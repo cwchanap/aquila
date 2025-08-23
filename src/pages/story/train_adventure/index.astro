@@ -1,0 +1,31 @@
+---
+import MainLayout from '@/layouts/main.astro';
+---
+
+<MainLayout title="Train Adventure">
+  <div id="game-container" class="min-h-screen flex items-center justify-center bg-black"></div>
+</MainLayout>
+
+<script>
+  import Phaser from 'phaser';
+  import { EntryScene } from '@/game/EntryScene';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const characterName = urlParams.get('name') || 'Player';
+
+    const config = {
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      parent: 'game-container',
+      backgroundColor: '#2c3e50',
+      scene: [EntryScene]
+    };
+
+    const game = new Phaser.Game(config);
+    
+    // Pass character name to the entry scene
+    game.scene.start('EntryScene', { characterName });
+  });
+</script>

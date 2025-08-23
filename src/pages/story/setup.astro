@@ -1,0 +1,49 @@
+---
+import MainLayout from '@/layouts/main.astro';
+import Button from '@/components/ui/Button.svelte';
+---
+
+<MainLayout title="Setup Character">
+  <div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center">
+    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4">
+      <h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
+        Setup Your Character
+      </h1>
+
+      <form id="setup-form" class="space-y-4">
+        <label for="character-name" class="block text-white text-lg font-semibold mb-2">Main Character Name:</label>
+        <input
+          type="text"
+          id="character-name"
+          name="name"
+          placeholder="Enter your character's name"
+          class="w-full py-3 px-4 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+          required
+        />
+
+        <Button variant="menu" type="submit" client:load>
+          Start Adventure
+        </Button>
+      </form>
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('setup-form');
+    const urlParams = new URLSearchParams(window.location.search);
+    const story = urlParams.get('story') || 'train_adventure';
+
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('character-name') as HTMLInputElement;
+        const name = nameInput.value.trim();
+        if (name) {
+          window.location.href = `/story/${story}?name=${encodeURIComponent(name)}`;
+        }
+      });
+    }
+  });
+</script>

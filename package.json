@@ -16,7 +16,12 @@
     "db:migrate:local": "TURSO_DATABASE_URL=http://127.0.0.1:8080 tsx src/lib/migrate.ts",
     "db:test": "TURSO_DATABASE_URL=http://127.0.0.1:8080 tsx src/lib/db-test.ts",
     "db:setup": "npm run db:migrate:local && npm run db:test",
-    "db:verify": "./scripts/verify-db.sh"
+    "db:verify": "./scripts/verify-db.sh",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.4",
@@ -41,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@playwright/test": "^1.55.0",
     "eslint": "^9.34.0",
     "eslint-plugin-astro": "^1.3.1",
     "eslint-plugin-svelte": "^3.11.0",

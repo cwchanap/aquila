@@ -8,7 +8,19 @@ import svelteParser from 'svelte-eslint-parser';
 export default [
   {
     name: 'ignores',
-    ignores: ['dist', '.astro', 'node_modules', '.husky', 'public/**/*.min.js', 'public/**/*.min.css']
+    ignores: [
+      'dist',
+      '.astro', 
+      'node_modules', 
+      '.husky', 
+      'public/**/*.min.js', 
+      'public/**/*.min.css',
+      '.vercel/**',
+      'test-results/**',
+      'playwright-report/**',
+      'coverage/**',
+      '**/*.log'
+    ]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

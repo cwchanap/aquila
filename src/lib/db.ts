@@ -4,7 +4,7 @@ import { LibsqlDialect } from '@libsql/kysely-libsql'
 import type { Database } from './db-types'
 
 // Get environment variables
-const url = process.env.TURSO_DATABASE_URL ?? 'http://127.0.0.1:8080'
+const url = process.env.TURSO_DATABASE_URL ?? 'http://127.0.0.1:8900'
 const authToken = process.env.TURSO_AUTH_TOKEN
 
 console.log('Database URL:', url)

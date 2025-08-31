@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "dev": {
+    "dev:app": {
       "persistent": true,
       "cache": false
     },

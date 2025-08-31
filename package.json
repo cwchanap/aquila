@@ -6,7 +6,7 @@
   "scripts": {
     "dev:app": "astro dev --port 5090",
     "dev:db": "turso dev --db-file ./db/dev.db --port 8080",
-    "dev": "turbo run dev dev:db --parallel",
+    "dev": "turbo run dev:app dev:db --parallel",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

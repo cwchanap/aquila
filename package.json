@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.8.0",
   "scripts": {
     "dev:app": "astro dev --port 5090",
-    "dev:db": "turso dev --db-file ./db/dev.db --port 8080",
+    "dev:db": "turso dev --db-file ./db/dev.db --port 8900",
     "dev": "turbo run dev:app dev:db --parallel",
     "build": "astro build",
     "preview": "astro preview",

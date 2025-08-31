@@ -12,18 +12,9 @@ export const auth = betterAuth({
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
-  },
-  user: {
-    additionalFields: {
-      username: {
-        type: "string",
-        required: false,
-      },
-    },
   },
   trustedOrigins: ["http://localhost:5090"],
-  secret: process.env.BETTER_AUTH_SECRET || "your-secret-key-here",
+  secret: process.env.BETTER_AUTH_SECRET || "your-secret-key-for-development-only",
 })
 
 export type Session = typeof auth.$Infer.Session

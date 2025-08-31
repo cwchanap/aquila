@@ -99,8 +99,6 @@ import '../styles/global.css';
 		</div>
 
 		<script>
-			import { authClient } from '../lib/auth-client.js';
-			
 			document.addEventListener('DOMContentLoaded', () => {
 				const loginForm = document.getElementById('login-form');
 				const signupBtn = document.getElementById('signup-btn');
@@ -125,13 +123,22 @@ import '../styles/global.css';
 						const password = formData.get('password');
 
 						try {
-							await authClient.signIn.email({
-								email,
-								password,
+							const response = await fetch('/api/simple-auth/signin', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify({ email, password }),
 							});
-							
-							// Redirect to home page on successful login
-							window.location.href = '/';
+
+							const result = await response.json();
+
+							if (response.ok) {
+								// Redirect to home page on successful login
+								window.location.href = '/';
+							} else {
+								showError(result.error || 'Login failed');
+							}
 						} catch (error) {
 							console.error('Login failed:', error);
 							showError('Login failed. Please check your credentials.');
@@ -153,15 +160,28 @@ import '../styles/global.css';
 							return;
 						}
 
+						if (!name) {
+							showError('Name is required for signup.');
+							return;
+						}
+
 						try {
-							await authClient.signUp.email({
-								email,
-								password,
-								name: name || undefined,
+							const response = await fetch('/api/simple-auth/signup', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify({ email, password, name }),
 							});
-							
-							// Redirect to home page on successful signup
-							window.location.href = '/';
+
+							const result = await response.json();
+
+							if (response.ok) {
+								// Redirect to home page on successful signup
+								window.location.href = '/';
+							} else {
+								showError(result.error || 'Signup failed');
+							}
 						} catch (error) {
 							console.error('Signup failed:', error);
 							showError('Signup failed. Email might already be in use.');

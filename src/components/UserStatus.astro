@@ -1,13 +1,15 @@
 ---
-import { auth } from '../lib/auth.js'
+import { SimpleAuthService } from '../lib/simple-auth.js'
 
 let user = null
 
 try {
-  const session = await auth.api.getSession({
-    headers: Astro.request.headers
-  })
-  user = session?.user || null
+  // Try to get session from cookie
+  const sessionId = Astro.cookies.get('session')?.value
+  if (sessionId) {
+    const session = await SimpleAuthService.getSession(sessionId)
+    user = session?.user || null
+  }
 } catch (error) {
   console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error')
 }
@@ -22,7 +24,7 @@ try {
         </div>
         <span class="text-white/90 font-medium">{user.name || user.email}</span>
       </div>
-      <form method="POST" action="/api/auth/sign-out">
+      <form method="POST" action="/api/simple-auth/session" style="display: inline;">
         <button 
           type="submit"
           title="Logout"

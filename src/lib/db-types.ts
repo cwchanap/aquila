@@ -1,10 +1,12 @@
 // Database schema types for Kysely
+import type { StoryId } from './story-types.js'
 
 export interface Database {
   users: UserTable
   sessions: SessionTable
   accounts: AccountTable
   verificationTokens: VerificationTokenTable
+  characterSetups: CharacterSetupTable
 }
 
 export interface UserTable {
@@ -50,6 +52,15 @@ export interface VerificationTokenTable {
   identifier: string
   token: string
   expires: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CharacterSetupTable {
+  id: string
+  userId: string
+  characterName: string
+  storyId: StoryId
   createdAt: string
   updatedAt: string
 }

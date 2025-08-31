@@ -2,6 +2,34 @@
 import MainLayout from '@/layouts/main.astro';
 import Button from '@/components/ui/Button.svelte';
 import UserStatus from '@/components/UserStatus.astro';
+import { auth } from '@/lib/auth.js';
+import { CharacterSetupRepository } from '@/lib/repositories.js';
+import { isValidStoryId, StoryId } from '@/lib/story-types.js';
+
+// Get the story parameter from URL
+const url = Astro.url;
+const storyParam = url.searchParams.get('story');
+
+// Validate story parameter
+if (!storyParam || !isValidStoryId(storyParam)) {
+  return Astro.redirect('/stories');
+}
+
+const storyId = storyParam as StoryId;
+
+// Check if user is authenticated
+const session = await auth.api.getSession({ headers: Astro.request.headers });
+if (!session?.user?.id) {
+  return Astro.redirect('/login');
+}
+
+// Check if character setup already exists
+const existingSetup = await CharacterSetupRepository.findByUserAndStory(session.user.id, storyId);
+
+// If setup exists, redirect to story with existing character name
+if (existingSetup) {
+  return Astro.redirect(`/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
+}
 ---
 
 <MainLayout title="Setup Character">
@@ -50,12 +78,48 @@ import UserStatus from '@/components/UserStatus.astro';
     const story = urlParams.get('story') || 'train_adventure';
 
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nameInput = document.getElementById('character-name') as HTMLInputElement;
+        const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
         const name = nameInput.value.trim();
-        if (name) {
+        
+        if (!name) {
+          alert('Please enter a character name');
+          return;
+        }
+
+        // Disable form during submission
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving...';
+
+        try {
+          // Save character setup to database
+          const response = await fetch('/api/character-setup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              characterName: name,
+              storyId: story
+            })
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save character setup');
+          }
+
+          // Redirect to story
           window.location.href = `/story/${story}?name=${encodeURIComponent(name)}`;
+        } catch (error) {
+          console.error('Setup error:', error);
+          alert('Failed to save character setup. Please try again.');
+          
+          // Re-enable form
+          submitButton.disabled = false;
+          submitButton.textContent = 'Start Adventure';
         }
       });
     }

@@ -2,6 +2,7 @@
 import MainLayout from '@/layouts/main.astro';
 import Button from '@/components/ui/Button.svelte';
 import UserStatus from '@/components/UserStatus.astro';
+import { StoryId, STORY_NAMES } from '@/lib/story-types.js';
 ---
 
 <MainLayout title="Select Story">
@@ -25,8 +26,8 @@ import UserStatus from '@/components/UserStatus.astro';
       </h1>
 
       <div class="space-y-4">
-        <Button variant="menu" href="/story/setup?story=train_adventure" client:load>
-          Train Adventure
+        <Button variant="menu" href={`/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+          {STORY_NAMES[StoryId.TRAIN_ADVENTURE]}
         </Button>
         <!-- Add more story buttons here as needed -->
       </div>

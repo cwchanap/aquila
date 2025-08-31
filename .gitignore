@@ -28,3 +28,5 @@ db/
 
 test-results/
 playwright-report/
+
+.turbo

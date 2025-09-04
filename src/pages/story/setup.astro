@@ -17,23 +17,26 @@ if (!storyParam || !isValidStoryId(storyParam)) {
 
 const storyId = storyParam as StoryId;
 
-// Check if user is authenticated
-const session = await auth.api.getSession({ headers: Astro.request.headers });
-if (!session?.user?.id) {
-  return Astro.redirect('/login');
+// Try to get session, but do not require auth
+let session;
+try {
+  session = await auth.api.getSession({ headers: Astro.request.headers });
+} catch (err) {
+  console.error('getSession error on setup page:', err);
 }
+const isAuthed = Boolean(session?.user?.id);
 
-// Check if character setup already exists
-const existingSetup = await CharacterSetupRepository.findByUserAndStory(session.user.id, storyId);
-
-// If setup exists, redirect to story with existing character name
-if (existingSetup) {
-  return Astro.redirect(`/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
+// If authenticated, check if character setup already exists in DB
+if (isAuthed) {
+  const existingSetup = await CharacterSetupRepository.findByUserAndStory(session.user.id, storyId);
+  if (existingSetup) {
+    return Astro.redirect(`/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
+  }
 }
 ---
 
 <MainLayout title="Setup Character">
-  <div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center relative">
+  <div id="setup-root" data-authed={isAuthed} data-story={storyId} class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center relative">
     <!-- Back button -->
     <a 
       href="/stories"
@@ -72,10 +75,28 @@ if (existingSetup) {
 </MainLayout>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('setup-form');
+    const root = document.getElementById('setup-root');
     const urlParams = new URLSearchParams(window.location.search);
-    const story = urlParams.get('story') || 'train_adventure';
+    const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
+    const isAuthed = (root?.getAttribute('data-authed') === 'true');
+
+    // If not authenticated, and there's a saved local setup, redirect immediately
+    if (!isAuthed) {
+      try {
+        const local = localStorage.getItem(`aquila:character:${story}`);
+        if (local) {
+          const { characterName } = JSON.parse(local);
+          if (characterName && typeof characterName === 'string') {
+            window.location.href = `/story/${story}?name=${encodeURIComponent(characterName)}`;
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to read local character setup:', e);
+      }
+    }
 
     if (form) {
       form.addEventListener('submit', async (e) => {
@@ -94,21 +115,26 @@ if (existingSetup) {
         submitButton.textContent = 'Saving...';
 
         try {
-          // Save character setup to database
-          const response = await fetch('/api/character-setup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              characterName: name,
-              storyId: story
-            })
-          });
+          if (isAuthed) {
+            // Save character setup to database
+            const response = await fetch('/api/character-setup', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                characterName: name,
+                storyId: story
+              })
+            });
 
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to save character setup');
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Failed to save character setup');
+            }
+          } else {
+            // Save character setup locally
+            localStorage.setItem(`aquila:character:${story}`, JSON.stringify({ characterName: name }));
           }
 
           // Redirect to story

@@ -28,16 +28,19 @@
   export let size: VariantProps<typeof buttonVariants>['size'] = 'default';
   export let className: string = '';
   export let href: string | undefined = undefined;
+  // Forward common HTML button attributes
+  export let type: 'button' | 'submit' | 'reset' = 'button';
+  export let disabled: boolean = false;
 
   $: finalClass = cn(buttonVariants({ variant, size, className }));
 </script>
 
 {#if href}
-  <a {href} class={finalClass} on:click>
+  <a {href} class={finalClass} on:click {...$$restProps}>
     <slot />
   </a>
 {:else}
-  <button class={finalClass} on:click>
+  <button class={finalClass} on:click {type} {disabled} aria-disabled={disabled} {...$$restProps}>
     <slot />
   </button>
 {/if}

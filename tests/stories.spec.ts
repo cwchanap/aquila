@@ -10,8 +10,8 @@ test.describe('Stories Page', () => {
     // Check if story selection heading is visible
     await expect(page.locator('body h1').first()).toContainText('Select Your Story');
 
-    // Check if Train Adventure button is visible
-    const trainAdventureButton = page.locator('a[href="/story/setup?story=train_adventure"]');
+    // Check if Train Adventure button is visible (link may vary based on authentication/character setup)
+    const trainAdventureButton = page.locator('a').filter({ hasText: 'Train Adventure' });
     await expect(trainAdventureButton).toBeVisible();
     await expect(trainAdventureButton).toContainText('Train Adventure');
   });
@@ -29,13 +29,14 @@ test.describe('Stories Page', () => {
     await expect(container).toHaveClass(/backdrop-blur-sm/);
   });
 
-  test('should navigate to train adventure setup when clicked', async ({ page }) => {
+  test('should navigate to train adventure setup when clicked (for non-authenticated users)', async ({ page }) => {
     await page.goto('/stories');
 
     // Click the Train Adventure button
-    await page.click('a[href="/story/setup?story=train_adventure"]');
+    const trainAdventureButton = page.locator('a').filter({ hasText: 'Train Adventure' });
+    await trainAdventureButton.click();
 
-    // Wait for navigation and check URL
+    // For non-authenticated users, should navigate to setup page
     await expect(page).toHaveURL('/story/setup?story=train_adventure');
   });
 

@@ -2,7 +2,7 @@
 import MainLayout from '@/layouts/main.astro';
 import Button from '@/components/ui/Button.svelte';
 import UserStatus from '@/components/UserStatus.astro';
-import { auth } from '@/lib/auth.js';
+import { SimpleAuthService } from '@/lib/simple-auth.js';
 import { CharacterSetupRepository } from '@/lib/repositories.js';
 import { isValidStoryId, StoryId } from '@/lib/story-types.js';
 
@@ -17,18 +17,22 @@ if (!storyParam || !isValidStoryId(storyParam)) {
 
 const storyId = storyParam as StoryId;
 
-// Try to get session, but do not require auth
-let session;
+// Try to get session from cookie (same as UserStatus component)
+let user = null;
 try {
-  session = await auth.api.getSession({ headers: Astro.request.headers });
-} catch (err) {
-  console.error('getSession error on setup page:', err);
+  const sessionId = Astro.cookies.get('session')?.value;
+  if (sessionId) {
+    const session = await SimpleAuthService.getSession(sessionId);
+    user = session?.user || null;
+  }
+} catch (error) {
+  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
 }
-const isAuthed = Boolean(session?.user?.id);
+const isAuthed = Boolean(user?.id);
 
 // If authenticated, check if character setup already exists in DB
-if (isAuthed) {
-  const existingSetup = await CharacterSetupRepository.findByUserAndStory(session.user.id, storyId);
+if (isAuthed && user?.id) {
+  const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
     return Astro.redirect(`/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
   }

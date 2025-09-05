@@ -1,12 +1,22 @@
 import type { APIRoute } from 'astro'
 import { CharacterSetupRepository } from '@/lib/repositories.js'
 import { StoryId, isValidStoryId } from '@/lib/story-types.js'
-import { auth } from '@/lib/auth.js'
+import { SimpleAuthService } from '@/lib/simple-auth.js'
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
-    
+    // Get session from cookie
+    const cookieHeader = request.headers.get('cookie') || ''
+    const sessionId = cookieHeader.split(';').find(c => c.trim().startsWith('session='))?.split('=')[1]
+
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    const session = await SimpleAuthService.getSession(sessionId)
     if (!session?.user?.id) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -65,8 +75,18 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
-    
+    // Get session from cookie
+    const cookieHeader = request.headers.get('cookie') || ''
+    const sessionId = cookieHeader.split(';').find(c => c.trim().startsWith('session='))?.split('=')[1]
+
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    const session = await SimpleAuthService.getSession(sessionId)
     if (!session?.user?.id) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,

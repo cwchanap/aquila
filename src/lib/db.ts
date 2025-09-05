@@ -7,8 +7,6 @@ import type { Database } from './db-types'
 const url = process.env.TURSO_DATABASE_URL ?? 'http://127.0.0.1:8080'
 const authToken = process.env.TURSO_AUTH_TOKEN
 
-console.log('Database URL:', url)
-
 if (!url) {
   throw new Error('TURSO_DATABASE_URL is not set. For local development, use http://127.0.0.1:8080')
 }

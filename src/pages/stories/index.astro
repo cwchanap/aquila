@@ -3,6 +3,32 @@ import MainLayout from '@/layouts/main.astro';
 import Button from '@/components/ui/Button.svelte';
 import UserStatus from '@/components/UserStatus.astro';
 import { StoryId, STORY_NAMES } from '@/lib/story-types.js';
+import { SimpleAuthService } from '@/lib/simple-auth.js';
+import { CharacterSetupRepository } from '@/lib/repositories.js';
+
+// Try to get session from cookie (same as UserStatus component)
+let user = null;
+try {
+  const sessionId = Astro.cookies.get('session')?.value;
+  if (sessionId) {
+    const session = await SimpleAuthService.getSession(sessionId);
+    user = session?.user || null;
+  }
+} catch (error) {
+  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
+}
+const isAuthed = Boolean(user?.id);
+
+// Check if user has already set up character for train adventure
+let hasCharacterSetup = false;
+let characterName = '';
+if (isAuthed && user?.id) {
+  const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, StoryId.TRAIN_ADVENTURE);
+  if (existingSetup) {
+    hasCharacterSetup = true;
+    characterName = existingSetup.characterName;
+  }
+}
 ---
 
 <MainLayout title="Select Story">
@@ -26,7 +52,7 @@ import { StoryId, STORY_NAMES } from '@/lib/story-types.js';
       </h1>
 
       <div class="space-y-4">
-        <Button variant="menu" href={`/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+        <Button variant="menu" href={hasCharacterSetup ? `/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}` : `/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
           {STORY_NAMES[StoryId.TRAIN_ADVENTURE]}
         </Button>
         <!-- Add more story buttons here as needed -->

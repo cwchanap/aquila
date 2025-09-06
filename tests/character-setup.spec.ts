@@ -91,6 +91,61 @@ test.describe('Character Setup Flow', () => {
     await expect(page).toHaveURL('/stories');
   });
 
+  test('should redirect authenticated users with existing character setup to game page', async ({ page }) => {
+    // First, set up a character by going through the setup flow
+    await page.goto('/story/setup?story=train_adventure');
+    await page.fill('input#character-name', 'Redirect Test Hero');
+    await page.click('button[type="submit"]');
+
+    // Wait for navigation to game page
+    await page.waitForURL(/\/story\/train_adventure\?name=Redirect%20Test%20Hero/);
+
+    // Now go back to stories page - should redirect automatically
+    await page.goto('/stories');
+
+    // Should automatically redirect to game page with character name
+    await page.waitForURL(/\/story\/train_adventure\?name=Redirect%20Test%20Hero/);
+    await expect(page).toHaveURL(/\/story\/train_adventure\?name=Redirect%20Test%20Hero/);
+  });
+
+  test('should redirect guest users with localStorage character setup to game page', async ({ page }) => {
+    // Set up localStorage with character data
+    await page.addScriptTag({
+      content: `
+        localStorage.setItem('aquila:character:train_adventure', JSON.stringify({
+          characterName: 'Guest Redirect Hero'
+        }));
+      `
+    });
+
+    // Navigate to stories page
+    await page.goto('/stories');
+
+    // Should automatically redirect to game page with character name
+    await page.waitForURL(/\/story\/train_adventure\?name=Guest%20Redirect%20Hero/);
+    await expect(page).toHaveURL(/\/story\/train_adventure\?name=Guest%20Redirect%20Hero/);
+  });
+
+  test('should show story selection for users without character setup', async ({ page }) => {
+    // Clear any existing localStorage
+    await page.addScriptTag({
+      content: `
+        localStorage.removeItem('aquila:character:train_adventure');
+      `
+    });
+
+    // Navigate to stories page
+    await page.goto('/stories');
+
+    // Should stay on stories page and show the selection
+    await expect(page).toHaveURL('/stories');
+    await expect(page.locator('h1')).toContainText('Select Your Story');
+
+    // Train Adventure button should be visible
+    const trainAdventureButton = page.locator('a').filter({ hasText: 'Train Adventure' });
+    await expect(trainAdventureButton).toBeVisible();
+  });
+
   test('should maintain consistent styling with other pages', async ({ page }) => {
     await page.goto('/story/setup?story=train_adventure');
 

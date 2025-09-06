@@ -7,6 +7,7 @@ export class BaseScene extends Phaser.Scene {
   protected characterNameText?: Phaser.GameObjects.Text;
   protected dialogueBox?: Phaser.GameObjects.Rectangle;
   protected hintText?: Phaser.GameObjects.Text;
+  protected homeButton?: Phaser.GameObjects.Text;
 
   constructor(key: string) {
     super(key);
@@ -48,6 +49,25 @@ export class BaseScene extends Phaser.Scene {
       })
       .setOrigin(1, 1)
       .setAlpha(0.8);
+
+    // home button top-left
+    this.homeButton = this.add
+      .text(padding, padding, '🏠 Home', {
+        fontSize: '18px',
+        color: '#ffffff',
+        backgroundColor: '#333333',
+        padding: { x: 12, y: 8 },
+      })
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        window.location.href = '/';
+      })
+      .on('pointerover', () => {
+        this.homeButton?.setStyle({ backgroundColor: '#555555' });
+      })
+      .on('pointerout', () => {
+        this.homeButton?.setStyle({ backgroundColor: '#333333' });
+      });
 
     // Require Enter key to advance dialogue
     this.input.keyboard?.on('keydown-ENTER', this.advanceDialogue, this);

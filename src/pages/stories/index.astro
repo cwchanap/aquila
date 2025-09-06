@@ -27,7 +27,13 @@ if (isAuthed && user?.id) {
   if (existingSetup) {
     hasCharacterSetup = true;
     characterName = existingSetup.characterName;
+    // Redirect directly to game page if character is already set up
+    return Astro.redirect(`/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}`);
   }
+} else {
+  // For guest users, check localStorage
+  // Note: This runs on server side, so we can't access localStorage directly
+  // The redirect logic for guests will be handled on the client side
 }
 ---
 
@@ -46,17 +52,38 @@ if (isAuthed && user?.id) {
     <!-- User status -->
     <UserStatus />
 
-    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4">
-      <h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
-        Select Your Story
-      </h1>
-
-      <div class="space-y-4">
-        <Button variant="menu" href={hasCharacterSetup ? `/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}` : `/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
-          {STORY_NAMES[StoryId.TRAIN_ADVENTURE]}
-        </Button>
-        <!-- Add more story buttons here as needed -->
+    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4" data-authed={isAuthed} data-story-id={StoryId.TRAIN_ADVENTURE}>
+        <h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
+          Select Your Story
+        </h1>
+  
+        <div class="space-y-4">
+          <Button variant="menu" href={hasCharacterSetup ? `/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}` : `/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+            {STORY_NAMES[StoryId.TRAIN_ADVENTURE]}
+          </Button>
+          <!-- Add more story buttons here as needed -->
+        </div>
       </div>
-    </div>
   </div>
 </MainLayout>
+
+<script>
+  // For guest users, check localStorage and redirect if character is set up
+  const storyContainer = document.querySelector('[data-authed]');
+  const isAuthed = storyContainer?.getAttribute('data-authed') === 'true';
+  const storyId = storyContainer?.getAttribute('data-story-id') || 'train_adventure';
+
+  if (!isAuthed) {
+    try {
+      const local = localStorage.getItem(`aquila:character:${storyId}`);
+      if (local) {
+        const { characterName } = JSON.parse(local);
+        if (characterName && typeof characterName === 'string') {
+          window.location.href = `/story/${storyId}?name=${encodeURIComponent(characterName)}`;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to read local character setup:', e);
+    }
+  }
+</script>

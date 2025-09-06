@@ -145,8 +145,8 @@ export class StoriesPage {
 
   // Locators
   get heading() { return this.page.locator('body h1').first(); }
-  get trainAdventureButton() { 
-    return this.page.locator('a[href="/story/setup?story=train_adventure"]'); 
+  get trainAdventureButton() {
+    return this.page.locator('a').filter({ hasText: 'Train Adventure' });
   }
 
   // Actions

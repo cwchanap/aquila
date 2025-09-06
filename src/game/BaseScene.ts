@@ -18,32 +18,56 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
-    // Shared create logic: dialogue UI aligned to bottom
+    // Shared create logic: dialogue UI at bottom with full screen background
+    this.updateDialogueUI();
+
+    // Listen for resize events to update UI
+    this.scale.on('resize', this.updateDialogueUI, this);
+
+    // Require Enter key to advance dialogue
+    this.input.keyboard?.on('keydown-ENTER', this.advanceDialogue, this);
+  }
+
+  updateDialogueUI() {
     const width = this.scale.width;
     const height = this.scale.height;
-    const boxHeight = 160;
+    const boxHeight = 180; // Increased height for better visibility
     const padding = 24;
 
-    // semi-transparent box at bottom
+    // Clear existing UI elements if they exist
+    if (this.dialogueBox) this.dialogueBox.destroy();
+    if (this.characterNameText) this.characterNameText.destroy();
+    if (this.textObject) this.textObject.destroy();
+    if (this.hintText) this.hintText.destroy();
+    if (this.homeButton) this.homeButton.destroy();
+
+    // full screen semi-transparent background
+    this.add
+      .rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
+      .setStrokeStyle(2, 0xffffff, 0.2);
+
+    // dialogue box at bottom with more margin from screen edge
+    const boxY = height - boxHeight / 2 - 20; // Add 20px margin from bottom
     this.dialogueBox = this.add
-      .rectangle(width / 2, height - boxHeight / 2, width, boxHeight, 0x000000, 0.6)
+      .rectangle(width / 2, boxY, width, boxHeight, 0x000000, 0.8)
       .setStrokeStyle(2, 0xffffff, 0.2);
 
     // character name and dialogue text inside the box
-    this.characterNameText = this.add.text(padding, height - boxHeight + padding, '', {
+    const textY = height - boxHeight - 20 + padding; // Adjust text position accordingly
+    this.characterNameText = this.add.text(padding, textY, '', {
       fontSize: '22px',
       color: '#ffffff',
     });
 
-    this.textObject = this.add.text(padding, height - boxHeight + padding + 34, '', {
+    this.textObject = this.add.text(padding, textY + 34, '', {
       fontSize: '20px',
       color: '#ffffff',
       wordWrap: { width: width - padding * 2 },
     });
 
-    // hint text bottom-right
+    // hint text positioned relative to dialogue box
     this.hintText = this.add
-      .text(width - padding, height - padding, 'Press Enter', {
+      .text(width - padding, height - 25, 'Press Enter', {
         fontSize: '14px',
         color: '#dddddd',
       })
@@ -68,23 +92,28 @@ export class BaseScene extends Phaser.Scene {
       .on('pointerout', () => {
         this.homeButton?.setStyle({ backgroundColor: '#333333' });
       });
-
-    // Require Enter key to advance dialogue
-    this.input.keyboard?.on('keydown-ENTER', this.advanceDialogue, this);
   }
 
   loadDialogue(dialogueData: { [key: string]: { dialogue: string; character: string }[] }) {
     this.dialogue = dialogueData;
     this.currentDialogueIndex = 0;
-    this.showDialogue();
+    // Ensure UI is ready before showing dialogue
+    this.time.delayedCall(100, () => {
+      this.showDialogue();
+    });
   }
 
   showDialogue() {
     const sceneId = this.scene.key; // Or manage scene IDs differently
     const current = this.dialogue[sceneId]?.[this.currentDialogueIndex];
     if (current) {
-      this.characterNameText?.setText(current.character);
-      this.textObject?.setText(current.dialogue);
+      if (this.characterNameText && this.textObject) {
+        this.characterNameText.setText(current.character);
+        this.textObject.setText(current.dialogue);
+      } else {
+        // If UI not ready, try again in a moment
+        this.time.delayedCall(50, () => this.showDialogue());
+      }
     } else {
       // End of dialogue, transition or end
       this.endScene();

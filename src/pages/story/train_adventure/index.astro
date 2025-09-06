@@ -3,7 +3,7 @@ import MainLayout from '@/layouts/main.astro';
 ---
 
 <MainLayout title="Train Adventure">
-  <div id="game-container" class="min-h-screen flex items-center justify-center bg-black"></div>
+  <div id="game-container" class="w-full h-screen bg-black"></div>
 </MainLayout>
 
 <script>
@@ -16,11 +16,15 @@ import MainLayout from '@/layouts/main.astro';
 
     const config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: window.innerWidth,
+      height: window.innerHeight,
       parent: 'game-container',
       backgroundColor: '#2c3e50',
-      scene: [EntryScene]
+      scene: [EntryScene],
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      }
     };
 
     const game = new Phaser.Game(config);

@@ -8,6 +8,24 @@ import UserStatus from './UserStatus.astro';
 	<!-- User status in top right corner -->
 	<UserStatus />
 
+	<!-- Language Switcher -->
+	<div class="absolute top-6 left-6">
+		<div class="bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
+			<a
+				href="/"
+				class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10"
+			>
+				English
+			</a>
+			<a
+				href="/zh"
+				class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10"
+			>
+				中文
+			</a>
+		</div>
+	</div>
+
 	<div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4">
 		<h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
 			Main Menu
@@ -39,7 +57,10 @@ import UserStatus from './UserStatus.astro';
 
 		if (startBtn) {
 			startBtn.addEventListener('click', () => {
-				window.location.href = '/stories';
+				// Make navigation locale-aware
+				const currentPath = window.location.pathname;
+				const isChinese = currentPath.startsWith('/zh');
+				window.location.href = isChinese ? '/zh/stories' : '/stories';
 			});
 		}
 

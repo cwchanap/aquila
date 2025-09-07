@@ -1,6 +1,6 @@
 ---
-import { SimpleAuthService } from '../lib/simple-auth.js'
-import MainLayout from '../layouts/main.astro'
+import { SimpleAuthService } from '../../lib/simple-auth.js'
+import MainLayout from '../../layouts/main.astro'
 import { t } from 'astro-i18n'
 
 let user = null
@@ -19,7 +19,7 @@ try {
 }
 
 if (!user) {
-  return Astro.redirect('/login')
+  return Astro.redirect('/zh/login')
 }
 ---
 
@@ -118,7 +118,7 @@ if (!user) {
 
         <!-- Back to Menu Button -->
         <a
-          href="/"
+          href="/zh"
           class="block w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/20 backdrop-blur-sm text-center"
         >
           {t("profile.backToMenu")}

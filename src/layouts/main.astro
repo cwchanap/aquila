@@ -1,13 +1,13 @@
 ---
-import '../styles/global.css';
 const { title = Astro.props.content?.title || 'Aquila' } = Astro.props;
 ---
 
-<html lang="en">
+<html lang={Astro.currentLocale || 'en'}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="stylesheet" href="/src/styles/global.css" />
 		<title>{title}</title>
 	</head>
 	<body>

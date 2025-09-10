@@ -1,0 +1,57 @@
+{
+  "profile": {
+    "title": "User Profile",
+    "userInfo": "User Information",
+    "name": "Name",
+    "email": "Email",
+    "notSet": "Not set",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "backToMenu": "Back to Menu",
+    "failedToLoad": "Failed to load user data"
+  },
+  "login": {
+    "title": "Login - Game App",
+    "heading": "Login",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "name": "Name (optional)",
+    "namePlaceholder": "Enter your name",
+    "loginButton": "Login",
+    "signupButton": "Sign Up",
+    "description": "Enter your credentials to login or sign up with a new account",
+    "loginFailed": "Login failed. Please check your credentials.",
+    "signupFailed": "Signup failed. Email might already be in use.",
+    "emailRequired": "Email and password are required for signup.",
+    "nameRequired": "Name is required for signup."
+  },
+  "menu": {
+    "title": "Main Menu - Game App",
+    "heading": "Main Menu",
+    "startGame": "Start Game",
+    "settings": "Settings"
+  },
+  "setup": {
+    "title": "Setup Character",
+    "heading": "Setup Your Character",
+    "characterName": "Main Character Name:",
+    "placeholder": "Enter your character's name",
+    "startAdventure": "Start Adventure",
+    "saving": "Saving...",
+    "enterName": "Please enter a character name",
+    "saveFailed": "Failed to save character setup. Please try again."
+  },
+  "adventure": {
+    "title": "Train Adventure"
+  },
+  "stories": {
+    "title": "Select Story",
+    "heading": "Select Your Story",
+    "trainAdventure": "Train Adventure"
+  }
+}

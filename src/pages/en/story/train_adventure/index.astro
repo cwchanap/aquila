@@ -1,8 +1,27 @@
 ---
 import MainLayout from '@/layouts/main.astro';
+import en from '../../../../translations/en.json';
+import zh from '../../../../translations/zh.json';
+
+// Helper function to get translations
+const t = (key: string): string => {
+  const locale = Astro.currentLocale || 'en';
+  const keys = key.split('.');
+  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k] as Record<string, unknown>;
+    } else {
+      return key;
+    }
+  }
+
+  return typeof value === 'string' ? value : key;
+};
 ---
 
-<MainLayout title="Train Adventure">
+<MainLayout title={t("adventure.title")}>
   <div id="game-container" class="w-full h-screen bg-black"></div>
 </MainLayout>
 

@@ -1,24 +1,14 @@
 ---
-import '../../styles/global.css';
-import { t } from 'astro-i18n';
+import MainLayout from '../../layouts/main.astro';
 
 // No server-side form handling needed with better-auth
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{t("login.title")}</title>
-	</head>
-
-	<body>
-		<div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center">
+<MainLayout title="Login - Game App">
+		<div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center" data-locale={Astro.currentLocale || 'en'}>
 			<!-- Back button -->
 			<a
-				href="/zh"
+				href={`/${Astro.currentLocale || 'en'}/`}
 				class="absolute top-6 left-6 p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,16 +16,15 @@ import { t } from 'astro-i18n';
 				</svg>
 			</a>
 
-
 			<div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4">
 				<h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
-					{t("login.heading")}
+					Login
 				</h1>
 
 				<form id="login-form" class="space-y-6">
 					<div>
 						<label for="email" class="block text-white font-semibold mb-2 drop-shadow">
-							{t("login.email")}
+							Email
 						</label>
 						<input
 							type="email"
@@ -43,13 +32,13 @@ import { t } from 'astro-i18n';
 							name="email"
 							required
 							class="w-full py-3 px-4 bg-white/20 text-white placeholder-white/70 rounded-xl border border-white/30 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all duration-300"
-							placeholder={t("login.emailPlaceholder")}
+							placeholder="Enter your email"
 						/>
 					</div>
 
 					<div>
 						<label for="password" class="block text-white font-semibold mb-2 drop-shadow">
-							{t("login.password")}
+							Password
 						</label>
 						<input
 							type="password"
@@ -57,20 +46,20 @@ import { t } from 'astro-i18n';
 							name="password"
 							required
 							class="w-full py-3 px-4 bg-white/20 text-white placeholder-white/70 rounded-xl border border-white/30 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all duration-300"
-							placeholder={t("login.passwordPlaceholder")}
+							placeholder="Enter your password"
 						/>
 					</div>
 
 					<div>
 						<label for="name" class="block text-white font-semibold mb-2 drop-shadow">
-							{t("login.name")}
+							Name (optional)
 						</label>
 						<input
 							type="text"
 							id="name"
 							name="name"
 							class="w-full py-3 px-4 bg-white/20 text-white placeholder-white/70 rounded-xl border border-white/30 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all duration-300"
-							placeholder={t("login.namePlaceholder")}
+							placeholder="Enter your name"
 						/>
 					</div>
 
@@ -78,7 +67,7 @@ import { t } from 'astro-i18n';
 						type="submit"
 						class="w-full py-4 px-6 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm"
 					>
-						{t("login.loginButton")}
+						Login
 					</button>
 
 					<button
@@ -86,7 +75,7 @@ import { t } from 'astro-i18n';
 						id="signup-btn"
 						class="w-full py-4 px-6 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm"
 					>
-						{t("login.signupButton")}
+						Sign Up
 					</button>
 				</form>
 
@@ -94,7 +83,7 @@ import { t } from 'astro-i18n';
 
 				<div class="mt-6 text-center">
 					<p class="text-white/80 text-sm drop-shadow">
-						{t("login.description")}
+						Enter your credentials to login or sign up with a new account
 					</p>
 				</div>
 			</div>
@@ -137,7 +126,8 @@ import { t } from 'astro-i18n';
 
 							if (response.ok) {
 								// Redirect to home page on successful login
-								window.location.href = '/';
+								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+								window.location.href = `/${locale}/`;
 							} else {
 								showError(result.error || 'Login failed');
 							}
@@ -180,7 +170,8 @@ import { t } from 'astro-i18n';
 
 							if (response.ok) {
 								// Redirect to home page on successful signup
-								window.location.href = '/';
+								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+								window.location.href = `/${locale}/`;
 							} else {
 								showError(result.error || 'Signup failed');
 							}
@@ -192,3 +183,4 @@ import { t } from 'astro-i18n';
 				}
 			});
 		</script>
+</MainLayout>

@@ -1,10 +1,29 @@
 ---
-import MainLayout from '@/layouts/main.astro';
-import Button from '@/components/ui/Button.svelte';
-import UserStatus from '@/components/UserStatus.astro';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
-import { CharacterSetupRepository } from '@/lib/repositories.js';
-import { isValidStoryId, StoryId } from '@/lib/story-types.js';
+import MainLayout from '../../../layouts/main.astro';
+import Button from '../../../components/ui/Button.svelte';
+import UserStatus from '../../../components/UserStatus.astro';
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { CharacterSetupRepository } from '../../../lib/repositories.js';
+import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
+import en from '../../../translations/en.json';
+import zh from '../../../translations/zh.json';
+
+// Helper function to get translations
+const t = (key: string): string => {
+  const locale = Astro.currentLocale || 'en';
+  const keys = key.split('.');
+  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k] as Record<string, unknown>;
+    } else {
+      return key;
+    }
+  }
+
+  return typeof value === 'string' ? value : key;
+};
 
 // Get the story parameter from URL
 const url = Astro.url;
@@ -12,7 +31,7 @@ const storyParam = url.searchParams.get('story');
 
 // Validate story parameter
 if (!storyParam || !isValidStoryId(storyParam)) {
-  return Astro.redirect('/stories');
+  return Astro.redirect('/zh/stories');
 }
 
 const storyId = storyParam as StoryId;
@@ -34,16 +53,16 @@ const isAuthed = Boolean(user?.id);
 if (isAuthed && user?.id) {
   const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
-    return Astro.redirect(`/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
+    return Astro.redirect(`/zh/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
   }
 }
 ---
 
-<MainLayout title="Setup Character">
+<MainLayout title={t("setup.title")}>
   <div id="setup-root" data-authed={isAuthed} data-story={storyId} class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center relative">
     <!-- Back button -->
-    <a 
-      href="/stories"
+    <a
+      href="/zh/stories"
       class="absolute top-6 left-6 p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm z-10"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,22 +75,22 @@ if (isAuthed && user?.id) {
 
     <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4">
       <h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
-        Setup Your Character
+        {t("setup.heading")}
       </h1>
 
       <form id="setup-form" class="space-y-4">
-        <label for="character-name" class="block text-white text-lg font-semibold mb-2">Main Character Name:</label>
+        <label for="character-name" class="block text-white text-lg font-semibold mb-2">{t("setup.characterName")}</label>
         <input
           type="text"
           id="character-name"
           name="name"
-          placeholder="Enter your character's name"
+          placeholder={t("setup.placeholder")}
           class="w-full py-3 px-4 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
           required
         />
 
         <Button variant="menu" type="submit" client:load>
-          Start Adventure
+          {t("setup.startAdventure")}
         </Button>
       </form>
     </div>
@@ -93,7 +112,7 @@ if (isAuthed && user?.id) {
         if (local) {
           const { characterName } = JSON.parse(local);
           if (characterName && typeof characterName === 'string') {
-            window.location.href = `/story/${story}?name=${encodeURIComponent(characterName)}`;
+            window.location.href = `/zh/story/${story}?name=${encodeURIComponent(characterName)}`;
             return;
           }
         }
@@ -142,11 +161,11 @@ if (isAuthed && user?.id) {
           }
 
           // Redirect to story
-          window.location.href = `/story/${story}?name=${encodeURIComponent(name)}`;
+          window.location.href = `/zh/story/${story}?name=${encodeURIComponent(name)}`;
         } catch (error) {
           console.error('Setup error:', error);
           alert('Failed to save character setup. Please try again.');
-          
+
           // Re-enable form
           submitButton.disabled = false;
           submitButton.textContent = 'Start Adventure';

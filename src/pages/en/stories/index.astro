@@ -1,10 +1,29 @@
 ---
-import MainLayout from '@/layouts/main.astro';
-import Button from '@/components/ui/Button.svelte';
-import UserStatus from '@/components/UserStatus.astro';
-import { StoryId, STORY_NAMES } from '@/lib/story-types.js';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
-import { CharacterSetupRepository } from '@/lib/repositories.js';
+import MainLayout from '../../../layouts/main.astro';
+import Button from '../../../components/ui/Button.svelte';
+import UserStatus from '../../../components/UserStatus.astro';
+import { StoryId } from '../../../lib/story-types.js';
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { CharacterSetupRepository } from '../../../lib/repositories.js';
+import en from '../../../translations/en.json';
+import zh from '../../../translations/zh.json';
+
+// Helper function to get translations
+const t = (key: string): string => {
+  const locale = Astro.currentLocale || 'en';
+  const keys = key.split('.');
+  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k] as Record<string, unknown>;
+    } else {
+      return key;
+    }
+  }
+
+  return typeof value === 'string' ? value : key;
+};
 
 // Try to get session from cookie (same as UserStatus component)
 let user = null;
@@ -28,7 +47,7 @@ if (isAuthed && user?.id) {
     hasCharacterSetup = true;
     characterName = existingSetup.characterName;
     // Redirect directly to game page if character is already set up
-    return Astro.redirect(`/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}`);
+    return Astro.redirect(`/zh/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}`);
   }
 } else {
   // For guest users, check localStorage
@@ -37,11 +56,11 @@ if (isAuthed && user?.id) {
 }
 ---
 
-<MainLayout title="Select Story">
+<MainLayout title={t("stories.title")}>
   <div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center relative">
     <!-- Back button -->
-    <a 
-      href="/"
+    <a
+      href="/zh/"
       class="absolute top-6 left-6 p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm z-10"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,12 +73,12 @@ if (isAuthed && user?.id) {
 
     <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4" data-authed={isAuthed} data-story-id={StoryId.TRAIN_ADVENTURE}>
         <h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
-          Select Your Story
+          {t("stories.heading")}
         </h1>
   
         <div class="space-y-4">
-          <Button variant="menu" href={hasCharacterSetup ? `/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}` : `/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
-            {STORY_NAMES[StoryId.TRAIN_ADVENTURE]}
+          <Button variant="menu" href={hasCharacterSetup ? `/zh/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}` : `/zh/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+            {t("stories.trainAdventure")}
           </Button>
           <!-- Add more story buttons here as needed -->
         </div>
@@ -79,7 +98,7 @@ if (isAuthed && user?.id) {
       if (local) {
         const { characterName } = JSON.parse(local);
         if (characterName && typeof characterName === 'string') {
-          window.location.href = `/story/${storyId}?name=${encodeURIComponent(characterName)}`;
+          window.location.href = `/zh/story/${storyId}?name=${encodeURIComponent(characterName)}`;
         }
       }
     } catch (e) {

@@ -1,7 +1,27 @@
 ---
+import UserStatus from './UserStatus.astro';
+import en from '../translations/en.json';
+import zh from '../translations/zh.json';
+
 // Main Menu Component with blue-green gradient background
 // Includes Start and Settings buttons
-import UserStatus from './UserStatus.astro';
+
+// Helper function to get translations
+const t = (key: string): string => {
+  const locale = Astro.currentLocale || 'en';
+  const keys = key.split('.');
+  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k] as Record<string, unknown>;
+    } else {
+      return key;
+    }
+  }
+
+  return typeof value === 'string' ? value : key;
+};
 ---
 
 <div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center relative">
@@ -12,14 +32,16 @@ import UserStatus from './UserStatus.astro';
 	<div class="absolute top-6 left-6">
 		<div class="bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
 			<a
-				href="/"
-				class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10"
+				href="/en/"
+				class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10 language-link"
+				data-lang="en"
 			>
 				English
 			</a>
 			<a
-				href="/zh"
-				class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10"
+				href="/zh/"
+				class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10 language-link"
+				data-lang="zh"
 			>
 				中文
 			</a>
@@ -28,7 +50,7 @@ import UserStatus from './UserStatus.astro';
 
 	<div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full mx-4">
 		<h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
-			Main Menu
+			{t("menu.heading")}
 		</h1>
 
 		<div class="space-y-4">
@@ -36,14 +58,14 @@ import UserStatus from './UserStatus.astro';
 				id="start-btn"
 				class="w-full py-4 px-6 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm"
 			>
-				Start Game
+				{t("menu.startGame")}
 			</button>
 
 			<button
 				id="settings-btn"
 				class="w-full py-4 px-6 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm"
 			>
-				Settings
+				{t("menu.settings")}
 			</button>
 		</div>
 	</div>
@@ -54,13 +76,24 @@ import UserStatus from './UserStatus.astro';
 	document.addEventListener('DOMContentLoaded', () => {
 		const startBtn = document.getElementById('start-btn');
 		const settingsBtn = document.getElementById('settings-btn');
+		const languageLinks = document.querySelectorAll('.language-link');
+
+		// Handle language preference saving
+		languageLinks.forEach(link => {
+			link.addEventListener('click', () => {
+				const lang = link.getAttribute('data-lang');
+				if (lang) {
+					localStorage.setItem('aquila:language', lang);
+				}
+			});
+		});
 
 		if (startBtn) {
 			startBtn.addEventListener('click', () => {
 				// Make navigation locale-aware
 				const currentPath = window.location.pathname;
 				const isChinese = currentPath.startsWith('/zh');
-				window.location.href = isChinese ? '/zh/stories' : '/stories';
+				window.location.href = isChinese ? '/zh/stories' : '/en/stories';
 			});
 		}
 

@@ -10,9 +10,14 @@ import vercel from '@astrojs/vercel/serverless';
 export default defineConfig({
   output: 'server',
   adapter: vercel({}),
+  i18n: {
+    locales: ["en", "zh"],
+    defaultLocale: "en",
+    routing: "manual"
+  },
   vite: {
       plugins: [tailwindcss()],
-	},
+  },
 
   integrations: [svelte()],
 });

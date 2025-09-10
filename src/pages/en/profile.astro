@@ -1,7 +1,25 @@
 ---
-import { SimpleAuthService } from '../lib/simple-auth.js'
-import MainLayout from '../layouts/main.astro'
-import { t } from 'astro-i18n'
+import { SimpleAuthService } from '../../lib/simple-auth.js'
+import MainLayout from '../../layouts/main.astro'
+import en from '../../translations/en.json'
+import zh from '../../translations/zh.json'
+
+// Helper function to get translations
+const t = (key: string): string => {
+  const locale = Astro.currentLocale || 'en';
+  const keys = key.split('.');
+  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k] as Record<string, unknown>;
+    } else {
+      return key;
+    }
+  }
+
+  return typeof value === 'string' ? value : key;
+};
 
 let user = null
 let error = ''
@@ -19,7 +37,7 @@ try {
 }
 
 if (!user) {
-  return Astro.redirect('/login')
+  return Astro.redirect(`/${Astro.currentLocale || 'en'}/login`)
 }
 ---
 
@@ -118,7 +136,7 @@ if (!user) {
 
         <!-- Back to Menu Button -->
         <a
-          href="/"
+          href={`/${Astro.currentLocale || 'en'}/`}
           class="block w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/20 backdrop-blur-sm text-center"
         >
           {t("profile.backToMenu")}

@@ -31,7 +31,7 @@ const storyParam = url.searchParams.get('story');
 
 // Validate story parameter
 if (!storyParam || !isValidStoryId(storyParam)) {
-  return Astro.redirect('/zh/stories');
+  return Astro.redirect(`/${Astro.currentLocale || 'en'}/stories`);
 }
 
 const storyId = storyParam as StoryId;
@@ -53,7 +53,7 @@ const isAuthed = Boolean(user?.id);
 if (isAuthed && user?.id) {
   const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
-    return Astro.redirect(`/zh/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
+    return Astro.redirect(`/${Astro.currentLocale || 'en'}/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
   }
 }
 ---
@@ -62,7 +62,7 @@ if (isAuthed && user?.id) {
   <div id="setup-root" data-authed={isAuthed} data-story={storyId} class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 flex items-center justify-center relative">
     <!-- Back button -->
     <a
-      href="/zh/stories"
+      href={`/${Astro.currentLocale || 'en'}/stories`}
       class="absolute top-6 left-6 p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm z-10"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,7 +112,8 @@ if (isAuthed && user?.id) {
         if (local) {
           const { characterName } = JSON.parse(local);
           if (characterName && typeof characterName === 'string') {
-            window.location.href = `/zh/story/${story}?name=${encodeURIComponent(characterName)}`;
+            const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+            window.location.href = `/${locale}/story/${story}?name=${encodeURIComponent(characterName)}`;
             return;
           }
         }
@@ -161,7 +162,8 @@ if (isAuthed && user?.id) {
           }
 
           // Redirect to story
-          window.location.href = `/zh/story/${story}?name=${encodeURIComponent(name)}`;
+          const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+          window.location.href = `/${locale}/story/${story}?name=${encodeURIComponent(name)}`;
         } catch (error) {
           console.error('Setup error:', error);
           alert('Failed to save character setup. Please try again.');

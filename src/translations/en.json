@@ -36,6 +36,10 @@
     "startGame": "Start Game",
     "settings": "Settings"
   },
+  "common": {
+    "logout": "Logout",
+    "login": "Login"
+  },
   "setup": {
     "title": "Setup Character",
     "heading": "Setup Your Character",

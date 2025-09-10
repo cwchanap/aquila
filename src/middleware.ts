@@ -1,14 +1,19 @@
 import { defineMiddleware } from "astro:middleware"
-import { redirectToDefaultLocale } from "astro:i18n"
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const { pathname } = url;
+
+  // Skip middleware for API routes
+  if (pathname.startsWith('/api/')) {
+    return next();
+  }
+
   const pathParts = pathname.split('/').filter(Boolean);
   const locale = pathParts[0];
 
   if (locale && ['en', 'zh'].includes(locale)) {
-    (context.locals as any).currentLocale = locale;
+    (context.locals as { currentLocale?: string }).currentLocale = locale;
   } else {
     // No locale or invalid, redirect to default locale
     return new Response(null, {

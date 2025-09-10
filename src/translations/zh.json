@@ -36,6 +36,10 @@
     "startGame": "开始游戏",
     "settings": "设置"
   },
+  "common": {
+    "logout": "登出",
+    "login": "登录"
+  },
   "setup": {
     "title": "设置角色",
     "heading": "设置您的角色",

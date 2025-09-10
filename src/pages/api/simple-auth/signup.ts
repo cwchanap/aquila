@@ -14,9 +14,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const user = await SimpleAuthService.signUp(email, password, name)
-    
+
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Failed to create user' }), {
+      return new Response(JSON.stringify({ error: 'Failed to create user. Email might already be in use.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       })

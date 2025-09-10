@@ -14,13 +14,17 @@ const translations = {
 
 export function t(locale: string, key: string): string {
   const keys = key.split('.')
-  let value: any = translations[locale as keyof typeof translations] || translations.en
+  let value: Record<string, unknown> = translations[locale as keyof typeof translations] || translations.en
 
   for (const k of keys) {
-    value = value?.[k]
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k] as Record<string, unknown>
+    } else {
+      return key
+    }
   }
 
-  return value || key
+  return typeof value === 'string' ? value : key
 }
 
 export interface User {

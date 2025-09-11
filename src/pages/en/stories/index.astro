@@ -46,8 +46,7 @@ if (isAuthed && user?.id) {
   if (existingSetup) {
     hasCharacterSetup = true;
     characterName = existingSetup.characterName;
-    // Redirect directly to game page if character is already set up
-    return Astro.redirect(`/zh/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}`);
+    // Don't redirect - allow users to access story config page
   }
 } else {
   // For guest users, check localStorage
@@ -87,23 +86,6 @@ if (isAuthed && user?.id) {
 </MainLayout>
 
 <script>
-  // For guest users, check localStorage and redirect if character is set up
-  const storyContainer = document.querySelector('[data-authed]');
-  const isAuthed = storyContainer?.getAttribute('data-authed') === 'true';
-  const storyId = storyContainer?.getAttribute('data-story-id') || 'train_adventure';
-
-  if (!isAuthed) {
-    try {
-      const local = localStorage.getItem(`aquila:character:${storyId}`);
-      if (local) {
-        const { characterName } = JSON.parse(local);
-        if (characterName && typeof characterName === 'string') {
-          const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-          window.location.href = `/${locale}/story/${storyId}?name=${encodeURIComponent(characterName)}`;
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to read local character setup:', e);
-    }
-  }
+  // Removed automatic redirect for guest users to allow access to story config page
+  // Users can now choose whether to play or configure their stories
 </script>

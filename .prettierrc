@@ -14,6 +14,12 @@
       "options": {
         "tabWidth": 4
       }
+    },
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "html"
+      }
     }
   ],
   "plugins": []

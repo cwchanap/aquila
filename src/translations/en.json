@@ -57,5 +57,22 @@
     "title": "Select Story",
     "heading": "Select Your Story",
     "trainAdventure": "Train Adventure"
+  },
+  "characters": {
+    "title": "My Characters",
+    "heading": "My Characters",
+    "description": "Here are your configured characters for different stories.",
+    "noCharacters": "No characters configured yet",
+    "startFirstStory": "Start Your First Story",
+    "guestDescription": "Sign in to save your characters permanently, or view your local characters below.",
+    "loadingLocal": "Loading local characters...",
+    "noLocalCharacters": "No local characters found",
+    "signInToSave": "Sign In to Save Characters",
+    "playStory": "Play Story",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "nameRequired": "Character name cannot be empty",
+    "updateFailed": "Failed to update character name. Please try again."
   }
 }

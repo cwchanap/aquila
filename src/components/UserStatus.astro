@@ -19,13 +19,44 @@ try {
 
 <div class="user-status absolute top-6 right-6 z-10">
   {user ? (
-    <div class="flex items-center gap-3">
-      <a href={`/${currentLocale}/profile`} class="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200" title="Go to Profile">
-        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium cursor-pointer">
-          {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+    <div class="flex items-center gap-3 relative">
+      <div class="relative">
+        <button
+          id="user-menu-button"
+          class="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200"
+          title="User Menu"
+        >
+          <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium cursor-pointer">
+            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <span class="text-white/90 font-medium">{user.name || user.email}</span>
+          <svg class="w-4 h-4 text-white/70 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          id="user-dropdown"
+          class="absolute right-0 mt-2 w-48 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg opacity-0 invisible transform translate-y-2 transition-all duration-200 z-20"
+        >
+          <div class="py-1">
+            <a
+              href={`/${currentLocale}/profile`}
+              class="block px-4 py-2 text-sm text-white/90 hover:bg-white/20 hover:text-white transition-colors duration-200"
+            >
+              Profile
+            </a>
+            <a
+              href={`/${currentLocale}/characters`}
+              class="block px-4 py-2 text-sm text-white/90 hover:bg-white/20 hover:text-white transition-colors duration-200"
+            >
+              Story Config
+            </a>
+          </div>
         </div>
-        <span class="text-white/90 font-medium">{user.name || user.email}</span>
-      </a>
+      </div>
+
       <form method="POST" action="/api/simple-auth/session" style="display: inline;">
         <button
           type="submit"
@@ -45,3 +76,56 @@ try {
     </a>
   )}
 </div>
+
+<script>
+  // Dropdown functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuButton = document.getElementById('user-menu-button') as HTMLElement;
+    const dropdown = document.getElementById('user-dropdown') as HTMLElement;
+
+    if (menuButton && dropdown) {
+      // Toggle dropdown on button click
+      menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = dropdown.classList.contains('opacity-100');
+        const svgIcon = menuButton.querySelector('svg');
+
+        if (isVisible) {
+          // Hide dropdown
+          dropdown.classList.remove('opacity-100', 'visible');
+          dropdown.classList.add('opacity-0', 'invisible');
+          dropdown.classList.add('translate-y-2');
+          if (svgIcon) svgIcon.classList.remove('rotate-180');
+        } else {
+          // Show dropdown
+          dropdown.classList.remove('opacity-0', 'invisible', 'translate-y-2');
+          dropdown.classList.add('opacity-100', 'visible');
+          if (svgIcon) svgIcon.classList.add('rotate-180');
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const target = e.target as Node;
+        if (target && !menuButton.contains(target) && !dropdown.contains(target)) {
+          dropdown.classList.remove('opacity-100', 'visible');
+          dropdown.classList.add('opacity-0', 'invisible');
+          dropdown.classList.add('translate-y-2');
+          const svgIcon = menuButton.querySelector('svg');
+          if (svgIcon) svgIcon.classList.remove('rotate-180');
+        }
+      });
+
+      // Close dropdown on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          dropdown.classList.remove('opacity-100', 'visible');
+          dropdown.classList.add('opacity-0', 'invisible');
+          dropdown.classList.add('translate-y-2');
+          const svgIcon = menuButton.querySelector('svg');
+          if (svgIcon) svgIcon.classList.remove('rotate-180');
+        }
+      });
+    }
+  });
+</script>

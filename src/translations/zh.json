@@ -57,5 +57,22 @@
     "title": "选择故事",
     "heading": "选择您的故事",
     "trainAdventure": "火车冒险"
+  },
+  "characters": {
+    "title": "我的角色",
+    "heading": "我的角色",
+    "description": "这里显示您为不同故事配置的角色。",
+    "noCharacters": "尚未配置角色",
+    "startFirstStory": "开始您的第一个故事",
+    "guestDescription": "登录以永久保存您的角色，或查看下面的本地角色。",
+    "loadingLocal": "正在加载本地角色...",
+    "noLocalCharacters": "未找到本地角色",
+    "signInToSave": "登录以保存角色",
+    "playStory": "开始游戏",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "nameRequired": "角色名称不能为空",
+    "updateFailed": "更新角色名称失败，请重试。"
   }
 }

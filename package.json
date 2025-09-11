@@ -70,8 +70,11 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs,astro,svelte}": [
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{astro,svelte}": [
       "eslint --fix"
     ]
   }

@@ -11,12 +11,12 @@ export default defineConfig({
   output: 'server',
   adapter: vercel({}),
   i18n: {
-    locales: ["en", "zh"],
-    defaultLocale: "en",
-    routing: "manual"
+    locales: ['en', 'zh'],
+    defaultLocale: 'en',
+    routing: 'manual',
   },
   vite: {
-      plugins: [tailwindcss()],
+    plugins: [tailwindcss()],
   },
 
   integrations: [svelte()],

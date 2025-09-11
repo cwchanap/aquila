@@ -10,17 +10,17 @@ export default [
     name: 'ignores',
     ignores: [
       'dist',
-      '.astro', 
-      'node_modules', 
-      '.husky', 
-      'public/**/*.min.js', 
+      '.astro',
+      'node_modules',
+      '.husky',
+      'public/**/*.min.js',
       'public/**/*.min.css',
       '.vercel/**',
       'test-results/**',
       'playwright-report/**',
       'coverage/**',
-      '**/*.log'
-    ]
+      '**/*.log',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -33,9 +33,9 @@ export default [
       parserOptions: {
         // Use TypeScript parser for <script lang="ts">
         parser: tseslint.parser,
-        extraFileExtensions: ['.svelte']
-      }
-    }
+        extraFileExtensions: ['.svelte'],
+      },
+    },
   },
   {
     files: ['**/*.astro'],
@@ -43,15 +43,15 @@ export default [
     languageOptions: {
       parserOptions: {
         parser: tseslint.parser,
-        extraFileExtensions: ['.astro']
-      }
-    }
+        extraFileExtensions: ['.astro'],
+      },
+    },
   },
   {
     files: ['**/*.{js,jsx,ts,tsx,mjs,cjs}'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module'
-    }
-  }
+      sourceType: 'module',
+    },
+  },
 ];

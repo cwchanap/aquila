@@ -3,24 +3,195 @@ export const trainAdventureDialogue = {
         {
             character: 'Narrator',
             dialogue:
-                'You board the mysterious train, unsure of what adventures await.',
+                "The night wind on the platform is chilly. Li Jie pulls his collar tight, trying to shake off the lingering alcohol and fatigue. He's an architect, twenty-eight, a life like his work: precise, rigorous, yet tinged with an indescribable monotony. It's 1:10 a.m.; the midnight train home is always a little late.",
         },
         {
-            character: 'MainCharacter',
-            dialogue: "This looks exciting! What's next?",
+            character: 'Narrator',
+            dialogue:
+                'He hears soft footsteps behind him. A young woman with a large backpack slowly steps into view. Early twenties, white T-shirt, long hair over her shoulders. Her face looks a little youthful under the dim lights, but her eyes brim with curiosity.',
+        },
+        { character: 'Lin Ya', dialogue: 'The train is late again...' },
+        {
+            character: 'Narrator',
+            dialogue: `She stops not far from him, takes out a small notebook, and starts sketching. Li Jie notices she isn't drawing scenery, but strange symbols—like ancient characters crossed with a complex circuit diagram.`,
         },
         {
-            character: 'Conductor',
-            dialogue: 'Welcome aboard! Please take your seat.',
+            character: 'Narrator',
+            dialogue:
+                'After a while, a distant whistle cuts the night. A beam of light tears through the darkness as the train roars into the station. Li Jie boards and takes a window seat. The girl from before enters as well and sits in an empty seat not far across from him.',
         },
         {
-            character: 'MainCharacter',
-            dialogue: 'Thank you. Where is this train headed?',
-        },
-        {
-            character: 'Conductor',
-            dialogue: 'To the land of adventures! Enjoy the ride.',
+            character: 'Narrator',
+            dialogue: `The train pulls out, leaving the station lights behind, heading into boundless darkness. It'll take him home, back to the familiar, monotonous world. Li Jie closes his eyes to rest, unaware that the destination of this journey is far more complicated than he imagines.`,
         },
     ],
-    // Add more scenes as needed, e.g., NextScene: [...]
+    TrainRideScene: [
+        {
+            character: 'Narrator',
+            dialogue: `The train glides smoothly. Aside from the air conditioner's hum, there are only scattered whispers.`,
+        },
+        {
+            character: 'Lin Ya',
+            dialogue:
+                '(walks up to Li Jie) Excuse me, do you know what time it is?',
+        },
+        {
+            character: 'Li Jie',
+            dialogue: '(glances at his phone) Uh, around 1:30 a.m.',
+        },
+        { character: 'Lin Ya', dialogue: 'Thank you.' },
+        {
+            character: 'Narrator',
+            dialogue: 'Lin Ya sits down in an empty seat across from Li Jie.',
+        },
+        {
+            character: 'Lin Ya',
+            dialogue: `I'm Lin Ya, just back from a school camping trip. This tunnel is so long—it feels like time has stopped.`,
+        },
+        {
+            character: 'Li Jie',
+            dialogue:
+                'Li Jie. Architect. This tunnel is always like this. You get used to it.',
+        },
+        {
+            character: 'Narrator',
+            dialogue: `The train enters the city's famous "Endless Tunnel." The windows go pitch-black. Minutes pass; the atmosphere turns strange. His phone shows “No Signal” forever.`,
+        },
+        {
+            character: 'Lin Ya',
+            dialogue: '(softly) Do you think... we took the wrong way?',
+        },
+        {
+            character: 'Narrator',
+            dialogue:
+                'The train jolts. A piercing screech follows. Light grows ahead. The moment they exit the tunnel, Li Jie freezes.',
+        },
+    ],
+    OtherworldStationScene: [
+        {
+            character: 'Narrator',
+            dialogue:
+                'Another jolt. A scream of metal. Then blinding light. Outside is no familiar cityscape, but a grotesque world. The train stops at a station no one has seen before: on one side a twisted black forest, on the other a bottomless cliff and a blood-red sea.',
+        },
+        {
+            character: 'Lin Ya',
+            dialogue: `(gripping Li Jie's hand, voice trembling) Li Jie... what is this place?`,
+        },
+        {
+            character: 'Li Jie',
+            dialogue: `(murmurs) I don't know... this isn't my home...`,
+        },
+        {
+            character: 'Narrator',
+            dialogue:
+                'The sky is a terrifying crimson. A bleeding red sun hangs at the horizon.',
+        },
+        {
+            character: 'PA',
+            dialogue:
+                '(hoarse, distorted) Dear passengers... due to a system failure, we have arrived at the terminus early. All passengers... please disembark immediately.',
+        },
+        {
+            character: 'Worker Wang',
+            dialogue: 'Terminus? Are you kidding me? What is this place?!',
+        },
+        {
+            character: 'Old Zhang',
+            dialogue: 'I... I have to go home... my wife is waiting...',
+        },
+        {
+            character: 'Chen',
+            dialogue:
+                '(whispers to Zhao) Could this be some kind of prank show?',
+        },
+        {
+            character: 'Zhao',
+            dialogue: `(shakes head) Doesn't look like it. This is too strange...`,
+        },
+        {
+            character: 'Narrator',
+            dialogue:
+                'The doors slide open. A cold wind rushes in, laced with the smell of rust.',
+        },
+        {
+            character: 'Lin Ya',
+            dialogue: `(hand icy in Li Jie's) I'm scared...`,
+        },
+        {
+            character: 'Li Jie',
+            dialogue: `(deep breath) Listen. I'll go take a look. You stay here. Don't move.`,
+        },
+        { character: 'Lin Ya', dialogue: `No! Please—don't leave me alone!` },
+        {
+            character: 'Li Jie',
+            dialogue: `(meets her eyes, softly) Okay. We'll go together.`,
+        },
+        {
+            character: 'Narrator',
+            dialogue:
+                'Hand in hand, they step onto the platform. The air is colder. The platform is rough gray rock—lifeless.',
+        },
+        {
+            character: 'Li Jie',
+            dialogue: 'No staff. No trains... not even wind.',
+        },
+        {
+            character: 'Worker Wang',
+            dialogue: 'Look! The tracks... the tracks are gone!',
+        },
+        {
+            character: 'Narrator',
+            dialogue: 'Passengers spill out, faces pale with fear.',
+        },
+        { character: 'Chen', dialogue: 'Is this... really the real world?' },
+        {
+            character: 'Narrator',
+            dialogue:
+                'A low sound comes from the forest. Like stones grinding.',
+        },
+        {
+            character: 'Worker Wang',
+            dialogue: '(points at the trees) What is that?!',
+        },
+        {
+            character: 'Narrator',
+            dialogue:
+                'A black humanoid shape forms from swarms of tiny insects and emerges from the trees, moving toward them.',
+        },
+        { character: 'Old Zhang', dialogue: 'Oh my god...' },
+        { character: 'Narrator', dialogue: 'It suddenly accelerates.' },
+        { character: 'Worker Wang', dialogue: 'Run! Run!' },
+        {
+            character: 'Narrator',
+            dialogue:
+                'Old Zhang is too slow. The shadow engulfs him. A short, sharp scream.',
+        },
+        { character: 'Lin Ya', dialogue: 'Li Jie, run!' },
+        {
+            character: 'Narrator',
+            dialogue:
+                'People scramble back into the cars. The shadow splits into countless swarms; one hurtles toward Li Jie and Lin Ya. Li Jie shields her and squeezes his eyes shut. The expected pain never comes. Lin Ya flings out her arm; a surge of force knocks him to the ground.',
+        },
+        { character: 'Li Jie', dialogue: 'You... how did you...' },
+        {
+            character: 'Narrator',
+            dialogue:
+                "Blue light flashes in Lin Ya's hand, forming a translucent barrier that blocks the insects.",
+        },
+        {
+            character: 'Lin Ya',
+            dialogue: '(pale, panting) No time to explain—go!',
+        },
+        { character: 'Narrator', dialogue: 'She pulls him. They run.' },
+        { character: 'Li Jie', dialogue: 'Where are we going?!' },
+        {
+            character: 'Lin Ya',
+            dialogue: '(silent, dragging him toward the dark forest)',
+        },
+        {
+            character: 'Narrator',
+            dialogue:
+                'He glances back. The swarm fuses again with a furious growl. Under the blood-red sky, their silhouettes vanish into the black woods.',
+        },
+    ],
 };

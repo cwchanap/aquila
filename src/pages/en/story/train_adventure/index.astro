@@ -22,16 +22,21 @@ const t = (key: string): string => {
 ---
 
 <MainLayout title={t("adventure.title")}>
-  <div id="game-container" class="w-full h-screen bg-black"></div>
+  <div id="game-container" data-locale={Astro.currentLocale || 'zh'} class="w-full h-screen bg-black"></div>
 </MainLayout>
 
 <script>
   import Phaser from 'phaser';
-  import { EntryScene } from '@/game/EntryScene';
+  import { PreloadScene } from '@/game/PreloadScene';
+  import { StoryScene } from '@/game/StoryScene';
 
   document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const characterName = urlParams.get('name') || 'Player';
+    const qsLocale = urlParams.get('locale');
+    const container = document.getElementById('game-container');
+    const defaultLocale = (container?.getAttribute('data-locale') || 'en');
+    const locale = (qsLocale || defaultLocale);
 
     const config = {
       type: Phaser.AUTO,
@@ -39,7 +44,7 @@ const t = (key: string): string => {
       height: window.innerHeight,
       parent: 'game-container',
       backgroundColor: '#2c3e50',
-      scene: [EntryScene],
+      scene: [PreloadScene, StoryScene],
       scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -48,7 +53,7 @@ const t = (key: string): string => {
 
     const game = new Phaser.Game(config);
     
-    // Pass character name to the entry scene
-    game.scene.start('EntryScene', { characterName });
+    // Pass character name and locale to the preload scene (it forwards to StoryScene)
+    game.scene.start('PreloadScene', { characterName, locale });
   });
 </script>

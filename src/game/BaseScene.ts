@@ -14,6 +14,7 @@ export class BaseScene extends Phaser.Scene {
     protected locale: string = 'en';
     protected bgGraphics?: Phaser.GameObjects.Graphics;
     protected bgImage?: Phaser.GameObjects.Image;
+    protected overlayRect?: Phaser.GameObjects.Rectangle;
     protected beepCtx?: AudioContext;
     protected ambientOsc?: OscillatorNode;
     protected ambientGain?: GainNode;
@@ -160,6 +161,9 @@ export class BaseScene extends Phaser.Scene {
             if (!this.bgImage) {
                 this.bgImage = this.add.image(0, 0, texKey).setOrigin(0.5, 0.5);
                 this.bgImage.setDepth(-20);
+            } else if (this.bgImage.texture.key !== texKey) {
+                // Update the existing image's texture when section changes
+                this.bgImage.setTexture(texKey);
             }
             // Position center
             this.bgImage.setPosition(width / 2, height / 2);
@@ -223,10 +227,18 @@ export class BaseScene extends Phaser.Scene {
         if (this.hintText) this.hintText.destroy();
         if (this.homeButton) this.homeButton.destroy();
 
-        // full screen semi-transparent overlay
-        this.add
-            .rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
-            .setStrokeStyle(2, 0xffffff, 0.2);
+        // full screen semi-transparent overlay (single instance, reused)
+        if (this.overlayRect) {
+            this.overlayRect
+                .setPosition(width / 2, height / 2)
+                .setSize(width, height)
+                .setFillStyle(0x000000, 0.3)
+                .setDepth(-10);
+        } else {
+            this.overlayRect = this.add
+                .rectangle(width / 2, height / 2, width, height, 0x000000, 0.3)
+                .setDepth(-10);
+        }
 
         // dialogue box at bottom with more margin from screen edge
         const boxY = height - boxHeight / 2 - 20; // Add 20px margin from bottom
@@ -244,7 +256,8 @@ export class BaseScene extends Phaser.Scene {
         this.textObject = this.add.text(padding, textY + 34, '', {
             fontSize: '20px',
             color: '#ffffff',
-            wordWrap: { width: width - padding * 2 },
+            wordWrap: { width: width - padding * 2, useAdvancedWrap: true },
+            fixedWidth: width - padding * 2,
         });
 
         // hint text positioned relative to dialogue box (localized)

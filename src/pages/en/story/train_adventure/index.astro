@@ -31,12 +31,10 @@ const t = (key: string): string => {
   import { StoryScene } from '@/game/StoryScene';
 
   document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const characterName = urlParams.get('name') || 'Player';
-    const qsLocale = urlParams.get('locale');
+    const storyId = 'train_adventure';
     const container = document.getElementById('game-container');
     const defaultLocale = (container?.getAttribute('data-locale') || 'en');
-    const locale = (qsLocale || defaultLocale);
+    const locale = defaultLocale;
 
     const config = {
       type: Phaser.AUTO,
@@ -52,8 +50,25 @@ const t = (key: string): string => {
     };
 
     const game = new Phaser.Game(config);
-    
-    // Pass character name and locale to the preload scene (it forwards to StoryScene)
-    game.scene.start('PreloadScene', { characterName, locale });
+
+    // Fetch character name from DB for this story, fallback to 'Player'
+    async function fetchCharacterName(): Promise<string> {
+      try {
+        const res = await fetch(`/api/character-setup?storyId=${storyId}`, { credentials: 'include' });
+        if (!res.ok) return 'Player';
+        const data = await res.json();
+        if (data && typeof data.characterName === 'string' && data.characterName.trim().length > 0) {
+          return data.characterName.trim();
+        }
+      } catch (e) {
+        console.warn('Failed to fetch character setup, using default name', e);
+      }
+      return 'Player';
+    }
+
+    fetchCharacterName().then((characterName) => {
+      // Pass character name, locale, and storyId to the preload scene (it forwards to StoryScene)
+      game.scene.start('PreloadScene', { characterName, locale, storyId });
+    });
   });
 </script>

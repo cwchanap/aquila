@@ -1,34 +1,57 @@
 import Phaser from 'phaser';
+import type { DialogueMap } from './dialogue/types';
 import entryUrl from '@/assets/entry.png?url';
 import trainRideUrl from '@/assets/train_ride.png?url';
 import stationUrl from '@/assets/station.png?url';
 
 export class PreloadScene extends Phaser.Scene {
-    private startData: { characterName: string; locale?: string } = {
+    private startData: {
+        characterName: string;
+        locale?: string;
+        storyId?: string;
+    } = {
         characterName: 'Player',
         locale: 'zh',
+        storyId: 'train_adventure',
     };
 
     constructor() {
         super('PreloadScene');
     }
 
-    init(data: { characterName: string; locale?: string }) {
+    init(data: { characterName: string; locale?: string; storyId?: string }) {
         this.startData = data || this.startData;
     }
 
     preload() {
-        // Backgrounds mapped to scene keys
+        // Backgrounds mapped to scene keys (built-in fallbacks for train_adventure)
         this.load.image('bg-EntryScene', entryUrl);
         this.load.image('bg-TrainRideScene', trainRideUrl);
         this.load.image('bg-OtherworldStationScene', stationUrl);
+
+        // Load optional JSON dialogue for data-driven flow (JSON only contains dialogues)
+        const storyId = this.startData.storyId || 'train_adventure';
+        const locale = (this.startData.locale || 'zh').toLowerCase();
+        const localePrefix = locale.startsWith('zh') ? 'zh' : 'en';
+        this.load.json(
+            'story-dialogue',
+            `/stories/${localePrefix}/${storyId}.json`
+        );
     }
 
     create() {
-        // Forward to story scene with original data
+        const dialogueMap = (this.cache.json.get('story-dialogue') ||
+            null) as DialogueMap | null;
+        if (dialogueMap) {
+            // Store for StoryScene to consume if provided
+            this.registry.set('dialogueMap', dialogueMap);
+        }
+
+        // Start StoryScene; sections are defined in code, not JSON settings
         this.scene.start('StoryScene', {
             characterName: this.startData.characterName,
             locale: this.startData.locale,
+            storyId: this.startData.storyId || 'train_adventure',
         });
     }
 }

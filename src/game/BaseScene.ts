@@ -99,6 +99,20 @@ export class BaseScene extends Phaser.Scene {
         }
     }
 
+    protected fadeAmbientTo(target: number, durationMs: number = 300) {
+        try {
+            if (!this.ambientGain || !this.beepCtx) return;
+            const now = this.beepCtx.currentTime;
+            const param = this.ambientGain.gain;
+            param.cancelScheduledValues(now);
+            // Ensure ramp starts from current value
+            param.setValueAtTime(param.value, now);
+            param.linearRampToValueAtTime(target, now + durationMs / 1000);
+        } catch {
+            // ignore
+        }
+    }
+
     preload() {
         // Shared preload logic, e.g., load fonts, UI assets
     }

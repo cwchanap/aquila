@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
 import type { DialogueMap } from './dialogue/types';
 
@@ -12,6 +13,10 @@ export class StoryScene extends BaseScene {
     private transitioning = false;
     private storyId: string = 'train_adventure';
     private completed = false;
+    private completionOverlay?: Phaser.GameObjects.Rectangle;
+    private completionTitle?: Phaser.GameObjects.Text;
+    private completionTip?: Phaser.GameObjects.Text;
+    private completionBtn?: Phaser.GameObjects.Text;
 
     constructor() {
         super('StoryScene');
@@ -74,7 +79,7 @@ export class StoryScene extends BaseScene {
             this.fadeAmbientTo(0.0015, 400);
             const width = this.scale.width;
             const height = this.scale.height;
-            this.add
+            this.completionOverlay = this.add
                 .rectangle(0, 0, width, height, 0x000000, 0.5)
                 .setOrigin(0)
                 .setDepth(1000);
@@ -88,21 +93,21 @@ export class StoryScene extends BaseScene {
                 ? '🏠 回首頁'
                 : '🏠 Home';
 
-            this.add
+            this.completionTitle = this.add
                 .text(width / 2, height / 2 - 20, title, {
                     fontSize: '36px',
                     color: '#ffffff',
                 })
                 .setOrigin(0.5)
                 .setDepth(1001);
-            this.add
+            this.completionTip = this.add
                 .text(width / 2, height / 2 + 8, tip, {
                     fontSize: '16px',
                     color: '#e5e7eb',
                 })
                 .setOrigin(0.5)
                 .setDepth(1001);
-            this.add
+            this.completionBtn = this.add
                 .text(width / 2, height / 2 + 50, btnLabel, {
                     fontSize: '18px',
                     color: '#ffffff',
@@ -120,5 +125,52 @@ export class StoryScene extends BaseScene {
                 window.location.href = '/';
             });
         }
+    }
+
+    protected onRetreatDialogue(): void {
+        // If user navigates back after completion, remove overlays and restore state
+        if (this.completed) {
+            this.completed = false;
+            // Restore ambient to normal scene level
+            this.fadeAmbientTo(0.004, 200);
+            this.completionOverlay?.destroy();
+            this.completionTitle?.destroy();
+            this.completionTip?.destroy();
+            this.completionBtn?.destroy();
+            this.completionOverlay = undefined;
+            this.completionTitle = undefined;
+            this.completionTip = undefined;
+            this.completionBtn = undefined;
+        }
+    }
+
+    protected onCrossSectionRetreat(): boolean {
+        // If at the first line of a section, go to the last line of the previous section
+        if (this.sectionIndex > 0) {
+            this.sectionIndex -= 1;
+            const prevKey = this.sections[this.sectionIndex];
+            // Switch section without auto-show from setSection; do it manually to avoid flicker
+            this.sectionKey = prevKey;
+            const len = this.dialogue[prevKey]?.length ?? 1;
+            this.currentDialogueIndex = Math.max(0, len - 1);
+            // Update ambient frequency to match previous section mood
+            try {
+                if (this.ambientOsc) {
+                    let freq = 80;
+                    if (prevKey === 'TrainRideScene') freq = 60;
+                    if (prevKey === 'OtherworldStationScene') freq = 95;
+                    this.ambientOsc.frequency.setValueAtTime(
+                        freq,
+                        this.beepCtx ? this.beepCtx.currentTime : 0
+                    );
+                }
+            } catch {
+                // ignore
+            }
+            // Rebuild layout for new section (background, UI preserved appropriately)
+            this.redrawLayout();
+            return true;
+        }
+        return false;
     }
 }

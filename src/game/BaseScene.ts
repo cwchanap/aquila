@@ -133,6 +133,15 @@ export class BaseScene extends Phaser.Scene {
 
         // Require Enter key to advance dialogue
         this.input.keyboard?.on('keydown-ENTER', this.advanceDialogue, this);
+        // Allow Backspace to go back to previous dialogue line
+        this.input.keyboard?.on(
+            'keydown-BACKSPACE',
+            (event: KeyboardEvent) => {
+                event.preventDefault?.();
+                this.retreatDialogue();
+            },
+            this
+        );
 
         // Start subtle ambient hum (no audio files required)
         this.startAmbient();
@@ -262,8 +271,8 @@ export class BaseScene extends Phaser.Scene {
 
         // hint text positioned relative to dialogue box (localized)
         const hint = this.locale.startsWith('zh')
-            ? '按 Enter 繼續'
-            : 'Press Enter';
+            ? 'Enter 繼續 · Backspace 返回'
+            : 'Enter: Next · Backspace: Back';
         this.hintText = this.add
             .text(width - padding, height - 25, hint, {
                 fontSize: '14px',
@@ -347,6 +356,33 @@ export class BaseScene extends Phaser.Scene {
         this.playBeep();
         this.currentDialogueIndex++;
         this.showDialogue();
+    }
+
+    retreatDialogue() {
+        this.playBeep();
+        if (this.currentDialogueIndex > 0) {
+            this.currentDialogueIndex--;
+            // Allow child scenes to react (e.g., clear completion overlays)
+            this.onRetreatDialogue();
+            this.showDialogue();
+        } else {
+            // At first line: allow child scene to switch to previous section
+            const handled = this.onCrossSectionRetreat();
+            if (handled) {
+                this.showDialogue();
+            }
+        }
+    }
+
+    // Hook for child scenes to override to cleanup any end-of-scene UI
+    protected onRetreatDialogue() {
+        // no-op by default
+    }
+
+    // Hook for child scenes to override for cross-section navigation.
+    // Return true if a previous section was selected and state updated.
+    protected onCrossSectionRetreat(): boolean {
+        return false;
     }
 
     protected playBeep() {

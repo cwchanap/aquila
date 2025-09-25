@@ -81,40 +81,54 @@
     }
   ],
   "OtherworldStationScene": [
-    { "character": "Narrator", "dialogue": "Another jolt. A scream of metal. Then blinding light. Outside is no familiar cityscape, but a grotesque world. The train stops at a station no one has seen before: on one side a twisted black forest, on the other a bottomless cliff and a blood-red sea." },
-    { "character": "Lin Ya", "dialogue": "(gripping Li Jie's hand, voice trembling) Li Jie... what is this place?" },
-    { "character": "Li Jie", "dialogue": "(murmurs) I don't know... this isn't my home..." },
-    { "character": "Narrator", "dialogue": "The sky is a terrifying crimson. A bleeding red sun hangs at the horizon." },
-    { "character": "PA", "dialogue": "(hoarse, distorted) Dear passengers... due to a system failure, we have arrived at the terminus early. All passengers... please disembark immediately." },
-    { "character": "Worker Wang", "dialogue": "Terminus? Are you kidding me? What is this place?!" },
-    { "character": "Old Zhang", "dialogue": "I... I have to go home... my wife is waiting..." },
-    { "character": "Chen", "dialogue": "(whispers to Zhao) Could this be some kind of prank show?" },
-    { "character": "Zhao", "dialogue": "(shakes head) Doesn't look like it. This is too strange..." },
-    { "character": "Narrator", "dialogue": "The doors slide open. A cold wind rushes in, laced with the smell of rust." },
-    { "character": "Lin Ya", "dialogue": "(hand icy in Li Jie's) I'm scared..." },
-    { "character": "Li Jie", "dialogue": "(deep breath) Listen. I'll go take a look. You stay here. Don't move." },
-    { "character": "Lin Ya", "dialogue": "No! Please—don't leave me alone!" },
-    { "character": "Li Jie", "dialogue": "(meets her eyes, softly) Okay. We'll go together." },
-    { "character": "Narrator", "dialogue": "Hand in hand, they step onto the platform. The air is colder. The platform is rough gray rock—lifeless." },
-    { "character": "Li Jie", "dialogue": "No staff. No trains... not even wind." },
-    { "character": "Worker Wang", "dialogue": "Look! The tracks... the tracks are gone!" },
-    { "character": "Narrator", "dialogue": "Passengers spill out, faces pale with fear." },
-    { "character": "Chen", "dialogue": "Is this... really the real world?" },
-    { "character": "Narrator", "dialogue": "A low sound comes from the forest. Like stones grinding." },
-    { "character": "Worker Wang", "dialogue": "(points at the trees) What is that?!" },
-    { "character": "Narrator", "dialogue": "A black humanoid shape forms from swarms of tiny insects and emerges from the trees, moving toward them." },
-    { "character": "Old Zhang", "dialogue": "Oh my god..." },
-    { "character": "Narrator", "dialogue": "It suddenly accelerates." },
-    { "character": "Worker Wang", "dialogue": "Run! Run!" },
-    { "character": "Narrator", "dialogue": "Old Zhang is too slow. The shadow engulfs him. A short, sharp scream." },
-    { "character": "Lin Ya", "dialogue": "Li Jie, run!" },
-    { "character": "Narrator", "dialogue": "People scramble back into the cars. The shadow splits into countless swarms; one hurtles toward Li Jie and Lin Ya. Li Jie shields her and squeezes his eyes shut. The expected pain never comes. Lin Ya flings out her arm; a surge of force knocks him to the ground." },
-    { "character": "Li Jie", "dialogue": "You... how did you..." },
-    { "character": "Narrator", "dialogue": "Blue light flashes in Lin Ya's hand, forming a translucent barrier that blocks the insects." },
-    { "character": "Lin Ya", "dialogue": "(pale, panting) No time to explain—go!" },
-    { "character": "Narrator", "dialogue": "She pulls him. They run." },
-    { "character": "Li Jie", "dialogue": "Where are we going?!" },
-    { "character": "Lin Ya", "dialogue": "(silent, dragging him toward the dark forest)" },
-    { "character": "Narrator", "dialogue": "He glances back. The swarm fuses again with a furious growl. Under the blood-red sky, their silhouettes vanish into the black woods." }
+    {
+      "character": "Narrator",
+      "dialogue": "The train jolts hard, metal screaming as brakes bite. Light swells at the tunnel's end. Everyone holds their breath, bracing for familiar city lights. Li Jie exhales, certain normalcy is seconds away—until the train slides out and he freezes."
+    },
+    { "character": "Li Jie", "dialogue": "(inner monologue) This... this can't be real." },
+    {
+      "character": "Narrator",
+      "dialogue": "No city. Instead, a world of unnerving calm. The train clings to tracks along a cliff. On the left, an endless shadowed forest—branches looming like hidden eyes. On the right, a sheer drop into a mirror-black sea. Above, no moon, no stars—just a deep indigo sky that seems to swallow every glimmer of light."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "The entire car falls silent. You could hear a pin drop. Terror and confusion etch every face."
+    },
+    {
+      "character": "Worker Wang",
+      "dialogue": "(eyes wide, voice shaking) This... this isn't the way we came. What even is this place?"
+    },
+    {
+      "character": "Old Zhang",
+      "dialogue": "(suddenly sober, face drained) Where are we? I... I have to go back!"
+    },
+    {
+      "character": "Chen",
+      "dialogue": "(voice quivering) Places like this don't exist. Are we... are we dreaming?"
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Li Jie looks at Lin Ya. Her gaze is fixed on the window too—astonished, yes, but with a flicker of curiosity. She grips her notebook like it's the only anchor she has."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "The train keeps rolling until it slows before a station marked only by silence. \"Sea of Silence,\" the words etch themselves into Li Jie's mind though no sign announces it. No ads, no bustle. Just a single lamp swaying on the platform."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "The cars ease to a stop. Doors slide open without a sound. No announcement. No instructions. Only a rush of frigid air tinged with sea salt spilling into the aisle."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Nobody moves. Fear sweeps the carriage like a tide. Every eye locks on the open doorway as though some waiting beast lurks just beyond."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) We're trapped. This train... it doesn't belong to our world anymore. What happens next? Do we step out... or stay and wait for the end?"
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Li Jie scans the passengers. Blank stares. Helplessness. In this forgotten place, all they can do is wait—for a fate none of them can see."
+    }
   ]
 }

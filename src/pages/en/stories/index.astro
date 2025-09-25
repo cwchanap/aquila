@@ -40,12 +40,10 @@ const isAuthed = Boolean(user?.id);
 
 // Check if user has already set up character for train adventure
 let hasCharacterSetup = false;
-let characterName = '';
 if (isAuthed && user?.id) {
   const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, StoryId.TRAIN_ADVENTURE);
   if (existingSetup) {
     hasCharacterSetup = true;
-    characterName = existingSetup.characterName;
     // Don't redirect - allow users to access story config page
   }
 } else {
@@ -76,7 +74,7 @@ if (isAuthed && user?.id) {
         </h1>
   
         <div class="space-y-4">
-          <Button variant="menu" href={hasCharacterSetup ? `/${Astro.currentLocale || 'en'}/story/${StoryId.TRAIN_ADVENTURE}?name=${encodeURIComponent(characterName)}` : `/${Astro.currentLocale || 'en'}/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+          <Button variant="menu" href={hasCharacterSetup ? `/${Astro.currentLocale || 'en'}/story/${StoryId.TRAIN_ADVENTURE}` : `/${Astro.currentLocale || 'en'}/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
             {t("stories.trainAdventure")}
           </Button>
           <!-- Add more story buttons here as needed -->

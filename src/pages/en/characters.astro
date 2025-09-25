@@ -91,7 +91,7 @@ try {
                     </div>
                     <div class="flex gap-2">
                       <a
-                        href={`/en/story/${setup.storyId}?name=${encodeURIComponent(setup.characterName)}`}
+                        href={`/en/story/${setup.storyId}`}
                         class="character-play-link flex-1 py-2 px-4 bg-white/20 hover:bg-white/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium"
                       >
                         {t("characters.playStory")}
@@ -226,7 +226,7 @@ try {
 
               // Update play link
               if (playLink && storyId) {
-                playLink.setAttribute('href', `/en/story/${storyId}?name=${encodeURIComponent(newName)}`);
+                playLink.setAttribute('href', `/en/story/${storyId}`);
               }
 
               // Switch back to display mode
@@ -314,7 +314,7 @@ try {
               </div>
               <div class="flex gap-2">
                 <a
-                  href="/en/story/${char.storyId}?name=${encodeURIComponent(char.characterName)}"
+                  href="/en/story/${char.storyId}"
                   class="character-play-link flex-1 py-2 px-4 bg-white/20 hover:bg-white/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium"
                 >
                   Play Story
@@ -389,7 +389,7 @@ try {
                       }
 
                       // Update play link
-                      playLink.setAttribute('href', `/en/story/${storyId}?name=${encodeURIComponent(newName)}`);
+                      playLink.setAttribute('href', `/en/story/${storyId}`);
                     }
 
                     // Switch back to display mode

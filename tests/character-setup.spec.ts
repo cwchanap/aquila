@@ -65,11 +65,9 @@ test.describe('Character Setup Flow', () => {
         // Submit form
         await page.click('button[type="submit"]');
 
-        // Should navigate to story page with character name parameter
-        await page.waitForURL(/\/story\/train_adventure\?name=Test%20Hero/);
-        await expect(page).toHaveURL(
-            /\/story\/train_adventure\?name=Test%20Hero/
-        );
+        // Should navigate to story page (name resolved internally)
+        await page.waitForURL('/story/train_adventure');
+        await expect(page).toHaveURL('/story/train_adventure');
     });
 
     test('should redirect to stories page for invalid story parameter', async ({
@@ -113,20 +111,17 @@ test.describe('Character Setup Flow', () => {
         await page.click('button[type="submit"]');
 
         // Wait for navigation to game page
-        await page.waitForURL(
-            /\/story\/train_adventure\?name=Redirect%20Test%20Hero/
-        );
+        await page.waitForURL('/story/train_adventure');
 
-        // Now go back to stories page - should redirect automatically
+        // Now go back to stories page - no automatic redirect; click the story button
         await page.goto('/stories');
-
-        // Should automatically redirect to game page with character name
-        await page.waitForURL(
-            /\/story\/train_adventure\?name=Redirect%20Test%20Hero/
-        );
-        await expect(page).toHaveURL(
-            /\/story\/train_adventure\?name=Redirect%20Test%20Hero/
-        );
+        const storyBtn = page
+            .locator('a')
+            .filter({ hasText: 'Train Adventure' });
+        await expect(storyBtn).toBeVisible();
+        await storyBtn.click();
+        await page.waitForURL('/story/train_adventure');
+        await expect(page).toHaveURL('/story/train_adventure');
     });
 
     test('should redirect guest users with localStorage character setup to game page', async ({
@@ -141,16 +136,15 @@ test.describe('Character Setup Flow', () => {
       `,
         });
 
-        // Navigate to stories page
+        // Navigate to stories page and start the story via button
         await page.goto('/stories');
-
-        // Should automatically redirect to game page with character name
-        await page.waitForURL(
-            /\/story\/train_adventure\?name=Guest%20Redirect%20Hero/
-        );
-        await expect(page).toHaveURL(
-            /\/story\/train_adventure\?name=Guest%20Redirect%20Hero/
-        );
+        const storyBtn2 = page
+            .locator('a')
+            .filter({ hasText: 'Train Adventure' });
+        await expect(storyBtn2).toBeVisible();
+        await storyBtn2.click();
+        await page.waitForURL('/story/train_adventure');
+        await expect(page).toHaveURL('/story/train_adventure');
     });
 
     test('should show story selection for users without character setup', async ({
@@ -206,9 +200,7 @@ test.describe('Character Setup API Integration', () => {
         const apiPromise = page
             .waitForResponse('/api/character-setup', { timeout: 1500 })
             .catch(() => null);
-        const navPromise = page.waitForURL(
-            /\/story\/train_adventure\?name=API%20Test%20Hero/
-        );
+        const navPromise = page.waitForURL('/story/train_adventure');
 
         await page.click('button[type="submit"]');
 

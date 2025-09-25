@@ -53,7 +53,7 @@ const isAuthed = Boolean(user?.id);
 if (isAuthed && user?.id) {
   const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
-    return Astro.redirect(`/${Astro.currentLocale || 'en'}/story/${storyId}?name=${encodeURIComponent(existingSetup.characterName)}`);
+    return Astro.redirect(`/${Astro.currentLocale}/story/${storyId}`);
   }
 }
 ---
@@ -105,21 +105,20 @@ if (isAuthed && user?.id) {
     const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
     const isAuthed = (root?.getAttribute('data-authed') === 'true');
 
-    // If not authenticated, and there's a saved local setup, redirect immediately
-    if (!isAuthed) {
-      try {
-        const local = localStorage.getItem(`aquila:character:${story}`);
-        if (local) {
-          const { characterName } = JSON.parse(local);
-          if (characterName && typeof characterName === 'string') {
-            const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-            window.location.href = `/${locale}/story/${story}?name=${encodeURIComponent(characterName)}`;
-            return;
+    // If there's a saved local setup, prefill the input (do NOT auto-redirect)
+    try {
+      const local = localStorage.getItem(`aquila:character:${story}`);
+      if (local) {
+        const { characterName } = JSON.parse(local);
+        if (characterName && typeof characterName === 'string') {
+          const nameInput = document.getElementById('character-name');
+          if (nameInput && !(nameInput as HTMLInputElement).value) {
+            (nameInput as HTMLInputElement).value = characterName;
           }
         }
-      } catch (e) {
-        console.warn('Failed to read local character setup:', e);
       }
+    } catch (e) {
+      console.warn('Failed to read local character setup:', e);
     }
 
     if (form) {
@@ -163,7 +162,7 @@ if (isAuthed && user?.id) {
 
           // Redirect to story
           const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-          window.location.href = `/${locale}/story/${story}?name=${encodeURIComponent(name)}`;
+          window.location.href = `/${locale}/story/${story}`;
         } catch (error) {
           console.error('Setup error:', error);
           alert('Failed to save character setup. Please try again.');

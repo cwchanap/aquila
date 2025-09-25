@@ -2,37 +2,83 @@
   "EntryScene": [
     {
       "character": "Narrator",
-      "dialogue": "The night wind on the platform is chilly. Li Jie pulls his collar tight, trying to shake off the lingering alcohol and fatigue. He's an architect, twenty-eight, a life like his work: precise, rigorous, yet tinged with an indescribable monotony. It's 1:10 a.m.; the midnight train home is always a little late."
+      "dialogue": "The night wind on the platform is cool, but compared to the surrounding commotion, it's barely noticeable. This is Shinjuku Station at 1:00 a.m., the final burst of noise before the last train. People hurry past, footsteps, chatter, PA announcements weaving into a symphony of the metropolis at midnight. Li Jie stands among them like an outsider. He tightens his jacket, trying to dispel lingering alcohol and fatigue. An architect at twenty-eight, his life is as precise and meticulous as his projects—yet burdened with an ineffable monotony. Memories of the party still echo in his mind: the clamor, the laughter, the flashing lights—all stark against his present solitude."
     },
     {
       "character": "Narrator",
-      "dialogue": "He hears soft footsteps behind him. A young woman with a large backpack slowly steps into view. Early twenties, white T-shirt, long hair over her shoulders. Her face looks a little youthful under the dim lights, but her eyes brim with curiosity."
-    },
-    { "character": "Lin Ya", "dialogue": "The train is late again..." },
-    {
-      "character": "Narrator",
-      "dialogue": "She stops not far from him, takes out a small notebook, and starts sketching. Li Jie notices she isn't drawing scenery, but strange symbols—like ancient characters crossed with a complex circuit diagram."
+      "dialogue": "He checks his phone: 1:10 a.m. by habit he looks around. The platform lights are still bright, though lacking the vibrancy of daytime. A few tipsy office workers prop each other up, shouting; a young couple says a lingering goodbye; and a student-looking girl sits alone on a bench, leaning against a huge backpack, quietly waiting."
     },
     {
       "character": "Narrator",
-      "dialogue": "After a while, a distant whistle cuts the night. A beam of light tears through the darkness as the train roars into the station. Li Jie boards and takes a window seat. The girl from before enters as well and sits in an empty seat not far across from him."
+      "dialogue": "Li Jie's gaze settles on the girl. Early twenties, simple white T-shirt, long hair cascading over her shoulders. Her face looks youthful under the lights, yet curiosity gleams in her eyes. Instead of rushing like everyone else, she pulls a small notebook from her bag and begins to write and sketch."
     },
     {
       "character": "Narrator",
-      "dialogue": "The train pulls out, leaving the station lights behind, heading into boundless darkness. It'll take him home, back to the familiar, monotonous world. Li Jie closes his eyes to rest, unaware that the destination of this journey is far more complicated than he imagines."
+      "dialogue": "Intrigued, Li Jie can't help watching. She isn't drawing scenery but strange symbols—like ancient script crossed with intricate circuitry. As he wonders, a distant whistle blows. A beam of light slices through the night, and the train thunders into the platform."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He breaks his stare, boards with the crowd, and finds a window seat. The girl from before steps in too, sitting not far across from him."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "The train eases out, leaving Shinjuku's bright lights behind and plunging into limitless darkness. It'll take him home, back to the world he knows so well—and its monotony. Li Jie closes his eyes to rest, unaware that this journey's destination is far more complicated than he imagines."
     }
   ],
   "TrainRideScene": [
-    { "character": "Narrator", "dialogue": "The train glides smoothly. Aside from the air conditioner's hum, there are only scattered whispers." },
-    { "character": "Lin Ya", "dialogue": "(walks up to Li Jie) Excuse me, do you know what time it is?" },
-    { "character": "Li Jie", "dialogue": "(glances at his phone) Uh, around 1:30 a.m." },
-    { "character": "Lin Ya", "dialogue": "Thank you." },
-    { "character": "Narrator", "dialogue": "Lin Ya sits down in an empty seat across from Li Jie." },
-    { "character": "Lin Ya", "dialogue": "I'm Lin Ya, just back from a school camping trip. This tunnel is so long—it feels like time has stopped." },
-    { "character": "Li Jie", "dialogue": "Li Jie. Architect. This tunnel is always like this. You get used to it." },
-    { "character": "Narrator", "dialogue": "The train enters the city's famous \"Endless Tunnel.\" The windows go pitch-black. Minutes pass; the atmosphere turns strange. His phone shows “No Signal” forever." },
-    { "character": "Lin Ya", "dialogue": "(softly) Do you think... we took the wrong way?" },
-    { "character": "Narrator", "dialogue": "The train jolts. A piercing screech follows. Light grows ahead. The moment they exit the tunnel, Li Jie freezes." }
+    {
+      "character": "Narrator",
+      "dialogue": "The train glides smoothly, nothing but the air conditioner's hum and scattered whispers in the car. Li Jie leans against the window, watching city lights flicker backward. He pulls out his phone, ready to mindlessly scroll through social media."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) Almost home. Shower, bed, finally..."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "The train slips into the suburban “Endless Tunnel.” Outside the windows, darkness swallows everything; only the car's interior lights paint each face. The rumble sounds heavier than usual, but that's it—no sign of a malfunction. Li Jie browses a site, only for the page to freeze. The spinning loader becomes an error: “Unable to load.” He frowns, refreshes, but the network refuses to return."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) Seriously? I've ridden this line for years. The signal has never died like this."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He looks up. Around the car, people poke at their phones with the same puzzled expressions."
+    },
+    { "character": "Worker Wang", "dialogue": "Weird. Zero bars?" },
+    { "character": "Chen", "dialogue": "Mine's dead too. Did a cell tower go down?" },
+    { "character": "Zhao", "dialogue": "No way. We just entered the tunnel. Even if we lost signal, the Wi-Fi shouldn't crap out." },
+    {
+      "character": "Narrator",
+      "dialogue": "The train keeps a steady pace, but the tunnel stretches on far longer than normal. Li Jie checks his watch; it's well past the usual travel time. A murmur of unease settles in his stomach."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) I've taken this commute for years. This tunnel has never lasted this long."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He glances at Lin Ya across the aisle. She's still focused on her little notebook, utterly calm—as if the odd situation doesn't touch her. That composure only deepens Li Jie's unease."
+    },
+    { "character": "Worker Wang", "dialogue": "What's going on? It's been almost thirty minutes and we're still in here! That's impossible!" },
+    {
+      "character": "Old Zhang",
+      "dialogue": "(rubbing sleepy eyes) Huh? We're not there yet? Thought I'd slept past my stop."
+    },
+    { "character": "Chen", "dialogue": "Something's off—way off! This tunnel isn't this long!" },
+    {
+      "character": "Narrator",
+      "dialogue": "The atmosphere grows denser. Passengers whisper. Some stand, pacing nervously. Li Jie clenches his watch, tracking the seconds spinning by, confusion curdling into dread. The train remains perfectly smooth, no jolts, no odd noises—but that very normalcy, paired with the endless tunnel, feeds an invisible fear."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) It feels like this train has slipped into a time and place that shouldn't exist."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "At last, light flares at the tunnel's end. Everyone holds their breath, expecting the familiar city nightscape. Li Jie exhales in relief, certain things will reset. But as the train glides out, he goes rigid."
+    }
   ],
   "OtherworldStationScene": [
     { "character": "Narrator", "dialogue": "Another jolt. A scream of metal. Then blinding light. Outside is no familiar cityscape, but a grotesque world. The train stops at a station no one has seen before: on one side a twisted black forest, on the other a bottomless cliff and a blood-red sea." },

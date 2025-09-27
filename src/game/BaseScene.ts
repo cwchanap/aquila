@@ -212,6 +212,7 @@ export class BaseScene extends Phaser.Scene {
         const height = this.scale.height;
         const boxHeight = 180; // Increased height for better visibility
         const padding = 24;
+        const bottomMargin = Math.max(160, height * 0.2);
 
         // Clear existing UI elements if they exist
         if (this.dialogueBox) this.dialogueBox.destroy();
@@ -234,13 +235,13 @@ export class BaseScene extends Phaser.Scene {
         }
 
         // dialogue box at bottom with more margin from screen edge
-        const boxY = height - boxHeight / 2 - 20; // Add 20px margin from bottom
+        const boxY = height - boxHeight / 2 - bottomMargin;
         this.dialogueBox = this.add
             .rectangle(width / 2, boxY, width, boxHeight, 0x000000, 0.8)
             .setStrokeStyle(2, 0xffffff, 0.2);
 
         // character name and dialogue text inside the box
-        const textY = height - boxHeight - 20 + padding; // Adjust text position accordingly
+        const textY = height - boxHeight - bottomMargin + padding;
         this.characterNameText = this.add.text(padding, textY, '', {
             fontSize: '22px',
             color: '#ffffff',
@@ -258,7 +259,7 @@ export class BaseScene extends Phaser.Scene {
             ? 'Enter 繼續 · Backspace 返回'
             : 'Enter: Next · Backspace: Back';
         this.hintText = this.add
-            .text(width - padding, height - 25, hint, {
+            .text(width - padding, height - bottomMargin * 0.3, hint, {
                 fontSize: '14px',
                 color: '#dddddd',
             })
@@ -266,24 +267,25 @@ export class BaseScene extends Phaser.Scene {
             .setAlpha(0.8);
 
         // home button top-left (localized)
-        const homeLabel = this.locale.startsWith('zh') ? '🏠 首頁' : '🏠 Home';
         this.homeButton = this.add
-            .text(padding, padding, homeLabel, {
+            .text(padding, padding, '', {
                 fontSize: '18px',
                 color: '#ffffff',
                 backgroundColor: '#333333',
                 padding: { x: 12, y: 8 },
             })
             .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => {
-                window.location.href = '/';
-            })
             .on('pointerover', () => {
-                this.homeButton?.setStyle({ backgroundColor: '#555555' });
+                this.onHomeButtonHoverChange(true);
             })
             .on('pointerout', () => {
-                this.homeButton?.setStyle({ backgroundColor: '#333333' });
+                this.onHomeButtonHoverChange(false);
+            })
+            .on('pointerup', () => {
+                this.onHomeButtonPressed();
             });
+        this.refreshHomeButtonLabel();
+        this.onHomeButtonHoverChange(false);
     }
 
     loadDialogue(dialogueData: DialogueMap) {
@@ -427,5 +429,23 @@ export class BaseScene extends Phaser.Scene {
         } catch {
             // ignore
         }
+    }
+
+    protected getHomeButtonLabel(): string {
+        return this.locale.startsWith('zh') ? '🏠 首頁' : '🏠 Home';
+    }
+
+    protected onHomeButtonPressed(): void {
+        window.location.href = '/';
+    }
+
+    protected onHomeButtonHoverChange(hovering: boolean): void {
+        const backgroundColor = hovering ? '#555555' : '#333333';
+        this.homeButton?.setStyle({ backgroundColor });
+    }
+
+    protected refreshHomeButtonLabel(): void {
+        const label = this.getHomeButtonLabel();
+        this.homeButton?.setText(label);
     }
 }

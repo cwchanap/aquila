@@ -17,6 +17,9 @@ export class StoryScene extends BaseScene {
     private choiceMap: ChoiceMap = {};
     private awaitingChoice = false;
     private choiceUiElements: Phaser.GameObjects.GameObject[] = [];
+    private menuOpen = false;
+    private menuUiElements: Phaser.GameObjects.GameObject[] = [];
+    private escListener?: Phaser.Input.Keyboard.Key;
 
     constructor() {
         super('StoryScene');
@@ -48,8 +51,15 @@ export class StoryScene extends BaseScene {
         this.setSection(initialScene);
         // Fade in at start for polish
         this.cameras.main.fadeIn(350, 0, 0, 0);
+
+        this.escListener = this.input.keyboard?.addKey(
+            Phaser.Input.Keyboard.KeyCodes.ESC
+        );
+        this.escListener?.on('down', () => this.toggleMenu());
         this.events.once('shutdown', () => {
             this.destroyChoiceUiElements();
+            this.closeMenu(true);
+            this.escListener?.destroy();
         });
     }
 
@@ -106,13 +116,21 @@ export class StoryScene extends BaseScene {
     }
 
     advanceDialogue(): void {
-        if (this.awaitingChoice || this.transitioning) return;
+        if (this.awaitingChoice || this.transitioning || this.menuOpen) return;
         super.advanceDialogue();
     }
 
     retreatDialogue(): void {
-        if (this.awaitingChoice || this.transitioning) return;
+        if (this.awaitingChoice || this.transitioning || this.menuOpen) return;
         super.retreatDialogue();
+    }
+
+    protected getHomeButtonLabel(): string {
+        return this.locale.startsWith('zh') ? '☰ 選單' : '☰ Menu';
+    }
+
+    protected onHomeButtonPressed(): void {
+        this.toggleMenu();
     }
 
     private buildSceneFlow(): SceneFlow {
@@ -223,7 +241,7 @@ export class StoryScene extends BaseScene {
 
         this.choiceUiElements.push(backdrop, panel, prompt);
 
-        const optionBaseY = prompt.y + 60;
+        const optionBaseY = prompt.y + 80;
         const optionSpacing = 60;
         let anyOptionAdded = false;
 
@@ -306,6 +324,182 @@ export class StoryScene extends BaseScene {
     private clearChoiceUi() {
         this.destroyChoiceUiElements();
         this.awaitingChoice = false;
+    }
+
+    private toggleMenu(forceState?: boolean) {
+        const desired =
+            typeof forceState === 'boolean' ? forceState : !this.menuOpen;
+        if (desired === this.menuOpen) return;
+        if (desired) {
+            this.openMenu();
+        } else {
+            this.closeMenu();
+        }
+    }
+
+    private openMenu() {
+        if (this.menuOpen) return;
+        this.menuOpen = true;
+        const width = this.scale.width;
+        const height = this.scale.height;
+        const locale = this.locale.startsWith('zh') ? 'zh' : 'en';
+
+        const backdrop = this.add
+            .rectangle(width / 2, height / 2, width, height, 0x000000, 0.65)
+            .setDepth(950)
+            .setInteractive()
+            .on('pointerup', () => this.closeMenu());
+        const panelWidth = Math.min(width - 120, 420);
+        const panelHeight = 300;
+        const menuBottomGap = Math.max(140, height * 0.22);
+        const panelY = Math.min(
+            height / 2,
+            height - menuBottomGap - panelHeight / 2
+        );
+        const panel = this.add
+            .rectangle(
+                width / 2,
+                panelY,
+                panelWidth,
+                panelHeight,
+                0x0f172a,
+                0.92
+            )
+            .setStrokeStyle(2, 0xffffff, 0.3)
+            .setDepth(951);
+        panel
+            .setInteractive()
+            .on(
+                'pointerdown',
+                (
+                    _pointer: Phaser.Input.Pointer,
+                    _localX: number,
+                    _localY: number,
+                    event: Phaser.Types.Input.EventData
+                ) => {
+                    event.stopPropagation();
+                }
+            );
+        panel.on(
+            'pointerup',
+            (
+                _pointer: Phaser.Input.Pointer,
+                _localX: number,
+                _localY: number,
+                event: Phaser.Types.Input.EventData
+            ) => {
+                event.stopPropagation();
+            }
+        );
+        const title = this.add
+            .text(
+                width / 2,
+                panelY - panelHeight / 2 + 42,
+                locale === 'zh' ? '遊戲選單' : 'Game Menu',
+                {
+                    fontSize: '26px',
+                    color: '#ffffff',
+                }
+            )
+            .setOrigin(0.5)
+            .setDepth(952);
+
+        this.menuUiElements.push(backdrop, panel, title);
+
+        const buttonDefs = [
+            {
+                label: locale === 'zh' ? '繼續旅程' : 'Resume Story',
+                handler: () => this.closeMenu(),
+            },
+            {
+                label: locale === 'zh' ? '個人檔案' : 'Profile',
+                handler: () => {
+                    window.location.href = `/${locale}/profile`;
+                },
+            },
+            {
+                label: locale === 'zh' ? '返回首頁' : 'Return Home',
+                handler: () => {
+                    window.location.href = `/${locale}/`;
+                },
+            },
+        ];
+
+        const panelTop = panelY - panelHeight / 2;
+        const panelBottom = panelY + panelHeight / 2;
+        const buttonTopMargin = 120;
+        const buttonBottomMargin = 80;
+        const buttonCount = buttonDefs.length;
+        const buttonAreaHeight = Math.max(
+            0,
+            panelHeight - buttonTopMargin - buttonBottomMargin
+        );
+        const buttonSpacing =
+            buttonCount > 1 ? buttonAreaHeight / (buttonCount - 1) : 0;
+        const minY = panelTop + buttonTopMargin;
+        const maxY = panelBottom - buttonBottomMargin;
+
+        buttonDefs.forEach((def, index) => {
+            const baseY =
+                buttonCount === 1
+                    ? (panelTop + panelBottom) / 2
+                    : minY + index * buttonSpacing;
+            const y = Phaser.Math.Clamp(baseY, minY, maxY);
+            const buttonBg = this.add
+                .rectangle(width / 2, y, panelWidth - 60, 44, 0x1e293b, 0.9)
+                .setStrokeStyle(1, 0xffffff, 0.35)
+                .setDepth(951)
+                .setInteractive({ useHandCursor: true })
+                .on('pointerover', () => {
+                    buttonBg.setFillStyle(0x334155, 0.95);
+                })
+                .on('pointerout', () => {
+                    buttonBg.setFillStyle(0x1e293b, 0.9);
+                })
+                .on(
+                    'pointerdown',
+                    (
+                        _pointer: Phaser.Input.Pointer,
+                        _localX: number,
+                        _localY: number,
+                        event: Phaser.Types.Input.EventData
+                    ) => {
+                        event.stopPropagation();
+                    }
+                )
+                .on(
+                    'pointerup',
+                    (
+                        _pointer: Phaser.Input.Pointer,
+                        _localX: number,
+                        _localY: number,
+                        event: Phaser.Types.Input.EventData
+                    ) => {
+                        event.stopPropagation();
+                        def.handler();
+                    }
+                );
+
+            const text = this.add
+                .text(width / 2, y, def.label, {
+                    fontSize: '20px',
+                    color: '#e2e8f0',
+                })
+                .setOrigin(0.5)
+                .setDepth(952);
+
+            this.menuUiElements.push(buttonBg, text);
+        });
+
+        this.fadeAmbientTo(0.001, 300);
+    }
+
+    private closeMenu(force = false) {
+        if (!this.menuOpen && !force) return;
+        this.menuUiElements.forEach(element => element.destroy());
+        this.menuUiElements = [];
+        this.menuOpen = false;
+        this.fadeAmbientTo(0.004, 300);
     }
 
     private showCompletionOverlay() {

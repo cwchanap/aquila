@@ -137,8 +137,8 @@ if (isAuthed && user?.id) {
         </div>
 
         <!-- Story Selection - Gaming Style -->
-        <div class="space-y-6">
-          <Button variant="menu" href={hasCharacterSetup ? `/${Astro.currentLocale || 'en'}/story/${StoryId.TRAIN_ADVENTURE}` : `/${Astro.currentLocale || 'en'}/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+        <div class="space-y-6 flex flex-col items-center">
+          <Button variant="menu-compact" href={hasCharacterSetup ? `/${Astro.currentLocale || 'en'}/story/${StoryId.TRAIN_ADVENTURE}` : `/${Astro.currentLocale || 'en'}/story/setup?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
             {t("stories.trainAdventure")}
           </Button>
           <!-- Add more story buttons here as needed -->

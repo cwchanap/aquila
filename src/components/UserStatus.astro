@@ -17,20 +17,21 @@ try {
 }
 ---
 
-<div class="user-status absolute top-6 right-6 z-10">
+<div class="user-status absolute top-6 right-6 z-50">
   {user ? (
     <div class="flex items-center gap-3 relative">
       <div class="relative">
         <button
           id="user-menu-button"
-          class="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200"
+          class="flex items-center gap-3 bg-white/80 hover:bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/60"
           title="User Menu"
+          style="font-family: 'Exo 2', sans-serif;"
         >
-          <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium cursor-pointer">
+          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg">
             {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
           </div>
-          <span class="text-white/90 font-medium">{user.name || user.email}</span>
-          <svg class="w-4 h-4 text-white/70 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span class="text-slate-700 font-medium">{user.name || user.email}</span>
+          <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
@@ -38,18 +39,20 @@ try {
         <!-- Dropdown Menu -->
         <div
           id="user-dropdown"
-          class="absolute right-0 mt-2 w-48 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg opacity-0 invisible transform translate-y-2 transition-all duration-200 z-20"
+          class="absolute right-0 mt-2 w-48 bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl opacity-0 invisible transform translate-y-2 transition-all duration-200 z-50"
         >
-          <div class="py-1">
+          <div class="py-2">
             <a
               href={`/${currentLocale}/profile`}
-              class="block px-4 py-2 text-sm text-white/90 hover:bg-white/20 hover:text-white transition-colors duration-200"
+              class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
+              style="font-family: 'Exo 2', sans-serif;"
             >
               Profile
             </a>
             <a
               href={`/${currentLocale}/characters`}
-              class="block px-4 py-2 text-sm text-white/90 hover:bg-white/20 hover:text-white transition-colors duration-200"
+              class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
+              style="font-family: 'Exo 2', sans-serif;"
             >
               Story Config
             </a>
@@ -61,7 +64,8 @@ try {
         <button
           type="submit"
           title={t(currentLocale, 'common.logout')}
-          class="px-3 py-1.5 text-sm bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-white/90 transition-all duration-200"
+          class="px-4 py-2 text-sm bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 backdrop-blur-sm border border-red-300/60 rounded-2xl text-white font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          style="font-family: 'Orbitron', monospace;"
         >
           {t(currentLocale, 'common.logout')}
         </button>
@@ -70,7 +74,8 @@ try {
   ) : (
     <a
       href="/en/login"
-      class="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg"
+      class="px-6 py-3 bg-white/80 hover:bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl text-slate-700 hover:text-slate-900 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+      style="font-family: 'Orbitron', monospace;"
     >
       Login
     </a>
@@ -80,37 +85,49 @@ try {
 <script>
   // Dropdown functionality
   document.addEventListener('DOMContentLoaded', () => {
+    console.log('UserStatus script loaded');
     const menuButton = document.getElementById('user-menu-button') as HTMLElement;
     const dropdown = document.getElementById('user-dropdown') as HTMLElement;
+
+    console.log('Menu button found:', !!menuButton);
+    console.log('Dropdown found:', !!dropdown);
 
     if (menuButton && dropdown) {
       // Toggle dropdown on button click
       menuButton.addEventListener('click', (e) => {
+        console.log('Menu button clicked!');
+        e.preventDefault();
         e.stopPropagation();
-        const isVisible = dropdown.classList.contains('opacity-100');
-        const svgIcon = menuButton.querySelector('svg');
 
-        if (isVisible) {
-          // Hide dropdown
-          dropdown.classList.remove('opacity-100', 'visible');
-          dropdown.classList.add('opacity-0', 'invisible');
-          dropdown.classList.add('translate-y-2');
-          if (svgIcon) svgIcon.classList.remove('rotate-180');
-        } else {
+        const svgIcon = menuButton.querySelector('svg');
+        const isCurrentlyHidden = dropdown.classList.contains('opacity-0');
+
+        console.log('Is currently hidden:', isCurrentlyHidden);
+        console.log('Current classes:', dropdown.className);
+
+        if (isCurrentlyHidden) {
           // Show dropdown
+          console.log('Showing dropdown');
           dropdown.classList.remove('opacity-0', 'invisible', 'translate-y-2');
-          dropdown.classList.add('opacity-100', 'visible');
+          dropdown.classList.add('opacity-100', 'visible', 'translate-y-0');
           if (svgIcon) svgIcon.classList.add('rotate-180');
+        } else {
+          // Hide dropdown
+          console.log('Hiding dropdown');
+          dropdown.classList.remove('opacity-100', 'visible', 'translate-y-0');
+          dropdown.classList.add('opacity-0', 'invisible', 'translate-y-2');
+          if (svgIcon) svgIcon.classList.remove('rotate-180');
         }
+
+        console.log('Classes after toggle:', dropdown.className);
       });
 
       // Close dropdown when clicking outside
       document.addEventListener('click', (e) => {
         const target = e.target as Node;
         if (target && !menuButton.contains(target) && !dropdown.contains(target)) {
-          dropdown.classList.remove('opacity-100', 'visible');
-          dropdown.classList.add('opacity-0', 'invisible');
-          dropdown.classList.add('translate-y-2');
+          dropdown.classList.remove('opacity-100', 'visible', 'translate-y-0');
+          dropdown.classList.add('opacity-0', 'invisible', 'translate-y-2');
           const svgIcon = menuButton.querySelector('svg');
           if (svgIcon) svgIcon.classList.remove('rotate-180');
         }
@@ -119,9 +136,8 @@ try {
       // Close dropdown on escape key
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          dropdown.classList.remove('opacity-100', 'visible');
-          dropdown.classList.add('opacity-0', 'invisible');
-          dropdown.classList.add('translate-y-2');
+          dropdown.classList.remove('opacity-100', 'visible', 'translate-y-0');
+          dropdown.classList.add('opacity-0', 'invisible', 'translate-y-2');
           const svgIcon = menuButton.querySelector('svg');
           if (svgIcon) svgIcon.classList.remove('rotate-180');
         }

@@ -8,7 +8,7 @@
       variants: {
         variant: {
           default: 'py-2 px-4 bg-purple-500 text-white hover:bg-purple-700 focus:ring-purple-400',
-          menu: 'w-full py-4 px-6 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg hover:shadow-xl border-white/30 backdrop-blur-sm',
+          menu: 'group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden text-xl tracking-wider uppercase font-black',
         },
         size: {
           default: 'h-10 px-4 py-2',

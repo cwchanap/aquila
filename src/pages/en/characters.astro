@@ -44,73 +44,140 @@ try {
 ---
 
 <MainLayout title={t("characters.title")}>
-  <div class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 relative">
+  <!-- Ocean Background with animated waves -->
+  <div class="min-h-screen relative overflow-hidden">
+    <!-- Gradient Ocean Background -->
+    <div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
+
+    <!-- Animated Ocean Waves (Background Layer) -->
+    <div class="absolute inset-0">
+      <svg class="absolute bottom-0 w-full h-96" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="rgba(59, 130, 246, 0.3)" fill-opacity="1"
+          d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            values="0 0; 50 0; 0 0"
+            dur="6s"
+            repeatCount="indefinite"
+          />
+        </path>
+      </svg>
+
+      <svg class="absolute bottom-0 w-full h-80" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="rgba(59, 130, 246, 0.4)" fill-opacity="1"
+          d="M0,192L48,176C96,160,192,128,288,128C384,128,480,160,576,176C672,192,768,192,864,176C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            values="0 0; -30 0; 0 0"
+            dur="8s"
+            repeatCount="indefinite"
+          />
+        </path>
+      </svg>
+
+      <svg class="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="rgba(59, 130, 246, 0.6)" fill-opacity="1"
+          d="M0,256L48,240C96,224,192,192,288,192C384,192,480,224,576,240C672,256,768,256,864,240C960,224,1056,192,1152,192C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            values="0 0; 40 0; 0 0"
+            dur="10s"
+            repeatCount="indefinite"
+          />
+        </path>
+      </svg>
+    </div>
+
+    <!-- Subtle cloud shadows -->
+    <div class="absolute inset-0 opacity-20">
+      <div class="absolute top-20 left-1/4 w-32 h-16 bg-white rounded-full blur-xl animate-pulse"></div>
+      <div class="absolute top-32 right-1/3 w-24 h-12 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 2s;"></div>
+      <div class="absolute top-16 right-1/4 w-28 h-14 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
+    </div>
+
     <!-- User status -->
     <UserStatus />
 
-    <!-- Back button -->
+    <!-- Back button - Gaming Style -->
     <a
       href="/en/"
-      class="absolute top-6 left-6 p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/30 backdrop-blur-sm z-10"
+      class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
+      style="font-family: 'Orbitron', monospace;"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
       </svg>
     </a>
 
-    <div class="flex items-center justify-center min-h-screen p-8">
-      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 max-w-4xl w-full mx-4">
-        <h1 class="text-4xl font-bold text-white text-center mb-8 drop-shadow-lg">
-          {t("characters.heading")}
-        </h1>
+    <!-- Main Content Container - Gaming Visual Novel Style -->
+    <div class="min-h-screen flex items-center justify-center relative p-8">
+      <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-4xl w-full mx-6 transform hover:scale-[1.02] transition-all duration-500">
+        <!-- Title with Gaming-inspired styling -->
+        <div class="text-center mb-12">
+          <h1 class="text-5xl font-black text-slate-800 mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
+            {t("characters.heading")}
+          </h1>
+          <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>
+          <div class="text-sm font-semibold text-slate-600 mt-2 tracking-widest uppercase opacity-70" style="font-family: 'Orbitron', monospace;">
+            Your Story Companions
+          </div>
+        </div>
 
         {user ? (
-          <div class="space-y-6">
-            <div class="text-center text-white/80 mb-6">
-              <p>{t("characters.description")}</p>
+          <div class="space-y-8">
+            <div class="text-center text-slate-600 mb-6">
+              <p class="text-lg" style="font-family: 'Exo 2', sans-serif;">{t("characters.description")}</p>
             </div>
 
             {characterSetups.length > 0 ? (
-              <div class="grid gap-4">
+              <div class="grid gap-6">
                 {characterSetups.map((setup) => (
-                  <div class="bg-white/10 rounded-xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300" data-character-id={setup.id} data-story-id={setup.storyId}>
-                    <div class="flex items-center gap-3 mb-4">
-                      <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-lg font-bold character-avatar">
+                  <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-character-id={setup.id} data-story-id={setup.storyId}>
+                    <div class="flex items-center gap-4 mb-6">
+                      <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
                         {setup.characterName.charAt(0).toUpperCase()}
                       </div>
                       <div class="flex-1">
-                        <h3 class="text-xl font-semibold text-white character-name-display">{setup.characterName}</h3>
+                        <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">{setup.characterName}</h3>
                         <input
                           type="text"
-                          class="character-name-input w-full bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 px-3 py-1 text-xl font-semibold hidden"
+                          class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
                           value={setup.characterName}
                           maxlength="50"
+                          style="font-family: 'Orbitron', monospace;"
                         />
-                        <p class="text-white/70 text-sm capitalize">{setup.storyId.replace('_', ' ')}</p>
+                        <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">{setup.storyId.replace('_', ' ')}</p>
                       </div>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-3 flex-wrap">
                       <a
                         href={`/en/story/${setup.storyId}`}
-                        class="character-play-link flex-1 py-2 px-4 bg-white/20 hover:bg-white/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium"
+                        class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
+                        style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                       >
                         {t("characters.playStory")}
                       </a>
                       <button
                         type="button"
-                        class="character-edit-btn py-2 px-4 bg-white/10 hover:bg-white/20 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium border border-white/20"
+                        class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
+                        style="font-family: 'Orbitron', monospace;"
                       >
                         {t("characters.edit")}
                       </button>
                       <button
                         type="button"
-                        class="character-save-btn py-2 px-4 bg-green-500/20 hover:bg-green-500/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium border border-green-500/30 hidden"
+                        class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
+                        style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                       >
                         {t("characters.save")}
                       </button>
                       <button
                         type="button"
-                        class="character-cancel-btn py-2 px-4 bg-red-500/20 hover:bg-red-500/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium border border-red-500/30 hidden"
+                        class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
+                        style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                       >
                         {t("characters.cancel")}
                       </button>
@@ -119,40 +186,83 @@ try {
                 ))}
               </div>
             ) : (
-              <div class="text-center py-12">
-                <div class="text-white/60 text-lg mb-4">{t("characters.noCharacters")}</div>
+              <div class="text-center py-16">
+                <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.noCharacters")}</div>
                 <a
                   href="/en/stories"
-                  class="inline-block py-3 px-6 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-300 font-medium border border-white/30"
+                  class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
+                  style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                 >
-                  {t("characters.startFirstStory")}
+                  <!-- Button glow effect -->
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+                  <span class="relative text-lg tracking-wider uppercase font-black">{t("characters.startFirstStory")}</span>
+                  <!-- Gaming accent corners -->
+                  <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+                  <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+                  <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+                  <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
                 </a>
               </div>
             )}
           </div>
         ) : (
-          <div class="space-y-6">
-            <div class="text-center text-white/80 mb-6">
-              <p>{t("characters.guestDescription")}</p>
+          <div class="space-y-8">
+            <div class="text-center text-slate-600 mb-6">
+              <p class="text-lg" style="font-family: 'Exo 2', sans-serif;">{t("characters.guestDescription")}</p>
             </div>
 
-            <div id="local-characters" class="space-y-4">
+            <div id="local-characters" class="space-y-6">
               <!-- Local characters will be loaded client-side -->
-              <div class="text-center py-8">
-                <div class="text-white/60 text-lg mb-4">{t("characters.loadingLocal")}</div>
+              <div class="text-center py-12">
+                <div class="text-slate-600 text-lg mb-4 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.loadingLocal")}</div>
               </div>
             </div>
 
             <div class="text-center">
               <a
                 href="/en/login"
-                class="inline-block py-3 px-6 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-300 font-medium border border-white/30"
+                class="group relative inline-block py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
+                style="font-family: 'Orbitron', 'Exo 2', monospace;"
               >
-                {t("characters.signInToSave")}
+                <!-- Button glow effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-slate-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative text-lg tracking-wider uppercase font-black">{t("characters.signInToSave")}</span>
+                <!-- Gaming accent corners -->
+                <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-slate-500/60"></div>
+                <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-slate-500/60"></div>
+                <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-slate-500/60"></div>
+                <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-slate-500/60"></div>
               </a>
             </div>
           </div>
         )}
+
+        <!-- Gaming Decorative Elements -->
+        <div class="mt-12 flex justify-center items-center space-x-4 opacity-60">
+          <!-- Power indicator bars -->
+          <div class="flex space-x-1">
+            <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse"></div>
+            <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.2s;"></div>
+            <div class="w-1 h-5 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.4s;"></div>
+            <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.6s;"></div>
+            <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.8s;"></div>
+          </div>
+
+          <!-- Gaming hexagon -->
+          <div class="relative">
+            <div class="w-6 h-6 bg-gradient-to-r from-blue-400 to-cyan-400 transform rotate-45 animate-spin" style="animation-duration: 8s; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"></div>
+            <div class="absolute inset-0 w-6 h-6 bg-white/30 transform rotate-45" style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"></div>
+          </div>
+
+          <!-- Power indicator bars (mirrored) -->
+          <div class="flex space-x-1">
+            <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 1s;"></div>
+            <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.8s;"></div>
+            <div class="w-1 h-5 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.6s;"></div>
+            <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.4s;"></div>
+            <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.2s;"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -296,44 +406,49 @@ try {
 
         if (localChars.length > 0) {
           localCharactersContainer.innerHTML = localChars.map(char => `
-            <div class="bg-white/10 rounded-xl p-6 border border-white/20" data-local-character="true" data-story-id="${char.storyId}">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-lg font-bold character-avatar">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-local-character="true" data-story-id="${char.storyId}">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
                   ${char.characterName.charAt(0).toUpperCase()}
                 </div>
                 <div class="flex-1">
-                  <h3 class="text-xl font-semibold text-white character-name-display">${char.characterName}</h3>
+                  <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${char.characterName}</h3>
                   <input
                     type="text"
-                    class="character-name-input w-full bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 px-3 py-1 text-xl font-semibold hidden"
+                    class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
                     value="${char.characterName}"
                     maxlength="50"
+                    style="font-family: 'Orbitron', monospace;"
                   />
-                  <p class="text-white/70 text-sm capitalize">${char.storyId.replace('_', ' ')}</p>
+                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${char.storyId.replace('_', ' ')}</p>
                 </div>
               </div>
-              <div class="flex gap-2">
+              <div class="flex gap-3 flex-wrap">
                 <a
                   href="/en/story/${char.storyId}"
-                  class="character-play-link flex-1 py-2 px-4 bg-white/20 hover:bg-white/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium"
+                  class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
+                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                 >
                   Play Story
                 </a>
                 <button
                   type="button"
-                  class="character-edit-btn py-2 px-4 bg-white/10 hover:bg-white/20 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium border border-white/20"
+                  class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
+                  style="font-family: 'Orbitron', monospace;"
                 >
                   Edit
                 </button>
                 <button
                   type="button"
-                  class="character-save-btn py-2 px-4 bg-green-500/20 hover:bg-green-500/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium border border-green-500/30 hidden"
+                  class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
+                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                 >
                   Save
                 </button>
                 <button
                   type="button"
-                  class="character-cancel-btn py-2 px-4 bg-red-500/20 hover:bg-red-500/30 text-white text-center rounded-lg transition-all duration-200 text-sm font-medium border border-red-500/30 hidden"
+                  class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
+                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                 >
                   Cancel
                 </button>
@@ -427,13 +542,19 @@ try {
           }, 100);
         } else {
           localCharactersContainer.innerHTML = `
-            <div class="text-center py-8">
-              <div class="text-white/60 text-lg mb-4">No local characters found</div>
+            <div class="text-center py-12">
+              <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">No local characters found</div>
               <a
                 href="/en/stories"
-                class="inline-block py-3 px-6 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-300 font-medium border border-white/30"
+                class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
+                style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
               >
-                Start Your First Story
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+                <span class="relative text-lg tracking-wider uppercase font-black">Start Your First Story</span>
+                <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+                <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+                <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+                <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
               </a>
             </div>
           `;
@@ -441,8 +562,8 @@ try {
       } catch (error) {
         console.error('Error loading local characters:', error);
         localCharactersContainer.innerHTML = `
-          <div class="text-center py-8">
-            <div class="text-red-300 text-lg">Error loading local characters</div>
+          <div class="text-center py-12">
+            <div class="text-red-600 text-lg font-semibold bg-red-100 rounded-lg p-4 border border-red-300" style="font-family: 'Exo 2', sans-serif;">Error loading local characters</div>
           </div>
         `;
       }

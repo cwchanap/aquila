@@ -1,0 +1,17 @@
+{
+  "get_off_or_stay": {
+    "prompt": "What should Li Jie do at the station?",
+    "options": [
+      {
+        "id": "leave_train",
+        "label": "Step off the train into the unknown",
+        "nextScene": "scene_4a"
+      },
+      {
+        "id": "stay_on_train",
+        "label": "Stay aboard and wait it out",
+        "nextScene": "scene_4b"
+      }
+    ]
+  }
+}

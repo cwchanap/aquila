@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
+import { CharacterDirectory } from './characters/CharacterDirectory';
+import { SceneDirectory, type SceneId } from './SceneDirectory';
+import type { DialogueEntry, DialogueMap } from './dialogue/types';
 
 export class BaseScene extends Phaser.Scene {
-    protected dialogue: {
-        [key: string]: { dialogue: string; character: string }[];
-    } = {};
+    protected dialogue: DialogueMap = {};
     protected currentDialogueIndex: number = 0;
     protected textObject?: Phaser.GameObjects.Text;
     protected characterNameText?: Phaser.GameObjects.Text;
@@ -18,34 +19,20 @@ export class BaseScene extends Phaser.Scene {
     protected beepCtx?: AudioContext;
     protected ambientOsc?: OscillatorNode;
     protected ambientGain?: GainNode;
-    // Active story section key (e.g., 'EntryScene', 'TrainRideScene').
-    // Defaults to Phaser scene key when null for backward compatibility.
-    protected sectionKey: string | null = null;
+    // Active story section key driven by SceneDirectory.
+    protected sectionKey: SceneId = SceneDirectory.defaultStart;
 
     constructor(key: string) {
         super(key);
     }
 
     // Helper to switch sections from a derived StoryScene
-    protected setSection(nextKey: string) {
+    protected setSection(nextKey: SceneId) {
         this.sectionKey = nextKey;
         this.currentDialogueIndex = 0;
         // Rebuild the layout for the new section (background, etc.)
         this.redrawLayout();
-        // Adjust ambient frequency to match new section mood
-        try {
-            if (this.ambientOsc) {
-                let freq = 80;
-                if (nextKey === 'TrainRideScene') freq = 60;
-                if (nextKey === 'OtherworldStationScene') freq = 95;
-                this.ambientOsc.frequency.setValueAtTime(
-                    freq,
-                    this.beepCtx ? this.beepCtx.currentTime : 0
-                );
-            }
-        } catch {
-            // ignore
-        }
+        this.applyAmbientForScene(nextKey);
         // Show first dialogue line of the new section
         this.showDialogue();
     }
@@ -71,14 +58,13 @@ export class BaseScene extends Phaser.Scene {
             this.ambientOsc.type = 'sine';
             // Different base tones per scene for mood
             const sKey = this.getSectionKey();
-            let freq = 80; // platform
-            if (sKey === 'TrainRideScene') freq = 60; // tunnel
-            if (sKey === 'OtherworldStationScene') freq = 95; // eerie
+            const freq = SceneDirectory.getAmbientFrequency(sKey);
             this.ambientOsc.frequency.value = freq;
             this.ambientGain.gain.value = 0.004; // very quiet
             this.ambientOsc.connect(this.ambientGain);
             this.ambientGain.connect(ctx.destination);
             this.ambientOsc.start();
+            this.applyAmbientForScene(sKey);
         } catch {
             // ignore if audio unavailable or blocked
         }
@@ -153,8 +139,8 @@ export class BaseScene extends Phaser.Scene {
         this.updateDialogueUI();
     };
 
-    protected getSectionKey() {
-        return this.sectionKey ?? this.scene.key;
+    protected getSectionKey(): SceneId {
+        return this.sectionKey;
     }
 
     protected setupBackground() {
@@ -162,7 +148,7 @@ export class BaseScene extends Phaser.Scene {
         const height = this.scale.height;
 
         const sKey = this.getSectionKey();
-        const texKey = `bg-${sKey}`;
+        const texKey = SceneDirectory.getBackgroundTextureKey(sKey);
         const hasTexture = this.textures.exists(texKey);
 
         // Use image background if preloaded, else fallback to graphics color fill
@@ -201,15 +187,13 @@ export class BaseScene extends Phaser.Scene {
                 this.bgGraphics.setDepth(-20);
             }
             const g = this.bgGraphics;
-            let color = 0x0b1022; // midnight platform
-            if (sKey === 'TrainRideScene') color = 0x000000; // dark tunnel
-            if (sKey === 'OtherworldStationScene') color = 0x2b0000; // otherworld red sky
+            const color = SceneDirectory.getFallbackColor(sKey);
 
             g.fillStyle(color, 1);
             g.fillRect(0, 0, width, height);
 
             // Simple horizon line for otherworld scene
-            if (sKey === 'OtherworldStationScene') {
+            if (sKey === 'scene_3' || sKey === 'scene_4a') {
                 g.lineStyle(2, 0xaa0000, 0.6);
                 g.strokeLineShape(
                     new Phaser.Geom.Line(
@@ -302,9 +286,7 @@ export class BaseScene extends Phaser.Scene {
             });
     }
 
-    loadDialogue(dialogueData: {
-        [key: string]: { dialogue: string; character: string }[];
-    }) {
+    loadDialogue(dialogueData: DialogueMap) {
         this.dialogue = dialogueData;
         this.currentDialogueIndex = 0;
         // Ensure UI is ready before showing dialogue
@@ -315,17 +297,32 @@ export class BaseScene extends Phaser.Scene {
 
     showDialogue() {
         const sceneId = this.getSectionKey();
-        const current = this.dialogue[sceneId]?.[this.currentDialogueIndex];
+        const current: DialogueEntry | undefined =
+            this.dialogue[sceneId]?.[this.currentDialogueIndex];
         if (current) {
             if (this.characterNameText && this.textObject) {
+                const charId = current.characterId;
                 let speaker = current.character;
+                if (!speaker && charId) {
+                    const info = CharacterDirectory.getById(charId);
+                    speaker = info?.name ?? charId;
+                }
                 let text = current.dialogue;
-                if (
+                const isMainCharacter =
+                    charId === 'li_jie' ||
                     speaker === 'MainCharacter' ||
                     speaker === '李杰' ||
-                    speaker === 'Li Jie'
+                    speaker === 'Li Jie';
+                if (
+                    isMainCharacter &&
+                    typeof this.playerName === 'string' &&
+                    this.playerName.length
                 ) {
-                    speaker = this.playerName || speaker;
+                    speaker = this.playerName;
+                } else if (speaker === 'MainCharacter') {
+                    speaker = this.locale.startsWith('zh')
+                        ? '主角'
+                        : 'Main Character';
                 }
                 if (this.playerName) {
                     if (
@@ -340,7 +337,7 @@ export class BaseScene extends Phaser.Scene {
                         text = text.replaceAll('Li Jie', this.playerName);
                     }
                 }
-                this.characterNameText.setText(speaker);
+                this.characterNameText.setText(speaker ?? '');
                 this.textObject.setText(text);
             } else {
                 // If UI not ready, try again in a moment
@@ -416,5 +413,19 @@ export class BaseScene extends Phaser.Scene {
 
     endScene() {
         // Override in child classes
+    }
+
+    protected applyAmbientForScene(sceneId: SceneId) {
+        try {
+            if (this.ambientOsc && this.beepCtx) {
+                const freq = SceneDirectory.getAmbientFrequency(sceneId);
+                this.ambientOsc.frequency.setValueAtTime(
+                    freq,
+                    this.beepCtx.currentTime
+                );
+            }
+        } catch {
+            // ignore
+        }
     }
 }

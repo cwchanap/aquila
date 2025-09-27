@@ -1,5 +1,5 @@
 {
-  "EntryScene": [
+  "scene_1": [
     {
       "dialogue": "深夜，新宿車站的中央線月台。月台上的電子顯示板閃爍著午夜的班次訊息，空氣中混雜著週末狂歡後的疲憊與歸家的焦躁。人群三三兩兩，各自沉浸在自己的世界裡。",
       "characterId": "narrator"
@@ -81,7 +81,7 @@
       "characterId": "narrator"
     }
   ],
-  "TrainRideScene": [
+  "scene_2": [
     {
       "dialogue": "列車平穩地行駛著，窗外的城市燈火匯成一條條流動的光河，迅速向後退去。車廂內，除了大學生們偶爾的笑鬧聲，大部分乘客都在閉目養神或滑著手機，享受著歸家途中的片刻寧靜。",
       "characterId": "narrator"
@@ -207,7 +207,7 @@
       "characterId": "li_jie"
     }
   ],
-  "OtherworldStationScene": [
+  "scene_3": [
     {
       "dialogue": "列車穿過了那片詭異的藍黑色光幕，車廂內的震動忽然變得極其輕微，幾乎感覺不到。刺眼的光芒褪去，一個絕對不應存在的，卻又無比真實的世界，展現在所有乘客眼前。",
       "characterId": "narrator"
@@ -276,5 +276,7 @@
       "dialogue": "（內心）留下，是待在這失控的鐵盒裡；出去，是踏入一個無法理解的世界...我們...到底該怎麼辦？",
       "characterId": "li_jie"
     }
-  ]
+  ],
+  "scene_4a": [],
+  "scene_4b": []
 }

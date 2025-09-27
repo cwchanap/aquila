@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { DialogueMap } from './dialogue/types';
+import type { ChoiceMap, DialogueMap } from './dialogue/types';
 import entryUrl from '@/assets/entry.png?url';
 import trainRideUrl from '@/assets/train_ride.png?url';
 import stationUrl from '@/assets/station.png?url';
@@ -24,10 +24,10 @@ export class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-        // Backgrounds mapped to scene keys (built-in fallbacks for train_adventure)
-        this.load.image('bg-EntryScene', entryUrl);
-        this.load.image('bg-TrainRideScene', trainRideUrl);
-        this.load.image('bg-OtherworldStationScene', stationUrl);
+        // Backgrounds mapped to scene IDs (built-in fallbacks for train_adventure)
+        this.load.image('bg-scene_1', entryUrl);
+        this.load.image('bg-scene_2', trainRideUrl);
+        this.load.image('bg-scene_3', stationUrl);
 
         // Load optional JSON dialogue for data-driven flow (JSON only contains dialogues)
         const storyId = this.startData.storyId || 'train_adventure';
@@ -37,6 +37,10 @@ export class PreloadScene extends Phaser.Scene {
             'story-dialogue',
             `/stories/${localePrefix}/${storyId}.json`
         );
+        this.load.json(
+            'story-choices',
+            `/stories/${localePrefix}/${storyId}_choices.json`
+        );
     }
 
     create() {
@@ -45,6 +49,12 @@ export class PreloadScene extends Phaser.Scene {
         if (dialogueMap) {
             // Store for StoryScene to consume if provided
             this.registry.set('dialogueMap', dialogueMap);
+        }
+
+        const choiceMap = (this.cache.json.get('story-choices') ||
+            null) as ChoiceMap | null;
+        if (choiceMap) {
+            this.registry.set('choiceMap', choiceMap);
         }
 
         // Start StoryScene; sections are defined in code, not JSON settings

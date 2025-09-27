@@ -1,5 +1,5 @@
 {
-  "EntryScene": [
+  "scene_1": [
     {
       "character": "Narrator",
       "dialogue": "Late night on the Chuo Line platform at Shinjuku Station. The electronic board blinks with midnight departures, the air mixed with the exhaustion of weekend revelry and the impatience of people heading home. Clusters of passengers drift about, each sealed inside their own world."
@@ -81,7 +81,7 @@
       "dialogue": "Li Jie moves with the crowd and takes a window seat. As he sets down his backpack, he notices the quiet girl boarding the same carriage, settling a short distance ahead. Head bowed, she remains absorbed in her private world. The college students and the posturing Glasses Guy pile in too, loud at the far end. The chime sounds, the doors close, and the train pulls away. City lights streak backward and blur. He has no idea that the train carrying him away from the familiar city is charting a path toward an unexpected fate."
     }
   ],
-  "TrainRideScene": [
+  "scene_2": [
     {
       "character": "Narrator",
       "dialogue": "The train runs smoothly, city lights outside merging into rivers that stream backward. Aside from the students' occasional laughter, most passengers doze or scroll, savoring a rare pocket of calm on the ride home."
@@ -207,7 +207,7 @@
       "dialogue": "(inner monologue) ...What kind of light is that? This isn't the world I know."
     }
   ],
-  "OtherworldStationScene": [
+  "scene_3": [
     {
       "character": "Narrator",
       "dialogue": "The train pierces that eerie curtain of blue-black light, and the vibration inside suddenly becomes impossibly faint—almost imperceptible. The glare fades. An impossible yet undeniably real world unfurls before every passenger."
@@ -276,5 +276,7 @@
       "character": "Li Jie",
       "dialogue": "(inner monologue) Stay, and we're trapped in this runaway metal box. Step out, and we walk into a world we can't comprehend... What are we supposed to do?"
     }
-  ]
+  ],
+  "scene_4a": [],
+  "scene_4b": []
 }

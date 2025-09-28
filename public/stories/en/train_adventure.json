@@ -277,6 +277,115 @@
       "dialogue": "(inner monologue) Stay, and we're trapped in this runaway metal box. Step out, and we walk into a world we can't comprehend... What are we supposed to do?"
     }
   ],
-  "scene_4a": [],
+  "scene_4a": [
+    {
+      "character": "Narrator",
+      "dialogue": "The air inside the carriage seemed to solidify. Beyond the open doors stretched a night as black as ink, and from Sea of Silence Station poured in a chill, alien breath. Every passenger sat frozen, unable to react."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) Staying here is waiting to die. The train isn't going to move, and this place is nowhere in Tokyo. If it's a trap, staying makes us sitting ducks. If there's any clue outside... at least it gives us a chance to search."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Li Jie drew in a deep breath, forcing down the fear in his chest. He knew the choice was reckless, but his rational mind insisted that between the known and the unknown, the unknown might hide the only scrap of hope."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Before committing, his eyes swept the carriage. Terrified college students, a couple clinging to each other, a mother covering her child's eyes, and the glasses man trying to look composed even as his face went pale."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) Hm? That man..."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "His gaze stopped at the seat where the man in black had been. The silent stranger with the low brim was gone. The seat sat empty, as if no one had occupied it at all."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) When did he... slip out? Or was he never here in the first place?"
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "The realization sent a chill through him, but there was no time to dwell. He made his move."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(raising his voice, trying to stay calm) I'm getting off. Staying here won't help anyone."
+    },
+    {
+      "character": "Middle-aged Man (Generous Uncle)",
+      "dialogue": "(jumping up to block him) Hold on, kid! We have no idea what's out there. What if it's dangerous? Let's wait for the conductor—"
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "We can't wait, Uncle. Can't you see? This isn't our world anymore. There won't be a conductor."
+    },
+    {
+      "character": "Glasses Guy",
+      "dialogue": "(pushing up his frames with a mocking tone) Hey, hero, pick your moment. Don't think you're brave—if there's a monster out there, you'll be the first one it eats."
+    },
+    {
+      "character": "Middle-aged Man (Selfish Coward)",
+      "dialogue": "(muttering from behind a seat) Yeah... running around will just drag something back in here..."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Between the uncle's pleading and the glasses guy's jeers, the rest of the passengers only stared at Li Jie, stunned. Their eyes brimmed with disbelief, deeper fear, and a desperate yearning for someone to lead them."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "There are no answers in here. At least outside I can look."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He hesitated no longer. Slinging his backpack over his shoulder, Li Jie sidestepped the uncle and strode toward the open door. Every step felt like a tightrope, every step heavy with doubt. When his feet finally touched the cold, rough concrete of the platform, reality hit him like a wave."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Sea of Silence Station— a platform weathered by sea winds, a few swaying lanterns, and a simple waiting room."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) It's even more desolate than I imagined..."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He scanned the surroundings. The platform was short, ending in a dirt path that disappeared into a pitch-black forest. The waiting room had no windowpanes, only timber walls, its interior steeped in darkness. At the entrance hung a faded timetable, and he stepped closer to read it."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Only one lonely route was listed, heading toward a place marked 'Nether City.' Below it, in washed-out ink, someone had scrawled:"
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "[Next train: twenty years from now]"
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) Twenty years... What is that supposed to mean? Are we trapped here?"
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He turned back to the train. The doors still gaped open. Inside, the passengers sat like statues, staring at him through the doorway with eyes full of confusion, dread, and a fragile glimmer of hope."
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "Just as he started toward the waiting room, soft footsteps sounded behind him."
+    },
+    {
+      "character": "Li Jie",
+      "dialogue": "(inner monologue) Someone else?"
+    },
+    {
+      "character": "Narrator",
+      "dialogue": "He whipped around to find Girl A standing at the doorway. Her face was drained of color, her body trembling, fingers clenched tight around her skirt. Tears shimmered in her eyes as she stepped cautiously onto the platform."
+    },
+    {
+      "character": "Girl A",
+      "dialogue": "(voice barely above a whisper, threaded with tears) Um... may I... go with you?"
+    }
+  ],
   "scene_4b": []
 }

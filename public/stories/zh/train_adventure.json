@@ -18,19 +18,19 @@
     },
     {
       "dialogue": "喂！你們說，剛剛那家店的酒也太遜了吧！下次絕對不去了！",
-      "characterId": "college_student_male_a"
+      "characterId": "zhao_yang"
     },
     {
       "dialogue": "就是說啊！而且還那麼貴！還不如我們在便利商店買的罐裝酒好喝！",
-      "characterId": "college_student_female_a"
+      "characterId": "wang_ting"
     },
     {
       "dialogue": "下次去我推薦的那家啦！保證氣氛超讚！",
-      "characterId": "college_student_male_b"
+      "characterId": "sun_peng"
     },
     {
       "dialogue": "（清了清喉嚨，刻意地靠近大學生們，用自以為帥氣的語氣插話）各位，聽你們的對話，就知道你們還很年輕。真正的好地方，可不是隨便能在網上找到的。下次有機會，我可以帶你們去一家行家才知道的店。",
-      "characterId": "glasses_man"
+      "characterId": "wang_hao"
     },
     {
       "dialogue": "幾個大學生面面相覷，只是禮貌性地點了點頭，便又自顧自地聊起來。眼鏡男有些尷尬地站在一旁，假裝在看手機。",
@@ -124,19 +124,19 @@
     },
     {
       "dialogue": "不是吧？我的手機完全沒訊號！連圈外都不是，是「沒有服務」耶！這底下是多深啊？",
-      "characterId": "college_student_female_a"
+      "characterId": "wang_ting"
     },
     {
       "dialogue": "我的也是，什麼都傳不出去。喂，這隧道也太長了吧？以前有這麼長嗎？我怎麼一點印象都沒有？",
-      "characterId": "college_student_male_a"
+      "characterId": "zhao_yang"
     },
     {
       "dialogue": "（故作鎮定地推了推眼鏡）這是常識。隧道結構會影響信號傳播，加上深夜線路維護，為了避開施工區域而繞道，延遲個二十分鐘是很正常的，不用大驚小怪。",
-      "characterId": "glasses_man"
+      "characterId": "wang_hao"
     },
     {
       "dialogue": "（沉穩地開口）小兄弟，話不是這麼說。我坐這條線三十年了，從來沒有在隧道裡待超過十分鐘的。這情況不對勁。",
-      "characterId": "generous_middle_aged_man"
+      "characterId": "shi_lei"
     },
     {
       "dialogue": "這位大叔的話像一顆石子投入水中，讓原本還抱有僥倖心理的乘客們，臉上最後一絲輕鬆也消失了。",
@@ -144,19 +144,19 @@
     },
     {
       "dialogue": "（語氣焦急）老公，我有點不安...你不是說這條路你很熟嗎？這是怎麼回事？",
-      "characterId": "middle_aged_couple_wife"
+      "characterId": "liu_shufen"
     },
     {
       "dialogue": "（煩躁地）我怎麼會知道！我又不是司機！妳問我有什麼用！",
-      "characterId": "middle_aged_couple_husband"
+      "characterId": "gao_zhiqiang"
     },
     {
       "dialogue": "媽媽，我怕黑...我們什麼時候才能出去？",
-      "characterId": "little_boy"
+      "characterId": "zheng_chen"
     },
     {
       "dialogue": "（緊緊抱住孩子，安撫地）快了快了，寶寶乖，你看，姐姐都沒怕。別看窗外了，我們看手機裡的卡通好不好？啊...手機也...",
-      "characterId": "mother"
+      "characterId": "wu_hui"
     },
     {
       "dialogue": "那位母親想打開手機影片，卻發現同樣沒有網路。",
@@ -180,11 +180,11 @@
     },
     {
       "dialogue": "喂！肯定出事了！是不是該去按那個緊急通話鈕啊！不然我們就在這裡困到天亮嗎？",
-      "characterId": "cowardly_middle_aged_man"
+      "characterId": "qian_ming"
     },
     {
       "dialogue": "你冷靜點！現在列車還在平穩運行，亂按鈕萬一導致緊急停車，卡在隧道中間那才叫危險！",
-      "characterId": "generous_middle_aged_man"
+      "characterId": "shi_lei"
     },
     {
       "dialogue": "就在兩人快要爭吵起來，車廂內的氣氛越來越凝重時，列車前方，黑暗的盡頭，終於滲出了一絲光亮。",
@@ -192,7 +192,7 @@
     },
     {
       "dialogue": "啊！有光了！終於要出去了！",
-      "characterId": "college_student_male_b"
+      "characterId": "sun_peng"
     },
     {
       "dialogue": "這一聲喜悅的呼喊像救贖一樣，讓所有人都停止了爭論，不約而同地將目光投向那片越來越大的光芒，每個人的臉上都寫滿了劫後餘生般的期待。",
@@ -222,19 +222,19 @@
     },
     {
       "dialogue": "（聲音顫抖）這...這裡是哪裡？新宿...不是在內陸嗎？這片海...是怎麼回事？",
-      "characterId": "college_student_female_a"
+      "characterId": "wang_ting"
     },
     {
       "dialogue": "（貼在窗戶上，臉色發白）這不是東京...絕對不是！你們看天上的月亮！有兩個！",
-      "characterId": "college_student_male_a"
+      "characterId": "zhao_yang"
     },
     {
       "dialogue": "（結結巴巴地）一...定是某種宣傳活動...對，是利用大氣反射原理製造的海市蜃樓...一定是這樣！",
-      "characterId": "glasses_man"
+      "characterId": "wang_hao"
     },
     {
       "dialogue": "（對著眼鏡男怒吼）你還在胡說八道什麼！你家投影能連空氣的味道都改變嗎！快報警啊！誰的手機有訊號？！",
-      "characterId": "middle_aged_couple_husband"
+      "characterId": "gao_zhiqiang"
     },
     {
       "dialogue": "「失聯」這兩個字像一把重錘，敲碎了所有人最後的僥倖。恐慌與絕望的情緒徹底爆發，尖叫聲、哭泣聲、祈禱聲在車廂內交織成一片混亂的交響樂。",
@@ -254,7 +254,7 @@
     },
     {
       "dialogue": "前面有車站！大家看！有車站！",
-      "characterId": "generous_middle_aged_man"
+      "characterId": "shi_lei"
     },
     {
       "dialogue": "這句話讓混亂的車廂暫時安靜下來。列車緩緩駛入，最終完美地停靠在月台旁。月台上，一塊被海風嚴重侵蝕的站牌上，用一種他們從未見過的古老字體寫著兩個字——「寂海」。",
@@ -277,6 +277,115 @@
       "characterId": "li_jie"
     }
   ],
-  "scene_4a": [],
+  "scene_4a": [
+    {
+      "dialogue": "車廂內的空氣凝固了。敞開的車門外，是深邃如墨的夜色，以及從「寂海」車站湧入的，冰冷而陌生的氣息。所有乘客都呆若木雞，無法做出任何反應。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（內心）繼續待在這裡，就是等死。列車不會動了，這絕對不是東京的任何一個地方。如果這是個陷阱，留在裡面也只是瓮中之鱉。如果外面有什麼線索...至少還有探尋的機會。",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "李杰深吸一口氣，強壓下心中的恐懼。他知道這個決定極其冒險，但內心的理性告訴他，在已知與未知之間，此刻的「未知」反而可能蘊含著生機。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "在下定決心之前，他的目光下意識地掃過周圍的乘客。驚恐萬狀的大學生們、抱在一起瑟瑟發抖的夫婦、緊緊捂住孩子眼睛的母親，還有那個故作鎮定卻臉色蒼白的眼鏡男。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（內心）嗯？那個人...",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "李杰的視線停在了之前黑衣男子的位置。那個一直沉默、帽簷壓低的神秘人，此刻竟然不見了！他的座位空空如也，彷彿從未有人坐過。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（內心）什麼時候...他竟然下車了？還是說...從一開始就不存在？",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "這個發現讓李杰心中一凜，但沒有時間多想。他決定行動。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（大聲，語氣盡量保持平穩）我要下車了。留在這裡不會有任何幫助。",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "（急忙起身，攔在李杰面前）小兄弟，別衝動啊！外面什麼情況都不知道，萬一有危險怎麼辦？還是等列車長...",
+      "characterId": "shi_lei"
+    },
+    {
+      "dialogue": "等不了了，大叔。你看不到嗎？這不是我們熟悉的世界，不可能有列車長。",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "（推了推眼鏡，語帶嘲諷）喂喂，這位老兄，你想當英雄也要看場合啊。別以為自己有多勇敢，搞不好外面有什麼怪物，第一個被吃掉的就是你！",
+      "characterId": "wang_hao"
+    },
+    {
+      "dialogue": "（躲在座位後面，小聲嘀咕）就是啊...亂跑什麼...萬一把什麼東西引進來了怎麼辦...",
+      "characterId": "qian_ming"
+    },
+    {
+      "dialogue": "在慷慨大叔的勸阻和眼鏡男的嘲諷聲中，車廂內的其他人只是呆滯地看著李杰，眼中充滿了難以置信和更深的恐懼。他們害怕這個選擇，卻也渴望有人能帶領他們。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "這裡不會有答案的。至少，我想出去看看。",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "李杰不再猶豫，他提起自己的背包，繞過慷慨大叔，邁開腳步，走向敞開的車門。每一步都像是踏在鋼絲上，每一步都充滿了不確定。當他雙腳真正踩上車站月台冰冷粗糙的水泥地面時，一股真實感襲來。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "寂海車站，一個被海風侵蝕的月台，幾盞搖曳的燈籠，以及一個簡單的候車室。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（內心）這裡比我想像的還要簡陋...",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "他環顧四周。月台很短，盡頭就是通往黑暗森林的泥土小徑。候車室沒有玻璃窗，只有木板搭建的牆壁，裡面漆黑一片。在候車室的入口處，他看到了一塊斑駁的時刻表，走上前去仔細查看。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "時刻表上只有孤零零的一條線路，通往某個標示為「幽冥之都」的地方。而下方，用褪色的墨跡寫著：",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "【下一班列車：二十年後】",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（內心）二十年後...這是什麼意思？我們被困在這裡了？",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "他轉身望向列車，車門依然敞開。車廂內，所有乘客都像凝固的雕像，透過車門呆呆地看著他，眼中充滿了疑惑、恐懼，以及一絲隱約的希望。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "就在他準備走向候車室時，一個輕微的腳步聲從他身後傳來。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（內心）還有誰？",
+      "characterId": "li_jie"
+    },
+    {
+      "dialogue": "他猛地回頭，只見少女A正站在車門口。她的臉色依然蒼白，身體微微顫抖，雙手緊緊地揪著裙襬，眼中閃爍著不安和淚光。她小心翼翼地、一步一步地踏出了車廂，站在月台上。",
+      "characterId": "narrator"
+    },
+    {
+      "dialogue": "（聲音細若蚊蚋，帶著哭腔，幾乎聽不清）那個...我可以...跟著你嗎...？",
+      "characterId": "lin_ya"
+    }
+  ],
   "scene_4b": []
 }

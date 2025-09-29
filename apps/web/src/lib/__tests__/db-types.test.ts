@@ -12,15 +12,13 @@ import { StoryId } from '../story-types';
 describe('Database Types', () => {
     describe('Database interface', () => {
         it('should have all required table properties', () => {
-            /* eslint-disable @typescript-eslint/no-explicit-any */
             const database: Database = {
-                users: {} as any,
-                sessions: {} as any,
-                accounts: {} as any,
-                verificationTokens: {} as any,
-                characterSetups: {} as any,
+                users: {} as UserTable,
+                sessions: {} as SessionTable,
+                accounts: {} as AccountTable,
+                verificationTokens: {} as VerificationTokenTable,
+                characterSetups: {} as CharacterSetupTable,
             };
-            /* eslint-enable @typescript-eslint/no-explicit-any */
 
             expect(database).toHaveProperty('users');
             expect(database).toHaveProperty('sessions');

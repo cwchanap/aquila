@@ -1,38 +1,75 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SimpleAuthService } from '../simple-auth';
 
-// Mock the db module
+type AnyMock = ReturnType<typeof vi.fn>;
+
+type DbMock = {
+    selectFrom: AnyMock;
+    selectAll: AnyMock;
+    where: AnyMock;
+    executeTakeFirst: AnyMock;
+    insertInto: AnyMock;
+    values: AnyMock;
+    execute: AnyMock;
+    deleteFrom: AnyMock;
+    innerJoin: AnyMock;
+    select: AnyMock;
+};
+
+const createDbMock = (): DbMock => ({
+    selectFrom: vi.fn().mockReturnThis(),
+    selectAll: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    executeTakeFirst: vi.fn(),
+    insertInto: vi.fn().mockReturnThis(),
+    values: vi.fn().mockReturnThis(),
+    execute: vi.fn(),
+    deleteFrom: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+});
+
+const mockedDb: DbMock = createDbMock();
+
 vi.mock('../db', () => ({
-    db: {
-        selectFrom: vi.fn().mockReturnThis(),
-        selectAll: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        executeTakeFirst: vi.fn(),
-        insertInto: vi.fn().mockReturnThis(),
-        values: vi.fn().mockReturnThis(),
-        execute: vi.fn(),
-        deleteFrom: vi.fn().mockReturnThis(),
-        innerJoin: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-    },
+    db: mockedDb,
 }));
 
-// Mock bcryptjs
+type BcryptMock = {
+    hash: AnyMock;
+    compare: AnyMock;
+};
+
+const mockedBcrypt: BcryptMock = {
+    hash: vi.fn(),
+    compare: vi.fn(),
+};
+
 vi.mock('bcryptjs', () => ({
-    default: {
-        hash: vi.fn(),
-        compare: vi.fn(),
-    },
+    default: mockedBcrypt,
 }));
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { db } from '../db';
-import bcrypt from 'bcryptjs';
 
 describe('SimpleAuthService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        const chainMocks = [
+            mockedDb.selectFrom,
+            mockedDb.selectAll,
+            mockedDb.where,
+            mockedDb.insertInto,
+            mockedDb.values,
+            mockedDb.deleteFrom,
+            mockedDb.innerJoin,
+            mockedDb.select,
+        ];
+        for (const mock of chainMocks) {
+            mock.mockReset();
+            mock.mockReturnThis();
+        }
+        mockedDb.executeTakeFirst.mockReset();
+        mockedDb.execute.mockReset();
+        mockedBcrypt.hash.mockReset();
+        mockedBcrypt.compare.mockReset();
     });
 
     describe('signUp', () => {
@@ -44,7 +81,7 @@ describe('SimpleAuthService', () => {
             };
 
             // Mock user not existing
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi.fn().mockResolvedValue(null),
@@ -53,17 +90,17 @@ describe('SimpleAuthService', () => {
             });
 
             // Mock bcrypt hash
-            (bcrypt.hash as any).mockResolvedValue('hashed-password');
+            mockedBcrypt.hash.mockResolvedValue('hashed-password');
 
             // Mock user creation
-            (db.insertInto as any).mockReturnValueOnce({
+            mockedDb.insertInto.mockReturnValueOnce({
                 values: vi.fn().mockReturnValue({
                     execute: vi.fn().mockResolvedValue(undefined),
                 }),
             });
 
             // Mock account creation
-            (db.insertInto as any).mockReturnValueOnce({
+            mockedDb.insertInto.mockReturnValueOnce({
                 values: vi.fn().mockReturnValue({
                     execute: vi.fn().mockResolvedValue(undefined),
                 }),
@@ -81,7 +118,10 @@ describe('SimpleAuthService', () => {
                 name: userData.name,
                 username: null,
             });
-            expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 10);
+            expect(mockedBcrypt.hash).toHaveBeenCalledWith(
+                userData.password,
+                10
+            );
         });
 
         it('should return null if user already exists', async () => {
@@ -92,7 +132,7 @@ describe('SimpleAuthService', () => {
             };
 
             // Mock existing user
-            (db.selectFrom as any).mockReturnValue({
+            mockedDb.selectFrom.mockReturnValue({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi.fn().mockResolvedValue({
@@ -120,7 +160,7 @@ describe('SimpleAuthService', () => {
             };
 
             // Mock database error
-            (db.selectFrom as any).mockReturnValue({
+            mockedDb.selectFrom.mockReturnValue({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi
@@ -159,7 +199,7 @@ describe('SimpleAuthService', () => {
             };
 
             // Mock user lookup
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi.fn().mockResolvedValue(mockUser),
@@ -168,7 +208,7 @@ describe('SimpleAuthService', () => {
             });
 
             // Mock account lookup
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
@@ -181,7 +221,7 @@ describe('SimpleAuthService', () => {
             });
 
             // Mock password comparison
-            (bcrypt.compare as any).mockResolvedValue(true);
+            mockedBcrypt.compare.mockResolvedValue(true);
 
             const result = await SimpleAuthService.signIn(
                 credentials.email,
@@ -189,7 +229,7 @@ describe('SimpleAuthService', () => {
             );
 
             expect(result).toEqual(mockUser);
-            expect(bcrypt.compare).toHaveBeenCalledWith(
+            expect(mockedBcrypt.compare).toHaveBeenCalledWith(
                 credentials.password,
                 mockAccount.password
             );
@@ -197,7 +237,7 @@ describe('SimpleAuthService', () => {
 
         it('should return null if user not found', async () => {
             // Mock user not found
-            (db.selectFrom as any).mockReturnValue({
+            mockedDb.selectFrom.mockReturnValue({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi.fn().mockResolvedValue(null),
@@ -218,7 +258,7 @@ describe('SimpleAuthService', () => {
             const mockAccount = { password: 'hashed-password' };
 
             // Mock user lookup
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi.fn().mockResolvedValue(mockUser),
@@ -227,7 +267,7 @@ describe('SimpleAuthService', () => {
             });
 
             // Mock account lookup
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
@@ -240,7 +280,7 @@ describe('SimpleAuthService', () => {
             });
 
             // Mock password comparison failure
-            (bcrypt.compare as any).mockResolvedValue(false);
+            mockedBcrypt.compare.mockResolvedValue(false);
 
             const result = await SimpleAuthService.signIn(
                 'test@example.com',
@@ -255,7 +295,7 @@ describe('SimpleAuthService', () => {
             const mockAccount = { password: null };
 
             // Mock user lookup
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         executeTakeFirst: vi.fn().mockResolvedValue(mockUser),
@@ -264,7 +304,7 @@ describe('SimpleAuthService', () => {
             });
 
             // Mock account lookup
-            (db.selectFrom as any).mockReturnValueOnce({
+            mockedDb.selectFrom.mockReturnValueOnce({
                 selectAll: vi.fn().mockReturnValue({
                     where: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
@@ -294,7 +334,7 @@ describe('SimpleAuthService', () => {
                 username: 'testuser',
             };
 
-            (db.insertInto as any).mockReturnValue({
+            mockedDb.insertInto.mockReturnValue({
                 values: vi.fn().mockReturnValue({
                     execute: vi.fn().mockResolvedValue(undefined),
                 }),
@@ -304,7 +344,7 @@ describe('SimpleAuthService', () => {
 
             expect(result).toBeDefined();
             expect(typeof result).toBe('string');
-            expect(db.insertInto).toHaveBeenCalledWith('sessions');
+            expect(mockedDb.insertInto).toHaveBeenCalledWith('sessions');
         });
     });
 
@@ -320,7 +360,7 @@ describe('SimpleAuthService', () => {
                 username: 'testuser',
             };
 
-            (db.selectFrom as any).mockReturnValue({
+            mockedDb.selectFrom.mockReturnValue({
                 innerJoin: vi.fn().mockReturnValue({
                     select: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
@@ -350,7 +390,7 @@ describe('SimpleAuthService', () => {
         it('should return null for expired session', async () => {
             const sessionId = 'expired-session';
 
-            (db.selectFrom as any).mockReturnValue({
+            mockedDb.selectFrom.mockReturnValue({
                 innerJoin: vi.fn().mockReturnValue({
                     select: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
@@ -372,7 +412,7 @@ describe('SimpleAuthService', () => {
         it('should return null for non-existent session', async () => {
             const sessionId = 'non-existent';
 
-            (db.selectFrom as any).mockReturnValue({
+            mockedDb.selectFrom.mockReturnValue({
                 innerJoin: vi.fn().mockReturnValue({
                     select: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
@@ -396,7 +436,7 @@ describe('SimpleAuthService', () => {
         it('should delete session', async () => {
             const sessionId = 'session-123';
 
-            (db.deleteFrom as any).mockReturnValue({
+            mockedDb.deleteFrom.mockReturnValue({
                 where: vi.fn().mockReturnValue({
                     execute: vi.fn().mockResolvedValue(undefined),
                 }),
@@ -405,13 +445,13 @@ describe('SimpleAuthService', () => {
             await expect(
                 SimpleAuthService.deleteSession(sessionId)
             ).resolves.toBeUndefined();
-            expect(db.deleteFrom).toHaveBeenCalledWith('sessions');
+            expect(mockedDb.deleteFrom).toHaveBeenCalledWith('sessions');
         });
 
         it('should handle database errors gracefully', async () => {
             const sessionId = 'session-123';
 
-            (db.deleteFrom as any).mockReturnValue({
+            mockedDb.deleteFrom.mockReturnValue({
                 where: vi.fn().mockReturnValue({
                     execute: vi
                         .fn()

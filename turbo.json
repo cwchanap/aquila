@@ -1,21 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "dev:app": {
-      "persistent": true,
-      "cache": false
-    },
-    "dev:db": {
-      "persistent": true,
-      "cache": false
-    },
-    "dev:full": {
-      "dependsOn": [],
+    "dev": {
       "persistent": true,
       "cache": false
     },
     "build": {
-      "outputs": ["dist/**"]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".astro/**"]
     },
     "lint": {
       "outputs": []

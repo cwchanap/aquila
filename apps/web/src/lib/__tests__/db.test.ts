@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { db } from '../db';
 import type { Database } from '../db';
+import type {
+    AccountTable,
+    CharacterSetupTable,
+    SessionTable,
+    UserTable,
+    VerificationTokenTable,
+} from '../db-types';
 
 // Mock @libsql/client
 vi.mock('@libsql/client', () => ({
@@ -48,15 +55,13 @@ describe('Database Configuration', () => {
     describe('Database type', () => {
         it('should export Database type', () => {
             // Test that we can create a properly typed database object
-            /* eslint-disable @typescript-eslint/no-explicit-any */
             const testDb: Database = {
-                users: {} as any,
-                sessions: {} as any,
-                accounts: {} as any,
-                verificationTokens: {} as any,
-                characterSetups: {} as any,
+                users: {} as UserTable,
+                sessions: {} as SessionTable,
+                accounts: {} as AccountTable,
+                verificationTokens: {} as VerificationTokenTable,
+                characterSetups: {} as CharacterSetupTable,
             };
-            /* eslint-enable @typescript-eslint/no-explicit-any */
 
             expect(testDb).toHaveProperty('users');
             expect(testDb).toHaveProperty('sessions');

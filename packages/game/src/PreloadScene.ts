@@ -1,8 +1,5 @@
 import Phaser from 'phaser';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
-import entryUrl from '@/assets/entry.png?url';
-import trainRideUrl from '@/assets/train_ride.png?url';
-import stationUrl from '@/assets/station.png?url';
 
 export class PreloadScene extends Phaser.Scene {
     private startData: {
@@ -25,9 +22,9 @@ export class PreloadScene extends Phaser.Scene {
 
     preload() {
         // Backgrounds mapped to scene IDs (built-in fallbacks for train_adventure)
-        this.load.image('bg-scene_1', entryUrl);
-        this.load.image('bg-scene_2', trainRideUrl);
-        this.load.image('bg-scene_3', stationUrl);
+        this.load.image('bg-scene_1', '/game/entry.png');
+        this.load.image('bg-scene_2', '/game/train_ride.png');
+        this.load.image('bg-scene_3', '/game/station.png');
 
         // Load optional JSON dialogue for data-driven flow (JSON only contains dialogues)
         const storyId = this.startData.storyId || 'train_adventure';

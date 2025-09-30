@@ -2,11 +2,19 @@ import Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
 import { SceneDirectory, type SceneId } from './SceneDirectory';
 import { SceneFlow } from './SceneFlow';
+import {
+    clearCheckpoint,
+    loadCheckpoint,
+    saveCheckpoint,
+    type CheckpointState,
+    type StoredCheckpoint,
+} from './CheckpointStorage';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
 
 export class StoryScene extends BaseScene {
     protected characterName: string = 'Player';
     private flow?: SceneFlow;
+    private checkpointState?: CheckpointState;
     private transitioning = false;
     private storyId: string = 'train_adventure';
     private completed = false;
@@ -45,7 +53,7 @@ export class StoryScene extends BaseScene {
             this.choiceMap = choices;
         }
 
-        this.flow = this.buildSceneFlow();
+        this.flow = this.restoreSceneFlow();
         const initialScene =
             this.flow.getCurrentSceneId() ?? SceneDirectory.defaultStart;
         this.setSection(initialScene);
@@ -112,6 +120,7 @@ export class StoryScene extends BaseScene {
         this.applyAmbientForScene(previousSceneId);
 
         this.redrawLayout();
+        this.persistCheckpoint();
         return true;
     }
 
@@ -133,9 +142,11 @@ export class StoryScene extends BaseScene {
         this.toggleMenu();
     }
 
-    private buildSceneFlow(): SceneFlow {
+    private buildSceneFlow(
+        start: SceneId = SceneDirectory.defaultStart
+    ): SceneFlow {
         return new SceneFlow({
-            start: SceneDirectory.defaultStart,
+            start,
             nodes: [
                 {
                     kind: 'scene',
@@ -178,6 +189,50 @@ export class StoryScene extends BaseScene {
                 },
             ],
         });
+    }
+
+    private restoreSceneFlow(): SceneFlow {
+        const checkpoint =
+            (this.registry.get('checkpointState') as StoredCheckpoint | null) ??
+            loadCheckpoint(this.storyId);
+        const flow = this.buildSceneFlow();
+
+        if (checkpoint && Array.isArray(checkpoint.history)) {
+            const restored = flow.restoreFromHistory(checkpoint.history);
+            if (restored && restored === checkpoint.sceneId) {
+                this.checkpointState = {
+                    sceneId: checkpoint.sceneId,
+                    history: [...checkpoint.history],
+                };
+                return flow;
+            }
+
+            clearCheckpoint(this.storyId);
+        }
+
+        this.checkpointState = undefined;
+        return flow;
+    }
+
+    private persistCheckpoint(completed = false): void {
+        if (completed) {
+            clearCheckpoint(this.storyId);
+            this.checkpointState = undefined;
+            return;
+        }
+
+        if (!this.flow) return;
+        const currentSceneId = this.flow.getCurrentSceneId();
+        if (!currentSceneId) return;
+        const history = this.flow.getSceneHistory();
+        if (!history.length) return;
+
+        const state: CheckpointState = {
+            sceneId: currentSceneId,
+            history,
+        };
+        this.checkpointState = state;
+        saveCheckpoint(this.storyId, state);
     }
 
     private transitionToScene(sceneId: SceneId) {
@@ -310,6 +365,7 @@ export class StoryScene extends BaseScene {
         if (resolution.type === 'scene') {
             this.transitionToScene(resolution.sceneId);
         } else {
+            this.persistCheckpoint(true);
             this.showCompletionOverlay();
         }
     }

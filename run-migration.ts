@@ -5,7 +5,7 @@ import { LibsqlDialect } from '@libsql/kysely-libsql';
 import { createClient } from '@libsql/client';
 
 async function migrateToLatest() {
-    const url = process.env.TURSO_DATABASE_URL ?? 'http://127.0.0.1:8080';
+    const url = process.env.TURSO_DATABASE_URL ?? 'http://127.0.0.1:5091';
     console.log('Using database URL:', url);
 
     // Create the database client

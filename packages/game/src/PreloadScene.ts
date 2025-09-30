@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
 import { getStoryContent } from './dialogue/stories';
+import { loadCheckpoint } from './CheckpointStorage';
 
 export class PreloadScene extends Phaser.Scene {
     private startData: {
@@ -33,6 +34,9 @@ export class PreloadScene extends Phaser.Scene {
         const { dialogue, choices } = getStoryContent(storyId, locale);
         this.registry.set('dialogueMap', dialogue);
         this.registry.set('choiceMap', choices);
+
+        const checkpoint = loadCheckpoint(storyId);
+        this.registry.set('checkpointState', checkpoint);
     }
 
     create() {

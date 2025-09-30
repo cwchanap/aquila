@@ -208,4 +208,76 @@ export class SceneFlow {
         this.mode = 'scene';
         return previousNode.sceneId;
     }
+
+    getSceneHistory(): SceneId[] {
+        return this.sceneHistory
+            .map(nodeId => this.nodes.get(nodeId))
+            .filter(
+                (node): node is SceneNodeDefinition =>
+                    !!node && node.kind === 'scene'
+            )
+            .map(node => node.sceneId);
+    }
+
+    restoreFromHistory(history: SceneId[]): SceneId | null {
+        if (!history.length) {
+            return null;
+        }
+
+        const sanitized = history.filter(sceneId => {
+            const node = this.nodes.get(sceneId);
+            return !!node && node.kind === 'scene';
+        });
+        if (!sanitized.length) {
+            return null;
+        }
+
+        const startId = sanitized[0];
+        const startNode = this.nodes.get(startId);
+        if (!startNode || startNode.kind !== 'scene') {
+            return null;
+        }
+
+        this.sceneHistory = [startNode.id];
+        this.currentNodeId = startNode.id;
+        this.mode = 'scene';
+
+        for (let i = 1; i < sanitized.length; i++) {
+            const targetSceneId = sanitized[i];
+            const outcome = this.advanceFromScene();
+
+            if (outcome.type === 'scene') {
+                if (outcome.sceneId !== targetSceneId) {
+                    return null;
+                }
+                continue;
+            }
+
+            if (outcome.type === 'choice') {
+                const choiceNode = this.nodes.get(this.currentNodeId);
+                if (!choiceNode || choiceNode.kind !== 'choice') {
+                    return null;
+                }
+                const matchedEntry = Object.entries(
+                    choiceNode.nextByOption
+                ).find(([, nextSceneId]) => nextSceneId === targetSceneId);
+                if (!matchedEntry) {
+                    return null;
+                }
+                const [optionId] = matchedEntry;
+                const resolution = this.selectChoice(optionId);
+                if (
+                    resolution.type !== 'scene' ||
+                    resolution.sceneId !== targetSceneId
+                ) {
+                    return null;
+                }
+                continue;
+            }
+
+            return null;
+        }
+
+        return this.getCurrentSceneId();
+    }
 }

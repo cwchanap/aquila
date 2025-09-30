@@ -17,8 +17,8 @@
     "test:watch": "vitest --watch",
     "db:migrate": "tsx src/lib/migrate.ts",
     "db:migrate:down": "tsx -e \"import('./src/lib/migrate.ts').then(m => m.migrateDown())\"",
-    "db:migrate:local": "TURSO_DATABASE_URL=http://127.0.0.1:8080 tsx src/lib/migrate.ts",
-    "db:test": "TURSO_DATABASE_URL=http://127.0.0.1:8080 tsx src/lib/db-test.ts",
+    "db:migrate:local": "TURSO_DATABASE_URL=http://127.0.0.1:5091 tsx src/lib/migrate.ts",
+    "db:test": "TURSO_DATABASE_URL=http://127.0.0.1:5091 tsx src/lib/db-test.ts",
     "db:setup": "pnpm db:migrate:local && pnpm db:test",
     "db:verify": "bash ../../scripts/verify-db.sh"
   },

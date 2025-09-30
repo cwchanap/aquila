@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
+import { getStoryContent } from './dialogue/stories';
 
 export class PreloadScene extends Phaser.Scene {
     private startData: {
@@ -26,33 +27,23 @@ export class PreloadScene extends Phaser.Scene {
         this.load.image('bg-scene_2', '/game/train_ride.png');
         this.load.image('bg-scene_3', '/game/station.png');
 
-        // Load optional JSON dialogue for data-driven flow (JSON only contains dialogues)
+        // Load dialogue/choice data from internal modules instead of network JSON
         const storyId = this.startData.storyId || 'train_adventure';
         const locale = (this.startData.locale || 'zh').toLowerCase();
-        const localePrefix = locale.startsWith('zh') ? 'zh' : 'en';
-        this.load.json(
-            'story-dialogue',
-            `/stories/${localePrefix}/${storyId}.json`
-        );
-        this.load.json(
-            'story-choices',
-            `/stories/${localePrefix}/${storyId}_choices.json`
-        );
+        const { dialogue, choices } = getStoryContent(storyId, locale);
+        this.registry.set('dialogueMap', dialogue);
+        this.registry.set('choiceMap', choices);
     }
 
     create() {
-        const dialogueMap = (this.cache.json.get('story-dialogue') ||
-            null) as DialogueMap | null;
-        if (dialogueMap) {
-            // Store for StoryScene to consume if provided
-            this.registry.set('dialogueMap', dialogueMap);
-        }
-
-        const choiceMap = (this.cache.json.get('story-choices') ||
-            null) as ChoiceMap | null;
-        if (choiceMap) {
-            this.registry.set('choiceMap', choiceMap);
-        }
+        const dialogueMap =
+            (this.registry.get('dialogueMap') as DialogueMap | undefined) ??
+            ({} as DialogueMap);
+        const choiceMap =
+            (this.registry.get('choiceMap') as ChoiceMap | undefined) ??
+            ({} as ChoiceMap);
+        this.registry.set('dialogueMap', dialogueMap);
+        this.registry.set('choiceMap', choiceMap);
 
         // Start StoryScene; sections are defined in code, not JSON settings
         this.scene.start('StoryScene', {

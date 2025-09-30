@@ -1,21 +1,22 @@
-export type CharacterId =
-    | 'narrator'
-    | 'li_jie'
-    | 'zhao_yang'
-    | 'wang_ting'
-    | 'sun_peng'
-    | 'zhou_qian'
-    | 'wang_hao'
-    | 'shi_lei'
-    | 'liu_shufen'
-    | 'gao_zhiqiang'
-    | 'zheng_chen'
-    | 'wu_hui'
-    | 'zheng_yi'
-    | 'zheng_xiaoyue'
-    | 'qian_ming'
-    | 'lin_ya'
-    | 'ling_mo';
+export enum CharacterId {
+    Narrator = 'narrator',
+    LiJie = 'li_jie',
+    ZhaoYang = 'zhao_yang',
+    WangTing = 'wang_ting',
+    SunPeng = 'sun_peng',
+    ZhouQian = 'zhou_qian',
+    WangHao = 'wang_hao',
+    ShiLei = 'shi_lei',
+    LiuShufen = 'liu_shufen',
+    GaoZhiqiang = 'gao_zhiqiang',
+    ZhengChen = 'zheng_chen',
+    WuHui = 'wu_hui',
+    ZhengYi = 'zheng_yi',
+    ZhengXiaoyue = 'zheng_xiaoyue',
+    QianMing = 'qian_ming',
+    LinYa = 'lin_ya',
+    LingMo = 'ling_mo',
+}
 
 export interface CharacterInfo {
     id: CharacterId;
@@ -26,27 +27,91 @@ export interface CharacterInfo {
 }
 
 const characterTable: Record<CharacterId, CharacterInfo> = {
-    narrator: { id: 'narrator', name: '旁白', alias: '旁白' },
-    li_jie: { id: 'li_jie', name: '李杰', alias: '李杰' },
-    zhao_yang: { id: 'zhao_yang', name: '趙陽', alias: '大學生（男A）' },
-    wang_ting: { id: 'wang_ting', name: '王婷', alias: '大學生（女A）' },
-    sun_peng: { id: 'sun_peng', name: '孫鵬', alias: '大學生（男B）' },
-    zhou_qian: { id: 'zhou_qian', name: '周倩', alias: '大學生（女B）' },
-    wang_hao: { id: 'wang_hao', name: '王皓', alias: '眼鏡男' },
-    shi_lei: { id: 'shi_lei', name: '石磊', alias: '中年男子（慷慨大叔）' },
-    liu_shufen: { id: 'liu_shufen', name: '劉淑芬', alias: '中年夫婦（妻）' },
-    gao_zhiqiang: {
-        id: 'gao_zhiqiang',
+    [CharacterId.Narrator]: {
+        id: CharacterId.Narrator,
+        name: '旁白',
+        alias: '旁白',
+    },
+    [CharacterId.LiJie]: {
+        id: CharacterId.LiJie,
+        name: '李杰',
+        alias: '李杰',
+    },
+    [CharacterId.ZhaoYang]: {
+        id: CharacterId.ZhaoYang,
+        name: '趙陽',
+        alias: '大學生（男A）',
+    },
+    [CharacterId.WangTing]: {
+        id: CharacterId.WangTing,
+        name: '王婷',
+        alias: '大學生（女A）',
+    },
+    [CharacterId.SunPeng]: {
+        id: CharacterId.SunPeng,
+        name: '孫鵬',
+        alias: '大學生（男B）',
+    },
+    [CharacterId.ZhouQian]: {
+        id: CharacterId.ZhouQian,
+        name: '周倩',
+        alias: '大學生（女B）',
+    },
+    [CharacterId.WangHao]: {
+        id: CharacterId.WangHao,
+        name: '王皓',
+        alias: '眼鏡男',
+    },
+    [CharacterId.ShiLei]: {
+        id: CharacterId.ShiLei,
+        name: '石磊',
+        alias: '中年男子（慷慨大叔）',
+    },
+    [CharacterId.LiuShufen]: {
+        id: CharacterId.LiuShufen,
+        name: '劉淑芬',
+        alias: '中年夫婦（妻）',
+    },
+    [CharacterId.GaoZhiqiang]: {
+        id: CharacterId.GaoZhiqiang,
         name: '高志強',
         alias: '中年夫婦（夫）',
     },
-    zheng_chen: { id: 'zheng_chen', name: '鄭晨', alias: '小男孩' },
-    wu_hui: { id: 'wu_hui', name: '吳慧', alias: '母親' },
-    zheng_yi: { id: 'zheng_yi', name: '鄭毅', alias: '父親' },
-    zheng_xiaoyue: { id: 'zheng_xiaoyue', name: '鄭曉月', alias: '姐姐' },
-    qian_ming: { id: 'qian_ming', name: '錢明', alias: '中年男子（自私膽小）' },
-    lin_ya: { id: 'lin_ya', name: '林雅', alias: '少女A' },
-    ling_mo: { id: 'ling_mo', name: '凌墨', alias: '黑衣男' },
+    [CharacterId.ZhengChen]: {
+        id: CharacterId.ZhengChen,
+        name: '鄭晨',
+        alias: '小男孩',
+    },
+    [CharacterId.WuHui]: {
+        id: CharacterId.WuHui,
+        name: '吳慧',
+        alias: '母親',
+    },
+    [CharacterId.ZhengYi]: {
+        id: CharacterId.ZhengYi,
+        name: '鄭毅',
+        alias: '父親',
+    },
+    [CharacterId.ZhengXiaoyue]: {
+        id: CharacterId.ZhengXiaoyue,
+        name: '鄭曉月',
+        alias: '姐姐',
+    },
+    [CharacterId.QianMing]: {
+        id: CharacterId.QianMing,
+        name: '錢明',
+        alias: '中年男子（自私膽小）',
+    },
+    [CharacterId.LinYa]: {
+        id: CharacterId.LinYa,
+        name: '林雅',
+        alias: '少女A',
+    },
+    [CharacterId.LingMo]: {
+        id: CharacterId.LingMo,
+        name: '凌墨',
+        alias: '黑衣男',
+    },
 };
 
 // Support lookups by both real name and legacy alias

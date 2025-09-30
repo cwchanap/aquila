@@ -5,3 +5,4 @@ export { SceneDirectory } from './SceneDirectory';
 export { SceneFlow } from './SceneFlow';
 export * from './dialogue/types';
 export * from './characters/CharacterDirectory';
+export { getStoryContent } from './dialogue/stories';

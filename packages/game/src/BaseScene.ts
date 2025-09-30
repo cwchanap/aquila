@@ -303,12 +303,12 @@ export class BaseScene extends Phaser.Scene {
             this.dialogue[sceneId]?.[this.currentDialogueIndex];
         if (current) {
             if (this.characterNameText && this.textObject) {
-                const charId = current.characterId;
-                let speaker = current.character;
-                if (!speaker && charId) {
-                    const info = CharacterDirectory.getById(charId);
-                    speaker = info?.name ?? charId;
-                }
+                const character = current.characterRef;
+                const charId = character?.id ?? current.characterId;
+                const info =
+                    character?.info ??
+                    (charId ? CharacterDirectory.getById(charId) : undefined);
+                let speaker = current.character ?? info?.name ?? charId;
                 let text = current.dialogue;
                 const isMainCharacter =
                     charId === 'li_jie' ||

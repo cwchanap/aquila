@@ -1,9 +1,11 @@
+import type { Character } from '../characters/Character';
 import type { CharacterId } from '../characters/CharacterDirectory';
 import type { SceneId } from '../SceneDirectory';
 
 export type DialogueEntry = {
     character?: string;
     characterId?: CharacterId;
+    characterRef?: Character;
     dialogue: string;
 };
 

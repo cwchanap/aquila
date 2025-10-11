@@ -1,0 +1,58 @@
+{
+  "name": "Aquila Monorepo",
+  "folders": [
+    {
+      "name": "Root",
+      "path": ".",
+    },
+    {
+      "name": "Web",
+      "path": "apps/web",
+    },
+    {
+      "name": "Game",
+      "path": "packages/game",
+    },
+    {
+      "name": "Assets",
+      "path": "packages/assets",
+    },
+  ],
+  "settings": {
+    "eslint.workingDirectories": ["./", "apps/web"],
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "svelte.plugin.typescript.tsdkPath": "node_modules/typescript/lib",
+    "astro.typescript.tsdk": "node_modules/typescript/lib",
+    "files.exclude": {
+      "**/.turbo": true,
+      "**/dist": true,
+      "**/node_modules": true,
+      "**/playwright-report": true,
+      "**/test-results": true,
+    },
+    "search.exclude": {
+      "**/.turbo": true,
+      "**/dist": true,
+      "**/node_modules": true,
+      "**/playwright-report": true,
+      "**/test-results": true,
+    },
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
+    "prettier.requireConfig": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "npm.packageManager": "pnpm",
+  },
+  "extensions": {
+    "recommendations": [
+      "astro-build.astro-vscode",
+      "svelte.svelte-vscode",
+      "bradlc.vscode-tailwindcss",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-playwright.playwright",
+    ],
+  },
+}

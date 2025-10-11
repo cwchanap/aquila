@@ -1,0 +1,15 @@
+{
+  "name": "@aquila/assets",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "types": "./types.d.ts",
+  "exports": {
+    "./train_adventure/backgrounds/*": "./media/train_adventure/backgrounds/*",
+    "./train_adventure/characters/*": "./media/train_adventure/characters/*"
+  },
+  "files": [
+    "media",
+    "types.d.ts"
+  ]
+}

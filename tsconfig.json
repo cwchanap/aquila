@@ -13,6 +13,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@aquila/assets": [
+        "./packages/assets"
+      ],
+      "@aquila/assets/*": [
+        "./packages/assets/*"
       ]
     }
     // ...

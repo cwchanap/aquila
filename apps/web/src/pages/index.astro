@@ -1,3 +1,47 @@
 ---
-return Astro.redirect('/en/');
+import MainLayout from '@/layouts/main.astro';
+import MainMenu from '@/components/MainMenu.astro';
+import en from '@/translations/en.json';
+import zh from '@/translations/zh.json';
+
+const t = (key: string): string => {
+    const locale = Astro.currentLocale || 'en';
+    const keys = key.split('.');
+    let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+
+    for (const segment of keys) {
+        if (value && typeof value === 'object' && segment in value) {
+            value = value[segment] as Record<string, unknown>;
+        } else {
+            return key;
+        }
+    }
+
+    return typeof value === 'string' ? value : key;
+};
+
+// Full Astro Component Syntax:
+// https://docs.astro.build/basics/astro-components/
 ---
+
+<MainLayout title={t('menu.title')}>
+    <MainMenu />
+
+    <script>
+        // Handle language preference persistence
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.pathname === '/') {
+                const savedLanguage = localStorage.getItem('aquila:language');
+
+                if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
+                    window.location.href = '/zh';
+                    return;
+                }
+
+                if (savedLanguage === 'en' && window.location.pathname.startsWith('/zh')) {
+                    window.location.href = '/';
+                }
+            }
+        });
+    </script>
+</MainLayout>

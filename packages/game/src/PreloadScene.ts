@@ -1,4 +1,7 @@
 import Phaser from 'phaser';
+import entryBackground from '@aquila/assets/train_adventure/backgrounds/entry.png';
+import trainRideBackground from '@aquila/assets/train_adventure/backgrounds/train_ride.png';
+import stationBackground from '@aquila/assets/train_adventure/backgrounds/station.png';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
 import { getStoryContent } from './dialogue/stories';
 import { loadCheckpoint } from './CheckpointStorage';
@@ -24,9 +27,9 @@ export class PreloadScene extends Phaser.Scene {
 
     preload() {
         // Backgrounds mapped to scene IDs (built-in fallbacks for train_adventure)
-        this.load.image('bg-scene_1', '/game/entry.png');
-        this.load.image('bg-scene_2', '/game/train_ride.png');
-        this.load.image('bg-scene_3', '/game/station.png');
+        this.load.image('bg-scene_1', entryBackground);
+        this.load.image('bg-scene_2', trainRideBackground);
+        this.load.image('bg-scene_3', stationBackground);
 
         // Load dialogue/choice data from internal modules instead of network JSON
         const storyId = this.startData.storyId || 'train_adventure';

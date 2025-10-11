@@ -5,7 +5,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@aquila/game": ["../../packages/game/src/index.ts"],
-      "@aquila/game/*": ["../../packages/game/src/*"]
+      "@aquila/game/*": ["../../packages/game/src/*"],
+      "@aquila/assets": ["../../packages/assets"],
+      "@aquila/assets/*": ["../../packages/assets/*"]
     }
   },
   "include": [

@@ -10,7 +10,12 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "rootDir": "src",
-    "types": ["phaser"]
+    "types": ["phaser"],
+    "baseUrl": ".",
+    "paths": {
+      "@aquila/assets": ["../assets"],
+      "@aquila/assets/*": ["../assets/*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]

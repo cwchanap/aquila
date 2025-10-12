@@ -7,12 +7,14 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".astro/**"]
+      "outputs": ["dist/**", ".astro/**", "build/**", ".svelte-kit/**", "src-tauri/target/**"]
     },
     "lint": {
+      "dependsOn": ["^lint"],
       "outputs": []
     },
     "test": {
+      "dependsOn": ["^test"],
       "outputs": []
     }
   }

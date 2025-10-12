@@ -10,6 +10,10 @@
       "path": "apps/web",
     },
     {
+      "name": "Desktop",
+      "path": "apps/desktop",
+    },
+    {
       "name": "Game",
       "path": "packages/game",
     },
@@ -19,7 +23,7 @@
     },
   ],
   "settings": {
-    "eslint.workingDirectories": ["./", "apps/web"],
+    "eslint.workingDirectories": ["./", "apps/web", "apps/desktop"],
     "typescript.tsdk": "node_modules/typescript/lib",
     "svelte.plugin.typescript.tsdkPath": "node_modules/typescript/lib",
     "astro.typescript.tsdk": "node_modules/typescript/lib",

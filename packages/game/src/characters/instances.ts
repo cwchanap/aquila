@@ -6,20 +6,20 @@ const create = (id: CharacterId) => new Character(id);
 export const characters: Record<CharacterId, Character> = {
     [CharacterId.Narrator]: create(CharacterId.Narrator),
     [CharacterId.LiJie]: create(CharacterId.LiJie),
-    [CharacterId.ZhaoYang]: create(CharacterId.ZhaoYang),
-    [CharacterId.WangTing]: create(CharacterId.WangTing),
-    [CharacterId.SunPeng]: create(CharacterId.SunPeng),
-    [CharacterId.ZhouQian]: create(CharacterId.ZhouQian),
-    [CharacterId.WangHao]: create(CharacterId.WangHao),
-    [CharacterId.ShiLei]: create(CharacterId.ShiLei),
-    [CharacterId.LiuShufen]: create(CharacterId.LiuShufen),
-    [CharacterId.GaoZhiqiang]: create(CharacterId.GaoZhiqiang),
-    [CharacterId.ZhengChen]: create(CharacterId.ZhengChen),
-    [CharacterId.WuHui]: create(CharacterId.WuHui),
-    [CharacterId.ZhengYi]: create(CharacterId.ZhengYi),
-    [CharacterId.ZhengXiaoyue]: create(CharacterId.ZhengXiaoyue),
-    [CharacterId.QianMing]: create(CharacterId.QianMing),
-    [CharacterId.LinYa]: create(CharacterId.LinYa),
+    [CharacterId.TanakaKenta]: create(CharacterId.TanakaKenta),
+    [CharacterId.SuzukiAsuka]: create(CharacterId.SuzukiAsuka),
+    [CharacterId.SatoTakumi]: create(CharacterId.SatoTakumi),
+    [CharacterId.TakahashiMisaki]: create(CharacterId.TakahashiMisaki),
+    [CharacterId.SaitoRen]: create(CharacterId.SaitoRen),
+    [CharacterId.YamamotoKoji]: create(CharacterId.YamamotoKoji),
+    [CharacterId.ItoNana]: create(CharacterId.ItoNana),
+    [CharacterId.ItoMakoto]: create(CharacterId.ItoMakoto),
+    [CharacterId.KobayashiShota]: create(CharacterId.KobayashiShota),
+    [CharacterId.KobayashiTomoko]: create(CharacterId.KobayashiTomoko),
+    [CharacterId.KobayashiYudai]: create(CharacterId.KobayashiYudai),
+    [CharacterId.KobayashiHina]: create(CharacterId.KobayashiHina),
+    [CharacterId.NakamuraHayato]: create(CharacterId.NakamuraHayato),
+    [CharacterId.ShimizuEmi]: create(CharacterId.ShimizuEmi),
     [CharacterId.LingMo]: create(CharacterId.LingMo),
 };
 
@@ -27,20 +27,20 @@ export type CharacterMap = typeof characters;
 
 export const narrator = characters[CharacterId.Narrator];
 export const liJie = characters[CharacterId.LiJie];
-export const zhaoYang = characters[CharacterId.ZhaoYang];
-export const wangTing = characters[CharacterId.WangTing];
-export const sunPeng = characters[CharacterId.SunPeng];
-export const zhouQian = characters[CharacterId.ZhouQian];
-export const wangHao = characters[CharacterId.WangHao];
-export const shiLei = characters[CharacterId.ShiLei];
-export const liuShufen = characters[CharacterId.LiuShufen];
-export const gaoZhiqiang = characters[CharacterId.GaoZhiqiang];
-export const zhengChen = characters[CharacterId.ZhengChen];
-export const wuHui = characters[CharacterId.WuHui];
-export const zhengYi = characters[CharacterId.ZhengYi];
-export const zhengXiaoyue = characters[CharacterId.ZhengXiaoyue];
-export const qianMing = characters[CharacterId.QianMing];
-export const linYa = characters[CharacterId.LinYa];
+export const tanakaKenta = characters[CharacterId.TanakaKenta];
+export const suzukiAsuka = characters[CharacterId.SuzukiAsuka];
+export const satoTakumi = characters[CharacterId.SatoTakumi];
+export const takahashiMisaki = characters[CharacterId.TakahashiMisaki];
+export const saitoRen = characters[CharacterId.SaitoRen];
+export const yamamotoKoji = characters[CharacterId.YamamotoKoji];
+export const itoNana = characters[CharacterId.ItoNana];
+export const itoMakoto = characters[CharacterId.ItoMakoto];
+export const kobayashiShota = characters[CharacterId.KobayashiShota];
+export const kobayashiTomoko = characters[CharacterId.KobayashiTomoko];
+export const kobayashiYudai = characters[CharacterId.KobayashiYudai];
+export const kobayashiHina = characters[CharacterId.KobayashiHina];
+export const nakamuraHayato = characters[CharacterId.NakamuraHayato];
+export const shimizuEmi = characters[CharacterId.ShimizuEmi];
 export const lingMo = characters[CharacterId.LingMo];
 
 export function getCharacter(id: CharacterId) {

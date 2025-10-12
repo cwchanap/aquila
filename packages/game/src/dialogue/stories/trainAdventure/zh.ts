@@ -2,17 +2,17 @@ import type { ChoiceMap, DialogueMap } from '../../types';
 import {
     narrator,
     liJie,
-    zhaoYang,
-    wangTing,
-    sunPeng,
-    wangHao,
-    shiLei,
-    liuShufen,
-    gaoZhiqiang,
-    zhengChen,
-    wuHui,
-    qianMing,
-    linYa,
+    tanakaKenta,
+    suzukiAsuka,
+    satoTakumi,
+    saitoRen,
+    yamamotoKoji,
+    itoNana,
+    itoMakoto,
+    kobayashiShota,
+    kobayashiTomoko,
+    nakamuraHayato,
+    shimizuEmi,
 } from '../../../characters/instances';
 
 export const trainAdventureZhDialogue: DialogueMap = {
@@ -35,19 +35,19 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `喂！你們說，剛剛那家店的酒也太遜了吧！下次絕對不去了！`,
-            characterRef: zhaoYang,
+            characterRef: tanakaKenta,
         },
         {
             dialogue: `就是說啊！而且還那麼貴！還不如我們在便利商店買的罐裝酒好喝！`,
-            characterRef: wangTing,
+            characterRef: suzukiAsuka,
         },
         {
             dialogue: `下次去我推薦的那家啦！保證氣氛超讚！`,
-            characterRef: sunPeng,
+            characterRef: satoTakumi,
         },
         {
             dialogue: `（清了清喉嚨，刻意地靠近大學生們，用自以為帥氣的語氣插話）各位，聽你們的對話，就知道你們還很年輕。真正的好地方，可不是隨便能在網上找到的。下次有機會，我可以帶你們去一家行家才知道的店。`,
-            characterRef: wangHao,
+            characterRef: saitoRen,
         },
         {
             dialogue: `幾個大學生面面相覷，只是禮貌性地點了點頭，便又自顧自地聊起來。眼鏡男有些尷尬地站在一旁，假裝在看手機。`,
@@ -141,19 +141,19 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `不是吧？我的手機完全沒訊號！連圈外都不是，是「沒有服務」耶！這底下是多深啊？`,
-            characterRef: wangTing,
+            characterRef: suzukiAsuka,
         },
         {
             dialogue: `我的也是，什麼都傳不出去。喂，這隧道也太長了吧？以前有這麼長嗎？我怎麼一點印象都沒有？`,
-            characterRef: zhaoYang,
+            characterRef: tanakaKenta,
         },
         {
             dialogue: `（故作鎮定地推了推眼鏡）這是常識。隧道結構會影響信號傳播，加上深夜線路維護，為了避開施工區域而繞道，延遲個二十分鐘是很正常的，不用大驚小怪。`,
-            characterRef: wangHao,
+            characterRef: saitoRen,
         },
         {
             dialogue: `（沉穩地開口）小兄弟，話不是這麼說。我坐這條線三十年了，從來沒有在隧道裡待超過十分鐘的。這情況不對勁。`,
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
         },
         {
             dialogue: `這位大叔的話像一顆石子投入水中，讓原本還抱有僥倖心理的乘客們，臉上最後一絲輕鬆也消失了。`,
@@ -161,19 +161,19 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `（語氣焦急）老公，我有點不安...你不是說這條路你很熟嗎？這是怎麼回事？`,
-            characterRef: liuShufen,
+            characterRef: itoNana,
         },
         {
             dialogue: `（煩躁地）我怎麼會知道！我又不是司機！妳問我有什麼用！`,
-            characterRef: gaoZhiqiang,
+            characterRef: itoMakoto,
         },
         {
             dialogue: `媽媽，我怕黑...我們什麼時候才能出去？`,
-            characterRef: zhengChen,
+            characterRef: kobayashiShota,
         },
         {
             dialogue: `（緊緊抱住孩子，安撫地）快了快了，寶寶乖，你看，姐姐都沒怕。別看窗外了，我們看手機裡的卡通好不好？啊...手機也...`,
-            characterRef: wuHui,
+            characterRef: kobayashiTomoko,
         },
         {
             dialogue: `那位母親想打開手機影片，卻發現同樣沒有網路。`,
@@ -197,11 +197,11 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `喂！肯定出事了！是不是該去按那個緊急通話鈕啊！不然我們就在這裡困到天亮嗎？`,
-            characterRef: qianMing,
+            characterRef: nakamuraHayato,
         },
         {
             dialogue: `你冷靜點！現在列車還在平穩運行，亂按鈕萬一導致緊急停車，卡在隧道中間那才叫危險！`,
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
         },
         {
             dialogue: `就在兩人快要爭吵起來，車廂內的氣氛越來越凝重時，列車前方，黑暗的盡頭，終於滲出了一絲光亮。`,
@@ -209,7 +209,7 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `啊！有光了！終於要出去了！`,
-            characterRef: sunPeng,
+            characterRef: satoTakumi,
         },
         {
             dialogue: `這一聲喜悅的呼喊像救贖一樣，讓所有人都停止了爭論，不約而同地將目光投向那片越來越大的光芒，每個人的臉上都寫滿了劫後餘生般的期待。`,
@@ -239,19 +239,19 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `（聲音顫抖）這...這裡是哪裡？新宿...不是在內陸嗎？這片海...是怎麼回事？`,
-            characterRef: wangTing,
+            characterRef: suzukiAsuka,
         },
         {
             dialogue: `（貼在窗戶上，臉色發白）這不是東京...絕對不是！你們看天上的月亮！有兩個！`,
-            characterRef: zhaoYang,
+            characterRef: tanakaKenta,
         },
         {
             dialogue: `（結結巴巴地）一...定是某種宣傳活動...對，是利用大氣反射原理製造的海市蜃樓...一定是這樣！`,
-            characterRef: wangHao,
+            characterRef: saitoRen,
         },
         {
             dialogue: `（對著眼鏡男怒吼）你還在胡說八道什麼！你家投影能連空氣的味道都改變嗎！快報警啊！誰的手機有訊號？！`,
-            characterRef: gaoZhiqiang,
+            characterRef: itoMakoto,
         },
         {
             dialogue: `「失聯」這兩個字像一把重錘，敲碎了所有人最後的僥倖。恐慌與絕望的情緒徹底爆發，尖叫聲、哭泣聲、祈禱聲在車廂內交織成一片混亂的交響樂。`,
@@ -271,7 +271,7 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `前面有車站！大家看！有車站！`,
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
         },
         {
             dialogue: `這句話讓混亂的車廂暫時安靜下來。列車緩緩駛入，最終完美地停靠在月台旁。月台上，一塊被海風嚴重侵蝕的站牌上，用一種他們從未見過的古老字體寫著兩個字——「寂海」。`,
@@ -333,7 +333,7 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `（急忙起身，攔在李杰面前）小兄弟，別衝動啊！外面什麼情況都不知道，萬一有危險怎麼辦？還是等列車長...`,
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
         },
         {
             dialogue: `等不了了，大叔。你看不到嗎？這不是我們熟悉的世界，不可能有列車長。`,
@@ -341,11 +341,11 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `（推了推眼鏡，語帶嘲諷）喂喂，這位老兄，你想當英雄也要看場合啊。別以為自己有多勇敢，搞不好外面有什麼怪物，第一個被吃掉的就是你！`,
-            characterRef: wangHao,
+            characterRef: saitoRen,
         },
         {
             dialogue: `（躲在座位後面，小聲嘀咕）就是啊...亂跑什麼...萬一把什麼東西引進來了怎麼辦...`,
-            characterRef: qianMing,
+            characterRef: nakamuraHayato,
         },
         {
             dialogue: `在慷慨大叔的勸阻和眼鏡男的嘲諷聲中，車廂內的其他人只是呆滯地看著李杰，眼中充滿了難以置信和更深的恐懼。他們害怕這個選擇，卻也渴望有人能帶領他們。`,
@@ -401,7 +401,7 @@ export const trainAdventureZhDialogue: DialogueMap = {
         },
         {
             dialogue: `（聲音細若蚊蚋，帶著哭腔，幾乎聽不清）那個...我可以...跟著你嗎...?`,
-            characterRef: linYa,
+            characterRef: shimizuEmi,
         },
     ],
     scene_4b: [],

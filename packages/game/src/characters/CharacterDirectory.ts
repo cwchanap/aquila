@@ -1,20 +1,20 @@
 export enum CharacterId {
     Narrator = 'narrator',
     LiJie = 'li_jie',
-    ZhaoYang = 'zhao_yang',
-    WangTing = 'wang_ting',
-    SunPeng = 'sun_peng',
-    ZhouQian = 'zhou_qian',
-    WangHao = 'wang_hao',
-    ShiLei = 'shi_lei',
-    LiuShufen = 'liu_shufen',
-    GaoZhiqiang = 'gao_zhiqiang',
-    ZhengChen = 'zheng_chen',
-    WuHui = 'wu_hui',
-    ZhengYi = 'zheng_yi',
-    ZhengXiaoyue = 'zheng_xiaoyue',
-    QianMing = 'qian_ming',
-    LinYa = 'lin_ya',
+    TanakaKenta = 'tanaka_kenta',
+    SuzukiAsuka = 'suzuki_asuka',
+    SatoTakumi = 'sato_takumi',
+    TakahashiMisaki = 'takahashi_misaki',
+    SaitoRen = 'saito_ren',
+    YamamotoKoji = 'yamamoto_koji',
+    ItoNana = 'ito_nana',
+    ItoMakoto = 'ito_makoto',
+    KobayashiShota = 'kobayashi_shota',
+    KobayashiTomoko = 'kobayashi_tomoko',
+    KobayashiYudai = 'kobayashi_yudai',
+    KobayashiHina = 'kobayashi_hina',
+    NakamuraHayato = 'nakamura_hayato',
+    ShimizuEmi = 'shimizu_emi',
     LingMo = 'ling_mo',
 }
 
@@ -35,82 +35,82 @@ const characterTable: Record<CharacterId, CharacterInfo> = {
     [CharacterId.LiJie]: {
         id: CharacterId.LiJie,
         name: '李杰',
-        alias: '李杰',
+        alias: '男主角',
     },
-    [CharacterId.ZhaoYang]: {
-        id: CharacterId.ZhaoYang,
-        name: '趙陽',
-        alias: '大學生（男A）',
+    [CharacterId.TanakaKenta]: {
+        id: CharacterId.TanakaKenta,
+        name: '田中健太',
+        alias: '健談男大生',
     },
-    [CharacterId.WangTing]: {
-        id: CharacterId.WangTing,
-        name: '王婷',
-        alias: '大學生（女A）',
+    [CharacterId.SuzukiAsuka]: {
+        id: CharacterId.SuzukiAsuka,
+        name: '鈴木明日香',
+        alias: '活潑女大生',
     },
-    [CharacterId.SunPeng]: {
-        id: CharacterId.SunPeng,
-        name: '孫鵬',
-        alias: '大學生（男B）',
+    [CharacterId.SatoTakumi]: {
+        id: CharacterId.SatoTakumi,
+        name: '佐藤拓海',
+        alias: '沉穩男大生',
     },
-    [CharacterId.ZhouQian]: {
-        id: CharacterId.ZhouQian,
-        name: '周倩',
-        alias: '大學生（女B）',
+    [CharacterId.TakahashiMisaki]: {
+        id: CharacterId.TakahashiMisaki,
+        name: '高橋美咲',
+        alias: '多話女大生',
     },
-    [CharacterId.WangHao]: {
-        id: CharacterId.WangHao,
-        name: '王皓',
-        alias: '眼鏡男',
+    [CharacterId.SaitoRen]: {
+        id: CharacterId.SaitoRen,
+        name: '斎藤蓮',
+        alias: '膽小眼鏡男',
     },
-    [CharacterId.ShiLei]: {
-        id: CharacterId.ShiLei,
-        name: '石磊',
-        alias: '中年男子（慷慨大叔）',
+    [CharacterId.YamamotoKoji]: {
+        id: CharacterId.YamamotoKoji,
+        name: '山本浩二',
+        alias: '慷慨大叔',
     },
-    [CharacterId.LiuShufen]: {
-        id: CharacterId.LiuShufen,
-        name: '劉淑芬',
-        alias: '中年夫婦（妻）',
+    [CharacterId.ItoNana]: {
+        id: CharacterId.ItoNana,
+        name: '伊藤奈々',
+        alias: '焦慮妻子',
     },
-    [CharacterId.GaoZhiqiang]: {
-        id: CharacterId.GaoZhiqiang,
-        name: '高志強',
-        alias: '中年夫婦（夫）',
+    [CharacterId.ItoMakoto]: {
+        id: CharacterId.ItoMakoto,
+        name: '伊藤誠',
+        alias: '煩躁丈夫',
     },
-    [CharacterId.ZhengChen]: {
-        id: CharacterId.ZhengChen,
-        name: '鄭晨',
-        alias: '小男孩',
+    [CharacterId.KobayashiShota]: {
+        id: CharacterId.KobayashiShota,
+        name: '小林翔太',
+        alias: '天真弟弟',
     },
-    [CharacterId.WuHui]: {
-        id: CharacterId.WuHui,
-        name: '吳慧',
-        alias: '母親',
+    [CharacterId.KobayashiTomoko]: {
+        id: CharacterId.KobayashiTomoko,
+        name: '小林智子',
+        alias: '溫柔母親',
     },
-    [CharacterId.ZhengYi]: {
-        id: CharacterId.ZhengYi,
-        name: '鄭毅',
-        alias: '父親',
+    [CharacterId.KobayashiYudai]: {
+        id: CharacterId.KobayashiYudai,
+        name: '小林雄大',
+        alias: '沉穩父親',
     },
-    [CharacterId.ZhengXiaoyue]: {
-        id: CharacterId.ZhengXiaoyue,
-        name: '鄭曉月',
-        alias: '姐姐',
+    [CharacterId.KobayashiHina]: {
+        id: CharacterId.KobayashiHina,
+        name: '小林陽菜',
+        alias: '懂事姐姐',
     },
-    [CharacterId.QianMing]: {
-        id: CharacterId.QianMing,
-        name: '錢明',
-        alias: '中年男子（自私膽小）',
+    [CharacterId.NakamuraHayato]: {
+        id: CharacterId.NakamuraHayato,
+        name: '中村隼人',
+        alias: '自私中年男',
     },
-    [CharacterId.LinYa]: {
-        id: CharacterId.LinYa,
-        name: '林雅',
-        alias: '少女A',
+    [CharacterId.ShimizuEmi]: {
+        id: CharacterId.ShimizuEmi,
+        name: '清水恵美',
+        alias: '文靜少女',
     },
     [CharacterId.LingMo]: {
         id: CharacterId.LingMo,
         name: '凌墨',
-        alias: '黑衣男',
+        alias: '神秘黑衣男',
     },
 };
 

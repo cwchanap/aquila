@@ -2,17 +2,17 @@ import type { ChoiceMap, DialogueMap } from '../../types';
 import {
     narrator,
     liJie,
-    zhaoYang,
-    wangTing,
-    sunPeng,
-    wangHao,
-    shiLei,
-    liuShufen,
-    gaoZhiqiang,
-    zhengChen,
-    wuHui,
-    qianMing,
-    linYa,
+    tanakaKenta,
+    suzukiAsuka,
+    satoTakumi,
+    saitoRen,
+    yamamotoKoji,
+    itoNana,
+    itoMakoto,
+    kobayashiShota,
+    kobayashiTomoko,
+    nakamuraHayato,
+    shimizuEmi,
 } from '../../../characters/instances';
 
 export const trainAdventureEnDialogue: DialogueMap = {
@@ -38,22 +38,22 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 'Not far away, a group of energetic college students are laughing loudly—the brightest splash of color on the platform.',
         },
         {
-            characterRef: zhaoYang,
+            characterRef: tanakaKenta,
             dialogue:
                 "Hey! That bar we just hit was pathetic! I'm never going back!",
         },
         {
-            characterRef: wangTing,
+            characterRef: suzukiAsuka,
             dialogue:
                 'Right? And for that price? Convenience-store canned cocktails taste better!',
         },
         {
-            characterRef: sunPeng,
+            characterRef: satoTakumi,
             dialogue:
                 "Next time let's go to my spot. I swear the vibe is unmatched!",
         },
         {
-            characterRef: wangHao,
+            characterRef: saitoRen,
             dialogue:
                 "(clearing his throat and leaning in with what he thinks is suave confidence) From the sound of it, you're all still pretty young. The true hidden gems aren't on any website. Next time, let me show you a place only insiders know.",
         },
@@ -168,22 +168,22 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 'Right then, the quiet at the far end of the car shatters.',
         },
         {
-            characterRef: wangTing,
+            characterRef: suzukiAsuka,
             dialogue:
                 "No way, I've got zero signal! Not even one bar—it says 'No Service'! How deep underground are we?",
         },
         {
-            characterRef: zhaoYang,
+            characterRef: tanakaKenta,
             dialogue:
                 "Same! Nothing's sending. Has this tunnel always been this long? I don't remember it at all.",
         },
         {
-            characterRef: wangHao,
+            characterRef: saitoRen,
             dialogue:
                 "(pushing up his glasses with forced calm) It's basic physics. Tunnel structure blocks signals. Plus it's late, so they probably rerouted us around maintenance. A twenty-minute delay is perfectly normal. No need to freak out.",
         },
         {
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
             dialogue:
                 "(steady voice) Hold on. I've ridden this line for thirty years and never spent more than ten minutes in this tunnel. Something's off.",
         },
@@ -193,21 +193,21 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 "His words drop like a stone in water, wiping the last traces of optimism from the passengers' faces.",
         },
         {
-            characterRef: liuShufen,
+            characterRef: itoNana,
             dialogue:
                 "(anxious) Honey, I'm getting nervous... You said you knew this route. What's happening?",
         },
         {
-            characterRef: gaoZhiqiang,
+            characterRef: itoMakoto,
             dialogue:
                 "(irritated) How should I know? I'm not the driver! Asking me won't help!",
         },
         {
-            characterRef: zhengChen,
+            characterRef: kobayashiShota,
             dialogue: "Mom, I'm scared of the dark... When are we getting out?",
         },
         {
-            characterRef: wuHui,
+            characterRef: kobayashiTomoko,
             dialogue:
                 "(hugging him tight) Soon, sweetheart. Look, that big sister isn't scared at all. Don't stare outside—let's watch cartoons on Mommy's phone, okay? Oh... the phone too...",
         },
@@ -237,12 +237,12 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 "(inner monologue) Still drawing? And that pattern... what is it? It's like she doesn't belong here at all.",
         },
         {
-            characterRef: qianMing,
+            characterRef: nakamuraHayato,
             dialogue:
                 "Hey! Something's definitely wrong! Shouldn't we hit the emergency call button? Or are we waiting here till sunrise?",
         },
         {
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
             dialogue:
                 "Calm down! The train's still running smooth. If you force an emergency stop in the middle of the tunnel, that's when we're actually in danger!",
         },
@@ -252,7 +252,7 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 'Just as the argument is about to explode and the tension peaks, a faint glow spills into the tunnel ahead.',
         },
         {
-            characterRef: sunPeng,
+            characterRef: satoTakumi,
             dialogue: "Look! Light! We're finally getting out!",
         },
         {
@@ -287,22 +287,22 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 'To the left, a forest so dark it swallows every glint of light. Each tree towers unnaturally tall, canopies so dense not even moonlight could slip through. The woods are utterly still. To the right, a black sea stretches to the horizon, its surface flat as obsidian. Overhead hang two ragged purple moons, casting alien constellations across the sky.',
         },
         {
-            characterRef: wangTing,
+            characterRef: suzukiAsuka,
             dialogue:
                 "(voice trembling) Where... where are we? Shinjuku isn't coastal! Why is there an ocean?",
         },
         {
-            characterRef: zhaoYang,
+            characterRef: tanakaKenta,
             dialogue:
                 "(pressed to the window, face drained) This isn't Tokyo... no way! Look at the sky—there are two moons!",
         },
         {
-            characterRef: wangHao,
+            characterRef: saitoRen,
             dialogue:
                 '(stammering) It... it has to be some big promo event... Yeah, using atmospheric reflection to project a mirage... That must be it!',
         },
         {
-            characterRef: gaoZhiqiang,
+            characterRef: itoMakoto,
             dialogue:
                 '(shouting at Wang Hao) Are you still spouting nonsense? Does your fancy projection change the smell of the air too? Call the police! Does anyone have a signal?!',
         },
@@ -327,7 +327,7 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 "Just as the panic peaks, the train's speed eases with uncanny smoothness. On the shoreline ahead, a solitary station emerges.",
         },
         {
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
             dialogue: "There's a station up ahead! Everyone, look! A station!",
         },
         {
@@ -402,7 +402,7 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 "(raising his voice, trying to stay calm) I'm getting off. Staying here won't help anyone.",
         },
         {
-            characterRef: shiLei,
+            characterRef: yamamotoKoji,
             dialogue:
                 "(jumping up to block him) Hold on, kid! We have no idea what's out there. What if it's dangerous? Let's wait for the conductor—",
         },
@@ -412,12 +412,12 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 "We can't wait, Uncle. Can't you see? This isn't our world anymore. There won't be a conductor.",
         },
         {
-            characterRef: wangHao,
+            characterRef: saitoRen,
             dialogue:
                 "(pushing up his frames with a mocking tone) Hey, hero, pick your moment. Don't think you're brave—if there's a monster out there, you'll be the first one it eats.",
         },
         {
-            characterRef: qianMing,
+            characterRef: nakamuraHayato,
             dialogue:
                 '(muttering from behind a seat) Yeah... running around will just drag something back in here...',
         },
@@ -485,7 +485,7 @@ export const trainAdventureEnDialogue: DialogueMap = {
                 'He whipped around to find Girl A standing at the doorway. Her face was drained of color, her body trembling, fingers clenched tight around her skirt. Tears shimmered in her eyes as she stepped cautiously onto the platform.',
         },
         {
-            characterRef: linYa,
+            characterRef: shimizuEmi,
             dialogue:
                 '(voice barely above a whisper, threaded with tears) Um... may I... go with you?',
         },

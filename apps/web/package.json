@@ -15,6 +15,11 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
+    "test:e2e": "playwright test",
+    "test:ui:e2e": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
     "db:migrate": "tsx src/lib/migrate.ts",
     "db:migrate:down": "tsx -e \"import('./src/lib/migrate.ts').then(m => m.migrateDown())\"",
     "db:migrate:local": "TURSO_DATABASE_URL=http://127.0.0.1:5091 tsx src/lib/migrate.ts",
@@ -52,6 +57,7 @@
     "typescript": "^5.9.2",
     "tsx": "^4.20.5",
     "tw-animate-css": "^1.3.7",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@playwright/test": "^1.55.0"
   }
 }

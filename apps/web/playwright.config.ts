@@ -4,9 +4,15 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-    testDir: './apps/web/tests',
+    testDir: './tests',
     /* Global setup file */
-    globalSetup: './apps/web/tests/global-setup.ts',
+    globalSetup: './tests/global-setup.ts',
+    webServer: {
+        command: 'pnpm run dev',
+        url: 'http://localhost:5090',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+    },
     /* Run tests in files in parallel */
     fullyParallel: true,
     /* Fail the build on CI if you accidentally left test.only in the source code. */

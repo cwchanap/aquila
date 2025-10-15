@@ -25,7 +25,10 @@
     "db:migrate:local": "TURSO_DATABASE_URL=http://127.0.0.1:5091 tsx src/lib/migrate.ts",
     "db:test": "TURSO_DATABASE_URL=http://127.0.0.1:5091 tsx src/lib/db-test.ts",
     "db:setup": "pnpm db:migrate:local && pnpm db:test",
-    "db:verify": "bash ../../scripts/verify-db.sh"
+    "db:verify": "bash ../../scripts/verify-db.sh",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@aquila/game": "workspace:*",
@@ -42,8 +45,12 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
+    "drizzle-orm": "^0.33.0",
     "kysely": "^0.28.5",
+    "postgres": "^3.4.4",
     "lucide-react": "^0.541.0",
+    "lucide-svelte": "^0.468.0",
+    "nanoid": "^5.0.9",
     "phaser": "^3.90.0",
     "svelte": "^5.38.2",
     "tailwind-merge": "^3.3.1",
@@ -53,6 +60,7 @@
     "@types/bcryptjs": "^3.0.0",
     "@types/canvas-confetti": "^1.9.0",
     "@vitest/ui": "^3.2.4",
+    "drizzle-kit": "^0.24.0",
     "jsdom": "^26.1.0",
     "typescript": "^5.9.2",
     "tsx": "^4.20.5",

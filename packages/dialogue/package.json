@@ -1,0 +1,24 @@
+{
+    "name": "@aquila/dialogue",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts",
+        "./characters": "./src/characters/index.ts",
+        "./types": "./src/types.ts",
+        "./stories": "./src/stories/index.ts"
+    },
+    "scripts": {
+        "dev": "tsc --watch",
+        "build": "tsc",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint .",
+        "test": "echo 'No tests yet for @aquila/dialogue' && exit 0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.3.3"
+    }
+}

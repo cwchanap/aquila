@@ -3,7 +3,7 @@ import entryBackground from '@aquila/assets/train_adventure/backgrounds/entry.pn
 import trainRideBackground from '@aquila/assets/train_adventure/backgrounds/train_ride.png';
 import stationBackground from '@aquila/assets/train_adventure/backgrounds/station.png';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
-import { getStoryContent } from './dialogue/stories';
+import { getStoryContent } from '@aquila/dialogue';
 import { loadCheckpoint } from './CheckpointStorage';
 
 export class PreloadScene extends Phaser.Scene {

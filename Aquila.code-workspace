@@ -18,12 +18,16 @@
       "path": "packages/game",
     },
     {
+      "name": "Dialogue",
+      "path": "packages/dialogue",
+    },
+    {
       "name": "Assets",
       "path": "packages/assets",
     },
   ],
   "settings": {
-    "eslint.workingDirectories": ["./", "apps/web", "apps/desktop"],
+    "eslint.workingDirectories": ["./", "apps/web", "apps/desktop", "packages/dialogue"],
     "typescript.tsdk": "node_modules/typescript/lib",
     "svelte.plugin.typescript.tsdkPath": "node_modules/typescript/lib",
     "astro.typescript.tsdk": "node_modules/typescript/lib",

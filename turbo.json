@@ -7,7 +7,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".astro/**", "build/**", ".svelte-kit/**", "src-tauri/target/**"]
+      "outputs": ["dist/**", ".astro/**", "build/**", ".svelte-kit/**", "src-tauri/target/**", ".tsbuildinfo"]
     },
     "lint": {
       "dependsOn": ["^lint"],

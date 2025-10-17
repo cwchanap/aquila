@@ -12,7 +12,12 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "test": "echo 'No tests yet for @aquila/game' && exit 0"
+  },
+  "dependencies": {
+    "@aquila/dialogue": "workspace:*"
   },
   "peerDependencies": {
     "phaser": "^3.90.0"

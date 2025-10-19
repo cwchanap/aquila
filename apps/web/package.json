@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev --port 5090",
+    "dev:db": "turso dev --db-file ../../db/dev.db --port 5091",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

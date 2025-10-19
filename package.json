@@ -5,9 +5,8 @@
   "version": "0.0.1",
   "packageManager": "pnpm@10.8.0",
   "scripts": {
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev web#dev:db",
     "dev:web": "pnpm --filter web dev",
-    "dev:db": "turso dev --db-file ./db/dev.db --port 5091",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",

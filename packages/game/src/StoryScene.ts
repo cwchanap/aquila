@@ -56,6 +56,8 @@ export class StoryScene extends BaseScene {
         const initialScene =
             this.flow.getCurrentSceneId() ?? SceneDirectory.defaultStart;
         this.setSection(initialScene);
+        // Autosave initial scene
+        this.persistCheckpoint();
         // Fade in at start for polish
         this.cameras.main.fadeIn(350, 0, 0, 0);
 
@@ -241,6 +243,8 @@ export class StoryScene extends BaseScene {
         this.cameras.main.fadeOut(350, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.setSection(sceneId);
+            // Autosave when entering new scene
+            this.persistCheckpoint();
             this.cameras.main.fadeIn(350, 0, 0, 0);
             this.fadeAmbientTo(0.004, 350);
             this.transitioning = false;
@@ -362,6 +366,7 @@ export class StoryScene extends BaseScene {
         }
         const resolution = this.flow.selectChoice(optionId);
         if (resolution.type === 'scene') {
+            // Note: autosave will happen in transitionToScene
             this.transitionToScene(resolution.sceneId);
         } else {
             this.persistCheckpoint(true);

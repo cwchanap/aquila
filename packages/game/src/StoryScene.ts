@@ -467,23 +467,22 @@ export class StoryScene extends BaseScene {
                 handler: () => this.closeMenu(),
             },
             {
-                label: locale === 'zh' ? '個人檔案' : 'Profile',
-                handler: () => {
-                    window.location.href = `/${locale}/profile`;
-                },
-            },
-            {
                 label: locale === 'zh' ? '返回首頁' : 'Return Home',
                 handler: () => {
-                    window.location.href = `/${locale}/`;
+                    // Check if we're in a localized route context (web app) or not (desktop app)
+                    const isLocalizedRoute =
+                        window.location.pathname.startsWith(`/${locale}/`);
+                    window.location.href = isLocalizedRoute
+                        ? `/${locale}/`
+                        : '/';
                 },
             },
         ];
 
         const panelTop = panelY - panelHeight / 2;
         const panelBottom = panelY + panelHeight / 2;
-        const buttonTopMargin = 120;
-        const buttonBottomMargin = 80;
+        const buttonTopMargin = 140;
+        const buttonBottomMargin = 100;
         const buttonCount = buttonDefs.length;
         const buttonAreaHeight = Math.max(
             0,

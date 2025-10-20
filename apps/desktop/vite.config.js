@@ -7,7 +7,6 @@ import { defineConfig } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
@@ -40,5 +39,12 @@ export default defineConfig(async () => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ['**/src-tauri/**'],
     },
+    // 4. Configure middleware to handle SPA routing
+    proxy: {},
+  },
+  // Preview server configuration for SPA mode
+  preview: {
+    port: 1420,
+    strictPort: true,
   },
 }));

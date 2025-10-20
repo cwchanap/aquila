@@ -106,9 +106,7 @@ export class BaseScene extends Phaser.Scene {
 
     create() {
         // Initialize runtime context from registry
-        const regName = this.registry.get('playerName');
         const regLocale = this.registry.get('locale');
-        if (typeof regName === 'string') this.playerName = regName;
         if (typeof regLocale === 'string') this.locale = regLocale;
 
         // Build scene layout (background + dialogue UI)
@@ -212,7 +210,7 @@ export class BaseScene extends Phaser.Scene {
         const height = this.scale.height;
         const boxHeight = 180; // Increased height for better visibility
         const padding = 24;
-        const bottomMargin = Math.max(160, height * 0.2);
+        const bottomMargin = 20; // Minimal margin to align dialogue box to bottom
 
         // Clear existing UI elements if they exist
         if (this.dialogueBox) this.dialogueBox.destroy();
@@ -234,7 +232,7 @@ export class BaseScene extends Phaser.Scene {
                 .setDepth(-10);
         }
 
-        // dialogue box at bottom with more margin from screen edge
+        // dialogue box aligned to bottom
         const boxY = height - boxHeight / 2 - bottomMargin;
         this.dialogueBox = this.add
             .rectangle(width / 2, boxY, width, boxHeight, 0x000000, 0.8)
@@ -254,12 +252,13 @@ export class BaseScene extends Phaser.Scene {
             fixedWidth: width - padding * 2,
         });
 
-        // hint text positioned relative to dialogue box (localized)
+        // hint text positioned at bottom-right corner of dialogue box (localized)
         const hint = this.locale.startsWith('zh')
             ? 'Enter 繼續 · Backspace 返回'
             : 'Enter: Next · Backspace: Back';
+        const hintY = height - bottomMargin - padding;
         this.hintText = this.add
-            .text(width - padding, height - bottomMargin * 0.3, hint, {
+            .text(width - padding, hintY, hint, {
                 fontSize: '14px',
                 color: '#dddddd',
             })
@@ -309,36 +308,13 @@ export class BaseScene extends Phaser.Scene {
                     character?.info ??
                     (charId ? CharacterDirectory.getById(charId) : undefined);
                 let speaker = current.character ?? info?.name ?? charId;
-                let text = current.dialogue;
-                const isMainCharacter =
-                    charId === 'li_jie' ||
-                    speaker === 'MainCharacter' ||
-                    speaker === '李杰' ||
-                    speaker === 'Li Jie';
-                if (
-                    isMainCharacter &&
-                    typeof this.playerName === 'string' &&
-                    this.playerName.length
-                ) {
-                    speaker = this.playerName;
-                } else if (speaker === 'MainCharacter') {
-                    speaker = this.locale.startsWith('zh')
-                        ? '主角'
-                        : 'Main Character';
+                const text = current.dialogue;
+
+                // Use default protagonist name based on locale
+                if (speaker === 'MainCharacter') {
+                    speaker = this.locale.startsWith('zh') ? '李杰' : 'Li Jie';
                 }
-                if (this.playerName) {
-                    if (
-                        this.locale.startsWith('zh') &&
-                        this.playerName !== '李杰'
-                    ) {
-                        text = text.replaceAll('李杰', this.playerName);
-                    } else if (
-                        !this.locale.startsWith('zh') &&
-                        this.playerName !== 'Li Jie'
-                    ) {
-                        text = text.replaceAll('Li Jie', this.playerName);
-                    }
-                }
+
                 this.characterNameText.setText(speaker ?? '');
                 this.textObject.setText(text);
             } else {

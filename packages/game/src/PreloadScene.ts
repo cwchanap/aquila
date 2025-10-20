@@ -1,7 +1,4 @@
 import Phaser from 'phaser';
-import entryBackground from '@aquila/assets/train_adventure/backgrounds/entry.png';
-import trainRideBackground from '@aquila/assets/train_adventure/backgrounds/train_ride.png';
-import stationBackground from '@aquila/assets/train_adventure/backgrounds/station.png';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
 import { getStoryContent } from '@aquila/dialogue';
 import { loadCheckpoint } from './CheckpointStorage';
@@ -26,10 +23,39 @@ export class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-        // Backgrounds mapped to scene IDs (built-in fallbacks for train_adventure)
-        this.load.image('bg-scene_1', entryBackground);
-        this.load.image('bg-scene_2', trainRideBackground);
-        this.load.image('bg-scene_3', stationBackground);
+        // Try to load backgrounds, but continue if they fail
+        // This allows the game to run without background images
+        const backgrounds = [
+            {
+                key: 'bg-scene_1',
+                path: '/assets/train_adventure/backgrounds/entry.png',
+            },
+            {
+                key: 'bg-scene_2',
+                path: '/assets/train_adventure/backgrounds/train_ride.png',
+            },
+            {
+                key: 'bg-scene_3',
+                path: '/assets/train_adventure/backgrounds/station.png',
+            },
+        ];
+
+        backgrounds.forEach(bg => {
+            this.load.image(bg.key, bg.path);
+        });
+
+        // Handle load errors gracefully
+        this.load.on('loaderror', (file: Phaser.Loader.File) => {
+            console.warn(`Failed to load asset: ${file.key}`, file.src);
+            // Create a placeholder texture for missing images
+            if (file.type === 'image') {
+                const graphics = this.add.graphics();
+                graphics.fillStyle(0x2c3e50, 1);
+                graphics.fillRect(0, 0, 1920, 1080);
+                graphics.generateTexture(file.key, 1920, 1080);
+                graphics.destroy();
+            }
+        });
 
         // Load dialogue/choice data from internal modules instead of network JSON
         const storyId = this.startData.storyId || 'train_adventure';

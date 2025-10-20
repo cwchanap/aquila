@@ -11,6 +11,7 @@ This package contains all dialogue content, character definitions, and story scr
 - **Character System**: Enum-based character IDs with metadata (name, alias)
 - **Dialogue Types**: Type-safe dialogue entries and choice definitions
 - **Story Content**: Localized dialogue for multiple languages (currently EN/ZH)
+- **Translations**: Shared UI translations for web and desktop apps
 - **Framework Agnostic**: No dependencies on Phaser or other game engines
 
 ## Structure
@@ -26,6 +27,9 @@ src/
 │   │   ├── zh.ts            # Chinese dialogue
 │   │   └── index.ts
 │   └── index.ts             # Story loader
+├── translations/            # Shared UI translations
+│   ├── en.json              # English UI strings
+│   └── zh.json              # Chinese UI strings
 ├── types.ts                 # Core dialogue types
 └── index.ts                 # Package exports
 ```
@@ -57,6 +61,28 @@ All dialogue entries use `characterId` field with `CharacterId` enum values:
 ```
 
 This avoids circular dependencies and allows the dialogue package to remain independent of the game engine.
+
+### Translations
+
+UI translations are shared between web and desktop apps:
+
+```typescript
+// Import translations
+import en from '@aquila/dialogue/translations/en.json';
+import zh from '@aquila/dialogue/translations/zh.json';
+
+// Use in your app
+const translations = { en, zh };
+const locale = 'zh';
+const text = translations[locale].menu.startGame; // "开始游戏"
+```
+
+The translation files contain all UI strings for:
+- Authentication (login, profile)
+- Menu and navigation
+- Character setup
+- Story selection
+- Common UI elements
 
 ## Development
 

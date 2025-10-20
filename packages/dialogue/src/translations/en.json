@@ -38,7 +38,8 @@
   },
   "common": {
     "logout": "Logout",
-    "login": "Login"
+    "login": "Login",
+    "back": "Back"
   },
   "setup": {
     "title": "Setup Character",

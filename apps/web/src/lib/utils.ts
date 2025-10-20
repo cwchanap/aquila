@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import enTranslations from '../translations/en.json';
-import zhTranslations from '../translations/zh.json';
+import enTranslations from '@aquila/dialogue/translations/en.json';
+import zhTranslations from '@aquila/dialogue/translations/zh.json';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));

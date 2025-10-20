@@ -8,7 +8,9 @@
     ".": "./src/index.ts",
     "./characters": "./src/characters/index.ts",
     "./types": "./src/types.ts",
-    "./stories": "./src/stories/index.ts"
+    "./stories": "./src/stories/index.ts",
+    "./translations/en.json": "./src/translations/en.json",
+    "./translations/zh.json": "./src/translations/zh.json"
   },
   "scripts": {
     "dev": "tsc --watch",

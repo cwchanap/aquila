@@ -1,157 +1,202 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
-  import type { SubmitEvent } from "svelte/elements";
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { t, getLocale, setLocale, type Locale } from '$lib/i18n';
 
-  let name = $state("");
-  let greetMsg = $state("");
+  let currentLocale = $state<Locale>('zh');
 
-  async function greet(event: SubmitEvent) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
+  onMount(() => {
+    currentLocale = getLocale();
+  });
+
+  function handleStart() {
+    goto('/game');
+  }
+
+  function handleSettings() {
+    // Add settings logic here
+  }
+
+  function switchLanguage(lang: Locale) {
+    setLocale(lang);
+    currentLocale = lang;
   }
 </script>
 
-<main class="container">
-  <h1>Welcome to Tauri + Svelte</h1>
+<svelte:head>
+  <title>{t('menu.title', currentLocale)}</title>
+</svelte:head>
 
-  <div class="row">
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo vite" alt="Vite Logo" />
-    </a>
-    <a href="https://tauri.app" target="_blank">
-      <img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank">
-      <img src="/svelte.svg" class="logo svelte-kit" alt="SvelteKit Logo" />
-    </a>
+<!-- Ocean Background with animated waves -->
+<div class="min-h-screen relative overflow-hidden">
+  <!-- Gradient Ocean Background -->
+  <div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
+
+  <!-- Animated Ocean Waves (Background Layer) -->
+  <div class="absolute inset-0">
+    <svg class="absolute bottom-0 w-full h-96" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="rgba(59, 130, 246, 0.3)" fill-opacity="1"
+        d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          values="0 0; 50 0; 0 0"
+          dur="6s"
+          repeatCount="indefinite"
+        />
+      </path>
+    </svg>
+
+    <svg class="absolute bottom-0 w-full h-80" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="rgba(59, 130, 246, 0.4)" fill-opacity="1"
+        d="M0,192L48,176C96,160,192,128,288,128C384,128,480,160,576,176C672,192,768,192,864,176C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          values="0 0; -30 0; 0 0"
+          dur="8s"
+          repeatCount="indefinite"
+        />
+      </path>
+    </svg>
+
+    <svg class="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="rgba(59, 130, 246, 0.6)" fill-opacity="1"
+        d="M0,256L48,240C96,224,192,192,288,192C384,192,480,224,576,240C672,256,768,256,864,240C960,224,1056,192,1152,192C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          values="0 0; 40 0; 0 0"
+          dur="10s"
+          repeatCount="indefinite"
+        />
+      </path>
+    </svg>
   </div>
-  <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
 
-  <form class="row" onsubmit={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
-  </form>
-  <p>{greetMsg}</p>
-</main>
+  <!-- Subtle cloud shadows -->
+  <div class="absolute inset-0 opacity-20">
+    <div class="absolute top-20 left-1/4 w-32 h-16 bg-white rounded-full blur-xl animate-pulse"></div>
+    <div class="absolute top-32 right-1/3 w-24 h-12 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 2s;"></div>
+    <div class="absolute top-16 right-1/4 w-28 h-14 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
+  </div>
+
+  <!-- Language Switcher - Visual Novel Style -->
+  <div class="absolute top-6 left-6 z-10">
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-white/40">
+      <button
+        onclick={() => switchLanguage('en')}
+        class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 block mb-1 w-full text-left {currentLocale === 'en' ? 'bg-white/60' : ''}"
+      >
+        English
+      </button>
+      <button
+        onclick={() => switchLanguage('zh')}
+        class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 block w-full text-left {currentLocale === 'zh' ? 'bg-white/60' : ''}"
+      >
+        中文
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Container - Visual Novel Style -->
+  <div class="min-h-screen flex items-center justify-center relative">
+    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-lg w-full mx-6 transform hover:scale-[1.02] transition-all duration-500">
+      <!-- Title with Gaming-inspired styling -->
+      <div class="text-center mb-12">
+        <h1 class="text-6xl font-black mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg game-title">
+          {t('menu.heading', currentLocale)}
+        </h1>
+        <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>
+        <div class="text-sm font-semibold text-slate-600 mt-2 tracking-widest uppercase opacity-70 game-subtitle">
+          Interactive Adventure
+        </div>
+      </div>
+
+      <!-- Menu Buttons - Gaming Style -->
+      <div class="space-y-6">
+        <button
+          onclick={handleStart}
+          class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden game-button"
+        >
+          <!-- Button glow effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+          <span class="relative text-xl tracking-wider uppercase font-black">{t('menu.startGame', currentLocale)}</span>
+          <!-- Gaming accent corners -->
+          <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+          <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+          <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+          <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+        </button>
+
+        <button
+          onclick={handleSettings}
+          class="group relative w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden game-button"
+        >
+          <!-- Button glow effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-slate-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <span class="relative text-xl tracking-wider uppercase font-black">{t('menu.settings', currentLocale)}</span>
+          <!-- Gaming accent corners -->
+          <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-slate-500/60"></div>
+          <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-slate-500/60"></div>
+          <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-slate-500/60"></div>
+          <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-slate-500/60"></div>
+        </button>
+      </div>
+
+      <!-- Gaming Decorative Elements -->
+      <div class="mt-12 flex justify-center items-center space-x-4 opacity-60">
+        <!-- Power indicator bars -->
+        <div class="flex space-x-1">
+          <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse"></div>
+          <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.2s;"></div>
+          <div class="w-1 h-5 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.4s;"></div>
+          <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.6s;"></div>
+          <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.8s;"></div>
+        </div>
+
+        <!-- Gaming hexagon -->
+        <div class="relative">
+          <div class="w-6 h-6 bg-gradient-to-r from-blue-400 to-cyan-400 transform rotate-45 animate-spin hexagon"></div>
+          <div class="absolute inset-0 w-6 h-6 bg-white/30 transform rotate-45 hexagon"></div>
+        </div>
+
+        <!-- Power indicator bars (mirrored) -->
+        <div class="flex space-x-1">
+          <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 1s;"></div>
+          <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.8s;"></div>
+          <div class="w-1 h-5 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.6s;"></div>
+          <div class="w-1 h-4 bg-blue-400 rounded-sm animate-pulse" style="animation-delay: 0.4s;"></div>
+          <div class="w-1 h-3 bg-cyan-400 rounded-sm animate-pulse" style="animation-delay: 0.2s;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <style>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.svelte-kit:hover {
-  filter: drop-shadow(0 0 2em #ff3e00);
-}
-
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+  :global(body) {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
   }
 
-  a:hover {
-    color: #24c8db;
+  .game-title {
+    font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+  .game-subtitle {
+    font-family: 'Orbitron', monospace;
   }
-  button:active {
-    background-color: #0f0f0f69;
-  }
-}
 
+  .game-button {
+    font-family: 'Orbitron', 'Exo 2', monospace;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .hexagon {
+    animation-duration: 8s;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  }
 </style>

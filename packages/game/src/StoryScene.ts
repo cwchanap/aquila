@@ -34,10 +34,9 @@ export class StoryScene extends BaseScene {
     }
 
     init(data: { characterName: string; locale?: string; storyId?: string }) {
-        this.characterName = data.characterName || 'Player';
+        // characterName parameter kept for backwards compatibility but not used
         if (data.locale) this.locale = data.locale;
         if (data.storyId) this.storyId = data.storyId;
-        this.registry.set('playerName', this.characterName);
         this.registry.set('locale', this.locale);
     }
 

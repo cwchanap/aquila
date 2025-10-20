@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { cn, t, getUserFromCookies, type User } from '../utils';
 
-vi.mock('../../translations/en.json', () => ({
+vi.mock('@aquila/dialogue/translations/en.json', () => ({
     default: {
         common: { hello: 'Hello', goodbye: 'Goodbye' },
         auth: { login: 'Login', logout: 'Logout' },
     },
 }));
 
-vi.mock('../../translations/zh.json', () => ({
+vi.mock('@aquila/dialogue/translations/zh.json', () => ({
     default: {
         common: { hello: '你好', goodbye: '再见' },
         auth: { login: '登录', logout: '登出' },

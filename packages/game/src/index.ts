@@ -3,6 +3,8 @@ export { PreloadScene } from './PreloadScene';
 export { StoryScene } from './StoryScene';
 export { SceneDirectory } from './SceneDirectory';
 export { SceneFlow } from './SceneFlow';
+export { StoryProgressionMap } from './StoryProgressionMap';
+export { ProgressMapModal } from './ProgressMapModal';
 export * from './dialogue/types';
 export * from './characters/CharacterDirectory';
 export { getStoryContent } from '@aquila/dialogue';

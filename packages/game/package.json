@@ -5,13 +5,22 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
-    "./*": "./src/*"
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    }
   },
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build && tsc --emitDeclarationOnly --declaration --declarationMap --outDir dist",
+    "dev": "vite build --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src",
     "test": "echo 'No tests yet for @aquila/game' && exit 0"
@@ -23,6 +32,8 @@
     "phaser": "^3.90.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "@types/node": "^22.10.2",
+    "typescript": "^5.9.2",
+    "vite": "^6.0.3"
   }
 }

@@ -107,6 +107,10 @@ export class SceneFlow {
         return Object.keys(node.nextByOption);
     }
 
+    getCurrentNodeId(): string {
+        return this.currentNodeId;
+    }
+
     advanceFromScene(): FlowAdvanceResult {
         if (this.mode !== 'scene') {
             return { type: 'end' };
@@ -217,6 +221,10 @@ export class SceneFlow {
                     !!node && node.kind === 'scene'
             )
             .map(node => node.sceneId);
+    }
+
+    getFlowNodes(): FlowNodeDefinition[] {
+        return Array.from(this.nodes.values());
     }
 
     restoreFromHistory(history: SceneId[]): SceneId | null {

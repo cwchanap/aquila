@@ -10,6 +10,7 @@ import {
     type StoredCheckpoint,
 } from './CheckpointStorage';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
+import { ProgressMapModal } from './ProgressMapModal';
 
 export class StoryScene extends BaseScene {
     protected characterName: string = 'Player';
@@ -28,6 +29,8 @@ export class StoryScene extends BaseScene {
     private menuOpen = false;
     private menuUiElements: Phaser.GameObjects.GameObject[] = [];
     private escListener?: Phaser.Input.Keyboard.Key;
+    private escListenerPaused = false;
+    private progressMapModal?: ProgressMapModal;
 
     constructor() {
         super('StoryScene');
@@ -387,6 +390,9 @@ export class StoryScene extends BaseScene {
     }
 
     private toggleMenu(forceState?: boolean) {
+        // Don't toggle menu if ESC listener is paused (e.g., modal is open)
+        if (this.escListenerPaused) return;
+
         const desired =
             typeof forceState === 'boolean' ? forceState : !this.menuOpen;
         if (desired === this.menuOpen) return;
@@ -395,6 +401,14 @@ export class StoryScene extends BaseScene {
         } else {
             this.closeMenu();
         }
+    }
+
+    public pauseEscListener(): void {
+        this.escListenerPaused = true;
+    }
+
+    public resumeEscListener(): void {
+        this.escListenerPaused = false;
     }
 
     private openMenu() {
@@ -409,13 +423,53 @@ export class StoryScene extends BaseScene {
             .setDepth(950)
             .setInteractive()
             .on('pointerup', () => this.closeMenu());
+
         const panelWidth = Math.min(width - 120, 420);
-        const panelHeight = 300;
+
+        // Define buttons first to calculate required panel height
+        const buttonDefs = [
+            {
+                label: locale === 'zh' ? '繼續旅程' : 'Resume Story',
+                handler: () => this.closeMenu(),
+            },
+            {
+                label: locale === 'zh' ? '📍 進度地圖' : '📍 Progress Map',
+                handler: () => this.openProgressMap(),
+            },
+            {
+                label: locale === 'zh' ? '返回首頁' : 'Return Home',
+                handler: () => {
+                    // Check if we're in a localized route context (web app) or not (desktop app)
+                    const isLocalizedRoute =
+                        window.location.pathname.startsWith(`/${locale}/`);
+                    window.location.href = isLocalizedRoute
+                        ? `/${locale}/`
+                        : '/';
+                },
+            },
+        ];
+
+        // Calculate panel height dynamically based on button count
+        // This automatically expands when more buttons are added while maintaining consistent spacing
+        // Formula: titleArea + (buttons × height) + (gaps × spacing) + bottomPadding
+        const buttonCount = buttonDefs.length;
+        const buttonHeight = 44;
+        const buttonSpacing = 60; // Spacing between buttons
+        const titleAreaHeight = 80; // Space for title at top
+        const bottomPadding = 40; // Padding at bottom
+        const panelHeight =
+            titleAreaHeight +
+            buttonCount * buttonHeight +
+            (buttonCount - 1) * buttonSpacing +
+            bottomPadding;
+
         const menuBottomGap = Math.max(140, height * 0.22);
         const panelY = Math.min(
             height / 2,
             height - menuBottomGap - panelHeight / 2
         );
+
+        // Create panel
         const panel = this.add
             .rectangle(
                 width / 2,
@@ -451,6 +505,7 @@ export class StoryScene extends BaseScene {
                 event.stopPropagation();
             }
         );
+
         const title = this.add
             .text(
                 width / 2,
@@ -466,44 +521,14 @@ export class StoryScene extends BaseScene {
 
         this.menuUiElements.push(backdrop, panel, title);
 
-        const buttonDefs = [
-            {
-                label: locale === 'zh' ? '繼續旅程' : 'Resume Story',
-                handler: () => this.closeMenu(),
-            },
-            {
-                label: locale === 'zh' ? '返回首頁' : 'Return Home',
-                handler: () => {
-                    // Check if we're in a localized route context (web app) or not (desktop app)
-                    const isLocalizedRoute =
-                        window.location.pathname.startsWith(`/${locale}/`);
-                    window.location.href = isLocalizedRoute
-                        ? `/${locale}/`
-                        : '/';
-                },
-            },
-        ];
-
-        const panelTop = panelY - panelHeight / 2;
-        const panelBottom = panelY + panelHeight / 2;
-        const buttonTopMargin = 140;
-        const buttonBottomMargin = 100;
-        const buttonCount = buttonDefs.length;
-        const buttonAreaHeight = Math.max(
-            0,
-            panelHeight - buttonTopMargin - buttonBottomMargin
-        );
-        const buttonSpacing =
-            buttonCount > 1 ? buttonAreaHeight / (buttonCount - 1) : 0;
-        const minY = panelTop + buttonTopMargin;
-        const maxY = panelBottom - buttonBottomMargin;
+        // Position buttons with consistent spacing
+        const firstButtonY = panelY - panelHeight / 2 + titleAreaHeight;
 
         buttonDefs.forEach((def, index) => {
-            const baseY =
+            const y =
                 buttonCount === 1
-                    ? (panelTop + panelBottom) / 2
-                    : minY + index * buttonSpacing;
-            const y = Phaser.Math.Clamp(baseY, minY, maxY);
+                    ? panelY
+                    : firstButtonY + index * (buttonHeight + buttonSpacing);
             const buttonBg = this.add
                 .rectangle(width / 2, y, panelWidth - 60, 44, 0x1e293b, 0.9)
                 .setStrokeStyle(1, 0xffffff, 0.35)
@@ -559,6 +584,38 @@ export class StoryScene extends BaseScene {
         this.menuUiElements = [];
         this.menuOpen = false;
         this.fadeAmbientTo(0.004, 300);
+    }
+
+    private openProgressMap() {
+        // Close the menu first
+        this.closeMenu();
+
+        // Get flow nodes for the map
+        if (!this.flow) return;
+
+        // Use actual flow nodes from the active SceneFlow instance
+        const flowNodes = this.flow.getFlowNodes();
+
+        // Get current node ID (could be a scene or choice node)
+        const currentNodeId = this.flow.getCurrentNodeId();
+        const completedHistory = this.flow.getSceneHistory();
+
+        this.progressMapModal = new ProgressMapModal(this, {
+            mapConfig: {
+                nodes: flowNodes,
+                currentNodeId,
+                completedHistory,
+                width: this.scale.width,
+                height: this.scale.height,
+                interactive: false, // Disable jumping to scenes for now
+                locale: this.locale,
+            },
+            onClose: () => {
+                this.progressMapModal = undefined;
+            },
+        });
+
+        this.progressMapModal.show();
     }
 
     private showCompletionOverlay() {

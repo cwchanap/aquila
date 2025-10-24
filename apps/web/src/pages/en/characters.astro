@@ -2,8 +2,8 @@
 import MainLayout from '../../layouts/main.astro';
 import UserStatus from '../../components/UserStatus.astro';
 import { SimpleAuthService, type SimpleUser } from '../../lib/simple-auth.js';
-import { CharacterSetupRepository } from '../../lib/repositories.js';
-import type { CharacterSetupTable } from '../../lib/db-types.js';
+import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
+import type { CharacterSetup } from '../../lib/drizzle/schema.js';
 import en from '@aquila/dialogue/translations/en.json';
 
 // Helper function to get translations (used in template)
@@ -25,7 +25,7 @@ const t = (key: string): string => {
 
 // Get user session
 let user: SimpleUser | null = null;
-let characterSetups: CharacterSetupTable[] = [];
+let characterSetups: CharacterSetup[] = [];
 
 try {
   const sessionId = Astro.cookies.get('session')?.value;

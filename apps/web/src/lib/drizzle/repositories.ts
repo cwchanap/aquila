@@ -1,9 +1,15 @@
 import { eq, and, asc, desc } from 'drizzle-orm';
 import { db, type DrizzleDB } from './db';
 import {
+    users,
+    characterSetups,
     stories,
     chapters,
     scenes,
+    type User,
+    type NewUser,
+    type CharacterSetup,
+    type NewCharacterSetup,
     type Story,
     type NewStory,
     type Chapter,
@@ -13,7 +19,137 @@ import {
 } from './schema';
 import { nanoid } from 'nanoid';
 
-// Story Repository - uses singleton db instance
+// ============= User Repository =============
+export class UserRepository {
+    static async create(data: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>) {
+        const id = nanoid();
+        const [user] = await db
+            .insert(users)
+            .values({
+                id,
+                ...data,
+            })
+            .returning();
+        return user;
+    }
+
+    static async findById(id: string) {
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, id))
+            .limit(1);
+        return user;
+    }
+
+    static async findByEmail(email: string) {
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
+        return user;
+    }
+
+    static async findByUsername(username: string) {
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.username, username))
+            .limit(1);
+        return user;
+    }
+
+    static async update(
+        id: string,
+        data: Partial<Omit<User, 'id' | 'createdAt'>>
+    ) {
+        const [user] = await db
+            .update(users)
+            .set({
+                ...data,
+                updatedAt: new Date(),
+            })
+            .where(eq(users.id, id))
+            .returning();
+        return user;
+    }
+
+    static async delete(id: string) {
+        await db.delete(users).where(eq(users.id, id));
+    }
+
+    static async list(limit = 50, offset = 0) {
+        return await db
+            .select()
+            .from(users)
+            .orderBy(desc(users.createdAt))
+            .limit(limit)
+            .offset(offset);
+    }
+}
+
+// ============= Character Setup Repository =============
+export class CharacterSetupRepository {
+    static async create(
+        data: Omit<NewCharacterSetup, 'id' | 'createdAt' | 'updatedAt'>
+    ) {
+        const id = nanoid();
+        const [setup] = await db
+            .insert(characterSetups)
+            .values({
+                id,
+                ...data,
+            })
+            .returning();
+        return setup;
+    }
+
+    static async findByUserAndStory(userId: string, storyId: string) {
+        const [setup] = await db
+            .select()
+            .from(characterSetups)
+            .where(
+                and(
+                    eq(characterSetups.userId, userId),
+                    eq(characterSetups.storyId, storyId)
+                )
+            )
+            .limit(1);
+        return setup;
+    }
+
+    static async findByUser(userId: string) {
+        return await db
+            .select()
+            .from(characterSetups)
+            .where(eq(characterSetups.userId, userId))
+            .orderBy(desc(characterSetups.createdAt));
+    }
+
+    static async update(
+        id: string,
+        data: Partial<
+            Omit<CharacterSetup, 'id' | 'createdAt' | 'userId' | 'storyId'>
+        >
+    ) {
+        const [setup] = await db
+            .update(characterSetups)
+            .set({
+                ...data,
+                updatedAt: new Date(),
+            })
+            .where(eq(characterSetups.id, id))
+            .returning();
+        return setup;
+    }
+
+    static async delete(id: string) {
+        await db.delete(characterSetups).where(eq(characterSetups.id, id));
+    }
+}
+
+// ============= Story Repository =============
 export class StoryRepository {
     private db: DrizzleDB;
 

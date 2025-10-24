@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { CharacterSetupRepository } from '@/lib/repositories.js';
+import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
 import { SimpleAuthService } from '@/lib/simple-auth.js';
 

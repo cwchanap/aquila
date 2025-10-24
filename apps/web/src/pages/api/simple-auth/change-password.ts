@@ -1,7 +1,9 @@
 import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { db } from '../../../lib/drizzle/db.js';
+import { accounts } from '../../../lib/drizzle/schema.js';
+import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { db } from '../../../lib/db.js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
@@ -65,12 +67,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         // Verify current password
-        const account = await db
-            .selectFrom('accounts')
-            .selectAll()
-            .where('userId', '=', session.user.id)
-            .where('providerId', '=', 'email')
-            .executeTakeFirst();
+        const [account] = await db
+            .select()
+            .from(accounts)
+            .where(
+                and(
+                    eq(accounts.userId, session.user.id),
+                    eq(accounts.providerId, 'email')
+                )
+            )
+            .limit(1);
 
         if (!account || !account.password) {
             return new Response(
@@ -101,14 +107,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
         // Update password
         await db
-            .updateTable('accounts')
+            .update(accounts)
             .set({
                 password: hashedNewPassword,
-                updatedAt: new Date().toISOString(),
+                updatedAt: new Date(),
             })
-            .where('userId', '=', session.user.id)
-            .where('providerId', '=', 'email')
-            .execute();
+            .where(
+                and(
+                    eq(accounts.userId, session.user.id),
+                    eq(accounts.providerId, 'email')
+                )
+            );
 
         return new Response(
             JSON.stringify({

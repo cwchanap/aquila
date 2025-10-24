@@ -1,6 +1,8 @@
 // Simple auth service as fallback for better-auth issues
-import { db } from './db.js';
 import bcrypt from 'bcryptjs';
+import { db } from './drizzle/db.js';
+import { users, accounts, sessions } from './drizzle/schema.js';
+import { eq, and, gt } from 'drizzle-orm';
 
 export interface SimpleUser {
     id: string;
@@ -22,11 +24,11 @@ export class SimpleAuthService {
     ): Promise<SimpleUser | null> {
         try {
             // Check if user already exists
-            const existingUser = await db
-                .selectFrom('users')
-                .selectAll()
-                .where('email', '=', email)
-                .executeTakeFirst();
+            const [existingUser] = await db
+                .select()
+                .from(users)
+                .where(eq(users.email, email))
+                .limit(1);
 
             if (existingUser) {
                 throw new Error('User already exists');
@@ -37,39 +39,29 @@ export class SimpleAuthService {
 
             // Create user
             const userId = crypto.randomUUID();
-            await db
-                .insertInto('users')
-                .values({
-                    id: userId,
-                    email,
-                    name,
-                    username: null,
-                    image: null,
-                    emailVerified: null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                })
-                .execute();
+            await db.insert(users).values({
+                id: userId,
+                email,
+                name,
+                username: null,
+                image: null,
+                emailVerified: null,
+            });
 
             // Create account with password
-            await db
-                .insertInto('accounts')
-                .values({
-                    id: crypto.randomUUID(),
-                    userId,
-                    accountId: email,
-                    providerId: 'email',
-                    password: hashedPassword,
-                    accessToken: null,
-                    refreshToken: null,
-                    idToken: null,
-                    accessTokenExpiresAt: null,
-                    refreshTokenExpiresAt: null,
-                    scope: null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                })
-                .execute();
+            await db.insert(accounts).values({
+                id: crypto.randomUUID(),
+                userId,
+                accountId: email,
+                providerId: 'email',
+                password: hashedPassword,
+                accessToken: null,
+                refreshToken: null,
+                idToken: null,
+                accessTokenExpiresAt: null,
+                refreshTokenExpiresAt: null,
+                scope: null,
+            });
 
             return {
                 id: userId,
@@ -89,23 +81,27 @@ export class SimpleAuthService {
     ): Promise<SimpleUser | null> {
         try {
             // Find user
-            const user = await db
-                .selectFrom('users')
-                .selectAll()
-                .where('email', '=', email)
-                .executeTakeFirst();
+            const [user] = await db
+                .select()
+                .from(users)
+                .where(eq(users.email, email))
+                .limit(1);
 
             if (!user) {
                 return null;
             }
 
             // Find account with password
-            const account = await db
-                .selectFrom('accounts')
-                .selectAll()
-                .where('userId', '=', user.id)
-                .where('providerId', '=', 'email')
-                .executeTakeFirst();
+            const [account] = await db
+                .select()
+                .from(accounts)
+                .where(
+                    and(
+                        eq(accounts.userId, user.id),
+                        eq(accounts.providerId, 'email')
+                    )
+                )
+                .limit(1);
 
             if (!account || !account.password) {
                 return null;
@@ -131,51 +127,49 @@ export class SimpleAuthService {
 
     static async createSession(user: SimpleUser): Promise<string> {
         const sessionId = crypto.randomUUID();
-        const expiresAt = new Date(
-            Date.now() + 7 * 24 * 60 * 60 * 1000
-        ).toISOString(); // 7 days
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-        await db
-            .insertInto('sessions')
-            .values({
-                id: sessionId,
-                userId: user.id,
-                token: crypto.randomUUID(),
-                expiresAt,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                ipAddress: null,
-                userAgent: null,
-            })
-            .execute();
+        await db.insert(sessions).values({
+            id: sessionId,
+            userId: user.id,
+            token: crypto.randomUUID(),
+            expiresAt,
+            ipAddress: null,
+            userAgent: null,
+        });
 
         return sessionId;
     }
 
     static async getSession(sessionId: string): Promise<SimpleSession | null> {
         try {
-            const session = await db
-                .selectFrom('sessions')
-                .innerJoin('users', 'users.id', 'sessions.userId')
-                .select([
-                    'sessions.id as sessionId',
-                    'sessions.expiresAt',
-                    'users.id',
-                    'users.email',
-                    'users.name',
-                    'users.username',
-                ])
-                .where('sessions.id', '=', sessionId)
-                .where('sessions.expiresAt', '>', new Date().toISOString())
-                .executeTakeFirst();
+            const result = await db
+                .select({
+                    sessionId: sessions.id,
+                    expiresAt: sessions.expiresAt,
+                    userId: users.id,
+                    email: users.email,
+                    name: users.name,
+                    username: users.username,
+                })
+                .from(sessions)
+                .innerJoin(users, eq(users.id, sessions.userId))
+                .where(
+                    and(
+                        eq(sessions.id, sessionId),
+                        gt(sessions.expiresAt, new Date())
+                    )
+                )
+                .limit(1);
 
+            const session = result[0];
             if (!session) {
                 return null;
             }
 
             return {
                 user: {
-                    id: session.id,
+                    id: session.userId,
                     email: session.email,
                     name: session.name,
                     username: session.username,
@@ -190,10 +184,7 @@ export class SimpleAuthService {
 
     static async deleteSession(sessionId: string): Promise<void> {
         try {
-            await db
-                .deleteFrom('sessions')
-                .where('id', '=', sessionId)
-                .execute();
+            await db.delete(sessions).where(eq(sessions.id, sessionId));
         } catch (error) {
             console.error('Delete session error:', error);
         }

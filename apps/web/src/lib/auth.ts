@@ -1,13 +1,10 @@
 import { betterAuth } from 'better-auth';
-import { db } from './db.js';
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5090',
     database: {
-        db,
-        type: 'sqlite',
-        casing: 'camel',
-        debugLogs: true,
+        provider: 'postgres',
+        url: process.env.DATABASE_URL || '',
     },
     // Map core models to our pluralized table names
     user: {

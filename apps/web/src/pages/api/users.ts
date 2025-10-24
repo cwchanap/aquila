@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { UserRepository } from '../../lib/repositories.js';
+import { UserRepository } from '../../lib/drizzle/repositories.js';
 
 export const GET: APIRoute = async ({ url }) => {
     try {

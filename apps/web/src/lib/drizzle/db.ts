@@ -1,22 +1,42 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import * as schema from './schema';
 
-// Get DATABASE_URL from environment
-const connectionString = process.env.DATABASE_URL;
+// Lazy-load db instance to avoid loading before env vars are available
+let _db: NodePgDatabase<typeof schema> | null = null;
 
-if (!connectionString) {
-    throw new Error('DATABASE_URL environment variable is not set');
+function getDb() {
+    if (!_db) {
+        const connectionString = process.env.DATABASE_URL;
+
+        if (!connectionString) {
+            throw new Error('DATABASE_URL environment variable is not set');
+        }
+
+        // Create PostgreSQL connection pool
+        const pool = new Pool({
+            connectionString,
+            ssl:
+                process.env.NODE_ENV === 'production'
+                    ? { rejectUnauthorized: false }
+                    : false,
+            max: 10,
+        });
+
+        // Create Drizzle DB instance
+        _db = drizzle(pool, { schema });
+    }
+
+    return _db;
 }
 
-// Create postgres connection
-const client = postgres(connectionString, {
-    ssl: 'require',
-    max: 10,
+// Export db instance via getter
+export const db = new Proxy({} as NodePgDatabase<typeof schema>, {
+    get(_, prop) {
+        const dbInstance = getDb();
+        return dbInstance[prop as keyof typeof dbInstance];
+    },
 });
 
-// Create and export Drizzle DB instance
-export const db = drizzle(client, { schema });
-
 // Type export
-export type DrizzleDB = typeof db;
+export type DrizzleDB = NodePgDatabase<typeof schema>;

@@ -1,19 +1,33 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
-import { Kysely, Migrator, FileMigrationProvider } from 'kysely';
-import { LibsqlDialect } from '@libsql/kysely-libsql';
-import { createClient } from '@libsql/client';
+import {
+    Kysely,
+    Migrator,
+    FileMigrationProvider,
+    PostgresDialect,
+} from 'kysely';
+import { Pool } from 'pg';
 
 async function migrateToLatest() {
-    const url = process.env.TURSO_DATABASE_URL ?? 'http://127.0.0.1:5091';
-    console.log('Using database URL:', url);
+    const databaseUrl = process.env.DATABASE_URL;
 
-    // Create the database client
-    const client = createClient({ url });
+    if (!databaseUrl) {
+        throw new Error('DATABASE_URL is not set');
+    }
 
-    // Create Kysely instance
+    // Hide password in logs for security
+    const safeUrl = databaseUrl.replace(/:[^:@]+@/, ':****@');
+    console.log('Using database URL:', safeUrl);
+
+    // Create PostgreSQL connection pool
+    const pool = new Pool({
+        connectionString: databaseUrl,
+        max: 10,
+    });
+
+    // Create Kysely instance with PostgreSQL dialect
     const db = new Kysely({
-        dialect: new LibsqlDialect({ client }),
+        dialect: new PostgresDialect({ pool }),
     });
 
     const migrator = new Migrator({

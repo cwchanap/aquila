@@ -26,15 +26,6 @@ vi.mock('bcryptjs', () => ({
     },
 }));
 
-// Mock @libsql/client
-vi.mock('@libsql/client', () => ({
-    createClient: vi.fn(() => ({
-        execute: vi.fn(),
-        batch: vi.fn(),
-        close: vi.fn(),
-    })),
-}));
-
 // Mock better-auth
 vi.mock('better-auth', () => ({
     betterAuth: vi.fn(() => ({
@@ -60,31 +51,51 @@ vi.mock('better-auth/client', () => ({
     })),
 }));
 
-// Mock Kysely
-vi.mock('kysely', () => ({
-    Kysely: vi.fn(() => ({
-        insertInto: vi.fn().mockReturnThis(),
-        values: vi.fn().mockReturnThis(),
-        returningAll: vi.fn().mockReturnThis(),
-        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({}),
-        selectFrom: vi.fn().mockReturnThis(),
-        selectAll: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        executeTakeFirst: vi.fn().mockResolvedValue(null),
-        updateTable: vi.fn().mockReturnThis(),
-        set: vi.fn().mockReturnThis(),
-        returning: vi.fn().mockReturnThis(),
-        deleteFrom: vi.fn().mockReturnThis(),
-        orderBy: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        offset: vi.fn().mockReturnThis(),
-        execute: vi.fn().mockResolvedValue([]),
-        innerJoin: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        destroy: vi.fn().mockResolvedValue(undefined),
-    })),
-}));
+// Mock Drizzle DB instance used in tests
+type DbMockChain = {
+    select: ReturnType<typeof vi.fn>;
+    insert: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    delete: ReturnType<typeof vi.fn>;
+    from: ReturnType<typeof vi.fn>;
+    into: ReturnType<typeof vi.fn>;
+    values: ReturnType<typeof vi.fn>;
+    set: ReturnType<typeof vi.fn>;
+    where: ReturnType<typeof vi.fn>;
+    andWhere: ReturnType<typeof vi.fn>;
+    innerJoin: ReturnType<typeof vi.fn>;
+    limit: ReturnType<typeof vi.fn>;
+    returning: ReturnType<typeof vi.fn>;
+    execute: ReturnType<typeof vi.fn>;
+    executeTakeFirst: ReturnType<typeof vi.fn>;
+    executeTakeFirstOrThrow: ReturnType<typeof vi.fn>;
+};
 
-vi.mock('@libsql/kysely-libsql', () => ({
-    LibsqlDialect: vi.fn(() => ({})),
+const createDbMock = (): DbMockChain => {
+    const chain = {} as DbMockChain;
+
+    chain.select = vi.fn(() => chain);
+    chain.insert = vi.fn(() => chain);
+    chain.update = vi.fn(() => chain);
+    chain.delete = vi.fn(() => chain);
+    chain.from = vi.fn(() => chain);
+    chain.into = vi.fn(() => chain);
+    chain.values = vi.fn(() => chain);
+    chain.set = vi.fn(() => chain);
+    chain.where = vi.fn(() => chain);
+    chain.andWhere = vi.fn(() => chain);
+    chain.innerJoin = vi.fn(() => chain);
+    chain.limit = vi.fn(() => chain);
+    chain.returning = vi.fn(() => chain);
+    chain.execute = vi.fn(async () => []);
+    chain.executeTakeFirst = vi.fn(async () => undefined);
+    chain.executeTakeFirstOrThrow = vi.fn(async () => ({}));
+
+    return chain;
+};
+
+const dbMockInstance = createDbMock();
+
+vi.mock('./drizzle/db.js', () => ({
+    db: dbMockInstance,
 }));

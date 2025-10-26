@@ -12,10 +12,12 @@ Aquila is a **hybrid web game application** combining Astro for web pages and Ph
 ## Critical Development Workflows
 
 ### Database Development
-- **Local setup**: `pnpm dev:db` (starts Turso dev server on :8080) + `pnpm db:migrate:local`
-- **Migration pattern**: Create `.ts` files in `src/lib/migrations/` with `up()` and `down()` functions
-- **Schema types**: Update `src/lib/db-types.ts` to match migration changes
+- **Local setup**: `pnpm dev:db` (starts Turso dev server on :8080) + `pnpm drizzle:migrate`
+- **Migration pattern**: Update `src/lib/drizzle/schema.ts`, then run `pnpm drizzle:generate`
+- **Schema types**: Update Drizzle schema and repositories together
 - **Repository pattern**: Use `UserRepository` class methods, not direct SQL
+- **CockroachDB note**: `pnpm drizzle:migrate` blocks Cockroach URLs. Only run `pnpm drizzle:migrate:allow-cockroach` with `ALLOW_COCKROACH_MIGRATIONS=true` after staging validation.
+- **Environment requirement**: Ensure `DATABASE_URL` is set for local dev, CI, and deployment. Optional tuning variables: `DB_ALLOW_SELF_SIGNED` (only for non-production self-signed certs) and `DB_POOL_MAX` (pool size).
 
 ### Game Development
 - **Scene inheritance**: All game scenes extend `BaseScene` which provides dialogue UI system

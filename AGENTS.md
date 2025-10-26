@@ -12,7 +12,7 @@ Aquila uses a pnpm/turbo monorepo. Web client and API routes live in `apps/web` 
 - `pnpm lint` / `pnpm lint:fix`: run ESLint across the workspace, optionally auto-fixing.
 - `pnpm test`: execute Vitest suites; scope with `pnpm --filter web test` when iterating.
 - `pnpm test:e2e`: execute Playwright specs from `apps/web/tests`.
-- `pnpm db:migrate` / `pnpm db:migrate:down`: apply or rollback migrations against the configured database.
+- `pnpm drizzle:generate` / `pnpm drizzle:migrate`: generate and apply Drizzle migrations. Use `pnpm drizzle:migrate:allow-cockroach` only after staging verification.
 
 ## Coding Style & Naming Conventions
 Prettier enforces formatting (80-character wrap, semicolons, single quotes); TypeScript files use 4-space indentation, other files 2 spaces. ESLint (Astro, Svelte, and TypeScript configs) guards imports, unused code, and accessibility rules. Prefer PascalCase for component files (`MainMenu.astro`, `Button.svelte`), camelCase for utilities, and SCREAMING_SNAKE_CASE for environment variables. Keep co-located styles (`.astro`, `.svelte`, or module CSS) close to the component they style, and scope Tailwind classes to component blocks rather than globals.
@@ -24,4 +24,4 @@ Vitest powers unit tests; add new coverage under `apps/web/src/lib/__tests__` us
 Adhere to Conventional Commits (`feat:`, `fix:`, `chore:`) as seen in the Git history. Write imperative, scope-aware summaries (e.g. `feat: add desktop tauri app scaffold`) and include detail in the body when necessary. Pull requests should link related issues, list verification commands, and attach screenshots or recordings for UX or gameplay changes. Ensure lint, unit, and e2e checks pass before requesting review.
 
 ## Environment & Configuration Tips
-Copy `.env.example` to `.env` and supply Turso credentials before running database scripts. Use `pnpm db:setup` to bootstrap a fresh schema against the local Turso instance. Keep secrets out of version control (`.env.local` is ignored) and mirror required keys in Vercel before deployment. For desktop builds, configure Tauri environment variables within `apps/desktop/src-tauri/tauri.conf.json`.
+Copy `.env.example` to `.env` and supply database credentials before running migrations. Prefer managed PostgreSQL for production; CockroachDB URLs require opting in via `ALLOW_COCKROACH_MIGRATIONS=true` and `pnpm drizzle:migrate:allow-cockroach` after staging verification. Keep secrets out of version control (`.env.local` is ignored) and mirror required keys in Vercel before deployment. For desktop builds, configure Tauri environment variables within `apps/desktop/src-tauri/tauri.conf.json`.

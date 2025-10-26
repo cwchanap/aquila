@@ -10,15 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm dev:db` - Start Turso database server on port 5091
 
 ### Database Operations
-- `pnpm db:migrate` - Run migrations against production database
-- `pnpm db:migrate:local` - Run migrations against local database (port 5091)
-- `pnpm db:migrate:down` - Rollback the last migration
-- `pnpm db:setup` - Initialize local database with migrations and test data
-- `pnpm db:test` - Test database connection
-- `pnpm db:verify` - Run database verification script
-- `pnpm drizzle:generate` - Generate Drizzle migrations (web app only)
-- `pnpm drizzle:migrate` - Run Drizzle migrations (web app only)
+- `pnpm drizzle:generate` - Generate SQL migrations from the Drizzle schema
+- `pnpm drizzle:migrate` - Run Drizzle migrations (guards against CockroachDB URLs)
+- `pnpm drizzle:migrate:allow-cockroach` - Opt-in CockroachDB migration once staging is verified
 - `pnpm drizzle:studio` - Open Drizzle Studio GUI (web app only)
+- **Reminder:** Drizzle's CockroachDB dialect is pre-release. Only set `ALLOW_COCKROACH_MIGRATIONS=true` after validating migrations in staging. Prefer managed PostgreSQL when in doubt.
 
 ### Testing
 - `pnpm test` - Run all tests (Turbo runs unit + E2E across workspaces)

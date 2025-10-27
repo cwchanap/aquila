@@ -161,3 +161,54 @@ Aquila is a **monorepo** using Turbo and pnpm workspaces containing:
   - `tsx` for TypeScript migration execution
   - `drizzle-kit` for Drizzle migrations
 - **Development Tools**: ESLint with Astro + Svelte plugins, Prettier with lint-staged (Husky hooks)
+
+## Practice
+
+### Translation & Internationalization (i18n)
+- **All user-facing text** must be placed in `packages/dialogue/src/translations/` as JSON files
+- Use `getTranslations(locale)` from `@aquila/dialogue` to access translated strings
+- Never hardcode UI text in components or pages - always reference translation keys
+- Add new translation keys to both `en.json` and `zh.json` simultaneously
+
+### Astro Page Architecture
+- **Keep Astro pages minimal** - use them as templates, not logic containers
+- Extract all TypeScript logic into separate files under `apps/web/src/lib/`
+- Create manager/controller classes for complex page behavior (e.g., `BookmarksManager`, `ReaderManager`)
+- Astro `<script>` tags should only:
+  1. Import manager classes
+  2. Initialize managers with required data
+  3. Call initialization methods
+- Keep business logic, state management, and DOM manipulation in TypeScript modules
+
+### DOM Manipulation Best Practices
+- **Never use `innerHTML`** - it's unsafe and bypasses sanitization
+- Always use `document.createElement()`, `textContent`, and `appendChild()` for dynamic content
+- Create helper methods like `createCard()`, `createButton()` to reduce code duplication
+- Use semantic HTML elements and proper accessibility attributes
+
+### Code Organization Patterns
+- **Manager Classes**: Encapsulate page-specific logic (e.g., `BookmarksManager`, `ReaderManager`)
+- **Repository Pattern**: Database access through repository classes, never raw SQL in pages/components
+- **Type Safety**: Export interfaces alongside manager classes for external consumption
+- **Single Responsibility**: Each module should have one clear purpose
+
+### Example: Minimal Astro Page
+```astro
+---
+import MainLayout from '@/layouts/main.astro';
+const locale = 'en';
+---
+
+<MainLayout title="Page Title">
+    <div id="app-container"></div>
+
+    <script define:vars={{ locale }}>
+        import { PageManager } from '@/lib/page-manager';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const manager = new PageManager(locale);
+            manager.initialize();
+        });
+    </script>
+</MainLayout>
+```

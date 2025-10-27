@@ -34,10 +34,46 @@ Aquila is a **hybrid web game application** combining Astro for web pages and Ph
 ## Project-Specific Patterns
 
 ### Component Architecture
-- **Astro components** (`.astro`): Server-rendered layouts and pages with integrated `<script>` sections
+- **Astro components** (`.astro`): Minimal server-rendered templates - extract logic to TypeScript modules
+- **TypeScript logic modules**: Complex behavior lives in `apps/web/src/lib/` as manager/controller classes
 - **Svelte components** (`.svelte`): Interactive UI elements requiring `client:load` directive in Astro
 - **Button variants**: Use `Button.svelte` with `variant="menu"` for glassmorphism game UI
 - **Path aliases**: `@/` maps to `src/` directory for clean imports
+
+### Astro Page Best Practices
+- **Keep pages minimal**: Astro files should be templates with minimal `<script>` logic
+- **Extract TypeScript**: Move all business logic, state management, and DOM manipulation to separate `.ts` files
+- **Manager pattern**: Create manager classes (e.g., `BookmarksManager`, `ReaderManager`) in `apps/web/src/lib/`
+- **Initialization only**: `<script>` tags should only import managers and call initialization methods
+- **Example structure**:
+  ```astro
+  ---
+  // Frontmatter: imports and server-side data
+  const locale = 'en';
+  ---
+  <MainLayout>
+    <div id="container"></div>
+    
+    <script define:vars={{ locale }}>
+      import { Manager } from '@/lib/manager';
+      document.addEventListener('DOMContentLoaded', () => {
+        new Manager(locale).initialize();
+      });
+    </script>
+  </MainLayout>
+  ```
+
+### Translation & Internationalization (i18n)
+- **Central location**: All user-facing text lives in `packages/dialogue/src/translations/` (JSON files)
+- **Access pattern**: Import and use `getTranslations(locale)` from `@aquila/dialogue`
+- **No hardcoded text**: Never put UI strings directly in components - always reference translation keys
+- **Consistency**: Add new keys to both `en.json` and `zh.json` simultaneously
+
+### DOM Manipulation Safety
+- **Never use `innerHTML`**: Security risk and bypasses sanitization
+- **Safe methods**: Use `document.createElement()`, `textContent`, `appendChild()`, `removeChild()`
+- **Helper functions**: Create reusable DOM builders like `createCard()`, `createButton()`
+- **Type safety**: Properly type DOM elements and event handlers
 
 ### Styling System
 - **Tailwind v4**: Uses new inline `@theme` configuration in `src/styles/global.css`

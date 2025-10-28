@@ -1,4 +1,12 @@
-import { pgTable, text, timestamp, index, pgEnum } from 'drizzle-orm/pg-core';
+import {
+    pgTable,
+    text,
+    timestamp,
+    index,
+    uniqueIndex,
+    pgEnum,
+    boolean,
+} from 'drizzle-orm/pg-core';
 
 // Enum for story status
 export const storyStatusEnum = pgEnum('story_status', [
@@ -18,7 +26,7 @@ export const users = pgTable(
         username: text('username'),
         name: text('name'),
         image: text('image'),
-        emailVerified: text('email_verified'),
+        emailVerified: boolean('email_verified').notNull().default(false),
         createdAt: timestamp('created_at', { mode: 'date' })
             .notNull()
             .defaultNow(),
@@ -53,6 +61,7 @@ export const sessions = pgTable(
     table => ({
         userIdIdx: index('sessions_user_id_idx').on(table.userId),
         tokenIdx: index('sessions_token_idx').on(table.token),
+        expiresAtIdx: index('sessions_expires_at_idx').on(table.expiresAt),
     })
 );
 
@@ -90,6 +99,9 @@ export const accounts = pgTable(
             table.userId,
             table.providerId
         ),
+        userProviderAccountIdx: uniqueIndex(
+            'accounts_user_provider_account_idx'
+        ).on(table.userId, table.providerId, table.accountId),
     })
 );
 
@@ -122,7 +134,9 @@ export const characterSetups = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
         characterName: text('character_name').notNull(),
-        storyId: text('story_id').notNull(),
+        storyId: text('story_id')
+            .notNull()
+            .references(() => stories.id, { onDelete: 'cascade' }),
         createdAt: timestamp('created_at', { mode: 'date' })
             .notNull()
             .defaultNow(),
@@ -232,6 +246,37 @@ export type NewVerificationToken = typeof verificationTokens.$inferInsert;
 export type CharacterSetup = typeof characterSetups.$inferSelect;
 export type NewCharacterSetup = typeof characterSetups.$inferInsert;
 
+// ============= Reading Progress (Bookmarks) =============
+
+// Bookmarks table - saves reading progress for stories
+export const bookmarks = pgTable(
+    'bookmarks',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        storyId: text('story_id').notNull(), // e.g., "trainAdventure"
+        sceneId: text('scene_id').notNull(), // e.g., "scene_1", "scene_4a"
+        bookmarkName: text('bookmark_name').notNull(),
+        locale: text('locale').notNull().default('en'),
+        createdAt: timestamp('created_at', { mode: 'date' })
+            .notNull()
+            .defaultNow(),
+        updatedAt: timestamp('updated_at', { mode: 'date' })
+            .notNull()
+            .defaultNow(),
+    },
+    table => ({
+        userIdIdx: index('bookmarks_user_id_idx').on(table.userId),
+        storyIdIdx: index('bookmarks_story_id_idx').on(table.storyId),
+        userStoryIdx: index('bookmarks_user_story_idx').on(
+            table.userId,
+            table.storyId
+        ),
+    })
+);
+
 // Type exports - Story Management
 export type Story = typeof stories.$inferSelect;
 export type NewStory = typeof stories.$inferInsert;
@@ -239,3 +284,7 @@ export type Chapter = typeof chapters.$inferSelect;
 export type NewChapter = typeof chapters.$inferInsert;
 export type Scene = typeof scenes.$inferSelect;
 export type NewScene = typeof scenes.$inferInsert;
+
+// Type exports - Reading Progress
+export type Bookmark = typeof bookmarks.$inferSelect;
+export type NewBookmark = typeof bookmarks.$inferInsert;

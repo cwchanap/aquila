@@ -17,12 +17,9 @@
     "test:debug": "pnpm --filter web test:debug",
     "test:report": "pnpm --filter web test:report",
     "prepare": "husky",
-    "db:migrate": "pnpm --filter web db:migrate",
-    "db:migrate:down": "pnpm --filter web db:migrate:down",
-    "db:migrate:local": "pnpm --filter web db:migrate:local",
-    "db:test": "pnpm --filter web db:test",
-    "db:setup": "pnpm --filter web db:setup",
-    "db:verify": "pnpm --filter web db:verify"
+    "drizzle:generate": "pnpm --filter web drizzle:generate",
+    "drizzle:migrate": "pnpm --filter web drizzle:migrate",
+    "drizzle:studio": "pnpm --filter web drizzle:studio"
   },
   "dependencies": {},
   "devDependencies": {

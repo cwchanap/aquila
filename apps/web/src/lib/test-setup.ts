@@ -89,7 +89,9 @@ const createDbMock = (): DbMockChain => {
     chain.returning = vi.fn(() => chain);
     chain.execute = vi.fn(async () => []);
     chain.executeTakeFirst = vi.fn(async () => undefined);
-    chain.executeTakeFirstOrThrow = vi.fn(async () => ({}));
+    chain.executeTakeFirstOrThrow = vi.fn(async () => {
+        throw new Error('No rows found');
+    });
 
     return chain;
 };

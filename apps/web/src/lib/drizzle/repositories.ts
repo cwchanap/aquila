@@ -6,6 +6,7 @@ import {
     stories,
     chapters,
     scenes,
+    bookmarks,
     type User,
     type NewUser,
     type CharacterSetup,
@@ -16,14 +17,22 @@ import {
     type NewChapter,
     type Scene,
     type NewScene,
+    type Bookmark,
+    type NewBookmark,
 } from './schema';
 import { nanoid } from 'nanoid';
 
 // ============= User Repository =============
 export class UserRepository {
-    static async create(data: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>) {
+    private db: DrizzleDB;
+
+    constructor(dbInstance?: DrizzleDB) {
+        this.db = dbInstance || db;
+    }
+
+    async create(data: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>) {
         const id = nanoid();
-        const [user] = await db
+        const [user] = await this.db
             .insert(users)
             .values({
                 id,
@@ -33,8 +42,8 @@ export class UserRepository {
         return user;
     }
 
-    static async findById(id: string) {
-        const [user] = await db
+    async findById(id: string) {
+        const [user] = await this.db
             .select()
             .from(users)
             .where(eq(users.id, id))
@@ -42,8 +51,8 @@ export class UserRepository {
         return user;
     }
 
-    static async findByEmail(email: string) {
-        const [user] = await db
+    async findByEmail(email: string) {
+        const [user] = await this.db
             .select()
             .from(users)
             .where(eq(users.email, email))
@@ -51,8 +60,8 @@ export class UserRepository {
         return user;
     }
 
-    static async findByUsername(username: string) {
-        const [user] = await db
+    async findByUsername(username: string) {
+        const [user] = await this.db
             .select()
             .from(users)
             .where(eq(users.username, username))
@@ -60,11 +69,8 @@ export class UserRepository {
         return user;
     }
 
-    static async update(
-        id: string,
-        data: Partial<Omit<User, 'id' | 'createdAt'>>
-    ) {
-        const [user] = await db
+    async update(id: string, data: Partial<Omit<User, 'id' | 'createdAt'>>) {
+        const [user] = await this.db
             .update(users)
             .set({
                 ...data,
@@ -75,12 +81,12 @@ export class UserRepository {
         return user;
     }
 
-    static async delete(id: string) {
-        await db.delete(users).where(eq(users.id, id));
+    async delete(id: string) {
+        await this.db.delete(users).where(eq(users.id, id));
     }
 
-    static async list(limit = 50, offset = 0) {
-        return await db
+    async list(limit = 50, offset = 0) {
+        return await this.db
             .select()
             .from(users)
             .orderBy(desc(users.createdAt))
@@ -91,11 +97,17 @@ export class UserRepository {
 
 // ============= Character Setup Repository =============
 export class CharacterSetupRepository {
-    static async create(
+    private db: DrizzleDB;
+
+    constructor(dbInstance?: DrizzleDB) {
+        this.db = dbInstance || db;
+    }
+
+    async create(
         data: Omit<NewCharacterSetup, 'id' | 'createdAt' | 'updatedAt'>
     ) {
         const id = nanoid();
-        const [setup] = await db
+        const [setup] = await this.db
             .insert(characterSetups)
             .values({
                 id,
@@ -105,8 +117,8 @@ export class CharacterSetupRepository {
         return setup;
     }
 
-    static async findByUserAndStory(userId: string, storyId: string) {
-        const [setup] = await db
+    async findByUserAndStory(userId: string, storyId: string) {
+        const [setup] = await this.db
             .select()
             .from(characterSetups)
             .where(
@@ -119,21 +131,21 @@ export class CharacterSetupRepository {
         return setup;
     }
 
-    static async findByUser(userId: string) {
-        return await db
+    async findByUser(userId: string) {
+        return await this.db
             .select()
             .from(characterSetups)
             .where(eq(characterSetups.userId, userId))
             .orderBy(desc(characterSetups.createdAt));
     }
 
-    static async update(
+    async update(
         id: string,
         data: Partial<
             Omit<CharacterSetup, 'id' | 'createdAt' | 'userId' | 'storyId'>
         >
     ) {
-        const [setup] = await db
+        const [setup] = await this.db
             .update(characterSetups)
             .set({
                 ...data,
@@ -144,8 +156,8 @@ export class CharacterSetupRepository {
         return setup;
     }
 
-    static async delete(id: string) {
-        await db.delete(characterSetups).where(eq(characterSetups.id, id));
+    async delete(id: string) {
+        await this.db.delete(characterSetups).where(eq(characterSetups.id, id));
     }
 }
 
@@ -370,6 +382,131 @@ export class SceneRepository {
                             : eq(scenes.chapterId, null)
                     )
                 );
+        }
+    }
+}
+
+// ============= Bookmark Repository =============
+export class BookmarkRepository {
+    private db: DrizzleDB;
+
+    constructor(dbInstance?: DrizzleDB) {
+        this.db = dbInstance || db;
+    }
+
+    async create(
+        data: Omit<NewBookmark, 'id' | 'createdAt' | 'updatedAt'>
+    ): Promise<Bookmark> {
+        const id = nanoid();
+        const [bookmark] = await this.db
+            .insert(bookmarks)
+            .values({
+                id,
+                ...data,
+            })
+            .returning();
+        return bookmark;
+    }
+
+    async findById(id: string): Promise<Bookmark | undefined> {
+        const [bookmark] = await this.db
+            .select()
+            .from(bookmarks)
+            .where(eq(bookmarks.id, id))
+            .limit(1);
+        return bookmark;
+    }
+
+    async findByUserAndStory(
+        userId: string,
+        storyId: string
+    ): Promise<Bookmark[]> {
+        return await this.db
+            .select()
+            .from(bookmarks)
+            .where(
+                and(
+                    eq(bookmarks.userId, userId),
+                    eq(bookmarks.storyId, storyId)
+                )
+            )
+            .orderBy(desc(bookmarks.updatedAt));
+    }
+
+    async findByUser(userId: string): Promise<Bookmark[]> {
+        return await this.db
+            .select()
+            .from(bookmarks)
+            .where(eq(bookmarks.userId, userId))
+            .orderBy(desc(bookmarks.updatedAt));
+    }
+
+    async update(
+        id: string,
+        data: Partial<Omit<Bookmark, 'id' | 'createdAt' | 'userId' | 'storyId'>>
+    ): Promise<Bookmark | undefined> {
+        const [bookmark] = await this.db
+            .update(bookmarks)
+            .set({
+                ...data,
+                updatedAt: new Date(),
+            })
+            .where(eq(bookmarks.id, id))
+            .returning();
+        return bookmark;
+    }
+
+    async delete(id: string): Promise<boolean> {
+        const deleted = await this.db
+            .delete(bookmarks)
+            .where(eq(bookmarks.id, id))
+            .returning({ id: bookmarks.id });
+
+        return deleted.length > 0;
+    }
+
+    // Create or update a bookmark for a specific scene
+    async upsertByScene(
+        userId: string,
+        storyId: string,
+        sceneId: string,
+        bookmarkName: string,
+        locale: string = 'en'
+    ): Promise<Bookmark> {
+        // Check if bookmark with this name already exists
+        const [existing] = await this.db
+            .select()
+            .from(bookmarks)
+            .where(
+                and(
+                    eq(bookmarks.userId, userId),
+                    eq(bookmarks.storyId, storyId),
+                    eq(bookmarks.bookmarkName, bookmarkName)
+                )
+            )
+            .limit(1);
+
+        if (existing) {
+            // Update existing bookmark
+            const [updated] = await this.db
+                .update(bookmarks)
+                .set({
+                    sceneId,
+                    locale,
+                    updatedAt: new Date(),
+                })
+                .where(eq(bookmarks.id, existing.id))
+                .returning();
+            return updated;
+        } else {
+            // Create new bookmark
+            return await this.create({
+                userId,
+                storyId,
+                sceneId,
+                bookmarkName,
+                locale,
+            });
         }
     }
 }

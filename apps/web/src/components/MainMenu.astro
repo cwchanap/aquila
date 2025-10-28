@@ -133,6 +133,21 @@ const t = (key: string): string => {
 				</button>
 
 				<button
+					id="bookmarks-btn"
+					class="group relative w-full py-6 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-purple-300/50 overflow-hidden"
+					style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+				>
+					<!-- Button glow effect -->
+					<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+					<span class="relative text-xl tracking-wider uppercase font-black">{t("menu.bookmarks")}</span>
+					<!-- Gaming accent corners -->
+					<div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+					<div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+					<div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+					<div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+				</button>
+
+				<button
 					id="settings-btn"
 					class="group relative w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
 					style="font-family: 'Orbitron', 'Exo 2', monospace;"
@@ -182,6 +197,7 @@ const t = (key: string): string => {
 	// Add click handlers for the buttons
 	document.addEventListener('DOMContentLoaded', () => {
 		const startBtn = document.getElementById('start-btn');
+		const bookmarksBtn = document.getElementById('bookmarks-btn');
 		const settingsBtn = document.getElementById('settings-btn');
 		const languageLinks = document.querySelectorAll('.language-link');
 
@@ -200,7 +216,16 @@ const t = (key: string): string => {
 				// Make navigation locale-aware
 				const currentPath = window.location.pathname;
 				const isChinese = currentPath.startsWith('/zh');
-				window.location.href = isChinese ? '/zh/stories' : '/en/stories';
+				window.location.href = isChinese ? '/zh/reader' : '/en/reader';
+			});
+		}
+
+		if (bookmarksBtn) {
+			bookmarksBtn.addEventListener('click', () => {
+				// Make navigation locale-aware
+				const currentPath = window.location.pathname;
+				const isChinese = currentPath.startsWith('/zh');
+				window.location.href = isChinese ? '/zh/bookmarks' : '/en/bookmarks';
 			});
 		}
 

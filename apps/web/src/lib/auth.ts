@@ -1,10 +1,18 @@
 import { betterAuth } from 'better-auth';
 
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+    throw new Error(
+        'DATABASE_URL is not set. Configure a PostgreSQL connection string before starting the app.'
+    );
+}
+
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5090',
     database: {
         provider: 'postgres',
-        url: process.env.DATABASE_URL || '',
+        url: databaseUrl,
     },
     // Map core models to our pluralized table names
     user: {

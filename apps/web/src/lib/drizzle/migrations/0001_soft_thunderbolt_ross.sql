@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"username" text,
 	"name" text,
 	"image" text,
-	"email_verified" text,
+	"email_verified" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")

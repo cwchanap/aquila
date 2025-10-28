@@ -13,14 +13,29 @@ function getDb() {
             throw new Error('DATABASE_URL environment variable is not set');
         }
 
+        const isProduction = process.env.NODE_ENV === 'production';
+        const allowSelfSigned = process.env.DB_ALLOW_SELF_SIGNED === 'true';
+        const poolMaxEnv = process.env.DB_POOL_MAX;
+        const parsedPoolMax = poolMaxEnv
+            ? Number.parseInt(poolMaxEnv, 10)
+            : NaN;
+        const poolMax =
+            !Number.isNaN(parsedPoolMax) && parsedPoolMax > 0
+                ? parsedPoolMax
+                : 10;
+
+        let ssl: boolean | { rejectUnauthorized: boolean } = false;
+        if (isProduction) {
+            ssl = { rejectUnauthorized: !allowSelfSigned };
+        } else if (allowSelfSigned) {
+            ssl = { rejectUnauthorized: false };
+        }
+
         // Create PostgreSQL connection pool
         const pool = new Pool({
             connectionString,
-            ssl:
-                process.env.NODE_ENV === 'production'
-                    ? { rejectUnauthorized: false }
-                    : false,
-            max: 10,
+            ssl,
+            max: poolMax,
         });
 
         // Create Drizzle DB instance

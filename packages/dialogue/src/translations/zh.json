@@ -34,7 +34,8 @@
     "title": "主菜单 - 游戏应用",
     "heading": "主菜单",
     "startGame": "开始游戏",
-    "settings": "设置"
+    "settings": "设置",
+    "bookmarks": "📖 书签"
   },
   "common": {
     "logout": "登出",
@@ -75,5 +76,36 @@
     "cancel": "取消",
     "nameRequired": "角色名称不能为空",
     "updateFailed": "更新角色名称失败，请重试。"
+  },
+  "bookmarks": {
+    "title": "📖 我的书签",
+    "description": "您保存的阅读进度",
+    "backToHome": "← 返回主页",
+    "loading": "加载书签中...",
+    "notLoggedIn": "请登录以查看您的书签",
+    "loginButton": "登录",
+    "error": "加载书签失败，请重试",
+    "retry": "重试",
+    "noBookmarks": "还没有书签。开始阅读以保存您的进度！",
+    "startReading": "开始阅读",
+    "story": "故事：",
+    "scene": "场景：",
+    "language": "语言：",
+    "savedAt": "保存时间：",
+    "continueReading": "继续阅读",
+    "delete": "删除",
+    "deleteConfirm": "确定要删除此书签吗？",
+    "deleteFailed": "删除书签失败",
+    "english": "English",
+    "chinese": "中文"
+  },
+  "reader": {
+    "title": "小说阅读器 - Aquila",
+    "bookmarkPrompt": "输入书签名称：",
+    "defaultBookmarkName": "场景：",
+    "bookmarkSaved": "书签已保存！",
+    "bookmarkFailed": "保存书签失败：",
+    "bookmarkError": "保存书签失败。请重试。",
+    "endOfStory": "故事结束！"
   }
 }

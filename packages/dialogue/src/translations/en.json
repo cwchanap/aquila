@@ -34,7 +34,8 @@
     "title": "Main Menu - Game App",
     "heading": "Main Menu",
     "startGame": "Start Game",
-    "settings": "Settings"
+    "settings": "Settings",
+    "bookmarks": "📖 Bookmarks"
   },
   "common": {
     "logout": "Logout",
@@ -75,5 +76,36 @@
     "cancel": "Cancel",
     "nameRequired": "Character name cannot be empty",
     "updateFailed": "Failed to update character name. Please try again."
+  },
+  "bookmarks": {
+    "title": "📖 My Bookmarks",
+    "description": "Your saved reading progress",
+    "backToHome": "← Back to Home",
+    "loading": "Loading bookmarks...",
+    "notLoggedIn": "Please log in to view your bookmarks",
+    "loginButton": "Log in",
+    "error": "Failed to load bookmarks. Please try again.",
+    "retry": "Retry",
+    "noBookmarks": "No bookmarks yet. Start reading to save your progress!",
+    "startReading": "Start Reading",
+    "story": "Story:",
+    "scene": "Scene:",
+    "language": "Language:",
+    "savedAt": "Saved at:",
+    "continueReading": "Continue Reading",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this bookmark?",
+    "deleteFailed": "Failed to delete bookmark",
+    "english": "English",
+    "chinese": "Chinese"
+  },
+  "reader": {
+    "title": "Novel Reader - Aquila",
+    "bookmarkPrompt": "Enter bookmark name:",
+    "defaultBookmarkName": "Scene:",
+    "bookmarkSaved": "Bookmark saved!",
+    "bookmarkFailed": "Failed to save bookmark:",
+    "bookmarkError": "Failed to save bookmark. Please try again.",
+    "endOfStory": "End of story!"
   }
 }

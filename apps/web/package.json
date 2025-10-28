@@ -22,11 +22,12 @@
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
     "drizzle:generate": "drizzle-kit generate",
-    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:migrate": "node ./scripts/drizzle-migrate-safe.mjs",
+    "drizzle:migrate:allow-cockroach": "ALLOW_COCKROACH_MIGRATIONS=true node ./scripts/drizzle-migrate-safe.mjs",
     "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@aquila/game": "workspace:*",
+    "@aquila/dialogue": "workspace:*",
     "@astrojs/mdx": "^4.3.4",
     "@astrojs/svelte": "^7.1.0",
     "@astrojs/vercel": "^8.2.6",
@@ -43,7 +44,6 @@
     "lucide-react": "^0.541.0",
     "lucide-svelte": "^0.468.0",
     "nanoid": "^5.0.9",
-    "phaser": "^3.90.0",
     "svelte": "^5.38.2",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.3"

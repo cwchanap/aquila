@@ -39,28 +39,29 @@ export class SimpleAuthService {
 
             // Create user
             const userId = crypto.randomUUID();
-            await db.insert(users).values({
-                id: userId,
-                email,
-                name,
-                username: null,
-                image: null,
-                emailVerified: null,
-            });
+            await db.transaction(async tx => {
+                await tx.insert(users).values({
+                    id: userId,
+                    email,
+                    name,
+                    username: null,
+                    image: null,
+                    emailVerified: false,
+                });
 
-            // Create account with password
-            await db.insert(accounts).values({
-                id: crypto.randomUUID(),
-                userId,
-                accountId: email,
-                providerId: 'email',
-                password: hashedPassword,
-                accessToken: null,
-                refreshToken: null,
-                idToken: null,
-                accessTokenExpiresAt: null,
-                refreshTokenExpiresAt: null,
-                scope: null,
+                await tx.insert(accounts).values({
+                    id: crypto.randomUUID(),
+                    userId,
+                    accountId: email,
+                    providerId: 'email',
+                    password: hashedPassword,
+                    accessToken: null,
+                    refreshToken: null,
+                    idToken: null,
+                    accessTokenExpiresAt: null,
+                    refreshTokenExpiresAt: null,
+                    scope: null,
+                });
             });
 
             return {

@@ -32,12 +32,22 @@ async function runMigration() {
     }
 
     console.log('🔗 Connecting to CockroachDB...');
+
+    let ssl: boolean | { ca: Buffer } = false;
+    if (process.env.NODE_ENV === 'production') {
+        const caPath = process.env.DB_CA_PATH;
+        if (!caPath) {
+            throw new Error(
+                'DB_CA_PATH environment variable must be set in production to enable certificate verification.'
+            );
+        }
+
+        ssl = { ca: readFileSync(caPath) };
+    }
+
     const pool = new Pool({
         connectionString,
-        ssl:
-            process.env.NODE_ENV === 'production'
-                ? { rejectUnauthorized: false }
-                : false,
+        ssl,
         max: 1,
     });
 
@@ -55,11 +65,33 @@ async function runMigration() {
 
         console.log(`📝 Found ${migrationFiles.length} migration file(s)`);
 
+        // Ensure migration tracking table exists
+        const trackingTableName = 'drizzle_migrations_audit';
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS ${trackingTableName} (
+                id SERIAL PRIMARY KEY,
+                file_name TEXT NOT NULL UNIQUE,
+                applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+        `);
+
         // Run each migration file in order
         for (const migrationFile of migrationFiles) {
             console.log(`\n🔄 Running migration: ${migrationFile}`);
             const migrationPath = join(migrationsDir, migrationFile);
             const migrationSQL = readFileSync(migrationPath, 'utf-8');
+
+            const { rows: alreadyApplied } = await pool.query(
+                `SELECT 1 FROM ${trackingTableName} WHERE file_name = $1 LIMIT 1`,
+                [migrationFile]
+            );
+
+            if (alreadyApplied.length > 0) {
+                console.log(
+                    `  ⏭️  Skipping ${migrationFile} (previously applied)`
+                );
+                continue;
+            }
 
             // Split by statement-breakpoint and execute each statement
             const statements = migrationSQL
@@ -76,24 +108,29 @@ async function runMigration() {
                     await pool.query(statement);
                     console.log(`  ✅ Statement ${i + 1} completed`);
                 } catch (error) {
-                    const { message, code } = extractDbErrorDetails(error);
-                    // Ignore errors for "already exists" conditions
+                    const { code, message } = extractDbErrorDetails(error);
                     if (
-                        (message && message.includes('already exists')) ||
-                        code === '42P07' || // duplicate table
-                        code === '42710' || // duplicate object
-                        code === '42P16' // duplicate constraint
+                        code === '42P07' ||
+                        code === '42710' ||
+                        code === '42P16' ||
+                        (message && message.includes('already exists'))
                     ) {
-                        console.log(
-                            `  ⚠️  Statement ${i + 1} skipped (already exists)`
+                        throw new Error(
+                            `Duplicate object detected while applying ${migrationFile} (statement ${i + 1}). ` +
+                                'This migration is not recorded as applied and may indicate schema drift. ' +
+                                'Verify the database state and update the migration tracking table if necessary.'
                         );
-                    } else {
-                        throw error;
                     }
+
+                    throw error;
                 }
             }
 
             console.log(`✅ Migration ${migrationFile} completed`);
+            await pool.query(
+                `INSERT INTO ${trackingTableName} (file_name) VALUES ($1) ON CONFLICT (file_name) DO NOTHING`,
+                [migrationFile]
+            );
         }
 
         console.log('\n🎉 All migrations completed successfully!');

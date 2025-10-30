@@ -3,7 +3,7 @@ import {
     getTranslations,
     type Locale,
 } from '@aquila/dialogue';
-import type NovelReader from '@/components/NovelReader.svelte';
+import { mount } from 'svelte';
 
 export interface SceneState {
     storyId: string;
@@ -13,7 +13,7 @@ export interface SceneState {
 
 export class ReaderManager {
     private currentState: SceneState;
-    private readerInstance: NovelReader | null = null;
+    private readerInstance: { unmount: () => void } | null = null;
     private readonly t: ReturnType<typeof getTranslations>;
 
     constructor(locale: Locale) {
@@ -160,13 +160,16 @@ export class ReaderManager {
         }
 
         if (this.readerInstance) {
-            this.readerInstance.$destroy();
+            this.readerInstance.unmount();
         }
+
+        // Clear container
+        container.innerHTML = '';
 
         // Dynamic import to avoid issues with Astro SSR
         import('@/components/NovelReader.svelte').then(module => {
             const NovelReaderComponent = module.default;
-            this.readerInstance = new NovelReaderComponent({
+            this.readerInstance = mount(NovelReaderComponent, {
                 target: container,
                 props: {
                     dialogue,

@@ -40,7 +40,8 @@
   "common": {
     "logout": "Logout",
     "login": "Login",
-    "back": "Back"
+    "back": "Back",
+    "backToHome": "← Back to Home"
   },
   "setup": {
     "title": "Setup Character",
@@ -106,6 +107,13 @@
     "bookmarkSaved": "Bookmark saved!",
     "bookmarkFailed": "Failed to save bookmark:",
     "bookmarkError": "Failed to save bookmark. Please try again.",
-    "endOfStory": "End of story!"
+    "endOfStory": "End of story!",
+    "continue": "Continue",
+    "nextScene": "Next Scene",
+    "complete": "Complete",
+    "bookmark": "📖 Bookmark",
+    "page": "Page",
+    "of": "of",
+    "unknown": "Unknown"
   }
 }

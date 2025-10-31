@@ -9,5 +9,8 @@ export const translations = {
 export type Locale = keyof typeof translations;
 
 export function getTranslations(locale: Locale) {
-    return translations[locale] || translations.en;
+    return {
+        ...(translations[locale] || translations.en),
+        locale,
+    };
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
     /* eslint-disable svelte/infinite-reactive-loop */
-    import type { DialogueEntry, ChoiceDefinition } from '@aquila/dialogue';
-    import { CharacterDirectory } from '@aquila/dialogue';
+    import type { DialogueEntry, ChoiceDefinition, Locale } from '@aquila/dialogue';
+    import { CharacterDirectory, getTranslations } from '@aquila/dialogue';
     
     export let dialogue: DialogueEntry[] = [];
     export let choice: ChoiceDefinition | null = null;
@@ -10,6 +10,10 @@
     export let onNext: () => void = () => {};
     export let canGoNext: boolean = false;
     export let showBookmarkButton: boolean = true;
+    export let locale: Locale = 'en';
+    export let backUrl: string = '/';
+
+    $: t = getTranslations(locale);
 
     let currentDialogueIndex = 0;
     let displayedText = '';
@@ -20,7 +24,7 @@
 
     $: currentDialogue = dialogue[currentDialogueIndex];
     $: characterName = currentDialogue?.characterId 
-        ? CharacterDirectory[currentDialogue.characterId]?.displayName || 'Unknown'
+        ? CharacterDirectory.getById(currentDialogue.characterId)?.name || t.reader.unknown
         : currentDialogue?.character || '';
     $: isLastDialogue = currentDialogueIndex >= dialogue.length - 1;
 
@@ -103,6 +107,16 @@
 <svelte:window on:keydown={handleKeyPress} />
 
 <div class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex items-center justify-center p-6">
+    <!-- Back button at top left -->
+    <div class="fixed top-6 left-6 z-10">
+        <a
+            href={backUrl}
+            class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+        >
+            {t.common.backToHome}
+        </a>
+    </div>
+
     <div class="max-w-4xl w-full">
         <!-- Main dialogue box with glassmorphism style -->
         <div class="bg-white/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50">
@@ -132,11 +146,11 @@
                             class="group px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                         >
                             {#if isLastDialogue && canGoNext}
-                                Next Scene
+                                {t.reader.nextScene}
                             {:else if isLastDialogue}
-                                Complete
+                                {t.reader.complete}
                             {:else}
-                                Continue
+                                {t.reader.continue}
                             {/if}
                         </button>
                     </div>
@@ -167,13 +181,17 @@
                     on:click={onBookmark}
                     class="px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-white/40"
                 >
-                    📖 Bookmark
+                    {t.reader.bookmark}
                 </button>
             {/if}
 
             <!-- Progress indicator -->
             <div class="text-white/90 text-sm font-medium">
-                Page {currentDialogueIndex + 1} of {dialogue.length}
+                {#if locale === 'zh'}
+                    {t.reader.page} {currentDialogueIndex + 1} {t.reader.of} {dialogue.length} 頁
+                {:else}
+                    {t.reader.page} {currentDialogueIndex + 1} {t.reader.of} {dialogue.length}
+                {/if}
             </div>
         </div>
     </div>

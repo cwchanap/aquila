@@ -1,5 +1,7 @@
 ---
 import MainLayout from '@/layouts/main.astro';
+
+const locale = 'zh';
 ---
 
 <MainLayout title="Bookmarks - Aquila">
@@ -14,7 +16,7 @@ import MainLayout from '@/layouts/main.astro';
             <!-- Back button -->
             <div class="mb-6">
                 <a
-                    href="/en/"
+                    href={`/${locale}/`}
                     id="back-button"
                     class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                 >
@@ -22,7 +24,7 @@ import MainLayout from '@/layouts/main.astro';
             </div>
 
             <!-- Bookmarks list -->
-            <div id="bookmarks-container" class="space-y-4">
+            <div id="bookmarks-container" class="space-y-4" data-locale={locale}>
                 <div class="text-center py-12">
                     <div id="loading-text" class="text-white/80"></div>
                 </div>
@@ -33,9 +35,9 @@ import MainLayout from '@/layouts/main.astro';
     <script>
         import { BookmarksManager } from '@/lib/bookmarks-manager';
 
-        const locale = 'en';
-
         document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('bookmarks-container');
+            const locale = container?.getAttribute('data-locale') || 'en';
             const manager = new BookmarksManager(locale);
             manager.initializeUI();
             manager.loadBookmarks();

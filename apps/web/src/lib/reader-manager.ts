@@ -179,6 +179,8 @@ export class ReaderManager {
                     onNext: this.handleNext,
                     canGoNext,
                     showBookmarkButton: true,
+                    locale: this.t.locale,
+                    backUrl: `/${this.t.locale}/`,
                 },
             });
         });

@@ -2,6 +2,8 @@ import {
     getStoryContent,
     getTranslations,
     type Locale,
+    type DialogueEntry,
+    type ChoiceDefinition,
 } from '@aquila/dialogue';
 import { mount } from 'svelte';
 
@@ -25,6 +27,33 @@ export class ReaderManager {
         this.t = getTranslations(locale);
     }
 
+    private validateSceneState(data: unknown): data is SceneState {
+        return (
+            data &&
+            typeof data === 'object' &&
+            typeof data.storyId === 'string' &&
+            typeof data.sceneId === 'string' &&
+            typeof data.locale === 'string'
+        );
+    }
+
+    private parseSceneNumber(sceneId: string): number | null {
+        const match = sceneId.match(/scene_(\d+)([a-z])?/);
+        return match ? parseInt(match[1]) : null;
+    }
+
+    private hasNextScene(sceneId: string): boolean {
+        const sceneNumber = this.parseSceneNumber(sceneId);
+        if (sceneNumber === null) return false;
+
+        const nextScene = `scene_${sceneNumber + 1}`;
+        const story = getStoryContent(
+            this.currentState.storyId,
+            this.currentState.locale
+        );
+        return !!story.dialogue[nextScene];
+    }
+
     loadInitialState(): SceneState {
         const params = new URLSearchParams(window.location.search);
         const urlScene = params.get('scene');
@@ -41,7 +70,12 @@ export class ReaderManager {
         const saved = localStorage.getItem('aquila:currentScene');
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                if (this.validateSceneState(parsed)) {
+                    return parsed;
+                } else {
+                    console.warn('Saved state has invalid structure, ignoring');
+                }
             } catch (e) {
                 console.error('Failed to parse saved state', e);
             }
@@ -59,15 +93,22 @@ export class ReaderManager {
         window.history.pushState({}, '', url);
     }
 
-    private getSceneData(storyId: string, sceneId: string, locale: string) {
+    private getSceneData(
+        storyId: string,
+        sceneId: string,
+        locale: string
+    ): {
+        dialogue: DialogueEntry[];
+        choice: ChoiceDefinition | null;
+    } {
         const story = getStoryContent(storyId, locale);
         const dialogue = story.dialogue[sceneId] || [];
 
-        const choiceId = Object.keys(story.choices).find(id => {
-            return id.includes(sceneId.replace('scene_', ''));
-        });
-
-        const choice = choiceId ? story.choices[choiceId] : null;
+        // Use deterministic mapping: choice_{sceneNumber}
+        // e.g., scene_3 -> choice_3, scene_4a -> choice_4
+        const sceneNumber = this.parseSceneNumber(sceneId);
+        const choiceKey = sceneNumber !== null ? `choice_${sceneNumber}` : null;
+        const choice = choiceKey ? story.choices[choiceKey] || null : null;
 
         return { dialogue, choice };
     }
@@ -120,20 +161,15 @@ export class ReaderManager {
     };
 
     handleNext = (): void => {
-        const match = this.currentState.sceneId.match(/scene_(\d+)([a-z])?/);
-        if (match) {
-            const num = parseInt(match[1]);
-            const nextScene = `scene_${num + 1}`;
-
-            const story = getStoryContent(
-                this.currentState.storyId,
-                this.currentState.locale
-            );
-            if (story.dialogue[nextScene]) {
-                this.navigateToScene(nextScene);
-            } else {
-                alert(this.t.reader.endOfStory);
-            }
+        const sceneNumber = this.parseSceneNumber(this.currentState.sceneId);
+        if (
+            sceneNumber !== null &&
+            this.hasNextScene(this.currentState.sceneId)
+        ) {
+            const nextScene = `scene_${sceneNumber + 1}`;
+            this.navigateToScene(nextScene);
+        } else {
+            alert(this.t.reader.endOfStory);
         }
     };
 
@@ -147,17 +183,7 @@ export class ReaderManager {
             this.currentState.locale
         );
 
-        const story = getStoryContent(
-            this.currentState.storyId,
-            this.currentState.locale
-        );
-        const match = this.currentState.sceneId.match(/scene_(\d+)([a-z])?/);
-        let canGoNext = false;
-        if (match) {
-            const num = parseInt(match[1]);
-            const nextScene = `scene_${num + 1}`;
-            canGoNext = !!story.dialogue[nextScene];
-        }
+        const canGoNext = this.hasNextScene(this.currentState.sceneId);
 
         if (this.readerInstance) {
             this.readerInstance.unmount();

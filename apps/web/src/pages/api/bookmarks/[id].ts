@@ -78,7 +78,10 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             })
         );
         return new Response(
-            JSON.stringify({ error: 'Failed to delete bookmark' }),
+            JSON.stringify({
+                error: 'Failed to delete bookmark',
+                correlationId,
+            }),
             {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },

@@ -112,8 +112,7 @@
     "nextScene": "Next Scene",
     "complete": "Complete",
     "bookmark": "📖 Bookmark",
-    "page": "Page",
-    "of": "of",
+    "pageDisplay": "Page {current} of {total}",
     "unknown": "Unknown"
   }
 }

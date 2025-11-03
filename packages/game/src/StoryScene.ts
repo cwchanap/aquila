@@ -168,12 +168,12 @@ export class StoryScene extends BaseScene {
                     kind: 'scene',
                     id: 'scene_3',
                     sceneId: 'scene_3',
-                    next: 'choice:get_off_or_stay',
+                    next: 'choice:choice_3',
                 },
                 {
                     kind: 'choice',
-                    id: 'choice:get_off_or_stay',
-                    choiceId: 'get_off_or_stay',
+                    id: 'choice:choice_3',
+                    choiceId: 'choice_3',
                     nextByOption: {
                         leave_train: 'scene_4a',
                         stay_on_train: 'scene_4b',

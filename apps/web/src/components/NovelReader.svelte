@@ -187,11 +187,7 @@
 
             <!-- Progress indicator -->
             <div class="text-white/90 text-sm font-medium">
-                {#if locale === 'zh'}
-                    {t.reader.page} {currentDialogueIndex + 1} {t.reader.of} {dialogue.length} 頁
-                {:else}
-                    {t.reader.page} {currentDialogueIndex + 1} {t.reader.of} {dialogue.length}
-                {/if}
+                {t.reader.pageDisplay.replace('{current}', (currentDialogueIndex + 1).toString()).replace('{total}', dialogue.length.toString())}
             </div>
         </div>
     </div>

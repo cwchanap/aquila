@@ -1,7 +1,8 @@
 ---
 import MainLayout from '@/layouts/main.astro';
 
-const locale = 'zh';
+// Derive locale dynamically from the route path
+const locale = Astro.url.pathname.split('/')[1] || 'en';
 ---
 
 <MainLayout title="Bookmarks - Aquila">

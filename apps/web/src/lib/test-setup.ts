@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, beforeEach } from 'vitest';
 
 // Mock crypto.randomUUID for consistent test results
 Object.defineProperty(global, 'crypto', {
@@ -96,7 +96,82 @@ const createDbMock = (): DbMockChain => {
     return chain;
 };
 
+// Export factory function for tests that need isolated mocks
+export const createFreshDbMock = createDbMock;
+
+/**
+ * Database Mock Usage Patterns:
+ *
+ * 1. Global Shared Mock (default):
+ *    - All tests share the same dbMockInstance
+ *    - Automatically reset between tests via global beforeEach
+ *    - Suitable for most tests that don't modify mock behavior extensively
+ *
+ * 2. Isolated Mock per Test:
+ *    - Import createFreshDbMock and use it in individual tests
+ *    - Completely isolated - no state sharing between tests
+ *    - Suitable for tests that need specific mock behaviors or heavy customization
+ *
+ * Example usage for isolated mocks:
+ * ```typescript
+ * import { createFreshDbMock } from '../test-setup';
+ *
+ * describe('My Test', () => {
+ *   it('should work with isolated mock', () => {
+ *     const db = createFreshDbMock();
+ *     // Configure db mock for this specific test
+ *     db.select.mockReturnValue(db);
+ *     db.execute.mockResolvedValue([{ id: '1' }]);
+ *
+ *     // Use db in your test
+ *   });
+ * });
+ * ```
+ */
+
+// Create shared instance for backward compatibility, but provide reset mechanism
 const dbMockInstance = createDbMock();
+
+// Reset function to restore default behaviors
+export const resetDbMock = () => {
+    const chainReturningMethods: Array<keyof DbMockChain> = [
+        'select',
+        'insert',
+        'update',
+        'delete',
+        'from',
+        'into',
+        'values',
+        'set',
+        'where',
+        'andWhere',
+        'innerJoin',
+        'limit',
+        'returning',
+    ];
+
+    chainReturningMethods.forEach(method => {
+        dbMockInstance[method].mockReset();
+        dbMockInstance[method].mockReturnValue(dbMockInstance);
+    });
+
+    dbMockInstance.execute.mockReset();
+    dbMockInstance.execute.mockResolvedValue([]);
+
+    dbMockInstance.executeTakeFirst.mockReset();
+    dbMockInstance.executeTakeFirst.mockResolvedValue(undefined);
+
+    dbMockInstance.executeTakeFirstOrThrow.mockReset();
+    dbMockInstance.executeTakeFirstOrThrow.mockImplementation(async () => {
+        throw new Error('No rows found');
+    });
+};
+
+// Global beforeEach to reset database mock between tests
+// This prevents state leakage between tests that use the shared dbMockInstance
+beforeEach(() => {
+    resetDbMock();
+});
 
 vi.mock('./drizzle/db.js', () => ({
     db: dbMockInstance,

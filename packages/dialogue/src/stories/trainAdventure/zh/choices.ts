@@ -1,7 +1,7 @@
 import type { ChoiceMap } from '../../../types';
 
 export const trainAdventureZhChoices: ChoiceMap = {
-    get_off_or_stay: {
+    choice_3: {
         prompt: '李杰應該怎麼做？',
         options: [
             {

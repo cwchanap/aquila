@@ -112,8 +112,7 @@
     "nextScene": "下一場景",
     "complete": "完成",
     "bookmark": "📖 書籤",
-    "page": "第",
-    "of": "頁，共",
+    "pageDisplay": "第 {current} / {total} 頁",
     "unknown": "未知"
   }
 }

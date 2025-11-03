@@ -1,0 +1,3 @@
+-- Migration intentionally left blank.
+-- Previous attempt to add bookmark foreign keys caused runtime regressions
+-- because built-in stories/scenes are not stored in the relational tables yet.

@@ -1,7 +1,7 @@
 ---
 import MainLayout from '@/layouts/main.astro';
 
-const locale = 'zh';
+const locale = 'en';
 ---
 
 <MainLayout title="Novel Reader - Aquila">
@@ -14,6 +14,10 @@ const locale = 'zh';
 
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('reader-container');
+            if (!container) {
+                console.warn('Reader container element not found');
+                return;
+            }
             const locale = container?.getAttribute('data-locale') || 'en';
             const manager = new ReaderManager(locale);
             manager.initialize();

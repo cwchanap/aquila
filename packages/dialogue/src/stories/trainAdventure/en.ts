@@ -480,7 +480,7 @@ export const trainAdventureEnDialogue: DialogueMap = {
 };
 
 export const trainAdventureEnChoices: ChoiceMap = {
-    get_off_or_stay: {
+    choice_3: {
         prompt: 'What should Li Jie do at the station?',
         options: [
             {

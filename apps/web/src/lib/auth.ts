@@ -1,7 +1,14 @@
 import { betterAuth } from 'better-auth';
 
 // Astro uses import.meta.env, but fallback to process.env for compatibility
-const databaseUrl = import.meta.env?.DATABASE_URL || process.env.DATABASE_URL;
+const isTestEnv =
+    (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test') ||
+    process.env.NODE_ENV === 'test';
+
+const databaseUrl =
+    import.meta.env?.DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    (isTestEnv ? 'postgres://localhost:5432/aquila_test' : undefined);
 
 if (!databaseUrl) {
     throw new Error(

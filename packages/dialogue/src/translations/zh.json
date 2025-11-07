@@ -78,6 +78,25 @@
     "nameRequired": "角色名稱不能為空",
     "updateFailed": "更新角色名稱失敗，請重試。"
   },
+  "characterNames": {
+    "narrator": "旁白",
+    "li_jie": "李杰",
+    "tanaka_kenta": "田中健太",
+    "suzuki_asuka": "鈴木明日香",
+    "sato_takumi": "佐藤拓海",
+    "takahashi_misaki": "高橋美咲",
+    "saito_ren": "斎藤蓮",
+    "yamamoto_koji": "山本浩二",
+    "ito_nana": "伊藤奈々",
+    "ito_makoto": "伊藤誠",
+    "kobayashi_shota": "小林翔太",
+    "kobayashi_tomoko": "小林智子",
+    "kobayashi_yudai": "小林雄大",
+    "kobayashi_hina": "小林陽菜",
+    "nakamura_hayato": "中村隼人",
+    "shimizu_emi": "清水恵美",
+    "ling_mo": "凌墨"
+  },
   "bookmarks": {
     "title": "📖 我的書籤",
     "description": "您儲存的閱讀進度",

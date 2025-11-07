@@ -23,9 +23,31 @@
     let lastDialogueText = '';
 
     $: currentDialogue = dialogue[currentDialogueIndex];
-    $: characterName = currentDialogue?.characterId 
-        ? CharacterDirectory.getById(currentDialogue.characterId)?.name || t.reader.unknown
-        : currentDialogue?.character || '';
+    $: characterName = (() => {
+        if (!currentDialogue) return '';
+
+        if (currentDialogue.characterId) {
+            const characterId = currentDialogue.characterId;
+            const localizedName =
+                (t as Record<string, unknown>).characterNames &&
+                typeof (t as Record<string, unknown>).characterNames === 'object'
+                    ? (
+                          (t as {
+                              characterNames?: Record<string, string>;
+                          }).characterNames?.[characterId] ?? undefined
+                      )
+                    : undefined;
+
+            if (localizedName) {
+                return localizedName;
+            }
+
+            const info = CharacterDirectory.getById(characterId);
+            return info?.name ?? t.reader.unknown;
+        }
+
+        return currentDialogue.character || '';
+    })();
     $: isLastDialogue = currentDialogueIndex >= dialogue.length - 1;
 
     // Type out text effect - only trigger when dialogue actually changes

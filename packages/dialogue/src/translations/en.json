@@ -78,6 +78,25 @@
     "nameRequired": "Character name cannot be empty",
     "updateFailed": "Failed to update character name. Please try again."
   },
+  "characterNames": {
+    "narrator": "Narrator",
+    "li_jie": "Li Jie",
+    "tanaka_kenta": "Tanaka Kenta",
+    "suzuki_asuka": "Suzuki Asuka",
+    "sato_takumi": "Sato Takumi",
+    "takahashi_misaki": "Takahashi Misaki",
+    "saito_ren": "Saito Ren",
+    "yamamoto_koji": "Yamamoto Koji",
+    "ito_nana": "Ito Nana",
+    "ito_makoto": "Ito Makoto",
+    "kobayashi_shota": "Kobayashi Shota",
+    "kobayashi_tomoko": "Kobayashi Tomoko",
+    "kobayashi_yudai": "Kobayashi Yudai",
+    "kobayashi_hina": "Kobayashi Hina",
+    "nakamura_hayato": "Nakamura Hayato",
+    "shimizu_emi": "Shimizu Emi",
+    "ling_mo": "Ling Mo"
+  },
   "bookmarks": {
     "title": "📖 My Bookmarks",
     "description": "Your saved reading progress",

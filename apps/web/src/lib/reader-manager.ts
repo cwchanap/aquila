@@ -10,30 +10,65 @@ import { mount } from 'svelte';
 export interface SceneState {
     storyId: string;
     sceneId: string;
-    locale: string;
+    locale: Locale;
 }
 
 export class ReaderManager {
     private currentState: SceneState;
     private readerInstance: { unmount: () => void } | null = null;
-    private readonly t: ReturnType<typeof getTranslations>;
+    private readonly initialLocale: Locale;
+
+    private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
+    private static readonly LEGACY_KEYS = [
+        'aquila:currentScene',
+        'aquila:currentScene:en',
+        'aquila:currentScene:zh',
+    ];
 
     constructor(locale: Locale) {
+        this.initialLocale = locale;
         this.currentState = {
             storyId: 'trainAdventure',
             sceneId: 'scene_1',
-            locale: locale,
+            locale,
         };
-        this.t = getTranslations(locale);
+
+        this.purgeLegacyState();
+    }
+
+    private get storageKey(): string {
+        return `${ReaderManager.STORAGE_KEY_PREFIX}:${this.initialLocale}`;
+    }
+
+    private isLocale(value: unknown): value is Locale {
+        return value === 'en' || value === 'zh';
+    }
+
+    private purgeLegacyState(): void {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        for (const key of ReaderManager.LEGACY_KEYS) {
+            localStorage.removeItem(key);
+        }
+    }
+
+    private get t() {
+        return getTranslations(this.currentState.locale);
     }
 
     private validateSceneState(data: unknown): data is SceneState {
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+
+        const { storyId, sceneId, locale } = data as Record<string, unknown>;
+
         return (
-            data &&
-            typeof data === 'object' &&
-            typeof data.storyId === 'string' &&
-            typeof data.sceneId === 'string' &&
-            typeof data.locale === 'string'
+            typeof storyId === 'string' &&
+            typeof sceneId === 'string' &&
+            this.isLocale(locale)
         );
     }
 
@@ -61,18 +96,36 @@ export class ReaderManager {
 
         if (urlScene) {
             return {
-                storyId: urlStory || 'trainAdventure',
+                storyId: urlStory || this.currentState.storyId,
                 sceneId: urlScene,
                 locale: this.currentState.locale,
             };
         }
 
-        const saved = localStorage.getItem('aquila:currentScene');
+        const saved = localStorage.getItem(this.storageKey);
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
                 if (this.validateSceneState(parsed)) {
-                    return parsed;
+                    if (
+                        parsed.locale &&
+                        this.isLocale(parsed.locale) &&
+                        parsed.locale !== this.initialLocale
+                    ) {
+                        // Saved state belongs to a different locale; ignore it
+                        localStorage.removeItem(this.storageKey);
+                    } else {
+                        const state: SceneState = {
+                            storyId: parsed.storyId,
+                            sceneId: parsed.sceneId,
+                            locale: this.initialLocale,
+                        };
+                        localStorage.setItem(
+                            this.storageKey,
+                            JSON.stringify(state)
+                        );
+                        return state;
+                    }
                 } else {
                     console.warn('Saved state has invalid structure, ignoring');
                 }
@@ -85,18 +138,26 @@ export class ReaderManager {
     }
 
     saveState(state: SceneState): void {
-        localStorage.setItem('aquila:currentScene', JSON.stringify(state));
+        const updatedState: SceneState = {
+            storyId: state.storyId,
+            sceneId: state.sceneId,
+            locale: this.initialLocale,
+        };
+
+        this.currentState = updatedState;
+
+        localStorage.setItem(this.storageKey, JSON.stringify(updatedState));
 
         const url = new URL(window.location.href);
-        url.searchParams.set('story', state.storyId);
-        url.searchParams.set('scene', state.sceneId);
+        url.searchParams.set('story', updatedState.storyId);
+        url.searchParams.set('scene', updatedState.sceneId);
         window.history.pushState({}, '', url);
     }
 
     private getSceneData(
         storyId: string,
         sceneId: string,
-        locale: string
+        locale: Locale
     ): {
         dialogue: DialogueEntry[];
         choice: ChoiceDefinition | null;
@@ -124,9 +185,13 @@ export class ReaderManager {
     };
 
     handleBookmark = async (): Promise<void> => {
+        const translations = this.t;
+
         const bookmarkName = prompt(
-            this.t.reader.bookmarkPrompt,
-            this.t.reader.defaultBookmarkName + ' ' + this.currentState.sceneId
+            translations.reader.bookmarkPrompt,
+            translations.reader.defaultBookmarkName +
+                ' ' +
+                this.currentState.sceneId
         );
         if (!bookmarkName) return;
 
@@ -145,22 +210,23 @@ export class ReaderManager {
             });
 
             if (response.ok) {
-                alert(this.t.reader.bookmarkSaved);
+                alert(translations.reader.bookmarkSaved);
             } else {
                 const error = await response.json();
                 alert(
-                    this.t.reader.bookmarkFailed +
+                    translations.reader.bookmarkFailed +
                         ' ' +
                         (error.message || 'Unknown error')
                 );
             }
         } catch (error) {
             console.error('Failed to save bookmark:', error);
-            alert(this.t.reader.bookmarkError);
+            alert(translations.reader.bookmarkError);
         }
     };
 
     handleNext = (): void => {
+        const translations = this.t;
         const sceneNumber = this.parseSceneNumber(this.currentState.sceneId);
         if (
             sceneNumber !== null &&
@@ -169,13 +235,15 @@ export class ReaderManager {
             const nextScene = `scene_${sceneNumber + 1}`;
             this.navigateToScene(nextScene);
         } else {
-            alert(this.t.reader.endOfStory);
+            alert(translations.reader.endOfStory);
         }
     };
 
     renderReader(): void {
         const container = document.getElementById('reader-container');
         if (!container) return;
+
+        const translations = this.t;
 
         const { dialogue, choice } = this.getSceneData(
             this.currentState.storyId,
@@ -195,7 +263,7 @@ export class ReaderManager {
         // Dynamic import to avoid issues with Astro SSR
         import('@/components/NovelReader.svelte').then(module => {
             const NovelReaderComponent = module.default;
-            this.readerInstance = mount(NovelReaderComponent, {
+            const mountedComponent = mount(NovelReaderComponent, {
                 target: container,
                 props: {
                     dialogue,
@@ -205,10 +273,21 @@ export class ReaderManager {
                     onNext: this.handleNext,
                     canGoNext,
                     showBookmarkButton: true,
-                    locale: this.t.locale,
-                    backUrl: `/${this.t.locale}/`,
+                    locale: translations.locale,
+                    backUrl: `/${translations.locale}/`,
                 },
             });
+
+            this.readerInstance = {
+                unmount: () => {
+                    const destroy = (
+                        mountedComponent as { destroy?: () => void }
+                    ).destroy;
+                    if (typeof destroy === 'function') {
+                        destroy();
+                    }
+                },
+            };
         });
     }
 

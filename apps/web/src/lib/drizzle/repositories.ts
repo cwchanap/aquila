@@ -82,7 +82,11 @@ export class UserRepository {
     }
 
     async delete(id: string) {
-        await this.db.delete(users).where(eq(users.id, id));
+        const deleted = await this.db
+            .delete(users)
+            .where(eq(users.id, id))
+            .returning();
+        return deleted[0];
     }
 
     async list(limit = 50, offset = 0) {

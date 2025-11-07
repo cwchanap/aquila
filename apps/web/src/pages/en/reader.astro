@@ -1,11 +1,14 @@
 ---
 import MainLayout from '@/layouts/main.astro';
+import { getTranslations, type Locale } from '@aquila/dialogue';
 
-const locale = 'en';
+const locale = ((Astro.currentLocale as string | undefined) ?? 'en') as Locale;
+const translations = getTranslations(locale);
+const title = translations.reader.title;
 ---
 
-<MainLayout title="Novel Reader - Aquila">
-    <div id="reader-container" class="min-h-screen" data-locale={locale}>
+<MainLayout title={title}>
+    <div id="reader-container" class="min-h-screen" data-locale={translations.locale}>
         <!-- Reader will be mounted here -->
     </div>
 
@@ -18,7 +21,8 @@ const locale = 'en';
                 console.warn('Reader container element not found');
                 return;
             }
-            const locale = container?.getAttribute('data-locale') || 'en';
+            const attr = container.getAttribute('data-locale');
+            const locale = attr === 'zh' || attr === 'en' ? attr : 'en';
             const manager = new ReaderManager(locale);
             manager.initialize();
         });

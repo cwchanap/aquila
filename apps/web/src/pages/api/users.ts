@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
-import { UserRepository } from '../../lib/drizzle/repositories.js';
+import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/repositories.js';
+
+const userRepository = new UserRepositoryClass();
 
 export const GET: APIRoute = async ({ url }) => {
     try {
@@ -11,7 +13,7 @@ export const GET: APIRoute = async ({ url }) => {
 
         // Get specific user by ID
         if (userId) {
-            const user = await UserRepository.findById(userId);
+            const user = await userRepository.findById(userId);
 
             if (!user) {
                 return new Response(
@@ -31,7 +33,7 @@ export const GET: APIRoute = async ({ url }) => {
 
         // Get user by email
         if (email) {
-            const user = await UserRepository.findByEmail(email);
+            const user = await userRepository.findByEmail(email);
 
             if (!user) {
                 return new Response(
@@ -51,7 +53,7 @@ export const GET: APIRoute = async ({ url }) => {
 
         // Get user by username
         if (username) {
-            const user = await UserRepository.findByUsername(username);
+            const user = await userRepository.findByUsername(username);
 
             if (!user) {
                 return new Response(
@@ -70,7 +72,7 @@ export const GET: APIRoute = async ({ url }) => {
         }
 
         // List all users with pagination
-        const users = await UserRepository.list(limit, offset);
+        const users = await userRepository.list(limit, offset);
 
         return new Response(JSON.stringify(users), {
             status: 200,
@@ -91,12 +93,12 @@ export const GET: APIRoute = async ({ url }) => {
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        const { id, email, username } = body;
+        const { email, username } = body;
 
-        if (!id || !email || !username) {
+        if (!email || !username) {
             return new Response(
                 JSON.stringify({
-                    error: 'Missing required fields: id, email, username',
+                    error: 'Missing required fields: email, username',
                 }),
                 {
                     status: 400,
@@ -105,7 +107,10 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        const user = await UserRepository.create({ id, email, username });
+        const user = await userRepository.create({
+            email,
+            username,
+        });
 
         return new Response(JSON.stringify(user), {
             status: 201,
@@ -142,7 +147,7 @@ export const PUT: APIRoute = async ({ request }) => {
         if (email) updates.email = email;
         if (username) updates.username = username;
 
-        const user = await UserRepository.update(id, updates);
+        const user = await userRepository.update(id, updates);
 
         if (!user) {
             return new Response(JSON.stringify({ error: 'User not found' }), {
@@ -169,8 +174,8 @@ export const PUT: APIRoute = async ({ request }) => {
 
 export const DELETE: APIRoute = async ({ request }) => {
     try {
-        const body = await request.json();
-        const { id } = body;
+        const url = new URL(request.url);
+        const id = url.searchParams.get('id');
 
         if (!id) {
             return new Response(
@@ -182,9 +187,9 @@ export const DELETE: APIRoute = async ({ request }) => {
             );
         }
 
-        const user = await UserRepository.delete(id);
+        const deletedUser = await userRepository.delete(id);
 
-        if (!user) {
+        if (!deletedUser) {
             return new Response(JSON.stringify({ error: 'User not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -192,7 +197,7 @@ export const DELETE: APIRoute = async ({ request }) => {
         }
 
         return new Response(
-            JSON.stringify({ message: 'User deleted successfully', user }),
+            JSON.stringify({ message: 'User deleted successfully' }),
             {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },

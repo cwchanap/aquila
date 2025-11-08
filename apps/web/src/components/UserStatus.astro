@@ -19,7 +19,7 @@ try {
 
 <div class="user-status absolute top-6 right-6 z-50">
   {user ? (
-    <div class="flex items-center gap-3 relative">
+    <div class="flex items-center relative">
       <div class="relative">
         <button
           id="user-menu-button"
@@ -56,20 +56,21 @@ try {
             >
               Story Config
             </a>
+            <div class="border-t border-slate-200/60 my-2 mx-2"></div>
+            <form method="POST" action="/api/logout">
+              <button
+                type="submit"
+                title={t(currentLocale, 'common.logout')}
+                class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
+                style="font-family: 'Exo 2', sans-serif;"
+              >
+                {t(currentLocale, 'common.logout')}
+              </button>
+            </form>
           </div>
         </div>
       </div>
 
-      <form method="POST" action="/api/simple-auth/session" style="display: inline;">
-        <button
-          type="submit"
-          title={t(currentLocale, 'common.logout')}
-          class="px-4 py-2 text-sm bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 backdrop-blur-sm border border-red-300/60 rounded-2xl text-white font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-          style="font-family: 'Orbitron', monospace;"
-        >
-          {t(currentLocale, 'common.logout')}
-        </button>
-      </form>
     </div>
   ) : (
     <a

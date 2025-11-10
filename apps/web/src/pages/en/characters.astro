@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../../layouts/main.astro';
-import UserStatus from '../../components/UserStatus.astro';
+import UserStatus from '../../components/UserStatus.svelte';
 import { SimpleAuthService, type SimpleUser } from '../../lib/simple-auth.js';
 import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
@@ -35,7 +35,8 @@ try {
 
     // Get character setups from database if authenticated
     if (user?.id) {
-      characterSetups = await CharacterSetupRepository.findByUser(user.id);
+      const characterSetupRepo = new CharacterSetupRepository();
+      characterSetups = await characterSetupRepo.findByUser(user.id);
     }
   }
 } catch (error) {
@@ -99,7 +100,7 @@ try {
     </div>
 
     <!-- User status -->
-    <UserStatus />
+    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
 
     <!-- Back button - Gaming Style -->
     <a
@@ -117,7 +118,7 @@ try {
       <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-4xl w-full mx-6 transform hover:scale-[1.02] transition-all duration-500">
         <!-- Title with Gaming-inspired styling -->
         <div class="text-center mb-12">
-          <h1 class="text-5xl font-black text-slate-800 mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
+          <h1 class="text-5xl font-black tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
             {t("characters.heading")}
           </h1>
           <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>

@@ -1,15 +1,14 @@
 ---
 import MainLayout from '../../layouts/main.astro';
 // Component Imports
-import MainMenu from '../../components/MainMenu.astro';
-import en from '@aquila/dialogue/translations/en.json';
-import zh from '@aquila/dialogue/translations/zh.json';
+import MainMenu from '../../components/MainMenu.svelte';
+import { translations } from '@aquila/dialogue';
 
 // Helper function to get translations
 const t = (key: string): string => {
   const locale = Astro.currentLocale || 'en';
   const keys = key.split('.');
-  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
+  let value: Record<string, unknown> = locale === 'zh' ? translations.zh : translations.en;
 
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
@@ -27,7 +26,7 @@ const t = (key: string): string => {
 ---
 
 <MainLayout title={t("menu.title")}>
-	<MainMenu />
+	<MainMenu client:load locale={Astro.currentLocale || 'en'} />
 
 	<script>
 		// Handle language preference persistence

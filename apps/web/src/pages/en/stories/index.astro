@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../../../layouts/main.astro';
 import Button from '../../../components/ui/Button.svelte';
-import UserStatus from '../../../components/UserStatus.astro';
+import UserStatus from '../../../components/UserStatus.svelte';
 import { StoryId } from '../../../lib/story-types.js';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
@@ -41,7 +41,8 @@ const isAuthed = Boolean(user?.id);
 // Check if user has already set up character for train adventure
 let hasCharacterSetup = false;
 if (isAuthed && user?.id) {
-  const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, StoryId.TRAIN_ADVENTURE);
+  const characterSetupRepo = new CharacterSetupRepository();
+  const existingSetup = await characterSetupRepo.findByUserAndStory(user.id, StoryId.TRAIN_ADVENTURE);
   if (existingSetup) {
     hasCharacterSetup = true;
     // Don't redirect - allow users to access story config page
@@ -120,14 +121,14 @@ if (isAuthed && user?.id) {
     </a>
 
     <!-- User status -->
-    <UserStatus />
+    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
 
     <!-- Main Content Container - Gaming Visual Novel Style -->
     <div class="min-h-screen flex items-center justify-center relative">
       <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-lg w-full mx-6 transform hover:scale-[1.02] transition-all duration-500" data-authed={isAuthed} data-story-id={StoryId.TRAIN_ADVENTURE}>
         <!-- Title with Gaming-inspired styling -->
         <div class="text-center mb-12">
-          <h1 class="text-5xl font-black text-slate-800 mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
+          <h1 class="text-5xl font-black mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
             {t("stories.heading")}
           </h1>
           <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>

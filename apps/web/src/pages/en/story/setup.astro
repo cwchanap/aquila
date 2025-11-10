@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../../../layouts/main.astro';
-import UserStatus from '../../../components/UserStatus.astro';
+import UserStatus from '../../../components/UserStatus.svelte';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
 import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
@@ -50,7 +50,8 @@ const isAuthed = Boolean(user?.id);
 
 // If authenticated, check if character setup already exists in DB
 if (isAuthed && user?.id) {
-  const existingSetup = await CharacterSetupRepository.findByUserAndStory(user.id, storyId);
+  const characterSetupRepo = new CharacterSetupRepository();
+  const existingSetup = await characterSetupRepo.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
     return Astro.redirect(`/${Astro.currentLocale}/story/${storyId}`);
   }
@@ -123,7 +124,7 @@ if (isAuthed && user?.id) {
     </a>
 
     <!-- User status -->
-    <UserStatus />
+    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
 
     <!-- Main Content Container - Visual Novel Style -->
     <div class="min-h-screen flex items-center justify-center relative">

@@ -3,29 +3,41 @@ import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
 import { SimpleAuthService } from '@/lib/simple-auth.js';
 
+async function validateSession(
+    request: Request
+): Promise<{ userId: string } | Response> {
+    // Get session from cookie
+    const cookieHeader = request.headers.get('cookie') || '';
+    const sessionId = cookieHeader
+        .split(';')
+        .find(c => c.trim().startsWith('session='))
+        ?.split('=')[1];
+
+    if (!sessionId) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const session = await SimpleAuthService.getSession(sessionId);
+    if (!session?.user?.id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    return { userId: session.user.id };
+}
+
 export const POST: APIRoute = async ({ request }) => {
     try {
-        // Get session from cookie
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
-
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const sessionValidation = await validateSession(request);
+        if (sessionValidation instanceof Response) {
+            return sessionValidation;
         }
-
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        const { userId } = sessionValidation;
 
         const { characterName, storyId } = await request.json();
 
@@ -54,14 +66,15 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Check if character setup already exists for this user and story
-        const existingSetup = await CharacterSetupRepository.findByUserAndStory(
-            session.user.id,
+        const characterSetupRepo = new CharacterSetupRepository();
+        const existingSetup = await characterSetupRepo.findByUserAndStory(
+            userId,
             storyId as StoryId
         );
 
         if (existingSetup) {
             // Update existing setup
-            const updatedSetup = await CharacterSetupRepository.update(
+            const updatedSetup = await characterSetupRepo.update(
                 existingSetup.id,
                 {
                     characterName: characterName.trim(),
@@ -73,8 +86,8 @@ export const POST: APIRoute = async ({ request }) => {
             });
         } else {
             // Create new setup
-            const setup = await CharacterSetupRepository.create({
-                userId: session.user.id,
+            const setup = await characterSetupRepo.create({
+                userId: userId,
                 characterName: characterName.trim(),
                 storyId: storyId as StoryId,
             });
@@ -97,34 +110,19 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const GET: APIRoute = async ({ request, url }) => {
     try {
-        // Get session from cookie
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
-
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const sessionValidation = await validateSession(request);
+        if (sessionValidation instanceof Response) {
+            return sessionValidation;
         }
-
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        const { userId } = sessionValidation;
 
         const storyId = url.searchParams.get('storyId');
+        const characterSetupRepo = new CharacterSetupRepository();
 
         if (storyId && isValidStoryId(storyId)) {
             // Get setup for specific story
-            const setup = await CharacterSetupRepository.findByUserAndStory(
-                session.user.id,
+            const setup = await characterSetupRepo.findByUserAndStory(
+                userId,
                 storyId as StoryId
             );
             return new Response(JSON.stringify(setup), {
@@ -133,9 +131,7 @@ export const GET: APIRoute = async ({ request, url }) => {
             });
         } else {
             // Get all setups for user
-            const setups = await CharacterSetupRepository.findByUser(
-                session.user.id
-            );
+            const setups = await characterSetupRepo.findByUser(userId);
             return new Response(JSON.stringify(setups), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },

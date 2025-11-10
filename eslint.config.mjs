@@ -35,6 +35,20 @@ export default [
         parser: tseslint.parser,
         extraFileExtensions: ['.svelte'],
       },
+      globals: {
+        // Browser globals for Svelte components
+        document: 'readonly',
+        window: 'readonly',
+        console: 'readonly',
+        localStorage: 'readonly',
+        Event: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        Node: 'readonly',
+        HTMLElement: 'readonly',
+        fetch: 'readonly',
+        Error: 'readonly',
+      },
     },
   },
   {

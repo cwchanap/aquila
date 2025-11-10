@@ -1,18 +1,20 @@
 ---
 import MainLayout from '@/layouts/main.astro';
-import UserStatus from '@/components/UserStatus.astro';
+import UserStatus from '@/components/UserStatus.svelte';
 import StoryWriterApp from '@/components/StoryWriter.svelte';
 import { SimpleAuthService } from '@/lib/simple-auth.js';
 
 const sessionId = Astro.cookies.get('session')?.value;
 let isAuthenticated = false;
 let userName = 'Guest';
+let user = null;
 
 if (sessionId) {
     const session = await SimpleAuthService.getSession(sessionId);
     if (session?.user) {
         isAuthenticated = true;
         userName = session.user.name || session.user.email || 'User';
+        user = session.user;
     }
 }
 
@@ -63,7 +65,7 @@ if (!isAuthenticated) {
             <div class="absolute top-16 right-1/4 w-28 h-14 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
         </div>
 
-        <UserStatus />
+        <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
 
         <div class="min-h-screen flex items-center justify-center relative px-6 py-20">
             <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-6xl w-full mx-auto">

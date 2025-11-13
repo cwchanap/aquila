@@ -54,7 +54,8 @@
     "saveFailed": "Failed to save character setup. Please try again."
   },
   "adventure": {
-    "title": "Train Adventure"
+    "title": "Train Adventure",
+    "desktop_only_notice": "Train Adventure is currently only playable in the desktop app. Download the desktop build to continue your journey."
   },
   "stories": {
     "title": "Select Story",

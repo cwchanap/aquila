@@ -5,8 +5,6 @@
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@aquila/game": ["../../packages/game/src/index.ts"],
-      "@aquila/game/*": ["../../packages/game/src/*"],
       "@aquila/assets": ["../../packages/assets"],
       "@aquila/assets/*": ["../../packages/assets/*"],
       "@aquila/dialogue/*": ["../../packages/dialogue/src/*"]
@@ -14,8 +12,7 @@
   },
   "include": [
     "src",
-    ".astro/types.d.ts",
-    "../../packages/game/src"
+    ".astro/types.d.ts"
   ],
   "exclude": [
     "dist"

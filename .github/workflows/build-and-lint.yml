@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  PNPM_VERSION: "10.8.0"
+  BUN_VERSION: "1.1.26"
   NODE_VERSION: "20"
   TURBO_TELEMETRY_DISABLED: "1"
 
@@ -19,22 +19,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          version: ${{ env.PNPM_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Lint workspace
-        run: pnpm lint
+        run: bun run lint
 
       - name: Build workspace
-        run: pnpm build
+        run: bun run build

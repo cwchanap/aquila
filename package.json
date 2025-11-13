@@ -3,23 +3,27 @@
   "private": true,
   "type": "module",
   "version": "0.0.1",
-  "packageManager": "pnpm@10.8.0",
+  "packageManager": "bun@1.1.26",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
-    "dev:web": "pnpm --filter web dev",
+    "dev:web": "turbo run dev --filter=web",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
     "test": "turbo run test",
-    "test:e2e": "pnpm --filter web test:e2e",
-    "test:ui": "pnpm --filter web test:ui:e2e",
-    "test:headed": "pnpm --filter web test:headed",
-    "test:debug": "pnpm --filter web test:debug",
-    "test:report": "pnpm --filter web test:report",
+    "test:e2e": "turbo run test:e2e --filter=web",
+    "test:ui": "turbo run test:ui --filter=web",
+    "test:headed": "turbo run test:headed --filter=web",
+    "test:debug": "turbo run test:debug --filter=web",
+    "test:report": "turbo run test:report --filter=web",
     "prepare": "husky",
-    "drizzle:generate": "pnpm --filter web drizzle:generate",
-    "drizzle:migrate": "pnpm --filter web drizzle:migrate",
-    "drizzle:studio": "pnpm --filter web drizzle:studio"
+    "drizzle:generate": "turbo run drizzle:generate --filter=web",
+    "drizzle:migrate": "turbo run drizzle:migrate --filter=web",
+    "drizzle:studio": "turbo run drizzle:studio --filter=web"
   },
   "dependencies": {},
   "devDependencies": {

@@ -8,7 +8,7 @@ export default defineConfig({
     /* Global setup file */
     globalSetup: './tests/global-setup.ts',
     webServer: {
-        command: 'pnpm run dev',
+        command: 'bun run dev',
         url: 'http://localhost:5090',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

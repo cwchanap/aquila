@@ -34,8 +34,8 @@ if (isCockroach && !allowCockroach) {
 
 const drizzleConfig = resolve(__dirname, '../drizzle.config.ts');
 const result = spawnSync(
-  'pnpm',
-  ['exec', 'drizzle-kit', 'migrate', '--config', drizzleConfig],
+  'bunx',
+  ['drizzle-kit', 'migrate', '--config', drizzleConfig],
   {
     stdio: 'inherit',
     env: process.env,

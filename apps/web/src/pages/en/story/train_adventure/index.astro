@@ -22,85 +22,12 @@ const t = (key: string): string => {
 ---
 
 <MainLayout title={t("adventure.title")}>
-  <div id="game-container" data-locale={Astro.currentLocale || 'zh'} class="w-full h-screen bg-black"></div>
+  <div class="flex h-screen w-full flex-col items-center justify-center bg-black px-4 text-center text-white">
+    <h1 class="text-4xl font-semibold">
+      {t("adventure.title")}
+    </h1>
+    <p class="mt-6 max-w-xl text-lg text-white/80">
+      {t("adventure.desktop_only_notice")}
+    </p>
+  </div>
 </MainLayout>
-
-<script>
-  import Phaser from 'phaser';
-  import { PreloadScene, StoryScene } from '@aquila/game';
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const storyId = 'train_adventure';
-    const container = document.getElementById('game-container');
-    const defaultLocale = (container?.getAttribute('data-locale') || 'en');
-    const locale = defaultLocale;
-
-    // Resolve character name and enforce setup flow before starting the game
-    async function resolveCharacterName() {
-      try {
-        // Check session state
-        const sessionRes = await fetch('/api/simple-auth/session', { credentials: 'include' });
-        const sessionData = await sessionRes.json().catch(() => ({ user: null }));
-        const user = sessionData?.user || null;
-
-        if (user && user.id) {
-          // Logged-in: must have DB setup for this story
-          const res = await fetch(`/api/character-setup?storyId=${storyId}`, { credentials: 'include' });
-          if (!res.ok) {
-            // Unexpected unauthorized while logged in; send to setup
-            window.location.href = `/${locale}/story/setup?story=${storyId}`;
-            return null;
-          }
-          const data = await res.json();
-          const name = (data && typeof data.characterName === 'string') ? data.characterName.trim() : '';
-          if (!name) {
-            window.location.href = `/${locale}/story/setup?story=${storyId}`;
-            return null;
-          }
-          return name;
-        } else {
-          // Guest: allow only if a local setup exists; otherwise send to setup
-          try {
-            const local = localStorage.getItem(`aquila:character:${storyId}`);
-            if (local) {
-              const parsed = JSON.parse(local);
-              const localName = (parsed && typeof parsed.characterName === 'string') ? parsed.characterName.trim() : '';
-              if (localName) {
-                return localName;
-              }
-            }
-          } catch (e) {
-            console.warn('Failed to read local character setup:', e);
-          }
-          window.location.href = `/${locale}/story/setup?story=${storyId}`;
-          return null;
-        }
-      } catch (e) {
-        console.warn('Failed to resolve session/setup; redirecting to setup', e);
-        window.location.href = `/${locale}/story/setup?story=${storyId}`;
-        return null;
-      }
-    }
-
-    resolveCharacterName().then((characterName) => {
-      if (!characterName) return;
-
-      const config = {
-        type: Phaser.AUTO,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        parent: 'game-container',
-        backgroundColor: '#2c3e50',
-        scene: [PreloadScene, StoryScene],
-        scale: {
-          mode: Phaser.Scale.RESIZE,
-          autoCenter: Phaser.Scale.CENTER_BOTH
-        }
-      };
-
-      const game = new Phaser.Game(config);
-      // Pass character name, locale, and storyId to the preload scene (it forwards to StoryScene)
-      game.scene.start('PreloadScene', { characterName, locale, storyId });
-    });
-  });
-</script>

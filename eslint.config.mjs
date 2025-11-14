@@ -7,6 +7,12 @@ import svelteParser from 'svelte-eslint-parser';
 
 export default [
   {
+    name: 'global-linter-options',
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
+    },
+  },
+  {
     name: 'ignores',
     ignores: [
       'dist',
@@ -49,6 +55,9 @@ export default [
         fetch: 'readonly',
         Error: 'readonly',
       },
+    },
+    rules: {
+      'svelte/no-navigation-without-resolve': 'off',
     },
   },
   {

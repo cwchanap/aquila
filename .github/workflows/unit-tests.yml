@@ -13,9 +13,24 @@ env:
   TURBO_TELEMETRY_DISABLED: "1"
 
 jobs:
-  game-unit-tests:
-    name: Game Unit Tests
+  unit-tests:
+    name: ${{ matrix.job-name }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - job-id: game
+            job-name: Game Unit Tests
+            working-directory: packages/game
+            command: bun run test
+          - job-id: web
+            job-name: Web Unit Tests
+            working-directory: apps/web
+            command: bun run test
+          - job-id: desktop
+            job-name: Desktop Unit Tests
+            working-directory: apps/desktop
+            command: bun run check
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,54 +48,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run game unit tests
-        working-directory: packages/game
-        run: bun run test
-
-  web-unit-tests:
-    name: Web Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run web unit tests
-        working-directory: apps/web
-        run: bun run test
-
-  desktop-unit-tests:
-    name: Desktop Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run desktop checks
-        working-directory: apps/desktop
-        run: bun run check
+      - name: Run ${{ matrix.job-id }} checks
+        working-directory: ${{ matrix.working-directory }}
+        run: ${{ matrix.command }}

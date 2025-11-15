@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  BUN_VERSION: "1.1.26"
-  NODE_VERSION: "20"
+  BUN_VERSION: "1.1.30"
+  NODE_VERSION: "20.11.1"
   TURBO_TELEMETRY_DISABLED: "1"
 
 jobs:

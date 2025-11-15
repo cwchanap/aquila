@@ -319,7 +319,7 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-white">Your Stories</h2>
           <button
-            onclick={openStoryModal}
+            on:click={openStoryModal}
             class="p-2 hover:bg-white/10 rounded-lg transition-colors"
             title="Create new story"
           >
@@ -339,7 +339,7 @@
           <div class="space-y-2">
             {#each stories as story (story.id)}
               <button
-                onclick={() => (selectedStoryId = story.id)}
+                on:click={() => (selectedStoryId = story.id)}
                 class={`w-full text-left p-3 rounded-lg border transition-all ${
                   selectedStoryId === story.id
                     ? 'bg-purple-500/20 border-purple-400/50'

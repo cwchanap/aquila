@@ -48,6 +48,11 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Build game package for desktop
+        if: ${{ matrix.job-name == 'Desktop Unit Tests' }}
+        working-directory: packages/game
+        run: bun run build
+
       - name: Run ${{ matrix.job-id }} checks
         working-directory: ${{ matrix.working-directory }}
         run: ${{ matrix.command }}

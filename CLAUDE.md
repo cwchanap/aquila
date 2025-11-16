@@ -59,7 +59,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 
 ### Database Development
 
-- **Schema Changes**: Update `apps/web/src/lib/drizzle/schema.ts`, then run `pnpm drizzle:generate`
+- **Schema Changes**: Update `apps/web/src/lib/drizzle/schema.ts`, then run `bun drizzle:generate`
 - **Repository Pattern**: Use repository class methods from `drizzle/repositories.ts`, not direct SQL
 - **Environment Variables**: Ensure `DATABASE_URL` is set for local dev, CI, and production
 - **Optional Tuning**: `DB_ALLOW_SELF_SIGNED=true` for non-production self-signed certs, `DB_POOL_MAX` for connection pool size (defaults to 10)
@@ -160,7 +160,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 
 - **Unit Tests (Vitest)**:
   - Located in `apps/web/src/**/__tests__/*.test.ts`
-  - Run with `pnpm --filter web test`
+  - Run with `bun --filter web test`
   - Use `jsdom` environment for browser API mocking
 - **E2E Tests (Playwright)**:
   - Located in `apps/web/tests/`

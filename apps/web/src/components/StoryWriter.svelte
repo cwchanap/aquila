@@ -92,6 +92,7 @@
         selectedStoryId = stories[0].id;
       }
     } catch (e) {
+      successMessage = null;
       error = e instanceof Error ? e.message : 'An error occurred';
       console.error('Failed to load stories:', e);
     } finally {
@@ -201,6 +202,7 @@
       showChapterModal = false;
       chapterForm = { title: '', description: '', storyId: '' };
     } catch (e) {
+      successMessage = null;
       error = e instanceof Error ? e.message : 'Failed to create chapter';
     }
   }
@@ -265,6 +267,7 @@
       showSceneModal = false;
       sceneForm = { title: '', content: '', storyId: '', chapterId: '' };
     } catch (e) {
+      successMessage = null;
       error = e instanceof Error ? e.message : 'Failed to create scene';
     }
   }

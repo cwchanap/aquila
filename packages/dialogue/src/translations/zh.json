@@ -54,7 +54,8 @@
     "saveFailed": "儲存角色設定失敗。請重試。"
   },
   "adventure": {
-    "title": "火車冒險"
+    "title": "火車冒險",
+    "desktop_only_notice": "此冒險目前僅支援桌面裝置，請在電腦上遊玩以獲得最佳體驗。"
   },
   "stories": {
     "title": "選擇故事",

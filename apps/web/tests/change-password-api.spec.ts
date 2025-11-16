@@ -10,15 +10,15 @@ test.describe('Change Password API Tests', () => {
         testUserEmail = `apiuser${Date.now()}@example.com`;
         testUserPassword = 'password123';
 
-        // Sign up the test user
-        await page.goto('/login');
+        // Sign up the test user on the localized signup page
+        await page.goto('/en/signup');
         await page.fill('input[name="email"]', testUserEmail);
         await page.fill('input[name="password"]', testUserPassword);
         await page.fill('input[name="name"]', 'API Test User');
         await page.click('button#signup-btn');
 
-        // Wait for redirect to home page
-        await expect(page).toHaveURL('/');
+        // Wait for redirect to localized home page
+        await expect(page).toHaveURL('/en/');
 
         // Get the session cookie
         const cookies = await page.context().cookies();
@@ -192,17 +192,18 @@ test.describe('Change Password API Tests', () => {
             },
         });
 
-        // Logout
-        await page.click('button[title="Logout"]');
+        // Logout by clearing the session via API and cookies
+        await page.request.post('/api/simple-auth/session');
+        await page.context().clearCookies();
 
-        // Try to login with new password
-        await page.goto('/login');
+        // Try to login with new password on localized login page
+        await page.goto('/en/login');
         await page.fill('input[name="email"]', testUserEmail);
         await page.fill('input[name="password"]', 'newpassword456');
         await page.click('button[type="submit"]');
 
-        // Should redirect to home page
-        await expect(page).toHaveURL('/');
+        // Should redirect to localized home page
+        await expect(page).toHaveURL('/en/');
         await expect(page.locator(`text=API Test User`)).toBeVisible();
     });
 });

@@ -35,16 +35,11 @@ export default defineConfig({
         screenshot: 'only-on-failure',
     },
 
-    /* Configure projects for major browsers */
+    /* Configure projects - only run Desktop Chromium for E2E */
     projects: [
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-        },
-
-        {
-            name: 'Mobile Chrome',
-            use: { ...devices['Pixel 5'] },
         },
     ],
 });

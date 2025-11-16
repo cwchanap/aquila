@@ -13,11 +13,26 @@ env:
   PLAYWRIGHT_BROWSERS_PATH: "0"
   TURBO_TELEMETRY_DISABLED: "1"
   CI: "true"
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aquila_e2e
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aquila_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout repository
@@ -39,6 +54,12 @@ jobs:
       - name: Install Playwright browsers
         working-directory: apps/web
         run: bunx playwright install --with-deps
+
+      - name: Run database migrations
+        working-directory: apps/web
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: bun run drizzle:migrate
 
       - name: Run Playwright tests
         working-directory: apps/web

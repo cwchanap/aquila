@@ -39,7 +39,7 @@ test.describe('Change Password Functionality', () => {
         await page.click('button[type="submit"]');
 
         // Should stay on profile page (no redirect on success for this implementation)
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL('/en/profile');
 
         // Try to login with the new password on localized login page
         await page.goto('/en/login');
@@ -65,7 +65,7 @@ test.describe('Change Password Functionality', () => {
         await page.click('button[type="submit"]');
 
         // Should stay on profile page
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL('/en/profile');
 
         // Should show error message (this would need to be implemented in the UI)
         // For now, we verify the form is still there
@@ -86,7 +86,7 @@ test.describe('Change Password Functionality', () => {
         await page.click('button[type="submit"]');
 
         // Should stay on profile page
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL('/en/profile');
 
         // Form should still be visible
         await expect(
@@ -106,7 +106,7 @@ test.describe('Change Password Functionality', () => {
         await page.click('button[type="submit"]');
 
         // Should stay on profile page
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL('/en/profile');
 
         // Form should still be visible
         await expect(

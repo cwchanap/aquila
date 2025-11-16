@@ -26,6 +26,7 @@
 {#if open}
   <div
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    aria-hidden="true"
     onclick={handleClose}
   >
     <div
@@ -66,16 +67,6 @@
   div[role='dialog'] {
     animation: slideUp 0.3s ease-out;
   }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
   @keyframes slideUp {
     from {
       opacity: 0;

@@ -169,6 +169,8 @@
     if (!chapterForm.storyId) return;
 
     try {
+      error = null;
+      successMessage = null;
       const story = stories.find(s => s.id === chapterForm.storyId);
       const order = story?.chapters.length || 0;
 
@@ -201,6 +203,7 @@
 
       showChapterModal = false;
       chapterForm = { title: '', description: '', storyId: '' };
+      successMessage = 'Chapter created successfully.';
     } catch (e) {
       successMessage = null;
       error = e instanceof Error ? e.message : 'Failed to create chapter';
@@ -211,6 +214,8 @@
     if (!sceneForm.storyId) return;
 
     try {
+      error = null;
+      successMessage = null;
       const story = stories.find(s => s.id === sceneForm.storyId);
       let order = 0;
 
@@ -266,6 +271,7 @@
 
       showSceneModal = false;
       sceneForm = { title: '', content: '', storyId: '', chapterId: '' };
+      successMessage = 'Scene created successfully.';
     } catch (e) {
       successMessage = null;
       error = e instanceof Error ? e.message : 'Failed to create scene';
@@ -332,6 +338,11 @@
 
         {#if loading}
           <div class="text-center py-8 text-gray-400">Loading...</div>
+        {:else if error}
+          <div class="text-center py-8 text-red-200">
+            <p>Failed to load stories.</p>
+            <p class="text-sm mt-2">Please refresh or try again later.</p>
+          </div>
         {:else if stories.length === 0}
           <div class="text-center py-8 text-gray-400">
             <BookOpen size={48} class="mx-auto mb-4 opacity-50" />
@@ -399,6 +410,13 @@
             console.log('Delete scene');
           }}
         />
+      {:else if error}
+        <div
+          class="bg-white/5 backdrop-blur-sm rounded-lg p-12 border border-white/10 text-center text-red-200"
+        >
+          <p class="text-lg font-semibold">Unable to display stories.</p>
+          <p class="text-sm mt-2">Please resolve the error above and retry.</p>
+        </div>
       {:else}
         <div
           class="bg-white/5 backdrop-blur-sm rounded-lg p-12 border border-white/10 text-center"

@@ -9,15 +9,15 @@ test.describe('Change Password Functionality', () => {
         testUserEmail = `testuser${Date.now()}@example.com`;
         testUserPassword = 'password123';
 
-        // Sign up the test user
-        await page.goto('/login');
+        // Sign up the test user on the localized signup page
+        await page.goto('/en/signup');
         await page.fill('input[name="email"]', testUserEmail);
         await page.fill('input[name="password"]', testUserPassword);
         await page.fill('input[name="name"]', 'Test User');
         await page.click('button#signup-btn');
 
-        // Wait for redirect to home page
-        await expect(page).toHaveURL('/');
+        // Wait for redirect to localized home page
+        await expect(page).toHaveURL('/en/');
 
         // Verify session cookie exists
         const cookies = await page.context().cookies();
@@ -26,9 +26,9 @@ test.describe('Change Password Functionality', () => {
     });
 
     test('should successfully change password', async ({ page }) => {
-        // Navigate to profile page
-        await page.goto('/profile');
-        await expect(page).toHaveURL('/profile');
+        // Navigate to localized profile page
+        await page.goto('/en/profile');
+        await expect(page).toHaveURL('/en/profile');
 
         // Fill out the change password form
         await page.fill('input[name="currentPassword"]', testUserPassword);
@@ -41,20 +41,20 @@ test.describe('Change Password Functionality', () => {
         // Should stay on profile page (no redirect on success for this implementation)
         await expect(page).toHaveURL('/profile');
 
-        // Try to login with the new password
-        await page.goto('/login');
+        // Try to login with the new password on localized login page
+        await page.goto('/en/login');
         await page.fill('input[name="email"]', testUserEmail);
         await page.fill('input[name="password"]', 'newpassword456');
         await page.click('button[type="submit"]');
 
-        // Should redirect to home page
-        await expect(page).toHaveURL('/');
+        // Should redirect to localized home page
+        await expect(page).toHaveURL('/en/');
     });
 
     test('should show error for incorrect current password', async ({
         page,
     }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Fill out form with wrong current password
         await page.fill('input[name="currentPassword"]', 'wrongpassword');
@@ -75,7 +75,7 @@ test.describe('Change Password Functionality', () => {
     });
 
     test('should show error for password mismatch', async ({ page }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Fill out form with mismatched passwords
         await page.fill('input[name="currentPassword"]', testUserPassword);
@@ -95,7 +95,7 @@ test.describe('Change Password Functionality', () => {
     });
 
     test('should show error for password too short', async ({ page }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Fill out form with short password
         await page.fill('input[name="currentPassword"]', testUserPassword);
@@ -115,13 +115,13 @@ test.describe('Change Password Functionality', () => {
     });
 
     test('should require all fields', async ({ page }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Try to submit with empty fields
         await page.click('button[type="submit"]');
 
         // Should stay on profile page
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL('/en/profile');
 
         // Form should still be visible
         await expect(
@@ -134,14 +134,14 @@ test.describe('Change Password Functionality', () => {
         await page.context().clearCookies();
 
         // Try to access profile page
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
-        // Should redirect to login
-        await expect(page).toHaveURL('/login');
+        // Should redirect to localized login
+        await expect(page).toHaveURL('/en/login');
     });
 
     test('should display user information correctly', async ({ page }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Should display user name
         await expect(page.locator('text=Test User')).toBeVisible();
@@ -161,17 +161,17 @@ test.describe('Change Password Functionality', () => {
     });
 
     test('should have working back to menu button', async ({ page }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Click back to menu button
-        await page.click('a[href="/"]');
+        await page.click('a[href="/en/"]');
 
-        // Should navigate to home page
-        await expect(page).toHaveURL('/');
+        // Should navigate to localized home page
+        await expect(page).toHaveURL('/en/');
     });
 
     test('should maintain session after password change', async ({ page }) => {
-        await page.goto('/profile');
+        await page.goto('/en/profile');
 
         // Change password
         await page.fill('input[name="currentPassword"]', testUserPassword);

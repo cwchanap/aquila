@@ -208,6 +208,7 @@
       <!-- Menu Buttons - Gaming Style -->
       <div class="space-y-6">
         <button
+          id="start-btn"
           class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
           on:click={handleStartClick}
@@ -262,6 +263,7 @@
         </button>
 
         <button
+          id="settings-btn"
           class="group relative w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace;"
           on:click={handleSettingsClick}

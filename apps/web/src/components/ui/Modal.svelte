@@ -21,20 +21,31 @@
       handleClose();
     }
   }
+
+  function handleOverlayKeydown(e: KeyboardEvent) {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClose();
+    }
+  }
 </script>
 
 {#if open}
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-    aria-hidden="true"
-    onclick={handleClose}
-  >
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      role="presentation"
+      aria-hidden="true"
+      tabindex="0"
+      onclick={handleClose}
+      onkeydown={handleOverlayKeydown}
+    />
     <div
       class={cn(
         'relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 rounded-2xl shadow-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-hidden',
         className
       )}
-      onclick={e => e.stopPropagation()}
       onkeydown={handleKeydown}
       role="dialog"
       aria-modal="true"

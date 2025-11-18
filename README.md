@@ -1,99 +1,235 @@
-# Aquila Game
+# Aquila
 
-A modern web-based game built with Astro, Svelte, and Phaser, featuring Drizzle ORM migrations and Vercel deployment.
+A visual novel game platform with interactive storytelling, built as a monorepo with web and desktop applications.
+
+## Overview
+
+Aquila is a narrative-driven game featuring dialogue-based storytelling with character interactions, choices, and multiple language support. The project includes:
+
+- **Web App**: Full-featured web application with authentication and story management
+- **Desktop App**: Standalone Tauri application optimized for offline gameplay
+- **Shared Packages**: Reusable game engine and dialogue content libraries
 
 ## Features
 
-- 🎮 **Game Engine**: Phaser 3 for interactive gameplay
-- 🎨 **UI Framework**: Astro with Svelte components
-- 🎯 **Styling**: Tailwind CSS with custom animations
-- 🗄️ **Database**: PostgreSQL-compatible database via Drizzle ORM
-- 🚀 **Deployment**: Vercel with serverless functions
-- 📱 **Responsive**: Mobile-friendly design
+- 🎮 **Phaser 3 Game Engine**: Interactive gameplay with scene management and dialogue systems
+- 🎨 **Modern UI**: Astro with Svelte components and glassmorphism design patterns
+- 🌍 **Multilingual**: Built-in support for English and Chinese
+- 🗄️ **Database**: PostgreSQL via Drizzle ORM with type-safe queries
+- 🔐 **Authentication**: Better Auth integration with session management
+- 📦 **Monorepo**: Turborepo for efficient builds and parallel task execution
+- 🚀 **Vercel Deployment**: Serverless deployment with SSR support
 
 ## Quick Start
 
-1. **Install dependencies:**
-   ```sh
-   pnpm install
-   ```
+### Prerequisites
 
-2. **Set up environment:**
-   ```sh
-   cp .env.example .env
-   # Edit .env with connection info (PostgreSQL required)
-   ```
-   Ensure `DATABASE_URL` is defined for local development, CI, and production.
+- [Bun](https://bun.sh/) v1.1.26 or higher
+- PostgreSQL-compatible database (for web app development)
 
-3. **Generate and run migrations:**
-   ```sh
-   pnpm drizzle:generate
-   pnpm drizzle:migrate
-   ```
-   > ⚠️ **CockroachDB warning:** Drizzle's CockroachDB support is pre-release. The default `pnpm drizzle:migrate` command blocks CockroachDB URLs to prevent accidental schema corruption. If you have verified compatibility in a staging environment, run `pnpm drizzle:migrate:allow-cockroach` with `ALLOW_COCKROACH_MIGRATIONS=true` set explicitly. The repo pins `pg@^8.11.3`; newer majors have known issues with CockroachDB and Drizzle.
+### Installation
 
-4. **Start development server:**
-   ```sh
-   pnpm dev
-   ```
+```bash
+# Install dependencies
+bun install
 
-5. **Open in browser:**
-   Navigate to `http://localhost:5090`
+# Set up environment variables
+cp apps/web/.env.example apps/web/.env
+# Edit apps/web/.env with your DATABASE_URL
+```
 
-## Scripts
+### Development
 
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build
-- `pnpm lint` - Run ESLint
-- `pnpm lint:fix` - Fix ESLint issues
-- `pnpm drizzle:generate` - Generate SQL migrations from the schema
-- `pnpm drizzle:migrate` - Run Drizzle migrations (blocks CockroachDB URLs)
-- `pnpm drizzle:migrate:allow-cockroach` - Run migrations after explicitly allowing CockroachDB
+```bash
+# Start all workspaces in development mode
+bun dev
 
-## Tech Stack
+# Or start only the web app (port 5090)
+bun dev:web
 
-- **Framework**: [Astro](https://astro.build/)
-- **UI Components**: [Svelte](https://svelte.dev/)
-- **Game Engine**: [Phaser 3](https://phaser.io/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Database**: [Drizzle ORM](https://orm.drizzle.team/) targeting PostgreSQL-compatible databases
-- **Deployment**: [Vercel](https://vercel.com/)
+# Or start only the desktop app
+bun --filter desktop dev
+```
+
+Visit `http://localhost:5090` for the web app.
+
+### Database Setup
+
+```bash
+# Generate migrations from schema changes
+bun drizzle:generate
+
+# Apply migrations to your database
+bun drizzle:migrate
+
+# Open Drizzle Studio GUI (optional)
+bun drizzle:studio
+```
+
+> **Note on CockroachDB**: Drizzle's CockroachDB dialect is pre-release. The default migrate command guards against CockroachDB URLs. Use `ALLOW_COCKROACH_MIGRATIONS=true` only after validating in staging. Prefer managed PostgreSQL for production.
 
 ## Project Structure
 
+This is a monorepo managed by Turborepo and Bun workspaces:
+
 ```
-src/
-├── components/         # Reusable UI components
-├── game/              # Phaser game logic
-│   ├── scenes/        # Game scenes
-│   ├── characters/    # Character classes
-│   └── dialogue/      # Dialogue systems
-├── layouts/           # Astro layouts
-├── lib/               # Database and utilities
-│   ├── db.ts          # Database connection
-│   ├── repositories.ts # Database operations
-│   └── migrations/    # Database migrations
-├── pages/             # Astro pages and API routes
-│   ├── api/           # API endpoints
-│   └── story/         # Game story pages
-└── styles/            # Global styles
+apps/
+├── web/                # Astro web application (SSR)
+│   ├── src/
+│   │   ├── components/ # Reusable UI components
+│   │   ├── lib/        # Database, auth, utilities
+│   │   ├── pages/      # Routes and API endpoints
+│   │   └── styles/     # Tailwind configuration
+│   └── tests/          # E2E tests (Playwright)
+└── desktop/            # Tauri desktop application
+    └── src/            # SvelteKit SPA
+
+packages/
+├── game/               # @aquila/game - Phaser scenes and engine
+│   └── src/
+│       ├── scenes/     # BaseScene, StoryScene
+│       └── types.ts    # Game type definitions
+├── dialogue/           # @aquila/dialogue - Story content
+│   └── src/
+│       ├── characters/ # Character definitions
+│       ├── stories/    # Localized dialogue files
+│       └── translations/ # UI text (en.json, zh.json)
+└── assets/             # Shared game assets
 ```
 
-## Database
+## Available Commands
 
-The project now uses a PostgreSQL-compatible database (CockroachDB staging or managed PostgreSQL in production) via Drizzle ORM. Ensure migrations have been applied to PostgreSQL and previous SQLite/Turso data has been migrated before deployment.
+### Development
+
+- `bun dev` - Start all workspaces (web + desktop) with hot reload
+- `bun dev:web` - Start Astro web app on port 5090
+- `bun build` - Build all workspaces for production
+- `bun preview` - Preview production build (web)
+
+### Testing
+
+- `bun test` - Run all tests (unit + E2E)
+- `bun test:e2e` - Run Playwright E2E tests
+- `bun test:headed` - Run E2E tests with visible browser
+- `bun test:debug` - Debug E2E tests
+- `bun test:report` - View Playwright HTML report
+- `bun --filter web test` - Run Vitest unit tests
+- `bun --filter web test:watch` - Unit tests in watch mode
+
+### Database
+
+- `bun drizzle:generate` - Generate SQL migrations from schema
+- `bun drizzle:migrate` - Apply migrations (with CockroachDB guard)
+- `bun drizzle:studio` - Open Drizzle Studio database GUI
+
+### Code Quality
+
+- `bun lint` - Run ESLint across all workspaces
+- `bun lint:fix` - Auto-fix ESLint issues
+
+## Technology Stack
+
+### Web App (`apps/web`)
+
+- **Framework**: [Astro](https://astro.build/) 5.x with SSR
+- **Components**: [Svelte](https://svelte.dev/) 5.x
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) v4
+- **Database**: [Drizzle ORM](https://orm.drizzle.team/) + PostgreSQL
+- **Auth**: [Better Auth](https://www.better-auth.com/)
+- **Testing**: [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)
+
+### Desktop App (`apps/desktop`)
+
+- **Framework**: [Tauri](https://tauri.app/) v2 + SvelteKit
+- **Runtime**: Rust + Web technologies
+- **Mode**: SPA (no SSR)
+
+### Shared Packages
+
+- **Game Engine**: [Phaser](https://phaser.io/) 3.x (`@aquila/game`)
+- **Content**: TypeScript dialogue system (`@aquila/dialogue`)
+- **Build Tool**: [Turborepo](https://turbo.build/repo)
+
+## Development Workflow
+
+### Adding a New Story
+
+1. Create dialogue files in `packages/dialogue/src/stories/[storyName]/`
+2. Add locale-specific content (`en.ts`, `zh.ts`)
+3. Export via story loader function
+4. Register in `packages/dialogue/src/stories/index.ts`
+
+### Database Schema Changes
+
+1. Modify `apps/web/src/lib/drizzle/schema.ts`
+2. Run `bun drizzle:generate` to create migration files
+3. Review generated SQL in `apps/web/src/lib/drizzle/migrations/`
+4. Apply with `bun drizzle:migrate`
+
+### Running Specific Tests
+
+```bash
+# Single E2E test file
+bun --filter web test:e2e tests/homepage.spec.ts
+
+# Specific test by name
+bun --filter web test:e2e -g "should navigate to login"
+
+# Unit tests for a specific file
+bun --filter web test src/lib/__tests__/utils.test.ts
+```
+
+## Environment Variables
+
+### Required (Web App)
+
+- `DATABASE_URL` - PostgreSQL connection string
+
+### Optional
+
+- `BETTER_AUTH_URL` - Auth service URL (defaults to app URL)
+- `BETTER_AUTH_SECRET` - Auth encryption key (auto-generated in dev)
+- `DB_ALLOW_SELF_SIGNED` - Allow self-signed SSL certs (`true`/`false`)
+- `DB_POOL_MAX` - PostgreSQL connection pool size (default: 10)
+- `ALLOW_COCKROACH_MIGRATIONS` - Explicitly enable CockroachDB migrations
 
 ## Deployment
 
-The app is configured for Vercel deployment with the Vercel adapter. Environment variables should be set in your Vercel dashboard, including **`DATABASE_URL`**.
+### Vercel (Web App)
 
-### PostgreSQL migration checklist
+The web app is configured for Vercel with automatic deployments:
 
-1. Apply the latest Drizzle migrations to your PostgreSQL instance (`pnpm drizzle:migrate`).
-2. If migrating from SQLite or Turso, run your data migration scripts to seed PostgreSQL.
-3. Verify critical tables (`users`, `sessions`, `accounts`, `verificationTokens`) contain expected data before deploying.
-4. Ensure CI/CD pipelines export `DATABASE_URL` so schema validation and tests use PostgreSQL.
-5. Optional tuning: set `DB_ALLOW_SELF_SIGNED=true` in non-production environments requiring self-signed certificates, and adjust `DB_POOL_MAX` to tune PostgreSQL connection pooling (defaults to 10).
+1. Connect your repository to Vercel
+2. Set `DATABASE_URL` in environment variables
+3. Set `BETTER_AUTH_SECRET` for production
+4. Deploy (Vercel will run `bun build` automatically)
 
-For complete setup instructions, please see our [Tailwind Integration Guide](https://docs.astro.build/en/guides/integrations-guide/tailwind).
+### Desktop App
+
+Build platform-specific binaries:
+
+```bash
+# Build for current platform
+bun --filter desktop tauri build
+
+# Output: apps/desktop/src-tauri/target/release/
+```
+
+## Contributing
+
+This project uses:
+
+- **Git Hooks**: Husky with lint-staged for pre-commit checks
+- **Code Style**: Prettier + ESLint with Astro and Svelte plugins
+- **Commit Format**: Conventional commits recommended
+
+## Documentation
+
+- [CLAUDE.md](./CLAUDE.md) - Detailed architecture and development patterns
+- [Web App Tests](./apps/web/tests/README.md) - E2E testing guide
+- [Dialogue Package](./packages/dialogue/README.md) - Content structure
+- [Desktop App](./apps/desktop/README.md) - Desktop-specific setup
+
+## License
+
+This project is private and not licensed for public use.

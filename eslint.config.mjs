@@ -57,7 +57,8 @@ export default [
       },
     },
     rules: {
-      'svelte/no-navigation-without-resolve': 'off',
+      // Enable navigation resolution checks; adjust individual callsites if noisy
+      'svelte/no-navigation-without-resolve': 'warn',
     },
   },
   {

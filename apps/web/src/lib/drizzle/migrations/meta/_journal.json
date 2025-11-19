@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1760390072704,
-      "tag": "0000_melodic_dark_beast",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1761101374522,
-      "tag": "0001_soft_thunderbolt_ross",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1761287906223,
-      "tag": "0002_lowly_nextwave",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1762039302701,
-      "tag": "0003_legal_deadpool",
+      "when": 1763492719526,
+      "tag": "0000_wild_vance_astro",
       "breakpoints": true
     }
   ]

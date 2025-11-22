@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { db } from '../../../lib/drizzle/db.js';
+import { users } from '../../../lib/drizzle/schema.js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
@@ -14,6 +16,36 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                     headers: { 'Content-Type': 'application/json' },
                 }
             );
+        }
+
+        // Development/test DB health check to surface configuration issues
+        if (
+            (typeof import.meta !== 'undefined' &&
+                import.meta.env?.MODE !== 'production') ||
+            process.env.NODE_ENV !== 'production'
+        ) {
+            try {
+                await db.select().from(users).limit(1);
+            } catch (dbError) {
+                console.error(
+                    'Simple auth signup DB health check failed:',
+                    dbError
+                );
+                const message =
+                    dbError instanceof Error
+                        ? dbError.message
+                        : String(dbError);
+                return new Response(
+                    JSON.stringify({
+                        error: 'Database error during signup',
+                        detail: message,
+                    }),
+                    {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
+            }
         }
 
         const user = await SimpleAuthService.signUp(email, password, name);

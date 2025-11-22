@@ -53,7 +53,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         if (!user) {
             return new Response(
                 JSON.stringify({
-                    error: 'Failed to create user. Email might already be in use.',
+                    error: 'Email already in use',
                 }),
                 {
                     status: 400,

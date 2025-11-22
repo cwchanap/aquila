@@ -215,11 +215,13 @@ import MainLayout from '../../layouts/main.astro';
 								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
 								window.location.href = `/${locale}/`;
 							} else {
-								showError(result.error || 'Login failed');
+								// Show the same error message as the API for invalid credentials
+								showError(result.error || 'Invalid credentials');
 							}
 						} catch (error) {
 							console.error('Login failed:', error);
-							showError('Login failed. Please check your credentials.');
+							// Fallback to the same invalid-credentials message on network or server error
+							showError('Invalid credentials');
 						}
 					});
 				}

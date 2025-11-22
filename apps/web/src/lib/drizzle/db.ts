@@ -7,7 +7,8 @@ let _db: NodePgDatabase<typeof schema> | null = null;
 
 function getDb() {
     if (!_db) {
-        const connectionString = process.env.DATABASE_URL;
+        const connectionString =
+            process.env.DATABASE_URL ?? import.meta.env.DATABASE_URL;
 
         if (!connectionString) {
             throw new Error('DATABASE_URL environment variable is not set');

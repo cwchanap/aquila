@@ -3,6 +3,18 @@ import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { db } from '../../../lib/drizzle/db.js';
 import { users } from '../../../lib/drizzle/schema.js';
 
+const isNonProduction = process.env.NODE_ENV !== 'production';
+let dbHealthChecked = false;
+
+async function ensureDbHealthCheck() {
+    if (dbHealthChecked || !isNonProduction) {
+        return;
+    }
+
+    await db.select().from(users).limit(1);
+    dbHealthChecked = true;
+}
+
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         const body = await request.json();
@@ -19,13 +31,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         // Development/test DB health check to surface configuration issues
-        if (
-            (typeof import.meta !== 'undefined' &&
-                import.meta.env?.MODE !== 'production') ||
-            process.env.NODE_ENV !== 'production'
-        ) {
+        if (isNonProduction && !dbHealthChecked) {
             try {
-                await db.select().from(users).limit(1);
+                await ensureDbHealthCheck();
             } catch (dbError) {
                 console.error(
                     'Simple auth signup DB health check failed:',

@@ -25,9 +25,19 @@
       "name": "Assets",
       "path": "packages/assets",
     },
+    {
+      "name": "E2E",
+      "path": "packages/e2e",
+    },
   ],
   "settings": {
-    "eslint.workingDirectories": ["./", "apps/web", "apps/desktop", "packages/dialogue"],
+    "eslint.workingDirectories": [
+      "./",
+      "apps/web",
+      "apps/desktop",
+      "packages/dialogue",
+      "packages/e2e",
+    ],
     "typescript.tsdk": "node_modules/typescript/lib",
     "svelte.plugin.typescript.tsdkPath": "node_modules/typescript/lib",
     "astro.typescript.tsdk": "node_modules/typescript/lib",

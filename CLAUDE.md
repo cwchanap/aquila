@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Testing
 
 - `bun test` - Run all tests (Turbo runs unit + E2E across workspaces)
-- `bun test:e2e` - Run Playwright E2E tests (web app)
+- `bun test:e2e` - Run Playwright E2E tests (via `packages/e2e` workspace)
 - `bun test:headed` - Run E2E tests in headed mode (visible browser)
 - `bun test:debug` - Run E2E tests in debug mode
 - `bun test:report` - Show Playwright test report
@@ -163,7 +163,8 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
   - Run with `bun --filter web test`
   - Use `jsdom` environment for browser API mocking
 - **E2E Tests (Playwright)**:
-  - Located in `apps/web/tests/`
+  - Located in `packages/e2e/tests/`
+  - Executed via `packages/e2e` workspace (see `packages/e2e/playwright.config.ts`)
   - Port consistency: Dev server must run on port 5090
   - Viewport testing: Desktop + mobile (Pixel 5, iPhone 12)
   - Page objects: Use `MainMenuPage`, `StoriesPage` from `tests/utils.ts`

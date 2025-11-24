@@ -80,7 +80,6 @@ apps/
 │   │   ├── lib/        # Database, auth, utilities
 │   │   ├── pages/      # Routes and API endpoints
 │   │   └── styles/     # Tailwind configuration
-│   └── tests/          # E2E tests (Playwright)
 └── desktop/            # Tauri desktop application
     └── src/            # SvelteKit SPA
 
@@ -94,6 +93,8 @@ packages/
 │       ├── characters/ # Character definitions
 │       ├── stories/    # Localized dialogue files
 │       └── translations/ # UI text (en.json, zh.json)
+├── e2e/                # Playwright E2E test suite
+│   └── tests/          # E2E specs, setup, utilities
 └── assets/             # Shared game assets
 ```
 
@@ -170,10 +171,10 @@ packages/
 
 ```bash
 # Single E2E test file
-bun --filter web test:e2e tests/homepage.spec.ts
+bun --filter e2e test:e2e tests/homepage.spec.ts
 
 # Specific test by name
-bun --filter web test:e2e -g "should navigate to login"
+bun --filter e2e test:e2e -g "should navigate to login"
 
 # Unit tests for a specific file
 bun --filter web test src/lib/__tests__/utils.test.ts
@@ -226,7 +227,7 @@ This project uses:
 ## Documentation
 
 - [CLAUDE.md](./CLAUDE.md) - Detailed architecture and development patterns
-- [Web App Tests](./apps/web/tests/README.md) - E2E testing guide
+- [E2E Tests](./packages/e2e/tests/README.md) - Playwright E2E testing guide
 - [Dialogue Package](./packages/dialogue/README.md) - Content structure
 - [Desktop App](./apps/desktop/README.md) - Desktop-specific setup
 

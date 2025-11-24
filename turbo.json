@@ -11,15 +11,43 @@
       "cache": false
     },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".astro/**", "build/**", ".svelte-kit/**", "src-tauri/target/**", ".tsbuildinfo"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".astro/**",
+        "build/**",
+        ".svelte-kit/**",
+        "src-tauri/target/**",
+        ".tsbuildinfo"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"],
+      "dependsOn": [
+        "^lint"
+      ],
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^test"],
+      "dependsOn": [
+        "^test"
+      ],
+      "outputs": []
+    },
+    "test:e2e": {
+      "outputs": []
+    },
+    "test:ui": {
+      "outputs": []
+    },
+    "test:headed": {
+      "outputs": []
+    },
+    "test:debug": {
+      "outputs": []
+    },
+    "test:report": {
       "outputs": []
     }
   }

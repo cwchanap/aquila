@@ -52,7 +52,7 @@ jobs:
         run: bun install
 
       - name: Install Playwright browsers
-        working-directory: apps/web
+        working-directory: packages/e2e
         run: bunx playwright install --with-deps
 
       - name: Run database migrations
@@ -62,5 +62,5 @@ jobs:
         run: bun run drizzle:migrate
 
       - name: Run Playwright tests
-        working-directory: apps/web
+        working-directory: packages/e2e
         run: bun run test:e2e

@@ -16,11 +16,6 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "test:e2e": "playwright test",
-    "test:ui:e2e": "playwright test --ui",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "node ./scripts/drizzle-migrate-safe.mjs",
     "drizzle:migrate:allow-cockroach": "ALLOW_COCKROACH_MIGRATIONS=true node ./scripts/drizzle-migrate-safe.mjs",
@@ -58,7 +53,6 @@
     "typescript": "^5.9.2",
     "tsx": "^4.20.5",
     "tw-animate-css": "^1.3.7",
-    "vitest": "^3.2.4",
-    "@playwright/test": "^1.55.0"
+    "vitest": "^3.2.4"
   }
 }

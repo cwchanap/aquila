@@ -39,14 +39,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                     'Simple auth signup DB health check failed:',
                     dbError
                 );
-                const message =
-                    dbError instanceof Error
-                        ? dbError.message
-                        : String(dbError);
                 return new Response(
                     JSON.stringify({
-                        error: 'Database error during signup',
-                        detail: message,
+                        error: 'Database connection error. Please check server configuration.',
                     }),
                     {
                         status: 500,

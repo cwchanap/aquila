@@ -1,9 +1,11 @@
 import { defineConfig } from 'vitest/config';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { resolve } from 'path';
 
 export default defineConfig({
+    plugins: [svelte()],
     test: {
-        environment: 'jsdom',
+        environment: 'happy-dom',
         globals: true,
         setupFiles: ['./src/lib/test-setup.ts'],
         exclude: [
@@ -16,5 +18,6 @@ export default defineConfig({
         alias: {
             '@': resolve(__dirname, './src'),
         },
+        conditions: ['browser'],
     },
 });

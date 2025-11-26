@@ -154,7 +154,22 @@ export class BookmarksManager {
 
             const title = document.createElement('h3');
             title.className = 'text-xl font-bold text-slate-800 mb-2';
-            title.textContent = bookmark.bookmarkName;
+
+            // Extract optional dialogue number from bookmarkName prefix: [dlg:N] My name
+            let dialogueNumber: number | null = null;
+            let displayName = bookmark.bookmarkName;
+            const dlgMatch = bookmark.bookmarkName.match(
+                /^\[dlg:(\d+)\]\s*(.*)$/
+            );
+            if (dlgMatch) {
+                const parsed = parseInt(dlgMatch[1], 10);
+                if (!Number.isNaN(parsed) && parsed > 0) {
+                    dialogueNumber = parsed;
+                }
+                displayName = dlgMatch[2] || bookmark.bookmarkName;
+            }
+
+            title.textContent = displayName;
 
             const details = document.createElement('div');
             details.className = 'space-y-1 text-sm text-slate-600';
@@ -196,7 +211,11 @@ export class BookmarksManager {
             actions.className = 'flex flex-col gap-2 ml-4';
 
             const continueLink = document.createElement('a');
-            continueLink.href = `/${bookmark.locale}/reader?story=${encodeURIComponent(bookmark.storyId)}&scene=${encodeURIComponent(bookmark.sceneId)}`;
+            let href = `/${bookmark.locale}/reader?story=${encodeURIComponent(bookmark.storyId)}&scene=${encodeURIComponent(bookmark.sceneId)}`;
+            if (dialogueNumber && dialogueNumber > 0) {
+                href += `&dialogue=${encodeURIComponent(dialogueNumber.toString())}`;
+            }
+            continueLink.href = href;
             continueLink.className =
                 'px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-center text-sm';
             continueLink.textContent = this.t.bookmarks.continueReading;

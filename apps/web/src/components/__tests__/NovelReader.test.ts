@@ -522,7 +522,7 @@ describe('NovelReader', () => {
             const bookmarkBtn = screen.getByText('Bookmark');
             await fireEvent.click(bookmarkBtn);
 
-            expect(onBookmark).toHaveBeenCalled();
+            expect(onBookmark).toHaveBeenCalledWith(1);
         });
     });
 
@@ -555,6 +555,28 @@ describe('NovelReader', () => {
             await fireEvent.click(continueBtn);
             await vi.runAllTimersAsync();
 
+            expect(screen.getByText('2 / 3')).toBeInTheDocument();
+        });
+
+        it('should respect initialDialogueIndex when provided', async () => {
+            render(NovelReader, {
+                props: {
+                    dialogue: mockDialogue,
+                    choice: null,
+                    locale: 'en',
+                    initialDialogueIndex: 1,
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // First two dialogues should be fully visible, and progress should reflect that
+            expect(
+                screen.getByText('First dialogue line.')
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText('Second dialogue line.')
+            ).toBeInTheDocument();
             expect(screen.getByText('2 / 3')).toBeInTheDocument();
         });
     });

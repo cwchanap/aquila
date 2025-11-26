@@ -17,6 +17,7 @@ export class ReaderManager {
     private currentState: SceneState;
     private readerInstance: { unmount: () => void } | null = null;
     private readonly initialLocale: Locale;
+    private initialDialogueIndex: number | null = null;
 
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
     private static readonly LEGACY_KEYS = [
@@ -93,6 +94,16 @@ export class ReaderManager {
         const params = new URLSearchParams(window.location.search);
         const urlScene = params.get('scene');
         const urlStory = params.get('story');
+        const urlDialogue = params.get('dialogue');
+
+        if (urlDialogue) {
+            const parsed = parseInt(urlDialogue, 10);
+            if (!Number.isNaN(parsed)) {
+                // dialogue=N means N dialogues shown; index is N-1 (clamped to >=0)
+                const idx = parsed > 0 ? parsed - 1 : 0;
+                this.initialDialogueIndex = idx;
+            }
+        }
 
         if (urlScene) {
             return {
@@ -151,6 +162,7 @@ export class ReaderManager {
         const url = new URL(window.location.href);
         url.searchParams.set('story', updatedState.storyId);
         url.searchParams.set('scene', updatedState.sceneId);
+        // Do not persist dialogue index here; it is provided via explicit links/bookmarks
         window.history.pushState({}, '', url);
     }
 
@@ -184,7 +196,7 @@ export class ReaderManager {
         this.navigateToScene(nextScene);
     };
 
-    handleBookmark = async (): Promise<void> => {
+    handleBookmark = async (dialogueNumber?: number): Promise<void> => {
         const translations = this.t;
 
         const bookmarkName = prompt(
@@ -195,6 +207,12 @@ export class ReaderManager {
         );
         if (!bookmarkName) return;
 
+        // Encode dialogue number in bookmark name so it can be restored later.
+        const storedBookmarkName =
+            dialogueNumber && dialogueNumber > 0
+                ? `[dlg:${dialogueNumber}] ${bookmarkName}`
+                : bookmarkName;
+
         try {
             const response = await fetch('/api/bookmarks', {
                 method: 'POST',
@@ -204,7 +222,7 @@ export class ReaderManager {
                 body: JSON.stringify({
                     storyId: this.currentState.storyId,
                     sceneId: this.currentState.sceneId,
-                    bookmarkName,
+                    bookmarkName: storedBookmarkName,
                     locale: this.currentState.locale,
                 }),
             });
@@ -269,14 +287,19 @@ export class ReaderManager {
                     dialogue,
                     choice,
                     onChoice: this.handleChoice,
-                    onBookmark: this.handleBookmark,
+                    onBookmark: (dialogueNumber: number) =>
+                        this.handleBookmark(dialogueNumber),
                     onNext: this.handleNext,
                     canGoNext,
                     showBookmarkButton: true,
                     locale: translations.locale,
                     backUrl: `/${translations.locale}/`,
+                    initialDialogueIndex: this.initialDialogueIndex,
                 },
             });
+
+            // Only apply the initial dialogue index on the first render.
+            this.initialDialogueIndex = null;
 
             this.readerInstance = {
                 unmount: () => {

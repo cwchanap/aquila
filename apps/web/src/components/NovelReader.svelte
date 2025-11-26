@@ -5,18 +5,18 @@
     ChoiceDefinition,
     Locale,
   } from '@aquila/dialogue';
-  import type { HTMLDivElement } from 'svelte/elements';
   import { CharacterDirectory, getTranslations } from '@aquila/dialogue';
 
   export let dialogue: DialogueEntry[] = [];
   export let choice: ChoiceDefinition | null = null;
   export let onChoice: (nextScene: string) => void = () => {};
-  export let onBookmark: () => void = () => {};
+  export let onBookmark: (dialogueNumber: number) => void = () => {};
   export let onNext: () => void = () => {};
   export let canGoNext: boolean = false;
   export let showBookmarkButton: boolean = true;
   export let locale: Locale = 'en';
   export let backUrl: string = '/';
+  export let initialDialogueIndex: number | null = null;
 
   $: t = getTranslations(locale);
 
@@ -31,7 +31,9 @@
   let skipTyping = false;
   let typingText = '';
   let lastDialogueLength = 0;
-  let dialogueContainer: HTMLDivElement | null = null;
+  let dialogueContainer: HTMLElement | null = null;
+  let hasAppliedInitialIndex = false;
+  let hasUserAdvanced = false;
 
   $: currentDialogue = dialogue[currentDialogueIndex];
 
@@ -71,12 +73,38 @@
     skipTyping = false;
     isTyping = false;
     typingText = '';
+    hasUserAdvanced = false;
+  }
+
+  // Apply initial dialogue index (if provided) once per mount
+  $: if (
+    !hasAppliedInitialIndex &&
+    initialDialogueIndex !== null &&
+    initialDialogueIndex >= 0 &&
+    dialogue.length > 0
+  ) {
+    const targetIndex = Math.min(initialDialogueIndex, dialogue.length - 1);
+
+    displayedDialogues = [];
+    isTyping = false;
+    skipTyping = false;
+    typingText = '';
+
+    for (let i = 0; i <= targetIndex; i++) {
+      const entry = dialogue[i];
+      if (!entry) break;
+      addDialogueToDisplay(entry.dialogue, entry);
+    }
+
+    currentDialogueIndex = targetIndex;
+    hasAppliedInitialIndex = true;
   }
 
   // Start typing new dialogue when index changes
   $: if (
     dialogue[currentDialogueIndex] &&
-    displayedDialogues.length === currentDialogueIndex
+    displayedDialogues.length === currentDialogueIndex &&
+    (!hasAppliedInitialIndex || hasUserAdvanced)
   ) {
     startTypingNewDialogue();
   }
@@ -150,6 +178,8 @@
       return;
     }
 
+    hasUserAdvanced = true;
+
     if (currentDialogueIndex < dialogue.length - 1) {
       currentDialogueIndex++;
       skipTyping = false;
@@ -211,7 +241,7 @@
     </a>
   </div>
 
-  <div class="max-w-4xl w-full">
+  <div class="w-[90vw] max-w-[90vw] mx-auto">
     <!-- Main dialogue box with glassmorphism style -->
     <div
       bind:this={dialogueContainer}
@@ -224,20 +254,22 @@
             ? 'pb-6 border-b border-slate-200'
             : ''}"
         >
-          <!-- Character name -->
-          {#if dialogueItem.characterName}
-            <div class="mb-3">
-              <span
-                class="text-xl font-bold text-blue-600 px-4 py-2 bg-blue-100/80 rounded-xl inline-block"
-              >
-                {dialogueItem.characterName}
-              </span>
+          <div class="flex gap-4 items-start">
+            <!-- Character name -->
+            <div class="w-32 shrink-0">
+              {#if dialogueItem.characterName}
+                <span
+                  class="text-xl font-bold text-blue-600 px-4 py-2 bg-blue-100/80 rounded-xl inline-block"
+                >
+                  {dialogueItem.characterName}
+                </span>
+              {/if}
             </div>
-          {/if}
 
-          <!-- Dialogue text -->
-          <div class="text-lg text-slate-800 leading-relaxed">
-            {dialogueItem.text}
+            <!-- Dialogue text -->
+            <div class="flex-1 text-lg text-slate-800 leading-relaxed">
+              {dialogueItem.text}
+            </div>
           </div>
         </div>
       {/each}
@@ -245,22 +277,26 @@
       <!-- Currently typing dialogue -->
       {#if isTyping && currentDialogue}
         <div class="mb-6">
-          <!-- Character name -->
-          {#if getCharacterName(currentDialogue)}
-            <div class="mb-3">
-              <span
-                class="text-xl font-bold text-blue-600 px-4 py-2 bg-blue-100/80 rounded-xl inline-block"
-              >
-                {getCharacterName(currentDialogue)}
-              </span>
+          <div class="flex gap-4 items-start">
+            <!-- Character name -->
+            <div class="w-32 shrink-0">
+              {#if getCharacterName(currentDialogue)}
+                <span
+                  class="text-xl font-bold text-blue-600 px-4 py-2 bg-blue-100/80 rounded-xl inline-block"
+                >
+                  {getCharacterName(currentDialogue)}
+                </span>
+              {/if}
             </div>
-          {/if}
 
-          <!-- Dialogue text being typed -->
-          <div class="text-lg text-slate-800 leading-relaxed min-h-[60px]">
-            {typingText}
-            <span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
-            ></span>
+            <!-- Dialogue text being typed -->
+            <div
+              class="flex-1 text-lg text-slate-800 leading-relaxed min-h-[60px]"
+            >
+              {typingText}
+              <span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
+              ></span>
+            </div>
           </div>
         </div>
       {/if}
@@ -306,7 +342,8 @@
       <!-- Bookmark button -->
       {#if showBookmarkButton}
         <button
-          on:click={onBookmark}
+          on:click={() =>
+            onBookmark(displayedDialogues.length + (isTyping ? 1 : 0))}
           class="px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-white/40"
         >
           {t.reader.bookmark}

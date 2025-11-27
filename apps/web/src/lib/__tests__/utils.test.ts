@@ -72,9 +72,16 @@ describe('Utils', () => {
 
     describe('getUserFromCookies()', () => {
         const createRequest = (cookieHeader?: string) => {
-            const headers = new Headers();
-            if (cookieHeader) headers.set('cookie', cookieHeader);
-            return new Request('https://example.com', { headers });
+            return {
+                headers: {
+                    get: (name: string) => {
+                        if (!cookieHeader) return null;
+                        return name.toLowerCase() === 'cookie'
+                            ? cookieHeader
+                            : null;
+                    },
+                },
+            } as unknown as Request;
         };
 
         it('returns null without cookie header', () => {

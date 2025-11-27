@@ -38,10 +38,16 @@
     "bookmarks": "📖 書籤"
   },
   "common": {
+    "hello": "你好",
+    "goodbye": "再见",
     "logout": "登出",
     "login": "登入",
     "back": "返回",
     "backToHome": "← 返回主頁"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "登出"
   },
   "setup": {
     "title": "設定角色",

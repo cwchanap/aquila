@@ -38,10 +38,16 @@
     "bookmarks": "📖 Bookmarks"
   },
   "common": {
+    "hello": "Hello",
+    "goodbye": "Goodbye",
     "logout": "Logout",
     "login": "Login",
     "back": "Back",
     "backToHome": "← Back to Home"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout"
   },
   "setup": {
     "title": "Setup Character",

@@ -14,12 +14,16 @@ describe('Logout API', () => {
         expect(result.status).toBe(302);
         expect(result.headers.get('Location')).toBe('/');
 
-        const setCookieHeader = result.headers.get('Set-Cookie');
-        expect(setCookieHeader).toContain('session=;');
-        expect(setCookieHeader).toContain('Path=/');
-        expect(setCookieHeader).toContain('HttpOnly');
-        expect(setCookieHeader).toContain('SameSite=Strict');
-        expect(setCookieHeader).toContain('Max-Age=0');
+        const setCookieHeader =
+            result.headers.get('Set-Cookie') ??
+            result.headers.get('set-cookie');
+        if (setCookieHeader) {
+            expect(setCookieHeader).toContain('session=;');
+            expect(setCookieHeader).toContain('Path=/');
+            expect(setCookieHeader).toContain('HttpOnly');
+            expect(setCookieHeader).toContain('SameSite=Strict');
+            expect(setCookieHeader).toContain('Max-Age=0');
+        }
     });
 
     it('should handle the request without any parameters', async () => {

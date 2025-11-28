@@ -45,10 +45,6 @@
     "back": "Back",
     "backToHome": "← Back to Home"
   },
-  "auth": {
-    "login": "Login",
-    "logout": "Logout"
-  },
   "setup": {
     "title": "Setup Character",
     "heading": "Setup Your Character",

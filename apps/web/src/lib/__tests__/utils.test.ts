@@ -3,15 +3,23 @@ import { cn, t, getUserFromCookies, type User } from '../utils';
 
 vi.mock('@aquila/dialogue/translations/en.json', () => ({
     default: {
-        common: { hello: 'Hello', goodbye: 'Goodbye' },
-        auth: { login: 'Login', logout: 'Logout' },
+        common: {
+            hello: 'Hello',
+            goodbye: 'Goodbye',
+            login: 'Login',
+            logout: 'Logout',
+        },
     },
 }));
 
 vi.mock('@aquila/dialogue/translations/zh.json', () => ({
     default: {
-        common: { hello: '你好', goodbye: '再见' },
-        auth: { login: '登录', logout: '登出' },
+        common: {
+            hello: '你好',
+            goodbye: '再见',
+            login: '登录',
+            logout: '登出',
+        },
     },
 }));
 
@@ -45,12 +53,12 @@ describe('Utils', () => {
     describe('t()', () => {
         it('returns english translations', () => {
             expect(t('en', 'common.hello')).toBe('Hello');
-            expect(t('en', 'auth.login')).toBe('Login');
+            expect(t('en', 'common.login')).toBe('Login');
         });
 
         it('returns chinese translations', () => {
             expect(t('zh', 'common.hello')).toBe('你好');
-            expect(t('zh', 'auth.login')).toBe('登录');
+            expect(t('zh', 'common.login')).toBe('登录');
         });
 
         it('falls back to key for missing entry', () => {
@@ -58,7 +66,7 @@ describe('Utils', () => {
         });
 
         it('defaults to english locale', () => {
-            expect(t('fr', 'auth.logout')).toBe('Logout');
+            expect(t('fr', 'common.logout')).toBe('Logout');
         });
 
         it('returns empty string when key is empty', () => {

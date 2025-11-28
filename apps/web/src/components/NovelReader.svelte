@@ -30,7 +30,7 @@
   let typingSpeed = 30; // milliseconds per character
   let skipTyping = false;
   let typingText = '';
-  let lastDialogueLength = 0;
+  let lastDialogueSnapshot = '';
   let dialogueContainer: HTMLElement | null = null;
   let hasAppliedInitialIndex = false;
   let hasUserAdvanced = false;
@@ -66,14 +66,18 @@
   $: isLastDialogue = currentDialogueIndex >= dialogue.length - 1;
 
   // Reset displayed dialogues when dialogue array changes (new scene)
-  $: if (dialogue.length !== lastDialogueLength) {
-    lastDialogueLength = dialogue.length;
-    currentDialogueIndex = 0;
-    displayedDialogues = [];
-    skipTyping = false;
-    isTyping = false;
-    typingText = '';
-    hasUserAdvanced = false;
+  $: {
+    const snapshot = JSON.stringify(dialogue);
+    if (snapshot !== lastDialogueSnapshot) {
+      lastDialogueSnapshot = snapshot;
+      currentDialogueIndex = 0;
+      displayedDialogues = [];
+      skipTyping = false;
+      isTyping = false;
+      typingText = '';
+      hasUserAdvanced = false;
+      hasAppliedInitialIndex = false;
+    }
   }
 
   // Apply initial dialogue index (if provided) once per mount

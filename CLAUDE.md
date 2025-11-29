@@ -201,3 +201,10 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **Optional Environment Variables**: `DB_ALLOW_SELF_SIGNED`, `DB_POOL_MAX`, `BETTER_AUTH_URL`, `ALLOW_COCKROACH_MIGRATIONS`
 - **Migration Tools**: `drizzle-kit` for migrations, Bun's native TypeScript execution for scripts
 - **Development Tools**: ESLint with Astro + Svelte plugins, Prettier with lint-staged (Husky hooks)
+
+## Active Technologies
+- Bun 1.1.26+ runtime with TypeScript 5.9+ (Astro 5.x, Svelte 5.x) + Astro 5 (SSR), Svelte 5, `@supabase/supabase-js`, Drizzle ORM, Better Auth (to be deprecated for web), Playwright, Vites (001-supabase-auth)
+- CockroachDB (Postgres-compatible) via Drizzle repositories in `apps/web/src/lib/drizzle/` (001-supabase-auth)
+
+## Recent Changes
+- 001-supabase-auth: Added Bun 1.1.26+ runtime with TypeScript 5.9+ (Astro 5.x, Svelte 5.x) + Astro 5 (SSR), Svelte 5, `@supabase/supabase-js`, Drizzle ORM, Better Auth (to be deprecated for web), Playwright, Vites

@@ -1,0 +1,65 @@
+openapi: 3.1.0
+info:
+  title: Aquila Auth Integration API
+  version: 1.0.0
+  description: >-
+    Minimal server-side contracts to map Supabase-authenticated users to Aquila
+    Application User records and support sign-out.
+paths:
+  /api/me:
+    get:
+      summary: Get the current authenticated Aquila application user
+      description: >-
+        Returns the Aquila Application User associated with the current
+        Supabase-authenticated session. If no Application User exists yet for
+        this Supabase user, the implementation may create one on-demand.
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/ApplicationUser"
+        "401":
+          description: Request is not authenticated with a valid Supabase session
+  /api/auth/logout:
+    post:
+      summary: Sign out the current user and clear Supabase session context
+      description: >-
+        Clears the current user's Supabase session (via cookies or other
+        session mechanism) and invalidates the local Aquila auth context.
+      responses:
+        "204":
+          description: User was signed out successfully (idempotent)
+        "401":
+          description: Request is not authenticated
+components:
+  schemas:
+    ApplicationUser:
+      type: object
+      description: Aquila application-level user linked to a Supabase Identity
+      properties:
+        id:
+          type: string
+          format: uuid
+        supabaseUserId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        locale:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

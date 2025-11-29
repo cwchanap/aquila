@@ -1,0 +1,71 @@
+# Quickstart: Supabase Auth Integration (Shared Supabase Project)
+
+## Prerequisites
+
+- Access to the existing **shared Supabase project** used by other applications.
+- Supabase credentials available as environment variables:
+  - `SUPABASE_URL`
+  - `SUPABASE_ANON_KEY`
+- Aquila monorepo checked out and dependencies installed (Bun 1.1.26+).
+
+## 1. Configure environment
+
+1. Open the repo root `.env` (or appropriate environment file for the web app).
+2. Add or update the following variables (values from the shared Supabase project):
+
+   ```bash
+   SUPABASE_URL=...       # e.g., https://your-project.supabase.co
+   SUPABASE_ANON_KEY=...  # public anon key for client-side use
+   # Optional: service-role key for server-to-server use, if needed later
+   # SUPABASE_SERVICE_ROLE_KEY=...
+   ```
+
+3. Ensure existing database-related env vars (e.g., `DATABASE_URL`) remain unchanged.
+
+## 2. Run the web app with Supabase auth
+
+1. From the repo root, start the dev server:
+
+   ```bash
+   bun dev
+   ```
+
+2. Open the web app in a browser (default):
+   - `http://localhost:5090`
+
+3. Use the new auth UI to:
+   - Sign up as a **new user** (creates a Supabase user and an Aquila `Application User`).
+   - Sign in using an **existing Supabase account** from another app in the same project (reuses the existing Supabase user and creates an Aquila `Application User` on first sign-in).
+
+4. Verify that gameplay and profile data still come from the existing Cockroach/Postgres database and that the `Application User` is linked by `supabaseUserId`.
+
+## 3. Run tests
+
+1. Run unit tests for the web app:
+
+   ```bash
+   bun --filter web test
+   ```
+
+2. Run Playwright E2E tests (including auth journeys once added):
+
+   ```bash
+   bun test:e2e
+   ```
+
+3. Run linting:
+
+   ```bash
+   bun lint
+   ```
+
+All test suites MUST pass before merging changes to the `001-supabase-auth` branch.
+
+## 4. Integration checklist
+
+- [ ] Supabase env vars configured for local development.
+- [ ] Supabase-based signup and signin flows working in the web UI.
+- [ ] `GET /api/me` returns the expected `Application User` for authenticated sessions.
+- [ ] Sign-out flow clears Supabase session and local auth context.
+- [ ] Existing game data and progress remain intact for returning players.
+- [ ] Unit and E2E tests updated to cover new auth flows and passing.

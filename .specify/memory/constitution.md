@@ -103,8 +103,12 @@ Comprehensive test coverage MUST be maintained across all layers:
 **Game Engine**: Phaser 3.x  
 **Desktop**: Tauri v2 + SvelteKit (SPA mode, no SSR)  
 **ORM**: Drizzle with type-safe queries  
-**Authentication**: Better Auth with PostgreSQL backend  
-**Testing**: Vitest (unit) + Playwright (E2E)
+**Authentication**:
+
+- Web app: Supabase Auth with PostgreSQL-backed application data (no credentials stored outside Supabase)
+- Other runtimes (desktop/CLI/legacy): Better Auth with PostgreSQL backend, or future auth providers explicitly justified in plan.md
+- Supabase Auth is the primary identity provider for the web app to enable shared identity across applications using the same Supabase project.
+  **Testing**: Vitest (unit) + Playwright (E2E)
 
 **Visual Design**: Glassmorphism UI patterns (`bg-white/10 backdrop-blur-sm`), consistent `Button.svelte` variants
 

@@ -39,7 +39,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - **DOM Safety & Security (OK)**: Auth-related UI MUST avoid `innerHTML` and use safe DOM APIs only. Supabase auth flows are invoked via SDK calls and standard forms, not via unsanitized HTML injection.
 - **Translation-First Internationalization (OK)**: All new user-facing auth strings (buttons, errors, prompts) MUST be added to `packages/dialogue/src/translations/` for all supported locales and consumed via `getTranslations(locale)`.
 - **Testing Discipline (OK)**: New auth flows MUST be covered by Vitest unit tests and Playwright E2E tests (happy paths plus basic failure cases) without breaking the existing test suite.
-- **Technology Constraint – Authentication (VIOLATION, justified)**: The constitution currently specifies Better Auth with PostgreSQL. This feature intentionally migrates the web app to Supabase Auth to share identity with other applications using the same Supabase project and to offload credential management. This violation is accepted for this feature and documented in the Complexity Tracking table.
+- **Technology Constraint – Authentication (OK)**: The constitution now specifies Supabase Auth for the web app with PostgreSQL-backed application data. This feature migrates the web app to Supabase Auth to share identity with other applications using the same Supabase project and to offload credential management; the tradeoff is documented in the Complexity Tracking table.
 
 ## Project Structure
 

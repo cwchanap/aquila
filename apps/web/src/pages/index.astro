@@ -3,10 +3,12 @@ import MainLayout from '@/layouts/main.astro';
 import MainMenu from '@/components/MainMenu.svelte';
 import { translations } from '@aquila/dialogue';
 
+const locale = Astro.currentLocale || 'en';
+
 const t = (key: string): string => {
-    const locale = Astro.currentLocale || 'en';
     const keys = key.split('.');
-    let value: Record<string, unknown> = locale === 'zh' ? translations.zh : translations.en;
+    let value: Record<string, unknown> =
+        locale === 'zh' ? translations.zh : translations.en;
 
     for (const segment of keys) {
         if (value && typeof value === 'object' && segment in value) {
@@ -33,7 +35,7 @@ const t = (key: string): string => {
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await getCurrentUser();
             if (!user) {
-                window.location.href = '/auth';
+                window.location.href = '/en/login';
                 return;
             }
 

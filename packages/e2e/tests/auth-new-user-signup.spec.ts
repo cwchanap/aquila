@@ -12,15 +12,16 @@ const uniqueEmail = (prefix: string) => `${prefix}-${randomUUID()}@example.com`;
  */
 
 test.describe('Supabase Auth - new user signup (US2)', () => {
-    test('new user can sign up via /auth/signup and reach main menu', async ({
+    test('new user can sign up via /en/signup and reach main menu', async ({
         page,
     }) => {
-        await page.goto('/auth/signup');
+        await page.goto('/en/signup');
 
         const email = uniqueEmail('supabase-signup');
 
         await page.fill('input[name="email"]', email);
         await page.fill('input[name="password"]', 'password123');
+        await page.fill('input[name="name"]', 'Supabase Test User');
         await page.click('button[type="submit"]');
 
         await page.waitForLoadState('networkidle');

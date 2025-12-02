@@ -173,58 +173,62 @@ import MainLayout from '../../layouts/main.astro';
 		</div>
 
 		<script>
+			import { getSupabaseAuthClient } from '@/lib/auth';
+			
 			document.addEventListener('DOMContentLoaded', () => {
-				const loginForm = document.getElementById('login-form') as HTMLFormElement;
+				const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
 				const errorMessage = document.getElementById('error-message');
-
+			
+				if (!loginForm || !errorMessage) {
+					return;
+				}
+			
+				const errorEl = errorMessage as HTMLElement;
+				const supabase = getSupabaseAuthClient();
+			
 				function showError(message: string) {
-					if (errorMessage) {
-						errorMessage.textContent = message;
-						errorMessage.classList.remove('hidden');
-					}
+					errorEl.textContent = message;
+					errorEl.classList.remove('hidden');
 				}
-
+			
 				function hideError() {
-					if (errorMessage) {
-						errorMessage.classList.add('hidden');
+					errorEl.classList.add('hidden');
+				}
+			
+				loginForm.addEventListener('submit', async (e) => {
+					e.preventDefault();
+					hideError();
+				
+					const formData = new FormData(loginForm);
+					const email = formData.get('email')?.toString() ?? '';
+					const password = formData.get('password')?.toString() ?? '';
+				
+					if (!email || !password) {
+						showError('Invalid credentials');
+						return;
 					}
-				}
-
-				if (loginForm) {
-					loginForm.addEventListener('submit', async (e) => {
-						e.preventDefault();
-						hideError();
-
-						const formData = new FormData(loginForm);
-						const email = formData.get('email');
-						const password = formData.get('password');
-
-						try {
-							const response = await fetch('/api/simple-auth/signin', {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/json',
-								},
-								body: JSON.stringify({ email, password }),
-							});
-
-							const result = await response.json();
-
-							if (response.ok) {
-								// Redirect to home page on successful login
-								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-								window.location.href = `/${locale}/`;
-							} else {
-								// Show the same error message as the API for invalid credentials
-								showError(result.error || 'Invalid credentials');
-							}
-						} catch (error) {
-							console.error('Login failed:', error);
-							// Fallback to the same invalid-credentials message on network or server error
-							showError('Invalid credentials');
+				
+					try {
+						const { error } = await supabase.auth.signInWithPassword({
+							email,
+							password,
+						});
+						
+						if (error) {
+							showError(error.message || 'Invalid credentials');
+							return;
 						}
-					});
-				}
+					
+						const locale =
+							document
+								.querySelector('[data-locale]')
+								?.getAttribute('data-locale') || 'en';
+						window.location.href = `/${locale}/`;
+					} catch (error) {
+						console.error('Login failed:', error);
+						showError('Invalid credentials');
+					}
+				});
 			});
 		</script>
 </MainLayout>

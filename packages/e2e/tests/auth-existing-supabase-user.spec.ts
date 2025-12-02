@@ -24,11 +24,11 @@ const hasSupabaseCreds =
 test.describe('Supabase Auth - existing user sign-in (US1)', () => {
     test.skip(!hasSupabaseCreds, 'SUPABASE_E2E_EMAIL/PASSWORD not configured');
 
-    test('existing Supabase user can sign in via /auth and reach main menu', async ({
+    test('existing Supabase user can sign in via /en/login and reach main menu', async ({
         page,
     }) => {
-        // Start on the auth page
-        await page.goto('/auth');
+        // Start on the localized login page
+        await page.goto('/en/login');
 
         // Fill Supabase email/password form
         await page.fill('input[name="email"]', SUPABASE_E2E_EMAIL!);

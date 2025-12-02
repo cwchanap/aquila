@@ -189,62 +189,73 @@ import MainLayout from '../../layouts/main.astro';
 		</div>
 
 		<script>
+			import { getSupabaseAuthClient } from '@/lib/auth';
+			
 			document.addEventListener('DOMContentLoaded', () => {
-				const signupForm = document.getElementById('signup-form') as HTMLFormElement;
+				const signupForm = document.getElementById('signup-form') as HTMLFormElement | null;
 				const errorMessage = document.getElementById('error-message');
-
+			
+				if (!signupForm || !errorMessage) {
+					return;
+				}
+			
+				const errorEl = errorMessage as HTMLElement;
+				const supabase = getSupabaseAuthClient();
+			
 				function showError(message: string) {
-					if (errorMessage) {
-						errorMessage.textContent = message;
-						errorMessage.classList.remove('hidden');
-					}
+					errorEl.textContent = message;
+					errorEl.classList.remove('hidden');
 				}
-
+			
 				function hideError() {
-					if (errorMessage) {
-						errorMessage.classList.add('hidden');
-					}
+					errorEl.classList.add('hidden');
 				}
-
-				if (signupForm) {
-					signupForm.addEventListener('submit', async (e) => {
-						e.preventDefault();
-						hideError();
-
-						const formData = new FormData(signupForm);
-						const email = formData.get('email');
-						const password = formData.get('password');
-						const name = formData.get('name');
-
-						if (!email || !password || !name) {
-							showError('All fields are required for signup.');
+			
+				signupForm.addEventListener('submit', async (e) => {
+					e.preventDefault();
+					hideError();
+				
+					const formData = new FormData(signupForm);
+					const email = formData.get('email')?.toString() ?? '';
+					const password = formData.get('password')?.toString() ?? '';
+					const name = formData.get('name')?.toString() ?? '';
+				
+					if (!email || !password || !name) {
+						showError('All fields are required for signup.');
+						return;
+					}
+				
+					if (password.length < 6) {
+						showError('Signup failed. Please try again.');
+						return;
+					}
+				
+					try {
+						const { error } = await supabase.auth.signUp({
+							email,
+							password,
+							options: {
+								data: {
+									full_name: name,
+								},
+							},
+						});
+						
+						if (error) {
+							showError(error.message || 'Signup failed');
 							return;
 						}
-
-						try {
-							const response = await fetch('/api/simple-auth/signup', {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/json',
-								},
-								body: JSON.stringify({ email, password, name }),
-							});
-
-							const result = await response.json();
-
-							if (response.ok) {
-								// Redirect to home page on successful signup
-								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-								window.location.href = `/${locale}/`;
-							} else {
-								showError(result.error || 'Signup failed');
-							}
-						} catch (error) {
-							console.error('Signup failed:', error);
-							showError('Signup failed. Please try again.');
-						}
-					});
-				}
+					
+						const locale =
+							document
+								.querySelector('[data-locale]')
+								?.getAttribute('data-locale') || 'en';
+						window.location.href = `/${locale}/`;
+					} catch (error) {
+						console.error('Signup failed:', error);
+						showError('Signup failed. Please try again.');
+					}
+				});
 			});
 		</script>
-</MainLayout>
+	</MainLayout>

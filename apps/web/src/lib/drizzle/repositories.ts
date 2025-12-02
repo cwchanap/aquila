@@ -69,6 +69,45 @@ export class UserRepository {
         return user;
     }
 
+    async findBySupabaseUserId(supabaseUserId: string) {
+        const [user] = await this.db
+            .select()
+            .from(users)
+            .where(eq(users.supabaseUserId, supabaseUserId))
+            .limit(1);
+        return user;
+    }
+
+    async findOrCreateBySupabaseUserId(
+        supabaseUserId: string,
+        data: {
+            email: string;
+            name?: string | null;
+            username?: string | null;
+            image?: string | null;
+        }
+    ) {
+        const existing = await this.findBySupabaseUserId(supabaseUserId);
+        if (existing) {
+            return existing;
+        }
+
+        const id = nanoid();
+        const [user] = await this.db
+            .insert(users)
+            .values({
+                id,
+                email: data.email,
+                name: data.name ?? null,
+                username: data.username ?? null,
+                image: data.image ?? null,
+                supabaseUserId,
+            })
+            .returning();
+
+        return user;
+    }
+
     async update(id: string, data: Partial<Omit<User, 'id' | 'createdAt'>>) {
         const [user] = await this.db
             .update(users)

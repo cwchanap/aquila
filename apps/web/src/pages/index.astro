@@ -27,18 +27,31 @@ const t = (key: string): string => {
     <MainMenu client:load locale={Astro.currentLocale ?? 'en'} />
 
     <script>
-        // Handle language preference persistence
-        document.addEventListener('DOMContentLoaded', () => {
+        import { getCurrentUser } from '@/lib/auth';
+
+        // Handle auth gating and language preference persistence
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            if (!user) {
+                window.location.href = '/auth';
+                return;
+            }
+
+            // Check if we're on the root path
             if (window.location.pathname === '/') {
+                // Check for saved language preference
                 const savedLanguage = localStorage.getItem('aquila:language');
 
+                // If user has a Chinese preference and we're not already on Chinese, redirect
                 if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
                     window.location.href = '/zh';
                     return;
                 }
 
+                // If user has English preference and we're on Chinese, redirect to English
                 if (savedLanguage === 'en' && window.location.pathname.startsWith('/zh')) {
                     window.location.href = '/';
+                    return;
                 }
             }
         });

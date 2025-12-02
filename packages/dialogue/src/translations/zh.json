@@ -136,5 +136,17 @@
     "bookmark": "📖 書籤",
     "pageDisplay": "第 {current} / {total} 頁",
     "unknown": "未知"
+  },
+  "auth": {
+    "email": "電子郵件",
+    "password": "密碼",
+    "signIn": "登入",
+    "signUp": "註冊",
+    "signOut": "登出",
+    "forgotPassword": "忘記密碼？",
+    "resetPassword": "重設密碼",
+    "genericError": "處理您的請求時發生錯誤。",
+    "unauthorized": "您需要先登入才能繼續。",
+    "sessionExpired": "登入狀態已過期，請重新登入。"
   }
 }

@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 
-export const ALL: APIRoute = async context => {
-    // Lazy-load auth to avoid loading before env vars are available
-    const { auth } = await import('../../../lib/auth.js');
-    return auth.handler(context.request);
+export const ALL: APIRoute = async () => {
+    return new Response(
+        JSON.stringify({ error: 'Better Auth endpoints have been removed.' }),
+        {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        }
+    );
 };

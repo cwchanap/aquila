@@ -23,6 +23,7 @@ export const users = pgTable(
     {
         id: text('id').primaryKey(),
         email: text('email').notNull().unique(),
+        supabaseUserId: text('supabase_user_id').unique(),
         username: text('username'),
         name: text('name'),
         image: text('image'),

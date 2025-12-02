@@ -27,7 +27,7 @@
 
 **Purpose**: Environment and documentation setup for Supabase integration.
 
-- [ ] T001 Configure `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env` at repo root
+- [x] T001 Configure `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env` at repo root
 - [ ] T002 [P] Verify Supabase env var instructions in `specs/001-supabase-auth/quickstart.md` match the actual shared project configuration
 - [ ] T003 [P] Confirm `specs/001-supabase-auth/research.md` decisions align with the current shared Supabase project (no extra providers or migrations enabled)
 
@@ -39,13 +39,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Add `supabaseUserId` column to the Aquila Application User table in `apps/web/src/lib/drizzle/schema.ts`
-- [ ] T005 [P] Generate and review Drizzle migrations for the new `supabaseUserId` column in `apps/web/src/lib/drizzle/migrations/`
-- [ ] T006 [P] Extend user repository to load/create users by `supabaseUserId` in `apps/web/src/lib/drizzle/repositories.ts`
-- [ ] T007 [P] Create Supabase client helper using `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `apps/web/src/lib/auth/supabaseClient.ts`
-- [ ] T008 [P] Refactor `apps/web/src/lib/auth.ts` to stop initializing Better Auth for the web app and instead expose Supabase-based helpers (e.g., `getSupabaseClient`, `getCurrentSession`)
-- [ ] T009 [P] Add baseline auth-related translation keys (labels, errors, buttons) to `packages/dialogue/src/translations/en.json` and `packages/dialogue/src/translations/zh.json`
-- [ ] T010 Ensure feature documentation set is complete (spec, plan, research, data-model, contracts, quickstart) in `specs/001-supabase-auth/`
+- [x] T004 Add `supabaseUserId` column to the Aquila Application User table in `apps/web/src/lib/drizzle/schema.ts`
+- [x] T005 [P] Generate and review Drizzle migrations for the new `supabaseUserId` column in `apps/web/src/lib/drizzle/migrations/`
+- [x] T006 [P] Extend user repository to load/create users by `supabaseUserId` in `apps/web/src/lib/drizzle/repositories.ts`
+- [x] T007 [P] Create Supabase client helper using `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `apps/web/src/lib/auth/supabaseClient.ts`
+- [x] T008 [P] Refactor `apps/web/src/lib/auth.ts` to stop initializing Better Auth for the web app and instead expose Supabase-based helpers (e.g., `getSupabaseClient`, `getCurrentSession`)
+- [x] T009 [P] Add baseline auth-related translation keys (labels, errors, buttons) to `packages/dialogue/src/translations/en.json` and `packages/dialogue/src/translations/zh.json`
+- [x] T010 Ensure feature documentation set is complete (spec, plan, research, data-model, contracts, quickstart) in `specs/001-supabase-auth/`
 
 **Checkpoint**: Foundation ready – user story implementation can now begin in parallel.
 
@@ -59,16 +59,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Add Vitest unit tests for repository method `findOrCreateBySupabaseUserId` in `apps/web/src/lib/drizzle/__tests__/userRepository.supabase.test.ts`
-- [ ] T012 [P] [US1] Add Playwright E2E test for existing Supabase user sign-in journey in `packages/e2e/tests/auth-existing-supabase-user.spec.ts`
+- [x] T011 [P] [US1] Add Vitest unit tests for repository method `findOrCreateBySupabaseUserId` in `apps/web/src/lib/drizzle/__tests__/userRepository.supabase.test.ts`
+- [x] T012 [P] [US1] Add Playwright E2E test for existing Supabase user sign-in journey in `packages/e2e/tests/auth-existing-supabase-user.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Implement `findOrCreateBySupabaseUserId` (or equivalent) in the user repository in `apps/web/src/lib/drizzle/repositories.ts`
-- [ ] T014 [P] [US1] Implement `GET /api/me` route that maps the current Supabase session to an Aquila Application User in `apps/web/src/pages/api/me.ts`
-- [ ] T015 [US1] Update `apps/web/src/lib/auth.ts` to call Supabase via `supabaseClient.ts` and `/api/me`, exposing a `getCurrentUser` helper for server/client usage
-- [ ] T016 [US1] Implement or update the sign-in UI to use Supabase email/password sign-in for existing users in `apps/web/src/pages/auth/index.astro`
-- [ ] T017 [US1] Wire the main entrypoint page to require an authenticated user (e.g., redirect unauthenticated users to auth page) in `apps/web/src/pages/index.astro`
+- [x] T013 [P] [US1] Implement `findOrCreateBySupabaseUserId` (or equivalent) in the user repository in `apps/web/src/lib/drizzle/repositories.ts`
+- [x] T014 [P] [US1] Implement `GET /api/me` route that maps the current Supabase session to an Aquila Application User in `apps/web/src/pages/api/me.ts`
+- [x] T015 [US1] Update `apps/web/src/lib/auth.ts` to call Supabase via `supabaseClient.ts` and `/api/me`, exposing a `getCurrentUser` helper for server/client usage
+- [x] T016 [US1] Implement or update the sign-in UI to use Supabase email/password sign-in for existing users in `apps/web/src/pages/auth/index.astro`
+- [x] T017 [US1] Wire the main entrypoint page to require an authenticated user (e.g., redirect unauthenticated users to auth page) in `apps/web/src/pages/index.astro`
 
 **Checkpoint**: User Story 1 should be fully functional and testable independently (existing Supabase users can sign in and reach Aquila with correct data).
 
@@ -82,14 +82,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T018 [P] [US2] Add Playwright E2E test for new-user signup and first-play journey in `packages/e2e/tests/auth-new-user-signup.spec.ts`
+- [x] T018 [P] [US2] Add Playwright E2E test for new-user signup and first-play journey in `packages/e2e/tests/auth-new-user-signup.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Implement Supabase email/password signup UI (including basic validation) in `apps/web/src/pages/auth/signup.astro`
-- [ ] T020 [US2] Ensure signup flow creates an Aquila Application User linked by `supabaseUserId` on first successful sign-up in `apps/web/src/lib/auth.ts`
-- [ ] T021 [US2] Handle duplicate email and validation error states with localized messages in `apps/web/src/pages/auth/signup.astro` using translations from `packages/dialogue/src/translations/*.json`
-- [ ] T022 [US2] Ensure newly registered users are redirected into the main game experience after signup in `apps/web/src/pages/auth/signup.astro`
+- [x] T019 [P] [US2] Implement Supabase email/password signup UI (including basic validation) in `apps/web/src/pages/auth/signup.astro`
+- [x] T020 [US2] Ensure signup flow creates an Aquila Application User linked by `supabaseUserId` on first successful sign-up in `apps/web/src/lib/auth.ts`
+- [x] T021 [US2] Handle duplicate email and validation error states with localized messages in `apps/web/src/pages/auth/signup.astro` using translations from `packages/dialogue/src/translations/*.json`
+- [x] T022 [US2] Ensure newly registered users are redirected into the main game experience after signup in `apps/web/src/pages/auth/signup.astro`
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently (existing users sign in, new users sign up and play).
 

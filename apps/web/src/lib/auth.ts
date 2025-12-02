@@ -1,57 +1,45 @@
-import { betterAuth } from 'better-auth';
+import type {
+    SupabaseClient,
+    Session as SupabaseSession,
+} from '@supabase/supabase-js';
+import { getSupabaseClient } from './auth/supabaseClient';
 
-// Astro uses import.meta.env, but fallback to process.env for compatibility
-const isTestEnv =
-    (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test') ||
-    process.env.NODE_ENV === 'test';
+export type { SupabaseSession };
 
-const databaseUrl =
-    import.meta.env?.DATABASE_URL ||
-    process.env.DATABASE_URL ||
-    (isTestEnv ? 'postgres://localhost:5432/aquila_test' : undefined);
-
-if (!databaseUrl) {
-    throw new Error(
-        'DATABASE_URL is not set. Configure a PostgreSQL connection string before starting the app.'
-    );
+export function getSupabaseAuthClient(): SupabaseClient {
+    return getSupabaseClient();
 }
 
-export const auth = betterAuth({
-    baseURL:
-        import.meta.env?.BETTER_AUTH_URL ||
-        process.env.BETTER_AUTH_URL ||
-        'http://localhost:5090',
-    database: {
-        provider: 'postgres',
-        url: databaseUrl,
-    },
-    // Map core models to our pluralized table names
-    user: {
-        modelName: 'users',
-    },
-    session: {
-        modelName: 'sessions',
-        expiresIn: 60 * 60 * 24 * 7, // 7 days
-    },
-    account: {
-        modelName: 'accounts',
-    },
-    verification: {
-        modelName: 'verificationTokens',
-        fields: {
-            value: 'token',
-            expiresAt: 'expires',
-        },
-    },
-    emailAndPassword: {
-        enabled: true,
-        requireEmailVerification: false,
-    },
-    trustedOrigins: ['http://localhost:5090'],
-    secret:
-        process.env.BETTER_AUTH_SECRET ||
-        'your-secret-key-for-development-only',
-});
+export async function getCurrentSession(): Promise<SupabaseSession | null> {
+    const client = getSupabaseClient();
+    const { data, error } = await client.auth.getSession();
+    if (error) {
+        throw error;
+    }
+    return data.session ?? null;
+}
 
-export type Session = typeof auth.$Infer.Session;
-export type User = typeof auth.$Infer.Session.user;
+export async function getCurrentUser(): Promise<unknown | null> {
+    const session = await getCurrentSession();
+    if (!session) {
+        return null;
+    }
+
+    const token = session.access_token;
+    if (!token) {
+        return null;
+    }
+
+    const response = await fetch('/api/me', {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        return null;
+    }
+
+    const json = (await response.json()) as { user?: unknown };
+    return json.user ?? null;
+}

@@ -1,0 +1,179 @@
+---
+import MainLayout from '@/layouts/main.astro';
+import { translations } from '@aquila/dialogue';
+
+const t = (key: string): string => {
+    const locale = Astro.currentLocale || 'en';
+    const keys = key.split('.');
+    let value: Record<string, unknown> =
+        locale === 'zh' ? translations.zh : translations.en;
+
+    for (const segment of keys) {
+        if (value && typeof value === 'object' && segment in value) {
+            value = value[segment] as Record<string, unknown>;
+        } else {
+            return key;
+        }
+    }
+
+    return typeof value === 'string' ? value : key;
+};
+
+const locale = Astro.currentLocale || 'en';
+---
+
+<MainLayout title={t('auth.signUp')}>
+    <div
+        class="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"
+        data-locale={locale}
+        data-error-generic={t('auth.genericError')}
+        data-signup-failed={t('login.signupFailed')}
+        data-email-required={t('login.emailRequired')}
+    >
+        <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-lg w-full mx-6">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-black text-slate-800 mb-2 uppercase tracking-wider">
+                    {t('auth.signUp')}
+                </h1>
+            </div>
+
+            <form id="supabase-signup-form" class="space-y-6">
+                <div>
+                    <label
+                        for="email"
+                        class="block text-slate-700 font-bold mb-2 tracking-wide"
+                    >
+                        {t('auth.email')}
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        class="w-full py-3 px-4 bg-white/70 text-slate-800 rounded-2xl border border-slate-300/60 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50"
+                    />
+                </div>
+
+                <div>
+                    <label
+                        for="password"
+                        class="block text-slate-700 font-bold mb-2 tracking-wide"
+                    >
+                        {t('auth.password')}
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        class="w-full py-3 px-4 bg-white/70 text-slate-800 rounded-2xl border border-slate-300/60 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+                >
+                    {t('auth.signUp')}
+                </button>
+            </form>
+
+            <div
+                id="error-message"
+                class="mt-4 text-red-600 text-sm font-semibold hidden p-3 bg-red-100 rounded-lg border border-red-300"
+            ></div>
+
+            <div class="mt-4 text-center">
+                <a
+                    href="/auth"
+                    class="text-blue-600 font-semibold hover:text-cyan-500 transition-colors duration-300"
+                >
+                    {t('auth.signIn')}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import { getSupabaseAuthClient } from '@/lib/auth';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById(
+                'supabase-signup-form'
+            ) as HTMLFormElement | null;
+            const root = document.querySelector('[data-locale]') as
+                | HTMLElement
+                | null;
+            const errorMessage = document.getElementById('error-message');
+
+            if (!form || !root || !errorMessage) {
+                return;
+            }
+
+            const errorEl = errorMessage as HTMLElement;
+
+            const locale = root.getAttribute('data-locale') || 'en';
+            const genericError =
+                root.getAttribute('data-error-generic') || 'Error';
+            const signupFailed =
+                root.getAttribute('data-signup-failed') || genericError;
+            const emailRequired =
+                root.getAttribute('data-email-required') || genericError;
+
+            const supabase = getSupabaseAuthClient();
+
+            function showError(message: string) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+
+            function hideError() {
+                errorEl.classList.add('hidden');
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                hideError();
+
+                const formData = new FormData(form);
+                const email = formData.get('email')?.toString() ?? '';
+                const password = formData.get('password')?.toString() ?? '';
+
+                if (!email || !password) {
+                    showError(emailRequired);
+                    return;
+                }
+
+                if (password.length < 6) {
+                    showError(genericError);
+                    return;
+                }
+
+                try {
+                    const { error } = await supabase.auth.signUp({
+                        email,
+                        password,
+                    });
+
+                    if (error) {
+                        showError(error.message || signupFailed);
+                        return;
+                    }
+
+                    localStorage.setItem('aquila:language', locale);
+
+                    if (locale === 'en') {
+                        window.location.href = '/en/';
+                    } else if (locale === 'zh') {
+                        window.location.href = '/zh/';
+                    } else {
+                        window.location.href = '/';
+                    }
+                } catch (err) {
+                    console.error('Supabase sign-up failed:', err);
+                    showError(genericError);
+                }
+            });
+        });
+    </script>
+</MainLayout>

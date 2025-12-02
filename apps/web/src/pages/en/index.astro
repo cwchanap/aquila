@@ -29,8 +29,16 @@ const t = (key: string): string => {
 	<MainMenu client:load locale={Astro.currentLocale || 'en'} />
 
 	<script>
-		// Handle language preference persistence
-		document.addEventListener('DOMContentLoaded', () => {
+		import { getCurrentUser } from '@/lib/auth';
+
+		// Handle auth gating and language preference persistence
+		document.addEventListener('DOMContentLoaded', async () => {
+			const user = await getCurrentUser();
+			if (!user) {
+				window.location.href = '/auth';
+				return;
+			}
+
 			// Check if we're on the root path
 			if (window.location.pathname === '/') {
 				// Check for saved language preference

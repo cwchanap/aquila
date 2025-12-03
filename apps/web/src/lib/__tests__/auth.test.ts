@@ -5,29 +5,31 @@ import {
     type SupabaseSession,
 } from '../auth';
 
-// Mock Supabase client
-vi.mock('@supabase/supabase-js', () => {
-    const getSession = vi.fn(async () => ({
-        data: {
-            session: {
-                access_token: 'test-token',
-                token_type: 'bearer',
-                expires_in: 3600,
-                user: {
-                    id: 'user-123',
-                    email: 'test@example.com',
-                },
+// Mock internal supabase client helper so tests don't depend on real env vars
+const getSession = vi.fn(async () => ({
+    data: {
+        session: {
+            access_token: 'test-token',
+            token_type: 'bearer',
+            expires_in: 3600,
+            user: {
+                id: 'user-123',
+                email: 'test@example.com',
             },
         },
-        error: null,
-    }));
+    },
+    error: null,
+}));
 
-    return {
-        createClient: vi.fn(() => ({
-            auth: { getSession },
-        })),
-    };
-});
+const mockClient = {
+    auth: {
+        getSession,
+    },
+} as unknown as { auth: { getSession: typeof getSession } };
+
+vi.mock('../auth/supabaseClient', () => ({
+    getSupabaseClient: vi.fn(() => mockClient),
+}));
 
 describe('Supabase auth helpers', () => {
     it('should provide a Supabase client instance', () => {

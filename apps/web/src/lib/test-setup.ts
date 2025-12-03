@@ -18,6 +18,12 @@ process.env.BETTER_AUTH_SECRET = 'test-secret';
 process.env.TURSO_DATABASE_URL = 'http://127.0.0.1:8080';
 process.env.TURSO_AUTH_TOKEN = 'test-token';
 
+// Supabase test environment variables for auth helpers
+process.env.SUPABASE_URL =
+    process.env.SUPABASE_URL ?? 'https://supabase.test.local';
+process.env.SUPABASE_ANON_KEY =
+    process.env.SUPABASE_ANON_KEY ?? 'test-anon-key';
+
 // Mock bcryptjs
 vi.mock('bcryptjs', () => ({
     default: {

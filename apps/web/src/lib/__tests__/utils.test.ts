@@ -17,7 +17,7 @@ vi.mock('@aquila/dialogue/translations/zh.json', () => ({
         common: {
             hello: '你好',
             goodbye: '再见',
-            login: '登录',
+            login: '登入',
             logout: '登出',
         },
     },
@@ -58,7 +58,7 @@ describe('Utils', () => {
 
         it('returns chinese translations', () => {
             expect(t('zh', 'common.hello')).toBe('你好');
-            expect(t('zh', 'common.login')).toBe('登录');
+            expect(t('zh', 'common.login')).toBe('登入');
         });
 
         it('falls back to key for missing entry', () => {

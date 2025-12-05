@@ -1,10 +1,9 @@
 ---
 import MainLayout from '../../layouts/main.astro';
 import UserStatus from '../../components/UserStatus.svelte';
-import { SimpleAuthService, type SimpleUser } from '../../lib/simple-auth.js';
-import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
-import type { CharacterSetup } from '../../lib/drizzle/schema.js';
 import en from '@aquila/dialogue/translations/en.json';
+import type { CharacterSetup } from '../../lib/drizzle/schema.js';
+import type { SimpleUser } from '../../lib/simple-auth.js';
 
 // Helper function to get translations (used in template)
  
@@ -23,25 +22,9 @@ const t = (key: string): string => {
   return typeof value === 'string' ? value : key;
 };
 
-// Get user session
+// Legacy server-side session removed; client-side Supabase auth will fetch data.
 let user: SimpleUser | null = null;
 let characterSetups: CharacterSetup[] = [];
-
-try {
-  const sessionId = Astro.cookies.get('session')?.value;
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    user = session?.user || null;
-
-    // Get character setups from database if authenticated
-    if (user?.id) {
-      const characterSetupRepo = new CharacterSetupRepository();
-      characterSetups = await characterSetupRepo.findByUser(user.id);
-    }
-  }
-} catch (error) {
-  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
-}
 ---
 
 <MainLayout title={t("characters.title")}>
@@ -269,7 +252,9 @@ try {
   </div>
 </MainLayout>
 
-<script>
+<script type="module">
+  import { authorizedFetch } from '../../lib/auth';
+
   // Inline editing functionality for authenticated users
   document.addEventListener('DOMContentLoaded', () => {
     // Handle edit buttons for database characters
@@ -312,7 +297,7 @@ try {
             const storyId = card.getAttribute('data-story-id');
 
             try {
-              const response = await fetch('/api/character-setup', {
+              const response = await authorizedFetch('/api/character-setup', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

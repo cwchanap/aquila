@@ -6,6 +6,7 @@ import {
     type ChoiceDefinition,
 } from '@aquila/dialogue';
 import { mount } from 'svelte';
+import { authorizedFetch } from './auth';
 
 export interface SceneState {
     storyId: string;
@@ -214,7 +215,7 @@ export class ReaderManager {
                 : bookmarkName;
 
         try {
-            const response = await fetch('/api/bookmarks', {
+            const response = await authorizedFetch('/api/bookmarks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

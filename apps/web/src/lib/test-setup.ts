@@ -31,32 +31,6 @@ vi.mock('bcryptjs', () => ({
         compare: vi.fn().mockResolvedValue(true),
     },
 }));
-
-// Mock better-auth
-vi.mock('better-auth', () => ({
-    betterAuth: vi.fn(() => ({
-        $Infer: {
-            Session: {
-                user: {
-                    id: 'string',
-                    email: 'string',
-                    name: 'string',
-                    username: 'string',
-                },
-            },
-        },
-    })),
-}));
-
-vi.mock('better-auth/client', () => ({
-    createAuthClient: vi.fn(() => ({
-        signIn: vi.fn(),
-        signUp: vi.fn(),
-        signOut: vi.fn(),
-        useSession: vi.fn(),
-    })),
-}));
-
 // Mock Drizzle DB instance used in tests
 type DbMockChain = {
     select: ReturnType<typeof vi.fn>;

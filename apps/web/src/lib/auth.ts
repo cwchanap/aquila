@@ -43,3 +43,23 @@ export async function getCurrentUser(): Promise<unknown | null> {
     const json = (await response.json()) as { user?: unknown };
     return json.user ?? null;
 }
+
+export async function authorizedFetch(
+    input: RequestInfo | URL,
+    init: RequestInit = {}
+): Promise<Response> {
+    const session = await getCurrentSession();
+    if (!session?.access_token) {
+        throw new Error('Not authenticated');
+    }
+
+    const headers = new Headers(init.headers ?? {});
+    if (!headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${session.access_token}`);
+    }
+
+    return fetch(input, {
+        ...init,
+        headers,
+    });
+}

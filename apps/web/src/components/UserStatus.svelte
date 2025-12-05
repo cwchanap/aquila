@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { t } from '../lib/utils.js';
+  import { getCurrentUser, getSupabaseAuthClient } from '@/lib/auth';
 
   interface User {
     id: string;
@@ -27,14 +28,27 @@
     // Only fetch if no user was provided server-side
     if (!user) {
       try {
-        const response = await globalThis.fetch('/api/simple-auth/session');
-        if (!response.ok) {
-          throw new globalThis.Error(
-            `Session fetch failed: ${response.status} ${response.statusText}`
-          );
+        const current = await getCurrentUser();
+
+        if (current && typeof current === 'object') {
+          const raw = current as {
+            id?: string;
+            email?: string;
+            name?: string | null;
+          };
+
+          if (raw.email) {
+            user = {
+              id: (raw.id as string) ?? raw.email,
+              email: raw.email,
+              name: (raw.name as string | null) ?? null,
+            };
+          } else {
+            user = null;
+          }
+        } else {
+          user = null;
         }
-        const data = await response.json();
-        user = data.user;
       } catch (error) {
         if (import.meta.env.DEV) {
           console.log(
@@ -81,6 +95,27 @@
       document.removeEventListener('keydown', handleKeydown);
     };
   });
+
+  const handleLogout = async (e: Event) => {
+    e.preventDefault();
+
+    try {
+      const client = getSupabaseAuthClient();
+      await client.auth.signOut();
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.log(
+          'Supabase signOut error:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
+    } finally {
+      user = null;
+      const locale =
+        globalThis.document.documentElement.lang || currentLocale || 'en';
+      globalThis.location.href = `/${locale}/login`;
+    }
+  };
 </script>
 
 <div class="user-status absolute top-6 right-6 z-50">
@@ -144,16 +179,15 @@
               Story Config
             </a>
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
-            <form method="POST" action="/api/simple-auth/session">
-              <button
-                type="submit"
-                title={t(currentLocale, 'common.logout')}
-                class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
-                style="font-family: 'Exo 2', sans-serif;"
-              >
-                {t(currentLocale, 'common.logout')}
-              </button>
-            </form>
+            <button
+              type="button"
+              on:click={handleLogout}
+              title={t(currentLocale, 'common.logout')}
+              class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
+              style="font-family: 'Exo 2', sans-serif;"
+            >
+              {t(currentLocale, 'common.logout')}
+            </button>
           </div>
         </div>
       </div>

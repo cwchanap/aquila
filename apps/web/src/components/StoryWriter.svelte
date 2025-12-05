@@ -6,6 +6,7 @@
   import StoryTree from './ui/StoryTree.svelte';
   import ChapterForm from './ui/ChapterForm.svelte';
   import SceneForm from './ui/SceneForm.svelte';
+  import { authorizedFetch } from '../lib/auth';
 
   type Scene = {
     id: string;
@@ -74,7 +75,7 @@
     loading = true;
     error = null;
     try {
-      const response = await fetch('/api/stories');
+      const response = await authorizedFetch('/api/stories');
       if (!response.ok) {
         throw new Error('Failed to load stories');
       }
@@ -104,7 +105,7 @@
     try {
       error = null;
       successMessage = null;
-      const response = await fetch('/api/stories', {
+      const response = await authorizedFetch('/api/stories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(storyForm),
@@ -132,7 +133,7 @@
     try {
       error = null;
       successMessage = null;
-      const response = await fetch(`/api/stories/${editingStoryId}`, {
+      const response = await authorizedFetch(`/api/stories/${editingStoryId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(storyForm),
@@ -174,7 +175,7 @@
       const story = stories.find(s => s.id === chapterForm.storyId);
       const order = story?.chapters.length || 0;
 
-      const response = await fetch('/api/chapters', {
+      const response = await authorizedFetch('/api/chapters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -226,7 +227,7 @@
         order = story?.directScenes.length || 0;
       }
 
-      const response = await fetch('/api/scenes', {
+      const response = await authorizedFetch('/api/scenes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

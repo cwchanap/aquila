@@ -1,43 +1,15 @@
 import type { APIRoute } from 'astro';
 import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
-
-async function validateSession(
-    request: Request
-): Promise<{ userId: string } | Response> {
-    // Get session from cookie
-    const cookieHeader = request.headers.get('cookie') || '';
-    const sessionId = cookieHeader
-        .split(';')
-        .find(c => c.trim().startsWith('session='))
-        ?.split('=')[1];
-
-    if (!sessionId) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    const session = await SimpleAuthService.getSession(sessionId);
-    if (!session?.user?.id) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    return { userId: session.user.id };
-}
+import { requireSupabaseUser } from '@/lib/auth/server';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const sessionValidation = await validateSession(request);
-        if (sessionValidation instanceof Response) {
-            return sessionValidation;
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
-        const { userId } = sessionValidation;
+        const { appUser } = authResult;
 
         const { characterName, storyId } = await request.json();
 
@@ -68,7 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
         // Check if character setup already exists for this user and story
         const characterSetupRepo = new CharacterSetupRepository();
         const existingSetup = await characterSetupRepo.findByUserAndStory(
-            userId,
+            appUser.id,
             storyId as StoryId
         );
 
@@ -87,7 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
         } else {
             // Create new setup
             const setup = await characterSetupRepo.create({
-                userId: userId,
+                userId: appUser.id,
                 characterName: characterName.trim(),
                 storyId: storyId as StoryId,
             });
@@ -110,28 +82,28 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const GET: APIRoute = async ({ request, url }) => {
     try {
-        const sessionValidation = await validateSession(request);
-        if (sessionValidation instanceof Response) {
-            return sessionValidation;
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
-        const { userId } = sessionValidation;
+        const { appUser } = authResult;
 
         const storyId = url.searchParams.get('storyId');
         const characterSetupRepo = new CharacterSetupRepository();
 
         if (storyId && isValidStoryId(storyId)) {
             // Get setup for specific story
-            const setup = await characterSetupRepo.findByUserAndStory(
-                userId,
+            const existingSetup = await characterSetupRepo.findByUserAndStory(
+                appUser.id,
                 storyId as StoryId
             );
-            return new Response(JSON.stringify(setup), {
+            return new Response(JSON.stringify(existingSetup), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
             });
         } else {
             // Get all setups for user
-            const setups = await characterSetupRepo.findByUser(userId);
+            const setups = await characterSetupRepo.findByUser(appUser.id);
             return new Response(JSON.stringify(setups), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },

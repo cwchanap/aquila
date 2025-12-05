@@ -1,4 +1,5 @@
 import { getTranslations, type Locale } from '@aquila/dialogue';
+import { authorizedFetch } from './auth';
 
 export interface Bookmark {
     id: string;
@@ -34,7 +35,7 @@ export class BookmarksManager {
 
     async loadBookmarks(): Promise<void> {
         try {
-            const response = await fetch('/api/bookmarks');
+            const response = await authorizedFetch('/api/bookmarks');
 
             if (!response.ok) {
                 if (response.status === 401) {
@@ -244,7 +245,7 @@ export class BookmarksManager {
         }
 
         try {
-            const response = await fetch(`/api/bookmarks/${id}`, {
+            const response = await authorizedFetch(`/api/bookmarks/${id}`, {
                 method: 'DELETE',
             });
 

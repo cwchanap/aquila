@@ -3,17 +3,17 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 let supabaseClient: SupabaseClient | null = null;
 
 function getSupabaseEnv() {
-    const env: Record<string, string | undefined> | undefined =
+    const metaEnv: Record<string, string | undefined> | undefined =
         typeof import.meta !== 'undefined'
             ? (
                   import.meta as unknown as {
                       env?: Record<string, string | undefined>;
                   }
               ).env
-            : process.env;
+            : undefined;
 
-    const url = env?.SUPABASE_URL;
-    const anonKey = env?.SUPABASE_ANON_KEY;
+    const url = metaEnv?.SUPABASE_URL ?? process.env.SUPABASE_URL;
+    const anonKey = metaEnv?.SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY;
 
     if (!url || !anonKey) {
         throw new Error(

@@ -3,7 +3,6 @@ import MainLayout from '../../../layouts/main.astro';
 import Button from '../../../components/ui/Button.svelte';
 import UserStatus from '../../../components/UserStatus.svelte';
 import { StoryId } from '../../../lib/story-types.js';
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import en from '@aquila/dialogue/translations/en.json';
 import zh from '@aquila/dialogue/translations/zh.json';
 
@@ -24,17 +23,8 @@ const t = (key: string): string => {
   return typeof value === 'string' ? value : key;
 };
 
-// Try to get session from cookie (same as UserStatus component)
-let user = null;
-try {
-  const sessionId = Astro.cookies.get('session')?.value;
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    user = session?.user || null;
-  }
-} catch (error) {
-  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
-}
+// Legacy server-side session removed; client-side Supabase auth will resolve user.
+const user = null;
 ---
 
 <MainLayout title={t("stories.title")}>

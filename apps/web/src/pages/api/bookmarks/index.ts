@@ -1,46 +1,19 @@
 import type { APIRoute } from 'astro';
 import { BookmarkRepository } from '@/lib/drizzle/repositories';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
-
-async function validateSession(
-    request: Request
-): Promise<{ userId: string } | Response> {
-    const cookieHeader = request.headers.get('cookie') || '';
-    const sessionId = cookieHeader
-        .split(';')
-        .find(c => c.trim().startsWith('session='))
-        ?.split('=')[1];
-
-    if (!sessionId) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    const session = await SimpleAuthService.getSession(sessionId);
-    if (!session?.user?.id) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    return { userId: session.user.id };
-}
+import { requireSupabaseUser } from '@/lib/auth/server';
 
 // GET /api/bookmarks - List all bookmarks for current user
 export const GET: APIRoute = async ({ request }) => {
     try {
-        const sessionValidation = await validateSession(request);
-        if (sessionValidation instanceof Response) {
-            return sessionValidation;
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
 
-        const { userId } = sessionValidation;
+        const { appUser } = authResult;
 
         const repository = new BookmarkRepository();
-        const bookmarks = await repository.findByUser(userId);
+        const bookmarks = await repository.findByUser(appUser.id);
 
         return new Response(JSON.stringify({ bookmarks }), {
             status: 200,
@@ -61,12 +34,12 @@ export const GET: APIRoute = async ({ request }) => {
 // POST /api/bookmarks - Upsert (create or update) a bookmark by scene
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const sessionValidation = await validateSession(request);
-        if (sessionValidation instanceof Response) {
-            return sessionValidation;
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
 
-        const { userId } = sessionValidation;
+        const { appUser } = authResult;
 
         const body = await request.json();
         const { storyId, sceneId, bookmarkName, locale } = body;
@@ -85,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         const repository = new BookmarkRepository();
         const bookmark = await repository.upsertByScene(
-            userId,
+            appUser.id,
             storyId,
             sceneId,
             bookmarkName,

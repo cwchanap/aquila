@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
 import { StoryRepository } from '@/lib/drizzle/repositories.js';
+import { requireSupabaseUser } from '@/lib/auth/server';
 
 export const GET: APIRoute = async ({ params, request }) => {
     try {
@@ -15,32 +15,17 @@ export const GET: APIRoute = async ({ params, request }) => {
             );
         }
 
-        // Get session from cookie
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
-
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
 
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        const { appUser } = authResult;
 
         const storyRepo = new StoryRepository();
         const story = await storyRepo.findById(id);
 
-        if (!story || story.userId !== session.user.id) {
+        if (!story || story.userId !== appUser.id) {
             return new Response(JSON.stringify({ error: 'Story not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -76,33 +61,19 @@ export const PUT: APIRoute = async ({ params, request }) => {
             );
         }
 
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
-
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
 
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        const { appUser } = authResult;
 
         const updates = await request.json();
 
         const storyRepo = new StoryRepository();
         const existingStory = await storyRepo.findById(id);
 
-        if (!existingStory || existingStory.userId !== session.user.id) {
+        if (!existingStory || existingStory.userId !== appUser.id) {
             return new Response(JSON.stringify({ error: 'Story not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -140,31 +111,17 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             );
         }
 
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
-
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const authResult = await requireSupabaseUser(request);
+        if (authResult instanceof Response) {
+            return authResult;
         }
 
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        const { appUser } = authResult;
 
         const storyRepo = new StoryRepository();
         const existingStory = await storyRepo.findById(id);
 
-        if (!existingStory || existingStory.userId !== session.user.id) {
+        if (!existingStory || existingStory.userId !== appUser.id) {
             return new Response(JSON.stringify({ error: 'Story not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },

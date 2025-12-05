@@ -1,8 +1,6 @@
 ---
 import MainLayout from '../../../layouts/main.astro';
 import UserStatus from '../../../components/UserStatus.svelte';
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
-import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
 import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
 import en from '@aquila/dialogue/translations/en.json';
 import zh from '@aquila/dialogue/translations/zh.json';
@@ -35,27 +33,9 @@ if (!storyParam || !isValidStoryId(storyParam)) {
 
 const storyId = storyParam as StoryId;
 
-// Try to get session from cookie (same as UserStatus component)
-let user = null;
-try {
-  const sessionId = Astro.cookies.get('session')?.value;
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    user = session?.user || null;
-  }
-} catch (error) {
-  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
-}
-const isAuthed = Boolean(user?.id);
-
-// If authenticated, check if character setup already exists in DB
-if (isAuthed && user?.id) {
-  const characterSetupRepo = new CharacterSetupRepository();
-  const existingSetup = await characterSetupRepo.findByUserAndStory(user.id, storyId);
-  if (existingSetup) {
-    return Astro.redirect(`/${Astro.currentLocale}/story/${storyId}`);
-  }
-}
+// Server-side auth removed; client will determine auth state via Supabase.
+const user = null;
+const isAuthed = false;
 ---
 
 <MainLayout title={t("setup.title")}>
@@ -198,13 +178,25 @@ if (isAuthed && user?.id) {
   </div>
 </MainLayout>
 
-<script>
+<script type="module">
+  import { authorizedFetch } from '../../../lib/auth';
+
   document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('setup-form');
     const root = document.getElementById('setup-root');
     const urlParams = new URLSearchParams(window.location.search);
     const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
-    const isAuthed = (root?.getAttribute('data-authed') === 'true');
+    let isAuthed = root?.getAttribute('data-authed') === 'true';
+
+    // Refresh auth state using Supabase session via /api/me
+    try {
+      const meRes = await authorizedFetch('/api/me');
+      if (meRes.ok) {
+        isAuthed = true;
+      }
+    } catch {
+      // not authenticated; keep isAuthed as is
+    }
 
     // If there's a saved local setup, prefill the input (do NOT auto-redirect)
     try {
@@ -225,8 +217,13 @@ if (isAuthed && user?.id) {
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const nameInput = document.getElementById('character-name') as HTMLInputElement;
-        const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const nameInput = document.getElementById('character-name');
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        if (!(nameInput instanceof HTMLInputElement) || !(submitButton instanceof HTMLButtonElement)) {
+          return;
+        }
+
         const name = nameInput.value.trim();
         
         if (!name) {
@@ -241,7 +238,7 @@ if (isAuthed && user?.id) {
         try {
           if (isAuthed) {
             // Save character setup to database
-            const response = await fetch('/api/character-setup', {
+            const response = await authorizedFetch('/api/character-setup', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

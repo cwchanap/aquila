@@ -2,25 +2,10 @@
 import MainLayout from '@/layouts/main.astro';
 import UserStatus from '@/components/UserStatus.svelte';
 import StoryWriterApp from '@/components/StoryWriter.svelte';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
 
-const sessionId = Astro.cookies.get('session')?.value;
-let isAuthenticated = false;
-let userName = 'Guest';
-let user = null;
-
-if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    if (session?.user) {
-        isAuthenticated = true;
-        userName = session.user.name || session.user.email || 'User';
-        user = session.user;
-    }
-}
-
-if (!isAuthenticated) {
-    return Astro.redirect('/en/login');
-}
+// Legacy server-side SimpleAuth removed; Supabase auth handled client-side.
+const userName = 'Guest';
+const user = null;
 ---
 
 <MainLayout title="Story Writer">

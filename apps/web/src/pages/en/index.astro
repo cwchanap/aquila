@@ -33,28 +33,47 @@ const t = (key: string): string => {
 
 		// Handle auth gating and language preference persistence
 		document.addEventListener('DOMContentLoaded', async () => {
-			const user = await getCurrentUser();
-			if (!user) {
-				window.location.href = '/en/login';
-				return;
-			}
-
-			// Check if we're on the root path
-			if (window.location.pathname === '/') {
-				// Check for saved language preference
-				const savedLanguage = localStorage.getItem('aquila:language');
-
-				// If user has a Chinese preference and we're not already on Chinese, redirect
-				if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
-					window.location.href = '/zh';
+			try {
+				const user = await getCurrentUser();
+				if (!user) {
+					window.location.href = '/en/login';
 					return;
 				}
 
-				// If user has English preference and we're on Chinese, redirect to English
-				if (savedLanguage === 'en' && window.location.pathname.startsWith('/zh')) {
-					window.location.href = '/';
-					return;
+				// Check if we're on the root path
+				if (window.location.pathname === '/') {
+					// Check for saved language preference
+					const savedLanguage = localStorage.getItem('aquila:language');
+
+					// If user has a Chinese preference and we're not already on Chinese, redirect
+					if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
+						window.location.href = '/zh';
+						return;
+					}
+
+					// If user has English preference and we're on Chinese, redirect to English
+					if (savedLanguage === 'en' && window.location.pathname.startsWith('/zh')) {
+						window.location.href = '/';
+						return;
+					}
 				}
+			} catch (error) {
+				console.error('Auth check failed:', error);
+				const container = document.querySelector('main') || document.body;
+				const errorDiv = document.createElement('div');
+				errorDiv.className =
+					'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
+				errorDiv.innerHTML = `
+					<div class="bg-red-900/90 border border-red-500 rounded-lg p-6 max-w-md w-full shadow-2xl text-white">
+						<h2 class="text-xl font-bold mb-2">Connection Error</h2>
+						<p class="mb-4 text-red-100">Unable to load your profile. The server might be experiencing issues.</p>
+						<p class="text-sm font-mono bg-black/50 p-2 rounded mb-4 overflow-x-auto">${
+							error instanceof Error ? error.message : String(error)
+						}</p>
+						<button onclick="window.location.reload()" class="w-full py-2 bg-red-600 hover:bg-red-500 rounded font-medium transition-colors">Retry</button>
+					</div>
+				`;
+				container.appendChild(errorDiv);
 			}
 		});
 	</script>

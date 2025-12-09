@@ -30,16 +30,31 @@ export async function getCurrentUser(): Promise<unknown | null> {
         return null;
     }
 
+    const startTime = performance.now();
     const response = await fetch('/api/me', {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
+    const endTime = performance.now();
 
     if (!response.ok) {
+        // If server error, throw so the UI can handle it (show error message instead of redirecting to login loop)
+        if (response.status >= 500) {
+            console.error(
+                `[AuthLatency] /api/me failed: ${Math.round(endTime - startTime)}ms (Status: ${response.status})`
+            );
+            throw new Error(
+                `Auth server error: ${response.status} ${response.statusText}`
+            );
+        }
+        // For 401/403, return null (not authenticated)
         return null;
     }
 
+    console.log(
+        `[AuthLatency] /api/me success: ${Math.round(endTime - startTime)}ms`
+    );
     const json = (await response.json()) as { user?: unknown };
     return json.user ?? null;
 }

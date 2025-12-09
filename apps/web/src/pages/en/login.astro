@@ -233,6 +233,7 @@ import MainLayout from '../../layouts/main.astro';
 					}
 				
 					try {
+						const startTime = performance.now();
 						const { error } = await supabase.auth.signInWithPassword({
 							email,
 							password,
@@ -242,7 +243,11 @@ import MainLayout from '../../layouts/main.astro';
 							showError(error.message || 'Invalid credentials');
 							return;
 						}
-					
+						
+						const endTime = performance.now();
+						const duration = Math.round(endTime - startTime);
+						console.log(`[AuthLatency] Sign-in success: ${duration}ms`);
+
 						const locale =
 							document
 								.querySelector('[data-locale]')

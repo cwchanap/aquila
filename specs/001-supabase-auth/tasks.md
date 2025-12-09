@@ -121,20 +121,20 @@
 
 **Purpose**: Improvements that affect multiple user stories and overall robustness.
 
-- [ ] T029 [P] Update `specs/001-supabase-auth/quickstart.md` with any final changes to setup, env vars, or test commands
-- [ ] T030 [P] Document Supabase auth integration and limitations in `apps/web/docs/auth-supabase.md` or, if missing, create this file
-- [ ] T031 Run full test and lint suite (`bun --filter web test`, `bun test:e2e`, `bun lint`) and fix any failures in `apps/web` and `packages/e2e`
-- [ ] T032 Remove remaining Better Auth-specific code and configuration from `apps/web/src/lib/auth.ts` and any related auth wiring files in `apps/web/src/pages/api/`
-- [ ] T033 [P] Instrument auth flows to record end-to-end sign-in latency (from form submit to main experience) in `apps/web/src/lib/auth.ts` and relevant pages
-- [ ] T034 [P] Add a script or dashboard query to compute 95th percentile sign-in latency for SC-001 using telemetry in `apps/web/scripts/` or `apps/web/docs/auth-supabase.md`
-- [ ] T035 [P] [US1] Add negative Vitest tests verifying that `/api/me` and repository methods never return another user's data when Supabase user IDs differ in `apps/web/src/lib/drizzle/__tests__/userRepository.supabase.test.ts` and `apps/web/src/pages/api/__tests__/me.test.ts`
-- [ ] T036 [P] [US3] Add Playwright E2E tests attempting cross-user data access and asserting denial in `packages/e2e/tests/auth-cross-user-deny.spec.ts`
-- [ ] T037 [P] Implement user-facing error handling and logging when Supabase authentication succeeds but loading/creating the Application User in Cockroach/Postgres fails in `apps/web/src/lib/auth.ts` and `/api/me`
-- [ ] T038 [P] Implement graceful degradation and user messaging when Supabase auth endpoints are unavailable in `apps/web/src/pages/auth/*.astro` and `apps/web/src/lib/auth.ts`
-- [ ] T039 [P] Add unit/E2E tests for the above failure modes in `apps/web/src/**/__tests__` and `packages/e2e/tests/auth-error-states.spec.ts`
-- [ ] T040 [P] Add a verification script that scans Supabase users against Application User records by `supabaseUserId` to detect unlinked records in `apps/web/scripts/verify-supabase-links.ts`
-- [ ] T041 [P] Document how to run the Supabase link verification and interpret results in `apps/web/docs/auth-supabase.md`
-- [ ] T042 [P] Define and document how to monitor support tickets related to auth issues (tags/labels, basic report) and run at least one post-release review for SC-004 in `apps/web/docs/auth-supabase.md` or an ops runbook
+- [x] T029 [P] Update `specs/001-supabase-auth/quickstart.md` with any final changes to setup, env vars, or test commands
+- [x] T030 [P] Document Supabase auth integration and limitations in `apps/web/docs/auth-supabase.md` or, if missing, create this file
+- [x] T031 Run full test and lint suite (`bun --filter web test`, `bun test:e2e`, `bun lint`) and fix any failures in `apps/web` and `packages/e2e`
+- [x] T032 Remove remaining Better Auth-specific code and configuration from `apps/web/src/lib/auth.ts` and any related auth wiring files in `apps/web/src/pages/api/`
+- [x] T033 [P] Instrument auth flows to record end-to-end sign-in latency (from form submit to main experience) in `apps/web/src/lib/auth.ts` and relevant pages
+- [x] T034 [P] Add a script or dashboard query to compute 95th percentile sign-in latency for SC-001 using telemetry in `apps/web/scripts/` or `apps/web/docs/auth-supabase.md`
+- [x] T035 [P] [US1] Add negative Vitest tests verifying that `/api/me` and repository methods never return another user's data when Supabase user IDs differ in `apps/web/src/lib/drizzle/__tests__/userRepository.supabase.test.ts` and `apps/web/src/pages/api/__tests__/me.test.ts`
+- [x] T036 [P] [US3] Add Playwright E2E tests attempting cross-user data access and asserting denial in `packages/e2e/tests/auth-cross-user-deny.spec.ts`
+- [x] T037 [P] Implement user-facing error handling and logging when Supabase authentication succeeds but loading/creating the Application User in Cockroach/Postgres fails in `apps/web/src/lib/auth.ts` and `/api/me`
+- [x] T038 [P] Implement graceful degradation and user messaging when Supabase auth endpoints are unavailable in `apps/web/src/pages/auth/*.astro` and `apps/web/src/lib/auth.ts`
+- [x] T039 [P] Add unit/E2E tests for the above failure modes in `apps/web/src/**/__tests__` and `packages/e2e/tests/auth-error-states.spec.ts`
+- [x] T040 [P] Add a verification script that scans Supabase users against Application User records by `supabaseUserId` to detect unlinked records in `apps/web/scripts/verify-supabase-links.ts`
+- [x] T041 [P] Document how to run the Supabase link verification and interpret results in `apps/web/docs/auth-supabase.md`
+- [x] T042 [P] Define and document how to monitor support tickets related to auth issues (tags/labels, basic report) and run at least one post-release review for SC-004 in `apps/web/docs/auth-supabase.md` or an ops runbook
 
 ---
 

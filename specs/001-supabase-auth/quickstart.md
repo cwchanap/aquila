@@ -84,3 +84,7 @@ All test suites MUST pass before merging changes to the `001-supabase-auth` bran
 - [x] Sign-out flow clears Supabase session and local auth context.
 - [x] Existing game data and progress remain intact for returning players.
 - [x] Unit and E2E tests updated to cover new auth flows and passing (US1–US3 auth specs).
+
+## 5. References
+
+- [Detailed Auth Documentation](../../apps/web/docs/auth-supabase.md) - Architecture, UI flows, and implementation details.

@@ -104,11 +104,11 @@
     e.preventDefault();
 
     try {
+      // Call server-side logout first while we still have a valid token
+      await authorizedFetch('/api/auth/logout', { method: 'POST' });
+
       const client = getSupabaseAuthClient();
       await client.auth.signOut();
-
-      // Attempt server-side logout to clear any server context or legacy cookies.
-      await authorizedFetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       if (import.meta.env.DEV) {
         console.log(

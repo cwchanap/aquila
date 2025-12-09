@@ -6,6 +6,8 @@
 - Supabase credentials available as environment variables:
   - `SUPABASE_URL`
   - `SUPABASE_ANON_KEY`
+  - `PUBLIC_SUPABASE_URL`
+  - `PUBLIC_SUPABASE_ANON_KEY`
 - Aquila monorepo checked out and dependencies installed (Bun 1.1.26+).
 
 ## 1. Configure environment
@@ -14,8 +16,14 @@
 2. Add or update the following variables (values from the shared Supabase project):
 
    ```bash
+   # Server-side Supabase config (Node/SSR, API routes)
    SUPABASE_URL=...       # e.g., https://your-project.supabase.co
-   SUPABASE_ANON_KEY=...  # public anon key for client-side use
+   SUPABASE_ANON_KEY=...  # public anon key for server-side and scripts
+
+   # Client-side Supabase config (exposed to the browser via import.meta.env)
+   PUBLIC_SUPABASE_URL=$SUPABASE_URL
+   PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+
    # Optional: service-role key for server-to-server use, if needed later
    # SUPABASE_SERVICE_ROLE_KEY=...
    ```
@@ -47,10 +55,17 @@
    bun --filter web test
    ```
 
-2. Run Playwright E2E tests (including auth journeys once added):
+2. Run Playwright E2E tests (including Supabase auth journeys):
 
    ```bash
+   # From repo root – full E2E suite (may include non-auth tests)
    bun test:e2e
+
+   # From packages/e2e – Supabase auth journeys only
+   cd packages/e2e
+   bun run test:e2e -- tests/auth-existing-supabase-user.spec.ts      # US1
+   bun run test:e2e -- tests/auth-new-user-signup.spec.ts             # US2
+   bun run test:e2e -- tests/auth-account-management.spec.ts          # US3
    ```
 
 3. Run linting:
@@ -63,9 +78,9 @@ All test suites MUST pass before merging changes to the `001-supabase-auth` bran
 
 ## 4. Integration checklist
 
-- [ ] Supabase env vars configured for local development.
-- [ ] Supabase-based signup and signin flows working in the web UI.
-- [ ] `GET /api/me` returns the expected `Application User` for authenticated sessions.
-- [ ] Sign-out flow clears Supabase session and local auth context.
-- [ ] Existing game data and progress remain intact for returning players.
-- [ ] Unit and E2E tests updated to cover new auth flows and passing.
+- [x] Supabase env vars configured for local development (including PUBLIC*SUPABASE*\* for client-side).
+- [x] Supabase-based signup and signin flows working in the web UI.
+- [x] `GET /api/me` returns the expected `Application User` for authenticated sessions.
+- [x] Sign-out flow clears Supabase session and local auth context.
+- [x] Existing game data and progress remain intact for returning players.
+- [x] Unit and E2E tests updated to cover new auth flows and passing (US1–US3 auth specs).

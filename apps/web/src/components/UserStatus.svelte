@@ -1,7 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { t } from '../lib/utils.js';
-  import { getCurrentUser, getSupabaseAuthClient } from '@/lib/auth';
+  import {
+    authorizedFetch,
+    getCurrentUser,
+    getSupabaseAuthClient,
+  } from '@/lib/auth';
 
   interface User {
     id: string;
@@ -102,6 +106,9 @@
     try {
       const client = getSupabaseAuthClient();
       await client.auth.signOut();
+
+      // Attempt server-side logout to clear any server context or legacy cookies.
+      await authorizedFetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       if (import.meta.env.DEV) {
         console.log(
@@ -130,7 +137,7 @@
           style="font-family: 'Exo 2', sans-serif;"
         >
           <div
-            class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg"
+            class="w-8 h-8 bg-linear-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg"
           >
             {user.name?.charAt(0).toUpperCase() ||
               user.email?.charAt(0).toUpperCase() ||

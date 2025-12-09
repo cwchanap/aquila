@@ -28,7 +28,10 @@
     "loginFailed": "Login failed. Please check your credentials.",
     "signupFailed": "Signup failed. Email might already be in use.",
     "emailRequired": "Email and password are required for signup.",
-    "nameRequired": "Name is required for signup."
+    "nameRequired": "Name is required for signup.",
+    "forgotPassword": "Forgot your password?",
+    "resetEmailSent": "Password reset email sent. Check your inbox.",
+    "resetEmailFailed": "We couldn't send the reset email. Please try again."
   },
   "menu": {
     "title": "Main Menu - Game App",

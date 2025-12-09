@@ -28,8 +28,8 @@
 **Purpose**: Environment and documentation setup for Supabase integration.
 
 - [x] T001 Configure `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env` at repo root
-- [ ] T002 [P] Verify Supabase env var instructions in `specs/001-supabase-auth/quickstart.md` match the actual shared project configuration
-- [ ] T003 [P] Confirm `specs/001-supabase-auth/research.md` decisions align with the current shared Supabase project (no extra providers or migrations enabled)
+- [x] T002 [P] Verify Supabase env var instructions in `specs/001-supabase-auth/quickstart.md` match the actual shared project configuration
+- [x] T003 [P] Confirm `specs/001-supabase-auth/research.md` decisions align with the current shared Supabase project (no extra providers or migrations enabled)
 
 ---
 
@@ -103,15 +103,15 @@
 
 ### Tests for User Story 3
 
-- [ ] T023 [P] [US3] Add Playwright E2E test covering sign-out, password-reset request, and recovery login in `packages/e2e/tests/auth-account-management.spec.ts`
+- [x] T023 [P] [US3] Add Playwright E2E test covering sign-out, password-reset request, and recovery login in `packages/e2e/tests/auth-account-management.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T024 [P] [US3] Implement `POST /api/auth/logout` route that clears Supabase session and local auth context in `apps/web/src/pages/api/auth/logout.ts`
-- [ ] T025 [US3] Implement sign-out UI (e.g., button in user menu) wired to `/api/auth/logout` in `apps/web/src/components/auth/UserMenu.svelte`
-- [ ] T026 [US3] Implement "forgot password" / password-reset trigger UI using Supabase password reset APIs in `apps/web/src/pages/auth/index.astro`
-- [ ] T027 [US3] Implement change-password or post-reset password update flow using Supabase APIs in `apps/web/src/pages/auth/index.astro` or a dedicated `apps/web/src/pages/auth/reset.astro`
-- [ ] T028 [US3] Localize success and error messages for account management flows using `packages/dialogue/src/translations/en.json` and `packages/dialogue/src/translations/zh.json`
+- [x] T024 [P] [US3] Implement `POST /api/auth/logout` route that clears Supabase session and local auth context in `apps/web/src/pages/api/auth/logout.ts`
+- [x] T025 [US3] Implement sign-out UI (e.g., button in user menu) wired to `/api/auth/logout` in `apps/web/src/components/auth/UserMenu.svelte`
+- [x] T026 [US3] Implement "forgot password" / password-reset trigger UI using Supabase password reset APIs in `apps/web/src/pages/auth/index.astro`
+- [x] T027 [US3] Implement change-password or post-reset password update flow using Supabase APIs in `apps/web/src/pages/auth/index.astro` or a dedicated `apps/web/src/pages/auth/reset.astro`
+- [x] T028 [US3] Localize success and error messages for account management flows using `packages/dialogue/src/translations/en.json` and `packages/dialogue/src/translations/zh.json`
 
 **Checkpoint**: All three user stories are independently functional and testable (sign-in, sign-up, and account management/recovery).
 

@@ -35,6 +35,6 @@ test.describe('Supabase Auth - new user signup (US2)', () => {
         const startButton = page.locator('#start-btn');
         await expect(startButton).toBeVisible();
         await startButton.click();
-        await expect(page).toHaveURL('/stories');
+        await expect(page).toHaveURL(/\/(en|zh)\/stories$/);
     });
 });

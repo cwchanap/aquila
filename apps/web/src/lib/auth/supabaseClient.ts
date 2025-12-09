@@ -12,8 +12,20 @@ function getSupabaseEnv() {
               ).env
             : undefined;
 
-    const url = metaEnv?.SUPABASE_URL ?? process.env.SUPABASE_URL;
-    const anonKey = metaEnv?.SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY;
+    const nodeEnv: Record<string, string | undefined> | undefined =
+        typeof process !== 'undefined' ? process.env : undefined;
+
+    // In Astro/Vite, only PUBLIC_* vars are exposed to the browser. Prefer those
+    // on the client, but continue to support plain SUPABASE_* on the server.
+    const url =
+        metaEnv?.PUBLIC_SUPABASE_URL ??
+        metaEnv?.SUPABASE_URL ??
+        nodeEnv?.SUPABASE_URL;
+
+    const anonKey =
+        metaEnv?.PUBLIC_SUPABASE_ANON_KEY ??
+        metaEnv?.SUPABASE_ANON_KEY ??
+        nodeEnv?.SUPABASE_ANON_KEY;
 
     if (!url || !anonKey) {
         throw new Error(

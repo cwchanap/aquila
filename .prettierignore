@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+.astro/
+.vercel/
+test-results/
+playwright-report/
+.turbo/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

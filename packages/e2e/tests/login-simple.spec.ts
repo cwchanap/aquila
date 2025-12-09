@@ -1,48 +1,62 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Simple Login UI Test', () => {
-    test('should show login button on main page', async ({ page }) => {
-        await page.goto('http://localhost:5090');
+    test('should show login button on localized main page', async ({
+        page,
+    }) => {
+        await page.goto('/en/');
 
-        // Should see login button in top right
-        const loginButton = page.locator('a[href="/login"]');
+        // Should see login button in top right for the English locale
+        const loginButton = page.locator('a[href="/en/login"]');
         await expect(loginButton).toBeVisible();
         await expect(loginButton).toHaveText('Login');
     });
 
-    test('should navigate to login page', async ({ page }) => {
-        await page.goto('http://localhost:5090');
+    test('should navigate to localized login page', async ({ page }) => {
+        await page.goto('/en/');
 
         // Click login button
-        await page.click('a[href="/login"]');
+        await page.click('a[href="/en/login"]');
 
-        // Should be on login page
-        await expect(page).toHaveURL('http://localhost:5090/login');
+        // Should be on localized login page
+        await expect(page).toHaveURL(/\/en\/login$/);
         await expect(page.locator('h1')).toHaveText('Login');
     });
 
-    test('should have login form elements', async ({ page }) => {
-        await page.goto('http://localhost:5090/login');
+    test('should have login and account-management UI elements', async ({
+        page,
+    }) => {
+        await page.goto('/en/login');
 
-        // Should have form elements
+        // Core form elements for Supabase email/password login
         await expect(page.locator('input[name="email"]')).toBeVisible();
         await expect(page.locator('input[name="password"]')).toBeVisible();
-        await expect(page.locator('input[name="name"]')).toBeVisible();
         await expect(page.locator('button[type="submit"]')).toBeVisible();
-        await expect(page.locator('button#signup-btn')).toBeVisible();
+
+        // Link to signup page
+        const signupLink = page
+            .locator('a')
+            .filter({ hasText: 'Sign up here' });
+        await expect(signupLink).toBeVisible();
+
+        // Forgot-password trigger link
+        const forgotLink = page
+            .locator('a')
+            .filter({ hasText: 'Forgot your password?' });
+        await expect(forgotLink).toBeVisible();
     });
 
-    test('should have back button', async ({ page }) => {
-        await page.goto('http://localhost:5090/login');
+    test('should have back button to localized home', async ({ page }) => {
+        await page.goto('/en/login');
 
-        // Should have back button
-        const backButton = page.locator('a[href="/"]').first();
+        // Should have back button that returns to localized home
+        const backButton = page.locator('a[href="/en/"]').first();
         await expect(backButton).toBeVisible();
 
         // Click back button
         await backButton.click();
 
-        // Should navigate back to home
-        await expect(page).toHaveURL('http://localhost:5090/');
+        // Should navigate back to localized home
+        await expect(page).toHaveURL(/\/en\/?$/);
     });
 });

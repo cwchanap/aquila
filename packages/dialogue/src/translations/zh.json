@@ -28,7 +28,10 @@
     "loginFailed": "登入失敗。請檢查您的憑證。",
     "signupFailed": "註冊失敗。電子郵件可能已被使用。",
     "emailRequired": "註冊需要電子郵件和密碼。",
-    "nameRequired": "註冊需要姓名。"
+    "nameRequired": "註冊需要姓名。",
+    "forgotPassword": "忘記密碼？",
+    "resetEmailSent": "已寄出重設密碼的電子郵件，請查收。",
+    "resetEmailFailed": "無法寄出重設郵件，請再試一次。"
   },
   "menu": {
     "title": "主選單 - 遊戲應用",

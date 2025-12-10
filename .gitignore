@@ -30,3 +30,6 @@ test-results/
 playwright-report/
 
 .turbo
+
+# specs folder (local only)
+specs/

@@ -255,8 +255,110 @@ let characterSetups: CharacterSetup[] = [];
 <script type="module">
   import { authorizedFetch } from '../../lib/auth';
 
-  // Inline editing functionality for authenticated users
+  async function loadAuthenticatedCharacters() {
+    const userSection = document.querySelector('[data-authenticated="true"]');
+    const guestSection = document.querySelector('[data-guest="true"]');
+
+    try {
+      const meResponse = await authorizedFetch('/api/me');
+      if (!meResponse.ok) {
+        if (meResponse.status === 401 || meResponse.status === 403) {
+          userSection?.classList.add('hidden');
+          guestSection?.classList.remove('hidden');
+          return null;
+        }
+        throw new Error('Failed to load user profile');
+      }
+
+      const { user } = await meResponse.json();
+      if (!user) {
+        userSection?.classList.add('hidden');
+        guestSection?.classList.remove('hidden');
+        return null;
+      }
+
+      const charactersResponse = await authorizedFetch('/api/characters');
+      if (!charactersResponse.ok) {
+        throw new Error('Failed to load characters');
+      }
+      const characters = await charactersResponse.json();
+
+      userSection?.classList.remove('hidden');
+      guestSection?.classList.add('hidden');
+
+      const listContainer = document.querySelector('#character-list');
+      if (listContainer) {
+        listContainer.innerHTML = characters
+          .map(
+            (setup) => `
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-character-id="${setup.id}" data-story-id="${setup.storyId}">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
+                  ${setup.characterName.charAt(0).toUpperCase()}
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${setup.characterName}</h3>
+                  <input
+                    type="text"
+                    class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
+                    value="${setup.characterName}"
+                    maxlength="50"
+                    style="font-family: 'Orbitron', monospace;"
+                  />
+                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${setup.storyId.replace(
+                    '_',
+                    ' '
+                  )}</p>
+                </div>
+              </div>
+              <div class="flex gap-3 flex-wrap">
+                <a
+                  href="/en/story/${setup.storyId}"
+                  class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
+                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+                >
+                  Play Story
+                </a>
+                <button
+                  type="button"
+                  class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
+                  style="font-family: 'Orbitron', monospace;"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
+                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
+                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          `
+          )
+          .join('');
+      }
+
+      return characters;
+    } catch (error) {
+      console.error('Failed to initialize authenticated characters page:', error);
+      userSection?.classList.add('hidden');
+      guestSection?.classList.remove('hidden');
+      return null;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
+    loadAuthenticatedCharacters();
+
     // Handle edit buttons for database characters
     document.querySelectorAll('.character-edit-btn').forEach((button: Element) => {
       button.addEventListener('click', (e) => {

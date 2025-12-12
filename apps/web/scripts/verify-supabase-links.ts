@@ -118,9 +118,7 @@ async function main() {
         process.exit(0);
     } else {
         console.log('\n⚠️ Verification FAILED: Inconsistencies found.');
-        // We exit with 0 because in some CI/CD verification steps we might just want the report,
-        // not to fail the pipeline. But for "verify" task, failing is appropriate if we want strictness.
-        // Let's exit 1 to indicate issues.
+        // Exit with code 1 so CI fails when verification fails.
         process.exit(1);
     }
 }

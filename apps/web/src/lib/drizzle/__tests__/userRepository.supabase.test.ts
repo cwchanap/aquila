@@ -2,6 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { UserRepository } from '../repositories';
 import { users } from '../schema';
 
+const eqMock = vi.fn((field: unknown, value: unknown) => ({ field, value }));
+
+vi.mock('drizzle-orm', () => ({
+    eq: eqMock,
+}));
+
 vi.mock('nanoid', () => ({
     nanoid: () => 'test-generated-id',
 }));
@@ -87,7 +93,7 @@ describe('UserRepository - Supabase helpers', () => {
         expect(result).toBe(createdUser);
     });
 
-    it('uses the correct supabaseUserId in the query condition', async () => {
+    it('passes the supabaseUserId value into the query condition', async () => {
         const existingUser = {
             id: 'user-1',
             supabaseUserId: 'target-user',
@@ -105,15 +111,9 @@ describe('UserRepository - Supabase helpers', () => {
             email: 'test@example.com',
         });
 
-        // Verify that the query was built using the correct ID logic
-        // Since we can't easily inspect the exact Drizzle "eq()" object structure in a mock,
-        // we rely on the fact that the repository calls .where(eq(users.supabaseUserId, ...))
-        // Testing exact arguments here would require mocking 'drizzle-orm' exports which is brittle.
-        // Instead, we trust the integration/E2E tests for the real SQL generation,
-        // and here we just ensure the flow happened.
-        // But we CAN mock the DB to return empty if the ID doesn't match, if we implemented a smarter mock.
-
         expect(from).toHaveBeenCalled();
-        expect(where).toHaveBeenCalled();
+        expect(where).toHaveBeenCalledWith(
+            expect.objectContaining({ value: 'target-user' })
+        );
     });
 });

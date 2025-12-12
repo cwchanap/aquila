@@ -55,8 +55,28 @@ export async function getCurrentUser(): Promise<unknown | null> {
     console.log(
         `[AuthLatency] /api/me success: ${Math.round(endTime - startTime)}ms`
     );
-    const json = (await response.json()) as { user?: unknown };
-    return json.user ?? null;
+    const responseClone = response.clone();
+    try {
+        const json = (await response.json()) as { user?: unknown };
+        return json.user ?? null;
+    } catch (err) {
+        let rawBody = '[unavailable]';
+        try {
+            rawBody = await responseClone.text();
+        } catch (bodyErr) {
+            console.error(
+                'Failed to read /api/me response body after JSON parse error:',
+                bodyErr
+            );
+        }
+        console.error(
+            'Failed to parse /api/me JSON:',
+            err,
+            '\nRaw body:',
+            rawBody
+        );
+        return null;
+    }
 }
 
 export async function authorizedFetch(

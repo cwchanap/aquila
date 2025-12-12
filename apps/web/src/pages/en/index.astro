@@ -51,29 +51,50 @@ const t = (key: string): string => {
 						return;
 					}
 
-					// If user has English preference and we're on Chinese, redirect to English
-					if (savedLanguage === 'en' && window.location.pathname.startsWith('/zh')) {
-						window.location.href = '/';
-						return;
-					}
 				}
 			} catch (error) {
-				console.error('Auth check failed:', error);
+				if (error instanceof Error) {
+					console.error('Auth check failed:', {
+						name: error.name,
+						message: error.message,
+						stack: error.stack,
+					});
+				} else {
+					console.error('Auth check failed:', error);
+				}
 				const container = document.querySelector('main') || document.body;
-				const errorDiv = document.createElement('div');
-				errorDiv.className =
+				const overlay = document.createElement('div');
+				overlay.className =
 					'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
-				errorDiv.innerHTML = `
-					<div class="bg-red-900/90 border border-red-500 rounded-lg p-6 max-w-md w-full shadow-2xl text-white">
-						<h2 class="text-xl font-bold mb-2">Connection Error</h2>
-						<p class="mb-4 text-red-100">Unable to load your profile. The server might be experiencing issues.</p>
-						<p class="text-sm font-mono bg-black/50 p-2 rounded mb-4 overflow-x-auto">${
-							error instanceof Error ? error.message : String(error)
-						}</p>
-						<button onclick="window.location.reload()" class="w-full py-2 bg-red-600 hover:bg-red-500 rounded font-medium transition-colors">Retry</button>
-					</div>
-				`;
-				container.appendChild(errorDiv);
+
+				const panel = document.createElement('div');
+				panel.className =
+					'bg-red-900/90 border border-red-500 rounded-lg p-6 max-w-md w-full shadow-2xl text-white';
+
+				const title = document.createElement('h2');
+				title.className = 'text-xl font-bold mb-2';
+				title.textContent = 'Connection Error';
+
+				const description = document.createElement('p');
+				description.className = 'mb-4 text-red-100';
+				description.textContent =
+					'Unable to load your profile. The server might be experiencing issues.';
+
+				const message = document.createElement('p');
+				message.className =
+					'text-sm font-mono bg-black/50 p-2 rounded mb-4 overflow-x-auto';
+				message.textContent = 'An unexpected error occurred.';
+
+				const retryButton = document.createElement('button');
+				retryButton.className =
+					'w-full py-2 bg-red-600 hover:bg-red-500 rounded font-medium transition-colors';
+				retryButton.type = 'button';
+				retryButton.textContent = 'Retry';
+				retryButton.addEventListener('click', () => window.location.reload());
+
+				panel.append(title, description, message, retryButton);
+				overlay.appendChild(panel);
+				container.appendChild(overlay);
 			}
 		});
 	</script>

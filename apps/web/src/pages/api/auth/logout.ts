@@ -40,6 +40,16 @@ export const POST: APIRoute = async ({ request }) => {
             await supabase.auth.signOut();
         }
 
+        const cookieFlags = [
+            'Path=/',
+            'HttpOnly',
+            'SameSite=Strict',
+            'Max-Age=0',
+        ];
+        if (process.env.NODE_ENV !== 'development') {
+            cookieFlags.push('Secure');
+        }
+
         return new Response(
             JSON.stringify({ success: true, cleared: Boolean(token) }),
             {
@@ -47,20 +57,15 @@ export const POST: APIRoute = async ({ request }) => {
                 headers: {
                     'Content-Type': 'application/json',
                     // Defensive cookie clear for any legacy session names
-                    'Set-Cookie':
-                        'session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0',
+                    'Set-Cookie': `session=; ${cookieFlags.join('; ')}`,
                 },
             }
         );
     } catch (error) {
-        return new Response(
-            JSON.stringify({
-                error: (error as Error).message ?? 'Logout failed',
-            }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        console.error('Logout handler failed:', error);
+        return new Response(JSON.stringify({ error: 'Logout failed' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 };

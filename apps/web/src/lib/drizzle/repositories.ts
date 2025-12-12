@@ -1,4 +1,4 @@
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { db, type DrizzleDB } from './db';
 import {
     users,
@@ -87,13 +87,8 @@ export class UserRepository {
             image?: string | null;
         }
     ) {
-        const existing = await this.findBySupabaseUserId(supabaseUserId);
-        if (existing) {
-            return existing;
-        }
-
         const id = nanoid();
-        const [user] = await this.db
+        const insertedUsers = await this.db
             .insert(users)
             .values({
                 id,
@@ -103,9 +98,22 @@ export class UserRepository {
                 image: data.image ?? null,
                 supabaseUserId,
             })
+            .onConflictDoNothing({
+                target: users.supabaseUserId,
+            })
             .returning();
 
-        return user;
+        if (insertedUsers[0]) {
+            return insertedUsers[0];
+        }
+
+        const existing = await this.findBySupabaseUserId(supabaseUserId);
+        if (!existing) {
+            throw new Error(
+                `Failed to load user ${supabaseUserId} after upsert attempt`
+            );
+        }
+        return existing;
     }
 
     async update(id: string, data: Partial<Omit<User, 'id' | 'createdAt'>>) {
@@ -322,7 +330,7 @@ export class ChapterRepository {
         for (let i = 0; i < chapterIds.length; i++) {
             await this.db
                 .update(chapters)
-                .set({ order: i, updatedAt: new Date() })
+                .set({ order: i.toString(), updatedAt: new Date() })
                 .where(
                     and(
                         eq(chapters.id, chapterIds[i]),
@@ -383,7 +391,7 @@ export class SceneRepository {
         return await this.db
             .select()
             .from(scenes)
-            .where(and(eq(scenes.storyId, storyId), eq(scenes.chapterId, null)))
+            .where(and(eq(scenes.storyId, storyId), isNull(scenes.chapterId)))
             .orderBy(asc(scenes.order));
     }
 
@@ -415,14 +423,14 @@ export class SceneRepository {
         for (let i = 0; i < sceneIds.length; i++) {
             await this.db
                 .update(scenes)
-                .set({ order: i, updatedAt: new Date() })
+                .set({ order: i.toString(), updatedAt: new Date() })
                 .where(
                     and(
                         eq(scenes.id, sceneIds[i]),
                         eq(scenes.storyId, storyId),
                         chapterId
                             ? eq(scenes.chapterId, chapterId)
-                            : eq(scenes.chapterId, null)
+                            : isNull(scenes.chapterId)
                     )
                 );
         }

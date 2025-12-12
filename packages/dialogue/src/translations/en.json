@@ -6,6 +6,7 @@
     "email": "Email",
     "notSet": "Not set",
     "changePassword": "Change Password",
+    "passwordDeprecationNotice": "Password changes are managed by your Supabase auth provider. Please re-authenticate or use your provider's password reset flow.",
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",

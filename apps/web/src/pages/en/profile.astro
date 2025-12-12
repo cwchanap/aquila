@@ -129,7 +129,7 @@ const t = (key: string): string => {
 
           <!-- Password Change Deprecated -->
           <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-2xl text-sm text-yellow-800">
-            {t('profile.changePassword')} is managed by your Supabase auth provider. Please re-authenticate or use your provider’s password reset flow.
+            {t('profile.passwordDeprecationNotice')}
           </div>
 
           <!-- Back to Menu Button -->
@@ -178,4 +178,12 @@ const t = (key: string): string => {
       </div>
     </div>
   </div>
+
+  <script>
+	import { initProfileClient } from '@/lib/profile-client';
+
+	document.addEventListener('DOMContentLoaded', () => {
+		void initProfileClient();
+	});
+  </script>
 </MainLayout>

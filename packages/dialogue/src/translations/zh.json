@@ -6,6 +6,7 @@
     "email": "電子郵件",
     "notSet": "未設定",
     "changePassword": "修改密碼",
+    "passwordDeprecationNotice": "密码更改由您的 Supabase 身份验证提供商管理。请重新验证或使用您提供商的密码重置流程。",
     "currentPassword": "目前密碼",
     "newPassword": "新密碼",
     "confirmPassword": "確認新密碼",

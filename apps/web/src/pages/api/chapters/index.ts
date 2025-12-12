@@ -1,5 +1,8 @@
 import type { APIRoute } from 'astro';
-import { ChapterRepository } from '@/lib/drizzle/repositories.js';
+import {
+    ChapterRepository,
+    StoryRepository,
+} from '@/lib/drizzle/repositories.js';
 import { requireSupabaseUser } from '@/lib/auth/server';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -8,6 +11,8 @@ export const POST: APIRoute = async ({ request }) => {
         if (authResult instanceof Response) {
             return authResult;
         }
+
+        const { appUser } = authResult;
 
         const { storyId, title, description, order } = await request.json();
 
@@ -21,6 +26,23 @@ export const POST: APIRoute = async ({ request }) => {
                     headers: { 'Content-Type': 'application/json' },
                 }
             );
+        }
+
+        const storyRepo = new StoryRepository();
+        const story = await storyRepo.findById(storyId);
+
+        if (!story) {
+            return new Response(JSON.stringify({ error: 'Story not found' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        if (story.userId !== appUser.id) {
+            return new Response(JSON.stringify({ error: 'Forbidden' }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' },
+            });
         }
 
         const chapterRepo = new ChapterRepository();

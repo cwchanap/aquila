@@ -1,6 +1,29 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 
+const SUPABASE_SIGNOUT_TIMEOUT_MS = 10_000;
+
+function createFetchWithTimeout(timeoutMs: number): typeof fetch {
+    return async (input, init) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            return await fetch(input, {
+                ...init,
+                signal: init?.signal
+                    ? (AbortSignal.any([
+                          init.signal,
+                          controller.signal,
+                      ]) as AbortSignal)
+                    : controller.signal,
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    };
+}
+
 function getEnv() {
     const url = process.env.SUPABASE_URL;
     const anonKey = process.env.SUPABASE_ANON_KEY;
@@ -24,6 +47,9 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const { url, anonKey } = getEnv();
 
+        let revoked = false;
+        let revokeError: 'timeout' | 'failed' | null = null;
+
         if (token) {
             // Create a short-lived client to revoke the session associated with the provided access token.
             const supabase = createClient(url, anonKey, {
@@ -31,13 +57,26 @@ export const POST: APIRoute = async ({ request }) => {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
+                    fetch: createFetchWithTimeout(SUPABASE_SIGNOUT_TIMEOUT_MS),
                 },
                 auth: {
                     persistSession: false,
                 },
             });
 
-            await supabase.auth.signOut();
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    revokeError = 'failed';
+                } else {
+                    revoked = true;
+                }
+            } catch (error) {
+                revokeError =
+                    error instanceof DOMException && error.name === 'AbortError'
+                        ? 'timeout'
+                        : 'failed';
+            }
         }
 
         const cookieFlags = [
@@ -51,7 +90,12 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         return new Response(
-            JSON.stringify({ success: true, cleared: Boolean(token) }),
+            JSON.stringify({
+                success: true,
+                cleared: Boolean(token),
+                revoked,
+                revokeError,
+            }),
             {
                 status: 200,
                 headers: {

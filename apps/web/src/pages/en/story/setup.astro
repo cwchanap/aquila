@@ -35,7 +35,7 @@ const storyId = storyParam as StoryId;
 
 // Server-side auth removed; client will determine auth state via Supabase.
 const user = null;
-const isAuthed = false;
+const isAuthed = 'unknown';
 ---
 
 <MainLayout title={t("setup.title")}>
@@ -104,7 +104,7 @@ const isAuthed = false;
     </a>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
+    <UserStatus client:only="svelte" user={user} currentLocale={Astro.currentLocale || 'en'} />
 
     <!-- Main Content Container - Visual Novel Style -->
     <div class="min-h-screen flex items-center justify-center relative">
@@ -186,17 +186,22 @@ const isAuthed = false;
     const root = document.getElementById('setup-root');
     const urlParams = new URLSearchParams(window.location.search);
     const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
-    let isAuthed = root?.getAttribute('data-authed') === 'true';
+    const initialAuthed = root?.getAttribute('data-authed');
+    let isAuthed: boolean = initialAuthed === 'true';
 
-    // Refresh auth state using Supabase session via /api/me
-    try {
-      const meRes = await authorizedFetch('/api/me');
-      if (meRes.ok) {
-        isAuthed = true;
+    const authCheck = (async () => {
+      // Refresh auth state using Supabase session via /api/me
+      try {
+        const meRes = await authorizedFetch('/api/me');
+        isAuthed = meRes.ok;
+      } catch {
+        isAuthed = false;
       }
-    } catch {
-      // not authenticated; keep isAuthed as is
-    }
+
+      if (root) {
+        root.setAttribute('data-authed', isAuthed ? 'true' : 'false');
+      }
+    })();
 
     // If there's a saved local setup, prefill the input (do NOT auto-redirect)
     try {
@@ -217,6 +222,8 @@ const isAuthed = false;
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        await authCheck;
         const nameInput = document.getElementById('character-name');
         const submitButton = form.querySelector('button[type="submit"]');
 

@@ -30,9 +30,20 @@ test.describe('Auth Error States', () => {
         );
 
         // 3. Reload the page to trigger the auth check again with the mocked failure
-        await page.reload();
+        await Promise.all([
+            page.waitForResponse(
+                response =>
+                    response.url().includes('/api/me') &&
+                    response.status() === 500,
+                { timeout: 10_000 }
+            ),
+            page.reload(),
+        ]);
 
         // 4. Verify that we are NOT redirected to login
+        await page.waitForURL(url => !url.toString().includes('/login'), {
+            timeout: 10_000,
+        });
         expect(page.url()).not.toContain('/login');
 
         // 5. Verify the error banner is visible

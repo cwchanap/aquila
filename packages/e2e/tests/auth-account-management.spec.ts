@@ -3,9 +3,10 @@ import { test, expect } from '@playwright/test';
 /**
  * US3 E2E: Account management flows (sign-out, password-reset request, recovery login).
  *
- * Requires existing Supabase user credentials:
- *   SUPABASE_E2E_EMAIL
- *   SUPABASE_E2E_PASSWORD
+ * The test signs up a new user with a unique email generated at runtime and uses the
+ * file-level PASSWORD constant.
+ *
+ * Required environment variables: none.
  *
  * The test sends a reset email but does not read inbox; it verifies the UI success path
  * and that the user can log out and log back in (recovery).

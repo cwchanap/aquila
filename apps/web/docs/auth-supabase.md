@@ -121,31 +121,7 @@ bun run test:e2e -- tests/auth-account-management.spec.ts
 3. Visit `http://localhost:5090/en/login` or `/en/signup` to exercise the Supabase auth flows.
 4. Use the Playwright specs to validate that US1–US3 remain green after changes.
 
-## 6. Data Integrity
-
-A verification script is available to audit the link between Supabase Identity and Aquila Application Users.
-
-**Usage:**
-
-```bash
-# Run from repo root or apps/web
-bun apps/web/scripts/verify-supabase-links.ts
-```
-
-**What it checks:**
-
-1. Fetches all users from the linked Supabase project (via `SUPABASE_SERVICE_ROLE_KEY`).
-2. Fetches all Aquila `Application User` records that have a `supabaseUserId`.
-3. Reports inconsistencies:
-   - **Missing in App**: Supabase user exists but has no corresponding Application User. (Expected for new users who haven't signed into Aquila yet, or users of _other_ apps sharing the project).
-   - **Orphaned App User**: Application User has a `supabaseUserId` that does not exist in Supabase. (Critical data integrity issue).
-
-**Interpretation:**
-
-- "Missing in App" is often benign in a shared-project environment.
-- "Orphaned App User" requires manual intervention to fix (e.g., clear the invalid ID or delete the user).
-
-## 7. Operational Support
+## 6. Operational Support
 
 ### Monitoring
 
@@ -159,6 +135,5 @@ bun apps/web/scripts/verify-supabase-links.ts
 
 Run a review after the first 1000 users or 1 week of traffic:
 
-1. Run `verify-supabase-links.ts` to ensure no data drift.
-2. Check Playwright test pass rates.
-3. Review support ticket volume for `auth` tag.
+1. Check Playwright test pass rates.
+2. Review support ticket volume for `auth` tag.

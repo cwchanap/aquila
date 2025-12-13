@@ -2,10 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { UserRepository } from '../repositories';
 import { users } from '../schema';
 
-const eqMock = vi.fn((field: unknown, value: unknown) => ({ field, value }));
-
 vi.mock('drizzle-orm', () => ({
-    eq: eqMock,
+    eq: vi.fn((field: unknown, value: unknown) => ({ field, value })),
 }));
 
 vi.mock('nanoid', () => ({
@@ -29,7 +27,11 @@ function createDbReturningExistingUser(existingUser: unknown): FakeDb {
     const from = vi.fn().mockReturnValue({ where });
 
     const select = vi.fn().mockReturnValue({ from });
-    const insert = vi.fn();
+
+    const returning = vi.fn().mockResolvedValue([]);
+    const onConflictDoNothing = vi.fn().mockReturnValue({ returning });
+    const values = vi.fn().mockReturnValue({ onConflictDoNothing });
+    const insert = vi.fn().mockReturnValue({ values });
 
     return { select, insert };
 }
@@ -41,7 +43,8 @@ function createDbCreatingUser(createdUser: unknown): FakeDb {
     const select = vi.fn().mockReturnValue({ from: selectFrom });
 
     const returning = vi.fn().mockResolvedValue([createdUser]);
-    const values = vi.fn().mockReturnValue({ returning });
+    const onConflictDoNothing = vi.fn().mockReturnValue({ returning });
+    const values = vi.fn().mockReturnValue({ onConflictDoNothing });
     const insert = vi.fn().mockReturnValue({ values });
 
     return { select, insert };
@@ -104,7 +107,12 @@ describe('UserRepository - Supabase helpers', () => {
         const from = vi.fn().mockReturnValue({ where });
         const select = vi.fn().mockReturnValue({ from });
 
-        const fakeDb = { select, insert: vi.fn() };
+        const returning = vi.fn().mockResolvedValue([]);
+        const onConflictDoNothing = vi.fn().mockReturnValue({ returning });
+        const values = vi.fn().mockReturnValue({ onConflictDoNothing });
+        const insert = vi.fn().mockReturnValue({ values });
+
+        const fakeDb = { select, insert };
         const repository = new UserRepository(fakeDb as any);
 
         await repository.findOrCreateBySupabaseUserId('target-user', {

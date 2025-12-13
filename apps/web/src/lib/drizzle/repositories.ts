@@ -87,6 +87,45 @@ export class UserRepository {
             image?: string | null;
         }
     ) {
+        const existingBySupabaseId =
+            await this.findBySupabaseUserId(supabaseUserId);
+        if (existingBySupabaseId) {
+            return existingBySupabaseId;
+        }
+
+        const existingByEmail = await this.findByEmail(data.email);
+        if (existingByEmail) {
+            if (
+                existingByEmail.supabaseUserId &&
+                existingByEmail.supabaseUserId !== supabaseUserId
+            ) {
+                throw new Error(
+                    `Email ${data.email} is already linked to a different Supabase user`
+                );
+            }
+
+            if (!existingByEmail.supabaseUserId) {
+                const [updated] = await this.db
+                    .update(users)
+                    .set({
+                        supabaseUserId,
+                        name: data.name ?? existingByEmail.name ?? null,
+                        username:
+                            data.username ?? existingByEmail.username ?? null,
+                        image: data.image ?? existingByEmail.image ?? null,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(users.id, existingByEmail.id))
+                    .returning();
+
+                if (updated) {
+                    return updated;
+                }
+            }
+
+            return existingByEmail;
+        }
+
         const id = nanoid();
         const insertedUsers = await this.db
             .insert(users)
@@ -99,7 +138,7 @@ export class UserRepository {
                 supabaseUserId,
             })
             .onConflictDoNothing({
-                target: users.supabaseUserId,
+                target: users.email,
             })
             .returning();
 
@@ -107,13 +146,32 @@ export class UserRepository {
             return insertedUsers[0];
         }
 
-        const existing = await this.findBySupabaseUserId(supabaseUserId);
-        if (!existing) {
-            throw new Error(
-                `Failed to load user ${supabaseUserId} after upsert attempt`
-            );
+        const racedEmail = await this.findByEmail(data.email);
+        if (racedEmail) {
+            if (!racedEmail.supabaseUserId) {
+                const [updated] = await this.db
+                    .update(users)
+                    .set({
+                        supabaseUserId,
+                        name: data.name ?? racedEmail.name ?? null,
+                        username: data.username ?? racedEmail.username ?? null,
+                        image: data.image ?? racedEmail.image ?? null,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(users.id, racedEmail.id))
+                    .returning();
+
+                if (updated) {
+                    return updated;
+                }
+            }
+
+            return racedEmail;
         }
-        return existing;
+
+        throw new Error(
+            `Failed to load user for Supabase user ${supabaseUserId} after upsert attempt`
+        );
     }
 
     async update(id: string, data: Partial<Omit<User, 'id' | 'createdAt'>>) {

@@ -19,6 +19,7 @@ type AnyFn = ReturnType<typeof vi.fn>;
 interface FakeDb {
     select: AnyFn;
     insert: AnyFn;
+    update: AnyFn;
 }
 
 function createDbReturningExistingUser(existingUser: unknown): FakeDb {
@@ -33,7 +34,12 @@ function createDbReturningExistingUser(existingUser: unknown): FakeDb {
     const values = vi.fn().mockReturnValue({ onConflictDoNothing });
     const insert = vi.fn().mockReturnValue({ values });
 
-    return { select, insert };
+    const updateReturning = vi.fn().mockResolvedValue([]);
+    const updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    const update = vi.fn().mockReturnValue({ set: updateSet });
+
+    return { select, insert, update };
 }
 
 function createDbCreatingUser(createdUser: unknown): FakeDb {
@@ -47,7 +53,39 @@ function createDbCreatingUser(createdUser: unknown): FakeDb {
     const values = vi.fn().mockReturnValue({ onConflictDoNothing });
     const insert = vi.fn().mockReturnValue({ values });
 
-    return { select, insert };
+    const updateReturning = vi.fn().mockResolvedValue([]);
+    const updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    const update = vi.fn().mockReturnValue({ set: updateSet });
+
+    return { select, insert, update };
+}
+
+function createDbLinkingExistingEmailUser(
+    existingUser: any,
+    updatedUser: unknown
+): FakeDb {
+    // First lookup by supabaseUserId -> none
+    // Second lookup by email -> existingUser
+    const limit = vi
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([existingUser]);
+    const where = vi.fn().mockReturnValue({ limit });
+    const from = vi.fn().mockReturnValue({ where });
+    const select = vi.fn().mockReturnValue({ from });
+
+    const returning = vi.fn().mockResolvedValue([]);
+    const onConflictDoNothing = vi.fn().mockReturnValue({ returning });
+    const values = vi.fn().mockReturnValue({ onConflictDoNothing });
+    const insert = vi.fn().mockReturnValue({ values });
+
+    const updateReturning = vi.fn().mockResolvedValue([updatedUser]);
+    const updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    const update = vi.fn().mockReturnValue({ set: updateSet });
+
+    return { select, insert, update };
 }
 
 describe('UserRepository - Supabase helpers', () => {
@@ -71,6 +109,37 @@ describe('UserRepository - Supabase helpers', () => {
         expect(result).toBe(existingUser);
     });
 
+    it('links an existing user by email when supabaseUserId is not found', async () => {
+        const existingUser = {
+            id: 'user-legacy',
+            email: 'legacy@example.com',
+            supabaseUserId: null,
+            name: null,
+            username: null,
+            image: null,
+        };
+
+        const updatedUser = {
+            ...existingUser,
+            supabaseUserId: 'supabase-999',
+        };
+
+        const fakeDb = createDbLinkingExistingEmailUser(
+            existingUser,
+            updatedUser
+        ) as unknown;
+        const repository = new UserRepository(fakeDb as any);
+
+        const result = await repository.findOrCreateBySupabaseUserId(
+            'supabase-999',
+            {
+                email: 'legacy@example.com',
+            }
+        );
+
+        expect(result).toEqual(updatedUser);
+    });
+
     it('creates a new user when supabaseUserId is not found', async () => {
         const createdUser = {
             id: 'generated-id',
@@ -81,6 +150,7 @@ describe('UserRepository - Supabase helpers', () => {
         const fakeDb = createDbCreatingUser(createdUser) as unknown as {
             select: AnyFn;
             insert: AnyFn;
+            update: AnyFn;
         };
 
         const repository = new UserRepository(fakeDb as any);
@@ -112,7 +182,14 @@ describe('UserRepository - Supabase helpers', () => {
         const values = vi.fn().mockReturnValue({ onConflictDoNothing });
         const insert = vi.fn().mockReturnValue({ values });
 
-        const fakeDb = { select, insert };
+        const updateReturning = vi.fn().mockResolvedValue([]);
+        const updateWhere = vi
+            .fn()
+            .mockReturnValue({ returning: updateReturning });
+        const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+        const update = vi.fn().mockReturnValue({ set: updateSet });
+
+        const fakeDb = { select, insert, update };
         const repository = new UserRepository(fakeDb as any);
 
         await repository.findOrCreateBySupabaseUserId('target-user', {

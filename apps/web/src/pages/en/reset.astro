@@ -41,7 +41,7 @@ import MainLayout from '../../layouts/main.astro';
         </div>
         <button
           type="submit"
-          class="w-full bg-linear-to-r from-blue-500 to-cyan-400 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition disabled:opacity-60 disabled:cursor-not-allowed"
+          class="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Update Password
         </button>
@@ -55,16 +55,18 @@ import MainLayout from '../../layouts/main.astro';
   <script>
     import { getSupabaseAuthClient } from '@/lib/auth';
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const form = document.getElementById('reset-form') as HTMLFormElement | null;
       const errorEl = document.getElementById('reset-error') as HTMLElement | null;
       const successEl = document.getElementById('reset-success') as HTMLElement | null;
-      const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      const submitButton = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 
-      if (!form || !errorEl || !successEl || !submitBtn) return;
+      if (!form || !errorEl || !successEl || !submitButton) return;
 
       const supabase = getSupabaseAuthClient();
       let sessionReady = false;
+
+      submitButton.disabled = true;
 
       function showError(message: string) {
         errorEl.textContent = message;
@@ -85,13 +87,16 @@ import MainLayout from '../../layouts/main.astro';
       }
 
       async function initializeSessionFromHash() {
+        sessionReady = false;
+        submitButton.disabled = true;
+
         const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
         const access_token = hashParams.get('access_token');
         const refresh_token = hashParams.get('refresh_token');
 
         if (!access_token || !refresh_token) {
           showError('Reset link is invalid or missing. Please request a new email.');
-          submitBtn.disabled = true;
+          submitButton.disabled = true;
           return;
         }
 
@@ -103,19 +108,22 @@ import MainLayout from '../../layouts/main.astro';
 
           if (error) {
             showError(error.message || 'Unable to start reset session.');
-            submitBtn.disabled = true;
+            sessionReady = false;
+            submitButton.disabled = true;
             return;
           }
 
           sessionReady = true;
+          submitButton.disabled = false;
         } catch (err) {
           console.error('Session init error:', err);
           showError('Unable to start reset session.');
-          submitBtn.disabled = true;
+          sessionReady = false;
+          submitButton.disabled = true;
         }
       }
 
-      initializeSessionFromHash();
+      await initializeSessionFromHash();
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();

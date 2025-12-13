@@ -29,7 +29,7 @@ test.describe('Supabase Auth - new user signup (US2)', () => {
         await expect(page.url()).toMatch(/\/(en|zh)\//);
 
         await expect(page.locator('body h1').first()).toContainText(
-            'Main Menu'
+            /Main Menu|主菜单|主選單/
         );
 
         const startButton = page.locator('#start-btn');

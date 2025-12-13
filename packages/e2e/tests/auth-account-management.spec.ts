@@ -58,6 +58,24 @@ test.describe('Supabase Auth - account management (US3)', () => {
             errorBanner.waitFor({ state: 'visible', timeout: 5000 }),
         ]);
 
+        const successVisible = await successBanner.isVisible();
+        const errorVisible = await errorBanner.isVisible();
+        expect(
+            successVisible !== errorVisible,
+            'Expected exactly one banner (success or error) to be visible after requesting a password reset.'
+        ).toBe(true);
+
+        if (errorVisible) {
+            throw new Error(
+                `Password reset request showed an error banner: ${await errorBanner
+                    .innerText()
+                    .catch(() => '(unable to read error text)')}`
+            );
+        }
+
+        await expect(successBanner).toBeVisible();
+        await expect(errorBanner).toBeHidden();
+
         // Log back in (recovery)
         await page.fill('input[name="password"]', PASSWORD);
         await page.click('button[type="submit"]');

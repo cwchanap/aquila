@@ -7,7 +7,9 @@ vi.mock('@aquila/dialogue/translations/en.json', () => ({
             hello: 'Hello',
             goodbye: 'Goodbye',
             login: 'Login',
-            logout: 'Logout',
+        },
+        auth: {
+            signOut: 'Sign Out',
         },
     },
 }));
@@ -18,7 +20,9 @@ vi.mock('@aquila/dialogue/translations/zh.json', () => ({
             hello: '你好',
             goodbye: '再见',
             login: '登入',
-            logout: '登出',
+        },
+        auth: {
+            signOut: '登出',
         },
     },
 }));
@@ -66,7 +70,7 @@ describe('Utils', () => {
         });
 
         it('defaults to english locale', () => {
-            expect(t('fr', 'common.logout')).toBe('Logout');
+            expect(t('fr', 'auth.signOut')).toBe('Sign Out');
         });
 
         it('returns empty string when key is empty', () => {

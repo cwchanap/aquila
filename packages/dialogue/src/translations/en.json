@@ -39,7 +39,6 @@
   "common": {
     "hello": "Hello",
     "goodbye": "Goodbye",
-    "logout": "Logout",
     "login": "Login",
     "back": "Back",
     "backToHome": "← Back to Home"

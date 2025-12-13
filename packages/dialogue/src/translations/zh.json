@@ -39,7 +39,6 @@
   "common": {
     "hello": "你好",
     "goodbye": "再见",
-    "logout": "登出",
     "login": "登入",
     "back": "返回",
     "backToHome": "← 返回主頁"

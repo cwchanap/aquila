@@ -3,6 +3,13 @@ import MainLayout from '../../layouts/main.astro';
 // Component Imports
 import MainMenu from '../../components/MainMenu.svelte';
 import { translations } from '@aquila/dialogue';
+import { requireAuthPage } from '../../lib/auth/supabaseServer';
+
+// Server-side authentication check - redirects to login if not authenticated
+const authResult = await requireAuthPage(Astro);
+if (authResult instanceof Response) {
+  return authResult;
+}
 
 // Helper function to get translations
 const t = (key: string): string => {
@@ -29,72 +36,18 @@ const t = (key: string): string => {
 	<MainMenu client:load locale={Astro.currentLocale || 'en'} />
 
 	<script>
-		import { getCurrentUser } from '@/lib/auth';
+		// Handle language preference persistence (auth is now checked server-side)
+		document.addEventListener('DOMContentLoaded', () => {
+			// Check if we're on the root path
+			if (window.location.pathname === '/') {
+				// Check for saved language preference
+				const savedLanguage = localStorage.getItem('aquila:language');
 
-		// Handle auth gating and language preference persistence
-		document.addEventListener('DOMContentLoaded', async () => {
-			try {
-				const user = await getCurrentUser();
-				if (!user) {
-					window.location.href = '/en/login';
+				// If user has a Chinese preference and we're not already on Chinese, redirect
+				if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
+					window.location.href = '/zh';
 					return;
 				}
-
-				// Check if we're on the root path
-				if (window.location.pathname === '/') {
-					// Check for saved language preference
-					const savedLanguage = localStorage.getItem('aquila:language');
-
-					// If user has a Chinese preference and we're not already on Chinese, redirect
-					if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
-						window.location.href = '/zh';
-						return;
-					}
-
-				}
-			} catch (error) {
-				if (error instanceof Error) {
-					console.error('Auth check failed:', {
-						name: error.name,
-						message: error.message,
-						stack: error.stack,
-					});
-				} else {
-					console.error('Auth check failed:', error);
-				}
-				const container = document.querySelector('main') || document.body;
-				const overlay = document.createElement('div');
-				overlay.className =
-					'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
-
-				const panel = document.createElement('div');
-				panel.className =
-					'bg-red-900/90 border border-red-500 rounded-lg p-6 max-w-md w-full shadow-2xl text-white';
-
-				const title = document.createElement('h2');
-				title.className = 'text-xl font-bold mb-2';
-				title.textContent = 'Connection Error';
-
-				const description = document.createElement('p');
-				description.className = 'mb-4 text-red-100';
-				description.textContent =
-					'Unable to load your profile. The server might be experiencing issues.';
-
-				const message = document.createElement('p');
-				message.className =
-					'text-sm font-mono bg-black/50 p-2 rounded mb-4 overflow-x-auto';
-				message.textContent = 'An unexpected error occurred.';
-
-				const retryButton = document.createElement('button');
-				retryButton.className =
-					'w-full py-2 bg-red-600 hover:bg-red-500 rounded font-medium transition-colors';
-				retryButton.type = 'button';
-				retryButton.textContent = 'Retry';
-				retryButton.addEventListener('click', () => window.location.reload());
-
-				panel.append(title, description, message, retryButton);
-				overlay.appendChild(panel);
-				container.appendChild(overlay);
 			}
 		});
 	</script>

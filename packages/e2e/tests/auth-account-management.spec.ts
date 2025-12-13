@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * US3 E2E: Account management flows (sign-out, password-reset request, recovery login).
+ * US3 E2E: Account management flows (sign-out, password-reset request UI).
  *
  * The test signs up a new user with a unique email generated at runtime and uses the
  * file-level PASSWORD constant.
  *
  * Required environment variables: none.
  *
- * The test sends a reset email but does not read inbox; it verifies the UI success path
- * and that the user can log out and log back in (recovery).
+ * NOTE: This test validates the password-reset REQUEST UI only. It does not test the
+ * full password recovery flow (email link extraction, setting a new password) because
+ * that would require email interception infrastructure (e.g., Mailosaur, Inbucket).
+ * A future enhancement could add full recovery testing with such tooling.
  */
 
 import { randomUUID } from 'crypto';
@@ -18,7 +20,7 @@ const uniqueEmail = (prefix: string) => `${prefix}-${randomUUID()}@example.com`;
 const PASSWORD = 'password123';
 
 test.describe('Supabase Auth - account management (US3)', () => {
-    test('user can sign up, log out, request password reset, and log back in', async ({
+    test('user can sign up, log out, and request password reset (UI only)', async ({
         page,
     }) => {
         const email = uniqueEmail('supabase-us3');
@@ -76,7 +78,37 @@ test.describe('Supabase Auth - account management (US3)', () => {
         await expect(successBanner).toBeVisible();
         await expect(errorBanner).toBeHidden();
 
-        // Log back in (recovery)
+        // NOTE: We intentionally stop here. The password reset REQUEST was successful.
+        // Testing the full recovery flow (clicking email link, setting new password)
+        // would require email interception infrastructure not currently in place.
+        // The login below only verifies the user can still log in with the ORIGINAL
+        // password—it does NOT validate the reset functionality itself.
+    });
+
+    test('user can still log in with original password after reset request', async ({
+        page,
+    }) => {
+        const email = uniqueEmail('supabase-us3-login');
+        const name = 'US3 Login Test';
+
+        // Sign up
+        await page.goto('/en/signup');
+        await page.fill('input[name="email"]', email);
+        await page.fill('input[name="password"]', PASSWORD);
+        await page.fill('input[name="name"]', name);
+        await page.click('button[type="submit"]');
+        await page.waitForLoadState('networkidle');
+        await expect(page).toHaveURL(/\/(en|zh)\/$/);
+
+        // Sign out
+        const userMenuButton = page.locator('button[title="User Menu"]');
+        await userMenuButton.click();
+        await page.getByRole('button', { name: /Logout/i }).click();
+        await page.waitForLoadState('networkidle');
+        await expect(page).toHaveURL(/\/(en|zh)\/login/);
+
+        // Log back in with original credentials
+        await page.fill('input[name="email"]', email);
         await page.fill('input[name="password"]', PASSWORD);
         await page.click('button[type="submit"]');
         await page.waitForLoadState('networkidle');

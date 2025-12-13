@@ -2,8 +2,6 @@
 import MainLayout from '../../layouts/main.astro';
 import UserStatus from '../../components/UserStatus.svelte';
 import en from '@aquila/dialogue/translations/en.json';
-import type { CharacterSetup } from '../../lib/drizzle/schema.js';
-import type { SimpleUser } from '../../lib/simple-auth.js';
 
 // Helper function to get translations (used in template)
  
@@ -22,9 +20,7 @@ const t = (key: string): string => {
   return typeof value === 'string' ? value : key;
 };
 
-// Legacy server-side session removed; client-side Supabase auth will fetch data.
-let user: SimpleUser | null = null;
-let characterSetups: CharacterSetup[] = [];
+// Client-side Supabase auth will fetch and render data dynamically.
 ---
 
 <MainLayout title={t("characters.title")}>
@@ -83,7 +79,7 @@ let characterSetups: CharacterSetup[] = [];
     </div>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
+    <UserStatus client:load currentLocale={Astro.currentLocale || 'en'} />
 
     <!-- Back button - Gaming Style -->
     <a
@@ -110,86 +106,37 @@ let characterSetups: CharacterSetup[] = [];
           </div>
         </div>
 
-        {user ? (
-          <div class="space-y-8">
-            <div class="text-center text-slate-600 mb-6">
-              <p class="text-lg" style="font-family: 'Exo 2', sans-serif;">{t("characters.description")}</p>
-            </div>
-
-            {characterSetups.length > 0 ? (
-              <div class="grid gap-6">
-                {characterSetups.map((setup) => (
-                  <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-character-id={setup.id} data-story-id={setup.storyId}>
-                    <div class="flex items-center gap-4 mb-6">
-                      <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
-                        {setup.characterName.charAt(0).toUpperCase()}
-                      </div>
-                      <div class="flex-1">
-                        <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">{setup.characterName}</h3>
-                        <input
-                          type="text"
-                          class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
-                          value={setup.characterName}
-                          maxlength="50"
-                          style="font-family: 'Orbitron', monospace;"
-                        />
-                        <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">{setup.storyId.replace('_', ' ')}</p>
-                      </div>
-                    </div>
-                    <div class="flex gap-3 flex-wrap">
-                      <a
-                        href={`/en/story/${setup.storyId}`}
-                        class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
-                        style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                      >
-                        {t("characters.playStory")}
-                      </a>
-                      <button
-                        type="button"
-                        class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
-                        style="font-family: 'Orbitron', monospace;"
-                      >
-                        {t("characters.edit")}
-                      </button>
-                      <button
-                        type="button"
-                        class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
-                        style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                      >
-                        {t("characters.save")}
-                      </button>
-                      <button
-                        type="button"
-                        class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
-                        style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                      >
-                        {t("characters.cancel")}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div class="text-center py-16">
-                <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.noCharacters")}</div>
-                <a
-                  href="/en/stories"
-                  class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
-                  style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  <!-- Button glow effect -->
-                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-                  <span class="relative text-lg tracking-wider uppercase font-black">{t("characters.startFirstStory")}</span>
-                  <!-- Gaming accent corners -->
-                  <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
-                  <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
-                  <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
-                  <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
-                </a>
-              </div>
-            )}
+        <!-- Authenticated user section (hidden by default, shown by client-side JS when authenticated) -->
+        <div id="authenticated-section" data-authenticated="true" class="hidden space-y-8">
+          <div class="text-center text-slate-600 mb-6">
+            <p class="text-lg" style="font-family: 'Exo 2', sans-serif;">{t("characters.description")}</p>
           </div>
-        ) : (
+
+          <div id="character-list" class="grid gap-6">
+            <!-- Characters will be rendered by client-side JS -->
+          </div>
+
+          <div id="no-characters" class="hidden text-center py-16">
+            <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.noCharacters")}</div>
+            <a
+              href="/en/stories"
+              class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
+              style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+            >
+              <!-- Button glow effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+              <span class="relative text-lg tracking-wider uppercase font-black">{t("characters.startFirstStory")}</span>
+              <!-- Gaming accent corners -->
+              <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+              <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+              <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+              <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Guest section (shown by default) -->
+        <div id="guest-section" data-guest="true" class="space-y-8">
           <div class="space-y-8">
             <div class="text-center text-slate-600 mb-6">
               <p class="text-lg" style="font-family: 'Exo 2', sans-serif;">{t("characters.guestDescription")}</p>
@@ -219,7 +166,7 @@ let characterSetups: CharacterSetup[] = [];
               </a>
             </div>
           </div>
-        )}
+        </div>
 
         <!-- Gaming Decorative Elements -->
         <div class="mt-12 flex justify-center items-center space-x-4 opacity-60">
@@ -287,10 +234,20 @@ let characterSetups: CharacterSetup[] = [];
       guestSection?.classList.add('hidden');
 
       const listContainer = document.querySelector('#character-list');
-      if (listContainer) {
-        listContainer.innerHTML = characters
-          .map(
-            (setup) => `
+      const noCharactersSection = document.querySelector('#no-characters');
+
+      if (characters.length === 0) {
+        // Show "no characters" message
+        listContainer?.classList.add('hidden');
+        noCharactersSection?.classList.remove('hidden');
+      } else {
+        // Show character list
+        listContainer?.classList.remove('hidden');
+        noCharactersSection?.classList.add('hidden');
+        if (listContainer) {
+          listContainer.innerHTML = characters
+            .map(
+              (setup) => `
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-character-id="${setup.id}" data-story-id="${setup.storyId}">
               <div class="flex items-center gap-4 mb-6">
                 <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
@@ -345,6 +302,7 @@ let characterSetups: CharacterSetup[] = [];
           `
           )
           .join('');
+        }
       }
 
       return characters;
@@ -356,305 +314,312 @@ let characterSetups: CharacterSetup[] = [];
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    loadAuthenticatedCharacters();
+  // Helper function to handle character card interactions (works for dynamically rendered cards)
+  function setupCharacterCardHandlers(container: Element) {
+    container.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+      const card = target.closest('[data-character-id]');
+      if (!card) return;
 
-    // Handle edit buttons for database characters
-    document.querySelectorAll('.character-edit-btn').forEach((button: Element) => {
-      button.addEventListener('click', (e) => {
-        const card = (e.target as HTMLElement).closest('[data-character-id]');
-        if (!card) return;
+      const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
+      const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
+      const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
+      const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
+      const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
+      const playLink = card.querySelector('.character-play-link') as HTMLElement;
 
-        const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
-        const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
-        const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
-        const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-        const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-        const playLink = card.querySelector('.character-play-link') as HTMLElement;
+      if (!nameDisplay || !nameInput || !editBtn || !saveBtn || !cancelBtn) return;
 
-        if (nameDisplay && nameInput && editBtn && saveBtn && cancelBtn) {
-          // Store original name for cancel functionality
-          const originalName = nameDisplay.textContent || '';
+      // Handle Edit button click
+      if (target.closest('.character-edit-btn')) {
+        const originalName = nameDisplay.textContent || '';
+        card.setAttribute('data-original-name', originalName);
 
-          // Switch to edit mode
-          nameDisplay.classList.add('hidden');
-          nameInput.classList.remove('hidden');
-          editBtn.classList.add('hidden');
-          saveBtn.classList.remove('hidden');
-          cancelBtn.classList.remove('hidden');
-          playLink.classList.add('hidden');
+        nameDisplay.classList.add('hidden');
+        nameInput.classList.remove('hidden');
+        editBtn.classList.add('hidden');
+        saveBtn.classList.remove('hidden');
+        cancelBtn.classList.remove('hidden');
+        playLink?.classList.add('hidden');
 
-          // Focus and select the input
-          nameInput.focus();
-          nameInput.select();
+        nameInput.focus();
+        nameInput.select();
+      }
 
-          // Handle save button
-          const handleSave = async () => {
-            const newName = nameInput.value.trim();
-            if (!newName) {
-              alert('Character name cannot be empty');
-              return;
-            }
-
-            const storyId = card.getAttribute('data-story-id');
-
-            try {
-              const response = await authorizedFetch('/api/character-setup', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  characterName: newName,
-                  storyId: storyId
-                })
-              });
-
-              if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to update character name. Please try again.');
-              }
-
-              // Update UI
-              nameDisplay.textContent = newName;
-              const avatar = card.querySelector('.character-avatar');
-              if (avatar) {
-                avatar.textContent = newName.charAt(0).toUpperCase();
-              }
-
-              // Update play link
-              if (playLink && storyId) {
-                playLink.setAttribute('href', `/en/story/${storyId}`);
-              }
-
-              // Switch back to display mode
-              nameDisplay.classList.remove('hidden');
-              nameInput.classList.add('hidden');
-              editBtn.classList.remove('hidden');
-              saveBtn.classList.add('hidden');
-              cancelBtn.classList.add('hidden');
-              playLink.classList.remove('hidden');
-
-            } catch (error) {
-              console.error('Error updating character:', error);
-              alert('Failed to update character name. Please try again.');
-            }
-          };
-
-          // Handle cancel button
-          const handleCancel = () => {
-            nameInput.value = originalName;
-            nameDisplay.classList.remove('hidden');
-            nameInput.classList.add('hidden');
-            editBtn.classList.remove('hidden');
-            saveBtn.classList.add('hidden');
-            cancelBtn.classList.add('hidden');
-            playLink.classList.remove('hidden');
-          };
-
-          // Remove existing event listeners
-          saveBtn.removeEventListener('click', handleSave);
-          cancelBtn.removeEventListener('click', handleCancel);
-
-          // Add event listeners
-          saveBtn.addEventListener('click', handleSave);
-          cancelBtn.addEventListener('click', handleCancel);
-
-          // Handle Enter key in input
-          nameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              handleSave();
-            } else if (e.key === 'Escape') {
-              handleCancel();
-            }
-          });
+      // Handle Save button click
+      if (target.closest('.character-save-btn')) {
+        const newName = nameInput.value.trim();
+        if (!newName) {
+          alert('Character name cannot be empty');
+          return;
         }
-      });
+
+        const storyId = card.getAttribute('data-story-id');
+
+        try {
+          const response = await authorizedFetch('/api/character-setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ characterName: newName, storyId })
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to update character name.');
+          }
+
+          nameDisplay.textContent = newName;
+          const avatar = card.querySelector('.character-avatar');
+          if (avatar) avatar.textContent = newName.charAt(0).toUpperCase();
+
+          nameDisplay.classList.remove('hidden');
+          nameInput.classList.add('hidden');
+          editBtn.classList.remove('hidden');
+          saveBtn.classList.add('hidden');
+          cancelBtn.classList.add('hidden');
+          playLink?.classList.remove('hidden');
+        } catch (error) {
+          console.error('Error updating character:', error);
+          alert('Failed to update character name. Please try again.');
+        }
+      }
+
+      // Handle Cancel button click
+      if (target.closest('.character-cancel-btn')) {
+        const originalName = card.getAttribute('data-original-name') || '';
+        nameInput.value = originalName;
+        nameDisplay.classList.remove('hidden');
+        nameInput.classList.add('hidden');
+        editBtn.classList.remove('hidden');
+        saveBtn.classList.add('hidden');
+        cancelBtn.classList.add('hidden');
+        playLink?.classList.remove('hidden');
+      }
     });
-  });
+
+    // Handle keyboard events for inputs
+    container.addEventListener('keydown', async (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.classList.contains('character-name-input')) return;
+
+      const card = target.closest('[data-character-id]');
+      if (!card) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
+        saveBtn?.click();
+      } else if (e.key === 'Escape') {
+        const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
+        cancelBtn?.click();
+      }
+    });
+  }
 
   // Load local characters for guest users
-  if (!document.querySelector('[data-user]')) {
+  function loadLocalCharacters() {
     const localCharactersContainer = document.getElementById('local-characters');
+    if (!localCharactersContainer) return;
 
-    if (localCharactersContainer) {
-      try {
-        const stories = ['train_adventure']; // Add more stories as needed
-        const localChars: { characterName: string; storyId: string }[] = [];
+    try {
+      const stories = ['train_adventure']; // Add more stories as needed
+      const localChars: { characterName: string; storyId: string }[] = [];
 
-        stories.forEach(story => {
-          const local = localStorage.getItem(`aquila:character:${story}`);
-          if (local) {
-            const { characterName } = JSON.parse(local);
-            if (characterName) {
-              localChars.push({ characterName, storyId: story });
-            }
+      stories.forEach(story => {
+        const local = localStorage.getItem(`aquila:character:${story}`);
+        if (local) {
+          const { characterName } = JSON.parse(local);
+          if (characterName) {
+            localChars.push({ characterName, storyId: story });
           }
-        });
-
-        if (localChars.length > 0) {
-          localCharactersContainer.innerHTML = localChars.map(char => `
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-local-character="true" data-story-id="${char.storyId}">
-              <div class="flex items-center gap-4 mb-6">
-                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
-                  ${char.characterName.charAt(0).toUpperCase()}
-                </div>
-                <div class="flex-1">
-                  <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${char.characterName}</h3>
-                  <input
-                    type="text"
-                    class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
-                    value="${char.characterName}"
-                    maxlength="50"
-                    style="font-family: 'Orbitron', monospace;"
-                  />
-                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${char.storyId.replace('_', ' ')}</p>
-                </div>
-              </div>
-              <div class="flex gap-3 flex-wrap">
-                <a
-                  href="/en/story/${char.storyId}"
-                  class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Play Story
-                </a>
-                <button
-                  type="button"
-                  class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
-                  style="font-family: 'Orbitron', monospace;"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          `).join('');
-
-          // Add event listeners for local character editing
-          setTimeout(() => {
-            document.querySelectorAll('[data-local-character] .character-edit-btn').forEach((button: Element) => {
-              button.addEventListener('click', (e) => {
-                const card = (e.target as HTMLElement).closest('[data-local-character]');
-                if (!card) return;
-
-                const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
-                const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
-                const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
-                const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-                const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-                const playLink = card.querySelector('.character-play-link') as HTMLElement;
-
-                if (nameDisplay && nameInput && editBtn && saveBtn && cancelBtn) {
-                  const originalName = nameDisplay.textContent || '';
-                  const storyId = card.getAttribute('data-story-id');
-
-                  // Switch to edit mode
-                  nameDisplay.classList.add('hidden');
-                  nameInput.classList.remove('hidden');
-                  editBtn.classList.add('hidden');
-                  saveBtn.classList.remove('hidden');
-                  cancelBtn.classList.remove('hidden');
-                  playLink.classList.add('hidden');
-
-                  nameInput.focus();
-                  nameInput.select();
-
-                  const handleSave = () => {
-                    const newName = nameInput.value.trim();
-                    if (!newName) {
-                      alert('Character name cannot be empty');
-                      return;
-                    }
-
-                    if (storyId) {
-                      // Update localStorage
-                      localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
-
-                      // Update UI
-                      nameDisplay.textContent = newName;
-                      const avatar = card.querySelector('.character-avatar');
-                      if (avatar) {
-                        avatar.textContent = newName.charAt(0).toUpperCase();
-                      }
-
-                      // Update play link
-                      playLink.setAttribute('href', `/en/story/${storyId}`);
-                    }
-
-                    // Switch back to display mode
-                    nameDisplay.classList.remove('hidden');
-                    nameInput.classList.add('hidden');
-                    editBtn.classList.remove('hidden');
-                    saveBtn.classList.add('hidden');
-                    cancelBtn.classList.add('hidden');
-                    playLink.classList.remove('hidden');
-                  };
-
-                  const handleCancel = () => {
-                    nameInput.value = originalName;
-                    nameDisplay.classList.remove('hidden');
-                    nameInput.classList.add('hidden');
-                    editBtn.classList.remove('hidden');
-                    saveBtn.classList.add('hidden');
-                    cancelBtn.classList.add('hidden');
-                    playLink.classList.remove('hidden');
-                  };
-
-                  saveBtn.addEventListener('click', handleSave);
-                  cancelBtn.addEventListener('click', handleCancel);
-
-                  nameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                      handleSave();
-                    } else if (e.key === 'Escape') {
-                      handleCancel();
-                    }
-                  });
-                }
-              });
-            });
-          }, 100);
-        } else {
-          localCharactersContainer.innerHTML = `
-            <div class="text-center py-12">
-              <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">No local characters found</div>
-              <a
-                href="/en/stories"
-                class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
-                style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-              >
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-                <span class="relative text-lg tracking-wider uppercase font-black">Start Your First Story</span>
-                <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
-                <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
-                <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
-                <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
-              </a>
-            </div>
-          `;
         }
-      } catch (error) {
-        console.error('Error loading local characters:', error);
+      });
+
+      if (localChars.length > 0) {
+        localCharactersContainer.innerHTML = localChars.map(char => `
+          <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-local-character="true" data-story-id="${char.storyId}">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
+                ${char.characterName.charAt(0).toUpperCase()}
+              </div>
+              <div class="flex-1">
+                <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${char.characterName}</h3>
+                <input
+                  type="text"
+                  class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
+                  value="${char.characterName}"
+                  maxlength="50"
+                  style="font-family: 'Orbitron', monospace;"
+                />
+                <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${char.storyId.replace('_', ' ')}</p>
+              </div>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+              <a
+                href="/en/story/${char.storyId}"
+                class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
+                style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+              >
+                Play Story
+              </a>
+              <button
+                type="button"
+                class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
+                style="font-family: 'Orbitron', monospace;"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
+                style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
+                style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        // Setup event delegation for local characters
+        setupLocalCharacterHandlers(localCharactersContainer);
+      } else {
         localCharactersContainer.innerHTML = `
           <div class="text-center py-12">
-            <div class="text-red-600 text-lg font-semibold bg-red-100 rounded-lg p-4 border border-red-300" style="font-family: 'Exo 2', sans-serif;">Error loading local characters</div>
+            <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">No local characters found</div>
+            <a
+              href="/en/stories"
+              class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
+              style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+              <span class="relative text-lg tracking-wider uppercase font-black">Start Your First Story</span>
+              <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+              <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+              <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+              <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+            </a>
           </div>
         `;
       }
+    } catch (error) {
+      console.error('Error loading local characters:', error);
+      localCharactersContainer.innerHTML = `
+        <div class="text-center py-12">
+          <div class="text-red-600 text-lg font-semibold bg-red-100 rounded-lg p-4 border border-red-300" style="font-family: 'Exo 2', sans-serif;">Error loading local characters</div>
+        </div>
+      `;
     }
   }
+
+  // Event delegation for local character cards
+  function setupLocalCharacterHandlers(container: Element) {
+    container.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const card = target.closest('[data-local-character]');
+      if (!card) return;
+
+      const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
+      const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
+      const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
+      const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
+      const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
+      const playLink = card.querySelector('.character-play-link') as HTMLElement;
+
+      if (!nameDisplay || !nameInput || !editBtn || !saveBtn || !cancelBtn) return;
+
+      const storyId = card.getAttribute('data-story-id');
+
+      // Handle Edit button click
+      if (target.closest('.character-edit-btn')) {
+        const originalName = nameDisplay.textContent || '';
+        card.setAttribute('data-original-name', originalName);
+
+        nameDisplay.classList.add('hidden');
+        nameInput.classList.remove('hidden');
+        editBtn.classList.add('hidden');
+        saveBtn.classList.remove('hidden');
+        cancelBtn.classList.remove('hidden');
+        playLink?.classList.add('hidden');
+
+        nameInput.focus();
+        nameInput.select();
+      }
+
+      // Handle Save button click
+      if (target.closest('.character-save-btn')) {
+        const newName = nameInput.value.trim();
+        if (!newName) {
+          alert('Character name cannot be empty');
+          return;
+        }
+
+        if (storyId) {
+          localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
+          nameDisplay.textContent = newName;
+          const avatar = card.querySelector('.character-avatar');
+          if (avatar) avatar.textContent = newName.charAt(0).toUpperCase();
+        }
+
+        nameDisplay.classList.remove('hidden');
+        nameInput.classList.add('hidden');
+        editBtn.classList.remove('hidden');
+        saveBtn.classList.add('hidden');
+        cancelBtn.classList.add('hidden');
+        playLink?.classList.remove('hidden');
+      }
+
+      // Handle Cancel button click
+      if (target.closest('.character-cancel-btn')) {
+        const originalName = card.getAttribute('data-original-name') || '';
+        nameInput.value = originalName;
+        nameDisplay.classList.remove('hidden');
+        nameInput.classList.add('hidden');
+        editBtn.classList.remove('hidden');
+        saveBtn.classList.add('hidden');
+        cancelBtn.classList.add('hidden');
+        playLink?.classList.remove('hidden');
+      }
+    });
+
+    // Handle keyboard events for inputs
+    container.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.classList.contains('character-name-input')) return;
+
+      const card = target.closest('[data-local-character]');
+      if (!card) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
+        saveBtn?.click();
+      } else if (e.key === 'Escape') {
+        const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
+        cancelBtn?.click();
+      }
+    });
+  }
+
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', async () => {
+    const characterList = document.querySelector('#character-list');
+    if (characterList) {
+      setupCharacterCardHandlers(characterList);
+    }
+
+    // Try to load authenticated characters first
+    const authResult = await loadAuthenticatedCharacters();
+
+    // If not authenticated, load local characters for the guest view
+    if (authResult === null) {
+      loadLocalCharacters();
+    }
+  });
 </script>

@@ -28,7 +28,7 @@ const t = (key: string): string => {
 <MainLayout title={t('menu.title')}>
     <MainMenu client:load locale={Astro.currentLocale ?? 'en'} />
 
-    <script>
+    <script define:vars={{ locale }}>
         import { getCurrentUser } from '@/lib/auth';
 
         // Handle auth gating and language preference persistence
@@ -36,7 +36,7 @@ const t = (key: string): string => {
             try {
                 const user = await getCurrentUser();
                 if (!user) {
-                    window.location.href = '/en/login';
+                    window.location.href = `/${locale}/login`;
                     return;
                 }
 

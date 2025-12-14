@@ -201,6 +201,7 @@ const t = (key: string): string => {
 
 <script>
   import { authorizedFetch } from '../../lib/auth';
+  import { CharacterCardManager } from '../../lib/characters/CharacterCardManager';
 
   type CharacterSetup = {
     id: string;
@@ -215,6 +216,8 @@ const t = (key: string): string => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+
+  const cardManagers: WeakMap<Element, CharacterCardManager> = new WeakMap();
 
   async function loadAuthenticatedCharacters() {
     const userSection = document.querySelector('[data-authenticated="true"]');
@@ -330,104 +333,23 @@ const t = (key: string): string => {
 
   // Helper function to handle character card interactions (works for dynamically rendered cards)
   function setupCharacterCardHandlers(container: Element) {
-    container.addEventListener('click', async (e) => {
-      const target = e.target as HTMLElement;
-      const card = target.closest('[data-character-id]');
-      if (!card) return;
+    if (cardManagers.has(container)) return;
 
-      const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
-      const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
-      const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
-      const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-      const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-      const playLink = card.querySelector('.character-play-link') as HTMLElement;
+    const manager = new CharacterCardManager(container, async (storyId: string, newName: string) => {
+      const response = await authorizedFetch('/api/character-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ characterName: newName, storyId })
+      });
 
-      if (!nameDisplay || !nameInput || !editBtn || !saveBtn || !cancelBtn) return;
-
-      // Handle Edit button click
-      if (target.closest('.character-edit-btn')) {
-        const originalName = nameDisplay.textContent || '';
-        card.setAttribute('data-original-name', originalName);
-
-        nameDisplay.classList.add('hidden');
-        nameInput.classList.remove('hidden');
-        editBtn.classList.add('hidden');
-        saveBtn.classList.remove('hidden');
-        cancelBtn.classList.remove('hidden');
-        playLink?.classList.add('hidden');
-
-        nameInput.focus();
-        nameInput.select();
-      }
-
-      // Handle Save button click
-      if (target.closest('.character-save-btn')) {
-        const newName = nameInput.value.trim();
-        if (!newName) {
-          alert('Character name cannot be empty');
-          return;
-        }
-
-        const storyId = card.getAttribute('data-story-id');
-
-        try {
-          const response = await authorizedFetch('/api/character-setup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ characterName: newName, storyId })
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to update character name.');
-          }
-
-          nameDisplay.textContent = newName;
-          const avatar = card.querySelector('.character-avatar');
-          if (avatar) avatar.textContent = newName.charAt(0).toUpperCase();
-
-          nameDisplay.classList.remove('hidden');
-          nameInput.classList.add('hidden');
-          editBtn.classList.remove('hidden');
-          saveBtn.classList.add('hidden');
-          cancelBtn.classList.add('hidden');
-          playLink?.classList.remove('hidden');
-        } catch (error) {
-          console.error('Error updating character:', error);
-          alert('Failed to update character name. Please try again.');
-        }
-      }
-
-      // Handle Cancel button click
-      if (target.closest('.character-cancel-btn')) {
-        const originalName = card.getAttribute('data-original-name') || '';
-        nameInput.value = originalName;
-        nameDisplay.classList.remove('hidden');
-        nameInput.classList.add('hidden');
-        editBtn.classList.remove('hidden');
-        saveBtn.classList.add('hidden');
-        cancelBtn.classList.add('hidden');
-        playLink?.classList.remove('hidden');
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.error || 'Failed to update character name.');
       }
     });
 
-    // Handle keyboard events for inputs
-    container.addEventListener('keydown', (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.classList.contains('character-name-input')) return;
-
-      const card = target.closest('[data-character-id]');
-      if (!card) return;
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-        saveBtn?.click();
-      } else if (e.key === 'Escape') {
-        const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-        cancelBtn?.click();
-      }
-    });
+    cardManagers.set(container, manager);
+    manager.setupHandlers();
   }
 
   // Load local characters for guest users
@@ -544,91 +466,14 @@ const t = (key: string): string => {
 
   // Event delegation for local character cards
   function setupLocalCharacterHandlers(container: Element) {
-    container.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const card = target.closest('[data-local-character]');
-      if (!card) return;
+    if (cardManagers.has(container)) return;
 
-      const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
-      const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
-      const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
-      const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-      const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-      const playLink = card.querySelector('.character-play-link') as HTMLElement;
-
-      if (!nameDisplay || !nameInput || !editBtn || !saveBtn || !cancelBtn) return;
-
-      const storyId = card.getAttribute('data-story-id');
-
-      // Handle Edit button click
-      if (target.closest('.character-edit-btn')) {
-        const originalName = nameDisplay.textContent || '';
-        card.setAttribute('data-original-name', originalName);
-
-        nameDisplay.classList.add('hidden');
-        nameInput.classList.remove('hidden');
-        editBtn.classList.add('hidden');
-        saveBtn.classList.remove('hidden');
-        cancelBtn.classList.remove('hidden');
-        playLink?.classList.add('hidden');
-
-        nameInput.focus();
-        nameInput.select();
-      }
-
-      // Handle Save button click
-      if (target.closest('.character-save-btn')) {
-        const newName = nameInput.value.trim();
-        if (!newName) {
-          alert('Character name cannot be empty');
-          return;
-        }
-
-        if (storyId) {
-          localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
-          nameDisplay.textContent = newName;
-          const avatar = card.querySelector('.character-avatar');
-          if (avatar) avatar.textContent = newName.charAt(0).toUpperCase();
-        }
-
-        nameDisplay.classList.remove('hidden');
-        nameInput.classList.add('hidden');
-        editBtn.classList.remove('hidden');
-        saveBtn.classList.add('hidden');
-        cancelBtn.classList.add('hidden');
-        playLink?.classList.remove('hidden');
-      }
-
-      // Handle Cancel button click
-      if (target.closest('.character-cancel-btn')) {
-        const originalName = card.getAttribute('data-original-name') || '';
-        nameInput.value = originalName;
-        nameDisplay.classList.remove('hidden');
-        nameInput.classList.add('hidden');
-        editBtn.classList.remove('hidden');
-        saveBtn.classList.add('hidden');
-        cancelBtn.classList.add('hidden');
-        playLink?.classList.remove('hidden');
-      }
+    const manager = new CharacterCardManager(container, async (storyId: string, newName: string) => {
+      localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
     });
 
-    // Handle keyboard events for inputs
-    container.addEventListener('keydown', (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.classList.contains('character-name-input')) return;
-
-      const card = target.closest('[data-local-character]');
-      if (!card) return;
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-        saveBtn?.click();
-      } else if (e.key === 'Escape') {
-        const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-        cancelBtn?.click();
-      }
-    });
+    cardManagers.set(container, manager);
+    manager.setupHandlers();
   }
 
   // Initialize on DOM ready
@@ -636,6 +481,11 @@ const t = (key: string): string => {
     const characterList = document.querySelector('#character-list');
     if (characterList) {
       setupCharacterCardHandlers(characterList);
+    }
+
+    const localCharactersContainer = document.getElementById('local-characters');
+    if (localCharactersContainer) {
+      setupLocalCharacterHandlers(localCharactersContainer);
     }
 
     // Try to load authenticated characters first

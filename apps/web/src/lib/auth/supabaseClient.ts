@@ -1,7 +1,14 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient, type CookieOptions } from '@supabase/ssr';
 
 let supabaseClient: SupabaseClient | null = null;
+
+export interface SupabaseCookieContext {
+    getAll: () => { name: string; value: string }[];
+    set: (name: string, value: string, options?: CookieOptions) => void;
+    delete?: (name: string, options?: CookieOptions) => void;
+    remove?: (name: string, options?: CookieOptions) => void;
+}
 
 function getSupabaseEnv() {
     const metaEnv: Record<string, string | undefined> | undefined =
@@ -38,8 +45,44 @@ function getSupabaseEnv() {
 }
 
 export function getSupabaseClient(): SupabaseClient {
+    return getSupabaseClientWithContext();
+}
+
+export function getSupabaseClientWithContext(
+    cookieContext?: SupabaseCookieContext
+): SupabaseClient {
+    const { url, anonKey } = getSupabaseEnv();
+
+    // SSR/framework context: use provided cookie APIs (never singleton)
+    if (cookieContext) {
+        const remove = cookieContext.remove ?? cookieContext.delete;
+        if (!remove) {
+            throw new Error(
+                'SupabaseCookieContext must provide either remove() or delete()'
+            );
+        }
+
+        return createBrowserClient(url, anonKey, {
+            isSingleton: false,
+            cookies: {
+                getAll() {
+                    return cookieContext.getAll();
+                },
+                setAll(cookiesToSet) {
+                    for (const { name, value, options } of cookiesToSet) {
+                        if (!value) {
+                            remove(name, options);
+                        } else {
+                            cookieContext.set(name, value, options);
+                        }
+                    }
+                },
+            },
+        });
+    }
+
+    // Default behavior
     if (!supabaseClient) {
-        const { url, anonKey } = getSupabaseEnv();
         if (typeof window !== 'undefined') {
             // Browser: store session in cookies so SSR can authenticate requests.
             supabaseClient = createBrowserClient(url, anonKey);

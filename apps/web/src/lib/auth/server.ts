@@ -1,6 +1,7 @@
 import type { User } from '../drizzle/schema';
 import { UserRepository } from '../drizzle/repositories';
 import { getSupabaseAuthClient } from '../auth';
+import { randomUUID } from 'crypto';
 
 export interface AuthContext {
     supabaseUserId: string;
@@ -52,21 +53,76 @@ export async function requireSupabaseUser(
     }
 
     const repository = new UserRepository();
-    const appUser = await repository.findOrCreateBySupabaseUserId(
-        supabaseUserId,
-        {
-            email,
-            name:
-                (
-                    supabaseUser.user_metadata as Record<string, unknown> | null
-                )?.full_name?.toString() ?? null,
-            username: null,
-            image:
-                (
-                    supabaseUser.user_metadata as Record<string, unknown> | null
-                )?.avatar_url?.toString() ?? null,
+    let appUser: User;
+    try {
+        appUser = await repository.findOrCreateBySupabaseUserId(
+            supabaseUserId,
+            {
+                email,
+                name:
+                    (
+                        supabaseUser.user_metadata as Record<
+                            string,
+                            unknown
+                        > | null
+                    )?.full_name?.toString() ?? null,
+                username: null,
+                image:
+                    (
+                        supabaseUser.user_metadata as Record<
+                            string,
+                            unknown
+                        > | null
+                    )?.avatar_url?.toString() ?? null,
+            }
+        );
+    } catch (error) {
+        const correlationId = randomUUID();
+        const safeMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+        const errorCode = (error as { code?: string } | null)?.code;
+
+        console.error(
+            JSON.stringify({
+                level: 'error',
+                msg: 'Failed to find or create user from Supabase identity',
+                correlationId,
+                supabaseUserId,
+                email,
+                error: safeMessage,
+                code: errorCode,
+            })
+        );
+
+        const isEmailConflict =
+            safeMessage.includes(
+                'already linked to a different Supabase user'
+            ) || errorCode === '23505';
+
+        if (isEmailConflict) {
+            return new Response(
+                JSON.stringify({
+                    error: 'This email is already linked to another account.',
+                    correlationId,
+                }),
+                {
+                    status: 409,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
         }
-    );
+
+        return new Response(
+            JSON.stringify({
+                error: 'Unable to complete authentication.',
+                correlationId,
+            }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
 
     return {
         supabaseUserId,

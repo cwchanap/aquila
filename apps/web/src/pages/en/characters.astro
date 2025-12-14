@@ -199,8 +199,14 @@ const t = (key: string): string => {
   </div>
 </MainLayout>
 
-<script type="module" lang="ts">
+<script>
   import { authorizedFetch } from '../../lib/auth';
+
+  type CharacterSetup = {
+    id: string;
+    storyId: string;
+    characterName: string;
+  };
 
   const escapeHtml = (value: string): string =>
     value
@@ -255,7 +261,7 @@ const t = (key: string): string => {
         if (listContainer) {
           listContainer.innerHTML = characters
             .map(
-              (setup) => `
+              (setup: CharacterSetup) => `
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-character-id="${setup.id}" data-story-id="${setup.storyId}">
               <div class="flex items-center gap-4 mb-6">
                 <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
@@ -406,7 +412,7 @@ const t = (key: string): string => {
     });
 
     // Handle keyboard events for inputs
-    container.addEventListener('keydown', async (e) => {
+    container.addEventListener('keydown', (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (!target.classList.contains('character-name-input')) return;
 
@@ -607,7 +613,7 @@ const t = (key: string): string => {
     });
 
     // Handle keyboard events for inputs
-    container.addEventListener('keydown', (e) => {
+    container.addEventListener('keydown', (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (!target.classList.contains('character-name-input')) return;
 

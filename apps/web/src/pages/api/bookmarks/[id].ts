@@ -40,10 +40,13 @@ export const DELETE: APIRoute = async ({ params, request }) => {
         }
 
         if (bookmark.userId !== appUser.id) {
-            return new Response(JSON.stringify({ error: 'Forbidden' }), {
-                status: 403,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(
+                JSON.stringify({ error: 'Bookmark not found' }),
+                {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
         }
 
         const deleted = await repository.delete(id);

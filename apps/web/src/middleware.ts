@@ -39,7 +39,14 @@ function parseCookieHeader(header: string) {
     for (const pair of pairs) {
         const [name, ...rest] = pair.trim().split('=');
         if (!name) continue;
-        cookies.push({ name, value: decodeURIComponent(rest.join('=')) });
+        const rawValue = rest.join('=');
+        let value = rawValue || '';
+        try {
+            value = decodeURIComponent(rawValue);
+        } catch {
+            value = rawValue || '';
+        }
+        cookies.push({ name, value });
     }
 
     return cookies;

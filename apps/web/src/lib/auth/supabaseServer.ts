@@ -164,5 +164,9 @@ export async function requireAuthPage(
         return redirectResponse;
     }
 
+    for (const [name, value] of responseHeaders.entries()) {
+        astro.response.headers.append(name, value);
+    }
+
     return user;
 }

@@ -143,6 +143,22 @@
     "signOut": "登出",
     "forgotPassword": "忘記密碼？",
     "resetPassword": "重設密碼",
+    "resetPage": {
+      "title": "重設密碼",
+      "heading": "重設密碼",
+      "subtitle": "為您的帳戶設定新密碼。",
+      "newPasswordLabel": "新密碼",
+      "newPasswordPlaceholder": "輸入新密碼",
+      "confirmPasswordLabel": "確認密碼",
+      "confirmPasswordPlaceholder": "再次輸入新密碼",
+      "submitButton": "更新密碼",
+      "invalidOrMissingLink": "重設連結無效或缺少資訊，請重新申請重設郵件。",
+      "startSessionFailed": "無法啟動重設流程。",
+      "sessionNotReady": "重設流程尚未就緒，請使用電子郵件中的連結。",
+      "passwordMismatch": "兩次輸入的密碼不一致。",
+      "updatePasswordFailed": "更新密碼失敗。",
+      "updatePasswordSuccess": "密碼已更新，您現在可以使用新密碼登入。"
+    },
     "genericError": "處理您的請求時發生錯誤。",
     "unauthorized": "您需要先登入才能繼續。",
     "sessionExpired": "登入狀態已過期，請重新登入。"

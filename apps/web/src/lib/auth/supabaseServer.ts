@@ -140,14 +140,21 @@ export async function getServerUser(
  */
 export async function requireAuthPage(
     astro: AstroGlobal,
-    loginPath = '/en/login'
+    loginPath?: string
 ): Promise<Response | User> {
     const responseHeaders = new Headers();
     const user = await getServerUser(astro.request, responseHeaders);
 
+    const resolvedLoginPath =
+        loginPath ?? `/${astro.currentLocale || 'en'}/login`;
+
     if (!user) {
         // Return redirect response
-        return astro.redirect(loginPath);
+        const redirectResponse = astro.redirect(resolvedLoginPath);
+        for (const [name, value] of responseHeaders.entries()) {
+            redirectResponse.headers.append(name, value);
+        }
+        return redirectResponse;
     }
 
     return user;

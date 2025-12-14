@@ -34,14 +34,22 @@ const t = (key: string): string => {
         // Handle auth gating and language preference persistence
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const user = await getCurrentUser();
-                if (!user) {
-                    window.location.href = `/${locale}/login`;
-                    return;
-                }
-
                 // Check for saved language preference
                 const savedLanguage = localStorage.getItem('aquila:language');
+                const preferredLanguage =
+                    savedLanguage && savedLanguage !== locale
+                        ? savedLanguage
+                        : null;
+
+                const user = await getCurrentUser();
+                if (!user) {
+                    const redirectLocale =
+                        preferredLanguage === 'en' || preferredLanguage === 'zh'
+                            ? preferredLanguage
+                            : locale;
+                    window.location.href = `/${redirectLocale}/login`;
+                    return;
+                }
 
                 // Check if we're on the root path
                 if (window.location.pathname === '/') {

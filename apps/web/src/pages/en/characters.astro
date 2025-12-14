@@ -199,8 +199,16 @@ const t = (key: string): string => {
   </div>
 </MainLayout>
 
-<script type="module">
+<script type="module" lang="ts">
   import { authorizedFetch } from '../../lib/auth';
+
+  const escapeHtml = (value: string): string =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
   async function loadAuthenticatedCharacters() {
     const userSection = document.querySelector('[data-authenticated="true"]');
@@ -262,7 +270,7 @@ const t = (key: string): string => {
                     maxlength="50"
                     style="font-family: 'Orbitron', monospace;"
                   />
-                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${setup.storyId.replace(
+                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${setup.storyId.replaceAll(
                     '_',
                     ' '
                   )}</p>
@@ -436,27 +444,35 @@ const t = (key: string): string => {
       });
 
       if (localChars.length > 0) {
-        localCharactersContainer.innerHTML = localChars.map(char => `
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-local-character="true" data-story-id="${char.storyId}">
+        localCharactersContainer.innerHTML = localChars
+          .map((char) => {
+            const safeCharacterName = escapeHtml(char.characterName);
+            const safeStoryId = escapeHtml(char.storyId);
+            const safeStoryIdDisplay = escapeHtml(char.storyId.replaceAll('_', ' '));
+            const safeStoryIdForHref = escapeHtml(encodeURIComponent(char.storyId));
+            const safeAvatarChar = escapeHtml(char.characterName.charAt(0).toUpperCase());
+
+            return `
+          <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-local-character="true" data-story-id="${safeStoryId}">
             <div class="flex items-center gap-4 mb-6">
               <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
-                ${char.characterName.charAt(0).toUpperCase()}
+                ${safeAvatarChar}
               </div>
               <div class="flex-1">
-                <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${char.characterName}</h3>
+                <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${safeCharacterName}</h3>
                 <input
                   type="text"
                   class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
-                  value="${char.characterName}"
+                  value="${safeCharacterName}"
                   maxlength="50"
                   style="font-family: 'Orbitron', monospace;"
                 />
-                <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${char.storyId.replace('_', ' ')}</p>
+                <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${safeStoryIdDisplay}</p>
               </div>
             </div>
             <div class="flex gap-3 flex-wrap">
               <a
-                href="/en/story/${char.storyId}"
+                href="/en/story/${safeStoryIdForHref}"
                 class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
                 style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
               >
@@ -485,7 +501,9 @@ const t = (key: string): string => {
               </button>
             </div>
           </div>
-        `).join('');
+        `;
+          })
+          .join('');
 
         // Setup event delegation for local characters
         setupLocalCharacterHandlers(localCharactersContainer);

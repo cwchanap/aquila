@@ -38,13 +38,14 @@ const t = (key: string): string => {
 	<script>
 		// Handle language preference persistence (auth is now checked server-side)
 		document.addEventListener('DOMContentLoaded', () => {
-			// Check if we're on the root path
-			if (window.location.pathname === '/') {
+			const path = window.location.pathname;
+			const isEnRoute = path === '/en' || path === '/en/' || path.startsWith('/en/');
+			if (isEnRoute) {
 				// Check for saved language preference
 				const savedLanguage = localStorage.getItem('aquila:language');
 
 				// If user has a Chinese preference and we're not already on Chinese, redirect
-				if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
+				if (savedLanguage === 'zh' && !path.startsWith('/zh')) {
 					window.location.href = '/zh';
 					return;
 				}

@@ -148,6 +148,16 @@ export class UserRepository {
 
         const racedEmail = await this.findByEmail(data.email);
         if (racedEmail) {
+            if (racedEmail.supabaseUserId) {
+                if (racedEmail.supabaseUserId === supabaseUserId) {
+                    return racedEmail;
+                }
+
+                throw new Error(
+                    `Email ${data.email} is already linked to a different Supabase user`
+                );
+            }
+
             if (!racedEmail.supabaseUserId) {
                 const [updated] = await this.db
                     .update(users)

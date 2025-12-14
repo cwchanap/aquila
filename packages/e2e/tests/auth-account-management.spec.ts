@@ -81,8 +81,6 @@ test.describe('Supabase Auth - account management (US3)', () => {
         // NOTE: We intentionally stop here. The password reset REQUEST was successful.
         // Testing the full recovery flow (clicking email link, setting new password)
         // would require email interception infrastructure not currently in place.
-        // The login below only verifies the user can still log in with the ORIGINAL
-        // password—it does NOT validate the reset functionality itself.
     });
 
     test('user can still log in with original password after reset request', async ({
@@ -107,6 +105,8 @@ test.describe('Supabase Auth - account management (US3)', () => {
         await page.waitForLoadState('networkidle');
         await expect(page).toHaveURL(/\/(en|zh)\/login/);
 
+        // NOTE: This login only verifies the user can still log in with the ORIGINAL
+        // password—it does NOT validate the reset functionality itself.
         // Log back in with original credentials
         await page.fill('input[name="email"]', email);
         await page.fill('input[name="password"]', PASSWORD);

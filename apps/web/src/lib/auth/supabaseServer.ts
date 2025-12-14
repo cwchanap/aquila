@@ -55,9 +55,16 @@ export function createSupabaseServerClient(
                     for (const pair of pairs) {
                         const [name, ...rest] = pair.trim().split('=');
                         if (name) {
+                            const rawValue = rest.join('=');
+                            let value = rawValue;
+                            try {
+                                value = decodeURIComponent(rawValue);
+                            } catch {
+                                value = rawValue;
+                            }
                             cookies.push({
                                 name,
-                                value: decodeURIComponent(rest.join('=')),
+                                value,
                             });
                         }
                     }

@@ -21,6 +21,12 @@ const t = (key: string): string => {
     return typeof value === 'string' ? value : key;
 };
 
+const errorStrings = {
+    connectionTitle: t('common.errors.connectionTitle'),
+    connectionMessage: t('common.errors.connectionMessage'),
+    retry: t('common.errors.retry'),
+};
+
 // Full Astro Component Syntax:
 // https://docs.astro.build/basics/astro-components/
 ---
@@ -28,7 +34,7 @@ const t = (key: string): string => {
 <MainLayout title={t('menu.title')}>
     <MainMenu client:load locale={Astro.currentLocale ?? 'en'} />
 
-    <script define:vars={{ locale }}>
+    <script define:vars={{ locale, errorStrings }}>
         import { getCurrentUser } from '@/lib/auth';
 
         // Handle auth gating and language preference persistence
@@ -79,13 +85,13 @@ const t = (key: string): string => {
 
                 const title = document.createElement('h2');
                 title.className = 'text-xl font-bold mb-2';
-                title.textContent = 'Connection Error';
+                title.textContent = errorStrings.connectionTitle;
 
                 const message = document.createElement('p');
                 message.className = 'mb-4 text-red-100';
-                message.textContent =
-                    'Unable to load your profile. The server might be experiencing issues.';
+                message.textContent = errorStrings.connectionMessage;
 
+                const shouldShowDetails = import.meta.env.DEV;
                 const details = document.createElement('pre');
                 details.className =
                     'text-sm font-mono bg-black/50 p-2 rounded mb-4 overflow-x-auto whitespace-pre-wrap';
@@ -96,14 +102,16 @@ const t = (key: string): string => {
                 retryButton.type = 'button';
                 retryButton.className =
                     'w-full py-2 bg-red-600 hover:bg-red-500 rounded font-medium transition-colors';
-                retryButton.textContent = 'Retry';
+                retryButton.textContent = errorStrings.retry;
                 retryButton.addEventListener('click', () => {
                     window.location.reload();
                 });
 
                 modalDiv.appendChild(title);
                 modalDiv.appendChild(message);
-                modalDiv.appendChild(details);
+                if (shouldShowDetails) {
+                    modalDiv.appendChild(details);
+                }
                 modalDiv.appendChild(retryButton);
                 errorDiv.appendChild(modalDiv);
                 container.appendChild(errorDiv);

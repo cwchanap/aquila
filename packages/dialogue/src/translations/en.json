@@ -41,7 +41,12 @@
     "goodbye": "Goodbye",
     "login": "Login",
     "back": "Back",
-    "backToHome": "← Back to Home"
+    "backToHome": "← Back to Home",
+    "errors": {
+      "connectionTitle": "Connection Error",
+      "connectionMessage": "Unable to load your profile. The server might be experiencing issues.",
+      "retry": "Retry"
+    }
   },
   "setup": {
     "title": "Setup Character",

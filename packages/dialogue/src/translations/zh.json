@@ -41,7 +41,12 @@
     "goodbye": "再见",
     "login": "登入",
     "back": "返回",
-    "backToHome": "← 返回主頁"
+    "backToHome": "← 返回主頁",
+    "errors": {
+      "connectionTitle": "連線錯誤",
+      "connectionMessage": "無法載入您的個人資料，伺服器可能正在發生問題。",
+      "retry": "重試"
+    }
   },
   "setup": {
     "title": "設定角色",

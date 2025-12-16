@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, devices } from '@playwright/test';
+import { MainMenuPage, StoriesPage, TestHelpers } from './utils';
 
 test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
     // We assume these endpoints exist and should be protected.
@@ -41,4 +42,34 @@ test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
 
         expect([401, 403]).toContain(response.status());
     });
+
+    const mobileDevices = ['Pixel 5', 'iPhone 12'] as const;
+
+    for (const deviceName of mobileDevices) {
+        test.describe(`Unauthenticated UI gating - ${deviceName}`, () => {
+            test.use({ ...devices[deviceName] });
+
+            test('Unauthenticated user is redirected to login from main menu', async ({
+                page,
+            }) => {
+                const mainMenu = new MainMenuPage(page);
+                const helpers = new TestHelpers(page);
+
+                await mainMenu.goto();
+                await helpers.waitForFullLoad();
+                await expect(page).toHaveURL(/\/(en|zh)\/login/);
+            });
+
+            test('Unauthenticated user is redirected to login from stories', async ({
+                page,
+            }) => {
+                const stories = new StoriesPage(page);
+                const helpers = new TestHelpers(page);
+
+                await stories.goto();
+                await helpers.waitForFullLoad();
+                await expect(page).toHaveURL(/\/(en|zh)\/login/);
+            });
+        });
+    }
 });

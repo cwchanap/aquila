@@ -56,7 +56,7 @@ export function createSupabaseServerClient(
                         const [name, ...rest] = pair.trim().split('=');
                         if (name) {
                             const rawValue = rest.join('=');
-                            let value = rawValue;
+                            let value: string;
                             try {
                                 value = decodeURIComponent(rawValue);
                             } catch {

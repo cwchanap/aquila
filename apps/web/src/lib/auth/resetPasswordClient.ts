@@ -16,7 +16,7 @@ type ResetPasswordClientOptions = {
 export function initializeResetPasswordClient({
     resetStrings,
 }: ResetPasswordClientOptions) {
-    document.addEventListener('DOMContentLoaded', async () => {
+    const initialize = async () => {
         const form = document.getElementById('reset-form');
         const errorEl = document.getElementById('reset-error');
         const successEl = document.getElementById('reset-success');
@@ -35,6 +35,7 @@ export function initializeResetPasswordClient({
 
         const supabase = getSupabaseAuthClient();
         let sessionReady = false;
+        let isSubmitting = false;
 
         submitButtonElement.disabled = true;
 
@@ -60,11 +61,17 @@ export function initializeResetPasswordClient({
             sessionReady = false;
             submitButtonElement.disabled = true;
 
-            const hashParams = new URLSearchParams(
+            const hashParams = new UwLSearchParams(
                 window.location.hash.replace('#', '')
             );
             const access_token = hashParams.get('access_token');
             const refresh_token = hashParams.get('refresh_token');
+
+            if (!access_token || !refresh_token) {
+                showError(resetStrings.invalidOrMissingLink);
+                submitButtonElement.disabled = true;
+                return;
+            }
 
             try {
                 history.replaceState(
@@ -74,12 +81,6 @@ export function initializeResetPasswordClient({
                 );
             } catch {
                 void 0;
-            }
-
-            if (!access_token || !refresh_token) {
-                showError(resetStrings.invalidOrMissingLink);
-                submitButtonElement.disabled = true;
-                return;
             }
 
             try {
@@ -122,27 +123,35 @@ export function initializeResetPasswordClient({
 
         resetForm.addEventListener('submit', async e => {
             e.preventDefault();
+
+            if (isSubmitting) {
+                return;
+            }
+
+            isSubmitting = true;
+            submitButtonElement.disabled = true;
+            submitButtonElement.setAttribute('aria-disabled', 'true');
+
             hideError();
             hideSuccess();
-
-            if (!sessionReady) {
-                showError(resetStrings.sessionNotReady);
-                return;
-            }
-
-            const newPassword = newPasswordInputElement
-                ? newPasswordInputElement.value
-                : '';
-            const confirmPassword = confirmPasswordInputElement
-                ? confirmPasswordInputElement.value
-                : '';
-
-            if (!newPassword || newPassword !== confirmPassword) {
-                showError(resetStrings.passwordMismatch);
-                return;
-            }
-
             try {
+                if (!sessionReady) {
+                    showError(resetStrings.sessionNotReady);
+                    return;
+                }
+
+                const newPassword = newPasswordInputElement
+                    ? newPasswordInputElement.value
+                    : '';
+                const confirmPassword = confirmPasswordInputElement
+                    ? confirmPasswordInputElement.value
+                    : '';
+
+                if (!newPassword || newPassword !== confirmPassword) {
+                    showError(resetStrings.passwordMismatch);
+                    return;
+                }
+
                 const { error } = await supabase.auth.updateUser({
                     password: newPassword,
                 });
@@ -161,7 +170,19 @@ export function initializeResetPasswordClient({
             } catch (err) {
                 console.error('Update password error:', err);
                 showError(resetStrings.updatePasswordFailed);
+            } finally {
+                isSubmitting = false;
+                submitButtonElement.disabled = !sessionReady;
+                submitButtonElement.removeAttribute('aria-disabled');
             }
         });
-    });
+    };
+
+    if (document.readyState !== 'loading') {
+        void initialize();
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            void initialize();
+        });
+    }
 }

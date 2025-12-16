@@ -262,63 +262,116 @@ const t = (key: string): string => {
         listContainer?.classList.remove('hidden');
         noCharactersSection?.classList.add('hidden');
         if (listContainer) {
-          listContainer.innerHTML = characters
-            .map(
-              (setup: CharacterSetup) => `
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-character-id="${setup.id}" data-story-id="${setup.storyId}">
-              <div class="flex items-center gap-4 mb-6">
-                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
-                  ${setup.characterName.charAt(0).toUpperCase()}
-                </div>
-                <div class="flex-1">
-                  <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${setup.characterName}</h3>
-                  <input
-                    type="text"
-                    class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
-                    value="${setup.characterName}"
-                    maxlength="50"
-                    style="font-family: 'Orbitron', monospace;"
-                  />
-                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${setup.storyId.replaceAll(
-                    '_',
-                    ' '
-                  )}</p>
-                </div>
-              </div>
-              <div class="flex gap-3 flex-wrap">
-                <a
-                  href="/en/story/${setup.storyId}"
-                  class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Play Story
-                </a>
-                <button
-                  type="button"
-                  class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
-                  style="font-family: 'Orbitron', monospace;"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          `
-          )
-          .join('');
+          listContainer.replaceChildren();
+
+          for (const setup of characters as CharacterSetup[]) {
+            const card = document.createElement('div');
+            card.className =
+              'bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]';
+            card.setAttribute('data-character-id', setup.id);
+            card.setAttribute('data-story-id', setup.storyId);
+
+            const header = document.createElement('div');
+            header.className = 'flex items-center gap-4 mb-6';
+
+            const avatar = document.createElement('div');
+            avatar.className =
+              'w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30';
+            avatar.textContent = setup.characterName
+              .charAt(0)
+              .toUpperCase();
+
+            const content = document.createElement('div');
+            content.className = 'flex-1';
+
+            const nameDisplay = document.createElement('h3');
+            nameDisplay.className =
+              'text-2xl font-bold text-slate-800 character-name-display tracking-wide';
+            nameDisplay.setAttribute(
+              'style',
+              "font-family: 'Orbitron', monospace;"
+            );
+            nameDisplay.textContent = setup.characterName;
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.className =
+              'character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg';
+            nameInput.value = setup.characterName;
+            nameInput.maxLength = 50;
+            nameInput.setAttribute(
+              'style',
+              "font-family: 'Orbitron', monospace;"
+            );
+
+            const storyLabel = document.createElement('p');
+            storyLabel.className =
+              'text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1';
+            storyLabel.setAttribute(
+              'style',
+              "font-family: 'Exo 2', sans-serif;"
+            );
+            storyLabel.textContent = setup.storyId.replaceAll('_', ' ');
+
+            content.appendChild(nameDisplay);
+            content.appendChild(nameInput);
+            content.appendChild(storyLabel);
+
+            header.appendChild(avatar);
+            header.appendChild(content);
+
+            const actions = document.createElement('div');
+            actions.className = 'flex gap-3 flex-wrap';
+
+            const playLink = document.createElement('a');
+            playLink.className =
+              'character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50';
+            playLink.setAttribute(
+              'style',
+              "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+            );
+            playLink.textContent = 'Play Story';
+            playLink.href = `/en/story/${encodeURIComponent(setup.storyId)}`;
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className =
+              'character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60';
+            editBtn.setAttribute(
+              'style',
+              "font-family: 'Orbitron', monospace;"
+            );
+            editBtn.textContent = 'Edit';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className =
+              'character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden';
+            saveBtn.setAttribute(
+              'style',
+              "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+            );
+            saveBtn.textContent = 'Save';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className =
+              'character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden';
+            cancelBtn.setAttribute(
+              'style',
+              "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+            );
+            cancelBtn.textContent = 'Cancel';
+
+            actions.appendChild(playLink);
+            actions.appendChild(editBtn);
+            actions.appendChild(saveBtn);
+            actions.appendChild(cancelBtn);
+
+            card.appendChild(header);
+            card.appendChild(actions);
+            listContainer.appendChild(card);
+          }
         }
       }
 

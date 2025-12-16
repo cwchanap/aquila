@@ -25,11 +25,32 @@ function createFetchWithTimeout(timeoutMs: number): typeof fetch {
 }
 
 function getEnv() {
-    const url = process.env.SUPABASE_URL;
-    const anonKey = process.env.SUPABASE_ANON_KEY;
+    const metaEnv: Record<string, string | undefined> | undefined =
+        typeof import.meta !== 'undefined'
+            ? (
+                  import.meta as unknown as {
+                      env?: Record<string, string | undefined>;
+                  }
+              ).env
+            : undefined;
+
+    const nodeEnv: Record<string, string | undefined> | undefined =
+        typeof process !== 'undefined' ? process.env : undefined;
+
+    const url =
+        metaEnv?.PUBLIC_SUPABASE_URL ??
+        metaEnv?.SUPABASE_URL ??
+        nodeEnv?.SUPABASE_URL ??
+        nodeEnv?.PUBLIC_SUPABASE_URL;
+
+    const anonKey =
+        metaEnv?.PUBLIC_SUPABASE_ANON_KEY ??
+        metaEnv?.SUPABASE_ANON_KEY ??
+        nodeEnv?.SUPABASE_ANON_KEY ??
+        nodeEnv?.PUBLIC_SUPABASE_ANON_KEY;
     if (!url || !anonKey) {
         throw new Error(
-            'SUPABASE_URL and SUPABASE_ANON_KEY must be set for logout.'
+            'SUPABASE_URL/SUPABASE_ANON_KEY (or PUBLIC_SUPABASE_URL/PUBLIC_SUPABASE_ANON_KEY) must be set for logout.'
         );
     }
     return { url, anonKey };

@@ -40,7 +40,7 @@ function parseCookieHeader(header: string) {
         const [name, ...rest] = pair.trim().split('=');
         if (!name) continue;
         const rawValue = rest.join('=');
-        let value = rawValue || '';
+        let value: string;
         try {
             value = decodeURIComponent(rawValue);
         } catch {

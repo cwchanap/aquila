@@ -62,11 +62,8 @@ test.describe('Auth Error States', () => {
                 ).toBeVisible();
 
                 const details = page.locator('pre');
-                if (await details.isVisible()) {
-                    await expect(details).toContainText(
-                        /Auth server error: 500/
-                    );
-                }
+                await expect(details).toBeVisible();
+                await expect(details).toContainText(/Auth server error: 500/);
             });
         });
     }

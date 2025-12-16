@@ -178,7 +178,7 @@ const isAuthed = 'unknown';
   </div>
 </MainLayout>
 
-<script>
+<script type="module">
   import { authorizedFetch } from '../../../lib/auth';
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -187,7 +187,7 @@ const isAuthed = 'unknown';
     const urlParams = new URLSearchParams(window.location.search);
     const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
     const initialAuthed = root?.getAttribute('data-authed');
-    let isAuthed: boolean = initialAuthed === 'true';
+    let isAuthed = initialAuthed === 'true';
 
     const authCheck = (async () => {
       // Refresh auth state using Supabase session via /api/me
@@ -210,8 +210,8 @@ const isAuthed = 'unknown';
         const { characterName } = JSON.parse(local);
         if (characterName && typeof characterName === 'string') {
           const nameInput = document.getElementById('character-name');
-          if (nameInput && !(nameInput as HTMLInputElement).value) {
-            (nameInput as HTMLInputElement).value = characterName;
+          if (nameInput instanceof HTMLInputElement && !nameInput.value) {
+            nameInput.value = characterName;
           }
         }
       }

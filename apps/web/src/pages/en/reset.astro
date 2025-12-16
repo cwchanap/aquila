@@ -8,7 +8,7 @@ const resetStrings = translations.auth.resetPage;
 ---
 
 <MainLayout title={resetStrings.title}>
-  <div class="min-h-screen flex items-center justify-center bg-slate-100">
+  <div id="reset-root" data-reset={JSON.stringify(resetStrings)} class="min-h-screen flex items-center justify-center bg-slate-100">
     <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
       <h1 class="text-2xl font-bold text-slate-800 mb-4" id="reset-heading">
         {resetStrings.heading}
@@ -57,8 +57,19 @@ const resetStrings = translations.auth.resetPage;
     </div>
   </div>
 
-  <script define:vars={{ resetStrings }}>
+  <script type="module">
     import { initializeResetPasswordClient } from '@/lib/auth/resetPasswordClient';
+
+    const root = document.getElementById('reset-root');
+    const resetData = root?.getAttribute('data-reset');
+    if (!resetData) return;
+
+    let resetStrings;
+    try {
+      resetStrings = JSON.parse(resetData);
+    } catch {
+      return;
+    }
 
     initializeResetPasswordClient({ resetStrings });
   </script>

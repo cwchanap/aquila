@@ -1,7 +1,7 @@
 import type { User } from '../drizzle/schema';
 import { UserRepository } from '../drizzle/repositories';
 import { getSupabaseAuthClient } from '../auth';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 
 export interface AuthContext {
     supabaseUserId: string;
@@ -81,6 +81,9 @@ export async function requireSupabaseUser(
         const safeMessage =
             error instanceof Error ? error.message : 'Unknown error';
         const errorCode = (error as { code?: string } | null)?.code;
+        const emailHash = createHash('sha256')
+            .update(email.trim().toLowerCase())
+            .digest('hex');
 
         console.error(
             JSON.stringify({
@@ -88,7 +91,7 @@ export async function requireSupabaseUser(
                 msg: 'Failed to find or create user from Supabase identity',
                 correlationId,
                 supabaseUserId,
-                email,
+                emailHash,
                 error: safeMessage,
                 code: errorCode,
             })

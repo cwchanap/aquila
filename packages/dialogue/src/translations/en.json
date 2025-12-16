@@ -157,7 +157,7 @@
       "confirmPasswordLabel": "Confirm Password",
       "confirmPasswordPlaceholder": "Confirm new password",
       "submitButton": "Update Password",
-      "invalidOrMissingLink": "Reset link is invalid or missing. Please request a new email.",
+      "invalidOrMissingLink": "Reset link is invalid or missing. Please request a new password reset email.",
       "startSessionFailed": "Unable to start reset session.",
       "sessionNotReady": "Reset session not ready. Please use the link from your email.",
       "passwordMismatch": "Passwords do not match.",

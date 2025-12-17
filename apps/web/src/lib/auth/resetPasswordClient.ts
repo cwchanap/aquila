@@ -61,7 +61,7 @@ export function initializeResetPasswordClient({
             sessionReady = false;
             submitButtonElement.disabled = true;
 
-            const hashParams = new UwLSearchParams(
+            const hashParams = new URLSearchParams(
                 window.location.hash.replace('#', '')
             );
             const access_token = hashParams.get('access_token');

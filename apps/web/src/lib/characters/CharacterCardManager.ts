@@ -123,7 +123,7 @@ export class CharacterCardManager {
             const saveButton = saveBtn as HTMLButtonElement;
             saveBtn.setAttribute('aria-disabled', 'true');
             saveBtn.classList.add('pointer-events-none');
-            if ('disabled' in saveButton) saveButton.disabled = true;
+            saveButton.disabled = true;
 
             try {
                 await this.onSave(storyId, newName);
@@ -148,7 +148,7 @@ export class CharacterCardManager {
                 card.removeAttribute('data-is-saving');
                 saveBtn.removeAttribute('aria-disabled');
                 saveBtn.classList.remove('pointer-events-none');
-                if ('disabled' in saveButton) saveButton.disabled = false;
+                saveButton.disabled = false;
             }
 
             return;

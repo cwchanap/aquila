@@ -137,7 +137,7 @@
           style="font-family: 'Exo 2', sans-serif;"
         >
           <div
-            class="w-8 h-8 bg-linear-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg"
+            class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg"
           >
             {user.name?.charAt(0).toUpperCase() ||
               user.email?.charAt(0).toUpperCase() ||

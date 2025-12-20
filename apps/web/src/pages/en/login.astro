@@ -227,8 +227,18 @@ import MainLayout from '../../layouts/main.astro';
 					const email = formData.get('email')?.toString() ?? '';
 					const password = formData.get('password')?.toString() ?? '';
 				
-					if (!email || !password) {
-						showError('Invalid credentials');
+					if (!email && !password) {
+						showError('Please enter your email and password.');
+						return;
+					}
+
+					if (!email) {
+						showError('Please enter your email.');
+						return;
+					}
+
+					if (!password) {
+						showError('Please enter your password.');
 						return;
 					}
 				

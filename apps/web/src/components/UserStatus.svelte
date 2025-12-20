@@ -103,24 +103,36 @@
   const handleLogout = async (e: Event) => {
     e.preventDefault();
 
+    const client = getSupabaseAuthClient();
+
     try {
       // Call server-side logout first while we still have a valid token
       await authorizedFetch('/api/auth/logout', { method: 'POST' });
-
-      const client = getSupabaseAuthClient();
-      await client.auth.signOut();
     } catch (error) {
       if (import.meta.env.DEV) {
         console.log(
-          'Supabase signOut error:',
+          'Server logout error:',
           error instanceof Error ? error.message : 'Unknown error'
         );
       }
     } finally {
-      user = null;
-      const locale =
-        globalThis.document.documentElement.lang || currentLocale || 'en';
-      globalThis.location.href = `/${locale}/login`;
+      try {
+        await client.auth.signOut();
+      } catch (signOutError) {
+        if (import.meta.env.DEV) {
+          console.log(
+            'Supabase signOut error:',
+            signOutError instanceof Error
+              ? signOutError.message
+              : 'Unknown error'
+          );
+        }
+      } finally {
+        user = null;
+        const locale =
+          globalThis.document.documentElement.lang || currentLocale || 'en';
+        globalThis.location.href = `/${locale}/login`;
+      }
     }
   };
 </script>

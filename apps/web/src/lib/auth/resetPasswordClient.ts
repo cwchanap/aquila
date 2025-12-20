@@ -4,6 +4,7 @@ type ResetPageStrings = {
     invalidOrMissingLink: string;
     startSessionFailed: string;
     sessionNotReady: string;
+    passwordRequired: string;
     passwordMismatch: string;
     updatePasswordFailed: string;
     updatePasswordSuccess: string;
@@ -147,7 +148,12 @@ export function initializeResetPasswordClient({
                     ? confirmPasswordInputElement.value
                     : '';
 
-                if (!newPassword || newPassword !== confirmPassword) {
+                if (!newPassword || !confirmPassword) {
+                    showError(resetStrings.passwordRequired);
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
                     showError(resetStrings.passwordMismatch);
                     return;
                 }

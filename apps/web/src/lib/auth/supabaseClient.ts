@@ -70,7 +70,7 @@ export function getSupabaseClientWithContext(
                 },
                 setAll(cookiesToSet) {
                     for (const { name, value, options } of cookiesToSet) {
-                        if (!value) {
+                        if (value === null || value === undefined) {
                             remove(name, options);
                         } else {
                             cookieContext.set(name, value, options);

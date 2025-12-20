@@ -47,7 +47,12 @@ test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
 
     for (const deviceName of mobileDevices) {
         test.describe(`Unauthenticated UI gating - ${deviceName}`, () => {
-            test.use({ ...devices[deviceName] });
+            const device = {
+                ...devices[deviceName],
+            } as Record<string, unknown>;
+            delete (device as { defaultBrowserType?: unknown })
+                .defaultBrowserType;
+            test.use(device);
 
             test('Unauthenticated user is redirected to login from main menu', async ({
                 page,
@@ -55,7 +60,7 @@ test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
                 const mainMenu = new MainMenuPage(page);
                 const helpers = new TestHelpers(page);
 
-                await mainMenu.goto();
+                await mainMenu.goto('en');
                 await helpers.waitForFullLoad();
                 await expect(page).toHaveURL(/\/(en|zh)\/login/);
             });
@@ -66,7 +71,7 @@ test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
                 const stories = new StoriesPage(page);
                 const helpers = new TestHelpers(page);
 
-                await stories.goto();
+                await stories.goto('en');
                 await helpers.waitForFullLoad();
                 await expect(page).toHaveURL(/\/(en|zh)\/login/);
             });

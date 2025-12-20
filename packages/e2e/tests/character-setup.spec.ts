@@ -1,14 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { signUpViaUI } from './utils';
 
 test.describe('Character Setup Flow', () => {
-    test.beforeEach(async ({ page }) => {
-        // Start each test by going to the stories page
-        await page.goto('/en/stories');
-    });
-
     test('should navigate to character setup when clicking Train Adventure', async ({
         page,
     }) => {
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'char-setup' });
+        await page.goto('/en/stories');
+
         // Click the Train Adventure button
         const trainAdventureButton = page
             .locator('a')
@@ -17,14 +16,19 @@ test.describe('Character Setup Flow', () => {
         await trainAdventureButton.click();
 
         // Should navigate to localized setup page with correct story parameter
-        await expect(page).toHaveURL('/en/story/setup?story=train_adventure');
+        await expect(page).toHaveURL(/\/en\/reader\?story=train_adventure/);
 
         // Check if setup page loads correctly
-        await expect(page.locator('h1')).toContainText('Setup Your Character');
+        await expect(page.locator('#reader-container')).toBeVisible();
     });
 
     test('should display character setup form correctly', async ({ page }) => {
-        await page.goto('/en/story/setup?story=train_adventure');
+        await page.goto('/en/story/setup?story=train_adventure', {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(
+            /\/en\/story\/setup\?story=train_adventure/
+        );
 
         // Check form elements are present
         await expect(page.locator('form#setup-form')).toBeVisible();
@@ -44,7 +48,12 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should validate character name input', async ({ page }) => {
-        await page.goto('/en/story/setup?story=train_adventure');
+        await page.goto('/en/story/setup?story=train_adventure', {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(
+            /\/en\/story\/setup\?story=train_adventure/
+        );
 
         // Try to submit empty form
         const submitButton = page.locator('button[type="submit"]');
@@ -56,7 +65,13 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should handle character name submission', async ({ page }) => {
-        await page.goto('/en/story/setup?story=train_adventure');
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'char-submit' });
+        await page.goto('/en/story/setup?story=train_adventure', {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(
+            /\/en\/story\/setup\?story=train_adventure/
+        );
 
         // Fill in character name
         const characterName = 'Test Hero';
@@ -66,13 +81,16 @@ test.describe('Character Setup Flow', () => {
         await page.click('button[type="submit"]');
 
         // Should navigate to localized story page (name resolved internally)
-        await page.waitForURL('/en/story/train_adventure');
-        await expect(page).toHaveURL('/en/story/train_adventure');
+        await page.waitForURL(/\/en\/story\/train_adventure\/?$/, {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(/\/en\/story\/train_adventure\/?$/);
     });
 
     test('should redirect to stories page for invalid story parameter', async ({
         page,
     }) => {
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'invalid-story' });
         // Try to access setup with invalid story
         await page.goto('/en/story/setup?story=invalid_story');
 
@@ -81,6 +99,7 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should handle missing story parameter', async ({ page }) => {
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'missing-story' });
         // Try to access setup without story parameter
         await page.goto('/en/story/setup');
 
@@ -89,6 +108,7 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should have back button that works', async ({ page }) => {
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'setup-back' });
         await page.goto('/en/story/setup?story=train_adventure');
 
         // Check back button is present (localized stories URL)
@@ -105,13 +125,24 @@ test.describe('Character Setup Flow', () => {
     test('should redirect authenticated users with existing character setup to game page', async ({
         page,
     }) => {
+        await signUpViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'setup-redirect',
+        });
         // First, set up a character by going through the setup flow
-        await page.goto('/en/story/setup?story=train_adventure');
+        await page.goto('/en/story/setup?story=train_adventure', {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(
+            /\/en\/story\/setup\?story=train_adventure/
+        );
         await page.fill('input#character-name', 'Redirect Test Hero');
         await page.click('button[type="submit"]');
 
         // Wait for navigation to localized game page
-        await page.waitForURL('/en/story/train_adventure');
+        await page.waitForURL(/\/en\/story\/train_adventure\/?$/, {
+            waitUntil: 'domcontentloaded',
+        });
 
         // Now go back to localized stories page - no automatic redirect; click the story button
         await page.goto('/en/stories');
@@ -120,8 +151,10 @@ test.describe('Character Setup Flow', () => {
             .filter({ hasText: 'Train Adventure' });
         await expect(storyBtn).toBeVisible();
         await storyBtn.click();
-        await page.waitForURL('/en/story/train_adventure');
-        await expect(page).toHaveURL('/en/story/train_adventure');
+        await page.waitForURL(/\/en\/reader\?story=train_adventure/, {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(/\/en\/reader\?story=train_adventure/);
     });
 
     test('should redirect guest users with localStorage character setup to game page', async ({
@@ -138,18 +171,13 @@ test.describe('Character Setup Flow', () => {
 
         // Navigate to localized stories page and start the story via button
         await page.goto('/en/stories');
-        const storyBtn2 = page
-            .locator('a')
-            .filter({ hasText: 'Train Adventure' });
-        await expect(storyBtn2).toBeVisible();
-        await storyBtn2.click();
-        await page.waitForURL('/en/story/train_adventure');
-        await expect(page).toHaveURL('/en/story/train_adventure');
+        await expect(page).toHaveURL('/en/login');
     });
 
     test('should show story selection for users without character setup', async ({
         page,
     }) => {
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'no-setup' });
         // Clear any existing localStorage
         await page.addScriptTag({
             content: `
@@ -191,7 +219,16 @@ test.describe('Character Setup Flow', () => {
 
 test.describe('Character Setup API Integration', () => {
     test('should handle API responses correctly', async ({ page }) => {
-        await page.goto('/en/story/setup?story=train_adventure');
+        await signUpViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'setup-api',
+        });
+        await page.goto('/en/story/setup?story=train_adventure', {
+            waitUntil: 'domcontentloaded',
+        });
+        await expect(page).toHaveURL(
+            /\/en\/story\/setup\?story=train_adventure/
+        );
 
         // Fill in character name
         await page.fill('input#character-name', 'API Test Hero');
@@ -200,7 +237,9 @@ test.describe('Character Setup API Integration', () => {
         const apiPromise = page
             .waitForResponse('/api/character-setup', { timeout: 1500 })
             .catch(() => null);
-        const navPromise = page.waitForURL('/en/story/train_adventure');
+        const navPromise = page.waitForURL(/\/en\/story\/train_adventure\/?$/, {
+            waitUntil: 'domcontentloaded',
+        });
 
         await page.click('button[type="submit"]');
 

@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { randomUUID } from 'crypto';
 
 /**
  * Common test utilities for the Aquila app
@@ -20,20 +21,24 @@ export class TestHelpers {
      * Check if the page has the expected gradient background
      */
     async expectGradientBackground() {
-        const mainDiv = this.page.locator('div.min-h-screen');
-        await expect(mainDiv).toHaveClass(/bg-gradient-to-br/);
-        await expect(mainDiv).toHaveClass(/from-blue-500/);
-        await expect(mainDiv).toHaveClass(/to-green-500/);
+        const background = this.page.locator(
+            'div.absolute.inset-0.from-sky-200.via-sky-300.to-blue-400'
+        );
+        await expect(background).toBeVisible();
+        await expect(background).toHaveClass(/from-sky-200/);
+        await expect(background).toHaveClass(/via-sky-300/);
+        await expect(background).toHaveClass(/to-blue-400/);
     }
 
     /**
      * Check if the glassmorphism container is present
      */
     async expectGlassmorphismContainer() {
-        const container = this.page.locator('div.bg-white\\/10');
+        const container = this.page
+            .locator('div.bg-white\\/90.backdrop-blur-md.rounded-3xl')
+            .first();
         await expect(container).toBeVisible();
-        await expect(container).toHaveClass(/backdrop-blur-sm/);
-        await expect(container).toHaveClass(/rounded-2xl/);
+        await expect(container).toHaveClass(/rounded-3xl/);
     }
 
     /**
@@ -127,8 +132,8 @@ export class MainMenuPage {
     }
 
     // Actions
-    async goto() {
-        await this.page.goto('/');
+    async goto(locale?: 'en' | 'zh') {
+        await this.page.goto(locale ? `/${locale}/` : '/');
     }
 
     async clickStartGame() {
@@ -158,12 +163,12 @@ export class StoriesPage {
         return this.page.locator('body h1').first();
     }
     get trainAdventureButton() {
-        return this.page.locator('a').filter({ hasText: 'Train Adventure' });
+        return this.page.locator('a[href*="/reader?story=train_adventure"]');
     }
 
     // Actions
-    async goto() {
-        await this.page.goto('/stories');
+    async goto(locale: 'en' | 'zh' = 'en') {
+        await this.page.goto(`/${locale}/stories`);
     }
 
     async selectTrainAdventure() {
@@ -172,7 +177,195 @@ export class StoriesPage {
 
     // Assertions
     async expectToBeVisible() {
-        await expect(this.heading).toContainText('Select Your Story');
+        await expect(this.heading).toContainText(
+            /Select Your Story|選擇您的故事/
+        );
         await expect(this.trainAdventureButton).toBeVisible();
     }
+}
+
+export const DEFAULT_TEST_PASSWORD = 'password123';
+
+type TestLocale = 'en' | 'zh';
+
+const sharedCredentialsByLocale = new Map<
+    TestLocale,
+    { email: string; password: string }
+>();
+
+async function assertServerAuthenticated(page: Page, locale: TestLocale) {
+    const storiesUrl = `/${locale}/stories`;
+    const response = await page.goto(storiesUrl, {
+        waitUntil: 'domcontentloaded',
+    });
+
+    await expect(page).toHaveURL(new RegExp(`/${locale}/stories/?$`));
+    expect(response?.ok()).toBeTruthy();
+
+    await expect
+        .poll(async () => {
+            const cookies = await page.context().cookies();
+            return cookies.some(
+                c => c.name.includes('sb-') && c.name.includes('auth-token')
+            );
+        })
+        .toBeTruthy();
+
+    const meResponse = await page.request.get('/api/me');
+    expect(meResponse.ok()).toBeTruthy();
+}
+
+export async function signInViaUI(
+    page: Page,
+    options: {
+        locale?: TestLocale;
+        email: string;
+        password: string;
+    }
+): Promise<void> {
+    const locale = options.locale ?? 'en';
+
+    await page.goto(`/${locale}/login`);
+    await page.fill('input[name="email"]', options.email);
+    await page.fill('input[name="password"]', options.password);
+    await page.click('button[type="submit"]');
+
+    const urlRegex = new RegExp(`/${locale}/?$`);
+
+    const outcome = await Promise.race([
+        page.waitForURL(urlRegex, { timeout: 15_000 }).then(() => 'redirect'),
+        page
+            .locator('#error-message:not(.hidden)')
+            .waitFor({ state: 'visible', timeout: 15_000 })
+            .then(() => 'error'),
+    ]);
+
+    if (outcome === 'error') {
+        const message = await page.locator('#error-message').innerText();
+        throw new Error(`Login failed: ${message}`);
+    }
+
+    await assertServerAuthenticated(page, locale);
+}
+
+export async function signUpViaUI(
+    page: Page,
+    options?: {
+        locale?: TestLocale;
+        emailPrefix?: string;
+        password?: string;
+        name?: string;
+        forceNew?: boolean;
+    }
+): Promise<{ email: string; password: string }> {
+    const locale = options?.locale ?? 'en';
+    const emailPrefix = options?.emailPrefix ?? 'e2e';
+    const password = options?.password ?? DEFAULT_TEST_PASSWORD;
+    const name = options?.name ?? 'E2E Test User';
+
+    const envEmail =
+        process.env.E2E_SHARED_EMAIL ?? process.env.SUPABASE_E2E_EMAIL;
+    const envPassword =
+        process.env.E2E_SHARED_PASSWORD ?? process.env.SUPABASE_E2E_PASSWORD;
+
+    if (envEmail && envPassword) {
+        await signInViaUI(page, {
+            locale,
+            email: envEmail,
+            password: envPassword,
+        });
+        sharedCredentialsByLocale.set(locale, {
+            email: envEmail,
+            password: envPassword,
+        });
+        return { email: envEmail, password: envPassword };
+    }
+
+    const existing = sharedCredentialsByLocale.get(locale);
+    if (existing && !options?.forceNew) {
+        await signInViaUI(page, {
+            locale,
+            email: existing.email,
+            password: existing.password,
+        });
+        return existing;
+    }
+
+    const stableEmail = `${emailPrefix}-shared-${locale}@example.com`;
+    const email = options?.forceNew
+        ? `${emailPrefix}-${randomUUID()}@example.com`
+        : stableEmail;
+
+    if (!options?.forceNew) {
+        try {
+            await signInViaUI(page, {
+                locale,
+                email,
+                password,
+            });
+            sharedCredentialsByLocale.set(locale, { email, password });
+            return { email, password };
+        } catch (err) {
+            void err;
+        }
+    }
+
+    await page.goto(`/${locale}/signup`);
+    await page.fill('input[name="email"]', email);
+    await page.fill('input[name="password"]', password);
+    await page.fill('input[name="name"]', name);
+    await page.click('button[type="submit"]');
+
+    const urlRegex = new RegExp(`/${locale}/?$`);
+
+    const outcome = await Promise.race([
+        page.waitForURL(urlRegex, { timeout: 15_000 }).then(() => 'redirect'),
+        page
+            .locator('#error-message:not(.hidden)')
+            .waitFor({ state: 'visible', timeout: 15_000 })
+            .then(() => 'error'),
+    ]);
+
+    if (outcome === 'error') {
+        const message = await page.locator('#error-message').innerText();
+
+        if (!options?.forceNew) {
+            const lowered = message.toLowerCase();
+            if (
+                lowered.includes('already') ||
+                lowered.includes('registered') ||
+                lowered.includes('exists') ||
+                lowered.includes('rate limit')
+            ) {
+                try {
+                    await signInViaUI(page, {
+                        locale,
+                        email,
+                        password,
+                    });
+                    sharedCredentialsByLocale.set(locale, { email, password });
+                    return { email, password };
+                } catch (err) {
+                    void err;
+                }
+            }
+        }
+
+        throw new Error(`Signup failed: ${message}`);
+    }
+
+    const url = page.url();
+    if (url.endsWith(`/${locale}/login`) || url.includes(`/${locale}/login?`)) {
+        await signInViaUI(page, { locale, email, password });
+    } else {
+        await expect(page).toHaveURL(urlRegex);
+    }
+
+    if (!options?.forceNew) {
+        sharedCredentialsByLocale.set(locale, { email, password });
+    }
+
+    await assertServerAuthenticated(page, locale);
+
+    return { email, password };
 }

@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { signUpViaUI } from './utils';
 
 test.describe('UserStatus Dropdown Functionality', () => {
     test('comprehensive dropdown functionality test', async ({ page }) => {
         console.log('Starting comprehensive dropdown functionality test...');
+
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'dropdown' });
 
         // Navigate to the main page
         await page.goto('/en/');
@@ -42,7 +45,43 @@ test.describe('UserStatus Dropdown Functionality', () => {
 
             // Test 3: Simulate logged-in state for dropdown testing
             await page.evaluate(() => {
-                const userStatus = document.querySelector('.user-status');
+                type ClassListLike = {
+                    contains: (token: string) => boolean;
+                    add: (...tokens: string[]) => void;
+                    remove: (...tokens: string[]) => void;
+                };
+
+                type ElementLike = {
+                    innerHTML: string;
+                    classList: ClassListLike;
+                    querySelector: (selector: string) => ElementLike | null;
+                    contains: (node: unknown) => boolean;
+                    addEventListener: (
+                        type: string,
+                        listener: (e: EventLike) => void
+                    ) => void;
+                };
+
+                type EventLike = {
+                    preventDefault?: () => void;
+                    stopPropagation?: () => void;
+                    target?: unknown;
+                };
+
+                type DocumentLike = {
+                    querySelector: (selector: string) => ElementLike | null;
+                    getElementById: (id: string) => ElementLike | null;
+                    addEventListener: (
+                        type: string,
+                        listener: (e: EventLike) => void
+                    ) => void;
+                };
+
+                const doc = (
+                    globalThis as unknown as { document?: DocumentLike }
+                ).document;
+
+                const userStatus = doc?.querySelector('.user-status');
                 if (userStatus) {
                     // Inject simulated logged-in dropdown for testing
                     userStatus.innerHTML = `
@@ -81,14 +120,13 @@ test.describe('UserStatus Dropdown Functionality', () => {
           `;
 
                     // Add dropdown functionality
-                    const menuButton =
-                        document.getElementById('user-menu-button');
-                    const dropdown = document.getElementById('user-dropdown');
+                    const menuButton = doc?.getElementById('user-menu-button');
+                    const dropdown = doc?.getElementById('user-dropdown');
 
-                    if (menuButton && dropdown) {
+                    if (doc && menuButton && dropdown) {
                         menuButton.addEventListener('click', e => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                            e.preventDefault?.();
+                            e.stopPropagation?.();
 
                             const svgIcon = menuButton.querySelector('svg');
                             const isCurrentlyHidden =
@@ -124,7 +162,7 @@ test.describe('UserStatus Dropdown Functionality', () => {
                         });
 
                         // Close dropdown when clicking outside
-                        document.addEventListener('click', e => {
+                        doc.addEventListener('click', e => {
                             const target = e.target;
                             if (
                                 target &&
@@ -236,6 +274,11 @@ test.describe('UserStatus Dropdown Functionality', () => {
 
     test('test dropdown with different viewport sizes', async ({ page }) => {
         console.log('Testing dropdown responsiveness...');
+
+        await signUpViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'dropdown-viewport',
+        });
 
         // Test on mobile viewport
         await page.setViewportSize({ width: 375, height: 667 });

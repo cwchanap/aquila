@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { signUpViaUI } from './utils';
 
 test.describe('Homepage', () => {
     test('should load and display main menu', async ({ page }) => {
-        await page.goto('/');
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'homepage' });
+        await page.goto('/en/');
 
         // Check if the page loads successfully
         await expect(page).toHaveTitle(/Main Menu - Game App/);
@@ -26,31 +28,40 @@ test.describe('Homepage', () => {
     test('should have proper styling and responsive design', async ({
         page,
     }) => {
-        await page.goto('/');
+        await signUpViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'homepage-style',
+        });
+        await page.goto('/en/');
 
         // Check if the page has the gradient background
-        const mainDiv = page.locator('div.min-h-screen');
-        await expect(mainDiv).toHaveClass(/bg-gradient-to-br/);
+        const gradient = page.locator('div.absolute.inset-0.bg-gradient-to-b');
+        await expect(gradient).toBeVisible();
 
         // Check if buttons have hover effects
         const startButton = page.locator('#start-btn');
-        await expect(startButton).toHaveClass(/hover:bg-white\/30/);
+        await expect(startButton).toHaveClass(/hover:from-blue-600/);
     });
 
     test('should navigate to stories page when Start Game is clicked', async ({
         page,
     }) => {
-        await page.goto('/');
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'homepage-nav' });
+        await page.goto('/en/');
 
         // Click the Start Game button
         await page.click('#start-btn');
 
         // Wait for navigation and check URL
-        await expect(page).toHaveURL('/stories');
+        await expect(page).toHaveURL('/en/stories');
     });
 
     test('should handle settings button click', async ({ page }) => {
-        await page.goto('/');
+        await signUpViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'homepage-settings',
+        });
+        await page.goto('/en/');
 
         // Set up console listener to catch the log message
         const consoleMessages: string[] = [];

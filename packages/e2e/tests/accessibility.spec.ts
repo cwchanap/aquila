@@ -1,4 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { signUpViaUI } from './utils';
+
+test.beforeEach(async ({ page }) => {
+    await signUpViaUI(page, { locale: 'en', emailPrefix: 'a11y' });
+});
 
 test.describe('Accessibility', () => {
     test('should have proper heading structure', async ({ page }) => {

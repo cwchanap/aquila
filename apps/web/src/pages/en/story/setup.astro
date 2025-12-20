@@ -267,7 +267,7 @@ const isAuthed = 'unknown';
 
           // Redirect to story
           const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-          window.location.href = `/${locale}/story/${story}`;
+          window.location.href = `/${locale}/story/${story}/`;
         } catch (error) {
           console.error('Setup error:', error);
           alert('Failed to save character setup. Please try again.');

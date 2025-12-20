@@ -56,6 +56,6 @@ test.describe('Supabase Auth - existing user sign-in (US1)', () => {
         const startButton = page.locator('#start-btn');
         await expect(startButton).toBeVisible();
         await startButton.click();
-        await expect(page).toHaveURL('/stories');
+        await expect(page).toHaveURL(/\/(en|zh)\/stories$/);
     });
 });

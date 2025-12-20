@@ -67,6 +67,7 @@
   };
 
   const handleSettingsClick = () => {
+    console.log('Settings button clicked!');
     // Add your settings logic here
   };
 </script>

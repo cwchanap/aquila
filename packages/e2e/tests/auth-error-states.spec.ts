@@ -10,7 +10,12 @@ test.describe('Auth Error States', () => {
 
     for (const deviceName of mobileDevices) {
         test.describe(`Auth Error States - ${deviceName}`, () => {
-            test.use({ ...devices[deviceName] });
+            const device = {
+                ...devices[deviceName],
+            } as Record<string, unknown>;
+            delete (device as { defaultBrowserType?: unknown })
+                .defaultBrowserType;
+            test.use(device);
 
             test('Displays error modal when /api/me fails with 500 after login', async ({
                 page,
@@ -50,7 +55,7 @@ test.describe('Auth Error States', () => {
                             response.status() === 500,
                         { timeout: 10_000 }
                     ),
-                    mainMenu.goto(),
+                    mainMenu.goto('en'),
                 ]);
 
                 // 4. Verify that we are NOT redirected to login

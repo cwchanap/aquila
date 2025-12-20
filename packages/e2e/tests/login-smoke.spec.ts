@@ -5,7 +5,7 @@ test.describe('Better-Auth Login Functionality', () => {
         await page.goto('/en/');
 
         // Click login button
-        await page.click('a[href="/en/login"]');
+        await expect(page).toHaveURL('/en/login');
 
         // Should be on localized login page
         await expect(page).toHaveURL('/en/login');

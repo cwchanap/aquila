@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { MainMenuPage, StoriesPage, TestHelpers } from './utils';
+import { MainMenuPage, StoriesPage, TestHelpers, signUpViaUI } from './utils';
 
 test.describe('Page Object Model Example', () => {
     test('should navigate using page objects', async ({ page }) => {
@@ -7,8 +7,10 @@ test.describe('Page Object Model Example', () => {
         const stories = new StoriesPage(page);
         const helpers = new TestHelpers(page);
 
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'pomspec' });
+
         // Navigate to main menu
-        await mainMenu.goto();
+        await mainMenu.goto('en');
         await helpers.waitForFullLoad();
 
         // Verify main menu is visible
@@ -22,11 +24,11 @@ test.describe('Page Object Model Example', () => {
 
         // Verify stories page is visible
         await stories.expectToBeVisible();
-        await expect(page).toHaveURL('/stories');
+        await expect(page).toHaveURL('/en/stories');
 
         // Select train adventure
         await stories.selectTrainAdventure();
-        await expect(page).toHaveURL('/story/setup?story=train_adventure');
+        await expect(page).toHaveURL('/en/reader?story=train_adventure');
     });
 
     test('should handle slow network conditions', async ({
@@ -45,8 +47,10 @@ test.describe('Page Object Model Example', () => {
         // Simulate slow network
         await helpers.simulateSlowNetwork();
 
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'pomspec-slow' });
+
         // Navigate and ensure it still works
-        await mainMenu.goto();
+        await mainMenu.goto('en');
         await helpers.waitForFullLoad();
         await mainMenu.expectToBeVisible();
 

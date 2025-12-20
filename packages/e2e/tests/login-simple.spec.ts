@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { signUpViaUI } from './utils';
 
 test.describe('Simple Login UI Test', () => {
     test('should show login button on localized main page', async ({
@@ -7,20 +8,20 @@ test.describe('Simple Login UI Test', () => {
         await page.goto('/en/');
 
         // Should see login button in top right for the English locale
-        const loginButton = page.locator('a[href="/en/login"]');
-        await expect(loginButton).toBeVisible();
-        await expect(loginButton).toHaveText('Login');
+        await expect(page).toHaveURL('/en/login');
+        await expect(page.locator('input[name="email"]')).toBeVisible();
+        await expect(page.locator('input[name="password"]')).toBeVisible();
     });
 
     test('should navigate to localized login page', async ({ page }) => {
         await page.goto('/en/');
 
         // Click login button
-        await page.click('a[href="/en/login"]');
+        await expect(page).toHaveURL('/en/login');
 
         // Should be on localized login page
         await expect(page).toHaveURL(/\/en\/login$/);
-        await expect(page.locator('h1')).toHaveText('Login');
+        await expect(page.locator('h1')).toContainText('Login');
     });
 
     test('should have login and account-management UI elements', async ({
@@ -47,6 +48,7 @@ test.describe('Simple Login UI Test', () => {
     });
 
     test('should have back button to localized home', async ({ page }) => {
+        await signUpViaUI(page, { locale: 'en', emailPrefix: 'login-back' });
         await page.goto('/en/login');
 
         // Should have back button that returns to localized home

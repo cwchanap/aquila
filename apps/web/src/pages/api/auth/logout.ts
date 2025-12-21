@@ -106,7 +106,9 @@ export const POST: APIRoute = async ({ request }) => {
             'SameSite=Strict',
             'Max-Age=0',
         ];
-        if (process.env.NODE_ENV !== 'development') {
+        const nodeEnv =
+            typeof process !== 'undefined' ? process.env?.NODE_ENV : undefined;
+        if (nodeEnv !== 'development') {
             cookieFlags.push('Secure');
         }
 

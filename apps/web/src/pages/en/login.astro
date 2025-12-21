@@ -250,7 +250,8 @@ import MainLayout from '../../layouts/main.astro';
 						});
 						
 						if (error) {
-							showError(error.message || 'Invalid credentials');
+							console.error('Supabase sign-in error:', error);
+							showError('Invalid credentials');
 							return;
 						}
 						

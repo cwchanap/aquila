@@ -83,7 +83,7 @@ test.describe('Supabase Auth - account management (US3)', () => {
         // would require email interception infrastructure not currently in place.
     });
 
-    test('user can still log in with original password after reset request', async ({
+    test('user can sign up, sign out, and sign back in with original password', async ({
         page,
     }) => {
         const email = uniqueEmail('supabase-us3-login');
@@ -105,8 +105,8 @@ test.describe('Supabase Auth - account management (US3)', () => {
         await page.waitForLoadState('networkidle');
         await expect(page).toHaveURL(/\/(en|zh)\/login/);
 
-        // NOTE: This login only verifies the user can still log in with the ORIGINAL
-        // password—it does NOT validate the reset functionality itself.
+        // NOTE: This login verifies the user can sign back in with the ORIGINAL password
+        // after signing out. It does NOT validate the reset functionality itself.
         // Log back in with original credentials
         await page.fill('input[name="email"]', email);
         await page.fill('input[name="password"]', PASSWORD);

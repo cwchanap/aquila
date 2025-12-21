@@ -194,26 +194,43 @@ import MainLayout from '../../layouts/main.astro';
 			document.addEventListener('DOMContentLoaded', () => {
 				const signupForm = document.getElementById('signup-form') as HTMLFormElement | null;
 				const errorMessage = document.getElementById('error-message');
+				const successMessage = document.createElement('div');
+				successMessage.className =
+					'mt-4 text-emerald-700 text-sm font-semibold p-3 bg-emerald-50 rounded-lg border border-emerald-200 hidden';
+				errorMessage?.insertAdjacentElement('afterend', successMessage);
 			
 				if (!signupForm || !errorMessage) {
 					return;
 				}
 			
 				const errorEl = errorMessage as HTMLElement;
+				const successEl = successMessage as HTMLElement;
 				const supabase = getSupabaseAuthClient();
 			
 				function showError(message: string) {
 					errorEl.textContent = message;
 					errorEl.classList.remove('hidden');
+					successEl.classList.add('hidden');
 				}
 			
 				function hideError() {
 					errorEl.classList.add('hidden');
 				}
+
+				function showSuccess(message: string) {
+					successEl.textContent = message;
+					successEl.classList.remove('hidden');
+					hideError();
+				}
+
+				function hideSuccess() {
+					successEl.classList.add('hidden');
+				}
 			
 				signupForm.addEventListener('submit', async (e) => {
 					e.preventDefault();
 					hideError();
+					hideSuccess();
 				
 					const formData = new FormData(signupForm);
 					const email = formData.get('email')?.toString() ?? '';
@@ -231,7 +248,7 @@ import MainLayout from '../../layouts/main.astro';
 					}
 				
 					try {
-						const { error } = await supabase.auth.signUp({
+						const { data, error } = await supabase.auth.signUp({
 							email,
 							password,
 							options: {
@@ -245,12 +262,27 @@ import MainLayout from '../../layouts/main.astro';
 							showError(error.message || 'Signup failed');
 							return;
 						}
-					
+
 						const locale =
 							document
 								.querySelector('[data-locale]')
 								?.getAttribute('data-locale') || 'en';
-						window.location.href = `/${locale}/`;
+
+						// If Supabase returns a session (email confirmation not required), redirect to home
+						if (data?.session) {
+							window.location.href = `/${locale}/`;
+							return;
+						}
+
+						// Otherwise, show email confirmation instructions and keep the user on the page
+						showSuccess('Check your email to confirm your account. Once verified, you can log in.');
+						// Optionally, prompt them to visit login page
+						setTimeout(() => {
+							successEl.insertAdjacentHTML(
+								'beforeend',
+								` <a href="/${locale}/login" class="underline text-emerald-700 font-bold hover:text-emerald-800">Go to login</a>`
+							);
+						}, 0);
 					} catch (error) {
 						console.error('Signup failed:', error);
 						showError('Signup failed. Please try again.');

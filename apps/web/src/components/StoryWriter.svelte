@@ -34,12 +34,17 @@
 
   type ApiStory = Omit<Story, 'chapters' | 'directScenes'>;
 
-  export let user: {
-    id: string;
-    email: string;
-    name?: string | null;
-  } | null = null;
-  export let isAuthLoading = false;
+  const props = $props<{
+    user: {
+      id: string;
+      email: string;
+      name?: string | null;
+    } | null;
+    isAuthLoading?: boolean;
+  }>();
+
+  const user = $derived(props.user ?? null);
+  const isAuthLoading = $derived(props.isAuthLoading ?? false);
 
   let stories = $state<Story[]>([]);
   let selectedStoryId = $state<string | null>(null);

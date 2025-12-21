@@ -17,7 +17,7 @@ test.describe('Auth Error States', () => {
                 .defaultBrowserType;
             test.use(device);
 
-            test('Displays error modal when /api/me fails with 500 after login', async ({
+            test('Displays error modal when /api/me fails with 500 after signup', async ({
                 page,
             }) => {
                 const mainMenu = new MainMenuPage(page);

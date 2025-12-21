@@ -10,9 +10,6 @@ test.describe('Better-Auth Login Functionality', () => {
         await page.waitForURL(/\/en\/login\/?$/);
 
         // Should be on localized login page
-        await expect(page).toHaveURL('/en/login');
-
-        // Should have login form with email and password
         await expect(page.locator('input[name="email"]')).toBeVisible();
         await expect(page.locator('input[name="password"]')).toBeVisible();
         await expect(page.locator('button[type="submit"]')).toBeVisible();

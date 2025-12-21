@@ -62,7 +62,7 @@ function createDbCreatingUser(createdUser: unknown): FakeDb {
 }
 
 function createDbLinkingExistingEmailUser(
-    existingUser: any,
+    existingUser: unknown,
     updatedUser: unknown
 ): FakeDb {
     // First lookup by supabaseUserId -> none

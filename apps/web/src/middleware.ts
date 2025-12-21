@@ -87,7 +87,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
                     setAll(cookiesToSet) {
                         for (const { name, value, options } of cookiesToSet) {
                             cookieJar.set(name, value);
-                            if (!value) {
+                            if (value === null || value === undefined) {
                                 context.cookies.delete(name, options);
                             } else {
                                 context.cookies.set(name, value, options);

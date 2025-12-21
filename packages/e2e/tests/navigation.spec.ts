@@ -6,6 +6,8 @@ test.describe('Navigation Flow', () => {
         page,
     }) => {
         await signUpViaUI(page, { locale: 'en', emailPrefix: 'nav' });
+        await expect(page.locator('button[title="User Menu"]')).toBeVisible();
+
         // Start at homepage
         await page.goto('/en/');
         await expect(page).toHaveTitle(/Main Menu - Game App/);

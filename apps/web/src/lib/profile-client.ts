@@ -1,3 +1,4 @@
+import { getTranslations } from '@aquila/dialogue';
 import { authorizedFetch } from './auth';
 
 type MaybeElement<T extends HTMLElement> = T | null;
@@ -11,6 +12,19 @@ function safeText(value: unknown): string {
 function getLang(): string {
     const lang = document.documentElement.lang;
     return typeof lang === 'string' && lang.trim() ? lang.trim() : 'en';
+}
+
+function getProfileErrorMessage(): string {
+    try {
+        const locale = getLang() === 'zh' ? 'zh' : 'en';
+        const translations = getTranslations(locale);
+        return (
+            translations?.profile?.failedToLoad ??
+            'Unable to load your profile.'
+        );
+    } catch {
+        return 'Unable to load your profile.';
+    }
 }
 
 function setText(el: MaybeElement<HTMLElement>, value: string) {
@@ -53,7 +67,7 @@ export async function initProfileClient(): Promise<void> {
                 statusText: response.statusText,
             });
             setProfileFallback();
-            showError(errorEl, 'Unable to load your profile.');
+            showError(errorEl, getProfileErrorMessage());
             return;
         }
 
@@ -80,6 +94,6 @@ export async function initProfileClient(): Promise<void> {
         }
 
         setProfileFallback();
-        showError(errorEl, 'Unable to load your profile.');
+        showError(errorEl, getProfileErrorMessage());
     }
 }

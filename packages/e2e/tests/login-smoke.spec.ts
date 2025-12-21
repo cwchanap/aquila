@@ -5,7 +5,9 @@ test.describe('Better-Auth Login Functionality', () => {
         await page.goto('/en/');
 
         // Click login button
-        await expect(page).toHaveURL('/en/login');
+        const loginLink = page.getByRole('link', { name: /login/i });
+        await loginLink.click();
+        await page.waitForURL(/\/en\/login\/?$/);
 
         // Should be on localized login page
         await expect(page).toHaveURL('/en/login');

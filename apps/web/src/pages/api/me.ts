@@ -13,7 +13,21 @@ export const GET: APIRoute = async ({ request }) => {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        console.error('GET /api/me error:', error);
+        const correlationId = crypto.randomUUID?.() ?? Date.now().toString();
+        const errorName =
+            error && typeof error === 'object' && 'name' in error
+                ? (error as { name?: string }).name
+                : undefined;
+        const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+        console.error(
+            JSON.stringify({
+                msg: 'GET /api/me error',
+                correlationId,
+                errorName,
+                errorMessage,
+            })
+        );
         return new Response(
             JSON.stringify({ error: 'Internal server error' }),
             {

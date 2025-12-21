@@ -34,6 +34,13 @@
 
   type ApiStory = Omit<Story, 'chapters' | 'directScenes'>;
 
+  export let user: {
+    id: string;
+    email: string;
+    name?: string | null;
+  } | null = null;
+  export let isAuthLoading = false;
+
   let stories = $state<Story[]>([]);
   let selectedStoryId = $state<string | null>(null);
   let loading = $state(false);
@@ -67,11 +74,35 @@
   let editMode = $state<'story' | 'chapter' | 'scene' | null>(null);
   let editingStoryId = $state<string | null>(null);
 
-  onMount(async () => {
-    await loadStories();
+  let initialized = $state(false);
+
+  onMount(() => {
+    if (!user) {
+      loading = isAuthLoading;
+      return;
+    }
+    initialized = true;
+    loadStories();
+  });
+
+  $effect(() => {
+    if (user && !initialized) {
+      initialized = true;
+      loadStories();
+    } else if (!user && !isAuthLoading) {
+      loading = false;
+      error = 'Please sign in to manage stories.';
+    } else if (!user && isAuthLoading) {
+      loading = true;
+    }
   });
 
   async function loadStories() {
+    if (!user) {
+      loading = false;
+      error = 'Please sign in to manage stories.';
+      return;
+    }
     loading = true;
     error = null;
     try {

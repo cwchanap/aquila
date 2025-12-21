@@ -15,6 +15,7 @@
 
   export let user: User | null = null;
   export let currentLocale: string = 'en';
+  export let isLoading = false;
   let dropdownOpen = false;
   let menuButton: globalThis.HTMLElement;
   let dropdown: globalThis.HTMLElement;
@@ -138,7 +139,15 @@
 </script>
 
 <div class="user-status absolute top-6 right-6 z-50">
-  {#if user}
+  {#if isLoading}
+    <div
+      class="flex items-center gap-3 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-2 shadow-lg text-slate-600"
+    >
+      <span class="inline-flex h-2 w-2 rounded-full bg-slate-400 animate-pulse"
+      ></span>
+      <span class="text-sm font-semibold animate-pulse">Loading session…</span>
+    </div>
+  {:else if user}
     <div class="flex items-center relative">
       <div class="relative">
         <button

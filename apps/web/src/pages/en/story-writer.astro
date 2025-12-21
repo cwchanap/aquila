@@ -2,10 +2,30 @@
 import MainLayout from '@/layouts/main.astro';
 import UserStatus from '@/components/UserStatus.svelte';
 import StoryWriterApp from '@/components/StoryWriter.svelte';
+import { requireAuthPage } from '@/lib/auth/supabaseServer';
 
-// Legacy server-side SimpleAuth removed; Supabase auth handled client-side.
-const userName = 'Guest';
-const user = null;
+const authResult = await requireAuthPage(Astro);
+if (authResult instanceof Response) {
+    return authResult;
+}
+
+const supabaseUser = authResult;
+const user =
+    supabaseUser && typeof supabaseUser === 'object'
+        ? {
+              id: supabaseUser.id,
+              email: supabaseUser.email ?? '',
+              name:
+                  (
+                      supabaseUser.user_metadata as {
+                          full_name?: string;
+                      } | null
+                  )?.full_name ?? null,
+          }
+        : null;
+
+const userName = user?.name || user?.email || 'Creator';
+const currentLocale = Astro.currentLocale || 'en';
 ---
 
 <MainLayout title="Story Writer">
@@ -50,7 +70,7 @@ const user = null;
             <div class="absolute top-16 right-1/4 w-28 h-14 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
         </div>
 
-        <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
+        <UserStatus client:load user={user} isLoading={!user} currentLocale={currentLocale} />
 
         <div class="min-h-screen flex items-center justify-center relative px-6 py-20">
             <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-6xl w-full mx-auto">
@@ -70,7 +90,14 @@ const user = null;
                                 Build rich stories with branching chapters and cinematic scenes. Organize your narrative with a visual structure inspired by Aquila's signature interface.
                             </p>
                             <div class="bg-white/70 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between text-slate-700">
-                                <span class="font-semibold">Welcome, {userName}</span>
+                                {user ? (
+                                    <span class="font-semibold">Welcome, {userName}</span>
+                                ) : (
+                                    <div class="flex items-center gap-2 text-slate-500">
+                                        <span class="inline-flex h-2 w-2 rounded-full bg-slate-300 animate-pulse"></span>
+                                        <span class="font-semibold animate-pulse">Checking session…</span>
+                                    </div>
+                                )}
                                 <a
                                     href="/en"
                                     class="px-4 py-2 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 text-white font-semibold rounded-xl shadow-md border border-cyan-300/60 transition-transform duration-300 transform hover:scale-105"
@@ -82,7 +109,7 @@ const user = null;
                     </div>
 
                     <div class="lg:flex-1 bg-white/80 border border-white/60 rounded-3xl shadow-inner p-6 lg:p-8 backdrop-blur">
-                        <StoryWriterApp client:load />
+                        <StoryWriterApp client:load user={user} />
                     </div>
                 </div>
             </div>

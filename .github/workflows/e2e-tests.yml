@@ -13,27 +13,11 @@ env:
   PLAYWRIGHT_BROWSERS_PATH: "0"
   TURBO_TELEMETRY_DISABLED: "1"
   CI: "true"
-  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aquila_e2e
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: aquila_e2e
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,12 +32,61 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
       - name: Install dependencies
         run: bun install
 
       - name: Install Playwright browsers
         working-directory: packages/e2e
         run: bunx playwright install --with-deps
+
+      - name: Start Supabase (local)
+        run: |
+          supabase init --force
+          supabase start
+
+      - name: Export Supabase env
+        run: |
+          eval "$(supabase status -o env)"
+          echo "API_URL=${API_URL}" >> $GITHUB_ENV
+          echo "DB_URL=${DB_URL}" >> $GITHUB_ENV
+          echo "ANON_KEY=${ANON_KEY}" >> $GITHUB_ENV
+          echo "SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}" >> $GITHUB_ENV
+          # Map CLI output to vars used by the app
+          echo "SUPABASE_URL=${API_URL}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${ANON_KEY}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}" >> $GITHUB_ENV
+          echo "PUBLIC_SUPABASE_URL=${API_URL}" >> $GITHUB_ENV
+          echo "PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}" >> $GITHUB_ENV
+          echo "DATABASE_URL=${DB_URL}" >> $GITHUB_ENV
+
+      - name: Ensure shared Supabase E2E user exists
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_E2E_EMAIL: test-e2e@cwchanap.dev
+          SUPABASE_E2E_PASSWORD: password123
+        run: |
+          bun -e "import { createClient } from '@supabase/supabase-js';
+          const url = process.env.SUPABASE_URL;
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          const email = process.env.SUPABASE_E2E_EMAIL;
+          const password = process.env.SUPABASE_E2E_PASSWORD;
+          if (!url || !key || !email || !password) {
+            console.error('Missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY/SUPABASE_E2E_EMAIL/SUPABASE_E2E_PASSWORD');
+            process.exit(1);
+          }
+          const supabase = createClient(url, key, { auth: { persistSession: false } });
+          const { error } = await supabase.auth.admin.createUser({ email, password, email_confirm: true });
+          if (error && !String(error.message ?? '').toLowerCase().includes('already')) {
+            console.error(error);
+            process.exit(1);
+          }
+          console.log('✅ Supabase E2E user ensured');"
 
       - name: Run database migrations
         working-directory: apps/web
@@ -63,4 +96,9 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: packages/e2e
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_E2E_EMAIL: test-e2e@cwchanap.dev
+          SUPABASE_E2E_PASSWORD: password123
         run: bun run test:e2e

@@ -16,14 +16,14 @@ test.describe('Simple Login UI Test', () => {
     test('should navigate to localized login page', async ({ page }) => {
         await page.goto('/en/');
 
-        // Click login button
-        const loginLink = page.getByRole('link', { name: /login/i });
-        await loginLink.click();
+        // Unauthenticated users are redirected to the localized login page
         await page.waitForURL(/\/en\/login\/?$/);
 
         // Should be on localized login page
-        await expect(page).toHaveURL(/\/en\/login$/);
-        await expect(page.locator('h1')).toContainText('Login');
+        await expect(page).toHaveURL(/\/en\/login\/?$/);
+        await expect(
+            page.getByRole('heading', { name: 'Login' })
+        ).toBeVisible();
     });
 
     test('should have login and account-management UI elements', async ({

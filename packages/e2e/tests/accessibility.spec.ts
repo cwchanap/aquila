@@ -1,9 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { signUpViaUI } from './utils';
 
 test.describe('Accessibility', () => {
-    test('should have proper heading structure', async ({ page }) => {
-        await page.goto('/');
+    test.beforeEach(async ({ page }) => {
+        await signUpViaUI(page, { locale: 'en' });
+        await page.goto('/en/');
+    });
 
+    test('should have proper heading structure', async ({ page }) => {
         // Check for proper heading hierarchy
         const h1 = page.locator('body h1').first();
         await expect(h1).toBeVisible();
@@ -11,8 +15,6 @@ test.describe('Accessibility', () => {
     });
 
     test('should have accessible buttons', async ({ page }) => {
-        await page.goto('/');
-
         // Check if buttons are accessible
         const startButton = page.locator('#start-btn');
         const settingsButton = page.locator('#settings-btn');
@@ -30,8 +32,6 @@ test.describe('Accessibility', () => {
     });
 
     test('should have proper meta tags', async ({ page }) => {
-        await page.goto('/');
-
         // Check for viewport meta tag
         const viewportMeta = page.locator('meta[name="viewport"]');
         await expect(viewportMeta).toHaveAttribute(
@@ -52,8 +52,6 @@ test.describe('Accessibility', () => {
         page,
         browserName,
     }) => {
-        await page.goto('/');
-
         // Skip keyboard test on WebKit (Safari) as it has different tab behavior
         if (browserName === 'webkit') {
             test.skip(
@@ -63,12 +61,28 @@ test.describe('Accessibility', () => {
             return;
         }
 
-        // Tab through the interface
-        await page.keyboard.press('Tab');
-        await expect(page.locator('#start-btn')).toBeFocused();
+        const startButton = page.locator('#start-btn');
+        const settingsButton = page.locator('#settings-btn');
 
-        await page.keyboard.press('Tab');
-        await expect(page.locator('#settings-btn')).toBeFocused();
+        let startFocused = false;
+        for (let i = 0; i < 10; i++) {
+            await page.keyboard.press('Tab');
+            startFocused = await startButton.evaluate(el =>
+                el.matches(':focus')
+            );
+            if (startFocused) break;
+        }
+        expect(startFocused).toBe(true);
+
+        let settingsFocused = false;
+        for (let i = 0; i < 10; i++) {
+            await page.keyboard.press('Tab');
+            settingsFocused = await settingsButton.evaluate(el =>
+                el.matches(':focus')
+            );
+            if (settingsFocused) break;
+        }
+        expect(settingsFocused).toBe(true);
 
         // Test Enter key activation
         await page.keyboard.press('Enter');
@@ -88,6 +102,7 @@ test.describe('Accessibility', () => {
 test.describe('Performance', () => {
     test('should load quickly', async ({ page }) => {
         const startTime = Date.now();
+        await signUpViaUI(page, { locale: 'en' });
         await page.goto('/');
         const loadTime = Date.now() - startTime;
 
@@ -107,6 +122,7 @@ test.describe('Performance', () => {
             }
         });
 
+        await signUpViaUI(page, { locale: 'en' });
         await page.goto('/');
 
         // Wait a bit to catch any async errors

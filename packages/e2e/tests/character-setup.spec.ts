@@ -1,11 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI } from './utils';
+import { signUpFreshUserViaUI } from './utils';
 
 test.describe('Character Setup Flow', () => {
     test('should navigate to character setup when clicking Train Adventure', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'char-setup' });
+        await signUpFreshUserViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'char-setup',
+        });
         await page.goto('/en/stories');
 
         // Click the Train Adventure button
@@ -65,7 +68,10 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should handle character name submission', async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'char-submit' });
+        await signUpFreshUserViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'char-submit',
+        });
         await page.goto('/en/story/setup?story=train_adventure', {
             waitUntil: 'domcontentloaded',
         });
@@ -90,7 +96,10 @@ test.describe('Character Setup Flow', () => {
     test('should redirect to stories page for invalid story parameter', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'invalid-story' });
+        await signUpFreshUserViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'invalid-story',
+        });
         // Try to access setup with invalid story
         await page.goto('/en/story/setup?story=invalid_story');
 
@@ -99,7 +108,10 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should handle missing story parameter', async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'missing-story' });
+        await signUpFreshUserViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'missing-story',
+        });
         // Try to access setup without story parameter
         await page.goto('/en/story/setup');
 
@@ -108,7 +120,10 @@ test.describe('Character Setup Flow', () => {
     });
 
     test('should have back button that works', async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'setup-back' });
+        await signUpFreshUserViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'setup-back',
+        });
         await page.goto('/en/story/setup?story=train_adventure');
 
         // Check back button is present (localized stories URL)
@@ -125,7 +140,7 @@ test.describe('Character Setup Flow', () => {
     test('should redirect authenticated users with existing character setup to game page', async ({
         page,
     }) => {
-        await signUpViaUI(page, {
+        await signUpFreshUserViaUI(page, {
             locale: 'en',
             emailPrefix: 'setup-redirect',
         });
@@ -177,7 +192,10 @@ test.describe('Character Setup Flow', () => {
     test('should show story selection for users without character setup', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'no-setup' });
+        await signUpFreshUserViaUI(page, {
+            locale: 'en',
+            emailPrefix: 'no-setup',
+        });
         // Clear any existing localStorage
         await page.addScriptTag({
             content: `
@@ -219,7 +237,7 @@ test.describe('Character Setup Flow', () => {
 
 test.describe('Character Setup API Integration', () => {
     test('should handle API responses correctly', async ({ page }) => {
-        await signUpViaUI(page, {
+        await signUpFreshUserViaUI(page, {
             locale: 'en',
             emailPrefix: 'setup-api',
         });

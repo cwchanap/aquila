@@ -4,9 +4,7 @@ test.describe('Better-Auth Login Functionality', () => {
     test('should navigate to login page', async ({ page }) => {
         await page.goto('/en/');
 
-        // Click login button
-        const loginLink = page.getByRole('link', { name: /login/i });
-        await loginLink.click();
+        // Unauthenticated users are redirected to the localized login page
         await page.waitForURL(/\/en\/login\/?$/);
 
         // Should be on localized login page

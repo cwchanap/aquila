@@ -12,6 +12,8 @@ const uniqueEmail = (prefix: string) => `${prefix}-${randomUUID()}@example.com`;
  */
 
 test.describe('Supabase Auth - new user signup (US2)', () => {
+    test.skip(!process.env.CI, 'Skipping account creation tests locally');
+
     test('new user can sign up via /en/signup and reach main menu', async ({
         page,
     }) => {

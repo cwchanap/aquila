@@ -1,9 +1,6 @@
 import { test, expect, devices } from '@playwright/test';
-import { randomUUID } from 'crypto';
 
-import { MainMenuPage, TestHelpers } from './utils';
-
-const uniqueEmail = (prefix: string) => `${prefix}-${randomUUID()}@example.com`;
+import { MainMenuPage, TestHelpers, signUpViaUI } from './utils';
 
 test.describe('Auth Error States', () => {
     const mobileDevices = ['Pixel 5', 'iPhone 12'] as const;
@@ -23,13 +20,8 @@ test.describe('Auth Error States', () => {
                 const mainMenu = new MainMenuPage(page);
                 const helpers = new TestHelpers(page);
 
-                // 1. Signup as a new user to establish a session
-                await page.goto('/en/signup');
-                const email = uniqueEmail('error-state-test');
-                await page.fill('input[name="email"]', email);
-                await page.fill('input[name="password"]', 'password123');
-                await page.fill('input[name="name"]', 'Error Test User');
-                await page.click('#signup-btn');
+                // 1. Login to establish a session
+                await signUpViaUI(page, { locale: 'en' });
 
                 // Wait for redirect to localized home (authenticated)
                 await page.waitForURL(/\/en\/?$/);

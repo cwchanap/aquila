@@ -198,9 +198,17 @@ test.describe('Story Writer E2E Flow', () => {
 
         await expect(page.getByText('Delete Me')).toBeVisible();
 
-        // Delete isn't implemented in the current UI (no "Delete story" button).
-        // Assert the story remains visible after creation.
-        await expect(page.getByText('Delete Me')).toBeVisible();
+        await page
+            .locator('button')
+            .filter({ hasText: 'Delete Me' })
+            .first()
+            .click();
+
+        const deleteButton = page.locator('button[title="Delete story"]');
+        await expect(deleteButton).toBeVisible();
+        await deleteButton.click();
+
+        await expect(page.getByText('Delete Me')).toHaveCount(0);
     });
 
     test('should handle empty state when no stories exist', async ({

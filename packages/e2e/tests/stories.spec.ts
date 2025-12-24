@@ -37,7 +37,7 @@ test.describe('Stories Page', () => {
         await helpers.expectGlassmorphismContainer();
     });
 
-    test('should navigate to train adventure setup when clicked (for non-authenticated users)', async ({
+    test('should navigate to train adventure setup when clicked (for authenticated users)', async ({
         page,
     }) => {
         await signUpViaUI(page, { locale: 'en', emailPrefix: 'stories-nav' });

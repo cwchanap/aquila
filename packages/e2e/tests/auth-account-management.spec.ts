@@ -46,17 +46,27 @@ test.describe('Supabase Auth - account management (US3)', () => {
         // Wait for either success or error banner to appear; exact text may vary by environment.
         const successBanner = page.locator('#success-message');
         const errorBanner = page.locator('#error-message');
-        await Promise.race([
+        const [successWait, errorWait] = await Promise.allSettled([
             successBanner.waitFor({ state: 'visible', timeout: 5000 }),
             errorBanner.waitFor({ state: 'visible', timeout: 5000 }),
         ]);
 
         const successVisible = await successBanner.isVisible();
         const errorVisible = await errorBanner.isVisible();
-        expect(
-            successVisible !== errorVisible,
-            'Expected exactly one banner (success or error) to be visible after requesting a password reset.'
-        ).toBe(true);
+        if (successVisible === errorVisible) {
+            const successText = await successBanner
+                .innerText()
+                .catch(() => '(unable to read success text)');
+            const errorText = await errorBanner
+                .innerText()
+                .catch(() => '(unable to read error text)');
+            throw new Error(
+                `Expected exactly one banner (success or error) to be visible after requesting a password reset.\n` +
+                    `successVisible=${successVisible} (${successWait.status}), errorVisible=${errorVisible} (${errorWait.status})\n` +
+                    `successText=${successText}\n` +
+                    `errorText=${errorText}`
+            );
+        }
 
         if (errorVisible) {
             const errorText = await errorBanner

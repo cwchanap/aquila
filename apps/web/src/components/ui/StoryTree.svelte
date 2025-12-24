@@ -28,6 +28,7 @@
         onEditStory = () => {},
         onEditChapter = () => {},
         onEditScene = () => {},
+        onDeleteStory = () => {},
         onDeleteChapter = () => {},
         onDeleteScene = () => {}
     }: {
@@ -37,6 +38,7 @@
         onEditStory?: (storyId: string) => void;
         onEditChapter?: (chapterId: string) => void;
         onEditScene?: (sceneId: string) => void;
+        onDeleteStory?: (storyId: string) => void;
         onDeleteChapter?: (chapterId: string) => void;
         onDeleteScene?: (sceneId: string) => void;
     } = $props();
@@ -79,6 +81,13 @@
                     title="Edit story"
                 >
                     <Edit2 size={16} class="text-blue-300" />
+                </button>
+                <button
+                    onclick={() => onDeleteStory(story.id)}
+                    class="p-2 hover:bg-white/10 rounded transition-colors"
+                    title="Delete story"
+                >
+                    <Trash2 size={16} class="text-red-300" />
                 </button>
                 <button
                     onclick={() => onAddChapter(story.id)}

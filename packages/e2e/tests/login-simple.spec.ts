@@ -8,7 +8,8 @@ test.describe('Simple Login UI Test', () => {
         await page.goto('/en/');
 
         // Should see login button in top right for the English locale
-        await expect(page).toHaveURL('/en/login');
+        await page.waitForURL(/\/en\/login\/?$/);
+        await expect(page).toHaveURL(/\/en\/login\/?$/);
         await expect(page.locator('input[name="email"]')).toBeVisible();
         await expect(page.locator('input[name="password"]')).toBeVisible();
     });

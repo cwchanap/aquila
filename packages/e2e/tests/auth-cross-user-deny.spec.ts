@@ -62,7 +62,7 @@ test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
 
                 await mainMenu.goto('en');
                 await helpers.waitForFullLoad();
-                await expect(page).toHaveURL(/\/(en|zh)\/login/);
+                await expect(page).toHaveURL(/\/en\/login\/?$/);
             });
 
             test('Unauthenticated user is redirected to login from stories', async ({
@@ -73,7 +73,7 @@ test.describe('Supabase Auth - Cross-User Access Denial (US3)', () => {
 
                 await stories.goto('en');
                 await helpers.waitForFullLoad();
-                await expect(page).toHaveURL(/\/(en|zh)\/login/);
+                await expect(page).toHaveURL(/\/en\/login\/?$/);
             });
         });
     }

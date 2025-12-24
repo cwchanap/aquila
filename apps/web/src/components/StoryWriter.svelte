@@ -202,6 +202,37 @@
     }
   }
 
+  async function handleDeleteStory(storyId: string) {
+    try {
+      error = null;
+      successMessage = null;
+      const response = await authorizedFetch(`/api/stories/${storyId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete story');
+      }
+
+      const nextStories = stories.filter(story => story.id !== storyId);
+      stories = nextStories;
+
+      if (selectedStoryId === storyId) {
+        selectedStoryId = nextStories[0]?.id ?? null;
+      }
+
+      if (editingStoryId === storyId) {
+        editingStoryId = null;
+        editMode = null;
+      }
+
+      successMessage = 'Story deleted successfully.';
+    } catch (e) {
+      successMessage = null;
+      error = e instanceof Error ? e.message : 'Failed to delete story';
+    }
+  }
+
   async function handleCreateChapter() {
     if (!chapterForm.storyId) return;
 
@@ -365,7 +396,7 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-white">Your Stories</h2>
           <button
-            on:click={openStoryModal}
+            onclick={openStoryModal}
             class="p-2 hover:bg-white/10 rounded-lg transition-colors"
             title="Create new story"
           >
@@ -390,7 +421,7 @@
           <div class="space-y-2">
             {#each stories as story (story.id)}
               <button
-                on:click={() => (selectedStoryId = story.id)}
+                onclick={() => (selectedStoryId = story.id)}
                 class={`w-full text-left p-3 rounded-lg border transition-all ${
                   selectedStoryId === story.id
                     ? 'bg-purple-500/20 border-purple-400/50'
@@ -428,6 +459,7 @@
               showStoryModal = true;
             }
           }}
+          onDeleteStory={handleDeleteStory}
           onEditChapter={() => {
             editMode = 'chapter';
             // Find chapter and populate form

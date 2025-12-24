@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient, type CookieOptions } from '@supabase/ssr';
 
-let supabaseClient: SupabaseClient | null = null;
+let browserClient: SupabaseClient | null = null;
 
 export interface SupabaseCookieContext {
     getAll: () => { name: string; value: string }[];
@@ -82,20 +82,17 @@ export function getSupabaseClientWithContext(
     }
 
     // Default behavior
-    if (!supabaseClient) {
-        if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
+        if (!browserClient) {
             // Browser: store session in cookies so SSR can authenticate requests.
-            supabaseClient = createBrowserClient(url, anonKey);
-        } else {
-            // Server: we generally pass access tokens explicitly (Authorization header),
-            // so avoid any persistent storage.
-            supabaseClient = createClient(url, anonKey, {
-                auth: {
-                    persistSession: false,
-                },
-            });
+            browserClient = createBrowserClient(url, anonKey);
         }
+        return browserClient;
     }
 
-    return supabaseClient;
+    return createClient(url, anonKey, {
+        auth: {
+            persistSession: false,
+        },
+    });
 }

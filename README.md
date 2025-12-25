@@ -16,7 +16,7 @@ Aquila is a narrative-driven game featuring dialogue-based storytelling with cha
 - 🎨 **Modern UI**: Astro with Svelte components and glassmorphism design patterns
 - 🌍 **Multilingual**: Built-in support for English and Chinese
 - 🗄️ **Database**: PostgreSQL via Drizzle ORM with type-safe queries
-- 🔐 **Authentication**: Better Auth integration with session management
+- 🔐 **Authentication**: Supabase Auth integration
 - 📦 **Monorepo**: Turborepo for efficient builds and parallel task execution
 - 🚀 **Vercel Deployment**: Serverless deployment with SSR support
 
@@ -136,7 +136,7 @@ packages/
 - **Components**: [Svelte](https://svelte.dev/) 5.x
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) v4
 - **Database**: [Drizzle ORM](https://orm.drizzle.team/) + PostgreSQL
-- **Auth**: [Better Auth](https://www.better-auth.com/)
+- **Auth**: [Supabase Auth](https://supabase.com/docs/guides/auth)
 - **Testing**: [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)
 
 ### Desktop App (`apps/desktop`)

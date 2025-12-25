@@ -10,6 +10,7 @@ on:
 env:
   BUN_VERSION: "1.1.26"
   NODE_VERSION: "22"
+  SUPABASE_CLI_VERSION: "2.70.5"
   PLAYWRIGHT_BROWSERS_PATH: "0"
   TURBO_TELEMETRY_DISABLED: "1"
   CI: "true"
@@ -18,6 +19,9 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      SUPABASE_E2E_EMAIL: ${{ secrets.SUPABASE_E2E_EMAIL }}
+      SUPABASE_E2E_PASSWORD: ${{ secrets.SUPABASE_E2E_PASSWORD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,7 +39,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: ${{ env.SUPABASE_CLI_VERSION }}
 
       - name: Install dependencies
         run: bun install
@@ -68,8 +72,6 @@ jobs:
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_E2E_EMAIL: test-e2e@cwchanap.dev
-          SUPABASE_E2E_PASSWORD: password123
         run: |
           bun -e "import { createClient } from '@supabase/supabase-js';
           const url = process.env.SUPABASE_URL;
@@ -82,9 +84,16 @@ jobs:
           }
           const supabase = createClient(url, key, { auth: { persistSession: false } });
           const { error } = await supabase.auth.admin.createUser({ email, password, email_confirm: true });
-          if (error && !String(error.message ?? '').toLowerCase().includes('already')) {
-            console.error(error);
-            process.exit(1);
+          if (error) {
+            const status = error.status;
+            const code = error.code;
+            const isDuplicate =
+              (status === 422 || status === 409) &&
+              (code === 'email_exists' || code === 'user_already_exists');
+            if (!isDuplicate) {
+              console.error({ message: error.message, status, code, name: error.name });
+              process.exit(1);
+            }
           }
           console.log('✅ Supabase E2E user ensured');"
 
@@ -99,6 +108,4 @@ jobs:
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
-          SUPABASE_E2E_EMAIL: test-e2e@cwchanap.dev
-          SUPABASE_E2E_PASSWORD: password123
         run: bun run test:e2e

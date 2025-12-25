@@ -171,7 +171,13 @@ export function initializeResetPasswordClient({
                 showSuccess(resetStrings.updatePasswordSuccess);
 
                 setTimeout(() => {
-                    window.location.href = `/${document.documentElement.lang || 'en'}/login`;
+                    const rawLang = document.documentElement.lang;
+                    const normalized = (rawLang ?? '').trim().toLowerCase();
+                    const allowedLocales = new Set(['en', 'zh']);
+                    const safeLocale = allowedLocales.has(normalized)
+                        ? normalized
+                        : 'en';
+                    window.location.href = `/${safeLocale}/login`;
                 }, 1200);
             } catch (err) {
                 console.error('Update password error:', err);

@@ -2,6 +2,7 @@ export class CharacterCardManager {
     private handlersSetup = false;
 
     private container: Element | null;
+    private handlersContainer: Element | null = null;
     private onSave:
         | ((storyId: string, newName: string) => Promise<void>)
         | null;
@@ -21,6 +22,7 @@ export class CharacterCardManager {
         if (!this.container) return;
         if (this.handlersSetup) return;
         this.handlersSetup = true;
+        this.handlersContainer = this.container;
 
         this.handleClick = e => {
             void this.onContainerClick(e);
@@ -35,18 +37,14 @@ export class CharacterCardManager {
     }
 
     public destroy() {
-        if (!this.container) {
-            this.handlersSetup = false;
-            this.handleClick = null;
-            this.handleKeydown = null;
-            this.onSave = null;
-            return;
-        }
+        const container = this.handlersContainer ?? this.container;
 
-        if (this.handleClick)
-            this.container.removeEventListener('click', this.handleClick);
-        if (this.handleKeydown)
-            this.container.removeEventListener('keydown', this.handleKeydown);
+        if (container) {
+            if (this.handleClick)
+                container.removeEventListener('click', this.handleClick);
+            if (this.handleKeydown)
+                container.removeEventListener('keydown', this.handleKeydown);
+        }
 
         this.handlersSetup = false;
         this.handleClick = null;
@@ -54,6 +52,7 @@ export class CharacterCardManager {
 
         this.onSave = null;
         this.container = null;
+        this.handlersContainer = null;
     }
 
     private async onContainerClick(e: Event) {

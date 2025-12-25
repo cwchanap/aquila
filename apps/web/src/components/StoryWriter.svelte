@@ -80,6 +80,7 @@
   let editingStoryId = $state<string | null>(null);
 
   let initialized = $state(false);
+  let prevUserId = $state<string | null>(null);
 
   onMount(() => {
     if (!user) {
@@ -91,6 +92,16 @@
   });
 
   $effect(() => {
+    const currentUserId = user?.id ?? null;
+    if (currentUserId !== prevUserId) {
+      prevUserId = currentUserId;
+      initialized = false;
+      stories = [];
+      selectedStoryId = null;
+      successMessage = null;
+      error = null;
+    }
+
     if (user && !initialized) {
       initialized = true;
       loadStories();

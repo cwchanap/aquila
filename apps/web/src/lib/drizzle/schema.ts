@@ -8,6 +8,11 @@ import {
     boolean,
 } from 'drizzle-orm/pg-core';
 
+// Auth note: The web app authenticates with Supabase Auth. The `users` table is the
+// application-level user profile and is linked to Supabase identities via
+// `users.supabaseUserId` (nullable, unique). Existing rows may have NULL
+// `supabaseUserId` until first Supabase-authenticated login links the account.
+
 // Enum for story status
 export const storyStatusEnum = pgEnum('story_status', [
     'draft',
@@ -15,7 +20,7 @@ export const storyStatusEnum = pgEnum('story_status', [
     'archived',
 ]);
 
-// ============= Authentication Tables (Better Auth) =============
+// ============= Authentication Tables (Application Users) =============
 
 // Users table
 export const users = pgTable(

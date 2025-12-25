@@ -37,7 +37,7 @@ function getSupabaseEnv() {
 
     if (!url || !anonKey) {
         throw new Error(
-            'SUPABASE_URL and SUPABASE_ANON_KEY must be set in the environment to use Supabase auth.'
+            'SUPABASE_URL (or PUBLIC_SUPABASE_URL) and SUPABASE_ANON_KEY (or PUBLIC_SUPABASE_ANON_KEY) must be set in the environment to use Supabase auth.'
         );
     }
 

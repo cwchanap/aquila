@@ -152,7 +152,7 @@
       <div class="relative">
         <button
           bind:this={menuButton}
-          on:click={toggleDropdown}
+          onclick={toggleDropdown}
           class="flex items-center gap-3 bg-white/80 hover:bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/60"
           title="User Menu"
           style="font-family: 'Exo 2', sans-serif;"
@@ -209,9 +209,9 @@
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
             <button
               type="button"
-              on:click={handleLogout}
+              onclick={handleLogout}
               title={t(currentLocale, 'auth.signOut')}
-              class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
+              class="w-[calc(100%-1rem)] text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
               style="font-family: 'Exo 2', sans-serif;"
             >
               {t(currentLocale, 'auth.signOut')}

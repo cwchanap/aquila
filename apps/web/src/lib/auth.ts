@@ -79,13 +79,20 @@ export async function getCurrentUser(): Promise<unknown | null> {
     }
 }
 
+export class AuthenticationError extends Error {
+    constructor(message = 'Not authenticated') {
+        super(message);
+        this.name = 'AuthenticationError';
+    }
+}
+
 export async function authorizedFetch(
     input: RequestInfo | URL,
     init: RequestInit = {}
 ): Promise<Response> {
     const session = await getCurrentSession();
     if (!session?.access_token) {
-        throw new Error('Not authenticated');
+        throw new AuthenticationError();
     }
 
     const headers = new Headers(init.headers ?? {});

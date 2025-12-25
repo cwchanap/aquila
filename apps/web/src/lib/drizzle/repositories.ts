@@ -115,11 +115,21 @@ export class UserRepository {
                         image: data.image ?? existingByEmail.image ?? null,
                         updatedAt: new Date(),
                     })
-                    .where(eq(users.id, existingByEmail.id))
+                    .where(
+                        and(
+                            eq(users.id, existingByEmail.id),
+                            isNull(users.supabaseUserId)
+                        )
+                    )
                     .returning();
 
                 if (updated) {
                     return updated;
+                }
+
+                const latest = await this.findById(existingByEmail.id);
+                if (latest) {
+                    return latest;
                 }
             }
 
@@ -168,7 +178,12 @@ export class UserRepository {
                         image: data.image ?? racedEmail.image ?? null,
                         updatedAt: new Date(),
                     })
-                    .where(eq(users.id, racedEmail.id))
+                    .where(
+                        and(
+                            eq(users.id, racedEmail.id),
+                            isNull(users.supabaseUserId)
+                        )
+                    )
                     .returning();
 
                 if (updated) {

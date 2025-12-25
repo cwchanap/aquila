@@ -417,9 +417,17 @@ const t = (key: string): string => {
       stories.forEach(story => {
         const local = localStorage.getItem(`aquila:character:${story}`);
         if (local) {
-          const { characterName } = JSON.parse(local);
-          if (characterName) {
-            localChars.push({ characterName, storyId: story });
+          try {
+            const parsed = JSON.parse(local);
+            const characterName = parsed?.characterName;
+            if (characterName) {
+              localChars.push({ characterName, storyId: story });
+            }
+          } catch (err) {
+            console.warn(
+              `Skipping invalid local character data for story ${story}:`,
+              err
+            );
           }
         }
       });

@@ -119,10 +119,13 @@ export class CharacterCardManager {
             if (card.getAttribute('data-is-saving') === 'true') return;
             card.setAttribute('data-is-saving', 'true');
 
-            const saveButton = saveBtn as HTMLButtonElement;
+            const saveButton =
+                saveBtn instanceof HTMLButtonElement ? saveBtn : null;
             saveBtn.setAttribute('aria-disabled', 'true');
             saveBtn.classList.add('pointer-events-none');
-            saveButton.disabled = true;
+            if (saveButton) {
+                saveButton.disabled = true;
+            }
 
             try {
                 await this.onSave(storyId, newName);
@@ -147,7 +150,9 @@ export class CharacterCardManager {
                 card.removeAttribute('data-is-saving');
                 saveBtn.removeAttribute('aria-disabled');
                 saveBtn.classList.remove('pointer-events-none');
-                saveButton.disabled = false;
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
             }
 
             return;

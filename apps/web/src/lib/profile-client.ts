@@ -1,5 +1,5 @@
 import { getTranslations } from '@aquila/dialogue';
-import { authorizedFetch } from './auth';
+import { authorizedFetch, AuthenticationError } from './auth';
 
 type MaybeElement<T extends HTMLElement> = T | null;
 
@@ -88,7 +88,7 @@ export async function initProfileClient(): Promise<void> {
     } catch (error) {
         console.error('Profile load failed:', error);
 
-        if (error instanceof Error && error.message === 'Not authenticated') {
+        if (error instanceof AuthenticationError) {
             window.location.href = `/${getLang()}/login`;
             return;
         }

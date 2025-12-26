@@ -530,7 +530,22 @@ const t = (key: string): string => {
     if (cardManagers.has(container)) return;
 
     const manager = new CharacterCardManager(container, async (storyId: string, newName: string) => {
-      localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
+      const key = `aquila:character:${storyId}`;
+      const existingRaw = localStorage.getItem(key);
+      let existingData: Record<string, unknown> = {};
+      if (existingRaw) {
+        try {
+          const parsed = JSON.parse(existingRaw);
+          if (parsed && typeof parsed === 'object') {
+            existingData = parsed as Record<string, unknown>;
+          }
+        } catch (err) {
+          console.warn(`Skipping corrupt local character data for ${storyId} while saving`, err);
+        }
+      }
+
+      const merged = { ...existingData, characterName: newName };
+      localStorage.setItem(key, JSON.stringify(merged));
     });
 
     cardManagers.set(container, manager);

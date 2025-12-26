@@ -20,7 +20,7 @@ test.describe('Auth Error States', () => {
                 const mainMenu = new MainMenuPage(page);
                 const helpers = new TestHelpers(page);
 
-                // 1. Login to establish a session
+                // 1. Sign up to establish a session
                 await signUpViaUI(page, { locale: 'en' });
 
                 // Wait for redirect to localized home (authenticated)

@@ -276,13 +276,15 @@ import MainLayout from '../../layouts/main.astro';
 
 						// Otherwise, show email confirmation instructions and keep the user on the page
 						showSuccess('Check your email to confirm your account. Once verified, you can log in.');
-						// Optionally, prompt them to visit login page
-						setTimeout(() => {
-							successEl.insertAdjacentHTML(
-								'beforeend',
-								` <a href="/${locale}/login" class="underline text-emerald-700 font-bold hover:text-emerald-800">Go to login</a>`
-							);
-						}, 0);
+
+						// Safely add a login link
+						const loginLink = document.createElement('a');
+						loginLink.href = `/${locale}/login`;
+						loginLink.textContent = 'Go to login';
+						loginLink.className =
+							'underline text-emerald-700 font-bold hover:text-emerald-800';
+						successEl.appendChild(document.createTextNode(' '));
+						successEl.appendChild(loginLink);
 					} catch (error) {
 						console.error('Signup failed:', error);
 						showError('Signup failed. Please try again.');

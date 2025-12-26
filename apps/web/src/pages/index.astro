@@ -35,7 +35,23 @@ const errorStrings = {
     <MainMenu client:load locale={Astro.currentLocale ?? 'en'} />
 
     <script define:vars={{ locale, errorStrings }}>
+        window.__AQUILA_PAGE_DATA__ = { locale, errorStrings };
+    </script>
+
+    <script type="module">
         import { getCurrentUser } from '@/lib/auth';
+
+        const pageData =
+            typeof window !== 'undefined'
+                ? window.__AQUILA_PAGE_DATA__ ?? {}
+                : {};
+        const locale = pageData.locale ?? 'en';
+        const errorStrings =
+            pageData.errorStrings ?? {
+                connectionTitle: 'Connection error',
+                connectionMessage: 'Unable to connect.',
+                retry: 'Retry',
+            };
 
         // Handle auth gating and language preference persistence
         document.addEventListener('DOMContentLoaded', async () => {
@@ -53,7 +69,9 @@ const errorStrings = {
                         preferredLanguage === 'en' || preferredLanguage === 'zh'
                             ? preferredLanguage
                             : locale;
-                    window.location.href = `/${redirectLocale}/login`;
+                    const redirectLocalePrefix =
+                        redirectLocale === 'en' ? '' : `/${redirectLocale}`;
+                    window.location.href = `${redirectLocalePrefix}/login`;
                     return;
                 }
 

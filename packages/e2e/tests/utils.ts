@@ -407,6 +407,7 @@ async function assertServerAuthenticated(page: Page, locale: TestLocale) {
     // the expected landing page before returning.
     await page.goto(`/${locale}/`, { waitUntil: 'commit' });
     await expect(page).toHaveURL(new RegExp(`/${locale}/?$`));
+    await expect(page.locator('button[title="User Menu"]')).toBeVisible();
 }
 
 export async function signInViaUI(

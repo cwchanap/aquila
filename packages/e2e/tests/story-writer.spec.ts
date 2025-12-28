@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Route } from '@playwright/test';
 import { signUpFreshUserViaUI } from './utils';
 
 async function gotoStoryWriter(page: import('@playwright/test').Page) {
@@ -244,8 +244,20 @@ test.describe('Story Writer E2E Flow', () => {
             .filter({ hasText: 'Expandable Chapter' });
         await expect(chapterItem).toBeVisible();
 
+        await chapterItem.locator('button[title="Add scene"]').first().click();
+        await expect(
+            page.getByRole('heading', { name: 'Create New Scene' })
+        ).toBeVisible();
+        await page.locator('#scene-title').fill('Expandable Scene');
+        await page.locator('#scene-content').fill('Scene content');
+        await page.getByRole('button', { name: 'Create Scene' }).click();
+
+        const sceneItem = chapterItem.getByText('Expandable Scene');
+
         await chapterItem.locator('button').first().click();
+        await expect(sceneItem).toBeVisible();
         await chapterItem.locator('button').first().click();
+        await expect(sceneItem).toHaveCount(0);
     });
 
     test('should display correct story count', async ({ page }) => {
@@ -305,24 +317,43 @@ test.describe('Story Writer API Integration', () => {
     });
 
     test('should handle network timeout', async ({ page }) => {
-        // Simulate slow network
-        await page.route('**/api/stories', async route => {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await route.continue();
-        });
-        await gotoStoryWriter(page);
+        const storiesRouteHandler = async (route: Route) => {
+            const method = route.request().method();
+            if (method === 'GET' || method === 'POST') {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return route.fulfill({
+                    status: 504,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ error: 'Gateway Timeout' }),
+                });
+            }
+            return route.continue();
+        };
 
-        await expect(page.getByText('Loading...')).toBeVisible();
+        await page.route('**/api/stories', storiesRouteHandler);
 
-        await expect(page.getByText('No stories yet')).toBeVisible({
-            timeout: 10_000,
-        });
+        try {
+            await gotoStoryWriter(page);
 
-        await page.unroute('**/api/stories');
+            await expect(page.getByText('Loading...')).toBeVisible();
 
-        // Try to create a story
-        // Should show loading state or timeout message
-        // This depends on implementation
+            await expect(
+                page.getByText('Failed to load stories', { exact: true })
+            ).toBeVisible({ timeout: 10_000 });
+
+            const createButton = page.locator(
+                'button[title="Create new story"]'
+            );
+            await expect(createButton).toBeVisible();
+            await createButton.click();
+            await page.locator('#story-title').fill('Timeout Story');
+            await page.getByRole('button', { name: 'Create Story' }).click();
+            await expect(
+                page.getByText('Failed to create story', { exact: true })
+            ).toBeVisible();
+        } finally {
+            await page.unroute('**/api/stories', storiesRouteHandler);
+        }
     });
 });
 
@@ -348,7 +379,9 @@ test.describe('Story Writer Accessibility', () => {
         ).toBeVisible();
 
         // Should be able to close with Escape
-        await page.getByRole('button', { name: 'Close modal' }).click();
+        const dialog = page.getByRole('dialog');
+        await dialog.focus();
+        await page.keyboard.press('Escape');
 
         // Modal should close
         await expect(page.getByRole('dialog')).toHaveCount(0);

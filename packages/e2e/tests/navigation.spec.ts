@@ -6,7 +6,6 @@ test.describe('Navigation Flow', () => {
         page,
     }) => {
         await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
-        await expect(page.locator('button[title="User Menu"]')).toBeVisible();
 
         // Start at homepage
         await page.goto('/en/');

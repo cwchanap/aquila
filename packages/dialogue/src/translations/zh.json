@@ -161,6 +161,7 @@
       "startSessionFailed": "無法啟動重設流程。",
       "sessionNotReady": "重設流程尚未就緒，請使用電子郵件中的連結。",
       "passwordRequired": "請輸入並確認您的新密碼。",
+      "passwordTooShort": "密碼至少需要 6 個字元。",
       "passwordMismatch": "兩次輸入的密碼不一致。",
       "updatePasswordFailed": "更新密碼失敗。",
       "updatePasswordSuccess": "密碼已更新，您現在可以使用新密碼登入。"

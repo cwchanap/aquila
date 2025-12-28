@@ -5,6 +5,7 @@ type ResetPageStrings = {
     startSessionFailed: string;
     sessionNotReady: string;
     passwordRequired: string;
+    passwordTooShort: string;
     passwordMismatch: string;
     updatePasswordFailed: string;
     updatePasswordSuccess: string;
@@ -13,6 +14,8 @@ type ResetPageStrings = {
 type ResetPasswordClientOptions = {
     resetStrings: ResetPageStrings;
 };
+
+const MIN_PASSWORD_LENGTH = 6;
 
 export function initializeResetPasswordClient({
     resetStrings,
@@ -150,6 +153,11 @@ export function initializeResetPasswordClient({
 
                 if (!newPassword || !confirmPassword) {
                     showError(resetStrings.passwordRequired);
+                    return;
+                }
+
+                if (newPassword.length < MIN_PASSWORD_LENGTH) {
+                    showError(resetStrings.passwordTooShort);
                     return;
                 }
 

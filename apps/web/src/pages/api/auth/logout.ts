@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_SIGNOUT_TIMEOUT_MS = 10_000;
+const SUPABASE_COOKIE_PREFIX = 'sb-';
 
 function createFetchWithTimeout(timeoutMs: number): typeof fetch {
     return async (input, init) => {
@@ -54,6 +55,14 @@ function getEnv() {
         );
     }
     return { url, anonKey };
+}
+
+function getCookieNames(cookieHeader: string | null): string[] {
+    if (!cookieHeader) return [];
+    return cookieHeader
+        .split(';')
+        .map(pair => pair.trim().split('=')[0])
+        .filter(Boolean);
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -112,20 +121,32 @@ export const POST: APIRoute = async ({ request }) => {
             cookieFlags.push('Secure');
         }
 
+        const cookieHeader = request.headers.get('cookie');
+        const cookieNames = getCookieNames(cookieHeader);
+        const supabaseCookies = cookieNames.filter(name =>
+            name.startsWith(SUPABASE_COOKIE_PREFIX)
+        );
+        const cookiesToClear = Array.from(
+            new Set(['session', ...supabaseCookies])
+        );
+
+        const headers = new Headers({
+            'Content-Type': 'application/json',
+        });
+        for (const name of cookiesToClear) {
+            headers.append('Set-Cookie', `${name}=; ${cookieFlags.join('; ')}`);
+        }
+
         return new Response(
             JSON.stringify({
                 success: true,
-                cleared: Boolean(token),
+                cleared: cookiesToClear.length > 0,
                 revoked,
                 revokeError,
             }),
             {
                 status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Defensive cookie clear for any legacy session names
-                    'Set-Cookie': `session=; ${cookieFlags.join('; ')}`,
-                },
+                headers,
             }
         );
     } catch (error) {

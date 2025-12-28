@@ -104,7 +104,7 @@ const t = (key: string): string => {
         </div>
 
         <div class="space-y-8" id="profile-root">
-          <div id="profile-error" class="hidden mb-6 p-4 bg-red-100 border border-red-300 rounded-2xl text-red-600 text-sm font-semibold"></div>
+          <div id="profile-error" data-default-error={t("profile.failedToLoad")} class="hidden mb-6 p-4 bg-red-100 border border-red-300 rounded-2xl text-red-600 text-sm font-semibold"></div>
 
           <!-- User Info Display -->
           <div>
@@ -180,10 +180,30 @@ const t = (key: string): string => {
   </div>
 
   <script>
-	import { initProfileClient } from '@/lib/profile-client';
+    import { initProfileClient } from '@/lib/profile-client';
 
-	document.addEventListener('DOMContentLoaded', () => {
-		void initProfileClient();
-	});
+    document.addEventListener('DOMContentLoaded', () => {
+      initProfileClient().catch((error) => {
+        console.error('Profile init failed:', error);
+        const errorEl = document.getElementById('profile-error');
+        if (errorEl instanceof HTMLElement) {
+          const fallback =
+            errorEl.getAttribute('data-default-error') ||
+            'Failed to load user data';
+          errorEl.textContent = fallback;
+          errorEl.classList.remove('hidden');
+        }
+
+        const nameEl = document.getElementById('profile-name');
+        if (nameEl instanceof HTMLElement) {
+          nameEl.textContent = 'N/A';
+        }
+
+        const emailEl = document.getElementById('profile-email');
+        if (emailEl instanceof HTMLElement) {
+          emailEl.textContent = 'N/A';
+        }
+      });
+    });
   </script>
 </MainLayout>

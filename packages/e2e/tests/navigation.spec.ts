@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI, TestHelpers } from './utils';
+import { signInWithSharedCredentialsViaUI, TestHelpers } from './utils';
 
 test.describe('Navigation Flow', () => {
     test('should complete full user journey from homepage to story setup', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'nav' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await expect(page.locator('button[title="User Menu"]')).toBeVisible();
 
         // Start at homepage
@@ -28,7 +28,7 @@ test.describe('Navigation Flow', () => {
         page,
     }) => {
         // Navigate through the flow
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'nav-back' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/');
         await page.click('#start-btn');
         await page.click('a[href*="/reader?story=train_adventure"]');
@@ -54,7 +54,7 @@ test.describe('Responsive Design', () => {
         // Set mobile viewport
         await page.setViewportSize({ width: 375, height: 667 });
 
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'nav-mobile' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
 
         await page.goto('/en/');
 
@@ -76,7 +76,7 @@ test.describe('Responsive Design', () => {
         // Set tablet viewport
         await page.setViewportSize({ width: 768, height: 1024 });
 
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'nav-tablet' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
 
         await page.goto('/en/');
 

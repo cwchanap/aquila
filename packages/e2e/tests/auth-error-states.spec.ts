@@ -1,6 +1,10 @@
 import { test, expect, devices } from '@playwright/test';
 
-import { MainMenuPage, TestHelpers, signUpViaUI } from './utils';
+import {
+    MainMenuPage,
+    TestHelpers,
+    signInWithSharedCredentialsViaUI,
+} from './utils';
 
 test.describe('Auth Error States', () => {
     const mobileDevices = ['Pixel 5', 'iPhone 12'] as const;
@@ -21,7 +25,7 @@ test.describe('Auth Error States', () => {
                 const helpers = new TestHelpers(page);
 
                 // 1. Sign up to establish a session
-                await signUpViaUI(page, { locale: 'en' });
+                await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
 
                 // Wait for redirect to localized home (authenticated)
                 await page.waitForURL(/\/en\/?$/);
@@ -58,7 +62,11 @@ test.describe('Auth Error States', () => {
                     page.getByRole('heading', { name: /Connection Error/i })
                 ).toBeVisible();
 
-                const details = page.locator('pre');
+                const details = page
+                    .locator(
+                        '[data-testid="auth-error"] pre, .error-modal pre, pre'
+                    )
+                    .first();
                 await expect(details).toBeVisible();
                 await expect(details).toContainText(/Auth server error: 500/);
             });

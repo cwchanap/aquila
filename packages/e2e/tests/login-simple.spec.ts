@@ -1,15 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI } from './utils';
+import { signInWithSharedCredentialsViaUI } from './utils';
 
 test.describe('Simple Login UI Test', () => {
-    test('should show login button on localized main page', async ({
+    test('should redirect unauthenticated users to localized login page', async ({
         page,
     }) => {
+        // Navigate to localized root as unauthenticated
         await page.goto('/en/');
 
-        // Should see login button in top right for the English locale
-        await page.waitForURL(/\/en\/login\/?$/);
-        await expect(page).toHaveURL(/\/en\/login\/?$/);
+        // Should be redirected to /en/login
+        await page.waitForURL(/\/en\/login/);
+        await expect(page).toHaveURL(/\/en\/login/);
+
+        // Verify login form is visible
         await expect(page.locator('input[name="email"]')).toBeVisible();
         await expect(page.locator('input[name="password"]')).toBeVisible();
     });
@@ -51,7 +54,7 @@ test.describe('Simple Login UI Test', () => {
     });
 
     test('should have back button to localized home', async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'login-back' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/login');
 
         // Should have back button that returns to localized home

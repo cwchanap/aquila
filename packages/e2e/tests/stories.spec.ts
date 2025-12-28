@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI, TestHelpers } from './utils';
+import { signInWithSharedCredentialsViaUI, TestHelpers } from './utils';
 
 test.describe('Stories Page', () => {
     test('should load and display story selection', async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'stories' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/stories');
 
         // Check if the page loads successfully
@@ -25,7 +25,7 @@ test.describe('Stories Page', () => {
     test('should have proper styling consistent with main menu', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'stories-style' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/stories');
 
         const helpers = new TestHelpers(page);
@@ -40,7 +40,7 @@ test.describe('Stories Page', () => {
     test('should navigate to train adventure setup when clicked (for authenticated users)', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'stories-nav' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/stories');
 
         // Click the Train Adventure button
@@ -52,9 +52,8 @@ test.describe('Stories Page', () => {
     });
 
     test('should be accessible from main menu', async ({ page }) => {
-        await signUpViaUI(page, {
+        await signInWithSharedCredentialsViaUI(page, {
             locale: 'en',
-            emailPrefix: 'stories-from-menu',
         });
         // Start from homepage
         await page.goto('/en/');

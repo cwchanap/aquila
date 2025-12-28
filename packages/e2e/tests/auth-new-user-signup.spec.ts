@@ -28,7 +28,7 @@ test.describe('Supabase Auth - new user signup (US2)', () => {
 
         await page.waitForLoadState('networkidle');
 
-        await expect(page.url()).toMatch(/\/(en|zh)\//);
+        await expect(page).toHaveURL(/^\/(en|zh)\/?$/);
 
         await expect(page.locator('body h1').first()).toContainText(
             /Main Menu|主菜单|主選單/

@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { MainMenuPage, StoriesPage, TestHelpers, signUpViaUI } from './utils';
+import {
+    MainMenuPage,
+    StoriesPage,
+    TestHelpers,
+    signInWithSharedCredentialsViaUI,
+} from './utils';
 
 test.describe('Page Object Model Example', () => {
     test('should navigate using page objects', async ({ page }) => {
@@ -7,7 +12,7 @@ test.describe('Page Object Model Example', () => {
         const stories = new StoriesPage(page);
         const helpers = new TestHelpers(page);
 
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'pomspec' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
 
         // Navigate to main menu
         await mainMenu.goto('en');
@@ -47,7 +52,7 @@ test.describe('Page Object Model Example', () => {
         // Simulate slow network
         await helpers.simulateSlowNetwork();
 
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'pomspec-slow' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
 
         // Navigate and ensure it still works
         await mainMenu.goto('en');

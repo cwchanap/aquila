@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI } from './utils';
+import { signInWithSharedCredentialsViaUI } from './utils';
 
 test.describe('Accessibility', () => {
     test.beforeEach(async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/');
     });
 
@@ -102,7 +102,7 @@ test.describe('Accessibility', () => {
 test.describe('Performance', () => {
     test('should load quickly', async ({ page }) => {
         const startTime = Date.now();
-        await signUpViaUI(page, { locale: 'en' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/');
         const loadTime = Date.now() - startTime;
 
@@ -122,7 +122,7 @@ test.describe('Performance', () => {
             }
         });
 
-        await signUpViaUI(page, { locale: 'en' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/');
 
         // Wait a bit to catch any async errors

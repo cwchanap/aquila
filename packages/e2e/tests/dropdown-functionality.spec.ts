@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI } from './utils';
+import { signInWithSharedCredentialsViaUI } from './utils';
 
 test.describe('UserStatus Dropdown Functionality', () => {
     test('comprehensive dropdown functionality test', async ({ page }) => {
         console.log('Starting comprehensive dropdown functionality test...');
 
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'dropdown' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
 
         // Navigate to the main page
         await page.goto('/en/');
@@ -275,9 +275,8 @@ test.describe('UserStatus Dropdown Functionality', () => {
     test('test dropdown with different viewport sizes', async ({ page }) => {
         console.log('Testing dropdown responsiveness...');
 
-        await signUpViaUI(page, {
+        await signInWithSharedCredentialsViaUI(page, {
             locale: 'en',
-            emailPrefix: 'dropdown-viewport',
         });
 
         // Test on mobile viewport

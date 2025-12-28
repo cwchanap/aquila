@@ -442,25 +442,27 @@ export async function signInViaUI(
     await assertServerAuthenticated(page, locale);
 }
 
-export async function signUpViaUI(
+export async function signInWithSharedCredentialsViaUI(
     page: Page,
     options?: {
         locale?: TestLocale;
-        emailPrefix?: string;
         password?: string;
-        name?: string;
-        forceNew?: boolean;
     }
 ): Promise<{ email: string; password: string }> {
     const locale = options?.locale ?? 'en';
     const email =
-        process.env.E2E_SHARED_EMAIL ??
-        process.env.SUPABASE_E2E_EMAIL ??
-        'test-aquila@cwchanap.dev';
+        process.env.E2E_SHARED_EMAIL ?? process.env.SUPABASE_E2E_EMAIL;
     const password =
+        options?.password ??
         process.env.E2E_SHARED_PASSWORD ??
         process.env.SUPABASE_E2E_PASSWORD ??
         DEFAULT_TEST_PASSWORD;
+
+    if (!email) {
+        throw new Error(
+            'E2E_SHARED_EMAIL or SUPABASE_E2E_EMAIL environment variable is required for shared credentials login.'
+        );
+    }
 
     try {
         await signInViaUI(page, {

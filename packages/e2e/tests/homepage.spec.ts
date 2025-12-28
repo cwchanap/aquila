@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { signUpViaUI } from './utils';
+import { signInWithSharedCredentialsViaUI } from './utils';
 
 test.describe('Homepage', () => {
     test('should load and display main menu', async ({ page }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'homepage' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/');
 
         // Check if the page loads successfully
@@ -28,9 +28,8 @@ test.describe('Homepage', () => {
     test('should have proper styling and responsive design', async ({
         page,
     }) => {
-        await signUpViaUI(page, {
+        await signInWithSharedCredentialsViaUI(page, {
             locale: 'en',
-            emailPrefix: 'homepage-style',
         });
         await page.goto('/en/');
 
@@ -46,7 +45,7 @@ test.describe('Homepage', () => {
     test('should navigate to stories page when Start Game is clicked', async ({
         page,
     }) => {
-        await signUpViaUI(page, { locale: 'en', emailPrefix: 'homepage-nav' });
+        await signInWithSharedCredentialsViaUI(page, { locale: 'en' });
         await page.goto('/en/');
 
         // Click the Start Game button
@@ -57,9 +56,8 @@ test.describe('Homepage', () => {
     });
 
     test('should handle settings button click', async ({ page }) => {
-        await signUpViaUI(page, {
+        await signInWithSharedCredentialsViaUI(page, {
             locale: 'en',
-            emailPrefix: 'homepage-settings',
         });
         await page.goto('/en/');
 

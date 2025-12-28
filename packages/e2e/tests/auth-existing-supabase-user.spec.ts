@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { DEFAULT_TEST_PASSWORD } from './utils';
 
 /**
  * US1 E2E: Existing Supabase user signs in and reaches Aquila main menu.
@@ -14,15 +13,16 @@ import { DEFAULT_TEST_PASSWORD } from './utils';
  */
 
 const SUPABASE_E2E_EMAIL =
-    process.env.E2E_SHARED_EMAIL ??
-    process.env.SUPABASE_E2E_EMAIL ??
-    'test-aquila@cwchanap.dev';
+    process.env.E2E_SHARED_EMAIL ?? process.env.SUPABASE_E2E_EMAIL;
 const SUPABASE_E2E_PASSWORD =
-    process.env.E2E_SHARED_PASSWORD ??
-    process.env.SUPABASE_E2E_PASSWORD ??
-    DEFAULT_TEST_PASSWORD;
+    process.env.E2E_SHARED_PASSWORD ?? process.env.SUPABASE_E2E_PASSWORD;
 
 test.describe('Supabase Auth - existing user sign-in (US1)', () => {
+    test.skip(
+        !SUPABASE_E2E_EMAIL || !SUPABASE_E2E_PASSWORD,
+        'Missing E2E_SHARED_EMAIL or SUPABASE_E2E_EMAIL'
+    );
+
     test('existing Supabase user can sign in via /en/login and reach main menu', async ({
         page,
     }) => {

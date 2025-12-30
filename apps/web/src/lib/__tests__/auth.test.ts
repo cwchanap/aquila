@@ -5,27 +5,30 @@ import {
     type SupabaseSession,
 } from '../auth';
 
-// Mock internal supabase client helper so tests don't depend on real env vars
-const getSession = vi.fn(async () => ({
-    data: {
-        session: {
-            access_token: 'test-token',
-            token_type: 'bearer',
-            expires_in: 3600,
-            user: {
-                id: 'user-123',
-                email: 'test@example.com',
+const { mockClient } = vi.hoisted(() => {
+    const getSession = vi.fn(async () => ({
+        data: {
+            session: {
+                access_token: 'test-token',
+                token_type: 'bearer',
+                expires_in: 3600,
+                user: {
+                    id: 'user-123',
+                    email: 'test@example.com',
+                },
             },
         },
-    },
-    error: null,
-}));
+        error: null,
+    }));
 
-const mockClient = {
-    auth: {
-        getSession,
-    },
-} as unknown as { auth: { getSession: typeof getSession } };
+    return {
+        mockClient: {
+            auth: {
+                getSession,
+            },
+        },
+    };
+});
 
 vi.mock('../auth/supabaseClient', () => ({
     getSupabaseClient: vi.fn(() => mockClient),

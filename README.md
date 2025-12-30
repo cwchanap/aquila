@@ -184,12 +184,13 @@ bun --filter web test src/lib/__tests__/utils.test.ts
 
 ### Required (Web App)
 
-- `DATABASE_URL` - PostgreSQL connection string
+- `PUBLIC_SUPABASE_URL` - Supabase project URL
+- `PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side only)
+- `DATABASE_URL` - PostgreSQL connection string (Supabase DB URL)
 
 ### Optional
 
-- `BETTER_AUTH_URL` - Auth service URL (defaults to app URL)
-- `BETTER_AUTH_SECRET` - Auth encryption key (auto-generated in dev)
 - `DB_ALLOW_SELF_SIGNED` - Allow self-signed SSL certs (`true`/`false`)
 - `DB_POOL_MAX` - PostgreSQL connection pool size (default: 10)
 - `ALLOW_COCKROACH_MIGRATIONS` - Explicitly enable CockroachDB migrations
@@ -201,9 +202,8 @@ bun --filter web test src/lib/__tests__/utils.test.ts
 The web app is configured for Vercel with automatic deployments:
 
 1. Connect your repository to Vercel
-2. Set `DATABASE_URL` in environment variables
-3. Set `BETTER_AUTH_SECRET` for production
-4. Deploy (Vercel will run `bun build` automatically)
+2. Set `DATABASE_URL`, `PUBLIC_SUPABASE_URL`, and `PUBLIC_SUPABASE_ANON_KEY` in environment variables
+3. Deploy (Vercel will run `bun build` automatically)
 
 ### Desktop App
 

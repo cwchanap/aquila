@@ -230,7 +230,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeyPress} />
+<svelte:window onkeydown={handleKeyPress} />
 
 <div
   class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex items-center justify-center p-6"
@@ -309,7 +309,7 @@
       {#if !isTyping && !choice}
         <div class="text-center">
           <button
-            on:click={handleNext}
+            onclick={handleNext}
             class="group px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             {#if isLastDialogue && canGoNext}
@@ -331,7 +331,7 @@
           </p>
           {#each choice.options as option (option.id)}
             <button
-              on:click={() => handleChoice(option.nextScene)}
+              onclick={() => handleChoice(option.nextScene)}
               class="w-full p-4 bg-gradient-to-r from-slate-100 to-white hover:from-blue-100 hover:to-cyan-50 text-slate-800 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] border-2 border-slate-200 hover:border-blue-300 text-left"
             >
               {option.label}
@@ -346,7 +346,7 @@
       <!-- Bookmark button -->
       {#if showBookmarkButton}
         <button
-          on:click={() =>
+          onclick={() =>
             onBookmark(displayedDialogues.length + (isTyping ? 1 : 0))}
           class="px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-white/40"
         >

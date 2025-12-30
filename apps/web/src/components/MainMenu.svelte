@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { createEventDispatcher } from 'svelte';
   import UserStatus from './UserStatus.svelte';
+  import Modal from './ui/Modal.svelte';
   import en from '@aquila/dialogue/translations/en.json';
   import zh from '@aquila/dialogue/translations/zh.json';
   import type { User } from '../lib/drizzle/schema.js';
@@ -10,6 +11,7 @@
   export let locale: string = 'en';
 
   let currentLocale = locale;
+  let showSettingsModal = false;
   const dispatch = createEventDispatcher();
 
   // Helper function to get translations
@@ -67,8 +69,7 @@
   };
 
   const handleSettingsClick = () => {
-    console.log('Settings button clicked!');
-    // Add your settings logic here
+    showSettingsModal = true;
   };
 </script>
 
@@ -168,14 +169,14 @@
       <a
         href="/en/"
         class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 language-link block mb-1"
-        on:click={() => handleLanguageClick('en')}
+        onclick={() => handleLanguageClick('en')}
       >
         English
       </a>
       <a
         href="/zh/"
         class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 language-link block"
-        on:click={() => handleLanguageClick('zh')}
+        onclick={() => handleLanguageClick('zh')}
       >
         中文
       </a>
@@ -212,7 +213,7 @@
           id="start-btn"
           class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-          on:click={handleStartClick}
+          onclick={handleStartClick}
         >
           <!-- Button glow effect -->
           <div
@@ -239,7 +240,7 @@
         <button
           class="group relative w-full py-6 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-purple-300/50 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-          on:click={handleBookmarksClick}
+          onclick={handleBookmarksClick}
         >
           <!-- Button glow effect -->
           <div
@@ -267,7 +268,7 @@
           id="settings-btn"
           class="group relative w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace;"
-          on:click={handleSettingsClick}
+          onclick={handleSettingsClick}
         >
           <!-- Button glow effect -->
           <div
@@ -291,6 +292,35 @@
           ></div>
         </button>
       </div>
+
+      <!-- Settings Modal -->
+      <Modal
+        bind:open={showSettingsModal}
+        title={t('menu.settings')}
+        className="max-w-md"
+      >
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-bold text-white uppercase tracking-wider"
+              style="font-family: 'Orbitron', sans-serif;"
+            >
+              {t('setup.characterName')}
+            </h3>
+            <p class="text-slate-400 text-sm">
+              Settings are currently managed via the story configuration.
+            </p>
+          </div>
+          <div class="flex justify-end pt-4">
+            <button
+              class="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors font-bold uppercase tracking-widest text-xs border border-white/10"
+              onclick={() => (showSettingsModal = false)}
+            >
+              {t('common.back')}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <!-- Gaming Decorative Elements -->
       <div class="mt-12 flex justify-center items-center space-x-4 opacity-60">

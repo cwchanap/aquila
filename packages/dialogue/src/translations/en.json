@@ -161,7 +161,7 @@
       "startSessionFailed": "Unable to start reset session.",
       "sessionNotReady": "Reset session not ready. Please use the link from your email.",
       "passwordRequired": "Please enter and confirm your new password.",
-      "passwordTooShort": "Password must be at least 6 characters.",
+      "passwordTooShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match.",
       "updatePasswordFailed": "Failed to update password.",
       "updatePasswordSuccess": "Password updated. You can now log in with your new password."

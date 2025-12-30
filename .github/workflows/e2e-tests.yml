@@ -69,9 +69,6 @@ jobs:
           echo "DATABASE_URL=${DB_URL}" >> $GITHUB_ENV
 
       - name: Ensure shared Supabase E2E user exists
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           bun -e "import { createClient } from '@supabase/supabase-js';
           const url = process.env.SUPABASE_URL;
@@ -105,7 +102,4 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: packages/e2e
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
         run: bun run test:e2e

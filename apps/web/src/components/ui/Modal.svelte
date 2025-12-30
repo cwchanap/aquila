@@ -40,10 +40,10 @@
       tabindex="0"
       onclick={handleClose}
       onkeydown={handleOverlayKeydown}
-    />
+    ></div>
     <div
       class={cn(
-        'relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 rounded-2xl shadow-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-hidden',
+        'relative bg-linear-to-br from-gray-900/95 to-gray-800/95 rounded-2xl shadow-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-hidden',
         className
       )}
       onkeydown={handleKeydown}

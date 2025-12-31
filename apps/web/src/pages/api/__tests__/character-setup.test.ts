@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isValidStoryId, StoryId } from '@/lib/story-types';
+import { isValidCharacterName } from '@/lib/validation';
 
 /**
  * Character Setup API Unit Tests
@@ -14,10 +15,6 @@ import { isValidStoryId, StoryId } from '@/lib/story-types';
 
 describe('Character Setup API Logic', () => {
     describe('Request Validation', () => {
-        const isValidCharacterName = (name: unknown): boolean => {
-            return !!name && typeof name === 'string' && name.trim().length > 0;
-        };
-
         it('should reject empty character name', () => {
             expect(isValidCharacterName('')).toBe(false);
         });
@@ -67,7 +64,12 @@ describe('Character Setup API Logic', () => {
         });
 
         it('should decide to update when existingSetup exists', () => {
-            const existingSetup = {
+            const existingSetup: {
+                id: string;
+                userId: string;
+                storyId: StoryId;
+                characterName: string;
+            } | null = {
                 id: 'setup-1',
                 userId: 'user-123',
                 storyId: StoryId.TRAIN_ADVENTURE,

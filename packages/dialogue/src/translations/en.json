@@ -146,6 +146,10 @@
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
+    "loadingSession": "Loading session…",
+    "profile": "Profile",
+    "storyConfig": "Story Config",
+    "login": "Login",
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset Password",
     "resetPage": {

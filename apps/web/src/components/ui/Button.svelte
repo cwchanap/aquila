@@ -37,7 +37,18 @@
 </script>
 
 {#if href}
-  <a {href} class={finalClass} {...$$restProps}>
+  <a
+    {href}
+    class={finalClass}
+    aria-disabled={disabled}
+    tabindex={disabled ? -1 : undefined}
+    on:click={(e) => {
+      if (disabled) {
+        e.preventDefault();
+      }
+    }}
+    {...$$restProps}
+  >
     <slot />
   </a>
 {:else}

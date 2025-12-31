@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
 import { requireSupabaseUser } from '@/lib/auth/server';
+import { isValidCharacterName } from '@/lib/validation.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -13,11 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         const { characterName, storyId } = await request.json();
 
-        if (
-            !characterName ||
-            typeof characterName !== 'string' ||
-            characterName.trim().length === 0
-        ) {
+        if (!isValidCharacterName(characterName)) {
             return new Response(
                 JSON.stringify({ error: 'Character name is required' }),
                 {

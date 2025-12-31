@@ -146,6 +146,10 @@
     "signIn": "登入",
     "signUp": "註冊",
     "signOut": "登出",
+    "loadingSession": "載入工作階段中…",
+    "profile": "個人資料",
+    "storyConfig": "故事設定",
+    "login": "登入",
     "forgotPassword": "忘記密碼？",
     "resetPassword": "重設密碼",
     "resetPage": {

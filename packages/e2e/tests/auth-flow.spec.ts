@@ -99,17 +99,17 @@ test.describe('Authentication Flows', () => {
 });
 
 test.describe('API Authorization Guards', () => {
-    test('unauthenticated requests return 401/403', async ({ request }) => {
+    test('unauthenticated requests return 401', async ({ request }) => {
         // These are quick API checks - no browser needed
         const endpoints = ['/api/me', '/api/bookmarks'];
 
         for (const endpoint of endpoints) {
             const response = await request.get(endpoint);
-            expect([401, 403]).toContain(response.status());
+            expect(response.status()).toBe(401);
         }
     });
 
-    test('unauthenticated POST/DELETE to bookmarks returns 401/403', async ({
+    test('unauthenticated POST/DELETE to bookmarks returns 401', async ({
         request,
     }) => {
         const postResponse = await request.post('/api/bookmarks', {

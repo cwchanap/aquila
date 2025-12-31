@@ -385,6 +385,12 @@ async function assertServerAuthenticated(page: Page, locale: TestLocale) {
     // use the access_token to call /api/me.
     const accessToken = await getSupabaseAccessToken(page);
 
+    if (!accessToken) {
+        throw new Error(
+            'Auth cookies exist but failed to extract access token from Supabase session cookie'
+        );
+    }
+
     if (accessToken) {
         const meResponse = await page.request.get('/api/me', {
             headers: {

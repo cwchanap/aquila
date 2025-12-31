@@ -145,7 +145,7 @@
     >
       <span class="inline-flex h-2 w-2 rounded-full bg-slate-400 animate-pulse"
       ></span>
-      <span class="text-sm font-semibold animate-pulse">Loading session…</span>
+      <span class="text-sm font-semibold animate-pulse">{t(currentLocale, 'auth.loadingSession')}</span>
     </div>
   {:else if user}
     <div class="flex items-center relative">
@@ -197,14 +197,14 @@
               class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
               style="font-family: 'Exo 2', sans-serif;"
             >
-              Profile
+              {t(currentLocale, 'auth.profile')}
             </a>
             <a
               href={`/${currentLocale}/characters`}
               class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
               style="font-family: 'Exo 2', sans-serif;"
             >
-              Story Config
+              {t(currentLocale, 'auth.storyConfig')}
             </a>
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
             <button
@@ -227,7 +227,7 @@
         class="px-6 py-3 bg-white/80 hover:bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl text-slate-700 hover:text-slate-900 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
         style="font-family: 'Orbitron', monospace;"
       >
-        Login
+        {t(currentLocale, 'auth.login')}
       </a>
       {#if hasClientError && errorMessage}
         <div

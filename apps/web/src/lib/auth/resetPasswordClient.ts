@@ -1,4 +1,5 @@
 import { getSupabaseAuthClient } from '@/lib/auth';
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth/constants';
 
 type ResetPageStrings = {
     invalidOrMissingLink: string;
@@ -14,8 +15,6 @@ type ResetPageStrings = {
 type ResetPasswordClientOptions = {
     resetStrings: ResetPageStrings;
 };
-
-const MIN_PASSWORD_LENGTH = 8;
 
 function redactError(error: unknown): string {
     const isDevelopment =

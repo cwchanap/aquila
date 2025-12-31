@@ -1,6 +1,15 @@
 <script lang="ts">
   import Button from './Button.svelte';
 
+  interface Props {
+    title?: string;
+    description?: string;
+    status?: 'draft' | 'published' | 'archived';
+    onSubmit: (e: Event & { submitter: HTMLElement | null }) => void;
+    onCancel: () => void;
+    submitLabel?: string;
+  }
+
   let {
     title = $bindable(''),
     description = $bindable(''),
@@ -8,17 +17,10 @@
     onSubmit,
     onCancel,
     submitLabel = 'Create Story',
-  }: {
-    title?: string;
-    description?: string;
-    status?: 'draft' | 'published' | 'archived';
-    onSubmit: () => void;
-    onCancel: () => void;
-    submitLabel?: string;
-  } = $props();
+  }: Props = $props();
 </script>
 
-<form onsubmit={onSubmit} class="space-y-6">
+<form on:submit|preventDefault={onSubmit} class="space-y-6">
   <div>
     <label
       for="story-title"

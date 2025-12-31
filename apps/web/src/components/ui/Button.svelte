@@ -37,11 +37,11 @@
 </script>
 
 {#if href}
-  <a {href} class={finalClass} onclick {...$$restProps}>
+  <a {href} class={finalClass} {...$$restProps}>
     <slot />
   </a>
 {:else}
-  <button class={finalClass} onclick {type} {disabled} aria-disabled={disabled} {...$$restProps}>
+  <button class={finalClass} {type} {disabled} aria-disabled={disabled} {...$$restProps}>
     <slot />
   </button>
 {/if}

@@ -182,11 +182,11 @@ describe('NovelReader', () => {
             // Progress through all dialogues
             await vi.runAllTimersAsync();
 
-            const continueBtn = screen.getByText('Continue');
-            await fireEvent.click(continueBtn);
+            // Re-query the button each time; Svelte may replace the node on update.
+            await fireEvent.click(screen.getByText('Continue'));
             await vi.runAllTimersAsync();
 
-            await fireEvent.click(continueBtn);
+            await fireEvent.click(screen.getByText('Continue'));
             await vi.runAllTimersAsync();
 
             // All three dialogues should be visible
@@ -196,9 +196,12 @@ describe('NovelReader', () => {
             expect(
                 screen.getByText('Second dialogue line.')
             ).toBeInTheDocument();
-            expect(
-                screen.getByText('Third dialogue line.')
-            ).toBeInTheDocument();
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText('Third dialogue line.')
+                ).toBeInTheDocument();
+            });
         });
     });
 

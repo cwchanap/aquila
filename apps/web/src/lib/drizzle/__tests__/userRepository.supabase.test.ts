@@ -4,6 +4,8 @@ import { users } from '../schema';
 
 vi.mock('drizzle-orm', () => ({
     eq: vi.fn((field: unknown, value: unknown) => ({ field, value })),
+    and: vi.fn((...conditions: unknown[]) => ({ conditions })),
+    isNull: vi.fn((field: unknown) => ({ field })),
 }));
 
 vi.mock('nanoid', () => ({

@@ -17,6 +17,53 @@ type ResetPasswordClientOptions = {
 
 const MIN_PASSWORD_LENGTH = 8;
 
+function redactError(error: unknown): string {
+    const isDevelopment =
+        (typeof process !== 'undefined' && process.env?.NODE_ENV) ===
+        'development';
+
+    if (!error) {
+        return 'Unknown error';
+    }
+
+    if (isDevelopment) {
+        const sensitiveKeys = new Set([
+            'access_token',
+            'refresh_token',
+            'token',
+            'id_token',
+            'user',
+            'email',
+            'phone',
+            'headers',
+            'body',
+        ]);
+
+        const replacer = (_key: string, value: unknown): unknown => {
+            if (sensitiveKeys.has(_key)) {
+                return '[REDACTED]';
+            }
+            return value;
+        };
+
+        try {
+            return JSON.stringify(error, replacer, 2);
+        } catch {
+            return String(error);
+        }
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        return String((error as { message: unknown }).message);
+    }
+
+    return 'An error occurred';
+}
+
 export function initializeResetPasswordClient({
     resetStrings,
 }: ResetPasswordClientOptions) {
@@ -94,7 +141,7 @@ export function initializeResetPasswordClient({
                 });
 
                 if (error) {
-                    console.error('Session init error:', error);
+                    console.error('Session init error:', redactError(error));
                     showError(resetStrings.startSessionFailed);
                     sessionReady = false;
                     submitButtonElement.disabled = true;
@@ -104,7 +151,7 @@ export function initializeResetPasswordClient({
                 sessionReady = true;
                 submitButtonElement.disabled = false;
             } catch (err) {
-                console.error('Session init error:', err);
+                console.error('Session init error:', redactError(err));
                 showError(resetStrings.startSessionFailed);
                 sessionReady = false;
                 submitButtonElement.disabled = true;
@@ -171,7 +218,7 @@ export function initializeResetPasswordClient({
                 });
 
                 if (error) {
-                    console.error('Update password error:', error);
+                    console.error('Update password error:', redactError(error));
                     showError(resetStrings.updatePasswordFailed);
                     return;
                 }
@@ -188,7 +235,7 @@ export function initializeResetPasswordClient({
                     window.location.href = `/${safeLocale}/login`;
                 }, 1200);
             } catch (err) {
-                console.error('Update password error:', err);
+                console.error('Update password error:', redactError(err));
                 showError(resetStrings.updatePasswordFailed);
             } finally {
                 isSubmitting = false;

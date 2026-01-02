@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { Locale } from '@aquila/dialogue';
+  import { getTranslations } from '@aquila/dialogue';
   import Button from './Button.svelte';
 
   interface Props {
@@ -8,6 +10,7 @@
     onSubmit: (e: Event & { submitter: HTMLElement | null }) => void;
     onCancel: () => void;
     submitLabel?: string;
+    locale?: Locale;
   }
 
   let {
@@ -16,8 +19,12 @@
     status = $bindable<'draft' | 'published' | 'archived'>('draft'),
     onSubmit,
     onCancel,
-    submitLabel = 'Create Story',
+    submitLabel,
+    locale = 'en',
   }: Props = $props();
+
+  const t = getTranslations(locale);
+  const resolvedSubmitLabel = submitLabel ?? t.actions.createStory;
 </script>
 
 <form on:submit|preventDefault={onSubmit} class="space-y-6">
@@ -26,7 +33,7 @@
       for="story-title"
       class="block text-sm font-medium text-gray-300 mb-2"
     >
-      Title <span class="text-red-400">*</span>
+      {t.story.title} <span class="text-red-400">*</span>
     </label>
     <input
       id="story-title"
@@ -34,7 +41,7 @@
       bind:value={title}
       required
       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-      placeholder="Enter story title"
+      placeholder={t.story.placeholderTitle}
     />
   </div>
 
@@ -43,14 +50,14 @@
       for="story-description"
       class="block text-sm font-medium text-gray-300 mb-2"
     >
-      Description
+      {t.story.description}
     </label>
     <textarea
       id="story-description"
       bind:value={description}
       rows="4"
       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
-      placeholder="Enter story description (optional)"
+      placeholder={t.story.placeholderDescriptionOptional}
     ></textarea>
   </div>
 
@@ -59,16 +66,16 @@
       for="story-status"
       class="block text-sm font-medium text-gray-300 mb-2"
     >
-      Status
+      {t.status.label}
     </label>
     <select
       id="story-status"
       bind:value={status}
       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
     >
-      <option value="draft">Draft</option>
-      <option value="published">Published</option>
-      <option value="archived">Archived</option>
+      <option value="draft">{t.status.draft}</option>
+      <option value="published">{t.status.published}</option>
+      <option value="archived">{t.status.archived}</option>
     </select>
   </div>
 
@@ -79,14 +86,14 @@
       onclick={onCancel}
       className="bg-gray-600 hover:bg-gray-700"
     >
-      Cancel
+      {t.actions.cancel}
     </Button>
     <Button
       type="submit"
       variant="default"
       className="bg-purple-600 hover:bg-purple-700"
     >
-      {submitLabel}
+      {resolvedSubmitLabel}
     </Button>
   </div>
 </form>

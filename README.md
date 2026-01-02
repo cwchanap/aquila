@@ -109,11 +109,12 @@ packages/
 
 ### Testing
 
-- `bun test` - Run all tests (unit + E2E)
-- `bun test:e2e` - Run Playwright E2E tests
-- `bun test:headed` - Run E2E tests with visible browser
-- `bun test:debug` - Debug E2E tests
-- `bun test:report` - View Playwright HTML report
+- Use `bun run` scripts; `bun test` invokes Bun's built-in runner and is not supported here.
+- `bun run test` - Run all tests (unit + E2E)
+- `bun run test:e2e` - Run Playwright E2E tests
+- `bun run test:headed` - Run E2E tests with visible browser
+- `bun run test:debug` - Debug E2E tests
+- `bun run test:report` - View Playwright HTML report
 - `bun --filter web test` - Run Vitest unit tests
 - `bun --filter web test:watch` - Unit tests in watch mode
 

@@ -67,6 +67,29 @@
     "heading": "Select Your Story",
     "trainAdventure": "Train Adventure"
   },
+  "chapter": {
+    "title": "Title",
+    "description": "Description",
+    "placeholderTitle": "Enter chapter title",
+    "placeholderDescriptionOptional": "Enter chapter description (optional)"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "createChapter": "Create Chapter",
+    "createStory": "Create Story"
+  },
+  "story": {
+    "title": "Title",
+    "description": "Description",
+    "placeholderTitle": "Enter story title",
+    "placeholderDescriptionOptional": "Enter story description (optional)"
+  },
+  "status": {
+    "label": "Status",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
+  },
   "characters": {
     "title": "My Characters",
     "heading": "My Characters",
@@ -152,6 +175,12 @@
     "login": "Login",
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset Password",
+    "signupAllFieldsRequired": "All fields are required for signup.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "signupFailed": "Signup failed",
+    "signupFailedTryAgain": "Signup failed. Please try again.",
+    "signupCheckEmail": "Check your email to confirm your account. Once verified, you can log in.",
+    "goToLogin": "Go to login",
     "resetPage": {
       "title": "Reset Password",
       "heading": "Reset Password",

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { Locale } from '@aquila/dialogue';
+  import { getTranslations } from '@aquila/dialogue';
   import Button from './Button.svelte';
 
   interface Props {
@@ -7,6 +9,7 @@
     onSubmit: (e: Event & { submitter: HTMLElement | null }) => void;
     onCancel: () => void;
     submitLabel?: string;
+    locale?: Locale;
   }
 
   let {
@@ -14,8 +17,12 @@
     description = $bindable(''),
     onSubmit,
     onCancel,
-    submitLabel = 'Create Chapter',
+    submitLabel,
+    locale = 'en',
   }: Props = $props();
+
+  $: t = getTranslations(locale);
+  $: resolvedSubmitLabel = submitLabel ?? t.actions.createChapter;
 </script>
 
 <form on:submit|preventDefault={onSubmit} class="space-y-6">
@@ -24,7 +31,7 @@
       for="chapter-title"
       class="block text-sm font-medium text-gray-300 mb-2"
     >
-      Title <span class="text-red-400">*</span>
+      {t.chapter.title} <span class="text-red-400">*</span>
     </label>
     <input
       id="chapter-title"
@@ -32,7 +39,7 @@
       bind:value={title}
       required
       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-      placeholder="Enter chapter title"
+      placeholder={t.chapter.placeholderTitle}
     />
   </div>
 
@@ -41,14 +48,14 @@
       for="chapter-description"
       class="block text-sm font-medium text-gray-300 mb-2"
     >
-      Description
+      {t.chapter.description}
     </label>
     <textarea
       id="chapter-description"
       bind:value={description}
       rows="4"
       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all resize-none"
-      placeholder="Enter chapter description (optional)"
+      placeholder={t.chapter.placeholderDescriptionOptional}
     ></textarea>
   </div>
 
@@ -59,14 +66,14 @@
       onclick={onCancel}
       className="bg-gray-600 hover:bg-gray-700"
     >
-      Cancel
+      {t.actions.cancel}
     </Button>
     <Button
       type="submit"
       variant="default"
       className="bg-cyan-600 hover:bg-cyan-700"
     >
-      {submitLabel}
+      {resolvedSubmitLabel}
     </Button>
   </div>
 </form>

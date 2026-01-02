@@ -20,13 +20,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing
 
-- `bun test` - Run all tests (Turbo runs unit + E2E across workspaces)
-- `bun test:e2e` - Run Playwright E2E tests (via `packages/e2e` workspace)
-- `bun test:headed` - Run E2E tests in headed mode (visible browser)
-- `bun test:debug` - Run E2E tests in debug mode
-- `bun test:report` - Show Playwright test report
+- Use `bun run` scripts; `bun test` invokes Bun's built-in runner and is not supported here.
+- `bun run test` - Run all tests (Turbo runs unit + E2E across workspaces)
+- `bun run test:e2e` - Run Playwright E2E tests (via `packages/e2e` workspace)
+- `bun run test:headed` - Run E2E tests in headed mode (visible browser)
+- `bun run test:debug` - Run E2E tests in debug mode
+- `bun run test:report` - Show Playwright test report
 - `bun --filter web test` - Run Vitest unit tests (web app only)
-- `bun test:watch` - Run Vitest unit tests in watch mode (web app only)
+- `bun run test:watch` - Run Vitest unit tests in watch mode (web app only)
 
 ### Build and Lint
 

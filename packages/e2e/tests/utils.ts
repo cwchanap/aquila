@@ -18,19 +18,6 @@ export class TestHelpers {
     }
 
     /**
-     * Check if the page has the expected gradient background
-     */
-    async expectGradientBackground() {
-        const background = this.page.locator(
-            'div.absolute.inset-0.from-sky-200.via-sky-300.to-blue-400'
-        );
-        await expect(background).toBeVisible();
-        await expect(background).toHaveClass(/from-sky-200/);
-        await expect(background).toHaveClass(/via-sky-300/);
-        await expect(background).toHaveClass(/to-blue-400/);
-    }
-
-    /**
      * Check if the glassmorphism container is present
      */
     async expectGlassmorphismContainer() {
@@ -391,21 +378,19 @@ async function assertServerAuthenticated(page: Page, locale: TestLocale) {
         );
     }
 
-    if (accessToken) {
-        const meResponse = await page.request.get('/api/me', {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+    const meResponse = await page.request.get('/api/me', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
 
-        if (!meResponse.ok()) {
-            const body = await meResponse
-                .text()
-                .catch(() => '(unable to read response body)');
-            throw new Error(
-                `Expected /api/me to succeed, but got status=${meResponse.status()} body=${body}`
-            );
-        }
+    if (!meResponse.ok()) {
+        const body = await meResponse
+            .text()
+            .catch(() => '(unable to read response body)');
+        throw new Error(
+            `Expected /api/me to succeed, but got status=${meResponse.status()} body=${body}`
+        );
     }
 
     // Many tests expect to be returned to the Main Menu route after authentication.

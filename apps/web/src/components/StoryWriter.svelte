@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Plus, BookOpen } from 'lucide-svelte';
+  import type { Locale } from '@aquila/dialogue';
   import Modal from './ui/Modal.svelte';
   import StoryForm from './ui/StoryForm.svelte';
   import StoryTree from './ui/StoryTree.svelte';
@@ -41,10 +42,12 @@
       name?: string | null;
     } | null;
     isAuthLoading?: boolean;
+    locale?: Locale;
   }>();
 
   const user = $derived(props.user ?? null);
   const isAuthLoading = $derived(props.isAuthLoading ?? false);
+  const locale = $derived(props.locale ?? 'en');
 
   let stories = $state<Story[]>([]);
   let selectedStoryId = $state<string | null>(null);
@@ -522,6 +525,7 @@
       onSubmit={editMode === 'story' ? handleUpdateStory : handleCreateStory}
       onCancel={() => (showStoryModal = false)}
       submitLabel={editMode === 'story' ? 'Update Story' : 'Create Story'}
+      locale={locale}
     />
   </Modal>
 
@@ -531,6 +535,7 @@
       bind:description={chapterForm.description}
       onSubmit={handleCreateChapter}
       onCancel={() => (showChapterModal = false)}
+      locale={locale}
     />
   </Modal>
 

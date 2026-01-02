@@ -2,11 +2,12 @@
 import MainLayout from '../../layouts/main.astro';
 
 // No server-side form handling needed with better-auth
+const currentLocale = Astro.currentLocale || 'en';
 ---
 
 <MainLayout title="Sign Up - Game App">
 		<!-- Ocean Background with animated waves -->
-		<div class="min-h-screen relative overflow-hidden" data-locale={Astro.currentLocale || 'en'}>
+		<div class="min-h-screen relative overflow-hidden" data-locale={currentLocale}>
 			<!-- Gradient Ocean Background -->
 			<div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
@@ -61,7 +62,7 @@ import MainLayout from '../../layouts/main.astro';
 
 			<!-- Back button - Gaming Style -->
 			<a
-				href={`/${Astro.currentLocale || 'en'}/`}
+				href={`/${currentLocale}/`}
 				class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
 				style="font-family: 'Orbitron', monospace;"
 			>
@@ -151,7 +152,7 @@ import MainLayout from '../../layouts/main.astro';
 						<p class="text-slate-600 text-sm" style="font-family: 'Exo 2', sans-serif;">
 							Already have an account?
 							<a
-								href={`/${Astro.currentLocale || 'en'}/login`}
+								href={`/${currentLocale}/login`}
 								class="text-blue-600 font-bold hover:text-cyan-500 underline ml-1 transition-colors duration-300"
 								style="font-family: 'Orbitron', monospace;"
 							>
@@ -188,110 +189,9 @@ import MainLayout from '../../layouts/main.astro';
 			</div>
 		</div>
 
-		<script>
-			import { getTranslations } from '@aquila/dialogue';
-			import { MIN_PASSWORD_LENGTH } from '@/lib/auth/constants';
-			import { getSupabaseAuthClient } from '@/lib/auth';
-			
-			document.addEventListener('DOMContentLoaded', () => {
-				const signupForm = document.getElementById('signup-form') as HTMLFormElement | null;
-				const errorMessage = document.getElementById('error-message');
-				const successMessage = document.createElement('div');
-				successMessage.className =
-					'mt-4 text-emerald-700 text-sm font-semibold p-3 bg-emerald-50 rounded-lg border border-emerald-200 hidden';
-				errorMessage?.insertAdjacentElement('afterend', successMessage);
-			
-				if (!signupForm || !errorMessage) {
-					return;
-				}
-			
-				const errorEl = errorMessage as HTMLElement;
-				const successEl = successMessage as HTMLElement;
-				const supabase = getSupabaseAuthClient();
-				const locale =
-					document
-						.querySelector('[data-locale]')
-						?.getAttribute('data-locale') || 'en';
-				const t = getTranslations(locale);
-			
-				function showError(message: string) {
-					errorEl.textContent = message;
-					errorEl.classList.remove('hidden');
-					successEl.classList.add('hidden');
-				}
-			
-				function hideError() {
-					errorEl.classList.add('hidden');
-				}
+		<script define:vars={{ locale: currentLocale }}>
+			import { initializeSignupClient } from '@/lib/auth/signupClient';
 
-				function showSuccess(message: string) {
-					successEl.textContent = message;
-					successEl.classList.remove('hidden');
-					hideError();
-				}
-
-				function hideSuccess() {
-					successEl.classList.add('hidden');
-				}
-			
-				signupForm.addEventListener('submit', async (e) => {
-					e.preventDefault();
-					hideError();
-					hideSuccess();
-				
-					const formData = new FormData(signupForm);
-					const email = formData.get('email')?.toString() ?? '';
-					const password = formData.get('password')?.toString() ?? '';
-					const name = formData.get('name')?.toString() ?? '';
-				
-					if (!email || !password || !name) {
-						showError(t.auth.signupAllFieldsRequired);
-						return;
-					}
-				
-					if (password.length < MIN_PASSWORD_LENGTH) {
-						showError(t.auth.passwordTooShort);
-						return;
-					}
-				
-					try {
-						const { data, error } = await supabase.auth.signUp({
-							email,
-							password,
-							options: {
-								data: {
-									full_name: name,
-								},
-							},
-						});
-						
-						if (error) {
-							showError(error.message || t.auth.signupFailed);
-							return;
-						}
-
-						// If Supabase returns a session (email confirmation not required), redirect to home
-						if (data?.session) {
-							window.location.href = `/${locale}/`;
-							return;
-						}
-
-						// Otherwise, show email confirmation instructions and keep the user on the page
-						showSuccess(t.auth.signupCheckEmail);
-
-						// Safely add a login link
-						const loginLink = document.createElement('a');
-						loginLink.href = `/${locale}/login`;
-						loginLink.textContent = t.auth.goToLogin;
-						loginLink.className =
-							'underline text-emerald-700 font-bold hover:text-emerald-800';
-						successEl.appendChild(document.createTextNode(' '));
-						successEl.appendChild(loginLink);
-					} catch (error) {
-						console.error('Signup failed:', error);
-						showError(t.auth.signupFailedTryAgain);
-					}
-				});
-			});
+			initializeSignupClient({ locale });
 		</script>
 	</MainLayout>

@@ -23,8 +23,8 @@
     locale = 'en',
   }: Props = $props();
 
-  const t = getTranslations(locale);
-  const resolvedSubmitLabel = submitLabel ?? t.actions.createStory;
+  const t = $derived(getTranslations(locale));
+  const resolvedSubmitLabel = $derived(submitLabel ?? t.actions.createStory);
 </script>
 
 <form on:submit|preventDefault={onSubmit} class="space-y-6">

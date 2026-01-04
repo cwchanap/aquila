@@ -1,167 +1,286 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the dependencies
-vi.mock('@/lib/repositories.js');
+const mockRepo = vi.hoisted(() => ({
+    findById: vi.fn(),
+    findByEmail: vi.fn(),
+    findByUsername: vi.fn(),
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+}));
 
-// Import after mocking
+const UserRepository = vi.hoisted(() => vi.fn(() => mockRepo));
+
+vi.mock('../../../lib/drizzle/repositories.js', () => ({
+    UserRepository,
+}));
+
 import { GET, POST, PUT, DELETE } from '../users';
 
 describe('Users API', () => {
-    it('should export GET, POST, PUT, DELETE functions', () => {
-        expect(typeof GET).toBe('function');
-        expect(typeof POST).toBe('function');
-        expect(typeof PUT).toBe('function');
-        expect(typeof DELETE).toBe('function');
+    beforeEach(() => {
+        UserRepository.mockClear();
+        mockRepo.findById.mockReset();
+        mockRepo.findByEmail.mockReset();
+        mockRepo.findByUsername.mockReset();
+        mockRepo.list.mockReset();
+        mockRepo.create.mockReset();
+        mockRepo.update.mockReset();
+        mockRepo.delete.mockReset();
     });
 
     describe('GET /api/users', () => {
-        it('should handle basic GET request structure', async () => {
-            const mockContext = {
-                url: new URL('http://localhost/api/users'),
-            } as any;
+        it('returns a user by id', async () => {
+            mockRepo.findById.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
 
-            try {
-                await GET(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            const response = await GET({
+                url: new URL('http://localhost/api/users?id=user123'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toEqual({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+            expect(mockRepo.findById).toHaveBeenCalledWith('user123');
         });
 
-        it('should handle GET request with query parameters', async () => {
-            const mockContext = {
-                url: new URL(
-                    'http://localhost/api/users?id=user123&limit=10&offset=0'
-                ),
-            } as any;
+        it('returns 404 when user id is not found', async () => {
+            mockRepo.findById.mockResolvedValue(null);
 
-            try {
-                await GET(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            const response = await GET({
+                url: new URL('http://localhost/api/users?id=missing'),
+            } as any);
+
+            expect(response.status).toBe(404);
+            await expect(response.json()).resolves.toEqual({
+                error: 'User not found',
+            });
+        });
+
+        it('returns a user by email', async () => {
+            mockRepo.findByEmail.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+
+            const response = await GET({
+                url: new URL(
+                    'http://localhost/api/users?email=test@example.com'
+                ),
+            } as any);
+
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toEqual({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
+                'test@example.com'
+            );
+        });
+
+        it('returns a user by username', async () => {
+            mockRepo.findByUsername.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?username=tester'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toEqual({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+            expect(mockRepo.findByUsername).toHaveBeenCalledWith('tester');
+        });
+
+        it('lists users when no filters are provided', async () => {
+            mockRepo.list.mockResolvedValue([
+                { id: 'user123', email: 'test@example.com' },
+            ]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toEqual([
+                { id: 'user123', email: 'test@example.com' },
+            ]);
+            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
         });
     });
 
     describe('POST /api/users', () => {
-        it('should handle basic POST request structure', async () => {
-            const mockContext = {
+        it('returns 400 when required fields are missing', async () => {
+            const response = await POST({
                 request: {
                     json: () =>
                         Promise.resolve({
-                            id: 'user123',
                             email: 'test@example.com',
-                            username: 'testuser',
                         }),
                 },
-            } as any;
+            } as any);
 
-            try {
-                await POST(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            expect(response.status).toBe(400);
+            await expect(response.json()).resolves.toEqual({
+                error: 'Missing required fields: email, username',
+            });
         });
 
-        it('should handle POST request with missing fields', async () => {
-            const mockContext = {
+        it('creates a user when input is valid', async () => {
+            mockRepo.create.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+
+            const response = await POST({
                 request: {
                     json: () =>
                         Promise.resolve({
                             email: 'test@example.com',
-                            // missing id and username
+                            username: 'tester',
                         }),
                 },
-            } as any;
+            } as any);
 
-            try {
-                await POST(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            expect(response.status).toBe(201);
+            await expect(response.json()).resolves.toEqual({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+            expect(mockRepo.create).toHaveBeenCalledWith({
+                email: 'test@example.com',
+                username: 'tester',
+            });
         });
     });
 
     describe('PUT /api/users', () => {
-        it('should handle basic PUT request structure', async () => {
-            const mockContext = {
+        it('returns 400 when id is missing', async () => {
+            const response = await PUT({
                 request: {
                     json: () =>
                         Promise.resolve({
-                            id: 'user123',
                             email: 'updated@example.com',
-                            username: 'updateduser',
                         }),
                 },
-            } as any;
+            } as any);
 
-            try {
-                await PUT(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            expect(response.status).toBe(400);
+            await expect(response.json()).resolves.toEqual({
+                error: 'User ID is required',
+            });
         });
 
-        it('should handle PUT request with partial updates', async () => {
-            const mockContext = {
+        it('returns 404 when user is not found', async () => {
+            mockRepo.update.mockResolvedValue(null);
+
+            const response = await PUT({
+                request: {
+                    json: () =>
+                        Promise.resolve({
+                            id: 'missing',
+                            email: 'updated@example.com',
+                        }),
+                },
+            } as any);
+
+            expect(response.status).toBe(404);
+            await expect(response.json()).resolves.toEqual({
+                error: 'User not found',
+            });
+        });
+
+        it('updates a user', async () => {
+            mockRepo.update.mockResolvedValue({
+                id: 'user123',
+                email: 'updated@example.com',
+                username: 'tester',
+            });
+
+            const response = await PUT({
                 request: {
                     json: () =>
                         Promise.resolve({
                             id: 'user123',
                             email: 'updated@example.com',
-                            // only updating email
                         }),
                 },
-            } as any;
+            } as any);
 
-            try {
-                await PUT(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toEqual({
+                id: 'user123',
+                email: 'updated@example.com',
+                username: 'tester',
+            });
+            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
+                email: 'updated@example.com',
+            });
         });
     });
 
     describe('DELETE /api/users', () => {
-        it('should handle basic DELETE request structure', async () => {
-            const mockContext = {
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            id: 'user123',
-                        }),
-                },
-            } as any;
+        it('returns 400 when id is missing', async () => {
+            const response = await DELETE({
+                request: { url: 'http://localhost/api/users' },
+            } as any);
 
-            try {
-                await DELETE(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            expect(response.status).toBe(400);
+            await expect(response.json()).resolves.toEqual({
+                error: 'User ID is required',
+            });
         });
 
-        it('should handle DELETE request without id', async () => {
-            const mockContext = {
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            // missing id
-                        }),
-                },
-            } as any;
+        it('returns 404 when user is not found', async () => {
+            mockRepo.delete.mockResolvedValue(null);
 
-            try {
-                await DELETE(mockContext);
-            } catch (error) {
-                // Expected to fail due to mocks not being set up
-                expect(error).toBeDefined();
-            }
+            const response = await DELETE({
+                request: {
+                    url: 'http://localhost/api/users?id=missing',
+                },
+            } as any);
+
+            expect(response.status).toBe(404);
+            await expect(response.json()).resolves.toEqual({
+                error: 'User not found',
+            });
+        });
+
+        it('deletes a user', async () => {
+            mockRepo.delete.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+            });
+
+            const response = await DELETE({
+                request: {
+                    url: 'http://localhost/api/users?id=user123',
+                },
+            } as any);
+
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toEqual({
+                message: 'User deleted successfully',
+            });
+            expect(mockRepo.delete).toHaveBeenCalledWith('user123');
         });
     });
 });

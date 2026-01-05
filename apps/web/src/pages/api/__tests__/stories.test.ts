@@ -123,7 +123,7 @@ describe('Stories API', () => {
         });
     });
 
-    it('rejects story detail requests when the story is missing', async () => {
+    it("returns 404 when user attempts to access another user's story", async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
         mockStoryRepo.findById.mockResolvedValue({
             id: 'story-1',
@@ -133,6 +133,21 @@ describe('Stories API', () => {
 
         const response = await itemGET({
             params: { id: 'story-1' },
+            request: makeRequest('session=session-123'),
+        } as any);
+
+        expect(response.status).toBe(404);
+        await expect(response.json()).resolves.toEqual({
+            error: 'Story not found',
+        });
+    });
+
+    it('returns 404 when story does not exist', async () => {
+        getSession.mockResolvedValue({ user: { id: 'user-1' } });
+        mockStoryRepo.findById.mockResolvedValue(null);
+
+        const response = await itemGET({
+            params: { id: 'nonexistent-story' },
             request: makeRequest('session=session-123'),
         } as any);
 

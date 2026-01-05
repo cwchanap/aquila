@@ -138,7 +138,7 @@ describe('Users API', () => {
 
             expect(response.status).toBe(400);
             await expect(response.json()).resolves.toEqual({
-                error: 'Missing required fields: email, username',
+                error: 'Missing required fields: username',
             });
         });
 

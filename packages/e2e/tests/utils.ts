@@ -10,6 +10,14 @@ export class MainMenuPage {
         private locale: 'en' | 'zh' = 'en'
     ) {}
 
+    private get menuHeading() {
+        const headings = {
+            en: 'Main Menu',
+            zh: '主選單',
+        };
+        return headings[this.locale];
+    }
+
     get startButton() {
         return this.page.locator('#start-btn');
     }
@@ -27,7 +35,7 @@ export class MainMenuPage {
     }
 
     async expectToBeVisible() {
-        await expect(this.heading).toContainText('Main Menu');
+        await expect(this.heading).toContainText(this.menuHeading);
         await expect(this.startButton).toBeVisible();
     }
 }
@@ -38,12 +46,28 @@ export class StoriesPage {
         private locale: 'en' | 'zh' = 'en'
     ) {}
 
+    private get trainAdventureText() {
+        const storyNames = {
+            en: 'Train Adventure',
+            zh: '火車冒險',
+        };
+        return storyNames[this.locale];
+    }
+
+    private get storiesHeading() {
+        const headings = {
+            en: 'Select Your Story',
+            zh: '選擇您的故事',
+        };
+        return headings[this.locale];
+    }
+
     get heading() {
         return this.page.locator('body h1').first();
     }
 
     get trainAdventureLink() {
-        return this.page.getByRole('link', { name: 'Train Adventure' });
+        return this.page.getByRole('link', { name: this.trainAdventureText });
     }
 
     async goto() {
@@ -55,7 +79,7 @@ export class StoriesPage {
     }
 
     async expectToBeVisible() {
-        await expect(this.heading).toContainText('Select Your Story');
+        await expect(this.heading).toContainText(this.storiesHeading);
         await expect(this.trainAdventureLink).toBeVisible();
     }
 }

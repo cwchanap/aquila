@@ -172,9 +172,8 @@ export const PUT: APIRoute = async ({ request }) => {
     }
 };
 
-export const DELETE: APIRoute = async ({ request }) => {
+export const DELETE: APIRoute = async ({ url }) => {
     try {
-        const url = new URL(request.url);
         const id = url.searchParams.get('id');
 
         if (!id) {

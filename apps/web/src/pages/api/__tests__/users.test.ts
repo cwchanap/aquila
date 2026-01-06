@@ -138,7 +138,7 @@ describe('Users API', () => {
 
             expect(response.status).toBe(400);
             await expect(response.json()).resolves.toEqual({
-                error: 'Missing required fields: username',
+                error: 'Missing required fields: email, username',
             });
         });
 
@@ -240,7 +240,7 @@ describe('Users API', () => {
     describe('DELETE /api/users', () => {
         it('returns 400 when id is missing', async () => {
             const response = await DELETE({
-                request: { url: 'http://localhost/api/users' },
+                url: new URL('http://localhost/api/users'),
             } as any);
 
             expect(response.status).toBe(400);
@@ -253,9 +253,7 @@ describe('Users API', () => {
             mockRepo.delete.mockResolvedValue(null);
 
             const response = await DELETE({
-                request: {
-                    url: 'http://localhost/api/users?id=missing',
-                },
+                url: new URL('http://localhost/api/users?id=missing'),
             } as any);
 
             expect(response.status).toBe(404);
@@ -271,9 +269,7 @@ describe('Users API', () => {
             });
 
             const response = await DELETE({
-                request: {
-                    url: 'http://localhost/api/users?id=user123',
-                },
+                url: new URL('http://localhost/api/users?id=user123'),
             } as any);
 
             expect(response.status).toBe(200);

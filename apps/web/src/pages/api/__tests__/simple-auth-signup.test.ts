@@ -115,7 +115,9 @@ describe('Signup API', () => {
             'session-123',
             expect.objectContaining({
                 httpOnly: true,
+                secure: false,
                 sameSite: 'lax',
+                maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
                 path: '/',
             })
         );

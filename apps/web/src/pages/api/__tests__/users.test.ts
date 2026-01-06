@@ -16,7 +16,7 @@ vi.mock('../../../lib/drizzle/repositories.js', () => ({
     UserRepository,
 }));
 
-import { GET, POST, PUT, DELETE } from '../users';
+import { GET, POST, PUT, DELETE } from '@/pages/api/users';
 
 describe('Users API', () => {
     beforeEach(() => {

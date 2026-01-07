@@ -176,3 +176,40 @@ beforeEach(() => {
 vi.mock('./drizzle/db.js', () => ({
     db: dbMockInstance,
 }));
+
+/**
+ * Creates a mock request object for API route testing.
+ * This helper is used across multiple test files to simulate Astro request objects.
+ *
+ * @param cookie - Optional cookie string to set in the request headers
+ * @param json - Optional function that returns a Promise with JSON body data
+ * @returns A mock request object compatible with Astro API routes
+ *
+ * @example
+ * ```typescript
+ * // Simple request without auth
+ * const request = makeRequest();
+ *
+ * // Request with session cookie
+ * const request = makeRequest('session=abc123');
+ *
+ * // Request with JSON body
+ * const request = makeRequest('session=abc123', () =>
+ *   Promise.resolve({ title: 'My Story' })
+ * );
+ * ```
+ */
+export const makeRequest = (
+    cookie?: string,
+    json?: () => Promise<Record<string, unknown>>
+) =>
+    ({
+        headers: {
+            get: (name: string) =>
+                name === 'cookie' ? (cookie ?? null) : null,
+        },
+        json,
+    }) as {
+        headers: { get: (name: string) => string | null };
+        json?: () => Promise<Record<string, unknown>>;
+    };

@@ -28,15 +28,7 @@ import {
     PUT as itemPUT,
     DELETE as itemDELETE,
 } from '../stories/[id]';
-
-const makeRequest = (cookie?: string, json?: () => Promise<any>) =>
-    ({
-        headers: {
-            get: (name: string) =>
-                name === 'cookie' ? (cookie ?? null) : null,
-        },
-        json,
-    }) as any;
+import { makeRequest } from './utils/requestUtils';
 
 describe('Stories API', () => {
     beforeEach(() => {

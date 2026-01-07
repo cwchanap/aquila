@@ -19,15 +19,7 @@ vi.mock('@/lib/drizzle/repositories.js', () => ({
 }));
 
 import { POST } from '../scenes/index';
-
-const makeRequest = (cookie?: string, json?: () => Promise<any>) =>
-    ({
-        headers: {
-            get: (name: string) =>
-                name === 'cookie' ? (cookie ?? null) : null,
-        },
-        json,
-    }) as any;
+import { makeRequest } from './utils/requestUtils';
 
 describe('Scenes API', () => {
     beforeEach(() => {

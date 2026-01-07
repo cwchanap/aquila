@@ -215,7 +215,7 @@ describe('Bookmarks API', () => {
                 id: 'bookmark-1',
                 userId: 'user-1',
             });
-            mockRepo.delete.mockResolvedValue(null);
+            mockRepo.delete.mockResolvedValue(false);
 
             const response = await DELETE({
                 params: { id: 'bookmark-1' },
@@ -234,7 +234,7 @@ describe('Bookmarks API', () => {
                 id: 'bookmark-1',
                 userId: 'user-1',
             });
-            mockRepo.delete.mockResolvedValue({ id: 'bookmark-1' });
+            mockRepo.delete.mockResolvedValue(true);
 
             const response = await DELETE({
                 params: { id: 'bookmark-1' },

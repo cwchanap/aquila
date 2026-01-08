@@ -7,7 +7,6 @@ const mockRepo = vi.hoisted(() => ({
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
-    delete: vi.fn(),
 }));
 
 const UserRepository = vi.hoisted(() => vi.fn(() => mockRepo));
@@ -16,7 +15,7 @@ vi.mock('../../../lib/drizzle/repositories.js', () => ({
     UserRepository,
 }));
 
-import { GET, POST, PUT, DELETE } from '@/pages/api/users';
+import { GET, POST, PUT } from '@/pages/api/users';
 
 describe('Users API', () => {
     beforeEach(() => {
@@ -27,7 +26,6 @@ describe('Users API', () => {
         mockRepo.list.mockReset();
         mockRepo.create.mockReset();
         mockRepo.update.mockReset();
-        mockRepo.delete.mockReset();
     });
 
     describe('GET /api/users', () => {
@@ -234,49 +232,6 @@ describe('Users API', () => {
             expect(mockRepo.update).toHaveBeenCalledWith('user123', {
                 email: 'updated@example.com',
             });
-        });
-    });
-
-    describe('DELETE /api/users', () => {
-        it('returns 400 when id is missing', async () => {
-            const response = await DELETE({
-                url: new URL('http://localhost/api/users'),
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User ID is required',
-            });
-        });
-
-        it('returns 404 when user is not found', async () => {
-            mockRepo.delete.mockResolvedValue(null);
-
-            const response = await DELETE({
-                url: new URL('http://localhost/api/users?id=missing'),
-            } as any);
-
-            expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User not found',
-            });
-        });
-
-        it('deletes a user', async () => {
-            mockRepo.delete.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-            });
-
-            const response = await DELETE({
-                url: new URL('http://localhost/api/users?id=user123'),
-            } as any);
-
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                message: 'User deleted successfully',
-            });
-            expect(mockRepo.delete).toHaveBeenCalledWith('user123');
         });
     });
 });

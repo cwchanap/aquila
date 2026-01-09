@@ -56,11 +56,6 @@
   };
 
   // Button click handlers
-  const handleStartClick = () => {
-    const isChinese = isChinesePath();
-    window.location.href = isChinese ? '/zh/stories' : '/en/stories';
-  };
-
   const handleBookmarksClick = () => {
     const isChinese = isChinesePath();
     window.location.href = isChinese ? '/zh/bookmarks' : '/en/bookmarks';
@@ -207,11 +202,11 @@
 
       <!-- Menu Buttons - Gaming Style -->
       <div class="space-y-6">
-        <button
+        <a
           id="start-btn"
-          class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
+          href={`/${currentLocale}/stories`}
+          class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden block text-center"
           style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-          on:click={handleStartClick}
         >
           <!-- Button glow effect -->
           <div
@@ -233,7 +228,7 @@
           <div
             class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"
           ></div>
-        </button>
+        </a>
 
         <button
           class="group relative w-full py-6 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-purple-300/50 overflow-hidden"

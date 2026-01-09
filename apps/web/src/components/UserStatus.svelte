@@ -81,6 +81,35 @@
       document.removeEventListener('keydown', handleKeydown);
     };
   });
+
+  const handleLogout = async () => {
+    try {
+      hasClientError = false;
+      errorMessage = '';
+
+      const response = await globalThis.fetch('/api/simple-auth/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new globalThis.Error(
+          `Logout failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      user = null;
+      dropdownOpen = false;
+    } catch (error) {
+      hasClientError = true;
+      errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unable to log out. Please try again.';
+    }
+  };
 </script>
 
 <div class="user-status absolute top-6 right-6 z-50">
@@ -144,7 +173,7 @@
               Story Config
             </a>
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
-            <form method="POST" action="/api/simple-auth/session">
+            <form method="POST" action="/api/simple-auth/session" on:submit|preventDefault={handleLogout}>
               <button
                 type="submit"
                 title={t(currentLocale, 'common.logout')}

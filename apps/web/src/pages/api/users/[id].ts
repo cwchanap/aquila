@@ -6,16 +6,17 @@ const userRepository = new UserRepositoryClass();
 export const DELETE: APIRoute = async ({ params }) => {
     try {
         const { id } = params;
+        const trimmedId = id?.trim() ?? '';
 
         // Validate that id is a non-empty string
-        if (!id || typeof id !== 'string' || id.trim() === '') {
+        if (!trimmedId) {
             return new Response(JSON.stringify({ error: 'Invalid User ID' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const deletedUser = await userRepository.delete(id);
+        const deletedUser = await userRepository.delete(trimmedId);
 
         if (!deletedUser) {
             return new Response(JSON.stringify({ error: 'User not found' }), {

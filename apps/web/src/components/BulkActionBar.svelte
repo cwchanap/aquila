@@ -23,10 +23,7 @@
   function handleClickOutside(event: MouseEvent) {
     const target = event.target as Node;
     if (containerRef && !containerRef.contains(target)) {
-      // Delay cancellation to allow for checkbox interactions
-      addOutsideClickListenerTimer = window.setTimeout(() => {
-        onCancel();
-      }, 200);
+      onCancel();
     }
   }
 
@@ -34,8 +31,14 @@
     if (isVisible && selectedIds.length > 0) {
       // Set up outside click listener
       if (!outsideClickListenerAttached) {
-        document.addEventListener('click', handleClickOutside);
-        outsideClickListenerAttached = true;
+        // Defer listener attachment until after the current event loop
+        // This ensures that clicks in the current interaction (like selecting a checkbox)
+        // are already processed before the listener starts watching for outside clicks
+        addOutsideClickListenerTimer = window.setTimeout(() => {
+          document.addEventListener('click', handleClickOutside);
+          outsideClickListenerAttached = true;
+          addOutsideClickListenerTimer = undefined;
+        }, 0);
       }
     }
   });

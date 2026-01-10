@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { makeRequest } from '@/lib/test-setup';
 
 const getSession = vi.hoisted(() => vi.fn());
 const isValidStoryId = vi.hoisted(() => vi.fn());
@@ -28,15 +29,6 @@ vi.mock('@/lib/story-types.js', () => ({
 }));
 
 import { POST, GET } from '../character-setup';
-
-const makeRequest = (cookie?: string, json?: () => Promise<any>) =>
-    ({
-        headers: {
-            get: (name: string) =>
-                name === 'cookie' ? (cookie ?? null) : null,
-        },
-        json,
-    }) as any;
 
 describe('Character Setup API', () => {
     beforeEach(() => {

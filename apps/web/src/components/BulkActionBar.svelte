@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
 
   interface BulkActionBarProps {
     /** Whether the bulk action bar is visible */
@@ -15,9 +14,10 @@
   let { isVisible, selectedIds, onCancel, onAction }: BulkActionBarProps = $props();
 
   // Instance-scoped state for outside click handling
-  // Each BulkActionBar instance has its own state - no shared module-level variables
-  let addOutsideClickListenerTimer: number | undefined = $state(undefined);
-  let outsideClickListenerAttached = $state(false);
+  // Use regular variables to track listener state - avoids $effect infinite loop
+  // These persist across renders but don't trigger reactivity
+  let addOutsideClickListenerTimer: number | undefined = undefined;
+  let isListenerAttached = false;
   let containerRef: HTMLElement | undefined = $state(undefined);
 
   function handleClickOutside(event: MouseEvent) {
@@ -27,33 +27,40 @@
     }
   }
 
-  onMount(() => {
-    if (isVisible && selectedIds.length > 0) {
-      // Set up outside click listener
-      if (!outsideClickListenerAttached) {
+  // Reactive effect to manage outside click listener based on isVisible and selectedIds
+  $effect(() => {
+    // Cleanup function - runs before re-running effect or on unmount
+    const cleanup = () => {
+      if (addOutsideClickListenerTimer !== undefined) {
+        window.clearTimeout(addOutsideClickListenerTimer);
+        addOutsideClickListenerTimer = undefined;
+      }
+      // Only remove listener if it was attached and document is available
+      if (isListenerAttached && typeof document !== 'undefined') {
+        document.removeEventListener('click', handleClickOutside);
+        isListenerAttached = false;
+      }
+    };
+
+    // Run cleanup first when dependencies change
+    cleanup();
+
+    // Then re-attach if conditions are met
+    if (isVisible && selectedIds.length > 0 && typeof document !== 'undefined') {
+      if (!isListenerAttached) {
         // Defer listener attachment until after the current event loop
         // This ensures that clicks in the current interaction (like selecting a checkbox)
         // are already processed before the listener starts watching for outside clicks
         addOutsideClickListenerTimer = window.setTimeout(() => {
           document.addEventListener('click', handleClickOutside);
-          outsideClickListenerAttached = true;
+          isListenerAttached = true;
           addOutsideClickListenerTimer = undefined;
         }, 0);
       }
     }
-  });
 
-  onDestroy(() => {
-    // Cleanup: clear timer and remove listener if attached
-    // This ensures proper cleanup per instance
-    if (addOutsideClickListenerTimer !== undefined) {
-      window.clearTimeout(addOutsideClickListenerTimer);
-      addOutsideClickListenerTimer = undefined;
-    }
-    if (outsideClickListenerAttached) {
-      document.removeEventListener('click', handleClickOutside);
-      outsideClickListenerAttached = false;
-    }
+    // Return cleanup function for when effect re-runs or component unmounts
+    return cleanup;
   });
 </script>
 

@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { getTranslations } from '@aquila/dialogue';
+  import type { Locale } from '@aquila/dialogue';
+  import Button from './ui/Button.svelte';
 
   interface BulkActionBarProps {
-    /** Whether the bulk action bar is visible */
+    /** Whether bulk action bar is visible */
     isVisible: boolean;
     /** Selected item IDs */
     selectedIds: string[];
@@ -9,9 +12,14 @@
     onCancel: () => void;
     /** Callback when a bulk action is selected */
     onAction?: (action: string) => void;
+    /** Locale for translations */
+    locale: Locale;
   }
 
-  let { isVisible, selectedIds, onCancel, onAction }: BulkActionBarProps = $props();
+  let { isVisible, selectedIds, onCancel, onAction, locale }: BulkActionBarProps = $props();
+
+  // Get translations using $derived for Svelte 5 runes mode
+  const t = $derived(getTranslations(locale));
 
   // Instance-scoped state for outside click handling
   // Use regular variables to track listener state - avoids $effect infinite loop
@@ -69,38 +77,38 @@
     bind:this={containerRef}
     class="bulk-action-bar"
     role="toolbar"
-    aria-label="Bulk actions"
+    aria-label={t.bulkAction.title}
   >
     <div class="bulk-action-bar-content">
       <span class="selection-count">
-        {selectedIds.length} item{selectedIds.length !== 1 ? 's' : ''} selected
+        {selectedIds.length} {selectedIds.length !== 1 ? t.bulkAction.items : t.bulkAction.item} {t.bulkAction.selected}
       </span>
-      
+
       <div class="bulk-action-buttons">
         {#if onAction}
-          <button
-            type="button"
-            class="bulk-action-btn"
-            onclick={() => onAction('delete')}
+          <Button
+            variant="menu"
+            className="bulk-action-btn"
+            on:click={() => onAction('delete')}
           >
-            Delete
-          </button>
-          <button
-            type="button"
-            class="bulk-action-btn"
-            onclick={() => onAction('archive')}
+            {t.bulkAction.delete}
+          </Button>
+          <Button
+            variant="menu"
+            className="bulk-action-btn"
+            on:click={() => onAction('archive')}
           >
-            Archive
-          </button>
+            {t.bulkAction.archive}
+          </Button>
         {/if}
-        
-        <button
-          type="button"
-          class="bulk-action-btn bulk-action-btn--cancel"
-          onclick={onCancel}
+
+        <Button
+          variant="menu"
+          className="bulk-action-btn bulk-action-btn--cancel"
+          on:click={onCancel}
         >
-          Cancel
-        </button>
+          {t.bulkAction.cancel}
+        </Button>
       </div>
     </div>
   </div>

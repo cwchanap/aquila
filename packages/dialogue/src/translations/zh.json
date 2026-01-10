@@ -136,5 +136,14 @@
     "bookmark": "📖 書籤",
     "pageDisplay": "第 {current} / {total} 頁",
     "unknown": "未知"
+  },
+  "bulkAction": {
+    "title": "批次操作",
+    "item": "項目",
+    "items": "項目",
+    "selected": "已選取",
+    "delete": "刪除",
+    "archive": "封存",
+    "cancel": "取消"
   }
 }

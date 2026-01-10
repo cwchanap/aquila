@@ -136,5 +136,14 @@
     "bookmark": "📖 Bookmark",
     "pageDisplay": "Page {current} of {total}",
     "unknown": "Unknown"
+  },
+  "bulkAction": {
+    "title": "Bulk Actions",
+    "item": "item",
+    "items": "items",
+    "selected": "selected",
+    "delete": "Delete",
+    "archive": "Archive",
+    "cancel": "Cancel"
   }
 }

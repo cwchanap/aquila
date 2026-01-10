@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { makeRequest } from '@/lib/test-setup';
 
 const getSession = vi.hoisted(() => vi.fn());
 
@@ -33,14 +34,6 @@ vi.mock('crypto', async importOriginal => {
 
 import { GET, POST } from '../bookmarks/index';
 import { DELETE } from '../bookmarks/[id]';
-
-const makeRequest = (json?: () => Promise<any>) =>
-    ({
-        headers: {
-            get: vi.fn(),
-        },
-        json,
-    }) as any;
 
 describe('Bookmarks API', () => {
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -105,7 +98,7 @@ describe('Bookmarks API', () => {
             getSession.mockResolvedValue({ user: { id: 'user-1' } });
 
             const response = await POST({
-                request: makeRequest(() =>
+                request: makeRequest(undefined, () =>
                     Promise.resolve({ storyId: 'story-1' })
                 ),
             } as any);
@@ -124,7 +117,7 @@ describe('Bookmarks API', () => {
             });
 
             const response = await POST({
-                request: makeRequest(() =>
+                request: makeRequest(undefined, () =>
                     Promise.resolve({
                         storyId: 'story-1',
                         sceneId: 'scene-1',

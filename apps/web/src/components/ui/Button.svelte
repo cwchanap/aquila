@@ -33,7 +33,7 @@
   export let type: 'button' | 'submit' | 'reset' = 'button';
   export let disabled: boolean = false;
 
-  $: finalClass = cn(buttonVariants({ variant, size, className }));
+  $: finalClass = cn(buttonVariants({ variant, size }), className);
 </script>
 
 {#if href}

@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import BulkActionBar from '../BulkActionBar.svelte';
+import type { Locale } from '@aquila/dialogue';
 
 describe('BulkActionBar', () => {
     const mockOnCancel = vi.fn();
     const mockOnAction = vi.fn();
+    const defaultLocale: Locale = 'en';
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -26,6 +28,7 @@ describe('BulkActionBar', () => {
                     selectedIds: ['item-1', 'item-2'],
                     onCancel: mockOnCancel,
                     onAction: mockOnAction,
+                    locale: defaultLocale,
                 },
             });
 
@@ -47,6 +50,7 @@ describe('BulkActionBar', () => {
                     isVisible: false,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -62,6 +66,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: [],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -77,6 +82,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -91,6 +97,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -111,6 +118,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -130,6 +138,7 @@ describe('BulkActionBar', () => {
                     isVisible: false,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -152,6 +161,7 @@ describe('BulkActionBar', () => {
                     isVisible: false,
                     selectedIds: [],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -162,6 +172,7 @@ describe('BulkActionBar', () => {
                 isVisible: true,
                 selectedIds: ['item-1', 'item-2'],
                 onCancel: mockOnCancel,
+                locale: defaultLocale,
             });
 
             expect(screen.getByText('2 items selected')).toBeInTheDocument();
@@ -173,6 +184,7 @@ describe('BulkActionBar', () => {
                     isVisible: false,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -183,6 +195,7 @@ describe('BulkActionBar', () => {
                 isVisible: true,
                 selectedIds: ['item-1'],
                 onCancel: mockOnCancel,
+                locale: defaultLocale,
             });
 
             await vi.advanceTimersByTimeAsync(0);
@@ -201,6 +214,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -211,6 +225,7 @@ describe('BulkActionBar', () => {
                 isVisible: true,
                 selectedIds: ['item-1', 'item-2', 'item-3'],
                 onCancel: mockOnCancel,
+                locale: defaultLocale,
             });
 
             expect(screen.getByText('3 items selected')).toBeInTheDocument();
@@ -222,6 +237,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1', 'item-2'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -232,6 +248,7 @@ describe('BulkActionBar', () => {
                 isVisible: true,
                 selectedIds: [],
                 onCancel: mockOnCancel,
+                locale: defaultLocale,
             });
 
             expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
@@ -246,6 +263,7 @@ describe('BulkActionBar', () => {
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
                     onAction: mockOnAction,
+                    locale: defaultLocale,
                 },
             });
 
@@ -263,6 +281,7 @@ describe('BulkActionBar', () => {
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
                     onAction: mockOnAction,
+                    locale: defaultLocale,
                 },
             });
 
@@ -280,6 +299,7 @@ describe('BulkActionBar', () => {
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
                     onAction: mockOnAction,
+                    locale: defaultLocale,
                 },
             });
 
@@ -297,6 +317,7 @@ describe('BulkActionBar', () => {
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
                     onAction: undefined,
+                    locale: defaultLocale,
                 },
             });
 
@@ -319,6 +340,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -331,12 +353,13 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
             expect(screen.getByRole('toolbar')).toHaveAttribute(
                 'aria-label',
-                'Bulk actions'
+                'Bulk Actions'
             );
         });
     });
@@ -354,6 +377,7 @@ describe('BulkActionBar', () => {
                     isVisible: true,
                     selectedIds: ['item-1'],
                     onCancel: mockOnCancel,
+                    locale: defaultLocale,
                 },
             });
 
@@ -365,6 +389,7 @@ describe('BulkActionBar', () => {
                 isVisible: false,
                 selectedIds: ['item-1'],
                 onCancel: mockOnCancel,
+                locale: defaultLocale,
             });
 
             // Show again
@@ -372,6 +397,7 @@ describe('BulkActionBar', () => {
                 isVisible: true,
                 selectedIds: ['item-1'],
                 onCancel: mockOnCancel,
+                locale: defaultLocale,
             });
 
             await vi.advanceTimersByTimeAsync(0);

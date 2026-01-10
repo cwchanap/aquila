@@ -19,7 +19,7 @@ vi.mock('@/lib/drizzle/repositories.js', () => ({
 }));
 
 import { POST } from '../chapters/index';
-import { makeRequest } from './utils/requestUtils';
+import { makeRequest } from '@/lib/test-setup';
 
 describe('Chapters API', () => {
     beforeEach(() => {

@@ -28,7 +28,7 @@ import {
     PUT as itemPUT,
     DELETE as itemDELETE,
 } from '../stories/[id]';
-import { makeRequest } from './utils/requestUtils';
+import { makeRequest } from '@/lib/test-setup';
 
 describe('Stories API', () => {
     beforeEach(() => {

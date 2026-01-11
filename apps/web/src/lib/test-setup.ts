@@ -4,6 +4,12 @@ import { vi, beforeEach } from 'vitest';
 Object.defineProperty(global, 'crypto', {
     value: {
         randomUUID: vi.fn(() => 'test-uuid-123'),
+        getRandomValues: vi.fn((arr: Uint8Array) => {
+            for (let i = 0; i < arr.length; i++) {
+                arr[i] = Math.floor(Math.random() * 256);
+            }
+            return arr;
+        }),
     },
 });
 
@@ -65,6 +71,8 @@ type DbMockChain = {
     andWhere: ReturnType<typeof vi.fn>;
     innerJoin: ReturnType<typeof vi.fn>;
     limit: ReturnType<typeof vi.fn>;
+    offset: ReturnType<typeof vi.fn>;
+    orderBy: ReturnType<typeof vi.fn>;
     returning: ReturnType<typeof vi.fn>;
     execute: ReturnType<typeof vi.fn>;
     executeTakeFirst: ReturnType<typeof vi.fn>;
@@ -86,6 +94,8 @@ const createDbMock = (): DbMockChain => {
     chain.andWhere = vi.fn(() => chain);
     chain.innerJoin = vi.fn(() => chain);
     chain.limit = vi.fn(() => chain);
+    chain.offset = vi.fn(() => chain);
+    chain.orderBy = vi.fn(() => chain);
     chain.returning = vi.fn(() => chain);
     chain.execute = vi.fn(async () => []);
     chain.executeTakeFirst = vi.fn(async () => undefined);
@@ -147,6 +157,8 @@ export const resetDbMock = () => {
         'andWhere',
         'innerJoin',
         'limit',
+        'offset',
+        'orderBy',
         'returning',
     ];
 
@@ -178,6 +190,15 @@ vi.mock('./drizzle/db.js', () => ({
 }));
 
 /**
+ * Mock API request type for testing.
+ * Compatible with Astro API route request objects.
+ */
+export interface MockApiRequest {
+    headers: { get: (name: string) => string | null };
+    json?: () => Promise<Record<string, unknown>>;
+}
+
+/**
  * Creates a mock request object for API route testing.
  * This helper is used across multiple test files to simulate Astro request objects.
  *
@@ -202,14 +223,9 @@ vi.mock('./drizzle/db.js', () => ({
 export const makeRequest = (
     cookie?: string,
     json?: () => Promise<Record<string, unknown>>
-) =>
-    ({
-        headers: {
-            get: (name: string) =>
-                name === 'cookie' ? (cookie ?? null) : null,
-        },
-        json,
-    }) as {
-        headers: { get: (name: string) => string | null };
-        json?: () => Promise<Record<string, unknown>>;
-    };
+): MockApiRequest => ({
+    headers: {
+        get: (name: string) => (name === 'cookie' ? (cookie ?? null) : null),
+    },
+    json,
+});

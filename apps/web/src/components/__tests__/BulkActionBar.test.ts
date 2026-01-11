@@ -10,6 +10,7 @@ describe('BulkActionBar', () => {
     const defaultLocale: Locale = 'en';
 
     beforeEach(() => {
+        vi.useFakeTimers();
         vi.clearAllMocks();
         // Clear any document event listeners between tests
         document.body.innerHTML = '';
@@ -18,6 +19,7 @@ describe('BulkActionBar', () => {
     afterEach(() => {
         vi.clearAllMocks();
         document.body.innerHTML = '';
+        vi.useRealTimers();
     });
 
     describe('Basic Rendering', () => {
@@ -407,6 +409,10 @@ describe('BulkActionBar', () => {
 
             // Verify add was called when showing again
             expect(addEventListenerSpy).toHaveBeenCalled();
+
+            // Restore spies to prevent cross-test leakage
+            addEventListenerSpy.mockRestore();
+            removeEventListenerSpy.mockRestore();
         });
     });
 });

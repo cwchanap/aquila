@@ -225,7 +225,9 @@ export const makeRequest = (
     json?: () => Promise<Record<string, unknown>>
 ): MockApiRequest => ({
     headers: {
-        get: (name: string) => (name === 'cookie' ? (cookie ?? null) : null),
+        // Case-insensitive header lookup to match real Headers behavior
+        get: (name: string) =>
+            name.toLowerCase() === 'cookie' ? (cookie ?? null) : null,
     },
     json,
 });

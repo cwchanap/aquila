@@ -10,7 +10,15 @@ const userRepository = new UserRepositoryClass();
 export const GET: APIRoute = async ({ params }) => {
     try {
         const { email } = params;
-        const trimmedEmail = email?.trim() ?? '';
+        // Decode the URL parameter before trimming and validation
+        let decoded: string;
+        try {
+            decoded = decodeURIComponent(email ?? '');
+        } catch {
+            // If decoding fails (malformed URI), treat as empty string
+            decoded = '';
+        }
+        const trimmedEmail = decoded.trim() ?? '';
 
         // Validate that email is a non-empty string
         if (!trimmedEmail) {

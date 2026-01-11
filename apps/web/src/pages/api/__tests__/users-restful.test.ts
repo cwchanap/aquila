@@ -70,6 +70,72 @@ describe('Users API - RESTful Design', () => {
             expect(mockRepo.list).toHaveBeenCalledWith(10, 20);
         });
 
+        it('clamps limit to maximum of 100', async () => {
+            mockRepo.list.mockResolvedValue([]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?limit=200'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.list).toHaveBeenCalledWith(100, 0);
+        });
+
+        it('clamps limit to minimum of 1', async () => {
+            mockRepo.list.mockResolvedValue([]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?limit=0'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.list).toHaveBeenCalledWith(1, 0);
+        });
+
+        it('defaults limit to 50 when NaN', async () => {
+            mockRepo.list.mockResolvedValue([]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?limit=invalid'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
+        });
+
+        it('clamps negative offset to 0', async () => {
+            mockRepo.list.mockResolvedValue([]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?offset=-10'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
+        });
+
+        it('defaults offset to 0 when NaN', async () => {
+            mockRepo.list.mockResolvedValue([]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?offset=invalid'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
+        });
+
+        it('handles edge case with negative limit', async () => {
+            mockRepo.list.mockResolvedValue([]);
+
+            const response = await GET({
+                url: new URL('http://localhost/api/users?limit=-5'),
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.list).toHaveBeenCalledWith(1, 0);
+        });
+
         it('returns 500 on internal server error', async () => {
             mockRepo.list.mockRejectedValue(new Error('Database error'));
 
@@ -550,6 +616,52 @@ describe('Users API - RESTful Design', () => {
             expect(mockRepo.findByEmail).toHaveBeenCalledWith(
                 'test@example.com'
             );
+        });
+
+        it('decodes URL-encoded email address', async () => {
+            mockRepo.findByEmail.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+
+            // @ sign encoded as %40
+            const response = await GetByEmail({
+                params: { email: 'test%40example.com' },
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
+                'test@example.com'
+            );
+        });
+
+        it('decodes URL-encoded email with plus sign (space)', async () => {
+            mockRepo.findByEmail.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'tester',
+            });
+
+            // + character is URL-encoded as %2B, and space as +
+            const response = await GetByEmail({
+                params: { email: 'test%2Buser@example.com' },
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
+                'test+user@example.com'
+            );
+        });
+
+        it('returns 400 for malformed URI', async () => {
+            // Invalid UTF-8 sequence
+            const response = await GetByEmail({
+                params: { email: '%E0%A4%A' },
+            } as any);
+
+            expect(response.status).toBe(400);
+            expect(mockRepo.findByEmail).not.toHaveBeenCalled();
         });
 
         it('returns 500 on internal server error', async () => {

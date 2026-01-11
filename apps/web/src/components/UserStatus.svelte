@@ -11,8 +11,8 @@
   export let user: User | null = null;
   export let currentLocale: string = 'en';
   let dropdownOpen = false;
-  let menuButton: globalThis.HTMLElement;
-  let dropdown: globalThis.HTMLElement;
+  let menuButton: HTMLElement;
+  let dropdown: HTMLElement;
   let hasClientError = false;
   let errorMessage = '';
 
@@ -22,14 +22,14 @@
     }
 
     // Always sync locale with document to ensure correct localization
-    currentLocale = globalThis.document.documentElement.lang || 'en';
+    currentLocale = document.documentElement.lang || 'en';
 
     // Only fetch if no user was provided server-side
     if (!user) {
       try {
-        const response = await globalThis.fetch('/api/simple-auth/session');
+        const response = await fetch('/api/simple-auth/session');
         if (!response.ok) {
-          throw new globalThis.Error(
+          throw new Error(
             `Session fetch failed: ${response.status} ${response.statusText}`
           );
         }
@@ -87,7 +87,7 @@
       hasClientError = false;
       errorMessage = '';
 
-      const response = await globalThis.fetch('/api/simple-auth/session', {
+      const response = await fetch('/api/simple-auth/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@
       });
 
       if (!response.ok) {
-        throw new globalThis.Error(
+        throw new Error(
           `Logout failed: ${response.status} ${response.statusText}`
         );
       }

@@ -3,75 +3,19 @@ import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/reposit
 
 const userRepository = new UserRepositoryClass();
 
+/**
+ * GET /api/users
+ * Lists all users with pagination support.
+ *
+ * Query parameters:
+ * - limit: number of users to return (default: 50)
+ * - offset: number of users to skip (default: 0)
+ */
 export const GET: APIRoute = async ({ url }) => {
     try {
-        const userId = url.searchParams.get('id');
-        const email = url.searchParams.get('email');
-        const username = url.searchParams.get('username');
         const limit = parseInt(url.searchParams.get('limit') || '50');
         const offset = parseInt(url.searchParams.get('offset') || '0');
 
-        // Get specific user by ID
-        if (userId) {
-            const user = await userRepository.findById(userId);
-
-            if (!user) {
-                return new Response(
-                    JSON.stringify({ error: 'User not found' }),
-                    {
-                        status: 404,
-                        headers: { 'Content-Type': 'application/json' },
-                    }
-                );
-            }
-
-            return new Response(JSON.stringify(user), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        // Get user by email
-        if (email) {
-            const user = await userRepository.findByEmail(email);
-
-            if (!user) {
-                return new Response(
-                    JSON.stringify({ error: 'User not found' }),
-                    {
-                        status: 404,
-                        headers: { 'Content-Type': 'application/json' },
-                    }
-                );
-            }
-
-            return new Response(JSON.stringify(user), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        // Get user by username
-        if (username) {
-            const user = await userRepository.findByUsername(username);
-
-            if (!user) {
-                return new Response(
-                    JSON.stringify({ error: 'User not found' }),
-                    {
-                        status: 404,
-                        headers: { 'Content-Type': 'application/json' },
-                    }
-                );
-            }
-
-            return new Response(JSON.stringify(user), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        // List all users with pagination
         const users = await userRepository.list(limit, offset);
 
         return new Response(JSON.stringify(users), {
@@ -79,7 +23,7 @@ export const GET: APIRoute = async ({ url }) => {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error listing users:', error);
         return new Response(
             JSON.stringify({ error: 'Internal server error' }),
             {
@@ -90,6 +34,14 @@ export const GET: APIRoute = async ({ url }) => {
     }
 };
 
+/**
+ * POST /api/users
+ * Creates a new user.
+ *
+ * Request body:
+ * - email: string (required)
+ * - username: string (required)
+ */
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
@@ -118,50 +70,6 @@ export const POST: APIRoute = async ({ request }) => {
         });
     } catch (error) {
         console.error('Error creating user:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
-    }
-};
-
-export const PUT: APIRoute = async ({ request }) => {
-    try {
-        const body = await request.json();
-        const { id, email, username } = body;
-
-        if (!id) {
-            return new Response(
-                JSON.stringify({ error: 'User ID is required' }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
-        }
-
-        const updates: { email?: string; username?: string } = {};
-        if (email) updates.email = email;
-        if (username) updates.username = username;
-
-        const user = await userRepository.update(id, updates);
-
-        if (!user) {
-            return new Response(JSON.stringify({ error: 'User not found' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        return new Response(JSON.stringify(user), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    } catch (error) {
-        console.error('Error updating user:', error);
         return new Response(
             JSON.stringify({ error: 'Internal server error' }),
             {

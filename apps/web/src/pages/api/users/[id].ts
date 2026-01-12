@@ -62,12 +62,40 @@ export const PUT: APIRoute = async ({ params, request }) => {
             });
         }
 
-        const body = await request.json();
+        // Parse request body with validation
+        let body: { email?: string; username?: string };
+        try {
+            body = await request.json();
+        } catch {
+            return new Response(
+                JSON.stringify({ error: 'Invalid JSON in request body' }),
+                {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
+        }
+
         const { email, username } = body;
 
+        // Trim and normalize email and username
+        const emailTrimmed = String(email ?? '').trim();
+        const usernameTrimmed = String(username ?? '').trim();
+
         const updates: { email?: string; username?: string } = {};
-        if (email) updates.email = email;
-        if (username) updates.username = username;
+        if (emailTrimmed) updates.email = emailTrimmed;
+        if (usernameTrimmed) updates.username = usernameTrimmed;
+
+        // Reject empty updates to avoid unnecessary database operations
+        if (Object.keys(updates).length === 0) {
+            return new Response(
+                JSON.stringify({ error: 'No valid fields to update' }),
+                {
+                    status: 422,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
+        }
 
         const user = await userRepository.update(trimmedId, updates);
 

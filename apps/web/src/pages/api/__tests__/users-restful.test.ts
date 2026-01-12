@@ -440,6 +440,144 @@ describe('Users API - RESTful Design', () => {
                 error: 'Internal server error',
             });
         });
+
+        it('returns 400 when request body contains invalid JSON', async () => {
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () => Promise.reject(new SyntaxError('Invalid JSON')),
+                },
+            } as any);
+
+            expect(response.status).toBe(400);
+            await expect(response.json()).resolves.toEqual({
+                error: 'Invalid JSON in request body',
+            });
+            expect(mockRepo.update).not.toHaveBeenCalled();
+        });
+
+        it('trims whitespace from email before update', async () => {
+            mockRepo.update.mockResolvedValue({
+                id: 'user123',
+                email: 'updated@example.com',
+                username: 'tester',
+            });
+
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () =>
+                        Promise.resolve({
+                            email: '  updated@example.com  ',
+                        }),
+                },
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
+                email: 'updated@example.com',
+            });
+        });
+
+        it('trims whitespace from username before update', async () => {
+            mockRepo.update.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+                username: 'newtester',
+            });
+
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () =>
+                        Promise.resolve({
+                            username: '  newtester  ',
+                        }),
+                },
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
+                username: 'newtester',
+            });
+        });
+
+        it('returns 422 when both email and username are empty strings', async () => {
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () =>
+                        Promise.resolve({
+                            email: '',
+                            username: '',
+                        }),
+                },
+            } as any);
+
+            expect(response.status).toBe(422);
+            await expect(response.json()).resolves.toEqual({
+                error: 'No valid fields to update',
+            });
+            expect(mockRepo.update).not.toHaveBeenCalled();
+        });
+
+        it('returns 422 when both email and username are whitespace only', async () => {
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () =>
+                        Promise.resolve({
+                            email: '   ',
+                            username: '  \t\n  ',
+                        }),
+                },
+            } as any);
+
+            expect(response.status).toBe(422);
+            await expect(response.json()).resolves.toEqual({
+                error: 'No valid fields to update',
+            });
+            expect(mockRepo.update).not.toHaveBeenCalled();
+        });
+
+        it('returns 422 when request body is empty object', async () => {
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () => Promise.resolve({}),
+                },
+            } as any);
+
+            expect(response.status).toBe(422);
+            await expect(response.json()).resolves.toEqual({
+                error: 'No valid fields to update',
+            });
+            expect(mockRepo.update).not.toHaveBeenCalled();
+        });
+
+        it('trims and updates when email has trailing/leading whitespace', async () => {
+            mockRepo.update.mockResolvedValue({
+                id: 'user123',
+                email: 'new@example.com',
+                username: 'tester',
+            });
+
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: {
+                    json: () =>
+                        Promise.resolve({
+                            email: '  new@example.com  ',
+                            username: '   ',
+                        }),
+                },
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
+                email: 'new@example.com',
+            });
+        });
     });
 
     describe('DELETE /api/users/[id]', () => {

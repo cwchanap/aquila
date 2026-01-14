@@ -29,4 +29,7 @@ db/
 test-results/
 playwright-report/
 
-.turbo
+.turboapps/web/src/pages/zh/
+.turbo/
+apps/*/.turbo/
+packages/*/.turbo/

@@ -4,8 +4,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const { url } = context;
     const { pathname } = url;
 
-    // Skip middleware for API routes
-    if (pathname.startsWith('/api/')) {
+    // Skip middleware for API routes and static assets
+    if (
+        pathname.startsWith('/api/') ||
+        pathname.startsWith('/_astro') ||
+        pathname.startsWith('/favicon')
+    ) {
         return next();
     }
 
@@ -28,6 +32,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const response = await next();
 
     if (response.status === 404) {
+        // For zh routes, try routing to en pages
+        if (locale === 'zh') {
+            const enPathname = pathname.replace(/^\/zh\//, '/en/');
+            return new Response(null, {
+                status: 302,
+                headers: {
+                    Location: enPathname || '/en/',
+                },
+            });
+        }
+
         // Fallback to default locale
         return new Response(null, {
             status: 302,

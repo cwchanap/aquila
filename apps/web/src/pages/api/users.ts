@@ -45,34 +45,66 @@ export const GET: APIRoute = async ({ url }) => {
     }
 };
 
+// Input validation helpers
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 50;
+
+function validateEmail(email: unknown): string | null {
+    if (typeof email !== 'string') return 'Email must be a string';
+    const trimmed = email.trim();
+    if (!trimmed) return 'Email is required';
+    if (!EMAIL_REGEX.test(trimmed)) return 'Invalid email format';
+    if (trimmed.length > 255) return 'Email must be at most 255 characters';
+    return null;
+}
+
+function validateUsername(username: unknown): string | null {
+    if (typeof username !== 'string') return 'Username must be a string';
+    const trimmed = username.trim();
+    if (!trimmed) return 'Username is required';
+    if (trimmed.length < USERNAME_MIN_LENGTH)
+        return `Username must be at least ${USERNAME_MIN_LENGTH} characters`;
+    if (trimmed.length > USERNAME_MAX_LENGTH)
+        return `Username must be at most ${USERNAME_MAX_LENGTH} characters`;
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmed))
+        return 'Username can only contain letters, numbers, underscores, and hyphens';
+    return null;
+}
+
 /**
  * POST /api/users
  * Creates a new user.
  *
  * Request body:
- * - email: string (required)
- * - username: string (required)
+ * - email: string (required, valid email format)
+ * - username: string (required, 3-50 chars, alphanumeric with _ and -)
  */
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
         const { email, username } = body;
 
-        if (!email || !username) {
-            return new Response(
-                JSON.stringify({
-                    error: 'Missing required fields: email, username',
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+        // Validate inputs
+        const emailError = validateEmail(email);
+        if (emailError) {
+            return new Response(JSON.stringify({ error: emailError }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const usernameError = validateUsername(username);
+        if (usernameError) {
+            return new Response(JSON.stringify({ error: usernameError }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
         }
 
         const user = await userRepository.create({
-            email,
-            username,
+            email: email.trim(),
+            username: username.trim(),
         });
 
         return new Response(JSON.stringify(user), {

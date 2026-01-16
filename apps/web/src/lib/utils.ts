@@ -1,23 +1,27 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import enTranslations from '@aquila/dialogue/translations/en.json';
-import zhTranslations from '@aquila/dialogue/translations/zh.json';
+import { translations, type Locale } from '@aquila/dialogue';
+
+export type { Locale };
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-const translations = {
-    en: enTranslations,
-    zh: zhTranslations,
-};
-
-export function t(locale: string, key: string): string {
+/**
+ * Retrieves a translated string by key for the given locale.
+ * Supports nested keys using dot notation (e.g., 'menu.title').
+ *
+ * @param locale - The locale to use ('en' or 'zh')
+ * @param key - Dot-notation key path (e.g., 'menu.title')
+ * @returns The translated string, or the key if not found
+ */
+export function t(locale: Locale | string, key: string): string {
     if (!key) return '';
 
     const keys = key.split('.');
-    const localeTranslations =
-        translations[locale as keyof typeof translations] || translations.en;
+    const validLocale: Locale = locale === 'zh' ? 'zh' : 'en';
+    const localeTranslations = translations[validLocale];
 
     // Support both direct JSON exports and modules with a `default` property
     const moduleValue = localeTranslations as Record<string, unknown>;

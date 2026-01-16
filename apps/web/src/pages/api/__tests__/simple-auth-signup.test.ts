@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const signUp = vi.hoisted(() => vi.fn());
 const createSession = vi.hoisted(() => vi.fn());
@@ -21,14 +21,21 @@ vi.mock('../../../lib/drizzle/db.js', () => ({
 import { POST } from '../simple-auth/signup';
 
 describe('Signup API', () => {
+    let originalNodeEnv: string | undefined;
+
     beforeEach(() => {
         signUp.mockReset();
         createSession.mockReset();
         mockDb.select.mockReset();
+        originalNodeEnv = process.env.NODE_ENV;
 
         const limit = vi.fn().mockResolvedValue([]);
         const from = vi.fn().mockReturnValue({ limit });
         mockDb.select.mockReturnValue({ from });
+    });
+
+    afterEach(() => {
+        process.env.NODE_ENV = originalNodeEnv;
     });
 
     it('returns 400 when required fields are missing', async () => {
@@ -115,11 +122,74 @@ describe('Signup API', () => {
             'session-123',
             expect.objectContaining({
                 httpOnly: true,
-                secure: false,
                 sameSite: 'lax',
                 maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
                 path: '/',
             })
         );
+    });
+
+    describe('session cookie secure flag', () => {
+        it('sets secure: true in production', async () => {
+            process.env.NODE_ENV = 'production';
+
+            signUp.mockResolvedValue({
+                id: 'user-1',
+                email: 'user@example.com',
+                name: 'User',
+                username: null,
+            });
+            createSession.mockResolvedValue('session-123');
+
+            const cookies = { set: vi.fn() };
+            const request = {
+                json: vi.fn().mockResolvedValue({
+                    email: 'user@example.com',
+                    password: 'password123',
+                    name: 'User',
+                }),
+            } as any;
+
+            await POST({ request, cookies } as any);
+
+            expect(cookies.set).toHaveBeenCalledWith(
+                'session',
+                'session-123',
+                expect.objectContaining({
+                    secure: true,
+                })
+            );
+        });
+
+        it('sets secure: false in development', async () => {
+            process.env.NODE_ENV = 'development';
+
+            signUp.mockResolvedValue({
+                id: 'user-1',
+                email: 'user@example.com',
+                name: 'User',
+                username: null,
+            });
+            createSession.mockResolvedValue('session-123');
+
+            const cookies = { set: vi.fn() };
+            const request = {
+                json: vi.fn().mockResolvedValue({
+                    email: 'user@example.com',
+                    password: 'password123',
+                    name: 'User',
+                }),
+            } as any;
+
+            await POST({ request, cookies } as any);
+
+            expect(cookies.set).toHaveBeenCalledWith(
+                'session',
+                'session-123',
+                expect.objectContaining({
+                    secure: false,
+                })
+            );
+        });
     });
 });

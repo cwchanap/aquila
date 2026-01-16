@@ -48,9 +48,15 @@ export const auth = betterAuth({
         requireEmailVerification: false,
     },
     trustedOrigins: ['http://localhost:5090'],
-    secret:
-        process.env.BETTER_AUTH_SECRET ||
-        'your-secret-key-for-development-only',
+    secret: (() => {
+        const secret = process.env.BETTER_AUTH_SECRET;
+        if (!secret && process.env.NODE_ENV === 'production') {
+            throw new Error(
+                'BETTER_AUTH_SECRET must be set in production environment'
+            );
+        }
+        return secret || 'development-only-secret-do-not-use-in-prod';
+    })(),
 });
 
 export type Session = typeof auth.$Infer.Session;

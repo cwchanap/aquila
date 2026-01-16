@@ -4,24 +4,10 @@ import UserStatus from '../../components/UserStatus.svelte';
 import { SimpleAuthService, type SimpleUser } from '../../lib/simple-auth.js';
 import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
-import en from '@aquila/dialogue/translations/en.json';
+import { t as translate } from '../../lib/utils';
 
-// Helper function to get translations (used in template)
- 
-const t = (key: string): string => {
-  const keys = key.split('.');
-  let value: Record<string, unknown> = en;
-
-  for (const k of keys) {
-    if (value && typeof value === 'object' && k in value) {
-      value = value[k] as Record<string, unknown>;
-    } else {
-      return key;
-    }
-  }
-
-  return typeof value === 'string' ? value : key;
-};
+const locale = Astro.currentLocale || 'en';
+const t = (key: string) => translate(locale, key);
 
 // Get user session
 let user: SimpleUser | null = null;
@@ -391,182 +377,246 @@ try {
     const localCharactersContainer = document.getElementById('local-characters');
 
     if (localCharactersContainer) {
+      // Safe DOM builder functions to prevent XSS
+      function createCharacterCard(characterName: string, storyId: string): HTMLDivElement {
+        const card = document.createElement('div');
+        card.className = 'bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]';
+        card.setAttribute('data-local-character', 'true');
+        card.setAttribute('data-story-id', storyId);
+
+        // Header section
+        const header = document.createElement('div');
+        header.className = 'flex items-center gap-4 mb-6';
+
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30';
+        avatar.textContent = characterName.charAt(0).toUpperCase();
+
+        // Info container
+        const info = document.createElement('div');
+        info.className = 'flex-1';
+
+        // Name display
+        const nameDisplay = document.createElement('h3');
+        nameDisplay.className = 'text-2xl font-bold text-slate-800 character-name-display tracking-wide';
+        nameDisplay.style.fontFamily = "'Orbitron', monospace";
+        nameDisplay.textContent = characterName;
+
+        // Name input
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg';
+        nameInput.value = characterName;
+        nameInput.maxLength = 50;
+        nameInput.style.fontFamily = "'Orbitron', monospace";
+
+        // Story label
+        const storyLabel = document.createElement('p');
+        storyLabel.className = 'text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1';
+        storyLabel.style.fontFamily = "'Exo 2', sans-serif";
+        storyLabel.textContent = storyId.replace('_', ' ');
+
+        info.appendChild(nameDisplay);
+        info.appendChild(nameInput);
+        info.appendChild(storyLabel);
+        header.appendChild(avatar);
+        header.appendChild(info);
+
+        // Buttons container
+        const buttons = document.createElement('div');
+        buttons.className = 'flex gap-3 flex-wrap';
+
+        // Play link
+        const playLink = document.createElement('a');
+        playLink.href = `/en/story/${encodeURIComponent(storyId)}`;
+        playLink.className = 'character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50';
+        playLink.style.cssText = "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
+        playLink.textContent = 'Play Story';
+
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60';
+        editBtn.style.fontFamily = "'Orbitron', monospace";
+        editBtn.textContent = 'Edit';
+
+        // Save button
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden';
+        saveBtn.style.cssText = "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
+        saveBtn.textContent = 'Save';
+
+        // Cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden';
+        cancelBtn.style.cssText = "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
+        cancelBtn.textContent = 'Cancel';
+
+        buttons.appendChild(playLink);
+        buttons.appendChild(editBtn);
+        buttons.appendChild(saveBtn);
+        buttons.appendChild(cancelBtn);
+
+        card.appendChild(header);
+        card.appendChild(buttons);
+
+        return card;
+      }
+
+      function createEmptyState(): HTMLDivElement {
+        const container = document.createElement('div');
+        container.className = 'text-center py-12';
+
+        const message = document.createElement('div');
+        message.className = 'text-slate-600 text-xl mb-6 font-semibold';
+        message.style.fontFamily = "'Exo 2', sans-serif";
+        message.textContent = 'No local characters found';
+
+        const link = document.createElement('a');
+        link.href = '/en/stories';
+        link.className = 'group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden';
+        link.style.cssText = "font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
+
+        const span = document.createElement('span');
+        span.className = 'relative text-lg tracking-wider uppercase font-black';
+        span.textContent = 'Start Your First Story';
+        link.appendChild(span);
+
+        container.appendChild(message);
+        container.appendChild(link);
+        return container;
+      }
+
+      function createErrorState(): HTMLDivElement {
+        const container = document.createElement('div');
+        container.className = 'text-center py-12';
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-red-600 text-lg font-semibold bg-red-100 rounded-lg p-4 border border-red-300';
+        errorDiv.style.fontFamily = "'Exo 2', sans-serif";
+        errorDiv.textContent = 'Error loading local characters';
+
+        container.appendChild(errorDiv);
+        return container;
+      }
+
+      function setupEditHandler(card: HTMLElement) {
+        const editBtn = card.querySelector('.character-edit-btn');
+        if (!editBtn) return;
+
+        editBtn.addEventListener('click', () => {
+          const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
+          const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
+          const editButton = card.querySelector('.character-edit-btn') as HTMLElement;
+          const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
+          const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
+          const playLink = card.querySelector('.character-play-link') as HTMLElement;
+
+          if (nameDisplay && nameInput && editButton && saveBtn && cancelBtn) {
+            const originalName = nameDisplay.textContent || '';
+            const storyId = card.getAttribute('data-story-id');
+
+            // Switch to edit mode
+            nameDisplay.classList.add('hidden');
+            nameInput.classList.remove('hidden');
+            editButton.classList.add('hidden');
+            saveBtn.classList.remove('hidden');
+            cancelBtn.classList.remove('hidden');
+            playLink.classList.add('hidden');
+
+            nameInput.focus();
+            nameInput.select();
+
+            const handleSave = () => {
+              const newName = nameInput.value.trim();
+              if (!newName) {
+                alert('Character name cannot be empty');
+                return;
+              }
+
+              if (storyId) {
+                localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
+                nameDisplay.textContent = newName;
+                const avatar = card.querySelector('.character-avatar');
+                if (avatar) {
+                  avatar.textContent = newName.charAt(0).toUpperCase();
+                }
+                playLink.setAttribute('href', `/en/story/${encodeURIComponent(storyId)}`);
+              }
+
+              nameDisplay.classList.remove('hidden');
+              nameInput.classList.add('hidden');
+              editButton.classList.remove('hidden');
+              saveBtn.classList.add('hidden');
+              cancelBtn.classList.add('hidden');
+              playLink.classList.remove('hidden');
+            };
+
+            const handleCancel = () => {
+              nameInput.value = originalName;
+              nameDisplay.classList.remove('hidden');
+              nameInput.classList.add('hidden');
+              editButton.classList.remove('hidden');
+              saveBtn.classList.add('hidden');
+              cancelBtn.classList.add('hidden');
+              playLink.classList.remove('hidden');
+            };
+
+            saveBtn.addEventListener('click', handleSave);
+            cancelBtn.addEventListener('click', handleCancel);
+
+            nameInput.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                handleSave();
+              } else if (e.key === 'Escape') {
+                handleCancel();
+              }
+            });
+          }
+        });
+      }
+
       try {
-        const stories = ['train_adventure']; // Add more stories as needed
+        const stories = ['train_adventure'];
         const localChars: { characterName: string; storyId: string }[] = [];
 
         stories.forEach(story => {
           const local = localStorage.getItem(`aquila:character:${story}`);
           if (local) {
-            const { characterName } = JSON.parse(local);
-            if (characterName) {
-              localChars.push({ characterName, storyId: story });
+            try {
+              const { characterName } = JSON.parse(local);
+              if (characterName && typeof characterName === 'string') {
+                localChars.push({ characterName, storyId: story });
+              }
+            } catch {
+              // Invalid JSON, skip this entry
             }
           }
         });
 
+        // Clear container safely
+        while (localCharactersContainer.firstChild) {
+          localCharactersContainer.removeChild(localCharactersContainer.firstChild);
+        }
+
         if (localChars.length > 0) {
-          localCharactersContainer.innerHTML = localChars.map(char => `
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]" data-local-character="true" data-story-id="${char.storyId}">
-              <div class="flex items-center gap-4 mb-6">
-                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30">
-                  ${char.characterName.charAt(0).toUpperCase()}
-                </div>
-                <div class="flex-1">
-                  <h3 class="text-2xl font-bold text-slate-800 character-name-display tracking-wide" style="font-family: 'Orbitron', monospace;">${char.characterName}</h3>
-                  <input
-                    type="text"
-                    class="character-name-input w-full bg-white/70 border-2 border-slate-300/60 rounded-xl text-slate-800 placeholder-slate-500 px-4 py-2 text-2xl font-bold hidden shadow-lg"
-                    value="${char.characterName}"
-                    maxlength="50"
-                    style="font-family: 'Orbitron', monospace;"
-                  />
-                  <p class="text-slate-600 text-sm capitalize font-semibold tracking-wider mt-1" style="font-family: 'Exo 2', sans-serif;">${char.storyId.replace('_', ' ')}</p>
-                </div>
-              </div>
-              <div class="flex gap-3 flex-wrap">
-                <a
-                  href="/en/story/${char.storyId}"
-                  class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Play Story
-                </a>
-                <button
-                  type="button"
-                  class="character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
-                  style="font-family: 'Orbitron', monospace;"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  class="character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  class="character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden"
-                  style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          `).join('');
-
-          // Add event listeners for local character editing
-          setTimeout(() => {
-            document.querySelectorAll('[data-local-character] .character-edit-btn').forEach((button: Element) => {
-              button.addEventListener('click', (e) => {
-                const card = (e.target as HTMLElement).closest('[data-local-character]');
-                if (!card) return;
-
-                const nameDisplay = card.querySelector('.character-name-display') as HTMLElement;
-                const nameInput = card.querySelector('.character-name-input') as HTMLInputElement;
-                const editBtn = card.querySelector('.character-edit-btn') as HTMLElement;
-                const saveBtn = card.querySelector('.character-save-btn') as HTMLElement;
-                const cancelBtn = card.querySelector('.character-cancel-btn') as HTMLElement;
-                const playLink = card.querySelector('.character-play-link') as HTMLElement;
-
-                if (nameDisplay && nameInput && editBtn && saveBtn && cancelBtn) {
-                  const originalName = nameDisplay.textContent || '';
-                  const storyId = card.getAttribute('data-story-id');
-
-                  // Switch to edit mode
-                  nameDisplay.classList.add('hidden');
-                  nameInput.classList.remove('hidden');
-                  editBtn.classList.add('hidden');
-                  saveBtn.classList.remove('hidden');
-                  cancelBtn.classList.remove('hidden');
-                  playLink.classList.add('hidden');
-
-                  nameInput.focus();
-                  nameInput.select();
-
-                  const handleSave = () => {
-                    const newName = nameInput.value.trim();
-                    if (!newName) {
-                      alert('Character name cannot be empty');
-                      return;
-                    }
-
-                    if (storyId) {
-                      // Update localStorage
-                      localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
-
-                      // Update UI
-                      nameDisplay.textContent = newName;
-                      const avatar = card.querySelector('.character-avatar');
-                      if (avatar) {
-                        avatar.textContent = newName.charAt(0).toUpperCase();
-                      }
-
-                      // Update play link
-                      playLink.setAttribute('href', `/en/story/${storyId}`);
-                    }
-
-                    // Switch back to display mode
-                    nameDisplay.classList.remove('hidden');
-                    nameInput.classList.add('hidden');
-                    editBtn.classList.remove('hidden');
-                    saveBtn.classList.add('hidden');
-                    cancelBtn.classList.add('hidden');
-                    playLink.classList.remove('hidden');
-                  };
-
-                  const handleCancel = () => {
-                    nameInput.value = originalName;
-                    nameDisplay.classList.remove('hidden');
-                    nameInput.classList.add('hidden');
-                    editBtn.classList.remove('hidden');
-                    saveBtn.classList.add('hidden');
-                    cancelBtn.classList.add('hidden');
-                    playLink.classList.remove('hidden');
-                  };
-
-                  saveBtn.addEventListener('click', handleSave);
-                  cancelBtn.addEventListener('click', handleCancel);
-
-                  nameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                      handleSave();
-                    } else if (e.key === 'Escape') {
-                      handleCancel();
-                    }
-                  });
-                }
-              });
-            });
-          }, 100);
+          localChars.forEach(char => {
+            const card = createCharacterCard(char.characterName, char.storyId);
+            localCharactersContainer.appendChild(card);
+            setupEditHandler(card);
+          });
         } else {
-          localCharactersContainer.innerHTML = `
-            <div class="text-center py-12">
-              <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">No local characters found</div>
-              <a
-                href="/en/stories"
-                class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
-                style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-              >
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-                <span class="relative text-lg tracking-wider uppercase font-black">Start Your First Story</span>
-                <div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
-                <div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
-                <div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
-                <div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
-              </a>
-            </div>
-          `;
+          localCharactersContainer.appendChild(createEmptyState());
         }
       } catch (error) {
         console.error('Error loading local characters:', error);
-        localCharactersContainer.innerHTML = `
-          <div class="text-center py-12">
-            <div class="text-red-600 text-lg font-semibold bg-red-100 rounded-lg p-4 border border-red-300" style="font-family: 'Exo 2', sans-serif;">Error loading local characters</div>
-          </div>
-        `;
+        while (localCharactersContainer.firstChild) {
+          localCharactersContainer.removeChild(localCharactersContainer.firstChild);
+        }
+        localCharactersContainer.appendChild(createErrorState());
       }
     }
   }

@@ -516,6 +516,17 @@ try {
           const playLink = card.querySelector('.character-play-link') as HTMLElement;
 
           if (nameDisplay && nameInput && editButton && saveBtn && cancelBtn) {
+            // Abort any existing edit session listeners
+            const cardWithController = card as HTMLElement & { _editAbortController?: AbortController };
+            if (cardWithController._editAbortController) {
+              cardWithController._editAbortController.abort();
+            }
+
+            // Create new AbortController for this edit session
+            const abortController = new AbortController();
+            cardWithController._editAbortController = abortController;
+            const { signal } = abortController;
+
             const originalName = nameDisplay.textContent || '';
             const storyId = card.getAttribute('data-story-id');
 
@@ -553,6 +564,9 @@ try {
               saveBtn.classList.add('hidden');
               cancelBtn.classList.add('hidden');
               playLink.classList.remove('hidden');
+
+              // Clean up event listeners
+              abortController.abort();
             };
 
             const handleCancel = () => {
@@ -563,10 +577,14 @@ try {
               saveBtn.classList.add('hidden');
               cancelBtn.classList.add('hidden');
               playLink.classList.remove('hidden');
+
+              // Clean up event listeners
+              abortController.abort();
             };
 
-            saveBtn.addEventListener('click', handleSave);
-            cancelBtn.addEventListener('click', handleCancel);
+            // Add listeners with abort signal for automatic cleanup
+            saveBtn.addEventListener('click', handleSave, { signal });
+            cancelBtn.addEventListener('click', handleCancel, { signal });
 
             nameInput.addEventListener('keydown', (e) => {
               if (e.key === 'Enter') {
@@ -574,7 +592,7 @@ try {
               } else if (e.key === 'Escape') {
                 handleCancel();
               }
-            });
+            }, { signal });
           }
         });
       }

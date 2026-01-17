@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { db } from '../../../lib/drizzle/db.js';
 import { users } from '../../../lib/drizzle/schema.js';
+import { validateEmail } from '../../../lib/validation.js';
 
 const isNonProduction = process.env.NODE_ENV !== 'production';
 let dbHealthChecked = false;
@@ -28,6 +29,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                     headers: { 'Content-Type': 'application/json' },
                 }
             );
+        }
+
+        // Validate email format
+        const emailError = validateEmail(email);
+        if (emailError) {
+            return new Response(JSON.stringify({ error: emailError }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
         }
 
         // Development/test DB health check to surface configuration issues

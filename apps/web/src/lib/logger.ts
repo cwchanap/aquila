@@ -5,6 +5,11 @@
  *   import { logger } from '@/lib/logger';
  *   logger.info('User logged in', { userId: '123' });
  *   logger.error('Failed to fetch data', error, { endpoint: '/api/users' });
+ *
+ * Log level filtering (based on NODE_ENV):
+ *   - production: logs "info", "warn", and "error" (info+)
+ *   - development/other: logs "debug", "info", "warn", and "error" (debug+)
+ *   - test: logs "error" only
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';

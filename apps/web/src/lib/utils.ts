@@ -21,6 +21,20 @@ export function t(locale: Locale | string, key: string): string {
 
     const keys = key.split('.');
     const validLocale: Locale = locale === 'zh' ? 'zh' : 'en';
+
+    // Log warning for invalid locale
+    if (locale !== 'en' && locale !== 'zh') {
+        if (typeof locale === 'string') {
+            console.warn(
+                `[i18n] Invalid locale "${locale}" provided to t(); falling back to "en".`
+            );
+        } else {
+            console.warn(
+                '[i18n] Invalid locale provided to t(); falling back to "en".'
+            );
+        }
+    }
+
     const localeTranslations = translations[validLocale];
 
     // Support both direct JSON exports and modules with a `default` property

@@ -377,8 +377,18 @@ try {
     const localCharactersContainer = document.getElementById('local-characters');
 
     if (localCharactersContainer) {
+      // Allowed story IDs whitelist
+      const ALLOWED_STORIES = ['train_adventure'] as const;
+      type AllowedStoryId = typeof ALLOWED_STORIES[number];
+
       // Safe DOM builder functions to prevent XSS
       function createCharacterCard(characterName: string, storyId: string): HTMLDivElement {
+        // Validate storyId against whitelist
+        if (!ALLOWED_STORIES.includes(storyId as AllowedStoryId)) {
+          console.warn(`[Security] Invalid storyId detected: "${storyId}". Skipping this character.`);
+          throw new Error(`Invalid story ID: ${storyId}`);
+        }
+
         const card = document.createElement('div');
         card.className = 'bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/60 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]';
         card.setAttribute('data-local-character', 'true');
@@ -607,7 +617,16 @@ try {
             try {
               const { characterName } = JSON.parse(local);
               if (characterName && typeof characterName === 'string') {
-                localChars.push({ characterName, storyId: story });
+                // Validate character name
+                const trimmed = characterName.trim();
+                const maxLength = 50;
+                const clampedName = trimmed.slice(0, maxLength);
+                const isValid = /^[A-Za-z0-9 _.-]+$/.test(clampedName);
+                if (clampedName.length > 0 && isValid) {
+                  localChars.push({ characterName: clampedName, storyId: story });
+                } else {
+                  console.warn(`[Validation] Invalid character name skipped: "${characterName}"`);
+                }
               }
             } catch {
               // Invalid JSON, skip this entry

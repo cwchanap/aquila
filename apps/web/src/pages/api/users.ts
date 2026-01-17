@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/repositories.js';
+import { validateEmail, validateUsername } from '../../lib/validation.js';
 
 const userRepository = new UserRepositoryClass();
 
@@ -45,33 +46,6 @@ export const GET: APIRoute = async ({ url }) => {
     }
 };
 
-// Input validation helpers
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 50;
-
-function validateEmail(email: unknown): string | null {
-    if (typeof email !== 'string') return 'Email must be a string';
-    const trimmed = email.trim();
-    if (!trimmed) return 'Email is required';
-    if (!EMAIL_REGEX.test(trimmed)) return 'Invalid email format';
-    if (trimmed.length > 255) return 'Email must be at most 255 characters';
-    return null;
-}
-
-function validateUsername(username: unknown): string | null {
-    if (typeof username !== 'string') return 'Username must be a string';
-    const trimmed = username.trim();
-    if (!trimmed) return 'Username is required';
-    if (trimmed.length < USERNAME_MIN_LENGTH)
-        return `Username must be at least ${USERNAME_MIN_LENGTH} characters`;
-    if (trimmed.length > USERNAME_MAX_LENGTH)
-        return `Username must be at most ${USERNAME_MAX_LENGTH} characters`;
-    if (!/^[a-zA-Z0-9_-]+$/.test(trimmed))
-        return 'Username can only contain letters, numbers, underscores, and hyphens';
-    return null;
-}
-
 /**
  * POST /api/users
  * Creates a new user.
@@ -103,8 +77,8 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const user = await userRepository.create({
-            email: email.trim(),
-            username: username.trim(),
+            email: email,
+            username: username,
         });
 
         return new Response(JSON.stringify(user), {

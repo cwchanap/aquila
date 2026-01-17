@@ -58,7 +58,7 @@ describe('Utils', () => {
 
         it('returns chinese translations', () => {
             expect(t('zh', 'common.hello')).toBe('你好');
-            expect(t('zh', 'common.login')).toBe('登录');
+            expect(t('zh', 'common.login')).toBe('登入');
         });
 
         it('falls back to key for missing entry', () => {
@@ -75,6 +75,44 @@ describe('Utils', () => {
 
         it('returns key when value is object', () => {
             expect(t('en', 'common')).toBe('common');
+        });
+
+        it('logs warning for invalid locale string', () => {
+            const consoleWarnSpy = vi
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+
+            expect(t('fr', 'common.logout')).toBe('Logout');
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                '[i18n] Invalid locale "fr" provided to t(); falling back to "en".'
+            );
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('logs warning for invalid non-string locale', () => {
+            const consoleWarnSpy = vi
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+
+            expect(t(123 as any, 'common.logout')).toBe('Logout');
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                '[i18n] Invalid locale provided to t(); falling back to "en".'
+            );
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('does not log warning for valid locales', () => {
+            const consoleWarnSpy = vi
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+
+            expect(t('en', 'common.hello')).toBe('Hello');
+            expect(t('zh', 'common.hello')).toBe('你好');
+            expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+            consoleWarnSpy.mockRestore();
         });
     });
 

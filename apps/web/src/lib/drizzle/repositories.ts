@@ -1,4 +1,4 @@
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { db, type DrizzleDB } from './db';
 import {
     users,
@@ -291,21 +291,23 @@ export class ChapterRepository {
     }
 
     async reorder(storyId: string, chapterIds: string[]): Promise<void> {
-        // Batch update all chapters in parallel
-        const now = new Date();
-        await Promise.all(
-            chapterIds.map((chapterId, index) =>
-                this.db
-                    .update(chapters)
-                    .set({ order: index, updatedAt: now })
-                    .where(
-                        and(
-                            eq(chapters.id, chapterId),
-                            eq(chapters.storyId, storyId)
+        // Use transaction to ensure atomicity - all updates succeed or none do
+        await this.db.transaction(async tx => {
+            const now = new Date();
+            await Promise.all(
+                chapterIds.map((chapterId, index) =>
+                    tx
+                        .update(chapters)
+                        .set({ order: index.toString(), updatedAt: now })
+                        .where(
+                            and(
+                                eq(chapters.id, chapterId),
+                                eq(chapters.storyId, storyId)
+                            )
                         )
-                    )
-            )
-        );
+                )
+            );
+        });
     }
 }
 
@@ -359,7 +361,7 @@ export class SceneRepository {
         return await this.db
             .select()
             .from(scenes)
-            .where(and(eq(scenes.storyId, storyId), eq(scenes.chapterId, null)))
+            .where(and(eq(scenes.storyId, storyId), isNull(scenes.chapterId)))
             .orderBy(asc(scenes.order));
     }
 
@@ -391,24 +393,26 @@ export class SceneRepository {
         sceneIds: string[],
         chapterId?: string | null
     ): Promise<void> {
-        // Batch update all scenes in parallel
-        const now = new Date();
-        await Promise.all(
-            sceneIds.map((sceneId, index) =>
-                this.db
-                    .update(scenes)
-                    .set({ order: index, updatedAt: now })
-                    .where(
-                        and(
-                            eq(scenes.id, sceneId),
-                            eq(scenes.storyId, storyId),
-                            chapterId
-                                ? eq(scenes.chapterId, chapterId)
-                                : eq(scenes.chapterId, null)
+        // Use transaction to ensure atomicity - all updates succeed or none do
+        await this.db.transaction(async tx => {
+            const now = new Date();
+            await Promise.all(
+                sceneIds.map((sceneId, index) =>
+                    tx
+                        .update(scenes)
+                        .set({ order: index.toString(), updatedAt: now })
+                        .where(
+                            and(
+                                eq(scenes.id, sceneId),
+                                eq(scenes.storyId, storyId),
+                                chapterId
+                                    ? eq(scenes.chapterId, chapterId)
+                                    : isNull(scenes.chapterId)
+                            )
                         )
-                    )
-            )
-        );
+                )
+            );
+        });
     }
 }
 

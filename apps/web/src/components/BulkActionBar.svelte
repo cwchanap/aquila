@@ -16,7 +16,13 @@
     locale: Locale;
   }
 
-  let { isVisible, selectedIds, onCancel, onAction, locale }: BulkActionBarProps = $props();
+  let {
+    isVisible,
+    selectedIds,
+    onCancel,
+    onAction,
+    locale,
+  }: BulkActionBarProps = $props();
 
   // Get translations using $derived for Svelte 5 runes mode
   const t = $derived(getTranslations(locale));
@@ -54,7 +60,11 @@
     cleanup();
 
     // Then re-attach if conditions are met
-    if (isVisible && selectedIds.length > 0 && typeof document !== 'undefined') {
+    if (
+      isVisible &&
+      selectedIds.length > 0 &&
+      typeof document !== 'undefined'
+    ) {
       if (!isListenerAttached) {
         // Defer listener attachment until after the current event loop
         // This ensures that clicks in the current interaction (like selecting a checkbox)
@@ -81,7 +91,9 @@
   >
     <div class="bulk-action-bar-content">
       <span class="selection-count">
-        {selectedIds.length} {selectedIds.length !== 1 ? t.bulkAction.items : t.bulkAction.item} {t.bulkAction.selected}
+        {selectedIds.length}
+        {selectedIds.length !== 1 ? t.bulkAction.items : t.bulkAction.item}
+        {t.bulkAction.selected}
       </span>
 
       <div class="bulk-action-buttons">
@@ -147,7 +159,7 @@
     gap: 0.5rem;
   }
 
-  .bulk-action-btn {
+  :global(.bulk-action-btn) {
     padding: 0.5rem 1rem;
     border-radius: 6px;
     border: none;
@@ -158,15 +170,15 @@
     transition: background-color 0.2s;
   }
 
-  .bulk-action-btn:hover {
+  :global(.bulk-action-btn:hover) {
     background: #3a7bc8;
   }
 
-  .bulk-action-btn--cancel {
+  :global(.bulk-action-btn--cancel) {
     background: #6b7280;
   }
 
-  .bulk-action-btn--cancel:hover {
+  :global(.bulk-action-btn--cancel:hover) {
     background: #4b5563;
   }
 </style>

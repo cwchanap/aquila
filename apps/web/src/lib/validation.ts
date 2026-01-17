@@ -4,7 +4,7 @@
 
 // Constants
 const EMAIL_REGEX_PATTERN =
-    '^[a-zA-Z0-9][a-zA-Z0-9._%+-]{0,61}[a-zA-Z0-9]@(?:[a-zA-Z0-9-]{1,61}\\\\.){1,3}[a-zA-Z]{2,3}$';
+    '^[a-zA-Z0-9][a-zA-Z0-9._%+-]{0,61}[a-zA-Z0-9]@(?:[a-zA-Z0-9-]{1,61}\\.){1,3}[a-zA-Z]{2,3}$';
 export const EMAIL_REGEX = new RegExp(EMAIL_REGEX_PATTERN);
 
 export const USERNAME_MIN_LENGTH = 3;
@@ -47,11 +47,11 @@ export function validateEmail(email: unknown): string | null {
     if (!trimmed) {
         return ERROR_MESSAGES.email.required;
     }
-    if (!EMAIL_REGEX.test(trimmed)) {
-        return ERROR_MESSAGES.email.invalid;
-    }
     if (trimmed.length > 255) {
         return ERROR_MESSAGES.email.tooLong;
+    }
+    if (!EMAIL_REGEX.test(trimmed)) {
+        return ERROR_MESSAGES.email.invalid;
     }
     return null;
 }

@@ -76,9 +76,12 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
+        const trimmedEmail = email.trim();
+        const trimmedUsername = username.trim();
+
         const user = await userRepository.create({
-            email: email,
-            username: username,
+            email: trimmedEmail,
+            username: trimmedUsername,
         });
 
         return new Response(JSON.stringify(user), {

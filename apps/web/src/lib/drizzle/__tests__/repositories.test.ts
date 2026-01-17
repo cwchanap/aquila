@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Hoist mocks to ensure they're available before imports
-const mockDb = vi.hoisted(() => {
+function createChain() {
     const chain: Record<string, ReturnType<typeof vi.fn>> = {};
 
     chain.select = vi.fn(() => chain);
@@ -19,9 +19,14 @@ const mockDb = vi.hoisted(() => {
     chain.offset = vi.fn(() => chain);
     chain.orderBy = vi.fn(() => chain);
     chain.returning = vi.fn(() => chain);
+    chain.transaction = vi.fn(async (callback: (tx: typeof chain) => unknown) =>
+        callback(chain)
+    );
 
     return chain;
-});
+}
+
+const mockDb = vi.hoisted(() => createChain());
 
 vi.mock('../db.js', () => ({
     db: mockDb,
@@ -60,10 +65,18 @@ describe('Repositories', () => {
             'offset',
             'orderBy',
             'returning',
+            'transaction',
         ];
 
         chainMethods.forEach(key => {
             mockDb[key].mockReset();
+            if (key === 'transaction') {
+                mockDb[key].mockImplementation(
+                    async (callback: (tx: typeof mockDb) => unknown) =>
+                        callback(mockDb)
+                );
+                return;
+            }
             mockDb[key].mockReturnValue(mockDb);
         });
     });
@@ -240,8 +253,8 @@ describe('Repositories', () => {
             });
 
             it('sets correct order for each chapter', async () => {
-                const setCalls: Array<{ order: number }> = [];
-                mockDb.set.mockImplementation((data: { order: number }) => {
+                const setCalls: Array<{ order: string }> = [];
+                mockDb.set.mockImplementation((data: { order: string }) => {
                     setCalls.push(data);
                     return mockDb;
                 });
@@ -249,8 +262,8 @@ describe('Repositories', () => {
 
                 await repo.reorder('story-1', ['ch-a', 'ch-b']);
 
-                expect(setCalls[0].order).toBe(0);
-                expect(setCalls[1].order).toBe(1);
+                expect(setCalls[0].order).toBe('0');
+                expect(setCalls[1].order).toBe('1');
             });
 
             it('handles empty chapter list', async () => {
@@ -304,8 +317,8 @@ describe('Repositories', () => {
             });
 
             it('sets correct order for each scene', async () => {
-                const setCalls: Array<{ order: number }> = [];
-                mockDb.set.mockImplementation((data: { order: number }) => {
+                const setCalls: Array<{ order: string }> = [];
+                mockDb.set.mockImplementation((data: { order: string }) => {
                     setCalls.push(data);
                     return mockDb;
                 });
@@ -313,9 +326,9 @@ describe('Repositories', () => {
 
                 await repo.reorder('story-1', ['sc-a', 'sc-b', 'sc-c']);
 
-                expect(setCalls[0].order).toBe(0);
-                expect(setCalls[1].order).toBe(1);
-                expect(setCalls[2].order).toBe(2);
+                expect(setCalls[0].order).toBe('0');
+                expect(setCalls[1].order).toBe('1');
+                expect(setCalls[2].order).toBe('2');
             });
         });
     });

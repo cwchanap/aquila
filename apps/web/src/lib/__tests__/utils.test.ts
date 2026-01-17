@@ -17,7 +17,7 @@ vi.mock('@aquila/dialogue/translations/zh.json', () => ({
         common: {
             hello: '你好',
             goodbye: '再见',
-            login: '登录',
+            login: '登入',
             logout: '登出',
         },
     },

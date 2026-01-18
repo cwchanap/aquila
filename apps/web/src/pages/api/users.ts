@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/repositories.js';
+import { validateEmail, validateUsername } from '../../lib/validation.js';
 
 const userRepository = new UserRepositoryClass();
 
@@ -50,29 +51,37 @@ export const GET: APIRoute = async ({ url }) => {
  * Creates a new user.
  *
  * Request body:
- * - email: string (required)
- * - username: string (required)
+ * - email: string (required, valid email format)
+ * - username: string (required, 3-50 chars, alphanumeric with _ and -)
  */
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
         const { email, username } = body;
 
-        if (!email || !username) {
-            return new Response(
-                JSON.stringify({
-                    error: 'Missing required fields: email, username',
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+        // Validate inputs
+        const emailError = validateEmail(email);
+        if (emailError) {
+            return new Response(JSON.stringify({ error: emailError }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
         }
 
+        const usernameError = validateUsername(username);
+        if (usernameError) {
+            return new Response(JSON.stringify({ error: usernameError }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const trimmedEmail = email.trim();
+        const trimmedUsername = username.trim();
+
         const user = await userRepository.create({
-            email,
-            username,
+            email: trimmedEmail,
+            username: trimmedUsername,
         });
 
         return new Response(JSON.stringify(user), {

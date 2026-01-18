@@ -4,25 +4,10 @@ import UserStatus from '../../../components/UserStatus.svelte';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
 import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
-import en from '@aquila/dialogue/translations/en.json';
-import zh from '@aquila/dialogue/translations/zh.json';
+import { t as translate } from '../../../lib/utils';
 
-// Helper function to get translations
-const t = (key: string): string => {
-  const locale = Astro.currentLocale || 'en';
-  const keys = key.split('.');
-  let value: Record<string, unknown> = locale === 'zh' ? zh : en;
-
-  for (const k of keys) {
-    if (value && typeof value === 'object' && k in value) {
-      value = value[k] as Record<string, unknown>;
-    } else {
-      return key;
-    }
-  }
-
-  return typeof value === 'string' ? value : key;
-};
+const locale = Astro.currentLocale || 'en';
+const t = (key: string) => translate(locale, key);
 
 // Get the story parameter from URL
 const url = Astro.url;

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { db } from '../../../lib/drizzle/db.js';
 import { users } from '../../../lib/drizzle/schema.js';
+import { validateEmail } from '../../../lib/validation.js';
 
 const isNonProduction = process.env.NODE_ENV !== 'production';
 let dbHealthChecked = false;
@@ -30,6 +31,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
+        // Validate email format
+        const emailError = validateEmail(email);
+        if (emailError) {
+            return new Response(JSON.stringify({ error: emailError }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
         // Development/test DB health check to surface configuration issues
         if (isNonProduction && !dbHealthChecked) {
             try {
@@ -51,7 +63,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }
         }
 
-        const user = await SimpleAuthService.signUp(email, password, name);
+        const user = await SimpleAuthService.signUp(
+            normalizedEmail,
+            password,
+            name
+        );
 
         if (!user) {
             return new Response(
@@ -65,19 +81,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
+        const normalizedUser = {
+            ...user,
+            email: normalizedEmail,
+        };
+
         // Create session
-        const sessionId = await SimpleAuthService.createSession(user);
+        const sessionId = await SimpleAuthService.createSession(normalizedUser);
 
         // Set session cookie
         cookies.set('session', sessionId, {
             httpOnly: true,
-            secure: false, // Set to true in production with HTTPS
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 60 * 60 * 24 * 7, // 7 days
             path: '/',
         });
 
-        return new Response(JSON.stringify({ user }), {
+        return new Response(JSON.stringify({ user: normalizedUser }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });

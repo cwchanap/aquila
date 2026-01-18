@@ -79,7 +79,9 @@
     "save": "儲存",
     "cancel": "取消",
     "nameRequired": "角色名稱不能為空",
-    "updateFailed": "更新角色名稱失敗，請重試。"
+    "updateFailed": "更新角色名稱失敗，請重試。",
+    "errorLoadingLocalCharacters": "載入本機角色失敗",
+    "invalidName": "角色名稱包含無效字元。"
   },
   "characterNames": {
     "narrator": "旁白",

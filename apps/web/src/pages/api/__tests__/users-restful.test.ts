@@ -152,19 +152,188 @@ describe('Users API - RESTful Design', () => {
     });
 
     describe('POST /api/users', () => {
-        it('returns 400 when required fields are missing', async () => {
-            const response = await POST({
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'test@example.com',
-                        }),
-                },
-            } as any);
+        describe('email validation', () => {
+            it('returns 400 when email is missing', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                username: 'tester',
+                            }),
+                    },
+                } as any);
 
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Missing required fields: email, username',
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Email must be a string',
+                });
+            });
+
+            it('returns 400 when email is empty', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: '',
+                                username: 'tester',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Email is required',
+                });
+            });
+
+            it('returns 400 when email format is invalid', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: 'not-an-email',
+                                username: 'tester',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Invalid email format',
+                });
+            });
+
+            it('returns 400 when email exceeds 255 characters', async () => {
+                const longEmail = 'a'.repeat(250) + '@test.com';
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: longEmail,
+                                username: 'tester',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Email must be at most 255 characters',
+                });
+            });
+        });
+
+        describe('username validation', () => {
+            it('returns 400 when username is missing', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: 'test@example.com',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Username must be a string',
+                });
+            });
+
+            it('returns 400 when username is too short', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: 'test@example.com',
+                                username: 'ab',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Username must be at least 3 characters',
+                });
+            });
+
+            it('returns 400 when username is too long', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: 'test@example.com',
+                                username: 'a'.repeat(51),
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Username must be at most 50 characters',
+                });
+            });
+
+            it('returns 400 when username contains invalid characters', async () => {
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: 'test@example.com',
+                                username: 'user@name!',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(400);
+                await expect(response.json()).resolves.toEqual({
+                    error: 'Username can only contain letters, numbers, underscores, and hyphens',
+                });
+            });
+
+            it('allows valid username with underscores and hyphens', async () => {
+                mockRepo.create.mockResolvedValue({
+                    id: 'user123',
+                    email: 'test@example.com',
+                    username: 'user_name-123',
+                });
+
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: 'test@example.com',
+                                username: 'user_name-123',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(201);
+            });
+        });
+
+        describe('input trimming', () => {
+            it('trims whitespace from email and username', async () => {
+                mockRepo.create.mockResolvedValue({
+                    id: 'user123',
+                    email: 'test@example.com',
+                    username: 'tester',
+                });
+
+                const response = await POST({
+                    request: {
+                        json: () =>
+                            Promise.resolve({
+                                email: '  test@example.com  ',
+                                username: '  tester  ',
+                            }),
+                    },
+                } as any);
+
+                expect(response.status).toBe(201);
+                expect(mockRepo.create).toHaveBeenCalledWith({
+                    email: 'test@example.com',
+                    username: 'tester',
+                });
             });
         });
 

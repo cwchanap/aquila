@@ -79,7 +79,9 @@
     "save": "Save",
     "cancel": "Cancel",
     "nameRequired": "Character name cannot be empty",
-    "updateFailed": "Failed to update character name. Please try again."
+    "updateFailed": "Failed to update character name. Please try again.",
+    "errorLoadingLocalCharacters": "Error loading local characters",
+    "invalidName": "Character name contains invalid characters."
   },
   "characterNames": {
     "narrator": "Narrator",

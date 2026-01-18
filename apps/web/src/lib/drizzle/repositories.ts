@@ -1,4 +1,4 @@
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { db, type DrizzleDB } from './db';
 import {
     users,
@@ -81,12 +81,12 @@ export class UserRepository {
         return user;
     }
 
-    async delete(id: string) {
+    async delete(id: string): Promise<boolean> {
         const deleted = await this.db
             .delete(users)
             .where(eq(users.id, id))
-            .returning();
-        return deleted[0];
+            .returning({ id: users.id });
+        return deleted.length > 0;
     }
 
     async list(limit = 50, offset = 0) {
@@ -160,8 +160,12 @@ export class CharacterSetupRepository {
         return setup;
     }
 
-    async delete(id: string) {
-        await this.db.delete(characterSetups).where(eq(characterSetups.id, id));
+    async delete(id: string): Promise<boolean> {
+        const deleted = await this.db
+            .delete(characterSetups)
+            .where(eq(characterSetups.id, id))
+            .returning({ id: characterSetups.id });
+        return deleted.length > 0;
     }
 }
 
@@ -217,8 +221,12 @@ export class StoryRepository {
         return story;
     }
 
-    async delete(id: string) {
-        await this.db.delete(stories).where(eq(stories.id, id));
+    async delete(id: string): Promise<boolean> {
+        const deleted = await this.db
+            .delete(stories)
+            .where(eq(stories.id, id))
+            .returning({ id: stories.id });
+        return deleted.length > 0;
     }
 }
 
@@ -274,23 +282,32 @@ export class ChapterRepository {
         return chapter;
     }
 
-    async delete(id: string) {
-        await this.db.delete(chapters).where(eq(chapters.id, id));
+    async delete(id: string): Promise<boolean> {
+        const deleted = await this.db
+            .delete(chapters)
+            .where(eq(chapters.id, id))
+            .returning({ id: chapters.id });
+        return deleted.length > 0;
     }
 
-    async reorder(storyId: string, chapterIds: string[]) {
-        // Update order for each chapter
-        for (let i = 0; i < chapterIds.length; i++) {
-            await this.db
-                .update(chapters)
-                .set({ order: i, updatedAt: new Date() })
-                .where(
-                    and(
-                        eq(chapters.id, chapterIds[i]),
-                        eq(chapters.storyId, storyId)
-                    )
-                );
-        }
+    async reorder(storyId: string, chapterIds: string[]): Promise<void> {
+        // Use transaction to ensure atomicity - all updates succeed or none do
+        await this.db.transaction(async tx => {
+            const now = new Date();
+            await Promise.all(
+                chapterIds.map((chapterId, index) =>
+                    tx
+                        .update(chapters)
+                        .set({ order: index.toString(), updatedAt: now })
+                        .where(
+                            and(
+                                eq(chapters.id, chapterId),
+                                eq(chapters.storyId, storyId)
+                            )
+                        )
+                )
+            );
+        });
     }
 }
 
@@ -344,7 +361,7 @@ export class SceneRepository {
         return await this.db
             .select()
             .from(scenes)
-            .where(and(eq(scenes.storyId, storyId), eq(scenes.chapterId, null)))
+            .where(and(eq(scenes.storyId, storyId), isNull(scenes.chapterId)))
             .orderBy(asc(scenes.order));
     }
 
@@ -363,30 +380,39 @@ export class SceneRepository {
         return scene;
     }
 
-    async delete(id: string) {
-        await this.db.delete(scenes).where(eq(scenes.id, id));
+    async delete(id: string): Promise<boolean> {
+        const deleted = await this.db
+            .delete(scenes)
+            .where(eq(scenes.id, id))
+            .returning({ id: scenes.id });
+        return deleted.length > 0;
     }
 
     async reorder(
         storyId: string,
         sceneIds: string[],
         chapterId?: string | null
-    ) {
-        // Update order for each scene
-        for (let i = 0; i < sceneIds.length; i++) {
-            await this.db
-                .update(scenes)
-                .set({ order: i, updatedAt: new Date() })
-                .where(
-                    and(
-                        eq(scenes.id, sceneIds[i]),
-                        eq(scenes.storyId, storyId),
-                        chapterId
-                            ? eq(scenes.chapterId, chapterId)
-                            : eq(scenes.chapterId, null)
-                    )
-                );
-        }
+    ): Promise<void> {
+        // Use transaction to ensure atomicity - all updates succeed or none do
+        await this.db.transaction(async tx => {
+            const now = new Date();
+            await Promise.all(
+                sceneIds.map((sceneId, index) =>
+                    tx
+                        .update(scenes)
+                        .set({ order: index.toString(), updatedAt: now })
+                        .where(
+                            and(
+                                eq(scenes.id, sceneId),
+                                eq(scenes.storyId, storyId),
+                                chapterId
+                                    ? eq(scenes.chapterId, chapterId)
+                                    : isNull(scenes.chapterId)
+                            )
+                        )
+                )
+            );
+        });
     }
 }
 

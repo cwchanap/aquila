@@ -94,7 +94,7 @@ describe('Signup API', () => {
         const cookies = { set: vi.fn() };
         const request = {
             json: vi.fn().mockResolvedValue({
-                email: 'user@example.com',
+                email: '  USER@Example.COM  ',
                 password: 'password123',
                 name: 'User',
             }),
@@ -111,6 +111,11 @@ describe('Signup API', () => {
                 username: null,
             },
         });
+        expect(signUp).toHaveBeenCalledWith(
+            'user@example.com',
+            'password123',
+            'User'
+        );
         expect(createSession).toHaveBeenCalledWith({
             id: 'user-1',
             email: 'user@example.com',

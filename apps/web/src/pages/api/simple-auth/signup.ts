@@ -40,6 +40,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             });
         }
 
+        const normalizedEmail = email.trim().toLowerCase();
+
         // Development/test DB health check to surface configuration issues
         if (isNonProduction && !dbHealthChecked) {
             try {
@@ -61,7 +63,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }
         }
 
-        const user = await SimpleAuthService.signUp(email, password, name);
+        const user = await SimpleAuthService.signUp(
+            normalizedEmail,
+            password,
+            name
+        );
 
         if (!user) {
             return new Response(
@@ -75,8 +81,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
+        const normalizedUser = {
+            ...user,
+            email: normalizedEmail,
+        };
+
         // Create session
-        const sessionId = await SimpleAuthService.createSession(user);
+        const sessionId = await SimpleAuthService.createSession(normalizedUser);
 
         // Set session cookie
         cookies.set('session', sessionId, {
@@ -87,7 +98,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             path: '/',
         });
 
-        return new Response(JSON.stringify({ user }), {
+        return new Response(JSON.stringify({ user: normalizedUser }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });

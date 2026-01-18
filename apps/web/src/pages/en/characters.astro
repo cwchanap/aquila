@@ -4,10 +4,12 @@ import UserStatus from '../../components/UserStatus.svelte';
 import { SimpleAuthService, type SimpleUser } from '../../lib/simple-auth.js';
 import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
+import { getTranslations, type Locale } from '@aquila/dialogue';
 import { t as translate } from '../../lib/utils';
 
-const locale = Astro.currentLocale || 'en';
+const locale = (Astro.currentLocale as Locale | undefined) ?? 'en';
 const t = (key: string) => translate(locale, key);
+const translations = getTranslations(locale);
 
 // Get user session
 let user: SimpleUser | null = null;
@@ -255,9 +257,10 @@ try {
   </div>
 </MainLayout>
 
-<script>
+<script lang="ts" define:vars={{ translations }}>
   // Inline editing functionality for authenticated users
   document.addEventListener('DOMContentLoaded', () => {
+    const characterTranslations = translations.characters;
     // Handle edit buttons for database characters
     document.querySelectorAll('.character-edit-btn').forEach((button: Element) => {
       button.addEventListener('click', (e) => {
@@ -291,7 +294,7 @@ try {
           const handleSave = async () => {
             const newName = nameInput.value.trim();
             if (!newName) {
-              alert('Character name cannot be empty');
+              alert(characterTranslations.nameRequired);
               return;
             }
 
@@ -336,7 +339,7 @@ try {
 
             } catch (error) {
               console.error('Error updating character:', error);
-              alert('Failed to update character name. Please try again.');
+              alert(characterTranslations.updateFailed);
             }
           };
 
@@ -377,9 +380,24 @@ try {
     const localCharactersContainer = document.getElementById('local-characters');
 
     if (localCharactersContainer) {
+      const characterTranslations = translations.characters;
       // Allowed story IDs whitelist
       const ALLOWED_STORIES = ['train_adventure'] as const;
       type AllowedStoryId = typeof ALLOWED_STORIES[number];
+      const CHARACTER_NAME_MAX_LENGTH = 50;
+      const CHARACTER_NAME_REGEX = /^[A-Za-z0-9 _.-]+$/;
+
+      const validateAndClampName = (rawName: string) => {
+        const trimmed = rawName.trim();
+        if (!trimmed) {
+          return { valid: false, reason: 'empty' as const };
+        }
+        const clampedName = trimmed.slice(0, CHARACTER_NAME_MAX_LENGTH);
+        if (!CHARACTER_NAME_REGEX.test(clampedName)) {
+          return { valid: false, reason: 'invalid' as const };
+        }
+        return { valid: true, value: clampedName };
+      };
 
       // Safe DOM builder functions to prevent XSS
       function createCharacterCard(characterName: string, storyId: string): HTMLDivElement {
@@ -442,28 +460,28 @@ try {
         playLink.href = `/en/story/${encodeURIComponent(storyId)}`;
         playLink.className = 'character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50';
         playLink.style.cssText = "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
-        playLink.textContent = 'Play Story';
+        playLink.textContent = characterTranslations.playStory;
 
         // Edit button
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60';
         editBtn.style.fontFamily = "'Orbitron', monospace";
-        editBtn.textContent = 'Edit';
+        editBtn.textContent = characterTranslations.edit;
 
         // Save button
         const saveBtn = document.createElement('button');
         saveBtn.type = 'button';
         saveBtn.className = 'character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden';
         saveBtn.style.cssText = "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
-        saveBtn.textContent = 'Save';
+        saveBtn.textContent = characterTranslations.save;
 
         // Cancel button
         const cancelBtn = document.createElement('button');
         cancelBtn.type = 'button';
         cancelBtn.className = 'character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden';
         cancelBtn.style.cssText = "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
-        cancelBtn.textContent = 'Cancel';
+        cancelBtn.textContent = characterTranslations.cancel;
 
         buttons.appendChild(playLink);
         buttons.appendChild(editBtn);
@@ -483,7 +501,7 @@ try {
         const message = document.createElement('div');
         message.className = 'text-slate-600 text-xl mb-6 font-semibold';
         message.style.fontFamily = "'Exo 2', sans-serif";
-        message.textContent = 'No local characters found';
+        message.textContent = characterTranslations.noLocalCharacters;
 
         const link = document.createElement('a');
         link.href = '/en/stories';
@@ -492,7 +510,7 @@ try {
 
         const span = document.createElement('span');
         span.className = 'relative text-lg tracking-wider uppercase font-black';
-        span.textContent = 'Start Your First Story';
+        span.textContent = characterTranslations.startFirstStory;
         link.appendChild(span);
 
         container.appendChild(message);
@@ -507,7 +525,7 @@ try {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'text-red-600 text-lg font-semibold bg-red-100 rounded-lg p-4 border border-red-300';
         errorDiv.style.fontFamily = "'Exo 2', sans-serif";
-        errorDiv.textContent = 'Error loading local characters';
+        errorDiv.textContent = characterTranslations.errorLoadingLocalCharacters;
 
         container.appendChild(errorDiv);
         return container;
@@ -552,14 +570,25 @@ try {
             nameInput.select();
 
             const handleSave = () => {
-              const newName = nameInput.value.trim();
-              if (!newName) {
-                alert('Character name cannot be empty');
+              const validation = validateAndClampName(nameInput.value);
+              if (!validation.valid) {
+                const message =
+                  validation.reason === 'empty'
+                    ? characterTranslations.nameRequired
+                    : characterTranslations.invalidName;
+                alert(message);
                 return;
               }
 
+              const newName = validation.value;
+              if (!newName) return;
+              nameInput.value = newName;
+
               if (storyId) {
-                localStorage.setItem(`aquila:character:${storyId}`, JSON.stringify({ characterName: newName }));
+                localStorage.setItem(
+                  `aquila:character:${storyId}`,
+                  JSON.stringify({ characterName: newName })
+                );
                 nameDisplay.textContent = newName;
                 const avatar = card.querySelector('.character-avatar');
                 if (avatar) {
@@ -616,14 +645,10 @@ try {
           if (local) {
             try {
               const { characterName } = JSON.parse(local);
-              if (characterName && typeof characterName === 'string') {
-                // Validate character name
-                const trimmed = characterName.trim();
-                const maxLength = 50;
-                const clampedName = trimmed.slice(0, maxLength);
-                const isValid = /^[A-Za-z0-9 _.-]+$/.test(clampedName);
-                if (clampedName.length > 0 && isValid) {
-                  localChars.push({ characterName: clampedName, storyId: story });
+              if (typeof characterName === 'string') {
+                const validation = validateAndClampName(characterName);
+                if (validation.valid) {
+                  localChars.push({ characterName: validation.value, storyId: story });
                 } else {
                   console.warn(`[Validation] Invalid character name skipped: "${characterName}"`);
                 }

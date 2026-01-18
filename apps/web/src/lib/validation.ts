@@ -3,9 +3,8 @@
  */
 
 // Constants
-const EMAIL_REGEX_PATTERN =
-    '^[a-zA-Z0-9][a-zA-Z0-9._%+-]{0,61}[a-zA-Z0-9]@(?:[a-zA-Z0-9-]{1,61}\\.){1,3}[a-zA-Z]{2,3}$';
-export const EMAIL_REGEX = new RegExp(EMAIL_REGEX_PATTERN);
+export const EMAIL_REGEX =
+    /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,62}[a-zA-Z0-9])?@(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$/;
 
 export const USERNAME_MIN_LENGTH = 3;
 export const USERNAME_MAX_LENGTH = 50;

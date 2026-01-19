@@ -30,6 +30,25 @@
     "emailRequired": "註冊需要電子郵件和密碼。",
     "nameRequired": "註冊需要姓名。"
   },
+  "email": {
+    "notString": "電子郵件必須為字串",
+    "required": "電子郵件為必填",
+    "invalid": "電子郵件格式無效",
+    "tooLong": "電子郵件長度不得超過 255 個字元"
+  },
+  "username": {
+    "notString": "使用者名稱必須為字串",
+    "required": "使用者名稱為必填",
+    "tooShort": "使用者名稱至少需要 3 個字元",
+    "tooLong": "使用者名稱不得超過 50 個字元",
+    "invalidChars": "使用者名稱只能包含字母、數字、底線與連字號"
+  },
+  "characterName": {
+    "notString": "角色名稱必須為字串",
+    "empty": "角色名稱不能為空",
+    "tooLong": "角色名稱不得超過 50 個字元",
+    "invalidChars": "角色名稱包含無效字元。僅允許字母、數字、空白與特定符號。"
+  },
   "menu": {
     "title": "主選單 - 遊戲應用",
     "heading": "主選單",
@@ -81,7 +100,8 @@
     "nameRequired": "角色名稱不能為空",
     "updateFailed": "更新角色名稱失敗，請重試。",
     "errorLoadingLocalCharacters": "載入本機角色失敗",
-    "invalidName": "角色名稱包含無效字元。"
+    "invalidName": "角色名稱包含無效字元。",
+    "invalidStoryId": "需要有效的故事 ID"
   },
   "characterNames": {
     "narrator": "旁白",

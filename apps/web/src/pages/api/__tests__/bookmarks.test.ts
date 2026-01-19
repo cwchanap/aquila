@@ -1,39 +1,44 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { makeRequest } from '@/lib/test-setup';
 
-const getSession = vi.hoisted(() => vi.fn());
-
-const mockRepo = vi.hoisted(() => ({
-    findByUser: vi.fn(),
-    upsertByScene: vi.fn(),
-    findById: vi.fn(),
-    delete: vi.fn(),
-}));
-
-const BookmarkRepository = vi.hoisted(() => vi.fn(() => mockRepo));
-
 vi.mock('@/lib/auth', () => ({
     auth: {
         api: {
-            getSession,
+            getSession: vi.fn(),
         },
     },
 }));
 
 vi.mock('@/lib/drizzle/repositories', () => ({
-    BookmarkRepository,
+    BookmarkRepository: vi.fn(),
 }));
 
 vi.mock('crypto', async importOriginal => {
     const actual = await importOriginal<typeof import('crypto')>();
     return {
         ...actual,
+        default: actual,
         randomUUID: vi.fn(() => 'corr-123'),
     };
 });
 
+import { auth } from '@/lib/auth';
+import { BookmarkRepository } from '@/lib/drizzle/repositories';
 import { GET, POST } from '../bookmarks/index';
 import { DELETE } from '../bookmarks/[id]';
+
+const createMockRepo = () => ({
+    findByUser: vi.fn(),
+    upsertByScene: vi.fn(),
+    findById: vi.fn(),
+    delete: vi.fn(),
+});
+
+const getSession = vi.mocked(auth.api.getSession) as unknown as ReturnType<
+    typeof vi.fn
+>;
+const BookmarkRepositoryMock = vi.mocked(BookmarkRepository);
+let mockRepo = createMockRepo();
 
 describe('Bookmarks API', () => {
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -43,11 +48,9 @@ describe('Bookmarks API', () => {
             .spyOn(console, 'error')
             .mockImplementation(() => {});
         getSession.mockReset();
-        BookmarkRepository.mockClear();
-        mockRepo.findByUser.mockReset();
-        mockRepo.upsertByScene.mockReset();
-        mockRepo.findById.mockReset();
-        mockRepo.delete.mockReset();
+        BookmarkRepositoryMock.mockReset();
+        mockRepo = createMockRepo();
+        BookmarkRepositoryMock.mockReturnValue(mockRepo as any);
     });
 
     afterEach(() => {

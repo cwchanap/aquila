@@ -1,24 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const signUp = vi.hoisted(() => vi.fn());
-const createSession = vi.hoisted(() => vi.fn());
-
-const mockDb = vi.hoisted(() => ({
-    select: vi.fn(),
-}));
-
 vi.mock('../../../lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        signUp,
-        createSession,
+        signUp: vi.fn(),
+        createSession: vi.fn(),
     },
 }));
 
 vi.mock('../../../lib/drizzle/db.js', () => ({
-    db: mockDb,
+    db: {
+        select: vi.fn(),
+    },
 }));
 
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { db } from '../../../lib/drizzle/db.js';
 import { POST } from '../simple-auth/signup';
+
+const signUp = vi.mocked(SimpleAuthService.signUp) as unknown as ReturnType<
+    typeof vi.fn
+>;
+const createSession = vi.mocked(
+    SimpleAuthService.createSession
+) as unknown as ReturnType<typeof vi.fn>;
+const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 
 describe('Signup API', () => {
     let originalNodeEnv: string | undefined;

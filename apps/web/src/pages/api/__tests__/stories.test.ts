@@ -1,27 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const getSession = vi.hoisted(() => vi.fn());
-
-const mockStoryRepo = vi.hoisted(() => ({
-    findByUserId: vi.fn(),
-    create: vi.fn(),
-    findById: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-}));
-
-const StoryRepository = vi.hoisted(() => vi.fn(() => mockStoryRepo));
-
 vi.mock('@/lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        getSession,
+        getSession: vi.fn(),
     },
 }));
 
 vi.mock('@/lib/drizzle/repositories.js', () => ({
-    StoryRepository,
+    StoryRepository: vi.fn(),
 }));
 
+import { SimpleAuthService } from '@/lib/simple-auth.js';
+import { StoryRepository } from '@/lib/drizzle/repositories.js';
 import { GET as listGET, POST as listPOST } from '../stories/index';
 import {
     GET as itemGET,
@@ -30,15 +20,26 @@ import {
 } from '../stories/[id]';
 import { makeRequest } from '@/lib/test-setup';
 
+const createMockStoryRepo = () => ({
+    findByUserId: vi.fn(),
+    create: vi.fn(),
+    findById: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+});
+
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+const StoryRepositoryMock = vi.mocked(StoryRepository);
+let mockStoryRepo = createMockStoryRepo();
+
 describe('Stories API', () => {
     beforeEach(() => {
         getSession.mockReset();
-        StoryRepository.mockClear();
-        mockStoryRepo.findByUserId.mockReset();
-        mockStoryRepo.create.mockReset();
-        mockStoryRepo.findById.mockReset();
-        mockStoryRepo.update.mockReset();
-        mockStoryRepo.delete.mockReset();
+        StoryRepositoryMock.mockReset();
+        mockStoryRepo = createMockStoryRepo();
+        StoryRepositoryMock.mockReturnValue(mockStoryRepo as any);
     });
 
     it('rejects unauthenticated list requests', async () => {

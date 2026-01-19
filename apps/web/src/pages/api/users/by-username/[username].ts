@@ -1,14 +1,13 @@
 import type { APIRoute } from 'astro';
 import { UserRepository as UserRepositoryClass } from '../../../../lib/drizzle/repositories.js';
 
-const userRepository = new UserRepositoryClass();
-
 /**
  * GET /api/users/by-username/[username]
  * Retrieves a single user by username.
  */
 export const GET: APIRoute = async ({ params }) => {
     try {
+        const userRepository = new UserRepositoryClass();
         const { username } = params;
         const trimmedUsername = username?.trim() ?? '';
 

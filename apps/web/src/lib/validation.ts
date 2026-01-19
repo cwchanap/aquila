@@ -16,29 +16,98 @@ export const CHARACTER_NAME_REGEX = /^[A-Za-z0-9 _.-]+$/;
 // Error messages
 export const ERROR_MESSAGES = {
     email: {
-        notString: 'Email must be a string',
-        required: 'Email is required',
-        invalid: 'Invalid email format',
-        tooLong: 'Email must be at most 255 characters',
+        notString: 'email.notString',
+        required: 'email.required',
+        invalid: 'email.invalid',
+        tooLong: 'email.tooLong',
     },
     username: {
-        notString: 'Username must be a string',
-        required: 'Username is required',
-        tooShort: `Username must be at least ${USERNAME_MIN_LENGTH} characters`,
-        tooLong: `Username must be at most ${USERNAME_MAX_LENGTH} characters`,
-        invalidChars:
-            'Username can only contain letters, numbers, underscores, and hyphens',
+        notString: 'username.notString',
+        required: 'username.required',
+        tooShort: 'username.tooShort',
+        tooLong: 'username.tooLong',
+        invalidChars: 'username.invalidChars',
     },
     characterName: {
-        notString: 'Character name must be a string',
-        empty: 'Character name cannot be empty',
-        tooLong: `Character name must be at most ${CHARACTER_NAME_MAX_LENGTH} characters`,
-        invalidChars:
-            'Character name contains invalid characters. Only letters, numbers, spaces, and certain special characters are allowed.',
+        notString: 'characterName.notString',
+        empty: 'characterName.empty',
+        tooLong: 'characterName.tooLong',
+        invalidChars: 'characterName.invalidChars',
     },
 } as const;
 
-export function validateEmail(email: unknown): string | null {
+type EmailErrorKey =
+    (typeof ERROR_MESSAGES.email)[keyof typeof ERROR_MESSAGES.email];
+type UsernameErrorKey =
+    (typeof ERROR_MESSAGES.username)[keyof typeof ERROR_MESSAGES.username];
+type CharacterNameErrorKey =
+    (typeof ERROR_MESSAGES.characterName)[keyof typeof ERROR_MESSAGES.characterName];
+
+export type ValidationErrorKey =
+    | EmailErrorKey
+    | UsernameErrorKey
+    | CharacterNameErrorKey;
+
+export type ValidationTranslations = {
+    email: {
+        notString: string;
+        required: string;
+        invalid: string;
+        tooLong: string;
+    };
+    username: {
+        notString: string;
+        required: string;
+        tooShort: string;
+        tooLong: string;
+        invalidChars: string;
+    };
+    characterName: {
+        notString: string;
+        empty: string;
+        tooLong: string;
+        invalidChars: string;
+    };
+};
+
+const VALIDATION_MESSAGE_MAP: Record<
+    ValidationErrorKey,
+    (translations: ValidationTranslations) => string
+> = {
+    [ERROR_MESSAGES.email.notString]: translations =>
+        translations.email.notString,
+    [ERROR_MESSAGES.email.required]: translations =>
+        translations.email.required,
+    [ERROR_MESSAGES.email.invalid]: translations => translations.email.invalid,
+    [ERROR_MESSAGES.email.tooLong]: translations => translations.email.tooLong,
+    [ERROR_MESSAGES.username.notString]: translations =>
+        translations.username.notString,
+    [ERROR_MESSAGES.username.required]: translations =>
+        translations.username.required,
+    [ERROR_MESSAGES.username.tooShort]: translations =>
+        translations.username.tooShort,
+    [ERROR_MESSAGES.username.tooLong]: translations =>
+        translations.username.tooLong,
+    [ERROR_MESSAGES.username.invalidChars]: translations =>
+        translations.username.invalidChars,
+    [ERROR_MESSAGES.characterName.notString]: translations =>
+        translations.characterName.notString,
+    [ERROR_MESSAGES.characterName.empty]: translations =>
+        translations.characterName.empty,
+    [ERROR_MESSAGES.characterName.tooLong]: translations =>
+        translations.characterName.tooLong,
+    [ERROR_MESSAGES.characterName.invalidChars]: translations =>
+        translations.characterName.invalidChars,
+};
+
+export function resolveValidationMessage(
+    translations: ValidationTranslations,
+    errorKey: ValidationErrorKey
+): string {
+    return VALIDATION_MESSAGE_MAP[errorKey](translations);
+}
+
+export function validateEmail(email: unknown): ValidationErrorKey | null {
     if (typeof email !== 'string') {
         return ERROR_MESSAGES.email.notString;
     }
@@ -55,7 +124,7 @@ export function validateEmail(email: unknown): string | null {
     return null;
 }
 
-export function validateUsername(username: unknown): string | null {
+export function validateUsername(username: unknown): ValidationErrorKey | null {
     if (typeof username !== 'string') {
         return ERROR_MESSAGES.username.notString;
     }
@@ -75,22 +144,31 @@ export function validateUsername(username: unknown): string | null {
     return null;
 }
 
-export function validateCharacterName(name: unknown): {
-    valid: boolean;
-    sanitizedName?: string;
-} {
+export type CharacterNameValidationResult =
+    | { valid: true; sanitizedName: string }
+    | { valid: false; errorKey: CharacterNameErrorKey };
+
+export function validateCharacterName(
+    name: unknown
+): CharacterNameValidationResult {
     if (typeof name !== 'string') {
-        return { valid: false };
+        return {
+            valid: false,
+            errorKey: ERROR_MESSAGES.characterName.notString,
+        };
     }
     const trimmed = name.trim();
     if (trimmed.length === 0) {
-        return { valid: false };
+        return { valid: false, errorKey: ERROR_MESSAGES.characterName.empty };
     }
     if (trimmed.length > CHARACTER_NAME_MAX_LENGTH) {
-        return { valid: false };
+        return { valid: false, errorKey: ERROR_MESSAGES.characterName.tooLong };
     }
     if (!CHARACTER_NAME_REGEX.test(trimmed)) {
-        return { valid: false };
+        return {
+            valid: false,
+            errorKey: ERROR_MESSAGES.characterName.invalidChars,
+        };
     }
     return { valid: true, sanitizedName: trimmed };
 }

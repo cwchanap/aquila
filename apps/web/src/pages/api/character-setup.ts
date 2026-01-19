@@ -1,7 +1,13 @@
 import type { APIRoute } from 'astro';
+import { getTranslations, type Locale } from '@aquila/dialogue';
 import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
 import { SimpleAuthService } from '@/lib/simple-auth.js';
+import {
+    resolveValidationMessage,
+    validateCharacterName,
+    type ValidationTranslations,
+} from '@/lib/validation.js';
 
 async function validateSession(
     request: Request
@@ -39,15 +45,28 @@ export const POST: APIRoute = async ({ request }) => {
         }
         const { userId } = sessionValidation;
 
-        const { characterName, storyId } = await request.json();
+        const {
+            characterName,
+            storyId,
+            locale: rawLocale,
+        } = await request.json();
+        const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
+        const translations = getTranslations(locale);
+        const validationTranslations: ValidationTranslations = {
+            email: translations.email,
+            username: translations.username,
+            characterName: translations.characterName,
+        };
 
-        if (
-            !characterName ||
-            typeof characterName !== 'string' ||
-            characterName.trim().length === 0
-        ) {
+        const nameValidation = validateCharacterName(characterName);
+        if (!nameValidation.valid) {
             return new Response(
-                JSON.stringify({ error: 'Character name is required' }),
+                JSON.stringify({
+                    error: resolveValidationMessage(
+                        validationTranslations,
+                        nameValidation.errorKey
+                    ),
+                }),
                 {
                     status: 400,
                     headers: { 'Content-Type': 'application/json' },
@@ -57,13 +76,17 @@ export const POST: APIRoute = async ({ request }) => {
 
         if (!storyId || !isValidStoryId(storyId)) {
             return new Response(
-                JSON.stringify({ error: 'Valid story ID is required' }),
+                JSON.stringify({
+                    error: translations.characters.invalidStoryId,
+                }),
                 {
                     status: 400,
                     headers: { 'Content-Type': 'application/json' },
                 }
             );
         }
+
+        const sanitizedName = nameValidation.sanitizedName;
 
         // Check if character setup already exists for this user and story
         const characterSetupRepo = new CharacterSetupRepository();
@@ -77,7 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
             const updatedSetup = await characterSetupRepo.update(
                 existingSetup.id,
                 {
-                    characterName: characterName.trim(),
+                    characterName: sanitizedName,
                 }
             );
             return new Response(JSON.stringify(updatedSetup), {
@@ -88,7 +111,7 @@ export const POST: APIRoute = async ({ request }) => {
             // Create new setup
             const setup = await characterSetupRepo.create({
                 userId: userId,
-                characterName: characterName.trim(),
+                characterName: sanitizedName,
                 storyId: storyId as StoryId,
             });
             return new Response(JSON.stringify(setup), {

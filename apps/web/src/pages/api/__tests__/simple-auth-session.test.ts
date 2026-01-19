@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const getSession = vi.hoisted(() => vi.fn());
-const deleteSession = vi.hoisted(() => vi.fn());
-
 vi.mock('../../../lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        getSession,
-        deleteSession,
+        getSession: vi.fn(),
+        deleteSession: vi.fn(),
     },
 }));
 
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { GET, POST } from '../simple-auth/session';
+
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+const deleteSession = vi.mocked(
+    SimpleAuthService.deleteSession
+) as unknown as ReturnType<typeof vi.fn>;
 
 describe('Simple Auth Session API', () => {
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;

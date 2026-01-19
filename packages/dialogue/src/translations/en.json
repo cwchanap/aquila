@@ -30,6 +30,25 @@
     "emailRequired": "Email and password are required for signup.",
     "nameRequired": "Name is required for signup."
   },
+  "email": {
+    "notString": "Email must be a string",
+    "required": "Email is required",
+    "invalid": "Invalid email format",
+    "tooLong": "Email must be at most 255 characters"
+  },
+  "username": {
+    "notString": "Username must be a string",
+    "required": "Username is required",
+    "tooShort": "Username must be at least 3 characters",
+    "tooLong": "Username must be at most 50 characters",
+    "invalidChars": "Username can only contain letters, numbers, underscores, and hyphens"
+  },
+  "characterName": {
+    "notString": "Character name must be a string",
+    "empty": "Character name cannot be empty",
+    "tooLong": "Character name must be at most 50 characters",
+    "invalidChars": "Character name contains invalid characters. Only letters, numbers, spaces, and certain special characters are allowed."
+  },
   "menu": {
     "title": "Main Menu - Game App",
     "heading": "Main Menu",
@@ -81,7 +100,8 @@
     "nameRequired": "Character name cannot be empty",
     "updateFailed": "Failed to update character name. Please try again.",
     "errorLoadingLocalCharacters": "Error loading local characters",
-    "invalidName": "Character name contains invalid characters."
+    "invalidName": "Character name contains invalid characters.",
+    "invalidStoryId": "Valid story ID is required"
   },
   "characterNames": {
     "narrator": "Narrator",

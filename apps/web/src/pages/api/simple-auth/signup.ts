@@ -1,8 +1,13 @@
 import type { APIRoute } from 'astro';
+import { getTranslations, type Locale } from '@aquila/dialogue';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { db } from '../../../lib/drizzle/db.js';
 import { users } from '../../../lib/drizzle/schema.js';
-import { validateEmail } from '../../../lib/validation.js';
+import {
+    resolveValidationMessage,
+    validateEmail,
+    type ValidationTranslations,
+} from '../../../lib/validation.js';
 
 const isNonProduction = process.env.NODE_ENV !== 'production';
 let dbHealthChecked = false;
@@ -19,7 +24,15 @@ async function ensureDbHealthCheck() {
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         const body = await request.json();
-        const { email, password, name } = body;
+        const { email, password, name, locale: rawLocale } = body;
+
+        const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
+        const translations = getTranslations(locale);
+        const validationTranslations: ValidationTranslations = {
+            email: translations.email,
+            username: translations.username,
+            characterName: translations.characterName,
+        };
 
         if (!email || !password || !name) {
             return new Response(
@@ -34,10 +47,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         // Validate email format
         const emailError = validateEmail(email);
         if (emailError) {
-            return new Response(JSON.stringify({ error: emailError }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(
+                JSON.stringify({
+                    error: resolveValidationMessage(
+                        validationTranslations,
+                        emailError
+                    ),
+                }),
+                {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
         }
 
         const normalizedEmail = email.trim().toLowerCase();

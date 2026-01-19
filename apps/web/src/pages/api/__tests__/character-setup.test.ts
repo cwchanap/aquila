@@ -1,44 +1,49 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { makeRequest } from '@/lib/test-setup';
 
-const getSession = vi.hoisted(() => vi.fn());
-const isValidStoryId = vi.hoisted(() => vi.fn());
-
-const mockRepo = vi.hoisted(() => ({
-    findByUserAndStory: vi.fn(),
-    findByUser: vi.fn(),
-    update: vi.fn(),
-    create: vi.fn(),
-}));
-
-const CharacterSetupRepository = vi.hoisted(() => vi.fn(() => mockRepo));
-
 vi.mock('@/lib/drizzle/repositories.js', () => ({
-    CharacterSetupRepository,
+    CharacterSetupRepository: vi.fn(),
 }));
 
 vi.mock('@/lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        getSession,
+        getSession: vi.fn(),
     },
 }));
 
 vi.mock('@/lib/story-types.js', () => ({
     StoryId: { TRAIN_ADVENTURE: 'train_adventure' },
-    isValidStoryId,
+    isValidStoryId: vi.fn(),
 }));
 
+import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
+import { SimpleAuthService } from '@/lib/simple-auth.js';
+import { isValidStoryId } from '@/lib/story-types.js';
 import { POST, GET } from '../character-setup';
+
+const createMockRepo = () => ({
+    findByUserAndStory: vi.fn(),
+    findByUser: vi.fn(),
+    update: vi.fn(),
+    create: vi.fn(),
+});
+
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+const isValidStoryIdMock = vi.mocked(isValidStoryId) as unknown as ReturnType<
+    typeof vi.fn
+>;
+const CharacterSetupRepositoryMock = vi.mocked(CharacterSetupRepository);
+let mockRepo = createMockRepo();
 
 describe('Character Setup API', () => {
     beforeEach(() => {
         getSession.mockReset();
-        isValidStoryId.mockReset();
-        CharacterSetupRepository.mockClear();
-        mockRepo.findByUserAndStory.mockReset();
-        mockRepo.findByUser.mockReset();
-        mockRepo.update.mockReset();
-        mockRepo.create.mockReset();
+        isValidStoryIdMock.mockReset();
+        CharacterSetupRepositoryMock.mockReset();
+        mockRepo = createMockRepo();
+        CharacterSetupRepositoryMock.mockReturnValue(mockRepo as any);
     });
 
     it('rejects unauthenticated POST requests', async () => {
@@ -64,7 +69,7 @@ describe('Character Setup API', () => {
 
     it('validates required character name', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
-        isValidStoryId.mockReturnValue(true);
+        isValidStoryIdMock.mockReturnValue(true);
 
         const response = await POST({
             request: makeRequest('session=token', () =>
@@ -77,13 +82,13 @@ describe('Character Setup API', () => {
 
         expect(response.status).toBe(400);
         await expect(response.json()).resolves.toEqual({
-            error: 'Character name is required',
+            error: 'Character name cannot be empty',
         });
     });
 
     it('validates story id', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
-        isValidStoryId.mockReturnValue(false);
+        isValidStoryIdMock.mockReturnValue(false);
 
         const response = await POST({
             request: makeRequest('session=token', () =>
@@ -102,7 +107,7 @@ describe('Character Setup API', () => {
 
     it('updates an existing setup', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
-        isValidStoryId.mockReturnValue(true);
+        isValidStoryIdMock.mockReturnValue(true);
         mockRepo.findByUserAndStory.mockResolvedValue({ id: 'setup-1' });
         mockRepo.update.mockResolvedValue({
             id: 'setup-1',
@@ -130,7 +135,7 @@ describe('Character Setup API', () => {
 
     it('creates a new setup when none exists', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
-        isValidStoryId.mockReturnValue(true);
+        isValidStoryIdMock.mockReturnValue(true);
         mockRepo.findByUserAndStory.mockResolvedValue(undefined);
         mockRepo.create.mockResolvedValue({
             id: 'setup-2',
@@ -162,7 +167,7 @@ describe('Character Setup API', () => {
 
     it('returns all setups when no story id is provided', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
-        isValidStoryId.mockReturnValue(false);
+        isValidStoryIdMock.mockReturnValue(false);
         mockRepo.findByUser.mockResolvedValue([
             { id: 'setup-1', characterName: 'Hero' },
         ]);
@@ -181,7 +186,7 @@ describe('Character Setup API', () => {
 
     it('returns a setup when a valid story id is provided', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
-        isValidStoryId.mockReturnValue(true);
+        isValidStoryIdMock.mockReturnValue(true);
         mockRepo.findByUserAndStory.mockResolvedValue({
             id: 'setup-2',
             characterName: 'Hero',

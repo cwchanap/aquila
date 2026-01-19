@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
+import { getTranslations, type Locale } from '@aquila/dialogue';
 import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/repositories.js';
-import { validateEmail, validateUsername } from '../../lib/validation.js';
-
-const userRepository = new UserRepositoryClass();
+import {
+    resolveValidationMessage,
+    validateEmail,
+    validateUsername,
+    type ValidationTranslations,
+} from '../../lib/validation.js';
 
 /**
  * GET /api/users
@@ -14,6 +18,7 @@ const userRepository = new UserRepositoryClass();
  */
 export const GET: APIRoute = async ({ url }) => {
     try {
+        const userRepository = new UserRepositoryClass();
         // Parse and validate limit parameter
         const rawLimit = url.searchParams.get('limit');
         let limit = parseInt(rawLimit || '50', 10);
@@ -56,24 +61,49 @@ export const GET: APIRoute = async ({ url }) => {
  */
 export const POST: APIRoute = async ({ request }) => {
     try {
+        const userRepository = new UserRepositoryClass();
         const body = await request.json();
-        const { email, username } = body;
+        const { email, username, locale: rawLocale } = body;
+
+        const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
+        const translations = getTranslations(locale);
+        const validationTranslations: ValidationTranslations = {
+            email: translations.email,
+            username: translations.username,
+            characterName: translations.characterName,
+        };
 
         // Validate inputs
         const emailError = validateEmail(email);
         if (emailError) {
-            return new Response(JSON.stringify({ error: emailError }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(
+                JSON.stringify({
+                    error: resolveValidationMessage(
+                        validationTranslations,
+                        emailError
+                    ),
+                }),
+                {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
         }
 
         const usernameError = validateUsername(username);
         if (usernameError) {
-            return new Response(JSON.stringify({ error: usernameError }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(
+                JSON.stringify({
+                    error: resolveValidationMessage(
+                        validationTranslations,
+                        usernameError
+                    ),
+                }),
+                {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
         }
 
         const trimmedEmail = email.trim();

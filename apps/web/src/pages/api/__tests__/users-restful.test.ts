@@ -1,20 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockRepo = vi.hoisted(() => ({
-    findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findByUsername: vi.fn(),
-    list: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-}));
-
-const UserRepository = vi.hoisted(() => vi.fn(() => mockRepo));
-
 vi.mock('../../../lib/drizzle/repositories.js', () => ({
-    UserRepository,
+    UserRepository: vi.fn(),
 }));
+
+import { UserRepository } from '../../../lib/drizzle/repositories.js';
 
 import { GET, POST } from '../users';
 import {
@@ -25,16 +15,24 @@ import {
 import { GET as GetByEmail } from '../users/by-email/[email]';
 import { GET as GetByUsername } from '../users/by-username/[username]';
 
+const createMockRepo = () => ({
+    findById: vi.fn(),
+    findByEmail: vi.fn(),
+    findByUsername: vi.fn(),
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+});
+
+const UserRepositoryMock = vi.mocked(UserRepository);
+let mockRepo = createMockRepo();
+
 describe('Users API - RESTful Design', () => {
     beforeEach(() => {
-        UserRepository.mockClear();
-        mockRepo.findById.mockReset();
-        mockRepo.findByEmail.mockReset();
-        mockRepo.findByUsername.mockReset();
-        mockRepo.list.mockReset();
-        mockRepo.create.mockReset();
-        mockRepo.update.mockReset();
-        mockRepo.delete.mockReset();
+        UserRepositoryMock.mockReset();
+        mockRepo = createMockRepo();
+        UserRepositoryMock.mockReturnValue(mockRepo as any);
     });
 
     describe('GET /api/users', () => {
@@ -159,13 +157,14 @@ describe('Users API - RESTful Design', () => {
                         json: () =>
                             Promise.resolve({
                                 username: 'tester',
+                                locale: 'zh',
                             }),
                     },
                 } as any);
 
                 expect(response.status).toBe(400);
                 await expect(response.json()).resolves.toEqual({
-                    error: 'Email must be a string',
+                    error: '電子郵件必須為字串',
                 });
             });
 

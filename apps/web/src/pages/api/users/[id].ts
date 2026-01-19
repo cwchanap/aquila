@@ -1,14 +1,13 @@
 import type { APIRoute } from 'astro';
 import { UserRepository as UserRepositoryClass } from '../../../lib/drizzle/repositories.js';
 
-const userRepository = new UserRepositoryClass();
-
 /**
  * GET /api/users/[id]
  * Retrieves a single user by ID.
  */
 export const GET: APIRoute = async ({ params }) => {
     try {
+        const userRepository = new UserRepositoryClass();
         const { id } = params;
         const trimmedId = id?.trim() ?? '';
 
@@ -51,6 +50,7 @@ export const GET: APIRoute = async ({ params }) => {
  */
 export const PUT: APIRoute = async ({ params, request }) => {
     try {
+        const userRepository = new UserRepositoryClass();
         const { id } = params;
         const trimmedId = id?.trim() ?? '';
 
@@ -128,6 +128,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
  */
 export const DELETE: APIRoute = async ({ params }) => {
     try {
+        const userRepository = new UserRepositoryClass();
         const { id } = params;
         const trimmedId = id?.trim() ?? '';
 

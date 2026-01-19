@@ -1,32 +1,41 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const getSession = vi.hoisted(() => vi.fn());
-
-const mockDb = vi.hoisted(() => ({
-    select: vi.fn(),
-    update: vi.fn(),
-}));
-
-const mockBcrypt = vi.hoisted(() => ({
-    compare: vi.fn(),
-    hash: vi.fn(),
-}));
-
 vi.mock('../../../lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        getSession,
+        getSession: vi.fn(),
     },
 }));
 
 vi.mock('../../../lib/drizzle/db.js', () => ({
-    db: mockDb,
+    db: {
+        select: vi.fn(),
+        update: vi.fn(),
+    },
 }));
 
 vi.mock('bcryptjs', () => ({
-    default: mockBcrypt,
+    default: {
+        compare: vi.fn(),
+        hash: vi.fn(),
+    },
 }));
 
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { db } from '../../../lib/drizzle/db.js';
+import bcrypt from 'bcryptjs';
 import { POST } from '../simple-auth/change-password';
+
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+const mockDb = db as unknown as {
+    select: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+};
+const mockBcrypt = bcrypt as unknown as {
+    compare: ReturnType<typeof vi.fn>;
+    hash: ReturnType<typeof vi.fn>;
+};
 
 const makeFormData = (values: Record<string, string | undefined>) => ({
     get: (key: string) => values[key] ?? null,

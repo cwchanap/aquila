@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const handler = vi.hoisted(() => vi.fn());
-
 vi.mock('../../../lib/auth.js', () => ({
     auth: {
-        handler,
+        handler: vi.fn(),
     },
 }));
 
+import { auth } from '../../../lib/auth.js';
 import { ALL } from '../auth/[...all]';
+
+const handler = vi.mocked(auth.handler) as unknown as ReturnType<typeof vi.fn>;
 
 describe('Auth catch-all API', () => {
     beforeEach(() => {

@@ -1,31 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const getSession = vi.hoisted(() => vi.fn());
-
-const mockRepo = vi.hoisted(() => ({
-    create: vi.fn(),
-}));
-
-const ChapterRepository = vi.hoisted(() => vi.fn(() => mockRepo));
+import { makeRequest } from '@/lib/test-setup';
 
 vi.mock('@/lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        getSession,
+        getSession: vi.fn(),
     },
 }));
 
 vi.mock('@/lib/drizzle/repositories.js', () => ({
-    ChapterRepository,
+    ChapterRepository: vi.fn(),
 }));
 
+import { SimpleAuthService } from '@/lib/simple-auth.js';
+import { ChapterRepository } from '@/lib/drizzle/repositories.js';
 import { POST } from '../chapters/index';
-import { makeRequest } from '@/lib/test-setup';
+
+const createMockRepo = () => ({
+    create: vi.fn(),
+});
+
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+const ChapterRepositoryMock = vi.mocked(ChapterRepository);
+let mockRepo = createMockRepo();
 
 describe('Chapters API', () => {
     beforeEach(() => {
         getSession.mockReset();
-        ChapterRepository.mockClear();
-        mockRepo.create.mockReset();
+        ChapterRepositoryMock.mockReset();
+        mockRepo = createMockRepo();
+        ChapterRepositoryMock.mockReturnValue(mockRepo as any);
     });
 
     it('rejects unauthenticated requests', async () => {

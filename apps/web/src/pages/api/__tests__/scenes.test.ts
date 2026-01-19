@@ -1,31 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const getSession = vi.hoisted(() => vi.fn());
-
-const mockRepo = vi.hoisted(() => ({
-    create: vi.fn(),
-}));
-
-const SceneRepository = vi.hoisted(() => vi.fn(() => mockRepo));
+import { makeRequest } from '@/lib/test-setup';
 
 vi.mock('@/lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        getSession,
+        getSession: vi.fn(),
     },
 }));
 
 vi.mock('@/lib/drizzle/repositories.js', () => ({
-    SceneRepository,
+    SceneRepository: vi.fn(),
 }));
 
+import { SimpleAuthService } from '@/lib/simple-auth.js';
+import { SceneRepository } from '@/lib/drizzle/repositories.js';
 import { POST } from '../scenes/index';
-import { makeRequest } from '@/lib/test-setup';
+
+const createMockRepo = () => ({
+    create: vi.fn(),
+});
+
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+const SceneRepositoryMock = vi.mocked(SceneRepository);
+let mockRepo = createMockRepo();
 
 describe('Scenes API', () => {
     beforeEach(() => {
         getSession.mockReset();
-        SceneRepository.mockClear();
-        mockRepo.create.mockReset();
+        SceneRepositoryMock.mockReset();
+        mockRepo = createMockRepo();
+        SceneRepositoryMock.mockReturnValue(mockRepo as any);
     });
 
     it('rejects unauthenticated requests', async () => {

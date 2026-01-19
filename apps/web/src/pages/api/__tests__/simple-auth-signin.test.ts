@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const signIn = vi.hoisted(() => vi.fn());
-const createSession = vi.hoisted(() => vi.fn());
-
 vi.mock('../../../lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        signIn,
-        createSession,
+        signIn: vi.fn(),
+        createSession: vi.fn(),
     },
 }));
 
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { POST } from '../simple-auth/signin';
+
+const signIn = vi.mocked(SimpleAuthService.signIn) as unknown as ReturnType<
+    typeof vi.fn
+>;
+const createSession = vi.mocked(
+    SimpleAuthService.createSession
+) as unknown as ReturnType<typeof vi.fn>;
 
 describe('Signin API', () => {
     let originalNodeEnv: string | undefined;

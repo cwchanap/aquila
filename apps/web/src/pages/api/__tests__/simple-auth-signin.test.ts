@@ -118,6 +118,46 @@ describe('Signin API', () => {
         );
     });
 
+    it('normalizes mixed-case email during signin', async () => {
+        signIn.mockResolvedValue({
+            id: 'user-1',
+            email: 'user@example.com',
+            name: 'User',
+            username: null,
+        });
+        createSession.mockResolvedValue('session-789');
+
+        const cookies = { set: vi.fn() };
+        const request = {
+            json: vi.fn().mockResolvedValue({
+                email: '  USER@Example.COM  ',
+                password: 'password123',
+            }),
+        } as any;
+
+        const response = await POST({ request, cookies } as any);
+
+        expect(response.status).toBe(200);
+        expect(signIn).toHaveBeenCalledWith('user@example.com', 'password123');
+        await expect(response.json()).resolves.toEqual({
+            user: {
+                id: 'user-1',
+                email: 'user@example.com',
+                name: 'User',
+                username: null,
+            },
+        });
+        expect(cookies.set).toHaveBeenCalledWith(
+            'session',
+            'session-789',
+            expect.objectContaining({
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+            })
+        );
+    });
+
     describe('session cookie secure flag', () => {
         it('sets secure: true in production', async () => {
             process.env.NODE_ENV = 'production';

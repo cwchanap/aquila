@@ -1,8 +1,8 @@
 export const ALLOWED_STORIES = ['train_adventure'] as const;
 export type AllowedStoryId = (typeof ALLOWED_STORIES)[number];
 
-export const CHARACTER_NAME_MAX_LENGTH = 50;
-export const CHARACTER_NAME_REGEX = /^[A-Za-z0-9 _.-]+$/;
+// Import validation constants from the centralized validation module
+import { CHARACTER_NAME_MAX_LENGTH, CHARACTER_NAME_REGEX } from './validation';
 
 export type CharacterTranslations = {
     playStory: string;
@@ -36,7 +36,8 @@ export const validateAndClampName = (rawName: string): NameValidationResult => {
 export function createCharacterCard(
     characterName: string,
     storyId: string,
-    translations: CharacterTranslations
+    translations: CharacterTranslations,
+    locale: string = 'en'
 ): HTMLDivElement {
     if (!ALLOWED_STORIES.includes(storyId as AllowedStoryId)) {
         console.warn(
@@ -92,7 +93,7 @@ export function createCharacterCard(
     buttons.className = 'flex gap-3 flex-wrap';
 
     const playLink = document.createElement('a');
-    playLink.href = `/en/story/${encodeURIComponent(storyId)}`;
+    playLink.href = `/${locale}/story/${encodeURIComponent(storyId)}`;
     playLink.className =
         'character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50';
     playLink.style.cssText =
@@ -134,7 +135,8 @@ export function createCharacterCard(
 }
 
 export function createEmptyState(
-    translations: CharacterTranslations
+    translations: CharacterTranslations,
+    locale: string = 'en'
 ): HTMLDivElement {
     const container = document.createElement('div');
     container.className = 'text-center py-12';
@@ -145,7 +147,7 @@ export function createEmptyState(
     message.textContent = translations.noLocalCharacters;
 
     const link = document.createElement('a');
-    link.href = '/en/stories';
+    link.href = `/${locale}/stories`;
     link.className =
         'group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden';
     link.style.cssText =
@@ -183,7 +185,8 @@ type CardWithEditController = HTMLElement & {
 
 export function setupEditHandler(
     card: HTMLElement,
-    translations: CharacterTranslations
+    translations: CharacterTranslations,
+    locale: string = 'en'
 ): void {
     const editBtn = card.querySelector('.character-edit-btn');
     if (!editBtn) return;
@@ -258,7 +261,7 @@ export function setupEditHandler(
                     }
                     playLink.setAttribute(
                         'href',
-                        `/en/story/${encodeURIComponent(storyId)}`
+                        `/${locale}/story/${encodeURIComponent(storyId)}`
                     );
                 }
 
@@ -308,7 +311,8 @@ type CardWithRemoteEditController = HTMLElement & {
 
 function setupRemoteEditHandler(
     card: HTMLElement,
-    translations: CharacterTranslations
+    translations: CharacterTranslations,
+    locale: string = 'en'
 ): void {
     const editBtn = card.querySelector('.character-edit-btn');
     if (!editBtn) return;
@@ -397,7 +401,10 @@ function setupRemoteEditHandler(
                     }
 
                     if (playLink && storyId) {
-                        playLink.setAttribute('href', `/en/story/${storyId}`);
+                        playLink.setAttribute(
+                            'href',
+                            `/${locale}/story/${storyId}`
+                        );
                     }
 
                     nameDisplay.classList.remove('hidden');
@@ -447,7 +454,8 @@ function setupRemoteEditHandler(
 }
 
 function setupAuthenticatedCharacterEditing(
-    translations: CharacterTranslations
+    translations: CharacterTranslations,
+    locale: string = 'en'
 ): void {
     document.addEventListener('DOMContentLoaded', () => {
         document
@@ -457,12 +465,19 @@ function setupAuthenticatedCharacterEditing(
                     '[data-character-id]'
                 );
                 if (!card) return;
-                setupRemoteEditHandler(card as HTMLElement, translations);
+                setupRemoteEditHandler(
+                    card as HTMLElement,
+                    translations,
+                    locale
+                );
             });
     });
 }
 
-function loadLocalCharacters(translations: CharacterTranslations): void {
+function loadLocalCharacters(
+    translations: CharacterTranslations,
+    locale: string = 'en'
+): void {
     if (document.querySelector('[data-user]')) {
         return;
     }
@@ -511,14 +526,15 @@ function loadLocalCharacters(translations: CharacterTranslations): void {
                 const card = createCharacterCard(
                     char.characterName,
                     char.storyId,
-                    translations
+                    translations,
+                    locale
                 );
                 localCharactersContainer.appendChild(card);
-                setupEditHandler(card, translations);
+                setupEditHandler(card, translations, locale);
             });
         } else {
             localCharactersContainer.appendChild(
-                createEmptyState(translations)
+                createEmptyState(translations, locale)
             );
         }
     } catch (error) {
@@ -533,8 +549,9 @@ function loadLocalCharacters(translations: CharacterTranslations): void {
 }
 
 export function initializeCharacterPage(
-    translations: CharacterTranslations
+    translations: CharacterTranslations,
+    locale: string = 'en'
 ): void {
-    setupAuthenticatedCharacterEditing(translations);
-    loadLocalCharacters(translations);
+    setupAuthenticatedCharacterEditing(translations, locale);
+    loadLocalCharacters(translations, locale);
 }

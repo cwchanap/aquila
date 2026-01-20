@@ -92,7 +92,7 @@ try {
 
     <!-- Back button - Gaming Style -->
     <a
-      href="/en/"
+      href={`/${locale}/`}
       class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
       style="font-family: 'Orbitron', monospace;"
     >
@@ -143,7 +143,7 @@ try {
                     </div>
                     <div class="flex gap-3 flex-wrap">
                       <a
-                        href={`/en/story/${setup.storyId}`}
+                        href={`/${locale}/story/${setup.storyId}`}
                         class="character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50"
                         style="font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                       >
@@ -174,11 +174,11 @@ try {
                   </div>
                 ))}
               </div>
-            ) : (
+             ) : (
               <div class="text-center py-16">
                 <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.noCharacters")}</div>
                 <a
-                  href="/en/stories"
+                  href={`/${locale}/stories`}
                   class="group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
                   style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                 >
@@ -207,9 +207,9 @@ try {
               </div>
             </div>
 
-            <div class="text-center">
+             <div class="text-center">
               <a
-                href="/en/login"
+                href={`/${locale}/login`}
                 class="group relative inline-block py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
                 style="font-family: 'Orbitron', 'Exo 2', monospace;"
               >
@@ -257,10 +257,10 @@ try {
   </div>
 </MainLayout>
 
-<script lang="ts" define:vars={{ translations }}>
+<script lang="ts" define:vars={{ translations, locale }}>
   import { initializeCharacterPage } from '@/lib/local-characters';
 
   const characterTranslations = translations.characters;
 
-  initializeCharacterPage(characterTranslations);
+  initializeCharacterPage(characterTranslations, locale);
 </script>

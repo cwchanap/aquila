@@ -90,7 +90,7 @@ describe('Signup API', () => {
     it('creates a session cookie on successful signup', async () => {
         signUp.mockResolvedValue({
             id: 'user-1',
-            email: 'user@example.com',
+            email: 'USER@Example.COM',
             name: 'User',
             username: null,
         });
@@ -111,19 +111,19 @@ describe('Signup API', () => {
         await expect(response.json()).resolves.toEqual({
             user: {
                 id: 'user-1',
-                email: 'user@example.com',
+                email: 'USER@Example.COM',
                 name: 'User',
                 username: null,
             },
         });
         expect(signUp).toHaveBeenCalledWith(
-            'user@example.com',
+            'USER@Example.COM',
             'password123',
             'User'
         );
         expect(createSession).toHaveBeenCalledWith({
             id: 'user-1',
-            email: 'user@example.com',
+            email: 'USER@Example.COM',
             name: 'User',
             username: null,
         });

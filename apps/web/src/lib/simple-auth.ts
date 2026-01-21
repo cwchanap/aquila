@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import { db } from './drizzle/db.js';
 import { users, accounts, sessions } from './drizzle/schema.js';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, ilike } from 'drizzle-orm';
 
 export interface SimpleUser {
     id: string;
@@ -23,11 +23,13 @@ export class SimpleAuthService {
         name: string
     ): Promise<SimpleUser | null> {
         try {
+            const trimmedEmail = email.trim();
+
             // Check if user already exists
             const [existingUser] = await db
                 .select()
                 .from(users)
-                .where(eq(users.email, email))
+                .where(ilike(users.email, trimmedEmail))
                 .limit(1);
 
             if (existingUser) {
@@ -42,7 +44,7 @@ export class SimpleAuthService {
             await db.transaction(async tx => {
                 await tx.insert(users).values({
                     id: userId,
-                    email,
+                    email: trimmedEmail,
                     name,
                     username: null,
                     image: null,
@@ -52,7 +54,7 @@ export class SimpleAuthService {
                 await tx.insert(accounts).values({
                     id: crypto.randomUUID(),
                     userId,
-                    accountId: email,
+                    accountId: trimmedEmail,
                     providerId: 'email',
                     password: hashedPassword,
                     accessToken: null,
@@ -66,7 +68,7 @@ export class SimpleAuthService {
 
             return {
                 id: userId,
-                email,
+                email: trimmedEmail,
                 name,
                 username: null,
             };
@@ -81,11 +83,13 @@ export class SimpleAuthService {
         password: string
     ): Promise<SimpleUser | null> {
         try {
+            const trimmedEmail = email.trim();
+
             // Find user
             const [user] = await db
                 .select()
                 .from(users)
-                .where(eq(users.email, email))
+                .where(ilike(users.email, trimmedEmail))
                 .limit(1);
 
             if (!user) {

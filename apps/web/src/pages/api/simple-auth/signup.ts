@@ -22,12 +22,13 @@ async function ensureDbHealthCheck() {
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+    let translations = getTranslations('en');
     try {
         const body = await request.json();
         const { email, password, name, locale: rawLocale } = body;
 
         const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
-        const translations = getTranslations(locale);
+        translations = getTranslations(locale);
         const validationTranslations: ValidationTranslations = {
             email: translations.email,
             username: translations.username,
@@ -36,7 +37,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
         if (!email || !password || !name) {
             return new Response(
-                JSON.stringify({ error: 'Missing required fields' }),
+                JSON.stringify({
+                    error: translations.login.missingRequiredFields,
+                }),
                 {
                     status: 400,
                     headers: { 'Content-Type': 'application/json' },
@@ -74,7 +77,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                 );
                 return new Response(
                     JSON.stringify({
-                        error: 'Database connection error. Please check server configuration.',
+                        error: translations.login.dbConnectionError,
                     }),
                     {
                         status: 500,
@@ -93,7 +96,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         if (!user) {
             return new Response(
                 JSON.stringify({
-                    error: 'Email already in use',
+                    error: translations.login.emailAlreadyInUse,
                 }),
                 {
                     status: 400,
@@ -121,7 +124,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     } catch (error) {
         console.error('Signup error:', error);
         return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({ error: translations.login.internalServerError }),
             {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },

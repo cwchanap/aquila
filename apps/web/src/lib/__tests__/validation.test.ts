@@ -32,6 +32,8 @@ describe('Validation Constants', () => {
         expect(CHARACTER_NAME_REGEX.test('John Doe')).toBe(true);
         expect(CHARACTER_NAME_REGEX.test('Jane-Marie')).toBe(true);
         expect(CHARACTER_NAME_REGEX.test('Dr. Smith')).toBe(true);
+        expect(CHARACTER_NAME_REGEX.test('王小明')).toBe(true);
+        expect(CHARACTER_NAME_REGEX.test('Zoë Álvarez')).toBe(true);
     });
 
     it('should have correct username length constraints', () => {
@@ -182,6 +184,9 @@ describe('validateCharacterName', () => {
         'Mr. Anderson',
         'Test 123',
         'A B C',
+        '王小明',
+        'Zoë Álvarez',
+        'Łukasz Kowalski',
         'A'.repeat(50), // Exactly 50 characters
     ];
 

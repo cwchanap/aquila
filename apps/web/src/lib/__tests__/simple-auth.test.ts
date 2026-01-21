@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { eq, and, gt, ilike } from 'drizzle-orm';
 import { SimpleAuthService } from '../simple-auth';
 import { accounts, sessions, users } from '../drizzle/schema.js';
 
@@ -22,6 +23,13 @@ const mockedDb = vi.hoisted(() => {
 
 vi.mock('../drizzle/db.js', () => ({
     db: mockedDb,
+}));
+
+vi.mock('drizzle-orm', () => ({
+    eq: vi.fn((...args: unknown[]) => ({ type: 'eq', args })),
+    and: vi.fn((...args: unknown[]) => ({ type: 'and', args })),
+    gt: vi.fn((...args: unknown[]) => ({ type: 'gt', args })),
+    ilike: vi.fn((...args: unknown[]) => ({ type: 'ilike', args })),
 }));
 
 type BcryptMock = {
@@ -54,6 +62,10 @@ describe('SimpleAuthService', () => {
         mockedDb.delete.mockReset();
         mockedBcrypt.hash.mockReset();
         mockedBcrypt.compare.mockReset();
+        vi.mocked(eq).mockReset();
+        vi.mocked(and).mockReset();
+        vi.mocked(gt).mockReset();
+        vi.mocked(ilike).mockReset();
     });
 
     afterEach(() => {
@@ -63,10 +75,11 @@ describe('SimpleAuthService', () => {
     describe('signUp', () => {
         it('should successfully create a new user', async () => {
             const userData = {
-                email: 'test@example.com',
+                email: '  MixedCase@Example.com  ',
                 password: 'password123',
                 name: 'Test User',
             };
+            const trimmedEmail = 'MixedCase@Example.com';
 
             const selectLimit = vi.fn().mockResolvedValue([]);
             const selectWhere = vi.fn().mockReturnValue({ limit: selectLimit });
@@ -95,7 +108,7 @@ describe('SimpleAuthService', () => {
 
             expect(result).toEqual({
                 id: expect.any(String),
-                email: userData.email,
+                email: trimmedEmail,
                 name: userData.name,
                 username: null,
             });
@@ -104,18 +117,19 @@ describe('SimpleAuthService', () => {
                 10
             );
             expect(selectFrom).toHaveBeenCalledWith(users);
+            expect(ilike).toHaveBeenCalledWith(users.email, trimmedEmail);
             expect(txInsert).toHaveBeenNthCalledWith(1, users);
             expect(txInsert).toHaveBeenNthCalledWith(2, accounts);
             expect(userValues).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    email: userData.email,
+                    email: trimmedEmail,
                     name: userData.name,
                     username: null,
                 })
             );
             expect(accountValues).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    accountId: userData.email,
+                    accountId: trimmedEmail,
                     providerId: 'email',
                     password: 'hashed-password',
                 })
@@ -185,13 +199,14 @@ describe('SimpleAuthService', () => {
     describe('signIn', () => {
         it('should successfully authenticate user', async () => {
             const credentials = {
-                email: 'test@example.com',
+                email: '  MixedCase@Example.com  ',
                 password: 'password123',
             };
+            const trimmedEmail = 'MixedCase@Example.com';
 
             const mockUser = {
                 id: 'user-123',
-                email: credentials.email,
+                email: trimmedEmail,
                 name: 'Test User',
                 username: 'testuser',
             };
@@ -225,6 +240,7 @@ describe('SimpleAuthService', () => {
 
             expect(result).toEqual(mockUser);
             expect(userFrom).toHaveBeenCalledWith(users);
+            expect(ilike).toHaveBeenCalledWith(users.email, trimmedEmail);
             expect(accountFrom).toHaveBeenCalledWith(accounts);
             expect(mockedBcrypt.compare).toHaveBeenCalledWith(
                 credentials.password,

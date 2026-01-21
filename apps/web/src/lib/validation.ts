@@ -11,7 +11,7 @@ export const USERNAME_MAX_LENGTH = 50;
 export const CHARACTER_NAME_MAX_LENGTH = 50;
 
 export const USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/;
-export const CHARACTER_NAME_REGEX = /^[A-Za-z0-9 _.-]+$/;
+export const CHARACTER_NAME_REGEX = /^[\p{L}\p{N}\p{M} _.-]+$/u;
 
 // Error messages
 export const ERROR_MESSAGES = {

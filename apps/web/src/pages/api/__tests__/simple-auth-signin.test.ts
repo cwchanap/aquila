@@ -118,7 +118,7 @@ describe('Signin API', () => {
         );
     });
 
-    it('normalizes mixed-case email during signin', async () => {
+    it('trims mixed-case email during signin', async () => {
         signIn.mockResolvedValue({
             id: 'user-1',
             email: 'user@example.com',
@@ -138,7 +138,7 @@ describe('Signin API', () => {
         const response = await POST({ request, cookies } as any);
 
         expect(response.status).toBe(200);
-        expect(signIn).toHaveBeenCalledWith('user@example.com', 'password123');
+        expect(signIn).toHaveBeenCalledWith('USER@Example.COM', 'password123');
         await expect(response.json()).resolves.toEqual({
             user: {
                 id: 'user-1',

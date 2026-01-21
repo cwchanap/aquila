@@ -16,8 +16,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
-        const user = await SimpleAuthService.signIn(normalizedEmail, password);
+        const trimmedEmail = email.trim();
+        const user = await SimpleAuthService.signIn(trimmedEmail, password);
 
         if (!user) {
             return new Response(

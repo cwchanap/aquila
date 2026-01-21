@@ -28,7 +28,11 @@
     "loginFailed": "登入失敗。請檢查您的憑證。",
     "signupFailed": "註冊失敗。電子郵件可能已被使用。",
     "emailRequired": "註冊需要電子郵件和密碼。",
-    "nameRequired": "註冊需要姓名。"
+    "nameRequired": "註冊需要姓名。",
+    "missingRequiredFields": "缺少必填欄位",
+    "emailAlreadyInUse": "電子郵件已被使用",
+    "dbConnectionError": "資料庫連線錯誤。請檢查伺服器設定。",
+    "internalServerError": "伺服器內部錯誤"
   },
   "email": {
     "notString": "電子郵件必須為字串",

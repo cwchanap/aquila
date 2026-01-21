@@ -28,7 +28,11 @@
     "loginFailed": "Login failed. Please check your credentials.",
     "signupFailed": "Signup failed. Email might already be in use.",
     "emailRequired": "Email and password are required for signup.",
-    "nameRequired": "Name is required for signup."
+    "nameRequired": "Name is required for signup.",
+    "missingRequiredFields": "Missing required fields",
+    "emailAlreadyInUse": "Email already in use",
+    "dbConnectionError": "Database connection error. Please check server configuration.",
+    "internalServerError": "Internal server error"
   },
   "email": {
     "notString": "Email must be a string",

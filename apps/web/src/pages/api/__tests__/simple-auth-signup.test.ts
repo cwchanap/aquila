@@ -1,42 +1,44 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { UserAlreadyExistsError } from '../../../lib/errors.js';
+
+const signUp = vi.hoisted(() => vi.fn());
+const createSession = vi.hoisted(() => vi.fn());
+const mockDbSelect = vi.hoisted(() => vi.fn());
 
 vi.mock('../../../lib/simple-auth.js', () => ({
     SimpleAuthService: {
-        signUp: vi.fn(),
-        createSession: vi.fn(),
+        signUp,
+        createSession,
     },
 }));
 
 vi.mock('../../../lib/drizzle/db.js', () => ({
     db: {
-        select: vi.fn(),
+        select: mockDbSelect,
     },
 }));
 
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
-import { db } from '../../../lib/drizzle/db.js';
-import { POST } from '../simple-auth/signup';
+vi.mock('../../../lib/logger.js', () => ({
+    logger: {
+        error: vi.fn(),
+        warn: vi.fn(),
+        info: vi.fn(),
+        debug: vi.fn(),
+    },
+}));
 
-const signUp = vi.mocked(SimpleAuthService.signUp) as unknown as ReturnType<
-    typeof vi.fn
->;
-const createSession = vi.mocked(
-    SimpleAuthService.createSession
-) as unknown as ReturnType<typeof vi.fn>;
-const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
+import { POST } from '../simple-auth/signup';
 
 describe('Signup API', () => {
     let originalNodeEnv: string | undefined;
 
     beforeEach(() => {
-        signUp.mockReset();
-        createSession.mockReset();
-        mockDb.select.mockReset();
+        vi.clearAllMocks();
         originalNodeEnv = process.env.NODE_ENV;
 
         const limit = vi.fn().mockResolvedValue([]);
         const from = vi.fn().mockReturnValue({ limit });
-        mockDb.select.mockReturnValue({ from });
+        mockDbSelect.mockReturnValue({ from });
     });
 
     afterEach(() => {
@@ -68,8 +70,8 @@ describe('Signup API', () => {
         expect(signUp).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when email is already in use', async () => {
-        signUp.mockResolvedValue(null);
+    it('returns 409 when email is already in use', async () => {
+        signUp.mockRejectedValue(new UserAlreadyExistsError());
 
         const request = {
             json: vi.fn().mockResolvedValue({
@@ -84,7 +86,7 @@ describe('Signup API', () => {
             cookies: { set: vi.fn() },
         } as any);
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(409);
         await expect(response.json()).resolves.toEqual({
             error: 'Email already in use',
         });

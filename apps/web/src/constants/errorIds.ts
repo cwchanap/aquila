@@ -1,0 +1,64 @@
+/**
+ * Error ID constants for Sentry tracking and error correlation.
+ *
+ * These IDs are used to:
+ * - Group related errors in Sentry
+ * - Correlate errors across multiple services
+ * - Track error frequency and patterns
+ * - Provide correlation IDs to users for support tickets
+ */
+
+export const ERROR_IDS = {
+    // Authentication errors (AUTH_001-099)
+    AUTH_SIGNUP_FAILED: 'AUTH_001',
+    AUTH_SIGNIN_FAILED: 'AUTH_002',
+    AUTH_SESSION_CREATE_FAILED: 'AUTH_003',
+    AUTH_SESSION_DELETE_FAILED: 'AUTH_004',
+    AUTH_SESSION_GET_FAILED: 'AUTH_005',
+    AUTH_USER_ALREADY_EXISTS: 'AUTH_006',
+    AUTH_INVALID_CREDENTIALS: 'AUTH_007',
+    AUTH_PASSWORD_HASH_FAILED: 'AUTH_008',
+
+    // Database errors (DB_001-099)
+    DB_CONNECTION_FAILED: 'DB_001',
+    DB_TRANSACTION_FAILED: 'DB_002',
+    DB_QUERY_FAILED: 'DB_003',
+    DB_INSERT_FAILED: 'DB_004',
+    DB_UPDATE_FAILED: 'DB_005',
+    DB_DELETE_FAILED: 'DB_006',
+    DB_CONSTRAINT_VIOLATION: 'DB_007',
+
+    // Validation errors (VAL_001-099)
+    VALIDATION_EMAIL_INVALID: 'VAL_001',
+    VALIDATION_EMAIL_REQUIRED: 'VAL_002',
+    VALIDATION_EMAIL_TOO_LONG: 'VAL_003',
+    VALIDATION_USERNAME_INVALID: 'VAL_004',
+    VALIDATION_USERNAME_TOO_SHORT: 'VAL_005',
+    VALIDATION_USERNAME_TOO_LONG: 'VAL_006',
+    VALIDATION_CHARACTER_NAME_INVALID: 'VAL_007',
+    VALIDATION_CHARACTER_NAME_TOO_SHORT: 'VAL_008',
+    VALIDATION_CHARACTER_NAME_TOO_LONG: 'VAL_009',
+
+    // API errors (API_001-099)
+    API_INVALID_REQUEST: 'API_001',
+    API_INVALID_JSON: 'API_002',
+    API_MISSING_PARAMETER: 'API_003',
+    API_INVALID_PARAMETER: 'API_004',
+    API_RESOURCE_NOT_FOUND: 'API_005',
+    API_INTERNAL_ERROR: 'API_006',
+
+    // Repository errors (REPO_001-099)
+    REPO_USER_NOT_FOUND: 'REPO_001',
+    REPO_USER_CREATE_FAILED: 'REPO_002',
+    REPO_USER_UPDATE_FAILED: 'REPO_003',
+    REPO_USER_DELETE_FAILED: 'REPO_004',
+    REPO_STORY_NOT_FOUND: 'REPO_005',
+    REPO_CHAPTER_NOT_FOUND: 'REPO_006',
+    REPO_SCENE_NOT_FOUND: 'REPO_007',
+
+    // Character setup errors (CHAR_001-099)
+    CHAR_SETUP_FAILED: 'CHAR_001',
+    CHAR_VALIDATION_FAILED: 'CHAR_002',
+} as const;
+
+export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

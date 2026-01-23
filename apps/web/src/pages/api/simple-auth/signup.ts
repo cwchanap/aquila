@@ -8,6 +8,9 @@ import {
     validateEmail,
     type ValidationTranslations,
 } from '../../../lib/validation.js';
+import { UserAlreadyExistsError } from '../../../lib/errors.js';
+import { logger } from '../../../lib/logger.js';
+import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 const isNonProduction = process.env.NODE_ENV !== 'production';
 let dbHealthChecked = false;
@@ -66,14 +69,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
         const trimmedEmail = email.trim();
 
-        // Development/test DB health check to surface configuration issues
+        // Perform one-time DB health check in non-production environments to surface
+        // connection issues early during signup flow, rather than failing silently
         if (isNonProduction && !dbHealthChecked) {
             try {
                 await ensureDbHealthCheck();
             } catch (dbError) {
-                console.error(
-                    'Simple auth signup DB health check failed:',
-                    dbError
+                logger.error(
+                    'Simple auth signup DB health check failed',
+                    dbError,
+                    {
+                        errorId: ERROR_IDS.DB_CONNECTION_FAILED,
+                    }
                 );
                 return new Response(
                     JSON.stringify({
@@ -87,22 +94,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }
         }
 
-        const user = await SimpleAuthService.signUp(
-            trimmedEmail,
-            password,
-            name
-        );
-
-        if (!user) {
-            return new Response(
-                JSON.stringify({
-                    error: translations.login.emailAlreadyInUse,
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+        let user;
+        try {
+            user = await SimpleAuthService.signUp(trimmedEmail, password, name);
+        } catch (error) {
+            if (error instanceof UserAlreadyExistsError) {
+                return new Response(
+                    JSON.stringify({
+                        error: translations.login.emailAlreadyInUse,
+                    }),
+                    {
+                        status: 409,
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
+            }
+            // Re-throw other errors to be caught by outer catch block
+            throw error;
         }
 
         // Create session
@@ -122,9 +130,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        console.error('Signup error:', error);
+        const correlationId = crypto.randomUUID();
+        logger.error('Signup failed', error, {
+            errorId: ERROR_IDS.AUTH_SIGNUP_FAILED,
+            correlationId,
+        });
+
         return new Response(
-            JSON.stringify({ error: translations.login.internalServerError }),
+            JSON.stringify({
+                error: translations.login.internalServerError,
+                ...(process.env.NODE_ENV !== 'production' && {
+                    correlationId,
+                }),
+            }),
             {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },

@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(bun lint:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git diff:*)",
+      "Bash(bun test:*)",
+      "Bash(bun --filter web test:*)"
     ]
   }
 }

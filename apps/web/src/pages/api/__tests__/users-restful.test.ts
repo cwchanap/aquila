@@ -1,10 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../../../lib/drizzle/repositories.js', () => ({
-    UserRepository: vi.fn(),
-}));
+// Create mock repository with all methods
+const mockRepo = {
+    findById: vi.fn(),
+    findByEmail: vi.fn(),
+    findByUsername: vi.fn(),
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+};
 
-import { UserRepository } from '../../../lib/drizzle/repositories.js';
+// Create constructor mock that returns mockRepo
+const UserRepositoryConstructor = vi.fn(() => mockRepo);
+
+vi.mock('../../../lib/drizzle/repositories.js', () => ({
+    UserRepository: UserRepositoryConstructor,
+}));
 
 import { GET, POST } from '../users';
 import {
@@ -15,24 +27,17 @@ import {
 import { GET as GetByEmail } from '../users/by-email/[email]';
 import { GET as GetByUsername } from '../users/by-username/[username]';
 
-const createMockRepo = () => ({
-    findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findByUsername: vi.fn(),
-    list: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-});
-
-const UserRepositoryMock = vi.mocked(UserRepository);
-let mockRepo = createMockRepo();
-
 describe('Users API - RESTful Design', () => {
     beforeEach(() => {
-        UserRepositoryMock.mockReset();
-        mockRepo = createMockRepo();
-        UserRepositoryMock.mockReturnValue(mockRepo as any);
+        // Reset all mocks
+        vi.clearAllMocks();
+        mockRepo.findById.mockReset();
+        mockRepo.findByEmail.mockReset();
+        mockRepo.findByUsername.mockReset();
+        mockRepo.list.mockReset();
+        mockRepo.create.mockReset();
+        mockRepo.update.mockReset();
+        mockRepo.delete.mockReset();
     });
 
     describe('GET /api/users', () => {

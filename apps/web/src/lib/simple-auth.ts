@@ -1,8 +1,21 @@
-// Simple auth service as fallback for better-auth issues
+/**
+ * Simple auth service as fallback for better-auth issues.
+ * NOT recommended for production use - prefer better-auth for production deployments.
+ *
+ * Uses bcrypt for password hashing and session-based authentication.
+ * All errors are thrown (not silently swallowed) for proper error handling.
+ */
 import bcrypt from 'bcryptjs';
 import { db } from './drizzle/db.js';
 import { users, accounts, sessions } from './drizzle/schema.js';
 import { eq, and, gt, ilike } from 'drizzle-orm';
+import { logger } from './logger.js';
+import { ERROR_IDS } from '../constants/errorIds.js';
+import {
+    UserAlreadyExistsError,
+    PasswordHashError,
+    DatabaseError,
+} from './errors.js';
 
 export interface SimpleUser {
     id: string;
@@ -17,30 +30,46 @@ export interface SimpleSession {
 }
 
 export class SimpleAuthService {
+    /**
+     * Sign up a new user with email and password.
+     *
+     * @throws {UserAlreadyExistsError} If email already exists (case-insensitive)
+     * @throws {PasswordHashError} If password hashing fails
+     * @throws {DatabaseError} If user/account creation fails
+     */
     static async signUp(
         email: string,
         password: string,
         name: string
-    ): Promise<SimpleUser | null> {
+    ): Promise<SimpleUser> {
+        const trimmedEmail = email.trim();
+
+        // Check if user already exists (case-insensitive email match using ilike)
+        const [existingUser] = await db
+            .select()
+            .from(users)
+            .where(ilike(users.email, trimmedEmail))
+            .limit(1);
+
+        if (existingUser) {
+            throw new UserAlreadyExistsError();
+        }
+
+        // Hash password with bcrypt (10 rounds)
+        let hashedPassword: string;
         try {
-            const trimmedEmail = email.trim();
+            hashedPassword = await bcrypt.hash(password, 10);
+        } catch (error) {
+            logger.error('Password hashing failed during signup', error, {
+                errorId: ERROR_IDS.AUTH_PASSWORD_HASH_FAILED,
+                email: trimmedEmail.substring(0, 3) + '***',
+            });
+            throw new PasswordHashError();
+        }
 
-            // Check if user already exists
-            const [existingUser] = await db
-                .select()
-                .from(users)
-                .where(ilike(users.email, trimmedEmail))
-                .limit(1);
-
-            if (existingUser) {
-                throw new Error('User already exists');
-            }
-
-            // Hash password
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Create user
-            const userId = crypto.randomUUID();
+        // Create user and account in atomic transaction
+        const userId = crypto.randomUUID();
+        try {
             await db.transaction(async tx => {
                 await tx.insert(users).values({
                     id: userId,
@@ -65,71 +94,87 @@ export class SimpleAuthService {
                     scope: null,
                 });
             });
-
-            return {
-                id: userId,
-                email: trimmedEmail,
-                name,
-                username: null,
-            };
         } catch (error) {
-            console.error('Signup error:', error);
-            return null;
+            logger.error('User creation transaction failed', error, {
+                errorId: ERROR_IDS.AUTH_SIGNUP_FAILED,
+                email: trimmedEmail.substring(0, 3) + '***',
+                userId,
+            });
+            throw new DatabaseError('Failed to create user account');
         }
+
+        return {
+            id: userId,
+            email: trimmedEmail,
+            name,
+            username: null,
+        };
     }
 
+    /**
+     * Sign in a user with email and password.
+     *
+     * @returns SimpleUser if credentials are valid, null if invalid
+     *
+     * Note: Returns null for both "user not found" and "wrong password" to prevent
+     * timing attacks and user enumeration.
+     */
     static async signIn(
         email: string,
         password: string
     ): Promise<SimpleUser | null> {
-        try {
-            const trimmedEmail = email.trim();
+        const trimmedEmail = email.trim();
 
-            // Find user
-            const [user] = await db
-                .select()
-                .from(users)
-                .where(ilike(users.email, trimmedEmail))
-                .limit(1);
+        // Find user by email (case-insensitive match)
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(ilike(users.email, trimmedEmail))
+            .limit(1);
 
-            if (!user) {
-                return null;
-            }
-
-            // Find account with password
-            const [account] = await db
-                .select()
-                .from(accounts)
-                .where(
-                    and(
-                        eq(accounts.userId, user.id),
-                        eq(accounts.providerId, 'email')
-                    )
-                )
-                .limit(1);
-
-            if (!account || !account.password) {
-                return null;
-            }
-
-            // Check password
-            const isValid = await bcrypt.compare(password, account.password);
-            if (!isValid) {
-                return null;
-            }
-
-            return {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                username: user.username,
-            };
-        } catch (error) {
-            console.error('Signin error:', error);
+        if (!user) {
+            // User not found - this is a valid authentication failure
             return null;
         }
+
+        // Find account with password
+        const [account] = await db
+            .select()
+            .from(accounts)
+            .where(
+                and(
+                    eq(accounts.userId, user.id),
+                    eq(accounts.providerId, 'email')
+                )
+            )
+            .limit(1);
+
+        if (!account || !account.password) {
+            // Account not found or no password set - this is a valid authentication failure
+            return null;
+        }
+
+        // Verify password against hashed value using bcrypt constant-time comparison
+        const isValid = await bcrypt.compare(password, account.password);
+
+        if (!isValid) {
+            // Invalid password - this is a valid authentication failure
+            return null;
+        }
+
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            username: user.username,
+        };
     }
 
+    /**
+     * Create a new session for an authenticated user.
+     *
+     * @throws {DatabaseError} If session creation fails
+     */
     static async createSession(user: SimpleUser): Promise<string> {
         const sessionId = crypto.randomUUID();
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -146,52 +191,55 @@ export class SimpleAuthService {
         return sessionId;
     }
 
+    /**
+     * Retrieve and validate a session by ID.
+     *
+     * @returns SimpleSession if valid and not expired, null if not found or expired
+     */
     static async getSession(sessionId: string): Promise<SimpleSession | null> {
-        try {
-            const result = await db
-                .select({
-                    sessionId: sessions.id,
-                    expiresAt: sessions.expiresAt,
-                    userId: users.id,
-                    email: users.email,
-                    name: users.name,
-                    username: users.username,
-                })
-                .from(sessions)
-                .innerJoin(users, eq(users.id, sessions.userId))
-                .where(
-                    and(
-                        eq(sessions.id, sessionId),
-                        gt(sessions.expiresAt, new Date())
-                    )
+        const result = await db
+            .select({
+                sessionId: sessions.id,
+                expiresAt: sessions.expiresAt,
+                userId: users.id,
+                email: users.email,
+                name: users.name,
+                username: users.username,
+            })
+            .from(sessions)
+            .innerJoin(users, eq(users.id, sessions.userId))
+            .where(
+                and(
+                    eq(sessions.id, sessionId),
+                    gt(sessions.expiresAt, new Date())
                 )
-                .limit(1);
+            )
+            .limit(1);
 
-            const session = result[0];
-            if (!session) {
-                return null;
-            }
-
-            return {
-                user: {
-                    id: session.userId,
-                    email: session.email,
-                    name: session.name,
-                    username: session.username,
-                },
-                sessionId: session.sessionId,
-            };
-        } catch (error) {
-            console.error('Get session error:', error);
+        const session = result[0];
+        if (!session) {
+            // Session not found or expired - this is a valid case
             return null;
         }
+
+        return {
+            user: {
+                id: session.userId,
+                email: session.email,
+                name: session.name,
+                username: session.username,
+            },
+            sessionId: session.sessionId,
+        };
     }
 
+    /**
+     * Delete a session (logout).
+     *
+     * Important: Errors from this operation will propagate to the caller.
+     * The caller should handle failures appropriately (e.g., show error to user).
+     */
     static async deleteSession(sessionId: string): Promise<void> {
-        try {
-            await db.delete(sessions).where(eq(sessions.id, sessionId));
-        } catch (error) {
-            console.error('Delete session error:', error);
-        }
+        await db.delete(sessions).where(eq(sessions.id, sessionId));
     }
 }

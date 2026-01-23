@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { logger } from '../../../lib/logger.js';
+import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
@@ -17,7 +19,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         const trimmedEmail = email.trim();
-        const user = await SimpleAuthService.signIn(trimmedEmail, password);
+        let user;
+        try {
+            user = await SimpleAuthService.signIn(trimmedEmail, password);
+        } catch (error) {
+            // Database or system error during signin
+            logger.error('Signin service failed', error, {
+                errorId: ERROR_IDS.AUTH_SIGNIN_FAILED,
+                email: trimmedEmail.substring(0, 3) + '***',
+            });
+            throw error; // Re-throw to outer catch
+        }
 
         if (!user) {
             return new Response(
@@ -46,9 +58,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        console.error('Signin error:', error);
+        const correlationId = crypto.randomUUID();
+        logger.error('Signin failed', error, {
+            errorId: ERROR_IDS.AUTH_SIGNIN_FAILED,
+            correlationId,
+        });
+
         return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({
+                error: 'Internal server error',
+                ...(process.env.NODE_ENV !== 'production' && {
+                    correlationId,
+                }),
+            }),
             {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },

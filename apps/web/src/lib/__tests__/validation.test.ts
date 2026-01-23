@@ -282,6 +282,93 @@ describe('validateCharacterName', () => {
             sanitizedName: 'John_Doe',
         });
     });
+
+    describe('XSS prevention', () => {
+        it('should reject names with HTML tags', () => {
+            expect(
+                validateCharacterName('<script>alert("xss")</script>')
+            ).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(
+                validateCharacterName('<img src=x onerror=alert(1)>')
+            ).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('<div>John</div>')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(
+                validateCharacterName('</script><script>alert(1)</script>')
+            ).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+        });
+
+        it('should reject names with HTML entities', () => {
+            expect(validateCharacterName('&lt;script&gt;')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('&#60;script&#62;')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('&#x3C;script&#x3E;')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+        });
+
+        it('should reject names with JavaScript event handlers', () => {
+            expect(validateCharacterName('onerror=alert(1)')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('onclick="hack()"')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('onload=malicious()')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+        });
+
+        it('should reject names with angle brackets', () => {
+            expect(validateCharacterName('John<Doe')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('John>Doe')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('<>John<>')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+        });
+
+        it('should reject names with quotes that could break attributes', () => {
+            expect(validateCharacterName('John"Doe')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName("John'Doe")).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+            expect(validateCharacterName('John`Doe')).toEqual({
+                valid: false,
+                errorKey: ERROR_MESSAGES.characterName.invalidChars,
+            });
+        });
+    });
 });
 
 describe('validateStoryId', () => {

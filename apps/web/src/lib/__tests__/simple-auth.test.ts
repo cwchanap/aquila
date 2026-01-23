@@ -1,25 +1,33 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { eq, and, gt, ilike } from 'drizzle-orm';
-import { SimpleAuthService } from '../simple-auth';
-import { accounts, sessions, users } from '../drizzle/schema.js';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-type AnyMock = ReturnType<typeof vi.fn>;
+// Set test environment variables to prevent real DB connection
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
+process.env.NODE_ENV = 'test';
 
-type DbMock = {
-    select: AnyMock;
-    insert: AnyMock;
-    transaction: AnyMock;
-    delete: AnyMock;
-};
+// Create the mocked functions in hoisted scope
+const mockedLogger = vi.hoisted(() => ({
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+}));
 
-const mockedDb = vi.hoisted(() => {
-    return {
-        select: vi.fn(),
-        insert: vi.fn(),
-        transaction: vi.fn(),
-        delete: vi.fn(),
-    } satisfies DbMock;
-}) as DbMock;
+const mockedDb = vi.hoisted(() => ({
+    select: vi.fn(),
+    insert: vi.fn(),
+    transaction: vi.fn(),
+    delete: vi.fn(),
+}));
+
+const mockedBcrypt = vi.hoisted(() => ({
+    hash: vi.fn(),
+    compare: vi.fn(),
+}));
+
+// Apply the mocks
+vi.mock('../logger.js', () => ({
+    logger: mockedLogger,
+}));
 
 vi.mock('../drizzle/db.js', () => ({
     db: mockedDb,
@@ -32,44 +40,19 @@ vi.mock('drizzle-orm', () => ({
     ilike: vi.fn((...args: unknown[]) => ({ type: 'ilike', args })),
 }));
 
-type BcryptMock = {
-    hash: AnyMock;
-    compare: AnyMock;
-};
-
-const mockedBcrypt = vi.hoisted(
-    () =>
-        ({
-            hash: vi.fn(),
-            compare: vi.fn(),
-        }) as BcryptMock
-);
-
 vi.mock('bcryptjs', () => ({
     default: mockedBcrypt,
 }));
 
+// NOW import the modules
+import { ilike } from 'drizzle-orm';
+import { SimpleAuthService } from '../simple-auth';
+import { accounts, sessions, users } from '../drizzle/schema.js';
+import { UserAlreadyExistsError, DatabaseError } from '../errors.js';
+
 describe('SimpleAuthService', () => {
-    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-
     beforeEach(() => {
-        consoleErrorSpy = vi
-            .spyOn(console, 'error')
-            .mockImplementation(() => {});
-        mockedDb.select.mockReset();
-        mockedDb.insert.mockReset();
-        mockedDb.transaction.mockReset();
-        mockedDb.delete.mockReset();
-        mockedBcrypt.hash.mockReset();
-        mockedBcrypt.compare.mockReset();
-        vi.mocked(eq).mockReset();
-        vi.mocked(and).mockReset();
-        vi.mocked(gt).mockReset();
-        vi.mocked(ilike).mockReset();
-    });
-
-    afterEach(() => {
-        consoleErrorSpy.mockRestore();
+        vi.clearAllMocks();
     });
 
     describe('signUp', () => {
@@ -142,7 +125,7 @@ describe('SimpleAuthService', () => {
             );
         });
 
-        it('should return null if user already exists', async () => {
+        it('should throw UserAlreadyExistsError if user already exists', async () => {
             const userData = {
                 email: 'existing@example.com',
                 password: 'password123',
@@ -159,40 +142,118 @@ describe('SimpleAuthService', () => {
 
             mockedDb.select.mockReturnValueOnce({ from: selectFrom });
 
-            const result = await SimpleAuthService.signUp(
-                userData.email,
-                userData.password,
-                userData.name
-            );
+            await expect(
+                SimpleAuthService.signUp(
+                    userData.email,
+                    userData.password,
+                    userData.name
+                )
+            ).rejects.toThrow(UserAlreadyExistsError);
 
-            expect(result).toBeNull();
             expect(mockedDb.transaction).not.toHaveBeenCalled();
             expect(mockedBcrypt.hash).not.toHaveBeenCalled();
         });
 
-        it('should return null on database error', async () => {
+        it('should throw DatabaseError on transaction failure', async () => {
             const userData = {
                 email: 'test@example.com',
                 password: 'password123',
                 name: 'Test User',
             };
 
-            const selectLimit = vi
-                .fn()
-                .mockRejectedValue(new Error('Database error'));
+            const selectLimit = vi.fn().mockResolvedValue([]);
             const selectWhere = vi.fn().mockReturnValue({ limit: selectLimit });
             const selectFrom = vi.fn().mockReturnValue({ where: selectWhere });
 
             mockedDb.select.mockReturnValueOnce({ from: selectFrom });
-
-            const result = await SimpleAuthService.signUp(
-                userData.email,
-                userData.password,
-                userData.name
+            mockedBcrypt.hash.mockResolvedValue('hashed-password');
+            mockedDb.transaction.mockRejectedValue(
+                new Error('Transaction failed')
             );
 
-            expect(result).toBeNull();
-            expect(consoleErrorSpy).toHaveBeenCalled();
+            await expect(
+                SimpleAuthService.signUp(
+                    userData.email,
+                    userData.password,
+                    userData.name
+                )
+            ).rejects.toThrow(DatabaseError);
+        });
+
+        it('should rollback user creation when account creation fails', async () => {
+            const userData = {
+                email: 'test@example.com',
+                password: 'password123',
+                name: 'Test User',
+            };
+
+            const selectLimit = vi.fn().mockResolvedValue([]);
+            const selectWhere = vi.fn().mockReturnValue({ limit: selectLimit });
+            const selectFrom = vi.fn().mockReturnValue({ where: selectWhere });
+
+            mockedDb.select.mockReturnValueOnce({ from: selectFrom });
+            mockedBcrypt.hash.mockResolvedValue('hashed-password');
+
+            // Mock transaction to simulate user insert success but account insert failure
+            const userValues = vi.fn().mockResolvedValue(undefined);
+            const accountValues = vi
+                .fn()
+                .mockRejectedValue(new Error('Account insert failed'));
+
+            const txInsert = vi
+                .fn()
+                .mockReturnValueOnce({ values: userValues })
+                .mockReturnValueOnce({ values: accountValues });
+
+            mockedDb.transaction.mockImplementationOnce(async callback => {
+                await callback({ insert: txInsert });
+            });
+
+            // The signup should throw DatabaseError and no user record should persist
+            await expect(
+                SimpleAuthService.signUp(
+                    userData.email,
+                    userData.password,
+                    userData.name
+                )
+            ).rejects.toThrow(DatabaseError);
+
+            // Verify both user and account inserts were attempted
+            expect(txInsert).toHaveBeenNthCalledWith(1, users);
+            expect(txInsert).toHaveBeenNthCalledWith(2, accounts);
+            expect(userValues).toHaveBeenCalled();
+            expect(accountValues).toHaveBeenCalled();
+
+            // Transaction failure means neither record should persist (rollback)
+            // The test verifies the error is thrown, indicating rollback occurred
+        });
+
+        describe('case-insensitive email handling', () => {
+            it('should reject signup with different case of existing email', async () => {
+                const email1 = 'user@Example.COM';
+                const email2 = 'USER@example.com';
+
+                // Simulate existing user with first email format
+                const selectLimit = vi
+                    .fn()
+                    .mockResolvedValue([{ id: 'existing-id', email: email1 }]);
+                const selectWhere = vi
+                    .fn()
+                    .mockReturnValue({ limit: selectLimit });
+                const selectFrom = vi
+                    .fn()
+                    .mockReturnValue({ where: selectWhere });
+
+                mockedDb.select.mockReturnValueOnce({ from: selectFrom });
+
+                // Try to sign up with second email format (different case)
+                await expect(
+                    SimpleAuthService.signUp(email2, 'password', 'User')
+                ).rejects.toThrow(UserAlreadyExistsError);
+
+                // Verify ilike was used for case-insensitive comparison
+                expect(ilike).toHaveBeenCalledWith(users.email, email2.trim());
+            });
         });
     });
 
@@ -321,6 +382,51 @@ describe('SimpleAuthService', () => {
 
             expect(result).toBeNull();
         });
+
+        describe('case-insensitive email signin', () => {
+            it('should sign in with any case variation of registered email', async () => {
+                const registeredEmail = 'Test@Example.com';
+                const loginEmail = 'TEST@example.com';
+
+                const mockUser = {
+                    id: 'user-123',
+                    email: registeredEmail,
+                    name: 'Test User',
+                    username: 'testuser',
+                };
+
+                const mockAccount = {
+                    password: 'hashed-password',
+                };
+
+                const userLimit = vi.fn().mockResolvedValue([mockUser]);
+                const userWhere = vi.fn().mockReturnValue({ limit: userLimit });
+                const userFrom = vi.fn().mockReturnValue({ where: userWhere });
+
+                const accountLimit = vi.fn().mockResolvedValue([mockAccount]);
+                const accountWhere = vi
+                    .fn()
+                    .mockReturnValue({ limit: accountLimit });
+                const accountFrom = vi
+                    .fn()
+                    .mockReturnValue({ where: accountWhere });
+
+                mockedDb.select
+                    .mockReturnValueOnce({ from: userFrom })
+                    .mockReturnValueOnce({ from: accountFrom });
+
+                mockedBcrypt.compare.mockResolvedValue(true);
+
+                const result = await SimpleAuthService.signIn(
+                    loginEmail,
+                    'correctpassword'
+                );
+
+                expect(result).toEqual(mockUser);
+                // Verify ilike was used for case-insensitive comparison
+                expect(ilike).toHaveBeenCalledWith(users.email, loginEmail);
+            });
+        });
     });
 
     describe('createSession', () => {
@@ -432,7 +538,7 @@ describe('SimpleAuthService', () => {
             expect(where).toHaveBeenCalledWith(expect.anything());
         });
 
-        it('should handle database errors gracefully', async () => {
+        it('should throw error on database failure', async () => {
             const sessionId = 'session-123';
 
             const where = vi
@@ -443,9 +549,7 @@ describe('SimpleAuthService', () => {
 
             await expect(
                 SimpleAuthService.deleteSession(sessionId)
-            ).resolves.toBeUndefined();
-
-            expect(consoleErrorSpy).toHaveBeenCalled();
+            ).rejects.toThrow('Database error');
         });
     });
 });

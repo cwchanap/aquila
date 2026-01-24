@@ -33,8 +33,11 @@ vi.mock('bcryptjs', () => ({
 }));
 
 // Mock better-auth
+const betterAuthHandler = vi.hoisted(() => vi.fn());
+
 vi.mock('better-auth', () => ({
     betterAuth: vi.fn(() => ({
+        handler: betterAuthHandler,
         $Infer: {
             Session: {
                 user: {
@@ -185,7 +188,7 @@ beforeEach(() => {
     resetDbMock();
 });
 
-vi.mock('./drizzle/db.js', () => ({
+vi.mock('@/lib/drizzle/db.js', () => ({
     db: dbMockInstance,
 }));
 

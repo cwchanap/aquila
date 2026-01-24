@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 // Create mock repository with all methods
 const mockRepo = {
@@ -18,16 +18,35 @@ vi.mock('../../../lib/drizzle/repositories.js', () => ({
     UserRepository: UserRepositoryConstructor,
 }));
 
-import { GET, POST } from '../users';
-import {
-    GET as GetById,
-    PUT as UpdateById,
-    DELETE as DeleteById,
-} from '../users/[id]';
-import { GET as GetByEmail } from '../users/by-email/[email]';
-import { GET as GetByUsername } from '../users/by-username/[username]';
+vi.mock('@/lib/drizzle/repositories.js', () => ({
+    UserRepository: UserRepositoryConstructor,
+}));
+
+let GET: typeof import('../users').GET;
+let POST: typeof import('../users').POST;
+let GetById: typeof import('../users/[id]').GET;
+let UpdateById: typeof import('../users/[id]').PUT;
+let DeleteById: typeof import('../users/[id]').DELETE;
+let GetByEmail: typeof import('../users/by-email/[email]').GET;
+let GetByUsername: typeof import('../users/by-username/[username]').GET;
 
 describe('Users API - RESTful Design', () => {
+    beforeAll(async () => {
+        const usersModule = await import('../users');
+        GET = usersModule.GET;
+        POST = usersModule.POST;
+
+        const usersByIdModule = await import('../users/[id]');
+        GetById = usersByIdModule.GET;
+        UpdateById = usersByIdModule.PUT;
+        DeleteById = usersByIdModule.DELETE;
+
+        ({ GET: GetByEmail } = await import('../users/by-email/[email]'));
+        ({ GET: GetByUsername } = await import(
+            '../users/by-username/[username]'
+        ));
+    });
+
     beforeEach(() => {
         // Reset all mocks
         vi.clearAllMocks();

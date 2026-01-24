@@ -95,6 +95,9 @@ export class SimpleAuthService {
                 });
             });
         } catch (error) {
+            if (isEmailUniqueViolation(error)) {
+                throw new UserAlreadyExistsError();
+            }
             logger.error('User creation transaction failed', error, {
                 errorId: ERROR_IDS.AUTH_SIGNUP_FAILED,
                 email: trimmedEmail.substring(0, 3) + '***',
@@ -242,4 +245,32 @@ export class SimpleAuthService {
     static async deleteSession(sessionId: string): Promise<void> {
         await db.delete(sessions).where(eq(sessions.id, sessionId));
     }
+}
+
+const EMAIL_UNIQUE_CONSTRAINTS = new Set([
+    'users_email_unique',
+    'users_email_key',
+    'users_email_unique_idx',
+    'users_email_unique_index',
+]);
+
+function isEmailUniqueViolation(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+        return false;
+    }
+    const err = error as {
+        code?: string;
+        constraint?: string;
+        detail?: string;
+        message?: string;
+    };
+    if (err.code === '23505' && err.constraint) {
+        return EMAIL_UNIQUE_CONSTRAINTS.has(err.constraint);
+    }
+    const detail = err.detail ?? err.message ?? '';
+    return (
+        err.code === '23505' &&
+        typeof detail === 'string' &&
+        detail.includes('users_email')
+    );
 }

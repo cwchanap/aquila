@@ -7,7 +7,7 @@
  * - Logging layer includes error IDs for tracking
  */
 
-import type { ErrorId } from '../constants/errorIds.js';
+import { ERROR_IDS, type ErrorId } from '../constants/errorIds.js';
 
 /**
  * Base class for all application errors.
@@ -31,7 +31,7 @@ export class AppError extends Error {
  */
 export class UserAlreadyExistsError extends AppError {
     constructor(message: string = 'User with this email already exists') {
-        super(message, 'AUTH_USER_ALREADY_EXISTS', 409);
+        super(message, ERROR_IDS.AUTH_USER_ALREADY_EXISTS, 409);
     }
 }
 
@@ -40,7 +40,7 @@ export class UserAlreadyExistsError extends AppError {
  */
 export class SessionCreationError extends AppError {
     constructor(message: string = 'Failed to create user session') {
-        super(message, 'AUTH_SESSION_CREATE_FAILED', 500);
+        super(message, ERROR_IDS.AUTH_SESSION_CREATE_FAILED, 500);
     }
 }
 
@@ -49,7 +49,7 @@ export class SessionCreationError extends AppError {
  */
 export class SessionDeletionError extends AppError {
     constructor(message: string = 'Failed to delete user session') {
-        super(message, 'AUTH_SESSION_DELETE_FAILED', 500);
+        super(message, ERROR_IDS.AUTH_SESSION_DELETE_FAILED, 500);
     }
 }
 
@@ -59,7 +59,7 @@ export class SessionDeletionError extends AppError {
  */
 export class InvalidCredentialsError extends AppError {
     constructor(message: string = 'Invalid email or password') {
-        super(message, 'AUTH_INVALID_CREDENTIALS', 401);
+        super(message, ERROR_IDS.AUTH_INVALID_CREDENTIALS, 401);
     }
 }
 
@@ -68,7 +68,7 @@ export class InvalidCredentialsError extends AppError {
  */
 export class PasswordHashError extends AppError {
     constructor(message: string = 'Failed to hash password') {
-        super(message, 'AUTH_PASSWORD_HASH_FAILED', 500);
+        super(message, ERROR_IDS.AUTH_PASSWORD_HASH_FAILED, 500);
     }
 }
 
@@ -76,7 +76,7 @@ export class PasswordHashError extends AppError {
  * Thrown when a database operation fails.
  */
 export class DatabaseError extends AppError {
-    constructor(message: string, errorId: ErrorId = 'DB_QUERY_FAILED') {
+    constructor(message: string, errorId: ErrorId = ERROR_IDS.DB_QUERY_FAILED) {
         super(message, errorId, 500);
     }
 }

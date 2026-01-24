@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 // Set test environment variables to prevent real DB connection
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
@@ -33,6 +33,10 @@ vi.mock('../drizzle/db.js', () => ({
     db: mockedDb,
 }));
 
+vi.mock('@/lib/drizzle/db.js', () => ({
+    db: mockedDb,
+}));
+
 vi.mock('drizzle-orm', () => ({
     eq: vi.fn((...args: unknown[]) => ({ type: 'eq', args })),
     and: vi.fn((...args: unknown[]) => ({ type: 'and', args })),
@@ -44,13 +48,24 @@ vi.mock('bcryptjs', () => ({
     default: mockedBcrypt,
 }));
 
-// NOW import the modules
-import { ilike } from 'drizzle-orm';
-import { SimpleAuthService } from '../simple-auth';
-import { accounts, sessions, users } from '../drizzle/schema.js';
-import { UserAlreadyExistsError, DatabaseError } from '../errors.js';
+let ilike: typeof import('drizzle-orm').ilike;
+let SimpleAuthService: typeof import('../simple-auth').SimpleAuthService;
+let accounts: typeof import('../drizzle/schema.js').accounts;
+let sessions: typeof import('../drizzle/schema.js').sessions;
+let users: typeof import('../drizzle/schema.js').users;
+let UserAlreadyExistsError: typeof import('../errors.js').UserAlreadyExistsError;
+let DatabaseError: typeof import('../errors.js').DatabaseError;
 
 describe('SimpleAuthService', () => {
+    beforeAll(async () => {
+        ({ ilike } = await import('drizzle-orm'));
+        ({ SimpleAuthService } = await import('../simple-auth'));
+        ({ accounts, sessions, users } = await import('../drizzle/schema.js'));
+        ({ UserAlreadyExistsError, DatabaseError } = await import(
+            '../errors.js'
+        ));
+    });
+
     beforeEach(() => {
         vi.clearAllMocks();
     });

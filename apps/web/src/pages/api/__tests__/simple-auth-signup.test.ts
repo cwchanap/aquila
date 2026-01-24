@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+    describe,
+    it,
+    expect,
+    vi,
+    beforeEach,
+    afterEach,
+    beforeAll,
+} from 'vitest';
 import { UserAlreadyExistsError } from '../../../lib/errors.js';
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
 
-const signUp = vi.hoisted(() => vi.fn());
-const createSession = vi.hoisted(() => vi.fn());
 const mockDbSelect = vi.hoisted(() => vi.fn());
-
-vi.mock('../../../lib/simple-auth.js', () => ({
-    SimpleAuthService: {
-        signUp,
-        createSession,
-    },
-}));
 
 vi.mock('../../../lib/drizzle/db.js', () => ({
     db: {
@@ -27,10 +27,18 @@ vi.mock('../../../lib/logger.js', () => ({
     },
 }));
 
-import { POST } from '../simple-auth/signup';
+let POST: typeof import('../simple-auth/signup').POST;
+let signUp: ReturnType<typeof vi.spyOn>;
+let createSession: ReturnType<typeof vi.spyOn>;
 
 describe('Signup API', () => {
     let originalNodeEnv: string | undefined;
+
+    beforeAll(async () => {
+        signUp = vi.spyOn(SimpleAuthService, 'signUp');
+        createSession = vi.spyOn(SimpleAuthService, 'createSession');
+        ({ POST } = await import('../simple-auth/signup'));
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();

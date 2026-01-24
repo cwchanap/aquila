@@ -1,24 +1,26 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-vi.mock('../../../lib/simple-auth.js', () => ({
-    SimpleAuthService: {
-        signIn: vi.fn(),
-        createSession: vi.fn(),
-    },
-}));
-
+import {
+    describe,
+    it,
+    expect,
+    vi,
+    beforeEach,
+    afterEach,
+    beforeAll,
+} from 'vitest';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
-import { POST } from '../simple-auth/signin';
 
-const signIn = vi.mocked(SimpleAuthService.signIn) as unknown as ReturnType<
-    typeof vi.fn
->;
-const createSession = vi.mocked(
-    SimpleAuthService.createSession
-) as unknown as ReturnType<typeof vi.fn>;
+let POST: typeof import('../simple-auth/signin').POST;
+let signIn: ReturnType<typeof vi.spyOn>;
+let createSession: ReturnType<typeof vi.spyOn>;
 
 describe('Signin API', () => {
     let originalNodeEnv: string | undefined;
+
+    beforeAll(async () => {
+        signIn = vi.spyOn(SimpleAuthService, 'signIn');
+        createSession = vi.spyOn(SimpleAuthService, 'createSession');
+        ({ POST } = await import('../simple-auth/signin'));
+    });
 
     beforeEach(() => {
         signIn.mockReset();

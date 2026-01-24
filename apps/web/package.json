@@ -4,9 +4,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "tsx scripts/generate-zh-proxy-pages.ts && astro dev --port 5090",
+    "dev": "bun --cwd . scripts/generate-zh-proxy-pages.ts && astro dev --port 5090",
     "dev:db": "echo 'Start CockroachDB locally: cockroach start-single-node --insecure --listen-addr=localhost:26257 --http-addr=localhost:8080'",
-    "build": "tsx scripts/generate-zh-proxy-pages.ts && astro build",
+    "build": "bun --cwd . scripts/generate-zh-proxy-pages.ts && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint src",

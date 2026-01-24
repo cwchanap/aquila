@@ -1,17 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../../../lib/simple-auth.js', () => ({
-    SimpleAuthService: {
-        getSession: vi.fn(),
-    },
-}));
+import { SimpleAuthService } from '../../../lib/simple-auth.js';
 
-vi.mock('../../../lib/drizzle/db.js', () => ({
-    db: {
-        select: vi.fn(),
-        update: vi.fn(),
-    },
-}));
+let getSession: ReturnType<typeof vi.spyOn>;
+let POST: typeof import('../simple-auth/change-password').POST;
 
 vi.mock('bcryptjs', () => ({
     default: {
@@ -20,14 +12,9 @@ vi.mock('bcryptjs', () => ({
     },
 }));
 
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { db } from '../../../lib/drizzle/db.js';
 import bcrypt from 'bcryptjs';
-import { POST } from '../simple-auth/change-password';
 
-const getSession = vi.mocked(
-    SimpleAuthService.getSession
-) as unknown as ReturnType<typeof vi.fn>;
 const mockDb = db as unknown as {
     select: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
@@ -57,6 +44,11 @@ const setupUpdate = () => {
 };
 
 describe('Change Password API', () => {
+    beforeAll(async () => {
+        getSession = vi.spyOn(SimpleAuthService, 'getSession');
+        ({ POST } = await import('../simple-auth/change-password'));
+    });
+
     beforeEach(() => {
         getSession.mockReset();
         mockDb.select.mockReset();

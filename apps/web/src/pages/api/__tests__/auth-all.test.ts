@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import {
+    describe,
+    it,
+    expect,
+    vi,
+    beforeEach,
+    beforeAll,
+    afterAll,
+} from 'vitest';
 import { auth } from '../../../lib/auth.js';
 import { ALL } from '../auth/[...all]';
 
@@ -11,6 +19,10 @@ describe('Auth catch-all API', () => {
 
     beforeEach(() => {
         handler.mockReset();
+    });
+
+    afterAll(() => {
+        handler.mockRestore();
     });
 
     it('delegates to auth.handler', async () => {

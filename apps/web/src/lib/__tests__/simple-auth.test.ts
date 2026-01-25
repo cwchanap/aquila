@@ -41,14 +41,13 @@ vi.mock('drizzle-orm', () => ({
     eq: vi.fn((...args: unknown[]) => ({ type: 'eq', args })),
     and: vi.fn((...args: unknown[]) => ({ type: 'and', args })),
     gt: vi.fn((...args: unknown[]) => ({ type: 'gt', args })),
-    ilike: vi.fn((...args: unknown[]) => ({ type: 'ilike', args })),
 }));
 
 vi.mock('bcryptjs', () => ({
     default: mockedBcrypt,
 }));
 
-let ilike: typeof import('drizzle-orm').ilike;
+let eq: typeof import('drizzle-orm').eq;
 let SimpleAuthService: typeof import('../simple-auth').SimpleAuthService;
 let accounts: typeof import('../drizzle/schema.js').accounts;
 let sessions: typeof import('../drizzle/schema.js').sessions;
@@ -58,7 +57,7 @@ let DatabaseError: typeof import('../errors.js').DatabaseError;
 
 describe('SimpleAuthService', () => {
     beforeAll(async () => {
-        ({ ilike } = await import('drizzle-orm'));
+        ({ eq } = await import('drizzle-orm'));
         ({ SimpleAuthService } = await import('../simple-auth'));
         ({ accounts, sessions, users } = await import('../drizzle/schema.js'));
         ({ UserAlreadyExistsError, DatabaseError } = await import(
@@ -77,7 +76,7 @@ describe('SimpleAuthService', () => {
                 password: 'password123',
                 name: 'Test User',
             };
-            const trimmedEmail = 'MixedCase@Example.com';
+            const normalizedEmail = 'mixedcase@example.com';
 
             const selectLimit = vi.fn().mockResolvedValue([]);
             const selectWhere = vi.fn().mockReturnValue({ limit: selectLimit });
@@ -106,7 +105,7 @@ describe('SimpleAuthService', () => {
 
             expect(result).toEqual({
                 id: expect.any(String),
-                email: trimmedEmail,
+                email: normalizedEmail,
                 name: userData.name,
                 username: null,
             });
@@ -115,19 +114,19 @@ describe('SimpleAuthService', () => {
                 10
             );
             expect(selectFrom).toHaveBeenCalledWith(users);
-            expect(ilike).toHaveBeenCalledWith(users.email, trimmedEmail);
+            expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
             expect(txInsert).toHaveBeenNthCalledWith(1, users);
             expect(txInsert).toHaveBeenNthCalledWith(2, accounts);
             expect(userValues).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    email: trimmedEmail,
+                    email: normalizedEmail,
                     name: userData.name,
                     username: null,
                 })
             );
             expect(accountValues).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    accountId: trimmedEmail,
+                    accountId: normalizedEmail,
                     providerId: 'email',
                     password: 'hashed-password',
                 })
@@ -244,14 +243,16 @@ describe('SimpleAuthService', () => {
         });
 
         describe('case-insensitive email handling', () => {
-            it('should reject signup with different case of existing email', async () => {
-                const email1 = 'user@Example.COM';
-                const email2 = 'USER@example.com';
+            it('should normalize email to lowercase and reject duplicate', async () => {
+                const signupEmail = 'USER@example.com';
 
-                // Simulate existing user with first email format
+                // Simulate existing user with normalized (lowercase) email
+                const normalizedEmail = 'user@example.com';
                 const selectLimit = vi
                     .fn()
-                    .mockResolvedValue([{ id: 'existing-id', email: email1 }]);
+                    .mockResolvedValue([
+                        { id: 'existing-id', email: normalizedEmail },
+                    ]);
                 const selectWhere = vi
                     .fn()
                     .mockReturnValue({ limit: selectLimit });
@@ -261,13 +262,13 @@ describe('SimpleAuthService', () => {
 
                 mockedDb.select.mockReturnValueOnce({ from: selectFrom });
 
-                // Try to sign up with second email format (different case)
+                // Try to sign up with email in different case
                 await expect(
-                    SimpleAuthService.signUp(email2, 'password', 'User')
+                    SimpleAuthService.signUp(signupEmail, 'password', 'User')
                 ).rejects.toThrow(UserAlreadyExistsError);
 
-                // Verify ilike was used for case-insensitive comparison
-                expect(ilike).toHaveBeenCalledWith(users.email, email2.trim());
+                // Verify email was normalized to lowercase and eq was used for comparison
+                expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
             });
         });
     });
@@ -278,11 +279,11 @@ describe('SimpleAuthService', () => {
                 email: '  MixedCase@Example.com  ',
                 password: 'password123',
             };
-            const trimmedEmail = 'MixedCase@Example.com';
+            const normalizedEmail = 'mixedcase@example.com';
 
             const mockUser = {
                 id: 'user-123',
-                email: trimmedEmail,
+                email: normalizedEmail,
                 name: 'Test User',
                 username: 'testuser',
             };
@@ -316,7 +317,7 @@ describe('SimpleAuthService', () => {
 
             expect(result).toEqual(mockUser);
             expect(userFrom).toHaveBeenCalledWith(users);
-            expect(ilike).toHaveBeenCalledWith(users.email, trimmedEmail);
+            expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
             expect(accountFrom).toHaveBeenCalledWith(accounts);
             expect(mockedBcrypt.compare).toHaveBeenCalledWith(
                 credentials.password,
@@ -399,9 +400,10 @@ describe('SimpleAuthService', () => {
         });
 
         describe('case-insensitive email signin', () => {
-            it('should sign in with any case variation of registered email', async () => {
-                const registeredEmail = 'Test@Example.com';
+            it('should normalize email to lowercase and sign in successfully', async () => {
+                const registeredEmail = 'test@example.com';
                 const loginEmail = 'TEST@example.com';
+                const normalizedEmail = 'test@example.com';
 
                 const mockUser = {
                     id: 'user-123',
@@ -438,8 +440,8 @@ describe('SimpleAuthService', () => {
                 );
 
                 expect(result).toEqual(mockUser);
-                // Verify ilike was used for case-insensitive comparison
-                expect(ilike).toHaveBeenCalledWith(users.email, loginEmail);
+                // Verify email was normalized and eq was used for comparison
+                expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
             });
         });
     });

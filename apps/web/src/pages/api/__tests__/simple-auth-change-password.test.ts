@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 
-let getSession: ReturnType<typeof vi.spyOn>;
+let getSession: any;
 let POST: typeof import('../simple-auth/change-password').POST;
 
 vi.mock('bcryptjs', () => ({
@@ -12,9 +12,22 @@ vi.mock('bcryptjs', () => ({
     },
 }));
 
+// Mock the db module before importing it
+vi.mock('../../../lib/drizzle/db.js', () => {
+    const mockSelect = vi.fn();
+    const mockUpdate = vi.fn();
+    return {
+        db: {
+            select: mockSelect,
+            update: mockUpdate,
+        },
+    };
+});
+
 import { db } from '../../../lib/drizzle/db.js';
 import bcrypt from 'bcryptjs';
 
+// Now db is properly mocked with actual vi.fn() instances
 const mockDb = db as unknown as {
     select: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;

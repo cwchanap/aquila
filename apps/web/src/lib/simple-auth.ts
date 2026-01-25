@@ -8,7 +8,7 @@
 import bcrypt from 'bcryptjs';
 import { db } from './drizzle/db.js';
 import { users, accounts, sessions } from './drizzle/schema.js';
-import { eq, and, gt, ilike } from 'drizzle-orm';
+import { eq, and, gt } from 'drizzle-orm';
 import { logger } from './logger.js';
 import { ERROR_IDS } from '../constants/errorIds.js';
 import {
@@ -42,13 +42,14 @@ export class SimpleAuthService {
         password: string,
         name: string
     ): Promise<SimpleUser> {
-        const trimmedEmail = email.trim();
+        // Normalize email to lowercase for consistent storage and comparison
+        const normalizedEmail = email.trim().toLowerCase();
 
-        // Check if user already exists (case-insensitive email match using ilike)
+        // Check if user already exists (case-insensitive via normalization)
         const [existingUser] = await db
             .select()
             .from(users)
-            .where(ilike(users.email, trimmedEmail))
+            .where(eq(users.email, normalizedEmail))
             .limit(1);
 
         if (existingUser) {
@@ -62,7 +63,7 @@ export class SimpleAuthService {
         } catch (error) {
             logger.error('Password hashing failed during signup', error, {
                 errorId: ERROR_IDS.AUTH_PASSWORD_HASH_FAILED,
-                email: trimmedEmail.substring(0, 3) + '***',
+                email: normalizedEmail.substring(0, 3) + '***',
             });
             throw new PasswordHashError();
         }
@@ -73,7 +74,7 @@ export class SimpleAuthService {
             await db.transaction(async tx => {
                 await tx.insert(users).values({
                     id: userId,
-                    email: trimmedEmail,
+                    email: normalizedEmail,
                     name,
                     username: null,
                     image: null,
@@ -83,7 +84,7 @@ export class SimpleAuthService {
                 await tx.insert(accounts).values({
                     id: crypto.randomUUID(),
                     userId,
-                    accountId: trimmedEmail,
+                    accountId: normalizedEmail,
                     providerId: 'email',
                     password: hashedPassword,
                     accessToken: null,
@@ -100,7 +101,7 @@ export class SimpleAuthService {
             }
             logger.error('User creation transaction failed', error, {
                 errorId: ERROR_IDS.AUTH_SIGNUP_FAILED,
-                email: trimmedEmail.substring(0, 3) + '***',
+                email: normalizedEmail.substring(0, 3) + '***',
                 userId,
             });
             throw new DatabaseError('Failed to create user account');
@@ -108,7 +109,7 @@ export class SimpleAuthService {
 
         return {
             id: userId,
-            email: trimmedEmail,
+            email: normalizedEmail,
             name,
             username: null,
         };
@@ -126,13 +127,14 @@ export class SimpleAuthService {
         email: string,
         password: string
     ): Promise<SimpleUser | null> {
-        const trimmedEmail = email.trim();
+        // Normalize email to lowercase for consistent comparison
+        const normalizedEmail = email.trim().toLowerCase();
 
-        // Find user by email (case-insensitive match)
+        // Find user by email (case-insensitive via normalization)
         const [user] = await db
             .select()
             .from(users)
-            .where(ilike(users.email, trimmedEmail))
+            .where(eq(users.email, normalizedEmail))
             .limit(1);
 
         if (!user) {

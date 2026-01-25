@@ -5,29 +5,31 @@ import { SimpleAuthService } from '../../../lib/simple-auth.js';
 let getSession: any;
 let POST: typeof import('../simple-auth/change-password').POST;
 
+// Create mock functions before vi.mock using vi.hoisted
+const mockDbSelect = vi.hoisted(() => vi.fn());
+const mockDbUpdate = vi.hoisted(() => vi.fn());
+const mockBcryptCompare = vi.hoisted(() => vi.fn());
+const mockBcryptHash = vi.hoisted(() => vi.fn());
+
 vi.mock('bcryptjs', () => ({
     default: {
-        compare: vi.fn(),
-        hash: vi.fn(),
+        compare: mockBcryptCompare,
+        hash: mockBcryptHash,
     },
 }));
 
-// Mock the db module before importing it
-vi.mock('../../../lib/drizzle/db.js', () => {
-    const mockSelect = vi.fn();
-    const mockUpdate = vi.fn();
-    return {
-        db: {
-            select: mockSelect,
-            update: mockUpdate,
-        },
-    };
-});
+// Mock the db module with properly referenced vi.fn() instances
+vi.mock('../../../lib/drizzle/db.js', () => ({
+    db: {
+        select: mockDbSelect,
+        update: mockDbUpdate,
+    },
+}));
 
 import { db } from '../../../lib/drizzle/db.js';
 import bcrypt from 'bcryptjs';
 
-// Now db is properly mocked with actual vi.fn() instances
+// Type cast for clarity - these are the actual vi.fn() mocks
 const mockDb = db as unknown as {
     select: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
@@ -50,7 +52,7 @@ const setupAccountSelect = (account?: { password: string | null }) => {
 };
 
 const setupUpdate = () => {
-    const where = vi.fn().mockResolvedValue(undefined);
+    const where = vi.fn().mockResolvedValue([]);
     const set = vi.fn().mockReturnValue({ where });
     mockDb.update.mockReturnValue({ set });
     return { set, where };
@@ -68,6 +70,17 @@ describe('Change Password API', () => {
         mockDb.update.mockReset();
         mockBcrypt.compare.mockReset();
         mockBcrypt.hash.mockReset();
+
+        // Set up default mock chain for db.select() calls
+        const limit = vi.fn().mockResolvedValue([]);
+        const where = vi.fn().mockReturnValue({ limit });
+        const from = vi.fn().mockReturnValue({ where });
+        mockDb.select.mockReturnValue({ from });
+
+        // Set up default mock chain for db.update() calls
+        const updateWhere = vi.fn().mockResolvedValue([]);
+        const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+        mockDb.update.mockReturnValue({ set: updateSet });
     });
 
     it('returns 401 when no session cookie is provided', async () => {

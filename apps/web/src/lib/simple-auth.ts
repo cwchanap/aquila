@@ -8,7 +8,7 @@
 import bcrypt from 'bcryptjs';
 import { db } from './drizzle/db.js';
 import { users, accounts, sessions } from './drizzle/schema.js';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, sql } from 'drizzle-orm';
 import { logger } from './logger.js';
 import { ERROR_IDS } from '../constants/errorIds.js';
 import {
@@ -45,11 +45,12 @@ export class SimpleAuthService {
         // Normalize email to lowercase for consistent storage and comparison
         const normalizedEmail = email.trim().toLowerCase();
 
-        // Check if user already exists (case-insensitive via normalization)
+        // Check if user already exists using case-insensitive lookup
+        // to support existing users with mixed-case emails
         const [existingUser] = await db
             .select()
             .from(users)
-            .where(eq(users.email, normalizedEmail))
+            .where(sql`lower(${users.email}) = ${normalizedEmail}`)
             .limit(1);
 
         if (existingUser) {
@@ -130,11 +131,12 @@ export class SimpleAuthService {
         // Normalize email to lowercase for consistent comparison
         const normalizedEmail = email.trim().toLowerCase();
 
-        // Find user by email (case-insensitive via normalization)
+        // Find user by email using case-insensitive lookup to support existing users
+        // with mixed-case emails from before normalization was implemented
         const [user] = await db
             .select()
             .from(users)
-            .where(eq(users.email, normalizedEmail))
+            .where(sql`lower(${users.email}) = ${normalizedEmail}`)
             .limit(1);
 
         if (!user) {

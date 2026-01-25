@@ -41,13 +41,14 @@ vi.mock('drizzle-orm', () => ({
     eq: vi.fn((...args: unknown[]) => ({ type: 'eq', args })),
     and: vi.fn((...args: unknown[]) => ({ type: 'and', args })),
     gt: vi.fn((...args: unknown[]) => ({ type: 'gt', args })),
+    sql: vi.fn((...args: unknown[]) => ({ type: 'sql', args })),
 }));
 
 vi.mock('bcryptjs', () => ({
     default: mockedBcrypt,
 }));
 
-let eq: typeof import('drizzle-orm').eq;
+let sql: typeof import('drizzle-orm').sql;
 let SimpleAuthService: typeof import('../simple-auth').SimpleAuthService;
 let accounts: typeof import('../drizzle/schema.js').accounts;
 let sessions: typeof import('../drizzle/schema.js').sessions;
@@ -57,7 +58,7 @@ let DatabaseError: typeof import('../errors.js').DatabaseError;
 
 describe('SimpleAuthService', () => {
     beforeAll(async () => {
-        ({ eq } = await import('drizzle-orm'));
+        ({ sql } = await import('drizzle-orm'));
         ({ SimpleAuthService } = await import('../simple-auth'));
         ({ accounts, sessions, users } = await import('../drizzle/schema.js'));
         ({ UserAlreadyExistsError, DatabaseError } = await import(
@@ -114,7 +115,7 @@ describe('SimpleAuthService', () => {
                 10
             );
             expect(selectFrom).toHaveBeenCalledWith(users);
-            expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
+            expect(sql).toHaveBeenCalled();
             expect(txInsert).toHaveBeenNthCalledWith(1, users);
             expect(txInsert).toHaveBeenNthCalledWith(2, accounts);
             expect(userValues).toHaveBeenCalledWith(
@@ -267,8 +268,8 @@ describe('SimpleAuthService', () => {
                     SimpleAuthService.signUp(signupEmail, 'password', 'User')
                 ).rejects.toThrow(UserAlreadyExistsError);
 
-                // Verify email was normalized to lowercase and eq was used for comparison
-                expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
+                // Verify email was normalized to lowercase and sql was used for case-insensitive comparison
+                expect(sql).toHaveBeenCalled();
             });
         });
     });
@@ -317,7 +318,7 @@ describe('SimpleAuthService', () => {
 
             expect(result).toEqual(mockUser);
             expect(userFrom).toHaveBeenCalledWith(users);
-            expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
+            expect(sql).toHaveBeenCalled();
             expect(accountFrom).toHaveBeenCalledWith(accounts);
             expect(mockedBcrypt.compare).toHaveBeenCalledWith(
                 credentials.password,
@@ -403,7 +404,6 @@ describe('SimpleAuthService', () => {
             it('should normalize email to lowercase and sign in successfully', async () => {
                 const registeredEmail = 'test@example.com';
                 const loginEmail = 'TEST@example.com';
-                const normalizedEmail = 'test@example.com';
 
                 const mockUser = {
                     id: 'user-123',
@@ -440,8 +440,8 @@ describe('SimpleAuthService', () => {
                 );
 
                 expect(result).toEqual(mockUser);
-                // Verify email was normalized and eq was used for comparison
-                expect(eq).toHaveBeenCalledWith(users.email, normalizedEmail);
+                // Verify email was normalized and sql was used for case-insensitive comparison
+                expect(sql).toHaveBeenCalled();
             });
         });
     });

@@ -1,6 +1,11 @@
 import type { ChoiceMap, DialogueMap } from '../../types';
 import { trainAdventureEnChoices, trainAdventureEnDialogue } from './en';
 import { trainAdventureZhChoices, trainAdventureZhDialogue } from './zh';
+export { trainAdventureFlow } from './flow';
+export type {
+    TrainAdventureFlowConfig,
+    TrainAdventureFlowNodeDefinition,
+} from './flow';
 
 export type TrainAdventureLocale = 'en' | 'zh';
 

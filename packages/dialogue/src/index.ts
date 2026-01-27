@@ -7,7 +7,7 @@ export type {
     ChoiceOptionDefinition,
     ChoiceMap,
 } from './types';
-export { getStoryContent } from './stories';
-export type { StoryLoaderResult } from './stories';
+export { getStoryContent, getStoryFlow } from './stories';
+export type { StoryLoaderResult, StoryFlowConfig } from './stories';
 export { translations, getTranslations } from './translations';
 export type { Locale } from './translations';

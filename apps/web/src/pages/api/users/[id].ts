@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { UserRepository as UserRepositoryClass } from '../../../lib/drizzle/repositories.js';
+import { logger } from '../../../lib/logger.js';
+import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
 
 /**
  * GET /api/users/[id]
@@ -13,34 +15,21 @@ export const GET: APIRoute = async ({ params }) => {
 
         // Validate that id is a non-empty string
         if (!trimmedId) {
-            return new Response(JSON.stringify({ error: 'Invalid User ID' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('Invalid User ID', 400);
         }
 
         const user = await userRepository.findById(trimmedId);
 
         if (!user) {
-            return new Response(JSON.stringify({ error: 'User not found' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('User not found', 404);
         }
 
-        return new Response(JSON.stringify(user), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse(user);
     } catch (error) {
-        console.error('Error fetching user:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Error fetching user', error, {
+            endpoint: '/api/users/[id]',
+        });
+        return errorResponse('Internal server error', 500);
     }
 };
 
@@ -56,10 +45,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
         // Validate that id is a non-empty string
         if (!trimmedId) {
-            return new Response(JSON.stringify({ error: 'Invalid User ID' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('Invalid User ID', 400);
         }
 
         // Parse request body with validation
@@ -67,13 +53,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
         try {
             body = await request.json();
         } catch {
-            return new Response(
-                JSON.stringify({ error: 'Invalid JSON in request body' }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('Invalid JSON in request body', 400);
         }
 
         const { email, username } = body;
@@ -88,37 +68,21 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
         // Reject empty updates to avoid unnecessary database operations
         if (Object.keys(updates).length === 0) {
-            return new Response(
-                JSON.stringify({ error: 'No valid fields to update' }),
-                {
-                    status: 422,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('No valid fields to update', 422);
         }
 
         const user = await userRepository.update(trimmedId, updates);
 
         if (!user) {
-            return new Response(JSON.stringify({ error: 'User not found' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('User not found', 404);
         }
 
-        return new Response(JSON.stringify(user), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse(user);
     } catch (error) {
-        console.error('Error updating user:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Error updating user', error, {
+            endpoint: '/api/users/[id]',
+        });
+        return errorResponse('Internal server error', 500);
     }
 };
 
@@ -134,36 +98,20 @@ export const DELETE: APIRoute = async ({ params }) => {
 
         // Validate that id is a non-empty string
         if (!trimmedId) {
-            return new Response(JSON.stringify({ error: 'Invalid User ID' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('Invalid User ID', 400);
         }
 
         const deletedUser = await userRepository.delete(trimmedId);
 
         if (!deletedUser) {
-            return new Response(JSON.stringify({ error: 'User not found' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('User not found', 404);
         }
 
-        return new Response(
-            JSON.stringify({ message: 'User deleted successfully' }),
-            {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        return jsonResponse({ message: 'User deleted successfully' });
     } catch (error) {
-        console.error('Error deleting user:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Error deleting user', error, {
+            endpoint: '/api/users/[id]',
+        });
+        return errorResponse('Internal server error', 500);
     }
 };

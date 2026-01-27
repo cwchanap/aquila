@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { getTranslations, type Locale } from '@aquila/dialogue';
 import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/repositories.js';
+import { logger } from '../../lib/logger.js';
+import { jsonResponse, errorResponse } from '../../lib/api-utils.js';
 import {
     resolveValidationMessage,
     validateEmail,
@@ -35,19 +37,10 @@ export const GET: APIRoute = async ({ url }) => {
 
         const users = await userRepository.list(limit, offset);
 
-        return new Response(JSON.stringify(users), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse(users);
     } catch (error) {
-        console.error('Error listing users:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Error listing users', error, { endpoint: '/api/users' });
+        return errorResponse('Internal server error', 500);
     }
 };
 
@@ -76,33 +69,17 @@ export const POST: APIRoute = async ({ request }) => {
         // Validate inputs
         const emailError = validateEmail(email);
         if (emailError) {
-            return new Response(
-                JSON.stringify({
-                    error: resolveValidationMessage(
-                        validationTranslations,
-                        emailError
-                    ),
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
+            return errorResponse(
+                resolveValidationMessage(validationTranslations, emailError),
+                400
             );
         }
 
         const usernameError = validateUsername(username);
         if (usernameError) {
-            return new Response(
-                JSON.stringify({
-                    error: resolveValidationMessage(
-                        validationTranslations,
-                        usernameError
-                    ),
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
+            return errorResponse(
+                resolveValidationMessage(validationTranslations, usernameError),
+                400
             );
         }
 
@@ -114,18 +91,9 @@ export const POST: APIRoute = async ({ request }) => {
             username: trimmedUsername,
         });
 
-        return new Response(JSON.stringify(user), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse(user, 201);
     } catch (error) {
-        console.error('Error creating user:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Error creating user', error, { endpoint: '/api/users' });
+        return errorResponse('Internal server error', 500);
     }
 };

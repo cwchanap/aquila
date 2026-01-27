@@ -1,41 +1,23 @@
 import type { APIRoute } from 'astro';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
 import { ChapterRepository } from '@/lib/drizzle/repositories.js';
+import { logger } from '@/lib/logger.js';
+import {
+    requireSession,
+    jsonResponse,
+    errorResponse,
+} from '@/lib/api-utils.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
-
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        const { error } = await requireSession(request);
+        if (error) return error;
 
         const { storyId, title, description, order } = await request.json();
 
         if (!storyId || !title || order === undefined) {
-            return new Response(
-                JSON.stringify({
-                    error: 'Story ID, title, and order are required',
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
+            return errorResponse(
+                'Story ID, title, and order are required',
+                400
             );
         }
 
@@ -47,18 +29,11 @@ export const POST: APIRoute = async ({ request }) => {
             order: String(order),
         });
 
-        return new Response(JSON.stringify(chapter), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse(chapter, 201);
     } catch (error) {
-        console.error('Create chapter error:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Create chapter error', error, {
+            endpoint: '/api/chapters',
+        });
+        return errorResponse('Internal server error', 500);
     }
 };

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { CharacterDirectory } from './characters/CharacterDirectory';
 import { SceneDirectory, type SceneId } from './SceneDirectory';
 import type { DialogueEntry, DialogueMap } from './dialogue/types';
+import { GameConfig } from './GameConfig';
 
 export class BaseScene extends Phaser.Scene {
     protected dialogue: DialogueMap = {};
@@ -60,7 +61,7 @@ export class BaseScene extends Phaser.Scene {
             const sKey = this.getSectionKey();
             const freq = SceneDirectory.getAmbientFrequency(sKey);
             this.ambientOsc.frequency.value = freq;
-            this.ambientGain.gain.value = 0.004; // very quiet
+            this.ambientGain.gain.value = GameConfig.audio.defaultAmbientGain;
             this.ambientOsc.connect(this.ambientGain);
             this.ambientGain.connect(ctx.destination);
             this.ambientOsc.start();
@@ -208,9 +209,9 @@ export class BaseScene extends Phaser.Scene {
     updateDialogueUI() {
         const width = this.scale.width;
         const height = this.scale.height;
-        const boxHeight = 180; // Increased height for better visibility
-        const padding = 24;
-        const bottomMargin = 20; // Minimal margin to align dialogue box to bottom
+        const boxHeight = GameConfig.ui.dialogueBoxHeight;
+        const padding = GameConfig.ui.dialoguePadding;
+        const bottomMargin = GameConfig.ui.dialogueBottomMargin;
 
         // Clear existing UI elements if they exist
         if (this.dialogueBox) this.dialogueBox.destroy();
@@ -378,12 +379,12 @@ export class BaseScene extends Phaser.Scene {
             const o = ctx.createOscillator();
             const g = ctx.createGain();
             o.type = 'sine';
-            o.frequency.value = 880;
-            g.gain.value = 0.02;
+            o.frequency.value = GameConfig.audio.beepFrequency;
+            g.gain.value = GameConfig.audio.beepGain;
             o.connect(g);
             g.connect(ctx.destination);
             o.start();
-            o.stop(ctx.currentTime + 0.05);
+            o.stop(ctx.currentTime + GameConfig.audio.beepDuration);
         } catch {
             // no-op if audio not available
         }

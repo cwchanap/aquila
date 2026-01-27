@@ -1,29 +1,24 @@
 import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { logger } from '../../../lib/logger.js';
+import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
 
 export const GET: APIRoute = async ({ cookies }) => {
     try {
         const sessionId = cookies.get('session')?.value;
 
         if (!sessionId) {
-            return new Response(JSON.stringify({ user: null }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return jsonResponse({ user: null });
         }
 
         const session = await SimpleAuthService.getSession(sessionId);
 
-        return new Response(JSON.stringify({ user: session?.user || null }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ user: session?.user || null });
     } catch (error) {
-        console.error('Session error:', error);
-        return new Response(JSON.stringify({ user: null }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
+        logger.error('Session error', error, {
+            endpoint: '/api/simple-auth/session',
         });
+        return jsonResponse({ user: null });
     }
 };
 
@@ -38,18 +33,11 @@ export const POST: APIRoute = async ({ cookies }) => {
         // Clear session cookie
         cookies.delete('session', { path: '/' });
 
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ success: true });
     } catch (error) {
-        console.error('Logout error:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Logout error', error, {
+            endpoint: '/api/simple-auth/session',
+        });
+        return errorResponse('Internal server error', 500);
     }
 };

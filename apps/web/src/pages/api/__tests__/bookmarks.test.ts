@@ -242,7 +242,7 @@ describe('Bookmarks API', () => {
             expect(mockRepo.delete).toHaveBeenCalledWith('bookmark-1');
         });
 
-        it('returns correlation id on errors', async () => {
+        it('returns 500 on internal errors', async () => {
             getSession.mockResolvedValue({ user: { id: 'user-1' } });
             mockRepo.findById.mockRejectedValue(new Error('boom'));
 
@@ -252,13 +252,9 @@ describe('Bookmarks API', () => {
             } as any);
 
             expect(response.status).toBe(500);
-            const body = await response.json();
-            expect(body).toEqual(
-                expect.objectContaining({
-                    error: 'Failed to delete bookmark',
-                })
-            );
-            expect(typeof body.correlationId).toBe('string');
+            await expect(response.json()).resolves.toEqual({
+                error: 'Failed to delete bookmark',
+            });
         });
     });
 });

@@ -4,27 +4,20 @@ import { db } from '../../../lib/drizzle/db.js';
 import { accounts } from '../../../lib/drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { logger } from '../../../lib/logger.js';
+import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         // Get session
         const sessionId = cookies.get('session')?.value;
         if (!sessionId) {
-            return new Response(
-                JSON.stringify({ error: 'Not authenticated' }),
-                {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('Not authenticated', 401);
         }
 
         const session = await SimpleAuthService.getSession(sessionId);
         if (!session) {
-            return new Response(JSON.stringify({ error: 'Invalid session' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('Invalid session', 401);
         }
 
         // Parse form data
@@ -35,34 +28,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
         // Validate input
         if (!currentPassword || !newPassword || !confirmPassword) {
-            return new Response(
-                JSON.stringify({ error: 'All fields are required' }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('All fields are required', 400);
         }
 
         if (newPassword !== confirmPassword) {
-            return new Response(
-                JSON.stringify({ error: 'New passwords do not match' }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('New passwords do not match', 400);
         }
 
         if (newPassword.length < 6) {
-            return new Response(
-                JSON.stringify({
-                    error: 'New password must be at least 6 characters',
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
+            return errorResponse(
+                'New password must be at least 6 characters',
+                400
             );
         }
 
@@ -79,13 +55,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             .limit(1);
 
         if (!account || !account.password) {
-            return new Response(
-                JSON.stringify({ error: 'Account not found' }),
-                {
-                    status: 404,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('Account not found', 404);
         }
 
         const isCurrentPasswordValid = await bcrypt.compare(
@@ -93,13 +63,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             account.password
         );
         if (!isCurrentPasswordValid) {
-            return new Response(
-                JSON.stringify({ error: 'Current password is incorrect' }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            );
+            return errorResponse('Current password is incorrect', 400);
         }
 
         // Hash new password
@@ -119,24 +83,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                 )
             );
 
-        return new Response(
-            JSON.stringify({
-                success: true,
-                message: 'Password updated successfully',
-            }),
-            {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        return jsonResponse({
+            success: true,
+            message: 'Password updated successfully',
+        });
     } catch (error) {
-        console.error('Change password error:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Change password error', error, {
+            endpoint: '/api/simple-auth/change-password',
+        });
+        return errorResponse('Internal server error', 500);
     }
 };

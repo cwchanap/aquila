@@ -28,10 +28,19 @@ export async function getSessionFromRequest(
     request: Request
 ): Promise<SimpleSession | null> {
     const cookieHeader = request.headers.get('cookie') || '';
-    const sessionId = cookieHeader
+    // Normalize cookie string by replacing multiple spaces with single space
+    const cookieStr = cookieHeader
         .split(';')
-        .find(c => c.trim().startsWith('session='))
-        ?.split('=')[1];
+        .map(c => c.trim().replace(/\s+/g, ' '))
+        .find(c => c.startsWith('session='));
+
+    if (!cookieStr) return null;
+
+    // Find the first '=' to get the key-value boundary, then extract the full value
+    const firstEqIndex = cookieStr.indexOf('=');
+    if (firstEqIndex === -1) return null;
+
+    const sessionId = decodeURIComponent(cookieStr.substring(firstEqIndex + 1));
 
     if (!sessionId) return null;
     return SimpleAuthService.getSession(sessionId);

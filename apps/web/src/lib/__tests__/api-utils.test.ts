@@ -1,18 +1,30 @@
 /**
  * Unit tests for api-utils.ts
  *
- * Note: Tests for getSessionFromRequest that require mocking SimpleAuthService
- * are skipped due to module caching issues with vitest in turbo mode.
- * The cookie parsing logic has been verified to work correctly through manual testing.
+ * Note: Tests for getSessionFromRequest mock SimpleAuthService to avoid DB access.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+vi.mock('../simple-auth.js', () => ({
+    SimpleAuthService: {
+        getSession: vi.fn(),
+    },
+}));
+
+import { SimpleAuthService } from '../simple-auth.js';
 import {
     getSessionFromRequest,
     jsonResponse,
     errorResponse,
 } from '../api-utils';
 
+const getSession = vi.mocked(
+    SimpleAuthService.getSession
+) as unknown as ReturnType<typeof vi.fn>;
+
 describe('api-utils', () => {
+    beforeEach(() => {
+        getSession.mockReset();
+    });
     describe('jsonResponse', () => {
         it('should create a JSON response with default status 200', async () => {
             const data = { message: 'test' };
@@ -53,6 +65,7 @@ describe('api-utils', () => {
 
     describe('getSessionFromRequest - cookie parsing edge cases', () => {
         it('should return null when no session cookie is present', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {},
             });
@@ -63,6 +76,7 @@ describe('api-utils', () => {
         });
 
         it('should return null when session cookie has empty value', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'session=',
@@ -75,6 +89,7 @@ describe('api-utils', () => {
         });
 
         it('should return null when session cookie has no equals sign', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'session',
@@ -87,6 +102,7 @@ describe('api-utils', () => {
         });
 
         it('should return null when cookie header is not a session cookie', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'other=value',
@@ -99,6 +115,7 @@ describe('api-utils', () => {
         });
 
         it('should handle malformed cookie string', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'invalid-cookie-format',
@@ -111,6 +128,7 @@ describe('api-utils', () => {
         });
 
         it('should handle cookie values containing equals sign', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'session=abc=123=xyz',
@@ -127,6 +145,7 @@ describe('api-utils', () => {
         });
 
         it('should handle URL-encoded cookie values', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'session=hello%20world%21',
@@ -143,6 +162,7 @@ describe('api-utils', () => {
         });
 
         it('should handle cookie with multiple spaces', async () => {
+            getSession.mockResolvedValue(null);
             const request = new Request('http://localhost', {
                 headers: {
                     Cookie: 'other=foo;  session=test123;  another=bar',

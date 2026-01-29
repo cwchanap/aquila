@@ -1,6 +1,7 @@
 /**
  * API utility functions for consistent response handling and session validation.
  */
+import { logger } from './logger.js';
 import { SimpleAuthService, type SimpleSession } from './simple-auth.js';
 
 /**
@@ -40,7 +41,16 @@ export async function getSessionFromRequest(
     const firstEqIndex = cookieStr.indexOf('=');
     if (firstEqIndex === -1) return null;
 
-    const sessionId = decodeURIComponent(cookieStr.substring(firstEqIndex + 1));
+    let sessionId: string;
+    try {
+        sessionId = decodeURIComponent(cookieStr.substring(firstEqIndex + 1));
+    } catch (error) {
+        if (error instanceof URIError) {
+            logger.warn('Malformed session cookie', { cookieName: 'session' });
+            return null;
+        }
+        throw error;
+    }
 
     if (!sessionId) return null;
     return SimpleAuthService.getSession(sessionId);

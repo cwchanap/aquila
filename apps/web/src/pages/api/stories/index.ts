@@ -6,9 +6,10 @@ import {
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { storyStatusEnum } from '@/lib/drizzle/schema.js';
 
-const VALID_STATUSES = ['draft', 'published', 'archived'] as const;
-type StoryStatus = (typeof VALID_STATUSES)[number];
+const VALID_STATUSES = storyStatusEnum.enumValues;
+type StoryStatus = (typeof storyStatusEnum.enumValues)[number];
 
 export const GET: APIRoute = async ({ request }) => {
     try {

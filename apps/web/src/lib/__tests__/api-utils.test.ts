@@ -21,6 +21,22 @@ const getSession = vi.mocked(
     SimpleAuthService.getSession
 ) as unknown as ReturnType<typeof vi.fn>;
 
+/**
+ * Helper to create a mock request with a cookie header.
+ * Cookie is a restricted header that cannot be set directly on Request,
+ * so we mock the headers.get method to return the cookie value.
+ */
+function createMockRequest(cookieValue: string | null): Request {
+    const request = new Request('http://localhost');
+    vi.spyOn(request.headers, 'get').mockImplementation((key: string) => {
+        if (key.toLowerCase() === 'cookie') {
+            return cookieValue;
+        }
+        return null;
+    });
+    return request;
+}
+
 describe('api-utils', () => {
     beforeEach(() => {
         getSession.mockReset();
@@ -66,9 +82,7 @@ describe('api-utils', () => {
     describe('getSessionFromRequest - cookie parsing edge cases', () => {
         it('should return null when no session cookie is present', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {},
-            });
+            const request = createMockRequest(null);
 
             const result = await getSessionFromRequest(request);
 
@@ -77,11 +91,7 @@ describe('api-utils', () => {
 
         it('should return null when session cookie has empty value', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'session=',
-                },
-            });
+            const request = createMockRequest('session=');
 
             const result = await getSessionFromRequest(request);
 
@@ -90,11 +100,7 @@ describe('api-utils', () => {
 
         it('should return null when session cookie has no equals sign', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'session',
-                },
-            });
+            const request = createMockRequest('session');
 
             const result = await getSessionFromRequest(request);
 
@@ -103,11 +109,7 @@ describe('api-utils', () => {
 
         it('should return null when cookie header is not a session cookie', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'other=value',
-                },
-            });
+            const request = createMockRequest('other=value');
 
             const result = await getSessionFromRequest(request);
 
@@ -116,11 +118,7 @@ describe('api-utils', () => {
 
         it('should handle malformed cookie string', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'invalid-cookie-format',
-                },
-            });
+            const request = createMockRequest('invalid-cookie-format');
 
             const result = await getSessionFromRequest(request);
 
@@ -129,11 +127,7 @@ describe('api-utils', () => {
 
         it('should handle cookie values containing equals sign', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'session=abc=123=xyz',
-                },
-            });
+            const request = createMockRequest('session=abc=123=xyz');
 
             const result = await getSessionFromRequest(request);
 
@@ -142,15 +136,12 @@ describe('api-utils', () => {
             // because SimpleAuthService.getSession will not find a matching session,
             // but the cookie parsing should not throw an error.
             expect(result).toBeNull();
+            expect(getSession).toHaveBeenCalledWith('abc=123=xyz');
         });
 
         it('should handle URL-encoded cookie values', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'session=hello%20world%21',
-                },
-            });
+            const request = createMockRequest('session=hello%20world%21');
 
             const result = await getSessionFromRequest(request);
 
@@ -159,15 +150,14 @@ describe('api-utils', () => {
             // SimpleAuthService.getSession will not find a matching session,
             // but the cookie parsing should not throw an error.
             expect(result).toBeNull();
+            expect(getSession).toHaveBeenCalledWith('hello world!');
         });
 
         it('should handle cookie with multiple spaces', async () => {
             getSession.mockResolvedValue(null);
-            const request = new Request('http://localhost', {
-                headers: {
-                    Cookie: 'other=foo;  session=test123;  another=bar',
-                },
-            });
+            const request = createMockRequest(
+                'other=foo;  session=test123;  another=bar'
+            );
 
             const result = await getSessionFromRequest(request);
 
@@ -177,6 +167,7 @@ describe('api-utils', () => {
             // SimpleAuthService.getSession will not find a matching session,
             // but the cookie parsing should not throw an error.
             expect(result).toBeNull();
+            expect(getSession).toHaveBeenCalledWith('test123');
         });
     });
 });

@@ -3,22 +3,19 @@
  * Defines the narrative structure and branching paths.
  */
 
-// Note: We define the flow config structure here without importing from @aquila/game
-// to avoid circular dependencies. The structure matches FlowConfig from SceneFlow.ts.
+// Note: These aliases intentionally mirror the FlowConfig/FlowNodeDefinition
+// types used by SceneFlow in @aquila/game to avoid schema drift.
+import type { FlowConfig, FlowNodeDefinition } from '../../flow-types';
 
-export interface TrainAdventureFlowNodeDefinition {
-    kind: 'scene' | 'choice';
-    id: string;
-    sceneId?: string;
-    choiceId?: string;
-    next?: string | null;
-    nextByOption?: Record<string, string>;
-}
-
-export interface TrainAdventureFlowConfig {
-    start: string;
-    nodes: TrainAdventureFlowNodeDefinition[];
-}
+export type TrainAdventureSceneId =
+    | 'scene_1'
+    | 'scene_2'
+    | 'scene_3'
+    | 'scene_4a'
+    | 'scene_4b';
+export type TrainAdventureFlowNodeDefinition =
+    FlowNodeDefinition<TrainAdventureSceneId>;
+export type TrainAdventureFlowConfig = FlowConfig<TrainAdventureSceneId>;
 
 /**
  * The scene flow configuration for Train Adventure.

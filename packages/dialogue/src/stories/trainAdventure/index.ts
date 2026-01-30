@@ -5,6 +5,7 @@ export { trainAdventureFlow } from './flow';
 export type {
     TrainAdventureFlowConfig,
     TrainAdventureFlowNodeDefinition,
+    TrainAdventureSceneId,
 } from './flow';
 
 export type TrainAdventureLocale = 'en' | 'zh';

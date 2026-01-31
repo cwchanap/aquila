@@ -5,6 +5,10 @@ vi.mock('@/lib/auth', () => ({
     auth: {
         api: {
             getSession: vi.fn(),
+            listSessions: vi.fn(),
+            revokeSession: vi.fn(),
+            revokeSessions: vi.fn(),
+            signOut: vi.fn(),
         },
     },
 }));
@@ -12,15 +16,6 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('@/lib/drizzle/repositories', () => ({
     BookmarkRepository: vi.fn(),
 }));
-
-vi.mock('crypto', async importOriginal => {
-    const actual = await importOriginal<typeof import('crypto')>();
-    return {
-        ...actual,
-        default: actual,
-        randomUUID: vi.fn(() => 'corr-123'),
-    };
-});
 
 import { auth } from '@/lib/auth';
 import { BookmarkRepository } from '@/lib/drizzle/repositories';
@@ -34,10 +29,8 @@ const createMockRepo = () => ({
     delete: vi.fn(),
 });
 
-const getSession = vi.mocked(auth.api.getSession) as unknown as ReturnType<
-    typeof vi.fn
->;
-const BookmarkRepositoryMock = vi.mocked(BookmarkRepository);
+const getSession = auth.api.getSession as any;
+const BookmarkRepositoryMock = BookmarkRepository as any;
 let mockRepo = createMockRepo();
 
 describe('Bookmarks API', () => {

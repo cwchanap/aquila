@@ -16,6 +16,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             endpoint: '/api/bookmarks/[id]',
             errorId: ERROR_IDS.AUTH_SESSION_GET_FAILED,
         });
+        return errorResponse('Failed to authenticate', 500);
     }
 
     try {

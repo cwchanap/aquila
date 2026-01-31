@@ -6,6 +6,7 @@ import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { logger } from '../../../lib/logger.js';
 import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
+import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
@@ -88,9 +89,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             message: 'Password updated successfully',
         });
     } catch (error) {
-        logger.error('Change password error', error, {
+        logger.error('Failed to change password', error, {
             endpoint: '/api/simple-auth/change-password',
+            errorId: ERROR_IDS.AUTH_PASSWORD_HASH_FAILED,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to change password', 500);
     }
 };

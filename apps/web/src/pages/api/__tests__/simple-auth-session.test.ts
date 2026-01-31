@@ -61,15 +61,17 @@ describe('Simple Auth Session API', () => {
             expect(getSession).toHaveBeenCalledWith('token');
         });
 
-        it('returns null user on errors', async () => {
+        it('returns 500 on errors', async () => {
             getSession.mockRejectedValue(new Error('boom'));
 
             const response = await GET({
                 cookies: { get: vi.fn().mockReturnValue({ value: 'token' }) },
             } as any);
 
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({ user: null });
+            expect(response.status).toBe(500);
+            await expect(response.json()).resolves.toEqual({
+                error: 'Failed to retrieve session',
+            });
         });
     });
 
@@ -118,7 +120,7 @@ describe('Simple Auth Session API', () => {
 
             expect(response.status).toBe(500);
             await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
+                error: 'Failed to delete session',
             });
         });
     });

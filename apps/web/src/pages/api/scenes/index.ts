@@ -6,6 +6,7 @@ import {
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -33,7 +34,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         return jsonResponse(scene, 201);
     } catch (error) {
-        logger.error('Create scene error', error, { endpoint: '/api/scenes' });
-        return errorResponse('Internal server error', 500);
+        logger.error('Failed to create scene', error, {
+            endpoint: '/api/scenes',
+            errorId: ERROR_IDS.DB_INSERT_FAILED,
+        });
+        return errorResponse('Failed to create scene', 500);
     }
 };

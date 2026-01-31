@@ -13,6 +13,7 @@ import {
     validateCharacterName,
     type ValidationTranslations,
 } from '@/lib/validation.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -75,10 +76,11 @@ export const POST: APIRoute = async ({ request }) => {
             return jsonResponse(setup, 201);
         }
     } catch (error) {
-        logger.error('Character setup error', error, {
+        logger.error('Failed to save character setup', error, {
             endpoint: '/api/character-setup',
+            errorId: ERROR_IDS.CHAR_SETUP_FAILED,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to save character setup', 500);
     }
 };
 
@@ -103,9 +105,10 @@ export const GET: APIRoute = async ({ request, url }) => {
             return jsonResponse(setups);
         }
     } catch (error) {
-        logger.error('Get character setup error', error, {
+        logger.error('Failed to fetch character setup', error, {
             endpoint: '/api/character-setup',
+            errorId: ERROR_IDS.DB_QUERY_FAILED,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to fetch character setup', 500);
     }
 };

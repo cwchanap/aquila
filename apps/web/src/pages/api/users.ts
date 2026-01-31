@@ -9,6 +9,7 @@ import {
     validateUsername,
     type ValidationTranslations,
 } from '../../lib/validation.js';
+import { ERROR_IDS } from '../../constants/errorIds.js';
 
 /**
  * GET /api/users
@@ -39,8 +40,11 @@ export const GET: APIRoute = async ({ url }) => {
 
         return jsonResponse(users);
     } catch (error) {
-        logger.error('Error listing users', error, { endpoint: '/api/users' });
-        return errorResponse('Internal server error', 500);
+        logger.error('Failed to list users', error, {
+            endpoint: '/api/users',
+            errorId: ERROR_IDS.DB_QUERY_FAILED,
+        });
+        return errorResponse('Failed to list users', 500);
     }
 };
 
@@ -93,7 +97,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         return jsonResponse(user, 201);
     } catch (error) {
-        logger.error('Error creating user', error, { endpoint: '/api/users' });
-        return errorResponse('Internal server error', 500);
+        logger.error('Failed to create user', error, {
+            endpoint: '/api/users',
+            errorId: ERROR_IDS.REPO_USER_CREATE_FAILED,
+        });
+        return errorResponse('Failed to create user', 500);
     }
 };

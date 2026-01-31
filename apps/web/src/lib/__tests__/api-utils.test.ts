@@ -15,6 +15,7 @@ import {
     getSessionFromRequest,
     jsonResponse,
     errorResponse,
+    requireSession,
 } from '../api-utils';
 
 const getSession = vi.mocked(
@@ -79,7 +80,26 @@ describe('api-utils', () => {
         });
     });
 
-    describe('getSessionFromRequest - cookie parsing edge cases', () => {
+    describe('getSessionFromRequest', () => {
+        it('should return session when valid session cookie is present', async () => {
+            const mockSession = {
+                user: {
+                    id: 'user-1',
+                    email: 'test@example.com',
+                    name: 'Test User',
+                    username: 'testuser',
+                },
+                sessionId: 'session-123',
+            };
+            getSession.mockResolvedValue(mockSession);
+            const request = createMockRequest('session=valid-session-id');
+
+            const result = await getSessionFromRequest(request);
+
+            expect(result).toEqual(mockSession);
+            expect(getSession).toHaveBeenCalledWith('valid-session-id');
+        });
+
         it('should return null when no session cookie is present', async () => {
             getSession.mockResolvedValue(null);
             const request = createMockRequest(null);
@@ -161,13 +181,62 @@ describe('api-utils', () => {
 
             const result = await getSessionFromRequest(request);
 
-            // This test verifies that spaces are normalized and the session
-            // cookie is correctly identified and extracted.
-            // Note: getSessionFromRequest will return null here because
-            // SimpleAuthService.getSession will not find a matching session,
-            // but the cookie parsing should not throw an error.
             expect(result).toBeNull();
             expect(getSession).toHaveBeenCalledWith('test123');
+        });
+
+        it('should return null for invalid URL-encoded session cookie', async () => {
+            const request = createMockRequest('session=%ZZ%invalid');
+
+            const result = await getSessionFromRequest(request);
+
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('requireSession', () => {
+        it('should return session when valid session exists', async () => {
+            const mockSession = {
+                user: {
+                    id: 'user-1',
+                    email: 'test@example.com',
+                    name: 'Test',
+                    username: null,
+                },
+                sessionId: 'session-123',
+            };
+            getSession.mockResolvedValue(mockSession);
+            const request = createMockRequest('session=valid-token');
+
+            const result = await requireSession(request);
+
+            expect(result.session).toEqual(mockSession);
+            expect(result.error).toBeNull();
+        });
+
+        it('should return 401 error response when no session exists', async () => {
+            getSession.mockResolvedValue(null);
+            const request = createMockRequest(null);
+
+            const result = await requireSession(request);
+
+            expect(result.session).toBeNull();
+            expect(result.error).not.toBeNull();
+            expect(result.error?.status).toBe(401);
+            await expect(result.error?.json()).resolves.toEqual({
+                error: 'Unauthorized',
+            });
+        });
+
+        it('should return 401 error response when session is expired/invalid', async () => {
+            getSession.mockResolvedValue(null);
+            const request = createMockRequest('session=expired-token');
+
+            const result = await requireSession(request);
+
+            expect(result.session).toBeNull();
+            expect(result.error).not.toBeNull();
+            expect(result.error?.status).toBe(401);
         });
     });
 });

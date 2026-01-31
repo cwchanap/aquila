@@ -7,6 +7,7 @@ import {
     errorResponse,
 } from '@/lib/api-utils.js';
 import { storyStatusEnum } from '@/lib/drizzle/schema.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 const VALID_STATUSES = storyStatusEnum.enumValues;
 type StoryStatus = (typeof storyStatusEnum.enumValues)[number];
@@ -21,8 +22,11 @@ export const GET: APIRoute = async ({ request }) => {
 
         return jsonResponse(stories);
     } catch (error) {
-        logger.error('Get stories error', error, { endpoint: '/api/stories' });
-        return errorResponse('Internal server error', 500);
+        logger.error('Failed to fetch stories', error, {
+            endpoint: '/api/stories',
+            errorId: ERROR_IDS.DB_QUERY_FAILED,
+        });
+        return errorResponse('Failed to fetch stories', 500);
     }
 };
 
@@ -52,7 +56,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         return jsonResponse(story, 201);
     } catch (error) {
-        logger.error('Create story error', error, { endpoint: '/api/stories' });
-        return errorResponse('Internal server error', 500);
+        logger.error('Failed to create story', error, {
+            endpoint: '/api/stories',
+            errorId: ERROR_IDS.DB_INSERT_FAILED,
+        });
+        return errorResponse('Failed to create story', 500);
     }
 };

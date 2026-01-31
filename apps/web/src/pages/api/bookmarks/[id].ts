@@ -3,6 +3,7 @@ import { BookmarkRepository } from '@/lib/drizzle/repositories';
 import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger.js';
 import { jsonResponse, errorResponse } from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 // DELETE /api/bookmarks/:id - Delete a bookmark
 export const DELETE: APIRoute = async ({ params, request }) => {
@@ -41,6 +42,10 @@ export const DELETE: APIRoute = async ({ params, request }) => {
     } catch (error) {
         logger.error('Failed to delete bookmark', error, {
             endpoint: '/api/bookmarks/[id]',
+            errorId: ERROR_IDS.DB_DELETE_FAILED,
+            bookmarkId: params.id,
+            userId: (await auth.api.getSession({ headers: request.headers }))
+                ?.user?.id,
         });
         return errorResponse('Failed to delete bookmark', 500);
     }

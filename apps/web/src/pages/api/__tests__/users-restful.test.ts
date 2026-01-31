@@ -167,7 +167,7 @@ describe('Users API - RESTful Design', () => {
 
             expect(response.status).toBe(500);
             await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
+                error: 'Failed to list users',
             });
             expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
         });
@@ -404,7 +404,7 @@ describe('Users API - RESTful Design', () => {
 
             expect(response.status).toBe(500);
             await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
+                error: 'Failed to create user',
             });
         });
     });
@@ -489,7 +489,7 @@ describe('Users API - RESTful Design', () => {
 
             expect(response.status).toBe(500);
             await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
+                error: 'Failed to fetch user',
             });
             expect(mockRepo.findById).toHaveBeenCalledWith('user123');
         });
@@ -629,7 +629,7 @@ describe('Users API - RESTful Design', () => {
 
             expect(response.status).toBe(500);
             await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
+                error: 'Failed to update user',
             });
         });
 
@@ -850,7 +850,7 @@ describe('Users API - RESTful Design', () => {
 
             expect(response.status).toBe(500);
             await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
+                error: 'Failed to delete user',
             });
             expect(mockRepo.delete).toHaveBeenCalledWith('user123');
         });

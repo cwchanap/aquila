@@ -6,6 +6,7 @@ import {
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -31,9 +32,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         return jsonResponse(chapter, 201);
     } catch (error) {
-        logger.error('Create chapter error', error, {
+        logger.error('Failed to create chapter', error, {
             endpoint: '/api/chapters',
+            errorId: ERROR_IDS.DB_INSERT_FAILED,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to create chapter', 500);
     }
 };

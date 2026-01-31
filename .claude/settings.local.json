@@ -5,7 +5,8 @@
       "Bash(grep:*)",
       "Bash(git diff:*)",
       "Bash(bun test:*)",
-      "Bash(bun --filter web test:*)"
+      "Bash(bun --filter web test:*)",
+      "Bash(cat:*)"
     ]
   }
 }

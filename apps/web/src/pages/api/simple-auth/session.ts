@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { logger } from '../../../lib/logger.js';
 import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
+import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 export const GET: APIRoute = async ({ cookies }) => {
     try {
@@ -15,10 +16,11 @@ export const GET: APIRoute = async ({ cookies }) => {
 
         return jsonResponse({ user: session?.user || null });
     } catch (error) {
-        logger.error('Session error', error, {
+        logger.error('Failed to retrieve session', error, {
             endpoint: '/api/simple-auth/session',
+            errorId: ERROR_IDS.AUTH_SESSION_GET_FAILED,
         });
-        return jsonResponse({ user: null });
+        return errorResponse('Failed to retrieve session', 500);
     }
 };
 
@@ -35,9 +37,10 @@ export const POST: APIRoute = async ({ cookies }) => {
 
         return jsonResponse({ success: true });
     } catch (error) {
-        logger.error('Logout error', error, {
+        logger.error('Failed to delete session', error, {
             endpoint: '/api/simple-auth/session',
+            errorId: ERROR_IDS.AUTH_SESSION_DELETE_FAILED,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to delete session', 500);
     }
 };

@@ -3,6 +3,7 @@ import { BookmarkRepository } from '@/lib/drizzle/repositories';
 import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger.js';
 import { jsonResponse, errorResponse } from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 // GET /api/bookmarks - List all bookmarks for current user
 export const GET: APIRoute = async ({ request }) => {
@@ -20,6 +21,7 @@ export const GET: APIRoute = async ({ request }) => {
     } catch (error) {
         logger.error('Failed to fetch bookmarks', error, {
             endpoint: '/api/bookmarks',
+            errorId: ERROR_IDS.DB_QUERY_FAILED,
         });
         return errorResponse('Failed to fetch bookmarks', 500);
     }
@@ -57,6 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
     } catch (error) {
         logger.error('Failed to create bookmark', error, {
             endpoint: '/api/bookmarks',
+            errorId: ERROR_IDS.DB_INSERT_FAILED,
         });
         return errorResponse('Failed to create bookmark', 500);
     }

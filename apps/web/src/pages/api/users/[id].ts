@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { UserRepository as UserRepositoryClass } from '../../../lib/drizzle/repositories.js';
 import { logger } from '../../../lib/logger.js';
 import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
+import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 /**
  * GET /api/users/[id]
@@ -26,10 +27,12 @@ export const GET: APIRoute = async ({ params }) => {
 
         return jsonResponse(user);
     } catch (error) {
-        logger.error('Error fetching user', error, {
+        logger.error('Failed to fetch user', error, {
             endpoint: '/api/users/[id]',
+            errorId: ERROR_IDS.REPO_USER_NOT_FOUND,
+            userId: params.id,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to fetch user', 500);
     }
 };
 
@@ -79,10 +82,12 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
         return jsonResponse(user);
     } catch (error) {
-        logger.error('Error updating user', error, {
+        logger.error('Failed to update user', error, {
             endpoint: '/api/users/[id]',
+            errorId: ERROR_IDS.REPO_USER_UPDATE_FAILED,
+            userId: params.id,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to update user', 500);
     }
 };
 
@@ -109,9 +114,11 @@ export const DELETE: APIRoute = async ({ params }) => {
 
         return jsonResponse({ message: 'User deleted successfully' });
     } catch (error) {
-        logger.error('Error deleting user', error, {
+        logger.error('Failed to delete user', error, {
             endpoint: '/api/users/[id]',
+            errorId: ERROR_IDS.REPO_USER_DELETE_FAILED,
+            userId: params.id,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to delete user', 500);
     }
 };

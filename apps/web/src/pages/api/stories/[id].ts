@@ -6,6 +6,7 @@ import {
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const GET: APIRoute = async ({ params, request }) => {
     try {
@@ -26,10 +27,12 @@ export const GET: APIRoute = async ({ params, request }) => {
 
         return jsonResponse(story);
     } catch (error) {
-        logger.error('Get story error', error, {
+        logger.error('Failed to fetch story', error, {
             endpoint: '/api/stories/[id]',
+            errorId: ERROR_IDS.REPO_STORY_NOT_FOUND,
+            storyId: params.id,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to fetch story', 500);
     }
 };
 
@@ -56,10 +59,12 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
         return jsonResponse(story);
     } catch (error) {
-        logger.error('Update story error', error, {
+        logger.error('Failed to update story', error, {
             endpoint: '/api/stories/[id]',
+            errorId: ERROR_IDS.DB_UPDATE_FAILED,
+            storyId: params.id,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to update story', 500);
     }
 };
 
@@ -84,9 +89,11 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 
         return jsonResponse({ success: true });
     } catch (error) {
-        logger.error('Delete story error', error, {
+        logger.error('Failed to delete story', error, {
             endpoint: '/api/stories/[id]',
+            errorId: ERROR_IDS.DB_DELETE_FAILED,
+            storyId: params.id,
         });
-        return errorResponse('Internal server error', 500);
+        return errorResponse('Failed to delete story', 500);
     }
 };

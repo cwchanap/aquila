@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
 import { SceneDirectory, type SceneId } from './SceneDirectory';
-import { SceneFlow } from './SceneFlow';
+import { SceneFlow, type FlowConfig } from './SceneFlow';
 import {
     clearCheckpoint,
     loadCheckpoint,
@@ -146,11 +146,15 @@ export class StoryScene extends BaseScene {
         this.toggleMenu();
     }
 
-    private buildSceneFlow(
-        start: SceneId = SceneDirectory.defaultStart
-    ): SceneFlow {
+    private buildSceneFlow(externalConfig?: FlowConfig): SceneFlow {
+        // Use external flow config if provided (from PreloadScene/registry)
+        if (externalConfig) {
+            return new SceneFlow(externalConfig);
+        }
+
+        // Fallback to hardcoded flow for backward compatibility
         return new SceneFlow({
-            start,
+            start: SceneDirectory.defaultStart,
             nodes: [
                 {
                     kind: 'scene',
@@ -199,7 +203,12 @@ export class StoryScene extends BaseScene {
         const checkpoint =
             (this.registry.get('checkpointState') as StoredCheckpoint | null) ??
             loadCheckpoint(this.storyId);
-        const flow = this.buildSceneFlow();
+
+        // Load external flow config from registry if available
+        const externalFlowConfig = this.registry.get('flowConfig') as
+            | FlowConfig
+            | undefined;
+        const flow = this.buildSceneFlow(externalFlowConfig);
 
         if (checkpoint && Array.isArray(checkpoint.history)) {
             const restored = flow.restoreFromHistory(checkpoint.history);

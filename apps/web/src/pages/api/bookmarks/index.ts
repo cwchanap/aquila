@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro';
 import { BookmarkRepository } from '@/lib/drizzle/repositories';
 import { auth } from '@/lib/auth';
+import { logger } from '@/lib/logger.js';
+import { jsonResponse, errorResponse } from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 // GET /api/bookmarks - List all bookmarks for current user
 export const GET: APIRoute = async ({ request }) => {
@@ -8,28 +11,19 @@ export const GET: APIRoute = async ({ request }) => {
         const session = await auth.api.getSession({ headers: request.headers });
 
         if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('Unauthorized', 401);
         }
 
         const repository = new BookmarkRepository();
         const bookmarks = await repository.findByUser(session.user.id);
 
-        return new Response(JSON.stringify({ bookmarks }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ bookmarks });
     } catch (error) {
-        console.error('Failed to fetch bookmarks:', error);
-        return new Response(
-            JSON.stringify({ error: 'Failed to fetch bookmarks' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Failed to fetch bookmarks', error, {
+            endpoint: '/api/bookmarks',
+            errorId: ERROR_IDS.DB_QUERY_FAILED,
+        });
+        return errorResponse('Failed to fetch bookmarks', 500);
     }
 };
 
@@ -39,24 +33,31 @@ export const POST: APIRoute = async ({ request }) => {
         const session = await auth.api.getSession({ headers: request.headers });
 
         if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return errorResponse('Unauthorized', 401);
         }
 
-        const body = await request.json();
+        let body: {
+            storyId?: string;
+            sceneId?: string;
+            bookmarkName?: string;
+            locale?: string;
+        };
+        try {
+            body = await request.json();
+        } catch (error) {
+            logger.error('Failed to parse bookmark JSON', error, {
+                endpoint: '/api/bookmarks',
+                errorId: ERROR_IDS.API_INVALID_JSON,
+            });
+            return errorResponse('Malformed JSON', 400);
+        }
+
         const { storyId, sceneId, bookmarkName, locale } = body;
 
         if (!storyId || !sceneId || !bookmarkName) {
-            return new Response(
-                JSON.stringify({
-                    error: 'Missing required fields: storyId, sceneId, bookmarkName',
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
+            return errorResponse(
+                'Missing required fields: storyId, sceneId, bookmarkName',
+                400
             );
         }
 
@@ -69,18 +70,12 @@ export const POST: APIRoute = async ({ request }) => {
             locale || 'en'
         );
 
-        return new Response(JSON.stringify({ bookmark }), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ bookmark }, 201);
     } catch (error) {
-        console.error('Failed to create bookmark:', error);
-        return new Response(
-            JSON.stringify({ error: 'Failed to create bookmark' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Failed to create bookmark', error, {
+            endpoint: '/api/bookmarks',
+            errorId: ERROR_IDS.DB_INSERT_FAILED,
+        });
+        return errorResponse('Failed to create bookmark', 500);
     }
 };

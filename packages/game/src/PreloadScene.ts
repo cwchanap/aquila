@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
-import { getStoryContent } from '@aquila/dialogue';
+import { getStoryContent, getStoryFlow } from '@aquila/dialogue';
 import { loadCheckpoint } from './CheckpointStorage';
 
 export class PreloadScene extends Phaser.Scene {
@@ -63,6 +63,10 @@ export class PreloadScene extends Phaser.Scene {
         const { dialogue, choices } = getStoryContent(storyId, locale);
         this.registry.set('dialogueMap', dialogue);
         this.registry.set('choiceMap', choices);
+
+        // Load story flow configuration (locale-independent)
+        const flowConfig = getStoryFlow(storyId);
+        this.registry.set('flowConfig', flowConfig);
 
         const checkpoint = loadCheckpoint(storyId);
         this.registry.set('checkpointState', checkpoint);

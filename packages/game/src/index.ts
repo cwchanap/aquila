@@ -2,7 +2,14 @@ export { BaseScene } from './BaseScene';
 export { PreloadScene } from './PreloadScene';
 export { StoryScene } from './StoryScene';
 export { SceneDirectory } from './SceneDirectory';
+export type { SceneId } from './SceneDirectory';
 export { SceneFlow } from './SceneFlow';
+export type {
+    FlowConfig,
+    FlowNodeDefinition,
+    SceneNodeDefinition,
+    ChoiceNodeDefinition,
+} from './SceneFlow';
 export { StoryProgressionMap } from './StoryProgressionMap';
 export { ProgressMapModal } from './ProgressMapModal';
 export * from './dialogue/types';

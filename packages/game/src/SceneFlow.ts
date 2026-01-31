@@ -1,4 +1,20 @@
+import type {
+    FlowConfig as SharedFlowConfig,
+    FlowNodeDefinition as SharedFlowNodeDefinition,
+    ChoiceNodeDefinition as SharedChoiceNodeDefinition,
+    SceneNodeDefinition as SharedSceneNodeDefinition,
+    FlowNodeId as SharedFlowNodeId,
+    SceneNodeId as SharedSceneNodeId,
+} from '@aquila/dialogue';
 import type { SceneId } from './SceneDirectory';
+
+type SceneNodeId = SharedSceneNodeId<SceneId>;
+type FlowNodeId = SharedFlowNodeId<SceneId>;
+
+export type FlowConfig = SharedFlowConfig<SceneId>;
+export type FlowNodeDefinition = SharedFlowNodeDefinition<SceneId>;
+export type SceneNodeDefinition = SharedSceneNodeDefinition<SceneId>;
+export type ChoiceNodeDefinition = SharedChoiceNodeDefinition<SceneId>;
 
 export type FlowAdvanceResult =
     | { type: 'scene'; sceneId: SceneId }
@@ -8,31 +24,6 @@ export type FlowAdvanceResult =
 export type FlowChoiceResolution =
     | { type: 'scene'; sceneId: SceneId }
     | { type: 'end' };
-
-type SceneNodeId = SceneId;
-type ChoiceNodeId = `choice:${string}`;
-type FlowNodeId = SceneNodeId | ChoiceNodeId;
-
-export interface SceneNodeDefinition {
-    kind: 'scene';
-    id: SceneNodeId;
-    sceneId: SceneId;
-    next?: FlowNodeId | null;
-}
-
-export interface ChoiceNodeDefinition {
-    kind: 'choice';
-    id: ChoiceNodeId;
-    choiceId: string;
-    nextByOption: Record<string, SceneNodeId>;
-}
-
-export type FlowNodeDefinition = SceneNodeDefinition | ChoiceNodeDefinition;
-
-export interface FlowConfig {
-    start: SceneNodeId;
-    nodes: FlowNodeDefinition[];
-}
 
 export class SceneFlow {
     private readonly nodes: Map<FlowNodeId, FlowNodeDefinition> = new Map();

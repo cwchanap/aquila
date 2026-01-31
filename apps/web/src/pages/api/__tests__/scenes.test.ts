@@ -9,10 +9,14 @@ vi.mock('@/lib/simple-auth.js', () => ({
 
 vi.mock('@/lib/drizzle/repositories.js', () => ({
     SceneRepository: vi.fn(),
+    StoryRepository: vi.fn(),
 }));
 
 import { SimpleAuthService } from '@/lib/simple-auth.js';
-import { SceneRepository } from '@/lib/drizzle/repositories.js';
+import {
+    SceneRepository,
+    StoryRepository,
+} from '@/lib/drizzle/repositories.js';
 import { POST } from '../scenes/index';
 
 const createMockRepo = () => ({
@@ -23,14 +27,19 @@ const getSession = vi.mocked(
     SimpleAuthService.getSession
 ) as unknown as ReturnType<typeof vi.fn>;
 const SceneRepositoryMock = vi.mocked(SceneRepository);
+const StoryRepositoryMock = vi.mocked(StoryRepository);
 let mockRepo = createMockRepo();
+let mockStoryRepo = { findById: vi.fn() };
 
 describe('Scenes API', () => {
     beforeEach(() => {
         getSession.mockReset();
         SceneRepositoryMock.mockReset();
+        StoryRepositoryMock.mockReset();
         mockRepo = createMockRepo();
         SceneRepositoryMock.mockReturnValue(mockRepo as any);
+        mockStoryRepo = { findById: vi.fn() };
+        StoryRepositoryMock.mockReturnValue(mockStoryRepo as any);
     });
 
     it('rejects unauthenticated requests', async () => {
@@ -44,6 +53,10 @@ describe('Scenes API', () => {
 
     it('validates required fields', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+        });
 
         const response = await POST({
             request: makeRequest('session=token', () =>
@@ -63,6 +76,10 @@ describe('Scenes API', () => {
 
     it('creates a scene without a chapter', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+        });
         mockRepo.create.mockResolvedValue({
             id: 'scene-1',
             title: 'Scene One',
@@ -97,6 +114,10 @@ describe('Scenes API', () => {
 
     it('creates a scene within a chapter', async () => {
         getSession.mockResolvedValue({ user: { id: 'user-1' } });
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+        });
         mockRepo.create.mockResolvedValue({
             id: 'scene-2',
             title: 'Scene Two',

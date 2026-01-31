@@ -1,43 +1,54 @@
 import type { APIRoute } from 'astro';
-import { SimpleAuthService } from '@/lib/simple-auth.js';
-import { SceneRepository } from '@/lib/drizzle/repositories.js';
+import {
+    SceneRepository,
+    StoryRepository,
+} from '@/lib/drizzle/repositories.js';
+import { logger } from '@/lib/logger.js';
+import {
+    requireSession,
+    jsonResponse,
+    errorResponse,
+} from '@/lib/api-utils.js';
+import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const cookieHeader = request.headers.get('cookie') || '';
-        const sessionId = cookieHeader
-            .split(';')
-            .find(c => c.trim().startsWith('session='))
-            ?.split('=')[1];
+        const { session, error } = await requireSession(request);
+        if (error) return error;
 
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
+        let body: {
+            storyId?: string;
+            chapterId?: string;
+            title?: string;
+            content?: string;
+            order?: string | number;
+        };
+        try {
+            body = await request.json();
+        } catch (error) {
+            logger.error('Failed to parse scene JSON', error, {
+                endpoint: '/api/scenes',
+                errorId: ERROR_IDS.API_INVALID_JSON,
             });
+            return errorResponse('Malformed JSON', 400);
         }
 
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session?.user?.id) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        const { storyId, chapterId, title, content, order } =
-            await request.json();
+        const { storyId, chapterId, title, content, order } = body;
 
         if (!storyId || !title || order === undefined) {
-            return new Response(
-                JSON.stringify({
-                    error: 'Story ID, title, and order are required',
-                }),
-                {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                }
+            return errorResponse(
+                'Story ID, title, and order are required',
+                400
             );
+        }
+
+        const storyRepo = new StoryRepository();
+        const story = await storyRepo.findById(storyId);
+        if (!story) {
+            return errorResponse('Story not found', 404);
+        }
+        if (story.userId !== session.user.id) {
+            return errorResponse('Forbidden', 403);
         }
 
         const sceneRepo = new SceneRepository();
@@ -49,18 +60,12 @@ export const POST: APIRoute = async ({ request }) => {
             order: String(order),
         });
 
-        return new Response(JSON.stringify(scene), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse(scene, 201);
     } catch (error) {
-        console.error('Create scene error:', error);
-        return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        logger.error('Failed to create scene', error, {
+            endpoint: '/api/scenes',
+            errorId: ERROR_IDS.DB_INSERT_FAILED,
+        });
+        return errorResponse('Failed to create scene', 500);
     }
 };

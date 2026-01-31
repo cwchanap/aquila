@@ -33,11 +33,16 @@ vi.mock('bcryptjs', () => ({
 }));
 
 // Mock better-auth
-const betterAuthHandler = vi.hoisted(() => vi.fn());
-
 vi.mock('better-auth', () => ({
     betterAuth: vi.fn(() => ({
-        handler: betterAuthHandler,
+        handler: vi.fn(),
+        api: {
+            getSession: vi.fn(),
+            listSessions: vi.fn(),
+            revokeSession: vi.fn(),
+            revokeSessions: vi.fn(),
+            signOut: vi.fn(),
+        },
         $Infer: {
             Session: {
                 user: {

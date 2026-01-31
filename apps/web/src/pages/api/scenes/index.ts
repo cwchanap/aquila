@@ -13,8 +13,24 @@ export const POST: APIRoute = async ({ request }) => {
         const { error } = await requireSession(request);
         if (error) return error;
 
-        const { storyId, chapterId, title, content, order } =
-            await request.json();
+        let body: {
+            storyId?: string;
+            chapterId?: string;
+            title?: string;
+            content?: string;
+            order?: string | number;
+        };
+        try {
+            body = await request.json();
+        } catch (error) {
+            logger.error('Failed to parse scene JSON', error, {
+                endpoint: '/api/scenes',
+                errorId: ERROR_IDS.API_INVALID_JSON,
+            });
+            return errorResponse('Malformed JSON', 400);
+        }
+
+        const { storyId, chapterId, title, content, order } = body;
 
         if (!storyId || !title || order === undefined) {
             return errorResponse(

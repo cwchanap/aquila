@@ -8,6 +8,8 @@ import { logger } from '../../../lib/logger.js';
 import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
 import { ERROR_IDS } from '../../../constants/errorIds.js';
 
+const MAX_PASSWORD_LENGTH = 256;
+
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         // Get session
@@ -39,6 +41,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         if (newPassword.length < 6) {
             return errorResponse(
                 'New password must be at least 6 characters',
+                400
+            );
+        }
+        if (newPassword.length > MAX_PASSWORD_LENGTH) {
+            return errorResponse(
+                `New password must be at most ${MAX_PASSWORD_LENGTH} characters`,
                 400
             );
         }
@@ -91,7 +99,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     } catch (error) {
         logger.error('Failed to change password', error, {
             endpoint: '/api/simple-auth/change-password',
-            errorId: ERROR_IDS.AUTH_PASSWORD_HASH_FAILED,
+            errorId: ERROR_IDS.AUTH_PASSWORD_CHANGE_FAILED,
         });
         return errorResponse('Failed to change password', 500);
     }

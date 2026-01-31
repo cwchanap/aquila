@@ -57,6 +57,14 @@ export const POST: APIRoute = async ({ request }) => {
             return errorResponse('Title is required', 400);
         }
 
+        const normalizedDescription =
+            typeof description === 'string' ? description.trim() : null;
+        const normalizedCoverImage =
+            typeof coverImage === 'string' ? coverImage : null;
+        const normalizedStatus = VALID_STATUSES.includes(status as StoryStatus)
+            ? (status as StoryStatus)
+            : 'draft';
+
         if (status && !VALID_STATUSES.includes(status as StoryStatus)) {
             return errorResponse('Invalid status value', 400);
         }
@@ -65,9 +73,9 @@ export const POST: APIRoute = async ({ request }) => {
         const story = await storyRepo.create({
             userId: session.user.id,
             title: title.trim(),
-            description: description?.trim() || null,
-            coverImage: coverImage || null,
-            status: (status as StoryStatus) || 'draft',
+            description: normalizedDescription,
+            coverImage: normalizedCoverImage,
+            status: normalizedStatus,
         });
 
         return jsonResponse(story, 201);

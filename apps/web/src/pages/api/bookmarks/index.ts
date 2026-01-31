@@ -36,7 +36,22 @@ export const POST: APIRoute = async ({ request }) => {
             return errorResponse('Unauthorized', 401);
         }
 
-        const body = await request.json();
+        let body: {
+            storyId?: string;
+            sceneId?: string;
+            bookmarkName?: string;
+            locale?: string;
+        };
+        try {
+            body = await request.json();
+        } catch (error) {
+            logger.error('Failed to parse bookmark JSON', error, {
+                endpoint: '/api/bookmarks',
+                errorId: ERROR_IDS.API_INVALID_JSON,
+            });
+            return errorResponse('Malformed JSON', 400);
+        }
+
         const { storyId, sceneId, bookmarkName, locale } = body;
 
         if (!storyId || !sceneId || !bookmarkName) {

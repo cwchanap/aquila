@@ -1,5 +1,8 @@
 import type { APIRoute } from 'astro';
-import { SceneRepository } from '@/lib/drizzle/repositories.js';
+import {
+    SceneRepository,
+    StoryRepository,
+} from '@/lib/drizzle/repositories.js';
 import { logger } from '@/lib/logger.js';
 import {
     requireSession,
@@ -10,7 +13,7 @@ import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { error } = await requireSession(request);
+        const { session, error } = await requireSession(request);
         if (error) return error;
 
         let body: {
@@ -37,6 +40,15 @@ export const POST: APIRoute = async ({ request }) => {
                 'Story ID, title, and order are required',
                 400
             );
+        }
+
+        const storyRepo = new StoryRepository();
+        const story = await storyRepo.findById(storyId);
+        if (!story) {
+            return errorResponse('Story not found', 404);
+        }
+        if (story.userId !== session.user.id) {
+            return errorResponse('Forbidden', 403);
         }
 
         const sceneRepo = new SceneRepository();

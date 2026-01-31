@@ -7,10 +7,19 @@ import { ERROR_IDS } from '@/constants/errorIds.js';
 
 // DELETE /api/bookmarks/:id - Delete a bookmark
 export const DELETE: APIRoute = async ({ params, request }) => {
+    let userId: string | undefined;
     try {
         const session = await auth.api.getSession({ headers: request.headers });
+        userId = session?.user?.id;
+    } catch (error) {
+        logger.error('Failed to get session', error, {
+            endpoint: '/api/bookmarks/[id]',
+            errorId: ERROR_IDS.AUTH_SESSION_GET_FAILED,
+        });
+    }
 
-        if (!session?.user?.id) {
+    try {
+        if (!userId) {
             return errorResponse('Unauthorized', 401);
         }
 
@@ -28,7 +37,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             return errorResponse('Bookmark not found', 404);
         }
 
-        if (bookmark.userId !== session.user.id) {
+        if (bookmark.userId !== userId) {
             return errorResponse('Forbidden', 403);
         }
 
@@ -44,8 +53,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             endpoint: '/api/bookmarks/[id]',
             errorId: ERROR_IDS.DB_DELETE_FAILED,
             bookmarkId: params.id,
-            userId: (await auth.api.getSession({ headers: request.headers }))
-                ?.user?.id,
+            userId,
         });
         return errorResponse('Failed to delete bookmark', 500);
     }

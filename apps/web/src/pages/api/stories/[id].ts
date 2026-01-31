@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     } catch (error) {
         logger.error('Failed to fetch story', error, {
             endpoint: '/api/stories/[id]',
-            errorId: ERROR_IDS.REPO_STORY_NOT_FOUND,
+            errorId: ERROR_IDS.DB_QUERY_FAILED,
             storyId: params.id,
         });
         return errorResponse('Failed to fetch story', 500);

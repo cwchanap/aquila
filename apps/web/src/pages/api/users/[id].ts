@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ params }) => {
     } catch (error) {
         logger.error('Failed to fetch user', error, {
             endpoint: '/api/users/[id]',
-            errorId: ERROR_IDS.REPO_USER_NOT_FOUND,
+            errorId: ERROR_IDS.REPO_USER_FETCH_FAILED,
             userId: params.id,
         });
         return errorResponse('Failed to fetch user', 500);

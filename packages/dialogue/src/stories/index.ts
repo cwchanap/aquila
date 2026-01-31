@@ -39,5 +39,8 @@ export function getStoryContent(
 export function getStoryFlow(
     storyId: string | undefined
 ): StoryFlowConfig | undefined {
-    return storyFlows[storyId ?? 'train_adventure'];
+    return (
+        storyFlows[storyId ?? 'train_adventure'] ??
+        storyFlows['train_adventure']
+    );
 }

@@ -35,7 +35,23 @@ export const POST: APIRoute = async ({ request }) => {
         const { session, error } = await requireSession(request);
         if (error) return error;
 
-        const { title, description, coverImage, status } = await request.json();
+        let body: {
+            title?: string;
+            description?: string;
+            coverImage?: string;
+            status?: StoryStatus;
+        };
+        try {
+            body = await request.json();
+        } catch (error) {
+            logger.error('Failed to parse story JSON', error, {
+                endpoint: '/api/stories',
+                errorId: ERROR_IDS.API_INVALID_JSON,
+            });
+            return errorResponse('Malformed JSON', 400);
+        }
+
+        const { title, description, coverImage, status } = body;
 
         if (!title || typeof title !== 'string' || title.trim().length === 0) {
             return errorResponse('Title is required', 400);

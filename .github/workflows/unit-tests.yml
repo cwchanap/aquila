@@ -26,7 +26,7 @@ jobs:
           - job-id: web
             job-name: Web Unit Tests
             working-directory: apps/web
-            command: bun run test
+            command: bun run test:coverage
           - job-id: desktop
             job-name: Desktop Unit Tests
             working-directory: apps/desktop
@@ -56,3 +56,12 @@ jobs:
       - name: Run ${{ matrix.job-id }} checks
         working-directory: ${{ matrix.working-directory }}
         run: ${{ matrix.command }}
+
+      - name: Upload ${{ matrix.job-id }} coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          flags: ${{ matrix.job-id }}
+          name: ${{ matrix.job-id }}-unit-tests
+          token: ${{ secrets.CODECOV_TOKEN }}
+          handle_no_reports_found: true
+          fail_ci_if_error: false

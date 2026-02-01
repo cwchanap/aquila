@@ -13,6 +13,10 @@ export default defineConfig({
             '**/tests/**', // Exclude Playwright tests
             '**/*.spec.ts', // Exclude Playwright test files
         ],
+        coverage: {
+            reporter: ['text', 'lcov', 'json'],
+            reportsDirectory: './coverage',
+        },
     },
     resolve: {
         alias: {

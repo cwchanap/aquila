@@ -279,39 +279,54 @@ export class ReaderManager {
         container.innerHTML = '';
 
         // Dynamic import to avoid issues with Astro SSR
-        import('@/components/NovelReader.svelte').then(module => {
-            const NovelReaderComponent = module.default;
-            const mountedComponent = mount(NovelReaderComponent, {
-                target: container,
-                props: {
-                    dialogue,
-                    choice,
-                    onChoice: this.handleChoice,
-                    onBookmark: (dialogueNumber: number) =>
-                        this.handleBookmark(dialogueNumber),
-                    onNext: this.handleNext,
-                    canGoNext,
-                    showBookmarkButton: true,
-                    locale: translations.locale,
-                    backUrl: `/${translations.locale}/`,
-                    initialDialogueIndex: this.initialDialogueIndex,
-                },
+        import('@/components/NovelReader.svelte')
+            .then(module => {
+                const NovelReaderComponent = module.default;
+                const mountedComponent = mount(NovelReaderComponent, {
+                    target: container,
+                    props: {
+                        dialogue,
+                        choice,
+                        onChoice: this.handleChoice,
+                        onBookmark: (dialogueNumber: number) =>
+                            this.handleBookmark(dialogueNumber),
+                        onNext: this.handleNext,
+                        canGoNext,
+                        showBookmarkButton: true,
+                        locale: translations.locale,
+                        backUrl: `/${translations.locale}/`,
+                        initialDialogueIndex: this.initialDialogueIndex,
+                    },
+                });
+
+                // Only apply the initial dialogue index on the first render.
+                this.initialDialogueIndex = null;
+
+                this.readerInstance = {
+                    unmount: () => {
+                        const destroy = (
+                            mountedComponent as { destroy?: () => void }
+                        ).destroy;
+                        if (typeof destroy === 'function') {
+                            destroy();
+                        }
+                    },
+                };
+            })
+            .catch(error => {
+                console.error('Failed to load reader component:', error);
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center p-8">
+                        <p class="text-red-400 mb-4">${translations.reader.loadError || 'Failed to load reader'}</p>
+                        <button
+                            onclick="location.reload()"
+                            class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors"
+                        >
+                            ${translations.reader.retry || 'Retry'}
+                        </button>
+                    </div>
+                `;
             });
-
-            // Only apply the initial dialogue index on the first render.
-            this.initialDialogueIndex = null;
-
-            this.readerInstance = {
-                unmount: () => {
-                    const destroy = (
-                        mountedComponent as { destroy?: () => void }
-                    ).destroy;
-                    if (typeof destroy === 'function') {
-                        destroy();
-                    }
-                },
-            };
-        });
     }
 
     initialize(): void {

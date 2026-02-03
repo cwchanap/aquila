@@ -1,106 +1,39 @@
 import type { APIRoute } from 'astro';
-import { getTranslations, type Locale } from '@aquila/dialogue';
 import { UserRepository as UserRepositoryClass } from '../../lib/drizzle/repositories.js';
 import { logger } from '../../lib/logger.js';
-import { jsonResponse, errorResponse } from '../../lib/api-utils.js';
 import {
-    resolveValidationMessage,
-    validateEmail,
-    validateUsername,
-    type ValidationTranslations,
-} from '../../lib/validation.js';
+    requireAuth,
+    jsonResponse,
+    errorResponse,
+} from '../../lib/api-utils.js';
 import { ERROR_IDS } from '../../constants/errorIds.js';
 
 /**
  * GET /api/users
- * Lists all users with pagination support.
- *
- * Query parameters:
- * - limit: number of users to return (default: 50, min: 1, max: 100)
- * - offset: number of users to skip (default: 0, min: 0)
+ * Returns the authenticated user's own data.
+ * Users can only access their own information.
  */
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request }) => {
     try {
+        const { session, error } = await requireAuth(request);
+        if (error) return error;
+
         const userRepository = new UserRepositoryClass();
-        // Parse and validate limit parameter
-        const rawLimit = url.searchParams.get('limit');
-        let limit = parseInt(rawLimit || '50', 10);
-        // Validate and clamp limit to valid range [1, 100]
-        if (isNaN(limit)) limit = 50;
-        limit = Math.max(1, Math.min(100, limit));
+        const user = await userRepository.findById(session.user.id);
 
-        // Parse and validate offset parameter
-        const rawOffset = url.searchParams.get('offset');
-        let offset = parseInt(rawOffset || '0', 10);
-        // Validate and clamp offset to minimum of 0
-        if (isNaN(offset)) offset = 0;
-        offset = Math.max(0, offset);
+        if (!user) {
+            return errorResponse('User not found', 404);
+        }
 
-        const users = await userRepository.list(limit, offset);
-
-        return jsonResponse(users);
+        return jsonResponse(user);
     } catch (error) {
-        logger.error('Failed to list users', error, {
+        logger.error('Failed to fetch user', error, {
             endpoint: '/api/users',
             errorId: ERROR_IDS.DB_QUERY_FAILED,
         });
-        return errorResponse('Failed to list users', 500);
+        return errorResponse('Failed to fetch user', 500);
     }
 };
 
-/**
- * POST /api/users
- * Creates a new user.
- *
- * Request body:
- * - email: string (required, valid email format)
- * - username: string (required, 3-50 chars, alphanumeric with _ and -)
- */
-export const POST: APIRoute = async ({ request }) => {
-    try {
-        const userRepository = new UserRepositoryClass();
-        const body = await request.json();
-        const { email, username, locale: rawLocale } = body;
-
-        const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
-        const translations = getTranslations(locale);
-        const validationTranslations: ValidationTranslations = {
-            email: translations.email,
-            username: translations.username,
-            characterName: translations.characterName,
-        };
-
-        // Validate inputs
-        const emailError = validateEmail(email);
-        if (emailError) {
-            return errorResponse(
-                resolveValidationMessage(validationTranslations, emailError),
-                400
-            );
-        }
-
-        const usernameError = validateUsername(username);
-        if (usernameError) {
-            return errorResponse(
-                resolveValidationMessage(validationTranslations, usernameError),
-                400
-            );
-        }
-
-        const trimmedEmail = email.trim();
-        const trimmedUsername = username.trim();
-
-        const user = await userRepository.create({
-            email: trimmedEmail,
-            username: trimmedUsername,
-        });
-
-        return jsonResponse(user, 201);
-    } catch (error) {
-        logger.error('Failed to create user', error, {
-            endpoint: '/api/users',
-            errorId: ERROR_IDS.REPO_USER_CREATE_FAILED,
-        });
-        return errorResponse('Failed to create user', 500);
-    }
-};
+// Note: POST (user creation) is handled by Better Auth via /api/auth/[...all]
+// Direct user creation through this endpoint is no longer supported.

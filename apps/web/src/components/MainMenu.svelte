@@ -1,32 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { createEventDispatcher } from 'svelte';
   import UserStatus from './UserStatus.svelte';
-  import en from '@aquila/dialogue/translations/en.json';
-  import zh from '@aquila/dialogue/translations/zh.json';
+  import { getTranslations, type Locale } from '@aquila/dialogue';
   import type { User } from '../lib/drizzle/schema.js';
 
   export let user: User | null = null;
   export let locale: string = 'en';
 
   let currentLocale = locale;
-  const dispatch = createEventDispatcher();
 
-  // Helper function to get translations
-  const t = (key: string): string => {
-    const keys = key.split('.');
-    let value: Record<string, unknown> = currentLocale === 'zh' ? zh : en;
-
-    for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k] as Record<string, unknown>;
-      } else {
-        return key;
-      }
-    }
-
-    return typeof value === 'string' ? value : key;
-  };
+  // Use centralized translations
+  $: translations = getTranslations(currentLocale as Locale);
 
   // Helper to check if current path is Chinese
   const isChinesePath = (): boolean => {
@@ -38,7 +22,6 @@
     const clientLocale = document.documentElement.lang || 'en';
     if (clientLocale !== locale) {
       currentLocale = clientLocale;
-      dispatch('localeChange', { locale: clientLocale });
     }
   });
 
@@ -51,7 +34,6 @@
         'Failed to save language preference to localStorage:',
         error
       );
-      // Fall back gracefully - app continues to function without persistent storage
     }
   };
 
@@ -62,7 +44,8 @@
   };
 
   const handleSettingsClick = () => {
-    // Add your settings logic here
+    // Settings functionality not yet implemented
+    window.alert(translations.menu.settingsComingSoon || 'Settings coming soon!');
   };
 </script>
 
@@ -187,7 +170,7 @@
           class="text-6xl font-black mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
           style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);"
         >
-          {t('menu.heading')}
+          {translations.menu.heading}
         </h1>
         <div
           class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"
@@ -213,7 +196,7 @@
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
           ></div>
           <span class="relative text-xl tracking-wider uppercase font-black"
-            >{t('menu.startGame')}</span
+            >{translations.menu.startGame}</span
           >
           <!-- Gaming accent corners -->
           <div
@@ -240,7 +223,7 @@
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
           ></div>
           <span class="relative text-xl tracking-wider uppercase font-black"
-            >{t('menu.bookmarks')}</span
+            >{translations.menu.bookmarks}</span
           >
           <!-- Gaming accent corners -->
           <div
@@ -268,7 +251,7 @@
             class="absolute inset-0 bg-gradient-to-r from-transparent via-slate-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           ></div>
           <span class="relative text-xl tracking-wider uppercase font-black"
-            >{t('menu.settings')}</span
+            >{translations.menu.settings}</span
           >
           <!-- Gaming accent corners -->
           <div

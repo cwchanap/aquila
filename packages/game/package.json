@@ -23,7 +23,8 @@
     "dev": "vite build --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src",
-    "test": "echo 'No tests yet for @aquila/game' && exit 0"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@aquila/dialogue": "workspace:*"
@@ -33,7 +34,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "jsdom": "^28.0.0",
     "typescript": "^5.9.2",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "^4.0.18"
   }
 }

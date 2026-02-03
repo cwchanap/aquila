@@ -2,32 +2,31 @@ import type { APIRoute } from 'astro';
 import { ChapterRepository } from '@/lib/drizzle/repositories.js';
 import { logger } from '@/lib/logger.js';
 import {
-    requireSession,
+    requireAuth,
+    parseBody,
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { ChapterCreateSchema } from '@/lib/schemas.js';
 import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { error } = await requireSession(request);
-        if (error) return error;
+        const { error: authError } = await requireAuth(request);
+        if (authError) return authError;
 
-        const { storyId, title, description, order } = await request.json();
-
-        if (!storyId || !title || order === undefined) {
-            return errorResponse(
-                'Story ID, title, and order are required',
-                400
-            );
-        }
+        const { data, error: validationError } = await parseBody(
+            request,
+            ChapterCreateSchema
+        );
+        if (validationError) return validationError;
 
         const chapterRepo = new ChapterRepository();
         const chapter = await chapterRepo.create({
-            storyId,
-            title: title.trim(),
-            description: description?.trim() || null,
-            order: String(order),
+            storyId: data.storyId,
+            title: data.title.trim(),
+            description: data.description?.trim() || null,
+            order: data.order,
         });
 
         return jsonResponse(chapter, 201);

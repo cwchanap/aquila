@@ -5,45 +5,27 @@ import {
 } from '@/lib/drizzle/repositories.js';
 import { logger } from '@/lib/logger.js';
 import {
-    requireSession,
+    requireAuth,
+    parseBody,
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { SceneCreateSchema } from '@/lib/schemas.js';
 import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { session, error } = await requireSession(request);
-        if (error) return error;
+        const { session, error: authError } = await requireAuth(request);
+        if (authError) return authError;
 
-        let body: {
-            storyId?: string;
-            chapterId?: string;
-            title?: string;
-            content?: string;
-            order?: string | number;
-        };
-        try {
-            body = await request.json();
-        } catch (error) {
-            logger.error('Failed to parse scene JSON', error, {
-                endpoint: '/api/scenes',
-                errorId: ERROR_IDS.API_INVALID_JSON,
-            });
-            return errorResponse('Malformed JSON', 400);
-        }
-
-        const { storyId, chapterId, title, content, order } = body;
-
-        if (!storyId || !title || order === undefined) {
-            return errorResponse(
-                'Story ID, title, and order are required',
-                400
-            );
-        }
+        const { data, error: validationError } = await parseBody(
+            request,
+            SceneCreateSchema
+        );
+        if (validationError) return validationError;
 
         const storyRepo = new StoryRepository();
-        const story = await storyRepo.findById(storyId);
+        const story = await storyRepo.findById(data.storyId);
         if (!story) {
             return errorResponse('Story not found', 404);
         }
@@ -53,11 +35,11 @@ export const POST: APIRoute = async ({ request }) => {
 
         const sceneRepo = new SceneRepository();
         const scene = await sceneRepo.create({
-            storyId,
-            chapterId: chapterId || null,
-            title: title.trim(),
-            content: content?.trim() || null,
-            order: String(order),
+            storyId: data.storyId,
+            chapterId: data.chapterId || null,
+            title: data.title.trim(),
+            content: data.content?.trim() || null,
+            order: data.order,
         });
 
         return jsonResponse(scene, 201);

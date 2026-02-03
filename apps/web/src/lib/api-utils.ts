@@ -1,78 +1,101 @@
 /**
  * API utility functions for consistent response handling and session validation.
  */
-import { logger } from './logger.js';
-import { SimpleAuthService, type SimpleSession } from './simple-auth.js';
+import type { ZodSchema } from 'zod';
+import { auth, type Session } from './auth.js';
 
 /**
- * Create a JSON response with proper headers.
+ * Standard API success response format.
  */
-export function jsonResponse(data: unknown, status = 200): Response {
-    return new Response(JSON.stringify(data), {
+interface ApiSuccessResponse<T> {
+    data: T;
+    success: true;
+}
+
+/**
+ * Standard API error response format.
+ */
+interface ApiErrorResponse {
+    error: string;
+    errorId?: string;
+    success: false;
+}
+
+/**
+ * Create a JSON response with proper headers and standardized format.
+ */
+export function jsonResponse<T>(data: T, status = 200): Response {
+    const body: ApiSuccessResponse<T> = { data, success: true };
+    return new Response(JSON.stringify(body), {
         status,
         headers: { 'Content-Type': 'application/json' },
     });
 }
 
 /**
- * Create a JSON error response.
+ * Create a JSON error response with standardized format.
  */
-export function errorResponse(error: string, status: number): Response {
-    return jsonResponse({ error }, status);
+export function errorResponse(
+    error: string,
+    status: number,
+    errorId?: string
+): Response {
+    const body: ApiErrorResponse = {
+        error,
+        success: false,
+        ...(errorId && { errorId }),
+    };
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
 }
 
 /**
- * Extract session from request cookies.
- * Returns null if no session cookie or session is invalid/expired.
- */
-export async function getSessionFromRequest(
-    request: Request
-): Promise<SimpleSession | null> {
-    const cookieHeader = request.headers.get('cookie') || '';
-    // Normalize cookie string by replacing multiple spaces with single space
-    const cookieStr = cookieHeader
-        .split(';')
-        .map(c => c.trim().replace(/\s+/g, ' '))
-        .find(c => c.startsWith('session='));
-
-    if (!cookieStr) return null;
-
-    // Find the first '=' to get the key-value boundary, then extract the full value
-    const firstEqIndex = cookieStr.indexOf('=');
-    if (firstEqIndex === -1) return null;
-
-    let sessionId: string;
-    try {
-        sessionId = decodeURIComponent(cookieStr.substring(firstEqIndex + 1));
-    } catch (error) {
-        if (error instanceof URIError) {
-            logger.warn('Malformed session cookie', { cookieName: 'session' });
-            return null;
-        }
-        throw error;
-    }
-
-    if (!sessionId) return null;
-    return SimpleAuthService.getSession(sessionId);
-}
-
-/**
- * Require a valid session, returning an error response if not authenticated.
+ * Require a valid Better Auth session, returning an error response if not authenticated.
  * Use this in API routes that require authentication.
  *
  * @example
- * const { session, error } = await requireSession(request);
+ * const { session, error } = await requireAuth(request);
  * if (error) return error;
- * // session is now guaranteed to be valid
+ * // session.user is now guaranteed to be valid
  */
-export async function requireSession(
+export async function requireAuth(
     request: Request
 ): Promise<
-    { session: SimpleSession; error: null } | { session: null; error: Response }
+    { session: Session; error: null } | { session: null; error: Response }
 > {
-    const session = await getSessionFromRequest(request);
-    if (!session) {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user?.id) {
         return { session: null, error: errorResponse('Unauthorized', 401) };
     }
     return { session, error: null };
+}
+
+/**
+ * Parse and validate request body against a Zod schema.
+ * Returns validated data or an error response.
+ *
+ * @example
+ * const { data, error } = await parseBody(request, StoryCreateSchema);
+ * if (error) return error;
+ * // data is now typed and validated
+ */
+export async function parseBody<T>(
+    request: Request,
+    schema: ZodSchema<T>
+): Promise<{ data: T; error: null } | { data: null; error: Response }> {
+    let body: unknown;
+    try {
+        body = await request.json();
+    } catch {
+        return { data: null, error: errorResponse('Malformed JSON', 400) };
+    }
+
+    const result = schema.safeParse(body);
+    if (!result.success) {
+        const message = result.error.issues[0]?.message || 'Validation failed';
+        return { data: null, error: errorResponse(message, 400) };
+    }
+    return { data: result.data, error: null };
 }

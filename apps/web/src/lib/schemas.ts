@@ -6,8 +6,12 @@ import { z } from 'zod';
 
 // Story schemas
 export const StoryCreateSchema = z.object({
-    title: z.string().min(1, 'Title is required').max(255, 'Title too long'),
-    description: z.string().optional(),
+    title: z
+        .string()
+        .trim()
+        .min(1, 'Title is required')
+        .max(255, 'Title too long'),
+    description: z.string().trim().optional(),
     coverImage: z.string().url('Invalid cover image URL').optional(),
     status: z.enum(['draft', 'published', 'archived']).default('draft'),
 });
@@ -15,10 +19,11 @@ export const StoryCreateSchema = z.object({
 export const StoryUpdateSchema = z.object({
     title: z
         .string()
+        .trim()
         .min(1, 'Title is required')
         .max(255, 'Title too long')
         .optional(),
-    description: z.string().optional(),
+    description: z.string().trim().optional(),
     coverImage: z.string().url('Invalid cover image URL').optional().nullable(),
     status: z.enum(['draft', 'published', 'archived']).optional(),
 });

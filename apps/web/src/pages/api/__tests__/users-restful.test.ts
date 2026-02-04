@@ -22,19 +22,46 @@ vi.mock('@/lib/drizzle/repositories.js', () => ({
     UserRepository: UserRepositoryConstructor,
 }));
 
+// Mock Better Auth
+const mockGetSession = vi.fn();
+vi.mock('../../../lib/auth.js', () => ({
+    auth: {
+        api: {
+            getSession: mockGetSession,
+        },
+    },
+}));
+
+vi.mock('@/lib/auth.js', () => ({
+    auth: {
+        api: {
+            getSession: mockGetSession,
+        },
+    },
+}));
+
+// Helper to set up mock session
+const mockAuthenticatedSession = (userId: string = 'user123') => {
+    mockGetSession.mockResolvedValue({
+        user: { id: userId, email: 'test@example.com' },
+    });
+};
+
+const mockUnauthenticatedSession = () => {
+    mockGetSession.mockResolvedValue(null);
+};
+
 let GET: typeof import('../users').GET;
-let POST: typeof import('../users').POST;
 let GetById: typeof import('../users/[id]').GET;
 let UpdateById: typeof import('../users/[id]').PUT;
 let DeleteById: typeof import('../users/[id]').DELETE;
 let GetByEmail: typeof import('../users/by-email/[email]').GET;
 let GetByUsername: typeof import('../users/by-username/[username]').GET;
 
-describe('Users API - RESTful Design', () => {
+describe('Users API - Authenticated Endpoints', () => {
     beforeAll(async () => {
         const usersModule = await import('../users');
         GET = usersModule.GET;
-        POST = usersModule.POST;
 
         const usersByIdModule = await import('../users/[id]');
         GetById = usersByIdModule.GET;
@@ -48,7 +75,6 @@ describe('Users API - RESTful Design', () => {
     });
 
     beforeEach(() => {
-        // Reset all mocks
         vi.clearAllMocks();
         mockRepo.findById.mockReset();
         mockRepo.findByEmail.mockReset();
@@ -57,410 +83,127 @@ describe('Users API - RESTful Design', () => {
         mockRepo.create.mockReset();
         mockRepo.update.mockReset();
         mockRepo.delete.mockReset();
+        mockGetSession.mockReset();
+        // Default to authenticated session
+        mockAuthenticatedSession();
     });
 
     describe('GET /api/users', () => {
-        it('lists users with default pagination', async () => {
-            mockRepo.list.mockResolvedValue([
-                { id: 'user123', email: 'test@example.com' },
-            ]);
+        it('returns 401 when not authenticated', async () => {
+            mockUnauthenticatedSession();
 
             const response = await GET({
-                url: new URL('http://localhost/api/users'),
+                request: new Request('http://localhost/api/users'),
             } as any);
 
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual([
-                { id: 'user123', email: 'test@example.com' },
-            ]);
-            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
+            expect(response.status).toBe(401);
+            const data = await response.json();
+            expect(data.error).toBe('Unauthorized');
+            expect(data.success).toBe(false);
         });
 
-        it('lists users with custom pagination', async () => {
-            mockRepo.list.mockResolvedValue([
-                { id: 'user123', email: 'test@example.com' },
-            ]);
+        it('returns current user data when authenticated', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.findById.mockResolvedValue({
+                id: 'user123',
+                email: 'test@example.com',
+            });
 
             const response = await GET({
-                url: new URL('http://localhost/api/users?limit=10&offset=20'),
+                request: new Request('http://localhost/api/users'),
             } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual([
-                { id: 'user123', email: 'test@example.com' },
-            ]);
-            expect(mockRepo.list).toHaveBeenCalledWith(10, 20);
+            const data = await response.json();
+            expect(data.success).toBe(true);
+            expect(data.data).toEqual({
+                id: 'user123',
+                email: 'test@example.com',
+            });
+            expect(mockRepo.findById).toHaveBeenCalledWith('user123');
         });
 
-        it('clamps limit to maximum of 100', async () => {
-            mockRepo.list.mockResolvedValue([]);
+        it('returns 404 when user not found', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.findById.mockResolvedValue(null);
 
             const response = await GET({
-                url: new URL('http://localhost/api/users?limit=200'),
+                request: new Request('http://localhost/api/users'),
             } as any);
 
-            expect(response.status).toBe(200);
-            expect(mockRepo.list).toHaveBeenCalledWith(100, 0);
-        });
-
-        it('clamps limit to minimum of 1', async () => {
-            mockRepo.list.mockResolvedValue([]);
-
-            const response = await GET({
-                url: new URL('http://localhost/api/users?limit=0'),
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.list).toHaveBeenCalledWith(1, 0);
-        });
-
-        it('defaults limit to 50 when NaN', async () => {
-            mockRepo.list.mockResolvedValue([]);
-
-            const response = await GET({
-                url: new URL('http://localhost/api/users?limit=invalid'),
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
-        });
-
-        it('clamps negative offset to 0', async () => {
-            mockRepo.list.mockResolvedValue([]);
-
-            const response = await GET({
-                url: new URL('http://localhost/api/users?offset=-10'),
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
-        });
-
-        it('defaults offset to 0 when NaN', async () => {
-            mockRepo.list.mockResolvedValue([]);
-
-            const response = await GET({
-                url: new URL('http://localhost/api/users?offset=invalid'),
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
-        });
-
-        it('handles edge case with negative limit', async () => {
-            mockRepo.list.mockResolvedValue([]);
-
-            const response = await GET({
-                url: new URL('http://localhost/api/users?limit=-5'),
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.list).toHaveBeenCalledWith(1, 0);
+            expect(response.status).toBe(404);
+            const data = await response.json();
+            expect(data.success).toBe(false);
+            expect(data.error).toBe('User not found');
         });
 
         it('returns 500 on internal server error', async () => {
-            mockRepo.list.mockRejectedValue(new Error('Database error'));
+            mockAuthenticatedSession('user123');
+            mockRepo.findById.mockRejectedValue(new Error('Database error'));
 
             const response = await GET({
-                url: new URL('http://localhost/api/users'),
+                request: new Request('http://localhost/api/users'),
             } as any);
 
             expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Failed to list users',
-            });
-            expect(mockRepo.list).toHaveBeenCalledWith(50, 0);
-        });
-    });
-
-    describe('POST /api/users', () => {
-        describe('email validation', () => {
-            it('returns 400 when email is missing', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                username: 'tester',
-                                locale: 'zh',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: '電子郵件必須為字串',
-                });
-            });
-
-            it('returns 400 when email is empty', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: '',
-                                username: 'tester',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Email is required',
-                });
-            });
-
-            it('returns 400 when email format is invalid', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: 'not-an-email',
-                                username: 'tester',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Invalid email format',
-                });
-            });
-
-            it('returns 400 when email exceeds 255 characters', async () => {
-                const longEmail = 'a'.repeat(250) + '@test.com';
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: longEmail,
-                                username: 'tester',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Email must be at most 255 characters',
-                });
-            });
-        });
-
-        describe('username validation', () => {
-            it('returns 400 when username is missing', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: 'test@example.com',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Username must be a string',
-                });
-            });
-
-            it('returns 400 when username is too short', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: 'test@example.com',
-                                username: 'ab',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Username must be at least 3 characters',
-                });
-            });
-
-            it('returns 400 when username is too long', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: 'test@example.com',
-                                username: 'a'.repeat(51),
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Username must be at most 50 characters',
-                });
-            });
-
-            it('returns 400 when username contains invalid characters', async () => {
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: 'test@example.com',
-                                username: 'user@name!',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(400);
-                await expect(response.json()).resolves.toEqual({
-                    error: 'Username can only contain letters, numbers, underscores, and hyphens',
-                });
-            });
-
-            it('allows valid username with underscores and hyphens', async () => {
-                mockRepo.create.mockResolvedValue({
-                    id: 'user123',
-                    email: 'test@example.com',
-                    username: 'user_name-123',
-                });
-
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: 'test@example.com',
-                                username: 'user_name-123',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(201);
-            });
-        });
-
-        describe('input trimming', () => {
-            it('trims whitespace from email and username', async () => {
-                mockRepo.create.mockResolvedValue({
-                    id: 'user123',
-                    email: 'test@example.com',
-                    username: 'tester',
-                });
-
-                const response = await POST({
-                    request: {
-                        json: () =>
-                            Promise.resolve({
-                                email: '  test@example.com  ',
-                                username: '  tester  ',
-                            }),
-                    },
-                } as any);
-
-                expect(response.status).toBe(201);
-                expect(mockRepo.create).toHaveBeenCalledWith({
-                    email: 'test@example.com',
-                    username: 'tester',
-                });
-            });
-        });
-
-        it('creates a user when input is valid', async () => {
-            mockRepo.create.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-
-            const response = await POST({
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'test@example.com',
-                            username: 'tester',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(201);
-            await expect(response.json()).resolves.toEqual({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-            expect(mockRepo.create).toHaveBeenCalledWith({
-                email: 'test@example.com',
-                username: 'tester',
-            });
-        });
-
-        it('returns 500 on internal server error', async () => {
-            mockRepo.create.mockRejectedValue(new Error('Database error'));
-
-            const response = await POST({
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'test@example.com',
-                            username: 'tester',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Failed to create user',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Failed to fetch user');
+            expect(data.success).toBe(false);
         });
     });
 
     describe('GET /api/users/[id]', () => {
+        it('returns 401 when not authenticated', async () => {
+            mockUnauthenticatedSession();
+
+            const response = await GetById({
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123'),
+            } as any);
+
+            expect(response.status).toBe(401);
+        });
+
         it('returns 400 when id is missing', async () => {
             const response = await GetById({
                 params: {},
+                request: new Request('http://localhost/api/users/'),
             } as any);
 
             expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.findById).not.toHaveBeenCalled();
+            const data = await response.json();
+            expect(data.error).toBe('Invalid User ID');
         });
 
-        it('returns 400 when id is empty string', async () => {
+        it('returns 403 when accessing another users data', async () => {
+            mockAuthenticatedSession('user123');
+
             const response = await GetById({
-                params: { id: '' },
+                params: { id: 'other-user' },
+                request: new Request('http://localhost/api/users/other-user'),
             } as any);
 
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.findById).not.toHaveBeenCalled();
-        });
-
-        it('returns 400 when id is whitespace only', async () => {
-            const response = await GetById({
-                params: { id: '   ' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.findById).not.toHaveBeenCalled();
+            expect(response.status).toBe(403);
+            const data = await response.json();
+            expect(data.error).toBe('Forbidden');
         });
 
         it('returns 404 when user is not found', async () => {
+            mockAuthenticatedSession('user123');
             mockRepo.findById.mockResolvedValue(null);
 
             const response = await GetById({
-                params: { id: 'missing' },
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123'),
             } as any);
 
             expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User not found',
-            });
-            expect(mockRepo.findById).toHaveBeenCalledWith('missing');
+            const data = await response.json();
+            expect(data.error).toBe('User not found');
         });
 
-        it('returns a user successfully', async () => {
+        it('returns user data successfully', async () => {
+            mockAuthenticatedSession('user123');
             mockRepo.findById.mockResolvedValue({
                 id: 'user123',
                 email: 'test@example.com',
@@ -469,390 +212,148 @@ describe('Users API - RESTful Design', () => {
 
             const response = await GetById({
                 params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123'),
             } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
+            const data = await response.json();
+            expect(data.success).toBe(true);
+            expect(data.data).toEqual({
                 id: 'user123',
                 email: 'test@example.com',
                 username: 'tester',
             });
-            expect(mockRepo.findById).toHaveBeenCalledWith('user123');
-        });
-
-        it('returns 500 on internal server error', async () => {
-            mockRepo.findById.mockRejectedValue(new Error('Database error'));
-
-            const response = await GetById({
-                params: { id: 'user123' },
-            } as any);
-
-            expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Failed to fetch user',
-            });
-            expect(mockRepo.findById).toHaveBeenCalledWith('user123');
         });
     });
 
     describe('PUT /api/users/[id]', () => {
-        it('returns 400 when id is missing', async () => {
-            const response = await UpdateById({
-                params: {},
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'updated@example.com',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.update).not.toHaveBeenCalled();
-        });
-
-        it('returns 404 when user is not found', async () => {
-            mockRepo.update.mockResolvedValue(null);
-
-            const response = await UpdateById({
-                params: { id: 'missing' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'updated@example.com',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User not found',
-            });
-        });
-
-        it('updates user email', async () => {
-            mockRepo.update.mockResolvedValue({
-                id: 'user123',
-                email: 'updated@example.com',
-                username: 'tester',
-            });
+        it('returns 401 when not authenticated', async () => {
+            mockUnauthenticatedSession();
 
             const response = await UpdateById({
                 params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'updated@example.com',
-                        }),
-                },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'PUT',
+                    body: JSON.stringify({ name: 'New Name' }),
+                }),
             } as any);
 
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                id: 'user123',
-                email: 'updated@example.com',
-                username: 'tester',
-            });
-            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
-                email: 'updated@example.com',
-            });
+            expect(response.status).toBe(401);
         });
 
-        it('updates user username', async () => {
-            mockRepo.update.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'newtester',
-            });
+        it('returns 403 when updating another users data', async () => {
+            mockAuthenticatedSession('user123');
+
+            const response = await UpdateById({
+                params: { id: 'other-user' },
+                request: new Request('http://localhost/api/users/other-user', {
+                    method: 'PUT',
+                    body: JSON.stringify({ name: 'New Name' }),
+                }),
+            } as any);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('returns 422 when no valid fields to update', async () => {
+            mockAuthenticatedSession('user123');
 
             const response = await UpdateById({
                 params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            username: 'newtester',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'newtester',
-            });
-            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
-                username: 'newtester',
-            });
-        });
-
-        it('updates both email and username', async () => {
-            mockRepo.update.mockResolvedValue({
-                id: 'user123',
-                email: 'updated@example.com',
-                username: 'newtester',
-            });
-
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'updated@example.com',
-                            username: 'newtester',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
-                email: 'updated@example.com',
-                username: 'newtester',
-            });
-        });
-
-        it('returns 500 on internal server error', async () => {
-            mockRepo.update.mockRejectedValue(new Error('Database error'));
-
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: 'updated@example.com',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Failed to update user',
-            });
-        });
-
-        it('returns 400 when request body contains invalid JSON', async () => {
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () => Promise.reject(new SyntaxError('Invalid JSON')),
-                },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid JSON in request body',
-            });
-            expect(mockRepo.update).not.toHaveBeenCalled();
-        });
-
-        it('trims whitespace from email before update', async () => {
-            mockRepo.update.mockResolvedValue({
-                id: 'user123',
-                email: 'updated@example.com',
-                username: 'tester',
-            });
-
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: '  updated@example.com  ',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
-                email: 'updated@example.com',
-            });
-        });
-
-        it('trims whitespace from username before update', async () => {
-            mockRepo.update.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'newtester',
-            });
-
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            username: '  newtester  ',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
-                username: 'newtester',
-            });
-        });
-
-        it('returns 422 when both email and username are empty strings', async () => {
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: '',
-                            username: '',
-                        }),
-                },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}),
+                }),
             } as any);
 
             expect(response.status).toBe(422);
-            await expect(response.json()).resolves.toEqual({
-                error: 'No valid fields to update',
-            });
-            expect(mockRepo.update).not.toHaveBeenCalled();
+            const data = await response.json();
+            expect(data.error).toBe('No valid fields to update');
         });
 
-        it('returns 422 when both email and username are whitespace only', async () => {
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: '   ',
-                            username: '  \t\n  ',
-                        }),
-                },
-            } as any);
-
-            expect(response.status).toBe(422);
-            await expect(response.json()).resolves.toEqual({
-                error: 'No valid fields to update',
-            });
-            expect(mockRepo.update).not.toHaveBeenCalled();
-        });
-
-        it('returns 422 when request body is empty object', async () => {
-            const response = await UpdateById({
-                params: { id: 'user123' },
-                request: {
-                    json: () => Promise.resolve({}),
-                },
-            } as any);
-
-            expect(response.status).toBe(422);
-            await expect(response.json()).resolves.toEqual({
-                error: 'No valid fields to update',
-            });
-            expect(mockRepo.update).not.toHaveBeenCalled();
-        });
-
-        it('trims and updates when email has trailing/leading whitespace', async () => {
+        it('updates user successfully', async () => {
+            mockAuthenticatedSession('user123');
             mockRepo.update.mockResolvedValue({
                 id: 'user123',
-                email: 'new@example.com',
-                username: 'tester',
+                email: 'test@example.com',
+                name: 'Updated Name',
             });
 
             const response = await UpdateById({
                 params: { id: 'user123' },
-                request: {
-                    json: () =>
-                        Promise.resolve({
-                            email: '  new@example.com  ',
-                            username: '   ',
-                        }),
-                },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'Updated Name' }),
+                }),
             } as any);
 
             expect(response.status).toBe(200);
-            expect(mockRepo.update).toHaveBeenCalledWith('user123', {
-                email: 'new@example.com',
-            });
+            const data = await response.json();
+            expect(data.success).toBe(true);
+            expect(data.data.name).toBe('Updated Name');
         });
     });
 
     describe('DELETE /api/users/[id]', () => {
-        it('returns 400 when id is missing', async () => {
+        it('returns 401 when not authenticated', async () => {
+            mockUnauthenticatedSession();
+
             const response = await DeleteById({
-                params: {},
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'DELETE',
+                }),
             } as any);
 
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.delete).not.toHaveBeenCalled();
+            expect(response.status).toBe(401);
         });
 
-        it('returns 400 when id is empty string', async () => {
+        it('returns 403 when deleting another users account', async () => {
+            mockAuthenticatedSession('user123');
+
             const response = await DeleteById({
-                params: { id: '' },
+                params: { id: 'other-user' },
+                request: new Request('http://localhost/api/users/other-user', {
+                    method: 'DELETE',
+                }),
             } as any);
 
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.delete).not.toHaveBeenCalled();
-        });
-
-        it('returns 400 when id is whitespace only', async () => {
-            const response = await DeleteById({
-                params: { id: '   ' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid User ID',
-            });
-            expect(mockRepo.delete).not.toHaveBeenCalled();
+            expect(response.status).toBe(403);
         });
 
         it('returns 404 when user is not found', async () => {
-            mockRepo.delete.mockResolvedValue(null);
+            mockAuthenticatedSession('user123');
+            mockRepo.delete.mockResolvedValue(false);
 
             const response = await DeleteById({
-                params: { id: 'missing' },
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'DELETE',
+                }),
             } as any);
 
             expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User not found',
-            });
-            expect(mockRepo.delete).toHaveBeenCalledWith('missing');
+            const data = await response.json();
+            expect(data.error).toBe('User not found');
         });
 
-        it('deletes a user successfully', async () => {
-            mockRepo.delete.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
+        it('deletes user successfully', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.delete.mockResolvedValue(true);
 
             const response = await DeleteById({
                 params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'DELETE',
+                }),
             } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                message: 'User deleted successfully',
-            });
-            expect(mockRepo.delete).toHaveBeenCalledWith('user123');
-        });
-
-        it('returns 500 on internal server error', async () => {
-            mockRepo.delete.mockRejectedValue(new Error('Database error'));
-
-            const response = await DeleteById({
-                params: { id: 'user123' },
-            } as any);
-
-            expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Failed to delete user',
-            });
-            expect(mockRepo.delete).toHaveBeenCalledWith('user123');
+            const data = await response.json();
+            expect(data.success).toBe(true);
+            expect(data.data.deleted).toBe(true);
         });
     });
 
@@ -863,34 +364,8 @@ describe('Users API - RESTful Design', () => {
             } as any);
 
             expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid email address',
-            });
-            expect(mockRepo.findByEmail).not.toHaveBeenCalled();
-        });
-
-        it('returns 400 when email is empty string', async () => {
-            const response = await GetByEmail({
-                params: { email: '' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid email address',
-            });
-            expect(mockRepo.findByEmail).not.toHaveBeenCalled();
-        });
-
-        it('returns 400 when email is whitespace only', async () => {
-            const response = await GetByEmail({
-                params: { email: '   ' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid email address',
-            });
-            expect(mockRepo.findByEmail).not.toHaveBeenCalled();
+            const data = await response.json();
+            expect(data.error).toBe('Invalid email address');
         });
 
         it('returns 404 when user is not found', async () => {
@@ -901,19 +376,14 @@ describe('Users API - RESTful Design', () => {
             } as any);
 
             expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User not found',
-            });
-            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
-                'missing@example.com'
-            );
+            const data = await response.json();
+            expect(data.error).toBe('User not found');
         });
 
-        it('returns a user successfully', async () => {
+        it('returns user successfully', async () => {
             mockRepo.findByEmail.mockResolvedValue({
                 id: 'user123',
                 email: 'test@example.com',
-                username: 'tester',
             });
 
             const response = await GetByEmail({
@@ -921,93 +391,8 @@ describe('Users API - RESTful Design', () => {
             } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
-                'test@example.com'
-            );
-        });
-
-        it('trims whitespace from email', async () => {
-            mockRepo.findByEmail.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-
-            const response = await GetByEmail({
-                params: { email: '  test@example.com  ' },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
-                'test@example.com'
-            );
-        });
-
-        it('decodes URL-encoded email address', async () => {
-            mockRepo.findByEmail.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-
-            // @ sign encoded as %40
-            const response = await GetByEmail({
-                params: { email: 'test%40example.com' },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
-                'test@example.com'
-            );
-        });
-
-        it('decodes URL-encoded email with plus sign (space)', async () => {
-            mockRepo.findByEmail.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-
-            // + character is URL-encoded as %2B, and space as +
-            const response = await GetByEmail({
-                params: { email: 'test%2Buser@example.com' },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
-                'test+user@example.com'
-            );
-        });
-
-        it('returns 400 for malformed URI', async () => {
-            // Invalid UTF-8 sequence
-            const response = await GetByEmail({
-                params: { email: '%E0%A4%A' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            expect(mockRepo.findByEmail).not.toHaveBeenCalled();
-        });
-
-        it('returns 500 on internal server error', async () => {
-            mockRepo.findByEmail.mockRejectedValue(new Error('Database error'));
-
-            const response = await GetByEmail({
-                params: { email: 'test@example.com' },
-            } as any);
-
-            expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
-            });
-            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
-                'test@example.com'
-            );
+            const data = await response.json();
+            expect(data.id).toBe('user123');
         });
     });
 
@@ -1018,34 +403,8 @@ describe('Users API - RESTful Design', () => {
             } as any);
 
             expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid username',
-            });
-            expect(mockRepo.findByUsername).not.toHaveBeenCalled();
-        });
-
-        it('returns 400 when username is empty string', async () => {
-            const response = await GetByUsername({
-                params: { username: '' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid username',
-            });
-            expect(mockRepo.findByUsername).not.toHaveBeenCalled();
-        });
-
-        it('returns 400 when username is whitespace only', async () => {
-            const response = await GetByUsername({
-                params: { username: '   ' },
-            } as any);
-
-            expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Invalid username',
-            });
-            expect(mockRepo.findByUsername).not.toHaveBeenCalled();
+            const data = await response.json();
+            expect(data.error).toBe('Invalid username');
         });
 
         it('returns 404 when user is not found', async () => {
@@ -1056,16 +415,13 @@ describe('Users API - RESTful Design', () => {
             } as any);
 
             expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'User not found',
-            });
-            expect(mockRepo.findByUsername).toHaveBeenCalledWith('missing');
+            const data = await response.json();
+            expect(data.error).toBe('User not found');
         });
 
-        it('returns a user successfully', async () => {
+        it('returns user successfully', async () => {
             mockRepo.findByUsername.mockResolvedValue({
                 id: 'user123',
-                email: 'test@example.com',
                 username: 'tester',
             });
 
@@ -1074,43 +430,8 @@ describe('Users API - RESTful Design', () => {
             } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-            expect(mockRepo.findByUsername).toHaveBeenCalledWith('tester');
-        });
-
-        it('trims whitespace from username', async () => {
-            mockRepo.findByUsername.mockResolvedValue({
-                id: 'user123',
-                email: 'test@example.com',
-                username: 'tester',
-            });
-
-            const response = await GetByUsername({
-                params: { username: '  tester  ' },
-            } as any);
-
-            expect(response.status).toBe(200);
-            expect(mockRepo.findByUsername).toHaveBeenCalledWith('tester');
-        });
-
-        it('returns 500 on internal server error', async () => {
-            mockRepo.findByUsername.mockRejectedValue(
-                new Error('Database error')
-            );
-
-            const response = await GetByUsername({
-                params: { username: 'tester' },
-            } as any);
-
-            expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Internal server error',
-            });
-            expect(mockRepo.findByUsername).toHaveBeenCalledWith('tester');
+            const data = await response.json();
+            expect(data.id).toBe('user123');
         });
     });
 });

@@ -1,47 +1,37 @@
 /**
  * Unit tests for api-utils.ts
  *
- * Note: Tests for getSessionFromRequest mock SimpleAuthService to avoid DB access.
+ * Tests the core API utility functions including authentication helpers,
+ * request parsing, and response formatting.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-vi.mock('../simple-auth.js', () => ({
-    SimpleAuthService: {
-        getSession: vi.fn(),
+import { z } from 'zod';
+
+// Must use vi.hoisted() for variables used in vi.mock()
+const { mockGetSession } = vi.hoisted(() => ({
+    mockGetSession: vi.fn(),
+}));
+
+vi.mock('../auth.js', () => ({
+    auth: {
+        api: {
+            getSession: mockGetSession,
+        },
     },
 }));
 
-import { SimpleAuthService } from '../simple-auth.js';
 import {
-    getSessionFromRequest,
     jsonResponse,
     errorResponse,
-    requireSession,
+    requireAuth,
+    parseBody,
 } from '../api-utils';
-
-const getSession = vi.mocked(
-    SimpleAuthService.getSession
-) as unknown as ReturnType<typeof vi.fn>;
-
-/**
- * Helper to create a mock request with a cookie header.
- * Cookie is a restricted header that cannot be set directly on Request,
- * so we mock the headers.get method to return the cookie value.
- */
-function createMockRequest(cookieValue: string | null): Request {
-    const request = new Request('http://localhost');
-    vi.spyOn(request.headers, 'get').mockImplementation((key: string) => {
-        if (key.toLowerCase() === 'cookie') {
-            return cookieValue;
-        }
-        return null;
-    });
-    return request;
-}
 
 describe('api-utils', () => {
     beforeEach(() => {
-        getSession.mockReset();
+        mockGetSession.mockReset();
     });
+
     describe('jsonResponse', () => {
         it('should create a JSON response with default status 200', async () => {
             const data = { message: 'test' };
@@ -51,18 +41,22 @@ describe('api-utils', () => {
             expect(response.headers.get('Content-Type')).toBe(
                 'application/json'
             );
-            await expect(response.json()).resolves.toEqual(data);
+            const json = await response.json();
+            expect(json.data).toEqual(data);
+            expect(json.success).toBe(true);
         });
 
         it('should create a JSON response with custom status', async () => {
-            const data = { error: 'not found' };
-            const response = jsonResponse(data, 404);
+            const data = { items: [1, 2, 3] };
+            const response = jsonResponse(data, 201);
 
-            expect(response.status).toBe(404);
+            expect(response.status).toBe(201);
             expect(response.headers.get('Content-Type')).toBe(
                 'application/json'
             );
-            await expect(response.json()).resolves.toEqual(data);
+            const json = await response.json();
+            expect(json.data).toEqual(data);
+            expect(json.success).toBe(true);
         });
     });
 
@@ -74,169 +68,120 @@ describe('api-utils', () => {
             expect(response.headers.get('Content-Type')).toBe(
                 'application/json'
             );
-            await expect(response.json()).resolves.toEqual({
-                error: 'test error',
-            });
+            const json = await response.json();
+            expect(json.error).toBe('test error');
+            expect(json.success).toBe(false);
+        });
+
+        it('should include errorId when provided', async () => {
+            const response = errorResponse('server error', 500, 'ERR_001');
+
+            expect(response.status).toBe(500);
+            const json = await response.json();
+            expect(json.error).toBe('server error');
+            expect(json.errorId).toBe('ERR_001');
+            expect(json.success).toBe(false);
         });
     });
 
-    describe('getSessionFromRequest', () => {
-        it('should return session when valid session cookie is present', async () => {
+    describe('requireAuth', () => {
+        it('should return session when authenticated', async () => {
             const mockSession = {
-                user: {
-                    id: 'user-1',
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    username: 'testuser',
-                },
-                sessionId: 'session-123',
+                user: { id: 'user-1', email: 'test@example.com' },
             };
-            getSession.mockResolvedValue(mockSession);
-            const request = createMockRequest('session=valid-session-id');
+            mockGetSession.mockResolvedValue(mockSession);
+            const request = new Request('http://localhost/api/test');
 
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toEqual(mockSession);
-            expect(getSession).toHaveBeenCalledWith('valid-session-id');
-        });
-
-        it('should return null when no session cookie is present', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest(null);
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-        });
-
-        it('should return null when session cookie has empty value', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('session=');
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-        });
-
-        it('should return null when session cookie has no equals sign', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('session');
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-        });
-
-        it('should return null when cookie header is not a session cookie', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('other=value');
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-        });
-
-        it('should handle malformed cookie string', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('invalid-cookie-format');
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-        });
-
-        it('should handle cookie values containing equals sign', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('session=abc=123=xyz');
-
-            const result = await getSessionFromRequest(request);
-
-            // This test verifies that the full value "abc=123=xyz" is extracted,
-            // not just "abc". Note: getSessionFromRequest will return null here
-            // because SimpleAuthService.getSession will not find a matching session,
-            // but the cookie parsing should not throw an error.
-            expect(result).toBeNull();
-            expect(getSession).toHaveBeenCalledWith('abc=123=xyz');
-        });
-
-        it('should handle URL-encoded cookie values', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('session=hello%20world%21');
-
-            const result = await getSessionFromRequest(request);
-
-            // This test verifies that URL-encoded values are properly decoded.
-            // Note: getSessionFromRequest will return null here because
-            // SimpleAuthService.getSession will not find a matching session,
-            // but the cookie parsing should not throw an error.
-            expect(result).toBeNull();
-            expect(getSession).toHaveBeenCalledWith('hello world!');
-        });
-
-        it('should handle cookie with multiple spaces', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest(
-                'other=foo;  session=test123;  another=bar'
-            );
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-            expect(getSession).toHaveBeenCalledWith('test123');
-        });
-
-        it('should return null for invalid URL-encoded session cookie', async () => {
-            const request = createMockRequest('session=%ZZ%invalid');
-
-            const result = await getSessionFromRequest(request);
-
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('requireSession', () => {
-        it('should return session when valid session exists', async () => {
-            const mockSession = {
-                user: {
-                    id: 'user-1',
-                    email: 'test@example.com',
-                    name: 'Test',
-                    username: null,
-                },
-                sessionId: 'session-123',
-            };
-            getSession.mockResolvedValue(mockSession);
-            const request = createMockRequest('session=valid-token');
-
-            const result = await requireSession(request);
+            const result = await requireAuth(request);
 
             expect(result.session).toEqual(mockSession);
             expect(result.error).toBeNull();
         });
 
-        it('should return 401 error response when no session exists', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest(null);
+        it('should return 401 error when not authenticated', async () => {
+            mockGetSession.mockResolvedValue(null);
+            const request = new Request('http://localhost/api/test');
 
-            const result = await requireSession(request);
+            const result = await requireAuth(request);
 
             expect(result.session).toBeNull();
             expect(result.error).not.toBeNull();
             expect(result.error?.status).toBe(401);
-            await expect(result.error?.json()).resolves.toEqual({
-                error: 'Unauthorized',
-            });
+            const json = await result.error?.json();
+            expect(json.error).toBe('Unauthorized');
         });
 
-        it('should return 401 error response when session is expired/invalid', async () => {
-            getSession.mockResolvedValue(null);
-            const request = createMockRequest('session=expired-token');
+        it('should return 401 error when session has no user id', async () => {
+            mockGetSession.mockResolvedValue({ user: {} });
+            const request = new Request('http://localhost/api/test');
 
-            const result = await requireSession(request);
+            const result = await requireAuth(request);
 
             expect(result.session).toBeNull();
-            expect(result.error).not.toBeNull();
             expect(result.error?.status).toBe(401);
+        });
+    });
+
+    describe('parseBody', () => {
+        const TestSchema = z.object({
+            name: z.string().min(1, 'Name is required'),
+            age: z.number().min(0, 'Age must be non-negative'),
+        });
+
+        it('should parse valid JSON body', async () => {
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: 'Test', age: 25 }),
+            });
+
+            const result = await parseBody(request, TestSchema);
+
+            expect(result.error).toBeNull();
+            expect(result.data).toEqual({ name: 'Test', age: 25 });
+        });
+
+        it('should return error for malformed JSON', async () => {
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: 'not valid json',
+            });
+
+            const result = await parseBody(request, TestSchema);
+
+            expect(result.data).toBeNull();
+            expect(result.error?.status).toBe(400);
+            const json = await result.error?.json();
+            expect(json.error).toBe('Malformed JSON');
+        });
+
+        it('should return validation error for invalid data', async () => {
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: '', age: 25 }),
+            });
+
+            const result = await parseBody(request, TestSchema);
+
+            expect(result.data).toBeNull();
+            expect(result.error?.status).toBe(400);
+            const json = await result.error?.json();
+            expect(json.error).toBe('Name is required');
+        });
+
+        it('should return validation error for missing fields', async () => {
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: 'Test' }),
+            });
+
+            const result = await parseBody(request, TestSchema);
+
+            expect(result.data).toBeNull();
+            expect(result.error?.status).toBe(400);
         });
     });
 });

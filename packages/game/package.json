@@ -23,8 +23,8 @@
     "dev": "vite build --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "npx vitest run",
+    "test:watch": "npx vitest"
   },
   "dependencies": {
     "@aquila/dialogue": "workspace:*"

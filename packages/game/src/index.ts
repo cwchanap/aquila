@@ -1,8 +1,8 @@
 export { BaseScene } from './BaseScene';
 export { PreloadScene } from './PreloadScene';
 export { StoryScene } from './StoryScene';
-export { SceneDirectory } from './SceneDirectory';
-export type { SceneId } from './SceneDirectory';
+export { SceneDirectory, SceneRegistry } from './SceneDirectory';
+export type { SceneId, SceneInfo } from './SceneDirectory';
 export { SceneFlow } from './SceneFlow';
 export type {
     FlowConfig,

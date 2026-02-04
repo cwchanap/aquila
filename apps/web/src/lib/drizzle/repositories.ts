@@ -1,5 +1,6 @@
 import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { db, type DrizzleDB } from './db';
+import { BaseRepository } from './base-repository';
 import {
     users,
     characterSetups,
@@ -23,12 +24,9 @@ import {
 import { nanoid } from 'nanoid';
 
 // ============= User Repository =============
-export class UserRepository {
-    private db: DrizzleDB;
-
-    constructor(dbInstance?: DrizzleDB) {
-        this.db = dbInstance || db;
-    }
+export class UserRepository extends BaseRepository<typeof users, User> {
+    protected table = users;
+    protected idColumn = users.id;
 
     async create(data: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>) {
         const id = nanoid();
@@ -39,15 +37,6 @@ export class UserRepository {
                 ...data,
             })
             .returning();
-        return user;
-    }
-
-    async findById(id: string) {
-        const [user] = await this.db
-            .select()
-            .from(users)
-            .where(eq(users.id, id))
-            .limit(1);
         return user;
     }
 
@@ -79,14 +68,6 @@ export class UserRepository {
             .where(eq(users.id, id))
             .returning();
         return user;
-    }
-
-    async delete(id: string): Promise<boolean> {
-        const deleted = await this.db
-            .delete(users)
-            .where(eq(users.id, id))
-            .returning({ id: users.id });
-        return deleted.length > 0;
     }
 
     async list(limit = 50, offset = 0) {
@@ -170,12 +151,9 @@ export class CharacterSetupRepository {
 }
 
 // ============= Story Repository =============
-export class StoryRepository {
-    private db: DrizzleDB;
-
-    constructor(dbInstance?: DrizzleDB) {
-        this.db = dbInstance || db;
-    }
+export class StoryRepository extends BaseRepository<typeof stories, Story> {
+    protected table = stories;
+    protected idColumn = stories.id;
 
     async create(data: Omit<NewStory, 'id' | 'createdAt' | 'updatedAt'>) {
         const id = nanoid();
@@ -186,15 +164,6 @@ export class StoryRepository {
                 ...data,
             })
             .returning();
-        return story;
-    }
-
-    async findById(id: string) {
-        const [story] = await this.db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, id))
-            .limit(1);
         return story;
     }
 
@@ -220,23 +189,15 @@ export class StoryRepository {
             .returning();
         return story;
     }
-
-    async delete(id: string): Promise<boolean> {
-        const deleted = await this.db
-            .delete(stories)
-            .where(eq(stories.id, id))
-            .returning({ id: stories.id });
-        return deleted.length > 0;
-    }
 }
 
 // Chapter Repository
-export class ChapterRepository {
-    private db: DrizzleDB;
-
-    constructor(dbInstance?: DrizzleDB) {
-        this.db = dbInstance || db;
-    }
+export class ChapterRepository extends BaseRepository<
+    typeof chapters,
+    Chapter
+> {
+    protected table = chapters;
+    protected idColumn = chapters.id;
 
     async create(data: Omit<NewChapter, 'id' | 'createdAt' | 'updatedAt'>) {
         const id = nanoid();
@@ -247,15 +208,6 @@ export class ChapterRepository {
                 ...data,
             })
             .returning();
-        return chapter;
-    }
-
-    async findById(id: string) {
-        const [chapter] = await this.db
-            .select()
-            .from(chapters)
-            .where(eq(chapters.id, id))
-            .limit(1);
         return chapter;
     }
 
@@ -282,14 +234,6 @@ export class ChapterRepository {
         return chapter;
     }
 
-    async delete(id: string): Promise<boolean> {
-        const deleted = await this.db
-            .delete(chapters)
-            .where(eq(chapters.id, id))
-            .returning({ id: chapters.id });
-        return deleted.length > 0;
-    }
-
     async reorder(storyId: string, chapterIds: string[]): Promise<void> {
         // Use transaction to ensure atomicity - all updates succeed or none do
         await this.db.transaction(async tx => {
@@ -312,12 +256,9 @@ export class ChapterRepository {
 }
 
 // Scene Repository
-export class SceneRepository {
-    private db: DrizzleDB;
-
-    constructor(dbInstance?: DrizzleDB) {
-        this.db = dbInstance || db;
-    }
+export class SceneRepository extends BaseRepository<typeof scenes, Scene> {
+    protected table = scenes;
+    protected idColumn = scenes.id;
 
     async create(data: Omit<NewScene, 'id' | 'createdAt' | 'updatedAt'>) {
         const id = nanoid();
@@ -328,15 +269,6 @@ export class SceneRepository {
                 ...data,
             })
             .returning();
-        return scene;
-    }
-
-    async findById(id: string) {
-        const [scene] = await this.db
-            .select()
-            .from(scenes)
-            .where(eq(scenes.id, id))
-            .limit(1);
         return scene;
     }
 
@@ -380,14 +312,6 @@ export class SceneRepository {
         return scene;
     }
 
-    async delete(id: string): Promise<boolean> {
-        const deleted = await this.db
-            .delete(scenes)
-            .where(eq(scenes.id, id))
-            .returning({ id: scenes.id });
-        return deleted.length > 0;
-    }
-
     async reorder(
         storyId: string,
         sceneIds: string[],
@@ -417,12 +341,12 @@ export class SceneRepository {
 }
 
 // ============= Bookmark Repository =============
-export class BookmarkRepository {
-    private db: DrizzleDB;
-
-    constructor(dbInstance?: DrizzleDB) {
-        this.db = dbInstance || db;
-    }
+export class BookmarkRepository extends BaseRepository<
+    typeof bookmarks,
+    Bookmark
+> {
+    protected table = bookmarks;
+    protected idColumn = bookmarks.id;
 
     async create(
         data: Omit<NewBookmark, 'id' | 'createdAt' | 'updatedAt'>
@@ -435,15 +359,6 @@ export class BookmarkRepository {
                 ...data,
             })
             .returning();
-        return bookmark;
-    }
-
-    async findById(id: string): Promise<Bookmark | undefined> {
-        const [bookmark] = await this.db
-            .select()
-            .from(bookmarks)
-            .where(eq(bookmarks.id, id))
-            .limit(1);
         return bookmark;
     }
 
@@ -484,15 +399,6 @@ export class BookmarkRepository {
             .where(eq(bookmarks.id, id))
             .returning();
         return bookmark;
-    }
-
-    async delete(id: string): Promise<boolean> {
-        const deleted = await this.db
-            .delete(bookmarks)
-            .where(eq(bookmarks.id, id))
-            .returning({ id: bookmarks.id });
-
-        return deleted.length > 0;
     }
 
     // Create or update a bookmark for a specific scene

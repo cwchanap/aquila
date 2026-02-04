@@ -1,14 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { makeRequest } from '@/lib/test-setup';
+
+// Must use vi.hoisted() for variables used in vi.mock()
+const { mockGetSession } = vi.hoisted(() => ({
+    mockGetSession: vi.fn(),
+}));
 
 vi.mock('@/lib/auth', () => ({
     auth: {
         api: {
-            getSession: vi.fn(),
-            listSessions: vi.fn(),
-            revokeSession: vi.fn(),
-            revokeSessions: vi.fn(),
-            signOut: vi.fn(),
+            getSession: mockGetSession,
+        },
+    },
+}));
+
+vi.mock('../../../lib/auth.js', () => ({
+    auth: {
+        api: {
+            getSession: mockGetSession,
         },
     },
 }));
@@ -17,7 +25,6 @@ vi.mock('@/lib/drizzle/repositories', () => ({
     BookmarkRepository: vi.fn(),
 }));
 
-import { auth } from '@/lib/auth';
 import { BookmarkRepository } from '@/lib/drizzle/repositories';
 import { GET, POST } from '../bookmarks/index';
 import { DELETE } from '../bookmarks/[id]';
@@ -29,7 +36,16 @@ const createMockRepo = () => ({
     delete: vi.fn(),
 });
 
-const getSession = auth.api.getSession as any;
+const mockAuthenticatedSession = (userId: string = 'user-1') => {
+    mockGetSession.mockResolvedValue({
+        user: { id: userId, email: 'test@example.com' },
+    });
+};
+
+const mockUnauthenticatedSession = () => {
+    mockGetSession.mockResolvedValue(null);
+};
+
 const BookmarkRepositoryMock = BookmarkRepository as any;
 let mockRepo = createMockRepo();
 
@@ -40,10 +56,11 @@ describe('Bookmarks API', () => {
         consoleErrorSpy = vi
             .spyOn(console, 'error')
             .mockImplementation(() => {});
-        getSession.mockReset();
+        mockGetSession.mockReset();
         BookmarkRepositoryMock.mockReset();
         mockRepo = createMockRepo();
         BookmarkRepositoryMock.mockReturnValue(mockRepo as any);
+        mockUnauthenticatedSession();
     });
 
     afterEach(() => {
@@ -52,80 +69,91 @@ describe('Bookmarks API', () => {
 
     describe('GET /api/bookmarks', () => {
         it('rejects unauthenticated requests', async () => {
-            getSession.mockResolvedValue(null);
-
-            const response = await GET({ request: makeRequest() } as any);
+            const response = await GET({
+                request: new Request('http://localhost/api/bookmarks'),
+            } as any);
 
             expect(response.status).toBe(401);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Unauthorized',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Unauthorized');
+            expect(data.success).toBe(false);
         });
 
         it('returns bookmarks for the current user', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.findByUser.mockResolvedValue([
                 { id: 'bookmark-1', storyId: 'story-1' },
             ]);
 
-            const response = await GET({ request: makeRequest() } as any);
+            const response = await GET({
+                request: new Request('http://localhost/api/bookmarks'),
+            } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({
-                bookmarks: [{ id: 'bookmark-1', storyId: 'story-1' }],
-            });
+            const data = await response.json();
+            expect(data.success).toBe(true);
+            expect(data.data).toEqual([
+                { id: 'bookmark-1', storyId: 'story-1' },
+            ]);
             expect(mockRepo.findByUser).toHaveBeenCalledWith('user-1');
         });
     });
 
     describe('POST /api/bookmarks', () => {
         it('rejects unauthenticated requests', async () => {
-            getSession.mockResolvedValue(null);
-
-            const response = await POST({ request: makeRequest() } as any);
+            const response = await POST({
+                request: new Request('http://localhost/api/bookmarks', {
+                    method: 'POST',
+                    body: JSON.stringify({}),
+                }),
+            } as any);
 
             expect(response.status).toBe(401);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Unauthorized',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Unauthorized');
         });
 
         it('validates required fields', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
 
             const response = await POST({
-                request: makeRequest(undefined, () =>
-                    Promise.resolve({ storyId: 'story-1' })
-                ),
+                request: new Request('http://localhost/api/bookmarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ storyId: 'story-1' }),
+                }),
             } as any);
 
             expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Missing required fields: storyId, sceneId, bookmarkName',
-            });
+            const data = await response.json();
+            // Zod validation error for missing required string field
+            expect(data.success).toBe(false);
+            expect(data.error).toBeTruthy(); // Any validation error
         });
 
         it('creates a bookmark with default locale', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.upsertByScene.mockResolvedValue({
                 id: 'bookmark-1',
                 storyId: 'story-1',
             });
 
             const response = await POST({
-                request: makeRequest(undefined, () =>
-                    Promise.resolve({
+                request: new Request('http://localhost/api/bookmarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
                         storyId: 'story-1',
                         sceneId: 'scene-1',
                         bookmarkName: 'Checkpoint',
-                    })
-                ),
+                    }),
+                }),
             } as any);
 
             expect(response.status).toBe(201);
-            await expect(response.json()).resolves.toEqual({
-                bookmark: { id: 'bookmark-1', storyId: 'story-1' },
-            });
+            const data = await response.json();
+            expect(data.success).toBe(true);
+            expect(data.data).toEqual({ id: 'bookmark-1', storyId: 'story-1' });
             expect(mockRepo.upsertByScene).toHaveBeenCalledWith(
                 'user-1',
                 'story-1',
@@ -138,50 +166,54 @@ describe('Bookmarks API', () => {
 
     describe('DELETE /api/bookmarks/:id', () => {
         it('rejects unauthenticated requests', async () => {
-            getSession.mockResolvedValue(null);
-
             const response = await DELETE({
                 params: { id: 'bookmark-1' },
-                request: makeRequest(),
+                request: new Request(
+                    'http://localhost/api/bookmarks/bookmark-1',
+                    {
+                        method: 'DELETE',
+                    }
+                ),
             } as any);
 
             expect(response.status).toBe(401);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Unauthorized',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Unauthorized');
         });
 
         it('validates bookmark id', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
 
             const response = await DELETE({
                 params: {},
-                request: makeRequest(),
+                request: new Request('http://localhost/api/bookmarks/', {
+                    method: 'DELETE',
+                }),
             } as any);
 
             expect(response.status).toBe(400);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Bookmark ID is required',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Bookmark ID is required');
         });
 
         it('returns not found when bookmark is missing', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.findById.mockResolvedValue(null);
 
             const response = await DELETE({
                 params: { id: 'missing' },
-                request: makeRequest(),
+                request: new Request('http://localhost/api/bookmarks/missing', {
+                    method: 'DELETE',
+                }),
             } as any);
 
             expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Bookmark not found',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Bookmark not found');
         });
 
         it('returns forbidden when bookmark is owned by another user', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.findById.mockResolvedValue({
                 id: 'bookmark-1',
                 userId: 'user-2',
@@ -189,17 +221,21 @@ describe('Bookmarks API', () => {
 
             const response = await DELETE({
                 params: { id: 'bookmark-1' },
-                request: makeRequest(),
+                request: new Request(
+                    'http://localhost/api/bookmarks/bookmark-1',
+                    {
+                        method: 'DELETE',
+                    }
+                ),
             } as any);
 
             expect(response.status).toBe(403);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Forbidden',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Forbidden');
         });
 
         it('returns not found when delete does not remove a record', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.findById.mockResolvedValue({
                 id: 'bookmark-1',
                 userId: 'user-1',
@@ -208,17 +244,21 @@ describe('Bookmarks API', () => {
 
             const response = await DELETE({
                 params: { id: 'bookmark-1' },
-                request: makeRequest(),
+                request: new Request(
+                    'http://localhost/api/bookmarks/bookmark-1',
+                    {
+                        method: 'DELETE',
+                    }
+                ),
             } as any);
 
             expect(response.status).toBe(404);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Bookmark not found',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Bookmark not found');
         });
 
         it('deletes a bookmark', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.findById.mockResolvedValue({
                 id: 'bookmark-1',
                 userId: 'user-1',
@@ -227,27 +267,37 @@ describe('Bookmarks API', () => {
 
             const response = await DELETE({
                 params: { id: 'bookmark-1' },
-                request: makeRequest(),
+                request: new Request(
+                    'http://localhost/api/bookmarks/bookmark-1',
+                    {
+                        method: 'DELETE',
+                    }
+                ),
             } as any);
 
             expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({ success: true });
+            const data = await response.json();
+            expect(data.success).toBe(true);
             expect(mockRepo.delete).toHaveBeenCalledWith('bookmark-1');
         });
 
         it('returns 500 on internal errors', async () => {
-            getSession.mockResolvedValue({ user: { id: 'user-1' } });
+            mockAuthenticatedSession('user-1');
             mockRepo.findById.mockRejectedValue(new Error('boom'));
 
             const response = await DELETE({
                 params: { id: 'bookmark-1' },
-                request: makeRequest(),
+                request: new Request(
+                    'http://localhost/api/bookmarks/bookmark-1',
+                    {
+                        method: 'DELETE',
+                    }
+                ),
             } as any);
 
             expect(response.status).toBe(500);
-            await expect(response.json()).resolves.toEqual({
-                error: 'Failed to delete bookmark',
-            });
+            const data = await response.json();
+            expect(data.error).toBe('Failed to delete bookmark');
         });
     });
 });

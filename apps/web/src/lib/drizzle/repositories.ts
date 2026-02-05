@@ -402,7 +402,7 @@ export class BookmarkRepository extends BaseRepository<
     }
 
     // Create or update a bookmark for a specific scene
-    // Uses transaction to prevent race conditions
+    // Uses atomic upsert to prevent race conditions
     async upsertByScene(
         userId: string,
         storyId: string,
@@ -410,48 +410,35 @@ export class BookmarkRepository extends BaseRepository<
         bookmarkName: string,
         locale: string = 'en'
     ): Promise<Bookmark> {
-        return await this.db.transaction(async tx => {
-            // Check if bookmark with this name already exists
-            const [existing] = await tx
-                .select()
-                .from(bookmarks)
-                .where(
-                    and(
-                        eq(bookmarks.userId, userId),
-                        eq(bookmarks.storyId, storyId),
-                        eq(bookmarks.bookmarkName, bookmarkName)
-                    )
-                )
-                .limit(1);
+        const id = nanoid();
+        const now = new Date();
 
-            if (existing) {
-                // Update existing bookmark
-                const [updated] = await tx
-                    .update(bookmarks)
-                    .set({
-                        sceneId,
-                        locale,
-                        updatedAt: new Date(),
-                    })
-                    .where(eq(bookmarks.id, existing.id))
-                    .returning();
-                return updated;
-            } else {
-                // Create new bookmark
-                const id = nanoid();
-                const [bookmark] = await tx
-                    .insert(bookmarks)
-                    .values({
-                        id,
-                        userId,
-                        storyId,
-                        sceneId,
-                        bookmarkName,
-                        locale,
-                    })
-                    .returning();
-                return bookmark;
-            }
-        });
+        const [bookmark] = await this.db
+            .insert(bookmarks)
+            .values({
+                id,
+                userId,
+                storyId,
+                sceneId,
+                bookmarkName,
+                locale,
+                createdAt: now,
+                updatedAt: now,
+            })
+            .onConflictDoUpdate({
+                target: [
+                    bookmarks.userId,
+                    bookmarks.storyId,
+                    bookmarks.bookmarkName,
+                ],
+                set: {
+                    sceneId,
+                    locale,
+                    updatedAt: now,
+                },
+            })
+            .returning();
+
+        return bookmark;
     }
 }

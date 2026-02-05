@@ -70,17 +70,17 @@ describe('SceneDirectory', () => {
         });
     });
 
-    describe('isSceneId', () => {
+    describe('isRegisteredScene', () => {
         it('returns true for valid scene ids', () => {
-            expect(SceneDirectory.isSceneId('scene_1')).toBe(true);
-            expect(SceneDirectory.isSceneId('scene_4a')).toBe(true);
+            expect(SceneDirectory.isRegisteredScene('scene_1')).toBe(true);
+            expect(SceneDirectory.isRegisteredScene('scene_4a')).toBe(true);
         });
 
         it('returns false for invalid values', () => {
-            expect(SceneDirectory.isSceneId('invalid')).toBe(false);
-            expect(SceneDirectory.isSceneId(null)).toBe(false);
-            expect(SceneDirectory.isSceneId(undefined)).toBe(false);
-            expect(SceneDirectory.isSceneId('')).toBe(false);
+            expect(SceneDirectory.isRegisteredScene('invalid')).toBe(false);
+            expect(SceneDirectory.isRegisteredScene(null)).toBe(false);
+            expect(SceneDirectory.isRegisteredScene(undefined)).toBe(false);
+            expect(SceneDirectory.isRegisteredScene('')).toBe(false);
         });
     });
 
@@ -101,8 +101,11 @@ describe('SceneRegistry', () => {
     };
 
     afterEach(() => {
-        // Clean up test scene if registered
-        if (SceneRegistry.has('test_scene')) {
+        // Clean up test scenes if registered - check both test_scene and test_scene_2
+        if (
+            SceneRegistry.has('test_scene') ||
+            SceneRegistry.has('test_scene_2')
+        ) {
             SceneRegistry.clear();
             // Re-register default scenes since clear() removes everything
             SceneRegistry.registerMany([
@@ -142,6 +145,8 @@ describe('SceneRegistry', () => {
                     fallbackColor: 0x000000,
                 },
             ]);
+            // Reset default start after re-registration
+            SceneRegistry.setDefaultStart('scene_1');
         }
     });
 
@@ -196,6 +201,10 @@ describe('SceneRegistry', () => {
     });
 
     describe('defaultStart', () => {
+        afterEach(() => {
+            SceneRegistry.setDefaultStart('scene_1');
+        });
+
         it('returns scene_1 by default', () => {
             expect(SceneRegistry.defaultStart).toBe('scene_1');
         });
@@ -203,8 +212,6 @@ describe('SceneRegistry', () => {
         it('can be changed to a registered scene', () => {
             SceneRegistry.setDefaultStart('scene_2');
             expect(SceneRegistry.defaultStart).toBe('scene_2');
-            // Reset to scene_1
-            SceneRegistry.setDefaultStart('scene_1');
         });
 
         it('throws when setting to unregistered scene', () => {

@@ -30,10 +30,9 @@ describe('stories', () => {
             const entries = content.dialogue[firstSceneKey];
 
             expect(Array.isArray(entries)).toBe(true);
-            if (entries.length > 0) {
-                const entry = entries[0];
-                expect(entry).toHaveProperty('dialogue');
-            }
+            expect(entries.length).toBeGreaterThan(0);
+            const entry = entries[0];
+            expect(entry).toHaveProperty('dialogue');
         });
     });
 

@@ -105,7 +105,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 
         await storyRepo.delete(id);
 
-        return jsonResponse({ deleted: true });
+        return jsonResponse({ deleted: true, success: true });
     } catch (error) {
         logger.error('Failed to delete story', error, {
             endpoint: '/api/stories/[id]',

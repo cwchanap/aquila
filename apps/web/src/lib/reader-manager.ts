@@ -5,7 +5,7 @@ import {
     type DialogueEntry,
     type ChoiceDefinition,
 } from '@aquila/dialogue';
-import { mount } from 'svelte';
+import { mount, unmount } from 'svelte';
 
 export interface SceneState {
     storyId: string;
@@ -304,28 +304,34 @@ export class ReaderManager {
 
                 this.readerInstance = {
                     unmount: () => {
-                        const destroy = (
-                            mountedComponent as { destroy?: () => void }
-                        ).destroy;
-                        if (typeof destroy === 'function') {
-                            destroy();
-                        }
+                        unmount(mountedComponent);
                     },
                 };
             })
             .catch(error => {
                 console.error('Failed to load reader component:', error);
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-center p-8">
-                        <p class="text-red-400 mb-4">${translations.reader.loadError || 'Failed to load reader'}</p>
-                        <button
-                            onclick="location.reload()"
-                            class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors"
-                        >
-                            ${translations.reader.retry || 'Retry'}
-                        </button>
-                    </div>
-                `;
+
+                // Clear container and build DOM safely
+                container.innerHTML = '';
+
+                const wrapper = document.createElement('div');
+                wrapper.className =
+                    'flex flex-col items-center justify-center h-full text-center p-8';
+
+                const errorMsg = document.createElement('p');
+                errorMsg.className = 'text-red-400 mb-4';
+                errorMsg.textContent =
+                    translations.reader.loadError || 'Failed to load reader';
+
+                const retryBtn = document.createElement('button');
+                retryBtn.className =
+                    'px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors';
+                retryBtn.textContent = translations.reader.retry || 'Retry';
+                retryBtn.onclick = () => location.reload();
+
+                wrapper.appendChild(errorMsg);
+                wrapper.appendChild(retryBtn);
+                container.appendChild(wrapper);
             });
     }
 

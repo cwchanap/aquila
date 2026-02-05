@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request }) => {
         const storyRepo = new StoryRepository();
         const story = await storyRepo.create({
             userId: session.user.id,
-            title: data.title.trim(),
+            title: data.title,
             description: data.description?.trim() || null,
             coverImage: data.coverImage || null,
             status: data.status,

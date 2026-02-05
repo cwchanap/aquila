@@ -1,5 +1,8 @@
 import type { APIRoute } from 'astro';
-import { ChapterRepository } from '@/lib/drizzle/repositories.js';
+import {
+    ChapterRepository,
+    StoryRepository,
+} from '@/lib/drizzle/repositories.js';
 import { logger } from '@/lib/logger.js';
 import {
     requireAuth,
@@ -12,7 +15,7 @@ import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { error: authError } = await requireAuth(request);
+        const { session, error: authError } = await requireAuth(request);
         if (authError) return authError;
 
         const { data, error: validationError } = await parseBody(
@@ -20,6 +23,16 @@ export const POST: APIRoute = async ({ request }) => {
             ChapterCreateSchema
         );
         if (validationError) return validationError;
+
+        // Verify story ownership before creating chapter
+        const storyRepo = new StoryRepository();
+        const story = await storyRepo.findById(data.storyId);
+        if (!story) {
+            return errorResponse('Story not found', 404);
+        }
+        if (story.userId !== session.user.id) {
+            return errorResponse('Forbidden', 403);
+        }
 
         const chapterRepo = new ChapterRepository();
         const chapter = await chapterRepo.create({

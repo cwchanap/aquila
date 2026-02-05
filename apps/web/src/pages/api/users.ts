@@ -5,6 +5,7 @@ import {
     requireAuth,
     jsonResponse,
     errorResponse,
+    sanitizeUser,
 } from '../../lib/api-utils.js';
 import { ERROR_IDS } from '../../constants/errorIds.js';
 
@@ -25,7 +26,8 @@ export const GET: APIRoute = async ({ request }) => {
             return errorResponse('User not found', 404);
         }
 
-        return jsonResponse(user);
+        const sanitizedUser = sanitizeUser(user);
+        return jsonResponse(sanitizedUser);
     } catch (error) {
         logger.error('Failed to fetch user', error, {
             endpoint: '/api/users',

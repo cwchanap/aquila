@@ -41,6 +41,7 @@ export class SceneRegistry {
 
     static clear(): void {
         this.scenes.clear();
+        this._defaultStart = '';
     }
 
     static get defaultStart(): string {
@@ -113,7 +114,9 @@ SceneRegistry.registerMany(defaultScenes);
 
 // SceneDirectory facade for backwards compatibility
 export class SceneDirectory {
-    static readonly defaultStart: SceneId = 'scene_1';
+    static get defaultStart(): SceneId {
+        return SceneRegistry.defaultStart as SceneId;
+    }
 
     static getInfo(id: SceneId | string): SceneInfo | undefined {
         return SceneRegistry.get(id);
@@ -135,7 +138,7 @@ export class SceneDirectory {
         return SceneRegistry.getFallbackColor(id);
     }
 
-    static isSceneId(value: string | undefined | null): value is SceneId {
+    static isRegisteredScene(value: string | undefined | null): boolean {
         if (!value) return false;
         return SceneRegistry.has(value);
     }

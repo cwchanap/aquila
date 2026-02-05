@@ -150,6 +150,8 @@
   },
   "reader": {
     "title": "小說閱讀器 - Aquila",
+    "loadError": "載入閱讀器失敗",
+    "retry": "重試",
     "bookmarkPrompt": "輸入書籤名稱：",
     "defaultBookmarkName": "場景：",
     "bookmarkSaved": "書籤已儲存！",

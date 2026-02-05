@@ -74,15 +74,14 @@ export function createJsonRequest(
     body: unknown,
     options: RequestInit = {}
 ): Request {
-    return new Request('http://localhost:5090', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(options.headers as Record<string, string>),
-        },
-        body: JSON.stringify(body),
-        ...options,
-    });
+    const init = { ...options };
+    init.method = 'POST';
+    init.headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string>),
+    };
+    init.body = JSON.stringify(body);
+    return new Request('http://localhost:5090', init);
 }
 
 /**
@@ -101,9 +100,43 @@ export function createRequest(
 
 /**
  * Parse response JSON with proper success/error typing.
+ * Validates the discriminated union shape:
+ * - success: true requires data property
+ * - success: false requires error string
  */
 export async function parseApiResponse<T = unknown>(
-    response: Response
+    response: Response,
+    dataValidator?: (data: unknown) => data is T
 ): Promise<{ data: T; success: true } | { error: string; success: false }> {
-    return response.json();
+    const json = await response.json();
+
+    // Validate basic shape
+    if (typeof json !== 'object' || json === null) {
+        throw new Error('Invalid API response: expected object');
+    }
+
+    if (!('success' in json) || typeof json.success !== 'boolean') {
+        throw new Error(
+            'Invalid API response: missing boolean "success" property'
+        );
+    }
+
+    if (json.success === true) {
+        if (!('data' in json)) {
+            throw new Error(
+                'Invalid API response: success=true requires "data" property'
+            );
+        }
+        if (dataValidator && !dataValidator(json.data)) {
+            throw new Error('Invalid API response: data failed validation');
+        }
+        return json as { data: T; success: true };
+    } else {
+        if (!('error' in json) || typeof json.error !== 'string') {
+            throw new Error(
+                'Invalid API response: success=false requires "error" string property'
+            );
+        }
+        return json as { error: string; success: false };
+    }
 }

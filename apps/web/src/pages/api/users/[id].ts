@@ -80,9 +80,12 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
         const updates: { email?: string; username?: string; name?: string } =
             {};
-        if (data.email) updates.email = data.email;
-        if (data.username) updates.username = data.username;
-        if (data.name) updates.name = data.name;
+        if (Object.prototype.hasOwnProperty.call(data, 'email'))
+            updates.email = data.email;
+        if (Object.prototype.hasOwnProperty.call(data, 'username'))
+            updates.username = data.username;
+        if (Object.prototype.hasOwnProperty.call(data, 'name'))
+            updates.name = data.name;
 
         if (Object.keys(updates).length === 0) {
             return errorResponse('No valid fields to update', 422);

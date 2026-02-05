@@ -3,10 +3,38 @@
  */
 import type { ZodSchema } from 'zod';
 import { auth, type Session } from './auth.js';
+import type { User } from './drizzle/schema.js';
 
 /**
- * Standard API success response format.
+ * Sanitized user type for API responses (excludes sensitive fields).
  */
+export interface SanitizedUser {
+    id: string;
+    email: string;
+    username: string | null;
+    name: string | null;
+    image: string | null;
+    emailVerified: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+/**
+ * Sanitize user object for API responses.
+ * Removes sensitive fields that should not be exposed.
+ */
+export function sanitizeUser(user: User): SanitizedUser {
+    return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        image: user.image,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+    };
+}
 interface ApiSuccessResponse<T> {
     data: T;
     success: true;

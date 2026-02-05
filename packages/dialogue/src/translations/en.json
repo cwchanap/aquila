@@ -150,6 +150,8 @@
   },
   "reader": {
     "title": "Novel Reader - Aquila",
+    "loadError": "Failed to load reader",
+    "retry": "Retry",
     "bookmarkPrompt": "Enter bookmark name:",
     "defaultBookmarkName": "Scene:",
     "bookmarkSaved": "Bookmark saved!",

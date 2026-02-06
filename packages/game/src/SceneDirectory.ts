@@ -17,7 +17,7 @@ export interface SceneInfo {
 // Runtime registry for dynamic scene configuration
 export class SceneRegistry {
     private static scenes: Map<string, SceneInfo> = new Map();
-    private static _defaultStart: string = 'scene_1';
+    private static _defaultStart: string | null = 'scene_1';
 
     static register(config: SceneInfo): void {
         this.scenes.set(config.id, config);
@@ -41,10 +41,10 @@ export class SceneRegistry {
 
     static clear(): void {
         this.scenes.clear();
-        this._defaultStart = '';
+        this._defaultStart = null;
     }
 
-    static get defaultStart(): string {
+    static get defaultStart(): string | null {
         return this._defaultStart;
     }
 
@@ -114,8 +114,18 @@ SceneRegistry.registerMany(defaultScenes);
 
 // SceneDirectory facade for backwards compatibility
 export class SceneDirectory {
-    static get defaultStart(): SceneId {
-        return SceneRegistry.defaultStart as SceneId;
+    static get defaultStart(): SceneId | null {
+        const id = SceneRegistry.defaultStart;
+        if (
+            id === 'scene_1' ||
+            id === 'scene_2' ||
+            id === 'scene_3' ||
+            id === 'scene_4a' ||
+            id === 'scene_4b'
+        ) {
+            return id;
+        }
+        return null;
     }
 
     static getInfo(id: SceneId | string): SceneInfo | undefined {

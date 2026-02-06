@@ -85,8 +85,52 @@ describe('SceneDirectory', () => {
     });
 
     describe('defaultStart', () => {
-        it('is scene_1', () => {
+        it('is scene_1 when registry is populated', () => {
             expect(SceneDirectory.defaultStart).toBe('scene_1');
+        });
+
+        it('returns null when registry is cleared', () => {
+            SceneRegistry.clear();
+            expect(SceneDirectory.defaultStart).toBeNull();
+            // Restore for other tests
+            SceneRegistry.registerMany([
+                {
+                    id: 'scene_1',
+                    label: 'Entry Platform',
+                    backgroundTextureKey: 'bg-scene_1',
+                    ambientFrequency: 80,
+                    fallbackColor: 0x0b1022,
+                },
+                {
+                    id: 'scene_2',
+                    label: 'Train Ride',
+                    backgroundTextureKey: 'bg-scene_2',
+                    ambientFrequency: 60,
+                    fallbackColor: 0x000000,
+                },
+                {
+                    id: 'scene_3',
+                    label: 'Otherworld Station',
+                    backgroundTextureKey: 'bg-scene_3',
+                    ambientFrequency: 95,
+                    fallbackColor: 0x2b0000,
+                },
+                {
+                    id: 'scene_4a',
+                    label: 'Leave Train',
+                    backgroundTextureKey: 'bg-scene_3',
+                    ambientFrequency: 95,
+                    fallbackColor: 0x2b0000,
+                },
+                {
+                    id: 'scene_4b',
+                    label: 'Stay On Train',
+                    backgroundTextureKey: 'bg-scene_2',
+                    ambientFrequency: 60,
+                    fallbackColor: 0x000000,
+                },
+            ]);
+            SceneRegistry.setDefaultStart('scene_1');
         });
     });
 });
@@ -202,11 +246,58 @@ describe('SceneRegistry', () => {
 
     describe('defaultStart', () => {
         afterEach(() => {
-            SceneRegistry.setDefaultStart('scene_1');
+            // Only set default start if scenes are registered
+            if (SceneRegistry.has('scene_1')) {
+                SceneRegistry.setDefaultStart('scene_1');
+            }
         });
 
-        it('returns scene_1 by default', () => {
+        it('returns scene_1 by default when scenes registered', () => {
             expect(SceneRegistry.defaultStart).toBe('scene_1');
+        });
+
+        it('returns null after clear()', () => {
+            SceneRegistry.clear();
+            expect(SceneRegistry.defaultStart).toBeNull();
+            // Restore for other tests
+            SceneRegistry.registerMany([
+                {
+                    id: 'scene_1',
+                    label: 'Entry Platform',
+                    backgroundTextureKey: 'bg-scene_1',
+                    ambientFrequency: 80,
+                    fallbackColor: 0x0b1022,
+                },
+                {
+                    id: 'scene_2',
+                    label: 'Train Ride',
+                    backgroundTextureKey: 'bg-scene_2',
+                    ambientFrequency: 60,
+                    fallbackColor: 0x000000,
+                },
+                {
+                    id: 'scene_3',
+                    label: 'Otherworld Station',
+                    backgroundTextureKey: 'bg-scene_3',
+                    ambientFrequency: 95,
+                    fallbackColor: 0x2b0000,
+                },
+                {
+                    id: 'scene_4a',
+                    label: 'Leave Train',
+                    backgroundTextureKey: 'bg-scene_3',
+                    ambientFrequency: 95,
+                    fallbackColor: 0x2b0000,
+                },
+                {
+                    id: 'scene_4b',
+                    label: 'Stay On Train',
+                    backgroundTextureKey: 'bg-scene_2',
+                    ambientFrequency: 60,
+                    fallbackColor: 0x000000,
+                },
+            ]);
+            SceneRegistry.setDefaultStart('scene_1');
         });
 
         it('can be changed to a registered scene', () => {

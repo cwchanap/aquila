@@ -57,7 +57,9 @@ export class StoryScene extends BaseScene {
 
         this.flow = this.restoreSceneFlow();
         const initialScene =
-            this.flow.getCurrentSceneId() ?? SceneDirectory.defaultStart;
+            this.flow.getCurrentSceneId() ??
+            SceneDirectory.defaultStart ??
+            'scene_1';
         this.setSection(initialScene);
         // Autosave initial scene
         this.persistCheckpoint();
@@ -154,7 +156,7 @@ export class StoryScene extends BaseScene {
 
         // Fallback to hardcoded flow for backward compatibility
         return new SceneFlow({
-            start: SceneDirectory.defaultStart,
+            start: SceneDirectory.defaultStart ?? 'scene_1',
             nodes: [
                 {
                     kind: 'scene',

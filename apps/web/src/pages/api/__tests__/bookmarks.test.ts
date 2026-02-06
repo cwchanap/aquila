@@ -5,7 +5,7 @@ const { mockGetSession } = vi.hoisted(() => ({
     mockGetSession: vi.fn(),
 }));
 
-vi.mock('@/lib/auth', () => ({
+vi.mock('@/lib/auth.js', () => ({
     auth: {
         api: {
             getSession: mockGetSession,

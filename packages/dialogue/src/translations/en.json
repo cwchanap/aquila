@@ -58,7 +58,8 @@
     "heading": "Main Menu",
     "startGame": "Start Game",
     "settings": "Settings",
-    "bookmarks": "📖 Bookmarks"
+    "bookmarks": "📖 Bookmarks",
+    "settingsComingSoon": "Settings coming soon!"
   },
   "common": {
     "hello": "Hello",

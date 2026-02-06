@@ -32,7 +32,7 @@ describe('SceneFlow', () => {
 
         it('throws when start node is not a scene', () => {
             const config: FlowConfig = {
-                start: 'scene_2',
+                start: 'choice:1' as any,
                 nodes: [
                     {
                         kind: 'choice',

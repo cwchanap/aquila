@@ -276,7 +276,7 @@ export class ReaderManager {
         }
 
         // Clear container
-        container.innerHTML = '';
+        container.replaceChildren();
 
         // Dynamic import to avoid issues with Astro SSR
         import('@/components/NovelReader.svelte')
@@ -312,7 +312,7 @@ export class ReaderManager {
                 console.error('Failed to load reader component:', error);
 
                 // Clear container and build DOM safely
-                container.innerHTML = '';
+                container.replaceChildren();
 
                 const wrapper = document.createElement('div');
                 wrapper.className =
@@ -320,14 +320,13 @@ export class ReaderManager {
 
                 const errorMsg = document.createElement('p');
                 errorMsg.className = 'text-red-400 mb-4';
-                errorMsg.textContent =
-                    translations.reader.loadError || 'Failed to load reader';
+                errorMsg.textContent = translations.reader.loadError;
 
                 const retryBtn = document.createElement('button');
                 retryBtn.className =
                     'px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors';
-                retryBtn.textContent = translations.reader.retry || 'Retry';
-                retryBtn.onclick = () => location.reload();
+                retryBtn.textContent = translations.reader.retry;
+                retryBtn.addEventListener('click', () => location.reload());
 
                 wrapper.appendChild(errorMsg);
                 wrapper.appendChild(retryBtn);

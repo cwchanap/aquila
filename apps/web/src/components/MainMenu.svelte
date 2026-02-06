@@ -45,7 +45,7 @@
 
   const handleSettingsClick = () => {
     // Settings functionality not yet implemented
-    window.alert(translations.menu.settingsComingSoon || 'Settings coming soon!');
+    window.alert(translations.menu.settingsComingSoon);
   };
 </script>
 
@@ -53,7 +53,7 @@
 <div class="min-h-screen relative overflow-hidden">
   <!-- Gradient Ocean Background -->
   <div
-    class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"
+    class="absolute inset-0 bg-linear-to-b from-sky-200 via-sky-300 to-blue-400"
   ></div>
 
   <!-- Animated Ocean Waves (Background Layer) -->
@@ -167,13 +167,13 @@
       <!-- Title with Gaming-inspired styling -->
       <div class="text-center mb-12">
         <h1
-          class="text-6xl font-black mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
+          class="text-6xl font-black mb-4 tracking-wider uppercase bg-linear-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg"
           style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);"
         >
           {translations.menu.heading}
         </h1>
         <div
-          class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"
+          class="w-32 h-1 bg-linear-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"
         ></div>
         <div
           class="text-sm font-semibold text-slate-600 mt-2 tracking-widest uppercase opacity-70"
@@ -188,12 +188,12 @@
         <a
           id="start-btn"
           href={`/${currentLocale}/stories`}
-          class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden block text-center"
+          class="group relative w-full py-6 px-8 bg-linear-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden block text-center"
           style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
         >
           <!-- Button glow effect -->
           <div
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
+            class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
           ></div>
           <span class="relative text-xl tracking-wider uppercase font-black"
             >{translations.menu.startGame}</span
@@ -214,13 +214,13 @@
         </a>
 
         <button
-          class="group relative w-full py-6 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-purple-300/50 overflow-hidden"
+          class="group relative w-full py-6 px-8 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-purple-300/50 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
           on:click={handleBookmarksClick}
         >
           <!-- Button glow effect -->
           <div
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
+            class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
           ></div>
           <span class="relative text-xl tracking-wider uppercase font-black"
             >{translations.menu.bookmarks}</span
@@ -242,13 +242,13 @@
 
         <button
           id="settings-btn"
-          class="group relative w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
+          class="group relative w-full py-6 px-8 bg-linear-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden"
           style="font-family: 'Orbitron', 'Exo 2', monospace;"
           on:click={handleSettingsClick}
         >
           <!-- Button glow effect -->
           <div
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-slate-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            class="absolute inset-0 bg-linear-to-r from-transparent via-slate-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           ></div>
           <span class="relative text-xl tracking-wider uppercase font-black"
             >{translations.menu.settings}</span
@@ -295,7 +295,7 @@
         <!-- Gaming hexagon -->
         <div class="relative">
           <div
-            class="w-6 h-6 bg-gradient-to-r from-blue-400 to-cyan-400 transform rotate-45 animate-spin"
+            class="w-6 h-6 bg-linear-to-r from-blue-400 to-cyan-400 transform rotate-45 animate-spin"
             style="animation-duration: 8s; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"
           ></div>
           <div

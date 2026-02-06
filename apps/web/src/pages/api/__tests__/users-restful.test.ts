@@ -40,6 +40,25 @@ vi.mock('@/lib/auth.js', () => ({
     },
 }));
 
+// Mock logger to suppress stderr output during error tests
+vi.mock('../../../lib/logger.js', () => ({
+    logger: {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+    },
+}));
+
+vi.mock('@/lib/logger.js', () => ({
+    logger: {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+    },
+}));
+
 // Helper to set up mock session
 const mockAuthenticatedSession = (userId: string = 'user123') => {
     mockGetSession.mockResolvedValue({

@@ -32,15 +32,21 @@ describe('SceneFlow', () => {
 
         it('throws when start node is not a scene', () => {
             const config: FlowConfig = {
-                start: 'choice_1',
+                start: 'scene_2',
                 nodes: [
                     {
                         kind: 'choice',
-                        id: 'choice_1',
+                        id: 'choice:1',
                         choiceId: 'choice_1',
                         nextByOption: { a: 'scene_1' },
                     },
                     { kind: 'scene', id: 'scene_1', sceneId: 'scene_1' },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2',
+                        next: 'choice:1',
+                    },
                 ],
             };
             expect(() => new SceneFlow(config)).toThrow(
@@ -104,11 +110,11 @@ describe('SceneFlow', () => {
                         kind: 'scene',
                         id: 'scene_1',
                         sceneId: 'scene_1',
-                        next: 'choice_1',
+                        next: 'choice:1',
                     },
                     {
                         kind: 'choice',
-                        id: 'choice_1',
+                        id: 'choice:1',
                         choiceId: 'c1',
                         nextByOption: { a: 'scene_2', b: 'scene_3' },
                     },
@@ -147,11 +153,11 @@ describe('SceneFlow', () => {
                         kind: 'scene',
                         id: 'scene_1',
                         sceneId: 'scene_1',
-                        next: 'choice_1',
+                        next: 'choice:1',
                     },
                     {
                         kind: 'choice',
-                        id: 'choice_1',
+                        id: 'choice:1',
                         choiceId: 'c1',
                         nextByOption: { a: 'scene_4a', b: 'scene_4b' },
                     },

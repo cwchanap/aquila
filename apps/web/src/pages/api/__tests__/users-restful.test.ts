@@ -175,7 +175,7 @@ describe('Users API - Authenticated Endpoints', () => {
             expect(data.error).toBe('Invalid User ID');
         });
 
-        it('returns 403 when accessing another user's data', async () => {
+        it("returns 403 when accessing another user's data", async () => {
             mockAuthenticatedSession('user123');
 
             const response = await GetById({
@@ -241,7 +241,7 @@ describe('Users API - Authenticated Endpoints', () => {
             expect(response.status).toBe(401);
         });
 
-        it('returns 403 when updating another user's data', async () => {
+        it("returns 403 when updating another user's data", async () => {
             mockAuthenticatedSession('user123');
 
             const response = await UpdateById({
@@ -310,7 +310,7 @@ describe('Users API - Authenticated Endpoints', () => {
             expect(response.status).toBe(401);
         });
 
-        it('returns 403 when deleting another user's account', async () => {
+        it("returns 403 when deleting another user's account", async () => {
             mockAuthenticatedSession('user123');
 
             const response = await DeleteById({

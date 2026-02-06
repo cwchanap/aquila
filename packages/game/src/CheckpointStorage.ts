@@ -54,14 +54,16 @@ export function loadCheckpoint(storyId: string): StoredCheckpoint | null {
             return null;
         }
         const sceneId = parsed.sceneId;
-        if (!SceneDirectory.isSceneId(sceneId)) return null;
+        if (!SceneDirectory.isRegisteredScene(sceneId)) return null;
         const history = Array.isArray(parsed.history) ? parsed.history : [];
-        const filteredHistory = history.filter(SceneDirectory.isSceneId);
+        const filteredHistory = history.filter(
+            SceneDirectory.isRegisteredScene
+        );
         if (!filteredHistory.length) return null;
         return {
             version: VERSION,
             storyId,
-            sceneId,
+            sceneId: sceneId as SceneId,
             history: filteredHistory,
             savedAt:
                 typeof parsed.savedAt === 'number'

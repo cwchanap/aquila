@@ -8,6 +8,13 @@
       "when": 1763492719526,
       "tag": "0000_wild_vance_astro",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770452876377,
+      "tag": "0001_parched_colleen_wing",
+      "breakpoints": true
     }
   ]
 }

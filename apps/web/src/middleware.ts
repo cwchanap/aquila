@@ -17,8 +17,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const locale = pathParts[0];
 
     if (locale && ['en', 'zh'].includes(locale)) {
-        context.locals ??= {};
-        (context.locals as { currentLocale?: string }).currentLocale = locale;
+        context.locals.currentLocale = locale;
     } else {
         // No locale or invalid, redirect to default locale
         return new Response(null, {

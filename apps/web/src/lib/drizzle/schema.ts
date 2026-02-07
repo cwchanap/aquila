@@ -274,6 +274,11 @@ export const bookmarks = pgTable(
             table.userId,
             table.storyId
         ),
+        userStoryNameUnique: uniqueIndex('bookmarks_user_story_name_unique').on(
+            table.userId,
+            table.storyId,
+            table.bookmarkName
+        ),
     })
 );
 

@@ -5,7 +5,7 @@ import {
     type DialogueEntry,
     type ChoiceDefinition,
 } from '@aquila/dialogue';
-import { mount } from 'svelte';
+import { mount, unmount } from 'svelte';
 
 export interface SceneState {
     storyId: string;
@@ -276,42 +276,65 @@ export class ReaderManager {
         }
 
         // Clear container
-        container.innerHTML = '';
+        container.replaceChildren();
 
         // Dynamic import to avoid issues with Astro SSR
-        import('@/components/NovelReader.svelte').then(module => {
-            const NovelReaderComponent = module.default;
-            const mountedComponent = mount(NovelReaderComponent, {
-                target: container,
-                props: {
-                    dialogue,
-                    choice,
-                    onChoice: this.handleChoice,
-                    onBookmark: (dialogueNumber: number) =>
-                        this.handleBookmark(dialogueNumber),
-                    onNext: this.handleNext,
-                    canGoNext,
-                    showBookmarkButton: true,
-                    locale: translations.locale,
-                    backUrl: `/${translations.locale}/`,
-                    initialDialogueIndex: this.initialDialogueIndex,
-                },
+        import('@/components/NovelReader.svelte')
+            .then(module => {
+                const NovelReaderComponent = module.default;
+                const mountedComponent = mount(NovelReaderComponent, {
+                    target: container,
+                    props: {
+                        dialogue,
+                        choice,
+                        onChoice: this.handleChoice,
+                        onBookmark: (dialogueNumber: number) =>
+                            this.handleBookmark(dialogueNumber),
+                        onNext: this.handleNext,
+                        canGoNext,
+                        showBookmarkButton: true,
+                        locale: translations.locale,
+                        backUrl: `/${translations.locale}/`,
+                        initialDialogueIndex: this.initialDialogueIndex,
+                    },
+                });
+
+                // Only apply the initial dialogue index on the first render.
+                this.initialDialogueIndex = null;
+
+                this.readerInstance = {
+                    unmount: () => {
+                        unmount(mountedComponent);
+                    },
+                };
+            })
+            .catch(error => {
+                console.error('Failed to load reader component:', error);
+
+                // Clear container and build DOM safely
+                container.replaceChildren();
+
+                const wrapper = document.createElement('div');
+                wrapper.className =
+                    'flex flex-col items-center justify-center h-full text-center p-8';
+
+                const errorMsg = document.createElement('p');
+                errorMsg.className = 'text-red-400 mb-4';
+                const loadText =
+                    translations?.reader?.loadError ?? 'Failed to load reader';
+                errorMsg.textContent = loadText;
+
+                const retryBtn = document.createElement('button');
+                retryBtn.className =
+                    'px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors';
+                const retryText = translations?.reader?.retry ?? 'Retry';
+                retryBtn.textContent = retryText;
+                retryBtn.addEventListener('click', () => location.reload());
+
+                wrapper.appendChild(errorMsg);
+                wrapper.appendChild(retryBtn);
+                container.appendChild(wrapper);
             });
-
-            // Only apply the initial dialogue index on the first render.
-            this.initialDialogueIndex = null;
-
-            this.readerInstance = {
-                unmount: () => {
-                    const destroy = (
-                        mountedComponent as { destroy?: () => void }
-                    ).destroy;
-                    if (typeof destroy === 'function') {
-                        destroy();
-                    }
-                },
-            };
-        });
     }
 
     initialize(): void {

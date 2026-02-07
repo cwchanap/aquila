@@ -1,13 +1,72 @@
 /**
  * API utility functions for consistent response handling and session validation.
  */
-import { logger } from './logger.js';
-import { SimpleAuthService, type SimpleSession } from './simple-auth.js';
+import type { ZodSchema } from 'zod';
+import { auth, type Session } from './auth.js';
+import { SimpleAuthService } from './simple-auth.js';
+import type { User } from './drizzle/schema.js';
+
+/**
+ * Sanitized user type for API responses (excludes sensitive fields).
+ */
+export interface SanitizedUser {
+    id: string;
+    email: string;
+    username: string | null;
+    name: string | null;
+    image: string | null;
+    emailVerified: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+/**
+ * Sanitize user object for API responses.
+ * Removes sensitive fields that should not be exposed.
+ */
+export function sanitizeUser(user: User): SanitizedUser {
+    return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        image: user.image,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+    };
+}
+interface ApiSuccessResponse<T> {
+    data: T;
+    success: true;
+}
+
+/**
+ * Create a standardized success JSON response with { success: true, data } wrapper.
+ * Use this for new API endpoints that expect the wrapped format.
+ */
+export function jsonSuccessResponse<T>(data: T, status = 200): Response {
+    const body: ApiSuccessResponse<T> = { data, success: true };
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+/**
+ * Standard API error response format.
+ */
+interface ApiErrorResponse {
+    error: string;
+    errorId?: string;
+    success: false;
+}
 
 /**
  * Create a JSON response with proper headers.
+ * Returns raw data for backward compatibility.
  */
-export function jsonResponse(data: unknown, status = 200): Response {
+export function jsonResponse<T>(data: T, status = 200): Response {
     return new Response(JSON.stringify(data), {
         status,
         headers: { 'Content-Type': 'application/json' },
@@ -15,64 +74,110 @@ export function jsonResponse(data: unknown, status = 200): Response {
 }
 
 /**
- * Create a JSON error response.
+ * Create a JSON error response with standardized format.
  */
-export function errorResponse(error: string, status: number): Response {
-    return jsonResponse({ error }, status);
+export function errorResponse(
+    error: string,
+    status: number,
+    errorId?: string
+): Response {
+    const body: ApiErrorResponse = {
+        error,
+        success: false,
+        ...(errorId && { errorId }),
+    };
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
 }
 
 /**
- * Extract session from request cookies.
- * Returns null if no session cookie or session is invalid/expired.
- */
-export async function getSessionFromRequest(
-    request: Request
-): Promise<SimpleSession | null> {
-    const cookieHeader = request.headers.get('cookie') || '';
-    // Normalize cookie string by replacing multiple spaces with single space
-    const cookieStr = cookieHeader
-        .split(';')
-        .map(c => c.trim().replace(/\s+/g, ' '))
-        .find(c => c.startsWith('session='));
-
-    if (!cookieStr) return null;
-
-    // Find the first '=' to get the key-value boundary, then extract the full value
-    const firstEqIndex = cookieStr.indexOf('=');
-    if (firstEqIndex === -1) return null;
-
-    let sessionId: string;
-    try {
-        sessionId = decodeURIComponent(cookieStr.substring(firstEqIndex + 1));
-    } catch (error) {
-        if (error instanceof URIError) {
-            logger.warn('Malformed session cookie', { cookieName: 'session' });
-            return null;
-        }
-        throw error;
-    }
-
-    if (!sessionId) return null;
-    return SimpleAuthService.getSession(sessionId);
-}
-
-/**
- * Require a valid session, returning an error response if not authenticated.
+ * Require a valid session, checking both Better Auth and Simple Auth (fallback).
+ * Returns an error response if not authenticated.
  * Use this in API routes that require authentication.
  *
  * @example
- * const { session, error } = await requireSession(request);
+ * const { session, error } = await requireAuth(request);
  * if (error) return error;
- * // session is now guaranteed to be valid
+ * // session.user is now guaranteed to be valid
  */
-export async function requireSession(
+export async function requireAuth(
     request: Request
 ): Promise<
-    { session: SimpleSession; error: null } | { session: null; error: Response }
+    { session: Session; error: null } | { session: null; error: Response }
 > {
-    const session = await getSessionFromRequest(request);
-    if (!session) {
-        return { session: null, error: errorResponse('Unauthorized', 401) };
+    // First try Better Auth session
+    const betterAuthSession = await auth.api.getSession({
+        headers: request.headers,
+    });
+    if (betterAuthSession?.user?.id) {
+        return { session: betterAuthSession, error: null };
     }
-    return { session, error: null };
+
+    // Fallback: Check Simple Auth session cookie
+    const cookieHeader = request.headers.get('cookie');
+    if (cookieHeader) {
+        const sessionMatch = cookieHeader.match(/session=([^;]+)/);
+        const sessionId = sessionMatch?.[1];
+        if (sessionId) {
+            const simpleSession = await SimpleAuthService.getSession(sessionId);
+            if (simpleSession?.user?.id) {
+                // Convert SimpleSession to Better Auth Session shape for compatibility
+                const compatSession: Session = {
+                    user: {
+                        id: simpleSession.user.id,
+                        email: simpleSession.user.email,
+                        name: simpleSession.user.name,
+                        username: simpleSession.user.username,
+                        image: null,
+                        emailVerified: false,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                    session: {
+                        id: simpleSession.sessionId,
+                        userId: simpleSession.user.id,
+                        token: simpleSession.sessionId,
+                        expiresAt: new Date(
+                            Date.now() + 7 * 24 * 60 * 60 * 1000
+                        ),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                } as Session;
+                return { session: compatSession, error: null };
+            }
+        }
+    }
+
+    return { session: null, error: errorResponse('Unauthorized', 401) };
+}
+
+/**
+ * Parse and validate request body against a Zod schema.
+ * Returns validated data or an error response.
+ *
+ * @example
+ * const { data, error } = await parseBody(request, StoryCreateSchema);
+ * if (error) return error;
+ * // data is now typed and validated
+ */
+export async function parseBody<T>(
+    request: Request,
+    schema: ZodSchema<T>
+): Promise<{ data: T; error: null } | { data: null; error: Response }> {
+    let body: unknown;
+    try {
+        body = await request.json();
+    } catch {
+        return { data: null, error: errorResponse('Malformed JSON', 400) };
+    }
+
+    const result = schema.safeParse(body);
+    if (!result.success) {
+        const message = result.error.issues[0]?.message || 'Validation failed';
+        return { data: null, error: errorResponse(message, 400) };
+    }
+    return { data: result.data, error: null };
 }

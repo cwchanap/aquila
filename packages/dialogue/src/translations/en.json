@@ -58,7 +58,8 @@
     "heading": "Main Menu",
     "startGame": "Start Game",
     "settings": "Settings",
-    "bookmarks": "📖 Bookmarks"
+    "bookmarks": "📖 Bookmarks",
+    "settingsComingSoon": "Settings coming soon!"
   },
   "common": {
     "hello": "Hello",
@@ -150,6 +151,8 @@
   },
   "reader": {
     "title": "Novel Reader - Aquila",
+    "loadError": "Failed to load reader",
+    "retry": "Retry",
     "bookmarkPrompt": "Enter bookmark name:",
     "defaultBookmarkName": "Scene:",
     "bookmarkSaved": "Bookmark saved!",

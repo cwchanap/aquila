@@ -78,7 +78,8 @@
       if (!response.ok) {
         throw new Error('Failed to load stories');
       }
-      const data = (await response.json()) as ApiStory[];
+      const json = await response.json();
+      const data = (json.data ?? json) as ApiStory[];
 
       // Transform data to include chapters and scenes
       // For now, use empty arrays as the API returns empty
@@ -114,7 +115,8 @@
         throw new Error('Failed to create story');
       }
 
-      const newStory = await response.json();
+      const newStoryJson = await response.json();
+      const newStory = newStoryJson.data ?? newStoryJson;
       stories = [...stories, { ...newStory, chapters: [], directScenes: [] }];
       selectedStoryId = newStory.id;
       showStoryModal = false;
@@ -142,7 +144,8 @@
         throw new Error('Failed to update story');
       }
 
-      const updatedStory = await response.json();
+      const updatedStoryJson = await response.json();
+      const updatedStory = updatedStoryJson.data ?? updatedStoryJson;
 
       stories = stories.map(story => {
         if (story.id !== updatedStory.id) return story;
@@ -189,7 +192,8 @@
         throw new Error('Failed to create chapter');
       }
 
-      const newChapter = await response.json();
+      const newChapterJson = await response.json();
+      const newChapter = newChapterJson.data ?? newChapterJson;
 
       stories = stories.map(s => {
         if (s.id === chapterForm.storyId) {
@@ -242,7 +246,8 @@
         throw new Error('Failed to create scene');
       }
 
-      const newScene = await response.json();
+      const newSceneJson = await response.json();
+      const newScene = newSceneJson.data ?? newSceneJson;
 
       stories = stories.map(s => {
         if (s.id === sceneForm.storyId) {

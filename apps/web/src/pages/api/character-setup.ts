@@ -1,13 +1,15 @@
 import type { APIRoute } from 'astro';
-import { getTranslations, type Locale } from '@aquila/dialogue';
+import { getTranslations } from '@aquila/dialogue';
 import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
 import { logger } from '@/lib/logger.js';
 import {
-    requireSession,
+    requireAuth,
+    parseBody,
     jsonResponse,
     errorResponse,
 } from '@/lib/api-utils.js';
+import { CharacterSetupSchema } from '@/lib/schemas.js';
 import {
     resolveValidationMessage,
     validateCharacterName,
@@ -17,23 +19,24 @@ import { ERROR_IDS } from '@/constants/errorIds.js';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { session, error } = await requireSession(request);
-        if (error) return error;
+        const { session, error: authError } = await requireAuth(request);
+        if (authError) return authError;
 
-        const {
-            characterName,
-            storyId,
-            locale: rawLocale,
-        } = await request.json();
-        const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
-        const translations = getTranslations(locale);
+        const { data, error: validationError } = await parseBody(
+            request,
+            CharacterSetupSchema
+        );
+        if (validationError) return validationError;
+
+        const translations = getTranslations(data.locale);
         const validationTranslations: ValidationTranslations = {
             email: translations.email,
             username: translations.username,
             characterName: translations.characterName,
         };
 
-        const nameValidation = validateCharacterName(characterName);
+        // Additional character name validation with localized messages
+        const nameValidation = validateCharacterName(data.characterName);
         if (!nameValidation.valid) {
             return errorResponse(
                 resolveValidationMessage(
@@ -44,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        if (!storyId || !isValidStoryId(storyId)) {
+        if (!isValidStoryId(data.storyId)) {
             return errorResponse(translations.characters.invalidStoryId, 400);
         }
 
@@ -54,7 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
         const characterSetupRepo = new CharacterSetupRepository();
         const existingSetup = await characterSetupRepo.findByUserAndStory(
             session.user.id,
-            storyId as StoryId
+            data.storyId as StoryId
         );
 
         if (existingSetup) {
@@ -71,7 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
             const setup = await characterSetupRepo.create({
                 userId: session.user.id,
                 characterName: sanitizedName,
-                storyId: storyId as StoryId,
+                storyId: data.storyId as StoryId,
             });
             return jsonResponse(setup, 201);
         }
@@ -86,7 +89,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const GET: APIRoute = async ({ request, url }) => {
     try {
-        const { session, error } = await requireSession(request);
+        const { session, error } = await requireAuth(request);
         if (error) return error;
 
         const storyId = url.searchParams.get('storyId');

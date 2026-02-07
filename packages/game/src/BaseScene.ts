@@ -21,7 +21,7 @@ export class BaseScene extends Phaser.Scene {
     protected ambientOsc?: OscillatorNode;
     protected ambientGain?: GainNode;
     // Active story section key driven by SceneDirectory.
-    protected sectionKey: SceneId = SceneDirectory.defaultStart;
+    protected sectionKey: SceneId = SceneDirectory.defaultStart ?? 'scene_1';
 
     constructor(key: string) {
         super(key);

@@ -1,28 +1,14 @@
 import type { APIRoute } from 'astro';
 import { BookmarkRepository } from '@/lib/drizzle/repositories';
-import { auth } from '@/lib/auth';
 import { logger } from '@/lib/logger.js';
-import { jsonResponse, errorResponse } from '@/lib/api-utils.js';
+import { requireAuth, jsonResponse, errorResponse } from '@/lib/api-utils.js';
 import { ERROR_IDS } from '@/constants/errorIds.js';
 
 // DELETE /api/bookmarks/:id - Delete a bookmark
 export const DELETE: APIRoute = async ({ params, request }) => {
-    let userId: string | undefined;
     try {
-        const session = await auth.api.getSession({ headers: request.headers });
-        userId = session?.user?.id;
-    } catch (error) {
-        logger.error('Failed to get session', error, {
-            endpoint: '/api/bookmarks/[id]',
-            errorId: ERROR_IDS.AUTH_SESSION_GET_FAILED,
-        });
-        return errorResponse('Failed to authenticate', 500);
-    }
-
-    try {
-        if (!userId) {
-            return errorResponse('Unauthorized', 401);
-        }
+        const { session, error } = await requireAuth(request);
+        if (error) return error;
 
         const { id } = params;
 
@@ -38,7 +24,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             return errorResponse('Bookmark not found', 404);
         }
 
-        if (bookmark.userId !== userId) {
+        if (bookmark.userId !== session.user.id) {
             return errorResponse('Forbidden', 403);
         }
 
@@ -48,13 +34,12 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             return errorResponse('Bookmark not found', 404);
         }
 
-        return jsonResponse({ success: true });
+        return jsonResponse({ deleted: true });
     } catch (error) {
         logger.error('Failed to delete bookmark', error, {
             endpoint: '/api/bookmarks/[id]',
             errorId: ERROR_IDS.DB_DELETE_FAILED,
             bookmarkId: params.id,
-            userId,
         });
         return errorResponse('Failed to delete bookmark', 500);
     }

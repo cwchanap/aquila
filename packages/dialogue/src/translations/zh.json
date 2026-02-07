@@ -58,7 +58,8 @@
     "heading": "主選單",
     "startGame": "開始遊戲",
     "settings": "設定",
-    "bookmarks": "📖 書籤"
+    "bookmarks": "📖 書籤",
+    "settingsComingSoon": "設定功能即將推出！"
   },
   "common": {
     "hello": "你好",
@@ -150,6 +151,8 @@
   },
   "reader": {
     "title": "小說閱讀器 - Aquila",
+    "loadError": "載入閱讀器失敗",
+    "retry": "重試",
     "bookmarkPrompt": "輸入書籤名稱：",
     "defaultBookmarkName": "場景：",
     "bookmarkSaved": "書籤已儲存！",

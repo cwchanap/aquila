@@ -320,12 +320,15 @@ export class ReaderManager {
 
                 const errorMsg = document.createElement('p');
                 errorMsg.className = 'text-red-400 mb-4';
-                errorMsg.textContent = translations.reader.loadError;
+                const loadText =
+                    translations?.reader?.loadError ?? 'Failed to load reader';
+                errorMsg.textContent = loadText;
 
                 const retryBtn = document.createElement('button');
                 retryBtn.className =
                     'px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors';
-                retryBtn.textContent = translations.reader.retry;
+                const retryText = translations?.reader?.retry ?? 'Retry';
+                retryBtn.textContent = retryText;
                 retryBtn.addEventListener('click', () => location.reload());
 
                 wrapper.appendChild(errorMsg);

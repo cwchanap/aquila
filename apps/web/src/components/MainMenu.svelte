@@ -45,7 +45,7 @@
 
   const handleSettingsClick = () => {
     // Settings functionality not yet implemented
-    window.alert(translations.menu.settingsComingSoon);
+    window.alert(translations.menu?.settingsComingSoon ?? '[Coming soon]');
   };
 </script>
 

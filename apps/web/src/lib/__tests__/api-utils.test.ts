@@ -42,8 +42,8 @@ describe('api-utils', () => {
                 'application/json'
             );
             const json = await response.json();
-            expect(json.data).toEqual(data);
-            expect(json.success).toBe(true);
+            // jsonResponse returns raw data for backward compatibility
+            expect(json).toEqual(data);
         });
 
         it('should create a JSON response with custom status', async () => {
@@ -55,8 +55,8 @@ describe('api-utils', () => {
                 'application/json'
             );
             const json = await response.json();
-            expect(json.data).toEqual(data);
-            expect(json.success).toBe(true);
+            // jsonResponse returns raw data for backward compatibility
+            expect(json).toEqual(data);
         });
     });
 

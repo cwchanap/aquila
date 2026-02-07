@@ -88,8 +88,8 @@ describe('Stories API', () => {
 
         expect(response.status).toBe(200);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual([
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual([
             { id: 'story-1', title: 'Story One', userId: 'user-1' },
         ]);
         expect(mockStoryRepo.findByUserId).toHaveBeenCalledWith('user-1');
@@ -133,8 +133,8 @@ describe('Stories API', () => {
 
         expect(response.status).toBe(201);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'story-1',
             title: 'My Story',
             userId: 'user-1',
@@ -206,8 +206,8 @@ describe('Stories API', () => {
 
         expect(response.status).toBe(200);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'story-1',
             title: 'Updated Story',
             userId: 'user-1',

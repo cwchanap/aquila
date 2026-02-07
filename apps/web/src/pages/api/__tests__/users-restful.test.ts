@@ -134,8 +134,8 @@ describe('Users API - Authenticated Endpoints', () => {
 
             expect(response.status).toBe(200);
             const data = await response.json();
-            expect(data.success).toBe(true);
-            expect(data.data).toEqual({
+            // jsonResponse returns raw data for backward compatibility
+            expect(data).toEqual({
                 id: 'user123',
                 email: 'test@example.com',
             });
@@ -236,8 +236,8 @@ describe('Users API - Authenticated Endpoints', () => {
 
             expect(response.status).toBe(200);
             const data = await response.json();
-            expect(data.success).toBe(true);
-            expect(data.data).toEqual({
+            // jsonResponse returns raw data for backward compatibility
+            expect(data).toEqual({
                 id: 'user123',
                 email: 'test@example.com',
                 username: 'tester',
@@ -310,8 +310,8 @@ describe('Users API - Authenticated Endpoints', () => {
 
             expect(response.status).toBe(200);
             const data = await response.json();
-            expect(data.success).toBe(true);
-            expect(data.data.name).toBe('Updated Name');
+            // jsonResponse returns raw data for backward compatibility
+            expect(data.name).toBe('Updated Name');
         });
     });
 
@@ -371,8 +371,8 @@ describe('Users API - Authenticated Endpoints', () => {
 
             expect(response.status).toBe(200);
             const data = await response.json();
-            expect(data.success).toBe(true);
-            expect(data.data.deleted).toBe(true);
+            // jsonResponse returns raw data for backward compatibility
+            expect(data.deleted).toBe(true);
         });
     });
 

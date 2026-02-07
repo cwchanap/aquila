@@ -3,6 +3,7 @@
  */
 import type { ZodSchema } from 'zod';
 import { auth, type Session } from './auth.js';
+import { SimpleAuthService } from './simple-auth.js';
 import type { User } from './drizzle/schema.js';
 
 /**
@@ -41,6 +42,18 @@ interface ApiSuccessResponse<T> {
 }
 
 /**
+ * Create a standardized success JSON response with { success: true, data } wrapper.
+ * Use this for new API endpoints that expect the wrapped format.
+ */
+export function jsonSuccessResponse<T>(data: T, status = 200): Response {
+    const body: ApiSuccessResponse<T> = { data, success: true };
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+/**
  * Standard API error response format.
  */
 interface ApiErrorResponse {
@@ -50,11 +63,11 @@ interface ApiErrorResponse {
 }
 
 /**
- * Create a JSON response with proper headers and standardized format.
+ * Create a JSON response with proper headers.
+ * Returns raw data for backward compatibility.
  */
 export function jsonResponse<T>(data: T, status = 200): Response {
-    const body: ApiSuccessResponse<T> = { data, success: true };
-    return new Response(JSON.stringify(body), {
+    return new Response(JSON.stringify(data), {
         status,
         headers: { 'Content-Type': 'application/json' },
     });
@@ -80,7 +93,8 @@ export function errorResponse(
 }
 
 /**
- * Require a valid Better Auth session, returning an error response if not authenticated.
+ * Require a valid session, checking both Better Auth and Simple Auth (fallback).
+ * Returns an error response if not authenticated.
  * Use this in API routes that require authentication.
  *
  * @example
@@ -93,11 +107,51 @@ export async function requireAuth(
 ): Promise<
     { session: Session; error: null } | { session: null; error: Response }
 > {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user?.id) {
-        return { session: null, error: errorResponse('Unauthorized', 401) };
+    // First try Better Auth session
+    const betterAuthSession = await auth.api.getSession({
+        headers: request.headers,
+    });
+    if (betterAuthSession?.user?.id) {
+        return { session: betterAuthSession, error: null };
     }
-    return { session, error: null };
+
+    // Fallback: Check Simple Auth session cookie
+    const cookieHeader = request.headers.get('cookie');
+    if (cookieHeader) {
+        const sessionMatch = cookieHeader.match(/session=([^;]+)/);
+        const sessionId = sessionMatch?.[1];
+        if (sessionId) {
+            const simpleSession = await SimpleAuthService.getSession(sessionId);
+            if (simpleSession?.user?.id) {
+                // Convert SimpleSession to Better Auth Session shape for compatibility
+                const compatSession: Session = {
+                    user: {
+                        id: simpleSession.user.id,
+                        email: simpleSession.user.email,
+                        name: simpleSession.user.name,
+                        username: simpleSession.user.username,
+                        image: null,
+                        emailVerified: false,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                    session: {
+                        id: simpleSession.sessionId,
+                        userId: simpleSession.user.id,
+                        token: simpleSession.sessionId,
+                        expiresAt: new Date(
+                            Date.now() + 7 * 24 * 60 * 60 * 1000
+                        ),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                } as Session;
+                return { session: compatSession, error: null };
+            }
+        }
+    }
+
+    return { session: null, error: errorResponse('Unauthorized', 401) };
 }
 
 /**

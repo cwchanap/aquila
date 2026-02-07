@@ -127,8 +127,8 @@ describe('Chapters API', () => {
 
         expect(response.status).toBe(201);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'chapter-1',
             title: 'Chapter One',
             storyId: 'story-1',

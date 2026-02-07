@@ -126,8 +126,8 @@ describe('Scenes API', () => {
 
         expect(response.status).toBe(201);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'scene-1',
             title: 'Scene One',
             storyId: 'story-1',
@@ -170,8 +170,8 @@ describe('Scenes API', () => {
 
         expect(response.status).toBe(201);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'scene-2',
             title: 'Scene Two',
             storyId: 'story-1',

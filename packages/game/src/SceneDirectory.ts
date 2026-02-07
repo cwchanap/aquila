@@ -152,4 +152,7 @@ export class SceneDirectory {
         if (!value) return false;
         return SceneRegistry.has(value);
     }
+
+    // Backward compatibility alias - existing checkpoint code uses isSceneId
+    static isSceneId = SceneDirectory.isRegisteredScene;
 }

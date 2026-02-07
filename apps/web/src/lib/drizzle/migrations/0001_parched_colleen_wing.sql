@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "bookmarks_user_story_name_unique" ON "bookmarks" USING btree ("user_id","story_id","bookmark_name");

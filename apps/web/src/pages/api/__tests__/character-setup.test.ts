@@ -154,8 +154,8 @@ describe('Character Setup API', () => {
 
         expect(response.status).toBe(200);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'setup-1',
             characterName: 'New Hero',
         });
@@ -187,8 +187,8 @@ describe('Character Setup API', () => {
 
         expect(response.status).toBe(201);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'setup-2',
             characterName: 'Hero',
             storyId: 'train_adventure',
@@ -214,8 +214,8 @@ describe('Character Setup API', () => {
 
         expect(response.status).toBe(200);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual([{ id: 'setup-1', characterName: 'Hero' }]);
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual([{ id: 'setup-1', characterName: 'Hero' }]);
         expect(mockRepo.findByUser).toHaveBeenCalledWith('user-1');
     });
 
@@ -238,8 +238,8 @@ describe('Character Setup API', () => {
 
         expect(response.status).toBe(200);
         const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.data).toEqual({
+        // jsonResponse returns raw data for backward compatibility
+        expect(data).toEqual({
             id: 'setup-2',
             characterName: 'Hero',
         });

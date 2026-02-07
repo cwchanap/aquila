@@ -91,10 +91,8 @@ describe('Bookmarks API', () => {
 
             expect(response.status).toBe(200);
             const data = await response.json();
-            expect(data.success).toBe(true);
-            expect(data.data).toEqual([
-                { id: 'bookmark-1', storyId: 'story-1' },
-            ]);
+            // jsonResponse returns raw data for backward compatibility
+            expect(data).toEqual([{ id: 'bookmark-1', storyId: 'story-1' }]);
             expect(mockRepo.findByUser).toHaveBeenCalledWith('user-1');
         });
     });
@@ -152,8 +150,8 @@ describe('Bookmarks API', () => {
 
             expect(response.status).toBe(201);
             const data = await response.json();
-            expect(data.success).toBe(true);
-            expect(data.data).toEqual({ id: 'bookmark-1', storyId: 'story-1' });
+            // jsonResponse returns raw data for backward compatibility
+            expect(data).toEqual({ id: 'bookmark-1', storyId: 'story-1' });
             expect(mockRepo.upsertByScene).toHaveBeenCalledWith(
                 'user-1',
                 'story-1',
@@ -277,7 +275,8 @@ describe('Bookmarks API', () => {
 
             expect(response.status).toBe(200);
             const data = await response.json();
-            expect(data.success).toBe(true);
+            // jsonResponse returns raw data for backward compatibility
+            expect(data).toEqual({ deleted: true });
             expect(mockRepo.delete).toHaveBeenCalledWith('bookmark-1');
         });
 

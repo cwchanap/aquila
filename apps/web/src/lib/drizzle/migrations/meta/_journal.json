@@ -15,6 +15,13 @@
       "when": 1770452876377,
       "tag": "0001_parched_colleen_wing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770519265566,
+      "tag": "0002_certain_silver_centurion",
+      "breakpoints": true
     }
   ]
 }

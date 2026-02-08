@@ -53,10 +53,11 @@ export type BookmarkUpdate = z.infer<typeof BookmarkUpdateSchema>;
 
 // User schemas
 export const UserUpdateSchema = z.object({
-    name: z.string().min(1).max(255).optional(),
+    name: z.string().trim().min(1).max(255).optional(),
     email: z.string().email('Invalid email address').optional(),
     username: z
         .string()
+        .trim()
         .min(3, 'Username must be at least 3 characters')
         .max(50, 'Username too long')
         .optional(),

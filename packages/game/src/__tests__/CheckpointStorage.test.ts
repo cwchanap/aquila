@@ -12,8 +12,8 @@ describe('CheckpointStorage', () => {
         // Clear localStorage before each test
         localStorage.clear();
 
-        // Mock SceneDirectory.isSceneId to accept test scene IDs
-        vi.spyOn(SceneDirectory, 'isSceneId').mockImplementation(
+        // Mock SceneDirectory.isRegisteredScene to accept test scene IDs
+        vi.spyOn(SceneDirectory, 'isRegisteredScene').mockImplementation(
             (id: string | null | undefined) =>
                 id ? ['scene_1', 'scene_2'].includes(id) : false
         );

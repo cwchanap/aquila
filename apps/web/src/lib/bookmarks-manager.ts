@@ -45,7 +45,7 @@ export class BookmarksManager {
             }
 
             const data = await response.json();
-            this.bookmarks = data.data || [];
+            this.bookmarks = Array.isArray(data) ? data : data.data || [];
             this.renderBookmarks();
         } catch (error) {
             console.error('Failed to load bookmarks:', error);

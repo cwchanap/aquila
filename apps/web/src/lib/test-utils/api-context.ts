@@ -100,9 +100,9 @@ export function createRequest(
 
 /**
  * Parse response JSON with proper success/error typing.
- * Validates the discriminated union shape:
- * - success: true requires data property
- * - success: false requires error string
+ * Handles both wrapped and raw response formats:
+ * - Error responses: { success: false, error: string }
+ * - Success responses: raw data (backward compat) or { success: true, data }
  */
 export async function parseApiResponse<T = unknown>(
     response: Response,
@@ -115,23 +115,8 @@ export async function parseApiResponse<T = unknown>(
         throw new Error('Invalid API response: expected object');
     }
 
-    if (!('success' in json) || typeof json.success !== 'boolean') {
-        throw new Error(
-            'Invalid API response: missing boolean "success" property'
-        );
-    }
-
-    if (json.success === true) {
-        if (!('data' in json)) {
-            throw new Error(
-                'Invalid API response: success=true requires "data" property'
-            );
-        }
-        if (dataValidator && !dataValidator(json.data)) {
-            throw new Error('Invalid API response: data failed validation');
-        }
-        return json as { data: T; success: true };
-    } else {
+    // Check if it's an error response (has success: false)
+    if ('success' in json && json.success === false) {
         if (!('error' in json) || typeof json.error !== 'string') {
             throw new Error(
                 'Invalid API response: success=false requires "error" string property'
@@ -139,4 +124,16 @@ export async function parseApiResponse<T = unknown>(
         }
         return json as { error: string; success: false };
     }
+
+    // Success response: either raw data or wrapped { success: true, data }
+    const data =
+        'success' in json && json.success === true && 'data' in json
+            ? json.data
+            : json;
+
+    if (dataValidator && !dataValidator(data)) {
+        throw new Error('Invalid API response: data failed validation');
+    }
+
+    return { data: data as T, success: true };
 }

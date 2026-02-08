@@ -234,7 +234,7 @@ export class ReaderManager {
                 alert(
                     translations.reader.bookmarkFailed +
                         ' ' +
-                        (error.message || 'Unknown error')
+                        (error.error || 'Unknown error')
                 );
             }
         } catch (error) {

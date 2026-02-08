@@ -161,7 +161,9 @@ export const stories = pgTable(
     'stories',
     {
         id: text('id').primaryKey(),
-        userId: text('user_id').notNull(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
         title: text('title').notNull(),
         description: text('description'),
         coverImage: text('cover_image'),
@@ -256,8 +258,12 @@ export const bookmarks = pgTable(
         userId: text('user_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
-        storyId: text('story_id').notNull(), // e.g., "trainAdventure"
-        sceneId: text('scene_id').notNull(), // e.g., "scene_1", "scene_4a"
+        storyId: text('story_id')
+            .notNull()
+            .references(() => stories.id, { onDelete: 'cascade' }),
+        sceneId: text('scene_id')
+            .notNull()
+            .references(() => scenes.id, { onDelete: 'cascade' }),
         bookmarkName: text('bookmark_name').notNull(),
         locale: text('locale').notNull().default('en'),
         createdAt: timestamp('created_at', { mode: 'date' })

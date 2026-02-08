@@ -36,6 +36,7 @@ export function sanitizeUser(user: User): SanitizedUser {
         updatedAt: user.updatedAt,
     };
 }
+
 interface ApiSuccessResponse<T> {
     data: T;
     success: true;
@@ -118,7 +119,7 @@ export async function requireAuth(
     // Fallback: Check Simple Auth session cookie
     const cookieHeader = request.headers.get('cookie');
     if (cookieHeader) {
-        const sessionMatch = cookieHeader.match(/session=([^;]+)/);
+        const sessionMatch = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
         const sessionId = sessionMatch?.[1];
         if (sessionId) {
             const simpleSession = await SimpleAuthService.getSession(sessionId);

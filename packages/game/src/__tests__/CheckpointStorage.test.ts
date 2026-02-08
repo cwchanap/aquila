@@ -1,15 +1,22 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
     saveCheckpoint,
     loadCheckpoint,
     clearCheckpoint,
     type CheckpointState,
 } from '../CheckpointStorage';
+import { SceneDirectory } from '../SceneDirectory';
 
 describe('CheckpointStorage', () => {
     beforeEach(() => {
         // Clear localStorage before each test
         localStorage.clear();
+
+        // Mock SceneDirectory.isSceneId to accept test scene IDs
+        vi.spyOn(SceneDirectory, 'isSceneId').mockImplementation(
+            (id: string | null | undefined) =>
+                id ? ['scene_1', 'scene_2'].includes(id) : false
+        );
     });
 
     describe('saveCheckpoint', () => {

@@ -25,8 +25,15 @@ export interface SimpleUser {
 }
 
 export interface SimpleSession {
-    user: SimpleUser;
+    user: SimpleUser & {
+        emailVerified?: boolean;
+        createdAt?: Date;
+        updatedAt?: Date;
+    };
     sessionId: string;
+    expiresAt?: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export class SimpleAuthService {
@@ -208,10 +215,15 @@ export class SimpleAuthService {
             .select({
                 sessionId: sessions.id,
                 expiresAt: sessions.expiresAt,
+                sessionCreatedAt: sessions.createdAt,
+                sessionUpdatedAt: sessions.updatedAt,
                 userId: users.id,
                 email: users.email,
                 name: users.name,
                 username: users.username,
+                emailVerified: users.emailVerified,
+                userCreatedAt: users.createdAt,
+                userUpdatedAt: users.updatedAt,
             })
             .from(sessions)
             .innerJoin(users, eq(users.id, sessions.userId))
@@ -235,8 +247,14 @@ export class SimpleAuthService {
                 email: session.email,
                 name: session.name,
                 username: session.username,
+                emailVerified: session.emailVerified,
+                createdAt: session.userCreatedAt,
+                updatedAt: session.userUpdatedAt,
             },
             sessionId: session.sessionId,
+            expiresAt: session.expiresAt,
+            createdAt: session.sessionCreatedAt,
+            updatedAt: session.sessionUpdatedAt,
         };
     }
 

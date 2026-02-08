@@ -480,10 +480,15 @@ describe('SimpleAuthService', () => {
             const mockSessionRow = {
                 sessionId,
                 expiresAt: new Date(Date.now() + 1000),
+                sessionCreatedAt: new Date('2024-01-01'),
+                sessionUpdatedAt: new Date('2024-01-02'),
                 userId: 'user-123',
                 email: 'test@example.com',
                 name: 'Test User',
                 username: 'testuser',
+                emailVerified: true,
+                userCreatedAt: new Date('2023-01-01'),
+                userUpdatedAt: new Date('2023-06-01'),
             };
 
             const selectLimit = vi.fn().mockResolvedValue([mockSessionRow]);
@@ -501,8 +506,14 @@ describe('SimpleAuthService', () => {
                     email: mockSessionRow.email,
                     name: mockSessionRow.name,
                     username: mockSessionRow.username,
+                    emailVerified: mockSessionRow.emailVerified,
+                    createdAt: mockSessionRow.userCreatedAt,
+                    updatedAt: mockSessionRow.userUpdatedAt,
                 },
                 sessionId,
+                expiresAt: mockSessionRow.expiresAt,
+                createdAt: mockSessionRow.sessionCreatedAt,
+                updatedAt: mockSessionRow.sessionUpdatedAt,
             });
             expect(selectFrom).toHaveBeenCalledWith(sessions);
             expect(innerJoin).toHaveBeenCalledWith(users, expect.anything());

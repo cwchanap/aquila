@@ -123,7 +123,9 @@ export async function requireAuth(
         if (sessionId) {
             const simpleSession = await SimpleAuthService.getSession(sessionId);
             if (simpleSession?.user?.id) {
-                // Convert SimpleSession to Better Auth Session shape for compatibility
+                // Convert SimpleSession to Better Auth Session shape for compatibility.
+                // This is a best-effort conversion - we use actual values from simpleSession
+                // when available, with fallbacks for fields that may be missing.
                 const compatSession: Session = {
                     user: {
                         id: simpleSession.user.id,
@@ -131,19 +133,24 @@ export async function requireAuth(
                         name: simpleSession.user.name,
                         username: simpleSession.user.username,
                         image: null,
-                        emailVerified: false,
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
+                        // Fallback: false if emailVerified not present in SimpleSession
+                        emailVerified:
+                            simpleSession.user.emailVerified ?? false,
+                        // Fallback: current date if user timestamps not present
+                        createdAt: simpleSession.user.createdAt ?? new Date(),
+                        updatedAt: simpleSession.user.updatedAt ?? new Date(),
                     },
                     session: {
                         id: simpleSession.sessionId,
                         userId: simpleSession.user.id,
                         token: simpleSession.sessionId,
-                        expiresAt: new Date(
-                            Date.now() + 7 * 24 * 60 * 60 * 1000
-                        ),
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
+                        // Fallback: 7 days from now if expiresAt not present
+                        expiresAt:
+                            simpleSession.expiresAt ??
+                            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                        // Fallback: current date if session timestamps not present
+                        createdAt: simpleSession.createdAt ?? new Date(),
+                        updatedAt: simpleSession.updatedAt ?? new Date(),
                     },
                 } as Session;
                 return { session: compatSession, error: null };

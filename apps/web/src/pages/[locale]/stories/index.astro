@@ -4,20 +4,16 @@ import OceanBackground from '../../../components/OceanBackground.astro';
 import Button from '../../../components/ui/Button.svelte';
 import UserStatus from '../../../components/UserStatus.svelte';
 import { StoryId } from '../../../lib/story-types.js';
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { getSessionUser } from '../../../lib/auth-utils.js';
 import { t as translate } from '../../../lib/utils';
 
-const locale = Astro.currentLocale || 'en';
+const locale = Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 
-// Try to get session from cookie (same as UserStatus component)
+// Try to get session
 let user = null;
 try {
-  const sessionId = Astro.cookies.get('session')?.value;
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    user = session?.user || null;
-  }
+  user = await getSessionUser(Astro.request);
 } catch (error) {
   console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
 }
@@ -27,7 +23,7 @@ try {
   <OceanBackground>
     <!-- Back button - Gaming Style -->
     <a
-      href={`/${Astro.currentLocale || 'en'}/`}
+      href={`/${Astro.params.locale || 'en'}/`}
       class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
       style="font-family: 'Orbitron', monospace;"
     >
@@ -37,7 +33,7 @@ try {
     </a>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
+    <UserStatus client:load user={user} currentLocale={Astro.params.locale || 'en'} />
 
     <!-- Main Content Container - Gaming Visual Novel Style -->
     <div class="min-h-screen flex items-center justify-center relative">
@@ -55,7 +51,7 @@ try {
 
         <!-- Story Selection - Gaming Style -->
         <div class="space-y-6 flex flex-col items-center">
-          <Button variant="menu-compact" href={`/${Astro.currentLocale || 'en'}/reader?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
+          <Button variant="menu-compact" href={`/${Astro.params.locale || 'en'}/reader?story=${StoryId.TRAIN_ADVENTURE}`} client:load>
             {t("stories.trainAdventure")}
           </Button>
           <!-- Add more story buttons here as needed -->

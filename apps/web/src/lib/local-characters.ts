@@ -1,8 +1,7 @@
 export const ALLOWED_STORIES = ['train_adventure'] as const;
 export type AllowedStoryId = (typeof ALLOWED_STORIES)[number];
 
-// Import validation constants from the centralized validation module
-import { CHARACTER_NAME_MAX_LENGTH, CHARACTER_NAME_REGEX } from './validation';
+import { validateCharacterName, CHARACTER_NAME_MAX_LENGTH } from './validation';
 
 export type CharacterTranslations = {
     playStory: string;
@@ -22,15 +21,14 @@ type NameValidationResult =
     | { valid: false; reason: 'empty' | 'invalid' };
 
 export const validateAndClampName = (rawName: string): NameValidationResult => {
-    const trimmed = rawName.trim();
-    if (!trimmed) {
-        return { valid: false, reason: 'empty' };
+    const clamped = rawName.trim().slice(0, CHARACTER_NAME_MAX_LENGTH);
+    const result = validateCharacterName(clamped);
+    if (result.valid) {
+        return { valid: true, value: result.sanitizedName };
     }
-    const clampedName = trimmed.slice(0, CHARACTER_NAME_MAX_LENGTH);
-    if (!CHARACTER_NAME_REGEX.test(clampedName)) {
-        return { valid: false, reason: 'invalid' };
-    }
-    return { valid: true, value: clampedName };
+    const reason =
+        result.errorKey === 'characterName.empty' ? 'empty' : 'invalid';
+    return { valid: false, reason };
 };
 
 export function createCharacterCard(

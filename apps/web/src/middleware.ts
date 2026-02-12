@@ -28,28 +28,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
         });
     }
 
-    const response = await next();
-
-    if (response.status === 404) {
-        // For zh routes, try routing to en pages
-        if (locale === 'zh') {
-            const enPathname = pathname.replace(/^\/zh\//, '/en/');
-            return new Response(null, {
-                status: 302,
-                headers: {
-                    Location: enPathname || '/en/',
-                },
-            });
-        }
-
-        // Fallback to default locale
-        return new Response(null, {
-            status: 302,
-            headers: {
-                Location: '/en/',
-            },
-        });
-    }
-
-    return response;
+    return next();
 });

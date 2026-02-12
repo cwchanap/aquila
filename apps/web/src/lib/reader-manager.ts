@@ -6,6 +6,7 @@ import {
     type ChoiceDefinition,
 } from '@aquila/dialogue';
 import { mount, unmount } from 'svelte';
+import { showAlert, showPrompt } from './ui-dialogs';
 
 export interface SceneState {
     storyId: string;
@@ -199,7 +200,7 @@ export class ReaderManager {
     handleBookmark = async (dialogueNumber?: number): Promise<void> => {
         const translations = this.t;
 
-        const bookmarkName = prompt(
+        const bookmarkName = await showPrompt(
             translations.reader.bookmarkPrompt,
             translations.reader.defaultBookmarkName +
                 ' ' +
@@ -228,10 +229,10 @@ export class ReaderManager {
             });
 
             if (response.ok) {
-                alert(translations.reader.bookmarkSaved);
+                await showAlert(translations.reader.bookmarkSaved);
             } else {
                 const error = await response.json();
-                alert(
+                await showAlert(
                     translations.reader.bookmarkFailed +
                         ' ' +
                         (error.error || 'Unknown error')
@@ -239,11 +240,11 @@ export class ReaderManager {
             }
         } catch (error) {
             console.error('Failed to save bookmark:', error);
-            alert(translations.reader.bookmarkError);
+            await showAlert(translations.reader.bookmarkError);
         }
     };
 
-    handleNext = (): void => {
+    handleNext = async (): Promise<void> => {
         const translations = this.t;
         const sceneNumber = this.parseSceneNumber(this.currentState.sceneId);
         if (
@@ -253,7 +254,7 @@ export class ReaderManager {
             const nextScene = `scene_${sceneNumber + 1}`;
             this.navigateToScene(nextScene);
         } else {
-            alert(translations.reader.endOfStory);
+            await showAlert(translations.reader.endOfStory);
         }
     };
 

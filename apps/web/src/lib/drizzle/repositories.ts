@@ -1,5 +1,4 @@
 import { eq, and, asc, desc, isNull } from 'drizzle-orm';
-import { db, type DrizzleDB } from './db';
 import { BaseRepository } from './base-repository';
 import {
     users,
@@ -81,12 +80,12 @@ export class UserRepository extends BaseRepository<typeof users, User> {
 }
 
 // ============= Character Setup Repository =============
-export class CharacterSetupRepository {
-    private db: DrizzleDB;
-
-    constructor(dbInstance?: DrizzleDB) {
-        this.db = dbInstance || db;
-    }
+export class CharacterSetupRepository extends BaseRepository<
+    typeof characterSetups,
+    CharacterSetup
+> {
+    protected table = characterSetups;
+    protected idColumn = characterSetups.id;
 
     async create(
         data: Omit<NewCharacterSetup, 'id' | 'createdAt' | 'updatedAt'>
@@ -139,14 +138,6 @@ export class CharacterSetupRepository {
             .where(eq(characterSetups.id, id))
             .returning();
         return setup;
-    }
-
-    async delete(id: string): Promise<boolean> {
-        const deleted = await this.db
-            .delete(characterSetups)
-            .where(eq(characterSetups.id, id))
-            .returning({ id: characterSetups.id });
-        return deleted.length > 0;
     }
 }
 
@@ -242,7 +233,7 @@ export class ChapterRepository extends BaseRepository<
                 chapterIds.map((chapterId, index) =>
                     tx
                         .update(chapters)
-                        .set({ order: index.toString(), updatedAt: now })
+                        .set({ order: index, updatedAt: now })
                         .where(
                             and(
                                 eq(chapters.id, chapterId),
@@ -324,7 +315,7 @@ export class SceneRepository extends BaseRepository<typeof scenes, Scene> {
                 sceneIds.map((sceneId, index) =>
                     tx
                         .update(scenes)
-                        .set({ order: index.toString(), updatedAt: now })
+                        .set({ order: index, updatedAt: now })
                         .where(
                             and(
                                 eq(scenes.id, sceneId),

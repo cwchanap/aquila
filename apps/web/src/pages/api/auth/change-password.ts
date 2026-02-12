@@ -1,27 +1,22 @@
 import type { APIRoute } from 'astro';
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
 import { db } from '../../../lib/drizzle/db.js';
 import { accounts } from '../../../lib/drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { logger } from '../../../lib/logger.js';
-import { jsonResponse, errorResponse } from '../../../lib/api-utils.js';
+import {
+    jsonResponse,
+    errorResponse,
+    requireAuth,
+} from '../../../lib/api-utils.js';
 import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 const MAX_PASSWORD_LENGTH = 256;
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request }) => {
     try {
-        // Get session
-        const sessionId = cookies.get('session')?.value;
-        if (!sessionId) {
-            return errorResponse('Not authenticated', 401);
-        }
-
-        const session = await SimpleAuthService.getSession(sessionId);
-        if (!session) {
-            return errorResponse('Invalid session', 401);
-        }
+        const { session, error } = await requireAuth(request);
+        if (error) return error;
 
         // Parse form data
         const formData = await request.formData();
@@ -98,7 +93,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         });
     } catch (error) {
         logger.error('Failed to change password', error, {
-            endpoint: '/api/simple-auth/change-password',
+            endpoint: '/api/auth/change-password',
             errorId: ERROR_IDS.AUTH_PASSWORD_CHANGE_FAILED,
         });
         return errorResponse('Failed to change password', 500);

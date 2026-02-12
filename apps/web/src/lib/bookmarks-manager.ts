@@ -1,4 +1,5 @@
 import { getTranslations, type Locale } from '@aquila/dialogue';
+import { showAlert, showConfirm } from './ui-dialogs';
 
 export interface Bookmark {
     id: string;
@@ -239,9 +240,8 @@ export class BookmarksManager {
     }
 
     private async deleteBookmark(id: string): Promise<void> {
-        if (!confirm(this.t.bookmarks.deleteConfirm)) {
-            return;
-        }
+        const confirmed = await showConfirm(this.t.bookmarks.deleteConfirm);
+        if (!confirmed) return;
 
         try {
             const response = await fetch(`/api/bookmarks/${id}`, {
@@ -252,11 +252,11 @@ export class BookmarksManager {
                 this.bookmarks = this.bookmarks.filter(b => b.id !== id);
                 this.renderBookmarks();
             } else {
-                alert(this.t.bookmarks.deleteFailed);
+                await showAlert(this.t.bookmarks.deleteFailed);
             }
         } catch (error) {
             console.error('Failed to delete bookmark:', error);
-            alert(this.t.bookmarks.deleteFailed);
+            await showAlert(this.t.bookmarks.deleteFailed);
         }
     }
 }

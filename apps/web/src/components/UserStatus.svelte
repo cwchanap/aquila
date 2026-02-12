@@ -27,7 +27,7 @@
     // Only fetch if no user was provided server-side
     if (!user) {
       try {
-        const response = await fetch('/api/simple-auth/session');
+        const response = await fetch('/api/auth/get-session');
         if (!response.ok) {
           throw new Error(
             `Session fetch failed: ${response.status} ${response.statusText}`
@@ -87,7 +87,7 @@
       hasClientError = false;
       errorMessage = '';
 
-      const response = await fetch('/api/simple-auth/session', {
+      const response = await fetch('/api/auth/sign-out', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,7 +173,7 @@
               Story Config
             </a>
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
-            <form method="POST" action="/api/simple-auth/session" on:submit|preventDefault={handleLogout}>
+            <form method="POST" action="/api/auth/sign-out" on:submit|preventDefault={handleLogout}>
               <button
                 type="submit"
                 title={t(currentLocale, 'common.logout')}

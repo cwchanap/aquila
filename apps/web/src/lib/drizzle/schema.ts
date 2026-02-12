@@ -1,6 +1,7 @@
 import {
     pgTable,
     text,
+    integer,
     timestamp,
     index,
     uniqueIndex,
@@ -190,7 +191,7 @@ export const chapters = pgTable(
             .references(() => stories.id, { onDelete: 'cascade' }),
         title: text('title').notNull(),
         description: text('description'),
-        order: text('order').notNull(),
+        order: integer('order').notNull(),
         createdAt: timestamp('created_at', { mode: 'date' })
             .notNull()
             .defaultNow(),
@@ -217,7 +218,7 @@ export const scenes = pgTable(
         }),
         title: text('title').notNull(),
         content: text('content'),
-        order: text('order').notNull(),
+        order: integer('order').notNull(),
         createdAt: timestamp('created_at', { mode: 'date' })
             .notNull()
             .defaultNow(),

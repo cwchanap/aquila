@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { cn, t, getUserFromCookies, type User } from '../utils';
+import { cn, t } from '../utils';
 
 vi.mock('@aquila/dialogue/translations/en.json', () => ({
     default: {
@@ -113,66 +113,6 @@ describe('Utils', () => {
             expect(consoleWarnSpy).not.toHaveBeenCalled();
 
             consoleWarnSpy.mockRestore();
-        });
-    });
-
-    describe('getUserFromCookies()', () => {
-        const createRequest = (cookieHeader?: string) => {
-            return {
-                headers: {
-                    get: (name: string) => {
-                        if (!cookieHeader) return null;
-                        return name.toLowerCase() === 'cookie'
-                            ? cookieHeader
-                            : null;
-                    },
-                },
-            } as unknown as Request;
-        };
-
-        it('returns null without cookie header', () => {
-            expect(getUserFromCookies(createRequest())).toBeNull();
-        });
-
-        it('returns null when user cookie missing', () => {
-            expect(
-                getUserFromCookies(createRequest('session=abc123'))
-            ).toBeNull();
-        });
-
-        it('parses valid user cookie', () => {
-            const user: User = {
-                email: 'test@example.com',
-                username: 'tester',
-            };
-            const encoded = encodeURIComponent(JSON.stringify(user));
-            const request = createRequest(`session=abc123; user=${encoded}`);
-
-            expect(getUserFromCookies(request)).toEqual(user);
-        });
-
-        it('returns null for malformed json', () => {
-            const request = createRequest('user=invalid-json');
-            expect(getUserFromCookies(request)).toBeNull();
-        });
-
-        it('handles multiple cookies', () => {
-            const user: User = { email: 'one@example.com', username: 'one' };
-            const encoded = encodeURIComponent(JSON.stringify(user));
-            const request = createRequest(`foo=bar; user=${encoded}; baz=qux`);
-
-            expect(getUserFromCookies(request)).toEqual(user);
-        });
-
-        it('decodes url-encoded values', () => {
-            const user: User = {
-                email: 'test+user@example.com',
-                username: 'test user',
-            };
-            const encoded = encodeURIComponent(JSON.stringify(user));
-            const request = createRequest(`user=${encoded}`);
-
-            expect(getUserFromCookies(request)).toEqual(user);
         });
     });
 });

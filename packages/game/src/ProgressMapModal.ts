@@ -3,6 +3,7 @@ import {
     StoryProgressionMap,
     type StoryProgressionMapConfig,
 } from './StoryProgressionMap';
+import { isEscListenerHost } from './types';
 
 export interface ProgressMapModalConfig {
     mapConfig: StoryProgressionMapConfig;
@@ -36,11 +37,8 @@ export class ProgressMapModal {
         this.visible = true;
 
         // Pause the scene's ESC listener to prevent menu toggle conflicts
-        if (
-            'pauseEscListener' in this.scene &&
-            typeof this.scene.pauseEscListener === 'function'
-        ) {
-            (this.scene as { pauseEscListener: () => void }).pauseEscListener();
+        if (isEscListenerHost(this.scene)) {
+            this.scene.pauseEscListener();
         }
 
         const width = this.scene.scale.width;
@@ -267,13 +265,8 @@ export class ProgressMapModal {
         this.visible = false;
 
         // Resume the scene's ESC listener
-        if (
-            'resumeEscListener' in this.scene &&
-            typeof this.scene.resumeEscListener === 'function'
-        ) {
-            (
-                this.scene as { resumeEscListener: () => void }
-            ).resumeEscListener();
+        if (isEscListenerHost(this.scene)) {
+            this.scene.resumeEscListener();
         }
 
         if (this.config.onClose) {

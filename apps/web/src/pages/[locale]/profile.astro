@@ -1,28 +1,23 @@
 ---
-import { SimpleAuthService } from '../../lib/simple-auth.js'
+import { getSessionUser } from '../../lib/auth-utils.js'
 import MainLayout from '../../layouts/main.astro'
 import { t as translate } from '../../lib/utils';
 
-const locale = Astro.currentLocale || 'en';
+const locale = Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 
-let user = null
-let error = ''
+let user = null;
+let error = '';
 
 try {
-  // Get session from cookie
-  const sessionId = Astro.cookies.get('session')?.value
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId)
-    user = session?.user || null
-  }
+  user = await getSessionUser(Astro.request);
 } catch (err) {
   console.log('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
   error = t('profile.failedToLoad')
 }
 
 if (!user) {
-  return Astro.redirect(`/${Astro.currentLocale || 'en'}/login`)
+  return Astro.redirect(`/${Astro.params.locale || 'en'}/login`)
 }
 ---
 
@@ -83,7 +78,7 @@ if (!user) {
 
     <!-- Back button - Gaming Style -->
     <a
-      href={`/${Astro.currentLocale || 'en'}/`}
+      href={`/${Astro.params.locale || 'en'}/`}
       class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
       style="font-family: 'Orbitron', monospace;"
     >
@@ -138,7 +133,7 @@ if (!user) {
           <div>
             <h2 class="text-2xl font-bold text-slate-800 mb-6 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.changePassword")}</h2>
 
-            <form method="POST" action="/api/simple-auth/change-password" class="space-y-4">
+            <form method="POST" action="/api/auth/change-password" class="space-y-4">
               <div>
                 <label for="currentPassword" class="block text-sm font-bold text-slate-700 mb-2 tracking-wide" style="font-family: 'Orbitron', monospace;">
                   {t("profile.currentPassword")}
@@ -205,7 +200,7 @@ if (!user) {
 
           <!-- Back to Menu Button -->
           <a
-            href={`/${Astro.currentLocale || 'en'}/`}
+            href={`/${Astro.params.locale || 'en'}/`}
             class="group relative block w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden text-center"
             style="font-family: 'Orbitron', 'Exo 2', monospace;"
           >

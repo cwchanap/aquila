@@ -2,7 +2,7 @@
 import MainLayout from '@/layouts/main.astro';
 import { getTranslations, type Locale } from '@aquila/dialogue';
 
-const locale = ((Astro.currentLocale as string | undefined) ?? 'en') as Locale;
+const locale = ((Astro.params.locale as string | undefined) ?? 'en') as Locale;
 const translations = getTranslations(locale);
 const title = translations.reader.title;
 ---

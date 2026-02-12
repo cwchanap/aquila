@@ -20,6 +20,8 @@ export class BaseScene extends Phaser.Scene {
     protected beepCtx?: AudioContext;
     protected ambientOsc?: OscillatorNode;
     protected ambientGain?: GainNode;
+    private dialogueRetryCount: number = 0;
+    private static readonly MAX_DIALOGUE_RETRIES = 10;
     // Active story section key driven by SceneDirectory.
     protected sectionKey: SceneId = SceneDirectory.defaultStart ?? 'scene_1';
 
@@ -38,21 +40,25 @@ export class BaseScene extends Phaser.Scene {
         this.showDialogue();
     }
 
+    private getOrCreateAudioContext(): AudioContext | null {
+        if (this.beepCtx) return this.beepCtx;
+        const AudioCtor =
+            typeof AudioContext !== 'undefined'
+                ? AudioContext
+                : (
+                      window as unknown as {
+                          webkitAudioContext?: typeof AudioContext;
+                      }
+                  ).webkitAudioContext;
+        if (!AudioCtor) return null;
+        this.beepCtx = new AudioCtor();
+        return this.beepCtx;
+    }
+
     protected startAmbient() {
         try {
-            const AudioCtor =
-                typeof AudioContext !== 'undefined'
-                    ? AudioContext
-                    : (
-                          window as unknown as {
-                              webkitAudioContext?: typeof AudioContext;
-                          }
-                      ).webkitAudioContext;
-            if (!AudioCtor) return;
-            if (!this.beepCtx) {
-                this.beepCtx = new AudioCtor();
-            }
-            const ctx = this.beepCtx!;
+            const ctx = this.getOrCreateAudioContext();
+            if (!ctx) return;
             // Create a very low volume ambient hum
             this.ambientOsc = ctx.createOscillator();
             this.ambientGain = ctx.createGain();
@@ -303,6 +309,7 @@ export class BaseScene extends Phaser.Scene {
             this.dialogue[sceneId]?.[this.currentDialogueIndex];
         if (current) {
             if (this.characterNameText && this.textObject) {
+                this.dialogueRetryCount = 0;
                 const character = current.characterRef;
                 const charId = character?.id ?? current.characterId;
                 const info =
@@ -318,9 +325,16 @@ export class BaseScene extends Phaser.Scene {
 
                 this.characterNameText.setText(speaker ?? '');
                 this.textObject.setText(text);
-            } else {
-                // If UI not ready, try again in a moment
+            } else if (
+                this.dialogueRetryCount < BaseScene.MAX_DIALOGUE_RETRIES
+            ) {
+                this.dialogueRetryCount++;
                 this.time.delayedCall(50, () => this.showDialogue());
+            } else {
+                console.error(
+                    '[BaseScene] Dialogue UI not ready after maximum retries'
+                );
+                this.dialogueRetryCount = 0;
             }
         } else {
             // End of dialogue, transition or end
@@ -363,19 +377,8 @@ export class BaseScene extends Phaser.Scene {
 
     protected playBeep() {
         try {
-            const AudioCtor =
-                typeof AudioContext !== 'undefined'
-                    ? AudioContext
-                    : (
-                          window as unknown as {
-                              webkitAudioContext?: typeof AudioContext;
-                          }
-                      ).webkitAudioContext;
-            if (!AudioCtor) return;
-            if (!this.beepCtx) {
-                this.beepCtx = new AudioCtor();
-            }
-            const ctx = this.beepCtx!;
+            const ctx = this.getOrCreateAudioContext();
+            if (!ctx) return;
             const o = ctx.createOscillator();
             const g = ctx.createGain();
             o.type = 'sine';

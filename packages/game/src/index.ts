@@ -15,3 +15,5 @@ export { ProgressMapModal } from './ProgressMapModal';
 export * from './dialogue/types';
 export * from './characters/CharacterDirectory';
 export { getStoryContent } from '@aquila/dialogue';
+export { isEscListenerHost } from './types';
+export type { EscListenerHost } from './types';

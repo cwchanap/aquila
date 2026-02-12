@@ -3,7 +3,6 @@
  */
 import type { ZodSchema } from 'zod';
 import { auth, type Session } from './auth.js';
-import { SimpleAuthService } from './simple-auth.js';
 import type { User } from './drizzle/schema.js';
 
 /**
@@ -94,9 +93,8 @@ export function errorResponse(
 }
 
 /**
- * Require a valid session, checking both Better Auth and Simple Auth (fallback).
+ * Require a valid Better Auth session.
  * Returns an error response if not authenticated.
- * Use this in API routes that require authentication.
  *
  * @example
  * const { session, error } = await requireAuth(request);
@@ -108,55 +106,11 @@ export async function requireAuth(
 ): Promise<
     { session: Session; error: null } | { session: null; error: Response }
 > {
-    // First try Better Auth session
-    const betterAuthSession = await auth.api.getSession({
+    const session = await auth.api.getSession({
         headers: request.headers,
     });
-    if (betterAuthSession?.user?.id) {
-        return { session: betterAuthSession, error: null };
-    }
-
-    // Fallback: Check Simple Auth session cookie
-    const cookieHeader = request.headers.get('cookie');
-    if (cookieHeader) {
-        const sessionMatch = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
-        const sessionId = sessionMatch?.[1];
-        if (sessionId) {
-            const simpleSession = await SimpleAuthService.getSession(sessionId);
-            if (simpleSession?.user?.id) {
-                // Convert SimpleSession to Better Auth Session shape for compatibility.
-                // This is a best-effort conversion - we use actual values from simpleSession
-                // when available, with fallbacks for fields that may be missing.
-                const compatSession: Session = {
-                    user: {
-                        id: simpleSession.user.id,
-                        email: simpleSession.user.email,
-                        name: simpleSession.user.name,
-                        username: simpleSession.user.username,
-                        image: null,
-                        // Fallback: false if emailVerified not present in SimpleSession
-                        emailVerified:
-                            simpleSession.user.emailVerified ?? false,
-                        // Fallback: current date if user timestamps not present
-                        createdAt: simpleSession.user.createdAt ?? new Date(),
-                        updatedAt: simpleSession.user.updatedAt ?? new Date(),
-                    },
-                    session: {
-                        id: simpleSession.sessionId,
-                        userId: simpleSession.user.id,
-                        token: simpleSession.sessionId,
-                        // Fallback: 7 days from now if expiresAt not present
-                        expiresAt:
-                            simpleSession.expiresAt ??
-                            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                        // Fallback: current date if session timestamps not present
-                        createdAt: simpleSession.createdAt ?? new Date(),
-                        updatedAt: simpleSession.updatedAt ?? new Date(),
-                    },
-                } as Session;
-                return { session: compatSession, error: null };
-            }
-        }
+    if (session?.user?.id) {
+        return { session, error: null };
     }
 
     return { session: null, error: errorResponse('Unauthorized', 401) };

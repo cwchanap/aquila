@@ -262,8 +262,8 @@ describe('Repositories', () => {
 
                 await repo.reorder('story-1', ['ch-a', 'ch-b']);
 
-                expect(setCalls[0].order).toBe('0');
-                expect(setCalls[1].order).toBe('1');
+                expect(setCalls[0].order).toBe(0);
+                expect(setCalls[1].order).toBe(1);
             });
 
             it('handles empty chapter list', async () => {
@@ -317,8 +317,8 @@ describe('Repositories', () => {
             });
 
             it('sets correct order for each scene', async () => {
-                const setCalls: Array<{ order: string }> = [];
-                mockDb.set.mockImplementation((data: { order: string }) => {
+                const setCalls: Array<{ order: number }> = [];
+                mockDb.set.mockImplementation((data: { order: number }) => {
                     setCalls.push(data);
                     return mockDb;
                 });
@@ -326,9 +326,9 @@ describe('Repositories', () => {
 
                 await repo.reorder('story-1', ['sc-a', 'sc-b', 'sc-c']);
 
-                expect(setCalls[0].order).toBe('0');
-                expect(setCalls[1].order).toBe('1');
-                expect(setCalls[2].order).toBe('2');
+                expect(setCalls[0].order).toBe(0);
+                expect(setCalls[1].order).toBe(1);
+                expect(setCalls[2].order).toBe(2);
             });
         });
     });

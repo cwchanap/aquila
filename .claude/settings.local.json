@@ -7,7 +7,9 @@
       "Bash(bun test:*)",
       "Bash(bun --filter web test:*)",
       "Bash(cat:*)",
-      "Bash(bun run test:*)"
+      "Bash(bun run test:*)",
+      "Bash(bun drizzle:generate:*)",
+      "Bash(bunx drizzle-kit generate:*)"
     ]
   }
 }

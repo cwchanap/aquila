@@ -1,31 +1,27 @@
 ---
 import MainLayout from '../../layouts/main.astro';
 import UserStatus from '../../components/UserStatus.svelte';
-import { SimpleAuthService, type SimpleUser } from '../../lib/simple-auth.js';
+import { getSessionUser } from '../../lib/auth-utils.js';
 import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
 import { getTranslations, type Locale } from '@aquila/dialogue';
 import { t as translate } from '../../lib/utils';
 
-const locale = (Astro.currentLocale as Locale | undefined) ?? 'en';
+const locale = (Astro.params.locale as Locale | undefined) ?? 'en';
 const t = (key: string) => translate(locale, key);
 const translations = getTranslations(locale);
 
 // Get user session
-let user: SimpleUser | null = null;
+let user: Awaited<ReturnType<typeof getSessionUser>> = null;
 let characterSetups: CharacterSetup[] = [];
 
 try {
-  const sessionId = Astro.cookies.get('session')?.value;
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    user = session?.user || null;
+  user = await getSessionUser(Astro.request);
 
-    // Get character setups from database if authenticated
-    if (user?.id) {
-      const characterSetupRepo = new CharacterSetupRepository();
-      characterSetups = await characterSetupRepo.findByUser(user.id);
-    }
+  // Get character setups from database if authenticated
+  if (user?.id) {
+    const characterSetupRepo = new CharacterSetupRepository();
+    characterSetups = await characterSetupRepo.findByUser(user.id);
   }
 } catch (error) {
   console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
@@ -88,7 +84,7 @@ try {
     </div>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
+    <UserStatus client:load user={user} currentLocale={Astro.params.locale || 'en'} />
 
     <!-- Back button - Gaming Style -->
     <a

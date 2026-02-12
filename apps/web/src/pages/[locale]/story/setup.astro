@@ -1,12 +1,12 @@
 ---
 import MainLayout from '../../../layouts/main.astro';
 import UserStatus from '../../../components/UserStatus.svelte';
-import { SimpleAuthService } from '../../../lib/simple-auth.js';
+import { getSessionUser } from '../../../lib/auth-utils.js';
 import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
 import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
 import { t as translate } from '../../../lib/utils';
 
-const locale = Astro.currentLocale || 'en';
+const locale = Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 
 // Get the story parameter from URL
@@ -15,19 +15,15 @@ const storyParam = url.searchParams.get('story');
 
 // Validate story parameter
 if (!storyParam || !isValidStoryId(storyParam)) {
-  return Astro.redirect(`/${Astro.currentLocale || 'en'}/stories`);
+  return Astro.redirect(`/${Astro.params.locale || 'en'}/stories`);
 }
 
 const storyId = storyParam as StoryId;
 
-// Try to get session from cookie (same as UserStatus component)
+// Try to get session
 let user = null;
 try {
-  const sessionId = Astro.cookies.get('session')?.value;
-  if (sessionId) {
-    const session = await SimpleAuthService.getSession(sessionId);
-    user = session?.user || null;
-  }
+  user = await getSessionUser(Astro.request);
 } catch (error) {
   console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
 }
@@ -38,7 +34,7 @@ if (isAuthed && user?.id) {
   const characterSetupRepo = new CharacterSetupRepository();
   const existingSetup = await characterSetupRepo.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
-    return Astro.redirect(`/${Astro.currentLocale}/story/${storyId}`);
+    return Astro.redirect(`/${Astro.params.locale}/story/${storyId}`);
   }
 }
 ---
@@ -100,7 +96,7 @@ if (isAuthed && user?.id) {
 
     <!-- Back button -->
     <a
-      href={`/${Astro.currentLocale || 'en'}/stories`}
+      href={`/${Astro.params.locale || 'en'}/stories`}
       class="absolute top-6 left-6 p-3 bg-white/80 hover:bg-white/90 text-slate-700 hover:text-slate-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/40 backdrop-blur-sm z-20"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,7 +105,7 @@ if (isAuthed && user?.id) {
     </a>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.currentLocale || 'en'} />
+    <UserStatus client:load user={user} currentLocale={Astro.params.locale || 'en'} />
 
     <!-- Main Content Container - Visual Novel Style -->
     <div class="min-h-screen flex items-center justify-center relative">

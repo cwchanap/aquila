@@ -62,7 +62,7 @@ describe('ui-dialogs', () => {
         it('traps focus on Tab key', async () => {
             const promise = showAlert('Test');
 
-            // Tab should not propagate
+            // Tab should be prevented and focus should stay on the OK button
             const tabEvent = new KeyboardEvent('keydown', {
                 key: 'Tab',
                 cancelable: true,
@@ -71,9 +71,15 @@ describe('ui-dialogs', () => {
             document.addEventListener('keydown', spy);
             document.dispatchEvent(tabEvent);
 
+            // Assert that Tab was prevented
+            expect(tabEvent.defaultPrevented).toBe(true);
+
+            // Assert focus remains on the dialog button
+            const btn = document.querySelector('button');
+            expect(document.activeElement).toBe(btn);
+
             // Cleanup
             document.removeEventListener('keydown', spy);
-            const btn = document.querySelector('button');
             btn?.click();
             await promise;
         });
@@ -125,6 +131,55 @@ describe('ui-dialogs', () => {
             // Cleanup
             const buttons = document.querySelectorAll('button');
             buttons[0]?.click();
+            await promise;
+        });
+
+        it('traps focus on Tab key (forward)', async () => {
+            const promise = showConfirm('Confirm?');
+            const buttons = document.querySelectorAll('button');
+            const cancelBtn = buttons[0];
+            const okBtn = buttons[1];
+
+            // OK button is focused initially
+            expect(document.activeElement).toBe(okBtn);
+
+            // Tab should move focus from OK to Cancel
+            const tabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                cancelable: true,
+            });
+            document.dispatchEvent(tabEvent);
+
+            expect(tabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(cancelBtn);
+
+            // Cleanup
+            cancelBtn?.click();
+            await promise;
+        });
+
+        it('traps focus on Shift+Tab key (backward)', async () => {
+            const promise = showConfirm('Confirm?');
+            const buttons = document.querySelectorAll('button');
+            const cancelBtn = buttons[0];
+            const okBtn = buttons[1];
+
+            // OK button is focused initially
+            expect(document.activeElement).toBe(okBtn);
+
+            // Shift+Tab should move focus from OK to Cancel
+            const shiftTabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                shiftKey: true,
+                cancelable: true,
+            });
+            document.dispatchEvent(shiftTabEvent);
+
+            expect(shiftTabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(cancelBtn);
+
+            // Cleanup
+            cancelBtn?.click();
             await promise;
         });
     });

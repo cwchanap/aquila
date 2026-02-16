@@ -22,9 +22,32 @@ interface RateLimitEntry {
     attempts: number;
     windowStart: number;
     lockedUntil?: number;
+    lastSeen: number; // Timestamp for cleanup
 }
 
 const rateLimitMap = new Map<string, RateLimitEntry>();
+
+// TTL for rate limit entries (30 minutes)
+const ENTRY_TTL_MS = 30 * 60_000;
+
+/**
+ * Periodic cleanup task to remove stale entries from the rate limit map.
+ * NOTE: This in-memory rate limiter is NOT suitable for multi-instance production deployments.
+ * For production, consider using a distributed store like Redis to share rate limit state
+ * across all instances.
+ */
+const cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [userId, entry] of rateLimitMap.entries()) {
+        // Remove entries that haven't been updated in the TTL period
+        if (now - entry.lastSeen > ENTRY_TTL_MS) {
+            rateLimitMap.delete(userId);
+        }
+    }
+}, 60_000); // Run cleanup every minute
+
+// Clear interval on process shutdown
+process.on('beforeExit', () => clearInterval(cleanupInterval));
 
 function checkRateLimit(userId: string): {
     allowed: boolean;
@@ -34,6 +57,7 @@ function checkRateLimit(userId: string): {
     const entry = rateLimitMap.get(userId);
 
     if (entry?.lockedUntil && now < entry.lockedUntil) {
+        entry.lastSeen = now;
         return {
             allowed: false,
             retryAfterSeconds: Math.ceil((entry.lockedUntil - now) / 1000),
@@ -41,12 +65,17 @@ function checkRateLimit(userId: string): {
     }
 
     if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-        rateLimitMap.set(userId, { attempts: 1, windowStart: now });
+        rateLimitMap.set(userId, {
+            attempts: 1,
+            windowStart: now,
+            lastSeen: now,
+        });
         return { allowed: true };
     }
 
     if (entry.attempts >= MAX_ATTEMPTS) {
         entry.lockedUntil = now + LOCKOUT_DURATION_MS;
+        entry.lastSeen = now;
         return {
             allowed: false,
             retryAfterSeconds: Math.ceil(LOCKOUT_DURATION_MS / 1000),
@@ -54,6 +83,7 @@ function checkRateLimit(userId: string): {
     }
 
     entry.attempts++;
+    entry.lastSeen = now;
     return { allowed: true };
 }
 

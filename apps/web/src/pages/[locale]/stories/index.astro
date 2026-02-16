@@ -88,6 +88,15 @@ try {
   </OceanBackground>
 </MainLayout>
 
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse,
+    .animate-spin {
+      animation: none !important;
+    }
+  }
+</style>
+
 <script>
   // Removed automatic redirect for guest users to allow access to story config page
   // Users can now choose whether to play or configure their stories

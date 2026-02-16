@@ -248,4 +248,25 @@ describe('Character Setup API', () => {
             'train_adventure'
         );
     });
+
+    it('returns 400 when an invalid story id is provided', async () => {
+        mockAuthenticatedSession('user-1');
+        isValidStoryIdMock.mockReturnValue(false);
+
+        const response = await GET({
+            request: new Request(
+                'http://localhost/api/character-setup?storyId=invalid_story'
+            ),
+            url: new URL(
+                'http://localhost/api/character-setup?storyId=invalid_story'
+            ),
+        } as any);
+
+        expect(response.status).toBe(400);
+        const data = await response.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toBe('Invalid story ID');
+        expect(mockRepo.findByUserAndStory).not.toHaveBeenCalled();
+        expect(mockRepo.findByUser).not.toHaveBeenCalled();
+    });
 });

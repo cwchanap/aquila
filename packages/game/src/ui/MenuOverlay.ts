@@ -51,7 +51,10 @@ export class MenuOverlay {
             },
             {
                 label: isZh ? '返回首頁' : 'Return Home',
-                handler: onHome,
+                handler: () => {
+                    this.close();
+                    onHome();
+                },
             },
         ];
 

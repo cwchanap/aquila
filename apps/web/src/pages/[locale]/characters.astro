@@ -107,7 +107,7 @@ try {
           </h1>
           <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>
           <div class="text-sm font-semibold text-slate-600 mt-2 tracking-widest uppercase opacity-70" style="font-family: 'Orbitron', monospace;">
-            Your Story Companions
+            {t("characters.subtitle")}
           </div>
         </div>
 
@@ -253,10 +253,14 @@ try {
   </div>
 </MainLayout>
 
-<script lang="ts" define:vars={{ translations, locale }}>
+<script id="character-data" type="application/json" set:html={JSON.stringify({ translations: translations.characters, locale })} />
+
+<script>
   import { initializeCharacterPage } from '@/lib/local-characters';
 
-  const characterTranslations = translations.characters;
-
-  initializeCharacterPage(characterTranslations, locale);
+  const dataEl = document.getElementById('character-data');
+  if (dataEl) {
+    const { translations: characterTranslations, locale } = JSON.parse(dataEl.textContent || '{}');
+    initializeCharacterPage(characterTranslations, locale);
+  }
 </script>

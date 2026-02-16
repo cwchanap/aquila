@@ -50,12 +50,41 @@ export function showAlert(message: string): Promise<void> {
     return new Promise(resolve => {
         const overlay = createOverlay();
         const panel = createPanel();
-        panel.appendChild(createMessage(message));
+
+        // ARIA attributes for accessibility
+        const msgId = 'dialog-msg-' + Date.now();
+        panel.setAttribute('role', 'alertdialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-describedby', msgId);
+
+        const msg = createMessage(message);
+        msg.id = msgId;
+        panel.appendChild(msg);
 
         const row = createButtonRow();
         const ok = createButton('OK', true);
-        ok.addEventListener('click', () => {
+
+        function cleanup() {
+            document.removeEventListener('keydown', onKeyDown);
             overlay.remove();
+        }
+
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve();
+            }
+            // Focus trap: keep focus within the panel
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                ok.focus();
+            }
+        }
+
+        document.addEventListener('keydown', onKeyDown);
+
+        ok.addEventListener('click', () => {
+            cleanup();
             resolve();
         });
         row.appendChild(ok);
@@ -70,18 +99,46 @@ export function showConfirm(message: string): Promise<boolean> {
     return new Promise(resolve => {
         const overlay = createOverlay();
         const panel = createPanel();
+
+        // ARIA attributes
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+
         panel.appendChild(createMessage(message));
 
         const row = createButtonRow();
         const cancel = createButton('Cancel', false);
         const ok = createButton('OK', true);
 
-        cancel.addEventListener('click', () => {
+        function cleanup() {
+            document.removeEventListener('keydown', onKeyDown);
             overlay.remove();
+        }
+
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+            }
+            // Focus trap between cancel and ok buttons
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                if (document.activeElement === ok) {
+                    cancel.focus();
+                } else {
+                    ok.focus();
+                }
+            }
+        }
+
+        document.addEventListener('keydown', onKeyDown);
+
+        cancel.addEventListener('click', () => {
+            cleanup();
             resolve(false);
         });
         ok.addEventListener('click', () => {
-            overlay.remove();
+            cleanup();
             resolve(true);
         });
 

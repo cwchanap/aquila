@@ -14,22 +14,28 @@ const t = (key: string) => translate(locale, key);
 	<script>
 		// Handle language preference persistence
 		document.addEventListener('DOMContentLoaded', () => {
-			// Check if we're on the root path
-			if (window.location.pathname === '/') {
-				// Check for saved language preference
-				const savedLanguage = localStorage.getItem('aquila:language');
+			let savedLanguage: string | null = null;
+			try {
+				savedLanguage = localStorage.getItem('aquila:language');
+			} catch {
+				// localStorage may be unavailable (e.g. private browsing)
+			}
 
-				// If user has a Chinese preference and we're not already on Chinese, redirect
-				if (savedLanguage === 'zh' && !window.location.pathname.startsWith('/zh')) {
-					window.location.href = '/zh';
-					return;
-				}
+			if (!savedLanguage) return;
 
-				// If user has English preference and we're on Chinese, redirect to English
-				if (savedLanguage === 'en' && window.location.pathname.startsWith('/zh')) {
-					window.location.href = '/';
-					return;
-				}
+			const isOnZh = window.location.pathname.startsWith('/zh');
+			const isOnEn = window.location.pathname.startsWith('/en');
+
+			// If user prefers Chinese but is on English, redirect
+			if (savedLanguage === 'zh' && isOnEn) {
+				window.location.href = '/zh';
+				return;
+			}
+
+			// If user prefers English but is on Chinese, redirect
+			if (savedLanguage === 'en' && isOnZh) {
+				window.location.href = '/en';
+				return;
 			}
 		});
 	</script>

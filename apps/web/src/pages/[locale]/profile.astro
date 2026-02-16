@@ -8,15 +8,17 @@ const t = (key: string) => translate(locale, key);
 
 let user = null;
 let error = '';
+let sessionError = false;
 
 try {
   user = await getSessionUser(Astro.request);
 } catch (err) {
   console.log('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
   error = t('profile.failedToLoad')
+  sessionError = true;
 }
 
-if (!user) {
+if (!user && !sessionError) {
   return Astro.redirect(`/${Astro.params.locale || 'en'}/login`)
 }
 ---
@@ -79,6 +81,7 @@ if (!user) {
     <!-- Back button - Gaming Style -->
     <a
       href={`/${Astro.params.locale || 'en'}/`}
+      aria-label={t("common.backLabel")}
       class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
       style="font-family: 'Orbitron', monospace;"
     >
@@ -97,7 +100,7 @@ if (!user) {
           </h1>
           <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>
           <div class="text-sm font-semibold text-slate-600 mt-2 tracking-widest uppercase opacity-70" style="font-family: 'Orbitron', monospace;">
-            Manage Your Account
+            {t("profile.manageAccount")}
           </div>
         </div>
 
@@ -133,7 +136,7 @@ if (!user) {
           <div>
             <h2 class="text-2xl font-bold text-slate-800 mb-6 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.changePassword")}</h2>
 
-            <form method="POST" action="/api/auth/change-password" class="space-y-4">
+            <form id="password-change-form" class="space-y-4">
               <div>
                 <label for="currentPassword" class="block text-sm font-bold text-slate-700 mb-2 tracking-wide" style="font-family: 'Orbitron', monospace;">
                   {t("profile.currentPassword")}
@@ -245,3 +248,43 @@ if (!user) {
     </div>
   </div>
 </MainLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('password-change-form') as HTMLFormElement | null;
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin',
+        });
+
+        let data: { message?: string; error?: string };
+        try {
+          data = await response.json();
+        } catch {
+          data = { error: response.statusText };
+        }
+
+        if (response.ok) {
+          // Show brief success message, then reload
+          window.location.reload();
+        } else {
+          alert(data.error || 'Failed to change password');
+        }
+      } catch {
+        alert('Network error. Please try again.');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  });
+</script>

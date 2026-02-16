@@ -40,7 +40,19 @@ export class ChoicePresenter {
         const height = this.scene.scale.height;
         const backdrop = this.scene.add
             .rectangle(width / 2, height / 2, width, height, 0x000000, 0.55)
-            .setDepth(900);
+            .setDepth(900)
+            .setInteractive()
+            .on(
+                'pointerdown',
+                (
+                    pointer: Phaser.Input.Pointer,
+                    localX: number,
+                    localY: number,
+                    event: Phaser.Types.Input.EventData
+                ) => {
+                    event.stopPropagation();
+                }
+            );
         const panelWidth = Math.min(width - 80, 560);
         const panelHeight = 240;
         const panel = this.scene.add
@@ -74,14 +86,15 @@ export class ChoicePresenter {
         const optionBaseY = prompt.y + 80;
         const optionSpacing = 60;
         let anyOptionAdded = false;
+        let renderedIndex = 0;
 
-        validOptionIds.forEach((optionId, index) => {
+        validOptionIds.forEach(optionId => {
             const optionDef = choiceDef.options.find(
                 opt => opt.id === optionId
             );
             if (!optionDef) return;
 
-            const optionY = optionBaseY + index * optionSpacing;
+            const optionY = optionBaseY + renderedIndex * optionSpacing;
             const buttonBg = this.scene.add
                 .rectangle(
                     width / 2,
@@ -115,6 +128,7 @@ export class ChoicePresenter {
 
             this.uiElements.push(buttonBg, label);
             anyOptionAdded = true;
+            renderedIndex++;
         });
 
         if (!anyOptionAdded) {

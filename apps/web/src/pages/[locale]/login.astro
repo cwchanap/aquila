@@ -211,7 +211,9 @@ import MainLayout from '../../layouts/main.astro';
 								window.location.href = `/${locale}/`;
 							}
 						} catch (error) {
-							console.error('Login failed:', error);
+							if (import.meta.env.DEV) {
+								console.error('Login failed:', error instanceof Error ? error.message : 'unknown');
+							}
 							showError('Invalid credentials');
 						}
 					});

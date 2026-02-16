@@ -13,10 +13,71 @@ import { ERROR_IDS } from '../../../constants/errorIds.js';
 
 const MAX_PASSWORD_LENGTH = 256;
 
+// In-memory rate limiter for password change attempts
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60_000; // 15 minutes
+
+interface RateLimitEntry {
+    attempts: number;
+    windowStart: number;
+    lockedUntil?: number;
+}
+
+const rateLimitMap = new Map<string, RateLimitEntry>();
+
+function checkRateLimit(userId: string): {
+    allowed: boolean;
+    retryAfterSeconds?: number;
+} {
+    const now = Date.now();
+    const entry = rateLimitMap.get(userId);
+
+    if (entry?.lockedUntil && now < entry.lockedUntil) {
+        return {
+            allowed: false,
+            retryAfterSeconds: Math.ceil((entry.lockedUntil - now) / 1000),
+        };
+    }
+
+    if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+        rateLimitMap.set(userId, { attempts: 1, windowStart: now });
+        return { allowed: true };
+    }
+
+    if (entry.attempts >= MAX_ATTEMPTS) {
+        entry.lockedUntil = now + LOCKOUT_DURATION_MS;
+        return {
+            allowed: false,
+            retryAfterSeconds: Math.ceil(LOCKOUT_DURATION_MS / 1000),
+        };
+    }
+
+    entry.attempts++;
+    return { allowed: true };
+}
+
+function resetRateLimit(userId: string): void {
+    rateLimitMap.delete(userId);
+}
+
 export const POST: APIRoute = async ({ request }) => {
     try {
         const { session, error } = await requireAuth(request);
         if (error) return error;
+
+        // Rate limit check
+        const rateCheck = checkRateLimit(session.user.id);
+        if (!rateCheck.allowed) {
+            logger.warn('Password change rate limited', {
+                userId: session.user.id,
+                retryAfterSeconds: rateCheck.retryAfterSeconds,
+            });
+            return errorResponse(
+                `Too many attempts. Please try again in ${rateCheck.retryAfterSeconds} seconds.`,
+                429
+            );
+        }
 
         // Parse form data
         const formData = await request.formData();
@@ -67,6 +128,9 @@ export const POST: APIRoute = async ({ request }) => {
             account.password
         );
         if (!isCurrentPasswordValid) {
+            logger.warn('Failed password change attempt', {
+                userId: session.user.id,
+            });
             return errorResponse('Current password is incorrect', 400);
         }
 
@@ -86,6 +150,8 @@ export const POST: APIRoute = async ({ request }) => {
                     eq(accounts.providerId, 'email')
                 )
             );
+
+        resetRateLimit(session.user.id);
 
         return jsonResponse({
             success: true,

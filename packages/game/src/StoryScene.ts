@@ -73,6 +73,7 @@ export class StoryScene extends BaseScene implements EscListenerHost {
         this.events.once('shutdown', () => {
             this.choicePresenter.clear();
             this.menuOverlay.forceClose();
+            this.completionOverlay?.destroy();
             this.escListener?.destroy();
         });
     }

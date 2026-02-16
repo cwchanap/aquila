@@ -1,6 +1,7 @@
 {
   "profile": {
     "title": "User Profile",
+    "manageAccount": "Manage Your Account",
     "userInfo": "User Information",
     "name": "Name",
     "email": "Email",
@@ -67,6 +68,7 @@
     "logout": "Logout",
     "login": "Login",
     "back": "Back",
+    "backLabel": "Back",
     "backToHome": "← Back to Home"
   },
   "setup": {
@@ -86,11 +88,13 @@
   "stories": {
     "title": "Select Story",
     "heading": "Select Your Story",
-    "trainAdventure": "Train Adventure"
+    "trainAdventure": "Train Adventure",
+    "chooseYourAdventure": "Choose Your Adventure"
   },
   "characters": {
     "title": "My Characters",
     "heading": "My Characters",
+    "subtitle": "Your Story Companions",
     "description": "Here are your configured characters for different stories.",
     "noCharacters": "No characters configured yet",
     "startFirstStory": "Start Your First Story",

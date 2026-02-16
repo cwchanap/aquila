@@ -9,7 +9,7 @@ const isAuthenticated = Boolean(user?.id);
 const userName = user?.name || user?.email || 'Guest';
 
 if (!isAuthenticated) {
-    return Astro.redirect('/en/login');
+    return Astro.redirect(`/${Astro.params.locale || 'en'}/login`);
 }
 ---
 
@@ -24,7 +24,7 @@ if (!isAuthenticated) {
                     fill-opacity="1"
                     d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 >
-                    <animateTransform attributeName="transform" type="translate" values="0 0; 50 0; 0 0" dur="6s" repeatcount="indefinite" />
+                    <animateTransform attributeName="transform" type="translate" values="0 0; 50 0; 0 0" dur="6s" repeatCount="indefinite" />
                 </path>
             </svg>
 
@@ -34,7 +34,7 @@ if (!isAuthenticated) {
                     fill-opacity="1"
                     d="M0,192L48,176C96,160,192,128,288,128C384,128,480,160,576,176C672,192,768,192,864,176C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 >
-                    <animateTransform attributeName="transform" type="translate" values="0 0; -30 0; 0 0" dur="8s" repeatcount="indefinite" />
+                    <animateTransform attributeName="transform" type="translate" values="0 0; -30 0; 0 0" dur="8s" repeatCount="indefinite" />
                 </path>
             </svg>
 
@@ -44,7 +44,7 @@ if (!isAuthenticated) {
                     fill-opacity="1"
                     d="M0,256L48,240C96,224,192,192,288,192C384,192,480,224,576,240C672,256,768,256,864,240C960,224,1056,192,1152,192C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 >
-                    <animateTransform attributeName="transform" type="translate" values="0 0; 40 0; 0 0" dur="10s" repeatcount="indefinite" />
+                    <animateTransform attributeName="transform" type="translate" values="0 0; 40 0; 0 0" dur="10s" repeatCount="indefinite" />
                 </path>
             </svg>
         </div>
@@ -77,7 +77,7 @@ if (!isAuthenticated) {
                             <div class="bg-white/70 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between text-slate-700">
                                 <span class="font-semibold">Welcome, {userName}</span>
                                 <a
-                                    href="/en"
+                                    href={`/${Astro.params.locale || 'en'}`}
                                     class="px-4 py-2 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 text-white font-semibold rounded-xl shadow-md border border-cyan-300/60 transition-transform duration-300 transform hover:scale-105"
                                 >
                                     Main Menu

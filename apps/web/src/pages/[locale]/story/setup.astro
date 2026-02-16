@@ -34,14 +34,14 @@ if (isAuthed && user?.id) {
   const characterSetupRepo = new CharacterSetupRepository();
   const existingSetup = await characterSetupRepo.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
-    return Astro.redirect(`/${Astro.params.locale}/story/${storyId}`);
+    return Astro.redirect(`/${Astro.params.locale || 'en'}/story/${storyId}`);
   }
 }
 ---
 
 <MainLayout title={t("setup.title")}>
   <!-- Ocean Background with animated waves -->
-  <div id="setup-root" data-authed={isAuthed} data-story={storyId} class="min-h-screen relative overflow-hidden">
+  <div id="setup-root" data-authed={isAuthed} data-story={storyId} data-locale={locale} class="min-h-screen relative overflow-hidden">
     <!-- Gradient Ocean Background -->
     <div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
@@ -186,6 +186,7 @@ if (isAuthed && user?.id) {
     const urlParams = new URLSearchParams(window.location.search);
     const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
     const isAuthed = (root?.getAttribute('data-authed') === 'true');
+    const pageLocale = root?.getAttribute('data-locale') || 'en';
 
     // If there's a saved local setup, prefill the input (do NOT auto-redirect)
     try {
@@ -216,8 +217,9 @@ if (isAuthed && user?.id) {
         }
 
         // Disable form during submission
+        const originalText = submitButton.textContent;
         submitButton.disabled = true;
-        submitButton.textContent = 'Saving...';
+        submitButton.textContent = pageLocale === 'zh' ? '儲存中...' : 'Saving...';
 
         try {
           if (isAuthed) {
@@ -234,8 +236,15 @@ if (isAuthed && user?.id) {
             });
 
             if (!response.ok) {
-              const error = await response.json();
-              throw new Error(error.error || 'Failed to save character setup');
+              let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+              try {
+                const errorData = await response.json();
+                errorMsg = errorData.error || errorMsg;
+              } catch {
+                const text = await response.text();
+                if (text) errorMsg = text;
+              }
+              throw new Error(errorMsg);
             }
           } else {
             // Save character setup locally
@@ -243,15 +252,14 @@ if (isAuthed && user?.id) {
           }
 
           // Redirect to story
-          const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-          window.location.href = `/${locale}/story/${story}`;
+          window.location.href = `/${pageLocale}/story/${story}`;
         } catch (error) {
           console.error('Setup error:', error);
           alert('Failed to save character setup. Please try again.');
 
           // Re-enable form
           submitButton.disabled = false;
-          submitButton.textContent = 'Start Adventure';
+          submitButton.textContent = originalText || (pageLocale === 'zh' ? '開始冒險' : 'Start Adventure');
         }
       });
     }

@@ -6,6 +6,7 @@ export class CompletionOverlay {
     private titleText?: Phaser.GameObjects.Text;
     private tipText?: Phaser.GameObjects.Text;
     private btn?: Phaser.GameObjects.Text;
+    private enterKeyListener?: Phaser.Input.Keyboard.Key;
     private _visible = false;
 
     constructor(scene: Phaser.Scene) {
@@ -20,7 +21,7 @@ export class CompletionOverlay {
         if (this._visible) return;
         this._visible = true;
 
-        const isZh = locale.startsWith('zh');
+        const isZh = (locale ?? '').startsWith('zh');
         const width = this.scene.scale.width;
         const height = this.scene.scale.height;
 
@@ -63,12 +64,18 @@ export class CompletionOverlay {
                 window.location.href = '/';
             });
 
-        this.scene.input.keyboard?.once('keydown-ENTER', () => {
+        this.enterKeyListener = this.scene.input.keyboard?.addKey(
+            Phaser.Input.Keyboard.KeyCodes.ENTER
+        );
+        this.enterKeyListener?.once('down', () => {
             window.location.href = '/';
         });
     }
 
     destroy(): void {
+        this.enterKeyListener?.removeAllListeners();
+        this.enterKeyListener?.destroy();
+        this.enterKeyListener = undefined;
         this.overlay?.destroy();
         this.titleText?.destroy();
         this.tipText?.destroy();

@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
         );
         if (validationError) return validationError;
 
-        const translations = getTranslations(data.locale);
+        const translations = getTranslations(data.locale ?? 'en');
         const validationTranslations: ValidationTranslations = {
             email: translations.email,
             username: translations.username,
@@ -95,13 +95,18 @@ export const GET: APIRoute = async ({ request, url }) => {
         const storyId = url.searchParams.get('storyId');
         const characterSetupRepo = new CharacterSetupRepository();
 
-        if (storyId && isValidStoryId(storyId)) {
-            // Get setup for specific story
-            const setup = await characterSetupRepo.findByUserAndStory(
-                session.user.id,
-                storyId as StoryId
-            );
-            return jsonResponse(setup);
+        if (storyId) {
+            if (isValidStoryId(storyId)) {
+                // Get setup for specific story
+                const setup = await characterSetupRepo.findByUserAndStory(
+                    session.user.id,
+                    storyId as StoryId
+                );
+                return jsonResponse(setup);
+            } else {
+                // storyId is provided but invalid
+                return errorResponse('Invalid story ID', 400);
+            }
         } else {
             // Get all setups for user
             const setups = await characterSetupRepo.findByUser(session.user.id);

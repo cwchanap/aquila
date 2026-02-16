@@ -401,7 +401,7 @@ function setupRemoteEditHandler(
                     if (playLink && storyId) {
                         playLink.setAttribute(
                             'href',
-                            `/${locale}/story/${storyId}`
+                            `/${locale}/story/${encodeURIComponent(storyId)}`
                         );
                     }
 

@@ -123,10 +123,20 @@ export function showConfirm(message: string): Promise<boolean> {
             // Focus trap between cancel and ok buttons
             if (e.key === 'Tab') {
                 e.preventDefault();
-                if (document.activeElement === ok) {
-                    cancel.focus();
+                if (e.shiftKey) {
+                    // Shift+Tab: move focus backward (ok -> cancel, cancel -> ok)
+                    if (document.activeElement === cancel) {
+                        ok.focus();
+                    } else {
+                        cancel.focus();
+                    }
                 } else {
-                    ok.focus();
+                    // Tab: move focus forward (cancel -> ok, ok -> cancel)
+                    if (document.activeElement === ok) {
+                        cancel.focus();
+                    } else {
+                        ok.focus();
+                    }
                 }
             }
         }

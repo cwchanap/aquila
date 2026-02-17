@@ -242,16 +242,16 @@ const clientTranslations = {
 						const submitButton = signupForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 						if (submitButton) submitButton.disabled = true;
 
-						try {
-							const { error } = await signUp.email({ email, password, name });
+					try {
+						const { error } = await signUp.email({ email, password, name });
 
 						if (error) {
 							showError(error.message || translations.signupFailed);
 						} else {
-								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-								window.location.href = `/${locale}/`;
-							}
-						} catch (error) {
+							const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+							window.location.href = `/${locale}/`;
+						}
+					} catch (error) {
 							if (import.meta.env.DEV) {
 								console.error('Signup failed:', error instanceof Error ? error.message : 'unknown');
 							}

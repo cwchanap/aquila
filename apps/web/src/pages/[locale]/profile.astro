@@ -250,55 +250,55 @@ if (!user) {
       </div>
     </div>
   </div>
-</MainLayout>
 
-<script type="application/json" id="profile-translations" set:html={JSON.stringify(clientTranslations)} />
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('password-change-form') as HTMLFormElement | null;
-    if (!form) return;
+  <script type="application/json" id="profile-translations" set:html={JSON.stringify(clientTranslations)} />
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('password-change-form') as HTMLFormElement | null;
+      if (!form) return;
 
-    function getProfileTranslations(): { passwordChanged: string; failedPasswordChange: string; networkError: string } {
-      try {
-        const el = document.getElementById('profile-translations');
-        if (el?.textContent) return JSON.parse(el.textContent);
-      } catch { /* fallback */ }
-      return { passwordChanged: 'Password changed successfully', failedPasswordChange: 'Failed to change password', networkError: 'Network error. Please try again.' };
-    }
-    const translations = getProfileTranslations();
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
-      if (submitBtn) submitBtn.disabled = true;
-
-      try {
-        const response = await fetch('/api/auth/change-password', {
-          method: 'POST',
-          body: formData,
-          credentials: 'same-origin',
-        });
-
-        let data: { message?: string; error?: string };
+      function getProfileTranslations(): { passwordChanged: string; failedPasswordChange: string; networkError: string } {
         try {
-          data = await response.json();
-        } catch {
-          data = { error: response.statusText };
-        }
-
-        if (response.ok) {
-          // Show brief success message, then reload
-          alert(translations.passwordChanged);
-          window.location.reload();
-        } else {
-          alert(data.error || translations.failedPasswordChange);
-        }
-      } catch {
-        alert(translations.networkError);
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
+          const el = document.getElementById('profile-translations');
+          if (el?.textContent) return JSON.parse(el.textContent);
+        } catch { /* fallback */ }
+        return { passwordChanged: 'Password changed successfully', failedPasswordChange: 'Failed to change password', networkError: 'Network error. Please try again.' };
       }
+      const translations = getProfileTranslations();
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          const response = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+          });
+
+          let data: { message?: string; error?: string };
+          try {
+            data = await response.json();
+          } catch {
+            data = { error: response.statusText };
+          }
+
+          if (response.ok) {
+            // Show brief success message, then reload
+            alert(translations.passwordChanged);
+            window.location.reload();
+          } else {
+            alert(data.error || translations.failedPasswordChange);
+          }
+        } catch {
+          alert(translations.networkError);
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
     });
-  });
-</script>
+  </script>
+</MainLayout>

@@ -30,11 +30,9 @@ export class ChoicePresenter {
 
         if (!choiceDef) {
             console.warn(
-                `[ChoicePresenter] Missing choice definition for choiceId="${choiceId}", optionIds=${JSON.stringify(optionIds)}`
+                `[ChoicePresenter] Missing choice definition for choiceId="${choiceId}", optionIds=${JSON.stringify(optionIds)}. Calling onSelect with empty string.`
             );
-            if (validOptionIds[0]) {
-                onSelect(validOptionIds[0]);
-            }
+            onSelect('');
             return;
         }
 
@@ -69,8 +67,8 @@ export class ChoicePresenter {
             240,
             topPadding +
                 promptHeight +
-                optionCount * optionHeight +
-                (optionCount - 1) * (optionSpacing - optionHeight) +
+                optionHeight +
+                (optionCount - 1) * optionSpacing +
                 bottomPadding
         );
         const panel = this.scene.add
@@ -141,7 +139,8 @@ export class ChoicePresenter {
                     color: '#e5e7eb',
                 })
                 .setOrigin(0.5)
-                .setDepth(902);
+                .setDepth(902)
+                .disableInteractive();
 
             this.uiElements.push(buttonBg, label);
             anyOptionAdded = true;
@@ -160,7 +159,9 @@ export class ChoicePresenter {
     }
 
     private destroyElements(): void {
-        this.uiElements.forEach(el => el.destroy());
+        this.uiElements.forEach(el => {
+            el.destroy();
+        });
         this.uiElements = [];
     }
 }

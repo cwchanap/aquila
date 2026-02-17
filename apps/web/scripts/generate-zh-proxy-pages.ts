@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const pagesDir = path.resolve(__dirname, '../src/pages');
-const enPagesDir = path.resolve(pagesDir, 'en');
+const localePagesDir = path.resolve(pagesDir, '[locale]');
 const zhPagesDir = path.resolve(pagesDir, 'zh');
 
 if (!fs.existsSync(zhPagesDir)) {
@@ -80,31 +80,33 @@ const cleanupStaleProxies = (
     return removedCount;
 };
 
-const enAstroFiles = findAstroFiles(enPagesDir);
+const localeAstroFiles = findAstroFiles(localePagesDir);
 
-// Create a Set of valid en files for quick lookup
-const validEnFiles = new Set(enAstroFiles.map(f => f.replace(/\\/g, '/')));
+// Create a Set of valid locale files for quick lookup
+const validLocaleFiles = new Set(
+    localeAstroFiles.map(f => f.replace(/\\/g, '/'))
+);
 
 // Clean up stale proxies before generating new ones
 console.log('Cleaning up stale zh proxies...');
-const removedCount = cleanupStaleProxies(zhPagesDir, validEnFiles);
+const removedCount = cleanupStaleProxies(zhPagesDir, validLocaleFiles);
 if (removedCount > 0) {
     console.log(`Removed ${removedCount} stale proxy file(s)`);
 } else {
     console.log('No stale proxies found');
 }
 
-for (const filePath of enAstroFiles) {
+for (const filePath of localeAstroFiles) {
     const zhFilePath = path.join(zhPagesDir, filePath);
-    const enFilePath = path.join(enPagesDir, filePath);
+    const localeFilePath = path.join(localePagesDir, filePath);
 
     const zhDir = path.dirname(zhFilePath);
     if (!fs.existsSync(zhDir)) {
         fs.mkdirSync(zhDir, { recursive: true });
     }
 
-    // Calculate relative path from zh file to en file
-    const relativePath = path.relative(zhDir, enFilePath);
+    // Calculate relative path from zh file to locale file
+    const relativePath = path.relative(zhDir, localeFilePath);
 
     const proxyContent = `---
 import EnPage from '${relativePath}';
@@ -115,4 +117,4 @@ import EnPage from '${relativePath}';
     fs.writeFileSync(zhFilePath, proxyContent);
 }
 
-console.log(`Created ${enAstroFiles.length} proxy pages for zh`);
+console.log(`Created ${localeAstroFiles.length} proxy pages for zh`);

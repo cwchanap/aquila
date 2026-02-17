@@ -74,9 +74,10 @@ export class CompletionOverlay {
     }
 
     destroy(): void {
-        this.enterKeyListener?.removeAllListeners();
-        this.enterKeyListener?.destroy();
-        this.enterKeyListener = undefined;
+        if (this.enterKeyListener) {
+            this.scene.input.keyboard?.removeKey(this.enterKeyListener, true);
+            this.enterKeyListener = undefined;
+        }
         this.overlay?.destroy();
         this.titleText?.destroy();
         this.tipText?.destroy();

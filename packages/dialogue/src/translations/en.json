@@ -73,7 +73,7 @@
     "logout": "Logout",
     "login": "Login",
     "back": "Back",
-    "backLabel": "Back",
+    "backLabel": "Go back to the previous page",
     "backToHome": "← Back to Home"
   },
   "nav": {

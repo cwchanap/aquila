@@ -300,6 +300,8 @@ export class BaseScene extends Phaser.Scene {
     loadDialogue(dialogueData: DialogueMap) {
         this.dialogue = dialogueData;
         this.currentDialogueIndex = 0;
+        this.dialogueGeneration++;
+        this.dialogueRetryCount = 0;
         // Ensure UI is ready before showing dialogue
         this.time.delayedCall(100, () => {
             this.showDialogue();

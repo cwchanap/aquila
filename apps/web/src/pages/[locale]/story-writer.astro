@@ -7,7 +7,14 @@ import { t as translate } from '@/lib/utils';
 
 const locale = Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
-const user = await getSessionUser(Astro.request);
+
+let user = null;
+try {
+    user = await getSessionUser(Astro.request);
+} catch (err) {
+    console.log('Auth session error:', err instanceof Error ? err.message : 'Unknown error');
+}
+
 const isAuthenticated = Boolean(user?.id);
 const userName = user?.name || user?.email || t('storyWriter.guest');
 

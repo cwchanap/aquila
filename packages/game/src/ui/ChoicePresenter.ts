@@ -62,7 +62,10 @@ export class ChoicePresenter {
         const optionHeight = 44;
         const optionSpacing = 60;
         const bottomPadding = 30;
-        const optionCount = validOptionIds.length;
+        const matchedOptionIds = validOptionIds.filter(id =>
+            choiceDef.options.find(opt => opt.id === id)
+        );
+        const optionCount = matchedOptionIds.length;
         const panelHeight = Math.max(
             240,
             topPadding +
@@ -100,10 +103,9 @@ export class ChoicePresenter {
         this.uiElements.push(backdrop, panel, prompt);
 
         const optionBaseY = prompt.y + 80;
-        let anyOptionAdded = false;
         let renderedIndex = 0;
 
-        validOptionIds.forEach(optionId => {
+        matchedOptionIds.forEach(optionId => {
             const optionDef = choiceDef.options.find(
                 opt => opt.id === optionId
             );
@@ -137,19 +139,22 @@ export class ChoicePresenter {
                 .text(width / 2, optionY, optionDef.label, {
                     fontSize: '20px',
                     color: '#e5e7eb',
+                    wordWrap: { width: panelWidth - 60, useAdvancedWrap: true },
                 })
                 .setOrigin(0.5)
                 .setDepth(902)
                 .disableInteractive();
 
             this.uiElements.push(buttonBg, label);
-            anyOptionAdded = true;
             renderedIndex++;
         });
 
-        if (!anyOptionAdded) {
+        if (matchedOptionIds.length === 0) {
+            console.warn(
+                `[ChoicePresenter] No renderable options for choiceId="${choiceId}". Calling onSelect with empty string.`
+            );
             this.clear();
-            onSelect(validOptionIds[0]);
+            onSelect('');
         }
     }
 

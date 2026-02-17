@@ -32,8 +32,8 @@ const findAstroFiles = (dir: string, baseDir = ''): string[] => {
 };
 
 /**
- * Remove stale zh proxy files that no longer have corresponding en files.
- * This prevents build errors when en pages are deleted but their proxies remain.
+ * Remove stale zh proxy files that no longer have corresponding locale files.
+ * This prevents build errors when locale pages are deleted but their proxies remain.
  */
 const cleanupStaleProxies = (
     zhDir: string,
@@ -68,7 +68,7 @@ const cleanupStaleProxies = (
             const relativePath = path.relative(basePath, fullPath);
             const normalizedPath = relativePath.replace(/\\/g, '/');
 
-            // Check if this file has a corresponding en page
+            // Check if this file has a corresponding locale page
             if (!validFiles.has(normalizedPath)) {
                 fs.unlinkSync(fullPath);
                 removedCount++;
@@ -109,9 +109,9 @@ for (const filePath of localeAstroFiles) {
     const relativePath = path.relative(zhDir, localeFilePath);
 
     const proxyContent = `---
-import EnPage from '${relativePath}';
+import LocalePage from '${relativePath}';
 ---
-<EnPage {...Astro.props} />
+<LocalePage {...Astro.props} />
 `;
 
     fs.writeFileSync(zhFilePath, proxyContent);

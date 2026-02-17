@@ -12,13 +12,11 @@ const clientTranslations = {
 };
 
 let user = null;
-let error = '';
 
 try {
   user = await getSessionUser(Astro.request);
 } catch (err) {
   console.log('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
-  error = t('profile.failedToLoad')
 }
 
 if (!user) {
@@ -106,12 +104,6 @@ if (!user) {
             {t("profile.manageAccount")}
           </div>
         </div>
-
-        {error && (
-          <div class="mb-6 p-4 bg-red-100 border border-red-300 rounded-2xl text-red-600 text-sm font-semibold">
-            {error}
-          </div>
-        )}
 
         <div class="space-y-8">
           <!-- User Info Display -->

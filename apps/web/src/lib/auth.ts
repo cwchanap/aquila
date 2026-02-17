@@ -51,7 +51,17 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: false,
     },
-    trustedOrigins: ['http://localhost:5090'],
+    trustedOrigins: (() => {
+        const raw =
+            process.env.TRUSTED_ORIGINS || import.meta.env?.TRUSTED_ORIGINS;
+        if (raw) {
+            return raw
+                .split(',')
+                .map((o: string) => o.trim())
+                .filter(Boolean);
+        }
+        return ['http://localhost:5090'];
+    })(),
     secret: (() => {
         const secret = process.env.BETTER_AUTH_SECRET;
         if (!secret && process.env.NODE_ENV === 'production') {

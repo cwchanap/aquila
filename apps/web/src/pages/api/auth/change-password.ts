@@ -46,8 +46,13 @@ const cleanupInterval = setInterval(() => {
     }
 }, 60_000); // Run cleanup every minute
 
-// Clear interval on process shutdown
-process.on('beforeExit', () => clearInterval(cleanupInterval));
+// Clear interval on process shutdown (guarded for serverless/edge runtimes)
+if (typeof process !== 'undefined' && typeof process.on === 'function') {
+    const clearCleanup = () => clearInterval(cleanupInterval);
+    process.on('beforeExit', clearCleanup);
+    process.on('SIGTERM', clearCleanup);
+    process.on('SIGINT', clearCleanup);
+}
 
 function checkRateLimit(userId: string): {
     allowed: boolean;

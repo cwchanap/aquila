@@ -1,2 +1,2 @@
-ALTER TABLE "chapters" ALTER COLUMN "order" SET DATA TYPE integer;--> statement-breakpoint
-ALTER TABLE "scenes" ALTER COLUMN "order" SET DATA TYPE integer;
+ALTER TABLE "chapters" ALTER COLUMN "order" SET DATA TYPE integer USING (CASE WHEN trim("order") ~ '^\d+$' THEN trim("order")::integer ELSE NULL END);--> statement-breakpoint
+ALTER TABLE "scenes" ALTER COLUMN "order" SET DATA TYPE integer USING (CASE WHEN trim("order") ~ '^\d+$' THEN trim("order")::integer ELSE NULL END);

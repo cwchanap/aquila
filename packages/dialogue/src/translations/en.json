@@ -12,7 +12,10 @@
     "confirmPassword": "Confirm New Password",
     "updatePassword": "Update Password",
     "backToMenu": "Back to Menu",
-    "failedToLoad": "Failed to load user data"
+    "failedToLoad": "Failed to load user data",
+    "passwordChanged": "Password changed successfully",
+    "failedPasswordChange": "Failed to change password",
+    "networkError": "Network error. Please try again."
   },
   "login": {
     "title": "Login - Game App",
@@ -27,13 +30,15 @@
     "signupButton": "Sign Up",
     "description": "Enter your credentials to login or sign up with a new account",
     "loginFailed": "Login failed. Please check your credentials.",
+    "invalidCredentials": "Invalid credentials",
     "signupFailed": "Signup failed. Email might already be in use.",
     "emailRequired": "Email and password are required for signup.",
     "nameRequired": "Name is required for signup.",
     "missingRequiredFields": "Missing required fields",
     "emailAlreadyInUse": "Email already in use",
     "dbConnectionError": "Database connection error. Please check server configuration.",
-    "internalServerError": "Internal server error"
+    "internalServerError": "Internal server error",
+    "signupFailedRetry": "Signup failed. Please try again."
   },
   "email": {
     "notString": "Email must be a string",
@@ -70,6 +75,10 @@
     "back": "Back",
     "backLabel": "Back",
     "backToHome": "← Back to Home"
+  },
+  "nav": {
+    "profile": "Profile",
+    "storyConfig": "Story Config"
   },
   "setup": {
     "title": "Setup Character",
@@ -169,6 +178,14 @@
     "bookmark": "📖 Bookmark",
     "pageDisplay": "Page {current} of {total}",
     "unknown": "Unknown"
+  },
+  "storyWriter": {
+    "title": "Story Writer",
+    "guest": "Guest",
+    "subtitle": "Craft immersive adventures",
+    "description": "Build rich stories with branching dialogues, memorable characters, and dynamic scenes.",
+    "welcome": "Welcome, ",
+    "mainMenu": "Main Menu"
   },
   "bulkAction": {
     "title": "Bulk Actions",

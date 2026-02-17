@@ -12,7 +12,10 @@
     "confirmPassword": "確認新密碼",
     "updatePassword": "更新密碼",
     "backToMenu": "返回選單",
-    "failedToLoad": "載入使用者資料失敗"
+    "failedToLoad": "載入使用者資料失敗",
+    "passwordChanged": "密碼修改成功",
+    "failedPasswordChange": "修改密碼失敗",
+    "networkError": "網路錯誤。請重試。"
   },
   "login": {
     "title": "登入 - 遊戲應用",
@@ -27,13 +30,15 @@
     "signupButton": "註冊",
     "description": "輸入您的憑證進行登入或使用新帳號註冊",
     "loginFailed": "登入失敗。請檢查您的憑證。",
+    "invalidCredentials": "憑證無效",
     "signupFailed": "註冊失敗。電子郵件可能已被使用。",
     "emailRequired": "註冊需要電子郵件和密碼。",
     "nameRequired": "註冊需要姓名。",
     "missingRequiredFields": "缺少必填欄位",
     "emailAlreadyInUse": "電子郵件已被使用",
     "dbConnectionError": "資料庫連線錯誤。請檢查伺服器設定。",
-    "internalServerError": "伺服器內部錯誤"
+    "internalServerError": "伺服器內部錯誤",
+    "signupFailedRetry": "註冊失敗。請重試。"
   },
   "email": {
     "notString": "電子郵件必須為字串",
@@ -70,6 +75,10 @@
     "back": "返回",
     "backLabel": "返回",
     "backToHome": "← 返回主頁"
+  },
+  "nav": {
+    "profile": "個人資料",
+    "storyConfig": "故事設定"
   },
   "setup": {
     "title": "設定角色",
@@ -169,6 +178,14 @@
     "bookmark": "📖 書籤",
     "pageDisplay": "第 {current} / {total} 頁",
     "unknown": "未知"
+  },
+  "storyWriter": {
+    "title": "故事編輯器",
+    "guest": "訪客",
+    "subtitle": "打造沉浸式冒險",
+    "description": "建構豐富的故事，包含分支對話、令人難忘的角色和動態場景。",
+    "welcome": "歡迎，",
+    "mainMenu": "主選單"
   },
   "bulkAction": {
     "title": "批次操作",

@@ -5,20 +5,23 @@ import { t as translate } from '../../lib/utils';
 
 const locale = Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
+const clientTranslations = {
+  passwordChanged: t('profile.passwordChanged'),
+  failedPasswordChange: t('profile.failedPasswordChange'),
+  networkError: t('profile.networkError'),
+};
 
 let user = null;
 let error = '';
-let sessionError = false;
 
 try {
   user = await getSessionUser(Astro.request);
 } catch (err) {
   console.log('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
   error = t('profile.failedToLoad')
-  sessionError = true;
 }
 
-if (!user && !sessionError) {
+if (!user) {
   return Astro.redirect(`/${Astro.params.locale || 'en'}/login`)
 }
 ---
@@ -249,10 +252,20 @@ if (!user && !sessionError) {
   </div>
 </MainLayout>
 
+<script type="application/json" id="profile-translations" set:html={JSON.stringify(clientTranslations)} />
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('password-change-form') as HTMLFormElement | null;
     if (!form) return;
+
+    function getProfileTranslations(): { passwordChanged: string; failedPasswordChange: string; networkError: string } {
+      try {
+        const el = document.getElementById('profile-translations');
+        if (el?.textContent) return JSON.parse(el.textContent);
+      } catch { /* fallback */ }
+      return { passwordChanged: 'Password changed successfully', failedPasswordChange: 'Failed to change password', networkError: 'Network error. Please try again.' };
+    }
+    const translations = getProfileTranslations();
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -276,12 +289,13 @@ if (!user && !sessionError) {
 
         if (response.ok) {
           // Show brief success message, then reload
+          alert(translations.passwordChanged);
           window.location.reload();
         } else {
-          alert(data.error || 'Failed to change password');
+          alert(data.error || translations.failedPasswordChange);
         }
       } catch {
-        alert('Network error. Please try again.');
+        alert(translations.networkError);
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

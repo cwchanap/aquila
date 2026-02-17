@@ -25,6 +25,7 @@ export class ProgressMapModal {
     private map?: StoryProgressionMap;
     private container: Phaser.GameObjects.Container;
     private visible = false;
+    private escKey?: Phaser.Input.Keyboard.Key;
 
     constructor(scene: Phaser.Scene, config: ProgressMapModalConfig) {
         this.scene = scene;
@@ -158,10 +159,10 @@ export class ProgressMapModal {
         });
 
         // Add keyboard listener
-        const escListener = this.scene.input.keyboard?.addKey(
+        this.escKey = this.scene.input.keyboard?.addKey(
             Phaser.Input.Keyboard.KeyCodes.ESC
         );
-        escListener?.once('down', () => this.close());
+        this.escKey?.once('down', () => this.close());
 
         // Store reference for cleanup
         this.container.add([
@@ -277,6 +278,9 @@ export class ProgressMapModal {
     }
 
     public destroy(): void {
+        this.escKey?.removeAllListeners();
+        this.escKey?.destroy();
+        this.escKey = undefined;
         this.backdrop?.destroy();
         this.panel?.destroy();
         this.titleText?.destroy();

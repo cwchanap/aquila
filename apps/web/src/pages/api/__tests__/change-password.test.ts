@@ -87,10 +87,6 @@ vi.mock('../../../constants/errorIds.js', () => ({
 const { POST } = await import('../auth/change-password');
 
 function createFormRequest(data: Record<string, string>): Request {
-    const formData = new URLSearchParams();
-    for (const [key, value] of Object.entries(data)) {
-        formData.append(key, value);
-    }
     const body = new FormData();
     for (const [key, value] of Object.entries(data)) {
         body.append(key, value);

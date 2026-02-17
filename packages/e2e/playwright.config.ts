@@ -8,6 +8,13 @@ export default defineConfig({
         url: 'http://localhost:5090',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
+        env: {
+            DATABASE_URL:
+                process.env.DATABASE_URL ??
+                'postgresql://postgres:postgres@localhost:5432/aquila_e2e',
+            NODE_ENV: process.env.NODE_ENV ?? 'test',
+            CI: process.env.CI ?? 'false',
+        },
     },
     fullyParallel: true,
     forbidOnly: !!process.env.CI,

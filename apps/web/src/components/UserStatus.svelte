@@ -177,11 +177,12 @@
               method="POST"
               action="/api/auth/sign-out"
               on:submit|preventDefault={handleLogout}
+              class="w-full"
             >
               <button
                 type="submit"
                 title={t(currentLocale, 'common.logout')}
-                class="block text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
+                class="w-full block text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50/60 hover:text-red-700 transition-colors duration-200 rounded-lg mx-2 font-medium"
                 style="font-family: 'Exo 2', sans-serif;"
               >
                 {t(currentLocale, 'common.logout')}

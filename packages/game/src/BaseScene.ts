@@ -303,8 +303,11 @@ export class BaseScene extends Phaser.Scene {
         this.dialogueGeneration++;
         this.dialogueRetryCount = 0;
         // Ensure UI is ready before showing dialogue
+        const gen = this.dialogueGeneration;
         this.time.delayedCall(100, () => {
-            this.showDialogue();
+            if (this.dialogueGeneration === gen) {
+                this.showDialogue();
+            }
         });
     }
 

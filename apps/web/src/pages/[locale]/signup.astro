@@ -8,12 +8,13 @@ const clientTranslations = {
   signupFailed: t('login.signupFailed'),
   signupFailedRetry: t('login.signupFailedRetry'),
 };
+const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g, '<\\/');
 ---
 
 <MainLayout title={t('login.title')}>
 		<!-- Ocean Background with animated waves -->
-		<div class="min-h-screen relative overflow-hidden" data-locale={Astro.params.locale || 'en'}>
-			<script type="application/json" id="signup-translations" set:html={JSON.stringify(clientTranslations)} />
+		<div class="min-h-screen relative overflow-hidden" data-locale={locale}>
+			<script type="application/json" id="signup-translations" set:html={safeClientTranslations} />
 			<!-- Gradient Ocean Background -->
 			<div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
@@ -68,7 +69,7 @@ const clientTranslations = {
 
 			<!-- Back button - Gaming Style -->
 			<a
-				href={`/${Astro.params.locale || 'en'}/`}
+				href={`/${locale}/`}
 				class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
 				style="font-family: 'Orbitron', monospace;"
 			>
@@ -158,7 +159,7 @@ const clientTranslations = {
 						<p class="text-slate-600 text-sm" style="font-family: 'Exo 2', sans-serif;">
 							Already have an account?
 							<a
-								href={`/${Astro.params.locale || 'en'}/login`}
+							href={`/${locale}/login`}
 								class="text-blue-600 font-bold hover:text-cyan-500 underline ml-1 transition-colors duration-300"
 								style="font-family: 'Orbitron', monospace;"
 							>
@@ -248,8 +249,8 @@ const clientTranslations = {
 						if (error) {
 							showError(error.message || translations.signupFailed);
 						} else {
-							const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-							window.location.href = `/${locale}/`;
+							const pageLocale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+							window.location.href = `/${pageLocale}/`;
 						}
 					} catch (error) {
 							if (import.meta.env.DEV) {

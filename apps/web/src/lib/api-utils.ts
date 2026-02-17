@@ -106,14 +106,18 @@ export async function requireAuth(
 ): Promise<
     { session: Session; error: null } | { session: null; error: Response }
 > {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-    });
-    if (session?.user?.id) {
-        return { session, error: null };
-    }
+    try {
+        const session = await auth.api.getSession({
+            headers: request.headers,
+        });
+        if (session?.user?.id) {
+            return { session, error: null };
+        }
 
-    return { session: null, error: errorResponse('Unauthorized', 401) };
+        return { session: null, error: errorResponse('Unauthorized', 401) };
+    } catch {
+        return { session: null, error: errorResponse('Unauthorized', 401) };
+    }
 }
 
 /**

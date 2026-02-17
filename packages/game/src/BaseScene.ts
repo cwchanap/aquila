@@ -21,6 +21,7 @@ export class BaseScene extends Phaser.Scene {
     protected ambientOsc?: OscillatorNode;
     protected ambientGain?: GainNode;
     private dialogueRetryCount: number = 0;
+    private dialogueGeneration: number = 0;
     private static readonly MAX_DIALOGUE_RETRIES = 10;
     // Active story section key driven by SceneDirectory.
     protected sectionKey: SceneId = SceneDirectory.defaultStart ?? 'scene_1';
@@ -33,6 +34,8 @@ export class BaseScene extends Phaser.Scene {
     protected setSection(nextKey: SceneId) {
         this.sectionKey = nextKey;
         this.currentDialogueIndex = 0;
+        this.dialogueRetryCount = 0;
+        this.dialogueGeneration++;
         // Rebuild the layout for the new section (background, etc.)
         this.redrawLayout();
         this.applyAmbientForScene(nextKey);
@@ -329,7 +332,12 @@ export class BaseScene extends Phaser.Scene {
                 this.dialogueRetryCount < BaseScene.MAX_DIALOGUE_RETRIES
             ) {
                 this.dialogueRetryCount++;
-                this.time.delayedCall(50, () => this.showDialogue());
+                const gen = this.dialogueGeneration;
+                this.time.delayedCall(50, () => {
+                    if (gen === this.dialogueGeneration) {
+                        this.showDialogue();
+                    }
+                });
             } else {
                 console.error(
                     '[BaseScene] Dialogue UI not ready after maximum retries'

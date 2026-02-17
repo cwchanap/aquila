@@ -168,7 +168,16 @@ export function showPrompt(
     return new Promise(resolve => {
         const overlay = createOverlay();
         const panel = createPanel();
-        panel.appendChild(createMessage(message));
+
+        // ARIA attributes for accessibility
+        const msgId = 'dialog-msg-' + Date.now();
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-describedby', msgId);
+
+        const msg = createMessage(message);
+        msg.id = msgId;
+        panel.appendChild(msg);
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -181,22 +190,52 @@ export function showPrompt(
         const cancel = createButton('Cancel', false);
         const ok = createButton('OK', true);
 
-        cancel.addEventListener('click', () => {
+        function cleanup() {
+            document.removeEventListener('keydown', onKeyDown);
             overlay.remove();
+        }
+
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(null);
+            }
+            if (e.key === 'Enter' && document.activeElement !== cancel) {
+                cleanup();
+                resolve(input.value);
+            }
+            // Focus trap among input, cancel, and ok
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const focusable = [input, cancel, ok];
+                const currentIndex = focusable.indexOf(
+                    document.activeElement as HTMLElement
+                );
+                if (e.shiftKey) {
+                    const prevIndex =
+                        currentIndex <= 0
+                            ? focusable.length - 1
+                            : currentIndex - 1;
+                    focusable[prevIndex].focus();
+                } else {
+                    const nextIndex =
+                        currentIndex >= focusable.length - 1
+                            ? 0
+                            : currentIndex + 1;
+                    focusable[nextIndex].focus();
+                }
+            }
+        }
+
+        document.addEventListener('keydown', onKeyDown);
+
+        cancel.addEventListener('click', () => {
+            cleanup();
             resolve(null);
         });
         ok.addEventListener('click', () => {
-            overlay.remove();
+            cleanup();
             resolve(input.value);
-        });
-        input.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key === 'Enter') {
-                overlay.remove();
-                resolve(input.value);
-            } else if (e.key === 'Escape') {
-                overlay.remove();
-                resolve(null);
-            }
         });
 
         row.appendChild(cancel);

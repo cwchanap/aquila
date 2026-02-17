@@ -29,7 +29,12 @@ export class ChoicePresenter {
         const validOptionIds = optionIds.length ? optionIds : [''];
 
         if (!choiceDef) {
-            onSelect(validOptionIds[0]);
+            console.warn(
+                `[ChoicePresenter] Missing choice definition for choiceId="${choiceId}", optionIds=${JSON.stringify(optionIds)}`
+            );
+            if (validOptionIds[0]) {
+                onSelect(validOptionIds[0]);
+            }
             return;
         }
 
@@ -54,7 +59,20 @@ export class ChoicePresenter {
                 }
             );
         const panelWidth = Math.min(width - 80, 560);
-        const panelHeight = 240;
+        const topPadding = 40;
+        const promptHeight = 40;
+        const optionHeight = 44;
+        const optionSpacing = 60;
+        const bottomPadding = 30;
+        const optionCount = validOptionIds.length;
+        const panelHeight = Math.max(
+            240,
+            topPadding +
+                promptHeight +
+                optionCount * optionHeight +
+                (optionCount - 1) * (optionSpacing - optionHeight) +
+                bottomPadding
+        );
         const panel = this.scene.add
             .rectangle(
                 width / 2,
@@ -84,7 +102,6 @@ export class ChoicePresenter {
         this.uiElements.push(backdrop, panel, prompt);
 
         const optionBaseY = prompt.y + 80;
-        const optionSpacing = 60;
         let anyOptionAdded = false;
         let renderedIndex = 0;
 

@@ -1,12 +1,19 @@
 ---
 import MainLayout from '../../layouts/main.astro';
+import { t as translate } from '../../lib/utils';
 
-// No server-side form handling needed with better-auth
+const locale = Astro.params.locale || 'en';
+const t = (key: string) => translate(locale, key);
+const clientTranslations = {
+  signupFailed: t('login.signupFailed'),
+  signupFailedRetry: t('login.signupFailedRetry'),
+};
 ---
 
-<MainLayout title="Sign Up - Game App">
+<MainLayout title={t('login.title')}>
 		<!-- Ocean Background with animated waves -->
 		<div class="min-h-screen relative overflow-hidden" data-locale={Astro.params.locale || 'en'}>
+			<script type="application/json" id="signup-translations" set:html={JSON.stringify(clientTranslations)} />
 			<!-- Gradient Ocean Background -->
 			<div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
@@ -195,6 +202,15 @@ import MainLayout from '../../layouts/main.astro';
 				const signupForm = document.getElementById('signup-form') as HTMLFormElement;
 				const errorMessage = document.getElementById('error-message');
 
+				function getSignupTranslations(): { signupFailed: string; signupFailedRetry: string } {
+					try {
+						const el = document.getElementById('signup-translations');
+						if (el?.textContent) return JSON.parse(el.textContent);
+					} catch { /* fallback */ }
+					return { signupFailed: 'Signup failed', signupFailedRetry: 'Signup failed. Please try again.' };
+				}
+				const translations = getSignupTranslations();
+
 				function showError(message: string) {
 					if (errorMessage) {
 						errorMessage.textContent = message;
@@ -229,9 +245,9 @@ import MainLayout from '../../layouts/main.astro';
 						try {
 							const { error } = await signUp.email({ email, password, name });
 
-							if (error) {
-								showError(error.message || 'Signup failed');
-							} else {
+						if (error) {
+							showError(error.message || translations.signupFailed);
+						} else {
 								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
 								window.location.href = `/${locale}/`;
 							}
@@ -239,7 +255,7 @@ import MainLayout from '../../layouts/main.astro';
 							if (import.meta.env.DEV) {
 								console.error('Signup failed:', error instanceof Error ? error.message : 'unknown');
 							}
-							showError('Signup failed. Please try again.');
+							showError(translations.signupFailedRetry);
 						} finally {
 							if (submitButton) submitButton.disabled = false;
 						}

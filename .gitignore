@@ -33,6 +33,3 @@ apps/web/src/pages/zh/
 .turbo/
 apps/*/.turbo/
 packages/*/.turbo/
-
-# Claude AI local settings
-.claude/settings.local.json

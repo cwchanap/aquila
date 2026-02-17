@@ -163,17 +163,21 @@
               class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
               style="font-family: 'Exo 2', sans-serif;"
             >
-              Profile
+              {t(currentLocale, 'nav.profile')}
             </a>
             <a
               href={`/${currentLocale}/characters`}
               class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
               style="font-family: 'Exo 2', sans-serif;"
             >
-              Story Config
+              {t(currentLocale, 'nav.storyConfig')}
             </a>
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
-            <form method="POST" action="/api/auth/sign-out" on:submit|preventDefault={handleLogout}>
+            <form
+              method="POST"
+              action="/api/auth/sign-out"
+              on:submit|preventDefault={handleLogout}
+            >
               <button
                 type="submit"
                 title={t(currentLocale, 'common.logout')}
@@ -194,7 +198,7 @@
         class="px-6 py-3 bg-white/80 hover:bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl text-slate-700 hover:text-slate-900 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
         style="font-family: 'Orbitron', monospace;"
       >
-        Login
+        {t(currentLocale, 'common.login')}
       </a>
       {#if hasClientError && errorMessage}
         <div

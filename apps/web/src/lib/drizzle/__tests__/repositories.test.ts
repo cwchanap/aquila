@@ -253,8 +253,8 @@ describe('Repositories', () => {
             });
 
             it('sets correct order for each chapter', async () => {
-                const setCalls: Array<{ order: string }> = [];
-                mockDb.set.mockImplementation((data: { order: string }) => {
+                const setCalls: Array<{ order: number }> = [];
+                mockDb.set.mockImplementation((data: { order: number }) => {
                     setCalls.push(data);
                     return mockDb;
                 });

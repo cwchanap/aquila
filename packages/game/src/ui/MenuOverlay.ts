@@ -45,14 +45,14 @@ export class MenuOverlay {
             {
                 label: isZh ? '📍 進度地圖' : '📍 Progress Map',
                 handler: () => {
-                    this.close();
+                    this.close(onResume);
                     onProgressMap();
                 },
             },
             {
                 label: isZh ? '返回首頁' : 'Return Home',
                 handler: () => {
-                    this.close();
+                    this.close(onResume);
                     onHome();
                 },
             },

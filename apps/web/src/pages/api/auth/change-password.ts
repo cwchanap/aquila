@@ -46,6 +46,11 @@ const cleanupInterval = setInterval(() => {
     }
 }, 60_000); // Run cleanup every minute
 
+// Prevent interval from keeping the process alive (e.g., during tests)
+if (typeof cleanupInterval.unref === 'function') {
+    cleanupInterval.unref();
+}
+
 // Clear interval on process shutdown (guarded for serverless/edge runtimes)
 if (typeof process !== 'undefined' && typeof process.on === 'function') {
     const clearCleanup = () => clearInterval(cleanupInterval);

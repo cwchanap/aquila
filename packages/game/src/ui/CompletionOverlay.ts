@@ -17,12 +17,12 @@ export class CompletionOverlay {
         return this._visible;
     }
 
-    show(locale: string): void {
+    show(locale: string, homeUrl?: string): void {
         if (this._visible) return;
         this._visible = true;
 
         const isZh = (locale ?? '').startsWith('zh');
-        const homeUrl = locale ? `/${locale}/` : '/';
+        const resolvedHomeUrl = homeUrl ?? (locale ? `/${locale}/` : '/');
         const width = this.scene.scale.width;
         const height = this.scene.scale.height;
 
@@ -62,14 +62,14 @@ export class CompletionOverlay {
             .setDepth(1001)
             .setInteractive({ useHandCursor: true })
             .on('pointerup', () => {
-                window.location.href = homeUrl;
+                window.location.href = resolvedHomeUrl;
             });
 
         this.enterKeyListener = this.scene.input.keyboard?.addKey(
             Phaser.Input.Keyboard.KeyCodes.ENTER
         );
         this.enterKeyListener?.once('down', () => {
-            window.location.href = homeUrl;
+            window.location.href = resolvedHomeUrl;
         });
     }
 

@@ -137,7 +137,32 @@ describe('Chapters API', () => {
             storyId: 'story-1',
             title: 'Chapter One',
             description: 'A start',
-            order: '1',
+            order: 1,
         });
+    });
+
+    it('rejects non-integer order value', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+            title: 'Test Story',
+        });
+
+        const response = await POST({
+            request: new Request('http://localhost/api/chapters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'story-1',
+                    title: 'Chapter One',
+                    order: 'first',
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(400);
+        const data = await response.json();
+        expect(data.error).toContain('integer');
     });
 });

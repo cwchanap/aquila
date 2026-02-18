@@ -279,7 +279,6 @@ export class ProgressMapModal {
 
     public destroy(): void {
         this.escKey?.removeAllListeners();
-        this.escKey?.destroy();
         this.escKey = undefined;
         this.backdrop?.destroy();
         this.panel?.destroy();

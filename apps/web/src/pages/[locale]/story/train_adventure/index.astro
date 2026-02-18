@@ -2,7 +2,11 @@
 import MainLayout from '@/layouts/main.astro';
 import { t as translate } from '@/lib/utils';
 
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 ---
 

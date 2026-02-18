@@ -53,12 +53,17 @@ export const auth = betterAuth({
     },
     trustedOrigins: (() => {
         const raw =
-            process.env.TRUSTED_ORIGINS || import.meta.env?.TRUSTED_ORIGINS;
+            import.meta.env?.TRUSTED_ORIGINS || process.env.TRUSTED_ORIGINS;
         if (raw) {
             return raw
                 .split(',')
                 .map((o: string) => o.trim())
                 .filter(Boolean);
+        }
+        if (import.meta.env?.PROD || process.env.NODE_ENV === 'production') {
+            throw new Error(
+                'TRUSTED_ORIGINS must be set in production environment'
+            );
         }
         return ['http://localhost:5090'];
     })(),

@@ -2,8 +2,12 @@
 import MainLayout from '@/layouts/main.astro';
 import { t as translate } from '@/lib/utils';
 
-// Derive locale dynamically from the route path
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+// Derive locale from the prop (set by zh proxies) or route param
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 ---
 

@@ -26,12 +26,13 @@ export class ChoicePresenter {
         onSelect: (optionId: string) => void
     ): void {
         const choiceDef = this.choiceMap[choiceId];
-        const validOptionIds = optionIds.length ? optionIds : [''];
 
         if (!choiceDef) {
             console.warn(
                 `[ChoicePresenter] Missing choice definition for choiceId="${choiceId}", optionIds=${JSON.stringify(optionIds)}. Calling onSelect with empty string.`
             );
+            this.destroyElements();
+            this._awaiting = false;
             onSelect('');
             return;
         }
@@ -62,7 +63,7 @@ export class ChoicePresenter {
         const optionHeight = 44;
         const optionSpacing = 60;
         const bottomPadding = 30;
-        const matchedOptionIds = validOptionIds.filter(id =>
+        const matchedOptionIds = optionIds.filter(id =>
             choiceDef.options.find(opt => opt.id === id)
         );
         const optionCount = matchedOptionIds.length;
@@ -108,8 +109,7 @@ export class ChoicePresenter {
         matchedOptionIds.forEach(optionId => {
             const optionDef = choiceDef.options.find(
                 opt => opt.id === optionId
-            );
-            if (!optionDef) return;
+            )!;
 
             const optionY = optionBaseY + renderedIndex * optionSpacing;
             const buttonBg = this.scene.add

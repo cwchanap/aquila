@@ -26,10 +26,15 @@ vi.mock('../../../lib/api-utils.js', () => ({
             status,
             headers: { 'Content-Type': 'application/json' },
         }),
-    errorResponse: (message: string, status = 400) =>
+    errorResponse: (
+        message: string,
+        status = 400,
+        _errorId?: string,
+        headers?: Record<string, string>
+    ) =>
         new Response(JSON.stringify({ error: message }), {
             status,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...headers },
         }),
 }));
 
@@ -220,5 +225,8 @@ describe('change-password API', () => {
         expect(response.status).toBe(429);
         const body = await response.json();
         expect(body.error).toContain('Too many attempts');
+        expect(response.headers.get('Retry-After')).toBeDefined();
+        const retryAfter = parseInt(response.headers.get('Retry-After')!, 10);
+        expect(retryAfter).toBeGreaterThan(0);
     });
 });

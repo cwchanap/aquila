@@ -110,7 +110,9 @@ export const POST: APIRoute = async ({ request }) => {
             });
             return errorResponse(
                 `Too many attempts. Please try again in ${rateCheck.retryAfterSeconds} seconds.`,
-                429
+                429,
+                undefined,
+                { 'Retry-After': String(rateCheck.retryAfterSeconds) }
             );
         }
 

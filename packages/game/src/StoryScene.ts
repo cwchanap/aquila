@@ -352,6 +352,11 @@ export class StoryScene extends BaseScene implements EscListenerHost {
         this.completed = true;
         this.choicePresenter.clear();
         this.fadeAmbientTo(0.0015, 400);
-        this.completionOverlay.show(this.locale);
+        const locale = this.locale.startsWith('zh') ? 'zh' : 'en';
+        const isLocalizedRoute = window.location.pathname.startsWith(
+            `/${locale}/`
+        );
+        const homeUrl = isLocalizedRoute ? `/${locale}/` : '/';
+        this.completionOverlay.show(this.locale, homeUrl);
     }
 }

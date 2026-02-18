@@ -7,7 +7,11 @@ import type { CharacterSetup } from '../../lib/drizzle/schema.js';
 import { getTranslations, type Locale } from '@aquila/dialogue';
 import { t as translate } from '../../lib/utils';
 
-const locale = (Astro.params.locale as Locale | undefined) ?? 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = ((Astro.props.locale as string | undefined) || (Astro.params.locale as Locale | undefined)) ?? 'en';
 const t = (key: string) => translate(locale, key);
 const translations = getTranslations(locale);
 
@@ -84,7 +88,7 @@ try {
     </div>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.params.locale || 'en'} />
+    <UserStatus client:load user={user} currentLocale={locale} />
 
     <!-- Back button - Gaming Style -->
     <a

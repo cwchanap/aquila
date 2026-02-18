@@ -6,7 +6,11 @@ import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
 import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
 import { t as translate } from '../../../lib/utils';
 
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 
 // Get the story parameter from URL
@@ -15,7 +19,7 @@ const storyParam = url.searchParams.get('story');
 
 // Validate story parameter
 if (!storyParam || !isValidStoryId(storyParam)) {
-  return Astro.redirect(`/${Astro.params.locale || 'en'}/stories`);
+  return Astro.redirect(`/${locale}/stories`);
 }
 
 const storyId = storyParam as StoryId;
@@ -34,7 +38,7 @@ if (isAuthed && user?.id) {
   const characterSetupRepo = new CharacterSetupRepository();
   const existingSetup = await characterSetupRepo.findByUserAndStory(user.id, storyId);
   if (existingSetup) {
-    return Astro.redirect(`/${Astro.params.locale || 'en'}/story/${storyId}`);
+    return Astro.redirect(`/${locale}/story/${storyId}`);
   }
 }
 ---
@@ -96,7 +100,7 @@ if (isAuthed && user?.id) {
 
     <!-- Back button -->
     <a
-      href={`/${Astro.params.locale || 'en'}/stories`}
+      href={`/${locale}/stories`}
       class="absolute top-6 left-6 p-3 bg-white/80 hover:bg-white/90 text-slate-700 hover:text-slate-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/40 backdrop-blur-sm z-20"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,7 +109,7 @@ if (isAuthed && user?.id) {
     </a>
 
     <!-- User status -->
-    <UserStatus client:load user={user} currentLocale={Astro.params.locale || 'en'} />
+    <UserStatus client:load user={user} currentLocale={locale} />
 
     <!-- Main Content Container - Visual Novel Style -->
     <div class="min-h-screen flex items-center justify-center relative">

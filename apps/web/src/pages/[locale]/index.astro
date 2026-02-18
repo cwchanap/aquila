@@ -4,12 +4,16 @@ import MainLayout from '../../layouts/main.astro';
 import MainMenu from '../../components/MainMenu.svelte';
 import { t as translate } from '../../lib/utils';
 
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 ---
 
 <MainLayout title={t("menu.title")}>
-	<MainMenu client:load locale={Astro.params.locale || 'en'} />
+	<MainMenu client:load locale={locale} />
 
 	<script>
 		// Handle language preference persistence

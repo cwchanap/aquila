@@ -2,7 +2,11 @@
 import MainLayout from '../../layouts/main.astro';
 import { t as translate } from '../../lib/utils';
 
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 const clientTranslations = {
   signupFailed: t('login.signupFailed'),
@@ -231,10 +235,9 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 						hideError();
 
 						const formData = new FormData(signupForm);
-						const email = formData.get('email') as string;
-						const password = formData.get('password') as string;
-						const name = formData.get('name') as string;
-
+					const email = String(formData.get('email') ?? '');
+					const password = String(formData.get('password') ?? '');
+					const name = String(formData.get('name') ?? '');
 						if (!email || !password || !name) {
 							showError('All fields are required for signup.');
 							return;
@@ -243,16 +246,16 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 						const submitButton = signupForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 						if (submitButton) submitButton.disabled = true;
 
-					try {
-						const { error } = await signUp.email({ email, password, name });
+						try {
+							const { error } = await signUp.email({ email, password, name });
 
-						if (error) {
-							showError(error.message || translations.signupFailed);
-						} else {
-							const pageLocale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-							window.location.href = `/${pageLocale}/`;
-						}
-					} catch (error) {
+							if (error) {
+								showError(error.message || translations.signupFailed);
+							} else {
+								const pageLocale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
+								window.location.href = `/${pageLocale}/`;
+							}
+						} catch (error) {
 							if (import.meta.env.DEV) {
 								console.error('Signup failed:', error instanceof Error ? error.message : 'unknown');
 							}

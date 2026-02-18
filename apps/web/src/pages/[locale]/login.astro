@@ -2,7 +2,11 @@
 import MainLayout from '../../layouts/main.astro';
 import { t as translate } from '../../lib/utils';
 
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 const clientTranslations = {
   invalidCredentials: t('login.invalidCredentials'),
@@ -11,7 +15,7 @@ const clientTranslations = {
 
 <MainLayout title={t('login.title')}>
 		<!-- Ocean Background with animated waves -->
-		<div class="min-h-screen relative overflow-hidden" data-locale={Astro.params.locale || 'en'}>
+		<div class="min-h-screen relative overflow-hidden" data-locale={locale}>
 			<script type="application/json" id="login-translations" set:html={JSON.stringify(clientTranslations)} />
 			<!-- Gradient Ocean Background -->
 			<div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
@@ -67,7 +71,7 @@ const clientTranslations = {
 
 			<!-- Back button - Gaming Style -->
 			<a
-				href={`/${Astro.params.locale || 'en'}/`}
+				href={`/${locale}/`}
 				class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
 				style="font-family: 'Orbitron', monospace;"
 			>
@@ -140,7 +144,7 @@ const clientTranslations = {
 							<p class="text-slate-600 text-sm" style="font-family: 'Exo 2', sans-serif;">
 								Don't have an account?
 								<a
-									href={`/${Astro.params.locale || 'en'}/signup`}
+									href={`/${locale}/signup`}
 									class="text-blue-600 font-bold hover:text-cyan-500 underline ml-1 transition-colors duration-300"
 									style="font-family: 'Orbitron', monospace;"
 								>

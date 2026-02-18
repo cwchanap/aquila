@@ -48,11 +48,13 @@ export class BaseScene extends Phaser.Scene {
         const AudioCtor =
             typeof AudioContext !== 'undefined'
                 ? AudioContext
-                : (
-                      window as unknown as {
-                          webkitAudioContext?: typeof AudioContext;
-                      }
-                  ).webkitAudioContext;
+                : typeof window !== 'undefined'
+                  ? (
+                        window as unknown as {
+                            webkitAudioContext?: typeof AudioContext;
+                        }
+                    ).webkitAudioContext
+                  : undefined;
         if (!AudioCtor) return null;
         this.beepCtx = new AudioCtor();
         return this.beepCtx;
@@ -66,10 +68,7 @@ export class BaseScene extends Phaser.Scene {
             this.ambientOsc = ctx.createOscillator();
             this.ambientGain = ctx.createGain();
             this.ambientOsc.type = 'sine';
-            // Different base tones per scene for mood
             const sKey = this.getSectionKey();
-            const freq = SceneDirectory.getAmbientFrequency(sKey);
-            this.ambientOsc.frequency.value = freq;
             this.ambientGain.gain.value = GameConfig.audio.defaultAmbientGain;
             this.ambientOsc.connect(this.ambientGain);
             this.ambientGain.connect(ctx.destination);
@@ -392,6 +391,10 @@ export class BaseScene extends Phaser.Scene {
         try {
             const ctx = this.getOrCreateAudioContext();
             if (!ctx) return;
+            // Resume context if suspended (e.g. before first user gesture)
+            if (ctx.state === 'suspended') {
+                ctx.resume().catch(() => {});
+            }
             const o = ctx.createOscillator();
             const g = ctx.createGain();
             o.type = 'sine';

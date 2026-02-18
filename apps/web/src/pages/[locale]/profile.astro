@@ -3,7 +3,11 @@ import { getSessionUser } from '../../lib/auth-utils.js'
 import MainLayout from '../../layouts/main.astro'
 import { t as translate } from '../../lib/utils';
 
-const locale = Astro.params.locale || 'en';
+interface Props {
+  locale?: string;
+}
+
+const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 const clientTranslations = {
   passwordChanged: t('profile.passwordChanged'),
@@ -16,11 +20,11 @@ let user = null;
 try {
   user = await getSessionUser(Astro.request);
 } catch (err) {
-  console.log('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
+  console.error('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
 }
 
 if (!user) {
-  return Astro.redirect(`/${Astro.params.locale || 'en'}/login`)
+  return Astro.redirect(`/${locale}/login`)
 }
 ---
 
@@ -81,7 +85,7 @@ if (!user) {
 
     <!-- Back button - Gaming Style -->
     <a
-      href={`/${Astro.params.locale || 'en'}/`}
+      href={`/${locale}/`}
       aria-label={t("common.backLabel")}
       class="absolute top-6 left-6 p-4 bg-white/80 hover:bg-white/90 text-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/60 backdrop-blur-sm z-20"
       style="font-family: 'Orbitron', monospace;"
@@ -198,7 +202,7 @@ if (!user) {
 
           <!-- Back to Menu Button -->
           <a
-            href={`/${Astro.params.locale || 'en'}/`}
+            href={`/${locale}/`}
             class="group relative block w-full py-6 px-8 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-slate-300/60 overflow-hidden text-center"
             style="font-family: 'Orbitron', 'Exo 2', monospace;"
           >
@@ -254,7 +258,7 @@ if (!user) {
           const el = document.getElementById('profile-translations');
           if (el?.textContent) return JSON.parse(el.textContent);
         } catch { /* fallback */ }
-        return { passwordChanged: 'Password changed successfully', failedPasswordChange: 'Failed to change password', networkError: 'Network error. Please try again.' };
+        return { passwordChanged: '', failedPasswordChange: '', networkError: '' };
       }
       const translations = getProfileTranslations();
 

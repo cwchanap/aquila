@@ -80,6 +80,12 @@ const cleanupStaleProxies = (
     return removedCount;
 };
 
+if (!fs.existsSync(localePagesDir)) {
+    throw new Error(
+        `Missing src/pages/[locale] directory: check i18n/CI setup. Expected: ${localePagesDir}`
+    );
+}
+
 const localeAstroFiles = findAstroFiles(localePagesDir);
 
 // Create a Set of valid locale files for quick lookup
@@ -106,12 +112,15 @@ for (const filePath of localeAstroFiles) {
     }
 
     // Calculate relative path from zh file to locale file
-    const relativePath = path.relative(zhDir, localeFilePath);
+    // Normalize to forward slashes for cross-platform import compatibility
+    const relativePath = path
+        .relative(zhDir, localeFilePath)
+        .replace(/\\/g, '/');
 
     const proxyContent = `---
 import LocalePage from '${relativePath}';
 ---
-<LocalePage {...Astro.props} />
+<LocalePage {...Astro.props} locale="zh" />
 `;
 
     fs.writeFileSync(zhFilePath, proxyContent);

@@ -71,7 +71,17 @@ export const SceneCreateSchema = z.object({
     chapterId: z.string().optional().nullable(),
     title: z.string().min(1, 'Title is required').max(255),
     content: z.string().optional().nullable(),
-    order: z.union([z.string(), z.number()]).transform(v => String(v)),
+    order: z.union([z.number().int(), z.string()]).transform((v, ctx) => {
+        const n = Number(v);
+        if (!Number.isInteger(n)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Order must be an integer',
+            });
+            return z.NEVER;
+        }
+        return n;
+    }),
 });
 
 export type SceneCreate = z.infer<typeof SceneCreateSchema>;
@@ -81,7 +91,17 @@ export const ChapterCreateSchema = z.object({
     storyId: z.string().min(1, 'Story ID is required'),
     title: z.string().min(1, 'Title is required').max(255),
     description: z.string().optional().nullable(),
-    order: z.union([z.string(), z.number()]).transform(v => String(v)),
+    order: z.union([z.number().int(), z.string()]).transform((v, ctx) => {
+        const n = Number(v);
+        if (!Number.isInteger(n)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Order must be an integer',
+            });
+            return z.NEVER;
+        }
+        return n;
+    }),
 });
 
 export type ChapterCreate = z.infer<typeof ChapterCreateSchema>;

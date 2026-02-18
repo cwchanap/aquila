@@ -117,7 +117,7 @@ describe('change-password API', () => {
             {
                 password: '$2a$10$hashedpass',
                 userId: 'user-123',
-                providerId: 'email',
+                providerId: 'credential',
             },
         ]);
         mockBcryptCompare.mockResolvedValue(true);

@@ -137,7 +137,7 @@ describe('Scenes API', () => {
             chapterId: null,
             title: 'Scene One',
             content: 'Opening',
-            order: '1',
+            order: 1,
         });
     });
 
@@ -182,7 +182,31 @@ describe('Scenes API', () => {
             chapterId: 'chapter-1',
             title: 'Scene Two',
             content: 'Body',
-            order: '2',
+            order: 2,
         });
+    });
+
+    it('rejects non-integer order value', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+        });
+
+        const response = await POST({
+            request: new Request('http://localhost/api/scenes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'story-1',
+                    title: 'Scene One',
+                    order: 'first',
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(400);
+        const data = await response.json();
+        expect(data.error).toContain('integer');
     });
 });

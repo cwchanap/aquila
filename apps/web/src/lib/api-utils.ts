@@ -79,7 +79,8 @@ export function jsonResponse<T>(data: T, status = 200): Response {
 export function errorResponse(
     error: string,
     status: number,
-    errorId?: string
+    errorId?: string,
+    headers?: Record<string, string>
 ): Response {
     const body: ApiErrorResponse = {
         error,
@@ -88,7 +89,10 @@ export function errorResponse(
     };
     return new Response(JSON.stringify(body), {
         status,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers,
+        },
     });
 }
 

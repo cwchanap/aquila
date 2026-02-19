@@ -189,7 +189,7 @@ export const POST: APIRoute = async ({ request }) => {
             .where(
                 and(
                     eq(accounts.userId, session.user.id),
-                    eq(accounts.providerId, 'email')
+                    eq(accounts.providerId, 'credential')
                 )
             );
 

@@ -72,6 +72,13 @@ export const SceneCreateSchema = z.object({
     title: z.string().min(1, 'Title is required').max(255),
     content: z.string().optional().nullable(),
     order: z.union([z.number().int(), z.string()]).transform((v, ctx) => {
+        if (typeof v === 'string' && v.trim() === '') {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Order must not be empty',
+            });
+            return z.NEVER;
+        }
         const n = Number(v);
         if (!Number.isInteger(n)) {
             ctx.addIssue({
@@ -92,6 +99,13 @@ export const ChapterCreateSchema = z.object({
     title: z.string().min(1, 'Title is required').max(255),
     description: z.string().optional().nullable(),
     order: z.union([z.number().int(), z.string()]).transform((v, ctx) => {
+        if (typeof v === 'string' && v.trim() === '') {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Order must not be empty',
+            });
+            return z.NEVER;
+        }
         const n = Number(v);
         if (!Number.isInteger(n)) {
             ctx.addIssue({

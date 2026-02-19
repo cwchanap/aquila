@@ -44,17 +44,11 @@ export class MenuOverlay {
             },
             {
                 label: isZh ? '📍 進度地圖' : '📍 Progress Map',
-                handler: () => {
-                    this.close();
-                    onProgressMap();
-                },
+                handler: () => this.close(onProgressMap),
             },
             {
                 label: isZh ? '返回首頁' : 'Return Home',
-                handler: () => {
-                    this.close();
-                    onHome();
-                },
+                handler: () => this.close(onHome),
             },
         ];
 

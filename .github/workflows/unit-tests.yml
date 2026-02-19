@@ -30,7 +30,7 @@ jobs:
           - job-id: desktop
             job-name: Desktop Unit Tests
             working-directory: apps/desktop
-            command: bun run check
+            command: bun run test:coverage
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

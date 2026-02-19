@@ -7,21 +7,28 @@ export default defineConfig({
     test: {
         environment: 'happy-dom',
         globals: true,
+        passWithNoTests: true,
         setupFiles: ['./src/lib/test-setup.ts'],
-        exclude: [
-            '**/node_modules/**',
-            '**/tests/**', // Exclude Playwright tests
-            '**/*.spec.ts', // Exclude Playwright test files
-        ],
         coverage: {
             provider: 'v8',
             reporter: ['text', 'lcov', 'json'],
             reportsDirectory: './coverage',
+            exclude: [
+                'svelte.config.js',
+                'vite.config.js',
+                'vitest.config.ts',
+                '.svelte-kit/**',
+                'build/**',
+                '.output/**',
+                'src-tauri/**',
+                '**/*.d.ts',
+                'src/lib/test-setup.ts',
+            ],
         },
     },
     resolve: {
         alias: {
-            '@': resolve(__dirname, './src'),
+            '@aquila/assets': resolve(__dirname, '../../packages/assets/media'),
         },
         conditions: ['browser'],
     },

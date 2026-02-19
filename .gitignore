@@ -33,3 +33,5 @@ apps/web/src/pages/zh/
 .turbo/
 apps/*/.turbo/
 packages/*/.turbo/
+
+coverage/

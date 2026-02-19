@@ -11,12 +11,13 @@ const t = (key: string) => translate(locale, key);
 const clientTranslations = {
   invalidCredentials: t('login.invalidCredentials'),
 };
+const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g, '<\\/');
 ---
 
 <MainLayout title={t('login.title')}>
 		<!-- Ocean Background with animated waves -->
 		<div class="min-h-screen relative overflow-hidden" data-locale={locale}>
-			<script type="application/json" id="login-translations" set:html={JSON.stringify(clientTranslations)} />
+			<script type="application/json" id="login-translations" set:html={safeClientTranslations} />
 			<!-- Gradient Ocean Background -->
 			<div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 

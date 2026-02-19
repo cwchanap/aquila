@@ -247,7 +247,7 @@ if (!user) {
     </div>
   </div>
 
-  <script type="application/json" id="profile-translations" set:html={JSON.stringify(clientTranslations)} />
+  <script type="application/json" id="profile-translations" set:html={JSON.stringify(clientTranslations).replace(/<\//g, '<\\/')} />
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('password-change-form') as HTMLFormElement | null;

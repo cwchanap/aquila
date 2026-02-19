@@ -258,7 +258,7 @@ if (!user) {
           const el = document.getElementById('profile-translations');
           if (el?.textContent) return JSON.parse(el.textContent);
         } catch { /* fallback */ }
-        return { passwordChanged: '', failedPasswordChange: '', networkError: '' };
+        return { passwordChanged: 'Password changed successfully', failedPasswordChange: 'Failed to change password', networkError: 'Network error, please try again' };
       }
       const translations = getProfileTranslations();
 

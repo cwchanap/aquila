@@ -225,7 +225,7 @@ describe('change-password API', () => {
         expect(response.status).toBe(429);
         const body = await response.json();
         expect(body.error).toContain('Too many attempts');
-        expect(response.headers.get('Retry-After')).toBeDefined();
+        expect(response.headers.get('Retry-After')).not.toBeNull();
         const retryAfter = parseInt(response.headers.get('Retry-After')!, 10);
         expect(retryAfter).toBeGreaterThan(0);
     });

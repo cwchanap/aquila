@@ -18,6 +18,9 @@ const {
     mockDbUpdate: vi.fn(),
 }));
 
+// Capture where clauses for verification
+const capturedWhereClauses: { select?: unknown; update?: unknown } = {};
+
 // Mock dependencies
 vi.mock('../../../lib/api-utils.js', () => ({
     requireAuth: mockRequireAuth,
@@ -41,12 +44,18 @@ vi.mock('../../../lib/api-utils.js', () => ({
 vi.mock('../../../lib/drizzle/db.js', () => {
     const selectChain = {
         from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
+        where: vi.fn().mockImplementation(clause => {
+            capturedWhereClauses.select = clause;
+            return selectChain;
+        }),
         limit: vi.fn().mockImplementation(() => mockDbSelect()),
     };
     const updateChain = {
         set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockImplementation(() => mockDbUpdate()),
+        where: vi.fn().mockImplementation(clause => {
+            capturedWhereClauses.update = clause;
+            return mockDbUpdate();
+        }),
     };
     return {
         db: {
@@ -109,6 +118,8 @@ describe('change-password API', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        capturedWhereClauses.select = undefined;
+        capturedWhereClauses.update = undefined;
         mockRequireAuth.mockResolvedValue({
             session: mockSession,
             error: null,
@@ -228,5 +239,26 @@ describe('change-password API', () => {
         expect(response.headers.get('Retry-After')).not.toBeNull();
         const retryAfter = parseInt(response.headers.get('Retry-After')!, 10);
         expect(retryAfter).toBeGreaterThan(0);
+    });
+
+    it('uses consistent providerId for select and update queries', async () => {
+        const request = createFormRequest({
+            currentPassword: 'oldpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(200);
+
+        // Both queries should use 'credential' as the providerId
+        const selectClause = String(capturedWhereClauses.select);
+        const updateClause = String(capturedWhereClauses.update);
+
+        // Verify that both queries reference 'credential' providerId
+        expect(selectClause).toContain('credential');
+        expect(updateClause).toContain('credential');
+        expect(selectClause).not.toContain('email');
+        expect(updateClause).not.toContain('email');
     });
 });

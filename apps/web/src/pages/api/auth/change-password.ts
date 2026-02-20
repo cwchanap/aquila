@@ -1,7 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db } from '../../../lib/drizzle/db.js';
-import { accounts } from '../../../lib/drizzle/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { AccountRepository } from '../../../lib/drizzle/repositories.js';
 import bcrypt from 'bcryptjs';
 import { logger } from '../../../lib/logger.js';
 import {
@@ -59,20 +57,35 @@ if (typeof process !== 'undefined' && typeof process.on === 'function') {
     process.on('SIGINT', clearCleanup);
 }
 
-function checkRateLimit(userId: string): {
-    allowed: boolean;
+/**
+ * Check if a user is currently locked out. Does not modify state.
+ */
+function getLockoutStatus(userId: string): {
+    locked: boolean;
     retryAfterSeconds?: number;
 } {
     const now = Date.now();
     const entry = rateLimitMap.get(userId);
-
     if (entry?.lockedUntil && now < entry.lockedUntil) {
         entry.lastSeen = now;
         return {
-            allowed: false,
+            locked: true,
             retryAfterSeconds: Math.ceil((entry.lockedUntil - now) / 1000),
         };
     }
+    return { locked: false };
+}
+
+/**
+ * Record a failed password verification attempt and apply lockout if threshold is reached.
+ * Returns lockout info if the user has just been locked out.
+ */
+function recordFailedAttempt(userId: string): {
+    locked: boolean;
+    retryAfterSeconds?: number;
+} {
+    const now = Date.now();
+    const entry = rateLimitMap.get(userId);
 
     if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
         rateLimitMap.set(userId, {
@@ -80,21 +93,21 @@ function checkRateLimit(userId: string): {
             windowStart: now,
             lastSeen: now,
         });
-        return { allowed: true };
-    }
-
-    if (entry.attempts >= MAX_ATTEMPTS) {
-        entry.lockedUntil = now + LOCKOUT_DURATION_MS;
-        entry.lastSeen = now;
-        return {
-            allowed: false,
-            retryAfterSeconds: Math.ceil(LOCKOUT_DURATION_MS / 1000),
-        };
+        return { locked: false };
     }
 
     entry.attempts++;
     entry.lastSeen = now;
-    return { allowed: true };
+
+    if (entry.attempts >= MAX_ATTEMPTS) {
+        entry.lockedUntil = now + LOCKOUT_DURATION_MS;
+        return {
+            locked: true,
+            retryAfterSeconds: Math.ceil(LOCKOUT_DURATION_MS / 1000),
+        };
+    }
+
+    return { locked: false };
 }
 
 function resetRateLimit(userId: string): void {
@@ -106,26 +119,26 @@ export const POST: APIRoute = async ({ request }) => {
         const { session, error } = await requireAuth(request);
         if (error) return error;
 
-        // Rate limit check
-        const rateCheck = checkRateLimit(session.user.id);
-        if (!rateCheck.allowed) {
+        // Check lockout before processing (without counting this request)
+        const lockoutStatus = getLockoutStatus(session.user.id);
+        if (lockoutStatus.locked) {
             logger.warn('Password change rate limited', {
                 userId: session.user.id,
-                retryAfterSeconds: rateCheck.retryAfterSeconds,
+                retryAfterSeconds: lockoutStatus.retryAfterSeconds,
             });
             return errorResponse(
-                `Too many attempts. Please try again in ${rateCheck.retryAfterSeconds} seconds.`,
+                `Too many attempts. Please try again in ${lockoutStatus.retryAfterSeconds} seconds.`,
                 429,
                 undefined,
-                { 'Retry-After': String(rateCheck.retryAfterSeconds) }
+                { 'Retry-After': String(lockoutStatus.retryAfterSeconds) }
             );
         }
 
         // Parse form data
         const formData = await request.formData();
-        const currentPassword = formData.get('currentPassword') as string;
-        const newPassword = formData.get('newPassword') as string;
-        const confirmPassword = formData.get('confirmPassword') as string;
+        const currentPassword = String(formData.get('currentPassword') ?? '');
+        const newPassword = String(formData.get('newPassword') ?? '');
+        const confirmPassword = String(formData.get('confirmPassword') ?? '');
 
         // Validate input
         if (!currentPassword || !newPassword || !confirmPassword) {
@@ -149,17 +162,11 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        // Verify current password
-        const [account] = await db
-            .select()
-            .from(accounts)
-            .where(
-                and(
-                    eq(accounts.userId, session.user.id),
-                    eq(accounts.providerId, 'credential')
-                )
-            )
-            .limit(1);
+        // Verify current password via repository
+        const accountRepo = new AccountRepository();
+        const account = await accountRepo.findCredentialAccount(
+            session.user.id
+        );
 
         if (!account || !account.password) {
             return errorResponse('Account not found', 404);
@@ -170,28 +177,26 @@ export const POST: APIRoute = async ({ request }) => {
             account.password
         );
         if (!isCurrentPasswordValid) {
+            // Only count failed bcrypt verification attempts toward the rate limit
+            const attemptResult = recordFailedAttempt(session.user.id);
             logger.warn('Failed password change attempt', {
                 userId: session.user.id,
+                locked: attemptResult.locked,
             });
+            if (attemptResult.locked) {
+                return errorResponse(
+                    `Too many attempts. Please try again in ${attemptResult.retryAfterSeconds} seconds.`,
+                    429,
+                    undefined,
+                    { 'Retry-After': String(attemptResult.retryAfterSeconds) }
+                );
+            }
             return errorResponse('Current password is incorrect', 400);
         }
 
-        // Hash new password
+        // Hash and update password via repository
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update password
-        await db
-            .update(accounts)
-            .set({
-                password: hashedNewPassword,
-                updatedAt: new Date(),
-            })
-            .where(
-                and(
-                    eq(accounts.userId, session.user.id),
-                    eq(accounts.providerId, 'credential')
-                )
-            );
+        await accountRepo.updatePassword(session.user.id, hashedNewPassword);
 
         resetRateLimit(session.user.id);
 

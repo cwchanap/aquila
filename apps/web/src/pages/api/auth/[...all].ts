@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { logger } from '../../../lib/logger.js';
 
 export const ALL: APIRoute = async context => {
     try {
@@ -11,6 +12,14 @@ export const ALL: APIRoute = async context => {
             const isHtml = contentType.includes('text/html');
 
             if (isHtml) {
+                logger.error(
+                    'Auth handler returned 5xx HTML response',
+                    undefined,
+                    {
+                        status: response.status,
+                        url: context.request.url,
+                    }
+                );
                 return new Response(
                     JSON.stringify({
                         error: 'Authentication service unavailable',
@@ -27,12 +36,9 @@ export const ALL: APIRoute = async context => {
 
         return response;
     } catch (error) {
-        if (import.meta.env.DEV) {
-            console.error(
-                'Failed to initialize auth handler:',
-                error instanceof Error ? error.message : 'Unknown error'
-            );
-        }
+        logger.error('Failed to initialize auth handler', error, {
+            url: context.request.url,
+        });
 
         return new Response(
             JSON.stringify({

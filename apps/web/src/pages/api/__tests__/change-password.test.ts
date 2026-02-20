@@ -8,18 +8,15 @@ const {
     mockRequireAuth,
     mockBcryptCompare,
     mockBcryptHash,
-    mockDbSelect,
-    mockDbUpdate,
+    mockFindCredentialAccount,
+    mockUpdatePassword,
 } = vi.hoisted(() => ({
     mockRequireAuth: vi.fn(),
     mockBcryptCompare: vi.fn(),
     mockBcryptHash: vi.fn(),
-    mockDbSelect: vi.fn(),
-    mockDbUpdate: vi.fn(),
+    mockFindCredentialAccount: vi.fn(),
+    mockUpdatePassword: vi.fn(),
 }));
-
-// Capture where clauses for verification
-const capturedWhereClauses: { select?: unknown; update?: unknown } = {};
 
 // Mock dependencies
 vi.mock('../../../lib/api-utils.js', () => ({
@@ -41,40 +38,11 @@ vi.mock('../../../lib/api-utils.js', () => ({
         }),
 }));
 
-vi.mock('../../../lib/drizzle/db.js', () => {
-    const selectChain = {
-        from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockImplementation(clause => {
-            capturedWhereClauses.select = clause;
-            return selectChain;
-        }),
-        limit: vi.fn().mockImplementation(() => mockDbSelect()),
-    };
-    const updateChain = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockImplementation(clause => {
-            capturedWhereClauses.update = clause;
-            return mockDbUpdate();
-        }),
-    };
-    return {
-        db: {
-            select: () => selectChain,
-            update: () => updateChain,
-        },
-    };
-});
-
-vi.mock('../../../lib/drizzle/schema.js', () => ({
-    accounts: {
-        userId: 'userId',
-        providerId: 'providerId',
-    },
-}));
-
-vi.mock('drizzle-orm', () => ({
-    eq: vi.fn((_a, _b) => `eq(${_a},${_b})`),
-    and: vi.fn((...args: unknown[]) => `and(${args.join(',')})`),
+vi.mock('../../../lib/drizzle/repositories.js', () => ({
+    AccountRepository: vi.fn().mockImplementation(() => ({
+        findCredentialAccount: mockFindCredentialAccount,
+        updatePassword: mockUpdatePassword,
+    })),
 }));
 
 vi.mock('bcryptjs', () => ({
@@ -118,22 +86,18 @@ describe('change-password API', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        capturedWhereClauses.select = undefined;
-        capturedWhereClauses.update = undefined;
         mockRequireAuth.mockResolvedValue({
             session: mockSession,
             error: null,
         });
-        mockDbSelect.mockResolvedValue([
-            {
-                password: '$2a$10$hashedpass',
-                userId: 'user-123',
-                providerId: 'credential',
-            },
-        ]);
+        mockFindCredentialAccount.mockResolvedValue({
+            password: '$2a$10$hashedpass',
+            userId: 'user-123',
+            providerId: 'credential',
+        });
         mockBcryptCompare.mockResolvedValue(true);
         mockBcryptHash.mockResolvedValue('$2a$10$newhashedpass');
-        mockDbUpdate.mockResolvedValue(undefined);
+        mockUpdatePassword.mockResolvedValue(undefined);
     });
 
     it('returns 401 when not authenticated', async () => {
@@ -191,6 +155,36 @@ describe('change-password API', () => {
         expect(body.error).toContain('6 characters');
     });
 
+    it('returns 404 when no credential account exists for the user', async () => {
+        mockFindCredentialAccount.mockResolvedValue(null);
+
+        const request = createFormRequest({
+            currentPassword: 'oldpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(404);
+        const body = await response.json();
+        expect(body.error).toContain('Account not found');
+    });
+
+    it('returns 400 when current password is incorrect', async () => {
+        mockBcryptCompare.mockResolvedValue(false);
+
+        const request = createFormRequest({
+            currentPassword: 'wrongpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body.error).toContain('incorrect');
+    });
+
     it('successfully changes password', async () => {
         const request = createFormRequest({
             currentPassword: 'oldpass',
@@ -204,18 +198,18 @@ describe('change-password API', () => {
         expect(body.success).toBe(true);
     });
 
-    it('returns 429 after too many attempts', async () => {
-        // Use a unique user ID for rate limit testing
-        const rateLimitSession = {
-            user: { id: `user-rate-test-${Date.now()}` },
-        };
+    it('returns 429 after too many failed password attempts', async () => {
+        // Use a unique user ID for rate limit testing to avoid cross-test contamination
+        const rateLimitUserId = `user-rate-test-${Date.now()}`;
+        const rateLimitSession = { user: { id: rateLimitUserId } };
         mockRequireAuth.mockResolvedValue({
             session: rateLimitSession,
             error: null,
         });
+        // Wrong password triggers rate limit counting
         mockBcryptCompare.mockResolvedValue(false);
 
-        // Make MAX_ATTEMPTS (5) requests to hit the rate limit
+        // Make MAX_ATTEMPTS (5) requests with wrong password to hit the rate limit
         for (let i = 0; i < 5; i++) {
             const request = createFormRequest({
                 currentPassword: 'wrongpass',
@@ -225,7 +219,7 @@ describe('change-password API', () => {
             await POST({ request } as any);
         }
 
-        // Next request should be rate limited
+        // The 5th request should trigger lockout, so subsequent requests are also locked
         const request = createFormRequest({
             currentPassword: 'wrongpass',
             newPassword: 'newpass123',
@@ -241,7 +235,31 @@ describe('change-password API', () => {
         expect(retryAfter).toBeGreaterThan(0);
     });
 
-    it('uses consistent providerId for select and update queries', async () => {
+    it('does not count validation failures toward the rate limit', async () => {
+        // Use a unique user ID for this test
+        const userId = `user-validation-test-${Date.now()}`;
+        const session = { user: { id: userId } };
+        mockRequireAuth.mockResolvedValue({ session, error: null });
+
+        // Make 10 requests that fail validation (missing fields) - should NOT count toward rate limit
+        for (let i = 0; i < 10; i++) {
+            const request = createFormRequest({ currentPassword: 'old' });
+            const response = await POST({ request } as any);
+            expect(response.status).toBe(400);
+        }
+
+        // A valid request should still succeed (not rate limited)
+        mockBcryptCompare.mockResolvedValue(true);
+        const validRequest = createFormRequest({
+            currentPassword: 'oldpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+        const response = await POST({ request: validRequest } as any);
+        expect(response.status).toBe(200);
+    });
+
+    it('uses credential providerId for account lookup and update', async () => {
         const request = createFormRequest({
             currentPassword: 'oldpass',
             newPassword: 'newpassword',
@@ -251,14 +269,11 @@ describe('change-password API', () => {
         const response = await POST({ request } as any);
         expect(response.status).toBe(200);
 
-        // Both queries should use 'credential' as the providerId
-        const selectClause = String(capturedWhereClauses.select);
-        const updateClause = String(capturedWhereClauses.update);
-
-        // Verify that both queries reference 'credential' providerId
-        expect(selectClause).toContain('credential');
-        expect(updateClause).toContain('credential');
-        expect(selectClause).not.toContain('email');
-        expect(updateClause).not.toContain('email');
+        // Both repository calls should use the authenticated user's ID
+        expect(mockFindCredentialAccount).toHaveBeenCalledWith('user-123');
+        expect(mockUpdatePassword).toHaveBeenCalledWith(
+            'user-123',
+            expect.stringMatching(/^\$2/)
+        );
     });
 });

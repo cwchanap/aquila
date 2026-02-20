@@ -36,12 +36,10 @@
         const data = await response.json();
         user = data.user;
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.log(
-            'Auth session error:',
-            error instanceof Error ? error.message : 'Unknown error'
-          );
-        }
+        console.error(
+          'Auth session error:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
         hasClientError = true;
         errorMessage =
           'Unable to verify session. Please try refreshing the page.';
@@ -102,7 +100,12 @@
 
       user = null;
       dropdownOpen = false;
+      window.location.href = `/${currentLocale}/`;
     } catch (error) {
+      console.error(
+        'Logout error:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
       hasClientError = true;
       errorMessage =
         error instanceof Error

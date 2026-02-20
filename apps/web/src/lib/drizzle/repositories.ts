@@ -7,6 +7,7 @@ import {
     chapters,
     scenes,
     bookmarks,
+    accounts,
     type User,
     type NewUser,
     type CharacterSetup,
@@ -19,6 +20,7 @@ import {
     type NewScene,
     type Bookmark,
     type NewBookmark,
+    type Account,
 } from './schema';
 import { nanoid } from 'nanoid';
 
@@ -431,5 +433,46 @@ export class BookmarkRepository extends BaseRepository<
             .returning();
 
         return bookmark;
+    }
+}
+
+// ============= Account Repository =============
+export class AccountRepository extends BaseRepository<
+    typeof accounts,
+    Account
+> {
+    protected table = accounts;
+    protected idColumn = accounts.id;
+
+    async findCredentialAccount(userId: string): Promise<Account | null> {
+        const [account] = await this.db
+            .select()
+            .from(accounts)
+            .where(
+                and(
+                    eq(accounts.userId, userId),
+                    eq(accounts.providerId, 'credential')
+                )
+            )
+            .limit(1);
+        return account ?? null;
+    }
+
+    async updatePassword(
+        userId: string,
+        hashedPassword: string
+    ): Promise<void> {
+        await this.db
+            .update(accounts)
+            .set({
+                password: hashedPassword,
+                updatedAt: new Date(),
+            })
+            .where(
+                and(
+                    eq(accounts.userId, userId),
+                    eq(accounts.providerId, 'credential')
+                )
+            );
     }
 }

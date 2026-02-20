@@ -9,7 +9,9 @@
       "Bash(cat:*)",
       "Bash(bun run test:*)",
       "Bash(bun drizzle:generate:*)",
-      "Bash(bunx drizzle-kit generate:*)"
+      "Bash(bunx drizzle-kit generate:*)",
+      "Bash(bun build:*)",
+      "Bash(bun run build:*)"
     ]
   }
 }

@@ -1,3 +1,5 @@
+import { logger } from './logger.js';
+
 /**
  * Get the authenticated user from the request headers (for Astro page frontmatter).
  * Returns the user object or null if not authenticated.
@@ -9,7 +11,8 @@ export async function getSessionUser(request: Request) {
             headers: request.headers,
         });
         return session?.user ?? null;
-    } catch {
+    } catch (error) {
+        logger.error('Failed to retrieve session', error);
         return null;
     }
 }

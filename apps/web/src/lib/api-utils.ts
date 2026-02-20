@@ -4,6 +4,7 @@
 import type { ZodSchema } from 'zod';
 import { auth, type Session } from './auth.js';
 import type { User } from './drizzle/schema.js';
+import { logger } from './logger.js';
 
 /**
  * Sanitized user type for API responses (excludes sensitive fields).
@@ -119,8 +120,12 @@ export async function requireAuth(
         }
 
         return { session: null, error: errorResponse('Unauthorized', 401) };
-    } catch {
-        return { session: null, error: errorResponse('Unauthorized', 401) };
+    } catch (error) {
+        logger.error('Auth session check failed', error);
+        return {
+            session: null,
+            error: errorResponse('Authentication service unavailable', 503),
+        };
     }
 }
 

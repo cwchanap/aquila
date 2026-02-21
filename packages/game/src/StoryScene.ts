@@ -325,6 +325,9 @@ export class StoryScene extends BaseScene implements EscListenerHost {
     private openProgressMap() {
         if (!this.flow) return;
 
+        // Restore ambient to normal game level when transitioning from menu to progress map
+        this.fadeAmbientTo(0.004, 300);
+
         const flowNodes = this.flow.getFlowNodes();
         const currentNodeId = this.flow.getCurrentNodeId();
         const completedHistory = this.flow.getSceneHistory();

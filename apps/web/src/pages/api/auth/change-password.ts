@@ -58,7 +58,9 @@ if (typeof process !== 'undefined' && typeof process.on === 'function') {
 }
 
 /**
- * Check if a user is currently locked out. Does not modify state.
+ * Check if a user is currently locked out.
+ * NOTE: This function updates entry.lastSeen for active lockouts to prevent
+ * premature cleanup by the periodic cleanup task.
  */
 function getLockoutStatus(userId: string): {
     locked: boolean;

@@ -55,6 +55,7 @@ export function showAlert(message: string): Promise<void> {
         const msgId = 'dialog-msg-' + Date.now();
         panel.setAttribute('role', 'alertdialog');
         panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-label', 'Alert');
         panel.setAttribute('aria-describedby', msgId);
 
         const msg = createMessage(message);
@@ -101,10 +102,15 @@ export function showConfirm(message: string): Promise<boolean> {
         const panel = createPanel();
 
         // ARIA attributes
+        const msgId = 'dialog-msg-' + Date.now();
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-label', 'Confirmation');
+        panel.setAttribute('aria-describedby', msgId);
 
-        panel.appendChild(createMessage(message));
+        const msg = createMessage(message);
+        msg.id = msgId;
+        panel.appendChild(msg);
 
         const row = createButtonRow();
         const cancel = createButton('Cancel', false);
@@ -173,6 +179,7 @@ export function showPrompt(
         const msgId = 'dialog-msg-' + Date.now();
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-label', 'Prompt');
         panel.setAttribute('aria-describedby', msgId);
 
         const msg = createMessage(message);

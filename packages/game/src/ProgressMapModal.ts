@@ -26,6 +26,7 @@ export class ProgressMapModal {
     private container: Phaser.GameObjects.Container;
     private visible = false;
     private escKey?: Phaser.Input.Keyboard.Key;
+    private escHandler?: () => void;
 
     constructor(scene: Phaser.Scene, config: ProgressMapModalConfig) {
         this.scene = scene;
@@ -158,11 +159,12 @@ export class ProgressMapModal {
             this.close();
         });
 
-        // Add keyboard listener
+        // Add keyboard listener - store handler reference for safe removal
         this.escKey = this.scene.input.keyboard?.addKey(
             Phaser.Input.Keyboard.KeyCodes.ESC
         );
-        this.escKey?.once('down', () => this.close());
+        this.escHandler = () => this.close();
+        this.escKey?.once('down', this.escHandler);
 
         // Store reference for cleanup
         this.container.add([
@@ -278,8 +280,13 @@ export class ProgressMapModal {
     }
 
     public destroy(): void {
-        this.escKey?.removeAllListeners();
+        // Remove only our specific handler, not all listeners
+        // (the ESC key is shared with StoryScene for menu toggling)
+        if (this.escKey && this.escHandler) {
+            this.escKey.off('down', this.escHandler);
+        }
         this.escKey = undefined;
+        this.escHandler = undefined;
         this.backdrop?.destroy();
         this.panel?.destroy();
         this.titleText?.destroy();

@@ -164,7 +164,7 @@ export class ProgressMapModal {
             Phaser.Input.Keyboard.KeyCodes.ESC
         );
         this.escHandler = () => this.close();
-        this.escKey?.once('down', this.escHandler);
+        this.escKey?.on('down', this.escHandler);
 
         // Store reference for cleanup
         this.container.add([

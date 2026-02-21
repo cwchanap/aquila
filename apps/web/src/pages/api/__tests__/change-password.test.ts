@@ -276,4 +276,39 @@ describe('change-password API', () => {
             expect.stringMatching(/^\$2/)
         );
     });
+
+    it('successfully changes password for legacy users with email providerId', async () => {
+        // Simulate a legacy account with providerId 'email' (from Simple Auth)
+        mockFindCredentialAccount.mockResolvedValue({
+            password: '$2a$10$hashedpass',
+            userId: 'user-legacy-123',
+            providerId: 'email',
+        });
+
+        const legacySession = { user: { id: 'user-legacy-123' } };
+        mockRequireAuth.mockResolvedValue({
+            session: legacySession,
+            error: null,
+        });
+
+        const request = createFormRequest({
+            currentPassword: 'oldpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body.success).toBe(true);
+
+        // Verify repository was called with the legacy user ID
+        expect(mockFindCredentialAccount).toHaveBeenCalledWith(
+            'user-legacy-123'
+        );
+        expect(mockUpdatePassword).toHaveBeenCalledWith(
+            'user-legacy-123',
+            expect.stringMatching(/^\$2/)
+        );
+    });
 });

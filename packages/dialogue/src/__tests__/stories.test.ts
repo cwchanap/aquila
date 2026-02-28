@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getTrainAdventureStory } from '../stories/trainAdventure';
 import { trainAdventureFlow } from '../stories/trainAdventure/flow';
+import { getStoryContent, getStoryFlow } from '../stories';
 
 describe('stories', () => {
     describe('getTrainAdventureStory', () => {
@@ -66,5 +67,97 @@ describe('stories', () => {
             );
             expect(choiceNodes.length).toBeGreaterThan(0);
         });
+    });
+
+    describe('getTrainAdventureStory locale fallback', () => {
+        it('treats zh-TW as Chinese', () => {
+            const zhTW = getTrainAdventureStory('zh-TW');
+            const zh = getTrainAdventureStory('zh');
+            expect(zhTW.dialogue).toBe(zh.dialogue);
+            expect(zhTW.choices).toBe(zh.choices);
+        });
+
+        it('treats zh-CN as Chinese', () => {
+            const zhCN = getTrainAdventureStory('zh-CN');
+            const zh = getTrainAdventureStory('zh');
+            expect(zhCN.dialogue).toBe(zh.dialogue);
+        });
+
+        it('falls back to English for unknown locale', () => {
+            const fr = getTrainAdventureStory('fr');
+            const en = getTrainAdventureStory('en');
+            expect(fr.dialogue).toBe(en.dialogue);
+            expect(fr.choices).toBe(en.choices);
+        });
+
+        it('en and zh return different dialogue content', () => {
+            const en = getTrainAdventureStory('en');
+            const zh = getTrainAdventureStory('zh');
+            expect(en.dialogue).not.toBe(zh.dialogue);
+        });
+    });
+});
+
+describe('getStoryContent', () => {
+    it('returns content for train_adventure story', () => {
+        const result = getStoryContent('train_adventure', 'en');
+        expect(result).toBeDefined();
+        expect(result.dialogue).toBeDefined();
+        expect(result.choices).toBeDefined();
+    });
+
+    it('falls back to train_adventure for unknown storyId', () => {
+        const fallback = getStoryContent('unknown_story', 'en');
+        const trainAdventure = getStoryContent('train_adventure', 'en');
+        expect(fallback.dialogue).toBe(trainAdventure.dialogue);
+    });
+
+    it('falls back to train_adventure for undefined storyId', () => {
+        const fallback = getStoryContent(undefined, 'en');
+        const trainAdventure = getStoryContent('train_adventure', 'en');
+        expect(fallback.dialogue).toBe(trainAdventure.dialogue);
+    });
+
+    it('defaults to English for undefined locale', () => {
+        const result = getStoryContent('train_adventure', undefined);
+        const en = getStoryContent('train_adventure', 'en');
+        expect(result.dialogue).toBe(en.dialogue);
+    });
+
+    it('handles locale case-insensitively', () => {
+        const upper = getStoryContent('train_adventure', 'EN');
+        const lower = getStoryContent('train_adventure', 'en');
+        expect(upper.dialogue).toBe(lower.dialogue);
+    });
+
+    it('returns Chinese content when locale is zh', () => {
+        const zh = getStoryContent('train_adventure', 'zh');
+        const en = getStoryContent('train_adventure', 'en');
+        expect(zh.dialogue).not.toBe(en.dialogue);
+    });
+});
+
+describe('getStoryFlow', () => {
+    it('returns flow for train_adventure', () => {
+        const flow = getStoryFlow('train_adventure');
+        expect(flow).toBeDefined();
+        expect(flow?.start).toBe('scene_1');
+    });
+
+    it('falls back to train_adventure for unknown storyId', () => {
+        const flow = getStoryFlow('nonexistent');
+        expect(flow).toBeDefined();
+        expect(flow?.start).toBe('scene_1');
+    });
+
+    it('falls back to train_adventure for undefined storyId', () => {
+        const flow = getStoryFlow(undefined);
+        expect(flow).toBeDefined();
+        expect(flow?.nodes).toBeDefined();
+    });
+
+    it('returned flow matches trainAdventureFlow', () => {
+        const flow = getStoryFlow('train_adventure');
+        expect(flow).toBe(trainAdventureFlow);
     });
 });

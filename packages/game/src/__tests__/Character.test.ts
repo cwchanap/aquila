@@ -54,4 +54,22 @@ describe('Character', () => {
             expect(c.alias).toBe('男主角');
         });
     });
+
+    describe('unknown CharacterId (fallback branches)', () => {
+        it('name falls back to the raw id string when not in directory', () => {
+            // Cast an unknown string as CharacterId to hit the ?? this.id branch
+            const c = new Character('totally_unknown' as CharacterId);
+            expect(c.name).toBe('totally_unknown');
+        });
+
+        it('alias falls back to name (which falls back to id) when not in directory', () => {
+            const c = new Character('totally_unknown' as CharacterId);
+            expect(c.alias).toBe('totally_unknown');
+        });
+
+        it('info returns undefined for an unknown id', () => {
+            const c = new Character('totally_unknown' as CharacterId);
+            expect(c.info).toBeUndefined();
+        });
+    });
 });

@@ -10,6 +10,16 @@ export default defineConfig({
         globals: true,
         include: ['src/**/*.test.ts'],
         setupFiles: ['src/__tests__/setup.ts'],
+        coverage: {
+            provider: 'v8',
+            include: ['src/**/*.ts'],
+            exclude: [
+                'src/**/__tests__/**',
+                'src/**/*.test.ts',
+                'src/index.ts',
+            ],
+            reporter: ['text', 'lcov'],
+        },
     },
     resolve: {
         alias: {

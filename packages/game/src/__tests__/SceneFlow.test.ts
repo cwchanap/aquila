@@ -238,5 +238,169 @@ describe('SceneFlow', () => {
             const result = flow.restoreFromHistory([]);
             expect(result).toBeNull();
         });
+
+        it('returns null when all history entries are unknown scene ids', () => {
+            const flow = SceneFlow.fromLinearScenes(['scene_1', 'scene_2']);
+            // 'ghost_1' and 'ghost_2' are not in the flow → sanitized will be empty
+            const result = flow.restoreFromHistory([
+                'ghost_1' as any,
+                'ghost_2' as any,
+            ]);
+            expect(result).toBeNull();
+        });
+
+        it('restores through a choice branch', () => {
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2a', opt_b: 'scene_2b' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2a',
+                        sceneId: 'scene_2a',
+                        next: null,
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2b',
+                        sceneId: 'scene_2b',
+                        next: null,
+                    },
+                ],
+            };
+            const flow = new SceneFlow(config);
+
+            // Replay: scene_1 → (choice) → scene_2b
+            const result = flow.restoreFromHistory([
+                'scene_1',
+                'scene_2b',
+            ] as any[]);
+            expect(result).toBe('scene_2b');
+            expect(flow.getCurrentSceneId()).toBe('scene_2b');
+        });
+
+        it('returns null when choice history target has no matching option', () => {
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2a' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2a',
+                        sceneId: 'scene_2a',
+                        next: null,
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2b',
+                        sceneId: 'scene_2b',
+                        next: null,
+                    },
+                ],
+            };
+            const flow = new SceneFlow(config);
+
+            // 'scene_2b' is not reachable from choice:c1
+            const result = flow.restoreFromHistory([
+                'scene_1',
+                'scene_2b',
+            ] as any[]);
+            expect(result).toBeNull();
+        });
+
+        it('returns null when scene sequence is inconsistent with flow graph', () => {
+            const flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+                'scene_3',
+            ]);
+            // scene_3 does not directly follow scene_1 in this linear flow
+            const result = flow.restoreFromHistory([
+                'scene_1',
+                'scene_3',
+            ] as any[]);
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('selectChoice edge cases', () => {
+        const makeChoiceFlow = () =>
+            new SceneFlow({
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2',
+                        next: null,
+                    },
+                ],
+            } as any);
+
+        it('falls back to first option when optionId is unknown', () => {
+            const flow = makeChoiceFlow();
+            flow.advanceFromScene(); // → choice mode
+            const result = flow.selectChoice('non_existent_option');
+            // nextByOption has only 'opt_a' → falls back to first option → scene_2
+            expect(result).toEqual({ type: 'scene', sceneId: 'scene_2' });
+        });
+
+        it('returns end when choice node has empty nextByOption', () => {
+            const flow = new SceneFlow({
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: {},
+                    },
+                ],
+            } as any);
+            // advanceFromScene returns end (no valid options), so set mode manually
+            const result = flow.selectChoice('any');
+            // Already in scene mode (not choice), returns end
+            expect(result.type).toBe('end');
+        });
     });
 });

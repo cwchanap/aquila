@@ -89,6 +89,7 @@ export function makeMockGraphics() {
         strokeLineShape: vi.fn(),
         strokePoints: vi.fn(),
         lineBetween: vi.fn(),
+        generateTexture: vi.fn(),
         on: vi.fn(),
     } as Record<string, unknown>);
 }
@@ -186,6 +187,20 @@ function makeMockSceneProps() {
         },
         tweens: {
             add: vi.fn(),
+        },
+        // Phaser's scene plugin (this.scene.start() etc.)
+        scene: {
+            start: vi.fn(),
+            stop: vi.fn(),
+            pause: vi.fn(),
+            resume: vi.fn(),
+            switch: vi.fn(),
+        },
+        // Phaser's loader plugin (this.load.image() etc.)
+        load: {
+            image: vi.fn(),
+            on: vi.fn(),
+            off: vi.fn(),
         },
     };
 }

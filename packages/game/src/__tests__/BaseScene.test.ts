@@ -3,6 +3,7 @@ import { BaseScene } from '../BaseScene';
 import { makeMockText } from './phaserMock';
 import type { DialogueMap } from '../dialogue/types';
 import type { SceneId } from '../SceneDirectory';
+import { CharacterId } from '../characters/CharacterDirectory';
 
 // ── Minimal concrete subclass ──────────────────────────────────────────────
 class TestScene extends BaseScene {
@@ -73,6 +74,45 @@ class TestScene extends BaseScene {
     getKeyboard() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (this as any).input.keyboard;
+    }
+    getHomeButton() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (this as any).homeButton;
+    }
+
+    stopAmbientPub(): void {
+        this.stopAmbient();
+    }
+
+    fadeAmbientToPub(target: number, duration?: number): void {
+        this.fadeAmbientTo(target, duration);
+    }
+
+    applyAmbientForScenePub(sceneId: SceneId): void {
+        this.applyAmbientForScene(sceneId);
+    }
+
+    onHomeButtonHoverChangePub(hovering: boolean): void {
+        this.onHomeButtonHoverChange(hovering);
+    }
+
+    refreshHomeButtonLabelPub(): void {
+        this.refreshHomeButtonLabel();
+    }
+
+    getOverlayRect() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (this as any).overlayRect;
+    }
+
+    getBgGraphics() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (this as any).bgGraphics;
+    }
+
+    setBgGraphics(g: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this as any).bgGraphics = g;
     }
 }
 
@@ -283,6 +323,134 @@ describe('BaseScene', () => {
             scene.create();
             expect(addSpy.text).toHaveBeenCalled();
             expect(addSpy.rectangle).toHaveBeenCalled();
+        });
+    });
+
+    describe('showDialogue with characterId', () => {
+        it('resolves character name from CharacterDirectory when characterId is set', () => {
+            scene.setDialogue({
+                scene_1: [
+                    {
+                        characterId: CharacterId.Narrator,
+                        dialogue: 'Narrated line',
+                    },
+                ],
+            });
+            scene.showDialogue();
+            // CharacterDirectory.getById should return an info object with a name
+            expect(scene.getNameObj().setText).toHaveBeenCalledWith(
+                expect.any(String)
+            );
+            expect(scene.getTextObj().setText).toHaveBeenCalledWith(
+                'Narrated line'
+            );
+        });
+
+        it('falls back to characterId string when character not found', () => {
+            scene.setDialogue({
+                scene_1: [
+                    {
+                        // Cast unknown id
+                        characterId: 'unknown_char' as CharacterId,
+                        dialogue: 'Mystery line',
+                    },
+                ],
+            });
+            scene.showDialogue();
+            expect(scene.getNameObj().setText).toHaveBeenCalledWith(
+                'unknown_char'
+            );
+        });
+    });
+
+    describe('showDialogue retry path', () => {
+        it('retries when textObject is null (calls time.delayedCall)', () => {
+            // Remove pre-wired text objects to force retry
+            (scene as any).characterNameText = null;
+            (scene as any).textObject = null;
+            scene.setDialogue(twoLineDialogue);
+            scene.showDialogue();
+            // Should schedule a retry via time.delayedCall
+            expect((scene as any).time.delayedCall).toHaveBeenCalled();
+        });
+    });
+
+    describe('audio helpers (no AudioContext in jsdom)', () => {
+        it('stopAmbient does not throw when no oscillator exists', () => {
+            expect(() => scene.stopAmbientPub()).not.toThrow();
+        });
+
+        it('fadeAmbientTo does not throw when no gain node exists', () => {
+            expect(() => scene.fadeAmbientToPub(0.005, 300)).not.toThrow();
+        });
+
+        it('applyAmbientForScene does not throw when no oscillator exists', () => {
+            expect(() =>
+                scene.applyAmbientForScenePub('scene_1' as SceneId)
+            ).not.toThrow();
+        });
+    });
+
+    describe('onHomeButtonHoverChange', () => {
+        it('calls homeButton.setStyle with dark bg when not hovering', () => {
+            scene.create(); // populates homeButton
+            const btn = scene.getHomeButton();
+            scene.onHomeButtonHoverChangePub(false);
+            expect(btn.setStyle).toHaveBeenCalledWith(
+                expect.objectContaining({ backgroundColor: '#333333' })
+            );
+        });
+
+        it('calls homeButton.setStyle with lighter bg when hovering', () => {
+            scene.create();
+            const btn = scene.getHomeButton();
+            scene.onHomeButtonHoverChangePub(true);
+            expect(btn.setStyle).toHaveBeenCalledWith(
+                expect.objectContaining({ backgroundColor: '#555555' })
+            );
+        });
+
+        it('does not throw when homeButton is undefined', () => {
+            (scene as any).homeButton = undefined;
+            expect(() => scene.onHomeButtonHoverChangePub(true)).not.toThrow();
+        });
+    });
+
+    describe('refreshHomeButtonLabel', () => {
+        it('calls homeButton.setText with the label', () => {
+            scene.create();
+            const btn = scene.getHomeButton();
+            vi.clearAllMocks();
+            scene.refreshHomeButtonLabelPub();
+            expect(btn.setText).toHaveBeenCalledWith('🏠 Home');
+        });
+
+        it('does not throw when homeButton is undefined', () => {
+            (scene as any).homeButton = undefined;
+            expect(() => scene.refreshHomeButtonLabelPub()).not.toThrow();
+        });
+    });
+
+    describe('setupBackground', () => {
+        it('creates bgGraphics on first call when no texture exists', () => {
+            scene.create(); // textures.exists returns false by default
+            expect((scene as any).add.graphics).toHaveBeenCalled();
+        });
+
+        it('reuses existing bgGraphics (calls clear) on second layout pass', () => {
+            scene.create();
+            const firstGraphics = scene.getBgGraphics();
+            // Trigger another redrawLayout
+            (scene as any).redrawLayout();
+            // Should call clear() on the existing graphics object
+            expect(firstGraphics.clear).toHaveBeenCalled();
+        });
+
+        it('creates bgImage when texture exists', () => {
+            // Make textures.exists return true for the scene
+            (scene as any).textures.exists = vi.fn().mockReturnValue(true);
+            scene.create();
+            expect((scene as any).add.image).toHaveBeenCalled();
         });
     });
 });

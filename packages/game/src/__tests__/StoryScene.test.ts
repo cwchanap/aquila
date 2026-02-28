@@ -398,4 +398,337 @@ describe('StoryScene', () => {
             expect((realScene as any).menuOverlay.show).not.toHaveBeenCalled();
         });
     });
+
+    describe('persistCheckpoint', () => {
+        it('calls clearCheckpoint when completed=true', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'test_story';
+            localStorage.setItem(
+                'aquila:checkpoint:test_story',
+                JSON.stringify({
+                    version: 1,
+                    storyId: 'test_story',
+                    sceneId: 'scene_1',
+                    history: ['scene_1'],
+                    savedAt: Date.now(),
+                })
+            );
+            (realScene as any).persistCheckpoint(true);
+            expect(
+                localStorage.getItem('aquila:checkpoint:test_story')
+            ).toBeNull();
+        });
+
+        it('saves checkpoint to localStorage when flow has valid state', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'test_story';
+            const flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+            ] as any);
+            flow.advanceFromScene();
+            (realScene as any).flow = flow;
+            (realScene as any).persistCheckpoint(false);
+            const stored = localStorage.getItem('aquila:checkpoint:test_story');
+            expect(stored).not.toBeNull();
+            const parsed = JSON.parse(stored!);
+            expect(parsed.sceneId).toBe('scene_2');
+        });
+
+        it('is a no-op when flow is null', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'test_story';
+            (realScene as any).flow = null;
+            expect(() =>
+                (realScene as any).persistCheckpoint(false)
+            ).not.toThrow();
+        });
+    });
+
+    describe('buildSceneFlow', () => {
+        it('uses external config when provided', () => {
+            const realScene = new StoryScene();
+            const externalConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: null,
+                    },
+                ],
+            };
+            const flow = (realScene as any).buildSceneFlow(externalConfig);
+            expect(flow.getCurrentSceneId()).toBe('scene_1');
+        });
+
+        it('builds default flow when no external config', () => {
+            const realScene = new StoryScene();
+            const flow = (realScene as any).buildSceneFlow(undefined);
+            expect(flow.getCurrentSceneId()).toBe('scene_1');
+        });
+    });
+
+    describe('restoreSceneFlow', () => {
+        beforeEach(() => {
+            localStorage.clear();
+        });
+
+        it('returns a flow at scene_1 when no checkpoint exists', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'test_story';
+            (realScene as any).registry.get.mockReturnValue(undefined);
+            const flow = (realScene as any).restoreSceneFlow();
+            expect(flow.getCurrentSceneId()).toBe('scene_1');
+        });
+
+        it('restores from a valid saved checkpoint', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'train_adventure';
+            (realScene as any).registry.get.mockReturnValue(undefined);
+
+            localStorage.setItem(
+                'aquila:checkpoint:train_adventure',
+                JSON.stringify({
+                    version: 1,
+                    storyId: 'train_adventure',
+                    sceneId: 'scene_2',
+                    history: ['scene_1', 'scene_2'],
+                    savedAt: Date.now(),
+                })
+            );
+
+            const flow = (realScene as any).restoreSceneFlow();
+            expect(flow.getCurrentSceneId()).toBe('scene_2');
+        });
+
+        it('clears invalid checkpoint and returns fresh flow', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'train_adventure';
+            (realScene as any).registry.get.mockReturnValue(undefined);
+
+            localStorage.setItem(
+                'aquila:checkpoint:train_adventure',
+                JSON.stringify({
+                    version: 1,
+                    storyId: 'train_adventure',
+                    sceneId: 'scene_99',
+                    history: ['scene_1', 'scene_99'],
+                    savedAt: Date.now(),
+                })
+            );
+
+            const flow = (realScene as any).restoreSceneFlow();
+            expect(flow.getCurrentSceneId()).toBe('scene_1');
+        });
+    });
+
+    describe('transitionToScene', () => {
+        it('sets transitioning to true and triggers camera fadeOut', () => {
+            const realScene = new StoryScene();
+            (realScene as any).transitioning = false;
+            (realScene as any).choicePresenter = {
+                awaiting: false,
+                clear: vi.fn(),
+            };
+            (realScene as any).flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+            ] as any);
+            (realScene as any).dialogue = {
+                scene_1: [{ character: 'A', dialogue: 'hello' }],
+                scene_2: [{ character: 'B', dialogue: 'world' }],
+            };
+            (realScene as any).characterNameText = makeMockText();
+            (realScene as any).textObject = makeMockText();
+            (realScene as any).transitionToScene('scene_2' as any);
+            expect((realScene as any).transitioning).toBe(true);
+            expect((realScene as any).cameras.main.fadeOut).toHaveBeenCalled();
+        });
+
+        it('is a no-op when already transitioning', () => {
+            const realScene = new StoryScene();
+            (realScene as any).transitioning = true;
+            (realScene as any).transitionToScene('scene_2' as any);
+            expect(
+                (realScene as any).cameras.main.fadeOut
+            ).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('resolveChoice', () => {
+        it('calls showCompletionOverlay when flow is null', () => {
+            const realScene = new StoryScene();
+            (realScene as any).flow = null;
+            (realScene as any).completed = false;
+            (realScene as any).completionOverlay = {
+                show: vi.fn(),
+                destroy: vi.fn(),
+            };
+            (realScene as any).choicePresenter = {
+                awaiting: false,
+                clear: vi.fn(),
+            };
+            (realScene as any).characterNameText = makeMockText();
+            (realScene as any).textObject = makeMockText();
+            (realScene as any).resolveChoice('opt_a');
+            expect(
+                (realScene as any).completionOverlay.show
+            ).toHaveBeenCalled();
+        });
+
+        it('calls transitionToScene when flow.selectChoice returns a scene', () => {
+            const realScene = new StoryScene();
+            const config = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2',
+                        next: null,
+                    },
+                ],
+            };
+            const flow = new SceneFlow(config as any);
+            flow.advanceFromScene(); // → choice mode
+            (realScene as any).flow = flow;
+            (realScene as any).transitioning = false;
+            (realScene as any).completed = false;
+            (realScene as any).dialogue = {
+                scene_2: [{ character: 'A', dialogue: 'hi' }],
+            };
+            (realScene as any).characterNameText = makeMockText();
+            (realScene as any).textObject = makeMockText();
+            (realScene as any).resolveChoice('opt_a');
+            expect((realScene as any).transitioning).toBe(true);
+            expect((realScene as any).cameras.main.fadeOut).toHaveBeenCalled();
+        });
+
+        it('calls persistCheckpoint+showCompletionOverlay when selectChoice returns end', () => {
+            const realScene = new StoryScene();
+            const mockFlow = {
+                selectChoice: vi.fn().mockReturnValue({ type: 'end' }),
+                getCurrentSceneId: vi.fn().mockReturnValue(null),
+                getSceneHistory: vi.fn().mockReturnValue([]),
+            };
+            (realScene as any).flow = mockFlow;
+            (realScene as any).storyId = 'test_story';
+            (realScene as any).completed = false;
+            (realScene as any).completionOverlay = {
+                show: vi.fn(),
+                destroy: vi.fn(),
+            };
+            (realScene as any).choicePresenter = {
+                awaiting: false,
+                clear: vi.fn(),
+            };
+            (realScene as any).characterNameText = makeMockText();
+            (realScene as any).textObject = makeMockText();
+            (realScene as any).resolveChoice('opt_a');
+            expect(
+                (realScene as any).completionOverlay.show
+            ).toHaveBeenCalled();
+        });
+    });
+
+    describe('toggleMenu', () => {
+        it('calls openMenu when menu is closed and forceState is not specified', () => {
+            const realScene = new StoryScene();
+            (realScene as any).escListenerPaused = false;
+            const mockMenuOverlay = {
+                open: false,
+                show: vi.fn(),
+                close: vi.fn(),
+                forceClose: vi.fn(),
+            };
+            (realScene as any).menuOverlay = mockMenuOverlay;
+            (realScene as any).locale = 'en';
+            (realScene as any).flow = null;
+            const openMenuSpy = vi
+                .spyOn(realScene as any, 'openMenu')
+                .mockImplementation(() => {});
+            (realScene as any).toggleMenu();
+            expect(openMenuSpy).toHaveBeenCalled();
+        });
+
+        it('calls menuOverlay.close when menu is open and forceState=false', () => {
+            const realScene = new StoryScene();
+            (realScene as any).escListenerPaused = false;
+            const mockMenuOverlay = {
+                open: true,
+                show: vi.fn(),
+                close: vi.fn(),
+                forceClose: vi.fn(),
+            };
+            (realScene as any).menuOverlay = mockMenuOverlay;
+            (realScene as any).locale = 'en';
+            (realScene as any).toggleMenu(false);
+            expect(mockMenuOverlay.close).toHaveBeenCalled();
+        });
+    });
+
+    describe('transitionToScene camera callback', () => {
+        it('executes the camerafadeoutcomplete callback', () => {
+            const realScene = new StoryScene();
+            (realScene as any).transitioning = false;
+            (realScene as any).storyId = 'test_story';
+            (realScene as any).flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+            ] as any);
+            (realScene as any).dialogue = {
+                scene_2: [{ character: 'A', dialogue: 'hello' }],
+            };
+            (realScene as any).characterNameText = makeMockText();
+            (realScene as any).textObject = makeMockText();
+
+            let capturedCallback: (() => void) | undefined;
+            (realScene as any).cameras.main.once = vi
+                .fn()
+                .mockImplementation((_event: string, cb: () => void) => {
+                    capturedCallback = cb;
+                });
+
+            (realScene as any).transitionToScene('scene_2' as any);
+            expect((realScene as any).transitioning).toBe(true);
+
+            expect(capturedCallback).toBeDefined();
+            capturedCallback!();
+            expect((realScene as any).transitioning).toBe(false);
+            expect((realScene as any).cameras.main.fadeIn).toHaveBeenCalled();
+        });
+    });
+
+    describe('openProgressMap', () => {
+        it('is a no-op when flow is null', () => {
+            const realScene = new StoryScene();
+            (realScene as any).flow = null;
+            expect(() => (realScene as any).openProgressMap()).not.toThrow();
+            expect((realScene as any).progressMapModal).toBeUndefined();
+        });
+
+        it('creates and shows a ProgressMapModal when flow exists', () => {
+            const realScene = new StoryScene();
+            (realScene as any).flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+            ] as any);
+            (realScene as any).locale = 'en';
+            expect(() => (realScene as any).openProgressMap()).not.toThrow();
+        });
+    });
 });

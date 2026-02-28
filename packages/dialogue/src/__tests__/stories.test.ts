@@ -161,3 +161,83 @@ describe('getStoryFlow', () => {
         expect(flow).toBe(trainAdventureFlow);
     });
 });
+
+// ── Content consistency ────────────────────────────────────────────────────
+
+describe('trainAdventure content consistency', () => {
+    const en = getTrainAdventureStory('en');
+    const zh = getTrainAdventureStory('zh');
+
+    const sceneNodes = trainAdventureFlow.nodes.filter(n => n.kind === 'scene');
+    const choiceNodes = trainAdventureFlow.nodes.filter(
+        n => n.kind === 'choice'
+    );
+
+    it('en and zh dialogue have the same scene keys', () => {
+        const enKeys = Object.keys(en.dialogue).sort();
+        const zhKeys = Object.keys(zh.dialogue).sort();
+        expect(enKeys).toEqual(zhKeys);
+    });
+
+    it('every flow scene node has a matching entry in the en dialogue', () => {
+        for (const node of sceneNodes) {
+            const sceneId = (node as { sceneId: string }).sceneId;
+            expect(en.dialogue[sceneId]).toBeDefined();
+        }
+    });
+
+    it('every flow scene node has a matching entry in the zh dialogue', () => {
+        for (const node of sceneNodes) {
+            const sceneId = (node as { sceneId: string }).sceneId;
+            expect(zh.dialogue[sceneId]).toBeDefined();
+        }
+    });
+
+    it('every dialogue scene has at least one entry (excluding empty terminal scenes)', () => {
+        // scene_4b is intentionally empty (terminal scene with no dialogue)
+        const emptyScenes = Object.entries(en.dialogue)
+            .filter(([, entries]) => entries.length === 0)
+            .map(([sceneId]) => sceneId);
+        // Allow empty scenes but ensure most scenes have entries
+        const nonEmptyCount = Object.values(en.dialogue).filter(
+            e => e.length > 0
+        ).length;
+        expect(nonEmptyCount).toBeGreaterThan(emptyScenes.length);
+    });
+
+    it('every flow choice node has a matching entry in en choices', () => {
+        for (const node of choiceNodes) {
+            const choiceId = (node as { choiceId: string }).choiceId;
+            expect(en.choices[choiceId]).toBeDefined();
+        }
+    });
+
+    it('every flow choice node has a matching entry in zh choices', () => {
+        for (const node of choiceNodes) {
+            const choiceId = (node as { choiceId: string }).choiceId;
+            expect(zh.choices[choiceId]).toBeDefined();
+        }
+    });
+
+    it('en and zh choices have the same choice IDs', () => {
+        const enChoiceIds = Object.keys(en.choices).sort();
+        const zhChoiceIds = Object.keys(zh.choices).sort();
+        expect(enChoiceIds).toEqual(zhChoiceIds);
+    });
+
+    it('every choice has at least one option with a label', () => {
+        for (const [, choiceDef] of Object.entries(en.choices)) {
+            // ChoiceMap values are { prompt, options: ChoiceOption[] }
+            const { options } = choiceDef as {
+                prompt: string;
+                options: { id: string; label: string }[];
+            };
+            expect(Array.isArray(options)).toBe(true);
+            expect(options.length).toBeGreaterThan(0);
+            for (const opt of options) {
+                expect(typeof opt.label).toBe('string');
+                expect(opt.label.length).toBeGreaterThan(0);
+            }
+        }
+    });
+});

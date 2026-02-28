@@ -92,7 +92,7 @@ describe('ChoicePresenter', () => {
             const mockRectCreatedFirst =
                 scene.add.rectangle.mock.results[0].value;
 
-            presenter.clear();
+            // Present again without explicit clear - should rebuild and destroy prior elements
             presenter.present('choice_1', ['opt_a'], vi.fn());
 
             expect(mockRectCreatedFirst.destroy).toHaveBeenCalled();

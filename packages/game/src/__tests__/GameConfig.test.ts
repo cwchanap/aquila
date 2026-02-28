@@ -70,7 +70,7 @@ describe('GameConfig', () => {
             expect(GameConfig).toHaveProperty('audio');
         });
 
-        it('is a frozen (const) object', () => {
+        it('has expected keys', () => {
             // TypeScript `as const` — properties are readonly at compile-time.
             // At runtime we just verify the expected keys exist.
             expect(Object.keys(GameConfig)).toContain('ui');

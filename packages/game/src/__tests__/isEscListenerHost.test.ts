@@ -3,34 +3,35 @@ import { isEscListenerHost } from '../types';
 import { MockScene } from './phaserMock';
 
 describe('isEscListenerHost', () => {
-    it('returns false for a plain MockScene (no esc methods)', () => {
-        const scene = new MockScene('test');
-        expect(isEscListenerHost(scene as any)).toBe(false);
-    });
+    const testCases: [
+        string,
+        (() => void) | undefined,
+        (() => void) | undefined,
+        boolean,
+    ][] = [
+        ['no esc methods', undefined, undefined, false],
+        ['only pauseEscListener', vi.fn(), undefined, false],
+        ['only resumeEscListener', undefined, vi.fn(), false],
+        ['both esc methods as functions', vi.fn(), vi.fn(), true],
+        [
+            'methods exist but not functions',
+            'not a function' as any,
+            'not a function' as any,
+            false,
+        ],
+    ];
 
-    it('returns false when only pauseEscListener is present', () => {
-        const scene = new MockScene('test');
-        (scene as any).pauseEscListener = vi.fn();
-        expect(isEscListenerHost(scene as any)).toBe(false);
-    });
-
-    it('returns false when only resumeEscListener is present', () => {
-        const scene = new MockScene('test');
-        (scene as any).resumeEscListener = vi.fn();
-        expect(isEscListenerHost(scene as any)).toBe(false);
-    });
-
-    it('returns true when both esc methods are functions', () => {
-        const scene = new MockScene('test');
-        (scene as any).pauseEscListener = vi.fn();
-        (scene as any).resumeEscListener = vi.fn();
-        expect(isEscListenerHost(scene as any)).toBe(true);
-    });
-
-    it('returns false when methods exist but are not functions', () => {
-        const scene = new MockScene('test');
-        (scene as any).pauseEscListener = 'not a function';
-        (scene as any).resumeEscListener = 'not a function';
-        expect(isEscListenerHost(scene as any)).toBe(false);
-    });
+    it.each(testCases)(
+        'returns %s when pauseEscListener=%p and resumeEscListener=%p',
+        (_description, pauseValue, resumeValue, expected) => {
+            const scene = new MockScene('test');
+            if (pauseValue !== undefined) {
+                (scene as any).pauseEscListener = pauseValue;
+            }
+            if (resumeValue !== undefined) {
+                (scene as any).resumeEscListener = resumeValue;
+            }
+            expect(isEscListenerHost(scene as any)).toBe(expected);
+        }
+    );
 });

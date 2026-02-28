@@ -53,71 +53,30 @@ describe('getCharacter', () => {
 });
 
 describe('named exports', () => {
-    it('narrator has Narrator id', () => {
-        expect(narrator.id).toBe(CharacterId.Narrator);
-    });
+    const characterInstances: [string, Character, CharacterId][] = [
+        ['narrator', narrator, CharacterId.Narrator],
+        ['liJie', liJie, CharacterId.LiJie],
+        ['tanakaKenta', tanakaKenta, CharacterId.TanakaKenta],
+        ['suzukiAsuka', suzukiAsuka, CharacterId.SuzukiAsuka],
+        ['satoTakumi', satoTakumi, CharacterId.SatoTakumi],
+        ['takahashiMisaki', takahashiMisaki, CharacterId.TakahashiMisaki],
+        ['saitoRen', saitoRen, CharacterId.SaitoRen],
+        ['yamamotoKoji', yamamotoKoji, CharacterId.YamamotoKoji],
+        ['itoNana', itoNana, CharacterId.ItoNana],
+        ['itoMakoto', itoMakoto, CharacterId.ItoMakoto],
+        ['kobayashiShota', kobayashiShota, CharacterId.KobayashiShota],
+        ['kobayashiTomoko', kobayashiTomoko, CharacterId.KobayashiTomoko],
+        ['kobayashiYudai', kobayashiYudai, CharacterId.KobayashiYudai],
+        ['kobayashiHina', kobayashiHina, CharacterId.KobayashiHina],
+        ['nakamuraHayato', nakamuraHayato, CharacterId.NakamuraHayato],
+        ['shimizuEmi', shimizuEmi, CharacterId.ShimizuEmi],
+        ['lingMo', lingMo, CharacterId.LingMo],
+    ];
 
-    it('liJie has LiJie id', () => {
-        expect(liJie.id).toBe(CharacterId.LiJie);
-    });
-
-    it('tanakaKenta has TanakaKenta id', () => {
-        expect(tanakaKenta.id).toBe(CharacterId.TanakaKenta);
-    });
-
-    it('suzukiAsuka has SuzukiAsuka id', () => {
-        expect(suzukiAsuka.id).toBe(CharacterId.SuzukiAsuka);
-    });
-
-    it('satoTakumi has SatoTakumi id', () => {
-        expect(satoTakumi.id).toBe(CharacterId.SatoTakumi);
-    });
-
-    it('takahashiMisaki has TakahashiMisaki id', () => {
-        expect(takahashiMisaki.id).toBe(CharacterId.TakahashiMisaki);
-    });
-
-    it('saitoRen has SaitoRen id', () => {
-        expect(saitoRen.id).toBe(CharacterId.SaitoRen);
-    });
-
-    it('yamamotoKoji has YamamotoKoji id', () => {
-        expect(yamamotoKoji.id).toBe(CharacterId.YamamotoKoji);
-    });
-
-    it('itoNana has ItoNana id', () => {
-        expect(itoNana.id).toBe(CharacterId.ItoNana);
-    });
-
-    it('itoMakoto has ItoMakoto id', () => {
-        expect(itoMakoto.id).toBe(CharacterId.ItoMakoto);
-    });
-
-    it('kobayashiShota has KobayashiShota id', () => {
-        expect(kobayashiShota.id).toBe(CharacterId.KobayashiShota);
-    });
-
-    it('kobayashiTomoko has KobayashiTomoko id', () => {
-        expect(kobayashiTomoko.id).toBe(CharacterId.KobayashiTomoko);
-    });
-
-    it('kobayashiYudai has KobayashiYudai id', () => {
-        expect(kobayashiYudai.id).toBe(CharacterId.KobayashiYudai);
-    });
-
-    it('kobayashiHina has KobayashiHina id', () => {
-        expect(kobayashiHina.id).toBe(CharacterId.KobayashiHina);
-    });
-
-    it('nakamuraHayato has NakamuraHayato id', () => {
-        expect(nakamuraHayato.id).toBe(CharacterId.NakamuraHayato);
-    });
-
-    it('shimizuEmi has ShimizuEmi id', () => {
-        expect(shimizuEmi.id).toBe(CharacterId.ShimizuEmi);
-    });
-
-    it('lingMo has LingMo id', () => {
-        expect(lingMo.id).toBe(CharacterId.LingMo);
-    });
+    it.each(characterInstances)(
+        '%s has correct CharacterId',
+        (_name, instance, expectedId) => {
+            expect(instance.id).toBe(expectedId);
+        }
+    );
 });

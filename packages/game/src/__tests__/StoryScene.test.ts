@@ -309,10 +309,10 @@ describe('StoryScene', () => {
         it('is a no-op when transitioning', () => {
             scene.setTransitioning(true);
             scene.endSceneCalled = false;
-            scene.endScene();
-            // endScene is overridden in TestStoryScene but the REAL one should
-            // return early — here we test the real impl via calling the parent directly
-            // We re-expose by NOT overriding. Use a non-overriding subclass instead.
+            // Call the parent implementation directly to test real behavior
+            StoryScene.prototype.endScene.call(scene);
+            // The real endScene should return early when transitioning
+            expect(scene.endSceneCalled).toBe(false);
         });
 
         it('is a no-op when choicePresenter is awaiting', () => {

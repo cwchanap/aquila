@@ -103,11 +103,15 @@ describe('CompletionOverlay', () => {
 
             overlay.destroy();
 
-            createdRects.forEach((el: { destroy: ReturnType<typeof vi.fn> }) =>
-                expect(el.destroy).toHaveBeenCalled()
+            createdRects.forEach(
+                (el: { destroy: ReturnType<typeof vi.fn> }) => {
+                    expect(el.destroy).toHaveBeenCalled();
+                }
             );
-            createdTexts.forEach((el: { destroy: ReturnType<typeof vi.fn> }) =>
-                expect(el.destroy).toHaveBeenCalled()
+            createdTexts.forEach(
+                (el: { destroy: ReturnType<typeof vi.fn> }) => {
+                    expect(el.destroy).toHaveBeenCalled();
+                }
             );
         });
 

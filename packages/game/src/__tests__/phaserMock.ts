@@ -118,6 +118,30 @@ export function makeMockContainer() {
     } as Record<string, unknown>);
 }
 
+export function makeMockSprite() {
+    return fluent({
+        destroy: vi.fn(),
+        setPosition: vi.fn(),
+        play: vi.fn(),
+        setTint: vi.fn(),
+        setFlipX: vi.fn(),
+        setFlipY: vi.fn(),
+        setVisible: vi.fn(),
+        setScale: vi.fn(),
+        setDepth: vi.fn(),
+        setOrigin: vi.fn(),
+        setInteractive: vi.fn(),
+        setTexture: vi.fn(),
+        depth: 0,
+        x: 0,
+        y: 0,
+        texture: { key: '' },
+        on: vi.fn(),
+        off: vi.fn(),
+        once: vi.fn(),
+    } as Record<string, unknown>);
+}
+
 export function makeMockKey() {
     return fluent({
         on: vi.fn(),
@@ -165,6 +189,7 @@ function makeMockSceneProps() {
             graphics: vi.fn().mockImplementation(() => makeMockGraphics()),
             circle: vi.fn().mockImplementation(() => makeMockCircleObj()),
             container: vi.fn().mockImplementation(() => makeMockContainer()),
+            sprite: vi.fn().mockImplementation(() => makeMockSprite()),
         },
         time: {
             delayedCall: vi.fn(),
@@ -250,6 +275,7 @@ const Phaser = {
         Circle: class {},
         Container: class {},
         GameObject: class {},
+        Sprite: class {},
     },
 
     Input: {

@@ -397,9 +397,8 @@ describe('SceneFlow', () => {
                     },
                 ],
             } as any);
-            // advanceFromScene returns end (no valid options), so set mode manually
-            const result = flow.selectChoice('any');
-            // Already in scene mode (not choice), returns end
+            // advanceFromScene hits a choice node with no valid options → returns end
+            const result = flow.advanceFromScene();
             expect(result.type).toBe('end');
         });
     });

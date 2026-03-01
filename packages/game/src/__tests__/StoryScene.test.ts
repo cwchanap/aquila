@@ -315,25 +315,35 @@ describe('StoryScene', () => {
             expect(scene.endSceneCalled).toBe(false);
         });
 
-        it('is a no-op when choicePresenter is awaiting', () => {
-            // patch: remove the override so we can test the real endScene
+        function makeRealScene(
+            overrides: {
+                awaiting?: boolean;
+                transitioning?: boolean;
+                flow?: null;
+                completed?: boolean;
+            } = {}
+        ) {
             const RealScene = StoryScene;
             const realScene = new RealScene();
             (realScene as any).choicePresenter = {
-                awaiting: true,
+                awaiting: overrides.awaiting ?? false,
                 clear: vi.fn(),
                 present: vi.fn(),
             };
-            (realScene as any).transitioning = false;
-            (realScene as any).flow = null;
-            (realScene as any).completed = true; // already completed, so showCompletionOverlay no-ops
+            (realScene as any).transitioning = overrides.transitioning ?? false;
+            (realScene as any).flow = overrides.flow ?? null;
+            (realScene as any).completed = overrides.completed ?? false;
             (realScene as any).completionOverlay = {
                 show: vi.fn(),
                 destroy: vi.fn(),
             };
             (realScene as any).characterNameText = makeMockText();
             (realScene as any).textObject = makeMockText();
-            // Should return early without calling completionOverlay.show
+            return realScene;
+        }
+
+        it('is a no-op when choicePresenter is awaiting', () => {
+            const realScene = makeRealScene({ awaiting: true });
             realScene.endScene();
             expect(
                 (realScene as any).completionOverlay.show
@@ -341,22 +351,7 @@ describe('StoryScene', () => {
         });
 
         it('calls showCompletionOverlay when flow is null and not already completed', () => {
-            const RealScene = StoryScene;
-            const realScene = new RealScene();
-            (realScene as any).choicePresenter = {
-                awaiting: false,
-                clear: vi.fn(),
-                present: vi.fn(),
-            };
-            (realScene as any).transitioning = false;
-            (realScene as any).flow = null;
-            (realScene as any).completed = false;
-            (realScene as any).completionOverlay = {
-                show: vi.fn(),
-                destroy: vi.fn(),
-            };
-            (realScene as any).characterNameText = makeMockText();
-            (realScene as any).textObject = makeMockText();
+            const realScene = makeRealScene();
             realScene.endScene();
             expect(
                 (realScene as any).completionOverlay.show

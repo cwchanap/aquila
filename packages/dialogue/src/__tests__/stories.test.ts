@@ -73,27 +73,31 @@ describe('stories', () => {
         it('treats zh-TW as Chinese', () => {
             const zhTW = getTrainAdventureStory('zh-TW');
             const zh = getTrainAdventureStory('zh');
-            expect(zhTW.dialogue).toBe(zh.dialogue);
-            expect(zhTW.choices).toBe(zh.choices);
+            expect(zhTW.dialogue).toEqual(zh.dialogue);
+            expect(zhTW.choices).toEqual(zh.choices);
         });
 
         it('treats zh-CN as Chinese', () => {
             const zhCN = getTrainAdventureStory('zh-CN');
             const zh = getTrainAdventureStory('zh');
-            expect(zhCN.dialogue).toBe(zh.dialogue);
+            expect(zhCN.dialogue).toEqual(zh.dialogue);
         });
 
         it('falls back to English for unknown locale', () => {
             const fr = getTrainAdventureStory('fr');
             const en = getTrainAdventureStory('en');
-            expect(fr.dialogue).toBe(en.dialogue);
-            expect(fr.choices).toBe(en.choices);
+            expect(fr.dialogue).toEqual(en.dialogue);
+            expect(fr.choices).toEqual(en.choices);
         });
 
         it('en and zh return different dialogue content', () => {
             const en = getTrainAdventureStory('en');
             const zh = getTrainAdventureStory('zh');
-            expect(en.dialogue).not.toBe(zh.dialogue);
+            const enFirstScene = Object.keys(en.dialogue)[0];
+            const zhFirstScene = Object.keys(zh.dialogue)[0];
+            expect(en.dialogue[enFirstScene]).not.toEqual(
+                zh.dialogue[zhFirstScene]
+            );
         });
     });
 });

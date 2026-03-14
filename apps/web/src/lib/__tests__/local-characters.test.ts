@@ -599,22 +599,27 @@ describe('setupEditHandler', () => {
         });
 
         it('does not update display name when validation fails', () => {
-            vi.spyOn(window, 'alert').mockImplementation(() => {});
-            const card = buildCard('Alice');
-            card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+            const alertSpy = vi
+                .spyOn(window, 'alert')
+                .mockImplementation(() => {});
+            try {
+                const card = buildCard('Alice');
+                card.querySelector<HTMLElement>('.character-edit-btn')!.click();
 
-            const nameInput = card.querySelector<HTMLInputElement>(
-                '.character-name-input'
-            )!;
-            nameInput.value = '';
+                const nameInput = card.querySelector<HTMLInputElement>(
+                    '.character-name-input'
+                )!;
+                nameInput.value = '';
 
-            card.querySelector<HTMLElement>('.character-save-btn')!.click();
+                card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-            // Name display should still show Alice
-            expect(
-                card.querySelector('.character-name-display')!.textContent
-            ).toBe('Alice');
-            vi.restoreAllMocks();
+                // Name display should still show Alice
+                expect(
+                    card.querySelector('.character-name-display')!.textContent
+                ).toBe('Alice');
+            } finally {
+                alertSpy.mockRestore();
+            }
         });
     });
 
@@ -681,17 +686,14 @@ describe('initializeCharacterPage', () => {
         expect(container.children.length).toBe(0);
     });
 
-    it('renders error state when localStorage contains invalid JSON', () => {
-        // Corrupt the localStorage entry
+    it('renders empty state when localStorage contains invalid JSON', () => {
+        // Invalid JSON entries are silently skipped, resulting in empty state
         localStorage.setItem('aquila:character:train_adventure', '{bad json}');
         document.body.innerHTML = '<div id="local-characters"></div>';
 
-        // Force the container error path by causing an exception during render
-        // (invalid JSON is silently skipped per implementation — expect empty state)
         initializeCharacterPage(translations, 'en');
 
         const container = document.getElementById('local-characters')!;
-        // invalid JSON entries are skipped; container shows empty state
         expect(container.textContent).toContain('No characters yet.');
     });
 

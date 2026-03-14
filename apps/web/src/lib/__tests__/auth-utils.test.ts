@@ -68,14 +68,16 @@ describe('getSessionUser', () => {
             expect(mockGetSession).toHaveBeenCalledOnce();
         });
 
-        it('passes request headers to auth.api.getSession', async () => {
+        it('forwards request.headers as-is to auth.api.getSession', async () => {
             mockGetSession.mockResolvedValue(null as any);
             const request = makeRequest('my-cookie=xyz');
 
             await getSessionUser(request);
 
-            const callArgs = mockGetSession.mock.calls[0][0];
-            expect(callArgs).toHaveProperty('headers');
+            // auth-utils passes request.headers directly; verify the same
+            // Headers object reference is forwarded without modification
+            const { headers } = mockGetSession.mock.calls[0][0];
+            expect(headers).toBe(request.headers);
         });
     });
 

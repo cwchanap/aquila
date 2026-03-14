@@ -314,11 +314,9 @@ describe('BookmarksManager', () => {
             const manager = new BookmarksManager('en');
             await manager.loadBookmarks();
 
-            const link =
-                getContainer().querySelector('a.\\[continueLink\\]') ??
-                [...getContainer().querySelectorAll('a')].find(a =>
-                    a.href.includes('dialogue=7')
-                );
+            const link = [...getContainer().querySelectorAll('a')].find(a =>
+                a.href.includes('dialogue=7')
+            );
             // The href should include &dialogue=7
             expect(link?.getAttribute('href')).toContain('dialogue=7');
         });

@@ -566,36 +566,42 @@ describe('setupEditHandler', () => {
             const alertSpy = vi
                 .spyOn(window, 'alert')
                 .mockImplementation(() => {});
-            const card = buildCard('Alice');
-            card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+            try {
+                const card = buildCard('Alice');
+                card.querySelector<HTMLElement>('.character-edit-btn')!.click();
 
-            const nameInput = card.querySelector<HTMLInputElement>(
-                '.character-name-input'
-            )!;
-            nameInput.value = '   ';
+                const nameInput = card.querySelector<HTMLInputElement>(
+                    '.character-name-input'
+                )!;
+                nameInput.value = '   ';
 
-            card.querySelector<HTMLElement>('.character-save-btn')!.click();
+                card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-            expect(alertSpy).toHaveBeenCalledWith('Name is required.');
-            alertSpy.mockRestore();
+                expect(alertSpy).toHaveBeenCalledWith('Name is required.');
+            } finally {
+                alertSpy.mockRestore();
+            }
         });
 
         it('shows alert for invalid name on save', () => {
             const alertSpy = vi
                 .spyOn(window, 'alert')
                 .mockImplementation(() => {});
-            const card = buildCard('Alice');
-            card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+            try {
+                const card = buildCard('Alice');
+                card.querySelector<HTMLElement>('.character-edit-btn')!.click();
 
-            const nameInput = card.querySelector<HTMLInputElement>(
-                '.character-name-input'
-            )!;
-            nameInput.value = '<bad>';
+                const nameInput = card.querySelector<HTMLInputElement>(
+                    '.character-name-input'
+                )!;
+                nameInput.value = '<bad>';
 
-            card.querySelector<HTMLElement>('.character-save-btn')!.click();
+                card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-            expect(alertSpy).toHaveBeenCalledWith('Name is invalid.');
-            alertSpy.mockRestore();
+                expect(alertSpy).toHaveBeenCalledWith('Name is invalid.');
+            } finally {
+                alertSpy.mockRestore();
+            }
         });
 
         it('does not update display name when validation fails', () => {

@@ -210,7 +210,12 @@ describe('Stories API', () => {
 
         expect(response.status).toBe(200);
         const data = await response.json();
-        expect(data.id).toBe('story-1');
+        expect(data).toEqual({
+            id: 'story-1',
+            title: 'My Story',
+            userId: 'user-1',
+        });
+        expect(mockStoryRepo.findById).toHaveBeenCalledWith('story-1');
     });
 
     it('returns 500 on unexpected error in GET', async () => {

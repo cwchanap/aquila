@@ -19,6 +19,7 @@ function createChain() {
     chain.offset = vi.fn(() => chain);
     chain.orderBy = vi.fn(() => chain);
     chain.returning = vi.fn(() => chain);
+    chain.onConflictDoUpdate = vi.fn(() => chain);
     chain.transaction = vi.fn(async (callback: (tx: typeof chain) => unknown) =>
         callback(chain)
     );
@@ -44,6 +45,7 @@ import {
     ChapterRepository,
     SceneRepository,
     BookmarkRepository,
+    AccountRepository,
 } from '../repositories';
 
 describe('Repositories', () => {
@@ -65,6 +67,7 @@ describe('Repositories', () => {
             'offset',
             'orderBy',
             'returning',
+            'onConflictDoUpdate',
             'transaction',
         ];
 
@@ -162,6 +165,91 @@ describe('Repositories', () => {
                 expect(mockDb.offset).toHaveBeenCalled();
             });
         });
+
+        describe('findByEmail()', () => {
+            it('returns user when email matches', async () => {
+                const user = { id: 'user-1', email: 'test@example.com' };
+                mockDb.limit.mockResolvedValue([user]);
+
+                const result = await repo.findByEmail('test@example.com');
+
+                expect(result).toEqual(user);
+                expect(mockDb.select).toHaveBeenCalled();
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.limit).toHaveBeenCalled();
+            });
+
+            it('returns undefined when email is not found', async () => {
+                mockDb.limit.mockResolvedValue([]);
+
+                const result = await repo.findByEmail('missing@example.com');
+
+                expect(result).toBeUndefined();
+            });
+        });
+
+        describe('findByUsername()', () => {
+            it('returns user when username matches', async () => {
+                const user = { id: 'user-1', username: 'alice' };
+                mockDb.limit.mockResolvedValue([user]);
+
+                const result = await repo.findByUsername('alice');
+
+                expect(result).toEqual(user);
+                expect(mockDb.where).toHaveBeenCalled();
+            });
+
+            it('returns undefined when username is not found', async () => {
+                mockDb.limit.mockResolvedValue([]);
+
+                const result = await repo.findByUsername('nobody');
+
+                expect(result).toBeUndefined();
+            });
+        });
+
+        describe('update()', () => {
+            it('returns updated user', async () => {
+                const updated = { id: 'user-1', email: 'new@example.com' };
+                mockDb.returning.mockResolvedValue([updated]);
+
+                const result = await repo.update('user-1', {
+                    email: 'new@example.com',
+                });
+
+                expect(result).toEqual(updated);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+
+            it('returns undefined when user not found', async () => {
+                mockDb.returning.mockResolvedValue([]);
+
+                const result = await repo.update('nonexistent', {
+                    name: 'Ghost',
+                });
+
+                expect(result).toBeUndefined();
+            });
+
+            it('includes updatedAt in the set data', async () => {
+                const setCalls: Array<Record<string, unknown>> = [];
+                mockDb.set.mockImplementation(
+                    (data: Record<string, unknown>) => {
+                        setCalls.push(data);
+                        return mockDb;
+                    }
+                );
+                mockDb.returning.mockResolvedValue([{ id: 'user-1' }]);
+
+                await repo.update('user-1', { name: 'Alice' });
+
+                expect(setCalls[0]).toHaveProperty('updatedAt');
+                expect(setCalls[0].updatedAt).toBeInstanceOf(Date);
+            });
+        });
     });
 
     describe('CharacterSetupRepository', () => {
@@ -188,6 +276,92 @@ describe('Repositories', () => {
                 expect(result).toBe(false);
             });
         });
+
+        describe('create()', () => {
+            it('creates a character setup with generated id', async () => {
+                const newSetup = {
+                    id: 'test-id-123',
+                    userId: 'user-1',
+                    storyId: 'story-1',
+                    playerName: 'Alice',
+                };
+                mockDb.returning.mockResolvedValue([newSetup]);
+
+                const result = await repo.create({
+                    userId: 'user-1',
+                    storyId: 'story-1',
+                    playerName: 'Alice',
+                });
+
+                expect(result).toEqual(newSetup);
+                expect(mockDb.insert).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalled();
+            });
+        });
+
+        describe('findByUserAndStory()', () => {
+            it('returns setup when found', async () => {
+                const setup = {
+                    id: 'setup-1',
+                    userId: 'user-1',
+                    storyId: 'story-1',
+                };
+                mockDb.limit.mockResolvedValue([setup]);
+
+                const result = await repo.findByUserAndStory(
+                    'user-1',
+                    'story-1'
+                );
+
+                expect(result).toEqual(setup);
+                expect(mockDb.where).toHaveBeenCalled();
+            });
+
+            it('returns undefined when not found', async () => {
+                mockDb.limit.mockResolvedValue([]);
+
+                const result = await repo.findByUserAndStory(
+                    'user-x',
+                    'story-x'
+                );
+
+                expect(result).toBeUndefined();
+            });
+        });
+
+        describe('findByUser()', () => {
+            it('returns all setups for a user', async () => {
+                const setups = [
+                    { id: 'setup-1', userId: 'user-1' },
+                    { id: 'setup-2', userId: 'user-1' },
+                ];
+                mockDb.orderBy.mockResolvedValue(setups);
+
+                const result = await repo.findByUser('user-1');
+
+                expect(result).toEqual(setups);
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+        });
+
+        describe('update()', () => {
+            it('returns updated character setup', async () => {
+                const updated = {
+                    id: 'setup-1',
+                    playerName: 'Bob',
+                };
+                mockDb.returning.mockResolvedValue([updated]);
+
+                const result = await repo.update('setup-1', {
+                    playerName: 'Bob',
+                });
+
+                expect(result).toEqual(updated);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+        });
     });
 
     describe('StoryRepository', () => {
@@ -212,6 +386,83 @@ describe('Repositories', () => {
                 const result = await repo.delete('nonexistent');
 
                 expect(result).toBe(false);
+            });
+        });
+
+        describe('create()', () => {
+            it('creates a story with generated id', async () => {
+                const newStory = {
+                    id: 'test-id-123',
+                    userId: 'user-1',
+                    title: 'My Story',
+                    status: 'draft',
+                };
+                mockDb.returning.mockResolvedValue([newStory]);
+
+                const result = await repo.create({
+                    userId: 'user-1',
+                    title: 'My Story',
+                    status: 'draft',
+                });
+
+                expect(result).toEqual(newStory);
+                expect(mockDb.insert).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalled();
+            });
+        });
+
+        describe('findByUserId()', () => {
+            it('returns stories for a user ordered by updatedAt desc', async () => {
+                const stories = [
+                    { id: 'story-2', userId: 'user-1' },
+                    { id: 'story-1', userId: 'user-1' },
+                ];
+                mockDb.orderBy.mockResolvedValue(stories);
+
+                const result = await repo.findByUserId('user-1');
+
+                expect(result).toEqual(stories);
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+
+            it('returns empty array when user has no stories', async () => {
+                mockDb.orderBy.mockResolvedValue([]);
+
+                const result = await repo.findByUserId('user-no-stories');
+
+                expect(result).toEqual([]);
+            });
+        });
+
+        describe('update()', () => {
+            it('returns updated story', async () => {
+                const updated = {
+                    id: 'story-1',
+                    title: 'Renamed Story',
+                    status: 'published',
+                };
+                mockDb.returning.mockResolvedValue([updated]);
+
+                const result = await repo.update('story-1', {
+                    title: 'Renamed Story',
+                    status: 'published',
+                });
+
+                expect(result).toEqual(updated);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+
+            it('returns undefined when story not found', async () => {
+                mockDb.returning.mockResolvedValue([]);
+
+                const result = await repo.update('nonexistent', {
+                    title: 'Ghost',
+                });
+
+                expect(result).toBeUndefined();
             });
         });
     });
@@ -272,6 +523,71 @@ describe('Repositories', () => {
                 expect(mockDb.update).not.toHaveBeenCalled();
             });
         });
+
+        describe('create()', () => {
+            it('creates a chapter with generated id', async () => {
+                const newChapter = {
+                    id: 'test-id-123',
+                    storyId: 'story-1',
+                    title: 'Chapter One',
+                    order: 0,
+                };
+                mockDb.returning.mockResolvedValue([newChapter]);
+
+                const result = await repo.create({
+                    storyId: 'story-1',
+                    title: 'Chapter One',
+                    order: 0,
+                });
+
+                expect(result).toEqual(newChapter);
+                expect(mockDb.insert).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalled();
+            });
+        });
+
+        describe('findByStoryId()', () => {
+            it('returns chapters ordered by asc order', async () => {
+                const chapters = [
+                    { id: 'ch-1', storyId: 'story-1', order: 0 },
+                    { id: 'ch-2', storyId: 'story-1', order: 1 },
+                ];
+                mockDb.orderBy.mockResolvedValue(chapters);
+
+                const result = await repo.findByStoryId('story-1');
+
+                expect(result).toEqual(chapters);
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+
+            it('returns empty array when story has no chapters', async () => {
+                mockDb.orderBy.mockResolvedValue([]);
+
+                const result = await repo.findByStoryId('empty-story');
+
+                expect(result).toEqual([]);
+            });
+        });
+
+        describe('update()', () => {
+            it('returns updated chapter', async () => {
+                const updated = {
+                    id: 'ch-1',
+                    title: 'Renamed Chapter',
+                };
+                mockDb.returning.mockResolvedValue([updated]);
+
+                const result = await repo.update('ch-1', {
+                    title: 'Renamed Chapter',
+                });
+
+                expect(result).toEqual(updated);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+        });
     });
 
     describe('SceneRepository', () => {
@@ -329,6 +645,109 @@ describe('Repositories', () => {
                 expect(setCalls[0].order).toBe(0);
                 expect(setCalls[1].order).toBe(1);
                 expect(setCalls[2].order).toBe(2);
+            });
+        });
+
+        describe('create()', () => {
+            it('creates a scene with generated id', async () => {
+                const newScene = {
+                    id: 'test-id-123',
+                    storyId: 'story-1',
+                    title: 'Scene One',
+                    order: 0,
+                };
+                mockDb.returning.mockResolvedValue([newScene]);
+
+                const result = await repo.create({
+                    storyId: 'story-1',
+                    title: 'Scene One',
+                    order: 0,
+                });
+
+                expect(result).toEqual(newScene);
+                expect(mockDb.insert).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalled();
+            });
+        });
+
+        describe('findByStoryId()', () => {
+            it('returns scenes ordered by asc order', async () => {
+                const scenes = [
+                    { id: 'sc-1', storyId: 'story-1', order: 0 },
+                    { id: 'sc-2', storyId: 'story-1', order: 1 },
+                ];
+                mockDb.orderBy.mockResolvedValue(scenes);
+
+                const result = await repo.findByStoryId('story-1');
+
+                expect(result).toEqual(scenes);
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+        });
+
+        describe('findByChapterId()', () => {
+            it('returns scenes for a chapter', async () => {
+                const scenes = [
+                    { id: 'sc-1', chapterId: 'ch-1', order: 0 },
+                    { id: 'sc-2', chapterId: 'ch-1', order: 1 },
+                ];
+                mockDb.orderBy.mockResolvedValue(scenes);
+
+                const result = await repo.findByChapterId('ch-1');
+
+                expect(result).toEqual(scenes);
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+
+            it('returns empty array when chapter has no scenes', async () => {
+                mockDb.orderBy.mockResolvedValue([]);
+
+                const result = await repo.findByChapterId('empty-ch');
+
+                expect(result).toEqual([]);
+            });
+        });
+
+        describe('findDirectScenes()', () => {
+            it('returns scenes with no chapter (direct story scenes)', async () => {
+                const scenes = [
+                    { id: 'sc-1', storyId: 'story-1', chapterId: null },
+                ];
+                mockDb.orderBy.mockResolvedValue(scenes);
+
+                const result = await repo.findDirectScenes('story-1');
+
+                expect(result).toEqual(scenes);
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+        });
+
+        describe('update()', () => {
+            it('returns updated scene', async () => {
+                const updated = { id: 'sc-1', title: 'Renamed Scene' };
+                mockDb.returning.mockResolvedValue([updated]);
+
+                const result = await repo.update('sc-1', {
+                    title: 'Renamed Scene',
+                });
+
+                expect(result).toEqual(updated);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+
+            it('returns undefined when scene not found', async () => {
+                mockDb.returning.mockResolvedValue([]);
+
+                const result = await repo.update('nonexistent', {
+                    title: 'Ghost',
+                });
+
+                expect(result).toBeUndefined();
             });
         });
     });
@@ -394,6 +813,170 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(bookmarks);
                 expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+        });
+
+        describe('findByUserAndStory()', () => {
+            it('returns bookmarks for a user and story', async () => {
+                const bookmarks = [
+                    { id: 'bm-1', userId: 'user-1', storyId: 'story-1' },
+                    { id: 'bm-2', userId: 'user-1', storyId: 'story-1' },
+                ];
+                mockDb.orderBy.mockResolvedValue(bookmarks);
+
+                const result = await repo.findByUserAndStory(
+                    'user-1',
+                    'story-1'
+                );
+
+                expect(result).toEqual(bookmarks);
+                expect(mockDb.where).toHaveBeenCalled();
+                expect(mockDb.orderBy).toHaveBeenCalled();
+            });
+
+            it('returns empty array when no bookmarks match', async () => {
+                mockDb.orderBy.mockResolvedValue([]);
+
+                const result = await repo.findByUserAndStory(
+                    'user-x',
+                    'story-x'
+                );
+
+                expect(result).toEqual([]);
+            });
+        });
+
+        describe('update()', () => {
+            it('returns updated bookmark', async () => {
+                const updated = { id: 'bm-1', bookmarkName: 'New Save' };
+                mockDb.returning.mockResolvedValue([updated]);
+
+                const result = await repo.update('bm-1', {
+                    bookmarkName: 'New Save',
+                });
+
+                expect(result).toEqual(updated);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+
+            it('returns undefined when bookmark not found', async () => {
+                mockDb.returning.mockResolvedValue([]);
+
+                const result = await repo.update('nonexistent', {
+                    bookmarkName: 'Ghost',
+                });
+
+                expect(result).toBeUndefined();
+            });
+        });
+
+        describe('upsertByScene()', () => {
+            it('inserts a new bookmark when none exists', async () => {
+                const bookmark = {
+                    id: 'test-id-123',
+                    userId: 'user-1',
+                    storyId: 'story-1',
+                    sceneId: 'scene-1',
+                    bookmarkName: 'Auto Save',
+                    locale: 'en',
+                };
+                mockDb.returning.mockResolvedValue([bookmark]);
+
+                const result = await repo.upsertByScene(
+                    'user-1',
+                    'story-1',
+                    'scene-1',
+                    'Auto Save',
+                    'en'
+                );
+
+                expect(result).toEqual(bookmark);
+                expect(mockDb.insert).toHaveBeenCalled();
+                expect(mockDb.returning).toHaveBeenCalled();
+            });
+
+            it('uses default locale "en" when not provided', async () => {
+                const valuesCalls: Array<Record<string, unknown>> = [];
+                mockDb.values.mockImplementation(
+                    (data: Record<string, unknown>) => {
+                        valuesCalls.push(data);
+                        return mockDb;
+                    }
+                );
+                mockDb.returning.mockResolvedValue([{ id: 'bm-1' }]);
+
+                await repo.upsertByScene(
+                    'user-1',
+                    'story-1',
+                    'scene-1',
+                    'Save'
+                );
+
+                expect(valuesCalls[0]).toHaveProperty('locale', 'en');
+            });
+        });
+    });
+
+    describe('AccountRepository', () => {
+        let repo: AccountRepository;
+
+        beforeEach(() => {
+            repo = new AccountRepository(mockDb as any);
+        });
+
+        describe('findCredentialAccount()', () => {
+            it('returns credential account when found', async () => {
+                const account = {
+                    id: 'acct-1',
+                    userId: 'user-1',
+                    providerId: 'credential',
+                };
+                mockDb.limit.mockResolvedValue([account]);
+
+                const result = await repo.findCredentialAccount('user-1');
+
+                expect(result).toEqual(account);
+                expect(mockDb.select).toHaveBeenCalled();
+                expect(mockDb.where).toHaveBeenCalled();
+            });
+
+            it('returns null when no credential account exists', async () => {
+                mockDb.limit.mockResolvedValue([]);
+
+                const result = await repo.findCredentialAccount('user-1');
+
+                expect(result).toBeNull();
+            });
+        });
+
+        describe('updatePassword()', () => {
+            it('updates the password for the account', async () => {
+                mockDb.where.mockResolvedValue(undefined);
+
+                await repo.updatePassword('user-1', 'hashed-password');
+
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set).toHaveBeenCalled();
+                expect(mockDb.where).toHaveBeenCalled();
+            });
+
+            it('includes updatedAt in the set data', async () => {
+                const setCalls: Array<Record<string, unknown>> = [];
+                mockDb.set.mockImplementation(
+                    (data: Record<string, unknown>) => {
+                        setCalls.push(data);
+                        return mockDb;
+                    }
+                );
+                mockDb.where.mockResolvedValue(undefined);
+
+                await repo.updatePassword('user-1', 'new-hash');
+
+                expect(setCalls[0]).toHaveProperty('password', 'new-hash');
+                expect(setCalls[0]).toHaveProperty('updatedAt');
+                expect(setCalls[0].updatedAt).toBeInstanceOf(Date);
             });
         });
     });

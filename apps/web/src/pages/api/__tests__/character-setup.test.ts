@@ -269,4 +269,41 @@ describe('Character Setup API', () => {
         expect(mockRepo.findByUserAndStory).not.toHaveBeenCalled();
         expect(mockRepo.findByUser).not.toHaveBeenCalled();
     });
+
+    it('returns 500 on unexpected error in POST', async () => {
+        mockAuthenticatedSession('user-1');
+        isValidStoryIdMock.mockReturnValue(true);
+        mockRepo.findByUserAndStory.mockRejectedValue(new Error('DB crash'));
+
+        const response = await POST({
+            request: new Request('http://localhost/api/character-setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    characterName: 'Hero',
+                    storyId: 'train_adventure',
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(500);
+        const data = await response.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toBe('Failed to save character setup');
+    });
+
+    it('returns 500 on unexpected error in GET', async () => {
+        mockAuthenticatedSession('user-1');
+        mockRepo.findByUser.mockRejectedValue(new Error('DB crash'));
+
+        const response = await GET({
+            request: new Request('http://localhost/api/character-setup'),
+            url: new URL('http://localhost/api/character-setup'),
+        } as any);
+
+        expect(response.status).toBe(500);
+        const data = await response.json();
+        expect(data.success).toBe(false);
+        expect(data.error).toBe('Failed to fetch character setup');
+    });
 });

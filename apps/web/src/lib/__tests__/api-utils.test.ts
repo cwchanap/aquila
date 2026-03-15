@@ -22,14 +22,99 @@ vi.mock('../auth.js', () => ({
 
 import {
     jsonResponse,
+    jsonSuccessResponse,
     errorResponse,
     requireAuth,
     parseBody,
+    sanitizeUser,
 } from '../api-utils';
 
 describe('api-utils', () => {
     beforeEach(() => {
         mockGetSession.mockReset();
+    });
+
+    describe('sanitizeUser', () => {
+        it('returns only the whitelisted safe fields', () => {
+            const fullUser = {
+                id: 'user-1',
+                email: 'test@example.com',
+                username: 'tester',
+                name: 'Test User',
+                image: 'https://example.com/avatar.png',
+                emailVerified: true,
+                createdAt: new Date('2024-01-01'),
+                updatedAt: new Date('2024-06-01'),
+                // Hypothetical sensitive fields that should be stripped
+                passwordHash: 'secret-hash',
+                twoFactorSecret: 'totp-secret',
+            } as any;
+
+            const result = sanitizeUser(fullUser);
+
+            expect(result).toEqual({
+                id: 'user-1',
+                email: 'test@example.com',
+                username: 'tester',
+                name: 'Test User',
+                image: 'https://example.com/avatar.png',
+                emailVerified: true,
+                createdAt: fullUser.createdAt,
+                updatedAt: fullUser.updatedAt,
+            });
+
+            expect(result).not.toHaveProperty('passwordHash');
+            expect(result).not.toHaveProperty('twoFactorSecret');
+        });
+
+        it('preserves null optional fields', () => {
+            const user = {
+                id: 'user-2',
+                email: 'other@example.com',
+                username: null,
+                name: null,
+                image: null,
+                emailVerified: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            } as any;
+
+            const result = sanitizeUser(user);
+
+            expect(result.username).toBeNull();
+            expect(result.name).toBeNull();
+            expect(result.image).toBeNull();
+            expect(result.emailVerified).toBe(false);
+        });
+    });
+
+    describe('jsonSuccessResponse', () => {
+        it('wraps data with success:true and default status 200', async () => {
+            const response = jsonSuccessResponse({ message: 'ok' });
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get('Content-Type')).toBe(
+                'application/json'
+            );
+            const json = await response.json();
+            expect(json).toEqual({ success: true, data: { message: 'ok' } });
+        });
+
+        it('accepts a custom status code', async () => {
+            const response = jsonSuccessResponse({ id: 'new-1' }, 201);
+
+            expect(response.status).toBe(201);
+            const json = await response.json();
+            expect(json.success).toBe(true);
+            expect(json.data).toEqual({ id: 'new-1' });
+        });
+
+        it('works with array data', async () => {
+            const response = jsonSuccessResponse([1, 2, 3]);
+
+            const json = await response.json();
+            expect(json).toEqual({ success: true, data: [1, 2, 3] });
+        });
     });
 
     describe('jsonResponse', () => {
@@ -119,6 +204,37 @@ describe('api-utils', () => {
 
             expect(result.session).toBeNull();
             expect(result.error?.status).toBe(401);
+        });
+
+        it('should return 503 when auth service throws', async () => {
+            mockGetSession.mockRejectedValue(new Error('Auth service down'));
+            const request = new Request('http://localhost/api/test');
+
+            const result = await requireAuth(request);
+
+            expect(result.session).toBeNull();
+            expect(result.error?.status).toBe(503);
+            const json = await result.error?.json();
+            expect(json.error).toBe('Authentication service unavailable');
+        });
+    });
+
+    describe('errorResponse with custom headers', () => {
+        it('includes custom headers in the response', async () => {
+            const response = errorResponse('Rate limited', 429, undefined, {
+                'Retry-After': '60',
+            });
+
+            expect(response.status).toBe(429);
+            expect(response.headers.get('Retry-After')).toBe('60');
+            const json = await response.json();
+            expect(json.error).toBe('Rate limited');
+        });
+
+        it('does not include errorId field when not provided', async () => {
+            const response = errorResponse('Not found', 404);
+            const json = await response.json();
+            expect(json).not.toHaveProperty('errorId');
         });
     });
 

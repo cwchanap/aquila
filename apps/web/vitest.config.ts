@@ -22,6 +22,10 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': resolve(__dirname, './src'),
+            'astro:middleware': resolve(
+                __dirname,
+                './src/lib/test-utils/astro-middleware-stub.ts'
+            ),
         },
         conditions: ['browser'],
     },

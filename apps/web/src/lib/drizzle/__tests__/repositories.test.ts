@@ -130,7 +130,9 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(newUser);
                 expect(mockDb.insert).toHaveBeenCalled();
-                expect(mockDb.values).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ id: expect.any(String) })
+                );
             });
         });
 
@@ -283,19 +285,21 @@ describe('Repositories', () => {
                     id: 'test-id-123',
                     userId: 'user-1',
                     storyId: 'story-1',
-                    playerName: 'Alice',
+                    characterName: 'Alice',
                 };
                 mockDb.returning.mockResolvedValue([newSetup]);
 
                 const result = await repo.create({
                     userId: 'user-1',
                     storyId: 'story-1',
-                    playerName: 'Alice',
+                    characterName: 'Alice',
                 });
 
                 expect(result).toEqual(newSetup);
                 expect(mockDb.insert).toHaveBeenCalled();
-                expect(mockDb.values).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ id: expect.any(String) })
+                );
             });
         });
 
@@ -345,21 +349,23 @@ describe('Repositories', () => {
         });
 
         describe('update()', () => {
-            it('returns updated character setup', async () => {
+            it('returns updated character setup and includes updatedAt', async () => {
                 const updated = {
                     id: 'setup-1',
-                    playerName: 'Bob',
+                    characterName: 'Bob',
                 };
                 mockDb.returning.mockResolvedValue([updated]);
 
                 const result = await repo.update('setup-1', {
-                    playerName: 'Bob',
+                    characterName: 'Bob',
                 });
 
                 expect(result).toEqual(updated);
                 expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.set).toHaveBeenCalled();
                 expect(mockDb.returning).toHaveBeenCalled();
+                const setArg = mockDb.set.mock.calls[0][0];
+                expect(setArg).toHaveProperty('updatedAt');
+                expect(setArg.updatedAt).toBeInstanceOf(Date);
             });
         });
     });
@@ -407,7 +413,9 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(newStory);
                 expect(mockDb.insert).toHaveBeenCalled();
-                expect(mockDb.values).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ id: expect.any(String) })
+                );
             });
         });
 
@@ -436,7 +444,7 @@ describe('Repositories', () => {
         });
 
         describe('update()', () => {
-            it('returns updated story', async () => {
+            it('returns updated story and includes updatedAt', async () => {
                 const updated = {
                     id: 'story-1',
                     title: 'Renamed Story',
@@ -451,8 +459,10 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(updated);
                 expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.set).toHaveBeenCalled();
                 expect(mockDb.returning).toHaveBeenCalled();
+                const setArg = mockDb.set.mock.calls[0][0];
+                expect(setArg).toHaveProperty('updatedAt');
+                expect(setArg.updatedAt).toBeInstanceOf(Date);
             });
 
             it('returns undefined when story not found', async () => {
@@ -542,7 +552,9 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(newChapter);
                 expect(mockDb.insert).toHaveBeenCalled();
-                expect(mockDb.values).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ id: expect.any(String) })
+                );
             });
         });
 
@@ -571,7 +583,7 @@ describe('Repositories', () => {
         });
 
         describe('update()', () => {
-            it('returns updated chapter', async () => {
+            it('returns updated chapter and includes updatedAt', async () => {
                 const updated = {
                     id: 'ch-1',
                     title: 'Renamed Chapter',
@@ -584,8 +596,10 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(updated);
                 expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.set).toHaveBeenCalled();
                 expect(mockDb.returning).toHaveBeenCalled();
+                const setArg = mockDb.set.mock.calls[0][0];
+                expect(setArg).toHaveProperty('updatedAt');
+                expect(setArg.updatedAt).toBeInstanceOf(Date);
             });
         });
     });
@@ -666,7 +680,9 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(newScene);
                 expect(mockDb.insert).toHaveBeenCalled();
-                expect(mockDb.values).toHaveBeenCalled();
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ id: expect.any(String) })
+                );
             });
         });
 
@@ -723,10 +739,40 @@ describe('Repositories', () => {
                 expect(mockDb.where).toHaveBeenCalled();
                 expect(mockDb.orderBy).toHaveBeenCalled();
             });
+
+            it('passes an IS NULL predicate for chapterId to where', async () => {
+                mockDb.orderBy.mockResolvedValue([]);
+
+                await repo.findDirectScenes('story-1');
+
+                // The expression passed to where() is a real drizzle SQL expression
+                // (eq + isNull wrapped in and()). We traverse queryChunks recursively
+                // to confirm the IS NULL leaf is present.
+                const whereArg = mockDb.where.mock.calls[0][0];
+                expect(whereArg).toBeDefined();
+
+                function containsIsNull(node: unknown): boolean {
+                    if (!node || typeof node !== 'object') return false;
+                    const obj = node as Record<string, unknown>;
+                    if (obj.value !== undefined) {
+                        // drizzle SQL value chunks are string arrays
+                        const v = Array.isArray(obj.value)
+                            ? obj.value.join('').toLowerCase()
+                            : String(obj.value).toLowerCase();
+                        if (v.includes('is null')) return true;
+                    }
+                    if (Array.isArray(obj.queryChunks)) {
+                        return obj.queryChunks.some(containsIsNull);
+                    }
+                    return false;
+                }
+
+                expect(containsIsNull(whereArg)).toBe(true);
+            });
         });
 
         describe('update()', () => {
-            it('returns updated scene', async () => {
+            it('returns updated scene and includes updatedAt', async () => {
                 const updated = { id: 'sc-1', title: 'Renamed Scene' };
                 mockDb.returning.mockResolvedValue([updated]);
 
@@ -736,8 +782,10 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(updated);
                 expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.set).toHaveBeenCalled();
                 expect(mockDb.returning).toHaveBeenCalled();
+                const setArg = mockDb.set.mock.calls[0][0];
+                expect(setArg).toHaveProperty('updatedAt');
+                expect(setArg.updatedAt).toBeInstanceOf(Date);
             });
 
             it('returns undefined when scene not found', async () => {
@@ -798,6 +846,9 @@ describe('Repositories', () => {
                 });
 
                 expect(result).toEqual(newBookmark);
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ id: expect.any(String) })
+                );
             });
         });
 
@@ -847,7 +898,7 @@ describe('Repositories', () => {
         });
 
         describe('update()', () => {
-            it('returns updated bookmark', async () => {
+            it('returns updated bookmark and includes updatedAt', async () => {
                 const updated = { id: 'bm-1', bookmarkName: 'New Save' };
                 mockDb.returning.mockResolvedValue([updated]);
 
@@ -857,8 +908,10 @@ describe('Repositories', () => {
 
                 expect(result).toEqual(updated);
                 expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.set).toHaveBeenCalled();
                 expect(mockDb.returning).toHaveBeenCalled();
+                const setArg = mockDb.set.mock.calls[0][0];
+                expect(setArg).toHaveProperty('updatedAt');
+                expect(setArg.updatedAt).toBeInstanceOf(Date);
             });
 
             it('returns undefined when bookmark not found', async () => {
@@ -915,6 +968,39 @@ describe('Repositories', () => {
                 );
 
                 expect(valuesCalls[0]).toHaveProperty('locale', 'en');
+            });
+
+            it('calls onConflictDoUpdate with correct target and set payload', async () => {
+                const conflictCalls: Array<Record<string, unknown>> = [];
+                mockDb.onConflictDoUpdate.mockImplementation(
+                    (opts: Record<string, unknown>) => {
+                        conflictCalls.push(opts);
+                        return mockDb;
+                    }
+                );
+                mockDb.returning.mockResolvedValue([{ id: 'bm-1' }]);
+
+                await repo.upsertByScene(
+                    'user-1',
+                    'story-1',
+                    'scene-1',
+                    'Auto Save',
+                    'zh'
+                );
+
+                expect(conflictCalls).toHaveLength(1);
+                // target must include the three conflict-resolution columns
+                const { target, set } = conflictCalls[0] as {
+                    target: unknown[];
+                    set: Record<string, unknown>;
+                };
+                expect(Array.isArray(target)).toBe(true);
+                expect(target).toHaveLength(3);
+                // set payload must include sceneId, locale, and updatedAt
+                expect(set).toHaveProperty('sceneId', 'scene-1');
+                expect(set).toHaveProperty('locale', 'zh');
+                expect(set).toHaveProperty('updatedAt');
+                expect(set.updatedAt).toBeInstanceOf(Date);
             });
         });
     });

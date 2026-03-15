@@ -90,6 +90,7 @@ describe('middleware', () => {
             const result = await onRequest(ctx as any, next);
             expect(next).not.toHaveBeenCalled();
             expect(result?.status).toBe(302);
+            expect(result?.headers.get('Location')).toBe('/en/');
         });
     });
 });

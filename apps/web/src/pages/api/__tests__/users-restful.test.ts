@@ -387,6 +387,16 @@ describe('Users API - Authenticated Endpoints', () => {
             expect(data.error).toBe('Invalid email address');
         });
 
+        it('returns 400 when email is whitespace only', async () => {
+            const response = await GetByEmail({
+                params: { email: '   ' },
+            } as any);
+
+            expect(response.status).toBe(400);
+            const data = await response.json();
+            expect(data.error).toBe('Invalid email address');
+        });
+
         it('returns 404 when user is not found', async () => {
             mockRepo.findByEmail.mockResolvedValue(null);
 
@@ -413,12 +423,62 @@ describe('Users API - Authenticated Endpoints', () => {
             const data = await response.json();
             expect(data.id).toBe('user123');
         });
+
+        it('decodes URL-encoded email parameter', async () => {
+            mockRepo.findByEmail.mockResolvedValue({
+                id: 'user123',
+                email: 'user+tag@example.com',
+            });
+
+            const response = await GetByEmail({
+                params: { email: 'user%2Btag%40example.com' },
+            } as any);
+
+            expect(response.status).toBe(200);
+            expect(mockRepo.findByEmail).toHaveBeenCalledWith(
+                'user+tag@example.com'
+            );
+        });
+
+        it('returns 400 for malformed URI encoding', async () => {
+            // A malformed % sequence that decodeURIComponent cannot handle
+            const response = await GetByEmail({
+                params: { email: '%ZZ' },
+            } as any);
+
+            // Malformed URI is treated as empty string -> 400
+            expect(response.status).toBe(400);
+            const data = await response.json();
+            expect(data.error).toBe('Invalid email address');
+        });
+
+        it('returns 500 on internal server error', async () => {
+            mockRepo.findByEmail.mockRejectedValue(new Error('DB crash'));
+
+            const response = await GetByEmail({
+                params: { email: 'test@example.com' },
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Internal server error');
+        });
     });
 
     describe('GET /api/users/by-username/[username]', () => {
         it('returns 400 when username is missing', async () => {
             const response = await GetByUsername({
                 params: {},
+            } as any);
+
+            expect(response.status).toBe(400);
+            const data = await response.json();
+            expect(data.error).toBe('Invalid username');
+        });
+
+        it('returns 400 when username is whitespace only', async () => {
+            const response = await GetByUsername({
+                params: { username: '   ' },
             } as any);
 
             expect(response.status).toBe(400);
@@ -451,6 +511,107 @@ describe('Users API - Authenticated Endpoints', () => {
             expect(response.status).toBe(200);
             const data = await response.json();
             expect(data.id).toBe('user123');
+        });
+
+        it('returns 500 on internal server error', async () => {
+            mockRepo.findByUsername.mockRejectedValue(new Error('DB crash'));
+
+            const response = await GetByUsername({
+                params: { username: 'tester' },
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Internal server error');
+        });
+    });
+
+    describe('GET /api/users - additional error cases', () => {
+        it('returns 500 on unexpected error during user fetch', async () => {
+            mockAuthenticatedSession('user123');
+            UserRepositoryConstructor.mockImplementationOnce(() => {
+                throw new Error('Constructor failure');
+            });
+
+            const response = await GET({
+                request: new Request('http://localhost/api/users'),
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Failed to fetch user');
+        });
+    });
+
+    describe('GET /api/users/[id] - additional error cases', () => {
+        it('returns 500 on unexpected error', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.findById.mockRejectedValue(new Error('DB crash'));
+
+            const response = await GetById({
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123'),
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Failed to fetch user');
+        });
+    });
+
+    describe('PUT /api/users/[id] - additional error cases', () => {
+        it('returns 404 when user not found during update', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.update.mockResolvedValue(undefined);
+
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'New Name' }),
+                }),
+            } as any);
+
+            expect(response.status).toBe(404);
+            const data = await response.json();
+            expect(data.error).toBe('User not found');
+        });
+
+        it('returns 500 on unexpected error during update', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.update.mockRejectedValue(new Error('DB crash'));
+
+            const response = await UpdateById({
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'New Name' }),
+                }),
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Failed to update user');
+        });
+    });
+
+    describe('DELETE /api/users/[id] - additional error cases', () => {
+        it('returns 500 on unexpected error during delete', async () => {
+            mockAuthenticatedSession('user123');
+            mockRepo.delete.mockRejectedValue(new Error('DB crash'));
+
+            const response = await DeleteById({
+                params: { id: 'user123' },
+                request: new Request('http://localhost/api/users/user123', {
+                    method: 'DELETE',
+                }),
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Failed to delete user');
         });
     });
 });

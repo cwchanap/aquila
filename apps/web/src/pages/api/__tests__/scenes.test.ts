@@ -209,4 +209,70 @@ describe('Scenes API', () => {
         const data = await response.json();
         expect(data.error).toContain('integer');
     });
+
+    it('returns 404 when story does not exist', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue(null);
+
+        const response = await POST({
+            request: new Request('http://localhost/api/scenes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'nonexistent-story',
+                    title: 'Scene One',
+                    order: 0,
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(404);
+        const data = await response.json();
+        expect(data.error).toBe('Story not found');
+    });
+
+    it('returns 403 when story belongs to a different user', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'other-user',
+        });
+
+        const response = await POST({
+            request: new Request('http://localhost/api/scenes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'story-1',
+                    title: 'Scene One',
+                    order: 0,
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(403);
+        const data = await response.json();
+        expect(data.error).toBe('Forbidden');
+    });
+
+    it('returns 500 on unexpected server error', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockRejectedValue(new Error('DB crash'));
+
+        const response = await POST({
+            request: new Request('http://localhost/api/scenes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'story-1',
+                    title: 'Scene One',
+                    order: 0,
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(500);
+        const data = await response.json();
+        expect(data.error).toBe('Failed to create scene');
+    });
 });

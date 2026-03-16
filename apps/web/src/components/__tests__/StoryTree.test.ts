@@ -154,8 +154,11 @@ describe('StoryTree', () => {
                 },
             });
 
+            // getAllByText returns elements in DOM order, so this asserts sorting by `order`
             const chapterTitles = screen.getAllByText(/Chapter (One|Two)/);
             expect(chapterTitles).toHaveLength(2);
+            expect(chapterTitles[0]).toHaveTextContent('Chapter One');
+            expect(chapterTitles[1]).toHaveTextContent('Chapter Two');
         });
 
         it('chapters are collapsed by default', () => {

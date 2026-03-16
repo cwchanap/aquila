@@ -23,7 +23,7 @@ function createChain() {
 
 const mockDb = vi.hoisted(() => createChain());
 
-vi.mock('../db.js', () => ({
+vi.mock('../db', () => ({
     db: mockDb,
 }));
 
@@ -74,10 +74,16 @@ describe('BaseRepository', () => {
             expect(customRepo).toBeInstanceOf(TestRepository);
         });
 
-        it('falls back to default db when no instance provided', () => {
-            // This will use the mocked db from '../db.js'
+        it('falls back to default db when no instance provided', async () => {
+            mockDb.limit.mockResolvedValue([]);
             const defaultRepo = new TestRepository();
-            expect(defaultRepo).toBeInstanceOf(TestRepository);
+
+            await defaultRepo.findById('record-1');
+
+            expect(mockDb.select).toHaveBeenCalled();
+            expect(mockDb.from).toHaveBeenCalled();
+            expect(mockDb.where).toHaveBeenCalled();
+            expect(mockDb.limit).toHaveBeenCalled();
         });
     });
 

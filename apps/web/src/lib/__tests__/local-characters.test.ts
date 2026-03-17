@@ -722,4 +722,26 @@ describe('initializeCharacterPage', () => {
         document.body.innerHTML = '';
         expect(() => initializeCharacterPage(translations, 'en')).not.toThrow();
     });
+
+    it('renders error state when an unexpected error occurs during loading', () => {
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+        document.body.innerHTML = '<div id="local-characters"></div>';
+
+        // Spy on localStorage.getItem to throw on the first call (triggers outer catch)
+        const getItemSpy = vi
+            .spyOn(localStorage, 'getItem')
+            .mockImplementationOnce(() => {
+                throw new Error('Storage access denied');
+            });
+
+        initializeCharacterPage(translations, 'en');
+
+        const container = document.getElementById('local-characters')!;
+        expect(container.textContent).toContain('Error loading characters.');
+
+        consoleSpy.mockRestore();
+        getItemSpy.mockRestore();
+    });
 });

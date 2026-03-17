@@ -246,6 +246,21 @@ describe('Users API - Authenticated Endpoints', () => {
     });
 
     describe('PUT /api/users/[id]', () => {
+        it('returns 400 when id is missing', async () => {
+            const response = await UpdateById({
+                params: {},
+                request: new Request('http://localhost/api/users/', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'New Name' }),
+                }),
+            } as any);
+
+            expect(response.status).toBe(400);
+            const data = await response.json();
+            expect(data.error).toBe('Invalid User ID');
+        });
+
         it('returns 401 when not authenticated', async () => {
             mockUnauthenticatedSession();
 
@@ -316,6 +331,19 @@ describe('Users API - Authenticated Endpoints', () => {
     });
 
     describe('DELETE /api/users/[id]', () => {
+        it('returns 400 when id is missing', async () => {
+            const response = await DeleteById({
+                params: {},
+                request: new Request('http://localhost/api/users/', {
+                    method: 'DELETE',
+                }),
+            } as any);
+
+            expect(response.status).toBe(400);
+            const data = await response.json();
+            expect(data.error).toBe('Invalid User ID');
+        });
+
         it('returns 401 when not authenticated', async () => {
             mockUnauthenticatedSession();
 

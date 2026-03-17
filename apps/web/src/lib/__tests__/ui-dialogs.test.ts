@@ -182,6 +182,57 @@ describe('ui-dialogs', () => {
             cancelBtn?.click();
             await promise;
         });
+
+        it('traps focus on Tab from cancel (moves to ok)', async () => {
+            const promise = showConfirm('Confirm?');
+            const buttons = document.querySelectorAll('button');
+            const cancelBtn = buttons[0] as HTMLButtonElement;
+            const okBtn = buttons[1] as HTMLButtonElement;
+
+            // Manually focus cancel button
+            cancelBtn.focus();
+            expect(document.activeElement).toBe(cancelBtn);
+
+            // Tab should move focus from Cancel to OK
+            const tabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                cancelable: true,
+            });
+            document.dispatchEvent(tabEvent);
+
+            expect(tabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(okBtn);
+
+            // Cleanup
+            cancelBtn?.click();
+            await promise;
+        });
+
+        it('traps focus on Shift+Tab from cancel (wraps to ok)', async () => {
+            const promise = showConfirm('Confirm?');
+            const buttons = document.querySelectorAll('button');
+            const cancelBtn = buttons[0] as HTMLButtonElement;
+            const okBtn = buttons[1] as HTMLButtonElement;
+
+            // Manually focus cancel button
+            cancelBtn.focus();
+            expect(document.activeElement).toBe(cancelBtn);
+
+            // Shift+Tab from Cancel should move focus to OK
+            const shiftTabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                shiftKey: true,
+                cancelable: true,
+            });
+            document.dispatchEvent(shiftTabEvent);
+
+            expect(shiftTabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(okBtn);
+
+            // Cleanup
+            cancelBtn?.click();
+            await promise;
+        });
     });
 
     describe('showPrompt', () => {
@@ -229,6 +280,54 @@ describe('ui-dialogs', () => {
             // Cleanup
             const buttons = document.querySelectorAll('button');
             buttons[0]?.click();
+            await promise;
+        });
+
+        it('traps focus on Tab key (moves from input to cancel)', async () => {
+            const promise = showPrompt('Enter value:');
+            const input = document.querySelector('input') as HTMLInputElement;
+            const buttons = document.querySelectorAll('button');
+            const cancelBtn = buttons[0] as HTMLButtonElement;
+
+            // Input is focused initially
+            expect(document.activeElement).toBe(input);
+
+            const tabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                cancelable: true,
+            });
+            document.dispatchEvent(tabEvent);
+
+            expect(tabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(cancelBtn);
+
+            // Cleanup
+            cancelBtn?.click();
+            await promise;
+        });
+
+        it('traps focus on Shift+Tab key (wraps from input to ok)', async () => {
+            const promise = showPrompt('Enter value:');
+            const input = document.querySelector('input') as HTMLInputElement;
+            const buttons = document.querySelectorAll('button');
+            const okBtn = buttons[1] as HTMLButtonElement;
+
+            // Input is focused initially
+            expect(document.activeElement).toBe(input);
+
+            const shiftTabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                shiftKey: true,
+                cancelable: true,
+            });
+            document.dispatchEvent(shiftTabEvent);
+
+            expect(shiftTabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(okBtn);
+
+            // Cleanup
+            const cancelBtn = buttons[0];
+            cancelBtn?.click();
             await promise;
         });
     });

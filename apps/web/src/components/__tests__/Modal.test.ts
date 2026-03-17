@@ -107,6 +107,42 @@ describe('Modal', () => {
         });
     });
 
+    describe('Overlay keyboard interaction', () => {
+        it('closes the modal when Enter is pressed on overlay (target === currentTarget)', async () => {
+            render(Modal, { props: { open: true, title: 'Test' } });
+
+            const overlay = document.querySelector(
+                '[aria-hidden="true"]'
+            ) as HTMLElement;
+            // Dispatch keydown with Enter where target matches currentTarget
+            await fireEvent.keyDown(overlay, { key: 'Enter' });
+
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('closes the modal when Space is pressed on overlay (target === currentTarget)', async () => {
+            render(Modal, { props: { open: true, title: 'Test' } });
+
+            const overlay = document.querySelector(
+                '[aria-hidden="true"]'
+            ) as HTMLElement;
+            await fireEvent.keyDown(overlay, { key: ' ' });
+
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('does not close when a non-Enter/Space key is pressed on overlay', async () => {
+            render(Modal, { props: { open: true, title: 'Test' } });
+
+            const overlay = document.querySelector(
+                '[aria-hidden="true"]'
+            ) as HTMLElement;
+            await fireEvent.keyDown(overlay, { key: 'Tab' });
+
+            expect(screen.getByRole('dialog')).toBeInTheDocument();
+        });
+    });
+
     describe('Accessibility', () => {
         it('has role="dialog"', () => {
             render(Modal, { props: { open: true, title: 'Test' } });

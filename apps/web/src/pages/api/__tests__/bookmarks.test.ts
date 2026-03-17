@@ -160,6 +160,44 @@ describe('Bookmarks API', () => {
                 'en'
             );
         });
+
+        it('returns 500 on internal error during create', async () => {
+            mockAuthenticatedSession('user-1');
+            mockRepo.upsertByScene.mockRejectedValue(
+                new Error('Database failure')
+            );
+
+            const response = await POST({
+                request: new Request('http://localhost/api/bookmarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        storyId: 'story-1',
+                        sceneId: 'scene-1',
+                        bookmarkName: 'Checkpoint',
+                    }),
+                }),
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Failed to create bookmark');
+        });
+    });
+
+    describe('GET /api/bookmarks - error handling', () => {
+        it('returns 500 on internal error during list', async () => {
+            mockAuthenticatedSession('user-1');
+            mockRepo.findByUser.mockRejectedValue(new Error('DB crash'));
+
+            const response = await GET({
+                request: new Request('http://localhost/api/bookmarks'),
+            } as any);
+
+            expect(response.status).toBe(500);
+            const data = await response.json();
+            expect(data.error).toBe('Failed to fetch bookmarks');
+        });
     });
 
     describe('DELETE /api/bookmarks/:id', () => {

@@ -277,6 +277,54 @@ describe('change-password API', () => {
         );
     });
 
+    it('returns 400 when new password is too long', async () => {
+        const longPassword = 'a'.repeat(257); // exceeds MAX_PASSWORD_LENGTH (256)
+        const request = createFormRequest({
+            currentPassword: 'old',
+            newPassword: longPassword,
+            confirmPassword: longPassword,
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body.error).toContain('256 characters');
+    });
+
+    it('returns 500 on unexpected internal error', async () => {
+        mockRequireAuth.mockRejectedValueOnce(new Error('Unexpected failure'));
+
+        const request = createFormRequest({
+            currentPassword: 'oldpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(500);
+        const body = await response.json();
+        expect(body.error).toContain('Failed to change password');
+    });
+
+    it('returns 404 when account has no password field', async () => {
+        mockFindCredentialAccount.mockResolvedValue({
+            userId: 'user-123',
+            providerId: 'credential',
+            password: null, // no password
+        });
+
+        const request = createFormRequest({
+            currentPassword: 'oldpass',
+            newPassword: 'newpassword',
+            confirmPassword: 'newpassword',
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(404);
+        const body = await response.json();
+        expect(body.error).toContain('Account not found');
+    });
+
     it('successfully changes password for legacy users with email providerId', async () => {
         // Simulate a legacy account with providerId 'email' (from Simple Auth)
         mockFindCredentialAccount.mockResolvedValue({

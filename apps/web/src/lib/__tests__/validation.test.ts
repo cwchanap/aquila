@@ -4,6 +4,7 @@ import {
     validateUsername,
     validateCharacterName,
     validateStoryId,
+    resolveValidationMessage,
     EMAIL_REGEX,
     USERNAME_REGEX,
     CHARACTER_NAME_REGEX,
@@ -11,6 +12,7 @@ import {
     USERNAME_MAX_LENGTH,
     CHARACTER_NAME_MAX_LENGTH,
     ERROR_MESSAGES,
+    type ValidationTranslations,
 } from '../validation';
 
 describe('Validation Constants', () => {
@@ -368,6 +370,147 @@ describe('validateCharacterName', () => {
                 errorKey: ERROR_MESSAGES.characterName.invalidChars,
             });
         });
+    });
+});
+
+describe('resolveValidationMessage', () => {
+    const mockTranslations: ValidationTranslations = {
+        email: {
+            notString: 'Email must be a string',
+            required: 'Email is required',
+            invalid: 'Invalid email format',
+            tooLong: 'Email is too long',
+        },
+        username: {
+            notString: 'Username must be a string',
+            required: 'Username is required',
+            tooShort: 'Username is too short',
+            tooLong: 'Username is too long',
+            invalidChars: 'Username has invalid characters',
+        },
+        characterName: {
+            notString: 'Name must be a string',
+            empty: 'Name cannot be empty',
+            tooLong: 'Name is too long',
+            invalidChars: 'Name has invalid characters',
+        },
+    };
+
+    it('resolves email.notString message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.email.notString
+            )
+        ).toBe('Email must be a string');
+    });
+
+    it('resolves email.required message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.email.required
+            )
+        ).toBe('Email is required');
+    });
+
+    it('resolves email.invalid message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.email.invalid
+            )
+        ).toBe('Invalid email format');
+    });
+
+    it('resolves email.tooLong message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.email.tooLong
+            )
+        ).toBe('Email is too long');
+    });
+
+    it('resolves username.notString message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.username.notString
+            )
+        ).toBe('Username must be a string');
+    });
+
+    it('resolves username.required message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.username.required
+            )
+        ).toBe('Username is required');
+    });
+
+    it('resolves username.tooShort message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.username.tooShort
+            )
+        ).toBe('Username is too short');
+    });
+
+    it('resolves username.tooLong message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.username.tooLong
+            )
+        ).toBe('Username is too long');
+    });
+
+    it('resolves username.invalidChars message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.username.invalidChars
+            )
+        ).toBe('Username has invalid characters');
+    });
+
+    it('resolves characterName.notString message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.characterName.notString
+            )
+        ).toBe('Name must be a string');
+    });
+
+    it('resolves characterName.empty message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.characterName.empty
+            )
+        ).toBe('Name cannot be empty');
+    });
+
+    it('resolves characterName.tooLong message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.characterName.tooLong
+            )
+        ).toBe('Name is too long');
+    });
+
+    it('resolves characterName.invalidChars message', () => {
+        expect(
+            resolveValidationMessage(
+                mockTranslations,
+                ERROR_MESSAGES.characterName.invalidChars
+            )
+        ).toBe('Name has invalid characters');
     });
 });
 

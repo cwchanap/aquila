@@ -723,6 +723,52 @@ describe('initializeCharacterPage', () => {
         expect(() => initializeCharacterPage(translations, 'en')).not.toThrow();
     });
 
+    it('clears pre-existing children before rendering new characters', () => {
+        localStorage.setItem(
+            'aquila:character:train_adventure',
+            JSON.stringify({ characterName: 'Alice' })
+        );
+        document.body.innerHTML =
+            '<div id="local-characters"><p>stale content</p></div>';
+
+        initializeCharacterPage(translations, 'en');
+
+        const container = document.getElementById('local-characters')!;
+        // Old content should be gone, replaced with the character card
+        expect(
+            container.querySelector('[data-local-character]')
+        ).not.toBeNull();
+        // The stale <p> should have been removed
+        const paragraphs = Array.from(container.querySelectorAll('p'));
+        expect(paragraphs.every(p => p.textContent !== 'stale content')).toBe(
+            true
+        );
+    });
+
+    it('clears pre-existing children before rendering error state', () => {
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+        document.body.innerHTML =
+            '<div id="local-characters"><p>stale content</p></div>';
+
+        const getItemSpy = vi
+            .spyOn(localStorage, 'getItem')
+            .mockImplementationOnce(() => {
+                throw new Error('Storage access denied');
+            });
+
+        initializeCharacterPage(translations, 'en');
+
+        const container = document.getElementById('local-characters')!;
+        // Stale content should be gone, error state rendered
+        expect(container.textContent).not.toContain('stale content');
+        expect(container.textContent).toContain('Error loading characters.');
+
+        consoleSpy.mockRestore();
+        getItemSpy.mockRestore();
+    });
+
     it('renders error state when an unexpected error occurs during loading', () => {
         const consoleSpy = vi
             .spyOn(console, 'error')

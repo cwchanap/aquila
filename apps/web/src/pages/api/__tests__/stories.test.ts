@@ -182,6 +182,17 @@ describe('Stories API', () => {
         expect(data.error).toBe('Story not found');
     });
 
+    it('returns 401 when GET item is called unauthenticated', async () => {
+        mockUnauthenticatedSession();
+
+        const response = await itemGET({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1'),
+        } as any);
+
+        expect(response.status).toBe(401);
+    });
+
     it('returns 400 when GET is called without a story id', async () => {
         mockAuthenticatedSession('user-1');
 
@@ -267,6 +278,21 @@ describe('Stories API', () => {
         });
     });
 
+    it('returns 401 when PUT item is called unauthenticated', async () => {
+        mockUnauthenticatedSession();
+
+        const response = await itemPUT({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: 'New Title' }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(401);
+    });
+
     it('returns 400 when PUT is called without a story id', async () => {
         mockAuthenticatedSession('user-1');
 
@@ -304,6 +330,84 @@ describe('Stories API', () => {
         expect(response.status).toBe(404);
         const data = await response.json();
         expect(data.error).toBe('Story not found');
+    });
+
+    it('returns 400 on PUT validation error with invalid status', async () => {
+        mockAuthenticatedSession('user-1');
+
+        const response = await itemPUT({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'invalid-status' }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(400);
+    });
+
+    it('updates description and coverImage fields', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            title: 'Story One',
+            userId: 'user-1',
+        });
+        mockStoryRepo.update.mockResolvedValue({
+            id: 'story-1',
+            title: 'Story One',
+            description: 'A new description',
+            coverImage: 'https://example.com/cover.png',
+            userId: 'user-1',
+        });
+
+        const response = await itemPUT({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: 'A new description',
+                    coverImage: 'https://example.com/cover.png',
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(200);
+        expect(mockStoryRepo.update).toHaveBeenCalledWith('story-1', {
+            description: 'A new description',
+            coverImage: 'https://example.com/cover.png',
+        });
+    });
+
+    it('updates status field', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            title: 'Story One',
+            userId: 'user-1',
+        });
+        mockStoryRepo.update.mockResolvedValue({
+            id: 'story-1',
+            title: 'Story One',
+            status: 'published',
+            userId: 'user-1',
+        });
+
+        const response = await itemPUT({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'published' }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(200);
+        expect(mockStoryRepo.update).toHaveBeenCalledWith('story-1', {
+            status: 'published',
+        });
     });
 
     it('returns 422 when PUT provides no valid fields to update', async () => {
@@ -366,6 +470,19 @@ describe('Stories API', () => {
         const data = await response.json();
         expect(data.success).toBe(true);
         expect(mockStoryRepo.delete).toHaveBeenCalledWith('story-1');
+    });
+
+    it('returns 401 when DELETE item is called unauthenticated', async () => {
+        mockUnauthenticatedSession();
+
+        const response = await itemDELETE({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1', {
+                method: 'DELETE',
+            }),
+        } as any);
+
+        expect(response.status).toBe(401);
     });
 
     it('returns 400 when DELETE is called without a story id', async () => {

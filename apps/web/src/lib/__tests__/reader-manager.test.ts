@@ -35,12 +35,9 @@ vi.mock('@/components/NovelReader.svelte', () => ({
 
 import { getStoryContent } from '@aquila/dialogue';
 import { showAlert, showPrompt } from '../ui-dialogs';
-import { mount } from 'svelte';
-
 const mockGetStoryContent = vi.mocked(getStoryContent);
 const mockShowAlert = vi.mocked(showAlert);
 const mockShowPrompt = vi.mocked(showPrompt);
-vi.mocked(mount);
 
 // Helper to build a URLSearchParams mock with specific params
 function makeUrlParamsMock(params: Record<string, string> = {}) {

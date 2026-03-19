@@ -874,13 +874,6 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         vi.mocked(document.addEventListener).mockRestore();
     }
 
-    /** Flush the microtask queue so async event handlers (e.g., handleSave) complete. */
-    async function flushMicrotasks() {
-        await Promise.resolve();
-        await Promise.resolve();
-        await Promise.resolve();
-    }
-
     beforeEach(() => {
         document.body.replaceChildren();
         global.fetch = vi.fn();
@@ -997,7 +990,7 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
+        await vi.waitFor(() => expect(global.fetch).toHaveBeenCalled());
 
         expect(global.fetch).toHaveBeenCalledWith(
             '/api/character-setup',
@@ -1019,10 +1012,8 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             'Bob';
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
-
         const nameDisplay = card.querySelector('.character-name-display')!;
-        expect(nameDisplay.textContent).toBe('Bob');
+        await vi.waitFor(() => expect(nameDisplay.textContent).toBe('Bob'));
         expect(nameDisplay.classList.contains('hidden')).toBe(false);
         expect(
             card
@@ -1045,9 +1036,8 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             'Charlie';
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
-
-        expect(card.querySelector('.character-avatar')!.textContent).toBe('C');
+        const avatar = card.querySelector('.character-avatar')!;
+        await vi.waitFor(() => expect(avatar.textContent).toBe('C'));
     });
 
     it('save with empty name shows alert and does not call fetch', async () => {
@@ -1062,9 +1052,9 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             '';
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
-
-        expect(alertMock).toHaveBeenCalledWith(translations.nameRequired);
+        await vi.waitFor(() =>
+            expect(alertMock).toHaveBeenCalledWith(translations.nameRequired)
+        );
         expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -1080,9 +1070,9 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             '<script>';
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
-
-        expect(alertMock).toHaveBeenCalledWith(translations.invalidName);
+        await vi.waitFor(() =>
+            expect(alertMock).toHaveBeenCalledWith(translations.invalidName)
+        );
     });
 
     it('pressing Enter triggers save', async () => {
@@ -1103,9 +1093,7 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
         );
 
-        await flushMicrotasks();
-
-        expect(global.fetch).toHaveBeenCalled();
+        await vi.waitFor(() => expect(global.fetch).toHaveBeenCalled());
     });
 
     it('failed save (non-ok response) shows updateFailed alert', async () => {
@@ -1126,9 +1114,9 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
-
-        expect(alertMock).toHaveBeenCalledWith(translations.updateFailed);
+        await vi.waitFor(() =>
+            expect(alertMock).toHaveBeenCalledWith(translations.updateFailed)
+        );
         consoleSpy.mockRestore();
     });
 
@@ -1146,11 +1134,13 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             'Eve';
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
 
-        await flushMicrotasks();
-
         const playLink = card.querySelector<HTMLAnchorElement>(
             '.character-play-link'
         )!;
-        expect(playLink.getAttribute('href')).toBe('/en/story/train_adventure');
+        await vi.waitFor(() =>
+            expect(playLink.getAttribute('href')).toBe(
+                '/en/story/train_adventure'
+            )
+        );
     });
 });

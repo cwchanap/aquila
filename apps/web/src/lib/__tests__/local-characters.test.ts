@@ -791,3 +791,376 @@ describe('initializeCharacterPage', () => {
         getItemSpy.mockRestore();
     });
 });
+
+// ---------------------------------------------------------------------------
+// setupRemoteEditHandler (via initializeCharacterPage → setupAuthenticatedCharacterEditing)
+// ---------------------------------------------------------------------------
+describe('setupRemoteEditHandler (authenticated character editing)', () => {
+    /** Build a card element that matches what setupRemoteEditHandler expects. */
+    function buildRemoteCard(
+        characterId = 'char-1',
+        storyId = 'train_adventure'
+    ) {
+        const card = document.createElement('div');
+        card.setAttribute('data-character-id', characterId);
+        card.setAttribute('data-story-id', storyId);
+
+        const nameDisplay = document.createElement('h3');
+        nameDisplay.className = 'character-name-display';
+        nameDisplay.textContent = 'Alice';
+
+        const nameInput = document.createElement('input');
+        nameInput.className = 'character-name-input hidden';
+        nameInput.value = 'Alice';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'character-edit-btn';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'character-save-btn hidden';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'character-cancel-btn hidden';
+
+        const playLink = document.createElement('a');
+        playLink.className = 'character-play-link';
+
+        const avatar = document.createElement('span');
+        avatar.className = 'character-avatar';
+        avatar.textContent = 'A';
+
+        card.append(
+            nameDisplay,
+            nameInput,
+            editBtn,
+            saveBtn,
+            cancelBtn,
+            playLink,
+            avatar
+        );
+        document.body.appendChild(card);
+        return card;
+    }
+
+    /**
+     * Call initializeCharacterPage with a mocked document.addEventListener that
+     * fires DOMContentLoaded handlers immediately (without registering them on
+     * document, preventing listener accumulation across tests).
+     */
+    function wireUp(locale = 'en') {
+        const origAdd = document.addEventListener.bind(document);
+        vi.spyOn(document, 'addEventListener').mockImplementation(
+            (
+                type: string,
+                handler: EventListenerOrEventListenerObject,
+                options?: boolean | AddEventListenerOptions
+            ) => {
+                if (
+                    type === 'DOMContentLoaded' &&
+                    typeof handler === 'function'
+                ) {
+                    // Fire immediately and do NOT register on document (prevents accumulation)
+                    handler(new Event('DOMContentLoaded'));
+                } else {
+                    origAdd(
+                        type,
+                        handler as EventListener,
+                        options as AddEventListenerOptions
+                    );
+                }
+            }
+        );
+        initializeCharacterPage(translations, locale);
+        vi.mocked(document.addEventListener).mockRestore();
+    }
+
+    /** Flush the microtask queue so async event handlers (e.g., handleSave) complete. */
+    async function flushMicrotasks() {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+    }
+
+    beforeEach(() => {
+        document.body.innerHTML = '';
+        global.fetch = vi.fn();
+    });
+
+    afterEach(() => {
+        document.body.innerHTML = '';
+        vi.restoreAllMocks();
+    });
+
+    it('skips cards without [data-character-id] ancestor', () => {
+        const btn = document.createElement('button');
+        btn.className = 'character-edit-btn';
+        document.body.appendChild(btn);
+
+        expect(() => wireUp()).not.toThrow();
+    });
+
+    it('clicking edit button enters edit mode (shows input, hides display)', () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+
+        expect(
+            card
+                .querySelector('.character-name-display')!
+                .classList.contains('hidden')
+        ).toBe(true);
+        expect(
+            card
+                .querySelector('.character-name-input')!
+                .classList.contains('hidden')
+        ).toBe(false);
+        expect(
+            card
+                .querySelector('.character-save-btn')!
+                .classList.contains('hidden')
+        ).toBe(false);
+        expect(
+            card
+                .querySelector('.character-cancel-btn')!
+                .classList.contains('hidden')
+        ).toBe(false);
+    });
+
+    it('clicking cancel restores original name and exits edit mode', () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+
+        const input = card.querySelector<HTMLInputElement>(
+            '.character-name-input'
+        )!;
+        input.value = 'Changed';
+
+        card.querySelector<HTMLElement>('.character-cancel-btn')!.click();
+
+        expect(input.value).toBe('Alice');
+        expect(
+            card
+                .querySelector('.character-name-display')!
+                .classList.contains('hidden')
+        ).toBe(false);
+        expect(
+            card
+                .querySelector('.character-name-input')!
+                .classList.contains('hidden')
+        ).toBe(true);
+        expect(
+            card
+                .querySelector('.character-edit-btn')!
+                .classList.contains('hidden')
+        ).toBe(false);
+        expect(
+            card
+                .querySelector('.character-save-btn')!
+                .classList.contains('hidden')
+        ).toBe(true);
+    });
+
+    it('pressing Escape cancels edit mode', () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+
+        const input = card.querySelector<HTMLInputElement>(
+            '.character-name-input'
+        )!;
+        input.value = 'Changed';
+        input.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+        );
+
+        expect(input.value).toBe('Alice');
+        expect(
+            card
+                .querySelector('.character-name-display')!
+                .classList.contains('hidden')
+        ).toBe(false);
+    });
+
+    it('clicking save with valid name calls fetch to update character', async () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({}),
+            });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        expect(global.fetch).toHaveBeenCalledWith(
+            '/api/character-setup',
+            expect.objectContaining({ method: 'POST' })
+        );
+    });
+
+    it('successful save updates name display and exits edit mode', async () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({}),
+            });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLInputElement>('.character-name-input')!.value =
+            'Bob';
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        const nameDisplay = card.querySelector('.character-name-display')!;
+        expect(nameDisplay.textContent).toBe('Bob');
+        expect(nameDisplay.classList.contains('hidden')).toBe(false);
+        expect(
+            card
+                .querySelector('.character-save-btn')!
+                .classList.contains('hidden')
+        ).toBe(true);
+    });
+
+    it('save updates avatar initial to first letter of new name', async () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({}),
+            });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLInputElement>('.character-name-input')!.value =
+            'Charlie';
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        expect(card.querySelector('.character-avatar')!.textContent).toBe('C');
+    });
+
+    it('save with empty name shows alert and does not call fetch', async () => {
+        const card = buildRemoteCard();
+        const alertMock = vi
+            .spyOn(window, 'alert')
+            .mockImplementation(() => {});
+        wireUp();
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLInputElement>('.character-name-input')!.value =
+            '';
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        expect(alertMock).toHaveBeenCalledWith(translations.nameRequired);
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('save with invalid name shows alert for invalidName translation', async () => {
+        const card = buildRemoteCard();
+        const alertMock = vi
+            .spyOn(window, 'alert')
+            .mockImplementation(() => {});
+        wireUp();
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLInputElement>('.character-name-input')!.value =
+            '<script>';
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        expect(alertMock).toHaveBeenCalledWith(translations.invalidName);
+    });
+
+    it('pressing Enter triggers save', async () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({}),
+            });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        const input = card.querySelector<HTMLInputElement>(
+            '.character-name-input'
+        )!;
+        input.value = 'Dave';
+        input.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+        );
+
+        await flushMicrotasks();
+
+        expect(global.fetch).toHaveBeenCalled();
+    });
+
+    it('failed save (non-ok response) shows updateFailed alert', async () => {
+        const card = buildRemoteCard();
+        const alertMock = vi
+            .spyOn(window, 'alert')
+            .mockImplementation(() => {});
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+        wireUp();
+
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: false,
+            json: vi.fn().mockResolvedValue({ error: 'Conflict' }),
+        });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        expect(alertMock).toHaveBeenCalledWith(translations.updateFailed);
+        consoleSpy.mockRestore();
+    });
+
+    it('save with storyId updates play link href', async () => {
+        const card = buildRemoteCard('char-1', 'train_adventure');
+        wireUp('en');
+
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({}),
+            });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLInputElement>('.character-name-input')!.value =
+            'Eve';
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await flushMicrotasks();
+
+        const playLink = card.querySelector<HTMLAnchorElement>(
+            '.character-play-link'
+        )!;
+        expect(playLink.getAttribute('href')).toBe('/en/story/train_adventure');
+    });
+});

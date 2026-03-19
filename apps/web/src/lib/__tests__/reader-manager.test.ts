@@ -19,9 +19,12 @@ vi.mock('@aquila/dialogue', () => ({
     })),
 }));
 
+const mockMount = vi.hoisted(() => vi.fn(() => ({})));
+const mockUnmount = vi.hoisted(() => vi.fn());
+
 vi.mock('svelte', () => ({
-    mount: vi.fn(() => ({})),
-    unmount: vi.fn(),
+    mount: mockMount,
+    unmount: mockUnmount,
 }));
 
 vi.mock('../ui-dialogs', () => ({
@@ -783,6 +786,85 @@ describe('ReaderManager', () => {
             // renderReader fires import() and then clears container async
             // We only verify it doesn't throw with a container present
             expect(() => manager.renderReader()).not.toThrow();
+        });
+
+        it('shows error UI with loadError text when component mounting throws', async () => {
+            const errorSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+
+            const mockStory = {
+                dialogue: { scene_1: [] },
+                choices: {},
+            };
+            mockGetStoryContent.mockReturnValue(mockStory);
+
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+
+            // Make svelte's mount throw to trigger the .catch handler in renderReader
+            mockMount.mockImplementation(() => {
+                throw new Error('Mount failed');
+            });
+
+            const manager = new ReaderManager('en');
+            manager.renderReader();
+
+            // Wait until the .catch handler has built the error UI in the DOM
+            await vi.waitFor(() => {
+                const errorPara = container.querySelector('p');
+                expect(errorPara).not.toBeNull();
+            });
+
+            const errorPara = container.querySelector('p');
+            expect(errorPara?.textContent).toBe('Failed to load reader');
+
+            const retryBtn = container.querySelector('button');
+            expect(retryBtn?.textContent).toBe('Retry');
+
+            expect(errorSpy).toHaveBeenCalled();
+            errorSpy.mockRestore();
+            mockMount.mockImplementation(() => ({}));
+        });
+
+        it('shows Retry button in error UI that reloads the page', async () => {
+            const errorSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+
+            const reloadMock = vi.fn();
+            Object.defineProperty(window, 'location', {
+                value: { reload: reloadMock, href: 'http://localhost/' },
+                writable: true,
+            });
+
+            const mockStory = { dialogue: { scene_1: [] }, choices: {} };
+            mockGetStoryContent.mockReturnValue(mockStory);
+
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+
+            mockMount.mockImplementation(() => {
+                throw new Error('Mount failed');
+            });
+
+            const manager = new ReaderManager('en');
+            manager.renderReader();
+
+            // Wait until the retry button appears
+            await vi.waitFor(() => {
+                expect(container.querySelector('button')).not.toBeNull();
+            });
+
+            const retryBtn =
+                container.querySelector<HTMLButtonElement>('button');
+            retryBtn?.click();
+
+            expect(reloadMock).toHaveBeenCalled();
+            errorSpy.mockRestore();
+            mockMount.mockImplementation(() => ({}));
         });
     });
 

@@ -70,10 +70,15 @@ describe('api-context test utilities', () => {
             expect(ctx.params).toEqual({ id: '42' });
         });
 
-        it('redirect returns a redirect response', () => {
+        it('redirect returns a redirect response with status and location', () => {
             const ctx = createMockAPIContext();
             const response = ctx.redirect('/login');
             expect(response).toBeInstanceOf(Response);
+            expect(response.status).toBe(302);
+            expect(
+                response.headers.get('location') ??
+                    response.headers.get('Location')
+            ).toContain('/login');
         });
     });
 

@@ -123,6 +123,7 @@ describe('Database schema', () => {
             expect(cols.storyId).toBeDefined();
             expect(cols.chapterId).toBeDefined();
             expect(cols.title).toBeDefined();
+            expect(cols.content).toBeDefined();
             expect(cols.order).toBeDefined();
         });
     });

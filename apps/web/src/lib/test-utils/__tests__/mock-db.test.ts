@@ -47,11 +47,14 @@ describe('mock-db test utilities', () => {
 
         it('transaction calls the callback with a new mock db', async () => {
             const db = createMockDb();
+            let capturedTx: ReturnType<typeof createMockDb> | undefined;
             const result = await db.transaction(async tx => {
+                capturedTx = tx;
                 expect(typeof tx.select).toBe('function');
                 return 'done';
             });
             expect(result).toBe('done');
+            expect(capturedTx).not.toBe(db);
         });
     });
 

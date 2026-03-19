@@ -337,12 +337,12 @@ describe('setupEditHandler', () => {
     }
 
     beforeEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         localStorage.clear();
     });
 
     afterEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         localStorage.clear();
     });
 
@@ -644,12 +644,12 @@ describe('setupEditHandler', () => {
 // ---------------------------------------------------------------------------
 describe('initializeCharacterPage', () => {
     beforeEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         localStorage.clear();
     });
 
     afterEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         localStorage.clear();
     });
 
@@ -719,7 +719,7 @@ describe('initializeCharacterPage', () => {
     });
 
     it('does nothing if local-characters container is absent', () => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         expect(() => initializeCharacterPage(translations, 'en')).not.toThrow();
     });
 
@@ -882,12 +882,12 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
     }
 
     beforeEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         global.fetch = vi.fn();
     });
 
     afterEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         vi.restoreAllMocks();
     });
 
@@ -989,12 +989,10 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         const card = buildRemoteCard();
         wireUp();
 
-        global.fetch = vi
-            .fn()
-            .mockResolvedValue({
-                ok: true,
-                json: vi.fn().mockResolvedValue({}),
-            });
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({}),
+        });
 
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         card.querySelector<HTMLElement>('.character-save-btn')!.click();
@@ -1011,12 +1009,10 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         const card = buildRemoteCard();
         wireUp();
 
-        global.fetch = vi
-            .fn()
-            .mockResolvedValue({
-                ok: true,
-                json: vi.fn().mockResolvedValue({}),
-            });
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({}),
+        });
 
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         card.querySelector<HTMLInputElement>('.character-name-input')!.value =
@@ -1039,12 +1035,10 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         const card = buildRemoteCard();
         wireUp();
 
-        global.fetch = vi
-            .fn()
-            .mockResolvedValue({
-                ok: true,
-                json: vi.fn().mockResolvedValue({}),
-            });
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({}),
+        });
 
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         card.querySelector<HTMLInputElement>('.character-name-input')!.value =
@@ -1095,12 +1089,10 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         const card = buildRemoteCard();
         wireUp();
 
-        global.fetch = vi
-            .fn()
-            .mockResolvedValue({
-                ok: true,
-                json: vi.fn().mockResolvedValue({}),
-            });
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({}),
+        });
 
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         const input = card.querySelector<HTMLInputElement>(
@@ -1144,12 +1136,10 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         const card = buildRemoteCard('char-1', 'train_adventure');
         wireUp('en');
 
-        global.fetch = vi
-            .fn()
-            .mockResolvedValue({
-                ok: true,
-                json: vi.fn().mockResolvedValue({}),
-            });
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({}),
+        });
 
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
         card.querySelector<HTMLInputElement>('.character-name-input')!.value =

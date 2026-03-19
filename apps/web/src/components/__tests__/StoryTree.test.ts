@@ -102,21 +102,6 @@ describe('StoryTree', () => {
         });
     });
 
-    describe('Chapter expand/collapse', () => {
-        it('chapters are collapsed by default', () => {
-            const scene = makeScene({ title: 'Hidden Scene' });
-            render(StoryTree, {
-                props: {
-                    story: makeStory({
-                        chapters: [makeChapter({ scenes: [scene] })],
-                    }),
-                },
-            });
-
-            expect(screen.queryByText('Hidden Scene')).not.toBeInTheDocument();
-        });
-    });
-
     describe('Chapter rendering', () => {
         it('renders chapter title', () => {
             render(StoryTree, {

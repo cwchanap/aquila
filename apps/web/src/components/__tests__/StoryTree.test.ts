@@ -234,10 +234,9 @@ describe('StoryTree', () => {
             // Click chapter toggle (covers toggleChapter else-branch: expandedChapters.add)
             const chapterItem = document.querySelector('.chapter-item')!;
             const toggleBtn = chapterItem.querySelector('button')!;
-            // Should not throw
-            await expect(
-                act(() => fireEvent.click(toggleBtn))
-            ).resolves.not.toThrow();
+            await act(() => fireEvent.click(toggleBtn));
+            // Toggle button remains in DOM after click
+            expect(toggleBtn).toBeInTheDocument();
         });
 
         it('calls toggleChapter twice covering both add and delete branches', async () => {

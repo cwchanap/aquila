@@ -347,7 +347,7 @@ describe('SceneFlow', () => {
         it('returns null when advance returns end during history replay', () => {
             // scene_1 is a terminal node (no next), but history lists scene_2 after it
             // Both scene_1 and scene_2 are valid in the flow, so sanitized = ['scene_1', 'scene_2']
-            // Advancing from scene_1 returns 'end' because it has no next → line 277
+            // Advancing from scene_1 returns 'end' because it has no next
             const config: FlowConfig = {
                 start: 'scene_1',
                 nodes: [

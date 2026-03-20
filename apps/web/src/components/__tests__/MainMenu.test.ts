@@ -21,9 +21,9 @@ vi.mock('@aquila/dialogue', () => ({
     })),
 }));
 
-// Mock UserStatus component
+// Mock UserStatus with a minimal Svelte 5 compatible stub (components are functions in Svelte 5)
 vi.mock('../UserStatus.svelte', () => ({
-    default: vi.fn(() => ({ $$: { ctx: [] } })),
+    default: vi.fn(() => undefined),
 }));
 
 // Mock window methods

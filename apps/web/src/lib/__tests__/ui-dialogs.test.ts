@@ -330,5 +330,84 @@ describe('ui-dialogs', () => {
             cancelBtn?.click();
             await promise;
         });
+
+        it('traps focus on Shift+Tab from cancel (moves to input)', async () => {
+            const promise = showPrompt('Enter value:');
+            const input = document.querySelector('input') as HTMLInputElement;
+            const buttons = document.querySelectorAll('button');
+            const cancelBtn = buttons[0] as HTMLButtonElement;
+
+            // Focus cancel button
+            cancelBtn.focus();
+            expect(document.activeElement).toBe(cancelBtn);
+
+            // Shift+Tab from cancel should move to input (index 0)
+            const shiftTabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                shiftKey: true,
+                cancelable: true,
+            });
+            document.dispatchEvent(shiftTabEvent);
+
+            expect(shiftTabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(input);
+
+            // Cleanup
+            cancelBtn?.click();
+            await promise;
+        });
+
+        it('traps focus on Tab from ok button (wraps to input)', async () => {
+            const promise = showPrompt('Enter value:');
+            const input = document.querySelector('input') as HTMLInputElement;
+            const buttons = document.querySelectorAll('button');
+            const okBtn = buttons[1] as HTMLButtonElement;
+            const cancelBtn = buttons[0] as HTMLButtonElement;
+
+            // Focus ok button (last focusable element)
+            okBtn.focus();
+            expect(document.activeElement).toBe(okBtn);
+
+            // Tab from ok should wrap to input (index 0)
+            const tabEvent = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                cancelable: true,
+            });
+            document.dispatchEvent(tabEvent);
+
+            expect(tabEvent.defaultPrevented).toBe(true);
+            expect(document.activeElement).toBe(input);
+
+            // Cleanup
+            cancelBtn?.click();
+            await promise;
+        });
+    });
+
+    describe('button hover effects', () => {
+        it('applies opacity on button mouseenter', async () => {
+            const promise = showAlert('Test hover');
+            const btn = document.querySelector('button') as HTMLButtonElement;
+
+            btn.dispatchEvent(new MouseEvent('mouseenter'));
+            expect(btn.style.opacity).toBe('0.85');
+
+            btn.click();
+            await promise;
+        });
+
+        it('restores opacity on button mouseleave', async () => {
+            const promise = showAlert('Test hover');
+            const btn = document.querySelector('button') as HTMLButtonElement;
+
+            btn.dispatchEvent(new MouseEvent('mouseenter'));
+            expect(btn.style.opacity).toBe('0.85');
+
+            btn.dispatchEvent(new MouseEvent('mouseleave'));
+            expect(btn.style.opacity).toBe('1');
+
+            btn.click();
+            await promise;
+        });
     });
 });

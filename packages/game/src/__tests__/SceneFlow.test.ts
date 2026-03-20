@@ -343,6 +343,35 @@ describe('SceneFlow', () => {
             ] as any[]);
             expect(result).toBeNull();
         });
+
+        it('returns null when advance returns end during history replay', () => {
+            // scene_1 is a terminal node (no next), but history lists scene_2 after it
+            // Both scene_1 and scene_2 are valid in the flow, so sanitized = ['scene_1', 'scene_2']
+            // Advancing from scene_1 returns 'end' because it has no next → line 277
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: null,
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2',
+                        next: null,
+                    },
+                ],
+            };
+            const flow = new SceneFlow(config);
+            const result = flow.restoreFromHistory([
+                'scene_1',
+                'scene_2',
+            ] as any[]);
+            expect(result).toBeNull();
+        });
     });
 
     describe('selectChoice edge cases', () => {

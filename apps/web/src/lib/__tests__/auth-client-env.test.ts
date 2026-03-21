@@ -56,7 +56,7 @@ describe('auth-client getBaseURL branches', () => {
 
     it('throws when PUBLIC_AUTH_URL is not set in production', async () => {
         vi.stubEnv('PUBLIC_AUTH_URL', '');
-        vi.stubEnv('PROD', 'true');
+        vi.stubEnv('PROD', true);
 
         const createAuthClient = vi.fn(() => ({
             signIn: vi.fn(),

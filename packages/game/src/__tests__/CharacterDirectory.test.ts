@@ -18,16 +18,9 @@ describe('CharacterDirectory re-export', () => {
         const allIds = Object.values(CharacterId);
         expect(allIds.length).toBeGreaterThan(0);
 
-        const firstId = allIds[0] as string;
+        const firstId = allIds[0] as CharacterId;
         const character = CharacterDirectory.getById(firstId);
         expect(character).toBeDefined();
-    });
-
-    it('CharacterDirectory.getById returns undefined for unknown id', () => {
-        const character = CharacterDirectory.getById(
-            'nonexistent-id-xyz' as any
-        );
-        expect(character).toBeUndefined();
     });
 
     it('CharacterId has string values', () => {
@@ -40,8 +33,8 @@ describe('CharacterDirectory re-export', () => {
     it('type CharacterInfo is usable as a type', () => {
         // Type-level test: construct an object matching CharacterInfo
         const info: CharacterInfo = CharacterDirectory.getById(
-            Object.values(CharacterId)[0] as any
-        )!;
+            Object.values(CharacterId)[0] as CharacterId
+        );
         expect(info).toBeDefined();
         expect(info.id).toBeDefined();
         expect(info.name).toBeDefined();

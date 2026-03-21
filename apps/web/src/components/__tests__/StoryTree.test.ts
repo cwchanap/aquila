@@ -216,6 +216,10 @@ describe('StoryTree', () => {
         });
 
         it('calls toggleChapter when chapter toggle button is clicked (covers add branch)', async () => {
+            // Note: Svelte 5 $state<Set> mutations don't propagate to happy-dom in tests,
+            // so we verify the branch ran by spying on Set.prototype.add.
+            const addSpy = vi.spyOn(Set.prototype, 'add');
+
             render(StoryTree, {
                 props: {
                     story: makeStory({
@@ -235,11 +239,17 @@ describe('StoryTree', () => {
             const chapterItem = document.querySelector('.chapter-item')!;
             const toggleBtn = chapterItem.querySelector('button')!;
             await act(() => fireEvent.click(toggleBtn));
-            // Toggle button remains in DOM after click
-            expect(toggleBtn).toBeInTheDocument();
+
+            // The add branch ran: expandedChapters.add(chapterId) was called
+            expect(addSpy).toHaveBeenCalledWith('chapter-1');
+            addSpy.mockRestore();
         });
 
         it('calls toggleChapter twice covering both add and delete branches', async () => {
+            // Spy on Set prototype to verify both branches execute
+            const addSpy = vi.spyOn(Set.prototype, 'add');
+            const deleteSpy = vi.spyOn(Set.prototype, 'delete');
+
             render(StoryTree, {
                 props: {
                     story: makeStory({
@@ -255,15 +265,16 @@ describe('StoryTree', () => {
             const chapterItem = document.querySelector('.chapter-item')!;
             const toggleBtn = chapterItem.querySelector('button')!;
 
-            // First click: covers the else branch (add to set)
+            // First click: covers the else branch (expandedChapters.add)
             await act(() => fireEvent.click(toggleBtn));
+            expect(addSpy).toHaveBeenCalledWith('chapter-1');
 
-            // Second click: covers the if branch (delete from set), because
-            // the in-memory Set now has the chapterId
+            // Second click: covers the if branch (expandedChapters.delete)
             await act(() => fireEvent.click(toggleBtn));
+            expect(deleteSpy).toHaveBeenCalledWith('chapter-1');
 
-            // Verify toggle button still exists and is clickable
-            expect(toggleBtn).toBeInTheDocument();
+            addSpy.mockRestore();
+            deleteSpy.mockRestore();
         });
     });
 

@@ -17,6 +17,7 @@ describe('auth production environment branches', () => {
     it('throws when TRUSTED_ORIGINS is not set in production', async () => {
         // Clear TRUSTED_ORIGINS and set production mode
         delete process.env.TRUSTED_ORIGINS;
+        vi.stubEnv('TRUSTED_ORIGINS', '');
         process.env.NODE_ENV = 'production';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
 

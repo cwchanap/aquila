@@ -22,7 +22,7 @@ const makeStoryResponse = (stories: (typeof mockStory)[]) => ({
 beforeEach(() => {
     mockFetch.mockReset();
     mockFetch.mockResolvedValue(makeStoryResponse([]));
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
 });
 
 afterEach(() => {
@@ -335,14 +335,15 @@ describe('StoryWriter', () => {
 
             render(StoryWriter);
             await vi.runAllTimersAsync();
+            await tick();
 
-            // The edit button is inside StoryTree
-            const editBtn = screen.queryByTitle('Edit story');
-            if (editBtn) {
-                await fireEvent.click(editBtn);
-                await vi.runAllTimersAsync();
-                expect(screen.getByText('Edit Story')).toBeInTheDocument();
-            }
+            // The edit button is rendered inside StoryTree once a story is selected
+            const editBtn = screen.getByTitle('Edit story');
+            await fireEvent.click(editBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(screen.getByText('Edit Story')).toBeInTheDocument();
         });
 
         it('calls PUT /api/stories/:id when update form is submitted', async () => {
@@ -360,23 +361,21 @@ describe('StoryWriter', () => {
 
             render(StoryWriter);
             await vi.runAllTimersAsync();
+            await tick();
 
-            const editBtn = screen.queryByTitle('Edit story');
-            if (editBtn) {
-                await fireEvent.click(editBtn);
-                await vi.runAllTimersAsync();
+            const editBtn = screen.getByTitle('Edit story');
+            await fireEvent.click(editBtn);
+            await vi.runAllTimersAsync();
+            await tick();
 
-                const updateBtn = screen.queryByText('Update Story');
-                if (updateBtn) {
-                    await fireEvent.click(updateBtn);
-                    await vi.runAllTimersAsync();
+            const updateBtn = screen.getByText('Update Story');
+            await fireEvent.click(updateBtn);
+            await vi.runAllTimersAsync();
 
-                    expect(mockFetch).toHaveBeenCalledWith(
-                        '/api/stories/story-1',
-                        expect.objectContaining({ method: 'PUT' })
-                    );
-                }
-            }
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/stories/story-1',
+                expect.objectContaining({ method: 'PUT' })
+            );
         });
     });
 
@@ -386,16 +385,13 @@ describe('StoryWriter', () => {
 
             render(StoryWriter);
             await vi.runAllTimersAsync();
+            await tick();
 
-            const addChapterBtn = screen.queryByTitle('Add chapter');
-            if (addChapterBtn) {
-                await fireEvent.click(addChapterBtn);
-                await vi.runAllTimersAsync();
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
 
-                expect(
-                    screen.getByText('Create New Chapter')
-                ).toBeInTheDocument();
-            }
+            expect(screen.getByText('Create New Chapter')).toBeInTheDocument();
         });
 
         it('shows scene modal when add scene is clicked', async () => {
@@ -403,16 +399,13 @@ describe('StoryWriter', () => {
 
             render(StoryWriter);
             await vi.runAllTimersAsync();
+            await tick();
 
-            const addSceneBtn = screen.queryByTitle('Add scene');
-            if (addSceneBtn) {
-                await fireEvent.click(addSceneBtn);
-                await vi.runAllTimersAsync();
+            const addSceneBtn = screen.getByTitle('Add scene');
+            await fireEvent.click(addSceneBtn);
+            await vi.runAllTimersAsync();
 
-                expect(
-                    screen.getByText('Create New Scene')
-                ).toBeInTheDocument();
-            }
+            expect(screen.getByText('Create New Scene')).toBeInTheDocument();
         });
     });
 });

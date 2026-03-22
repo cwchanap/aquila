@@ -154,4 +154,169 @@ describe('MenuOverlay', () => {
             expect(onResume).toHaveBeenCalledOnce();
         });
     });
+
+    describe('backdrop click triggers close via registered pointerup handler', () => {
+        it('backdrop pointerup handler calls close with onResume', () => {
+            const scene = makeScene();
+            const config = defaultConfig();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(config);
+
+            // backdrop is the first rectangle created (index 0)
+            const backdrop = scene.add.rectangle.mock.results[0].value;
+            const pointerupCall = backdrop.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerup'
+            );
+            expect(pointerupCall).toBeDefined();
+
+            // Invoke the backdrop pointerup callback
+            const backdropPointerupCb = pointerupCall[1] as () => void;
+            backdropPointerupCb();
+
+            expect(overlay.open).toBe(false);
+            expect(config.onResume).toHaveBeenCalled();
+        });
+    });
+
+    describe('button event handlers', () => {
+        it('pointerover on first button calls setFillStyle with hover color', () => {
+            const scene = makeScene();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(defaultConfig());
+
+            // Button rectangles start at index 2 (0=backdrop, 1=panel, 2=first button)
+            const firstButton = scene.add.rectangle.mock.results[2].value;
+            const pointeroverCall = firstButton.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerover'
+            );
+            expect(pointeroverCall).toBeDefined();
+
+            const pointeroverCb = pointeroverCall[1] as () => void;
+            pointeroverCb();
+
+            expect(firstButton.setFillStyle).toHaveBeenCalledWith(
+                0x334155,
+                0.95
+            );
+        });
+
+        it('pointerout on first button calls setFillStyle with default color', () => {
+            const scene = makeScene();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(defaultConfig());
+
+            const firstButton = scene.add.rectangle.mock.results[2].value;
+            const pointeroutCall = firstButton.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerout'
+            );
+            expect(pointeroutCall).toBeDefined();
+
+            const pointeroutCb = pointeroutCall[1] as () => void;
+            pointeroutCb();
+
+            expect(firstButton.setFillStyle).toHaveBeenCalledWith(
+                0x1e293b,
+                0.9
+            );
+        });
+
+        it('pointerup on Resume button calls close with onResume', () => {
+            const scene = makeScene();
+            const config = defaultConfig();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(config);
+
+            // First button (Resume Story) is at rectangle index 2
+            const firstButton = scene.add.rectangle.mock.results[2].value;
+            const pointerupCall = firstButton.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerup'
+            );
+            expect(pointerupCall).toBeDefined();
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            const pointerupCb = pointerupCall[1] as (
+                ptr: unknown,
+                lx: unknown,
+                ly: unknown,
+                event: { stopPropagation: () => void }
+            ) => void;
+            pointerupCb(null, null, null, mockEvent);
+
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+            expect(overlay.open).toBe(false);
+            expect(config.onResume).toHaveBeenCalled();
+        });
+
+        it('pointerup on Progress Map button calls close with onProgressMap', () => {
+            const scene = makeScene();
+            const config = defaultConfig();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(config);
+
+            // Second button (Progress Map) is at rectangle index 3
+            const secondButton = scene.add.rectangle.mock.results[3].value;
+            const pointerupCall = secondButton.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerup'
+            );
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            const pointerupCb = pointerupCall[1] as (
+                ptr: unknown,
+                lx: unknown,
+                ly: unknown,
+                event: { stopPropagation: () => void }
+            ) => void;
+            pointerupCb(null, null, null, mockEvent);
+
+            expect(config.onProgressMap).toHaveBeenCalled();
+        });
+
+        it('pointerup on Return Home button calls close with onHome', () => {
+            const scene = makeScene();
+            const config = defaultConfig();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(config);
+
+            // Third button (Return Home) is at rectangle index 4
+            const thirdButton = scene.add.rectangle.mock.results[4].value;
+            const pointerupCall = thirdButton.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerup'
+            );
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            const pointerupCb = pointerupCall[1] as (
+                ptr: unknown,
+                lx: unknown,
+                ly: unknown,
+                event: { stopPropagation: () => void }
+            ) => void;
+            pointerupCb(null, null, null, mockEvent);
+
+            expect(config.onHome).toHaveBeenCalled();
+        });
+
+        it('stopPropagation handler stops event propagation on panel pointerdown', () => {
+            const scene = makeScene();
+            const overlay = new MenuOverlay(scene);
+            overlay.show(defaultConfig());
+
+            // Panel is at rectangle index 1
+            const panel = scene.add.rectangle.mock.results[1].value;
+            const pointerdownCall = panel.on.mock.calls.find(
+                (call: unknown[]) => call[0] === 'pointerdown'
+            );
+            expect(pointerdownCall).toBeDefined();
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            const stopPropCb = pointerdownCall[1] as (
+                ptr: unknown,
+                lx: unknown,
+                ly: unknown,
+                event: { stopPropagation: () => void }
+            ) => void;
+            stopPropCb(null, null, null, mockEvent);
+
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+        });
+    });
 });

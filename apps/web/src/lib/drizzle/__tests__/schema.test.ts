@@ -165,9 +165,11 @@ describe('Database schema', () => {
         function invokeBuilder(table: unknown): unknown {
             const t = table as Record<symbol, unknown>;
             const builder = t[ExtraConfigBuilder];
-            if (typeof builder !== 'function') return null;
+            expect(builder).toBeDefined();
+            expect(typeof builder).toBe('function');
             const cols = t[ExtraConfigColumns];
-            return builder(cols);
+            expect(cols).toBeDefined();
+            return (builder as (c: unknown) => unknown)(cols);
         }
 
         it('users index builder returns expected index keys', () => {

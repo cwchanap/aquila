@@ -822,10 +822,10 @@ describe('ReaderManager', () => {
 
             // Second render: the REAL readerInstance.unmount() is called (line 307-309)
             manager.renderReader();
-            await Promise.resolve();
-
-            // mockUnmount (svelte's unmount) should have been called by the closure
-            expect(mockUnmount).toHaveBeenCalled();
+            // Wait until the unmount closure fires and mockUnmount is recorded
+            await vi.waitFor(() => {
+                expect(mockUnmount).toHaveBeenCalled();
+            });
         });
 
         it('clears the container when container exists', () => {

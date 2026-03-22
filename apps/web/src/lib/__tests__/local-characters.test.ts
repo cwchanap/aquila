@@ -639,20 +639,23 @@ describe('setupEditHandler', () => {
     });
 
     describe('double-click edit aborts previous AbortController', () => {
-        it('clicking edit a second time aborts the previous controller (covers lines 215-216)', () => {
+        it('clicking edit a second time calls abort() on the previous controller (covers lines 215-216)', () => {
             const card = buildCard();
+            const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
+
             // First click – creates AbortController, sets _editAbortController
             card.querySelector<HTMLElement>('.character-edit-btn')!.click();
-            // Cancel to restore the edit button
+            // Cancel to restore the edit button (calls abort on first controller)
             card.querySelector<HTMLElement>('.character-cancel-btn')!.click();
-            // Second click – _editAbortController is already set, so abort() is called on it
+
+            const callsBefore = abortSpy.mock.calls.length;
+
+            // Second click – _editAbortController is set, abort() is called on the old one
             card.querySelector<HTMLElement>('.character-edit-btn')!.click();
-            // Verify we entered edit mode again (input is visible)
-            expect(
-                card
-                    .querySelector('.character-name-input')!
-                    .classList.contains('hidden')
-            ).toBe(false);
+
+            // abort() was called again for the previous controller on the second edit
+            expect(abortSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+            abortSpy.mockRestore();
         });
     });
 });
@@ -1171,23 +1174,24 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
         expect(() => wireUp()).not.toThrow();
     });
 
-    it('clicking edit a second time aborts previous AbortController', () => {
+    it('clicking edit a second time calls abort() on the previous AbortController', () => {
         const card = buildRemoteCard();
         wireUp();
 
+        const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
+
         // First click – creates an AbortController
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
-        // Cancel to exit edit mode so the button is accessible again
+        // Cancel to exit edit mode (calls abort on first controller)
         card.querySelector<HTMLElement>('.character-cancel-btn')!.click();
-        // Second click – should abort the previous controller
+
+        const callsBefore = abortSpy.mock.calls.length;
+
+        // Second click – should call abort() on the previous controller
         card.querySelector<HTMLElement>('.character-edit-btn')!.click();
 
-        // If no error was thrown the abort path was exercised
-        expect(
-            card
-                .querySelector('.character-name-input')!
-                .classList.contains('hidden')
-        ).toBe(false);
+        expect(abortSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+        abortSpy.mockRestore();
     });
 
     it('failed save with no error field uses fallback message', async () => {

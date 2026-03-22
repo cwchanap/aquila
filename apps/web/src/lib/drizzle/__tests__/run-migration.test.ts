@@ -218,6 +218,30 @@ describe('run-migration.ts', () => {
         expect(mockQuery).toHaveBeenCalledTimes(4);
     });
 
+    it('creates Pool with ssl.ca object in production when DB_CA_PATH is set', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'production';
+        process.env.DB_CA_PATH = '/fake/ca.pem';
+
+        const fakeCert = Buffer.from('fake-cert');
+        mockReadFileSync.mockImplementation((p: unknown) => {
+            if (String(p).includes('ca.pem')) return fakeCert;
+            return 'SELECT 1;';
+        });
+        mockReaddirSync.mockReturnValue([]);
+        mockQuery.mockResolvedValue({ rows: [] });
+
+        await import('../run-migration');
+
+        expect(mockPoolConstructor).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connectionString: 'postgres://localhost/testdb',
+                ssl: { ca: fakeCert },
+                max: 1,
+            })
+        );
+    });
+
     it('inserts migration filename into tracking table after successful application', async () => {
         process.env.DATABASE_URL = 'postgres://localhost/testdb';
         process.env.NODE_ENV = 'test';

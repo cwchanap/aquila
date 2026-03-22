@@ -37,6 +37,14 @@ vi.mock('fs', async importOriginal => {
     };
 });
 
+/**
+ * Cross-platform check: true when the path contains 'zh' as a distinct path segment.
+ * Normalising the separator avoids false negatives on Windows where path.join uses '\'.
+ */
+function hasPathSegment(p: unknown, segment: string): boolean {
+    return new RegExp(`(^|[\\\\/])${segment}($|[\\\\/])`).test(String(p));
+}
+
 // Helper to create a mock Dirent for an .astro file
 function makeFileDirent(name: string): Partial<Dirent> {
     return {
@@ -66,8 +74,8 @@ describe('generate-zh-proxy-pages', () => {
         // localePagesDir exists → no throw
         // readdirSync for localePagesDir returns one .astro file
         // readdirSync for zhPagesDir (cleanup) returns [] (no stale files)
-        mockExistsSync.mockImplementation((p: string) => {
-            if (String(p).includes('/zh')) return false; // zhPagesDir absent
+        mockExistsSync.mockImplementation((p: unknown) => {
+            if (hasPathSegment(p, 'zh')) return false; // zhPagesDir absent
             return true; // all others exist
         });
         mockReaddirSync.mockImplementation((dir: string) => {
@@ -121,7 +129,7 @@ describe('generate-zh-proxy-pages', () => {
                 // localePagesDir has one file
                 return [makeFileDirent('index.astro')];
             }
-            if (String(dir).includes('/zh')) {
+            if (hasPathSegment(dir, 'zh')) {
                 // zh dir has one stale file not in locale pages
                 return [makeFileDirent('stale-old.astro')];
             }
@@ -164,23 +172,21 @@ describe('generate-zh-proxy-pages', () => {
             isSocket: () => false,
         });
 
-        let callCount = 0;
         mockReaddirSync.mockImplementation((dir: string) => {
             const d = String(dir);
-            // First call: localePagesDir → returns a subdirectory
+            // First call: localePagesDir root → returns a subdirectory
             if (d.includes('[locale]') && !d.includes('subdir')) {
-                callCount++;
-                if (callCount === 1) {
-                    return [makeDirDirent('subdir')];
-                }
-                // Recursive call into subdir
-                return [makeFileDirent('page.astro')];
-            }
-            // zh dir cleanup: returns a subdirectory (for recursive cleanup)
-            if (d.includes('/zh') && !d.includes('subdir')) {
                 return [makeDirDirent('subdir')];
             }
-            // Recursive cleanup into subdir: returns empty (will trigger rmSync)
+            // Recursive call: localePagesDir/subdir → returns page.astro
+            if (d.includes('[locale]') && d.includes('subdir')) {
+                return [makeFileDirent('page.astro')];
+            }
+            // zh dir cleanup root: returns a subdirectory (for recursive cleanup)
+            if (hasPathSegment(d, 'zh') && !d.includes('subdir')) {
+                return [makeDirDirent('subdir')];
+            }
+            // Recursive cleanup into zh/subdir: returns empty (triggers rmSync)
             return [];
         });
 

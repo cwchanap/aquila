@@ -2,7 +2,15 @@
  * Tests for the rate-limit cleanup interval in change-password.ts.
  * Uses vi.useFakeTimers() so the setInterval fires on demand.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+    describe,
+    it,
+    expect,
+    vi,
+    beforeEach,
+    afterEach,
+    afterAll,
+} from 'vitest';
 
 // Enable fake timers BEFORE module import so setInterval uses them
 vi.useFakeTimers();
@@ -88,21 +96,35 @@ describe('change-password cleanup interval', () => {
         vi.clearAllTimers();
     });
 
+    afterAll(() => {
+        vi.useRealTimers();
+    });
+
     it('cleanup interval fires and removes stale rate-limit entries (covers lines 38-44)', async () => {
-        // Call POST with a wrong password → populates rateLimitMap
-        const req = makeFormRequest({
+        const formData = {
             currentPassword: 'wrongpass',
             newPassword: 'Newpass123!',
             confirmPassword: 'Newpass123!',
-        });
-        await POST({ request: req } as any);
+        };
 
-        // Advance time beyond ENTRY_TTL_MS (30 min) + fire the 60s interval
-        // vi.advanceTimersByTime fires the interval repeatedly up to the given duration
+        // Make 4 failed attempts to accumulate towards the 5-attempt lockout threshold.
+        // Each returns 400 (wrong password, not yet locked).
+        for (let i = 0; i < 4; i++) {
+            const res = await POST({
+                request: makeFormRequest(formData),
+            } as any);
+            expect(res.status).toBe(400);
+        }
+
+        // Advance time beyond ENTRY_TTL_MS (30 min); the cleanup interval fires and
+        // removes the stale entry from rateLimitMap.
         vi.advanceTimersByTime(31 * 60 * 1000);
 
-        // The cleanup callback ran — no assertion needed beyond coverage;
-        // verifying the test doesn't throw is sufficient.
-        expect(true).toBe(true);
+        // 5th attempt: if cleanup ran the entry was removed, so attempts reset to 1
+        // and the response is 400 (wrong password), NOT 429 (locked out).
+        const fifthRes = await POST({
+            request: makeFormRequest(formData),
+        } as any);
+        expect(fifthRes.status).toBe(400);
     });
 });

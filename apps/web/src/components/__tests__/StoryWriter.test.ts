@@ -478,6 +478,11 @@ describe('StoryWriter', () => {
                 '/api/chapters',
                 expect.objectContaining({ method: 'POST' })
             );
+            // Error banner visible and modal stays open on failure
+            expect(
+                screen.getByText('Failed to create chapter')
+            ).toBeInTheDocument();
+            expect(screen.getByText('Create Chapter')).toBeInTheDocument();
         });
 
         it('creates scene successfully and closes modal', async () => {
@@ -550,6 +555,11 @@ describe('StoryWriter', () => {
                 '/api/scenes',
                 expect.objectContaining({ method: 'POST' })
             );
+            // Error banner visible and modal stays open on failure
+            expect(
+                screen.getByText('Failed to create scene')
+            ).toBeInTheDocument();
+            expect(screen.getByText('Create Scene')).toBeInTheDocument();
         });
     });
 
@@ -727,8 +737,9 @@ describe('StoryWriter', () => {
             await vi.runAllTimersAsync();
             await tick();
 
-            // onEditScene sets editMode='scene' (a TODO callback)
-            expect(editSceneBtn).toBeInTheDocument();
+            // onEditScene sets editMode='scene' (TODO - no modal yet).
+            // Assert no error message appeared after the click (component still healthy).
+            expect(screen.queryByText(/Failed/)).not.toBeInTheDocument();
         });
 
         it('triggers delete scene callback after creating a direct scene', async () => {
@@ -760,12 +771,16 @@ describe('StoryWriter', () => {
             await tick();
 
             const deleteSceneBtn = screen.getByTitle('Delete scene');
+            const consoleSpy = vi
+                .spyOn(console, 'log')
+                .mockImplementation(() => {});
             await fireEvent.click(deleteSceneBtn);
             await vi.runAllTimersAsync();
             await tick();
 
-            // onDeleteScene logs "Delete scene" - button is still in DOM
-            expect(deleteSceneBtn).toBeInTheDocument();
+            // onDeleteScene currently logs 'Delete scene' as a placeholder
+            expect(consoleSpy).toHaveBeenCalledWith('Delete scene');
+            consoleSpy.mockRestore();
         });
     });
 

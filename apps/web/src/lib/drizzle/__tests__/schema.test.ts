@@ -12,6 +12,13 @@ import {
     bookmarks,
 } from '../schema';
 
+// Symbol used by Drizzle to store the lazy index-builder callback on each table.
+// The callback is NOT invoked during pgTable() – it is stored and called later
+// (e.g. during migration generation). Invoking it manually in tests is the only
+// way to get coverage for those arrow-function bodies.
+const ExtraConfigBuilder = Symbol.for('drizzle:ExtraConfigBuilder');
+const ExtraConfigColumns = Symbol.for('drizzle:ExtraConfigColumns');
+
 describe('Database schema', () => {
     describe('storyStatusEnum', () => {
         it('is defined and has expected values', () => {
@@ -148,6 +155,82 @@ describe('Database schema', () => {
             expect(cols.sceneId).toBeDefined();
             expect(cols.bookmarkName).toBeDefined();
             expect(cols.locale).toBeDefined();
+        });
+    });
+
+    // Drizzle stores the `table => ({...})` index-builder callbacks lazily via
+    // Symbol.for('drizzle:ExtraConfigBuilder'). Calling them here exercises those
+    // function bodies so they appear in the coverage report.
+    describe('index builder callbacks (ExtraConfigBuilder)', () => {
+        function invokeBuilder(table: unknown): unknown {
+            const t = table as Record<symbol, unknown>;
+            const builder = t[ExtraConfigBuilder];
+            if (typeof builder !== 'function') return null;
+            const cols = t[ExtraConfigColumns];
+            return builder(cols);
+        }
+
+        it('users index builder returns expected index keys', () => {
+            const result = invokeBuilder(users) as Record<string, unknown>;
+            expect(result).toHaveProperty('emailIdx');
+        });
+
+        it('sessions index builder returns expected index keys', () => {
+            const result = invokeBuilder(sessions) as Record<string, unknown>;
+            expect(result).toHaveProperty('userIdIdx');
+            expect(result).toHaveProperty('tokenIdx');
+            expect(result).toHaveProperty('expiresAtIdx');
+        });
+
+        it('accounts index builder returns expected index keys', () => {
+            const result = invokeBuilder(accounts) as Record<string, unknown>;
+            expect(result).toHaveProperty('userIdIdx');
+            expect(result).toHaveProperty('userProviderIdx');
+            expect(result).toHaveProperty('userProviderAccountIdx');
+        });
+
+        it('verificationTokens index builder returns expected index keys', () => {
+            const result = invokeBuilder(verificationTokens) as Record<
+                string,
+                unknown
+            >;
+            expect(result).toHaveProperty('tokenIdx');
+        });
+
+        it('characterSetups index builder returns expected index keys', () => {
+            const result = invokeBuilder(characterSetups) as Record<
+                string,
+                unknown
+            >;
+            expect(result).toHaveProperty('userIdIdx');
+            expect(result).toHaveProperty('storyIdIdx');
+            expect(result).toHaveProperty('userStoryIdx');
+        });
+
+        it('stories index builder returns expected index keys', () => {
+            const result = invokeBuilder(stories) as Record<string, unknown>;
+            expect(result).toHaveProperty('userIdIdx');
+        });
+
+        it('chapters index builder returns expected index keys', () => {
+            const result = invokeBuilder(chapters) as Record<string, unknown>;
+            expect(result).toHaveProperty('storyIdIdx');
+            expect(result).toHaveProperty('orderIdx');
+        });
+
+        it('scenes index builder returns expected index keys', () => {
+            const result = invokeBuilder(scenes) as Record<string, unknown>;
+            expect(result).toHaveProperty('storyIdIdx');
+            expect(result).toHaveProperty('chapterIdIdx');
+            expect(result).toHaveProperty('orderIdx');
+        });
+
+        it('bookmarks index builder returns expected index keys', () => {
+            const result = invokeBuilder(bookmarks) as Record<string, unknown>;
+            expect(result).toHaveProperty('userIdIdx');
+            expect(result).toHaveProperty('storyIdIdx');
+            expect(result).toHaveProperty('userStoryIdx');
+            expect(result).toHaveProperty('userStoryNameUnique');
         });
     });
 });

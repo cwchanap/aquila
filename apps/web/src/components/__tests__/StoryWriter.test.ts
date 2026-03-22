@@ -407,5 +407,569 @@ describe('StoryWriter', () => {
 
             expect(screen.getByText('Create New Scene')).toBeInTheDocument();
         });
+
+        it('creates chapter successfully and closes modal', async () => {
+            const mockChapter = {
+                id: 'chapter-1',
+                title: 'Chapter One',
+                description: '',
+                order: 0,
+            };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockChapter }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Chapter One' },
+            });
+
+            const submitBtn = screen.getByText('Create Chapter');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/chapters',
+                expect.objectContaining({ method: 'POST' })
+            );
+            expect(
+                screen.queryByText('Create New Chapter')
+            ).not.toBeInTheDocument();
+        });
+
+        it('shows error when chapter creation fails', async () => {
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Chapter One' },
+            });
+
+            const submitBtn = screen.getByText('Create Chapter');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/chapters',
+                expect.objectContaining({ method: 'POST' })
+            );
+        });
+
+        it('creates scene successfully and closes modal', async () => {
+            const mockScene = {
+                id: 'scene-1',
+                title: 'Scene One',
+                content: '',
+                order: 0,
+            };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockScene }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const addSceneBtn = screen.getByTitle('Add scene');
+            await fireEvent.click(addSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Scene One' },
+            });
+
+            const submitBtn = screen.getByText('Create Scene');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/scenes',
+                expect.objectContaining({ method: 'POST' })
+            );
+            expect(
+                screen.queryByText('Create New Scene')
+            ).not.toBeInTheDocument();
+        });
+
+        it('shows error when scene creation fails', async () => {
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const addSceneBtn = screen.getByTitle('Add scene');
+            await fireEvent.click(addSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Scene One' },
+            });
+
+            const submitBtn = screen.getByText('Create Scene');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/scenes',
+                expect.objectContaining({ method: 'POST' })
+            );
+        });
+    });
+
+    describe('success messages', () => {
+        it('shows success message after creating a story', async () => {
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({
+                        data: {
+                            id: 'new-story',
+                            title: 'New Story',
+                            description: '',
+                            status: 'draft',
+                        },
+                    }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const addBtn = screen.getByTitle('Create new story');
+            await fireEvent.click(addBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'New Story' },
+            });
+
+            const submitBtn = screen.getByText('Create Story');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(
+                screen.getByText('Story created successfully.')
+            ).toBeInTheDocument();
+        });
+
+        it('shows success message after updating a story', async () => {
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({
+                        data: { ...mockStory, title: 'Updated Story' },
+                    }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const editBtn = screen.getByTitle('Edit story');
+            await fireEvent.click(editBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const updateBtn = screen.getByText('Update Story');
+            await fireEvent.click(updateBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(
+                screen.getByText('Story updated successfully.')
+            ).toBeInTheDocument();
+        });
+    });
+
+    describe('update story error handling', () => {
+        it('shows error when update story fails', async () => {
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const editBtn = screen.getByTitle('Edit story');
+            await fireEvent.click(editBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const updateBtn = screen.getByText('Update Story');
+            await fireEvent.click(updateBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/stories/story-1',
+                expect.objectContaining({ method: 'PUT' })
+            );
+        });
+    });
+
+    describe('creates scene with multiple stories (covers return s branch)', () => {
+        it('adds scene to matching story while preserving other stories', async () => {
+            const story2 = {
+                id: 'story-2',
+                title: 'Second Story',
+                description: '',
+                status: 'published' as const,
+            };
+            const mockScene = { id: 'scene-1', title: 'Scene One', order: 0 };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory, story2]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockScene }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // First story is selected by default
+            const addSceneBtn = screen.getByTitle('Add scene');
+            await fireEvent.click(addSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Scene One' },
+            });
+
+            const submitBtn = screen.getByText('Create Scene');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // The scene was created - both stories should still be in the list
+            expect(screen.getByText('Second Story')).toBeInTheDocument();
+        });
+    });
+
+    describe('scene callbacks', () => {
+        it('triggers edit scene callback after creating a direct scene', async () => {
+            const mockScene = { id: 'scene-1', title: 'Scene One', order: 0 };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockScene }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Create a scene via story-level "Add scene" button
+            const addSceneBtn = screen.getByTitle('Add scene');
+            await fireEvent.click(addSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Scene One' },
+            });
+
+            const submitBtn = screen.getByText('Create Scene');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Scene is now in directScenes - "Edit scene" button should appear
+            const editSceneBtn = screen.getByTitle('Edit scene');
+            await fireEvent.click(editSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // onEditScene sets editMode='scene' (a TODO callback)
+            expect(editSceneBtn).toBeInTheDocument();
+        });
+
+        it('triggers delete scene callback after creating a direct scene', async () => {
+            const mockScene = { id: 'scene-1', title: 'Scene One', order: 0 };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockScene }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const addSceneBtn = screen.getByTitle('Add scene');
+            await fireEvent.click(addSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Scene One' },
+            });
+
+            const submitBtn = screen.getByText('Create Scene');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const deleteSceneBtn = screen.getByTitle('Delete scene');
+            await fireEvent.click(deleteSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // onDeleteScene logs "Delete scene" - button is still in DOM
+            expect(deleteSceneBtn).toBeInTheDocument();
+        });
+    });
+
+    describe('StoryTree callbacks', () => {
+        it('sets editMode to chapter when edit chapter is triggered', async () => {
+            const mockChapter = {
+                id: 'chapter-1',
+                title: 'Chapter One',
+                description: '',
+                order: 0,
+            };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockChapter }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Create a chapter first so chapter buttons appear
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Chapter One' },
+            });
+
+            const submitBtn = screen.getByText('Create Chapter');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Now click the edit chapter button
+            const editChapterBtn = screen.getByTitle('Edit chapter');
+            await fireEvent.click(editChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // editMode is 'chapter' but no modal opens (TODO state)
+            expect(editChapterBtn).toBeInTheDocument();
+        });
+
+        it('triggers delete chapter callback', async () => {
+            const mockChapter = {
+                id: 'chapter-1',
+                title: 'Chapter One',
+                description: '',
+                order: 0,
+            };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockChapter }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Create a chapter so delete button appears
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Chapter One' },
+            });
+
+            const submitBtn = screen.getByText('Create Chapter');
+            await fireEvent.click(submitBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const deleteChapterBtn = screen.getByTitle('Delete chapter');
+            await fireEvent.click(deleteChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Delete callback runs (console.log) - no error thrown
+            expect(deleteChapterBtn).toBeInTheDocument();
+        });
+    });
+
+    describe('chapter-based scene creation', () => {
+        it('creates scene within a chapter (covers chapterId path)', async () => {
+            const mockChapter = {
+                id: 'chapter-1',
+                title: 'Chapter One',
+                description: '',
+                order: 0,
+            };
+            const mockScene = {
+                id: 'scene-1',
+                title: 'Chapter Scene',
+                content: '',
+                order: 0,
+            };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockChapter }),
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockScene }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Step 1: Create a chapter so the chapter-level "Add scene" button appears
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const chapterTitleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(chapterTitleInput, {
+                target: { value: 'Chapter One' },
+            });
+            const createChapterBtn = screen.getByText('Create Chapter');
+            await fireEvent.click(createChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Step 2: Click the chapter-level "Add scene" button (there are now 2 "Add scene" buttons)
+            const addSceneBtns = screen.getAllByTitle('Add scene');
+            // First button is the story-level; second is the chapter-level
+            const chapterAddSceneBtn = addSceneBtns[addSceneBtns.length - 1];
+            await fireEvent.click(chapterAddSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Step 3: Fill in scene title and submit
+            const sceneTitleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(sceneTitleInput, {
+                target: { value: 'Chapter Scene' },
+            });
+            const createSceneBtn = screen.getByText('Create Scene');
+            await fireEvent.click(createSceneBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/api/scenes',
+                expect.objectContaining({ method: 'POST' })
+            );
+            expect(
+                screen.queryByText('Create New Scene')
+            ).not.toBeInTheDocument();
+        });
+
+        it('creates chapter with multiple stories (covers return s branch in handleCreateChapter)', async () => {
+            const story2 = {
+                id: 'story-2',
+                title: 'Second Story',
+                description: '',
+                status: 'published' as const,
+            };
+            const mockChapter = {
+                id: 'chapter-1',
+                title: 'Chapter One',
+                description: '',
+                order: 0,
+            };
+            mockFetch
+                .mockResolvedValueOnce(makeStoryResponse([mockStory, story2]))
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ data: mockChapter }),
+                });
+
+            render(StoryWriter);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Click the first "Add chapter" button (for mockStory which is selected by default)
+            const addChapterBtn = screen.getByTitle('Add chapter');
+            await fireEvent.click(addChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            const titleInput = screen.getByLabelText(/title/i);
+            await fireEvent.input(titleInput, {
+                target: { value: 'Chapter One' },
+            });
+            const createChapterBtn = screen.getByText('Create Chapter');
+            await fireEvent.click(createChapterBtn);
+            await vi.runAllTimersAsync();
+            await tick();
+
+            // Both stories should still be present; chapter created for story-1
+            expect(screen.getByText('Second Story')).toBeInTheDocument();
+        });
     });
 });

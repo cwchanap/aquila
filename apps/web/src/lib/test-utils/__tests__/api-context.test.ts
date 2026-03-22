@@ -6,7 +6,7 @@ import {
     createJsonRequest,
     createRequest,
     parseApiResponse,
-} from '../api-context';
+} from '../index';
 
 describe('api-context test utilities', () => {
     describe('createMockCookies', () => {

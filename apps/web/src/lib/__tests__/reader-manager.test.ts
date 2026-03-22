@@ -692,6 +692,38 @@ describe('ReaderManager', () => {
         });
     });
 
+    describe('onBookmark prop passed to mount (covers line 293)', () => {
+        it('invokes handleBookmark via onBookmark prop extracted from mount call', async () => {
+            mockShowPrompt.mockResolvedValueOnce(null); // handleBookmark returns early
+            const mockStory = { dialogue: { scene_1: [] }, choices: {} };
+            mockGetStoryContent.mockReturnValue(mockStory);
+
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+
+            const manager = new ReaderManager('en');
+            manager.renderReader();
+
+            // Wait for the dynamic import .then to run and call mount
+            await vi.waitFor(() => {
+                expect(mockMount).toHaveBeenCalled();
+            });
+
+            // Extract the onBookmark callback from mount's props argument
+            const mountCall =
+                mockMount.mock.calls[mockMount.mock.calls.length - 1];
+            const { onBookmark } = mountCall[1].props as {
+                onBookmark: (n: number) => Promise<void>;
+            };
+
+            // Invoke it - this exercises line 293: this.handleBookmark(dialogueNumber)
+            await onBookmark(3);
+
+            expect(mockShowPrompt).toHaveBeenCalled();
+        });
+    });
+
     describe('handleNext', () => {
         it('navigates to next scene when it exists', async () => {
             const mockStory = {
@@ -764,6 +796,35 @@ describe('ReaderManager', () => {
             // Give microtasks a chance to run
             await Promise.resolve();
 
+            expect(mockUnmount).toHaveBeenCalled();
+        });
+
+        it('unmount closure in readerInstance calls svelte unmount (covers lines 307-309)', async () => {
+            const mockStory = {
+                dialogue: { scene_1: [] },
+                choices: {},
+            };
+            mockGetStoryContent.mockReturnValue(mockStory);
+
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+
+            const manager = new ReaderManager('en');
+
+            // First render: let the async import chain complete so readerInstance is set
+            // with the REAL unmount closure (lines 306-310)
+            manager.renderReader();
+            // Wait until the dynamic import .then completes and sets readerInstance
+            await vi.waitFor(() => {
+                expect((manager as any).readerInstance).not.toBeNull();
+            });
+
+            // Second render: the REAL readerInstance.unmount() is called (line 307-309)
+            manager.renderReader();
+            await Promise.resolve();
+
+            // mockUnmount (svelte's unmount) should have been called by the closure
             expect(mockUnmount).toHaveBeenCalled();
         });
 

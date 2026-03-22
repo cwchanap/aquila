@@ -637,6 +637,24 @@ describe('setupEditHandler', () => {
             ).not.toThrow();
         });
     });
+
+    describe('double-click edit aborts previous AbortController', () => {
+        it('clicking edit a second time aborts the previous controller (covers lines 215-216)', () => {
+            const card = buildCard();
+            // First click – creates AbortController, sets _editAbortController
+            card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+            // Cancel to restore the edit button
+            card.querySelector<HTMLElement>('.character-cancel-btn')!.click();
+            // Second click – _editAbortController is already set, so abort() is called on it
+            card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+            // Verify we entered edit mode again (input is visible)
+            expect(
+                card
+                    .querySelector('.character-name-input')!
+                    .classList.contains('hidden')
+            ).toBe(false);
+        });
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -1141,6 +1159,56 @@ describe('setupRemoteEditHandler (authenticated character editing)', () => {
             expect(playLink.getAttribute('href')).toBe(
                 '/en/story/train_adventure'
             )
+        );
+    });
+
+    it('skips card when edit button is missing (early return)', () => {
+        const card = document.createElement('div');
+        card.setAttribute('data-character-id', 'char-x');
+        // Deliberately no .character-edit-btn child
+        document.body.appendChild(card);
+
+        expect(() => wireUp()).not.toThrow();
+    });
+
+    it('clicking edit a second time aborts previous AbortController', () => {
+        const card = buildRemoteCard();
+        wireUp();
+
+        // First click – creates an AbortController
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        // Cancel to exit edit mode so the button is accessible again
+        card.querySelector<HTMLElement>('.character-cancel-btn')!.click();
+        // Second click – should abort the previous controller
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+
+        // If no error was thrown the abort path was exercised
+        expect(
+            card
+                .querySelector('.character-name-input')!
+                .classList.contains('hidden')
+        ).toBe(false);
+    });
+
+    it('failed save with no error field uses fallback message', async () => {
+        const card = buildRemoteCard();
+        const alertMock = vi
+            .spyOn(window, 'alert')
+            .mockImplementation(() => {});
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        wireUp();
+
+        // json() resolves to an object with no `error` property → fallback message used
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: false,
+            json: vi.fn().mockResolvedValue({}),
+        });
+
+        card.querySelector<HTMLElement>('.character-edit-btn')!.click();
+        card.querySelector<HTMLElement>('.character-save-btn')!.click();
+
+        await vi.waitFor(() =>
+            expect(alertMock).toHaveBeenCalledWith(translations.updateFailed)
         );
     });
 });

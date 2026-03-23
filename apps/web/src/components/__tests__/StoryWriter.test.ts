@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, within } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import { tick } from 'svelte';
 import StoryWriter from '../StoryWriter.svelte';
@@ -864,12 +864,15 @@ describe('StoryWriter', () => {
             await tick();
 
             const deleteChapterBtn = screen.getByTitle('Delete chapter');
+            const consoleSpy = vi
+                .spyOn(console, 'log')
+                .mockImplementation(() => {});
             await fireEvent.click(deleteChapterBtn);
             await vi.runAllTimersAsync();
             await tick();
 
-            // Delete callback runs (console.log) - no error thrown
-            expect(deleteChapterBtn).toBeInTheDocument();
+            expect(consoleSpy).toHaveBeenCalledWith('Delete chapter');
+            consoleSpy.mockRestore();
         });
     });
 
@@ -917,10 +920,13 @@ describe('StoryWriter', () => {
             await vi.runAllTimersAsync();
             await tick();
 
-            // Step 2: Click the chapter-level "Add scene" button (there are now 2 "Add scene" buttons)
-            const addSceneBtns = screen.getAllByTitle('Add scene');
-            // First button is the story-level; second is the chapter-level
-            const chapterAddSceneBtn = addSceneBtns[addSceneBtns.length - 1];
+            // Step 2: Click the chapter-level "Add scene" button scoped to the chapter container
+            const chapterElement = screen
+                .getByText('Chapter One')
+                .closest('.chapter-item')!;
+            const chapterAddSceneBtn = within(
+                chapterElement as HTMLElement
+            ).getByTitle('Add scene');
             await fireEvent.click(chapterAddSceneBtn);
             await vi.runAllTimersAsync();
             await tick();
@@ -935,10 +941,17 @@ describe('StoryWriter', () => {
             await vi.runAllTimersAsync();
             await tick();
 
-            expect(mockFetch).toHaveBeenCalledWith(
-                '/api/scenes',
-                expect.objectContaining({ method: 'POST' })
+            const scenesCall = mockFetch.mock.calls.find(
+                (c: unknown[]) => c[0] === '/api/scenes'
             );
+            expect(scenesCall).toBeDefined();
+            const body = JSON.parse(
+                (scenesCall![1] as RequestInit).body as string
+            );
+            expect(body).toMatchObject({
+                storyId: mockStory.id,
+                chapterId: mockChapter.id,
+            });
             expect(
                 screen.queryByText('Create New Scene')
             ).not.toBeInTheDocument();

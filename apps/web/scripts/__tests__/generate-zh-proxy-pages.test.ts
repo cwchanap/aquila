@@ -2,7 +2,7 @@
  * Tests for generate-zh-proxy-pages.ts script.
  * Uses vi.mock('fs') + dynamic import to exercise module-level code and helper functions.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Dirent } from 'fs';
 
 // ---- fs mock ----------------------------------------------------------------
@@ -62,10 +62,6 @@ function makeFileDirent(name: string): Partial<Dirent> {
 describe('generate-zh-proxy-pages', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.resetModules();
-    });
-
-    afterEach(() => {
         vi.resetModules();
     });
 

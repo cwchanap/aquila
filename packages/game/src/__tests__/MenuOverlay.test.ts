@@ -12,6 +12,22 @@ const defaultConfig = () => ({
     onHome: vi.fn(),
 });
 
+/** Invoke the pointerup callback registered via `.on('pointerup', cb)`. */
+function callPointerCallback(
+    calls: unknown[][],
+    mockEvent: { stopPropagation: () => void }
+): void {
+    const call = calls.find((c: unknown[]) => c[0] === 'pointerup');
+    expect(call).toBeDefined();
+    const cb = call![1] as (
+        ptr: unknown,
+        lx: unknown,
+        ly: unknown,
+        event: { stopPropagation: () => void }
+    ) => void;
+    cb(null, null, null, mockEvent);
+}
+
 describe('MenuOverlay', () => {
     describe('open', () => {
         it('is false initially', () => {
@@ -228,19 +244,8 @@ describe('MenuOverlay', () => {
 
             // First button (Resume Story) is at rectangle index 2
             const firstButton = scene.add.rectangle.mock.results[2].value;
-            const pointerupCall = firstButton.on.mock.calls.find(
-                (call: unknown[]) => call[0] === 'pointerup'
-            );
-            expect(pointerupCall).toBeDefined();
-
             const mockEvent = { stopPropagation: vi.fn() };
-            const pointerupCb = pointerupCall[1] as (
-                ptr: unknown,
-                lx: unknown,
-                ly: unknown,
-                event: { stopPropagation: () => void }
-            ) => void;
-            pointerupCb(null, null, null, mockEvent);
+            callPointerCallback(firstButton.on.mock.calls, mockEvent);
 
             expect(mockEvent.stopPropagation).toHaveBeenCalled();
             expect(overlay.open).toBe(false);
@@ -255,19 +260,8 @@ describe('MenuOverlay', () => {
 
             // Second button (Progress Map) is at rectangle index 3
             const secondButton = scene.add.rectangle.mock.results[3].value;
-            const pointerupCall = secondButton.on.mock.calls.find(
-                (call: unknown[]) => call[0] === 'pointerup'
-            );
-            expect(pointerupCall).toBeDefined();
-
             const mockEvent = { stopPropagation: vi.fn() };
-            const pointerupCb = pointerupCall[1] as (
-                ptr: unknown,
-                lx: unknown,
-                ly: unknown,
-                event: { stopPropagation: () => void }
-            ) => void;
-            pointerupCb(null, null, null, mockEvent);
+            callPointerCallback(secondButton.on.mock.calls, mockEvent);
 
             expect(config.onProgressMap).toHaveBeenCalled();
         });
@@ -280,19 +274,8 @@ describe('MenuOverlay', () => {
 
             // Third button (Return Home) is at rectangle index 4
             const thirdButton = scene.add.rectangle.mock.results[4].value;
-            const pointerupCall = thirdButton.on.mock.calls.find(
-                (call: unknown[]) => call[0] === 'pointerup'
-            );
-            expect(pointerupCall).toBeDefined();
-
             const mockEvent = { stopPropagation: vi.fn() };
-            const pointerupCb = pointerupCall[1] as (
-                ptr: unknown,
-                lx: unknown,
-                ly: unknown,
-                event: { stopPropagation: () => void }
-            ) => void;
-            pointerupCb(null, null, null, mockEvent);
+            callPointerCallback(thirdButton.on.mock.calls, mockEvent);
 
             expect(config.onHome).toHaveBeenCalled();
         });

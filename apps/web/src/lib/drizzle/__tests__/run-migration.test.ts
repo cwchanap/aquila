@@ -88,7 +88,7 @@ describe('run-migration.ts', () => {
 
         await import('../run-migration');
 
-        expect(mockPoolEnd).toHaveBeenCalled();
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
     });
 
     it('returns early when no .sql migration files are found', async () => {
@@ -101,7 +101,7 @@ describe('run-migration.ts', () => {
         await import('../run-migration');
 
         // Pool.end is still called in finally, but no queries for migration
-        expect(mockPoolEnd).toHaveBeenCalled();
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
     });
 
     it('creates tracking table and applies unapplied migration files', async () => {
@@ -119,8 +119,8 @@ describe('run-migration.ts', () => {
 
         await import('../run-migration');
 
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
         expect(mockQuery).toHaveBeenCalledTimes(4);
-        expect(mockPoolEnd).toHaveBeenCalled();
     });
 
     it('skips migration files that were already applied', async () => {
@@ -137,8 +137,8 @@ describe('run-migration.ts', () => {
         await import('../run-migration');
 
         // Should only call query twice (tracking table + check), not execute or insert
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
         expect(mockQuery).toHaveBeenCalledTimes(2);
-        expect(mockPoolEnd).toHaveBeenCalled();
     });
 
     it('handles multiple SQL statements separated by breakpoints', async () => {
@@ -159,6 +159,7 @@ describe('run-migration.ts', () => {
 
         await import('../run-migration');
 
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
         expect(mockQuery).toHaveBeenCalledTimes(5);
     });
 
@@ -174,7 +175,7 @@ describe('run-migration.ts', () => {
         await import('../run-migration');
 
         // create tracking table (1) + per file: check (1) + execute (1) + insert (1) = 1 + 2*3 = 7
-        expect(mockQuery).toHaveBeenCalledTimes(7);
+        await vi.waitFor(() => expect(mockQuery).toHaveBeenCalledTimes(7));
     });
 
     it('sorts migration files alphabetically before applying', async () => {
@@ -193,6 +194,8 @@ describe('run-migration.ts', () => {
 
         await import('../run-migration');
 
+        // Wait for migration to finish, then check order
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
         // 0001_first.sql should appear before 0002_second.sql (alphabetical sorting)
         expect(queryParams.indexOf('0001_first.sql')).toBeLessThan(
             queryParams.indexOf('0002_second.sql')
@@ -215,7 +218,7 @@ describe('run-migration.ts', () => {
         await import('../run-migration');
 
         // Only 0001_init.sql should be processed: tracking table (1) + check (1) + execute (1) + insert (1) = 4
-        expect(mockQuery).toHaveBeenCalledTimes(4);
+        await vi.waitFor(() => expect(mockQuery).toHaveBeenCalledTimes(4));
     });
 
     it('creates Pool with ssl.ca object in production when DB_CA_PATH is set', async () => {

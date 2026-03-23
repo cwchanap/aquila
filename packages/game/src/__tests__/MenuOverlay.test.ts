@@ -258,6 +258,7 @@ describe('MenuOverlay', () => {
             const pointerupCall = secondButton.on.mock.calls.find(
                 (call: unknown[]) => call[0] === 'pointerup'
             );
+            expect(pointerupCall).toBeDefined();
 
             const mockEvent = { stopPropagation: vi.fn() };
             const pointerupCb = pointerupCall[1] as (
@@ -282,6 +283,7 @@ describe('MenuOverlay', () => {
             const pointerupCall = thirdButton.on.mock.calls.find(
                 (call: unknown[]) => call[0] === 'pointerup'
             );
+            expect(pointerupCall).toBeDefined();
 
             const mockEvent = { stopPropagation: vi.fn() };
             const pointerupCb = pointerupCall[1] as (

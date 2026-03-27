@@ -188,5 +188,65 @@ describe('ProgressMapModal', () => {
             modal.show();
             expect(pauseFn).toHaveBeenCalled();
         });
+
+        it('calls resumeEscListener on close when scene is an EscListenerHost (line 272)', () => {
+            const scene = makeScene();
+            const pauseFn = vi.fn();
+            const resumeFn = vi.fn();
+            scene.pauseEscListener = pauseFn;
+            scene.resumeEscListener = resumeFn;
+
+            const modal = new ProgressMapModal(scene, makeConfig());
+            modal.show();
+            clickBackdrop(scene);
+            expect(resumeFn).toHaveBeenCalled();
+        });
+    });
+
+    describe('close button interactions', () => {
+        it('closes the modal when close button is clicked (line 131)', () => {
+            const scene = makeScene();
+            const onClose = vi.fn();
+            const modal = new ProgressMapModal(scene, makeConfig(onClose));
+            modal.show();
+
+            // The close button is the second text created (index 1: title=0, closeBtn=1)
+            const closeBtnMock = scene.add.text.mock.results[1].value;
+            const pointerupCb = closeBtnMock.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerup'
+            )?.[1] as (() => void) | undefined;
+
+            pointerupCb?.();
+            expect(modal.isVisible()).toBe(false);
+            expect(onClose).toHaveBeenCalledOnce();
+        });
+
+        it('pointerover callback changes close button color (line 126)', () => {
+            const scene = makeScene();
+            const modal = new ProgressMapModal(scene, makeConfig());
+            modal.show();
+
+            const closeBtnMock = scene.add.text.mock.results[1].value;
+            const pointeroverCb = closeBtnMock.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerover'
+            )?.[1] as (() => void) | undefined;
+
+            expect(() => pointeroverCb?.()).not.toThrow();
+            expect(closeBtnMock.setColor).toHaveBeenCalledWith('#ffffff');
+        });
+
+        it('pointerout callback changes close button color (line 128)', () => {
+            const scene = makeScene();
+            const modal = new ProgressMapModal(scene, makeConfig());
+            modal.show();
+
+            const closeBtnMock = scene.add.text.mock.results[1].value;
+            const pointeroutCb = closeBtnMock.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerout'
+            )?.[1] as (() => void) | undefined;
+
+            expect(() => pointeroutCb?.()).not.toThrow();
+            expect(closeBtnMock.setColor).toHaveBeenCalledWith('#e5e7eb');
+        });
     });
 });

@@ -141,4 +141,74 @@ describe('ChoicePresenter', () => {
             expect(() => presenter.clear()).not.toThrow();
         });
     });
+
+    describe('event callbacks', () => {
+        it('backdrop pointerdown callback calls event.stopPropagation (line 57)', () => {
+            const scene = makeScene();
+            const presenter = new ChoicePresenter(scene, testChoiceMap);
+            presenter.present('choice_1', ['opt_a'], vi.fn());
+
+            // Backdrop is the first rectangle created
+            const backdrop = scene.add.rectangle.mock.results[0].value;
+            const pointerdownCb = backdrop.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerdown'
+            )?.[1] as
+                | ((
+                      p: unknown,
+                      x: unknown,
+                      y: unknown,
+                      e: { stopPropagation: () => void }
+                  ) => void)
+                | undefined;
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            pointerdownCb?.(null, 0, 0, mockEvent);
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+        });
+
+        it('option button pointerover callback calls setFillStyle (line 128)', () => {
+            const scene = makeScene();
+            const presenter = new ChoicePresenter(scene, testChoiceMap);
+            presenter.present('choice_1', ['opt_a'], vi.fn());
+
+            // Option button background is the 3rd rectangle (after backdrop + panel)
+            const buttonBg = scene.add.rectangle.mock.results[2].value;
+            const pointeroverCb = buttonBg.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerover'
+            )?.[1] as (() => void) | undefined;
+
+            expect(() => pointeroverCb?.()).not.toThrow();
+            expect(buttonBg.setFillStyle).toHaveBeenCalled();
+        });
+
+        it('option button pointerout callback calls setFillStyle (line 131)', () => {
+            const scene = makeScene();
+            const presenter = new ChoicePresenter(scene, testChoiceMap);
+            presenter.present('choice_1', ['opt_a'], vi.fn());
+
+            const buttonBg = scene.add.rectangle.mock.results[2].value;
+            const pointeroutCb = buttonBg.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerout'
+            )?.[1] as (() => void) | undefined;
+
+            pointeroutCb?.();
+            expect(buttonBg.setFillStyle).toHaveBeenCalled();
+        });
+
+        it('option button pointerup callback calls clear and onSelect (lines 133-135)', () => {
+            const scene = makeScene();
+            const onSelect = vi.fn();
+            const presenter = new ChoicePresenter(scene, testChoiceMap);
+            presenter.present('choice_1', ['opt_a'], onSelect);
+
+            const buttonBg = scene.add.rectangle.mock.results[2].value;
+            const pointerupCb = buttonBg.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerup'
+            )?.[1] as (() => void) | undefined;
+
+            pointerupCb?.();
+            expect(presenter.awaiting).toBe(false);
+            expect(onSelect).toHaveBeenCalledWith('opt_a');
+        });
+    });
 });

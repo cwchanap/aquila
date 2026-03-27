@@ -12,7 +12,9 @@ const mockRepo = {
 };
 
 // Create constructor mock that returns mockRepo
-const UserRepositoryConstructor = vi.fn(() => mockRepo);
+const UserRepositoryConstructor = vi.fn(function () {
+    return mockRepo;
+});
 
 vi.mock('../../../lib/drizzle/repositories.js', () => ({
     UserRepository: UserRepositoryConstructor,
@@ -557,7 +559,7 @@ describe('Users API - Authenticated Endpoints', () => {
     describe('GET /api/users - additional error cases', () => {
         it('returns 500 on unexpected error during user fetch', async () => {
             mockAuthenticatedSession('user123');
-            UserRepositoryConstructor.mockImplementationOnce(() => {
+            UserRepositoryConstructor.mockImplementationOnce(function () {
                 throw new Error('Constructor failure');
             });
 

@@ -41,9 +41,8 @@ describe('run-migration.ts', () => {
 
         mockQuery.mockReset();
         mockPoolEnd.mockReset().mockResolvedValue(undefined);
-        mockPoolConstructor.mockReset().mockReturnValue({
-            query: mockQuery,
-            end: mockPoolEnd,
+        mockPoolConstructor.mockReset().mockImplementation(function () {
+            return { query: mockQuery, end: mockPoolEnd };
         });
         mockReaddirSync.mockReset();
         mockReadFileSync.mockReset();

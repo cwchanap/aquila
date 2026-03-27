@@ -57,9 +57,13 @@ describe('Scenes API', () => {
         SceneRepositoryMock.mockReset();
         StoryRepositoryMock.mockReset();
         mockRepo = createMockRepo();
-        SceneRepositoryMock.mockReturnValue(mockRepo as any);
+        SceneRepositoryMock.mockImplementation(function () {
+            return mockRepo;
+        });
         mockStoryRepo = { findById: vi.fn() };
-        StoryRepositoryMock.mockReturnValue(mockStoryRepo as any);
+        StoryRepositoryMock.mockImplementation(function () {
+            return mockStoryRepo;
+        });
         mockUnauthenticatedSession();
     });
 

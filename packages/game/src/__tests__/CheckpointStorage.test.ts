@@ -183,5 +183,25 @@ describe('CheckpointStorage', () => {
         it('does not throw for non-existent checkpoint', () => {
             expect(() => clearCheckpoint('nonExistent')).not.toThrow();
         });
+
+        it('swallows errors when localStorage.removeItem throws (line 84 catch)', () => {
+            vi.spyOn(localStorage, 'removeItem').mockImplementationOnce(() => {
+                throw new Error('Storage error');
+            });
+            expect(() => clearCheckpoint('trainAdventure')).not.toThrow();
+        });
+    });
+
+    describe('saveCheckpoint error handling', () => {
+        it('swallows errors when localStorage.setItem throws (line 39 catch)', () => {
+            vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
+                throw new Error('QuotaExceededError');
+            });
+            const state: CheckpointState = {
+                sceneId: 'scene_1',
+                history: ['scene_1'],
+            };
+            expect(() => saveCheckpoint('trainAdventure', state)).not.toThrow();
+        });
     });
 });

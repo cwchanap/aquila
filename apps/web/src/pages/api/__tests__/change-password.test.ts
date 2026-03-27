@@ -39,10 +39,12 @@ vi.mock('../../../lib/api-utils.js', () => ({
 }));
 
 vi.mock('../../../lib/drizzle/repositories.js', () => ({
-    AccountRepository: vi.fn().mockImplementation(() => ({
-        findCredentialAccount: mockFindCredentialAccount,
-        updatePassword: mockUpdatePassword,
-    })),
+    AccountRepository: vi.fn().mockImplementation(function () {
+        return {
+            findCredentialAccount: mockFindCredentialAccount,
+            updatePassword: mockUpdatePassword,
+        };
+    }),
 }));
 
 vi.mock('bcryptjs', () => ({

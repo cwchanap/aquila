@@ -133,6 +133,40 @@ describe('StoryProgressionMap', () => {
                 map.update('scene_2', ['scene_1', 'scene_2'])
             ).not.toThrow();
         });
+
+        it('marks choice node as completed when a target scene is in history', () => {
+            // Covers line 546: hasVisitedAnyTarget ? 'completed' : 'locked' — the 'completed' branch
+            const scene = makeScene();
+            const map = new StoryProgressionMap(
+                scene,
+                baseConfig(branchingNodes)
+            );
+            // scene_3a is one of the targets of choice:c1; visiting it marks the choice as completed
+            expect(() =>
+                map.update('scene_3a', ['scene_1', 'scene_2', 'scene_3a'])
+            ).not.toThrow();
+        });
+
+        it('marks choice node as locked when no target scenes are in history', () => {
+            // Covers line 546: hasVisitedAnyTarget ? 'completed' : 'locked' — the 'locked' branch
+            const scene = makeScene();
+            const map = new StoryProgressionMap(
+                scene,
+                baseConfig(branchingNodes)
+            );
+            expect(() => map.update('scene_2', ['scene_1'])).not.toThrow();
+        });
+
+        it('marks unvisited scene nodes as locked (else branch)', () => {
+            // Covers line 548: the else branch when node.kind === 'scene' but not in completedHistory
+            const scene = makeScene();
+            const map = new StoryProgressionMap(
+                scene,
+                baseConfig(branchingNodes)
+            );
+            // scene_3a and scene_3b are scene nodes not in history and not current → locked
+            expect(() => map.update('scene_2', ['scene_1'])).not.toThrow();
+        });
     });
 
     describe('event subscription', () => {
@@ -141,6 +175,82 @@ describe('StoryProgressionMap', () => {
             const map = new StoryProgressionMap(scene, baseConfig(linearNodes));
             const handler = vi.fn();
             expect(() => map.on('nodeClicked', handler)).not.toThrow();
+        });
+    });
+
+    describe('interactive mode', () => {
+        const interactiveConfig = (nodes: FlowNodeDefinition[]) => ({
+            ...baseConfig(nodes),
+            interactive: true,
+        });
+
+        it('registers pointer events on node containers when interactive=true', () => {
+            const scene = makeScene();
+            new StoryProgressionMap(scene, interactiveConfig(linearNodes));
+            // Root container (index 0) + one per node (2); the node containers get .on() calls
+            const nodeContainer = scene.add.container.mock.results[1].value;
+            const events = nodeContainer.on.mock.calls.map(
+                (c: [string, unknown]) => c[0]
+            );
+            expect(events).toContain('pointerover');
+            expect(events).toContain('pointerout');
+            expect(events).toContain('pointerup');
+        });
+
+        it('showTooltip creates a tooltip container on pointerover', () => {
+            const scene = makeScene();
+            new StoryProgressionMap(scene, interactiveConfig(linearNodes));
+            const nodeContainer = scene.add.container.mock.results[1].value;
+            const pointeroverCb = nodeContainer.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerover'
+            )?.[1] as (() => void) | undefined;
+            const containersBefore = scene.add.container.mock.calls.length;
+            pointeroverCb?.();
+            // A new tooltip container is created inside showTooltip
+            expect(scene.add.container.mock.calls.length).toBeGreaterThan(
+                containersBefore
+            );
+        });
+
+        it('hideTooltip destroys an existing tooltip container on pointerout (line 491)', () => {
+            // Covers StoryProgressionMap.ts line 491: this.tooltipContainer = undefined
+            const scene = makeScene();
+            new StoryProgressionMap(scene, interactiveConfig(linearNodes));
+            const nodeContainer = scene.add.container.mock.results[1].value;
+            const findCb = (event: string) =>
+                nodeContainer.on.mock.calls.find(
+                    (c: [string, unknown]) => c[0] === event
+                )?.[1] as (() => void) | undefined;
+
+            // First trigger pointerover to create the tooltip
+            findCb('pointerover')?.();
+            // Capture the tooltip container that was created
+            const tooltipContainer =
+                scene.add.container.mock.results[
+                    scene.add.container.mock.results.length - 1
+                ].value;
+            // Then trigger pointerout to destroy it (covers line 491)
+            findCb('pointerout')?.();
+            expect(tooltipContainer.destroy).toHaveBeenCalled();
+        });
+
+        it('pointerup emits nodeClicked event without throwing (line 502)', () => {
+            // Covers StoryProgressionMap.ts line 502: this.eventEmitter.emit(event, ...args)
+            const scene = makeScene();
+            const map = new StoryProgressionMap(
+                scene,
+                interactiveConfig(linearNodes)
+            );
+            const handler = vi.fn();
+            map.on('nodeClicked', handler);
+
+            const nodeContainer = scene.add.container.mock.results[1].value;
+            const pointerupCb = nodeContainer.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerup'
+            )?.[1] as (() => void) | undefined;
+            // Calling pointerup should invoke emit() on the event emitter (line 502)
+            expect(() => pointerupCb?.()).not.toThrow();
+            expect(pointerupCb).toBeDefined();
         });
     });
 

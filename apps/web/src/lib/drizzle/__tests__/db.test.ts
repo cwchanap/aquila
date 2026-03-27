@@ -29,9 +29,11 @@ describe('Database module (db.ts)', () => {
         }
 
         mockPoolConstructor.mockClear();
-        mockPoolConstructor.mockReturnValue({ isPool: true });
+        mockPoolConstructor.mockImplementation(function () {
+            return { isPool: true };
+        });
         mockDrizzleFn.mockClear();
-        mockDrizzleFn.mockReturnValue({ select: vi.fn(), insert: vi.fn() });
+        mockDrizzleFn.mockReturnValue({ select: vi.fn(), insert: vi.fn() }); // drizzle is not a constructor, mockReturnValue is fine
 
         // Reset module registry so _db module-level cache is cleared each test
         vi.resetModules();

@@ -62,8 +62,12 @@ describe('Chapters API', () => {
         StoryRepositoryMock.mockReset();
         mockRepo = createMockRepo();
         mockStoryRepo = createMockStoryRepo();
-        ChapterRepositoryMock.mockReturnValue(mockRepo as any);
-        StoryRepositoryMock.mockReturnValue(mockStoryRepo as any);
+        ChapterRepositoryMock.mockImplementation(function () {
+            return mockRepo;
+        });
+        StoryRepositoryMock.mockImplementation(function () {
+            return mockStoryRepo;
+        });
         mockUnauthenticatedSession();
     });
 

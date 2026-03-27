@@ -1,5 +1,14 @@
 import { vi, beforeEach } from 'vitest';
 
+// Define window.alert for environments (like happy-dom) that don't provide it
+if (typeof window !== 'undefined' && typeof window.alert !== 'function') {
+    Object.defineProperty(window, 'alert', {
+        value: vi.fn(),
+        writable: true,
+        configurable: true,
+    });
+}
+
 // Mock crypto.randomUUID for consistent test results
 Object.defineProperty(global, 'crypto', {
     value: {

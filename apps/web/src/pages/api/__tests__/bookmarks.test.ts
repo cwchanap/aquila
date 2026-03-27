@@ -59,7 +59,9 @@ describe('Bookmarks API', () => {
         mockGetSession.mockReset();
         BookmarkRepositoryMock.mockReset();
         mockRepo = createMockRepo();
-        BookmarkRepositoryMock.mockReturnValue(mockRepo as any);
+        BookmarkRepositoryMock.mockImplementation(function () {
+            return mockRepo;
+        });
         mockUnauthenticatedSession();
     });
 

@@ -63,7 +63,9 @@ describe('Character Setup API', () => {
         isValidStoryIdMock.mockReset();
         CharacterSetupRepositoryMock.mockReset();
         mockRepo = createMockRepo();
-        CharacterSetupRepositoryMock.mockReturnValue(mockRepo as any);
+        CharacterSetupRepositoryMock.mockImplementation(function () {
+            return mockRepo;
+        });
         mockUnauthenticatedSession();
     });
 

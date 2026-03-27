@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { getTrainAdventureStory } from '../stories/trainAdventure';
 import { trainAdventureFlow } from '../stories/trainAdventure/flow';
+import {
+    trainAdventureZhChoices,
+    trainAdventureZhDialogue,
+} from '../stories/trainAdventure/zh';
 import { getStoryContent, getStoryFlow } from '../stories';
 
 describe('stories', () => {
@@ -243,5 +247,39 @@ describe('trainAdventure content consistency', () => {
                 expect(opt.label.length).toBeGreaterThan(0);
             }
         }
+    });
+});
+
+// ── trainAdventure/zh.ts barrel file ──────────────────────────────────────
+
+describe('trainAdventure/zh barrel exports', () => {
+    it('exports trainAdventureZhDialogue', () => {
+        expect(trainAdventureZhDialogue).toBeDefined();
+        expect(typeof trainAdventureZhDialogue).toBe('object');
+    });
+
+    it('exports trainAdventureZhChoices', () => {
+        expect(trainAdventureZhChoices).toBeDefined();
+        expect(typeof trainAdventureZhChoices).toBe('object');
+    });
+
+    it('zh dialogue has at least one scene', () => {
+        const keys = Object.keys(trainAdventureZhDialogue);
+        expect(keys.length).toBeGreaterThan(0);
+    });
+
+    it('zh choices has at least one choice', () => {
+        const keys = Object.keys(trainAdventureZhChoices);
+        expect(keys.length).toBeGreaterThan(0);
+    });
+
+    it('zh dialogue matches zh content from getTrainAdventureStory', () => {
+        const story = getTrainAdventureStory('zh');
+        expect(story.dialogue).toBe(trainAdventureZhDialogue);
+    });
+
+    it('zh choices matches zh choices from getTrainAdventureStory', () => {
+        const story = getTrainAdventureStory('zh');
+        expect(story.choices).toBe(trainAdventureZhChoices);
     });
 });

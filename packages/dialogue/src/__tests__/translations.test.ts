@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getTranslations, translations } from '../translations';
+import { getTranslations, translations, type Locale } from '../translations';
 
 describe('translations', () => {
     describe('translations object', () => {
@@ -61,6 +61,15 @@ describe('translations', () => {
             expect(en.email).toBeDefined();
             expect(en.username).toBeDefined();
             expect(en.characterName).toBeDefined();
+        });
+
+        it('falls back to English for an unknown locale (exercises the || branch)', () => {
+            // Cast to bypass TypeScript's Locale type restriction to cover the fallback branch
+            const t = getTranslations('fr' as Locale);
+            // locale field reflects what was passed
+            expect(t.locale).toBe('fr');
+            // Content falls back to English
+            expect(t.menu).toEqual(translations.en.menu);
         });
     });
 });

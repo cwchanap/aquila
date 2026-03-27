@@ -60,7 +60,9 @@ describe('Stories API', () => {
         mockGetSession.mockReset();
         StoryRepositoryMock.mockReset();
         mockStoryRepo = createMockStoryRepo();
-        StoryRepositoryMock.mockReturnValue(mockStoryRepo as any);
+        StoryRepositoryMock.mockImplementation(function () {
+            return mockStoryRepo;
+        });
         // Default to unauthenticated
         mockUnauthenticatedSession();
     });

@@ -281,7 +281,17 @@ export class MockEventEmitter {
             }
         );
 
-    once = vi.fn().mockReturnThis();
+    once = vi
+        .fn()
+        .mockImplementation(
+            (event: string, fn: (...args: unknown[]) => void) => {
+                const wrapper = (...args: unknown[]) => {
+                    this.off(event, wrapper);
+                    fn(...args);
+                };
+                return this.on(event, wrapper);
+            }
+        );
 
     emit = vi.fn().mockImplementation((event: string, ...args: unknown[]) => {
         const handlers = this._listeners[event] ?? [];
@@ -291,6 +301,7 @@ export class MockEventEmitter {
 
     removeAllListeners = vi.fn().mockImplementation(() => {
         this._listeners = {};
+        return this;
     });
 }
 

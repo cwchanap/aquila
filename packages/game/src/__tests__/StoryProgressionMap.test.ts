@@ -234,7 +234,7 @@ describe('StoryProgressionMap', () => {
             expect(tooltipContainer.destroy).toHaveBeenCalled();
         });
 
-        it('pointerup emits nodeClicked event without throwing (line 502)', () => {
+        it('pointerup emits nodeClicked event with node data (line 502)', () => {
             // Covers StoryProgressionMap.ts line 502: this.eventEmitter.emit(event, ...args)
             const scene = makeScene();
             const map = new StoryProgressionMap(
@@ -248,9 +248,14 @@ describe('StoryProgressionMap', () => {
             const pointerupCb = nodeContainer.on.mock.calls.find(
                 (c: [string, unknown]) => c[0] === 'pointerup'
             )?.[1] as (() => void) | undefined;
-            // Calling pointerup should invoke emit() on the event emitter (line 502)
-            expect(() => pointerupCb?.()).not.toThrow();
+
             expect(pointerupCb).toBeDefined();
+            pointerupCb?.();
+            // handler should be called with the ProgressionNodeVisual data for scene_1
+            expect(handler).toHaveBeenCalledOnce();
+            expect(handler).toHaveBeenCalledWith(
+                expect.objectContaining({ nodeId: 'scene_1' })
+            );
         });
     });
 

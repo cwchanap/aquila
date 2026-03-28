@@ -141,20 +141,22 @@ describe('CompletionOverlay', () => {
         it('resolves homeUrl to "/" when locale is null and no homeUrl provided', () => {
             const mockLocation = { href: '' };
             vi.stubGlobal('location', mockLocation);
+            try {
+                const scene = makeScene();
+                const overlay = new CompletionOverlay(scene);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                overlay.show(null as any);
 
-            const scene = makeScene();
-            const overlay = new CompletionOverlay(scene);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            overlay.show(null as any);
-
-            const mockKey = scene.input.keyboard.addKey.mock.results[0].value;
-            const onceCb = mockKey.once.mock.calls.find(
-                (c: [string, unknown]) => c[0] === 'down'
-            )?.[1] as (() => void) | undefined;
-            onceCb?.();
-            expect(mockLocation.href).toBe('/');
-
-            vi.unstubAllGlobals();
+                const mockKey =
+                    scene.input.keyboard.addKey.mock.results[0].value;
+                const onceCb = mockKey.once.mock.calls.find(
+                    (c: [string, unknown]) => c[0] === 'down'
+                )?.[1] as (() => void) | undefined;
+                onceCb?.();
+                expect(mockLocation.href).toBe('/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
     });
 
@@ -162,41 +164,44 @@ describe('CompletionOverlay', () => {
         it('button pointerup callback sets window.location.href (line 65)', () => {
             const mockLocation = { href: '' };
             vi.stubGlobal('location', mockLocation);
+            try {
+                const scene = makeScene();
+                const overlay = new CompletionOverlay(scene);
+                overlay.show('en', '/home/');
 
-            const scene = makeScene();
-            const overlay = new CompletionOverlay(scene);
-            overlay.show('en', '/home/');
+                // The button is the 3rd text created (title, tip, btn)
+                const btn = scene.add.text.mock.results[2].value;
+                const pointerupCb = btn.on.mock.calls.find(
+                    (c: [string, unknown]) => c[0] === 'pointerup'
+                )?.[1] as (() => void) | undefined;
 
-            // The button is the 3rd text created (title, tip, btn)
-            const btn = scene.add.text.mock.results[2].value;
-            const pointerupCb = btn.on.mock.calls.find(
-                (c: [string, unknown]) => c[0] === 'pointerup'
-            )?.[1] as (() => void) | undefined;
-
-            pointerupCb?.();
-            expect(mockLocation.href).toBe('/home/');
-
-            vi.unstubAllGlobals();
+                pointerupCb?.();
+                expect(mockLocation.href).toBe('/home/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
 
         it('keyboard once-down callback sets window.location.href (line 72)', () => {
             const mockLocation = { href: '' };
             vi.stubGlobal('location', mockLocation);
+            try {
+                const scene = makeScene();
+                const overlay = new CompletionOverlay(scene);
+                overlay.show('en', '/home/');
 
-            const scene = makeScene();
-            const overlay = new CompletionOverlay(scene);
-            overlay.show('en', '/home/');
+                // enterKeyListener is the mock key returned by addKey
+                const mockKey =
+                    scene.input.keyboard.addKey.mock.results[0].value;
+                const onceCb = mockKey.once.mock.calls.find(
+                    (c: [string, unknown]) => c[0] === 'down'
+                )?.[1] as (() => void) | undefined;
 
-            // enterKeyListener is the mock key returned by addKey
-            const mockKey = scene.input.keyboard.addKey.mock.results[0].value;
-            const onceCb = mockKey.once.mock.calls.find(
-                (c: [string, unknown]) => c[0] === 'down'
-            )?.[1] as (() => void) | undefined;
-
-            onceCb?.();
-            expect(mockLocation.href).toBe('/home/');
-
-            vi.unstubAllGlobals();
+                onceCb?.();
+                expect(mockLocation.href).toBe('/home/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
     });
 });

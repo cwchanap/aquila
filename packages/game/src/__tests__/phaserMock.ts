@@ -256,11 +256,42 @@ export class MockScene {
 
 // ── Mock EventEmitter ──────────────────────────────────────────────────────
 export class MockEventEmitter {
-    on = vi.fn().mockReturnThis();
-    off = vi.fn().mockReturnThis();
+    private _listeners: Record<string, ((...args: unknown[]) => void)[]> = {};
+
+    on = vi
+        .fn()
+        .mockImplementation(
+            (event: string, fn: (...args: unknown[]) => void) => {
+                if (!this._listeners[event]) this._listeners[event] = [];
+                this._listeners[event].push(fn);
+                return this;
+            }
+        );
+
+    off = vi
+        .fn()
+        .mockImplementation(
+            (event: string, fn: (...args: unknown[]) => void) => {
+                if (this._listeners[event]) {
+                    this._listeners[event] = this._listeners[event].filter(
+                        h => h !== fn
+                    );
+                }
+                return this;
+            }
+        );
+
     once = vi.fn().mockReturnThis();
-    emit = vi.fn().mockReturnThis();
-    removeAllListeners = vi.fn();
+
+    emit = vi.fn().mockImplementation((event: string, ...args: unknown[]) => {
+        const handlers = this._listeners[event] ?? [];
+        handlers.forEach(h => h(...args));
+        return this;
+    });
+
+    removeAllListeners = vi.fn().mockImplementation(() => {
+        this._listeners = {};
+    });
 }
 
 // ── Phaser namespace ───────────────────────────────────────────────────────

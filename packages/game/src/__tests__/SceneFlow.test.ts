@@ -430,5 +430,137 @@ describe('SceneFlow', () => {
             const result = flow.advanceFromScene();
             expect(result.type).toBe('end');
         });
+
+        it('resets sceneHistory when choice loops back to the starting scene (covers history-reset branch)', () => {
+            // scene_1 → choice:c1 → (loop) scene_1
+            // sceneHistory = ['scene_1'], lastIndexOf('scene_1') = 0 → slice(0,0) = []
+            // The empty-history guard fires and resets sceneHistory to [] before pushing.
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { loop: 'scene_1', forward: 'scene_2' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2',
+                        next: null,
+                    },
+                ],
+            };
+            const flow = new SceneFlow(config);
+            flow.advanceFromScene(); // → choice mode
+
+            const result = flow.selectChoice('loop');
+            expect(result).toEqual({ type: 'scene', sceneId: 'scene_1' });
+            expect(flow.getCurrentSceneId()).toBe('scene_1');
+        });
+    });
+
+    describe('getFlowNodes', () => {
+        it('returns all nodes in the flow', () => {
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'scene_2',
+                    },
+                    { kind: 'scene', id: 'scene_2', sceneId: 'scene_2' },
+                ],
+            };
+            const flow = new SceneFlow(config);
+            const nodes = flow.getFlowNodes();
+            expect(nodes).toHaveLength(2);
+            expect(nodes.some(n => n.id === 'scene_1')).toBe(true);
+            expect(nodes.some(n => n.id === 'scene_2')).toBe(true);
+        });
+    });
+
+    describe('getCurrentNodeId', () => {
+        it('returns the current node id', () => {
+            const flow = SceneFlow.fromLinearScenes(['scene_1', 'scene_2']);
+            expect(flow.getCurrentNodeId()).toBe('scene_1');
+            flow.advanceFromScene();
+            expect(flow.getCurrentNodeId()).toBe('scene_2');
+        });
+    });
+
+    describe('getCurrentChoiceId', () => {
+        it('returns null when not in choice mode', () => {
+            const flow = SceneFlow.fromLinearScenes(['scene_1']);
+            expect(flow.getCurrentChoiceId()).toBeNull();
+        });
+
+        it('returns the choice id when in choice mode', () => {
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'my_choice',
+                        nextByOption: { a: 'scene_2' },
+                    },
+                    { kind: 'scene', id: 'scene_2', sceneId: 'scene_2' },
+                ],
+            };
+            const flow = new SceneFlow(config);
+            flow.advanceFromScene(); // → choice mode
+            expect(flow.getCurrentChoiceId()).toBe('my_choice');
+        });
+    });
+
+    describe('getCurrentChoiceOptionIds', () => {
+        it('returns empty array when not in choice mode', () => {
+            const flow = SceneFlow.fromLinearScenes(['scene_1']);
+            expect(flow.getCurrentChoiceOptionIds()).toEqual([]);
+        });
+
+        it('returns option ids when in choice mode', () => {
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2', opt_b: 'scene_3' },
+                    },
+                    { kind: 'scene', id: 'scene_2', sceneId: 'scene_2' },
+                    { kind: 'scene', id: 'scene_3', sceneId: 'scene_3' },
+                ],
+            };
+            const flow = new SceneFlow(config);
+            flow.advanceFromScene(); // → choice mode
+            expect(flow.getCurrentChoiceOptionIds()).toEqual([
+                'opt_a',
+                'opt_b',
+            ]);
+        });
     });
 });

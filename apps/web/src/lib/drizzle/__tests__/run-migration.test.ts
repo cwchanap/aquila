@@ -267,4 +267,132 @@ describe('run-migration.ts', () => {
         );
         expect(insertCall).toBeDefined();
     });
+
+    it('throws formatted error when SQL statement fails with duplicate object code 42P07', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+
+        const dupError = Object.assign(new Error('relation already exists'), {
+            code: '42P07',
+        });
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied → not applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
+
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+
+        await import('../run-migration');
+
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
+
+        consoleSpy.mockRestore();
+    });
+
+    it('throws formatted error when SQL statement fails with duplicate object code 42710', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE INDEX idx ON test (id);');
+
+        const dupError = Object.assign(new Error('index already exists'), {
+            code: '42710',
+        });
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
+
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+
+        await import('../run-migration');
+
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
+
+        consoleSpy.mockRestore();
+    });
+
+    it('throws formatted error when SQL error message contains "already exists"', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+
+        // Error has no matching code, but message contains "already exists"
+        const dupError = new Error('table "users" already exists');
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
+
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+
+        await import('../run-migration');
+
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
+
+        consoleSpy.mockRestore();
+    });
+
+    it('re-throws generic SQL errors that are not duplicate object errors', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+
+        const genericError = new Error('column "bad_col" does not exist');
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(genericError); // generic SQL error
+
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+
+        await import('../run-migration');
+
+        await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+
+        // The outer catch logs and re-throws the original error
+        expect(consoleSpy).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            genericError
+        );
+
+        consoleSpy.mockRestore();
+    });
 });

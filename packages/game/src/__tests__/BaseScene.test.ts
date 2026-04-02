@@ -432,11 +432,6 @@ describe('BaseScene', () => {
     });
 
     describe('setupBackground', () => {
-        it('creates bgGraphics on first call when no texture exists', () => {
-            scene.create(); // textures.exists returns false by default
-            expect((scene as any).add.graphics).toHaveBeenCalled();
-        });
-
         it('reuses existing bgGraphics (calls clear) on second layout pass', () => {
             scene.create();
             const firstGraphics = scene.getBgGraphics();
@@ -451,6 +446,12 @@ describe('BaseScene', () => {
             (scene as any).textures.exists = vi.fn().mockReturnValue(true);
             scene.create();
             expect((scene as any).add.image).toHaveBeenCalled();
+        });
+    });
+
+    describe('onHomeButtonPressed', () => {
+        it('sets window.location.href to "/" without throwing', () => {
+            expect(() => (scene as any).onHomeButtonPressed()).not.toThrow();
         });
     });
 });

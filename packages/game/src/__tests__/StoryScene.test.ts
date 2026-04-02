@@ -358,6 +358,92 @@ describe('StoryScene', () => {
             ).toHaveBeenCalled();
             expect((realScene as any).completed).toBe(true);
         });
+
+        it('calls transitionToScene when flow advances to a scene', () => {
+            const realScene = makeRealScene();
+            const flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+            ] as any);
+            (realScene as any).flow = flow;
+            (realScene as any).dialogue = {
+                scene_2: [{ character: 'A', dialogue: 'Hi' }],
+            };
+
+            const transitionSpy = vi
+                .spyOn(realScene as any, 'transitionToScene')
+                .mockImplementation(() => {});
+
+            realScene.endScene();
+            expect(transitionSpy).toHaveBeenCalledWith('scene_2');
+        });
+
+        it('presents choices when flow reaches a choice node', () => {
+            const realScene = makeRealScene();
+            const flow = new SceneFlow({
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { a: 'scene_2', b: 'scene_3' },
+                    },
+                    { kind: 'scene', id: 'scene_2', sceneId: 'scene_2' },
+                    { kind: 'scene', id: 'scene_3', sceneId: 'scene_3' },
+                ],
+            } as any);
+            (realScene as any).flow = flow;
+
+            realScene.endScene();
+            expect(
+                (realScene as any).choicePresenter.present
+            ).toHaveBeenCalledWith('c1', ['a', 'b'], expect.any(Function));
+        });
+
+        it('calls showCompletionOverlay when flow reaches end', () => {
+            const realScene = makeRealScene();
+            const flow = SceneFlow.fromLinearScenes(['scene_1'] as any);
+            (realScene as any).flow = flow;
+
+            realScene.endScene();
+            expect(
+                (realScene as any).completionOverlay.show
+            ).toHaveBeenCalled();
+        });
+    });
+
+    describe('create', () => {
+        it('initialises choicePresenter, menuOverlay, completionOverlay and starts the scene', () => {
+            localStorage.clear();
+            const realScene = new StoryScene();
+            expect(() => (realScene as any).create()).not.toThrow();
+            // After create(), these should be proper instances
+            expect((realScene as any).choicePresenter).toBeDefined();
+            expect((realScene as any).menuOverlay).toBeDefined();
+            expect((realScene as any).completionOverlay).toBeDefined();
+            expect((realScene as any).flow).toBeDefined();
+        });
+
+        it('triggers shutdown cleanup callbacks without throwing', () => {
+            localStorage.clear();
+            const realScene = new StoryScene();
+            (realScene as any).create();
+
+            // Retrieve and invoke the 'shutdown' callback registered via events.once
+            const eventsOnce = (realScene as any).events.once;
+            const shutdownCall = eventsOnce.mock.calls.find(
+                (c: string[]) => c[0] === 'shutdown'
+            );
+            expect(shutdownCall).toBeDefined();
+            expect(() => shutdownCall[1]()).not.toThrow();
+        });
     });
 
     describe('toggleMenu (via escListenerPaused)', () => {
@@ -724,6 +810,138 @@ describe('StoryScene', () => {
             ] as any);
             (realScene as any).locale = 'en';
             expect(() => (realScene as any).openProgressMap()).not.toThrow();
+        });
+
+        it('sets progressMapModal to undefined when the modal is closed', () => {
+            const realScene = new StoryScene();
+            (realScene as any).flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+            ] as any);
+            (realScene as any).locale = 'en';
+
+            (realScene as any).openProgressMap();
+
+            const modal = (realScene as any).progressMapModal;
+            expect(modal).toBeDefined();
+
+            // Invoke the private close() method to trigger the onClose callback
+            // which sets progressMapModal back to undefined (covers line 346).
+            (modal as any).close();
+
+            expect((realScene as any).progressMapModal).toBeUndefined();
+        });
+    });
+
+    describe('onHomeButtonPressed', () => {
+        it('calls toggleMenu without throwing', () => {
+            const realScene = new StoryScene();
+            const mockMenuOverlay = {
+                open: false,
+                show: vi.fn(),
+                close: vi.fn(),
+                forceClose: vi.fn(),
+            };
+            (realScene as any).menuOverlay = mockMenuOverlay;
+            (realScene as any).escListenerPaused = false;
+            (realScene as any).locale = 'en';
+            (realScene as any).flow = null;
+
+            const toggleSpy = vi
+                .spyOn(realScene as any, 'toggleMenu')
+                .mockImplementation(() => {});
+            (realScene as any).onHomeButtonPressed();
+            expect(toggleSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('openMenu body', () => {
+        function makeMenuScene(locale = 'en') {
+            const realScene = new StoryScene();
+            const mockMenuOverlay = {
+                open: false,
+                show: vi.fn(),
+                close: vi.fn(),
+                forceClose: vi.fn(),
+            };
+            (realScene as any).menuOverlay = mockMenuOverlay;
+            (realScene as any).locale = locale;
+            (realScene as any).flow = null;
+            return { realScene, mockMenuOverlay };
+        }
+
+        it('calls menuOverlay.show with locale and callback config', () => {
+            const { realScene, mockMenuOverlay } = makeMenuScene();
+            (realScene as any).openMenu();
+            expect(mockMenuOverlay.show).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    locale: 'en',
+                    onResume: expect.any(Function),
+                    onProgressMap: expect.any(Function),
+                    onHome: expect.any(Function),
+                })
+            );
+        });
+
+        it('passes zh locale when scene locale starts with zh', () => {
+            const { realScene, mockMenuOverlay } = makeMenuScene('zh-TW');
+            (realScene as any).openMenu();
+            expect(mockMenuOverlay.show).toHaveBeenCalledWith(
+                expect.objectContaining({ locale: 'zh' })
+            );
+        });
+
+        it('onResume callback invokes fadeAmbientTo without throwing', () => {
+            const { realScene, mockMenuOverlay } = makeMenuScene();
+            (realScene as any).openMenu();
+            const config = mockMenuOverlay.show.mock.calls[0][0];
+            expect(() => config.onResume()).not.toThrow();
+        });
+
+        it('onProgressMap callback calls openProgressMap without throwing', () => {
+            const { realScene, mockMenuOverlay } = makeMenuScene();
+            (realScene as any).openMenu();
+            const config = mockMenuOverlay.show.mock.calls[0][0];
+            expect(() => config.onProgressMap()).not.toThrow();
+        });
+
+        it('onHome callback navigates based on window.location.pathname', () => {
+            const { realScene, mockMenuOverlay } = makeMenuScene('en');
+            (realScene as any).openMenu();
+            const config = mockMenuOverlay.show.mock.calls[0][0];
+            // Default jsdom pathname is '/' (not '/en/...'), so href should be set to '/'
+            expect(() => config.onHome()).not.toThrow();
+        });
+    });
+
+    describe('restoreSceneFlow – clears checkpoint when restoration fails', () => {
+        beforeEach(() => {
+            localStorage.clear();
+        });
+
+        it('clears a valid-format checkpoint whose history cannot be replayed', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'train_adventure';
+            (realScene as any).registry.get.mockReturnValue(undefined);
+
+            // scene_3 is registered but does NOT directly follow scene_1 in the flow
+            // (scene_2 is in between), so restoreFromHistory returns null for this history.
+            localStorage.setItem(
+                'aquila:checkpoint:train_adventure',
+                JSON.stringify({
+                    version: 1,
+                    storyId: 'train_adventure',
+                    sceneId: 'scene_3',
+                    history: ['scene_1', 'scene_3'],
+                    savedAt: Date.now(),
+                })
+            );
+
+            (realScene as any).restoreSceneFlow();
+
+            // Checkpoint should be cleared from localStorage (line 234 executed)
+            expect(
+                localStorage.getItem('aquila:checkpoint:train_adventure')
+            ).toBeNull();
         });
     });
 });

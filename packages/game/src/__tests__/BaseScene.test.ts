@@ -450,8 +450,14 @@ describe('BaseScene', () => {
     });
 
     describe('onHomeButtonPressed', () => {
-        it('sets window.location.href to "/" without throwing', () => {
-            expect(() => (scene as any).onHomeButtonPressed()).not.toThrow();
+        it('sets window.location.href to "/"', () => {
+            vi.stubGlobal('location', { href: '' });
+            try {
+                (scene as any).onHomeButtonPressed();
+                expect(location.href).toBe('/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
     });
 });

@@ -436,13 +436,44 @@ describe('StoryScene', () => {
             const realScene = new StoryScene();
             (realScene as any).create();
 
-            // Retrieve and invoke the 'shutdown' callback registered via events.once
+            // Spy on the cleanup methods StoryScene registers in its shutdown handler
+            const clear = vi.fn();
+            const forceClose = vi.fn();
+            const destroyCompletionOverlay = vi.fn();
+            const destroyEscListener = vi.fn();
+
+            (realScene as any).choicePresenter = {
+                ...(realScene as any).choicePresenter,
+                clear,
+            };
+            (realScene as any).menuOverlay = {
+                ...(realScene as any).menuOverlay,
+                forceClose,
+            };
+            (realScene as any).completionOverlay = {
+                ...(realScene as any).completionOverlay,
+                destroy: destroyCompletionOverlay,
+            };
+            (realScene as any).escListener = { destroy: destroyEscListener };
+
+            // Invoke ALL shutdown callbacks: super.create() (BaseScene) registers one
+            // first, then StoryScene.create() registers another.  Call both so the
+            // test is independent of registration order.
             const eventsOnce = (realScene as any).events.once;
-            const shutdownCall = eventsOnce.mock.calls.find(
-                (c: string[]) => c[0] === 'shutdown'
+            const shutdownCalls = eventsOnce.mock.calls.filter(
+                (c: unknown[]) => c[0] === 'shutdown'
             );
-            expect(shutdownCall).toBeDefined();
-            expect(() => shutdownCall[1]()).not.toThrow();
+            expect(shutdownCalls.length).toBeGreaterThan(0);
+            expect(() =>
+                shutdownCalls.forEach(([, callback]: unknown[]) => {
+                    (callback as () => void)();
+                })
+            ).not.toThrow();
+
+            expect(clear).toHaveBeenCalled();
+            expect(forceClose).toHaveBeenCalled();
+            expect(destroyCompletionOverlay).toHaveBeenCalled();
+            expect(destroyEscListener).toHaveBeenCalled();
         });
     });
 
@@ -904,12 +935,18 @@ describe('StoryScene', () => {
             expect(() => config.onProgressMap()).not.toThrow();
         });
 
-        it('onHome callback navigates based on window.location.pathname', () => {
+        it('onHome callback sets window.location.href to "/"', () => {
             const { realScene, mockMenuOverlay } = makeMenuScene('en');
             (realScene as any).openMenu();
             const config = mockMenuOverlay.show.mock.calls[0][0];
-            // Default jsdom pathname is '/' (not '/en/...'), so href should be set to '/'
-            expect(() => config.onHome()).not.toThrow();
+
+            vi.stubGlobal('location', { href: '', pathname: '/' });
+            try {
+                config.onHome();
+                expect(location.href).toBe('/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
     });
 

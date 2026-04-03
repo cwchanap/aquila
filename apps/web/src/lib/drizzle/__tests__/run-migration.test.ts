@@ -277,39 +277,29 @@ describe('run-migration.ts', () => {
     // rejection event fires so the listener is still present.  The helper
     // returns the captured rejection reason and fails the test if no rejection
     // occurs within 200 ms, ensuring the test actually exercises the error path.
+    // Note: we use vi.waitFor (not setTimeout) so the deadline works correctly
+    // even when vi.useFakeTimers() is active in the global test setup.
     async function captureNextUnhandledRejection(
         fn: () => Promise<void>
     ): Promise<unknown> {
-        let resolveCapture: (reason: unknown) => void = () => {};
-        const capturedRejection = new Promise<unknown>(
-            r => (resolveCapture = r)
-        );
-        const absorb: NodeJS.UnhandledRejectionListener = reason =>
-            resolveCapture(reason);
+        let captured = false;
+        let capturedReason: unknown;
+        const absorb: NodeJS.UnhandledRejectionListener = reason => {
+            captured = true;
+            capturedReason = reason;
+        };
         process.on('unhandledRejection', absorb);
         try {
             await fn();
             // The unhandledRejection event fires after the module-level
             // runMigration() promise settles (nextTick phase), which may be
-            // after vi.waitFor() resolves.  Race with a rejecting deadline so
-            // the test fails fast if no rejection ever occurs.
-            let timeoutId: ReturnType<typeof setTimeout> | undefined;
-            const timeoutPromise = new Promise<never>((_, reject) => {
-                timeoutId = setTimeout(
-                    () =>
-                        reject(
-                            new Error(
-                                'Expected an unhandled rejection from runMigration() but none occurred within 200ms'
-                            )
-                        ),
-                    200
-                );
+            // after fn() resolves.  Use vi.waitFor so the deadline works with
+            // both real and fake timers.
+            await vi.waitFor(() => expect(captured).toBe(true), {
+                timeout: 200,
+                interval: 10,
             });
-            try {
-                return await Promise.race([capturedRejection, timeoutPromise]);
-            } finally {
-                clearTimeout(timeoutId);
-            }
+            return capturedReason;
         } finally {
             process.off('unhandledRejection', absorb);
         }

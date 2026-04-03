@@ -293,20 +293,23 @@ describe('run-migration.ts', () => {
             // runMigration() promise settles (nextTick phase), which may be
             // after vi.waitFor() resolves.  Race with a rejecting deadline so
             // the test fails fast if no rejection ever occurs.
-            return await Promise.race([
-                capturedRejection,
-                new Promise<never>((_, reject) =>
-                    setTimeout(
-                        () =>
-                            reject(
-                                new Error(
-                                    'Expected an unhandled rejection from runMigration() but none occurred within 200ms'
-                                )
-                            ),
-                        200
-                    )
-                ),
-            ]);
+            let timeoutId: ReturnType<typeof setTimeout> | undefined;
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                timeoutId = setTimeout(
+                    () =>
+                        reject(
+                            new Error(
+                                'Expected an unhandled rejection from runMigration() but none occurred within 200ms'
+                            )
+                        ),
+                    200
+                );
+            });
+            try {
+                return await Promise.race([capturedRejection, timeoutPromise]);
+            } finally {
+                clearTimeout(timeoutId);
+            }
         } finally {
             process.off('unhandledRejection', absorb);
         }
@@ -355,6 +358,40 @@ describe('run-migration.ts', () => {
         const dupError = Object.assign(new Error('index already exists'), {
             code: '42710',
         });
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
+
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const reason = await captureNextUnhandledRejection(async () => {
+            await import('../run-migration');
+            await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+        });
+
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('Duplicate object detected'),
+        });
+        expect(console.error).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
+    });
+
+    it('throws formatted error when SQL statement fails with duplicate object code 42P16', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+
+        const dupError = Object.assign(
+            new Error('multiple primary keys for table "test" are not allowed'),
+            { code: '42P16' }
+        );
         mockQuery
             .mockResolvedValueOnce({ rows: [] }) // create tracking table
             .mockResolvedValueOnce({ rows: [] }) // check if already applied

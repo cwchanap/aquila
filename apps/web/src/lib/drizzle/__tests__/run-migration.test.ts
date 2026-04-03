@@ -58,6 +58,7 @@ describe('run-migration.ts', () => {
                 process.env[key] = value;
             }
         }
+        vi.restoreAllMocks();
     });
 
     it('creates Pool with ssl=false in non-production', async () => {
@@ -271,25 +272,40 @@ describe('run-migration.ts', () => {
     // runMigration() is called at module scope without `await`, so errors it
     // throws become unhandled promise rejections.  vitest's catchError skips
     // reporting when process.listeners('unhandledRejection').length > 1
-    // (it assumes user code handles it).  We register a no-op listener to
+    // (it assumes user code handles it).  We register a capturing listener to
     // raise the count to ≥ 2, run the test body, then wait until the
-    // rejection event fires (or a short deadline passes) so the listener is
-    // still present when the event occurs.
-    async function absorbNextUnhandledRejection(fn: () => Promise<void>) {
-        let resolveCapture: () => void = () => {};
-        const capturedRejection = new Promise<void>(r => (resolveCapture = r));
-        const absorb: NodeJS.UnhandledRejectionListener = () =>
-            resolveCapture();
+    // rejection event fires so the listener is still present.  The helper
+    // returns the captured rejection reason and fails the test if no rejection
+    // occurs within 200 ms, ensuring the test actually exercises the error path.
+    async function captureNextUnhandledRejection(
+        fn: () => Promise<void>
+    ): Promise<unknown> {
+        let resolveCapture: (reason: unknown) => void = () => {};
+        const capturedRejection = new Promise<unknown>(
+            r => (resolveCapture = r)
+        );
+        const absorb: NodeJS.UnhandledRejectionListener = reason =>
+            resolveCapture(reason);
         process.on('unhandledRejection', absorb);
         try {
             await fn();
             // The unhandledRejection event fires after the module-level
             // runMigration() promise settles (nextTick phase), which may be
-            // after vi.waitFor() resolves.  Race with a 200 ms deadline so
-            // we don't block indefinitely when no rejection occurs.
-            await Promise.race([
+            // after vi.waitFor() resolves.  Race with a rejecting deadline so
+            // the test fails fast if no rejection ever occurs.
+            return await Promise.race([
                 capturedRejection,
-                new Promise<void>(r => setTimeout(r, 200)),
+                new Promise<never>((_, reject) =>
+                    setTimeout(
+                        () =>
+                            reject(
+                                new Error(
+                                    'Expected an unhandled rejection from runMigration() but none occurred within 200ms'
+                                )
+                            ),
+                        200
+                    )
+                ),
             ]);
         } finally {
             process.off('unhandledRejection', absorb);
@@ -297,147 +313,128 @@ describe('run-migration.ts', () => {
     }
 
     it('throws formatted error when SQL statement fails with duplicate object code 42P07', async () => {
-        await absorbNextUnhandledRejection(async () => {
-            process.env.DATABASE_URL = 'postgres://localhost/testdb';
-            process.env.NODE_ENV = 'test';
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
 
-            mockReaddirSync.mockReturnValue(['0001_init.sql']);
-            mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
 
-            const dupError = Object.assign(
-                new Error('relation already exists'),
-                {
-                    code: '42P07',
-                }
-            );
-            mockQuery
-                .mockResolvedValueOnce({ rows: [] }) // create tracking table
-                .mockResolvedValueOnce({ rows: [] }) // check if already applied → not applied
-                .mockRejectedValueOnce(dupError); // SQL execution fails
-
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
-
-            await import('../run-migration');
-
-            await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
-
-            expect(consoleSpy).toHaveBeenCalledWith(
-                '❌ Migration failed:',
-                expect.objectContaining({
-                    message: expect.stringContaining(
-                        'Duplicate object detected'
-                    ),
-                })
-            );
-
-            consoleSpy.mockRestore();
+        const dupError = Object.assign(new Error('relation already exists'), {
+            code: '42P07',
         });
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied → not applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
+
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const reason = await captureNextUnhandledRejection(async () => {
+            await import('../run-migration');
+            await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+        });
+
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('Duplicate object detected'),
+        });
+        expect(console.error).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
     });
 
     it('throws formatted error when SQL statement fails with duplicate object code 42710', async () => {
-        await absorbNextUnhandledRejection(async () => {
-            process.env.DATABASE_URL = 'postgres://localhost/testdb';
-            process.env.NODE_ENV = 'test';
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
 
-            mockReaddirSync.mockReturnValue(['0001_init.sql']);
-            mockReadFileSync.mockReturnValue('CREATE INDEX idx ON test (id);');
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE INDEX idx ON test (id);');
 
-            const dupError = Object.assign(new Error('index already exists'), {
-                code: '42710',
-            });
-            mockQuery
-                .mockResolvedValueOnce({ rows: [] }) // create tracking table
-                .mockResolvedValueOnce({ rows: [] }) // check if already applied
-                .mockRejectedValueOnce(dupError); // SQL execution fails
-
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
-
-            await import('../run-migration');
-
-            await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
-
-            expect(consoleSpy).toHaveBeenCalledWith(
-                '❌ Migration failed:',
-                expect.objectContaining({
-                    message: expect.stringContaining(
-                        'Duplicate object detected'
-                    ),
-                })
-            );
-
-            consoleSpy.mockRestore();
+        const dupError = Object.assign(new Error('index already exists'), {
+            code: '42710',
         });
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
+
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const reason = await captureNextUnhandledRejection(async () => {
+            await import('../run-migration');
+            await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+        });
+
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('Duplicate object detected'),
+        });
+        expect(console.error).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
     });
 
     it('throws formatted error when SQL error message contains "already exists"', async () => {
-        await absorbNextUnhandledRejection(async () => {
-            process.env.DATABASE_URL = 'postgres://localhost/testdb';
-            process.env.NODE_ENV = 'test';
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
 
-            mockReaddirSync.mockReturnValue(['0001_init.sql']);
-            mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
 
-            // Error has no matching code, but message contains "already exists"
-            const dupError = new Error('table "users" already exists');
-            mockQuery
-                .mockResolvedValueOnce({ rows: [] }) // create tracking table
-                .mockResolvedValueOnce({ rows: [] }) // check if already applied
-                .mockRejectedValueOnce(dupError); // SQL execution fails
+        // Error has no matching code, but message contains "already exists"
+        const dupError = new Error('table "users" already exists');
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(dupError); // SQL execution fails
 
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
+        vi.spyOn(console, 'error').mockImplementation(() => {});
 
+        const reason = await captureNextUnhandledRejection(async () => {
             await import('../run-migration');
-
             await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
-
-            expect(consoleSpy).toHaveBeenCalledWith(
-                '❌ Migration failed:',
-                expect.objectContaining({
-                    message: expect.stringContaining(
-                        'Duplicate object detected'
-                    ),
-                })
-            );
-
-            consoleSpy.mockRestore();
         });
+
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('Duplicate object detected'),
+        });
+        expect(console.error).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            expect.objectContaining({
+                message: expect.stringContaining('Duplicate object detected'),
+            })
+        );
     });
 
     it('re-throws generic SQL errors that are not duplicate object errors', async () => {
-        await absorbNextUnhandledRejection(async () => {
-            process.env.DATABASE_URL = 'postgres://localhost/testdb';
-            process.env.NODE_ENV = 'test';
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
 
-            mockReaddirSync.mockReturnValue(['0001_init.sql']);
-            mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('CREATE TABLE test (id INT);');
 
-            const genericError = new Error('column "bad_col" does not exist');
-            mockQuery
-                .mockResolvedValueOnce({ rows: [] }) // create tracking table
-                .mockResolvedValueOnce({ rows: [] }) // check if already applied
-                .mockRejectedValueOnce(genericError); // generic SQL error
+        const genericError = new Error('column "bad_col" does not exist');
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // create tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check if already applied
+            .mockRejectedValueOnce(genericError); // generic SQL error
 
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
+        vi.spyOn(console, 'error').mockImplementation(() => {});
 
+        const reason = await captureNextUnhandledRejection(async () => {
             await import('../run-migration');
-
             await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
-
-            // The outer catch logs and re-throws the original error
-            expect(consoleSpy).toHaveBeenCalledWith(
-                '❌ Migration failed:',
-                genericError
-            );
-
-            consoleSpy.mockRestore();
         });
+
+        // The outer catch re-throws the original error unchanged
+        expect(reason).toBe(genericError);
+        expect(console.error).toHaveBeenCalledWith(
+            '❌ Migration failed:',
+            genericError
+        );
     });
 });

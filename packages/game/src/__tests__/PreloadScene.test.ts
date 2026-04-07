@@ -145,7 +145,7 @@ describe('PreloadScene', () => {
             );
         });
 
-        it('falls back to train_adventure when startData.storyId is falsy (line 89 branch)', () => {
+        it('falls back to train_adventure when startData.storyId is falsy', () => {
             const scene = new PreloadScene();
             (scene as any).preload();
             // Make storyId falsy so the || fallback fires

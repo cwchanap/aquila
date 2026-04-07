@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StoryScene } from '../StoryScene';
 import { SceneFlow } from '../SceneFlow';
+import { ChoicePresenter } from '../ui/ChoicePresenter';
 import { makeMockText } from './phaserMock';
 import type { DialogueMap } from '../dialogue/types';
 
@@ -476,7 +477,7 @@ describe('StoryScene', () => {
     });
 
     describe('create', () => {
-        it('calls setChoiceMap when choiceMap is defined in registry (line 57)', () => {
+        it('calls setChoiceMap when choiceMap is defined in registry', () => {
             localStorage.clear();
             const realScene = new StoryScene();
             const fakeChoiceMap = { c1: { prompt: 'Choose', options: [] } };
@@ -486,9 +487,12 @@ describe('StoryScene', () => {
                     return undefined;
                 }
             );
+            const setChoiceMapSpy = vi
+                .spyOn(ChoicePresenter.prototype, 'setChoiceMap')
+                .mockImplementation(() => {});
             expect(() => (realScene as any).create()).not.toThrow();
-            // choicePresenter.setChoiceMap should have been called with the fake map
-            expect((realScene as any).choicePresenter).toBeDefined();
+            expect(setChoiceMapSpy).toHaveBeenCalledWith(fakeChoiceMap);
+            setChoiceMapSpy.mockRestore();
         });
 
         it('initialises choicePresenter, menuOverlay, completionOverlay and starts the scene', () => {
@@ -1022,7 +1026,7 @@ describe('StoryScene', () => {
     });
 
     describe('persistCheckpoint edge cases', () => {
-        it('returns early when getSceneHistory returns empty array (line 252)', () => {
+        it('returns early when getSceneHistory returns empty array, skipping any write', () => {
             const realScene = new StoryScene();
             (realScene as any).choicePresenter = {
                 awaiting: false,
@@ -1041,7 +1045,11 @@ describe('StoryScene', () => {
             );
             vi.spyOn(flow, 'getSceneHistory').mockReturnValue([]);
             (realScene as any).flow = flow;
-            expect(() => (realScene as any).persistCheckpoint()).not.toThrow();
+
+            const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+            (realScene as any).persistCheckpoint();
+            expect(setItemSpy).not.toHaveBeenCalled();
+            setItemSpy.mockRestore();
         });
     });
 

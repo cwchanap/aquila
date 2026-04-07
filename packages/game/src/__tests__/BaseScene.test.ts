@@ -161,6 +161,15 @@ describe('BaseScene', () => {
         });
     });
 
+    describe('setSection (via setSectionPub)', () => {
+        it('updates sectionKey and resets dialogue index to 0', () => {
+            scene.setIndex(3);
+            scene.setSectionPub('scene_2' as SceneId);
+            expect(scene.getSectionKeyPub()).toBe('scene_2');
+            expect(scene.getIndex()).toBe(0);
+        });
+    });
+
     describe('getHomeButtonLabel', () => {
         it('returns "🏠 Home" for English locale', () => {
             expect(scene.getHomeButtonLabelPub()).toBe('🏠 Home');
@@ -532,7 +541,7 @@ describe('BaseScene', () => {
         });
     });
 
-    describe('getOrCreateAudioContext creates beepCtx when AudioContext is available (lines 59-60)', () => {
+    describe('getOrCreateAudioContext creates beepCtx when AudioContext is available', () => {
         it('calls new AudioContext() and stores result in beepCtx', () => {
             // Use a regular function constructor (arrow functions cannot be used with `new`)
             function FakeAudioContext(this: object) {}
@@ -755,7 +764,8 @@ describe('BaseScene', () => {
                 .mockImplementation(() => {});
             (scene as any).characterNameText = null;
             (scene as any).textObject = null;
-            (scene as any).dialogueRetryCount = 10; // MAX_DIALOGUE_RETRIES
+            // 10 = BaseScene.MAX_DIALOGUE_RETRIES (private static, not exported)
+            (scene as any).dialogueRetryCount = 10;
 
             scene.setDialogue(twoLineDialogue);
             scene.showDialogue();

@@ -49,6 +49,26 @@ function clickBackdrop(scene: ReturnType<typeof makeScene>) {
     }
 }
 
+// Emit a nodeClicked event on the modal's internal StoryProgressionMap
+type ModalWithMap = {
+    map: { eventEmitter: { emit: (e: string, ...args: unknown[]) => void } };
+};
+function emitNodeClicked(modal: ProgressMapModal, nodeId: string) {
+    const { map } = modal as unknown as ModalWithMap;
+    map.eventEmitter.emit('nodeClicked', { nodeId });
+}
+
+// Find the panel rectangle by the presence of a pointerdown stopPropagation handler
+function getPanelMock(scene: ReturnType<typeof makeScene>) {
+    const results = scene.add.rectangle.mock.results as Array<{
+        value: ReturnType<typeof import('./phaserMock').makeMockRectangle>;
+    }>;
+    return results.find(r => {
+        const calls = r.value?.on?.mock?.calls as unknown[][] | undefined;
+        return calls?.some(c => c[0] === 'pointerdown');
+    })?.value;
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('ProgressMapModal', () => {
@@ -261,11 +281,6 @@ describe('ProgressMapModal', () => {
     });
 
     describe('panel pointer event propagation stop', () => {
-        function getPanelMock(scene: ReturnType<typeof makeScene>) {
-            // Panel is the 2nd rectangle added (index 1, after backdrop)
-            return scene.add.rectangle.mock.results[1]?.value;
-        }
-
         it('pointerdown on panel calls event.stopPropagation (line 84)', () => {
             const scene = makeScene();
             const modal = new ProgressMapModal(scene, makeConfig());
@@ -316,24 +331,11 @@ describe('ProgressMapModal', () => {
             const scene = makeScene();
             const onNodeSelected = vi.fn();
             const onClose = vi.fn();
-            const config = {
-                ...makeConfig(onClose),
-                onNodeSelected,
-            };
+            const config = { ...makeConfig(onClose), onNodeSelected };
             const modal = new ProgressMapModal(scene, config);
             modal.show();
 
-            // Emit nodeClicked on the internal StoryProgressionMap's eventEmitter
-            const map = (
-                modal as unknown as {
-                    map: {
-                        eventEmitter: {
-                            emit: (e: string, ...args: unknown[]) => void;
-                        };
-                    };
-                }
-            ).map;
-            map.eventEmitter.emit('nodeClicked', { nodeId: 'scene_2' });
+            emitNodeClicked(modal, 'scene_2');
 
             expect(onNodeSelected).toHaveBeenCalledWith('scene_2');
             expect(modal.isVisible()).toBe(false);
@@ -344,16 +346,7 @@ describe('ProgressMapModal', () => {
             const modal = new ProgressMapModal(scene, makeConfig());
             modal.show();
 
-            const map = (
-                modal as unknown as {
-                    map: {
-                        eventEmitter: {
-                            emit: (e: string, ...args: unknown[]) => void;
-                        };
-                    };
-                }
-            ).map;
-            map.eventEmitter.emit('nodeClicked', { nodeId: 'scene_1' });
+            emitNodeClicked(modal, 'scene_1');
 
             expect(modal.isVisible()).toBe(false);
         });

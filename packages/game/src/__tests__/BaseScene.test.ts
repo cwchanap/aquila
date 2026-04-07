@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BaseScene } from '../BaseScene';
-import { makeMockText } from './phaserMock';
+import { makeMockText, makeMockImage, makeMockGraphics } from './phaserMock';
 import type { DialogueMap } from '../dialogue/types';
 import type { SceneId } from '../SceneDirectory';
 import { CharacterId } from '../characters/CharacterDirectory';
+import { Character } from '../characters/Character';
 
 // ── Minimal concrete subclass ──────────────────────────────────────────────
 class TestScene extends BaseScene {
@@ -84,12 +85,20 @@ class TestScene extends BaseScene {
         this.stopAmbient();
     }
 
+    startAmbientPub(): void {
+        this.startAmbient();
+    }
+
     fadeAmbientToPub(target: number, duration?: number): void {
         this.fadeAmbientTo(target, duration);
     }
 
     applyAmbientForScenePub(sceneId: SceneId): void {
         this.applyAmbientForScene(sceneId);
+    }
+
+    setSectionPub(key: SceneId): void {
+        this.setSection(key);
     }
 
     onHomeButtonHoverChangePub(hovering: boolean): void {
@@ -458,6 +467,416 @@ describe('BaseScene', () => {
             } finally {
                 vi.unstubAllGlobals();
             }
+        });
+    });
+
+    describe('keydown-BACKSPACE callback', () => {
+        it('calls retreatDialogue and preventDefault when triggered', () => {
+            scene.create();
+            const keyboardMock = (scene as any).input.keyboard;
+            const backspaceCalls = (
+                keyboardMock.on.mock.calls as unknown[][]
+            ).filter(call => call[0] === 'keydown-BACKSPACE');
+            expect(backspaceCalls.length).toBeGreaterThan(0);
+
+            scene.setDialogue(twoLineDialogue);
+            scene.setIndex(1);
+
+            const callback = backspaceCalls[0][1] as (event: {
+                preventDefault?: () => void;
+            }) => void;
+            const mockEvent = { preventDefault: vi.fn() };
+            callback(mockEvent);
+
+            expect(mockEvent.preventDefault).toHaveBeenCalled();
+            expect(scene.getIndex()).toBe(0);
+        });
+    });
+
+    describe('stopAmbient with existing audio nodes', () => {
+        it('stops and disconnects oscillator and gain when they exist', () => {
+            const mockOsc = { stop: vi.fn(), disconnect: vi.fn() };
+            const mockGain = { disconnect: vi.fn() };
+            (scene as any).ambientOsc = mockOsc;
+            (scene as any).ambientGain = mockGain;
+
+            scene.stopAmbientPub();
+
+            expect(mockOsc.stop).toHaveBeenCalled();
+            expect(mockOsc.disconnect).toHaveBeenCalled();
+            expect(mockGain.disconnect).toHaveBeenCalled();
+            expect((scene as any).ambientOsc).toBeUndefined();
+            expect((scene as any).ambientGain).toBeUndefined();
+        });
+    });
+
+    describe('fadeAmbientTo with existing audio nodes', () => {
+        it('ramps gain to target when audio context and gain exist', () => {
+            const mockParam = {
+                value: 0.1,
+                cancelScheduledValues: vi.fn(),
+                setValueAtTime: vi.fn(),
+                linearRampToValueAtTime: vi.fn(),
+            };
+            (scene as any).ambientGain = { gain: mockParam };
+            (scene as any).beepCtx = { currentTime: 0 };
+
+            scene.fadeAmbientToPub(0.5, 500);
+
+            expect(mockParam.cancelScheduledValues).toHaveBeenCalledWith(0);
+            expect(mockParam.setValueAtTime).toHaveBeenCalledWith(0.1, 0);
+            expect(mockParam.linearRampToValueAtTime).toHaveBeenCalledWith(
+                0.5,
+                0.5
+            );
+        });
+    });
+
+    describe('getOrCreateAudioContext creates beepCtx when AudioContext is available (lines 59-60)', () => {
+        it('calls new AudioContext() and stores result in beepCtx', () => {
+            // Use a regular function constructor (arrow functions cannot be used with `new`)
+            function FakeAudioContext(this: object) {}
+            vi.stubGlobal('AudioContext', FakeAudioContext);
+            // Ensure beepCtx is not pre-set so getOrCreateAudioContext creates it
+            (scene as any).beepCtx = undefined;
+
+            const ctx = (scene as any).getOrCreateAudioContext();
+
+            expect(ctx).toBeInstanceOf(FakeAudioContext);
+            expect((scene as any).beepCtx).toBe(ctx);
+            vi.unstubAllGlobals();
+        });
+    });
+
+    describe('startAmbient with mocked AudioContext', () => {
+        it('creates oscillator and starts it when audio context is available', () => {
+            const mockOsc = {
+                type: '',
+                frequency: { setValueAtTime: vi.fn() },
+                connect: vi.fn(),
+                start: vi.fn(),
+            };
+            const mockGain = {
+                gain: { value: 0 },
+                connect: vi.fn(),
+            };
+            // Pre-set beepCtx so getOrCreateAudioContext() returns it immediately
+            const mockCtx = {
+                createOscillator: vi.fn().mockReturnValue(mockOsc),
+                createGain: vi.fn().mockReturnValue(mockGain),
+                destination: {},
+                currentTime: 0,
+            };
+            (scene as any).beepCtx = mockCtx;
+
+            scene.startAmbientPub();
+
+            expect(mockCtx.createOscillator).toHaveBeenCalled();
+            expect(mockCtx.createGain).toHaveBeenCalled();
+            expect(mockOsc.start).toHaveBeenCalled();
+        });
+    });
+
+    describe('applyAmbientForScene with existing audio nodes', () => {
+        it('updates oscillator frequency when ambientOsc and beepCtx exist', () => {
+            const mockOsc = { frequency: { setValueAtTime: vi.fn() } };
+            (scene as any).ambientOsc = mockOsc;
+            (scene as any).beepCtx = { currentTime: 1 };
+
+            scene.applyAmbientForScenePub('scene_1' as SceneId);
+
+            expect(mockOsc.frequency.setValueAtTime).toHaveBeenCalled();
+        });
+    });
+
+    describe('playBeep with mocked AudioContext', () => {
+        it('creates and plays oscillator when audio context is available', () => {
+            const mockOsc = {
+                type: '',
+                frequency: { value: 0 },
+                connect: vi.fn(),
+                start: vi.fn(),
+                stop: vi.fn(),
+            };
+            const mockGain = { gain: { value: 0 }, connect: vi.fn() };
+            // Pre-set beepCtx so getOrCreateAudioContext() returns it immediately
+            const mockCtx = {
+                state: 'running',
+                createOscillator: vi.fn().mockReturnValue(mockOsc),
+                createGain: vi.fn().mockReturnValue(mockGain),
+                destination: {},
+                currentTime: 0,
+                resume: vi.fn().mockResolvedValue(undefined),
+            };
+            (scene as any).beepCtx = mockCtx;
+
+            scene.setDialogue(twoLineDialogue);
+            scene.advanceDialogue();
+
+            expect(mockCtx.createOscillator).toHaveBeenCalled();
+            expect(mockOsc.start).toHaveBeenCalled();
+            expect(mockOsc.stop).toHaveBeenCalled();
+        });
+
+        it('resumes suspended audio context before playing beep', () => {
+            const mockOsc = {
+                type: '',
+                frequency: { value: 0 },
+                connect: vi.fn(),
+                start: vi.fn(),
+                stop: vi.fn(),
+            };
+            const mockGain = { gain: { value: 0 }, connect: vi.fn() };
+            const mockResume = vi.fn().mockResolvedValue(undefined);
+            const mockCtx = {
+                state: 'suspended',
+                createOscillator: vi.fn().mockReturnValue(mockOsc),
+                createGain: vi.fn().mockReturnValue(mockGain),
+                destination: {},
+                currentTime: 0,
+                resume: mockResume,
+            };
+            (scene as any).beepCtx = mockCtx;
+
+            scene.setDialogue(twoLineDialogue);
+            scene.advanceDialogue();
+
+            expect(mockResume).toHaveBeenCalled();
+        });
+    });
+
+    describe('setupBackground - additional texture paths', () => {
+        it('calls setTexture on bgImage when texture key changes', () => {
+            const existingImage = makeMockImage();
+            existingImage.texture = { key: 'old_key' };
+            (scene as any).bgImage = existingImage;
+            (scene as any).textures.exists = vi.fn().mockReturnValue(true);
+
+            (scene as any).redrawLayout();
+
+            expect(existingImage.setTexture).toHaveBeenCalled();
+        });
+
+        it('destroys bgGraphics when switching to texture background', () => {
+            const mockGraphics = makeMockGraphics();
+            (scene as any).bgGraphics = mockGraphics;
+            (scene as any).textures.exists = vi.fn().mockReturnValue(true);
+
+            (scene as any).redrawLayout();
+
+            expect(mockGraphics.destroy).toHaveBeenCalled();
+            expect((scene as any).bgGraphics).toBeUndefined();
+        });
+
+        it('destroys bgImage when switching from texture to graphics background', () => {
+            const existingImage = makeMockImage();
+            (scene as any).bgImage = existingImage;
+            // textures.exists returns false (the default in mock)
+
+            (scene as any).redrawLayout();
+
+            expect(existingImage.destroy).toHaveBeenCalled();
+            expect((scene as any).bgImage).toBeUndefined();
+        });
+
+        it('draws horizon line for scene_3', () => {
+            (scene as any).sectionKey = 'scene_3';
+            const mockGraphics = makeMockGraphics();
+            (scene as any).add.graphics = vi.fn().mockReturnValue(mockGraphics);
+
+            (scene as any).redrawLayout();
+
+            expect(mockGraphics.lineStyle).toHaveBeenCalled();
+            expect(mockGraphics.strokeLineShape).toHaveBeenCalled();
+        });
+
+        it('draws horizon line for scene_4a', () => {
+            (scene as any).sectionKey = 'scene_4a';
+            const mockGraphics = makeMockGraphics();
+            (scene as any).add.graphics = vi.fn().mockReturnValue(mockGraphics);
+
+            (scene as any).redrawLayout();
+
+            expect(mockGraphics.lineStyle).toHaveBeenCalled();
+        });
+    });
+
+    describe('home button event handlers via callbacks', () => {
+        it('pointerover callback triggers hover=true styling', () => {
+            scene.create();
+            const homeBtn = scene.getHomeButton();
+            const pointeroverCall = (homeBtn.on.mock.calls as unknown[][]).find(
+                call => call[0] === 'pointerover'
+            );
+            expect(pointeroverCall).toBeDefined();
+            const callback = pointeroverCall![1] as () => void;
+            callback();
+            expect(homeBtn.setStyle).toHaveBeenCalledWith(
+                expect.objectContaining({ backgroundColor: '#555555' })
+            );
+        });
+
+        it('pointerout callback triggers hover=false styling', () => {
+            scene.create();
+            const homeBtn = scene.getHomeButton();
+            const pointeroutCall = (homeBtn.on.mock.calls as unknown[][]).find(
+                call => call[0] === 'pointerout'
+            );
+            expect(pointeroutCall).toBeDefined();
+            const callback = pointeroutCall![1] as () => void;
+            callback();
+            expect(homeBtn.setStyle).toHaveBeenCalledWith(
+                expect.objectContaining({ backgroundColor: '#333333' })
+            );
+        });
+
+        it('pointerup callback navigates to home', () => {
+            vi.stubGlobal('location', { href: '' });
+            try {
+                scene.create();
+                const homeBtn = scene.getHomeButton();
+                const pointerupCall = (
+                    homeBtn.on.mock.calls as unknown[][]
+                ).find(call => call[0] === 'pointerup');
+                expect(pointerupCall).toBeDefined();
+                const callback = pointerupCall![1] as () => void;
+                callback();
+                expect(location.href).toBe('/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        });
+    });
+
+    describe('showDialogue - max retries exceeded', () => {
+        it('logs error and resets retry count at max retries', () => {
+            const consoleSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+            (scene as any).characterNameText = null;
+            (scene as any).textObject = null;
+            (scene as any).dialogueRetryCount = 10; // MAX_DIALOGUE_RETRIES
+
+            scene.setDialogue(twoLineDialogue);
+            scene.showDialogue();
+
+            expect(consoleSpy).toHaveBeenCalledWith(
+                '[BaseScene] Dialogue UI not ready after maximum retries'
+            );
+            expect((scene as any).dialogueRetryCount).toBe(0);
+            consoleSpy.mockRestore();
+        });
+    });
+
+    describe('showDialogue - retry delayedCall callback', () => {
+        it('calls showDialogue when generation matches after delayedCall fires', () => {
+            (scene as any).characterNameText = null;
+            (scene as any).textObject = null;
+
+            let capturedCb: (() => void) | null = null;
+            (scene as any).time.delayedCall = vi
+                .fn()
+                .mockImplementation((_delay: number, cb: () => void) => {
+                    capturedCb = cb;
+                });
+
+            scene.setDialogue(twoLineDialogue);
+            scene.showDialogue();
+
+            expect(capturedCb).not.toBeNull();
+
+            // Restore text objects so showDialogue succeeds on retry
+            (scene as any).characterNameText = makeMockText();
+            (scene as any).textObject = makeMockText();
+
+            capturedCb!();
+
+            expect(scene.getTextObj().setText).toHaveBeenCalledWith('Hello!');
+        });
+    });
+
+    describe('showDialogue - characterRef path', () => {
+        it('uses characterRef info name when characterRef is provided', () => {
+            const char = new Character(CharacterId.LiJie);
+            scene.setDialogue({
+                scene_1: [{ characterRef: char, dialogue: 'Story text' }],
+            });
+            scene.showDialogue();
+            expect(scene.getNameObj().setText).toHaveBeenCalledWith('李杰');
+            expect(scene.getTextObj().setText).toHaveBeenCalledWith(
+                'Story text'
+            );
+        });
+    });
+
+    describe('retreatDialogue - onCrossSectionRetreat handled path', () => {
+        it('calls showDialogue when onCrossSectionRetreat returns true', () => {
+            class HandledScene extends TestScene {
+                protected override onCrossSectionRetreat(): boolean {
+                    return true;
+                }
+            }
+            const handledScene = new HandledScene();
+            handledScene.setDialogue(twoLineDialogue);
+            handledScene.setIndex(0);
+
+            const showSpy = vi.spyOn(handledScene, 'showDialogue');
+            handledScene.retreatDialogue();
+
+            expect(showSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('updateDialogueUI overlayRect reuse', () => {
+        it('updates existing overlayRect on second redrawLayout', () => {
+            scene.create();
+            const overlayRect = scene.getOverlayRect();
+            expect(overlayRect).toBeDefined();
+
+            vi.clearAllMocks();
+            (scene as any).redrawLayout();
+
+            // overlayRect.setPosition should be called (reuse branch)
+            expect(overlayRect.setPosition).toHaveBeenCalled();
+        });
+    });
+
+    describe('loadDialogue - delayedCall callback', () => {
+        it('calls showDialogue when generation matches when callback fires', () => {
+            let capturedCb: (() => void) | null = null;
+            (scene as any).time.delayedCall = vi
+                .fn()
+                .mockImplementation((_delay: number, cb: () => void) => {
+                    capturedCb = cb;
+                });
+
+            scene.loadDialogue(twoLineDialogue);
+
+            expect(capturedCb).not.toBeNull();
+
+            // Fire the captured callback – generation should match
+            capturedCb!();
+
+            // showDialogue was called and set the text
+            expect(scene.getTextObj().setText).toHaveBeenCalledWith('Hello!');
+        });
+
+        it('skips showDialogue when generation has changed before callback fires', () => {
+            const callbacks: (() => void)[] = [];
+            (scene as any).time.delayedCall = vi
+                .fn()
+                .mockImplementation((_delay: number, cb: () => void) => {
+                    callbacks.push(cb);
+                });
+
+            scene.loadDialogue(twoLineDialogue); // captures callbacks[0] at gen N
+            scene.loadDialogue(twoLineDialogue); // captures callbacks[1] at gen N+1
+
+            vi.clearAllMocks();
+            callbacks[0](); // stale – gen N no longer matches current gen
+
+            // setText should NOT have been called by the stale callback
+            expect(scene.getTextObj().setText).not.toHaveBeenCalled();
         });
     });
 });

@@ -259,4 +259,145 @@ describe('ProgressMapModal', () => {
             expect(closeBtnMock?.setColor).toHaveBeenCalledWith('#e5e7eb');
         });
     });
+
+    describe('panel pointer event propagation stop', () => {
+        function getPanelMock(scene: ReturnType<typeof makeScene>) {
+            // Panel is the 2nd rectangle added (index 1, after backdrop)
+            return scene.add.rectangle.mock.results[1]?.value;
+        }
+
+        it('pointerdown on panel calls event.stopPropagation (line 84)', () => {
+            const scene = makeScene();
+            const modal = new ProgressMapModal(scene, makeConfig());
+            modal.show();
+
+            const panel = getPanelMock(scene);
+            const pointerdownCb = (panel.on.mock.calls as unknown[][]).find(
+                c => c[0] === 'pointerdown'
+            )?.[1] as
+                | ((
+                      _p: unknown,
+                      _x: unknown,
+                      _y: unknown,
+                      e: { stopPropagation: () => void }
+                  ) => void)
+                | undefined;
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            pointerdownCb?.(null, 0, 0, mockEvent);
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+        });
+
+        it('pointerup on panel calls event.stopPropagation (line 95)', () => {
+            const scene = makeScene();
+            const modal = new ProgressMapModal(scene, makeConfig());
+            modal.show();
+
+            const panel = getPanelMock(scene);
+            const pointerupCb = (panel.on.mock.calls as unknown[][]).find(
+                c => c[0] === 'pointerup'
+            )?.[1] as
+                | ((
+                      _p: unknown,
+                      _x: unknown,
+                      _y: unknown,
+                      e: { stopPropagation: () => void }
+                  ) => void)
+                | undefined;
+
+            const mockEvent = { stopPropagation: vi.fn() };
+            pointerupCb?.(null, 0, 0, mockEvent);
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+        });
+    });
+
+    describe('nodeClicked event handler', () => {
+        it('calls onNodeSelected and closes modal when nodeClicked fires (lines 155-159)', () => {
+            const scene = makeScene();
+            const onNodeSelected = vi.fn();
+            const onClose = vi.fn();
+            const config = {
+                ...makeConfig(onClose),
+                onNodeSelected,
+            };
+            const modal = new ProgressMapModal(scene, config);
+            modal.show();
+
+            // Emit nodeClicked on the internal StoryProgressionMap's eventEmitter
+            const map = (
+                modal as unknown as {
+                    map: {
+                        eventEmitter: {
+                            emit: (e: string, ...args: unknown[]) => void;
+                        };
+                    };
+                }
+            ).map;
+            map.eventEmitter.emit('nodeClicked', { nodeId: 'scene_2' });
+
+            expect(onNodeSelected).toHaveBeenCalledWith('scene_2');
+            expect(modal.isVisible()).toBe(false);
+        });
+
+        it('closes modal even when onNodeSelected is not set', () => {
+            const scene = makeScene();
+            const modal = new ProgressMapModal(scene, makeConfig());
+            modal.show();
+
+            const map = (
+                modal as unknown as {
+                    map: {
+                        eventEmitter: {
+                            emit: (e: string, ...args: unknown[]) => void;
+                        };
+                    };
+                }
+            ).map;
+            map.eventEmitter.emit('nodeClicked', { nodeId: 'scene_1' });
+
+            expect(modal.isVisible()).toBe(false);
+        });
+    });
+
+    describe('close() guard and callback branches', () => {
+        it('returns early when close() is called while already not visible (line 267 early return)', () => {
+            const scene = makeScene();
+            const onClose = vi.fn();
+            const modal = new ProgressMapModal(scene, makeConfig(onClose));
+            modal.show();
+            clickBackdrop(scene); // first close — visible becomes false, onClose called once
+            onClose.mockClear();
+            // Call close() again directly — !this.visible is true → early return
+            (modal as unknown as { close: () => void }).close();
+            expect(onClose).not.toHaveBeenCalled();
+        });
+
+        it('does not throw when onClose is not provided (line 275 false branch)', () => {
+            const scene = makeScene();
+            const modal = new ProgressMapModal(scene, {
+                mapConfig: makeConfig().mapConfig,
+                // no onClose
+            });
+            modal.show();
+            expect(() => clickBackdrop(scene)).not.toThrow();
+            expect(modal.isVisible()).toBe(false);
+        });
+    });
+
+    describe('ESC key handler', () => {
+        it('closes the modal when the ESC handler is invoked (line 166)', () => {
+            const scene = makeScene();
+            const onClose = vi.fn();
+            const modal = new ProgressMapModal(scene, makeConfig(onClose));
+            modal.show();
+
+            // Invoke the stored escHandler directly (same function registered with key.on('down'))
+            const handler = (modal as unknown as { escHandler?: () => void })
+                .escHandler;
+            handler?.();
+
+            expect(modal.isVisible()).toBe(false);
+            expect(onClose).toHaveBeenCalledOnce();
+        });
+    });
 });

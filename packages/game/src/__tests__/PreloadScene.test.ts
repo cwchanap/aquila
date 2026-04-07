@@ -108,6 +108,19 @@ describe('PreloadScene', () => {
             });
             expect((scene as any).add.graphics).toHaveBeenCalled();
         });
+
+        it('loaderror handler skips graphics for non-image files (line 51 false branch)', () => {
+            const scene = new PreloadScene();
+            (scene as any).preload();
+            const loadOn = (scene as any).load.on;
+            const errorCall = loadOn.mock.calls.find(
+                (call: unknown[]) => call[0] === 'loaderror'
+            );
+            const errorHandler = errorCall[1] as (file: unknown) => void;
+            // Trigger with a non-image type — should not create graphics
+            errorHandler({ key: 'data.json', src: '/data.json', type: 'json' });
+            expect((scene as any).add.graphics).not.toHaveBeenCalled();
+        });
     });
 
     describe('create', () => {
@@ -129,6 +142,18 @@ describe('PreloadScene', () => {
             expect(scenePlugin.start).toHaveBeenCalledWith(
                 'StoryScene',
                 expect.objectContaining({ characterName: expect.any(String) })
+            );
+        });
+
+        it('falls back to train_adventure when startData.storyId is falsy (line 89 branch)', () => {
+            const scene = new PreloadScene();
+            (scene as any).preload();
+            // Make storyId falsy so the || fallback fires
+            (scene as any).startData.storyId = undefined;
+            (scene as any).create();
+            expect((scene as any).scene.start).toHaveBeenCalledWith(
+                'StoryScene',
+                expect.objectContaining({ storyId: 'train_adventure' })
             );
         });
     });

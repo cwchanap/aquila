@@ -203,6 +203,18 @@ describe('SceneFlow', () => {
             const result = flow.retreatToPreviousScene();
             expect(result).toBeNull();
         });
+
+        it('returns null when previous history entry is not a known scene node (line 200)', () => {
+            const flow = SceneFlow.fromLinearScenes([
+                'scene_1',
+                'scene_2',
+            ] as any);
+            // sceneHistory is ordered oldest→newest; pop() removes the last (current).
+            // After pop, previousId = '__invalid_node__' which has no matching node.
+            (flow as any).sceneHistory = ['__invalid_node__', 'scene_2'];
+            const result = flow.retreatToPreviousScene();
+            expect(result).toBeNull();
+        });
     });
 
     describe('getSceneHistory', () => {

@@ -398,4 +398,62 @@ describe('run-migration.ts', () => {
             genericError
         );
     });
+
+    it('throws when DATABASE_URL is not set (line 31-32)', async () => {
+        delete process.env.DATABASE_URL;
+        process.env.NODE_ENV = 'test';
+
+        // Silence the console.error from the outer catch
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const reason = await captureNextUnhandledRejection(async () => {
+            await import('../run-migration');
+        });
+
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('DATABASE_URL'),
+        });
+    });
+
+    it('throws when in production and DB_CA_PATH is not set (lines 40-43)', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'production';
+        delete process.env.DB_CA_PATH;
+
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const reason = await captureNextUnhandledRejection(async () => {
+            await import('../run-migration');
+        });
+
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('DB_CA_PATH'),
+        });
+    });
+
+    it('extractDbErrorDetails returns empty object for non-object errors (line 24)', async () => {
+        process.env.DATABASE_URL = 'postgres://localhost/testdb';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue(['0001_init.sql']);
+        mockReadFileSync.mockReturnValue('SELECT 1;');
+
+        // Throw a non-object error (string) to hit the else branch in extractDbErrorDetails
+        const stringError = 'raw string error';
+        mockQuery
+            .mockResolvedValueOnce({ rows: [] }) // tracking table
+            .mockResolvedValueOnce({ rows: [] }) // check applied
+            .mockRejectedValueOnce(stringError); // non-object error
+
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const reason = await captureNextUnhandledRejection(async () => {
+            await import('../run-migration');
+            await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
+        });
+
+        // extractDbErrorDetails returns {} for non-objects → no duplicate code
+        // so the generic re-throw path is hit
+        expect(reason).toBe(stringError);
+    });
 });

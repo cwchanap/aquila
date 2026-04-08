@@ -1054,7 +1054,7 @@ describe('StoryScene', () => {
     });
 
     describe('showCompletionOverlay edge cases', () => {
-        it('is a no-op when already completed (line 354 early return)', () => {
+        it('is a no-op when already completed', () => {
             const realScene = new StoryScene();
             (realScene as any).choicePresenter = {
                 awaiting: false,

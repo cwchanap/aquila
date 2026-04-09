@@ -490,9 +490,12 @@ describe('StoryScene', () => {
             const setChoiceMapSpy = vi
                 .spyOn(ChoicePresenter.prototype, 'setChoiceMap')
                 .mockImplementation(() => {});
-            expect(() => (realScene as any).create()).not.toThrow();
-            expect(setChoiceMapSpy).toHaveBeenCalledWith(fakeChoiceMap);
-            setChoiceMapSpy.mockRestore();
+            try {
+                expect(() => (realScene as any).create()).not.toThrow();
+                expect(setChoiceMapSpy).toHaveBeenCalledWith(fakeChoiceMap);
+            } finally {
+                setChoiceMapSpy.mockRestore();
+            }
         });
 
         it('initialises choicePresenter, menuOverlay, completionOverlay and starts the scene', () => {

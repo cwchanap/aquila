@@ -419,7 +419,7 @@ describe('StoryScene', () => {
             ).toHaveBeenCalled();
         });
 
-        it('resolveChoice callback (line 97) transitions to the resolved scene', () => {
+        it('resolveChoice callback transitions to the resolved scene', () => {
             const realScene = makeRealScene();
             const flow = new SceneFlow({
                 start: 'scene_1',

@@ -1046,7 +1046,7 @@ describe('StoryScene', () => {
             vi.spyOn(flow, 'getSceneHistory').mockReturnValue([]);
             (realScene as any).flow = flow;
 
-            const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+            const setItemSpy = vi.spyOn(localStorage, 'setItem');
             (realScene as any).persistCheckpoint();
             expect(setItemSpy).not.toHaveBeenCalled();
             setItemSpy.mockRestore();

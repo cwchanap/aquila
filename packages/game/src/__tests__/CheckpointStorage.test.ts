@@ -204,4 +204,28 @@ describe('CheckpointStorage', () => {
             expect(() => saveCheckpoint('trainAdventure', state)).not.toThrow();
         });
     });
+
+    describe('loadCheckpoint — localStorage unavailable (line 46)', () => {
+        it('returns null when window.localStorage is null', () => {
+            // Simulate an environment where localStorage is not available.
+            // This covers the `!window.localStorage` branch inside loadCheckpoint.
+            const descriptor = Object.getOwnPropertyDescriptor(
+                window,
+                'localStorage'
+            );
+            Object.defineProperty(window, 'localStorage', {
+                value: null,
+                configurable: true,
+                writable: true,
+            });
+
+            const result = loadCheckpoint('trainAdventure');
+            expect(result).toBeNull();
+
+            // Restore original descriptor
+            if (descriptor) {
+                Object.defineProperty(window, 'localStorage', descriptor);
+            }
+        });
+    });
 });

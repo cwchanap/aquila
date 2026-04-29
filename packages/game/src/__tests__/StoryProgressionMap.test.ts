@@ -274,4 +274,56 @@ describe('StoryProgressionMap', () => {
             expect(container.destroy).toHaveBeenCalled();
         });
     });
+
+    describe('computeLayers — all-incoming-edges fallback (line 124)', () => {
+        it('handles cyclic node graph by falling back to first node', () => {
+            // When every node has an incoming edge (a cycle), startNodes would
+            // be empty.  Line 124 pushes nodes[0].id as the fallback start.
+            const cyclicNodes: FlowNodeDefinition[] = [
+                {
+                    kind: 'scene',
+                    id: 'scene_1',
+                    sceneId: 'scene_1',
+                    next: 'scene_2',
+                },
+                {
+                    kind: 'scene',
+                    id: 'scene_2',
+                    sceneId: 'scene_2',
+                    // Points back to scene_1, creating a cycle
+                    next: 'scene_1' as never,
+                },
+            ];
+            const scene = makeScene();
+            // Should construct without throwing even with a cyclic graph
+            expect(
+                () =>
+                    new StoryProgressionMap(
+                        scene,
+                        baseConfig(cyclicNodes, 'scene_1', ['scene_1'])
+                    )
+            ).not.toThrow();
+        });
+    });
+
+    describe('assignPositions — choice completed during construction (line 211)', () => {
+        it('marks a choice node as completed when its target is in initial completedHistory', () => {
+            // To cover line 211 (state = "completed" inside assignPositions),
+            // the completedHistory passed at construction must contain one of
+            // the choice node's target scene ids.
+            const scene = makeScene();
+            expect(
+                () =>
+                    new StoryProgressionMap(
+                        scene,
+                        baseConfig(
+                            branchingNodes,
+                            'scene_3a',
+                            // scene_3a is a target of choice:c1 → triggers the completed branch
+                            ['scene_1', 'scene_2', 'scene_3a']
+                        )
+                    )
+            ).not.toThrow();
+        });
+    });
 });

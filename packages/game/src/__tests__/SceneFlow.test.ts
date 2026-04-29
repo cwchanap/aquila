@@ -572,4 +572,44 @@ describe('SceneFlow', () => {
             ]);
         });
     });
+
+    describe('selectChoice — non-scene resolution', () => {
+        it('returns end when choice option resolves to a non-scene node', () => {
+            // A malformed flow where a choice option points to another choice
+            // node rather than a scene.  The defensive guard on line 167-169
+            // catches this and returns { type: 'end' }.
+            const config: FlowConfig = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1' as never,
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        // opt_a resolves to another choice node, not a scene
+                        nextByOption: {
+                            opt_a: 'choice:c2' as never,
+                        },
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c2',
+                        choiceId: 'c2',
+                        nextByOption: {},
+                    },
+                ],
+            };
+
+            const flow = new SceneFlow(config);
+            flow.advanceFromScene(); // → choice mode at choice:c1
+
+            const result = flow.selectChoice('opt_a');
+            expect(result).toEqual({ type: 'end' });
+        });
+    });
 });

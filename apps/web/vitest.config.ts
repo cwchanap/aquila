@@ -17,6 +17,18 @@ export default defineConfig({
             provider: 'v8',
             reporter: ['text', 'lcov', 'json'],
             reportsDirectory: './coverage',
+            include: [
+                'src/**/*.ts',
+                'src/**/*.svelte',
+                'scripts/**/*.ts',
+                'scripts/**/*.mjs',
+            ],
+            exclude: [
+                '**/__tests__/**',
+                '**/*.test.ts',
+                '**/test-utils/**',
+                '**/test-setup.ts',
+            ],
         },
     },
     resolve: {

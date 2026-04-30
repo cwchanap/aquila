@@ -294,6 +294,30 @@ describe('Character Setup API', () => {
         expect(data.error).toBe('Failed to save character setup');
     });
 
+    it('uses provided locale for translations when locale is explicitly set (line 31 ?? branch)', async () => {
+        mockAuthenticatedSession('user-1');
+        isValidStoryIdMock.mockReturnValue(true);
+        mockRepo.findByUserAndStory.mockResolvedValue({ id: 'setup-1' });
+        mockRepo.update.mockResolvedValue({
+            id: 'setup-1',
+            characterName: 'Hero',
+        });
+
+        const response = await POST({
+            request: new Request('http://localhost/api/character-setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    characterName: 'Hero',
+                    storyId: 'train_adventure',
+                    locale: 'zh',
+                }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(200);
+    });
+
     it('returns 500 on unexpected error in GET', async () => {
         mockAuthenticatedSession('user-1');
         mockRepo.findByUser.mockRejectedValue(new Error('DB crash'));

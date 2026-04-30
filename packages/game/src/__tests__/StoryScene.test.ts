@@ -304,6 +304,17 @@ describe('StoryScene', () => {
             // Max(0, len-1) = 1
             expect((scene as any).currentDialogueIndex).toBe(1);
         });
+
+        it('defaults dialogue index to 0 when previous scene has no dialogue (line 118 ?? 0 branch)', () => {
+            // When dialogue[previousSceneId] is undefined, the ?. returns undefined,
+            // so the ?? 0 fallback fires and currentDialogueIndex = Max(0, 0-1) = 0
+            const flow = makeTwoSceneFlow();
+            scene.setFlow(flow);
+            (scene as any).sectionKey = 'scene_2';
+            (scene as any).dialogue = {}; // No dialogue for scene_1
+            scene.onCrossSectionRetreatPub();
+            expect((scene as any).currentDialogueIndex).toBe(0);
+        });
     });
 
     describe('endScene', () => {
@@ -1073,6 +1084,93 @@ describe('StoryScene', () => {
             expect(
                 (realScene as any).completionOverlay.show
             ).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('persistCheckpoint — null currentSceneId branch (line 250)', () => {
+        it('returns early when flow.getCurrentSceneId() returns null', () => {
+            const realScene = new StoryScene();
+            (realScene as any).storyId = 'test_story';
+            const mockFlow = {
+                getCurrentSceneId: vi.fn().mockReturnValue(null),
+                getSceneHistory: vi.fn().mockReturnValue(['scene_1']),
+            };
+            (realScene as any).flow = mockFlow;
+            const setItemSpy = vi.spyOn(localStorage, 'setItem');
+            (realScene as any).persistCheckpoint(false);
+            expect(setItemSpy).not.toHaveBeenCalled();
+            setItemSpy.mockRestore();
+        });
+    });
+
+    describe('openMenu — onHome localized route branch (line 319)', () => {
+        it('sets window.location.href to localized URL when pathname is localized', () => {
+            const realScene = new StoryScene();
+            const mockMenuOverlay = {
+                open: false,
+                show: vi.fn(),
+                close: vi.fn(),
+                forceClose: vi.fn(),
+            };
+            (realScene as any).menuOverlay = mockMenuOverlay;
+            (realScene as any).locale = 'en';
+            (realScene as any).flow = null;
+
+            (realScene as any).openMenu();
+            const config = mockMenuOverlay.show.mock.calls[0][0];
+
+            vi.stubGlobal('location', { href: '', pathname: '/en/reader' });
+            try {
+                config.onHome();
+                expect(location.href).toBe('/en/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        });
+    });
+
+    describe('showCompletionOverlay — zh locale and localized route branches (lines 358-362)', () => {
+        function makeCompletionScene(locale: string) {
+            const scene = new StoryScene();
+            (scene as any).locale = locale;
+            (scene as any).completed = false;
+            (scene as any).completionOverlay = {
+                show: vi.fn(),
+                destroy: vi.fn(),
+            };
+            (scene as any).choicePresenter = { clear: vi.fn() };
+            (scene as any).characterNameText = {
+                setText: vi.fn(),
+                setVisible: vi.fn(),
+            };
+            (scene as any).textObject = { setText: vi.fn() };
+            return scene;
+        }
+
+        it('uses zh locale for showCompletionOverlay (line 358 zh branch)', () => {
+            const scene = makeCompletionScene('zh');
+            vi.stubGlobal('location', { href: '', pathname: '/zh/reader' });
+            try {
+                (scene as any).showCompletionOverlay();
+                expect(
+                    (scene as any).completionOverlay.show
+                ).toHaveBeenCalledWith('zh', '/zh/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        });
+
+        it('uses localized homeUrl when pathname matches locale route (line 362 true branch)', () => {
+            const scene = makeCompletionScene('en');
+            vi.stubGlobal('location', { href: '', pathname: '/en/reader' });
+            try {
+                (scene as any).showCompletionOverlay();
+                expect(
+                    (scene as any).completionOverlay.show
+                ).toHaveBeenCalledWith('en', '/en/');
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
     });
 

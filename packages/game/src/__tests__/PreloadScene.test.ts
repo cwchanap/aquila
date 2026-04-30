@@ -109,6 +109,27 @@ describe('PreloadScene', () => {
             expect((scene as any).add.graphics).toHaveBeenCalled();
         });
 
+        it('uses train_adventure fallback when startData.storyId is undefined (line 61)', () => {
+            const scene = new PreloadScene();
+            (scene as any).startData.storyId = undefined;
+            expect(() => (scene as any).preload()).not.toThrow();
+            // Registry should still be populated via the fallback storyId
+            const setCall = (scene as any).registry.set.mock.calls.find(
+                (call: unknown[]) => call[0] === 'dialogueMap'
+            );
+            expect(setCall).toBeDefined();
+        });
+
+        it('uses zh fallback when startData.locale is undefined (line 62)', () => {
+            const scene = new PreloadScene();
+            (scene as any).startData.locale = undefined;
+            expect(() => (scene as any).preload()).not.toThrow();
+            const setCall = (scene as any).registry.set.mock.calls.find(
+                (call: unknown[]) => call[0] === 'dialogueMap'
+            );
+            expect(setCall).toBeDefined();
+        });
+
         it('loaderror handler skips graphics for non-image files (line 51 false branch)', () => {
             const scene = new PreloadScene();
             (scene as any).preload();

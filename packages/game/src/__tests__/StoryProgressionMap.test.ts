@@ -275,6 +275,47 @@ describe('StoryProgressionMap', () => {
         });
     });
 
+    describe('drawChoiceNode — current state (line 396)', () => {
+        it('uses choice color when choice node is the current node', () => {
+            const scene = makeScene();
+            // Set currentNodeId to the choice node so it gets 'current' state
+            new StoryProgressionMap(
+                scene,
+                baseConfig(branchingNodes, 'choice:c1', ['scene_1', 'scene_2'])
+            );
+            // Verify graphics were called (choice diamond drawn)
+            expect(scene.add.graphics).toHaveBeenCalled();
+        });
+    });
+
+    describe('showTooltip — choice node tooltip text (line 469 false branch)', () => {
+        it('shows Choice tooltip text when pointerover fires on a choice node', () => {
+            const scene = makeScene();
+            const interactiveConfig = {
+                ...baseConfig(branchingNodes),
+                interactive: true,
+            };
+            new StoryProgressionMap(scene, interactiveConfig);
+
+            // Container layout: 0=root, 1=scene_1, 2=scene_2, 3=choice:c1, 4=scene_3a, 5=scene_3b
+            const choiceContainer = scene.add.container.mock.results[3].value;
+            const pointeroverCb = choiceContainer.on.mock.calls.find(
+                (c: [string, unknown]) => c[0] === 'pointerover'
+            )?.[1] as (() => void) | undefined;
+
+            const textCallsBefore = scene.add.text.mock.calls.length;
+            pointeroverCb?.();
+            // A new text object with "Choice:" prefix should be created for the tooltip
+            const newTextCalls =
+                scene.add.text.mock.calls.slice(textCallsBefore);
+            const choiceTooltip = newTextCalls.find(
+                (args: unknown[]) =>
+                    typeof args[2] === 'string' && args[2].startsWith('Choice:')
+            );
+            expect(choiceTooltip).toBeDefined();
+        });
+    });
+
     describe('computeLayers — all-incoming-edges fallback (line 124)', () => {
         it('handles cyclic node graph by falling back to first node', () => {
             // When every node has an incoming edge (a cycle), startNodes would

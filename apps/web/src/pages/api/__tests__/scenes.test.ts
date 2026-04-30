@@ -279,4 +279,34 @@ describe('Scenes API', () => {
         const data = await response.json();
         expect(data.error).toBe('Failed to create scene');
     });
+
+    it('creates scene with null content when content is omitted (line 41 || null branch)', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+        });
+        mockRepo.create.mockResolvedValue({
+            id: 'scene-3',
+            title: 'Scene Three',
+            storyId: 'story-1',
+        });
+
+        await POST({
+            request: new Request('http://localhost/api/scenes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'story-1',
+                    title: 'Scene Three',
+                    order: 3,
+                    // no content field
+                }),
+            }),
+        } as any);
+
+        expect(mockRepo.create).toHaveBeenCalledWith(
+            expect.objectContaining({ content: null })
+        );
+    });
 });

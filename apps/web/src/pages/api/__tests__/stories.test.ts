@@ -78,6 +78,20 @@ describe('Stories API', () => {
         expect(data.success).toBe(false);
     });
 
+    it('rejects unauthenticated POST requests (line 34 authError branch)', async () => {
+        const response = await listPOST({
+            request: new Request('http://localhost/api/stories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: 'My Story' }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(401);
+        const data = await response.json();
+        expect(data.error).toBe('Unauthorized');
+    });
+
     it('returns stories for an authenticated user', async () => {
         mockAuthenticatedSession('user-1');
         mockStoryRepo.findByUserId.mockResolvedValue([
@@ -548,6 +562,35 @@ describe('Stories API', () => {
         expect(response.status).toBe(500);
         const data = await response.json();
         expect(data.error).toBe('Failed to fetch stories');
+    });
+
+    it('sets description to null when description is empty string on PUT (line 68 || null branch)', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            title: 'Story One',
+            userId: 'user-1',
+        });
+        mockStoryRepo.update.mockResolvedValue({
+            id: 'story-1',
+            title: 'Story One',
+            description: null,
+            userId: 'user-1',
+        });
+
+        const response = await itemPUT({
+            params: { id: 'story-1' },
+            request: new Request('http://localhost/api/stories/story-1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: '' }),
+            }),
+        } as any);
+
+        expect(response.status).toBe(200);
+        expect(mockStoryRepo.update).toHaveBeenCalledWith('story-1', {
+            description: null,
+        });
     });
 
     it('returns 500 on unexpected error in list POST', async () => {

@@ -151,6 +151,47 @@ describe('CheckpointStorage', () => {
             expect(loaded!.history).toEqual(['scene_1', 'scene_2']);
         });
 
+        it('returns null when parsed JSON is null (line 51 branch)', () => {
+            // JSON.parse("null") === null — covers the !parsed guard
+            localStorage.setItem('aquila:checkpoint:trainAdventure', 'null');
+            const loaded = loadCheckpoint('trainAdventure');
+            expect(loaded).toBeNull();
+        });
+
+        it('falls back to empty array when history is not an array (line 58 false branch)', () => {
+            // history is a string instead of an array → filteredHistory = [] → returns null
+            const checkpoint = {
+                version: 1,
+                storyId: 'trainAdventure',
+                sceneId: 'scene_2',
+                history: 'not-an-array',
+                savedAt: Date.now(),
+            };
+            localStorage.setItem(
+                'aquila:checkpoint:trainAdventure',
+                JSON.stringify(checkpoint)
+            );
+            const loaded = loadCheckpoint('trainAdventure');
+            expect(loaded).toBeNull();
+        });
+
+        it('uses Date.now() fallback when savedAt is not a number (lines 68-71 branch)', () => {
+            const checkpoint = {
+                version: 1,
+                storyId: 'trainAdventure',
+                sceneId: 'scene_2',
+                history: ['scene_1', 'scene_2'],
+                savedAt: 'not-a-number',
+            };
+            localStorage.setItem(
+                'aquila:checkpoint:trainAdventure',
+                JSON.stringify(checkpoint)
+            );
+            const loaded = loadCheckpoint('trainAdventure');
+            expect(loaded).not.toBeNull();
+            expect(typeof loaded!.savedAt).toBe('number');
+        });
+
         it('returns null for corrupted JSON', () => {
             localStorage.setItem(
                 'aquila:checkpoint:trainAdventure',
@@ -205,27 +246,28 @@ describe('CheckpointStorage', () => {
         });
     });
 
-    describe('loadCheckpoint — localStorage unavailable (line 46)', () => {
-        it('returns null when window.localStorage is null', () => {
-            // Simulate an environment where localStorage is not available.
-            // This covers the `!window.localStorage` branch inside loadCheckpoint.
-            const descriptor = Object.getOwnPropertyDescriptor(
-                window,
-                'localStorage'
-            );
-            Object.defineProperty(window, 'localStorage', {
-                value: null,
-                configurable: true,
-                writable: true,
-            });
+    describe('localStorage unavailable — all functions (lines 26, 46, 81)', () => {
+        afterEach(() => {
+            vi.unstubAllGlobals();
+        });
 
-            const result = loadCheckpoint('trainAdventure');
-            expect(result).toBeNull();
+        it('loadCheckpoint returns null when window.localStorage is null', () => {
+            vi.stubGlobal('localStorage', null);
+            expect(loadCheckpoint('trainAdventure')).toBeNull();
+        });
 
-            // Restore original descriptor
-            if (descriptor) {
-                Object.defineProperty(window, 'localStorage', descriptor);
-            }
+        it('saveCheckpoint returns early when window.localStorage is null', () => {
+            vi.stubGlobal('localStorage', null);
+            const state: CheckpointState = {
+                sceneId: 'scene_1',
+                history: ['scene_1'],
+            };
+            expect(() => saveCheckpoint('trainAdventure', state)).not.toThrow();
+        });
+
+        it('clearCheckpoint returns early when window.localStorage is null', () => {
+            vi.stubGlobal('localStorage', null);
+            expect(() => clearCheckpoint('trainAdventure')).not.toThrow();
         });
     });
 });

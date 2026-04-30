@@ -216,6 +216,36 @@ describe('Chapters API', () => {
         expect(data.error).toBe('Forbidden');
     });
 
+    it('creates chapter with null description when description is omitted (line 41 || null branch)', async () => {
+        mockAuthenticatedSession('user-1');
+        mockStoryRepo.findById.mockResolvedValue({
+            id: 'story-1',
+            userId: 'user-1',
+            title: 'Test Story',
+        });
+        mockRepo.create.mockResolvedValue({
+            id: 'chapter-1',
+            title: 'Chapter One',
+            storyId: 'story-1',
+        });
+
+        await POST({
+            request: new Request('http://localhost/api/chapters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    storyId: 'story-1',
+                    title: 'Chapter One',
+                    order: 1,
+                }),
+            }),
+        } as any);
+
+        expect(mockRepo.create).toHaveBeenCalledWith(
+            expect.objectContaining({ description: null })
+        );
+    });
+
     it('returns 500 on unexpected server error', async () => {
         mockAuthenticatedSession('user-1');
         mockStoryRepo.findById.mockRejectedValue(new Error('DB crash'));

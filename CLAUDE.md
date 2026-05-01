@@ -26,12 +26,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `bun test:debug` - Run E2E tests in debug mode
 - `bun test:report` - Show Playwright test report
 - `bun --filter web test` - Run Vitest unit tests (web app only)
-- `bun test:watch` - Run Vitest unit tests in watch mode (web app only)
+- `bun --filter web test:watch` - Run Vitest unit tests in watch mode
+- `bun --filter web test:coverage` - Run unit tests with coverage report
+- `bun --filter e2e test:e2e tests/navigation.spec.ts` - Run a single E2E test file
+- `bun --filter e2e test:e2e -g "test name"` - Run E2E tests matching a name pattern
+- `bun --filter web test src/lib/__tests__/utils.test.ts` - Run a specific unit test file
 
 ### Build and Lint
 
 - `bun build` - Build all workspaces for production (via Turbo)
 - `bun preview` - Preview production build (web app)
+- `bun --filter desktop tauri build` - Build desktop binaries for current platform
 - `bun lint` - Run ESLint across all workspaces (via Turbo)
 - `bun lint:fix` - Fix ESLint issues automatically
 
@@ -42,7 +47,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 ### Workspaces
 
 - **`apps/web`**: Astro web application with SSR, deployed to Vercel
-- **`apps/desktop`**: Desktop application (Electron/Tauri)
+- **`apps/desktop`**: Desktop application (Tauri v2 + SvelteKit, SPA mode)
 - **`packages/game`**: Phaser 3 game engine logic (`@aquila/game`)
 - **`packages/dialogue`**: Standalone dialogue content and character system (`@aquila/dialogue`)
 - **`packages/assets`**: Shared game assets
@@ -85,6 +90,11 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
   - Use `DialogueMap` type: `{ [sceneId: string]: DialogueEntry[] }`
   - Support for multi-language via locale-specific files organized by story (e.g., `trainAdventure/en.ts`, `trainAdventure/zh.ts`)
   - Access via helper functions like `getTrainAdventureStory(locale)`
+- **Story Flow**:
+  - `SceneFlow` (in `@aquila/game`) manages graph-based scene transitions using `FlowConfig` from `@aquila/dialogue`
+  - Stories register scenes and choices as nodes; `SceneFlow.advance()` / `SceneFlow.resolveChoice()` navigate the graph
+  - Add new stories by defining a `FlowConfig` and registering in `packages/dialogue/src/stories/index.ts`
+  - The `StoryId` enum in `apps/web/src/lib/story-types.ts` is the canonical list of valid story identifiers
 - **Integration**: Astro pages initialize Phaser scenes with `game.scene.start()` and pass data via registry
 
 ### Component Architecture
@@ -122,6 +132,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 
 ### Translation & Internationalization (i18n)
 
+- **Routing**: All pages live under `apps/web/src/pages/[locale]/` (supports `en` and `zh`). Middleware in `middleware.ts` redirects bare paths to `/en/`. `/zh/` routes are auto-generated proxy pages by `scripts/generate-zh-proxy-pages.ts`, which runs automatically before `dev` and `build` — do not edit files in `pages/zh/` directly.
 - **Central location**: All user-facing text lives in `packages/dialogue/src/translations/` (JSON files)
 - **Access pattern**: Import and use `getTranslations(locale)` from `@aquila/dialogue`
 - **No hardcoded text**: Never put UI strings directly in components - always reference translation keys
@@ -141,6 +152,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **Authentication**: Better Auth integration via `/api/auth/[...all]` catch-all route
 - **Repository Calls**: API routes delegate to repository class methods
 - **Error Handling**: Return consistent JSON responses with appropriate status codes
+- **Input Validation**: Use Zod schemas from `lib/schemas.ts` at API boundaries; shared validation helpers in `lib/validation.ts`
 
 ### Styling System
 
@@ -198,6 +210,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **Node/Runtime Version**: Bun v1.1.26+ (includes TypeScript 5.9+)
 - **Database**: PostgreSQL-compatible database (CockroachDB staging or managed PostgreSQL in production)
 - **Required Environment Variables**: `DATABASE_URL` for PostgreSQL connection
+- **Required in Production**: `BETTER_AUTH_SECRET` for auth session encryption
 - **Optional Environment Variables**: `DB_ALLOW_SELF_SIGNED`, `DB_POOL_MAX`, `BETTER_AUTH_URL`, `ALLOW_COCKROACH_MIGRATIONS`
 - **Migration Tools**: `drizzle-kit` for migrations, Bun's native TypeScript execution for scripts
 - **Development Tools**: ESLint with Astro + Svelte plugins, Prettier with lint-staged (Husky hooks)

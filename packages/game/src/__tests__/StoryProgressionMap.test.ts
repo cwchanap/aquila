@@ -290,7 +290,7 @@ describe('StoryProgressionMap', () => {
     });
 
     describe('drawChoiceNode — current state (line 396)', () => {
-        it('uses choice color when choice node is the current node', () => {
+        it('renders a choice diamond without throwing when the choice node is current', () => {
             const scene = makeScene();
             // Set currentNodeId to the choice node so it gets 'current' state
             new StoryProgressionMap(
@@ -363,22 +363,20 @@ describe('StoryProgressionMap', () => {
 
     describe('assignPositions — choice completed during construction (line 211)', () => {
         it('marks a choice node as completed when its target is in initial completedHistory', () => {
-            // To cover line 211 (state = "completed" inside assignPositions),
-            // the completedHistory passed at construction must contain one of
-            // the choice node's target scene ids.
+            // scene_3a is a target of choice:c1 → assignPositions sets state='completed'
             const scene = makeScene();
-            expect(
-                () =>
-                    new StoryProgressionMap(
-                        scene,
-                        baseConfig(
-                            branchingNodes,
-                            'scene_3a',
-                            // scene_3a is a target of choice:c1 → triggers the completed branch
-                            ['scene_1', 'scene_2', 'scene_3a']
-                        )
-                    )
-            ).not.toThrow();
+            const map = new StoryProgressionMap(
+                scene,
+                baseConfig(branchingNodes, 'scene_3a', [
+                    'scene_1',
+                    'scene_2',
+                    'scene_3a',
+                ])
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const choiceVisual = (map as any).nodeData.get('choice:c1');
+            expect(choiceVisual).toBeDefined();
+            expect(choiceVisual.state).toBe('completed');
         });
     });
 });

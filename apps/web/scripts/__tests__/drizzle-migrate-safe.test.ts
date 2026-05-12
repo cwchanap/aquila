@@ -36,8 +36,14 @@ async function runScript(): Promise<void> {
 describe('drizzle-migrate-safe', () => {
     let exitSpy: ReturnType<typeof vi.spyOn>;
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+    let originalDatabaseUrl: string | undefined;
+    let originalAllowCockroachMigrations: string | undefined;
 
     beforeEach(() => {
+        originalDatabaseUrl = process.env.DATABASE_URL;
+        originalAllowCockroachMigrations =
+            process.env.ALLOW_COCKROACH_MIGRATIONS;
+
         vi.resetModules();
         vi.clearAllMocks();
 
@@ -59,7 +65,17 @@ describe('drizzle-migrate-safe', () => {
     afterEach(() => {
         exitSpy.mockRestore();
         consoleErrorSpy.mockRestore();
-        delete process.env.ALLOW_COCKROACH_MIGRATIONS;
+        if (originalDatabaseUrl === undefined) {
+            delete process.env.DATABASE_URL;
+        } else {
+            process.env.DATABASE_URL = originalDatabaseUrl;
+        }
+        if (originalAllowCockroachMigrations === undefined) {
+            delete process.env.ALLOW_COCKROACH_MIGRATIONS;
+        } else {
+            process.env.ALLOW_COCKROACH_MIGRATIONS =
+                originalAllowCockroachMigrations;
+        }
     });
 
     // ── hasCockroachSignature paths ────────────────────────────────────────

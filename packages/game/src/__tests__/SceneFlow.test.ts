@@ -381,6 +381,42 @@ describe('SceneFlow', () => {
             ] as any[]);
             expect(result).toBeNull();
         });
+
+        it('returns null when selectChoice resolves to a different sceneId than the target (line 272)', () => {
+            // scene_2 has id='scene_2' (used in nextByOption lookup) but sceneId='scene_2_actual'.
+            // sanitized history includes 'scene_2' (it's a valid scene node).
+            // matchedEntry finds opt_a→'scene_2'. selectChoice('opt_a') returns sceneId='scene_2_actual',
+            // which !== targetSceneId ('scene_2') → line 272 is reached.
+            const config = {
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2_actual', // differs from node id
+                        next: null,
+                    },
+                ],
+            };
+            const flow = new SceneFlow(config as any);
+            const result = flow.restoreFromHistory([
+                'scene_1',
+                'scene_2',
+            ] as any[]);
+            expect(result).toBeNull();
+        });
     });
 
     describe('selectChoice edge cases', () => {
@@ -438,6 +474,40 @@ describe('SceneFlow', () => {
             // advanceFromScene hits a choice node with no valid options → returns end
             const result = flow.advanceFromScene();
             expect(result.type).toBe('end');
+        });
+
+        it('returns end via selectChoice when nextByOption has falsy values (line 163)', () => {
+            // Build a flow whose choice node has an option mapped to an empty string,
+            // which is falsy but not null/undefined so ?? does not fall back.
+            const flow = new SceneFlow({
+                start: 'scene_1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'scene_1',
+                        sceneId: 'scene_1',
+                        next: 'choice:c1',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:c1',
+                        choiceId: 'c1',
+                        nextByOption: { opt_a: 'scene_2' },
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'scene_2',
+                        sceneId: 'scene_2',
+                        next: null,
+                    },
+                ],
+            } as any);
+            flow.advanceFromScene(); // → choice mode
+            // Directly patch the nextByOption value to empty-string so nextId is falsy.
+            const node = (flow as any).nodes.get('choice:c1');
+            node.nextByOption['opt_a'] = '';
+            const result = flow.selectChoice('opt_a');
+            expect(result).toEqual({ type: 'end' });
         });
 
         it('resets sceneHistory when choice loops back to the starting scene (covers history-reset branch)', () => {

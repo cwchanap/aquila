@@ -90,6 +90,20 @@ describe('StoryProgressionMap', () => {
             // graphics called for: edgeVisuals + 1 choice diamond
             expect(scene.add.graphics).toHaveBeenCalledTimes(2);
         });
+
+        it('draws edges for choice node outgoing connections (lines 256-268)', () => {
+            // branchingNodes: scene_1→scene_2→choice:c1→{scene_3a,scene_3b}
+            // Edges: scene_1→scene_2, scene_2→choice:c1, choice:c1→scene_3a, choice:c1→scene_3b
+            // The choice→scene edges are drawn via the else-if(node.kind==='choice') branch.
+            const scene = makeScene();
+            vi.clearAllMocks();
+
+            new StoryProgressionMap(scene, baseConfig(branchingNodes));
+            // edgeVisuals is the first graphics object created during construction
+            const edgeVisuals = scene.add.graphics.mock.results[0].value;
+            // 4 edges total: 1 (scene→scene) + 1 (scene→choice) + 2 (choice→scene)
+            expect(edgeVisuals.lineBetween).toHaveBeenCalledTimes(4);
+        });
     });
 
     describe('getContainer', () => {

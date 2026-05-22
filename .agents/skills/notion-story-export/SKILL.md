@@ -17,11 +17,17 @@ Use keywords from the user's request to search for the primary story container.
 - **Action**: Search for the story title (e.g., "train adventure").
 - **Verification**: Confirm the ID of the root page or the "Story" sub-page.
 
-### 2. Map the Story Hierarchy
+### 2. Map the Story Hierarchy (Tree Discovery)
 Recursively explore sub-pages to understand the narrative structure (Acts, Branches, Scenes).
 - **Tool**: `mcp_notionApi_API-get-block-children`
 - **Action**: Fetch children of the root page. Look for `child_page` block types.
+- **Tree Visualization**: After fetching a page's children, save the JSON response to a file and run the script's `tree` command to see the structure:
+  ```bash
+  python .agents/skills/notion-story-export/process_notion.py tree children.json
+  ```
+- **Recursive Mapping**: For each `child_page` that represents a branch (e.g., "Branch 1A"), fetch **its** children to discover nested branches and acts. Repeat until you reach act-level pages.
 - **Critical Step**: If a page is labeled as a "Branch" (e.g., "Branch 1A"), fetch its children to find the actual "Acts" or "Scenes" inside it. **Do not assume the branch page itself contains the text.**
+- **Avoid Mixing Branches**: Always verify the parent chain. An act under "Branch 3A" must be stored in `branch_3a/`, even if another branch also has an act with a similar name.
 
 ### 3. Extract Full Content (Zero Truncation)
 Ensure every piece of dialogue and description is captured.
@@ -36,7 +42,29 @@ Ensure every piece of dialogue and description is captured.
 ### 4. Organize Local Repository
 Mirror the Notion hierarchy in the local filesystem for clarity and maintainability.
 - **Pattern**: `packages/stories/[storyName]/[branchName]/act[N].md`
+- **Nested Branches**: For deeply nested branches, extend the path: `packages/stories/[storyName]/[parentBranch]/[childBranch]/act[N].md`
+  - Example: `packages/stories/trainAdventure/branch_1a/branch_2b/branch_3a/act8.md`
 - **Action**: Create subdirectories as needed using `mkdir -p`.
+
+### 5. Bulk Extraction with the Script
+For exporting many acts at once, use the `bulk` command:
+1. Save each Notion JSON response to a file (e.g., `/tmp/act7.json`).
+2. Create a mapping JSON file describing the export:
+   ```json
+   [
+     {
+       "story": "trainAdventure",
+       "branch_path": "branch_1a/branch_2b",
+       "files": [
+         {"json": "/tmp/act7.json", "act": "act7", "title": "第七幕：分歧的追蹤"}
+       ]
+     }
+   ]
+   ```
+3. Run the bulk export:
+   ```bash
+   python .agents/skills/notion-story-export/process_notion.py bulk mapping.json packages/stories
+   ```
 
 ## Quality Standards
 

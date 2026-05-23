@@ -133,6 +133,18 @@ def get_branch_slug(title):
     return slugify(title)
 
 
+def get_act_slug(title):
+    """Generate a slug for an act page, e.g. '終幕：...' -> 'actFinal', '尾聲：...' -> 'actEpilogue', '第八幕：...' -> 'act8'."""
+    if '終幕' in title:
+        return 'actFinal'
+    if '尾聲' in title:
+        return 'actEpilogue'
+    num = parse_act_number(title)
+    if num is not None:
+        return f'act{num}'
+    return slugify(title)
+
+
 def classify_node(title):
     """Classify a node as 'branch', 'act', or 'other'."""
     if re.search(r'Branch\s+\w+', title, re.IGNORECASE):
@@ -201,8 +213,10 @@ def cmd_bulk(mapping_json, out_dir):
             if title:
                 md_content = f"# {title}\n\n{md_content}"
 
+            # Determine output filename: explicit filename > act field > auto-derived from title
+            filename = item.get('filename') or item.get('act') or get_act_slug(title)
             relative_dir = os.path.join(story_name, branch_path) if branch_path else story_name
-            out_file = os.path.join(out_dir, relative_dir, f"{act}.md")
+            out_file = os.path.join(out_dir, relative_dir, f"{filename}.md")
             write_markdown_to_file(md_content, out_file)
             print(f"[OK] {out_file}")
 

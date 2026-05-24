@@ -477,6 +477,19 @@ export const trainAdventureEnDialogue: DialogueMap = {
         },
     ],
     scene_4b: [],
+    scene_5b: [],
+    scene_6b: [],
+    scene_7b: [],
+    scene_8b: [],
+    scene_9b: [],
+    scene_10b: [],
+    scene_11b: [],
+    scene_12b: [],
+    scene_13b: [],
+    scene_14b: [],
+    scene_15b: [],
+    scene_16b: [],
+    scene_final_3b: [],
 };
 
 export const trainAdventureEnChoices: ChoiceMap = {

@@ -29,6 +29,10 @@
       "name": "E2E",
       "path": "packages/e2e",
     },
+    {
+      "name": "Stories",
+      "path": "packages/stories",
+    },
   ],
   "settings": {
     "eslint.workingDirectories": [

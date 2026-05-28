@@ -27,7 +27,7 @@
     "test:watch": "npx vitest"
   },
   "dependencies": {
-    "@aquila/dialogue": "workspace:*"
+    "@aquila/stories": "workspace:*"
   },
   "peerDependencies": {
     "phaser": "^3.90.0"

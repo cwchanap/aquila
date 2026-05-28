@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { ChoiceMap, DialogueMap } from './dialogue/types';
-import { getStoryContent, getStoryFlow } from '@aquila/dialogue';
+import { getStoryContent, getStoryFlow } from '@aquila/stories';
 import { loadCheckpoint } from './CheckpointStorage';
 
 export class PreloadScene extends Phaser.Scene {

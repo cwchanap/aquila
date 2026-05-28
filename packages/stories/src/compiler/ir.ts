@@ -1,6 +1,9 @@
 import type { CharacterId } from '../characters';
 
 export interface DialogueEntryIR {
+    // Always concrete: the parser resolves every "**name**：" line to a CharacterId
+    // (narrator included, via 旁白 → CharacterId.Narrator) and throws on unknowns,
+    // so unlike the runtime DialogueEntry this is never speakerless.
     characterId: CharacterId;
     dialogue: string;
 }

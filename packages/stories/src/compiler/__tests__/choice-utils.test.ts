@@ -43,4 +43,12 @@ describe('buildChoiceMap', () => {
         expect(map.choice_act1.options[0].label).toContain('TODO');
         expect(map.choice_act1.options[0].nextScene).toBe('b1a_act2');
     });
+
+    it('returns an empty map for a flow with no choice nodes', () => {
+        const linearFlow: FlowConfig = {
+            start: 'act1',
+            nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
+        };
+        expect(buildChoiceMap(linearFlow, {})).toEqual({});
+    });
 });

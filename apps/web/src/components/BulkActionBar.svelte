@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getTranslations } from '@aquila/dialogue';
-  import type { Locale } from '@aquila/dialogue';
+  import { getTranslations } from '@aquila/stories';
+  import type { Locale } from '@aquila/stories';
   import Button from './ui/Button.svelte';
 
   interface BulkActionBarProps {

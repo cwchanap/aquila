@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { translations, type Locale } from '@aquila/dialogue';
+import { translations, type Locale } from '@aquila/stories';
 
 export type { Locale };
 

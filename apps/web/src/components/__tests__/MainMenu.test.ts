@@ -3,8 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import MainMenu from '../MainMenu.svelte';
 
-// Mock @aquila/dialogue
-vi.mock('@aquila/dialogue', () => ({
+// Mock @aquila/stories
+vi.mock('@aquila/stories', () => ({
     getTranslations: vi.fn(() => ({
         menu: {
             heading: 'AQUILA',

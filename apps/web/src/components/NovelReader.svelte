@@ -4,8 +4,8 @@
     DialogueEntry,
     ChoiceDefinition,
     Locale,
-  } from '@aquila/dialogue';
-  import { CharacterDirectory, getTranslations } from '@aquila/dialogue';
+  } from '@aquila/stories';
+  import { CharacterDirectory, getTranslations } from '@aquila/stories';
 
   export let dialogue: DialogueEntry[] = [];
   export let choice: ChoiceDefinition | null = null;

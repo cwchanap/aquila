@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ReaderManager } from '../reader-manager';
 
-// Mock the @aquila/dialogue module
-vi.mock('@aquila/dialogue', () => ({
+// Mock the @aquila/stories module
+vi.mock('@aquila/stories', () => ({
     getStoryContent: vi.fn(),
     getTranslations: vi.fn(() => ({
         reader: {
@@ -36,7 +36,7 @@ vi.mock('@/components/NovelReader.svelte', () => ({
     default: class MockNovelReader {},
 }));
 
-import { getStoryContent } from '@aquila/dialogue';
+import { getStoryContent } from '@aquila/stories';
 import { showAlert, showPrompt } from '../ui-dialogs';
 const mockGetStoryContent = vi.mocked(getStoryContent);
 const mockShowAlert = vi.mocked(showAlert);

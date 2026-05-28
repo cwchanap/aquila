@@ -1,5 +1,5 @@
-import en from '@aquila/dialogue/translations/en.json';
-import zh from '@aquila/dialogue/translations/zh.json';
+import en from '@aquila/stories/translations/en.json';
+import zh from '@aquila/stories/translations/zh.json';
 
 export type Locale = 'en' | 'zh';
 

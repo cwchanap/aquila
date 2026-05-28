@@ -15,7 +15,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@aquila/dialogue": "workspace:*",
+    "@aquila/stories": "workspace:*",
     "@aquila/game": "workspace:*",
     "@tailwindcss/vite": "^4.1.3",
     "@tauri-apps/api": "^2",

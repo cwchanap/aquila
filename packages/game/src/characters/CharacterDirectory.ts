@@ -3,4 +3,4 @@ export {
     CharacterId,
     CharacterDirectory,
     type CharacterInfo,
-} from '@aquila/dialogue';
+} from '@aquila/stories';

@@ -11,7 +11,7 @@ export default defineConfig({
         },
         rollupOptions: {
             // Externalize dependencies that shouldn't be bundled
-            external: ['phaser', '@aquila/dialogue', '@aquila/assets'],
+            external: ['phaser', '@aquila/stories', '@aquila/assets'],
             output: {
                 // Preserve module structure for tree-shaking
                 preserveModules: true,

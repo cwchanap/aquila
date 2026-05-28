@@ -116,7 +116,7 @@
       "name": "@aquila/game",
       "version": "0.0.1",
       "dependencies": {
-        "@aquila/dialogue": "workspace:*",
+        "@aquila/stories": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^22.10.2",

@@ -5,7 +5,7 @@ import type {
     SceneNodeDefinition as SharedSceneNodeDefinition,
     FlowNodeId as SharedFlowNodeId,
     SceneNodeId as SharedSceneNodeId,
-} from '@aquila/dialogue';
+} from '@aquila/stories';
 import type { SceneId } from './SceneDirectory';
 
 type SceneNodeId = SharedSceneNodeId<SceneId>;

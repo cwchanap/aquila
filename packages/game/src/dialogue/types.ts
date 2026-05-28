@@ -6,7 +6,7 @@ import type {
     ChoiceMap as BaseChoiceMap,
     ChoiceDefinition as BaseChoiceDefinition,
     ChoiceOptionDefinition as BaseChoiceOptionDefinition,
-} from '@aquila/dialogue';
+} from '@aquila/stories';
 import type { SceneId } from '../SceneDirectory';
 
 // Extended dialogue entry that allows Character instance references for game engine

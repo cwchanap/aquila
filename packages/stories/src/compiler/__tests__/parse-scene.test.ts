@@ -1,0 +1,51 @@
+import { describe, it, expect } from 'vitest';
+import { parseScene } from '../parse-scene';
+import { CharacterId } from '../../characters';
+
+const resolve = (name: string) =>
+    name === '旁白'
+        ? CharacterId.Narrator
+        : name === '李杰'
+          ? CharacterId.LiJie
+          : undefined;
+
+describe('parseScene', () => {
+    it('extracts title and entries, keeping parentheticals verbatim', () => {
+        const md = [
+            '# 第一幕：月台',
+            '',
+            '**旁白**：深夜的月台。',
+            '',
+            '**李杰**：(內心)又是一個夜晚。',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+        expect(result.title).toBe('第一幕：月台');
+        expect(result.entries).toEqual([
+            { characterId: CharacterId.Narrator, dialogue: '深夜的月台。' },
+            {
+                characterId: CharacterId.LiJie,
+                dialogue: '(內心)又是一個夜晚。',
+            },
+        ]);
+    });
+
+    it('accepts a half-width colon', () => {
+        const result = parseScene('**旁白**:hello', resolve, 'x.md');
+        expect(result.entries[0]).toEqual({
+            characterId: CharacterId.Narrator,
+            dialogue: 'hello',
+        });
+    });
+
+    it('throws on an unknown character', () => {
+        expect(() => parseScene('**陌生人**：hi', resolve, 'x.md')).toThrow(
+            /unknown character/
+        );
+    });
+
+    it('throws on a non-header paragraph', () => {
+        expect(() => parseScene('just some prose', resolve, 'x.md')).toThrow(
+            /unrecognized paragraph/
+        );
+    });
+});

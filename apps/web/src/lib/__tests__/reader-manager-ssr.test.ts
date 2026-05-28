@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@aquila/dialogue', () => ({
+vi.mock('@aquila/stories', () => ({
     getStoryContent: vi.fn().mockReturnValue({ dialogue: {}, choices: {} }),
     getTranslations: vi.fn(() => ({
         reader: {

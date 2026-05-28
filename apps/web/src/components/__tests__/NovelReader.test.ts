@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import NovelReader from '../NovelReader.svelte';
-import type { DialogueEntry, ChoiceDefinition } from '@aquila/dialogue';
+import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
-// Mock @aquila/dialogue
-vi.mock('@aquila/dialogue', () => ({
+// Mock @aquila/stories
+vi.mock('@aquila/stories', () => ({
     CharacterDirectory: {
         getById: vi.fn((id: string) => ({
             id,

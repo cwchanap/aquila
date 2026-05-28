@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import BulkActionBar from '../BulkActionBar.svelte';
-import type { Locale } from '@aquila/dialogue';
+import type { Locale } from '@aquila/stories';
 
 describe('BulkActionBar', () => {
     const mockOnCancel = vi.fn();

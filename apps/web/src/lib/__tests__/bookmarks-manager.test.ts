@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock @aquila/dialogue
-vi.mock('@aquila/dialogue', () => ({
+// Mock @aquila/stories
+vi.mock('@aquila/stories', () => ({
     getTranslations: vi.fn(() => ({
         bookmarks: {
             title: 'My Bookmarks',

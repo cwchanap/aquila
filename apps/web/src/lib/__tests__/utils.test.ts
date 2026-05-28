@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { cn, t } from '../utils';
 
-vi.mock('@aquila/dialogue/translations/en.json', () => ({
+vi.mock('@aquila/stories/translations/en.json', () => ({
     default: {
         common: {
             hello: 'Hello',
@@ -12,7 +12,7 @@ vi.mock('@aquila/dialogue/translations/en.json', () => ({
     },
 }));
 
-vi.mock('@aquila/dialogue/translations/zh.json', () => ({
+vi.mock('@aquila/stories/translations/zh.json', () => ({
     default: {
         common: {
             hello: '你好',

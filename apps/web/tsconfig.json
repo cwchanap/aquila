@@ -7,7 +7,7 @@
       "@/*": ["./src/*"],
       "@aquila/assets": ["../../packages/assets"],
       "@aquila/assets/*": ["../../packages/assets/*"],
-      "@aquila/dialogue/*": ["../../packages/dialogue/src/*"]
+      "@aquila/stories/*": ["../../packages/stories/src/*"]
     }
   },
   "include": [

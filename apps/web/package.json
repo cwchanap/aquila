@@ -22,7 +22,7 @@
     "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@aquila/dialogue": "workspace:*",
+    "@aquila/stories": "workspace:*",
     "@astrojs/mdx": "^4.3.4",
     "@astrojs/svelte": "^7.1.0",
     "@astrojs/vercel": "^8.2.6",

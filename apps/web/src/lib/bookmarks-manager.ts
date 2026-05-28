@@ -1,4 +1,4 @@
-import { getTranslations, type Locale } from '@aquila/dialogue';
+import { getTranslations, type Locale } from '@aquila/stories';
 import { showAlert, showConfirm } from './ui-dialogs';
 
 export interface Bookmark {

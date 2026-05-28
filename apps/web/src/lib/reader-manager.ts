@@ -4,7 +4,7 @@ import {
     type Locale,
     type DialogueEntry,
     type ChoiceDefinition,
-} from '@aquila/dialogue';
+} from '@aquila/stories';
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 

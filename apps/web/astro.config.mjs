@@ -23,9 +23,9 @@ export default defineConfig({
     plugins: [tailwindcss()],
     resolve: {
       alias: {
-        '@aquila/dialogue': path.resolve(
+        '@aquila/stories': path.resolve(
           __dirname,
-          '../../packages/dialogue/src'
+          '../../packages/stories/src'
         ),
       },
     },

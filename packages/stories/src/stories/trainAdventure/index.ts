@@ -1,32 +1,42 @@
 import type { ChoiceMap, DialogueMap } from '../../types';
-import { trainAdventureEnChoices, trainAdventureEnDialogue } from './en';
-import { trainAdventureZhChoices, trainAdventureZhDialogue } from './zh';
-export { trainAdventureFlow } from './flow';
-export type {
-    TrainAdventureFlowConfig,
-    TrainAdventureFlowNodeDefinition,
-    TrainAdventureSceneId,
-} from './flow';
+import type { FlowConfig } from '../../flow-types';
+import { buildChoiceMap } from '../choice-utils';
+import { trainAdventureZhDialogue } from './generated/dialogue.zh';
+import {
+    trainAdventureFlow,
+    type TrainAdventureSceneId,
+} from './generated/flow';
+import { trainAdventureChoiceText } from './choices.zh';
+
+export { trainAdventureFlow };
+export type { TrainAdventureSceneId };
+
+// Convenience alias consumed by the story registry (stories/index.ts).
+export type TrainAdventureFlowConfig = FlowConfig<TrainAdventureSceneId>;
 
 export type TrainAdventureLocale = 'en' | 'zh';
 
+// English is not yet authored; fall back to the generated zh content as a
+// visible placeholder so the default-locale ('en') reader stays functional.
+// TODO: author/compile real en source.
 const dialogueByLocale: Record<TrainAdventureLocale, DialogueMap> = {
-    en: trainAdventureEnDialogue,
     zh: trainAdventureZhDialogue,
+    en: trainAdventureZhDialogue,
 };
 
-const choicesByLocale: Record<TrainAdventureLocale, ChoiceMap> = {
-    en: trainAdventureEnChoices,
-    zh: trainAdventureZhChoices,
-};
+// Choices are locale-independent: flow transitions merged with hand-maintained
+// choice text. Empty text surfaces as visible TODO markers (see buildChoiceMap).
+const choices: ChoiceMap = buildChoiceMap(
+    trainAdventureFlow,
+    trainAdventureChoiceText
+);
 
 export function getTrainAdventureStory(locale: string): {
     dialogue: DialogueMap;
     choices: ChoiceMap;
 } {
-    const normalized = locale.startsWith('zh') ? 'zh' : 'en';
-    return {
-        dialogue: dialogueByLocale[normalized as TrainAdventureLocale],
-        choices: choicesByLocale[normalized as TrainAdventureLocale],
-    };
+    const normalized: TrainAdventureLocale = locale.startsWith('zh')
+        ? 'zh'
+        : 'en';
+    return { dialogue: dialogueByLocale[normalized], choices };
 }

@@ -8,7 +8,7 @@ describe('CharacterDirectory', () => {
             expect(info).toEqual({
                 id: CharacterId.LiJie,
                 name: '李杰',
-                alias: '男主角',
+                aliases: ['男主角'],
             });
         });
 

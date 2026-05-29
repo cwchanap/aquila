@@ -4,9 +4,9 @@ import { CharacterId } from '../../characters';
 
 const resolve = (name: string) =>
     name === '旁白'
-        ? CharacterId.Narrator
+        ? { id: CharacterId.Narrator, displayName: '旁白' }
         : name === '李杰'
-          ? CharacterId.LiJie
+          ? { id: CharacterId.LiJie, displayName: '李杰' }
           : undefined;
 
 describe('parseScene', () => {
@@ -21,9 +21,14 @@ describe('parseScene', () => {
         const result = parseScene(md, resolve, 'act1.md');
         expect(result.title).toBe('第一幕：月台');
         expect(result.entries).toEqual([
-            { characterId: CharacterId.Narrator, dialogue: '深夜的月台。' },
+            {
+                characterId: CharacterId.Narrator,
+                displayName: '旁白',
+                dialogue: '深夜的月台。',
+            },
             {
                 characterId: CharacterId.LiJie,
+                displayName: '李杰',
                 dialogue: '(內心)又是一個夜晚。',
             },
         ]);
@@ -33,8 +38,15 @@ describe('parseScene', () => {
         const result = parseScene('**旁白**:hello', resolve, 'x.md');
         expect(result.entries[0]).toEqual({
             characterId: CharacterId.Narrator,
+            displayName: '旁白',
             dialogue: 'hello',
         });
+    });
+
+    it('skips --- horizontal-rule separators', () => {
+        const md = ['**旁白**：a', '', '---', '', '**李杰**：b'].join('\n');
+        const result = parseScene(md, resolve, 'x.md');
+        expect(result.entries.map(e => e.dialogue)).toEqual(['a', 'b']);
     });
 
     it('throws on an unknown character', () => {

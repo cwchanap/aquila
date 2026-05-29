@@ -1,5 +1,5 @@
-import type { CharacterId } from '../characters';
 import type { DialogueEntryIR } from './ir';
+import type { ResolvedCharacter } from './config';
 
 const HEADER_RE = /^\*\*(.+?)\*\*[：:]\s*([\s\S]*)$/;
 
@@ -10,7 +10,7 @@ export interface ParseSceneResult {
 
 export function parseScene(
     markdown: string,
-    resolveCharacter: (name: string) => CharacterId | undefined,
+    resolveCharacter: (name: string) => ResolvedCharacter | undefined,
     sourcePath: string
 ): ParseSceneResult {
     const text = markdown.replace(/\r\n/g, '\n');
@@ -27,6 +27,8 @@ export function parseScene(
             title = block.slice(2).trim();
             continue;
         }
+        // Horizontal-rule separators (scene breaks) are not dialogue.
+        if (/^-{3,}$/.test(block)) continue;
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);
         if (!m) {
@@ -36,13 +38,17 @@ export function parseScene(
         }
         const name = m[1].trim();
         const dialogue = m[2].trim();
-        const characterId = resolveCharacter(name);
-        if (!characterId) {
+        const resolved = resolveCharacter(name);
+        if (!resolved) {
             throw new Error(
                 `[story-compiler] ${sourcePath}: unknown character "${name}"`
             );
         }
-        entries.push({ characterId, dialogue });
+        entries.push({
+            characterId: resolved.id,
+            displayName: resolved.displayName,
+            dialogue,
+        });
     }
 
     return { title, entries };

@@ -18,21 +18,41 @@ const story: StoryIR = {
             id: 'act1',
             title: '第一幕',
             entries: [
-                { characterId: CharacterId.Narrator, dialogue: "It's night." },
-                { characterId: CharacterId.LiJie, dialogue: '(內心)hm.' },
+                {
+                    characterId: CharacterId.Narrator,
+                    displayName: '旁白',
+                    dialogue: "It's night.",
+                },
+                {
+                    characterId: CharacterId.LiJie,
+                    displayName: '李杰（內心）',
+                    dialogue: '(內心)hm.',
+                },
             ],
             next: 'choice:choice_act1',
             sourcePath: 'act1.md',
         },
         {
             id: 'b1a_act2',
-            entries: [{ characterId: CharacterId.Narrator, dialogue: 'a' }],
+            entries: [
+                {
+                    characterId: CharacterId.Narrator,
+                    displayName: '旁白',
+                    dialogue: 'a',
+                },
+            ],
             next: null,
             sourcePath: 'branch_1a/act2.md',
         },
         {
             id: 'b1b_act2',
-            entries: [{ characterId: CharacterId.Narrator, dialogue: 'b' }],
+            entries: [
+                {
+                    characterId: CharacterId.Narrator,
+                    displayName: '旁白',
+                    dialogue: 'b',
+                },
+            ],
             next: null,
             sourcePath: 'branch_1b/act2.md',
         },
@@ -62,6 +82,8 @@ describe('emitStory', () => {
         expect(scene).toContain('CharacterId.Narrator');
         // string is JSON-escaped, so apostrophes survive safely
         expect(scene).toContain(JSON.stringify("It's night."));
+        // as-written display label is emitted as the `character` field
+        expect(scene).toContain(`character: ${JSON.stringify('李杰（內心）')}`);
 
         const flow = readFileSync(join(dir, 'flow.ts'), 'utf8');
         expect(flow).toContain('start: "act1"');

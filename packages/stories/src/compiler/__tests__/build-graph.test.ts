@@ -44,4 +44,42 @@ describe('buildStoryGraph', () => {
         expect(byId.b1b_act4.next).toBe('b1b_actFinal');
         expect(byId.b1b_actFinal.next).toBeNull();
     });
+
+    // act1 -(choice)-> branch_1b/act2 -(choice)-> branch_1b/branch_2c/act3 (terminal)
+    it('encodes nested branches into multi-segment scene ids', () => {
+        const nested: DirNode = {
+            rel: '',
+            acts: ['act1'],
+            children: [
+                {
+                    rel: 'branch_1b',
+                    acts: ['act2'],
+                    children: [
+                        {
+                            rel: 'branch_1b/branch_2c',
+                            acts: ['act3'],
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        };
+        const g = buildStoryGraph(nested);
+        const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
+        expect(byId.act1.next).toBe('choice:choice_act1');
+        expect(byId.b1b_act2.next).toBe('choice:choice_b1b_act2');
+        expect(byId.b1b_b2c_act3.next).toBeNull();
+        expect(g.choices).toEqual([
+            {
+                choiceId: 'choice_act1',
+                fromSceneId: 'act1',
+                options: [{ optionId: 'b1b', nextScene: 'b1b_act2' }],
+            },
+            {
+                choiceId: 'choice_b1b_act2',
+                fromSceneId: 'b1b_act2',
+                options: [{ optionId: 'b2c', nextScene: 'b1b_b2c_act3' }],
+            },
+        ]);
+    });
 });

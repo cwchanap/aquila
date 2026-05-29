@@ -12,7 +12,11 @@ function baseStory(): StoryIR {
             {
                 id: 'act1',
                 entries: [
-                    { characterId: CharacterId.Narrator, dialogue: 'hi' },
+                    {
+                        characterId: CharacterId.Narrator,
+                        displayName: '旁白',
+                        dialogue: 'hi',
+                    },
                 ],
                 next: 'act2',
                 sourcePath: 'act1.md',
@@ -20,7 +24,11 @@ function baseStory(): StoryIR {
             {
                 id: 'act2',
                 entries: [
-                    { characterId: CharacterId.Narrator, dialogue: 'bye' },
+                    {
+                        characterId: CharacterId.Narrator,
+                        displayName: '旁白',
+                        dialogue: 'bye',
+                    },
                 ],
                 next: null,
                 sourcePath: 'act2.md',

@@ -5,6 +5,9 @@ export interface DialogueEntryIR {
     // (narrator included, via 旁白 → CharacterId.Narrator) and throws on unknowns,
     // so unlike the runtime DialogueEntry this is never speakerless.
     characterId: CharacterId;
+    // Speaker label to display for this line: the as-written header, or a
+    // canonicalized form for misspelled/verbose source labels.
+    displayName: string;
     dialogue: string;
 }
 

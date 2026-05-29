@@ -15,7 +15,7 @@ function emitSceneFile(story: StoryIR, sceneId: string): string {
     const lines = scene.entries
         .map(
             e =>
-                `    { characterId: CharacterId.${charKey(e.characterId)}, dialogue: ${q(e.dialogue)} },`
+                `    { characterId: CharacterId.${charKey(e.characterId)}, character: ${q(e.displayName)}, dialogue: ${q(e.dialogue)} },`
         )
         .join('\n');
     return (

@@ -19,7 +19,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "compile": "bun src/compiler/cli.ts"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

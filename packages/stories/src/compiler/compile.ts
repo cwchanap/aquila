@@ -23,7 +23,8 @@ export function compileStory(opts: CompileOptions): StoryIR {
         const parsed = parseScene(
             md,
             opts.config.resolveCharacter,
-            s.sourcePath
+            s.sourcePath,
+            opts.config.defaultSpeaker
         );
         return {
             id: s.id,

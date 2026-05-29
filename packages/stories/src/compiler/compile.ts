@@ -1,5 +1,5 @@
-import { readFileSync, existsSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import type { StoryCompilerConfig } from './config';
 import type { StoryIR } from './ir';
 import { scanStory } from './scan-story';
@@ -57,6 +57,7 @@ function scaffoldChoices(story: StoryIR, choicesPath: string): void {
                 return `  ${JSON.stringify(c.choiceId)}: {\n    prompt: '',\n    labels: {\n${labels}\n    },\n  },`;
             })
             .join('\n');
+        mkdirSync(dirname(choicesPath), { recursive: true });
         writeFileSync(
             choicesPath,
             `import type { ChoiceText } from '../choice-utils';\n\n` +

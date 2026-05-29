@@ -33,17 +33,19 @@ export function buildStoryGraph(root: DirNode): StoryGraph {
 
     function process(node: DirNode): void {
         const acts = orderedActs(node);
+        // Sorted once and reused for both the choice options and the recursion,
+        // so child ordering can never drift between the two.
+        const sortedChildren = [...node.children].sort((a, b) =>
+            a.rel.localeCompare(b.rel)
+        );
         acts.forEach((act, i) => {
             const id = makeSceneId(node.rel, act);
             const sourcePath = sourcePathFor(node.rel, act);
             let next: string | null;
             if (i < acts.length - 1) {
                 next = makeSceneId(node.rel, acts[i + 1]);
-            } else if (node.children.length > 0) {
+            } else if (sortedChildren.length > 0) {
                 const choiceId = `choice_${id}`;
-                const sortedChildren = [...node.children].sort((a, b) =>
-                    a.rel.localeCompare(b.rel)
-                );
                 choices.push({
                     choiceId,
                     fromSceneId: id,
@@ -61,9 +63,7 @@ export function buildStoryGraph(root: DirNode): StoryGraph {
             }
             scenes.push({ id, sourcePath, next });
         });
-        for (const child of [...node.children].sort((a, b) =>
-            a.rel.localeCompare(b.rel)
-        )) {
+        for (const child of sortedChildren) {
             process(child);
         }
     }

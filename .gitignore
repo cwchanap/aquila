@@ -35,3 +35,5 @@ apps/*/.turbo/
 packages/*/.turbo/
 
 coverage/
+
+.claude/settings.local.json

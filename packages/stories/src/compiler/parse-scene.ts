@@ -11,7 +11,8 @@ export interface ParseSceneResult {
 export function parseScene(
     markdown: string,
     resolveCharacter: (name: string) => ResolvedCharacter | undefined,
-    sourcePath: string
+    sourcePath: string,
+    defaultSpeaker?: ResolvedCharacter
 ): ParseSceneResult {
     const text = markdown.replace(/\r\n/g, '\n');
     const blocks = text
@@ -32,6 +33,18 @@ export function parseScene(
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);
         if (!m) {
+            // Non-header paragraph (forum post, news article, bold marker like
+            // **<完>**). With a defaultSpeaker, render it as narration; otherwise
+            // it is a malformed scene and we fail loudly.
+            if (defaultSpeaker) {
+                const wrapped = /^\*\*([\s\S]+)\*\*$/.exec(oneLine);
+                entries.push({
+                    characterId: defaultSpeaker.id,
+                    displayName: defaultSpeaker.displayName,
+                    dialogue: (wrapped ? wrapped[1] : oneLine).trim(),
+                });
+                continue;
+            }
             throw new Error(
                 `[story-compiler] ${sourcePath}: unrecognized paragraph (no "**name**：" header):\n${block}`
             );

@@ -60,4 +60,33 @@ describe('parseScene', () => {
             /unrecognized paragraph/
         );
     });
+
+    it('renders non-header paragraphs as narration when a defaultSpeaker is given', () => {
+        const narrator = { id: CharacterId.Narrator, displayName: '旁白' };
+        const md = [
+            '**<完>**',
+            '',
+            'plain forum prose',
+            '',
+            '**李杰**：hi',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'x.md', narrator);
+        expect(result.entries).toEqual([
+            {
+                characterId: CharacterId.Narrator,
+                displayName: '旁白',
+                dialogue: '<完>',
+            },
+            {
+                characterId: CharacterId.Narrator,
+                displayName: '旁白',
+                dialogue: 'plain forum prose',
+            },
+            {
+                characterId: CharacterId.LiJie,
+                displayName: '李杰',
+                dialogue: 'hi',
+            },
+        ]);
+    });
 });

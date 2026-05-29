@@ -16,6 +16,6 @@ export class Character {
     }
 
     get alias(): string {
-        return this.info?.alias ?? this.name;
+        return this.info?.aliases?.[0] ?? this.name;
     }
 }

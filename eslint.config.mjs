@@ -26,6 +26,7 @@ export default [
       'playwright-report/**',
       'coverage/**',
       '**/*.log',
+      '**/generated/**',
     ],
   },
   js.configs.recommended,

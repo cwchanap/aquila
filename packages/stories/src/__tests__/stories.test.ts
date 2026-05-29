@@ -1,10 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getTrainAdventureStory } from '../stories/trainAdventure';
-import { trainAdventureFlow } from '../stories/trainAdventure/flow';
 import {
-    trainAdventureZhChoices,
-    trainAdventureZhDialogue,
-} from '../stories/trainAdventure/zh';
+    getTrainAdventureStory,
+    trainAdventureFlow,
+} from '../stories/trainAdventure';
 import { getStoryContent, getStoryFlow } from '../stories';
 
 describe('stories', () => {
@@ -24,13 +22,13 @@ describe('stories', () => {
         });
 
         it('has dialogue entries', () => {
-            const content = getTrainAdventureStory('en');
+            const content = getTrainAdventureStory('zh');
             const dialogueKeys = Object.keys(content.dialogue);
             expect(dialogueKeys.length).toBeGreaterThan(0);
         });
 
         it('dialogue entries have required properties', () => {
-            const content = getTrainAdventureStory('en');
+            const content = getTrainAdventureStory('zh');
             const firstSceneKey = Object.keys(content.dialogue)[0];
             const entries = content.dialogue[firstSceneKey];
 
@@ -49,8 +47,8 @@ describe('stories', () => {
             expect(Array.isArray(trainAdventureFlow.nodes)).toBe(true);
         });
 
-        it('starts with scene_1', () => {
-            expect(trainAdventureFlow.start).toBe('scene_1');
+        it('starts with act1', () => {
+            expect(trainAdventureFlow.start).toBe('act1');
         });
 
         it('has scene nodes for all scenes', () => {
@@ -62,7 +60,7 @@ describe('stories', () => {
             const sceneIds = sceneNodes.map(
                 n => (n as { sceneId: string }).sceneId
             );
-            expect(sceneIds).toContain('scene_1');
+            expect(sceneIds).toContain('act1');
         });
 
         it('has at least one choice node', () => {
@@ -94,14 +92,10 @@ describe('stories', () => {
             expect(fr.choices).toEqual(en.choices);
         });
 
-        it('en and zh return different dialogue content', () => {
+        it('en currently mirrors zh dialogue (placeholder until en is authored)', () => {
             const en = getTrainAdventureStory('en');
             const zh = getTrainAdventureStory('zh');
-            const enFirstScene = Object.keys(en.dialogue)[0];
-            const zhFirstScene = Object.keys(zh.dialogue)[0];
-            expect(en.dialogue[enFirstScene]).not.toEqual(
-                zh.dialogue[zhFirstScene]
-            );
+            expect(en.dialogue).toBe(zh.dialogue);
         });
     });
 });
@@ -140,8 +134,8 @@ describe('getStoryContent', () => {
 
     it('returns Chinese content when locale is zh', () => {
         const zh = getStoryContent('train_adventure', 'zh');
-        const en = getStoryContent('train_adventure', 'en');
-        expect(zh.dialogue).not.toBe(en.dialogue);
+        expect(zh.dialogue).toBeDefined();
+        expect(Object.keys(zh.dialogue).length).toBeGreaterThan(0);
     });
 });
 
@@ -149,13 +143,13 @@ describe('getStoryFlow', () => {
     it('returns flow for train_adventure', () => {
         const flow = getStoryFlow('train_adventure');
         expect(flow).toBeDefined();
-        expect(flow?.start).toBe('scene_1');
+        expect(flow?.start).toBe('act1');
     });
 
     it('falls back to train_adventure for unknown storyId', () => {
         const flow = getStoryFlow('nonexistent');
         expect(flow).toBeDefined();
-        expect(flow?.start).toBe('scene_1');
+        expect(flow?.start).toBe('act1');
     });
 
     it('falls back to train_adventure for undefined storyId', () => {
@@ -187,13 +181,6 @@ describe('trainAdventure content consistency', () => {
         expect(enKeys).toEqual(zhKeys);
     });
 
-    it('every flow scene node has a matching entry in the en dialogue', () => {
-        for (const node of sceneNodes) {
-            const sceneId = (node as { sceneId: string }).sceneId;
-            expect(en.dialogue[sceneId]).toBeDefined();
-        }
-    });
-
     it('every flow scene node has a matching entry in the zh dialogue', () => {
         for (const node of sceneNodes) {
             const sceneId = (node as { sceneId: string }).sceneId;
@@ -201,40 +188,40 @@ describe('trainAdventure content consistency', () => {
         }
     });
 
-    it('every dialogue scene has at least one entry (excluding empty terminal scenes)', () => {
-        // scene_4b is intentionally empty (terminal scene with no dialogue)
-        const emptyScenes = Object.entries(en.dialogue)
+    it('every dialogue scene maps to a flow scene node', () => {
+        const flowSceneIds = new Set(
+            sceneNodes.map(n => (n as { sceneId: string }).sceneId)
+        );
+        for (const sceneId of Object.keys(zh.dialogue)) {
+            expect(flowSceneIds.has(sceneId)).toBe(true);
+        }
+    });
+
+    it('most dialogue scenes have at least one entry', () => {
+        const emptyScenes = Object.entries(zh.dialogue)
             .filter(([, entries]) => entries.length === 0)
             .map(([sceneId]) => sceneId);
-        // Allow empty scenes but ensure most scenes have entries
-        const nonEmptyCount = Object.values(en.dialogue).filter(
+        const nonEmptyCount = Object.values(zh.dialogue).filter(
             e => e.length > 0
         ).length;
         expect(nonEmptyCount).toBeGreaterThan(emptyScenes.length);
     });
 
-    it('every flow choice node has a matching entry in en choices', () => {
-        for (const node of choiceNodes) {
-            const choiceId = (node as { choiceId: string }).choiceId;
-            expect(en.choices[choiceId]).toBeDefined();
-        }
-    });
-
-    it('every flow choice node has a matching entry in zh choices', () => {
+    it('every flow choice node has a matching entry in choices', () => {
         for (const node of choiceNodes) {
             const choiceId = (node as { choiceId: string }).choiceId;
             expect(zh.choices[choiceId]).toBeDefined();
         }
     });
 
-    it('en and zh choices have the same choice IDs', () => {
+    it('en and zh expose the same choice IDs', () => {
         const enChoiceIds = Object.keys(en.choices).sort();
         const zhChoiceIds = Object.keys(zh.choices).sort();
         expect(enChoiceIds).toEqual(zhChoiceIds);
     });
 
     it('every choice has at least one option with a label', () => {
-        for (const [, choiceDef] of Object.entries(en.choices)) {
+        for (const [, choiceDef] of Object.entries(zh.choices)) {
             // ChoiceMap values are { prompt, options: ChoiceOption[] }
             const { options } = choiceDef as {
                 prompt: string;
@@ -247,39 +234,5 @@ describe('trainAdventure content consistency', () => {
                 expect(opt.label.length).toBeGreaterThan(0);
             }
         }
-    });
-});
-
-// ── trainAdventure/zh.ts barrel file ──────────────────────────────────────
-
-describe('trainAdventure/zh barrel exports', () => {
-    it('exports trainAdventureZhDialogue', () => {
-        expect(trainAdventureZhDialogue).toBeDefined();
-        expect(typeof trainAdventureZhDialogue).toBe('object');
-    });
-
-    it('exports trainAdventureZhChoices', () => {
-        expect(trainAdventureZhChoices).toBeDefined();
-        expect(typeof trainAdventureZhChoices).toBe('object');
-    });
-
-    it('zh dialogue has at least one scene', () => {
-        const keys = Object.keys(trainAdventureZhDialogue);
-        expect(keys.length).toBeGreaterThan(0);
-    });
-
-    it('zh choices has at least one choice', () => {
-        const keys = Object.keys(trainAdventureZhChoices);
-        expect(keys.length).toBeGreaterThan(0);
-    });
-
-    it('zh dialogue matches zh content from getTrainAdventureStory', () => {
-        const story = getTrainAdventureStory('zh');
-        expect(story.dialogue).toBe(trainAdventureZhDialogue);
-    });
-
-    it('zh choices matches zh choices from getTrainAdventureStory', () => {
-        const story = getTrainAdventureStory('zh');
-        expect(story.choices).toBe(trainAdventureZhChoices);
     });
 });

@@ -101,6 +101,11 @@ export class ReaderManager {
         );
     }
 
+    /** Check whether a scene ID exists in the flow graph for the given story. */
+    private isValidSceneId(storyId: string, sceneId: string): boolean {
+        return this.getSceneNode(storyId, sceneId) !== undefined;
+    }
+
     loadInitialState(): SceneState {
         const params = new URLSearchParams(window.location.search);
         const urlScene = params.get('scene');
@@ -117,11 +122,17 @@ export class ReaderManager {
         }
 
         if (urlScene) {
-            return {
-                storyId: urlStory || this.currentState.storyId,
-                sceneId: urlScene,
-                locale: this.currentState.locale,
-            };
+            const storyId = urlStory || this.currentState.storyId;
+            // Validate the URL scene ID against the flow — stale bookmarks
+            // (e.g. scene_1) that no longer exist should be ignored.
+            if (this.isValidSceneId(storyId, urlScene)) {
+                return {
+                    storyId,
+                    sceneId: urlScene,
+                    locale: this.currentState.locale,
+                };
+            }
+            // Invalid URL scene: fall through to saved/default state
         }
 
         const saved = localStorage.getItem(this.storageKey);
@@ -137,16 +148,24 @@ export class ReaderManager {
                         // Saved state belongs to a different locale; ignore it
                         localStorage.removeItem(this.storageKey);
                     } else {
-                        const state: SceneState = {
-                            storyId: parsed.storyId,
-                            sceneId: parsed.sceneId,
-                            locale: this.initialLocale,
-                        };
-                        localStorage.setItem(
-                            this.storageKey,
-                            JSON.stringify(state)
-                        );
-                        return state;
+                        // Validate saved scene ID against the current flow
+                        if (
+                            !this.isValidSceneId(parsed.storyId, parsed.sceneId)
+                        ) {
+                            // Stale saved state (e.g. old scene_1); discard it
+                            localStorage.removeItem(this.storageKey);
+                        } else {
+                            const state: SceneState = {
+                                storyId: parsed.storyId,
+                                sceneId: parsed.sceneId,
+                                locale: this.initialLocale,
+                            };
+                            localStorage.setItem(
+                                this.storageKey,
+                                JSON.stringify(state)
+                            );
+                            return state;
+                        }
                     }
                 } else {
                     console.warn('Saved state has invalid structure, ignoring');

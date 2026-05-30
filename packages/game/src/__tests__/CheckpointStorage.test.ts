@@ -201,6 +201,93 @@ describe('CheckpointStorage', () => {
             const loaded = loadCheckpoint('trainAdventure');
             expect(loaded).toBeNull();
         });
+
+        describe('custom isValidSceneId option', () => {
+            it('uses custom validator to accept generated scene IDs', () => {
+                const generatedSceneIds = new Set(['act1', 'act2', 'b1a_act4']);
+                const checkpoint = {
+                    version: 1,
+                    storyId: 'trainAdventure',
+                    sceneId: 'b1a_act4',
+                    history: ['act1', 'act2', 'b1a_act4'],
+                    savedAt: Date.now(),
+                };
+                localStorage.setItem(
+                    'aquila:checkpoint:trainAdventure',
+                    JSON.stringify(checkpoint)
+                );
+
+                const loaded = loadCheckpoint('trainAdventure', {
+                    isValidSceneId: (id: string) => generatedSceneIds.has(id),
+                });
+
+                expect(loaded).not.toBeNull();
+                expect(loaded!.sceneId).toBe('b1a_act4');
+                expect(loaded!.history).toEqual(['act1', 'act2', 'b1a_act4']);
+            });
+
+            it('rejects scene IDs not in custom validator', () => {
+                const generatedSceneIds = new Set(['act1', 'act2']);
+                const checkpoint = {
+                    version: 1,
+                    storyId: 'trainAdventure',
+                    sceneId: 'scene_1',
+                    history: ['scene_1'],
+                    savedAt: Date.now(),
+                };
+                localStorage.setItem(
+                    'aquila:checkpoint:trainAdventure',
+                    JSON.stringify(checkpoint)
+                );
+
+                const loaded = loadCheckpoint('trainAdventure', {
+                    isValidSceneId: (id: string) => generatedSceneIds.has(id),
+                });
+
+                expect(loaded).toBeNull();
+            });
+
+            it('filters history with custom validator', () => {
+                const generatedSceneIds = new Set(['act1', 'act2']);
+                const checkpoint = {
+                    version: 1,
+                    storyId: 'trainAdventure',
+                    sceneId: 'act2',
+                    history: ['act1', 'scene_1', 'act2'],
+                    savedAt: Date.now(),
+                };
+                localStorage.setItem(
+                    'aquila:checkpoint:trainAdventure',
+                    JSON.stringify(checkpoint)
+                );
+
+                const loaded = loadCheckpoint('trainAdventure', {
+                    isValidSceneId: (id: string) => generatedSceneIds.has(id),
+                });
+
+                expect(loaded).not.toBeNull();
+                expect(loaded!.history).toEqual(['act1', 'act2']);
+            });
+
+            it('defaults to SceneDirectory.isRegisteredScene when no option provided', () => {
+                const checkpoint = {
+                    version: 1,
+                    storyId: 'trainAdventure',
+                    sceneId: 'scene_1',
+                    history: ['scene_1'],
+                    savedAt: Date.now(),
+                };
+                localStorage.setItem(
+                    'aquila:checkpoint:trainAdventure',
+                    JSON.stringify(checkpoint)
+                );
+
+                // No options → uses SceneDirectory.isRegisteredScene mock
+                const loaded = loadCheckpoint('trainAdventure');
+                expect(loaded).not.toBeNull();
+                expect(loaded!.sceneId).toBe('scene_1');
+            });
+        });
     });
 
     describe('clearCheckpoint', () => {

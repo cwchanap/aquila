@@ -395,7 +395,25 @@ describe('ReaderManager', () => {
             expect(state.locale).toBe('en');
         });
 
-        it('returns state from URL when scene param is present', () => {
+        it('returns state from URL when scene param is present and valid in flow', () => {
+            // act1 is valid in the default mock flow
+            Object.defineProperty(window, 'URLSearchParams', {
+                value: makeUrlParamsMock({
+                    scene: 'act1',
+                    story: 'train_adventure',
+                }),
+                writable: true,
+            });
+
+            const manager = new ReaderManager('en');
+            const state = manager.loadInitialState();
+
+            expect(state.sceneId).toBe('act1');
+            expect(state.storyId).toBe('train_adventure');
+        });
+
+        it('ignores URL scene param when scene does not exist in flow', () => {
+            // 'scene_5' does not exist in the default mock flow (act1, act2)
             Object.defineProperty(window, 'URLSearchParams', {
                 value: makeUrlParamsMock({
                     scene: 'scene_5',
@@ -407,11 +425,27 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
             const state = manager.loadInitialState();
 
-            expect(state.sceneId).toBe('scene_5');
-            expect(state.storyId).toBe('trainAdventure');
+            // Falls through to default state since scene_5 is not in the flow
+            expect(state.sceneId).toBe('act1');
+            expect(state.storyId).toBe('train_adventure');
         });
 
         it('uses current storyId when URL has scene but no story', () => {
+            // act2 is valid in the default mock flow
+            Object.defineProperty(window, 'URLSearchParams', {
+                value: makeUrlParamsMock({ scene: 'act2' }),
+                writable: true,
+            });
+
+            const manager = new ReaderManager('en');
+            const state = manager.loadInitialState();
+
+            expect(state.sceneId).toBe('act2');
+            expect(state.storyId).toBe('train_adventure');
+        });
+
+        it('ignores URL scene when scene is valid string but not in flow', () => {
+            // 'scene_3' is a valid string but not in the default mock flow
             Object.defineProperty(window, 'URLSearchParams', {
                 value: makeUrlParamsMock({ scene: 'scene_3' }),
                 writable: true,
@@ -420,14 +454,13 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
             const state = manager.loadInitialState();
 
-            expect(state.sceneId).toBe('scene_3');
-            expect(state.storyId).toBe('train_adventure');
+            expect(state.sceneId).toBe('act1');
         });
 
         it('sets initialDialogueIndex from dialogue URL param', () => {
             Object.defineProperty(window, 'URLSearchParams', {
                 value: makeUrlParamsMock({
-                    scene: 'scene_2',
+                    scene: 'act1',
                     dialogue: '3',
                 }),
                 writable: true,
@@ -442,7 +475,7 @@ describe('ReaderManager', () => {
         it('clamps dialogue index to 0 when dialogue param is 0', () => {
             Object.defineProperty(window, 'URLSearchParams', {
                 value: makeUrlParamsMock({
-                    scene: 'scene_1',
+                    scene: 'act1',
                     dialogue: '0',
                 }),
                 writable: true,
@@ -457,7 +490,7 @@ describe('ReaderManager', () => {
         it('ignores non-numeric dialogue param', () => {
             Object.defineProperty(window, 'URLSearchParams', {
                 value: makeUrlParamsMock({
-                    scene: 'scene_1',
+                    scene: 'act1',
                     dialogue: 'abc',
                 }),
                 writable: true,
@@ -469,10 +502,26 @@ describe('ReaderManager', () => {
             expect((manager as any).initialDialogueIndex).toBeNull();
         });
 
-        it('loads state from localStorage when available', () => {
+        it('loads state from localStorage when valid in flow', () => {
             mockStorage.getItem.mockReturnValueOnce(
                 JSON.stringify({
-                    storyId: 'trainAdventure',
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    locale: 'en',
+                })
+            );
+
+            const manager = new ReaderManager('en');
+            const state = manager.loadInitialState();
+
+            expect(state.sceneId).toBe('act2');
+            expect(state.storyId).toBe('train_adventure');
+        });
+
+        it('discards saved state when sceneId is not in flow', () => {
+            mockStorage.getItem.mockReturnValueOnce(
+                JSON.stringify({
+                    storyId: 'train_adventure',
                     sceneId: 'scene_7',
                     locale: 'en',
                 })
@@ -481,15 +530,18 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
             const state = manager.loadInitialState();
 
-            expect(state.sceneId).toBe('scene_7');
-            expect(state.storyId).toBe('trainAdventure');
+            // scene_7 is not in the mock flow (act1, act2), so fall back to default
+            expect(state.sceneId).toBe('act1');
+            expect(mockStorage.removeItem).toHaveBeenCalledWith(
+                'aquila:readerState:en'
+            );
         });
 
         it('ignores localStorage state with different locale', () => {
             mockStorage.getItem.mockReturnValueOnce(
                 JSON.stringify({
-                    storyId: 'trainAdventure',
-                    sceneId: 'scene_7',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
                     locale: 'zh',
                 })
             );
@@ -539,22 +591,22 @@ describe('ReaderManager', () => {
         it('saves state to localStorage with the storage key', () => {
             const manager = new ReaderManager('en');
             manager.saveState({
-                storyId: 'trainAdventure',
-                sceneId: 'scene_3',
+                storyId: 'train_adventure',
+                sceneId: 'act2',
                 locale: 'en',
             });
 
             expect(mockStorage.setItem).toHaveBeenCalledWith(
                 'aquila:readerState:en',
-                expect.stringContaining('scene_3')
+                expect.stringContaining('act2')
             );
         });
 
         it('updates the URL with story and scene params', () => {
             const manager = new ReaderManager('en');
             manager.saveState({
-                storyId: 'trainAdventure',
-                sceneId: 'scene_3',
+                storyId: 'train_adventure',
+                sceneId: 'act2',
                 locale: 'en',
             });
 
@@ -564,8 +616,8 @@ describe('ReaderManager', () => {
         it('normalizes locale to initialLocale', () => {
             const manager = new ReaderManager('en');
             manager.saveState({
-                storyId: 'trainAdventure',
-                sceneId: 'scene_3',
+                storyId: 'train_adventure',
+                sceneId: 'act2',
                 locale: 'zh', // different from initialLocale
             });
 
@@ -1021,13 +1073,13 @@ describe('ReaderManager', () => {
 
         it('loads URL state and uses it during initialization', () => {
             Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({ scene: 'scene_4' }),
+                value: makeUrlParamsMock({ scene: 'act2' }),
                 writable: true,
             });
 
             const mockStory = {
                 dialogue: {
-                    scene_4: [{ characterId: 'narrator', dialogue: 'Scene 4' }],
+                    act2: [{ characterId: 'narrator', dialogue: 'Act 2' }],
                 },
                 choices: {},
             };
@@ -1038,7 +1090,7 @@ describe('ReaderManager', () => {
 
             expect(mockStorage.setItem).toHaveBeenCalledWith(
                 'aquila:readerState:en',
-                expect.stringContaining('scene_4')
+                expect.stringContaining('act2')
             );
         });
     });

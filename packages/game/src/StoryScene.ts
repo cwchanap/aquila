@@ -212,13 +212,31 @@ export class StoryScene extends BaseScene implements EscListenerHost {
     }
 
     private restoreSceneFlow(): SceneFlow {
-        const checkpoint =
-            (this.registry.get('checkpointState') as StoredCheckpoint | null) ??
-            loadCheckpoint(this.storyId);
-
         const externalFlowConfig = this.registry.get('flowConfig') as
             | FlowConfig
             | undefined;
+
+        // Build a flow-aware validator: any scene ID present in the external
+        // flow config is valid. Fall back to SceneDirectory for legacy flows.
+        const flowSceneIds = externalFlowConfig
+            ? new Set(
+                  externalFlowConfig.nodes
+                      .filter(
+                          (n): n is Extract<typeof n, { kind: 'scene' }> =>
+                              n.kind === 'scene'
+                      )
+                      .map(n => n.sceneId)
+              )
+            : null;
+
+        const isValidSceneId = flowSceneIds
+            ? (id: string) => flowSceneIds.has(id)
+            : SceneDirectory.isRegisteredScene;
+
+        const checkpoint =
+            (this.registry.get('checkpointState') as StoredCheckpoint | null) ??
+            loadCheckpoint(this.storyId, { isValidSceneId });
+
         const flow = this.buildSceneFlow(externalFlowConfig);
 
         if (checkpoint && Array.isArray(checkpoint.history)) {

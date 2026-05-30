@@ -1,0 +1,17 @@
+{
+  // Type-checking only (no emit). Unlike the build config this also covers the
+  // test files AND the per-story compiler configs under raw/ (e.g. the golden
+  // test imports raw/trainAdventure/compiler.config), which live outside the
+  // build's src rootDir.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "rootDir": "."
+  },
+  "include": ["src/**/*.ts", "src/**/*.json", "raw/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,4 +1,4 @@
-import { SceneDirectory, type SceneId } from './SceneDirectory';
+import { SceneDirectory } from './SceneDirectory';
 
 const STORAGE_PREFIX = 'aquila:checkpoint:';
 const VERSION = 1;
@@ -6,14 +6,19 @@ const VERSION = 1;
 export interface StoredCheckpoint {
     version: number;
     storyId: string;
-    sceneId: SceneId;
-    history: SceneId[];
+    sceneId: string;
+    history: string[];
     savedAt: number;
 }
 
 export interface CheckpointState {
-    sceneId: SceneId;
-    history: SceneId[];
+    sceneId: string;
+    history: string[];
+}
+
+export interface CheckpointLoadOptions {
+    /** Custom scene ID validator. Defaults to SceneDirectory.isRegisteredScene. */
+    isValidSceneId?: (id: string) => boolean;
 }
 
 function getStorageKey(storyId: string): string {
@@ -40,7 +45,13 @@ export function saveCheckpoint(storyId: string, state: CheckpointState): void {
     }
 }
 
-export function loadCheckpoint(storyId: string): StoredCheckpoint | null {
+export function loadCheckpoint(
+    storyId: string,
+    options?: CheckpointLoadOptions
+): StoredCheckpoint | null {
+    const isValidSceneId =
+        options?.isValidSceneId ?? SceneDirectory.isRegisteredScene;
+
     try {
         if (typeof window === 'undefined' || !window.localStorage) {
             return null;
@@ -54,16 +65,14 @@ export function loadCheckpoint(storyId: string): StoredCheckpoint | null {
             return null;
         }
         const sceneId = parsed.sceneId;
-        if (!SceneDirectory.isRegisteredScene(sceneId)) return null;
+        if (!isValidSceneId(sceneId)) return null;
         const history = Array.isArray(parsed.history) ? parsed.history : [];
-        const filteredHistory = history.filter(
-            SceneDirectory.isRegisteredScene
-        );
+        const filteredHistory = history.filter(isValidSceneId);
         if (!filteredHistory.length) return null;
         return {
             version: VERSION,
             storyId,
-            sceneId: sceneId as SceneId,
+            sceneId,
             history: filteredHistory,
             savedAt:
                 typeof parsed.savedAt === 'number'

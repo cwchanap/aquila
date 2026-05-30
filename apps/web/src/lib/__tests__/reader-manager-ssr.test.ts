@@ -8,6 +8,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@aquila/stories', () => ({
     getStoryContent: vi.fn().mockReturnValue({ dialogue: {}, choices: {} }),
+    getStoryFlow: vi.fn().mockReturnValue({ start: 'act1', nodes: [] }),
     getTranslations: vi.fn(() => ({
         reader: {
             bookmarkPrompt: 'Save as:',

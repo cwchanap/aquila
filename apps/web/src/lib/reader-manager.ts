@@ -1,5 +1,6 @@
 import {
     getStoryContent,
+    getStoryFlow,
     getTranslations,
     type Locale,
     type DialogueEntry,
@@ -29,9 +30,10 @@ export class ReaderManager {
 
     constructor(locale: Locale) {
         this.initialLocale = locale;
+        const storyId = 'trainAdventure';
         this.currentState = {
-            storyId: 'trainAdventure',
-            sceneId: 'scene_1',
+            storyId,
+            sceneId: getStoryFlow(storyId)?.start ?? 'act1',
             locale,
         };
 
@@ -74,21 +76,29 @@ export class ReaderManager {
         );
     }
 
-    private parseSceneNumber(sceneId: string): number | null {
-        const match = sceneId.match(/scene_(\d+)([a-z])?/);
-        return match ? parseInt(match[1]) : null;
+    private getSceneNode(storyId: string, sceneId: string) {
+        const flow = getStoryFlow(storyId);
+        return flow?.nodes.find(
+            (n): n is Extract<typeof n, { kind: 'scene' }> =>
+                n.kind === 'scene' && n.sceneId === sceneId
+        );
+    }
+
+    /** The next SCENE id when the scene advances linearly; null at a terminal
+     *  scene or a choice point (a choice point is driven by the choice UI). */
+    private getLinearNextScene(
+        storyId: string,
+        sceneId: string
+    ): string | null {
+        const next = this.getSceneNode(storyId, sceneId)?.next;
+        if (!next || next.startsWith('choice:')) return null;
+        return next;
     }
 
     private hasNextScene(sceneId: string): boolean {
-        const sceneNumber = this.parseSceneNumber(sceneId);
-        if (sceneNumber === null) return false;
-
-        const nextScene = `scene_${sceneNumber + 1}`;
-        const story = getStoryContent(
-            this.currentState.storyId,
-            this.currentState.locale
+        return (
+            this.getLinearNextScene(this.currentState.storyId, sceneId) !== null
         );
-        return !!story.dialogue[nextScene];
     }
 
     loadInitialState(): SceneState {
@@ -178,11 +188,15 @@ export class ReaderManager {
         const story = getStoryContent(storyId, locale);
         const dialogue = story.dialogue[sceneId] || [];
 
-        // Use deterministic mapping: choice_{sceneNumber}
-        // e.g., scene_3 -> choice_3, scene_4a -> choice_4
-        const sceneNumber = this.parseSceneNumber(sceneId);
-        const choiceKey = sceneNumber !== null ? `choice_${sceneNumber}` : null;
-        const choice = choiceKey ? story.choices[choiceKey] || null : null;
+        // Derive the choice from the flow graph: if the scene node's next
+        // is a choice ref (e.g. "choice:choice_act3"), look up that choiceId.
+        const sceneNode = this.getSceneNode(storyId, sceneId);
+        const nextRef = sceneNode?.next;
+        let choice: ChoiceDefinition | null = null;
+        if (nextRef && nextRef.startsWith('choice:')) {
+            const choiceId = nextRef.slice('choice:'.length);
+            choice = story.choices[choiceId] ?? null;
+        }
 
         return { dialogue, choice };
     }
@@ -246,13 +260,12 @@ export class ReaderManager {
 
     handleNext = async (): Promise<void> => {
         const translations = this.t;
-        const sceneNumber = this.parseSceneNumber(this.currentState.sceneId);
-        if (
-            sceneNumber !== null &&
-            this.hasNextScene(this.currentState.sceneId)
-        ) {
-            const nextScene = `scene_${sceneNumber + 1}`;
-            this.navigateToScene(nextScene);
+        const next = this.getLinearNextScene(
+            this.currentState.storyId,
+            this.currentState.sceneId
+        );
+        if (next !== null) {
+            this.navigateToScene(next);
         } else {
             await showAlert(translations.reader.endOfStory);
         }

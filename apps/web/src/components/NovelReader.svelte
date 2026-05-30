@@ -40,6 +40,12 @@
   function getCharacterName(dialogueEntry: DialogueEntry | undefined): string {
     if (!dialogueEntry) return '';
 
+    // Prefer the emitted displayName (preserves author's intent for
+    // aliases / role labels like "健談男大生" before the character is named).
+    if (dialogueEntry.character) {
+      return dialogueEntry.character;
+    }
+
     if (dialogueEntry.characterId) {
       const characterId = dialogueEntry.characterId;
       const localizedName =
@@ -60,7 +66,7 @@
       return info?.name ?? t.reader.unknown;
     }
 
-    return dialogueEntry.character || '';
+    return '';
   }
 
   $: isLastDialogue = currentDialogueIndex >= dialogue.length - 1;

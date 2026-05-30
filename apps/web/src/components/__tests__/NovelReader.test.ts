@@ -626,6 +626,81 @@ describe('NovelReader', () => {
         });
     });
 
+    describe('Character Display Name Priority', () => {
+        it('should prefer emitted character displayName over CharacterDirectory canonical name', async () => {
+            // Simulates compiler-emitted entries where the source uses an alias
+            // (e.g. "健談男大生") instead of the canonical name ("田中健太").
+            const aliasDialogue: DialogueEntry[] = [
+                {
+                    characterId: 'tanaka_kenta' as any,
+                    character: '健談男大生',
+                    dialogue: 'Some dialogue line.',
+                },
+            ];
+
+            render(NovelReader, {
+                props: {
+                    dialogue: aliasDialogue,
+                    choice: null,
+                    locale: 'en',
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // Should show the emitted displayName, not the CharacterDirectory canonical name
+            expect(screen.getByText('健談男大生')).toBeInTheDocument();
+            // Should NOT show the canonical CharacterDirectory name
+            expect(screen.queryByText('Character')).not.toBeInTheDocument();
+        });
+
+        it('should fall back to CharacterDirectory when character field is absent', async () => {
+            const noCharField: DialogueEntry[] = [
+                {
+                    characterId: 'narrator' as any,
+                    dialogue: 'Narrator dialogue.',
+                },
+            ];
+
+            render(NovelReader, {
+                props: {
+                    dialogue: noCharField,
+                    choice: null,
+                    locale: 'en',
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // Falls back to CharacterDirectory.getById('narrator').name → 'Narrator'
+            expect(screen.getByText('Narrator')).toBeInTheDocument();
+        });
+
+        it('should prefer character field even when localized name exists', async () => {
+            // Even with characterNames in translations, the emitted displayName
+            // should take priority to preserve narrative intent.
+            const aliasDialogue: DialogueEntry[] = [
+                {
+                    characterId: 'narrator' as any,
+                    character: '旁白',
+                    dialogue: 'Chinese narrator line.',
+                },
+            ];
+
+            render(NovelReader, {
+                props: {
+                    dialogue: aliasDialogue,
+                    choice: null,
+                    locale: 'zh',
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            expect(screen.getByText('旁白')).toBeInTheDocument();
+        });
+    });
+
     describe('Edge Cases', () => {
         it('should handle empty dialogue array', () => {
             render(NovelReader, {

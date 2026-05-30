@@ -30,7 +30,7 @@ export class ReaderManager {
 
     constructor(locale: Locale) {
         this.initialLocale = locale;
-        const storyId = 'trainAdventure';
+        const storyId = 'train_adventure';
         this.currentState = {
             storyId,
             sceneId: getStoryFlow(storyId)?.start ?? 'act1',

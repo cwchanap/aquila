@@ -390,7 +390,7 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
             const state = manager.loadInitialState();
 
-            expect(state.storyId).toBe('trainAdventure');
+            expect(state.storyId).toBe('train_adventure');
             expect(state.sceneId).toBe('act1');
             expect(state.locale).toBe('en');
         });
@@ -421,7 +421,7 @@ describe('ReaderManager', () => {
             const state = manager.loadInitialState();
 
             expect(state.sceneId).toBe('scene_3');
-            expect(state.storyId).toBe('trainAdventure');
+            expect(state.storyId).toBe('train_adventure');
         });
 
         it('sets initialDialogueIndex from dialogue URL param', () => {

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
-import { SceneDirectory, type SceneId } from './SceneDirectory';
+import { SceneDirectory } from './SceneDirectory';
 import { SceneFlow, type FlowConfig } from './SceneFlow';
 import {
     clearCheckpoint,
@@ -277,7 +277,7 @@ export class StoryScene extends BaseScene implements EscListenerHost {
         saveCheckpoint(this.storyId, state);
     }
 
-    private transitionToScene(sceneId: SceneId) {
+    private transitionToScene(sceneId: string) {
         if (this.transitioning) return;
         this.transitioning = true;
         this.fadeAmbientTo(0.0005, 300);

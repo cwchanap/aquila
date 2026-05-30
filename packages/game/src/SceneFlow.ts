@@ -6,23 +6,22 @@ import type {
     FlowNodeId as SharedFlowNodeId,
     SceneNodeId as SharedSceneNodeId,
 } from '@aquila/stories';
-import type { SceneId } from './SceneDirectory';
 
-type SceneNodeId = SharedSceneNodeId<SceneId>;
-type FlowNodeId = SharedFlowNodeId<SceneId>;
+type SceneNodeId = SharedSceneNodeId<string>;
+type FlowNodeId = SharedFlowNodeId<string>;
 
-export type FlowConfig = SharedFlowConfig<SceneId>;
-export type FlowNodeDefinition = SharedFlowNodeDefinition<SceneId>;
-export type SceneNodeDefinition = SharedSceneNodeDefinition<SceneId>;
-export type ChoiceNodeDefinition = SharedChoiceNodeDefinition<SceneId>;
+export type FlowConfig = SharedFlowConfig<string>;
+export type FlowNodeDefinition = SharedFlowNodeDefinition<string>;
+export type SceneNodeDefinition = SharedSceneNodeDefinition<string>;
+export type ChoiceNodeDefinition = SharedChoiceNodeDefinition<string>;
 
 export type FlowAdvanceResult =
-    | { type: 'scene'; sceneId: SceneId }
+    | { type: 'scene'; sceneId: string }
     | { type: 'choice'; choiceId: string; optionIds: string[] }
     | { type: 'end' };
 
 export type FlowChoiceResolution =
-    | { type: 'scene'; sceneId: SceneId }
+    | { type: 'scene'; sceneId: string }
     | { type: 'end' };
 
 export class SceneFlow {
@@ -58,7 +57,7 @@ export class SceneFlow {
         this.sceneHistory = [startNode.id];
     }
 
-    static fromLinearScenes(sceneIds: SceneId[]): SceneFlow {
+    static fromLinearScenes(sceneIds: string[]): SceneFlow {
         if (!sceneIds.length) {
             throw new Error('[SceneFlow] Cannot create flow without scenes.');
         }
@@ -77,7 +76,7 @@ export class SceneFlow {
         return new SceneFlow({ start: sceneIds[0], nodes });
     }
 
-    getCurrentSceneId(): SceneId | null {
+    getCurrentSceneId(): string | null {
         if (this.mode !== 'scene') return null;
         const node = this.nodes.get(this.currentNodeId);
         if (!node || node.kind !== 'scene') return null;
@@ -188,7 +187,7 @@ export class SceneFlow {
         return { type: 'scene', sceneId: nextNode.sceneId };
     }
 
-    retreatToPreviousScene(): SceneId | null {
+    retreatToPreviousScene(): string | null {
         if (this.sceneHistory.length <= 1) {
             return null;
         }
@@ -204,7 +203,7 @@ export class SceneFlow {
         return previousNode.sceneId;
     }
 
-    getSceneHistory(): SceneId[] {
+    getSceneHistory(): string[] {
         return this.sceneHistory
             .map(nodeId => this.nodes.get(nodeId))
             .filter(
@@ -218,7 +217,7 @@ export class SceneFlow {
         return Array.from(this.nodes.values());
     }
 
-    restoreFromHistory(history: SceneId[]): SceneId | null {
+    restoreFromHistory(history: string[]): string | null {
         if (!history.length) {
             return null;
         }

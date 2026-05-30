@@ -65,7 +65,8 @@ export function loadCheckpoint(
             return null;
         }
         const sceneId = parsed.sceneId;
-        if (!isValidSceneId(sceneId)) return null;
+        if (typeof sceneId !== 'string' || !isValidSceneId(sceneId))
+            return null;
         const history = Array.isArray(parsed.history) ? parsed.history : [];
         const filteredHistory = history.filter(isValidSceneId);
         if (!filteredHistory.length) return null;

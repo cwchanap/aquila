@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { CharacterDirectory } from './characters/CharacterDirectory';
-import { SceneDirectory, type SceneId } from './SceneDirectory';
+import { SceneDirectory } from './SceneDirectory';
 import type { DialogueEntry, DialogueMap } from './dialogue/types';
 import { GameConfig } from './GameConfig';
 
@@ -24,14 +24,14 @@ export class BaseScene extends Phaser.Scene {
     private dialogueGeneration: number = 0;
     private static readonly MAX_DIALOGUE_RETRIES = 10;
     // Active story section key driven by SceneDirectory.
-    protected sectionKey: SceneId = SceneDirectory.defaultStart ?? 'scene_1';
+    protected sectionKey: string = SceneDirectory.defaultStart ?? 'scene_1';
 
     constructor(key: string) {
         super(key);
     }
 
     // Helper to switch sections from a derived StoryScene
-    protected setSection(nextKey: SceneId) {
+    protected setSection(nextKey: string) {
         this.sectionKey = nextKey;
         this.currentDialogueIndex = 0;
         this.dialogueRetryCount = 0;
@@ -146,7 +146,7 @@ export class BaseScene extends Phaser.Scene {
         this.updateDialogueUI();
     };
 
-    protected getSectionKey(): SceneId {
+    protected getSectionKey(): string {
         return this.sectionKey;
     }
 
@@ -413,7 +413,7 @@ export class BaseScene extends Phaser.Scene {
         // Override in child classes
     }
 
-    protected applyAmbientForScene(sceneId: SceneId) {
+    protected applyAmbientForScene(sceneId: string) {
         try {
             if (this.ambientOsc && this.beepCtx) {
                 const freq = SceneDirectory.getAmbientFrequency(sceneId);

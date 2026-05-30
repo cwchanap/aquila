@@ -7,7 +7,6 @@ import type {
     ChoiceDefinition as BaseChoiceDefinition,
     ChoiceOptionDefinition as BaseChoiceOptionDefinition,
 } from '@aquila/stories';
-import type { SceneId } from '../SceneDirectory';
 
 // Extended dialogue entry that allows Character instance references for game engine
 export type DialogueEntry = BaseDialogueEntry & {
@@ -16,12 +15,12 @@ export type DialogueEntry = BaseDialogueEntry & {
 
 export type DialogueMap = { [sectionKey: string]: DialogueEntry[] };
 
-// Extended choice option that uses typed SceneId
+// Extended choice option that uses string scene IDs
 export type ChoiceOptionDefinition = Omit<
     BaseChoiceOptionDefinition,
     'nextScene'
 > & {
-    nextScene: SceneId;
+    nextScene: string;
 };
 
 export type ChoiceDefinition = {

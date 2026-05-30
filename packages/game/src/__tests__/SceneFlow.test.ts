@@ -79,6 +79,24 @@ describe('SceneFlow', () => {
             const result3 = flow.advanceFromScene();
             expect(result3).toEqual({ type: 'end' });
         });
+
+        it('accepts arbitrary string scene IDs (not just legacy SceneId union)', () => {
+            const flow = SceneFlow.fromLinearScenes([
+                'act1',
+                'b1a_act4',
+                'b1b_b2c_actFinal',
+            ]);
+            expect(flow.getCurrentSceneId()).toBe('act1');
+
+            const result = flow.advanceFromScene();
+            expect(result).toEqual({ type: 'scene', sceneId: 'b1a_act4' });
+
+            const result2 = flow.advanceFromScene();
+            expect(result2).toEqual({
+                type: 'scene',
+                sceneId: 'b1b_b2c_actFinal',
+            });
+        });
     });
 
     describe('advanceFromScene', () => {
@@ -240,6 +258,18 @@ describe('SceneFlow', () => {
             const result = flow.restoreFromHistory(['scene_1', 'scene_2']);
             expect(result).toBe('scene_2');
             expect(flow.getCurrentSceneId()).toBe('scene_2');
+        });
+
+        it('restores flow with arbitrary string scene IDs', () => {
+            const flow = SceneFlow.fromLinearScenes([
+                'act1',
+                'b1a_act4',
+                'b1a_act7',
+            ]);
+            const result = flow.restoreFromHistory(['act1', 'b1a_act4']);
+            expect(result).toBe('b1a_act4');
+            expect(flow.getCurrentSceneId()).toBe('b1a_act4');
+            expect(flow.getSceneHistory()).toEqual(['act1', 'b1a_act4']);
         });
 
         it('returns null for empty history', () => {

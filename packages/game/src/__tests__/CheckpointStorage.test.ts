@@ -158,6 +158,22 @@ describe('CheckpointStorage', () => {
             expect(loaded).toBeNull();
         });
 
+        it('returns null when sceneId is missing (typeof guard)', () => {
+            const checkpoint = {
+                version: 1,
+                storyId: 'trainAdventure',
+                // sceneId deliberately omitted — typeof sceneId !== 'string'
+                history: ['scene_1'],
+                savedAt: Date.now(),
+            };
+            localStorage.setItem(
+                'aquila:checkpoint:trainAdventure',
+                JSON.stringify(checkpoint)
+            );
+            const loaded = loadCheckpoint('trainAdventure');
+            expect(loaded).toBeNull();
+        });
+
         it('falls back to empty array when history is not an array (line 58 false branch)', () => {
             // history is a string instead of an array → filteredHistory = [] → returns null
             const checkpoint = {

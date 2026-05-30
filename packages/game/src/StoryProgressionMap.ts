@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import type { SceneId } from './SceneDirectory';
 import type { FlowNodeDefinition } from './SceneFlow';
 
 export interface ProgressionNodeVisual {
@@ -8,7 +7,7 @@ export interface ProgressionNodeVisual {
     x: number;
     y: number;
     state: 'completed' | 'current' | 'locked';
-    sceneId?: SceneId;
+    sceneId?: string;
     choiceId?: string;
 }
 

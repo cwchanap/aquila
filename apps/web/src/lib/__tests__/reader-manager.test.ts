@@ -4,6 +4,7 @@ import { ReaderManager } from '../reader-manager';
 // Mock the @aquila/stories module
 vi.mock('@aquila/stories', () => ({
     getStoryContent: vi.fn(),
+    getStoryFlow: vi.fn(),
     getTranslations: vi.fn(() => ({
         reader: {
             bookmarkPrompt: 'Save bookmark as:',
@@ -36,9 +37,10 @@ vi.mock('@/components/NovelReader.svelte', () => ({
     default: class MockNovelReader {},
 }));
 
-import { getStoryContent } from '@aquila/stories';
+import { getStoryContent, getStoryFlow } from '@aquila/stories';
 import { showAlert, showPrompt } from '../ui-dialogs';
 const mockGetStoryContent = vi.mocked(getStoryContent);
+const mockGetStoryFlow = vi.mocked(getStoryFlow);
 const mockShowAlert = vi.mocked(showAlert);
 const mockShowPrompt = vi.mocked(showPrompt);
 
@@ -66,6 +68,15 @@ describe('ReaderManager', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+
+        // Default flow: act1 -> act2 (linear), act2 is terminal
+        mockGetStoryFlow.mockReturnValue({
+            start: 'act1',
+            nodes: [
+                { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+                { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+            ],
+        });
 
         mockStorage = makeMockStorage();
 
@@ -104,109 +115,156 @@ describe('ReaderManager', () => {
     });
 
     describe('getSceneData', () => {
-        it('should return dialogue and choice data for a valid scene', () => {
+        it('returns dialogue and choice when scene node next is a choice ref', () => {
+            // Set up a flow where act3's next points to a choice node
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'act1',
+                        sceneId: 'act1',
+                        next: 'act2',
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'act2',
+                        sceneId: 'act2',
+                        next: 'act3',
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'act3',
+                        sceneId: 'act3',
+                        next: 'choice:choice_act3',
+                    },
+                    {
+                        kind: 'choice',
+                        id: 'choice:choice_act3',
+                        choiceId: 'choice_act3',
+                        nextByOption: {
+                            option1: 'b1a_act4',
+                            option2: 'b1b_act4',
+                        },
+                    },
+                ],
+            });
+
             const mockStory = {
                 dialogue: {
-                    scene_3: [
+                    act3: [
                         { characterId: 'narrator', dialogue: 'Test dialogue' },
                     ],
                 },
                 choices: {
-                    choice_3: {
+                    choice_act3: {
                         prompt: 'What to do?',
                         options: [
                             {
                                 id: 'option1',
                                 label: 'Option 1',
-                                nextScene: 'scene_4',
+                                nextScene: 'b1a_act4',
+                            },
+                            {
+                                id: 'option2',
+                                label: 'Option 2',
+                                nextScene: 'b1b_act4',
                             },
                         ],
                     },
                 },
             };
-
             mockGetStoryContent.mockReturnValue(mockStory);
 
             const manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
-                'scene_3',
+                'act3',
                 'en'
             );
 
-            expect(result.dialogue).toEqual(mockStory.dialogue.scene_3);
-            expect(result.choice).toEqual(mockStory.choices.choice_3);
+            expect(result.dialogue).toEqual(mockStory.dialogue.act3);
+            expect(result.choice).toEqual(mockStory.choices.choice_act3);
         });
 
-        it('should return null choice when no matching choice exists', () => {
+        it('returns null choice when scene node next is a plain scene id', () => {
+            // Default flow: act1 -> act2 (plain next), no choice
             const mockStory = {
                 dialogue: {
-                    scene_1: [
+                    act1: [
                         { characterId: 'narrator', dialogue: 'Test dialogue' },
                     ],
                 },
-                choices: {},
+                choices: {
+                    choice_act1: {
+                        prompt: 'Unused',
+                        options: [],
+                    },
+                },
             };
-
             mockGetStoryContent.mockReturnValue(mockStory);
 
             const manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
-                'scene_1',
+                'act1',
                 'en'
             );
 
-            expect(result.dialogue).toEqual(mockStory.dialogue.scene_1);
+            expect(result.dialogue).toEqual(mockStory.dialogue.act1);
             expect(result.choice).toBeNull();
         });
 
-        it('should handle scene IDs with suffixes (e.g., scene_4a)', () => {
+        it('returns null choice when scene node next is null (terminal)', () => {
+            // Default flow: act2 is terminal (next: null)
             const mockStory = {
                 dialogue: {
-                    scene_4a: [
-                        { characterId: 'narrator', dialogue: 'Test dialogue' },
-                    ],
+                    act2: [{ characterId: 'narrator', dialogue: 'Last scene' }],
                 },
-                choices: {
-                    choice_4: {
-                        prompt: 'What to do?',
-                        options: [
-                            {
-                                id: 'option1',
-                                label: 'Option 1',
-                                nextScene: 'scene_5',
-                            },
-                        ],
-                    },
-                },
+                choices: {},
             };
-
             mockGetStoryContent.mockReturnValue(mockStory);
 
             const manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
-                'scene_4a',
+                'act2',
                 'en'
             );
 
-            expect(result.dialogue).toEqual(mockStory.dialogue.scene_4a);
-            expect(result.choice).toEqual(mockStory.choices.choice_4);
+            expect(result.dialogue).toEqual(mockStory.dialogue.act2);
+            expect(result.choice).toBeNull();
         });
 
-        it('should return empty dialogue array when scene does not exist', () => {
+        it('returns null choice when scene node is not found in flow', () => {
             const mockStory = {
                 dialogue: {},
                 choices: {},
             };
-
             mockGetStoryContent.mockReturnValue(mockStory);
 
             const manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
-                'scene_999',
+                'unknown_scene',
+                'en'
+            );
+
+            expect(result.dialogue).toEqual([]);
+            expect(result.choice).toBeNull();
+        });
+
+        it('returns empty dialogue array when scene does not exist in content', () => {
+            const mockStory = {
+                dialogue: {},
+                choices: {},
+            };
+            mockGetStoryContent.mockReturnValue(mockStory);
+
+            const manager = new ReaderManager('en');
+            const result = (manager as any).getSceneData(
+                'trainAdventure',
+                'act1',
                 'en'
             );
 
@@ -215,79 +273,42 @@ describe('ReaderManager', () => {
         });
     });
 
-    describe('parseSceneNumber', () => {
-        it('should parse basic scene numbers', () => {
-            const manager = new ReaderManager('en');
-            expect((manager as any).parseSceneNumber('scene_1')).toBe(1);
-            expect((manager as any).parseSceneNumber('scene_10')).toBe(10);
-            expect((manager as any).parseSceneNumber('scene_123')).toBe(123);
-        });
-
-        it('should handle scene IDs with suffixes', () => {
-            const manager = new ReaderManager('en');
-            expect((manager as any).parseSceneNumber('scene_1a')).toBe(1);
-            expect((manager as any).parseSceneNumber('scene_2b')).toBe(2);
-            expect((manager as any).parseSceneNumber('scene_10_final')).toBe(
-                10
-            );
-        });
-
-        it('should return null for invalid scene IDs', () => {
-            const manager = new ReaderManager('en');
-            expect((manager as any).parseSceneNumber('invalid')).toBeNull();
-            expect((manager as any).parseSceneNumber('scene_')).toBeNull();
-            expect((manager as any).parseSceneNumber('scene_abc')).toBeNull();
-            expect((manager as any).parseSceneNumber('')).toBeNull();
-        });
-    });
-
     describe('hasNextScene', () => {
-        it('should return true when next scene exists', () => {
-            const mockStory = {
-                dialogue: {
-                    scene_2: [
-                        {
-                            characterId: 'narrator',
-                            dialogue: 'Next scene exists',
-                        },
-                    ],
-                },
-                choices: {},
-            };
-
-            mockGetStoryContent.mockReturnValue(mockStory);
-
+        it('returns true when scene node has a plain scene id as next', () => {
+            // Default flow: act1 -> act2 (plain next)
             const manager = new ReaderManager('en');
-            const result = (manager as any).hasNextScene('scene_1');
-
+            const result = (manager as any).hasNextScene('act1');
             expect(result).toBe(true);
         });
 
-        it('should return false when next scene does not exist', () => {
-            const mockStory = {
-                dialogue: {
-                    scene_1: [
-                        {
-                            characterId: 'narrator',
-                            dialogue: 'Only this scene',
-                        },
-                    ],
-                },
-                choices: {},
-            };
-
-            mockGetStoryContent.mockReturnValue(mockStory);
-
+        it('returns false when scene node next is null (terminal scene)', () => {
+            // Default flow: act2 is terminal
             const manager = new ReaderManager('en');
-            const result = (manager as any).hasNextScene('scene_1');
-
+            const result = (manager as any).hasNextScene('act2');
             expect(result).toBe(false);
         });
 
-        it('should return false for invalid scene IDs', () => {
-            const manager = new ReaderManager('en');
-            const result = (manager as any).hasNextScene('invalid_scene');
+        it('returns false when scene node next is a choice ref', () => {
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'act3',
+                        sceneId: 'act3',
+                        next: 'choice:choice_act3',
+                    },
+                ],
+            });
 
+            const manager = new ReaderManager('en');
+            const result = (manager as any).hasNextScene('act3');
+            expect(result).toBe(false);
+        });
+
+        it('returns false when scene id is not found in flow', () => {
+            const manager = new ReaderManager('en');
+            const result = (manager as any).hasNextScene('unknown_scene');
             expect(result).toBe(false);
         });
     });
@@ -370,7 +391,7 @@ describe('ReaderManager', () => {
             const state = manager.loadInitialState();
 
             expect(state.storyId).toBe('trainAdventure');
-            expect(state.sceneId).toBe('scene_1');
+            expect(state.sceneId).toBe('act1');
             expect(state.locale).toBe('en');
         });
 
@@ -477,7 +498,7 @@ describe('ReaderManager', () => {
             const state = manager.loadInitialState();
 
             // Different locale means the saved state is discarded
-            expect(state.sceneId).toBe('scene_1');
+            expect(state.sceneId).toBe('act1');
             expect(mockStorage.removeItem).toHaveBeenCalledWith(
                 'aquila:readerState:en'
             );
@@ -494,7 +515,7 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
             const state = manager.loadInitialState();
 
-            expect(state.sceneId).toBe('scene_1');
+            expect(state.sceneId).toBe('act1');
             expect(warnSpy).toHaveBeenCalled();
             warnSpy.mockRestore();
         });
@@ -508,7 +529,7 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
             const state = manager.loadInitialState();
 
-            expect(state.sceneId).toBe('scene_1');
+            expect(state.sceneId).toBe('act1');
             expect(errorSpy).toHaveBeenCalled();
             errorSpy.mockRestore();
         });
@@ -695,7 +716,7 @@ describe('ReaderManager', () => {
     describe('onBookmark prop passed to mount (covers line 293)', () => {
         it('invokes handleBookmark via onBookmark prop extracted from mount call', async () => {
             mockShowPrompt.mockResolvedValueOnce(null); // handleBookmark returns early
-            const mockStory = { dialogue: { scene_1: [] }, choices: {} };
+            const mockStory = { dialogue: { act1: [] }, choices: {} };
             mockGetStoryContent.mockReturnValue(mockStory);
 
             const container = document.createElement('div');
@@ -725,12 +746,12 @@ describe('ReaderManager', () => {
     });
 
     describe('handleNext', () => {
-        it('navigates to next scene when it exists', async () => {
+        it('navigates to the linear next scene when flow node has a plain next', async () => {
+            // Default flow: act1 -> act2 (plain next). Manager starts at act1.
             const mockStory = {
                 dialogue: {
-                    scene_2: [
-                        { characterId: 'narrator', dialogue: 'Next scene' },
-                    ],
+                    act1: [{ characterId: 'narrator', dialogue: 'Scene 1' }],
+                    act2: [{ characterId: 'narrator', dialogue: 'Scene 2' }],
                 },
                 choices: {},
             };
@@ -741,15 +762,51 @@ describe('ReaderManager', () => {
 
             expect(mockStorage.setItem).toHaveBeenCalledWith(
                 'aquila:readerState:en',
-                expect.stringContaining('scene_2')
+                expect.stringContaining('act2')
             );
         });
 
-        it('shows end-of-story alert when no next scene exists', async () => {
+        it('shows end-of-story alert when flow node next is null (terminal)', async () => {
+            // Override flow so manager starts at act2 (terminal)
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act2',
+                nodes: [
+                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+                ],
+            });
+
             const mockStory = {
                 dialogue: {
-                    scene_1: [
-                        { characterId: 'narrator', dialogue: 'Last scene' },
+                    act2: [{ characterId: 'narrator', dialogue: 'Last scene' }],
+                },
+                choices: {},
+            };
+            mockGetStoryContent.mockReturnValue(mockStory);
+
+            const manager = new ReaderManager('en');
+            await manager.handleNext();
+
+            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
+        });
+
+        it('shows end-of-story alert when flow node next is a choice ref', async () => {
+            // A choice-branching scene has no linear next; showAlert is expected
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act3',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'act3',
+                        sceneId: 'act3',
+                        next: 'choice:choice_act3',
+                    },
+                ],
+            });
+
+            const mockStory = {
+                dialogue: {
+                    act3: [
+                        { characterId: 'narrator', dialogue: 'Choice scene' },
                     ],
                 },
                 choices: {},
@@ -948,7 +1005,7 @@ describe('ReaderManager', () => {
 
         it('saves state to localStorage on initialization', () => {
             const mockStory = {
-                dialogue: { scene_1: [] },
+                dialogue: { act1: [] },
                 choices: {},
             };
             mockGetStoryContent.mockReturnValue(mockStory);
@@ -958,7 +1015,7 @@ describe('ReaderManager', () => {
 
             expect(mockStorage.setItem).toHaveBeenCalledWith(
                 'aquila:readerState:en',
-                expect.stringContaining('scene_1')
+                expect.stringContaining('act1')
             );
         });
 

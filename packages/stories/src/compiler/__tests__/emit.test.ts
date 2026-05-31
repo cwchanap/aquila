@@ -78,7 +78,7 @@ describe('emitStory', () => {
         expect(existsSync(join(dir, 'choices.todo.zh.ts'))).toBe(true);
 
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
-        expect(scene).toContain('../../../../characters');
+        expect(scene).toContain('../../../characters');
         expect(scene).toContain('CharacterId.Narrator');
         // string is JSON-escaped, so apostrophes survive safely
         expect(scene).toContain(JSON.stringify("It's night."));

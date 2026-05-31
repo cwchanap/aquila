@@ -11,7 +11,7 @@ import { emitStory } from './emit';
 export interface CompileOptions {
     rawDir: string; // packages/stories/raw/<name>
     name: string; // 'trainAdventure'
-    outDir: string; // packages/stories/src/stories/<name>/generated
+    outDir: string; // packages/stories/src/generated/<name>
     choicesPath: string; // packages/stories/src/stories/<name>/choices.zh.ts
     config: StoryCompilerConfig;
 }

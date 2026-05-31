@@ -28,7 +28,7 @@ async function main(): Promise<void> {
         const story = compileStory({
             rawDir: join(rawRoot, name),
             name,
-            outDir: join(srcDir, 'stories', name, 'generated'),
+            outDir: join(srcDir, 'generated', name),
             choicesPath: join(srcDir, 'stories', name, 'choices.zh.ts'),
             config,
         });

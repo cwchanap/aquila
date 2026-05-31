@@ -20,8 +20,8 @@ function emitSceneFile(story: StoryIR, sceneId: string): string {
         .join('\n');
     return (
         HEADER +
-        `import type { DialogueEntry } from '../../../../types';\n` +
-        `import { CharacterId } from '../../../../characters';\n\n` +
+        `import type { DialogueEntry } from '../../../types';\n` +
+        `import { CharacterId } from '../../../characters';\n\n` +
         `export const scene: DialogueEntry[] = [\n${lines}\n];\n`
     );
 }
@@ -46,7 +46,7 @@ function emitDialogueIndex(story: StoryIR): string {
         .join('\n');
     return (
         HEADER +
-        `import type { DialogueMap } from '../../../types';\n${imports}\n\n` +
+        `import type { DialogueMap } from '../../types';\n${imports}\n\n` +
         `export const ${story.name}ZhDialogue: DialogueMap = {\n${entries}\n};\n`
     );
 }
@@ -66,7 +66,7 @@ function emitFlow(story: StoryIR): string {
         story.scenes.map(s => `    | ${q(s.id)}`).join('\n') || '    | never';
     return (
         HEADER +
-        `import type { FlowConfig } from '../../../flow-types';\n\n` +
+        `import type { FlowConfig } from '../../flow-types';\n\n` +
         `export type ${cap(story.name)}SceneId =\n${union};\n\n` +
         `export const ${story.name}Flow: FlowConfig<${cap(story.name)}SceneId> = {\n` +
         `  start: ${q(story.start)},\n  nodes: [\n${[...sceneNodes, ...choiceNodes].join('\n')}\n  ],\n};\n`
@@ -84,7 +84,7 @@ function emitChoiceTodo(story: StoryIR): string {
         .join('\n');
     return (
         HEADER +
-        `import type { ChoiceText } from '../../choice-utils';\n\n` +
+        `import type { ChoiceText } from '../../stories/choice-utils';\n\n` +
         `// Reference stub. Copy entries you need into choices.zh.ts and fill in real text.\n` +
         `export const ${story.name}ChoiceTextStub: ChoiceText = {\n${entries}\n};\n`
     );

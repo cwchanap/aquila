@@ -13,7 +13,7 @@
     "dev:web": "turbo run dev --filter=web",
     "build": "turbo run build",
     "compile:stories": "bun --filter @aquila/stories compile",
-    "compile:check": "bun run compile:stories && git diff --exit-code -- packages/stories/src/stories",
+    "compile:check": "bun run compile:stories && git diff --exit-code -- packages/stories/src/generated packages/stories/src/stories",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
     "test": "turbo run test",

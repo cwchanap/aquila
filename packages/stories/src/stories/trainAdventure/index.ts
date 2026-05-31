@@ -1,11 +1,11 @@
 import type { ChoiceMap, DialogueMap } from '../../types';
 import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
-import { trainAdventureZhDialogue } from './generated/dialogue.zh';
+import { trainAdventureZhDialogue } from '../../generated/trainAdventure/dialogue.zh';
 import {
     trainAdventureFlow,
     type TrainAdventureSceneId,
-} from './generated/flow';
+} from '../../generated/trainAdventure/flow';
 import { trainAdventureChoiceText } from './choices.zh';
 
 export { trainAdventureFlow };

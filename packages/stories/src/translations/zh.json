@@ -161,7 +161,20 @@
     "deleteConfirm": "確定要刪除此書籤嗎？",
     "deleteFailed": "刪除書籤失敗",
     "english": "English",
-    "chinese": "中文"
+    "chinese": "中文",
+    "localBookmarks": "本機書籤",
+    "cloudBookmarks": "雲端書籤",
+    "noLocalBookmarks": "沒有本機書籤。",
+    "syncToCloud": "同步到雲端",
+    "syncAllToCloud": "全部同步到雲端",
+    "syncSuccess": "書籤已同步到雲端！",
+    "syncFailed": "同步書籤到雲端失敗。",
+    "syncAllSuccess": "所有書籤已同步到雲端！",
+    "syncAllPartial": "已同步 {count} / {total} 個書籤。",
+    "syncAllFailed": "同步書籤失敗。",
+    "deleteLocal": "刪除",
+    "deleteLocalConfirm": "確定要刪除此本機書籤嗎？",
+    "loginToSync": "登入以將書籤同步到雲端"
   },
   "reader": {
     "title": "小說閱讀器 - Aquila",
@@ -178,7 +191,11 @@
     "complete": "完成",
     "bookmark": "📖 書籤",
     "pageDisplay": "第 {current} / {total} 頁",
-    "unknown": "未知"
+    "unknown": "未知",
+    "actPanel": "章節",
+    "actLabel": "第 {n} 章",
+    "actFinal": "最終章",
+    "actEpilogue": "尾聲"
   },
   "storyWriter": {
     "title": "故事編輯器",

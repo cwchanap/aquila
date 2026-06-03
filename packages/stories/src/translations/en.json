@@ -161,7 +161,20 @@
     "deleteConfirm": "Are you sure you want to delete this bookmark?",
     "deleteFailed": "Failed to delete bookmark",
     "english": "English",
-    "chinese": "Chinese"
+    "chinese": "Chinese",
+    "localBookmarks": "Local Bookmarks",
+    "cloudBookmarks": "Cloud Bookmarks",
+    "noLocalBookmarks": "No local bookmarks.",
+    "syncToCloud": "Sync to Cloud",
+    "syncAllToCloud": "Sync All to Cloud",
+    "syncSuccess": "Bookmark synced to cloud!",
+    "syncFailed": "Failed to sync bookmark to cloud.",
+    "syncAllSuccess": "All bookmarks synced to cloud!",
+    "syncAllPartial": "{count} of {total} bookmarks synced.",
+    "syncAllFailed": "Failed to sync bookmarks.",
+    "deleteLocal": "Delete",
+    "deleteLocalConfirm": "Delete this local bookmark?",
+    "loginToSync": "Log in to sync bookmarks to the cloud"
   },
   "reader": {
     "title": "Novel Reader - Aquila",
@@ -178,7 +191,11 @@
     "complete": "Complete",
     "bookmark": "📖 Bookmark",
     "pageDisplay": "Page {current} of {total}",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "actPanel": "Acts",
+    "actLabel": "Act {n}",
+    "actFinal": "Final",
+    "actEpilogue": "Epilogue"
   },
   "storyWriter": {
     "title": "Story Writer",

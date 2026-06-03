@@ -57,7 +57,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他在緊張。" },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯林主任？" },
     { characterId: CharacterId.LinZhuren, character: "林主任", dialogue: "這些是還沒有分類的檔案，不應該在開放區域。誰讓你動這些的？" },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "我以為是要整理的⋯⋯" },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "⋯⋯整理。" },
     { characterId: CharacterId.LinZhuren, character: "林主任", dialogue: "不用整理，這些會統一處理。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "林主任的手指緊緊捏著那張照片，指節發白。他低頭看了一眼照片，然後迅速翻到背面，像是在確認什麼，接著又翻回正面，目光在四個人的臉上快速掃過。" },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他在看那張照片。" },

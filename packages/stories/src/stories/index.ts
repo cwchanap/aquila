@@ -6,9 +6,9 @@ import {
 } from './trainAdventure';
 import {
     getDontSaveMeBeforeMidnightStory,
-    dont_save_me_before_midnightFlow,
-    type Dont_save_me_before_midnightFlowConfig,
-} from './dont_save_me_before_midnight';
+    dontSaveMeBeforeMidnightFlow,
+    type DontSaveMeBeforeMidnightFlowConfig,
+} from './dontSaveMeBeforeMidnight';
 
 export type StoryLoaderResult = {
     dialogue: DialogueMap;
@@ -17,7 +17,7 @@ export type StoryLoaderResult = {
 
 export type StoryFlowConfig =
     | TrainAdventureFlowConfig
-    | Dont_save_me_before_midnightFlowConfig;
+    | DontSaveMeBeforeMidnightFlowConfig;
 
 const storyLoaders: Record<string, (locale: string) => StoryLoaderResult> = {
     train_adventure: getTrainAdventureStory,
@@ -26,7 +26,7 @@ const storyLoaders: Record<string, (locale: string) => StoryLoaderResult> = {
 
 const storyFlows: Record<string, StoryFlowConfig> = {
     train_adventure: trainAdventureFlow,
-    dont_save_me_before_midnight: dont_save_me_before_midnightFlow,
+    dont_save_me_before_midnight: dontSaveMeBeforeMidnightFlow,
 };
 
 export function getStoryContent(

@@ -40,7 +40,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的手機亮了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕在黑暗中像一顆突然睜開的眼睛。白光刺目。他沒有去按它。它自己亮了。螢幕上顯示著鎖定畫面：22:22。沒有通知。沒有訊息。只有時間。那個數字在黑暗中發著冷白色的光，像一塊嵌入虛空的墓碑。" },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)22:22。" },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)早上的訊息。「不要在22:22之前救我。」" },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)早上的訊息。「今晚 22:22，鐘樓會停電。不要上去。」" },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)我沒有救任何人。我甚至沒有救自己。" },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)這不是惡作劇。" },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)從第一條訊息開始就不是惡作劇。照片不是。鐘樓不是。黑色雨衣不是。被卸掉的螺絲不是。這一切都不是某個人在開玩笑。有人在殺我。" },

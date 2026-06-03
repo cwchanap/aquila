@@ -417,7 +417,7 @@ describe('ReaderManager', () => {
             Object.defineProperty(window, 'URLSearchParams', {
                 value: makeUrlParamsMock({
                     scene: 'scene_5',
-                    story: 'trainAdventure',
+                    story: 'train_adventure',
                 }),
                 writable: true,
             });

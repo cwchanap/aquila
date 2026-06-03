@@ -7,9 +7,15 @@ const tree: DirNode = {
     rel: '',
     acts: ['act1', 'act2', 'act3'],
     children: [
-        { rel: 'branch_1a', acts: ['act4'], children: [] },
-        { rel: 'branch_1b', acts: ['act4', 'actFinal'], children: [] },
+        { rel: 'branch_1a', acts: ['act4'], children: [], chapters: [] },
+        {
+            rel: 'branch_1b',
+            acts: ['act4', 'actFinal'],
+            children: [],
+            chapters: [],
+        },
     ],
+    chapters: [],
 };
 
 describe('buildStoryGraph', () => {
@@ -59,10 +65,13 @@ describe('buildStoryGraph', () => {
                             rel: 'branch_1b/branch_2c',
                             acts: ['act3'],
                             children: [],
+                            chapters: [],
                         },
                     ],
+                    chapters: [],
                 },
             ],
+            chapters: [],
         };
         const g = buildStoryGraph(nested);
         const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
@@ -81,5 +90,130 @@ describe('buildStoryGraph', () => {
                 options: [{ optionId: 'b2c', nextScene: 'b1b_b2c_act3' }],
             },
         ]);
+    });
+
+    describe('chapter support', () => {
+        it('links chapters sequentially with ch-prefixed scene IDs', () => {
+            const withChapters: DirNode = {
+                rel: '',
+                acts: [],
+                children: [],
+                chapters: [
+                    {
+                        rel: 'chapter_1',
+                        acts: ['act1', 'act2', 'act3'],
+                        children: [],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_2',
+                        acts: ['act1', 'act2'],
+                        children: [],
+                        chapters: [],
+                    },
+                ],
+            };
+            const g = buildStoryGraph(withChapters);
+            expect(g.start).toBe('ch1_act1');
+            const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
+            expect(byId.ch1_act1.next).toBe('ch1_act2');
+            expect(byId.ch1_act2.next).toBe('ch1_act3');
+            expect(byId.ch1_act3.next).toBe('ch2_act1');
+            expect(byId.ch2_act1.next).toBe('ch2_act2');
+            expect(byId.ch2_act2.next).toBeNull();
+            expect(g.choices).toEqual([]);
+        });
+
+        it('supports root acts followed by chapters', () => {
+            const mixed: DirNode = {
+                rel: '',
+                acts: ['act1'],
+                children: [],
+                chapters: [
+                    {
+                        rel: 'chapter_1',
+                        acts: ['act1', 'act2'],
+                        children: [],
+                        chapters: [],
+                    },
+                ],
+            };
+            const g = buildStoryGraph(mixed);
+            expect(g.start).toBe('act1');
+            const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
+            expect(byId.act1.next).toBe('ch1_act1');
+            expect(byId.ch1_act1.next).toBe('ch1_act2');
+            expect(byId.ch1_act2.next).toBeNull();
+        });
+
+        it('supports chapters with branch directories', () => {
+            const withBranches: DirNode = {
+                rel: '',
+                acts: [],
+                children: [],
+                chapters: [
+                    {
+                        rel: 'chapter_1',
+                        acts: ['act1', 'act2'],
+                        children: [
+                            {
+                                rel: 'chapter_1/branch_1a',
+                                acts: ['act3'],
+                                children: [],
+                                chapters: [],
+                            },
+                            {
+                                rel: 'chapter_1/branch_1b',
+                                acts: ['act3'],
+                                children: [],
+                                chapters: [],
+                            },
+                        ],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_2',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                ],
+            };
+            const g = buildStoryGraph(withBranches);
+            expect(g.start).toBe('ch1_act1');
+            const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
+            expect(byId.ch1_act1.next).toBe('ch1_act2');
+            expect(byId.ch1_act2.next).toBe('choice:choice_ch1_act2');
+            expect(byId.ch1_b1a_act3.next).toBeNull();
+            expect(byId.ch1_b1b_act3.next).toBeNull();
+            expect(byId.ch2_act1.next).toBeNull();
+        });
+
+        it('sorts chapters by name', () => {
+            const sorted: DirNode = {
+                rel: '',
+                acts: [],
+                children: [],
+                chapters: [
+                    {
+                        rel: 'chapter_2',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_1',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                ],
+            };
+            const g = buildStoryGraph(sorted);
+            expect(g.start).toBe('ch1_act1');
+            const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
+            expect(byId.ch1_act1.next).toBe('ch2_act1');
+            expect(byId.ch2_act1.next).toBeNull();
+        });
     });
 });

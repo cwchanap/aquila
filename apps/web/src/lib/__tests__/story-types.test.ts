@@ -8,7 +8,10 @@ describe('Story Types', () => {
         });
 
         it('should contain all expected story IDs', () => {
-            const expectedIds = ['train_adventure'];
+            const expectedIds = [
+                'train_adventure',
+                'dont_save_me_before_midnight',
+            ];
             const actualIds = Object.values(StoryId);
             expect(actualIds).toEqual(expectedIds);
         });

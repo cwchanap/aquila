@@ -3,6 +3,6 @@
 import type { ChoiceText } from '../../stories/choice-utils';
 
 // Reference stub. Copy entries you need into choices.zh.ts and fill in real text.
-export const dont_save_me_before_midnightChoiceTextStub: ChoiceText = {
+export const dontSaveMeBeforeMidnightChoiceTextStub: ChoiceText = {
 
 };

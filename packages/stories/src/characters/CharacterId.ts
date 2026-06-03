@@ -83,6 +83,7 @@ export enum CharacterId {
     BlackRaincoat = 'black_raincoat',
     Roommate = 'roommate',
     FemaleVoice = 'female_voice',
+    ZhangHao = 'zhang_hao',
 
     // collapsed anonymous / role speakers
     ElfGuard = 'elf_guard',
@@ -495,6 +496,11 @@ const characterTable: Record<CharacterId, CharacterInfo> = {
     [CharacterId.FemaleVoice]: {
         id: CharacterId.FemaleVoice,
         name: '女聲',
+        aliases: [],
+    },
+    [CharacterId.ZhangHao]: {
+        id: CharacterId.ZhangHao,
+        name: '張昊',
         aliases: [],
     },
     [CharacterId.ElfGuard]: {

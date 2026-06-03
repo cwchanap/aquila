@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=!desktop",
     "dev:web": "turbo run dev --filter=web",
     "build": "turbo run build",
     "compile:stories": "bun --filter @aquila/stories compile",

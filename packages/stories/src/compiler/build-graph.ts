@@ -27,47 +27,90 @@ function sourcePathFor(dirRel: string, act: string): string {
     return dirRel ? `${dirRel}/${act}.md` : `${act}.md`;
 }
 
+interface ProcessResult {
+    firstSceneId: string;
+    lastSceneId: string;
+}
+
 export function buildStoryGraph(root: DirNode): StoryGraph {
     const scenes: GraphScene[] = [];
     const choices: ChoiceIR[] = [];
 
-    function process(node: DirNode): void {
-        const acts = orderedActs(node);
-        // Sorted once and reused for both the choice options and the recursion,
-        // so child ordering can never drift between the two.
+    function process(node: DirNode): ProcessResult | null {
         const sortedChildren = [...node.children].sort((a, b) =>
             a.rel.localeCompare(b.rel)
         );
-        acts.forEach((act, i) => {
-            const id = makeSceneId(node.rel, act);
-            const sourcePath = sourcePathFor(node.rel, act);
-            let next: string | null;
-            if (i < acts.length - 1) {
-                next = makeSceneId(node.rel, acts[i + 1]);
-            } else if (sortedChildren.length > 0) {
-                const choiceId = `choice_${id}`;
-                choices.push({
-                    choiceId,
-                    fromSceneId: id,
-                    options: sortedChildren.map(child => ({
-                        optionId: optionIdFromDirRel(child.rel),
-                        nextScene: makeSceneId(
-                            child.rel,
-                            orderedActs(child)[0]
-                        ),
-                    })),
-                });
-                next = `choice:${choiceId}`;
-            } else {
-                next = null;
-            }
-            scenes.push({ id, sourcePath, next });
-        });
+        const sortedChapters = [...node.chapters].sort((a, b) =>
+            a.rel.localeCompare(b.rel)
+        );
+
+        let firstSceneId: string | null = null;
+        let lastSceneId: string | null = null;
+
+        if (node.acts.length > 0) {
+            const acts = orderedActs(node);
+            acts.forEach((act, i) => {
+                const id = makeSceneId(node.rel, act);
+                const sourcePath = sourcePathFor(node.rel, act);
+                if (!firstSceneId) firstSceneId = id;
+                lastSceneId = id;
+
+                let next: string | null;
+                if (i < acts.length - 1) {
+                    next = makeSceneId(node.rel, acts[i + 1]);
+                } else if (sortedChildren.length > 0) {
+                    const choiceId = `choice_${id}`;
+                    choices.push({
+                        choiceId,
+                        fromSceneId: id,
+                        options: sortedChildren.map(child => ({
+                            optionId: optionIdFromDirRel(child.rel),
+                            nextScene: makeSceneId(
+                                child.rel,
+                                orderedActs(child)[0]
+                            ),
+                        })),
+                    });
+                    next = `choice:${choiceId}`;
+                } else {
+                    next = null;
+                }
+                scenes.push({ id, sourcePath, next });
+            });
+        }
+
         for (const child of sortedChildren) {
             process(child);
         }
+
+        for (let i = 0; i < sortedChapters.length; i++) {
+            const chapterResult = process(sortedChapters[i]);
+            if (!chapterResult) continue;
+
+            if (!firstSceneId) {
+                firstSceneId = chapterResult.firstSceneId;
+            }
+
+            if (lastSceneId) {
+                const prev = scenes.find(s => s.id === lastSceneId);
+                if (prev && prev.next === null) {
+                    prev.next = chapterResult.firstSceneId;
+                }
+            }
+
+            lastSceneId = chapterResult.lastSceneId;
+        }
+
+        return firstSceneId
+            ? { firstSceneId, lastSceneId: lastSceneId! }
+            : null;
     }
 
-    process(root);
-    return { start: makeSceneId('', orderedActs(root)[0]), scenes, choices };
+    const result = process(root);
+    if (!result) {
+        throw new Error(
+            `[story-compiler] story has no scenes (no acts or chapters found)`
+        );
+    }
+    return { start: result.firstSceneId, scenes, choices };
 }

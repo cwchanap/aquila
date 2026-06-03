@@ -28,9 +28,9 @@ export class ReaderManager {
         'aquila:currentScene:zh',
     ];
 
-    constructor(locale: Locale) {
+    constructor(locale: Locale, defaultStoryId?: string) {
         this.initialLocale = locale;
-        const storyId = 'train_adventure';
+        const storyId = defaultStoryId || 'train_adventure';
         this.currentState = {
             storyId,
             sceneId: getStoryFlow(storyId)?.start ?? 'act1',
@@ -121,10 +121,13 @@ export class ReaderManager {
             }
         }
 
+        // Resolve story from URL, falling back to current default
+        const storyId =
+            urlStory && getStoryFlow(urlStory)
+                ? urlStory
+                : this.currentState.storyId;
+
         if (urlScene) {
-            const storyId = urlStory || this.currentState.storyId;
-            // Validate the URL scene ID against the flow — stale bookmarks
-            // (e.g. scene_1) that no longer exist should be ignored.
             if (this.isValidSceneId(storyId, urlScene)) {
                 return {
                     storyId,
@@ -132,7 +135,16 @@ export class ReaderManager {
                     locale: this.currentState.locale,
                 };
             }
-            // Invalid URL scene: fall through to saved/default state
+        }
+
+        // URL story overrides default/saved when no scene is specified
+        if (urlStory && storyId !== this.currentState.storyId) {
+            const flow = getStoryFlow(storyId);
+            return {
+                storyId,
+                sceneId: flow?.start ?? 'act1',
+                locale: this.currentState.locale,
+            };
         }
 
         const saved = localStorage.getItem(this.storageKey);

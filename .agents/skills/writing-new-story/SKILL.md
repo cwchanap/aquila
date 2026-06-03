@@ -27,9 +27,28 @@ Plan structure → Add characters → Write markdown → Create compiler config 
 Decide on:
 - **Story name**: camelCase directory name (e.g. `spaceOdyssey`)
 - **Story ID**: snake_case registry key (e.g. `space_odyssey`)
-- **Branch tree**: how many acts per branch, how deep the branching goes, where choices happen
+- **Chapter structure**: how many chapters, how many acts per chapter
+- **Branch tree**: how deep the branching goes, where choices happen
 
 Directory layout convention:
+```
+raw/<storyName>/
+  chapter_1/                      # First chapter
+    act1.md                       # Opening acts
+    act2.md
+    act3.md                       # Last act before first choice
+    branch_1a/                    # Choice option A
+      act4.md
+      act5.md
+    branch_1b/                    # Choice option B
+      act4.md
+      actFinal.md                 # Terminal act
+  chapter_2/                      # Second chapter (linked after chapter_1's last act)
+    act1.md
+    act2.md
+```
+
+For shorter stories without chapters, acts can live at the root level (backward compatible):
 ```
 raw/<storyName>/
   act1.md                         # Opening acts (shared trunk)
@@ -50,11 +69,15 @@ raw/<storyName>/
 
 **Rules:**
 - Acts are named `act1.md`, `act2.md`, ..., `act10.md`, ..., `actFinal.md`, `actEpilogue.md`
+- Chapter directories are named `chapter_1`, `chapter_2`, etc. — sorted numerically, linked sequentially
 - Branch directories are named `branch_<level><letter>` (e.g. `branch_1a`, `branch_1b`, `branch_2c`)
 - Letters sort alphabetically (a, b, c, ...) — this determines option order
 - When a directory has `branch_*` children, its **last act** becomes a **choice point**
-- When a directory has NO `branch_*` children, its last act is **terminal** (story ends)
+- When a directory has NO `branch_*` children, its last act either links to the next chapter (if present) or is **terminal** (story ends)
+- Chapters are linked sequentially: the last act of chapter N points to the first act of chapter N+1
 - Act numbers restart within each branch directory (siblings share numbering)
+- Acts can also restart within each chapter directory
+- Scene IDs are prefixed by chapter: `chapter_1/act1.md` → `ch1_act1`, `chapter_2/act3.md` → `ch2_act3`
 
 ### Step 2: Add Characters (if needed)
 
@@ -135,7 +158,11 @@ Two choice-related files exist:
 - **`choices.todo.zh.ts`** (generated, safe to delete/recreate): Lists every choice ID and option ID with TODO text. Use as a reference when filling in the real file.
 - **`choices.zh.ts`** (hand-maintained, scaffolded once, never overwritten by compiler): Where you write the actual choice prompts and labels. The compiler creates this with empty strings on first run and leaves it untouched on subsequent runs.
 
-**Scene IDs** are derived from the path: `branch_1b/branch_2c/act14.md` → `b1b_b2c_act14`. Root acts are just `act1`, `act2`, etc.
+**Scene IDs** are derived from the path:
+- `act1.md` → `act1` (root-level, no chapters)
+- `chapter_1/act1.md` → `ch1_act1` (inside a chapter)
+- `branch_1b/act4.md` → `b1b_act4` (inside a branch)
+- `chapter_1/branch_1a/act3.md` → `ch1_b1a_act3` (chapter + branch)
 
 **If the compiler throws `unknown character`**: Add the missing character to `CharacterId.ts` and re-run.
 
@@ -276,8 +303,12 @@ The `compile:check` script is the CI no-diff guard — it recompiles and fails i
 | Act file | `act<N>.md` | `act1.md`, `act10.md` |
 | Terminal act | `actFinal.md` | `actFinal.md` |
 | Epilogue | `actEpilogue.md` | `actEpilogue.md` |
+| Chapter dir | `chapter_<N>` | `chapter_1`, `chapter_2` |
 | Branch dir | `branch_<level><letter>` | `branch_1a`, `branch_2c` |
-| Scene ID | `b<level><letter>_<act>` | `b1b_b2c_act14` |
+| Scene ID (root) | `<act>` | `act1` |
+| Scene ID (chapter) | `ch<N>_<act>` | `ch1_act1`, `ch2_act3` |
+| Scene ID (branch) | `b<level><letter>_<act>` | `b1b_act4` |
+| Scene ID (chapter+branch) | `ch<N>_b<level><letter>_<act>` | `ch1_b1a_act3` |
 | Choice ID | `choice_<lastSceneId>` | `choice_b1b_act8` |
 | Option ID | `b<level><letter>` | `b2a` |
 
@@ -285,7 +316,8 @@ The `compile:check` script is the CI no-diff guard — it recompiles and fails i
 
 | File | Action |
 |---|---|
-| `raw/<story>/act*.md` | Write markdown dialogue |
+| `raw/<story>/chapter_<N>/act*.md` | Write markdown dialogue (inside chapter folders) |
+| `raw/<story>/act*.md` | Or write at root level for chapterless stories |
 | `raw/<story>/compiler.config.ts` | Create compiler config |
 | `src/characters/CharacterId.ts` | Add new characters (if needed) |
 | `src/stories/<story>/choices.zh.ts` | Fill choice prompts + labels |

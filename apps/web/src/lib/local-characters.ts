@@ -1,4 +1,7 @@
-export const ALLOWED_STORIES = ['train_adventure'] as const;
+export const ALLOWED_STORIES = [
+    'train_adventure',
+    'dont_save_me_before_midnight',
+] as const;
 export type AllowedStoryId = (typeof ALLOWED_STORIES)[number];
 
 import { validateCharacterName, CHARACTER_NAME_MAX_LENGTH } from './validation';

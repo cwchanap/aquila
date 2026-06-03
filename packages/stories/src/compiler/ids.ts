@@ -1,9 +1,13 @@
-/** 'branch_1b/branch_2c' + 'act14' -> 'b1b_b2c_act14'; '' + 'act1' -> 'act1'. */
+/** 'chapter_1/branch_1b/branch_2c' + 'act14' -> 'ch1_b1b_b2c_act14'; '' + 'act1' -> 'act1'. */
 export function makeSceneId(dirRel: string, act: string): string {
-    const branchParts = dirRel
-        ? dirRel.split('/').map(s => s.replace(/^branch_/, 'b'))
+    const parts = dirRel
+        ? dirRel.split('/').map(s => {
+              if (s.startsWith('chapter_')) return s.replace(/^chapter_/, 'ch');
+              if (s.startsWith('branch_')) return s.replace(/^branch_/, 'b');
+              return s;
+          })
         : [];
-    return [...branchParts, act].join('_');
+    return [...parts, act].join('_');
 }
 
 /** 'branch_1b/branch_2c' -> 'b2c' (option id from the child's own last segment). */

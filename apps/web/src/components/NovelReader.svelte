@@ -17,6 +17,9 @@
   export let locale: Locale = 'en';
   export let backUrl: string = '/';
   export let initialDialogueIndex: number | null = null;
+  export let storyId: string = '';
+  export let currentSceneId: string = '';
+  export let onNavigate: (sceneId: string) => void = () => {};
 
   $: t = getTranslations(locale);
 
@@ -34,6 +37,7 @@
   let dialogueContainer: HTMLElement | null = null;
   let hasAppliedInitialIndex = false;
   let hasUserAdvanced = false;
+  let showActPanel = false;
 
   $: currentDialogue = dialogue[currentDialogueIndex];
 
@@ -241,14 +245,20 @@
 <div
   class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex items-center justify-center p-6"
 >
-  <!-- Back button at top left -->
-  <div class="fixed top-6 left-6 z-10">
+  <!-- Back button and act panel toggle at top left -->
+  <div class="fixed top-6 left-6 z-10 flex gap-3">
     <a
       href={backUrl}
       class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
     >
       {t.common.backToHome}
     </a>
+    <button
+      on:click={() => (showActPanel = !showActPanel)}
+      class="px-4 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+    >
+      {t.reader.actPanel}
+    </button>
   </div>
 
   <div class="w-[90vw] max-w-[90vw] mx-auto">
@@ -372,6 +382,21 @@
     </div>
   </div>
 </div>
+
+{#if showActPanel}
+  {#await import('@/components/ActPanel.svelte') then module}
+    <svelte:component
+      this={module.default}
+      {storyId}
+      {currentSceneId}
+      onNavigate={(sceneId: string) => {
+        showActPanel = false;
+        onNavigate(sceneId);
+      }}
+      {locale}
+    />
+  {/await}
+{/if}
 
 <style>
   .novel-reader {

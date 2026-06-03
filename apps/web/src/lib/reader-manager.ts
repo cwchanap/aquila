@@ -354,6 +354,10 @@ export class ReaderManager {
                         locale: translations.locale,
                         backUrl: `/${translations.locale}/`,
                         initialDialogueIndex: this.initialDialogueIndex,
+                        storyId: this.currentState.storyId,
+                        currentSceneId: this.currentState.sceneId,
+                        onNavigate: (sceneId: string) =>
+                            this.navigateToScene(sceneId),
                     },
                 });
 

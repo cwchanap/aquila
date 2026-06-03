@@ -24,6 +24,19 @@ vi.mock('@aquila/stories', () => ({
             savedAt: 'Saved:',
             chinese: 'Chinese',
             english: 'English',
+            localBookmarks: 'Local Bookmarks',
+            cloudBookmarks: 'Cloud Bookmarks',
+            noLocalBookmarks: 'No local bookmarks.',
+            syncToCloud: 'Sync to Cloud',
+            syncAllToCloud: 'Sync All to Cloud',
+            syncSuccess: 'Bookmark synced to cloud!',
+            syncFailed: 'Failed to sync bookmark to cloud.',
+            syncAllSuccess: 'All bookmarks synced to cloud!',
+            syncAllPartial: '{count} of {total} bookmarks synced.',
+            syncAllFailed: 'Failed to sync bookmarks.',
+            deleteLocal: 'Delete',
+            deleteLocalConfirm: 'Delete this local bookmark?',
+            loginToSync: 'Log in to sync bookmarks to the cloud',
         },
     })),
 }));
@@ -271,9 +284,15 @@ describe('BookmarksManager', () => {
             const manager = new BookmarksManager('en');
             await manager.loadBookmarks();
 
-            // Each bookmark gets its own child card in the container
-            const cards = getContainer().children;
-            expect(cards.length).toBe(sampleBookmarks.length);
+            // Cloud section + local section = 2 top-level children
+            const sections = getContainer().children;
+            expect(sections.length).toBe(2);
+
+            // Cloud section contains one card per bookmark
+            const cloudCards = sections[0]!.querySelectorAll(
+                ':scope > .bg-white\\/90'
+            );
+            expect(cloudCards.length).toBe(sampleBookmarks.length);
         });
 
         it('strips [dlg:N] prefix from bookmark name display', async () => {

@@ -64,7 +64,7 @@ export class BookmarksManager {
         } catch (error) {
             console.error('Failed to load bookmarks:', error);
             this.isLoggedIn = false;
-            this.renderAll();
+            this.renderError();
         }
     }
 
@@ -137,9 +137,15 @@ export class BookmarksManager {
 
         if (bookmarks.length === 0) {
             const empty = document.createElement('p');
-            empty.className = 'text-slate-500';
+            empty.className = 'text-slate-500 mb-4';
             empty.textContent = this.t.bookmarks.noBookmarks;
             section.appendChild(empty);
+
+            const startBtn = this.createButton(
+                this.t.bookmarks.startReading,
+                `/${this.locale}/reader`
+            );
+            section.appendChild(startBtn);
         } else {
             bookmarks.forEach(bookmark => {
                 section.appendChild(this.createBookmarkCard(bookmark, isLocal));

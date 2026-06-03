@@ -8,6 +8,7 @@ import {
 } from '@aquila/stories';
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
+import { LocalBookmarksStore } from './local-bookmarks-store';
 
 export interface SceneState {
     storyId: string;
@@ -20,6 +21,7 @@ export class ReaderManager {
     private readerInstance: { unmount: () => void } | null = null;
     private readonly initialLocale: Locale;
     private initialDialogueIndex: number | null = null;
+    private readonly localBookmarks: LocalBookmarksStore;
 
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
     private static readonly LEGACY_KEYS = [
@@ -38,6 +40,7 @@ export class ReaderManager {
         };
 
         this.purgeLegacyState();
+        this.localBookmarks = new LocalBookmarksStore(locale);
     }
 
     private get storageKey(): string {
@@ -253,7 +256,6 @@ export class ReaderManager {
         );
         if (!bookmarkName) return;
 
-        // Encode dialogue number in bookmark name so it can be restored later.
         const storedBookmarkName =
             dialogueNumber && dialogueNumber > 0
                 ? `[dlg:${dialogueNumber}] ${bookmarkName}`
@@ -275,14 +277,25 @@ export class ReaderManager {
 
             if (response.ok) {
                 await showAlert(translations.reader.bookmarkSaved);
-            } else {
-                const error = await response.json();
-                await showAlert(
-                    translations.reader.bookmarkFailed +
-                        ' ' +
-                        (error.error || 'Unknown error')
-                );
+                return;
             }
+
+            if (response.status === 401) {
+                this.localBookmarks.create({
+                    storyId: this.currentState.storyId,
+                    sceneId: this.currentState.sceneId,
+                    bookmarkName: storedBookmarkName,
+                });
+                await showAlert(translations.reader.bookmarkSaved);
+                return;
+            }
+
+            const error = await response.json();
+            await showAlert(
+                translations.reader.bookmarkFailed +
+                    ' ' +
+                    (error.error || 'Unknown error')
+            );
         } catch (error) {
             console.error('Failed to save bookmark:', error);
             await showAlert(translations.reader.bookmarkError);

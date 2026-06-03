@@ -391,7 +391,9 @@
       {currentSceneId}
       onNavigate={(sceneId: string) => {
         showActPanel = false;
-        onNavigate(sceneId);
+        if (sceneId !== currentSceneId) {
+          onNavigate(sceneId);
+        }
       }}
       {locale}
     />

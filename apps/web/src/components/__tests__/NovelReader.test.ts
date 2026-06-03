@@ -12,6 +12,24 @@ vi.mock('@aquila/stories', () => ({
             name: id === 'narrator' ? 'Narrator' : 'Character',
         })),
     },
+    getStoryFlow: vi.fn(() => ({
+        start: 'b1a_act1',
+        nodes: [
+            {
+                kind: 'scene',
+                id: 'b1a_act1',
+                sceneId: 'b1a_act1',
+                next: 'b1a_act2',
+            },
+            {
+                kind: 'scene',
+                id: 'b1a_act2',
+                sceneId: 'b1a_act2',
+                next: 'b1a_act3',
+            },
+            { kind: 'scene', id: 'b1a_act3', sceneId: 'b1a_act3', next: null },
+        ],
+    })),
     getTranslations: vi.fn((locale: string) => ({
         reader: {
             title: 'Novel Reader - Aquila',
@@ -27,6 +45,10 @@ vi.mock('@aquila/stories', () => ({
             complete: 'Complete',
             bookmark: 'Bookmark',
             pageDisplay: '{current} / {total}',
+            actPanel: 'Acts',
+            actLabel: 'Act {n}',
+            actFinal: 'Final Act',
+            actEpilogue: 'Epilogue',
         },
         common: {
             logout: 'Logout',
@@ -698,6 +720,77 @@ describe('NovelReader', () => {
             await vi.runAllTimersAsync();
 
             expect(screen.getByText('旁白')).toBeInTheDocument();
+        });
+    });
+
+    describe('Act Panel Navigation Guard', () => {
+        it('should not call onNavigate when act panel closes with same sceneId', async () => {
+            const onNavigate = vi.fn();
+
+            render(NovelReader, {
+                props: {
+                    dialogue: mockDialogue,
+                    choice: null,
+                    locale: 'en',
+                    storyId: 'test_story',
+                    currentSceneId: 'b1a_act1',
+                    onNavigate,
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // Click the "Acts" toggle button to show the panel
+            const actPanelToggle = screen.getByText('Acts');
+            await fireEvent.click(actPanelToggle);
+
+            // Wait for dynamic import to resolve and panel to render
+            await waitFor(() => {
+                expect(screen.getByText('Act 1')).toBeInTheDocument();
+            });
+
+            // Click backdrop (click-outside) to close - this passes currentSceneId
+            // The backdrop is in the dynamically loaded ActPanel, so we need the
+            // outermost fixed overlay which is the backdrop
+            const overlays = document.querySelectorAll('.fixed.inset-0.z-50');
+            const panelOverlay = overlays[overlays.length - 1];
+            await fireEvent.click(panelOverlay!);
+
+            // onNavigate should NOT have been called since sceneId === currentSceneId
+            expect(onNavigate).not.toHaveBeenCalled();
+        });
+
+        it('should call onNavigate when act panel navigates to a different scene', async () => {
+            const onNavigate = vi.fn();
+
+            render(NovelReader, {
+                props: {
+                    dialogue: mockDialogue,
+                    choice: null,
+                    locale: 'en',
+                    storyId: 'test_story',
+                    currentSceneId: 'b1a_act1',
+                    onNavigate,
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // Click the "Acts" toggle button to show the panel
+            const actPanelToggle = screen.getByText('Acts');
+            await fireEvent.click(actPanelToggle);
+
+            // Wait for dynamic import to resolve and panel to render
+            await waitFor(() => {
+                expect(screen.getByText('Act 2')).toBeInTheDocument();
+            });
+
+            // Click a different act button
+            const act2Button = screen.getByText('Act 2');
+            await fireEvent.click(act2Button);
+
+            // onNavigate SHOULD have been called with the new scene ID
+            expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
         });
     });
 

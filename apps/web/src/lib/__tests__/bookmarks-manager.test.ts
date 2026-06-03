@@ -74,8 +74,44 @@ const sampleBookmarks: Bookmark[] = [
     },
 ];
 
+const localStorageStore: Record<string, string> = {};
+
 function setupContainer(html = '<div id="bookmarks-container"></div>') {
     document.body.innerHTML = html;
+}
+
+function setupLocalStorage() {
+    Object.keys(localStorageStore).forEach(k => delete localStorageStore[k]);
+    const origLocalStorage = window.localStorage;
+    Object.defineProperty(window, 'localStorage', {
+        value: {
+            getItem: vi.fn((key: string) => localStorageStore[key] ?? null),
+            setItem: vi.fn((key: string, value: string) => {
+                localStorageStore[key] = value;
+            }),
+            removeItem: vi.fn((key: string) => {
+                delete localStorageStore[key];
+            }),
+            clear: vi.fn(() => {
+                Object.keys(localStorageStore).forEach(
+                    k => delete localStorageStore[k]
+                );
+            }),
+            length: 0,
+            key: vi.fn(),
+        },
+        writable: true,
+        configurable: true,
+    });
+    return origLocalStorage;
+}
+
+function restoreLocalStorage(orig: Storage) {
+    Object.defineProperty(window, 'localStorage', {
+        value: orig,
+        writable: true,
+        configurable: true,
+    });
 }
 
 function getContainer() {
@@ -522,6 +558,625 @@ describe('BookmarksManager', () => {
 
             const link = getContainer().querySelector('a');
             expect(link?.getAttribute('href')).toBe('/zh/reader');
+        });
+    });
+
+    describe('local bookmarks rendering', () => {
+        let origLS: Storage;
+        beforeEach(() => {
+            origLS = setupLocalStorage();
+        });
+        afterEach(() => {
+            restoreLocalStorage(origLS);
+        });
+
+        it('shows local bookmarks section when logged in with local bookmarks', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            expect(getContainer().textContent).toContain('Local Bookmarks');
+            expect(getContainer().textContent).toContain('Local Save');
+        });
+
+        it('shows sync all button when logged in with local bookmarks', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const buttons = [...getContainer().querySelectorAll('button')];
+            expect(
+                buttons.find(b => b.textContent === 'Sync All to Cloud')
+            ).toBeDefined();
+        });
+
+        it('shows sync-to-cloud button on each local bookmark card when logged in', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const buttons = [...getContainer().querySelectorAll('button')];
+            expect(
+                buttons.find(b => b.textContent === 'Sync to Cloud')
+            ).toBeDefined();
+        });
+
+        it('shows login hint when not logged in and has local bookmarks', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: false,
+                status: 401,
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            expect(getContainer().textContent).toContain(
+                'Log in to sync bookmarks to the cloud'
+            );
+        });
+
+        it('does not show local section when not logged in and no local bookmarks', async () => {
+            setupContainer();
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: false,
+                status: 401,
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            expect(getContainer().textContent).not.toContain('Local Bookmarks');
+        });
+
+        it('shows noLocalBookmarks message when logged in with no local bookmarks', async () => {
+            setupContainer();
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            expect(getContainer().textContent).toContain('No local bookmarks.');
+        });
+
+        it('renders local bookmark card with continue reading link including dialogue param', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: '[dlg:5] My Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const links = [...getContainer().querySelectorAll('a')];
+            const continueLink = links.find(
+                a =>
+                    a.textContent === 'Continue Reading' &&
+                    a.getAttribute('href')?.includes('dialogue=5')
+            );
+            expect(continueLink).toBeDefined();
+        });
+
+        it('renders delete local button on local bookmark cards', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const buttons = [...getContainer().querySelectorAll('button')];
+            expect(
+                buttons.find(
+                    b =>
+                        b.textContent === 'Delete' &&
+                        b.className.includes('bg-red-500')
+                )
+            ).toBeDefined();
+        });
+    });
+
+    describe('syncSingleToCloud', () => {
+        let origLS: Storage;
+        beforeEach(() => {
+            origLS = setupLocalStorage();
+        });
+        afterEach(() => {
+            restoreLocalStorage(origLS);
+        });
+
+        it('syncs a local bookmark and removes it from local list', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncBtn = [...getContainer().querySelectorAll('button')].find(
+                b => b.textContent === 'Sync to Cloud'
+            );
+
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi
+                    .fn()
+                    .mockResolvedValue({
+                        id: 'cloud-new',
+                        storyId: 'train_adventure',
+                        sceneId: 'act1',
+                        bookmarkName: 'Synced',
+                        locale: 'en',
+                        createdAt: '2024-01-01',
+                        updatedAt: '2024-01-01',
+                    }),
+            } as any);
+
+            syncBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                '/api/bookmarks',
+                expect.objectContaining({ method: 'POST' })
+            );
+        });
+
+        it('shows alert when sync single fails', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncBtn = [...getContainer().querySelectorAll('button')].find(
+                b => b.textContent === 'Sync to Cloud'
+            );
+
+            global.fetch = vi.fn().mockResolvedValue({ ok: false } as any);
+
+            syncBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(mockShowAlert).toHaveBeenCalledWith(
+                'Failed to sync bookmark to cloud.'
+            );
+        });
+
+        it('shows alert when sync single throws', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncBtn = [...getContainer().querySelectorAll('button')].find(
+                b => b.textContent === 'Sync to Cloud'
+            );
+
+            global.fetch = vi
+                .fn()
+                .mockRejectedValue(new Error('Network error'));
+
+            syncBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(mockShowAlert).toHaveBeenCalledWith(
+                'Failed to sync bookmark to cloud.'
+            );
+        });
+    });
+
+    describe('syncAllToCloud', () => {
+        let origLS: Storage;
+        beforeEach(() => {
+            origLS = setupLocalStorage();
+        });
+        afterEach(() => {
+            restoreLocalStorage(origLS);
+        });
+
+        it('syncs all local bookmarks and shows success alert', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'l1',
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'B1',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                {
+                    id: 'l2',
+                    storyId: 's2',
+                    sceneId: 'sc2',
+                    bookmarkName: 'B2',
+                    locale: 'en',
+                    createdAt: 2,
+                    updatedAt: 2,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncAllBtn = [
+                ...getContainer().querySelectorAll('button'),
+            ].find(b => b.textContent === 'Sync All to Cloud');
+
+            let syncCall = 0;
+            global.fetch = vi.fn().mockImplementation(() => {
+                syncCall++;
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            id: 'cloud-' + syncCall,
+                            storyId: 's' + syncCall,
+                            sceneId: 'sc' + syncCall,
+                            bookmarkName: 'C' + syncCall,
+                            locale: 'en',
+                            createdAt: '2024-01-01',
+                            updatedAt: '2024-01-01',
+                        }),
+                });
+            });
+
+            syncAllBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(global.fetch).toHaveBeenCalledTimes(2);
+            expect(mockShowAlert).toHaveBeenCalledWith(
+                'All bookmarks synced to cloud!'
+            );
+        });
+
+        it('shows partial success message when some syncs fail', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'l1',
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'B1',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                {
+                    id: 'l2',
+                    storyId: 's2',
+                    sceneId: 'sc2',
+                    bookmarkName: 'B2',
+                    locale: 'en',
+                    createdAt: 2,
+                    updatedAt: 2,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncAllBtn = [
+                ...getContainer().querySelectorAll('button'),
+            ].find(b => b.textContent === 'Sync All to Cloud');
+
+            let callCount = 0;
+            global.fetch = vi.fn().mockImplementation(() => {
+                callCount++;
+                if (callCount === 1) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: () =>
+                            Promise.resolve({
+                                id: 'cloud-1',
+                                storyId: 's1',
+                                sceneId: 'sc1',
+                                bookmarkName: 'C1',
+                                locale: 'en',
+                                createdAt: '2024-01-01',
+                                updatedAt: '2024-01-01',
+                            }),
+                    });
+                }
+                return Promise.resolve({ ok: false });
+            });
+
+            syncAllBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(mockShowAlert).toHaveBeenCalledWith(
+                '1 of 2 bookmarks synced.'
+            );
+        });
+
+        it('shows all-failed message when all syncs fail', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'l1',
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'B1',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncAllBtn = [
+                ...getContainer().querySelectorAll('button'),
+            ].find(b => b.textContent === 'Sync All to Cloud');
+
+            global.fetch = vi.fn().mockRejectedValue(new Error('fail'));
+
+            syncAllBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(mockShowAlert).toHaveBeenCalledWith(
+                'Failed to sync bookmarks.'
+            );
+        });
+    });
+
+    describe('deleteLocalBookmark', () => {
+        let origLS: Storage;
+        beforeEach(() => {
+            origLS = setupLocalStorage();
+        });
+        afterEach(() => {
+            restoreLocalStorage(origLS);
+        });
+
+        it('deletes local bookmark when confirmed', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: false,
+                status: 401,
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const deleteBtn = [
+                ...getContainer().querySelectorAll('button'),
+            ].find(
+                b =>
+                    b.textContent === 'Delete' &&
+                    b.className.includes('bg-red-500')
+            );
+
+            mockShowConfirm.mockResolvedValue(true);
+            deleteBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(mockShowConfirm).toHaveBeenCalledWith(
+                'Delete this local bookmark?'
+            );
+        });
+
+        it('does not delete when confirmation is cancelled', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: false,
+                status: 401,
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const deleteBtn = [
+                ...getContainer().querySelectorAll('button'),
+            ].find(
+                b =>
+                    b.textContent === 'Delete' &&
+                    b.className.includes('bg-red-500')
+            );
+
+            mockShowConfirm.mockResolvedValue(false);
+            deleteBtn!.click();
+            await vi.runAllTimersAsync();
+
+            expect(getContainer().textContent).toContain('Local Save');
+        });
+    });
+
+    describe('renderError retry button', () => {
+        it('retry button reloads the page', async () => {
+            setupContainer();
+            const reloadMock = vi.fn();
+            (window.location as any).reload = reloadMock;
+
+            global.fetch = vi
+                .fn()
+                .mockRejectedValue(new Error('Network error'));
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const retryBtn = getContainer().querySelector('button');
+            expect(retryBtn?.textContent).toBe('Retry');
+            retryBtn!.click();
+            expect(reloadMock).toHaveBeenCalled();
+        });
+    });
+
+    describe('renderAll no container', () => {
+        it('does not throw when container does not exist', async () => {
+            document.body.innerHTML = '';
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue([]),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await expect(manager.loadBookmarks()).resolves.toBeUndefined();
         });
     });
 });

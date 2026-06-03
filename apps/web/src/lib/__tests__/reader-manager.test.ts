@@ -556,6 +556,77 @@ describe('ReaderManager', () => {
             );
         });
 
+        it('uses URL story start scene when URL has story but no scene and story differs from default', () => {
+            mockGetStoryFlow.mockImplementation((sid: string) => {
+                if (sid === 'other_story') {
+                    return {
+                        start: 'other_act1',
+                        nodes: [
+                            {
+                                kind: 'scene',
+                                id: 'other_act1',
+                                sceneId: 'other_act1',
+                                next: null,
+                            },
+                        ],
+                    };
+                }
+                return {
+                    start: 'act1',
+                    nodes: [
+                        {
+                            kind: 'scene',
+                            id: 'act1',
+                            sceneId: 'act1',
+                            next: 'act2',
+                        },
+                        {
+                            kind: 'scene',
+                            id: 'act2',
+                            sceneId: 'act2',
+                            next: null,
+                        },
+                    ],
+                };
+            });
+            Object.defineProperty(window, 'URLSearchParams', {
+                value: makeUrlParamsMock({ story: 'other_story' }),
+                writable: true,
+            });
+
+            const manager = new ReaderManager('en');
+            const state = manager.loadInitialState();
+
+            expect(state.storyId).toBe('other_story');
+            expect(state.sceneId).toBe('other_act1');
+        });
+
+        it('ignores URL story when getStoryFlow returns undefined for it', () => {
+            mockGetStoryFlow.mockImplementation((sid: string) => {
+                if (sid === 'unknown_story') return undefined;
+                return {
+                    start: 'act1',
+                    nodes: [
+                        {
+                            kind: 'scene',
+                            id: 'act1',
+                            sceneId: 'act1',
+                            next: null,
+                        },
+                    ],
+                };
+            });
+            Object.defineProperty(window, 'URLSearchParams', {
+                value: makeUrlParamsMock({ story: 'unknown_story' }),
+                writable: true,
+            });
+
+            const manager = new ReaderManager('en');
+            const state = manager.loadInitialState();
+
+            expect(state.storyId).toBe('train_adventure');
+        });
+
         it('warns and falls back to default when localStorage state is invalid', () => {
             const warnSpy = vi
                 .spyOn(console, 'warn')
@@ -729,6 +800,23 @@ describe('ReaderManager', () => {
 
             expect(mockShowAlert).toHaveBeenCalledWith('Error saving bookmark');
             errorSpy.mockRestore();
+        });
+
+        it('saves to local bookmarks when response is 401', async () => {
+            mockShowPrompt.mockResolvedValueOnce('Local Save');
+            global.fetch = vi.fn().mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+            });
+
+            const manager = new ReaderManager('en');
+            await manager.handleBookmark();
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                '/api/bookmarks',
+                expect.objectContaining({ method: 'POST' })
+            );
+            expect(mockShowAlert).toHaveBeenCalledWith('Bookmark saved!');
         });
 
         it('encodes dialogue number in bookmark name when provided', async () => {

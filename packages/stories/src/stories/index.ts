@@ -4,20 +4,29 @@ import {
     trainAdventureFlow,
     type TrainAdventureFlowConfig,
 } from './trainAdventure';
+import {
+    getDontSaveMeBeforeMidnightStory,
+    dont_save_me_before_midnightFlow,
+    type Dont_save_me_before_midnightFlowConfig,
+} from './dont_save_me_before_midnight';
 
 export type StoryLoaderResult = {
     dialogue: DialogueMap;
     choices: ChoiceMap;
 };
 
-export type StoryFlowConfig = TrainAdventureFlowConfig;
+export type StoryFlowConfig =
+    | TrainAdventureFlowConfig
+    | Dont_save_me_before_midnightFlowConfig;
 
 const storyLoaders: Record<string, (locale: string) => StoryLoaderResult> = {
     train_adventure: getTrainAdventureStory,
+    dont_save_me_before_midnight: getDontSaveMeBeforeMidnightStory,
 };
 
 const storyFlows: Record<string, StoryFlowConfig> = {
     train_adventure: trainAdventureFlow,
+    dont_save_me_before_midnight: dont_save_me_before_midnightFlow,
 };
 
 export function getStoryContent(

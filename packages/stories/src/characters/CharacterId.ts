@@ -72,6 +72,18 @@ export enum CharacterId {
     Aiwen = 'aiwen',
     Nanao = 'nanao',
 
+    // dont_save_me_before_midnight
+    GuYan = 'gu_yan',
+    XuXingtang = 'xu_xingtang',
+    ShaoQiming = 'shao_qiming',
+    HanYue = 'han_yue',
+    LinZhuren = 'lin_zhuren',
+    GuZe = 'gu_ze',
+    XuMother = 'xu_mother',
+    BlackRaincoat = 'black_raincoat',
+    Roommate = 'roommate',
+    FemaleVoice = 'female_voice',
+
     // collapsed anonymous / role speakers
     ElfGuard = 'elf_guard',
     Elf = 'elf',
@@ -435,6 +447,56 @@ const characterTable: Record<CharacterId, CharacterInfo> = {
     [CharacterId.Kuga]: { id: CharacterId.Kuga, name: '久我', aliases: [] }, // FLAG romaji (Kuga?)
     [CharacterId.Aiwen]: { id: CharacterId.Aiwen, name: '艾文', aliases: [] }, // FLAG romaji (Evan/Aiwen?)
     [CharacterId.Nanao]: { id: CharacterId.Nanao, name: '七尾', aliases: [] }, // FLAG: distinct from 七海詩織?
+    [CharacterId.GuYan]: {
+        id: CharacterId.GuYan,
+        name: '顧言',
+        aliases: [],
+    },
+    [CharacterId.XuXingtang]: {
+        id: CharacterId.XuXingtang,
+        name: '許星棠',
+        aliases: [],
+    },
+    [CharacterId.ShaoQiming]: {
+        id: CharacterId.ShaoQiming,
+        name: '邵啟明',
+        aliases: ['邵叔'],
+    },
+    [CharacterId.HanYue]: {
+        id: CharacterId.HanYue,
+        name: '韓越',
+        aliases: [],
+    },
+    [CharacterId.LinZhuren]: {
+        id: CharacterId.LinZhuren,
+        name: '林主任',
+        aliases: [],
+    },
+    [CharacterId.GuZe]: {
+        id: CharacterId.GuZe,
+        name: '顧澤',
+        aliases: [],
+    },
+    [CharacterId.XuMother]: {
+        id: CharacterId.XuMother,
+        name: '許星棠母親',
+        aliases: [],
+    },
+    [CharacterId.BlackRaincoat]: {
+        id: CharacterId.BlackRaincoat,
+        name: '黑雨衣',
+        aliases: [],
+    },
+    [CharacterId.Roommate]: {
+        id: CharacterId.Roommate,
+        name: '室友',
+        aliases: [],
+    },
+    [CharacterId.FemaleVoice]: {
+        id: CharacterId.FemaleVoice,
+        name: '女聲',
+        aliases: [],
+    },
     [CharacterId.ElfGuard]: {
         id: CharacterId.ElfGuard,
         name: '精靈守衛',

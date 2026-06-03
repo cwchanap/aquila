@@ -71,7 +71,15 @@
   function handleSelect(sceneId: string) {
     onNavigate(sceneId);
   }
+
+  function handleEscape(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      onNavigate(currentSceneId);
+    }
+  }
 </script>
+
+<svelte:window on:keydown={handleEscape} />
 
 <div class="fixed inset-0 z-50 flex justify-end" on:click|self={() => onNavigate(currentSceneId)}>
   <div

@@ -178,6 +178,36 @@ describe('ActPanel', () => {
         expect(act4Idx).toBeLessThan(finalIdx);
     });
 
+    it('calls onNavigate with currentSceneId when Escape is pressed', async () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+
+        await fireEvent.keyDown(window, { key: 'Escape' });
+
+        expect(onNavigate).toHaveBeenCalledWith('b1a_act1');
+    });
+
+    it('does not call onNavigate on non-Escape key press', async () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+
+        await fireEvent.keyDown(window, { key: 'Enter' });
+
+        expect(onNavigate).not.toHaveBeenCalled();
+    });
+
     it('renders empty panel when story has no flow', async () => {
         const { getStoryFlow } = await import('@aquila/stories');
         (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(

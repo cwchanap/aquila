@@ -9,7 +9,7 @@
   export let locale: Locale = 'en';
 
   $: t = getTranslations(locale);
-  $: acts = computeActs(storyId);
+  $: acts = computeActs(storyId, currentSceneId);
   $: currentAct = extractActName(currentSceneId);
 
   interface ActInfo {
@@ -41,11 +41,29 @@
     return numMatch ? parseInt(numMatch[1], 10) : 0;
   }
 
-  function computeActs(sid: string): ActInfo[] {
+  function extractBranchPrefix(sceneId: string): string {
+    const match = sceneId.match(/^(.*?)(?:act\d+|actFinal|actEpilogue)/);
+    return match ? match[1] : '';
+  }
+
+  function branchMatchScore(candidatePrefix: string, currentPrefix: string): number {
+    if (!candidatePrefix && !currentPrefix) return 0;
+    const cParts = candidatePrefix.split('_').filter(Boolean);
+    const curParts = currentPrefix.split('_').filter(Boolean);
+    let score = 0;
+    for (let i = 0; i < Math.min(cParts.length, curParts.length); i++) {
+      if (cParts[i] === curParts[i]) score++;
+      else break;
+    }
+    return score;
+  }
+
+  function computeActs(sid: string, sceneId: string): ActInfo[] {
     const flow = getStoryFlow(sid);
     if (!flow) return [];
 
-    const actMap = new SvelteMap<string, string>();
+    // Collect all candidate scenes grouped by act name
+    const actCandidates: Record<string, string[]> = {};
 
     for (const node of flow.nodes) {
       if (node.kind !== 'scene') continue;
@@ -54,15 +72,33 @@
       );
       if (!match) continue;
       const actName = match[1];
-      if (!actMap.has(actName)) {
-        actMap.set(actName, node.sceneId);
+      if (!actCandidates[actName]) {
+        actCandidates[actName] = [];
       }
+      actCandidates[actName].push(node.sceneId);
+    }
+
+    // For each act, pick the candidate whose branch prefix best matches the current scene
+    const currentBranch = extractBranchPrefix(sceneId);
+
+    const actMap = new SvelteMap<string, string>();
+    for (const [actName, candidates] of Object.entries(actCandidates)) {
+      let bestScene = candidates[0];
+      let bestScore = branchMatchScore(extractBranchPrefix(bestScene), currentBranch);
+      for (let i = 1; i < candidates.length; i++) {
+        const score = branchMatchScore(extractBranchPrefix(candidates[i]), currentBranch);
+        if (score > bestScore) {
+          bestScore = score;
+          bestScene = candidates[i];
+        }
+      }
+      actMap.set(actName, bestScene);
     }
 
     return Array.from(actMap.entries())
-      .map(([rawName, sceneId]) => ({
+      .map(([rawName, sid]) => ({
         label: actLabel(rawName),
-        sceneId,
+        sceneId: sid,
         sortKey: actSortKey(rawName),
         rawName,
       }))

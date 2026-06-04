@@ -37,6 +37,12 @@ const mockFlow = {
         },
         {
             kind: 'scene',
+            id: 'b1a_b2b_act4',
+            sceneId: 'b1a_b2b_act4',
+            next: 'actFinal',
+        },
+        {
+            kind: 'scene',
             id: 'actFinal',
             sceneId: 'actFinal',
             next: 'actEpilogue',
@@ -225,5 +231,59 @@ describe('ActPanel', () => {
 
         const buttons = screen.queryAllByRole('button');
         expect(buttons.length).toBe(0);
+    });
+
+    it('navigates to branch-matching act when on b1a_b2a branch', async () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_b2a_act4',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+
+        // Act 4 button should navigate to b1a_b2a_act4 (matching branch)
+        const buttons = screen.getAllByRole('button');
+        const act4Button = buttons.find(b => b.textContent === 'Act 4');
+        expect(act4Button).toBeDefined();
+        await fireEvent.click(act4Button!);
+        expect(onNavigate).toHaveBeenCalledWith('b1a_b2a_act4');
+    });
+
+    it('navigates to branch-matching act when on b1a_b2b branch', async () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_b2b_act4',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+
+        // Act 4 button should navigate to b1a_b2b_act4 (matching branch)
+        const buttons = screen.getAllByRole('button');
+        const act4Button = buttons.find(b => b.textContent === 'Act 4');
+        expect(act4Button).toBeDefined();
+        await fireEvent.click(act4Button!);
+        expect(onNavigate).toHaveBeenCalledWith('b1a_b2b_act4');
+    });
+
+    it('navigates to shared root acts regardless of current branch', async () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_b2b_act4',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+
+        // Act 1,2,3 are on the shared root — clicking them should work correctly
+        const buttons = screen.getAllByRole('button');
+        const act1Button = buttons.find(b => b.textContent === 'Act 1');
+        expect(act1Button).toBeDefined();
+        await fireEvent.click(act1Button!);
+        expect(onNavigate).toHaveBeenCalledWith('b1a_act1');
     });
 });

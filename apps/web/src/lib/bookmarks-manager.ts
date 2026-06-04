@@ -63,8 +63,14 @@ export class BookmarksManager {
             this.renderAll();
         } catch (error) {
             console.error('Failed to load bookmarks:', error);
-            this.isLoggedIn = false;
-            this.renderError();
+            this.renderAll();
+            const container = document.getElementById('bookmarks-container');
+            if (container) {
+                this.renderCloudErrorBanner(
+                    container,
+                    error instanceof Error ? error.message : String(error)
+                );
+            }
         }
     }
 
@@ -194,6 +200,17 @@ export class BookmarksManager {
         }
 
         container.appendChild(section);
+    }
+
+    private renderCloudErrorBanner(
+        container: HTMLElement,
+        message: string
+    ): void {
+        const banner = document.createElement('div');
+        banner.className =
+            'mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm';
+        banner.textContent = message;
+        container.prepend(banner);
     }
 
     private renderError(): void {

@@ -817,6 +817,20 @@ describe('ReaderManager', () => {
                 expect.objectContaining({ method: 'POST' })
             );
             expect(mockShowAlert).toHaveBeenCalledWith('Bookmark saved!');
+
+            expect(mockStorage.setItem).toHaveBeenCalledWith(
+                'aquila:bookmarks:en',
+                expect.stringContaining('Local Save')
+            );
+            const storedCall = mockStorage.setItem.mock.calls.find(
+                (call: [string, string]) => call[0] === 'aquila:bookmarks:en'
+            );
+            expect(storedCall).toBeDefined();
+            const stored = JSON.parse(storedCall![1]);
+            expect(stored).toHaveLength(1);
+            expect(stored[0].bookmarkName).toBe('Local Save');
+            expect(stored[0].storyId).toBe('train_adventure');
+            expect(stored[0].sceneId).toBe('act1');
         });
 
         it('encodes dialogue number in bookmark name when provided', async () => {

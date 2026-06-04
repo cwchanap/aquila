@@ -176,10 +176,7 @@ describe('LocalBookmarksStore', () => {
     });
 
     describe('persist error handling', () => {
-        it('logs error when setItem throws', () => {
-            const errorSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
+        it('throws when setItem throws', () => {
             (
                 localStorageMock.getItem as ReturnType<typeof vi.fn>
             ).mockReturnValue('[]');
@@ -189,17 +186,63 @@ describe('LocalBookmarksStore', () => {
                 throw new Error('Quota exceeded');
             });
 
-            store.create({
-                storyId: 's1',
-                sceneId: 'sc1',
-                bookmarkName: 'Test',
-            });
+            expect(() =>
+                store.create({
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'Test',
+                })
+            ).toThrow('Quota exceeded');
+        });
+    });
 
-            expect(errorSpy).toHaveBeenCalledWith(
-                'Failed to persist local bookmarks:',
-                expect.any(Error)
-            );
-            errorSpy.mockRestore();
+    describe('getAll validation', () => {
+        it('filters out items missing required fields', () => {
+            const bookmarks = [
+                {
+                    id: 'valid',
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'Good',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                { id: 'invalid', storyId: 's1' },
+                null,
+                'string',
+            ];
+            (
+                localStorageMock.getItem as ReturnType<typeof vi.fn>
+            ).mockReturnValue(JSON.stringify(bookmarks));
+            expect(store.getAll()).toEqual([bookmarks[0]]);
+        });
+
+        it('filters out items with wrong types', () => {
+            const bookmarks = [
+                {
+                    id: 'valid',
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'Good',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                {
+                    id: 123,
+                    storyId: 's1',
+                    sceneId: 'sc1',
+                    bookmarkName: 'Bad',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ];
+            (
+                localStorageMock.getItem as ReturnType<typeof vi.fn>
+            ).mockReturnValue(JSON.stringify(bookmarks));
+            expect(store.getAll()).toEqual([bookmarks[0]]);
         });
     });
 });

@@ -22,14 +22,31 @@ export class LocalBookmarksStore {
 
     getAll(): LocalBookmark[] {
         if (typeof window === 'undefined') return [];
+        let parsed: unknown;
         try {
             const raw = localStorage.getItem(this.storageKey);
             if (!raw) return [];
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
+            parsed = JSON.parse(raw);
         } catch {
             return [];
         }
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(this.isValidBookmark);
+    }
+
+    private isValidBookmark(item: unknown): item is LocalBookmark {
+        if (typeof item !== 'object' || item === null) return false;
+        const b = item as Record<string, unknown>;
+        return (
+            typeof b.id === 'string' &&
+            typeof b.storyId === 'string' &&
+            typeof b.sceneId === 'string' &&
+            typeof b.bookmarkName === 'string' &&
+            typeof b.locale === 'string' &&
+            (typeof b.createdAt === 'number' ||
+                typeof b.createdAt === 'string') &&
+            (typeof b.updatedAt === 'number' || typeof b.updatedAt === 'string')
+        );
     }
 
     create(data: {
@@ -69,10 +86,6 @@ export class LocalBookmarksStore {
 
     private persist(bookmarks: LocalBookmark[]): void {
         if (typeof window === 'undefined') return;
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(bookmarks));
-        } catch (e) {
-            console.error('Failed to persist local bookmarks:', e);
-        }
+        localStorage.setItem(this.storageKey, JSON.stringify(bookmarks));
     }
 }

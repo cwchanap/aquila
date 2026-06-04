@@ -12,7 +12,7 @@
 
 ---
 
-### Task 1: Add translation keys
+## Task 1: Add translation keys
 
 **Files:**
 - Modify: `packages/stories/src/translations/en.json:144-165`

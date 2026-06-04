@@ -76,8 +76,10 @@ const sampleBookmarks: Bookmark[] = [
 
 const localStorageStore: Record<string, string> = {};
 
-function setupContainer(html = '<div id="bookmarks-container"></div>') {
-    document.body.innerHTML = html;
+function setupContainer() {
+    const container = document.createElement('div');
+    container.id = 'bookmarks-container';
+    document.body.replaceChildren(container);
 }
 
 function setupLocalStorage() {
@@ -121,7 +123,7 @@ function getContainer() {
 describe('BookmarksManager', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
     });
 
     afterEach(() => {
@@ -130,12 +132,18 @@ describe('BookmarksManager', () => {
 
     describe('initializeUI', () => {
         it('sets text content of all UI elements', () => {
-            document.body.innerHTML = `
-                <div id="page-title"></div>
-                <div id="page-description"></div>
-                <a id="back-button"></a>
-                <div id="loading-text"></div>
-            `;
+            const title = document.createElement('div');
+            title.id = 'page-title';
+            const desc = document.createElement('div');
+            desc.id = 'page-description';
+            const back = document.createElement('a');
+            back.id = 'back-button';
+            const loading = document.createElement('div');
+            loading.id = 'loading-text';
+            document.body.appendChild(title);
+            document.body.appendChild(desc);
+            document.body.appendChild(back);
+            document.body.appendChild(loading);
 
             const manager = new BookmarksManager('en');
             manager.initializeUI();
@@ -155,13 +163,15 @@ describe('BookmarksManager', () => {
         });
 
         it('gracefully handles missing UI elements', () => {
-            document.body.innerHTML = '';
+            document.body.replaceChildren();
             const manager = new BookmarksManager('en');
             expect(() => manager.initializeUI()).not.toThrow();
         });
 
         it('only updates elements that are present', () => {
-            document.body.innerHTML = '<div id="page-title"></div>';
+            const title = document.createElement('div');
+            title.id = 'page-title';
+            document.body.appendChild(title);
             const manager = new BookmarksManager('en');
             manager.initializeUI();
             expect(document.getElementById('page-title')!.textContent).toBe(
@@ -260,7 +270,7 @@ describe('BookmarksManager', () => {
                 expect(loginLink?.getAttribute('href')).toBe('/en/login');
             });
 
-            it('renders error state on non-401 error response', async () => {
+            it('renders not-logged-in state with error banner on non-401 error response', async () => {
                 setupContainer();
                 global.fetch = vi.fn().mockResolvedValue({
                     ok: false,
@@ -272,11 +282,14 @@ describe('BookmarksManager', () => {
 
                 const container = getContainer();
                 expect(container.textContent).toContain(
-                    'Failed to load bookmarks.'
+                    'You must be logged in'
+                );
+                expect(container.textContent).toContain(
+                    'Failed to fetch bookmarks'
                 );
             });
 
-            it('renders error state with retry button on non-401 error', async () => {
+            it('renders login link on non-401 error', async () => {
                 setupContainer();
                 global.fetch = vi.fn().mockResolvedValue({
                     ok: false,
@@ -286,13 +299,13 @@ describe('BookmarksManager', () => {
                 const manager = new BookmarksManager('en');
                 await manager.loadBookmarks();
 
-                const retryBtn = getContainer().querySelector('button');
-                expect(retryBtn?.textContent).toBe('Retry');
+                const loginLink = getContainer().querySelector('a');
+                expect(loginLink?.getAttribute('href')).toBe('/en/login');
             });
         });
 
         describe('network / fetch errors', () => {
-            it('renders error state when fetch throws', async () => {
+            it('renders not-logged-in state with error banner when fetch throws', async () => {
                 setupContainer();
                 global.fetch = vi
                     .fn()
@@ -303,8 +316,9 @@ describe('BookmarksManager', () => {
 
                 const container = getContainer();
                 expect(container.textContent).toContain(
-                    'Failed to load bookmarks.'
+                    'You must be logged in'
                 );
+                expect(container.textContent).toContain('Network error');
             });
         });
     });
@@ -799,17 +813,15 @@ describe('BookmarksManager', () => {
 
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: vi
-                    .fn()
-                    .mockResolvedValue({
-                        id: 'cloud-new',
-                        storyId: 'train_adventure',
-                        sceneId: 'act1',
-                        bookmarkName: 'Synced',
-                        locale: 'en',
-                        createdAt: '2024-01-01',
-                        updatedAt: '2024-01-01',
-                    }),
+                json: vi.fn().mockResolvedValue({
+                    id: 'cloud-new',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Synced',
+                    locale: 'en',
+                    createdAt: '2024-01-01',
+                    updatedAt: '2024-01-01',
+                }),
             } as any);
 
             syncBtn!.click();
@@ -1147,29 +1159,9 @@ describe('BookmarksManager', () => {
         });
     });
 
-    describe('renderError retry button', () => {
-        it('retry button reloads the page', async () => {
-            setupContainer();
-            const reloadMock = vi.fn();
-            (window.location as any).reload = reloadMock;
-
-            global.fetch = vi
-                .fn()
-                .mockRejectedValue(new Error('Network error'));
-
-            const manager = new BookmarksManager('en');
-            await manager.loadBookmarks();
-
-            const retryBtn = getContainer().querySelector('button');
-            expect(retryBtn?.textContent).toBe('Retry');
-            retryBtn!.click();
-            expect(reloadMock).toHaveBeenCalled();
-        });
-    });
-
     describe('renderAll no container', () => {
         it('does not throw when container does not exist', async () => {
-            document.body.innerHTML = '';
+            document.body.replaceChildren();
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 json: vi.fn().mockResolvedValue([]),

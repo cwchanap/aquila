@@ -6,6 +6,7 @@
     Locale,
   } from '@aquila/stories';
   import { CharacterDirectory, getTranslations } from '@aquila/stories';
+  import Button from '@/components/ui/Button.svelte';
 
   export let dialogue: DialogueEntry[] = [];
   export let choice: ChoiceDefinition | null = null;
@@ -219,6 +220,10 @@
       return;
     }
 
+    if (showActPanel) {
+      return;
+    }
+
     const activeElement = globalThis.document
       .activeElement as HTMLElement | null;
     const rawTarget = (event.target ?? activeElement) as unknown;
@@ -226,7 +231,7 @@
 
     if (target) {
       const tagName = target.tagName.toLowerCase();
-      const interactiveTags = ['input', 'textarea', 'select', 'option'];
+      const interactiveTags = ['input', 'textarea', 'select', 'option', 'button', 'a'];
       const hasEditableAttr =
         target.isContentEditable ||
         target.getAttribute('contenteditable') === 'true';
@@ -253,12 +258,15 @@
     >
       {t.common.backToHome}
     </a>
-    <button
-      on:click={() => (showActPanel = !showActPanel)}
-      class="px-4 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-    >
-      {t.reader.actPanel}
-    </button>
+    {#if storyId && currentSceneId}
+      <Button
+        variant="menu"
+        on:click={() => (showActPanel = !showActPanel)}
+        aria-label={t.reader.actPanel}
+      >
+        {t.reader.actPanel}
+      </Button>
+    {/if}
   </div>
 
   <div class="w-[90vw] max-w-[90vw] mx-auto">
@@ -383,7 +391,7 @@
   </div>
 </div>
 
-{#if showActPanel}
+{#if showActPanel && storyId && currentSceneId}
   {#await import('@/components/ActPanel.svelte') then module}
     <svelte:component
       this={module.default}

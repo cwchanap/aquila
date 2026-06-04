@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SvelteMap } from 'svelte/reactivity';
   import { getStoryFlow, getTranslations, type Locale } from '@aquila/stories';
+  import Button from '@/components/ui/Button.svelte';
 
   export let storyId: string;
   export let currentSceneId: string;
@@ -93,14 +94,15 @@
 
       <div class="space-y-2">
         {#each acts as act (act.rawName)}
-          <button
+          <Button
+            variant="menu"
             on:click={() => handleSelect(act.sceneId)}
-            class="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 {act.rawName === currentAct
-              ? 'bg-blue-500 text-white font-semibold shadow-md'
-              : 'bg-white/60 hover:bg-blue-50 text-slate-700 hover:text-blue-600'}"
+            className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 {act.rawName === currentAct
+              ? 'bg-blue-500 text-white font-semibold shadow-md text-base tracking-normal normal-case hover:scale-100 border-transparent'
+              : 'bg-white/60 hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-base tracking-normal normal-case hover:scale-100 border-transparent'}"
           >
             {act.label}
-          </button>
+          </Button>
         {/each}
       </div>
     </div>

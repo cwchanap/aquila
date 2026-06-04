@@ -100,6 +100,70 @@ describe('ActPanel', () => {
         ]);
     });
 
+    it('filters out acts from divergent branches', async () => {
+        // When on b1a_b2b branch which terminates at act4,
+        // acts that only exist on the sibling b1a_b2a branch should not appear.
+        const { getStoryFlow } = await import('@aquila/stories');
+        const divergentFlow = {
+            start: 'act1',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'act1',
+                    sceneId: 'act1',
+                    next: 'choice:ch1',
+                },
+                {
+                    kind: 'choice',
+                    id: 'choice:ch1',
+                    choiceId: 'ch1',
+                    nextByOption: { a: 'b1a_act2', b: 'b1b_act2' },
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1a_act2',
+                    sceneId: 'b1a_act2',
+                    next: 'b1a_act3',
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1a_act3',
+                    sceneId: 'b1a_act3',
+                    next: 'b1a_act4',
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1a_act4',
+                    sceneId: 'b1a_act4',
+                    next: null,
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1b_act2',
+                    sceneId: 'b1b_act2',
+                    next: null,
+                },
+            ],
+        };
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            divergentFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1b_act2',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+
+        // On b1b branch: act1 (shared root) + act2 (b1b_act2) should show.
+        // act3 and act4 only exist on b1a branch and should be filtered out.
+        const buttons = screen.getAllByRole('button');
+        expect(buttons.map(b => b.textContent)).toEqual(['Act 1', 'Act 2']);
+    });
+
     it('highlights the current act button', () => {
         render(ActPanel, {
             props: {

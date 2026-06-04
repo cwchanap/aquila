@@ -281,12 +281,19 @@ export class ReaderManager {
             }
 
             if (response.status === 401) {
-                this.localBookmarks.create({
+                const saved = this.localBookmarks.create({
                     storyId: this.currentState.storyId,
                     sceneId: this.currentState.sceneId,
                     bookmarkName: storedBookmarkName,
                 });
-                await showAlert(translations.reader.bookmarkSaved);
+                if (saved) {
+                    await showAlert(translations.reader.bookmarkSaved);
+                } else {
+                    await showAlert(
+                        translations.reader.bookmarkFailed +
+                            ' Storage unavailable'
+                    );
+                }
                 return;
             }
 

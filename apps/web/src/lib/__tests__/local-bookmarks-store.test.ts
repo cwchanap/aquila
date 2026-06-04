@@ -176,7 +176,7 @@ describe('LocalBookmarksStore', () => {
     });
 
     describe('persist error handling', () => {
-        it('throws when setItem throws', () => {
+        it('swallows setItem errors gracefully', () => {
             (
                 localStorageMock.getItem as ReturnType<typeof vi.fn>
             ).mockReturnValue('[]');
@@ -192,7 +192,7 @@ describe('LocalBookmarksStore', () => {
                     sceneId: 'sc1',
                     bookmarkName: 'Test',
                 })
-            ).toThrow('Quota exceeded');
+            ).not.toThrow();
         });
     });
 

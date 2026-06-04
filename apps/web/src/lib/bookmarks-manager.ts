@@ -449,6 +449,9 @@ export class BookmarksManager {
                 );
                 const data = await response.json().catch(() => null);
                 if (data) {
+                    this.cloudBookmarks = this.cloudBookmarks.filter(
+                        b => b.id !== data.id
+                    );
                     this.cloudBookmarks.unshift(data);
                 }
                 this.renderAll();
@@ -482,6 +485,9 @@ export class BookmarksManager {
                     this.localStore.remove(bookmark.id);
                     const data = await response.json().catch(() => null);
                     if (data) {
+                        this.cloudBookmarks = this.cloudBookmarks.filter(
+                            b => b.id !== data.id
+                        );
                         this.cloudBookmarks.unshift(data);
                     }
                     synced++;

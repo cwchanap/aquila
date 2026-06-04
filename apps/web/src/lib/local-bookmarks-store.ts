@@ -86,6 +86,10 @@ export class LocalBookmarksStore {
 
     private persist(bookmarks: LocalBookmark[]): void {
         if (typeof window === 'undefined') return;
-        localStorage.setItem(this.storageKey, JSON.stringify(bookmarks));
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(bookmarks));
+        } catch {
+            // Quota exceeded, storage disabled, or private-mode — swallow silently
+        }
     }
 }

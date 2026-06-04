@@ -1,34 +1,15 @@
 import { betterAuth } from 'better-auth';
-
-// Astro uses import.meta.env, but fallback to process.env for compatibility
-const isTestEnv =
-    (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test') ||
-    process.env.NODE_ENV === 'test' ||
-    process.env.CI === 'true';
-
-// In CI/test environments, prioritize process.env over import.meta.env
-// to allow environment variables from the test runner to override .env files
-const databaseUrl = isTestEnv
-    ? process.env.DATABASE_URL ||
-      import.meta.env?.DATABASE_URL ||
-      'postgres://localhost:5432/aquila_test'
-    : import.meta.env?.DATABASE_URL || process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-    throw new Error(
-        'DATABASE_URL is not set. Configure a PostgreSQL connection string before starting the app.'
-    );
-}
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { db } from './drizzle/db.js';
 
 export const auth = betterAuth({
     baseURL:
         import.meta.env?.BETTER_AUTH_URL ||
         process.env.BETTER_AUTH_URL ||
         'http://localhost:5090',
-    database: {
-        provider: 'postgres',
-        url: databaseUrl,
-    },
+    database: drizzleAdapter(db, {
+        provider: 'pg',
+    }),
     // Map core models to our pluralized table names
     user: {
         modelName: 'users',

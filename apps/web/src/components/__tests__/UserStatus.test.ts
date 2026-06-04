@@ -181,7 +181,7 @@ describe('UserStatus', () => {
         it('fetches session on mount', async () => {
             mockFetch.mockResolvedValueOnce({
                 ok: true,
-                json: async () => ({ user: null }),
+                json: async () => null,
             });
 
             render(UserStatus, {
@@ -196,7 +196,7 @@ describe('UserStatus', () => {
         it('renders login link when no user', async () => {
             mockFetch.mockResolvedValueOnce({
                 ok: true,
-                json: async () => ({ user: null }),
+                json: async () => null,
             });
 
             render(UserStatus, {
@@ -212,7 +212,7 @@ describe('UserStatus', () => {
             document.documentElement.lang = 'zh';
             mockFetch.mockResolvedValueOnce({
                 ok: true,
-                json: async () => ({ user: null }),
+                json: async () => null,
             });
 
             render(UserStatus, {
@@ -416,7 +416,7 @@ describe('UserStatus', () => {
             document.documentElement.lang = 'zh';
             mockFetch.mockResolvedValueOnce({
                 ok: true,
-                json: async () => ({ user: null }),
+                json: async () => null,
             });
 
             render(UserStatus, {
@@ -433,7 +433,7 @@ describe('UserStatus', () => {
             document.documentElement.lang = '';
             mockFetch.mockResolvedValueOnce({
                 ok: true,
-                json: async () => ({ user: null }),
+                json: async () => null,
             });
 
             render(UserStatus, {

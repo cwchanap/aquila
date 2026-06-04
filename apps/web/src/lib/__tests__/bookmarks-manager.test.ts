@@ -904,6 +904,57 @@ describe('BookmarksManager', () => {
                 'Failed to sync bookmark to cloud.'
             );
         });
+
+        it('replaces existing cloud bookmark when upsert returns same id', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncBtn = [...getContainer().querySelectorAll('button')].find(
+                b => b.textContent === 'Sync to Cloud'
+            );
+
+            // API returns the existing cloud bookmark (same id as bm-1 already loaded)
+            const upsertedBookmark = {
+                id: 'bm-1',
+                storyId: 'train_adventure',
+                sceneId: 'act1-updated',
+                bookmarkName: 'Updated Name',
+                locale: 'en',
+                createdAt: '2024-06-01T10:00:00.000Z',
+                updatedAt: '2024-06-03T12:00:00.000Z',
+            };
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(upsertedBookmark),
+            } as any);
+
+            syncBtn!.click();
+            await vi.runAllTimersAsync();
+
+            // Should show the updated bookmark, not a duplicate
+            const text = getContainer().textContent!;
+            const count = (text.match(/Updated Name/g) || []).length;
+            expect(count).toBe(1);
+            // Should NOT show the original "Chapter 1" name for bm-1
+            expect(text).not.toContain('Chapter 1');
+        });
     });
 
     describe('syncAllToCloud', () => {
@@ -1072,6 +1123,56 @@ describe('BookmarksManager', () => {
             expect(mockShowAlert).toHaveBeenCalledWith(
                 'Failed to sync bookmarks.'
             );
+        });
+
+        it('replaces existing cloud bookmarks on bulk sync upsert', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'l1',
+                    storyId: 'train_adventure',
+                    sceneId: 'scene_3',
+                    bookmarkName: 'Chapter 1',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const syncAllBtn = [
+                ...getContainer().querySelectorAll('button'),
+            ].find(b => b.textContent === 'Sync All to Cloud');
+
+            // The upsert returns bm-1 (same id as an existing cloud bookmark)
+            // with updated sceneId — should replace, not duplicate
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({
+                    id: 'bm-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'scene_3-updated',
+                    bookmarkName: 'Chapter 1',
+                    locale: 'en',
+                    createdAt: '2024-06-01T10:00:00.000Z',
+                    updatedAt: '2024-06-03T12:00:00.000Z',
+                }),
+            } as any);
+
+            syncAllBtn!.click();
+            await vi.runAllTimersAsync();
+
+            // bm-1 should appear exactly once with the updated scene
+            const text = getContainer().textContent!;
+            const chapterOneCount = (text.match(/Chapter 1/g) || []).length;
+            expect(chapterOneCount).toBe(1);
+            expect(text).toContain('scene_3-updated');
         });
     });
 

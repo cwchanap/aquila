@@ -78,18 +78,36 @@
       actCandidates[actName].push(node.sceneId);
     }
 
-    // For each act, pick the candidate whose branch prefix best matches the current scene
+    // For each act, pick the candidate whose branch prefix best matches the current scene.
+    // Only consider candidates that are on the current branch: the candidate's prefix must
+    // be a prefix of the current branch, or vice versa. Acts with no on-branch candidates
+    // (e.g. act38 only existing on sibling b5a when reader is on b5b) are excluded.
     const currentBranch = extractBranchPrefix(sceneId);
+    const currentParts = currentBranch.split('_').filter(Boolean);
+
+    function isOnBranch(candidatePrefix: string): boolean {
+      if (!candidatePrefix && !currentBranch) return true;
+      const candParts = candidatePrefix.split('_').filter(Boolean);
+      const shorter = candParts.length <= currentParts.length ? candParts : currentParts;
+      const longer = candParts.length <= currentParts.length ? currentParts : candParts;
+      // The shorter prefix must be a prefix of the longer one
+      for (let i = 0; i < shorter.length; i++) {
+        if (shorter[i] !== longer[i]) return false;
+      }
+      return true;
+    }
 
     const actMap = new SvelteMap<string, string>();
     for (const [actName, candidates] of Object.entries(actCandidates)) {
-      let bestScene = candidates[0];
+      const onBranch = candidates.filter(c => isOnBranch(extractBranchPrefix(c)));
+      if (onBranch.length === 0) continue;
+      let bestScene = onBranch[0];
       let bestScore = branchMatchScore(extractBranchPrefix(bestScene), currentBranch);
-      for (let i = 1; i < candidates.length; i++) {
-        const score = branchMatchScore(extractBranchPrefix(candidates[i]), currentBranch);
+      for (let i = 1; i < onBranch.length; i++) {
+        const score = branchMatchScore(extractBranchPrefix(onBranch[i]), currentBranch);
         if (score > bestScore) {
           bestScore = score;
-          bestScene = candidates[i];
+          bestScene = onBranch[i];
         }
       }
       actMap.set(actName, bestScene);

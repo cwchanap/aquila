@@ -53,7 +53,7 @@ export class LocalBookmarksStore {
         storyId: string;
         sceneId: string;
         bookmarkName: string;
-    }): LocalBookmark {
+    }): LocalBookmark | null {
         const now = Date.now();
         const bookmark: LocalBookmark = {
             id: nanoid(),
@@ -66,7 +66,7 @@ export class LocalBookmarksStore {
         };
         const bookmarks = this.getAll();
         bookmarks.unshift(bookmark);
-        this.persist(bookmarks);
+        if (!this.persist(bookmarks)) return null;
         return bookmark;
     }
 
@@ -84,12 +84,13 @@ export class LocalBookmarksStore {
         }
     }
 
-    private persist(bookmarks: LocalBookmark[]): void {
-        if (typeof window === 'undefined') return;
+    private persist(bookmarks: LocalBookmark[]): boolean {
+        if (typeof window === 'undefined') return false;
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(bookmarks));
+            return true;
         } catch {
-            // Quota exceeded, storage disabled, or private-mode — swallow silently
+            return false;
         }
     }
 }

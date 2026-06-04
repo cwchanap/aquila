@@ -34,7 +34,7 @@
           );
         }
         const data = await response.json();
-        user = data.user;
+        user = data?.user ?? null;
       } catch (error) {
         console.error(
           'Auth session error:',

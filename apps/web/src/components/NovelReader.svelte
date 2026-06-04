@@ -6,7 +6,7 @@
     Locale,
   } from '@aquila/stories';
   import { CharacterDirectory, getTranslations } from '@aquila/stories';
-  import Button from '@/components/ui/Button.svelte';
+  import ActPanel from '@/components/ActPanel.svelte';
 
   export let dialogue: DialogueEntry[] = [];
   export let choice: ChoiceDefinition | null = null;
@@ -248,28 +248,40 @@
 <svelte:window on:keydown={handleKeyPress} />
 
 <div
-  class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex items-center justify-center p-6"
+  class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex overflow-hidden"
 >
-  <!-- Back button and act panel toggle at top left -->
-  <div class="fixed top-6 left-6 z-10 flex gap-3">
-    <a
-      href={backUrl}
-      class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-    >
-      {t.common.backToHome}
-    </a>
+  <!-- Left panel -- embedded toggle, slider animation -->
+  <aside class="flex-shrink-0 h-screen overflow-hidden">
     {#if storyId && currentSceneId}
-      <Button
-        variant="menu"
-        on:click={() => (showActPanel = !showActPanel)}
-        aria-label={t.reader.actPanel}
-      >
-        {t.reader.actPanel}
-      </Button>
+      <ActPanel
+        {storyId}
+        {currentSceneId}
+        open={showActPanel}
+        onToggle={() => (showActPanel = !showActPanel)}
+        onNavigate={(sceneId: string) => {
+          showActPanel = false;
+          if (sceneId !== currentSceneId) {
+            onNavigate(sceneId);
+          }
+        }}
+        {locale}
+      />
     {/if}
-  </div>
+  </aside>
 
-  <div class="w-[90vw] max-w-[90vw] mx-auto">
+  <!-- Main content area -->
+  <main class="flex-1 flex items-center justify-center p-6 relative min-w-0">
+    <!-- Back button at top right -->
+    <div class="absolute top-6 right-6 z-10">
+      <a
+        href={backUrl}
+        class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+      >
+        {t.common.backToHome}
+      </a>
+    </div>
+
+    <div class="w-full max-w-4xl">
     <!-- Main dialogue box with glassmorphism style -->
     <div
       bind:this={dialogueContainer}
@@ -388,25 +400,9 @@
           .replace('{total}', dialogue.length.toString())}
       </div>
     </div>
-  </div>
+    </div>
+  </main>
 </div>
-
-{#if showActPanel && storyId && currentSceneId}
-  {#await import('@/components/ActPanel.svelte') then module}
-    <svelte:component
-      this={module.default}
-      {storyId}
-      {currentSceneId}
-      onNavigate={(sceneId: string) => {
-        showActPanel = false;
-        if (sceneId !== currentSceneId) {
-          onNavigate(sceneId);
-        }
-      }}
-      {locale}
-    />
-  {/await}
-{/if}
 
 <style>
   .novel-reader {

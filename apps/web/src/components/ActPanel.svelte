@@ -6,6 +6,8 @@
   export let storyId: string;
   export let currentSceneId: string;
   export let onNavigate: (sceneId: string) => void;
+  export let onToggle: () => void;
+  export let open = false;
   export let locale: Locale = 'en';
 
   $: t = getTranslations(locale);
@@ -128,18 +130,50 @@
   }
 
   function handleEscape(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      onNavigate(currentSceneId);
+    if (e.key === 'Escape' && open) {
+      onToggle();
     }
   }
 </script>
 
 <svelte:window on:keydown={handleEscape} />
 
-<div class="fixed inset-0 z-50 flex justify-end" on:click|self={() => onNavigate(currentSceneId)}>
+<div
+  class="h-full flex transition-all duration-300 ease-in-out overflow-hidden {open ? 'w-80' : 'w-12'}"
+>
+  <!-- Toggle tab -- always visible -->
+  <button
+    on:click={onToggle}
+    class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors"
+    aria-label={open ? 'Close acts panel' : 'Open acts panel'}
+  >
+    {#if open}
+      <svg
+        class="w-5 h-5 text-slate-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    {:else}
+      <span
+        class="text-sm font-bold text-slate-600 tracking-wider"
+        style="writing-mode: vertical-rl;"
+      >
+        {t.reader.actPanel}
+      </span>
+    {/if}
+  </button>
+
+  <!-- Panel content -- slides in -->
   <div
-    class="w-80 max-w-[85vw] h-full bg-white/95 backdrop-blur-xl shadow-2xl border-l border-white/50 overflow-y-auto"
-    on:click|stopPropagation
+    class="flex-1 h-full overflow-y-auto transition-opacity duration-300 {open ? 'opacity-100' : 'opacity-0'}"
   >
     <div class="p-6">
       <h2 class="text-xl font-bold text-slate-800 mb-6">

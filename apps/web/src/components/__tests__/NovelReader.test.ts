@@ -741,20 +741,18 @@ describe('NovelReader', () => {
             await vi.runAllTimersAsync();
 
             // Click the "Acts" toggle button to show the panel
-            const actPanelToggle = screen.getByText('Acts');
+            const actPanelToggle = screen.getByRole('button', {
+                name: 'Open acts panel',
+            });
             await fireEvent.click(actPanelToggle);
 
-            // Wait for dynamic import to resolve and panel to render
+            // Wait for panel to render
             await waitFor(() => {
                 expect(screen.getByText('Act 1')).toBeInTheDocument();
             });
 
-            // Click backdrop (click-outside) to close - this passes currentSceneId
-            // The backdrop is in the dynamically loaded ActPanel, so we need the
-            // outermost fixed overlay which is the backdrop
-            const overlays = document.querySelectorAll('.fixed.inset-0.z-50');
-            const panelOverlay = overlays[overlays.length - 1];
-            await fireEvent.click(panelOverlay!);
+            // Press Escape to close the panel (passes currentSceneId)
+            await fireEvent.keyDown(window, { key: 'Escape' });
 
             // onNavigate should NOT have been called since sceneId === currentSceneId
             expect(onNavigate).not.toHaveBeenCalled();
@@ -777,7 +775,9 @@ describe('NovelReader', () => {
             await vi.runAllTimersAsync();
 
             // Click the "Acts" toggle button to show the panel
-            const actPanelToggle = screen.getByText('Acts');
+            const actPanelToggle = screen.getByRole('button', {
+                name: 'Open acts panel',
+            });
             await fireEvent.click(actPanelToggle);
 
             // Wait for dynamic import to resolve and panel to render

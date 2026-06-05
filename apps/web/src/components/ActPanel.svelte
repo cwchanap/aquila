@@ -145,7 +145,7 @@
   <button
     on:click={onToggle}
     class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors"
-    aria-label={open ? 'Close acts panel' : 'Open acts panel'}
+    aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
   >
     {#if open}
       <svg
@@ -174,6 +174,8 @@
   <!-- Panel content -- slides in -->
   <div
     class="flex-1 h-full overflow-y-auto transition-opacity duration-300 {open ? 'opacity-100' : 'opacity-0'}"
+    aria-hidden={!open}
+    inert={!open}
   >
     <div class="p-6">
       <h2 class="text-xl font-bold text-slate-800 mb-6">

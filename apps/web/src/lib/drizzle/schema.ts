@@ -112,8 +112,8 @@ export const verificationTokens = pgTable(
     {
         id: text('id').primaryKey(),
         identifier: text('identifier').notNull(),
-        token: text('token').notNull().unique(),
-        expires: timestamp('expires', { mode: 'date' }).notNull(),
+        value: text('token').notNull().unique(),
+        expiresAt: timestamp('expires', { mode: 'date' }).notNull(),
         createdAt: timestamp('created_at', { mode: 'date' })
             .notNull()
             .defaultNow(),
@@ -122,7 +122,7 @@ export const verificationTokens = pgTable(
             .defaultNow(),
     },
     table => ({
-        tokenIdx: index('verification_tokens_token_idx').on(table.token),
+        tokenIdx: index('verification_tokens_token_idx').on(table.value),
     })
 );
 

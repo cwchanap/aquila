@@ -146,6 +146,7 @@
     on:click={onToggle}
     class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors"
     aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
+    aria-expanded={open}
   >
     {#if open}
       <svg
@@ -173,7 +174,7 @@
 
   <!-- Panel content -- slides in -->
   <div
-    class="flex-1 h-full overflow-y-auto transition-opacity duration-300 {open ? 'opacity-100' : 'opacity-0'}"
+    class="flex-1 h-full overflow-y-auto transition-opacity duration-300 {open ? 'opacity-100' : 'opacity-0 pointer-events-none'}"
     aria-hidden={!open}
     inert={!open}
   >

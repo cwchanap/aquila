@@ -195,7 +195,9 @@
     "actPanel": "Acts",
     "actLabel": "Act {n}",
     "actFinal": "Final",
-    "actEpilogue": "Epilogue"
+    "actEpilogue": "Epilogue",
+    "openActsPanel": "Open acts panel",
+    "closeActsPanel": "Close acts panel"
   },
   "storyWriter": {
     "title": "Story Writer",

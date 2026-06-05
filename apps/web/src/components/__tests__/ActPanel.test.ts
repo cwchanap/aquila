@@ -64,6 +64,8 @@ vi.mock('@aquila/stories', () => ({
             actLabel: 'Act {n}',
             actFinal: 'Final Act',
             actEpilogue: 'Epilogue',
+            openActsPanel: 'Open acts panel',
+            closeActsPanel: 'Close acts panel',
         },
         locale: 'en',
     })),
@@ -334,6 +336,63 @@ describe('ActPanel', () => {
         expect(
             screen.getByRole('button', { name: /acts panel/i })
         ).toBeInTheDocument();
+    });
+
+    it('uses translated aria-label for toggle button when open', () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        expect(
+            screen.getByRole('button', { name: 'Close acts panel' })
+        ).toBeInTheDocument();
+    });
+
+    it('uses translated aria-label for toggle button when closed', () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onToggle,
+                open: false,
+                locale: 'en',
+            },
+        });
+
+        expect(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        ).toBeInTheDocument();
+    });
+
+    it('marks panel content inert and aria-hidden when closed', () => {
+        render(ActPanel, {
+            props: {
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onToggle,
+                open: false,
+                locale: 'en',
+            },
+        });
+
+        // All act buttons should be hidden from accessibility tree when closed
+        const actButtons = getActButtons();
+        for (const btn of actButtons) {
+            // Buttons inside an [inert] container are not focusable and not exposed
+            // to accessibility APIs.
+            const inertAncestor = btn.closest('[inert]');
+            expect(inertAncestor).not.toBeNull();
+            expect(inertAncestor?.getAttribute('aria-hidden')).toBe('true');
+        }
     });
 
     it('navigates to branch-matching act when on b1a_b2a branch', async () => {

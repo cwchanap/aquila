@@ -49,6 +49,8 @@ vi.mock('@aquila/stories', () => ({
             actLabel: 'Act {n}',
             actFinal: 'Final Act',
             actEpilogue: 'Epilogue',
+            openActsPanel: 'Open acts panel',
+            closeActsPanel: 'Close acts panel',
         },
         common: {
             logout: 'Logout',

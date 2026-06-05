@@ -195,7 +195,9 @@
     "actPanel": "章節",
     "actLabel": "第 {n} 章",
     "actFinal": "最終章",
-    "actEpilogue": "尾聲"
+    "actEpilogue": "尾聲",
+    "openActsPanel": "開啟章節面板",
+    "closeActsPanel": "關閉章節面板"
   },
   "storyWriter": {
     "title": "故事編輯器",

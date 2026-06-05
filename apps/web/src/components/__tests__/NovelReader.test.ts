@@ -753,7 +753,7 @@ describe('NovelReader', () => {
                 expect(screen.getByText('Act 1')).toBeInTheDocument();
             });
 
-            // Press Escape to close the panel (passes currentSceneId)
+            // Press Escape to close the panel
             await fireEvent.keyDown(window, { key: 'Escape' });
 
             // onNavigate should NOT have been called since sceneId === currentSceneId

@@ -1,8 +1,6 @@
-import type { CharacterId } from '../characters';
-
 export interface ResolvedCharacter {
-    /** Stable unique-character reference id. */
-    id: CharacterId;
+    /** Stable unique-character reference id (string, matches generated enum value). */
+    id: string;
     /** Label to render for this line — the as-written speaker label, or a
      *  canonicalized one for misspelled/verbose source labels. */
     displayName: string;
@@ -11,13 +9,16 @@ export interface ResolvedCharacter {
 export interface StoryCompilerConfig {
     /** Registry id used by getStoryContent/getStoryFlow, e.g. 'train_adventure'. */
     storyId: string;
-    /** Resolve a markdown character header (real name OR alias) to a character
-     *  reference id plus the display label to render for that line. */
-    resolveCharacter: (name: string) => ResolvedCharacter | undefined;
-    /** Optional fallback for paragraphs that are NOT "**speaker**：" headers
-     *  (forum posts, news articles, bold markers like **<完>**). When set, such
-     *  paragraphs become narration lines spoken by this character; when omitted,
-     *  the parser throws on them (strict default for well-formed stories). */
-    defaultSpeaker?: ResolvedCharacter;
+    /** Misspelled / verbose / dual-name source labels -> a clean canonical label.
+     *  The canonical form is used both for resolution AND as the per-line displayName. */
+    canonicalize?: Record<string, string>;
+    /** Anonymous / role speakers collapse to ONE reference id each;
+     *  the as-written label is preserved per line via displayName. */
+    rolePatterns?: { pattern: RegExp; id: string }[];
+    /** Default speaker for non-header paragraphs (narration). ID must exist in characters. */
+    defaultSpeakerId?: string;
+    /** Override path to characters.md (default: 'docs/characters.md'). */
     charactersDocPath?: string;
+    /** Override suffix regex for stripping (內心)/聲音/etc. Default: common pattern. */
+    suffixRegex?: RegExp;
 }

@@ -1,11 +1,10 @@
-import type { CharacterId } from '../characters';
 import type { AssetManifest } from './resolve-assets';
 
 export interface DialogueEntryIR {
-    // Always concrete: the parser resolves every "**name**：" line to a CharacterId
-    // (narrator included, via 旁白 → CharacterId.Narrator) and throws on unknowns,
+    // Always concrete: the parser resolves every "**name**：" line to a character id
+    // string (narrator included, via 旁白 → 'narrator') and throws on unknowns,
     // so unlike the runtime DialogueEntry this is never speakerless.
-    characterId: CharacterId;
+    characterId: string;
     // Speaker label to display for this line: the as-written header, or a
     // canonicalized form for misspelled/verbose source labels.
     displayName: string;
@@ -17,27 +16,27 @@ export interface DialogueEntryIR {
 }
 
 export interface SceneIR {
-    id: string; // e.g. 'b1b_b2c_act14'
-    title?: string; // from the leading "# ..." H1
+    id: string;
+    title?: string;
     entries: DialogueEntryIR[];
-    next: string | null; // scene id, 'choice:<choiceId>', or null (terminal)
-    sourcePath: string; // md path relative to the story root (diagnostics)
+    next: string | null;
+    sourcePath: string;
 }
 
 export interface ChoiceOptionIR {
-    optionId: string; // e.g. 'b2a'
-    nextScene: string; // first scene id of the child branch
+    optionId: string;
+    nextScene: string;
 }
 
 export interface ChoiceIR {
-    choiceId: string; // e.g. 'choice_b1b_act8'
-    fromSceneId: string; // the choice-point scene id
+    choiceId: string;
+    fromSceneId: string;
     options: ChoiceOptionIR[];
 }
 
 export interface StoryIR {
-    storyId: string; // registry id, e.g. 'train_adventure'
-    name: string; // raw dir name / export prefix, e.g. 'trainAdventure'
+    storyId: string;
+    name: string;
     start: string;
     scenes: SceneIR[];
     choices: ChoiceIR[];

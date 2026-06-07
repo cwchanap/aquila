@@ -127,13 +127,16 @@ describe('emitStory', () => {
         };
         emitStory(storyWithAssets, dir);
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
-        expect(scene).toContain('background:');
-        expect(scene).toContain(JSON.stringify('_root/act1_s0'));
+        expect(scene).toContain('background: Background.Root_Act1_S0');
         expect(scene).toContain('portrait: Portrait.LiJie_Angry');
 
         const portraits = readFileSync(join(dir, 'portraits.ts'), 'utf8');
         expect(portraits).toContain('export enum Portrait {');
         expect(portraits).toContain('LiJie_Angry = "li_jie/angry"');
+
+        const backgrounds = readFileSync(join(dir, 'backgrounds.ts'), 'utf8');
+        expect(backgrounds).toContain('export enum Background {');
+        expect(backgrounds).toContain('Root_Act1_S0 = "_root/act1_s0"');
     });
 
     it('emits image-assets.json manifest', () => {

@@ -1,5 +1,9 @@
 # 第四幕：十一點的校門口
 
+```bg
+school main gate on overcast day, blue-and-white security tents, metal detector gates, security guards in reflective vests, long queue of parents and visitors stretching onto sidewalk, grey low clouds pressing down, wet asphalt, moody cinematic visual-novel background art, wide shot
+```
+
 **旁白**：雨停了，但天空沒有放晴。雲層壓得很低，灰白色的，像一塊洗了太多次的舊布，透不出光也掉不下水。空氣裡全是濕氣，吸進肺裡涼涼的，帶著泥土和瀝青混合的味道。
 
 **旁白**：校門口搭了一排臨時帳篷，藍白相間的帆布被風吹得微微鼓起。帳篷下面是安全檢查區，幾個穿著反光背心的保安站在金屬探測門兩側，臉上的表情既疲憊又警惕，像站了一整個早上。
@@ -170,7 +174,7 @@
 
 **旁白**：邵叔頓了一下，像是在考慮要不要說下一句話。他的嘴唇抿了一下，又鬆開，然後他用一種很隨意的、像是隨口問問的語氣開了口。
 
-**邵叔**：你最近有沒有想起小時候的事？
+**邵叔** [concerned]：你最近有沒有想起小時候的事？
 
 **旁白**：空氣裡有什麼東西變了。
 
@@ -186,7 +190,7 @@
 
 **顧言**：嗯。
 
-**邵叔**：小孩子的事，忘就忘了。沒什麼重要的。
+**邵叔** [serious]：小孩子的事，忘就忘了。沒什麼重要的。
 
 **顧言**：(內心)他在說「沒什麼重要的」。
 
@@ -258,11 +262,15 @@
 
 **旁白**：口袋裡的手機安靜地躺著。螢幕已經熄滅了，但那條訊息還在。「今晚 22:22，鐘樓會停電。不要上去。不要把相機交給任何大人。」
 
+```bg
+temporary security command center interior, prefab mobile office unit, folding table with campus map spread out and radios, uniformed officers moving about, monitors and equipment, fluorescent lighting, cramped functional space, moody cinematic visual-novel background art
+```
+
 **旁白**：在指揮室裡，邵啟明坐在桌前，面前的對講機安靜了下來。他把剛才顧言給他看的手機畫面在腦子裡又過了一遍。
 
 **旁白**：他的手指無意識地敲了兩下桌面。然後他拿起對講機，按了一個頻道。
 
-**邵叔**：鐘樓那邊的監控，調一下。確認今天所有攝像頭都在線。
+**邵叔** [serious]：鐘樓那邊的監控，調一下。確認今天所有攝像頭都在線。
 
 **旁白**：他說這話的語氣很平，是工作語氣，沒有任何多餘的東西。但他的目光在說這句話的時候，落在了桌面上一張攤開的校園平面圖上——準確地說，落在了鐘樓的位置。
 

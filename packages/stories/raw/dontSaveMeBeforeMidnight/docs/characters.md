@@ -52,6 +52,16 @@
 中段問：「為什麼我每次都會死？」
 最後問：「如果我活下來，但真正該被救的人死了，那算逃出去嗎？」
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 17-year-old East Asian boy, short messy black hair, dark school uniform with collar slightly open, faint dark circles under half-lidded eyes, dry cracked lips, guarded neutral expression, slightly hunched posture, hands in pockets, soft overcast window light from the side, muted cool grey palette, upper-body shot, clean background
+- **angry**: anime visual-novel portrait, 17-year-old boy, short messy black hair, cold hard glare, jaw clenched tight, eyes narrowed to slits, school uniform, dim overcast lighting, tense shoulders, muted cool tones, upper-body shot
+- **scared**: anime visual-novel portrait, 17-year-old boy, short messy black hair, eyes wide with whites showing, body rigid and tense, breath held, mouth slightly open, school uniform, cold blue-grey lighting, upper-body shot
+- **sad**: anime visual-novel portrait, 17-year-old boy, short messy black hair, downcast eyes avoiding contact, lips pressed into a thin line, shoulders dropped, school uniform, soft desaturated lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 17-year-old boy, short messy black hair, jaw set firm, eyes sharp and bright with resolve, leaning slightly forward, school uniform, strong directional light cutting across face, upper-body shot
+- **shocked**: anime visual-novel portrait, 17-year-old boy, short messy black hair, eyes blown wide, mouth slightly parted, face drained of color, school uniform, stark lighting, upper-body shot
+- **trembling**: anime visual-novel portrait, 17-year-old boy, short messy black hair, hand visibly shaking, eyes glistening with unshed tears, trying to hold composure, lips trembling, school uniform, dim lighting, upper-body shot
+
 ---
 
 ## 2. 許星棠（Xu Xingtang）
@@ -105,9 +115,17 @@
 | 冷淡不解釋行動 | 不敢太早信任顧言，因為他一直被邵叔照顧 |
 | 被韓越「威脅」 | 被韓越保護 |
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 17-year-old East Asian girl, small delicate face, slender features, pale porcelain skin, low ponytail with loose strands clinging to ears, calm composed expression with quiet intensity, deep still-water eyes, school uniform under dark grey photography vest, blue work ID badge, camera strap around neck, soft diffused light, muted palette, upper-body shot, clean background
+- **cold**: anime visual-novel portrait, 17-year-old girl, low ponytail, flat emotionally distant stare, delivering a statement not a question, photography vest, camera around neck, cool desaturated lighting, upper-body shot
+- **urgent**: anime visual-novel portrait, 17-year-old girl, low ponytail, leaning forward, eyes intense and focused, voice low and urgent, photography vest, camera around neck, dramatic side lighting, upper-body shot
+- **regretful**: anime visual-novel portrait, 17-year-old girl, low ponytail, lips pressed tight, stepping back, knuckles white on camera strap, eyes averted with regret, photography vest, soft dim lighting, upper-body shot
+- **afraid**: anime visual-novel portrait, 17-year-old girl, low ponytail, controlled fear visible, tension in jaw, eyes darting sideways, photography vest, camera around neck, cold blue lighting, upper-body shot
+
 ---
 
-## 3. 邵啟明／邵叔（Shao Qiming）
+## 3. 邵啟明（邵叔／Shao Qiming）
 
 ### 基本資料
 
@@ -163,6 +181,13 @@
 | 其他警員 | 指揮若定、經驗老道 | 利用警察體系為自己提供合法掩護 |
 | 校方人員 | 配合協調、維持秩序 | 確保舊證據不會在校慶重見天日 |
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-something East Asian man, not tall, dark tanned skin, very short buzzcut following scalp curve, warm reliable smile showing white teeth, deep laugh lines, dark blue police uniform with shoulder insignia catching light, arms crossed or hands behind back, fatherly presence, warm even lighting, upper-body shot, clean background
+- **concerned**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, brows furrowed with warmth, leaning in with paternal worry, police uniform, soft warm lighting, upper-body shot
+- **serious**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, flat professional expression with no smile, eyes coldly evaluating, police uniform, hard directional lighting, upper-body shot
+- **sinister**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, smile unchanged but eyes gone completely cold, a flicker of something predatory behind the warmth, police uniform, shadow falling across half the face, upper-body shot
+
 ---
 
 ## 4. 韓越（Han Yue）
@@ -199,6 +224,12 @@
 | 對許星棠說話像威脅 | 其實是擔心 |
 | 不願回答顧言問題 | 怕暴露計畫 |
 | 出現在校史館、後台、器材室 | 協助許星棠調查的合理行動 |
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 17-year-old East Asian boy, school uniform with dark dust-covered jacket, blue-and-white stage crew temporary pass around neck, annoyed expression, jaw tight, shoulders tense, looking away to the side, parallel dark red scab scratches on back of hand, right arm held closer to body, overcast lighting, upper-body shot, clean background
+- **angry**: anime visual-novel portrait, 17-year-old boy, school uniform with dust-covered jacket, shouting with veins showing on neck, fist clenched, stage crew pass swinging, harsh lighting, upper-body shot
+- **worried**: anime visual-novel portrait, 17-year-old boy, school uniform with dust-covered jacket, deep frown, eyes tracking someone intently, body half-turned as if to follow, stage crew pass, dim anxious lighting, upper-body shot
 
 ---
 
@@ -242,9 +273,50 @@
 - 走路步伐比正常快半拍，像永遠在趕路
 - 面對邵叔時焦躁不安，手機反覆滑動，肢體語言無序
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-something East Asian man, dark grey suit, school badge on chest, thin metal-frame glasses, neatly combed hair, nervous official expression with forced calm, hands clasped behind back, fluorescent office lighting, upper-body shot, clean background
+- **panicked**: anime visual-novel portrait, 40-something man, dark grey suit, thin metal-frame glasses askew, sweating beads on forehead, trembling hands, eyes darting, collar unbuttoned and askew, harsh fluorescent lighting, upper-body shot
+- **stern**: anime visual-novel portrait, 40-something man, dark grey suit, thin metal-frame glasses, authoritarian mask over fear, finger pointing forward, voice raised, forced rigid posture, stark lighting, upper-body shot
+
 ---
 
-## 6. 次要角色
+## 6. 張昊（Zhang Hao）
+
+### 基本資料
+
+- **身份**：隔壁寢室的學生，顧言的鄰居
+- **外貌**：典型高中生模樣，帶點痞氣
+
+### 說話風格
+
+- **隨口調侃**：喜歡拿顧言父親的事開玩笑，不覺得有什麼問題
+- **看人下菜**：被顧言冷冷盯一眼就會縮回去
+
+### 代表性台詞
+
+- `又有人約你去鬼樓？你爸以前是不是也去過那裡？`——從門口探頭的調侃
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 17-year-old East Asian boy, typical high school student, slightly cocky half-grin, leaning out from a dorm doorframe, teasing expression, school uniform worn casually, warm hallway lighting, upper-body shot, clean background
+
+---
+
+## 7. 黑雨衣（Black Raincoat）
+
+### 基本資料
+
+- **身份**：校慶夜晚出現的神秘人物，身份不明
+- **外貌**：全身裹在寬大的黑色雨衣裡，帽沿壓低遮住大半張臉
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, mysterious figure in oversized black raincoat, hood pulled low obscuring entire upper face, only lower face visible with jaw set and lips closed, dark scarf around neck, rain dripping off the hem, camera strap visible on shoulder, leather dress shoes glimpsed below, heavy rain and darkness behind, cold blue-grey palette, upper-body shot
+
+---
+
+## 8. 次要角色
 
 ### 顧澤（顧言父親）
 
@@ -262,7 +334,7 @@
 
 ---
 
-## 7. 角色關係圖
+## 9. 角色關係圖
 
 ```
                   十年前舊案
@@ -290,7 +362,7 @@
 
 ---
 
-## 8. 角色聲音對照表
+## 10. 角色聲音對照表
 
 | 特徵 | 顧言 | 許星棠 | 邵叔 | 韓越 | 林主任 |
 |---|---|---|---|---|---|

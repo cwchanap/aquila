@@ -1,5 +1,9 @@
 # 第十幕：二十二點二十二分
 
+```bg
+clock face maintenance platform at top of clock tower, giant mechanical gears and clock numerals looming overhead, rain pouring through gaps in the clock face, phone screen showing 22:22 glowing in the darkness, narrow metal walkway less than one meter wide, moody cinematic visual-novel background art
+```
+
 **旁白**：22:22。
 
 **旁白**：燈滅了。
@@ -58,6 +62,10 @@
 
 **旁白**：聲音從上面傳下來。很近。就在他剛才站的位置。那個成年男人的聲音，平靜得像在陳述一個氣象預報。不帶感情。不帶惡意。只是一個事實。
 
+```bg
+total blackout void, only faint phone screen glow falling through pure darkness, abstract falling sensation, rain streaks barely visible streaking past, vertigo and weightlessness, surreal dark abstract visual-novel background art
+```
+
 **旁白**：然後他在墜落。
 
 **旁白**：沒有聲音。或者有聲音但他聽不到了。雨聲、鐘聲、齒輪聲全部消失。世界變成了一個純粹的、失重的、黑暗的空間。他的胃像被一隻手從裡面揪起來。風從下面湧上來，灌進他的衣服、袖口、領口，把他變成了一個被吹脹的、空洞的形狀。
@@ -80,7 +88,7 @@
 
 **顧言**：(內心)從第一條訊息開始就不是惡作劇。照片不是。鐘樓不是。黑色雨衣不是。被卸掉的螺絲不是。這一切都不是某個人在開玩笑。有人在殺我。
 
-**顧言**：(內心)有人要殺我。
+**顧言** [scared]：(內心)有人要殺我。
 
 **顧言**：(內心)而我到現在才明白。
 

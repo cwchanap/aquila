@@ -1,5 +1,9 @@
 # 第二幕：八點的餐廳
 
+```bg
+school cafeteria interior, red centennial anniversary banners hanging from ceiling, crowded with students and parents, trays of soy milk and fried dough on tables, steam and noise, warm fluorescent lighting mixed with grey daylight from windows, moody cinematic visual-novel background art, wide shot
+```
+
 **旁白**：餐廳裡掛著百年校慶的紅色布條，空氣裡混著豆漿和油條的味道，還有一層薄薄的興奮。今天是特別的日子，每個人都這麼覺得。
 
 **旁白**：除了顧言。
@@ -39,6 +43,10 @@
 **旁白**：三秒。他把油條放下，端起餐盤站起來，經過那兩個同學身邊的時候，腳步沒有停，眼神也沒有轉過去。他只是把餐盤放回回收台，然後走出了餐廳。
 
 **旁白**：身後的對話安靜了一瞬，然後又恢復了，只是音量更低了。
+
+```bg
+campus plaza outdoors on overcast morning, light fine rain like gauze veil over everything, temporary stage and tents being assembled, large electronic screen testing live broadcast, puddles on wet ground, grey sky, students and parents moving about, moody cinematic visual-novel background art, wide shot
+```
 
 **旁白**：走廊上的風很大，帶著海水的鹹味和雨水的潮氣。布條被吹得啪啪作響，上面寫著「鳴海高中百年校慶」幾個大字，紅底金字，喜氣洋洋。
 

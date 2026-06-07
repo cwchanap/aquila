@@ -1,5 +1,9 @@
 # 第八幕：九點半的禮堂
 
+```bg
+school auditorium interior at night, bright fluorescent ceiling lights combined with warm stage spotlights, crowded seats with students and parents, large screen testing live broadcast feed, camera tripods, humid warm atmosphere, moody cinematic visual-novel background art, wide shot from back row
+```
+
 **旁白**：二十一點三十分。禮堂的燈全部亮著，白色的日光燈管和暖黃色的舞台聚光燈同時運作，把整個空間照得沒有一絲陰影。座位區坐了大約七成滿——大部分是學生和留校過夜的家長，少數是穿著反光背心的志工和幾個扛著攝影設備的媒體人員。空氣裡混著潮濕的外套味道和人體蒸出來的熱氣，悶而暖，像一個被塞了太多人的罐頭。
 
 **旁白**：舞台上的大螢幕正在測試直播訊號。畫面閃了幾下，跳出一行字：「鳴海高中百年校慶閉幕典禮——直播測試中」。字很大，白底藍字，每個筆劃都銳利得像刻出來的。畫面又閃了一下，切到了一個空鏡頭——雨夜的校園，遠處的鐘樓在雨幕後面只剩一個模糊的輪廓，像一個正在消失的影子。三秒後畫面切回測試卡。
@@ -104,9 +108,9 @@
 
 **旁白**：他低頭看了一眼自己的手。確實在抖。不明顯，拿著照片的手指指尖有很細的顫動，頻率很快，像琴弦被撥動後的餘震。他用另一隻手按住，壓了兩秒，鬆開，還是抖。
 
-**顧言**：(內心)我在乎。
+**顧言** [trembling]：(內心)我在乎。
 
-**顧言**：(內心)我一直都他媽的在乎。
+**顧言** [trembling]：(內心)我一直都他媽的在乎。
 
 **顧言**：(內心)我不在乎誰發了這張紙、誰裁掉了那個女人、誰知道我爸還有東西留下。我在乎的只有一件事：我爸是不是真的留下了什麼。
 
@@ -153,6 +157,10 @@
 **顧言**：(內心)她也在往那個方向去？
 
 **旁白**：他開始往走道方向移動。身體先於大腦做出了決定——他還沒有在腦子裡完整地說出「我要去鐘樓」這句話，但他的腳已經開始往走道上邁了。走到側門口的時候，他看到了一個畫面。
+
+```bg
+side corridor backstage of auditorium, half-open iron door at far end, rain slanting in through the gap, darkness and rain visible outside, wet floor with water trail, dim emergency lighting, moody cinematic visual-novel background art
+```
 
 **旁白**：側門外面是一段狹窄的走廊，走廊兩邊是後台的休息室和設備間。走廊盡頭有一扇通往外面的鐵門，鐵門是半開的，雨水從門縫裡斜斜地打進來，在地面上畫出一道濕痕。
 

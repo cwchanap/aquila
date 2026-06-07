@@ -1,5 +1,9 @@
 # 第九幕：十點十六分的鐘樓
 
+```bg
+clock tower exterior in heavy nighttime rain, dark weathered stone facade, rain pounding like coins on tin roof, old wooden double door with iron fittings and stone plaque reading the tower name, unlit surroundings, total darkness and rain, moody cinematic visual-novel background art
+```
+
 **旁白**：二十二點十六分。雨沒有停。反而比一個小時前更大了，雨點砸在地面上的聲音不再是沙沙的，而是密集的、沉重的、像無數硬幣同時落在鐵皮屋頂上。顧言站在鐘樓的正門前，全身濕透，頭髮貼在額頭上，雨水沿著下巴滴落，在地面的積水裡打出一圈一圈的漣漪。
 
 **旁白**：鐘樓的正門是一扇雙開的木門，帶鐵藝裝飾，門框上方有一塊石匾，刻著「鳴海鐘樓」四個字，字跡被雨水沖刷得發亮。門上掛著一把鐵鎖——但鎖沒有鎖上。鎖體掛在門環上，呈開啟狀態，像一個人隨手扣上去、忘記按下鎖芯的樣子。
@@ -15,6 +19,10 @@
 **顧言**：(內心)有人最近來過。門鉸鏈上了油。誰會來給鐘樓的門上油？
 
 **旁白**：他沒有多想。不是不想，是沒有時間想。口袋裡那張照片的重量像一塊燒紅的鐵，燙著他的大腿。他側身擠進門縫，踏進了鐘樓內部。
+
+```bg
+clock tower interior, narrow spiral wooden staircase winding up circular stone shaft, total darkness pierced only by phone flashlight beam, countless water droplets floating in the light beam like a micro galaxy, damp stone walls with exposed rock and old brick, iron handrail, moody cinematic visual-novel background art
+```
 
 **旁白**：黑暗。完全的黑暗。
 

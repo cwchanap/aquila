@@ -19,4 +19,5 @@ export interface StoryCompilerConfig {
      *  paragraphs become narration lines spoken by this character; when omitted,
      *  the parser throws on them (strict default for well-formed stories). */
     defaultSpeaker?: ResolvedCharacter;
+    charactersDocPath?: string;
 }

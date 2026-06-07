@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { DialogueEntryIR } from '../ir';
+import type { StoryCompilerConfig } from '../config';
 
 describe('DialogueEntryIR', () => {
     it('supports backgroundPrompt and expressionKey for raw parsed data', () => {
@@ -24,5 +25,24 @@ describe('DialogueEntryIR', () => {
         };
         expect(entry.background).toBe('_root/act1_s0');
         expect(entry.portrait).toBe('李杰/angry');
+    });
+});
+
+describe('StoryCompilerConfig', () => {
+    it('accepts optional charactersDocPath', () => {
+        const config: StoryCompilerConfig = {
+            storyId: 'demo',
+            resolveCharacter: () => undefined,
+            charactersDocPath: 'docs/characters.md',
+        };
+        expect(config.charactersDocPath).toBe('docs/characters.md');
+    });
+
+    it('works without charactersDocPath (defaults internally)', () => {
+        const config: StoryCompilerConfig = {
+            storyId: 'demo',
+            resolveCharacter: () => undefined,
+        };
+        expect(config.charactersDocPath).toBeUndefined();
     });
 });

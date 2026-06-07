@@ -104,9 +104,19 @@
       "prompt": "anime visual-novel portrait, 17-year-old East Asian boy, short messy black hair, dark school uniform with collar slightly open, faint dark circles under half-lidded eyes, dry cracked lips, guarded neutral expression, slightly hunched posture, hands in pockets, soft overcast window light from the side, muted cool grey palette, upper-body shot, clean background"
     },
     {
+      "key": "gu_yan/sad",
+      "path": "dont_save_me_before_midnight/characters/gu_yan/sad.png",
+      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, downcast eyes avoiding contact, lips pressed into a thin line, shoulders dropped, school uniform, soft desaturated lighting, upper-body shot"
+    },
+    {
       "key": "zhang_hao/base",
       "path": "dont_save_me_before_midnight/characters/zhang_hao/base.png",
       "prompt": "anime visual-novel portrait, 17-year-old East Asian boy, typical high school student, slightly cocky half-grin, leaning out from a dorm doorframe, teasing expression, school uniform worn casually, warm hallway lighting, upper-body shot, clean background"
+    },
+    {
+      "key": "gu_yan/angry",
+      "path": "dont_save_me_before_midnight/characters/gu_yan/angry.png",
+      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, cold hard glare, jaw clenched tight, eyes narrowed to slits, school uniform, dim overcast lighting, tense shoulders, muted cool tones, upper-body shot"
     },
     {
       "key": "gu_yan/shocked",
@@ -114,9 +124,9 @@
       "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, eyes blown wide, mouth slightly parted, face drained of color, school uniform, stark lighting, upper-body shot"
     },
     {
-      "key": "gu_yan/sad",
-      "path": "dont_save_me_before_midnight/characters/gu_yan/sad.png",
-      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, downcast eyes avoiding contact, lips pressed into a thin line, shoulders dropped, school uniform, soft desaturated lighting, upper-body shot"
+      "key": "gu_yan/trembling",
+      "path": "dont_save_me_before_midnight/characters/gu_yan/trembling.png",
+      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, hand visibly shaking, eyes glistening with unshed tears, trying to hold composure, lips trembling, school uniform, dim lighting, upper-body shot"
     },
     {
       "key": "lin_zhuren/panicked",
@@ -134,6 +144,11 @@
       "prompt": "anime visual-novel portrait, 40-something man, dark grey suit, thin metal-frame glasses, authoritarian mask over fear, finger pointing forward, voice raised, forced rigid posture, stark lighting, upper-body shot"
     },
     {
+      "key": "gu_yan/determined",
+      "path": "dont_save_me_before_midnight/characters/gu_yan/determined.png",
+      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, jaw set firm, eyes sharp and bright with resolve, leaning slightly forward, school uniform, strong directional light cutting across face, upper-body shot"
+    },
+    {
       "key": "shao_qiming/base",
       "path": "dont_save_me_before_midnight/characters/shao_qiming/base.png",
       "prompt": "anime visual-novel portrait, 40-something East Asian man, not tall, dark tanned skin, very short buzzcut following scalp curve, warm reliable smile showing white teeth, deep laugh lines, dark blue police uniform with shoulder insignia catching light, arms crossed or hands behind back, fatherly presence, warm even lighting, upper-body shot, clean background"
@@ -147,6 +162,11 @@
       "key": "shao_qiming/serious",
       "path": "dont_save_me_before_midnight/characters/shao_qiming/serious.png",
       "prompt": "anime visual-novel portrait, 40-something man, dark skin, buzzcut, flat professional expression with no smile, eyes coldly evaluating, police uniform, hard directional lighting, upper-body shot"
+    },
+    {
+      "key": "xu_xingtang/cold",
+      "path": "dont_save_me_before_midnight/characters/xu_xingtang/cold.png",
+      "prompt": "anime visual-novel portrait, 17-year-old girl, low ponytail, flat emotionally distant stare, delivering a statement not a question, photography vest, camera around neck, cool desaturated lighting, upper-body shot"
     },
     {
       "key": "xu_xingtang/base",
@@ -164,9 +184,9 @@
       "prompt": "anime visual-novel portrait, 17-year-old girl, low ponytail, lips pressed tight, stepping back, knuckles white on camera strap, eyes averted with regret, photography vest, soft dim lighting, upper-body shot"
     },
     {
-      "key": "han_yue/base",
-      "path": "dont_save_me_before_midnight/characters/han_yue/base.png",
-      "prompt": "anime visual-novel portrait, 17-year-old East Asian boy, school uniform with dark dust-covered jacket, blue-and-white stage crew temporary pass around neck, annoyed expression, jaw tight, shoulders tense, looking away to the side, parallel dark red scab scratches on back of hand, right arm held closer to body, overcast lighting, upper-body shot, clean background"
+      "key": "han_yue/angry",
+      "path": "dont_save_me_before_midnight/characters/han_yue/angry.png",
+      "prompt": "anime visual-novel portrait, 17-year-old boy, school uniform with dust-covered jacket, shouting with veins showing on neck, fist clenched, stage crew pass swinging, harsh lighting, upper-body shot"
     },
     {
       "key": "han_yue/worried",
@@ -174,24 +194,14 @@
       "prompt": "anime visual-novel portrait, 17-year-old boy, school uniform with dust-covered jacket, deep frown, eyes tracking someone intently, body half-turned as if to follow, stage crew pass, dim anxious lighting, upper-body shot"
     },
     {
-      "key": "gu_yan/trembling",
-      "path": "dont_save_me_before_midnight/characters/gu_yan/trembling.png",
-      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, hand visibly shaking, eyes glistening with unshed tears, trying to hold composure, lips trembling, school uniform, dim lighting, upper-body shot"
-    },
-    {
-      "key": "black_raincoat/base",
-      "path": "dont_save_me_before_midnight/characters/black_raincoat/base.png",
-      "prompt": "anime visual-novel portrait, mysterious figure in oversized black raincoat, hood pulled low obscuring entire upper face, only lower face visible with jaw set and lips closed, dark scarf around neck, rain dripping off the hem, camera strap visible on shoulder, leather dress shoes glimpsed below, heavy rain and darkness behind, cold blue-grey palette, upper-body shot"
-    },
-    {
       "key": "gu_yan/scared",
       "path": "dont_save_me_before_midnight/characters/gu_yan/scared.png",
       "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, eyes wide with whites showing, body rigid and tense, breath held, mouth slightly open, school uniform, cold blue-grey lighting, upper-body shot"
     },
     {
-      "key": "gu_yan/determined",
-      "path": "dont_save_me_before_midnight/characters/gu_yan/determined.png",
-      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, jaw set firm, eyes sharp and bright with resolve, leaning slightly forward, school uniform, strong directional light cutting across face, upper-body shot"
+      "key": "black_raincoat/base",
+      "path": "dont_save_me_before_midnight/characters/black_raincoat/base.png",
+      "prompt": "anime visual-novel portrait, mysterious figure in oversized black raincoat, hood pulled low obscuring entire upper face, only lower face visible with jaw set and lips closed, dark scarf around neck, rain dripping off the hem, camera strap visible on shoulder, leather dress shoes glimpsed below, heavy rain and darkness behind, cold blue-grey palette, upper-body shot"
     }
   ]
 }

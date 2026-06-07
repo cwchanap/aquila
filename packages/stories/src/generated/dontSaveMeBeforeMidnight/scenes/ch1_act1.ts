@@ -34,7 +34,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰色。全是灰色。天空是灰的，海面是灰的，遠處的鐘樓在雨霧裡只剩下一個模糊的輪廓，像一根插在霧裡的斷骨。", background: Background.Chapter_1_Ch1_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "鐘樓。", background: Background.Chapter_1_Ch1_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "看到它的瞬間，顧言的胃裡翻了一下。不是恐懼，比較像是本能的排斥。鐘樓是鳴海高中最老的建築，平常不開放，學生之間流傳著各種鬼故事。但那些故事都不是重點。", background: Background.Chapter_1_Ch1_Act1_S1 },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)重點是十年前。重點是南翼樓。重點是父親。", background: Background.Chapter_1_Ch1_Act1_S1, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)重點是十年前。重點是南翼樓。重點是父親。", background: Background.Chapter_1_Ch1_Act1_S1, portrait: Portrait.GuYan_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十年前，鳴海高中南翼樓發生火災。官方結論是「校友顧某涉嫌人為縱火」。那個「顧某」，就是他的父親，顧澤。", background: Background.Chapter_1_Ch1_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言七歲那年，父親被帶走。之後他跟著外婆長大，輾轉幾個城市，最後因為戶籍關係回到鳴海高中就讀。他不知道這算不算命運的玩笑——讓縱火犯的兒子回到縱火現場，在同一片天空下長大。", background: Background.Chapter_1_Ch1_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他已經學會了一種生存技能：在被議論之前，先讓自己變得透明。不參加聚會，不主動社交，不在課堂上發言超過三句話。別人看見他會壓低聲音，他就假裝沒聽見。有人拿父親的事開玩笑，他就冷冷地回一句，然後走開。", background: Background.Chapter_1_Ch1_Act1_S1 },

@@ -117,7 +117,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "邵叔的背影消失在指揮室的門口。他推門進去的時候，裡面有幾個穿制服的人在走動，桌上的對講機正在發出斷斷續續的沙沙聲。門在他身後關上，金屬門框撞擊的聲音很沉，悶悶的，像敲在一個空箱子上。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言站在原地，又待了幾秒。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)邵叔是好人。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)這句話他從來沒有對任何人說過。不是因為不確定，而是因為一旦說出口，就會有人問「為什麼」，而那個「為什麼」的答案太長了，也太複雜了，涉及到火災、涉及到父親、涉及到一個十七歲的少年為什麼只有在警察局才能感到一點點安全。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)這句話他從來沒有對任何人說過。不是因為不確定，而是因為一旦說出口，就會有人問「為什麼」，而那個「為什麼」的答案太長了，也太複雜了，涉及到火災、涉及到父親、涉及到一個十七歲的少年為什麼只有在警察局才能感到一點點安全。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.GuYan_Sad },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)但他確實是。至少對我來說。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他正準備離開，視線的邊緣捕捉到一個畫面。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "指揮室的門又開了。出來的不是邵叔，是林主任。他穿著那件深灰色的西裝，胸前別著校徽，手裡拿著一個牛皮紙文件夾，腳步很快，朝主道另一頭走去。", background: Background.Chapter_1_Ch1_Act4_S0 },

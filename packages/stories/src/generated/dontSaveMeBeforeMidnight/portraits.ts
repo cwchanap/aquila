@@ -2,13 +2,14 @@
 
 export enum Portrait {
     BlackRaincoat_Base = "black_raincoat/base",
+    GuYan_Angry = "gu_yan/angry",
     GuYan_Base = "gu_yan/base",
     GuYan_Determined = "gu_yan/determined",
     GuYan_Sad = "gu_yan/sad",
     GuYan_Scared = "gu_yan/scared",
     GuYan_Shocked = "gu_yan/shocked",
     GuYan_Trembling = "gu_yan/trembling",
-    HanYue_Base = "han_yue/base",
+    HanYue_Angry = "han_yue/angry",
     HanYue_Worried = "han_yue/worried",
     LinZhuren_Base = "lin_zhuren/base",
     LinZhuren_Panicked = "lin_zhuren/panicked",
@@ -17,6 +18,7 @@ export enum Portrait {
     ShaoQiming_Concerned = "shao_qiming/concerned",
     ShaoQiming_Serious = "shao_qiming/serious",
     XuXingtang_Base = "xu_xingtang/base",
+    XuXingtang_Cold = "xu_xingtang/cold",
     XuXingtang_Regretful = "xu_xingtang/regretful",
     XuXingtang_Urgent = "xu_xingtang/urgent",
     ZhangHao_Base = "zhang_hao/base",

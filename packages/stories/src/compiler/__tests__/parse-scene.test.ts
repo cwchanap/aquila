@@ -156,4 +156,32 @@ describe('parseScene', () => {
         expect(result.entries[0].backgroundPrompt).toContain('月台夜景');
         expect(result.entries[0].backgroundPrompt).toContain('無人');
     });
+
+    it('parses [expression] override tag after speaker name', () => {
+        const result = parseScene(
+            '**李杰** [angry]：妳做什麼！',
+            resolve,
+            'x.md'
+        );
+        expect(result.entries[0].expressionKey).toBe('angry');
+        expect(result.entries[0].dialogue).toBe('妳做什麼！');
+    });
+
+    it('works without expression tag (backward compatible)', () => {
+        const result = parseScene('**李杰**：hello', resolve, 'x.md');
+        expect(result.entries[0].expressionKey).toBeUndefined();
+    });
+
+    it('combines bg block and expression tag', () => {
+        const md = [
+            '```bg',
+            '月台',
+            '```',
+            '',
+            '**李杰** [scared]：这是什麼？',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'x.md');
+        expect(result.entries[0].backgroundPrompt).toBe('月台');
+        expect(result.entries[0].expressionKey).toBe('scared');
+    });
 });

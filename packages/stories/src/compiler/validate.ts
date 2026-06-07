@@ -1,6 +1,12 @@
 import type { StoryIR } from './ir';
+import type { PortraitPromptMap } from './parse-portraits';
+import type { CharacterId } from '../characters';
 
-export function validateStory(story: StoryIR): void {
+export function validateStory(
+    story: StoryIR,
+    portraitMap?: PortraitPromptMap
+): string[] {
+    const warnings: string[] = [];
     const sceneIds = new Set(story.scenes.map(s => s.id));
     const choiceById = new Map(story.choices.map(c => [c.choiceId, c]));
 
@@ -65,4 +71,29 @@ export function validateStory(story: StoryIR): void {
             );
         }
     }
+
+    if (portraitMap) {
+        const charsInStory = new Set<CharacterId>();
+        for (const scene of story.scenes) {
+            for (const entry of scene.entries) {
+                charsInStory.add(entry.characterId);
+                if (entry.expressionKey && portraitMap[entry.characterId]) {
+                    if (!portraitMap[entry.characterId]![entry.expressionKey]) {
+                        warnings.push(
+                            `[story-compiler] scene "${scene.id}": unknown expression "${entry.expressionKey}" for character "${entry.characterId}" (falling back to base)`
+                        );
+                    }
+                }
+            }
+        }
+        for (const charId of charsInStory) {
+            if (!portraitMap[charId]) {
+                warnings.push(
+                    `[story-compiler] character "${charId}" has no portrait prompts in characters.md`
+                );
+            }
+        }
+    }
+
+    return warnings;
 }

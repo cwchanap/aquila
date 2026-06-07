@@ -1,4 +1,5 @@
 import type { CharacterId } from '../characters';
+import type { AssetManifest } from './resolve-assets';
 
 export interface DialogueEntryIR {
     // Always concrete: the parser resolves every "**name**：" line to a CharacterId
@@ -40,4 +41,5 @@ export interface StoryIR {
     start: string;
     scenes: SceneIR[];
     choices: ChoiceIR[];
+    assetManifest?: AssetManifest;
 }

@@ -138,7 +138,7 @@ Each `actN.md` file follows this format:
 
 **Important:** The character name in bold must resolve to a `CharacterId`. If it doesn't, the compiler will throw an error with the file and the unknown name.
 
-**Background image prompts** — a ` ```bg ` fenced block attaches a background to the next dialogue entry:
+**Background image prompts** — a ` ```bg ` fenced block sets the background starting from the next dialogue entry. That background **persists** for all subsequent entries until another `bg` block changes it (standard visual-novel behaviour — you only need a new block when the scene/location shifts):
 
 ````markdown
 ```bg
@@ -146,10 +146,19 @@ train platform at night, cold blue lighting, empty platform
 ```
 
 **李杰**：這裡是哪裡？
+
+**旁白**：風很冷。
+
+```bg
+train interior, warm fluorescent lighting, empty seats
+```
+
+**李杰**：車裡好多了。
 ````
 
-- The prompt applies to the **next** dialogue entry only (the entry immediately following the block).
-- Multiple `bg` blocks may appear in one scene to give different sections their own background.
+- A `bg` block applies starting from the **next** dialogue entry.
+- The background **carries forward** to all following entries — no need to repeat it.
+- Multiple `bg` blocks in one scene create distinct **sections** (indexed `s0`, `s1`, `s2`, …). Each section gets its own background image.
 - **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
 
 **Expression override tags** — put a `[key]` between the bold name and the colon to override the portrait for that line:
@@ -207,7 +216,9 @@ This discovers all `raw/<story>/compiler.config.ts` entries and generates:
 
 | Output file | Purpose |
 |---|---|
-| `src/generated/<story>/scenes/<sceneId>.ts` | One `DialogueEntry[]` per scene |
+| `src/generated/<story>/scenes/<sceneId>.ts` | One `DialogueEntry[]` per scene — references `Portrait.*` and `Background.*` enums |
+| `src/generated/<story>/portraits.ts` | `Portrait` enum mapping every `characterId/expression` key to an enum member (emitted when portrait prompts exist) |
+| `src/generated/<story>/backgrounds.ts` | `Background` enum mapping every background key to an enum member (emitted when `bg` blocks exist) |
 | `src/generated/<story>/dialogue.zh.ts` | `DialogueMap` index importing all scenes |
 | `src/generated/<story>/flow.ts` | `FlowConfig` with scene graph + choice transitions |
 | `src/generated/<story>/choices.todo.zh.ts` | Reference stub showing all choice/option IDs with TODO placeholders |
@@ -399,12 +410,47 @@ The manifest is a source of truth for both the prompts and where each rendered P
 ### Asset paths
 | What | Pattern | Example |
 |---|---|---|
-| Portrait | `<storyId>/characters/<characterName>/<expression>.png` | `train_adventure/characters/李杰/angry.png` |
-| Background | `<storyId>/backgrounds/<rawDirName>/<sceneId>_s<section>.png` | `train_adventure/backgrounds/_root/act1_s0.png` |
+| Portrait | `<storyId>/characters/<characterId>/<expression>.png` | `dont_save_me_before_midnight/characters/gu_yan/determined.png` |
+| Background | `<storyId>/backgrounds/<rawDirName>/<sceneId>_s<section>.png` | `dont_save_me_before_midnight/backgrounds/chapter_1/ch1_act4_s0.png` |
 
-- Portraits use the character's **display name** and the expression key (`base` when no override is given).
-- Backgrounds embed the **raw directory name**: root-level scenes use `_root`, otherwise the source directory (e.g. `chapter_1`, `branch_1a`).
+- Portrait paths use the character's **ID** (snake_case from `CharacterId` enum, e.g. `gu_yan`), **not** the display name. The expression key defaults to `base` when no `[override]` is given.
+- Background paths embed the **raw directory name**: root-level scenes use `_root`, otherwise the source directory (e.g. `chapter_1`, `branch_1a`).
 - `<section>` is a **zero-based** index that increments each time a new ` ```bg ` block appears in a scene (`s0` for the first, `s1` for the second, ...).
+
+### Generated enums (`Portrait` / `Background`)
+
+The compiler generates per-story enum files so scene files reference typed enum members instead of raw strings:
+
+**`portraits.ts`** — emitted when any character has portrait prompts:
+```typescript
+export enum Portrait {
+    GuYan_Base = "gu_yan/base",
+    GuYan_Determined = "gu_yan/determined",
+    // ...
+}
+```
+- Enum key = `${CharacterIdEnumKey}_${CapitalizedExpression}` (e.g. `gu_yan` → `GuYan`, `determined` → `Determined` → `GuYan_Determined`).
+
+**`backgrounds.ts`** — emitted when any scene has `bg` blocks:
+```typescript
+export enum Background {
+    Chapter_1_Ch1_Act4_S0 = "chapter_1/ch1_act4_s0",
+    // ...
+}
+```
+- Enum key = each `/`- and `_`-separated segment capitalized and joined with `_` (e.g. `chapter_1/ch1_act4_s0` → `Chapter_1_Ch1_Act4_S0`).
+
+Generated scene files import and reference these enums:
+```typescript
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
+
+export const scene: DialogueEntry[] = [
+    { ..., background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.GuYan_Base },
+];
+```
+
+Both files are compiler-owned — re-run `bun compile:stories` after adding or changing portrait/background prompts.
 
 ### Key files to touch when adding a story
 

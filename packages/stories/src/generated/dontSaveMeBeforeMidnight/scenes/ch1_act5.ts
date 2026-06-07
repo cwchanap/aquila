@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯為什麼？", background: "chapter_1/ch1_act5_s0", portrait: "顧言/base" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他從拱柱後面走出來，朝那個女生的方向走去。腳步不快，但路線很直。他的鞋踩在長廊的石板地面上，聲音被拱頂回彈，她不可能聽不到。", background: "chapter_1/ch1_act5_s0" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她確實聽到了。", background: "chapter_1/ch1_act5_s0" },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在顧言走到距離她大約五步遠的時候，她放下了相機。動作很自然，不慌不忙，像一個人結束了一項工作，隨手把工具收起來。她沒有轉身，也沒有回頭看，只是把相機的背帶繞在手腕上，站直了身體。", background: "chapter_1/ch1_act5_s0" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在顧言走到距離她大約五步遠的時候，她放下了相機。動作很自然，不慌不忙，像一個人結束了一項工作，隨手把工具收起來。她沒有轉身，也沒有回頭看，只是把相機的灰色背帶繞在手腕上，站直了身體。", background: "chapter_1/ch1_act5_s0" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她轉過來了。", background: "chapter_1/ch1_act5_s0" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "臉很小，五官清瘦，皮膚是那種不怎麼曬太陽的白。頭髮紮成低馬尾，幾根碎髮貼在耳側，被雨後的濕氣黏住了。眼睛是黑的，瞳仁很亮，但不是那種熱情的亮，是一種安靜的、像深水一樣的東西——你看得到表面，猜不到深度。", background: "chapter_1/ch1_act5_s0" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看了顧言一眼。只有一眼。然後她的視線就從他臉上移開了，落在他肩膀後方的某個位置，像在確認他有沒有帶別人來。", background: "chapter_1/ch1_act5_s0" },

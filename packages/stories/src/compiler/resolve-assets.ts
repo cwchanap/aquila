@@ -59,16 +59,18 @@ export function resolveSceneAssets(
         if (prompts) {
             const charName = CharacterDirectory.getById(entry.characterId).name;
             const expression = entry.expressionKey || 'base';
-            const portraitKey = `${charName}/${expression}`;
-            entry.portrait = portraitKey;
             const promptText = prompts[expression] || prompts['base'];
-            if (promptText && !portraitByKey.has(portraitKey)) {
-                portraitByKey.set(portraitKey, {
-                    key: portraitKey,
-                    path: `${storyId}/characters/${portraitKey}.png`,
-                    prompt: promptText,
-                });
-                portraits.push(portraitByKey.get(portraitKey)!);
+            if (promptText) {
+                const portraitKey = `${charName}/${expression}`;
+                entry.portrait = portraitKey;
+                if (!portraitByKey.has(portraitKey)) {
+                    portraitByKey.set(portraitKey, {
+                        key: portraitKey,
+                        path: `${storyId}/characters/${portraitKey}.png`,
+                        prompt: promptText,
+                    });
+                    portraits.push(portraitByKey.get(portraitKey)!);
+                }
             }
         }
     }

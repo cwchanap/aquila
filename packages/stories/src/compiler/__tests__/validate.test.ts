@@ -121,4 +121,35 @@ describe('validateStory', () => {
         const warnings = validateStory(story, portraitMap);
         expect(warnings.join('\n')).toContain('unknown expression');
     });
+
+    it('warns when a character with portrait prompts lacks a base expression', () => {
+        const story: StoryIR = {
+            storyId: 'demo',
+            name: 'demoStory',
+            start: 'act1',
+            scenes: [
+                {
+                    id: 'act1',
+                    entries: [
+                        {
+                            characterId: CharacterId.LiJie,
+                            displayName: '李杰',
+                            dialogue: 'a',
+                            expressionKey: 'happy',
+                        },
+                    ],
+                    next: null,
+                    sourcePath: 'act1.md',
+                },
+            ],
+            choices: [],
+        };
+        const portraitMap: PortraitPromptMap = {
+            [CharacterId.LiJie]: { happy: 'smiling' } as Record<string, string>,
+        };
+        const warnings = validateStory(story, portraitMap);
+        expect(warnings.join('\n')).toContain(
+            'missing required "base" expression'
+        );
+    });
 });

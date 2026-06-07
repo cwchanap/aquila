@@ -122,6 +122,29 @@ describe('resolveSceneAssets', () => {
         expect(entries[0].portrait).toBeUndefined();
     });
 
+    it('does not assign portrait when expression and base are both missing', () => {
+        const incompleteMap: PortraitPromptMap = {
+            [CharacterId.LiJie]: { happy: 'smiling' } as Record<string, string>,
+        };
+        const entries: DialogueEntryIR[] = [
+            {
+                characterId: CharacterId.LiJie,
+                displayName: '李杰',
+                dialogue: 'a',
+                expressionKey: 'nonexistent',
+            },
+        ];
+        const { portraits } = resolveSceneAssets(
+            'demo',
+            'act1',
+            'act1.md',
+            entries,
+            incompleteMap
+        );
+        expect(entries[0].portrait).toBeUndefined();
+        expect(portraits).toHaveLength(0);
+    });
+
     it('builds manifest entries with correct paths', () => {
         const entries: DialogueEntryIR[] = [
             {

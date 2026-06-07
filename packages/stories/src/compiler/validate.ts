@@ -93,6 +93,13 @@ export function validateStory(
                 );
             }
         }
+        for (const charId of Object.keys(portraitMap) as CharacterId[]) {
+            if (portraitMap[charId] && !portraitMap[charId]!.base) {
+                warnings.push(
+                    `[story-compiler] character "${charId}" missing required "base" expression in characters.md`
+                );
+            }
+        }
     }
 
     return warnings;

@@ -95,4 +95,117 @@ describe('emitStory', () => {
         expect(idx).toContain('export const demoStoryZhDialogue');
         expect(idx).toContain('"b1b_act2": s_b1b_act2');
     });
+
+    it('emits background and portrait keys in scene files', () => {
+        const storyWithAssets: StoryIR = {
+            storyId: 'demo_story',
+            name: 'demoStory',
+            start: 'act1',
+            scenes: [
+                {
+                    id: 'act1',
+                    entries: [
+                        {
+                            characterId: CharacterId.Narrator,
+                            displayName: '旁白',
+                            dialogue: 'hello',
+                            background: '_root/act1_s0',
+                        },
+                        {
+                            characterId: CharacterId.LiJie,
+                            displayName: '李杰',
+                            dialogue: 'hi',
+                            background: '_root/act1_s0',
+                            portrait: '李杰/angry',
+                        },
+                    ],
+                    next: null,
+                    sourcePath: 'act1.md',
+                },
+            ],
+            choices: [],
+        };
+        emitStory(storyWithAssets, dir);
+        const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
+        expect(scene).toContain('background:');
+        expect(scene).toContain(JSON.stringify('_root/act1_s0'));
+        expect(scene).toContain('portrait:');
+        expect(scene).toContain(JSON.stringify('李杰/angry'));
+    });
+
+    it('emits image-assets.json manifest', () => {
+        const storyWithManifest: StoryIR = {
+            storyId: 'demo_story',
+            name: 'demoStory',
+            start: 'act1',
+            scenes: [
+                {
+                    id: 'act1',
+                    entries: [
+                        {
+                            characterId: CharacterId.Narrator,
+                            displayName: '旁白',
+                            dialogue: 'hello',
+                            background: '_root/act1_s0',
+                        },
+                    ],
+                    next: null,
+                    sourcePath: 'act1.md',
+                },
+            ],
+            choices: [],
+            assetManifest: {
+                storyId: 'demo_story',
+                backgrounds: [
+                    {
+                        key: '_root/act1_s0',
+                        path: 'demo_story/backgrounds/_root/act1_s0.png',
+                        prompt: '月台',
+                    },
+                ],
+                portraits: [
+                    {
+                        key: '李杰/base',
+                        path: 'demo_story/characters/李杰/base.png',
+                        prompt: '17yo boy',
+                    },
+                ],
+            },
+        };
+        emitStory(storyWithManifest, dir);
+        const manifestPath = join(dir, 'image-assets.json');
+        expect(existsSync(manifestPath)).toBe(true);
+        const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+        expect(manifest.storyId).toBe('demo_story');
+        expect(manifest.backgrounds).toHaveLength(1);
+        expect(manifest.backgrounds[0].prompt).toBe('月台');
+        expect(manifest.portraits).toHaveLength(1);
+    });
+
+    it('does not emit background/portrait fields when undefined', () => {
+        const storyNoAssets: StoryIR = {
+            storyId: 'demo_story',
+            name: 'demoStory',
+            start: 'act1',
+            scenes: [
+                {
+                    id: 'act1',
+                    entries: [
+                        {
+                            characterId: CharacterId.Narrator,
+                            displayName: '旁白',
+                            dialogue: 'hello',
+                        },
+                    ],
+                    next: null,
+                    sourcePath: 'act1.md',
+                },
+            ],
+            choices: [],
+        };
+        emitStory(storyNoAssets, dir);
+        const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
+        expect(scene).not.toContain('background:');
+        expect(scene).not.toContain('portrait:');
+    });
 });

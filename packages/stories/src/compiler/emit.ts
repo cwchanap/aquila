@@ -13,10 +13,16 @@ function q(s: string): string {
 function emitSceneFile(story: StoryIR, sceneId: string): string {
     const scene = story.scenes.find(s => s.id === sceneId)!;
     const lines = scene.entries
-        .map(
-            e =>
-                `    { characterId: CharacterId.${charKey(e.characterId)}, character: ${q(e.displayName)}, dialogue: ${q(e.dialogue)} },`
-        )
+        .map(e => {
+            const parts = [
+                `characterId: CharacterId.${charKey(e.characterId)}`,
+                `character: ${q(e.displayName)}`,
+                `dialogue: ${q(e.dialogue)}`,
+            ];
+            if (e.background) parts.push(`background: ${q(e.background)}`);
+            if (e.portrait) parts.push(`portrait: ${q(e.portrait)}`);
+            return `    { ${parts.join(', ')} },`;
+        })
         .join('\n');
     return (
         HEADER +
@@ -106,4 +112,10 @@ export function emitStory(story: StoryIR, outDir: string): void {
     writeFileSync(join(outDir, 'dialogue.zh.ts'), emitDialogueIndex(story));
     writeFileSync(join(outDir, 'flow.ts'), emitFlow(story));
     writeFileSync(join(outDir, 'choices.todo.zh.ts'), emitChoiceTodo(story));
+    if (story.assetManifest) {
+        writeFileSync(
+            join(outDir, 'image-assets.json'),
+            JSON.stringify(story.assetManifest, null, 2) + '\n'
+        );
+    }
 }

@@ -8,6 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./characters": "./src/characters/index.ts",
+    "./generated/trainAdventure/characters": "./src/generated/trainAdventure/characters.ts",
+    "./generated/dontSaveMeBeforeMidnight/characters": "./src/generated/dontSaveMeBeforeMidnight/characters.ts",
     "./types": "./src/types.ts",
     "./stories": "./src/stories/index.ts",
     "./translations/en.json": "./src/translations/en.json",

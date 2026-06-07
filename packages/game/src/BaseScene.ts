@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { CharacterDirectory } from './characters/CharacterDirectory';
 import { SceneDirectory } from './SceneDirectory';
 import type { DialogueEntry, DialogueMap } from './dialogue/types';
 import { GameConfig } from './GameConfig';
@@ -319,10 +318,7 @@ export class BaseScene extends Phaser.Scene {
                 this.dialogueRetryCount = 0;
                 const character = current.characterRef;
                 const charId = character?.id ?? current.characterId;
-                const info =
-                    character?.info ??
-                    (charId ? CharacterDirectory.getById(charId) : undefined);
-                let speaker = current.character ?? info?.name ?? charId;
+                let speaker = character?.name ?? current.character ?? charId;
                 const text = current.dialogue;
 
                 // Use default protagonist name based on locale

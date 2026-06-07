@@ -1,12 +1,17 @@
 import { Character } from './Character';
-import { CharacterId } from './CharacterDirectory';
+import {
+    CharacterId,
+    characterTable,
+} from '@aquila/stories/generated/trainAdventure/characters';
 
-const create = (id: CharacterId) => new Character(id);
+const create = (id: string) => {
+    const info = characterTable[id];
+    return new Character(id, info?.name ?? id);
+};
 
-// Built over every CharacterId so new entries are picked up automatically.
 export const characters = Object.fromEntries(
     Object.values(CharacterId).map(id => [id, create(id)])
-) as Record<CharacterId, Character>;
+) as Record<string, Character>;
 
 export type CharacterMap = typeof characters;
 
@@ -28,6 +33,6 @@ export const nakamuraHayato = characters[CharacterId.NakamuraHayato];
 export const shimizuEmi = characters[CharacterId.ShimizuEmi];
 export const lingMo = characters[CharacterId.LingMo];
 
-export function getCharacter(id: CharacterId) {
+export function getCharacter(id: string) {
     return characters[id];
 }

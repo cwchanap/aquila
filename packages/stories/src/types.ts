@@ -1,8 +1,6 @@
-import type { CharacterId } from './characters';
-
 export type DialogueEntry = {
     character?: string;
-    characterId?: CharacterId;
+    characterId?: string;
     dialogue: string;
     background?: string;
     portrait?: string;

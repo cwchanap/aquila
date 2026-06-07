@@ -1,6 +1,5 @@
-// Re-export from dialogue package
 export {
-    CharacterId,
     CharacterDirectory,
+    CharacterId,
     type CharacterInfo,
-} from '@aquila/stories';
+} from '@aquila/stories/generated/trainAdventure/characters';

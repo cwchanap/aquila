@@ -1,6 +1,7 @@
 import type { StoryIR } from './ir';
-import type { PortraitPromptMap } from './parse-portraits';
 import type { CharacterId } from '../characters';
+
+type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
 
 export function validateStory(
     story: StoryIR,

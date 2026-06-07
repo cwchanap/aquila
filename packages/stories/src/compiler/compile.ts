@@ -1,38 +1,71 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { StoryCompilerConfig } from './config';
+import type { ResolvedCharacter } from './config';
 import type { StoryIR } from './ir';
 import { scanStory } from './scan-story';
 import { buildStoryGraph } from './build-graph';
 import { parseScene } from './parse-scene';
 import { validateStory } from './validate';
 import { emitStory } from './emit';
-import { parsePortraits } from './parse-portraits';
-import type { PortraitPromptMap } from './parse-portraits';
+import { parseCharacters } from './parse-characters';
+import type { ParsedCharacterDirectory } from './parse-characters';
+import { buildResolveCharacter } from './resolve-character';
 import { resolveSceneAssets, buildAssetManifest } from './resolve-assets';
 import type { SceneAssets } from './resolve-assets';
 
 export interface CompileOptions {
-    rawDir: string; // packages/stories/raw/<name>
-    name: string; // 'trainAdventure'
-    outDir: string; // packages/stories/src/generated/<name>
-    choicesPath: string; // packages/stories/src/stories/<name>/choices.zh.ts
+    rawDir: string;
+    name: string;
+    outDir: string;
+    choicesPath: string;
     config: StoryCompilerConfig;
 }
 
+function loadCharacterDir(opts: CompileOptions): ParsedCharacterDirectory {
+    const docPath = opts.config.charactersDocPath ?? 'docs/characters.md';
+    const fullPath = join(opts.rawDir, docPath);
+    if (!existsSync(fullPath)) {
+        throw new Error(
+            `[story-compiler] no characters.md at ${docPath} for story "${opts.name}"`
+        );
+    }
+    const md = readFileSync(fullPath, 'utf8');
+    return parseCharacters(md);
+}
+
 export function compileStory(opts: CompileOptions): StoryIR {
-    const portraitMap = loadPortraitMap(opts);
+    const charDir = loadCharacterDir(opts);
+    const resolveCharacter = buildResolveCharacter(charDir, opts.config);
+
+    let defaultSpeaker: ResolvedCharacter | undefined;
+    if (opts.config.defaultSpeakerId) {
+        const info = charDir.getById(opts.config.defaultSpeakerId);
+        if (!info) {
+            throw new Error(
+                `[story-compiler] defaultSpeakerId "${opts.config.defaultSpeakerId}" not found in characters.md`
+            );
+        }
+        defaultSpeaker = { id: info.id, displayName: info.name };
+    }
 
     const graph = buildStoryGraph(scanStory(opts.rawDir));
     const allSceneAssets: SceneAssets[] = [];
+
+    const portraitMap: Partial<Record<string, Record<string, string>>> = {};
+    for (const c of charDir.characters) {
+        if (Object.keys(c.portraits).length > 0) {
+            portraitMap[c.id] = c.portraits;
+        }
+    }
 
     const scenes = graph.scenes.map(s => {
         const md = readFileSync(join(opts.rawDir, s.sourcePath), 'utf8');
         const parsed = parseScene(
             md,
-            opts.config.resolveCharacter,
+            resolveCharacter,
             s.sourcePath,
-            opts.config.defaultSpeaker
+            defaultSpeaker
         );
 
         const sceneAssets = resolveSceneAssets(
@@ -70,22 +103,9 @@ export function compileStory(opts: CompileOptions): StoryIR {
     const warnings = validateStory(story, portraitMap);
     for (const w of warnings) console.warn(w);
 
-    emitStory(story, opts.outDir);
+    emitStory(story, opts.outDir, charDir);
     scaffoldChoices(story, opts.choicesPath);
     return story;
-}
-
-function loadPortraitMap(opts: CompileOptions): PortraitPromptMap {
-    const docPath = opts.config.charactersDocPath ?? 'docs/characters.md';
-    const fullPath = join(opts.rawDir, docPath);
-    if (!existsSync(fullPath)) {
-        console.warn(
-            `[story-compiler] no characters.md at ${docPath}, skipping portrait prompts`
-        );
-        return {};
-    }
-    const md = readFileSync(fullPath, 'utf8');
-    return parsePortraits(md, opts.config.resolveCharacter);
 }
 
 /** Create choices.zh.ts on first run; otherwise warn about drift, never overwrite. */

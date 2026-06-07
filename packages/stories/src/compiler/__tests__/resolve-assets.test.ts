@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { resolveSceneAssets } from '../resolve-assets';
 import { CharacterId } from '../../characters';
 import type { DialogueEntryIR } from '../ir';
-import type { PortraitPromptMap } from '../parse-portraits';
+
+type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
 
 const portraitMap: PortraitPromptMap = {
     [CharacterId.LiJie]: {

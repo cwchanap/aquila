@@ -1,5 +1,6 @@
 import type { DialogueEntryIR } from './ir';
-import type { PortraitPromptMap } from './parse-portraits';
+
+type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
 
 export interface AssetManifestEntry {
     key: string;

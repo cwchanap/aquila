@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { validateStory } from '../validate';
 import { CharacterId } from '../../characters';
 import type { StoryIR } from '../ir';
-import type { PortraitPromptMap } from '../parse-portraits';
+
+type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
 
 function baseStory(): StoryIR {
     return {

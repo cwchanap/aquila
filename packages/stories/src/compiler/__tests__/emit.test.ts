@@ -3,8 +3,18 @@ import { mkdtempSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { emitStory } from '../emit';
-import { CharacterId } from '../../characters';
+import type { ParsedCharacterDirectory } from '../parse-characters';
 import type { StoryIR } from '../ir';
+
+const mockCharDir: ParsedCharacterDirectory = {
+    characters: [
+        { id: 'narrator', name: '旁白', aliases: [], portraits: {} },
+        { id: 'li_jie', name: '李杰', aliases: [], portraits: {} },
+    ],
+    getById: (id: string) => mockCharDir.characters.find(c => c.id === id),
+    getIdByName: (name: string) =>
+        mockCharDir.characters.find(c => c.name === name)?.id,
+};
 
 const dir = mkdtempSync(join(tmpdir(), 'emit-'));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
@@ -19,12 +29,12 @@ const story: StoryIR = {
             title: '第一幕',
             entries: [
                 {
-                    characterId: CharacterId.Narrator,
+                    characterId: 'narrator',
                     displayName: '旁白',
                     dialogue: "It's night.",
                 },
                 {
-                    characterId: CharacterId.LiJie,
+                    characterId: 'li_jie',
                     displayName: '李杰（內心）',
                     dialogue: '(內心)hm.',
                 },
@@ -36,7 +46,7 @@ const story: StoryIR = {
             id: 'b1a_act2',
             entries: [
                 {
-                    characterId: CharacterId.Narrator,
+                    characterId: 'narrator',
                     displayName: '旁白',
                     dialogue: 'a',
                 },
@@ -48,7 +58,7 @@ const story: StoryIR = {
             id: 'b1b_act2',
             entries: [
                 {
-                    characterId: CharacterId.Narrator,
+                    characterId: 'narrator',
                     displayName: '旁白',
                     dialogue: 'b',
                 },
@@ -71,14 +81,14 @@ const story: StoryIR = {
 
 describe('emitStory', () => {
     it('writes scene files, dialogue index, flow, and choice stub', () => {
-        emitStory(story, dir);
+        emitStory(story, dir, mockCharDir);
         expect(existsSync(join(dir, 'scenes', 'act1.ts'))).toBe(true);
         expect(existsSync(join(dir, 'dialogue.zh.ts'))).toBe(true);
         expect(existsSync(join(dir, 'flow.ts'))).toBe(true);
         expect(existsSync(join(dir, 'choices.todo.zh.ts'))).toBe(true);
 
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
-        expect(scene).toContain('../../../characters');
+        expect(scene).toContain('../characters');
         expect(scene).toContain('CharacterId.Narrator');
         // string is JSON-escaped, so apostrophes survive safely
         expect(scene).toContain(JSON.stringify("It's night."));
@@ -106,13 +116,13 @@ describe('emitStory', () => {
                     id: 'act1',
                     entries: [
                         {
-                            characterId: CharacterId.Narrator,
+                            characterId: 'narrator',
                             displayName: '旁白',
                             dialogue: 'hello',
                             background: '_root/act1_s0',
                         },
                         {
-                            characterId: CharacterId.LiJie,
+                            characterId: 'li_jie',
                             displayName: '李杰',
                             dialogue: 'hi',
                             background: '_root/act1_s0',
@@ -125,7 +135,7 @@ describe('emitStory', () => {
             ],
             choices: [],
         };
-        emitStory(storyWithAssets, dir);
+        emitStory(storyWithAssets, dir, mockCharDir);
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
         expect(scene).toContain('background: Background.Root_Act1_S0');
         expect(scene).toContain('portrait: Portrait.LiJie_Angry');
@@ -149,7 +159,7 @@ describe('emitStory', () => {
                     id: 'act1',
                     entries: [
                         {
-                            characterId: CharacterId.Narrator,
+                            characterId: 'narrator',
                             displayName: '旁白',
                             dialogue: 'hello',
                             background: '_root/act1_s0',
@@ -178,7 +188,7 @@ describe('emitStory', () => {
                 ],
             },
         };
-        emitStory(storyWithManifest, dir);
+        emitStory(storyWithManifest, dir, mockCharDir);
         const manifestPath = join(dir, 'image-assets.json');
         expect(existsSync(manifestPath)).toBe(true);
         const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -198,7 +208,7 @@ describe('emitStory', () => {
                     id: 'act1',
                     entries: [
                         {
-                            characterId: CharacterId.Narrator,
+                            characterId: 'narrator',
                             displayName: '旁白',
                             dialogue: 'hello',
                         },
@@ -209,9 +219,19 @@ describe('emitStory', () => {
             ],
             choices: [],
         };
-        emitStory(storyNoAssets, dir);
+        emitStory(storyNoAssets, dir, mockCharDir);
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
         expect(scene).not.toContain('background:');
         expect(scene).not.toContain('portrait:');
+    });
+
+    it('generates characters.ts with enum and directory', () => {
+        emitStory(story, dir, mockCharDir);
+        const charFile = readFileSync(join(dir, 'characters.ts'), 'utf8');
+        expect(charFile).toContain('export enum CharacterId {');
+        expect(charFile).toContain('Narrator = "narrator"');
+        expect(charFile).toContain('LiJie = "li_jie"');
+        expect(charFile).toContain('export const characterTable');
+        expect(charFile).toContain('export class CharacterDirectory');
     });
 });

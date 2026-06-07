@@ -13,10 +13,14 @@ function q(s: string): string {
 function emitSceneFile(
     story: StoryIR,
     sceneId: string,
-    portraitEnum?: Map<string, string>
+    assetEnums: {
+        portraits?: Map<string, string>;
+        backgrounds?: Map<string, string>;
+    }
 ): string {
     const scene = story.scenes.find(s => s.id === sceneId)!;
-    const hasPortraits = portraitEnum !== undefined && portraitEnum.size > 0;
+    const hasPortraits = !!assetEnums.portraits?.size;
+    const hasBackgrounds = !!assetEnums.backgrounds?.size;
     const lines = scene.entries
         .map(e => {
             const parts = [
@@ -24,11 +28,22 @@ function emitSceneFile(
                 `character: ${q(e.displayName)}`,
                 `dialogue: ${q(e.dialogue)}`,
             ];
-            if (e.background) parts.push(`background: ${q(e.background)}`);
-            if (e.portrait) {
-                if (hasPortraits && portraitEnum!.has(e.portrait)) {
+            if (e.background) {
+                if (
+                    hasBackgrounds &&
+                    assetEnums.backgrounds!.has(e.background)
+                ) {
                     parts.push(
-                        `portrait: Portrait.${portraitEnum!.get(e.portrait)}`
+                        `background: Background.${assetEnums.backgrounds!.get(e.background)}`
+                    );
+                } else {
+                    parts.push(`background: ${q(e.background)}`);
+                }
+            }
+            if (e.portrait) {
+                if (hasPortraits && assetEnums.portraits!.has(e.portrait)) {
+                    parts.push(
+                        `portrait: Portrait.${assetEnums.portraits!.get(e.portrait)}`
                     );
                 } else {
                     parts.push(`portrait: ${q(e.portrait)}`);
@@ -42,6 +57,8 @@ function emitSceneFile(
         `import { CharacterId } from '../../../characters';`,
     ];
     if (hasPortraits) imports.push(`import { Portrait } from '../portraits';`);
+    if (hasBackgrounds)
+        imports.push(`import { Background } from '../backgrounds';`);
     return (
         HEADER +
         imports.join('\n') +
@@ -144,6 +161,35 @@ function emitPortraits(portraitEnum: Map<string, string>): string | null {
     return HEADER + `export enum Portrait {\n${entries}\n}\n`;
 }
 
+function backgroundEnumKey(bgKey: string): string {
+    return bgKey
+        .replace(/\//g, '_')
+        .split('_')
+        .filter(s => s.length > 0)
+        .map(cap)
+        .join('_');
+}
+
+function buildBackgroundEnum(story: StoryIR): Map<string, string> {
+    const keys = new Set<string>();
+    for (const scene of story.scenes) {
+        for (const entry of scene.entries) {
+            if (entry.background) keys.add(entry.background);
+        }
+    }
+    const map = new Map<string, string>();
+    for (const k of [...keys].sort()) map.set(k, backgroundEnumKey(k));
+    return map;
+}
+
+function emitBackgrounds(bgEnum: Map<string, string>): string | null {
+    if (bgEnum.size === 0) return null;
+    const entries = [...bgEnum.entries()]
+        .map(([key, enumKey]) => `    ${enumKey} = ${q(key)},`)
+        .join('\n');
+    return HEADER + `export enum Background {\n${entries}\n}\n`;
+}
+
 export function emitStory(story: StoryIR, outDir: string): void {
     if (existsSync(outDir)) rmSync(outDir, { recursive: true, force: true });
     mkdirSync(join(outDir, 'scenes'), { recursive: true });
@@ -154,10 +200,21 @@ export function emitStory(story: StoryIR, outDir: string): void {
         writeFileSync(join(outDir, 'portraits.ts'), portraitsCode);
     }
 
+    const backgroundEnum = buildBackgroundEnum(story);
+    const backgroundsCode = emitBackgrounds(backgroundEnum);
+    if (backgroundsCode) {
+        writeFileSync(join(outDir, 'backgrounds.ts'), backgroundsCode);
+    }
+
+    const assetEnums = {
+        portraits: portraitEnum.size > 0 ? portraitEnum : undefined,
+        backgrounds: backgroundEnum.size > 0 ? backgroundEnum : undefined,
+    };
+
     for (const scene of story.scenes) {
         writeFileSync(
             join(outDir, 'scenes', `${scene.id}.ts`),
-            emitSceneFile(story, scene.id, portraitEnum)
+            emitSceneFile(story, scene.id, assetEnums)
         );
     }
     writeFileSync(join(outDir, 'dialogue.zh.ts'), emitDialogueIndex(story));

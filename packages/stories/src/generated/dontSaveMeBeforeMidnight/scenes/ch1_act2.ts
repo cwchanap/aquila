@@ -37,8 +37,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言繞過人群，走向校史館方向。班導之前在群組裡說，需要幾個人去校史館幫忙搬展覽箱，他報了名。不是因為他想去，是因為那邊人最少。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "路過公告牆的時候，他看見幾名學生站在「十年前南翼樓火災紀念角」的展板前面。展板上的文字他看過無數次了——「前校友顧某涉嫌人為縱火，造成多人受傷」。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有寫名字。永遠不會寫名字。只用「顧某」兩個字帶過，像一塊遮羞布，既承認了事件的存在，又迴避了真正的責任歸屬。", background: Background.Chapter_1_Ch1_Act2_S1 },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)「顧某」。每次看到這兩個字，都想笑。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)學校既想利用火災做安全教育，又不願意真正談當年的責任。標題寫得冠冕堂皇，內容全都是模糊帶過。好像只要不寫名字，那個人就不存在一樣。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)「顧某」。每次看到這兩個字，都想笑。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.GuYan_Sad },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)學校既想利用火災做安全教育，又不願意真正談當年的責任。標題寫得冠冕堂皇，內容全都是模糊帶過。好像只要不寫名字，那個人就不存在一樣。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.GuYan_Angry },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他收回視線，加快腳步。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "雨還在下。", background: Background.Chapter_1_Ch1_Act2_S1 },
 ];

@@ -160,7 +160,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)如果山路被封，校門被管，所有人都被困在校園裡——
 
-**顧言**：(內心)那他比任何人都清楚，沒有人能離開。
+**顧言** [scared]：(內心)那他比任何人都清楚，沒有人能離開。
 
 **旁白**：一輛廂型車的喇叭突然響了一聲，尖銳刺耳，穿透了雨幕。有人在大聲喊叫，聽不清內容，但語氣是憤怒的。校門口的混亂還在繼續——家長在排隊登記，警察在維持秩序，媒體在拍攝，雨在下。所有的聲音疊在一起，像一座正在倒塌的積木塔。
 
@@ -168,7 +168,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)他站在那裡，什麼都不怕。所有人都信他。
 
-**顧言**：(內心)但如果他就是那個製造風暴的人呢？
+**顧言** [scared]：(內心)但如果他就是那個製造風暴的人呢？
 
 **顧言**：(內心)⋯⋯不，我在亂想。
 
@@ -186,9 +186,9 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)六點了。天很快就會黑。天黑之後，雨會更大，山路不會開放，所有人會被留在這裡過夜。
 
-**顧言**：(內心)如果今晚真的有人要對我做什麼——
+**顧言** [scared]：(內心)如果今晚真的有人要對我做什麼——
 
-**顧言**：(內心)我跑不掉。
+**顧言** [scared]：(內心)我跑不掉。
 
 **旁白**：這是他今天第一次清楚地意識到這件事。不是推理，不是猜測，是一種身體層面的認知。就像你站在一個房間裡，突然注意到門已經鎖上了，窗戶打不開，牆壁很厚。你不害怕，因為還沒有發生什麼事。但你感受到了空間的邊界。
 
@@ -210,7 +210,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)而我會找一個他們都看不到的地方，把所有的事情再想一遍。
 
-**顧言**：(內心)在二十二點二十二分之前，我必須搞清楚這座校園裡到底發生過什麼。
+**顧言** [determined]：(內心)在二十二點二十二分之前，我必須搞清楚這座校園裡到底發生過什麼。
 
 ```bg
 second-floor open rooftop terrace in heavy rain, rain pouring from a seamless leaden sky, water pooling on concrete floor, solitary figure standing in the rain looking out toward distant clock tower silhouette, moody cinematic visual-novel background art
@@ -220,8 +220,8 @@ second-floor open rooftop terrace in heavy rain, rain pouring from a seamless le
 
 **顧言**：(內心)我出不去。
 
-**顧言**：(內心)但我不打算逃。
+**顧言** [determined]：(內心)但我不打算逃。
 
-**顧言**：(內心)我要知道真相。
+**顧言** [determined]：(內心)我要知道真相。
 
 **旁白**：他站在露台上，雨水打在他的臉上，流過眉毛和睫毛，模糊了視線。遠處，鐘樓在雨中沉默。它從來不移動，從來不回答。它只是站在那裡，指針在雨幕後面看不見的地方走著，一步一步，朝向二十二點二十二分。

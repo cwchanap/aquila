@@ -1,4 +1,3 @@
-import { CharacterDirectory } from '../characters/CharacterId';
 import type { DialogueEntryIR } from './ir';
 import type { PortraitPromptMap } from './parse-portraits';
 
@@ -57,11 +56,10 @@ export function resolveSceneAssets(
 
         const prompts = portraitMap[entry.characterId];
         if (prompts) {
-            const charName = CharacterDirectory.getById(entry.characterId).name;
             const expression = entry.expressionKey || 'base';
             const promptText = prompts[expression] || prompts['base'];
             if (promptText) {
-                const portraitKey = `${charName}/${expression}`;
+                const portraitKey = `${entry.characterId}/${expression}`;
                 entry.portrait = portraitKey;
                 if (!portraitByKey.has(portraitKey)) {
                     portraitByKey.set(portraitKey, {

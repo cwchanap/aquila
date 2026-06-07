@@ -6,10 +6,10 @@ describe('DialogueEntry', () => {
         const entry: DialogueEntry = {
             dialogue: 'hello',
             background: '_root/act1_s0',
-            portrait: '李杰/angry',
+            portrait: 'li_jie/angry',
         };
         expect(entry.background).toBe('_root/act1_s0');
-        expect(entry.portrait).toBe('李杰/angry');
+        expect(entry.portrait).toBe('li_jie/angry');
     });
 
     it('works without background and portrait (backward compatible)', () => {

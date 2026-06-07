@@ -94,7 +94,7 @@ describe('resolveSceneAssets', () => {
             },
         ];
         resolveSceneAssets('demo', 'act1', 'act1.md', entries, portraitMap);
-        expect(entries[0].portrait).toBe('李杰/base');
+        expect(entries[0].portrait).toBe('li_jie/base');
     });
 
     it('assigns portrait expression override key', () => {
@@ -107,7 +107,7 @@ describe('resolveSceneAssets', () => {
             },
         ];
         resolveSceneAssets('demo', 'act1', 'act1.md', entries, portraitMap);
-        expect(entries[0].portrait).toBe('李杰/angry');
+        expect(entries[0].portrait).toBe('li_jie/angry');
     });
 
     it('does not assign portrait for characters without portrait prompts', () => {
@@ -162,7 +162,7 @@ describe('resolveSceneAssets', () => {
             portraitMap
         );
         expect(backgrounds[0].path).toBe('demo/backgrounds/_root/act1_s0.png');
-        expect(portraits[0].path).toBe('demo/characters/李杰/base.png');
+        expect(portraits[0].path).toBe('demo/characters/li_jie/base.png');
         expect(portraits[0].prompt).toBe('17yo boy, school uniform');
     });
 });

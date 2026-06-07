@@ -116,7 +116,7 @@ describe('emitStory', () => {
                             displayName: '李杰',
                             dialogue: 'hi',
                             background: '_root/act1_s0',
-                            portrait: '李杰/angry',
+                            portrait: 'li_jie/angry',
                         },
                     ],
                     next: null,
@@ -129,8 +129,11 @@ describe('emitStory', () => {
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
         expect(scene).toContain('background:');
         expect(scene).toContain(JSON.stringify('_root/act1_s0'));
-        expect(scene).toContain('portrait:');
-        expect(scene).toContain(JSON.stringify('李杰/angry'));
+        expect(scene).toContain('portrait: Portrait.LiJie_Angry');
+
+        const portraits = readFileSync(join(dir, 'portraits.ts'), 'utf8');
+        expect(portraits).toContain('export enum Portrait {');
+        expect(portraits).toContain('LiJie_Angry = "li_jie/angry"');
     });
 
     it('emits image-assets.json manifest', () => {
@@ -165,8 +168,8 @@ describe('emitStory', () => {
                 ],
                 portraits: [
                     {
-                        key: '李杰/base',
-                        path: 'demo_story/characters/李杰/base.png',
+                        key: 'li_jie/base',
+                        path: 'demo_story/characters/li_jie/base.png',
                         prompt: '17yo boy',
                     },
                 ],

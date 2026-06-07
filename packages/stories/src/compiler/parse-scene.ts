@@ -2,6 +2,7 @@ import type { DialogueEntryIR } from './ir';
 import type { ResolvedCharacter } from './config';
 
 const HEADER_RE = /^\*\*(.+?)\*\*[：:]\s*([\s\S]*)$/;
+const BG_BLOCK_RE = /^```bg\s*\n([\s\S]*?)\n```$/;
 
 export interface ParseSceneResult {
     title?: string;
@@ -22,6 +23,7 @@ export function parseScene(
 
     let title: string | undefined;
     const entries: DialogueEntryIR[] = [];
+    let pendingBg: string | undefined;
 
     for (const block of blocks) {
         if (block.startsWith('# ')) {
@@ -30,6 +32,11 @@ export function parseScene(
         }
         // Horizontal-rule separators (scene breaks) are not dialogue.
         if (/^-{3,}$/.test(block)) continue;
+        const bgMatch = BG_BLOCK_RE.exec(block);
+        if (bgMatch) {
+            pendingBg = bgMatch[1].trim();
+            continue;
+        }
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);
         if (!m) {
@@ -42,7 +49,11 @@ export function parseScene(
                     characterId: defaultSpeaker.id,
                     displayName: defaultSpeaker.displayName,
                     dialogue: (wrapped ? wrapped[1] : oneLine).trim(),
+                    ...(pendingBg !== undefined
+                        ? { backgroundPrompt: pendingBg }
+                        : {}),
                 });
+                pendingBg = undefined;
                 continue;
             }
             throw new Error(
@@ -61,7 +72,9 @@ export function parseScene(
             characterId: resolved.id,
             displayName: resolved.displayName,
             dialogue,
+            ...(pendingBg !== undefined ? { backgroundPrompt: pendingBg } : {}),
         });
+        pendingBg = undefined;
     }
 
     return { title, entries };

@@ -10,8 +10,13 @@ function q(s: string): string {
     return JSON.stringify(s);
 }
 
-function emitSceneFile(story: StoryIR, sceneId: string): string {
+function emitSceneFile(
+    story: StoryIR,
+    sceneId: string,
+    portraitEnum?: Map<string, string>
+): string {
     const scene = story.scenes.find(s => s.id === sceneId)!;
+    const hasPortraits = portraitEnum !== undefined && portraitEnum.size > 0;
     const lines = scene.entries
         .map(e => {
             const parts = [
@@ -20,15 +25,27 @@ function emitSceneFile(story: StoryIR, sceneId: string): string {
                 `dialogue: ${q(e.dialogue)}`,
             ];
             if (e.background) parts.push(`background: ${q(e.background)}`);
-            if (e.portrait) parts.push(`portrait: ${q(e.portrait)}`);
+            if (e.portrait) {
+                if (hasPortraits && portraitEnum!.has(e.portrait)) {
+                    parts.push(
+                        `portrait: Portrait.${portraitEnum!.get(e.portrait)}`
+                    );
+                } else {
+                    parts.push(`portrait: ${q(e.portrait)}`);
+                }
+            }
             return `    { ${parts.join(', ')} },`;
         })
         .join('\n');
+    const imports = [
+        `import type { DialogueEntry } from '../../../types';`,
+        `import { CharacterId } from '../../../characters';`,
+    ];
+    if (hasPortraits) imports.push(`import { Portrait } from '../portraits';`);
     return (
         HEADER +
-        `import type { DialogueEntry } from '../../../types';\n` +
-        `import { CharacterId } from '../../../characters';\n\n` +
-        `export const scene: DialogueEntry[] = [\n${lines}\n];\n`
+        imports.join('\n') +
+        `\n\nexport const scene: DialogueEntry[] = [\n${lines}\n];\n`
     );
 }
 
@@ -100,13 +117,47 @@ function cap(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function portraitEnumKey(portraitKey: string): string {
+    const slashIdx = portraitKey.indexOf('/');
+    const charIdValue = portraitKey.slice(0, slashIdx);
+    const expression = portraitKey.slice(slashIdx + 1);
+    return `${charKey(charIdValue)}_${cap(expression)}`;
+}
+
+function buildPortraitEnum(story: StoryIR): Map<string, string> {
+    const keys = new Set<string>();
+    for (const scene of story.scenes) {
+        for (const entry of scene.entries) {
+            if (entry.portrait) keys.add(entry.portrait);
+        }
+    }
+    const map = new Map<string, string>();
+    for (const k of [...keys].sort()) map.set(k, portraitEnumKey(k));
+    return map;
+}
+
+function emitPortraits(portraitEnum: Map<string, string>): string | null {
+    if (portraitEnum.size === 0) return null;
+    const entries = [...portraitEnum.entries()]
+        .map(([key, enumKey]) => `    ${enumKey} = ${q(key)},`)
+        .join('\n');
+    return HEADER + `export enum Portrait {\n${entries}\n}\n`;
+}
+
 export function emitStory(story: StoryIR, outDir: string): void {
     if (existsSync(outDir)) rmSync(outDir, { recursive: true, force: true });
     mkdirSync(join(outDir, 'scenes'), { recursive: true });
+
+    const portraitEnum = buildPortraitEnum(story);
+    const portraitsCode = emitPortraits(portraitEnum);
+    if (portraitsCode) {
+        writeFileSync(join(outDir, 'portraits.ts'), portraitsCode);
+    }
+
     for (const scene of story.scenes) {
         writeFileSync(
             join(outDir, 'scenes', `${scene.id}.ts`),
-            emitSceneFile(story, scene.id)
+            emitSceneFile(story, scene.id, portraitEnum)
         );
     }
     writeFileSync(join(outDir, 'dialogue.zh.ts'), emitDialogueIndex(story));

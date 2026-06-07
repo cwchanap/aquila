@@ -1,21 +1,13 @@
-import { CharacterDirectory, CharacterId } from './CharacterDirectory';
-
 export class Character {
-    readonly id: CharacterId;
+    readonly id: string;
+    readonly name: string;
 
-    constructor(id: CharacterId) {
+    constructor(id: string, name: string) {
         this.id = id;
-    }
-
-    get info() {
-        return CharacterDirectory.getById(this.id);
-    }
-
-    get name(): string {
-        return this.info?.name ?? this.id;
+        this.name = name;
     }
 
     get alias(): string {
-        return this.info?.aliases?.[0] ?? this.name;
+        return this.name;
     }
 }

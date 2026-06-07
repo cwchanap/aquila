@@ -1,5 +1,4 @@
 import type { StoryIR } from './ir';
-import type { CharacterId } from '../characters';
 
 type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
 
@@ -74,7 +73,7 @@ export function validateStory(
     }
 
     if (portraitMap) {
-        const charsInStory = new Set<CharacterId>();
+        const charsInStory = new Set<string>();
         for (const scene of story.scenes) {
             for (const entry of scene.entries) {
                 charsInStory.add(entry.characterId);
@@ -94,7 +93,7 @@ export function validateStory(
                 );
             }
         }
-        for (const charId of Object.keys(portraitMap) as CharacterId[]) {
+        for (const charId of Object.keys(portraitMap) as string[]) {
             if (portraitMap[charId] && !portraitMap[charId]!.base) {
                 warnings.push(
                     `[story-compiler] character "${charId}" missing required "base" expression in characters.md`

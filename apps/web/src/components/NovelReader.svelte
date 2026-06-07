@@ -5,7 +5,7 @@
     ChoiceDefinition,
     Locale,
   } from '@aquila/stories';
-  import { CharacterDirectory, getTranslations } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories';
   import ActPanel from '@/components/ActPanel.svelte';
 
   export let dialogue: DialogueEntry[] = [];
@@ -67,8 +67,7 @@
         return localizedName;
       }
 
-      const info = CharacterDirectory.getById(characterId);
-      return info?.name ?? t.reader.unknown;
+      return t.reader.unknown;
     }
 
     return '';

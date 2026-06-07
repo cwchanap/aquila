@@ -1,5 +1,3 @@
-export { CharacterId, CharacterDirectory } from './characters';
-export type { CharacterInfo } from './characters';
 export type {
     DialogueEntry,
     DialogueMap,

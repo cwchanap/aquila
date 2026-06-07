@@ -4,6 +4,8 @@ export type DialogueEntry = {
     character?: string;
     characterId?: CharacterId;
     dialogue: string;
+    background?: string;
+    portrait?: string;
 };
 
 export type DialogueMap = { [sectionKey: string]: DialogueEntry[] };

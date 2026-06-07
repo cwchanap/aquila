@@ -91,6 +91,29 @@ If your story introduces new characters:
 
 Characters must exist before the compiler can parse your markdown.
 
+#### Portrait Prompts (`docs/characters.md`)
+
+For each character that appears on screen, define image-generation prompts in a portrait doc. By default this lives at `raw/<storyName>/docs/characters.md` (override the location with the optional `charactersDocPath` field in `compiler.config.ts`). Each character is a numbered `##` heading with a `（role）` suffix, followed by a `### Portrait Prompts` section listing one prompt per expression:
+
+```markdown
+## 1. 李杰（高中生）
+
+A guarded teenager who keeps everyone at arm's length.
+
+### Portrait Prompts
+
+- **base**: 17yo boy, short black hair, school uniform, guarded expression
+- **angry**: clenched jaw, narrowed eyes, fists balled at sides
+- **sad**: downcast eyes, trembling lips, shoulders hunched
+```
+
+**Rules:**
+- The section heading must appear exactly as `### Portrait Prompts`.
+- Each prompt is `- **<key>**: <prompt>`. The `**base**` prompt is required — every other expression falls back to it.
+- Expression keys are **case-insensitive**: written as `Angry` or `ANGRY`, they normalize to lowercase `angry`.
+- **Multi-line prompts** are supported: continuation lines must be indented with **2 spaces**, and the compiler joins them into a single prompt string.
+- Any other `###` subsection ends the portrait block.
+
 ### Step 3: Write the Markdown
 
 Each `actN.md` file follows this format:
@@ -114,6 +137,41 @@ Each `actN.md` file follows this format:
 - All paragraphs must be valid `**name**：text` headers (unless `defaultSpeaker` is set in config, which treats non-header paragraphs as narration)
 
 **Important:** The character name in bold must resolve to a `CharacterId`. If it doesn't, the compiler will throw an error with the file and the unknown name.
+
+**Background image prompts** — a ` ```bg ` fenced block attaches a background to the next dialogue entry:
+
+````markdown
+```bg
+train platform at night, cold blue lighting, empty platform
+```
+
+**李杰**：這裡是哪裡？
+````
+
+- The prompt applies to the **next** dialogue entry only (the entry immediately following the block).
+- Multiple `bg` blocks may appear in one scene to give different sections their own background.
+- **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
+
+**Expression override tags** — put a `[key]` between the bold name and the colon to override the portrait for that line:
+
+```markdown
+**李杰** [angry]：妳做什麼！
+```
+
+- The tag sits between `**Name**` and the colon: `**Name** [key]：`.
+- It overrides the portrait expression for that specific dialogue entry.
+- Keys must match entries in the character's Portrait Prompts section (case-insensitive).
+- Unknown keys fall back to `base` (and emit a compiler warning — see Step 5).
+
+**Combining both:**
+
+````markdown
+```bg
+rooftop at dusk, warm orange light
+```
+
+**李杰** [scared]：這是什麼？
+````
 
 ### Step 4: Create `compiler.config.ts`
 
@@ -153,6 +211,7 @@ This discovers all `raw/<story>/compiler.config.ts` entries and generates:
 | `src/generated/<story>/dialogue.zh.ts` | `DialogueMap` index importing all scenes |
 | `src/generated/<story>/flow.ts` | `FlowConfig` with scene graph + choice transitions |
 | `src/generated/<story>/choices.todo.zh.ts` | Reference stub showing all choice/option IDs with TODO placeholders |
+| `src/generated/<story>/image-assets.json` | All background + portrait image-generation prompts with their target file paths (emitted when portrait/background prompts are defined) |
 
 Two choice-related files exist:
 - **`choices.todo.zh.ts`** (generated, safe to delete/recreate): Lists every choice ID and option ID with TODO text. Use as a reference when filling in the real file.
@@ -165,6 +224,13 @@ Two choice-related files exist:
 - `chapter_1/branch_1a/act3.md` → `ch1_b1a_act3` (chapter + branch)
 
 **If the compiler throws `unknown character`**: Add the missing character to `CharacterId.ts` and re-run.
+
+**Asset warnings** (non-fatal — compilation succeeds regardless, emitted via `console.warn`):
+- **Character without portrait prompts**: a character appears in the story but has no entry in `docs/characters.md`. No portrait is assigned for that character.
+- **Unknown expression key**: an `[expression]` override doesn't match any key in that character's Portrait Prompts. The entry falls back to `base`.
+- **Missing `docs/characters.md`**: if no portrait doc is found at all, the compiler skips portrait prompts entirely.
+
+These warnings clear as you add the missing prompts and assets.
 
 ### Step 6: Fill In Choice Text
 
@@ -284,6 +350,24 @@ bun run lint                      # Lint check
 
 The `compile:check` script is the CI no-diff guard — it recompiles and fails if committed generated output has drifted from source markdown. Run it before committing.
 
+## Image Asset Workflow
+
+Visual-novel images are driven end-to-end by the compiler. The flow is:
+
+```
+Write prompts in markdown + docs/characters.md
+    -> Compile: compiler extracts prompts, assigns asset paths, emits image-assets.json
+    -> Generate: image-generation agent reads the manifest, creates PNGs at the expected paths
+    -> Verify: re-run the compiler; asset warnings clear once every referenced asset exists
+```
+
+1. **Author** — write ` ```bg ` blocks in scene markdown (Step 3) and `### Portrait Prompts` per character in `docs/characters.md` (Step 2).
+2. **Compile** — `bun compile:stories` extracts every background/portrait prompt, dedupes by asset key, assigns a target file path, and writes `src/generated/<story>/image-assets.json` alongside the TypeScript output.
+3. **Generate** — an image-generation agent reads `image-assets.json` and produces each PNG at its `path` (see asset conventions in Quick Reference).
+4. **Verify** — re-run the compiler. The asset warnings (missing portrait prompts / unknown expressions) guide you toward completeness.
+
+The manifest is a source of truth for both the prompts and where each rendered PNG must land.
+
 ## Quick Reference
 
 ### Markdown format
@@ -311,6 +395,16 @@ The `compile:check` script is the CI no-diff guard — it recompiles and fails i
 | Scene ID (chapter+branch) | `ch<N>_b<level><letter>_<act>` | `ch1_b1a_act3` |
 | Choice ID | `choice_<lastSceneId>` | `choice_b1b_act8` |
 | Option ID | `b<level><letter>` | `b2a` |
+
+### Asset paths
+| What | Pattern | Example |
+|---|---|---|
+| Portrait | `<storyId>/characters/<characterName>/<expression>.png` | `train_adventure/characters/李杰/angry.png` |
+| Background | `<storyId>/backgrounds/<rawDirName>/<sceneId>_s<section>.png` | `train_adventure/backgrounds/_root/act1_s0.png` |
+
+- Portraits use the character's **display name** and the expression key (`base` when no override is given).
+- Backgrounds embed the **raw directory name**: root-level scenes use `_root`, otherwise the source directory (e.g. `chapter_1`, `branch_1a`).
+- `<section>` is a **zero-based** index that increments each time a new ` ```bg ` block appears in a scene (`s0` for the first, `s1` for the second, ...).
 
 ### Key files to touch when adding a story
 

@@ -1,5 +1,9 @@
 # 第六幕：三點鐘的雨聲
 
+```bg
+empty classroom interior seen from back row by window, heavy rain hammering the glass outside, third-floor view of leaden grey sky and dark clouds, rows of desks and chairs, wall clock ticking, dark overcast afternoon light, moody cinematic visual-novel background art
+```
+
 **旁白**：下午三點零三分。教室裡的時鐘走得很準，秒針每跳一格都發出很小的「嗒」聲，被窗外的雨聲蓋掉大半，但在安靜的間隙裡還是聽得到。顧言坐在教室最後一排靠窗的位置，面前攤著一本沒在看的書，手指無意識地轉著手機。手機螢幕是暗的，但他知道如果點開，那條訊息還在。
 
 **旁白**：窗外的雨和早上不一樣了。早上的雨是斜的，風帶著它從一個方向打過來，打在玻璃上會發出規律的敲擊聲。現在的雨沒有方向。雨滴從天空垂直砸下來，密密麻麻，像有人在天上倒水。操場上的臨時舞台已經拉起了防水布，布面被雨打得鼓起來又塌下去，發出沉悶的、像心跳一樣的聲響。

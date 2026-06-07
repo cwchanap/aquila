@@ -1,5 +1,9 @@
 # 第三幕：九點半的校史館
 
+```bg
+school history exhibition hall interior, warm yellow lamp light like old desk lamps, vintage black-and-white photos and documents on wood-paneled walls, centennial display panels with gold lettering, old wooden floors, smell of old paper and mothballs, ivy-covered building exterior visible through windows, moody cinematic visual-novel background art
+```
+
 **旁白**：校史館在鳴海高中最北邊，一棟獨立的三層老樓，外牆爬滿了深綠色的藤蔓，看起來像一塊被苔蘚覆蓋的石碑。雨天的時候，藤蔓會變得更深、更濕，像活的東西在呼吸。
 
 **旁白**：顧言推開鐵門的時候，門軸發出一聲刺耳的嘎吱聲。館內的燈光是暖黃色的，帶著一種老式檯燈的昏沉感，和外面灰濛濛的雨天完全不同。空氣裡有木頭和舊紙的味道，混著一點點防蟲劑的刺鼻氣味。
@@ -9,6 +13,10 @@
 **顧言**：(內心)人果然不多。
 
 **旁白**：一樓展廳裡只有三三兩兩的參觀者，大部分是外校來的家長，戴著胸牌，在手機上對著展板拍照。展板是新的，白底黑字，上面用燙金字體印著「百年鳴海，世紀同行」，每個字都經過精心設計，連感嘆號的角度都統一過。
+
+```bg
+back preparation staging area behind exhibition hall, harsh white fluorescent tube lighting, archive boxes on metal shelves, cluttered with props and display boards, time capsule pedestal with heavy metal lock, flat clinical atmosphere, moody cinematic visual-novel background art
+```
 
 **旁白**：顧言沒有看展板。他穿過展廳，走到後方的準備區入口。門上貼著一張手寫的紙條：「志工請先簽到，箱子搬到B區架子。」
 
@@ -42,9 +50,9 @@
 
 **旁白**：他的手指僵住了。
 
-**顧言**：(內心)這是我。
+**顧言** [shocked]：(內心)這是我。
 
-**顧言**：(內心)這是我小時候。旁邊這個人是⋯⋯
+**顧言** [shocked]：(內心)這是我小時候。旁邊這個人是⋯⋯
 
 **旁白**：抱著他的那個男人正在笑。不是那種為了拍照擠出來的笑，是真的在笑——眼角有細紋，嘴角的弧度很自然，整個人看起來放鬆、柔軟，像一個普通的父親抱著自己的孩子，在普通的下午，站在普通的校門口。
 
@@ -78,9 +86,9 @@
 
 **旁白**：那個笑容。他一直在看那個笑容。
 
-**顧言**：(內心)這個人看起來不像縱火犯。
+**顧言** [sad]：(內心)這個人看起來不像縱火犯。
 
-**顧言**：(內心)他看起來像一個父親。
+**顧言** [sad]：(內心)他看起來像一個父親。
 
 **顧言**：(內心)他抱著我，在笑。就好像這是一個正常的日子，正常的人生，沒有什麼會被燒掉。
 
@@ -94,7 +102,7 @@
 
 **旁白**：動作很快，快到他的手指還保持著捏住照片邊緣的姿勢，但手裡已經空了。
 
-**林主任**：你在看什麼？
+**林主任** [panicked]：你在看什麼？
 
 **旁白**：聲音從正後方傳來，不高，但很急。顧言轉過身，看見一個穿著深灰色西裝、胸前別著校徽的男人站在他身後。林主任，校史館的行政主管，也是這次百年校慶展覽的總負責人。
 
@@ -116,7 +124,7 @@
 
 **顧言**：(內心)不，他在看我爸。
 
-**林主任**：校慶是喜事，別把以前那些不愉快的東西拿出來。
+**林主任** [stern]：校慶是喜事，別把以前那些不愉快的東西拿出來。
 
 **旁白**：他說這句話的時候，語氣是平的，像是在背誦一段規定。但他的手在抖。不明顯，如果不盯著看根本不會發現，但顧言離他不到一公尺，看得很清楚——林主任的右手在抖，照片的邊角跟著顫動，像一面被風吹皺的小旗。
 

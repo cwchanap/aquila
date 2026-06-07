@@ -1,5 +1,9 @@
 # 第七幕：六點鐘的圍牆
 
+```bg
+school gate area in torrential rain at dusk, rain falling like a solid wall, car headlights smeared into orange halos, parents crowding under blue-and-white security tents, police in reflective gear, flooded ground, dark grey oppressive sky, moody cinematic visual-novel background art, wide shot
+```
+
 **旁白**：下午六點整。雨聲已經不是「聲」了。它是一面牆。站在教學樓一樓的走廊裡往外看，十公尺以外的校門口就只剩下一團模糊的灰色輪廓，像一幅沒畫完的水墨畫。雨被風切成斜的，從左到右刷過整個視野，連續不斷，沒有間隙。
 
 **旁白**：校門口從來沒有這麼擁擠過。
@@ -201,6 +205,10 @@
 **顧言**：(內心)而我會找一個他們都看不到的地方，把所有的事情再想一遍。
 
 **顧言**：(內心)在二十二點二十二分之前，我必須搞清楚這座校園裡到底發生過什麼。
+
+```bg
+second-floor open rooftop terrace in heavy rain, rain pouring from a seamless leaden sky, water pooling on concrete floor, solitary figure standing in the rain looking out toward distant clock tower silhouette, moody cinematic visual-novel background art
+```
 
 **旁白**：他走到二樓的走廊盡頭，推開了一扇通往露台的門。露台上沒有人，地面全是積水，天空是一塊完整的鉛灰色幕布，看不見雲的邊界，也看不見雲的厚度。只有雨。從天上落到地上。從所有方向同時落下來。
 

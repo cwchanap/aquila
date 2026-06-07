@@ -1,5 +1,9 @@
 # 第十一幕：07:05，再一次醒來
 
+```bg
+student dormitory room interior at dawn, same grey rain outside window and same ceiling crack as before but subtly colder and more surreal emotional lighting, uncanny familiar-yet-wrong atmosphere, phone glowing on pillow, muted desaturated palette, moody cinematic visual-novel background art, wide shot
+```
+
 **旁白**：顧言的眼睛猛地睜開。不是緩緩清醒，不是迷迷糊糊地從夢裡浮上來——是像溺水的人突然被拉出水面，粗暴的，尖銳的。
 
 **旁白**：天花板上那道裂紋，從左下角斜斜延伸到右上角。他認得這道裂紋。他盯著它看過無數個早晨。
@@ -88,7 +92,7 @@
 
 **旁白**：他站起來，把手機揣進睡褲口袋，走向洗手台，擰開水龍頭。冷水衝在臉上的時候他沒有閉眼，透過水珠看著鏡子裡自己的臉。那張臉沒有任何表情，但眼睛很亮，亮得不像一個剛睡醒的人。
 
-**顧言**：(內心)我不怕了。不是因為我知道自己不會死——我不知道。我怕過了，在墜落的那幾秒裡我已經把能怕的都怕完了。現在剩下來的不是恐懼。
+**顧言** [determined]：(內心)我不怕了。不是因為我知道自己不會死——我不知道。我怕過了，在墜落的那幾秒裡我已經把能怕的都怕完了。現在剩下來的不是恐懼。
 
 **旁白**：他關上水龍頭，拿毛巾擦臉，動作平穩。然後他重新拿起手機，看了一眼時間：07:09。四分鐘過去了。他有十五個小時。
 

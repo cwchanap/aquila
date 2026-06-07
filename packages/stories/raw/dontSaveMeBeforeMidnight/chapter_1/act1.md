@@ -1,5 +1,9 @@
 # 第一幕：七點零五分
 
+```bg
+student dormitory room interior at dawn, grey rain streaking down window glass, dim overcast morning light, messy unmade bed, empty top bunk, glowing phone screen on pillow edge, sparse furnishings, muted cold grey-blue palette, moody cinematic visual-novel background art, wide establishing shot
+```
+
 **旁白**：手機震動。
 
 **旁白**：不是鬧鐘，是那種急促的、不講道理的震動，像有人反覆捏著他的手腕不放。顧言皺著眉，伸手在枕邊亂摸，指尖碰到冰涼的手機外殼，然後整個人像被抽掉了支撐一樣，從夢的邊緣滑進現實。
@@ -45,6 +49,10 @@
 **顧言**：(內心)不要只什麼？不要只⋯⋯不要只是一場夢？不要只是嚇唬我？後面是什麼？
 
 **旁白**：他搖了搖頭，把這些碎片趕出腦子。夢就是夢，沒有道理可講，越想越亂。
+
+```bg
+washstand corner of student dormitory, small wall mirror, running cold tap water, dripping faucet, grey rainy window behind, sparse toiletries on shelf, dim cold overcast light, moody cinematic visual-novel background art
+```
 
 **旁白**：腳踩到拖鞋的時候，地板傳來一陣涼意，他哆嗦了一下，起身走到洗手台前。水龍頭打開，冷水淋在手上，那種冰冷的金屬殘留感終於慢慢褪去。
 

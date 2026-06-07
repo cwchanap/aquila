@@ -453,3 +453,9 @@
 ## 20. ？？？（Unknown）
 
 - **ID**: `unknown`
+
+---
+
+## 21. 家長（Parent）
+
+- **ID**: `parent`

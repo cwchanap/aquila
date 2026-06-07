@@ -1,7 +1,7 @@
 import type { DialogueEntryIR } from './ir';
 import type { ResolvedCharacter } from './config';
 
-const HEADER_RE = /^\*\*(.+?)\*\*[：:]\s*([\s\S]*)$/;
+const HEADER_RE = /^\*\*(.+?)\*\*(?:\s*\[([^\]]+)\])?[：:]\s*([\s\S]*)$/;
 const BG_BLOCK_RE = /^```bg\s*\n([\s\S]*?)\n```$/;
 
 export interface ParseSceneResult {
@@ -61,20 +61,27 @@ export function parseScene(
             );
         }
         const name = m[1].trim();
-        const dialogue = m[2].trim();
+        const expressionKey = m[2]?.trim().toLowerCase();
+        const dialogue = m[3].trim();
         const resolved = resolveCharacter(name);
         if (!resolved) {
             throw new Error(
                 `[story-compiler] ${sourcePath}: unknown character "${name}"`
             );
         }
-        entries.push({
+        const entry: DialogueEntryIR = {
             characterId: resolved.id,
             displayName: resolved.displayName,
             dialogue,
-            ...(pendingBg !== undefined ? { backgroundPrompt: pendingBg } : {}),
-        });
-        pendingBg = undefined;
+        };
+        if (pendingBg !== undefined) {
+            entry.backgroundPrompt = pendingBg;
+            pendingBg = undefined;
+        }
+        if (expressionKey) {
+            entry.expressionKey = expressionKey;
+        }
+        entries.push(entry);
     }
 
     return { title, entries };

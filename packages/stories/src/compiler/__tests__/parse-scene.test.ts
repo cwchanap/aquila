@@ -89,4 +89,71 @@ describe('parseScene', () => {
             },
         ]);
     });
+
+    it('parses ```bg blocks and sets backgroundPrompt on the next entry', () => {
+        const md = [
+            '**旁白**：第一段。',
+            '',
+            '```bg',
+            '月台夜景，冷色調',
+            '```',
+            '',
+            '**李杰**：第二段。',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+        expect(result.entries[0].backgroundPrompt).toBeUndefined();
+        expect(result.entries[1].backgroundPrompt).toBe('月台夜景，冷色調');
+    });
+
+    it('carries backgroundPrompt to subsequent entries after a bg block', () => {
+        const md = [
+            '```bg',
+            '月台夜景',
+            '```',
+            '',
+            '**旁白**：第一段。',
+            '',
+            '**李杰**：第二段。',
+            '',
+            '**旁白**：第三段。',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+        expect(result.entries[0].backgroundPrompt).toBe('月台夜景');
+        expect(result.entries[1].backgroundPrompt).toBeUndefined();
+        expect(result.entries[2].backgroundPrompt).toBeUndefined();
+    });
+
+    it('handles multiple bg blocks in one scene', () => {
+        const md = [
+            '```bg',
+            '場景一',
+            '```',
+            '',
+            '**旁白**：a',
+            '',
+            '```bg',
+            '場景二',
+            '```',
+            '',
+            '**旁白**：b',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+        expect(result.entries[0].backgroundPrompt).toBe('場景一');
+        expect(result.entries[1].backgroundPrompt).toBe('場景二');
+    });
+
+    it('handles multi-line bg prompts', () => {
+        const md = [
+            '```bg',
+            '月台夜景',
+            '冷色調',
+            '無人',
+            '```',
+            '',
+            '**旁白**：hello',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+        expect(result.entries[0].backgroundPrompt).toContain('月台夜景');
+        expect(result.entries[0].backgroundPrompt).toContain('無人');
+    });
 });

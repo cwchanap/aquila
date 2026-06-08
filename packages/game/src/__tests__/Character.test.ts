@@ -1,75 +1,50 @@
 import { describe, it, expect } from 'vitest';
 import { Character } from '../characters/Character';
-import { CharacterId } from '../characters/CharacterDirectory';
 
 describe('Character', () => {
     describe('id', () => {
-        it('stores the CharacterId', () => {
-            const c = new Character(CharacterId.LiJie);
-            expect(c.id).toBe(CharacterId.LiJie);
+        it('stores the id', () => {
+            const c = new Character('li_jie', '李杰');
+            expect(c.id).toBe('li_jie');
         });
 
         it('stores narrator id', () => {
-            const c = new Character(CharacterId.Narrator);
-            expect(c.id).toBe(CharacterId.Narrator);
-        });
-    });
-
-    describe('info', () => {
-        it('returns CharacterInfo for the id', () => {
-            const c = new Character(CharacterId.LiJie);
-            expect(c.info).toEqual({
-                id: CharacterId.LiJie,
-                name: '李杰',
-                aliases: ['男主角'],
-            });
-        });
-
-        it('returns CharacterInfo for narrator', () => {
-            const c = new Character(CharacterId.Narrator);
-            expect(c.info.name).toBe('旁白');
+            const c = new Character('narrator', '旁白');
+            expect(c.id).toBe('narrator');
         });
     });
 
     describe('name', () => {
-        it('returns the real character name', () => {
-            const c = new Character(CharacterId.TanakaKenta);
+        it('returns the character name', () => {
+            const c = new Character('tanaka_kenta', '田中健太');
             expect(c.name).toBe('田中健太');
         });
 
         it('returns narrator name', () => {
-            const c = new Character(CharacterId.Narrator);
+            const c = new Character('narrator', '旁白');
             expect(c.name).toBe('旁白');
+        });
+
+        it('falls back to the raw id string when name is not provided', () => {
+            const c = new Character('totally_unknown', 'totally_unknown');
+            expect(c.name).toBe('totally_unknown');
         });
     });
 
     describe('alias', () => {
-        it('returns the character alias', () => {
-            const c = new Character(CharacterId.TanakaKenta);
-            expect(c.alias).toBe('健談男大生');
+        it('returns the character name as alias', () => {
+            const c = new Character('tanaka_kenta', '田中健太');
+            expect(c.alias).toBe('田中健太');
         });
 
-        it('returns alias for LiJie', () => {
-            const c = new Character(CharacterId.LiJie);
-            expect(c.alias).toBe('男主角');
-        });
-    });
-
-    describe('unknown CharacterId (fallback branches)', () => {
-        it('name falls back to the raw id string when not in directory', () => {
-            // Cast an unknown string as CharacterId to hit the ?? this.id branch
-            const c = new Character('totally_unknown' as CharacterId);
-            expect(c.name).toBe('totally_unknown');
+        it('returns alias for LiJie (equals name)', () => {
+            const c = new Character('li_jie', '李杰');
+            expect(c.alias).toBe('李杰');
         });
 
-        it('alias falls back to name (which falls back to id) when not in directory', () => {
-            const c = new Character('totally_unknown' as CharacterId);
+        it('alias falls back to name when not in directory', () => {
+            const c = new Character('totally_unknown', 'totally_unknown');
             expect(c.alias).toBe('totally_unknown');
-        });
-
-        it('info returns undefined for an unknown id', () => {
-            const c = new Character('totally_unknown' as CharacterId);
-            expect(c.info).toBeUndefined();
         });
     });
 });

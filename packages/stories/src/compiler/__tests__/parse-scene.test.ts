@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { parseScene } from '../parse-scene';
-import { CharacterId } from '../../characters';
 
 const resolve = (name: string) =>
     name === '旁白'
-        ? { id: CharacterId.Narrator, displayName: '旁白' }
+        ? { id: 'narrator', displayName: '旁白' }
         : name === '李杰'
-          ? { id: CharacterId.LiJie, displayName: '李杰' }
+          ? { id: 'li_jie', displayName: '李杰' }
           : undefined;
 
 describe('parseScene', () => {
@@ -22,12 +21,12 @@ describe('parseScene', () => {
         expect(result.title).toBe('第一幕：月台');
         expect(result.entries).toEqual([
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: '深夜的月台。',
             },
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: '(內心)又是一個夜晚。',
             },
@@ -37,7 +36,7 @@ describe('parseScene', () => {
     it('accepts a half-width colon', () => {
         const result = parseScene('**旁白**:hello', resolve, 'x.md');
         expect(result.entries[0]).toEqual({
-            characterId: CharacterId.Narrator,
+            characterId: 'narrator',
             displayName: '旁白',
             dialogue: 'hello',
         });
@@ -62,7 +61,7 @@ describe('parseScene', () => {
     });
 
     it('renders non-header paragraphs as narration when a defaultSpeaker is given', () => {
-        const narrator = { id: CharacterId.Narrator, displayName: '旁白' };
+        const narrator = { id: 'narrator', displayName: '旁白' };
         const md = [
             '**<完>**',
             '',
@@ -73,17 +72,17 @@ describe('parseScene', () => {
         const result = parseScene(md, resolve, 'x.md', narrator);
         expect(result.entries).toEqual([
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: '<完>',
             },
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'plain forum prose',
             },
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: 'hi',
             },

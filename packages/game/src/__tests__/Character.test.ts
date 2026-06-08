@@ -25,7 +25,7 @@ describe('Character', () => {
             expect(c.name).toBe('旁白');
         });
 
-        it('falls back to the raw id string when name is not provided', () => {
+        it('returns the raw id when constructed with id as name (instances.ts fallback pattern)', () => {
             const c = new Character('totally_unknown', 'totally_unknown');
             expect(c.name).toBe('totally_unknown');
         });
@@ -42,7 +42,7 @@ describe('Character', () => {
             expect(c.alias).toBe('李杰');
         });
 
-        it('alias falls back to name when not in directory', () => {
+        it('alias equals name when constructed with id as name (instances.ts fallback pattern)', () => {
             const c = new Character('totally_unknown', 'totally_unknown');
             expect(c.alias).toBe('totally_unknown');
         });

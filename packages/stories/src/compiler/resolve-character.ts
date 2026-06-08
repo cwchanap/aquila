@@ -48,6 +48,7 @@ export function buildResolveCharacter(
         // Role patterns
         if (config.rolePatterns) {
             for (const r of config.rolePatterns) {
+                r.pattern.lastIndex = 0;
                 if (r.pattern.test(displayName) || r.pattern.test(base)) {
                     if (!dir.getById(r.id)) {
                         throw new Error(

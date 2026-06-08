@@ -36,7 +36,12 @@ export function buildResolveCharacter(
         // Suffix stripping
         const base = stripSuffix(displayName, suffixRe);
         if (base !== displayName) {
-            const viaBase = dir.getIdByName(base);
+            // Re-run canonicalization on the stripped base so that variant
+            // forms (e.g. "齋藤大輔（內心）" -> base "齋藤大輔" -> canonical
+            // "斎藤大輔") still resolve when the canonicalize map only covers
+            // the un-suffixed form.
+            const canonicalBase = config.canonicalize?.[base] ?? base;
+            const viaBase = dir.getIdByName(canonicalBase);
             if (viaBase) return { id: viaBase, displayName };
         }
 

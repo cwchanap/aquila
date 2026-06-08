@@ -33,6 +33,6 @@ export const nakamuraHayato = characters[CharacterId.NakamuraHayato];
 export const shimizuEmi = characters[CharacterId.ShimizuEmi];
 export const lingMo = characters[CharacterId.LingMo];
 
-export function getCharacter(id: string) {
+export function getCharacter(id: string): Character | undefined {
     return characters[id];
 }

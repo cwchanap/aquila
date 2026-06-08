@@ -5,62 +5,67 @@ import NovelReader from '../NovelReader.svelte';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
 // Mock @aquila/stories
-vi.mock('@aquila/stories', () => ({
-    CharacterDirectory: {
-        getById: vi.fn((id: string) => ({
-            id,
-            name: id === 'narrator' ? 'Narrator' : 'Character',
+vi.mock('@aquila/stories', () => {
+    return {
+        getStoryFlow: vi.fn(() => ({
+            start: 'b1a_act1',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'b1a_act1',
+                    sceneId: 'b1a_act1',
+                    next: 'b1a_act2',
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1a_act2',
+                    sceneId: 'b1a_act2',
+                    next: 'b1a_act3',
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1a_act3',
+                    sceneId: 'b1a_act3',
+                    next: null,
+                },
+            ],
         })),
-    },
-    getStoryFlow: vi.fn(() => ({
-        start: 'b1a_act1',
-        nodes: [
-            {
-                kind: 'scene',
-                id: 'b1a_act1',
-                sceneId: 'b1a_act1',
-                next: 'b1a_act2',
+        getTranslations: vi.fn((locale: string) => ({
+            reader: {
+                title: 'Novel Reader - Aquila',
+                bookmarkPrompt: 'Enter bookmark name:',
+                defaultBookmarkName: 'Scene:',
+                bookmarkSaved: 'Bookmark saved!',
+                bookmarkFailed: 'Failed to save bookmark:',
+                bookmarkError: 'Failed to save bookmark. Please try again.',
+                endOfStory: 'End of story!',
+                unknown: 'Unknown',
+                continue: 'Continue',
+                nextScene: 'Next Scene',
+                complete: 'Complete',
+                bookmark: 'Bookmark',
+                pageDisplay: '{current} / {total}',
+                actPanel: 'Acts',
+                actLabel: 'Act {n}',
+                actFinal: 'Final Act',
+                actEpilogue: 'Epilogue',
+                openActsPanel: 'Open acts panel',
+                closeActsPanel: 'Close acts panel',
             },
-            {
-                kind: 'scene',
-                id: 'b1a_act2',
-                sceneId: 'b1a_act2',
-                next: 'b1a_act3',
+            characterNames: {
+                narrator: 'Narrator',
+                tanaka_kenta: '田中健太',
             },
-            { kind: 'scene', id: 'b1a_act3', sceneId: 'b1a_act3', next: null },
-        ],
-    })),
-    getTranslations: vi.fn((locale: string) => ({
-        reader: {
-            title: 'Novel Reader - Aquila',
-            bookmarkPrompt: 'Enter bookmark name:',
-            defaultBookmarkName: 'Scene:',
-            bookmarkSaved: 'Bookmark saved!',
-            bookmarkFailed: 'Failed to save bookmark:',
-            bookmarkError: 'Failed to save bookmark. Please try again.',
-            endOfStory: 'End of story!',
-            unknown: 'Unknown',
-            continue: 'Continue',
-            nextScene: 'Next Scene',
-            complete: 'Complete',
-            bookmark: 'Bookmark',
-            pageDisplay: '{current} / {total}',
-            actPanel: 'Acts',
-            actLabel: 'Act {n}',
-            actFinal: 'Final Act',
-            actEpilogue: 'Epilogue',
-            openActsPanel: 'Open acts panel',
-            closeActsPanel: 'Close acts panel',
-        },
-        common: {
-            logout: 'Logout',
-            login: 'Login',
-            back: 'Back',
-            backToHome: 'Back to Home',
-        },
-        locale,
-    })),
-}));
+            common: {
+                logout: 'Logout',
+                login: 'Login',
+                back: 'Back',
+                backToHome: 'Back to Home',
+            },
+            locale,
+        })),
+    };
+});
 
 describe('NovelReader', () => {
     const mockDialogue: DialogueEntry[] = [
@@ -651,7 +656,7 @@ describe('NovelReader', () => {
     });
 
     describe('Character Display Name Priority', () => {
-        it('should prefer emitted character displayName over CharacterDirectory canonical name', async () => {
+        it('should prefer emitted character displayName over localized character name', async () => {
             // Simulates compiler-emitted entries where the source uses an alias
             // (e.g. "健談男大生") instead of the canonical name ("田中健太").
             const aliasDialogue: DialogueEntry[] = [
@@ -672,13 +677,13 @@ describe('NovelReader', () => {
 
             await vi.runAllTimersAsync();
 
-            // Should show the emitted displayName, not the CharacterDirectory canonical name
+            // Should show the emitted displayName, not the localized character name
             expect(screen.getByText('健談男大生')).toBeInTheDocument();
-            // Should NOT show the canonical CharacterDirectory name
+            // Should NOT show the localized character name
             expect(screen.queryByText('Character')).not.toBeInTheDocument();
         });
 
-        it('should fall back to CharacterDirectory when character field is absent', async () => {
+        it('should fall back to localized character name when character field is absent', async () => {
             const noCharField: DialogueEntry[] = [
                 {
                     characterId: 'narrator' as any,
@@ -696,7 +701,7 @@ describe('NovelReader', () => {
 
             await vi.runAllTimersAsync();
 
-            // Falls back to CharacterDirectory.getById('narrator').name → 'Narrator'
+            // Falls back to characterNames['narrator'] → 'Narrator'
             expect(screen.getByText('Narrator')).toBeInTheDocument();
         });
 

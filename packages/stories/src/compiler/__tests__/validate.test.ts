@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { validateStory } from '../validate';
-import { CharacterId } from '../../characters';
 import type { StoryIR } from '../ir';
 
 type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
@@ -15,7 +14,7 @@ function baseStory(): StoryIR {
                 id: 'act1',
                 entries: [
                     {
-                        characterId: CharacterId.Narrator,
+                        characterId: 'narrator',
                         displayName: '旁白',
                         dialogue: 'hi',
                     },
@@ -27,7 +26,7 @@ function baseStory(): StoryIR {
                 id: 'act2',
                 entries: [
                     {
-                        characterId: CharacterId.Narrator,
+                        characterId: 'narrator',
                         displayName: '旁白',
                         dialogue: 'bye',
                     },
@@ -78,7 +77,7 @@ describe('validateStory', () => {
                     id: 'act1',
                     entries: [
                         {
-                            characterId: CharacterId.Narrator,
+                            characterId: 'narrator',
                             displayName: '旁白',
                             dialogue: 'a',
                         },
@@ -103,7 +102,7 @@ describe('validateStory', () => {
                     id: 'act1',
                     entries: [
                         {
-                            characterId: CharacterId.LiJie,
+                            characterId: 'li_jie',
                             displayName: '李杰',
                             dialogue: 'a',
                             expressionKey: 'nonexistent',
@@ -117,7 +116,7 @@ describe('validateStory', () => {
             choices: [],
         };
         const portraitMap: PortraitPromptMap = {
-            [CharacterId.LiJie]: { base: 'prompt' },
+            ['li_jie']: { base: 'prompt' },
         };
         const warnings = validateStory(story, portraitMap);
         expect(warnings.join('\n')).toContain('unknown expression');
@@ -133,7 +132,7 @@ describe('validateStory', () => {
                     id: 'act1',
                     entries: [
                         {
-                            characterId: CharacterId.LiJie,
+                            characterId: 'li_jie',
                             displayName: '李杰',
                             dialogue: 'a',
                             expressionKey: 'happy',
@@ -146,7 +145,7 @@ describe('validateStory', () => {
             choices: [],
         };
         const portraitMap: PortraitPromptMap = {
-            [CharacterId.LiJie]: { happy: 'smiling' } as Record<string, string>,
+            ['li_jie']: { happy: 'smiling' } as Record<string, string>,
         };
         const warnings = validateStory(story, portraitMap);
         expect(warnings.join('\n')).toContain(

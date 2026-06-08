@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { resolveSceneAssets } from '../resolve-assets';
-import { CharacterId } from '../../characters';
 import type { DialogueEntryIR } from '../ir';
 
 type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
 
 const portraitMap: PortraitPromptMap = {
-    [CharacterId.LiJie]: {
+    ['li_jie']: {
         base: '17yo boy, school uniform',
         angry: 'clenched jaw, narrowed eyes',
     },
@@ -16,18 +15,18 @@ describe('resolveSceneAssets', () => {
     it('assigns background keys to every entry in a section', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'a',
                 backgroundPrompt: '月台',
             },
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: 'b',
             },
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'c',
             },
@@ -50,13 +49,13 @@ describe('resolveSceneAssets', () => {
     it('handles multiple bg sections with incrementing index', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'a',
                 backgroundPrompt: 'scene1',
             },
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'b',
                 backgroundPrompt: 'scene2',
@@ -70,7 +69,7 @@ describe('resolveSceneAssets', () => {
     it('uses directory name from sourcePath for nested scenes', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'a',
                 backgroundPrompt: 'x',
@@ -89,7 +88,7 @@ describe('resolveSceneAssets', () => {
     it('assigns portrait base key for characters with portrait prompts', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: 'a',
             },
@@ -101,7 +100,7 @@ describe('resolveSceneAssets', () => {
     it('assigns portrait expression override key', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: 'a',
                 expressionKey: 'angry',
@@ -114,7 +113,7 @@ describe('resolveSceneAssets', () => {
     it('does not assign portrait for characters without portrait prompts', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.Narrator,
+                characterId: 'narrator',
                 displayName: '旁白',
                 dialogue: 'a',
             },
@@ -125,11 +124,11 @@ describe('resolveSceneAssets', () => {
 
     it('does not assign portrait when expression and base are both missing', () => {
         const incompleteMap: PortraitPromptMap = {
-            [CharacterId.LiJie]: { happy: 'smiling' } as Record<string, string>,
+            ['li_jie']: { happy: 'smiling' } as Record<string, string>,
         };
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: 'a',
                 expressionKey: 'nonexistent',
@@ -149,7 +148,7 @@ describe('resolveSceneAssets', () => {
     it('builds manifest entries with correct paths', () => {
         const entries: DialogueEntryIR[] = [
             {
-                characterId: CharacterId.LiJie,
+                characterId: 'li_jie',
                 displayName: '李杰',
                 dialogue: 'a',
                 backgroundPrompt: '月台',

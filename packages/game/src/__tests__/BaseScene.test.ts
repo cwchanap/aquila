@@ -807,7 +807,7 @@ describe('BaseScene', () => {
 
     describe('showDialogue - characterRef path', () => {
         it('uses characterRef info name when characterRef is provided', () => {
-            const char = new Character(CharacterId.LiJie);
+            const char = new Character(CharacterId.LiJie, '李杰');
             scene.setDialogue({
                 scene_1: [{ characterRef: char, dialogue: 'Story text' }],
             });

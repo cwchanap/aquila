@@ -5,9 +5,22 @@ import { scanStory } from '../scan-story';
 import { buildStoryGraph } from '../build-graph';
 import { validateStory } from '../validate';
 import { parseScene } from '../parse-scene';
+import { parseCharacters } from '../parse-characters';
+import { buildResolveCharacter } from '../resolve-character';
 import config from '../../../raw/trainAdventure/compiler.config';
 
 const rawDir = resolve(__dirname, '../../../raw/trainAdventure');
+
+const charDir = parseCharacters(
+    readFileSync(join(rawDir, 'docs/characters.md'), 'utf8')
+);
+const resolveCharacter = buildResolveCharacter(charDir, config);
+const defaultSpeaker = config.defaultSpeakerId
+    ? {
+          id: config.defaultSpeakerId,
+          displayName: charDir.getById(config.defaultSpeakerId)?.name ?? '',
+      }
+    : undefined;
 
 // Compiles the REAL trainAdventure markdown in-memory (no file emit) using the
 // story's own resolver/defaultSpeaker, so a regression in scanning, graph
@@ -36,9 +49,9 @@ describe('trainAdventure golden compile', () => {
             const md = readFileSync(join(rawDir, s.sourcePath), 'utf8');
             const { title, entries } = parseScene(
                 md,
-                config.resolveCharacter,
+                resolveCharacter,
                 s.sourcePath,
-                config.defaultSpeaker
+                defaultSpeaker
             );
             return {
                 id: s.id,

@@ -318,6 +318,13 @@ export class BaseScene extends Phaser.Scene {
                 this.dialogueRetryCount = 0;
                 const character = current.characterRef;
                 const charId = character?.id ?? current.characterId;
+                // Character instance (canonical name) takes priority over the
+                // per-line displayName (current.character). This differs from
+                // NovelReader which prefers the per-line displayName. The
+                // canonical name is preferred here because the game attaches a
+                // Character instance via characterRef when a portrait sprite is
+                // loaded, and the portrait and speaker label should stay
+                // consistent.
                 let speaker = character?.name ?? current.character ?? charId;
                 const text = current.dialogue;
 

@@ -32,7 +32,6 @@ describe('StoryCompilerConfig', () => {
     it('accepts optional charactersDocPath', () => {
         const config: StoryCompilerConfig = {
             storyId: 'demo',
-            resolveCharacter: () => undefined,
             charactersDocPath: 'docs/characters.md',
         };
         expect(config.charactersDocPath).toBe('docs/characters.md');
@@ -41,7 +40,6 @@ describe('StoryCompilerConfig', () => {
     it('works without charactersDocPath (defaults internally)', () => {
         const config: StoryCompilerConfig = {
             storyId: 'demo',
-            resolveCharacter: () => undefined,
         };
         expect(config.charactersDocPath).toBeUndefined();
     });

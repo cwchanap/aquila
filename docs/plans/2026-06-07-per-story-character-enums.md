@@ -918,6 +918,8 @@ For each `## N. Name（Romaji）` heading, add the ID and aliases bullets right 
 
 Append these minimal sections (no prose, no portraits) for characters used by role patterns and defaultSpeaker:
 
+> **Note:** The character parser requires numeric headings (`/^##\s+\d+\.\s+...$/`). Replace each `N`, `N+1`, ... placeholder below with a concrete numeric index that continues the sequence established in Step 1 (which adds IDs to the 9 existing named characters `1`–`9`). So the first generic character below becomes `## 10.`, the next `## 11.`, and so on. The `**ID**` values (`narrator`, `roommate`, `female_voice`, `student`, `police_officer`, `message`, `announcement`, `voice`, `unknown`) must remain unchanged.
+
 ```markdown
 ---
 

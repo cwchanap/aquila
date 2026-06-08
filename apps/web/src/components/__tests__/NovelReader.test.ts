@@ -679,8 +679,8 @@ describe('NovelReader', () => {
 
             // Should show the emitted displayName, not the localized character name
             expect(screen.getByText('健談男大生')).toBeInTheDocument();
-            // Should NOT show the localized character name
-            expect(screen.queryByText('Character')).not.toBeInTheDocument();
+            // Should NOT show the localized character name (tanaka_kenta -> '田中健太')
+            expect(screen.queryByText('田中健太')).not.toBeInTheDocument();
         });
 
         it('should fall back to localized character name when character field is absent', async () => {

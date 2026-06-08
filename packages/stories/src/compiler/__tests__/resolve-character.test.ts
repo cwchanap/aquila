@@ -53,6 +53,19 @@ describe('buildResolveCharacter', () => {
         });
     });
 
+    it('re-canonicalizes the stripped base before lookup', () => {
+        // canonicalize maps only the un-suffixed base form to a resolvable
+        // alias; the base itself is NOT a name/alias in the directory, so the
+        // lookup only succeeds when canonicalize is re-applied after stripping.
+        const resolve = buildResolveCharacter(dir, {
+            canonicalize: { 顧言同學: '小顧' },
+        });
+        expect(resolve('顧言同學（內心）')).toEqual({
+            id: 'gu_yan',
+            displayName: '顧言同學（內心）',
+        });
+    });
+
     it('matches role patterns', () => {
         const resolve = buildResolveCharacter(dir, {
             rolePatterns: [{ pattern: /^隔壁同學$/, id: 'student' }],

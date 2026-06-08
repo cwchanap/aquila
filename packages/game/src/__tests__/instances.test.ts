@@ -42,13 +42,17 @@ describe('getCharacter', () => {
     it('returns the Character instance for a given id', () => {
         const c = getCharacter(CharacterId.LiJie);
         expect(c).toBeInstanceOf(Character);
-        expect(c.id).toBe(CharacterId.LiJie);
+        expect(c?.id).toBe(CharacterId.LiJie);
     });
 
     it('returns the same instance as the characters map', () => {
         expect(getCharacter(CharacterId.Narrator)).toBe(
             characters[CharacterId.Narrator]
         );
+    });
+
+    it('returns undefined for an unknown id', () => {
+        expect(getCharacter('nonexistent_id')).toBeUndefined();
     });
 });
 

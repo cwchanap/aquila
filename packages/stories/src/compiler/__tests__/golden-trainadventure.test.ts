@@ -15,12 +15,16 @@ const charDir = parseCharacters(
     readFileSync(join(rawDir, 'docs/characters.md'), 'utf8')
 );
 const resolveCharacter = buildResolveCharacter(charDir, config);
-const defaultSpeaker = config.defaultSpeakerId
-    ? {
-          id: config.defaultSpeakerId,
-          displayName: charDir.getById(config.defaultSpeakerId)?.name ?? '',
-      }
-    : undefined;
+const defaultSpeaker = (() => {
+    if (!config.defaultSpeakerId) return undefined;
+    const info = charDir.getById(config.defaultSpeakerId);
+    if (!info) {
+        throw new Error(
+            `[story-compiler] config.defaultSpeakerId "${config.defaultSpeakerId}" is not present in the parsed character directory`
+        );
+    }
+    return { id: config.defaultSpeakerId, displayName: info.name };
+})();
 
 // Compiles the REAL trainAdventure markdown in-memory (no file emit) using the
 // story's own resolver/defaultSpeaker, so a regression in scanning, graph

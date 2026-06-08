@@ -17,6 +17,36 @@ function charEnumKey(id: string): string {
         .join('');
 }
 
+/**
+ * charEnumKey collapses distinct IDs that differ only in underscore placement
+ * or capitalization (e.g. `foo_bar` and `fooBar` both -> `FooBar`). Deriving a
+ * TS enum with duplicate members produces uncompilable output that is hard to
+ * diagnose, so detect collisions up front and fail with the offending IDs.
+ */
+function assertNoCharEnumKeyCollisions(ids: string[]): void {
+    const keyToIds = new Map<string, string[]>();
+    for (const id of ids) {
+        const key = charEnumKey(id);
+        const list = keyToIds.get(key);
+        if (list) list.push(id);
+        else keyToIds.set(key, [id]);
+    }
+    const collisions = [...keyToIds.values()].filter(list => list.length > 1);
+    if (collisions.length > 0) {
+        const details = collisions
+            .map(list => {
+                const key = charEnumKey(list[0]);
+                return `enum key "${key}" <- IDs ${list
+                    .map(i => `"${i}"`)
+                    .join(', ')}`;
+            })
+            .join('; ');
+        throw new Error(
+            `[story-compiler] character ID collision after enum-key derivation: ${details}`
+        );
+    }
+}
+
 function emitSceneFile(
     story: StoryIR,
     sceneId: string,
@@ -191,6 +221,8 @@ function emitBackgrounds(bgEnum: Map<string, string>): string | null {
 }
 
 function emitCharacters(dir: ParsedCharacterDirectory): string {
+    assertNoCharEnumKeyCollisions(dir.characters.map(c => c.id));
+
     const enumEntries = dir.characters
         .map(c => `    ${charEnumKey(c.id)} = ${q(c.id)},`)
         .join('\n');

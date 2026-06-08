@@ -234,4 +234,31 @@ describe('emitStory', () => {
         expect(charFile).toContain('export const characterTable');
         expect(charFile).toContain('export class CharacterDirectory');
     });
+
+    it('throws when two character IDs collapse to the same enum key', () => {
+        const collidingDir: ParsedCharacterDirectory = {
+            characters: [
+                {
+                    id: 'foo_bar',
+                    name: '甲',
+                    aliases: [],
+                    portraits: {},
+                },
+                {
+                    id: 'fooBar',
+                    name: '乙',
+                    aliases: [],
+                    portraits: {},
+                },
+            ],
+            getById: (id: string) =>
+                collidingDir.characters.find(c => c.id === id),
+            getIdByName: (name: string) =>
+                collidingDir.characters.find(c => c.name === name)?.id,
+        };
+        // foo_bar and fooBar both derive to enum key "FooBar"
+        expect(() => emitStory(story, dir, collidingDir)).toThrow(
+            /collision after enum-key derivation.*FooBar.*foo_bar.*fooBar/s
+        );
+    });
 });

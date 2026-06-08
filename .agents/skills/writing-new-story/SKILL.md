@@ -13,7 +13,7 @@ The **directory structure IS the branching graph**: `branch_*` subdirectories be
 
 ## Prerequisites
 
-- All speakers in markdown must resolve to a `CharacterId` (defined in `packages/stories/src/characters/CharacterId.ts`)
+- All speakers in markdown must resolve to a character defined in `raw/<storyName>/docs/characters.md`
 - Bun runtime (runs TS directly)
 
 ## Workflow
@@ -81,33 +81,43 @@ raw/<storyName>/
 
 ### Step 2: Add Characters (if needed)
 
-If your story introduces new characters:
+Characters are defined per-story in `raw/<storyName>/docs/characters.md`. Each character is a `##`-level heading with metadata bullets. The compiler parses this file to generate a per-story `characters.ts` (enum + directory + portrait prompts).
 
-1. Add entries to `packages/stories/src/characters/CharacterId.ts`:
-   - Add the enum value: `MyCharacter = 'my_character'`
-   - Add to the `CHARACTERS` map with `displayName` and `aliases` array
+1. Add a character heading with ID and aliases:
+   ```markdown
+   ## 1. 李杰（Li Jie）
 
-2. The `CharacterDirectory.getIdByName()` method automatically indexes all entries for reverse lookup.
+   - **ID**: `li_jie`
+   - **Aliases**: 男主角
 
-Characters must exist before the compiler can parse your markdown.
+   Optional bio prose here.
+   ```
 
-#### Portrait Prompts (`docs/characters.md`)
+2. For characters that appear on screen, add portrait prompts in a `### Portrait Prompts` subsection:
+   ```markdown
+   ### Portrait Prompts
 
-For each character that appears on screen, define image-generation prompts in a portrait doc. By default this lives at `raw/<storyName>/docs/characters.md` (override the location with the optional `charactersDocPath` field in `compiler.config.ts`). Each character is a numbered `##` heading with a `（role）` suffix, followed by a `### Portrait Prompts` section listing one prompt per expression:
+   - **base**: 17yo boy, short black hair, school uniform, guarded expression
+   - **angry**: clenched jaw, narrowed eyes, fists balled at sides
+   - **sad**: downcast eyes, trembling lips, shoulders hunched
+   ```
 
-```markdown
-## 1. 李杰（高中生）
+3. For generic/role speakers (narrator, crowd, unnamed NPCs), add minimal entries with just an ID:
+   ```markdown
+   ## N. 旁白（Narrator）
 
-A guarded teenager who keeps everyone at arm's length.
-
-### Portrait Prompts
-
-- **base**: 17yo boy, short black hair, school uniform, guarded expression
-- **angry**: clenched jaw, narrowed eyes, fists balled at sides
-- **sad**: downcast eyes, trembling lips, shoulders hunched
-```
+   - **ID**: `narrator`
+   ```
 
 **Rules:**
+- The heading must follow the pattern `## N. DisplayName（Romaji）` with full-width parens.
+- The `- **ID**: \`snake_case_id\`` bullet is required for every character.
+- The `- **Aliases**: name1, name2` bullet is optional (comma-separated).
+- The `### Portrait Prompts` section is optional (only for characters with portraits).
+- Characters must exist in `characters.md` before the compiler can parse your markdown.
+
+#### Portrait Prompts
+
 - The section heading must appear exactly as `### Portrait Prompts`.
 - Each prompt is `- **<key>**: <prompt>`. The `**base**` prompt is required — every other expression falls back to it.
 - Expression keys are **case-insensitive**: written as `Angry` or `ANGRY`, they normalize to lowercase `angry`.
@@ -136,7 +146,7 @@ Each `actN.md` file follows this format:
 - **Narrator**: Use `**旁白**：` for narration
 - All paragraphs must be valid `**name**：text` headers (unless `defaultSpeaker` is set in config, which treats non-header paragraphs as narration)
 
-**Important:** The character name in bold must resolve to a `CharacterId`. If it doesn't, the compiler will throw an error with the file and the unknown name.
+**Important:** The character name in bold must resolve to a character ID defined in `docs/characters.md`. If it doesn't, the compiler will throw an error with the file and the unknown name.
 
 **Background image prompts** — a ` ```bg ` fenced block sets the background starting from the next dialogue entry. That background **persists** for all subsequent entries until another `bg` block changes it (standard visual-novel behaviour — you only need a new block when the scene/location shifts):
 
@@ -187,24 +197,25 @@ rooftop at dusk, warm orange light
 Create `packages/stories/raw/<storyName>/compiler.config.ts`:
 
 ```typescript
-import { CharacterId, CharacterDirectory } from '../../src/characters';
 import type { StoryCompilerConfig } from '../../src/compiler/config';
 
 const config: StoryCompilerConfig = {
     storyId: 'my_story',
-    resolveCharacter: (name) => CharacterDirectory.getIdByName(name),
     // Optional: makes non-dialogue paragraphs render as Narrator lines
-    // defaultSpeaker: { id: CharacterId.Narrator, displayName: '旁白' },
+    defaultSpeakerId: 'narrator',
 };
 
 export default config;
 ```
 
-**`resolveCharacter`** options:
-- **Simple**: `CharacterDirectory.getIdByName` — resolves by display name or aliases
-- **Advanced**: Custom function with canonicalization, suffix stripping, and role-pattern matching (see `raw/trainAdventure/compiler.config.ts` for the full example with 30+ role patterns)
+**Optional config fields:**
+- **`canonicalize`**: A map of misspelled/verbose source labels → clean canonical name. Example: `{ '齋藤大輔': '斎藤大輔' }`
+- **`rolePatterns`**: Array of `{ pattern: RegExp, id: string }` for anonymous/role speakers that collapse to one character ID. Example: `{ pattern: /^路人[甲乙]?$/, id: 'passerby' }`
+- **`suffixRegex`**: Override the default suffix-stripping regex for inner-thought/voice markers. Default: strips `（內心）`, `的聲音`, punctuation, etc.
+- **`charactersDocPath`**: Override path to characters.md (default: `'docs/characters.md'`).
+- **`defaultSpeakerId`**: Set this if your markdown has non-dialogue paragraphs (forum posts, news articles, markers like `**<完>**`). The ID must exist in `characters.md`.
 
-**`defaultSpeaker`**: Set this if your markdown has non-dialogue paragraphs (forum posts, news articles, markers like `**<完>**`). Without it, the compiler fails on any paragraph that isn't a `**name**：text` header.
+The compiler builds character resolution internally from `characters.md` + these config fields. You never write a `resolveCharacter` function — the data drives everything.
 
 ### Step 5: Run the Compiler
 
@@ -216,6 +227,7 @@ This discovers all `raw/<story>/compiler.config.ts` entries and generates:
 
 | Output file | Purpose |
 |---|---|
+| `src/generated/<story>/characters.ts` | Per-story `CharacterId` enum, `CharacterInfo` interface, `characterTable`, and `CharacterDirectory` class |
 | `src/generated/<story>/scenes/<sceneId>.ts` | One `DialogueEntry[]` per scene — references `Portrait.*` and `Background.*` enums |
 | `src/generated/<story>/portraits.ts` | `Portrait` enum mapping every `characterId/expression` key to an enum member (emitted when portrait prompts exist) |
 | `src/generated/<story>/backgrounds.ts` | `Background` enum mapping every background key to an enum member (emitted when `bg` blocks exist) |
@@ -234,7 +246,7 @@ Two choice-related files exist:
 - `branch_1b/act4.md` → `b1b_act4` (inside a branch)
 - `chapter_1/branch_1a/act3.md` → `ch1_b1a_act3` (chapter + branch)
 
-**If the compiler throws `unknown character`**: Add the missing character to `CharacterId.ts` and re-run.
+**If the compiler throws `unknown character`**: Add the missing character to `raw/<storyName>/docs/characters.md` with an `- **ID**: \`...\`` bullet and re-run.
 
 **Asset warnings** (non-fatal — compilation succeeds regardless, emitted via `console.warn`):
 - **Character without portrait prompts**: a character appears in the story but has no entry in `docs/characters.md`. No portrait is assigned for that character.
@@ -413,7 +425,7 @@ The manifest is a source of truth for both the prompts and where each rendered P
 | Portrait | `<storyId>/characters/<characterId>/<expression>.png` | `dont_save_me_before_midnight/characters/gu_yan/determined.png` |
 | Background | `<storyId>/backgrounds/<rawDirName>/<sceneId>_s<section>.png` | `dont_save_me_before_midnight/backgrounds/chapter_1/ch1_act4_s0.png` |
 
-- Portrait paths use the character's **ID** (snake_case from `CharacterId` enum, e.g. `gu_yan`), **not** the display name. The expression key defaults to `base` when no `[override]` is given.
+- Portrait paths use the character's **ID** (snake_case from `characters.md`, e.g. `gu_yan`), **not** the display name. The expression key defaults to `base` when no `[override]` is given.
 - Background paths embed the **raw directory name**: root-level scenes use `_root`, otherwise the source directory (e.g. `chapter_1`, `branch_1a`).
 - `<section>` is a **zero-based** index that increments each time a new ` ```bg ` block appears in a scene (`s0` for the first, `s1` for the second, ...).
 
@@ -456,10 +468,10 @@ Both files are compiler-owned — re-run `bun compile:stories` after adding or c
 
 | File | Action |
 |---|---|
+| `raw/<story>/docs/characters.md` | Define characters (ID, aliases, portrait prompts) |
 | `raw/<story>/chapter_<N>/act*.md` | Write markdown dialogue (inside chapter folders) |
 | `raw/<story>/act*.md` | Or write at root level for chapterless stories |
 | `raw/<story>/compiler.config.ts` | Create compiler config |
-| `src/characters/CharacterId.ts` | Add new characters (if needed) |
 | `src/stories/<story>/choices.zh.ts` | Fill choice prompts + labels |
 | `src/stories/<story>/index.ts` | Create story loader |
 | `src/stories/index.ts` | Register in dictionaries |
@@ -467,7 +479,7 @@ Both files are compiler-owned — re-run `bun compile:stories` after adding or c
 
 ## Common Mistakes
 
-- **Unknown character error**: Every `**name**` in markdown must resolve. Check `CharacterId.ts` and add the character or an alias. Use the `canonicalize` map in `compiler.config.ts` for misspellings.
+- **Unknown character error**: Every `**name**` in markdown must resolve. Add the character to `raw/<story>/docs/characters.md` with an `- **ID**:` bullet. For misspellings, use the `canonicalize` map in `compiler.config.ts`.
 - **Wrong colon**: The compiler accepts both full-width `：` and half-width `:`, but the convention is full-width for Chinese text.
 - **Missing blank lines**: Every dialogue paragraph must be separated by a blank line. Consecutive lines without a blank separator get merged.
 - **Branch naming inconsistency**: Directories must be `branch_<number><letter>`. Sorting determines option order (`branch_1a` before `branch_1b`).

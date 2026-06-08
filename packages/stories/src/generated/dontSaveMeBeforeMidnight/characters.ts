@@ -20,6 +20,9 @@ export enum CharacterId {
     Voice = "voice",
     Unknown = "unknown",
     Parent = "parent",
+    Staff = "staff",
+    Driver = "driver",
+    SecurityGuard = "security_guard",
 }
 
 export interface CharacterInfo {
@@ -48,6 +51,9 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.Voice]: { id: "voice", name: "聲音", aliases: [] },
     [CharacterId.Unknown]: { id: "unknown", name: "？？？", aliases: [] },
     [CharacterId.Parent]: { id: "parent", name: "家長", aliases: [] },
+    [CharacterId.Staff]: { id: "staff", name: "工作人員", aliases: ["搬運人員", "裝卸人員"] },
+    [CharacterId.Driver]: { id: "driver", name: "司機", aliases: [] },
+    [CharacterId.SecurityGuard]: { id: "security_guard", name: "保全", aliases: ["值班老師", "校安"] },
 };
 
 const nameToId = new Map<string, string>();

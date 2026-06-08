@@ -1,6 +1,6 @@
 ---
 name: writing-new-story
-description: Use when creating a new branching story for the Aquila game — writing markdown dialogue, setting up the compiler config, running the story compiler, filling in choice text, and wiring the story into the game and web app. Also use when adding new characters for a story or extending the branching tree of an existing story.
+description: Use when creating a new branching story, adding a new chapter to an existing story, adding new characters, or extending the branching tree of an existing story. Also use when the task involves `packages/stories/raw/` markdown dialogue or `bun compile:stories`.
 ---
 
 # Writing a New Story
@@ -19,8 +19,10 @@ The **directory structure IS the branching graph**: `branch_*` subdirectories be
 ## Workflow
 
 ```
-Plan structure → Add characters → Write markdown → Create compiler config → Compile → Fill choice text → Wire to game → Verify
+Plan structure → Add characters → Plan act breakdown → Delegate writing to subagents → Create compiler config → Compile → Review & fix → Fill choice text → Wire to game → Verify
 ```
+
+**Important:** The main agent should focus on planning the act breakdown (mapping scenes to acts, deciding batch sizes). The actual writing of each act's markdown dialogue should be **delegated to subagents** using the Task tool (see Step 3b).
 
 ### Step 1: Plan the Story Structure
 
@@ -124,7 +126,49 @@ Characters are defined per-story in `raw/<storyName>/docs/characters.md`. Each c
 - **Multi-line prompts** are supported: continuation lines must be indented with **2 spaces**, and the compiler joins them into a single prompt string.
 - Any other `###` subsection ends the portrait block.
 
-### Step 3: Write the Markdown
+### Step 3a: Plan the Act Breakdown
+
+Before writing any markdown, create a mapping from the story plan's scenes to act files:
+
+1. **Read the story plan** (e.g. `docs/chapter_2_plan.md`) to understand each scene's content, time, and location.
+2. **Map scenes 1:1 to acts** — typically one act per scene. If a scene is very long, consider splitting into two acts. Keep the mapping explicit (e.g. scene 1 → act1, scene 2 → act2).
+3. **Identify character needs** — list any new characters or speaker roles that appear in the planned scenes and aren't yet in `docs/characters.md`.
+4. **Group acts into batches** for parallel subagent dispatch (typically 3-4 acts per batch). Batch by narrative arc when possible (e.g. morning scenes together, evening scenes together).
+5. **Note key constraints** per batch: POV character, time of day, specific plot beats that must land, items/props introduced, foreshadowing to plant.
+
+Output: A table like:
+
+| Act | Scene | Time | Location | Key beats |
+|---|---|---|---|---|
+| act1 | Awakening | 07:05 | Dorm | Wakes remembering death, loop confirmed |
+| act2 | ... | ... | ... | ... |
+
+### Step 3b: Delegate Writing to Subagents
+
+Dispatch parallel subagents to write the actual markdown. Each subagent handles a batch of acts (typically 3-4).
+
+**Dispatch pattern:**
+- Use the Task tool with `subagent_type: "general"` for each batch, sent in parallel
+- Each subagent must load this skill (`writing-new-story`) to learn the markdown format
+- Provide the preceding act's content for continuity across batch boundaries
+
+**Each subagent prompt must include:**
+1. Which acts to write (filenames + brief scene descriptions)
+2. Reference files to read first (characters.md, chapter plan, previous act, compiler.config.ts)
+3. Key constraints (Traditional Chinese, POV rules, story-specific rules from the plan)
+4. Instructions to report back: files written, characters added, deviations from plan
+
+See `subagent-prompt-template.md` in this skill's directory for the full prompt template.
+
+**Post-writing review:**
+After all subagents complete, run a review pass:
+1. `bun compile:stories` — fix missing characters and format errors
+2. Check for POV violations across batch boundaries
+3. Check consistency of props/descriptions across acts by different subagents
+4. Check for simplified Chinese characters
+5. Optionally dispatch a dedicated review subagent for continuity checking
+
+### Step 3c: Markdown Format Reference
 
 Each `actN.md` file follows this format:
 
@@ -479,10 +523,7 @@ Both files are compiler-owned — re-run `bun compile:stories` after adding or c
 
 ## Common Mistakes
 
-- **Unknown character error**: Every `**name**` in markdown must resolve. Add the character to `raw/<story>/docs/characters.md` with an `- **ID**:` bullet. For misspellings, use the `canonicalize` map in `compiler.config.ts`.
-- **Wrong colon**: The compiler accepts both full-width `：` and half-width `:`, but the convention is full-width for Chinese text.
-- **Missing blank lines**: Every dialogue paragraph must be separated by a blank line. Consecutive lines without a blank separator get merged.
-- **Branch naming inconsistency**: Directories must be `branch_<number><letter>`. Sorting determines option order (`branch_1a` before `branch_1b`).
+- **Writing acts yourself instead of delegating**: Plan the act breakdown, then delegate writing to subagents. Writing directly causes context overflow for chapters with 6+ acts.
+- **Unknown character error**: Every `**name**` in markdown must resolve. Add the character to `characters.md` with an `- **ID**:` bullet. For misspellings, use the `canonicalize` map in `compiler.config.ts`.
 - **Forgetting to register**: After compiling, the story won't appear in the game until you add it to `stories/index.ts` AND `story-types.ts`.
-- **Editing generated files**: Everything under `src/generated/` is compiler-owned. Re-run `bun compile:stories` after any markdown change. Never edit generated files by hand.
-- **Empty choices**: The `choices.zh.ts` file is scaffolded with empty strings. Fill in real prompt/label text — unfilled entries show as `TODO: ...` at runtime.
+- **Editing generated files**: Everything under `src/generated/` is compiler-owned. Re-run `bun compile:stories` after any markdown change.

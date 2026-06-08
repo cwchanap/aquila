@@ -331,6 +331,18 @@
 
 ---
 
+## 7.5. 司機（Driver）
+
+- **ID**: `driver`
+- **Aliases**: 校務車司機
+
+### 基本資料
+
+- **身份**：校務廂型車司機，校慶當天負責運送直播備份器材下山
+- **作用**：被電話指令臨時改道，是照指令辦事的人，不是主謀；事故後狀態不明（昏迷或被甩出車外）
+
+---
+
 ## 8. 顧澤（Gu Ze）
 
 - **ID**: `gu_ze`
@@ -459,3 +471,29 @@
 ## 21. 家長（Parent）
 
 - **ID**: `parent`
+
+---
+
+## 22. 工作人員（Staff）
+
+- **ID**: `staff`
+- **Aliases**: 搬運人員, 裝卸人員
+
+Generic school event staff / workers handling equipment, loading, and logistics during the centennial celebration.
+
+---
+
+## 23. 司機（Driver）
+
+- **ID**: `driver`
+
+The school van driver — a passive executor of dispatch instructions, not a conspirator.
+
+---
+
+## 24. 保全（Security Guard）
+
+- **ID**: `security_guard`
+- **Aliases**: 值班老師, 校安
+
+School gate security and duty teachers enforcing campus access rules during the centennial celebration.

@@ -95,6 +95,86 @@
       "key": "chapter_1/ch1_act11_s0",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_1/ch1_act11_s0.png",
       "prompt": "student dormitory room interior at dawn, same grey rain outside window and same ceiling crack as before but subtly colder and more surreal emotional lighting, uncanny familiar-yet-wrong atmosphere, phone glowing on pillow, muted desaturated palette, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act1_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act1_s0.png",
+      "prompt": "student dormitory room interior at dawn, same grey rain on window but colder and subtly uncanny, familiar ceiling crack, dim overcast light with faint blue-grey tint, wet black raincoat draped over chair beside bed in exact same position, glowing phone on pillow, muted desaturated palette, eerie familiar-yet-wrong atmosphere, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act2_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act2_s0.png",
+      "prompt": "dormitory corridor stairwell, cold concrete steps with water trails, grey morning light filtering from window at end of hall, fluorescent tube flickering overhead, damp walls, scattered rain boots and umbrellas, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_2/ch2_act3_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act3_s0.png",
+      "prompt": "school cafeteria interior, long rows of folding tables, fluorescent lighting, breakfast service windows with queues of students in uniform, steam rising from food trays, grey rain visible through tall windows, centennial decorations on walls, bustling morning atmosphere, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_2/ch2_act4_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act4_s0.png",
+      "prompt": "campus main road near temporary security command center, prefab mobile office unit with sign, overcast morning with low grey clouds, wet asphalt reflecting dim light, scattered security staff and volunteers in reflective vests walking, wind tugging at bunting and flags, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act5_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act5_s0.png",
+      "prompt": "school main gate security checkpoint, blue-and-white striped canopy tents, metal detector frames, security guards in reflective vests behind folding table, clipboard and sign-in sheets, wet pavement, grey overcast sky pressing low, wind bending small flags, mountain road visible beyond gate disappearing into mist, moody cinematic visual-novel background art, medium-wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act6_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act6_s0.png",
+      "prompt": "side entrance of school auditorium, grey concrete wall and metal fire door propped open, overcast sky with low clouds, wet ground with puddles reflecting dim light, few students passing in distance, school history hall facade visible across a narrow courtyard, wind moving treetops, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_2/ch2_act7_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act7_s0.png",
+      "prompt": "backstage corridor of school auditorium, stacked equipment cases and cable reels along concrete walls, harsh fluorescent lighting mixed with daylight leaking from loading dock doors, damp concrete floor with water trails, centennial event logistics staging area, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_2/ch2_act7_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act7_s1.png",
+      "prompt": "loading dock platform at school side gate, half-open concrete bay with corrugated metal awning, rain streaming off awning edge, stacked black hard-shell equipment cases, coiled cables, school van visible in background with rear doors open, overcast grey sky, wet reflective surfaces, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_2/ch2_act7_s2",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act7_s2.png",
+      "prompt": "dark equipment storage room adjacent to loading dock, rows of black hard-shell cases on metal shelving, dim overhead bulb casting long shadows, narrow aisle between cases, dust motes in single light beam, moody cinematic visual-novel background art, medium shot from corridor doorway"
+    },
+    {
+      "key": "chapter_2/ch2_act8_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act8_s0.png",
+      "prompt": "school campus central plaza under darkening typhoon sky, heavy grey cloud ceiling pressing low, rain intensifying, puddles reflecting dull light on pavement, students and staff moving with purpose between buildings, tarpaulin-covered equipment stacks, wet flags and centennial banners sagging, moody cinematic visual-novel background art, wide shot from elevated position"
+    },
+    {
+      "key": "chapter_2/ch2_act8_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act8_s1.png",
+      "prompt": "school plaza ground level, teachers with clipboards checking student attendance near auditorium entrance, workers in identical black raincoats moving equipment, wet pavement, low grey sky, rain intensifying, reflective patches glinting on raincoat chests, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_2/ch2_act9_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act9_s0.png",
+      "prompt": "school side gate loading dock in heavy rain, corrugated metal awning dripping water curtains, concrete platform wet and slick, school van with rear doors wide open, black equipment cases stacked near ramp, workers in reflective vests rushing, dark grey sky, rain bouncing off pavement, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act9_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act9_s1.png",
+      "prompt": "dark interior of school van cargo area, cramped space between stacked black hard-shell equipment cases, faint cold light leaking from rear door, metal walls and floor, elastic straps and nylon ties visible, shadows dense, claustrophobic atmosphere, moody cinematic visual-novel background art, tight enclosed shot"
+    },
+    {
+      "key": "chapter_2/ch2_act10_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act10_s0.png",
+      "prompt": "inside cargo van on narrow back mountain maintenance road, cramped dark compartment stacked with black equipment cases, view through rear door gap showing rain-blurred narrow road and dripping foliage pressing close, claustrophobic confined space, dim grey light, moody cinematic visual-novel background art, tight interior shot"
+    },
+    {
+      "key": "chapter_2/ch2_act11_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act11_s0.png",
+      "prompt": "back mountain maintenance road in heavy typhoon rain, extremely narrow single-lane road carved into hillside, low rusted guardrail on one side, deep muddy drainage ditch below, dense dripping foliage pressing from both sides, headlight beams cutting through curtain of rain, moody cinematic visual-novel background art, low angle wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act12_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_2/ch2_act12_s0.png",
+      "prompt": "same student dormitory room at dawn as before, same grey rain outside window and same ceiling crack, but the light feels subtly wrong and too still, an uncanny déjà vu of a déjà vu, phone glowing on pillow with unnerving familiarity, muted desaturated palette with a faint cold blue cast, moody cinematic visual-novel background art, wide shot"
     }
   ],
   "portraits": [

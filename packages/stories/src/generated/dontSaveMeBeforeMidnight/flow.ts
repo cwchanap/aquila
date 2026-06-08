@@ -13,7 +13,19 @@ export type DontSaveMeBeforeMidnightSceneId =
     | "ch1_act8"
     | "ch1_act9"
     | "ch1_act10"
-    | "ch1_act11";
+    | "ch1_act11"
+    | "ch2_act1"
+    | "ch2_act2"
+    | "ch2_act3"
+    | "ch2_act4"
+    | "ch2_act5"
+    | "ch2_act6"
+    | "ch2_act7"
+    | "ch2_act8"
+    | "ch2_act9"
+    | "ch2_act10"
+    | "ch2_act11"
+    | "ch2_act12";
 
 export const dontSaveMeBeforeMidnightFlow: FlowConfig<DontSaveMeBeforeMidnightSceneId> = {
   start: "ch1_act1",
@@ -28,6 +40,18 @@ export const dontSaveMeBeforeMidnightFlow: FlowConfig<DontSaveMeBeforeMidnightSc
     { kind: 'scene', id: "ch1_act8", sceneId: "ch1_act8", next: "ch1_act9" },
     { kind: 'scene', id: "ch1_act9", sceneId: "ch1_act9", next: "ch1_act10" },
     { kind: 'scene', id: "ch1_act10", sceneId: "ch1_act10", next: "ch1_act11" },
-    { kind: 'scene', id: "ch1_act11", sceneId: "ch1_act11", next: null },
+    { kind: 'scene', id: "ch1_act11", sceneId: "ch1_act11", next: "ch2_act1" },
+    { kind: 'scene', id: "ch2_act1", sceneId: "ch2_act1", next: "ch2_act2" },
+    { kind: 'scene', id: "ch2_act2", sceneId: "ch2_act2", next: "ch2_act3" },
+    { kind: 'scene', id: "ch2_act3", sceneId: "ch2_act3", next: "ch2_act4" },
+    { kind: 'scene', id: "ch2_act4", sceneId: "ch2_act4", next: "ch2_act5" },
+    { kind: 'scene', id: "ch2_act5", sceneId: "ch2_act5", next: "ch2_act6" },
+    { kind: 'scene', id: "ch2_act6", sceneId: "ch2_act6", next: "ch2_act7" },
+    { kind: 'scene', id: "ch2_act7", sceneId: "ch2_act7", next: "ch2_act8" },
+    { kind: 'scene', id: "ch2_act8", sceneId: "ch2_act8", next: "ch2_act9" },
+    { kind: 'scene', id: "ch2_act9", sceneId: "ch2_act9", next: "ch2_act10" },
+    { kind: 'scene', id: "ch2_act10", sceneId: "ch2_act10", next: "ch2_act11" },
+    { kind: 'scene', id: "ch2_act11", sceneId: "ch2_act11", next: "ch2_act12" },
+    { kind: 'scene', id: "ch2_act12", sceneId: "ch2_act12", next: null },
   ],
 };

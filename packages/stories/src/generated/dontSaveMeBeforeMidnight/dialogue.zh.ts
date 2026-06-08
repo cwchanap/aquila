@@ -12,6 +12,18 @@ import { scene as s_ch1_act8 } from './scenes/ch1_act8';
 import { scene as s_ch1_act9 } from './scenes/ch1_act9';
 import { scene as s_ch1_act10 } from './scenes/ch1_act10';
 import { scene as s_ch1_act11 } from './scenes/ch1_act11';
+import { scene as s_ch2_act1 } from './scenes/ch2_act1';
+import { scene as s_ch2_act2 } from './scenes/ch2_act2';
+import { scene as s_ch2_act3 } from './scenes/ch2_act3';
+import { scene as s_ch2_act4 } from './scenes/ch2_act4';
+import { scene as s_ch2_act5 } from './scenes/ch2_act5';
+import { scene as s_ch2_act6 } from './scenes/ch2_act6';
+import { scene as s_ch2_act7 } from './scenes/ch2_act7';
+import { scene as s_ch2_act8 } from './scenes/ch2_act8';
+import { scene as s_ch2_act9 } from './scenes/ch2_act9';
+import { scene as s_ch2_act10 } from './scenes/ch2_act10';
+import { scene as s_ch2_act11 } from './scenes/ch2_act11';
+import { scene as s_ch2_act12 } from './scenes/ch2_act12';
 
 export const dontSaveMeBeforeMidnightZhDialogue: DialogueMap = {
     "ch1_act1": s_ch1_act1,
@@ -25,4 +37,16 @@ export const dontSaveMeBeforeMidnightZhDialogue: DialogueMap = {
     "ch1_act9": s_ch1_act9,
     "ch1_act10": s_ch1_act10,
     "ch1_act11": s_ch1_act11,
+    "ch2_act1": s_ch2_act1,
+    "ch2_act2": s_ch2_act2,
+    "ch2_act3": s_ch2_act3,
+    "ch2_act4": s_ch2_act4,
+    "ch2_act5": s_ch2_act5,
+    "ch2_act6": s_ch2_act6,
+    "ch2_act7": s_ch2_act7,
+    "ch2_act8": s_ch2_act8,
+    "ch2_act9": s_ch2_act9,
+    "ch2_act10": s_ch2_act10,
+    "ch2_act11": s_ch2_act11,
+    "ch2_act12": s_ch2_act12,
 };

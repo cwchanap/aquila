@@ -2,45 +2,56 @@
   /* eslint-disable svelte/infinite-reactive-loop */
   import type {
     DialogueEntry,
-    ChoiceDefinition,
-    Locale,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories';
   import ActPanel from '@/components/ActPanel.svelte';
+  import { readerState } from '@/lib/reader-state.svelte';
 
-  export let dialogue: DialogueEntry[] = [];
-  export let choice: ChoiceDefinition | null = null;
-  export let onChoice: (nextScene: string) => void = () => {};
-  export let onBookmark: (dialogueNumber: number) => void = () => {};
-  export let onNext: () => void = () => {};
-  export let canGoNext: boolean = false;
-  export let showBookmarkButton: boolean = true;
-  export let locale: Locale = 'en';
-  export let backUrl: string = '/';
-  export let initialDialogueIndex: number | null = null;
-  export let storyId: string = '';
-  export let currentSceneId: string = '';
-  export let onNavigate: (sceneId: string) => void = () => {};
+  let {
+    onChoice = () => {},
+    onBookmark = () => {},
+    onNext = () => {},
+    showBookmarkButton = true,
+    backUrl = '/',
+    initialDialogueIndex = null,
+    onNavigate = () => {},
+  }: {
+    onChoice: (nextScene: string) => void;
+    onBookmark: (dialogueNumber: number) => void;
+    onNext: () => void;
+    showBookmarkButton: boolean;
+    backUrl: string;
+    initialDialogueIndex: number | null;
+    onNavigate: (sceneId: string) => void;
+  } = $props();
 
-  $: t = getTranslations(locale);
+  let dialogue = $derived(readerState.dialogue);
+  let choice = $derived(readerState.choice);
+  let storyId = $derived(readerState.storyId);
+  let currentSceneId = $derived(readerState.currentSceneId);
+  let canGoNext = $derived(readerState.canGoNext);
+  let locale = $derived(readerState.locale);
 
-  let currentDialogueIndex = 0;
+  let t = $derived(getTranslations(locale));
+
+  let currentDialogueIndex = $state(0);
   let displayedDialogues: {
     text: string;
     characterName: string;
     characterId?: string;
-  }[] = [];
-  let isTyping = false;
-  let typingSpeed = 30; // milliseconds per character
-  let skipTyping = false;
-  let typingText = '';
-  let lastDialogueSnapshot = '';
-  let dialogueContainer: HTMLElement | null = null;
-  let hasAppliedInitialIndex = false;
-  let hasUserAdvanced = false;
-  let showActPanel = false;
+  } = $state([]);
+  let isTyping = $state(false);
+  let typingSpeed = 30;
+  let skipTyping = $state(false);
+  let typingText = $state('');
+  let lastDialogueSnapshot = $state('');
+  let dialogueContainer: HTMLElement | null = $state(null);
+  let hasAppliedInitialIndex = $state(false);
+  let hasUserAdvanced = $state(false);
+  let showActPanel = $state(false);
 
-  $: currentDialogue = dialogue[currentDialogueIndex];
+  let currentDialogue = $derived(dialogue[currentDialogueIndex]);
+  let isLastDialogue = $derived(currentDialogueIndex >= dialogue.length - 1);
 
   function getCharacterName(dialogueEntry: DialogueEntry | undefined): string {
     if (!dialogueEntry) return '';
@@ -73,10 +84,8 @@
     return '';
   }
 
-  $: isLastDialogue = currentDialogueIndex >= dialogue.length - 1;
-
   // Reset displayed dialogues when dialogue array changes (new scene)
-  $: {
+  $effect(() => {
     const snapshot = JSON.stringify(dialogue);
     if (snapshot !== lastDialogueSnapshot) {
       lastDialogueSnapshot = snapshot;
@@ -88,40 +97,44 @@
       hasUserAdvanced = false;
       hasAppliedInitialIndex = false;
     }
-  }
+  });
 
   // Apply initial dialogue index (if provided) once per mount
-  $: if (
-    !hasAppliedInitialIndex &&
-    initialDialogueIndex !== null &&
-    initialDialogueIndex >= 0 &&
-    dialogue.length > 0
-  ) {
-    const targetIndex = Math.min(initialDialogueIndex, dialogue.length - 1);
+  $effect(() => {
+    if (
+      !hasAppliedInitialIndex &&
+      initialDialogueIndex !== null &&
+      initialDialogueIndex >= 0 &&
+      dialogue.length > 0
+    ) {
+      const targetIndex = Math.min(initialDialogueIndex, dialogue.length - 1);
 
-    displayedDialogues = [];
-    isTyping = false;
-    skipTyping = false;
-    typingText = '';
+      displayedDialogues = [];
+      isTyping = false;
+      skipTyping = false;
+      typingText = '';
 
-    for (let i = 0; i <= targetIndex; i++) {
-      const entry = dialogue[i];
-      if (!entry) break;
-      addDialogueToDisplay(entry.dialogue, entry);
+      for (let i = 0; i <= targetIndex; i++) {
+        const entry = dialogue[i];
+        if (!entry) break;
+        addDialogueToDisplay(entry.dialogue, entry);
+      }
+
+      currentDialogueIndex = targetIndex;
+      hasAppliedInitialIndex = true;
     }
-
-    currentDialogueIndex = targetIndex;
-    hasAppliedInitialIndex = true;
-  }
+  });
 
   // Start typing new dialogue when index changes
-  $: if (
-    dialogue[currentDialogueIndex] &&
-    displayedDialogues.length === currentDialogueIndex &&
+  $effect(() => {
+    if (
+      dialogue[currentDialogueIndex] &&
+      displayedDialogues.length === currentDialogueIndex &&
     (!hasAppliedInitialIndex || hasUserAdvanced)
-  ) {
-    startTypingNewDialogue();
-  }
+    ) {
+      startTypingNewDialogue();
+    }
+  });
 
   function startTypingNewDialogue() {
     const dialogueEntry = dialogue[currentDialogueIndex];
@@ -250,7 +263,7 @@
   class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex overflow-hidden"
 >
   <!-- Left panel -- embedded toggle, slider animation -->
-  <aside class="flex-shrink-0 h-screen overflow-hidden">
+  <aside class="flex-shrink-0 h-screen relative z-30">
     {#if storyId && currentSceneId}
       <ActPanel
         {storyId}
@@ -258,7 +271,6 @@
         open={showActPanel}
         onToggle={() => (showActPanel = !showActPanel)}
         onNavigate={(sceneId: string) => {
-          showActPanel = false;
           if (sceneId !== currentSceneId) {
             onNavigate(sceneId);
           }

@@ -73,8 +73,12 @@ export default [
     },
   },
   {
-    files: ['**/*.{js,jsx,ts,tsx,mjs,cjs}'],
+    files: ['**/*.{js,jsx,ts,tsx,mjs,cjs,svelte.ts}'],
     languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: true,
+      },
       ecmaVersion: 2022,
       sourceType: 'module',
     },

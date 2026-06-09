@@ -986,7 +986,7 @@ describe('ReaderManager', () => {
             expect(() => manager.renderReader()).not.toThrow();
         });
 
-        it('unmounts existing reader instance before rendering', async () => {
+        it('skips remounting when reader instance already exists', async () => {
             const mockStory = {
                 dialogue: { scene_1: [] },
                 choices: {},
@@ -1007,10 +1007,11 @@ describe('ReaderManager', () => {
             // Give microtasks a chance to run
             await Promise.resolve();
 
-            expect(mockUnmount).toHaveBeenCalled();
+            // Should NOT call unmount — component stays mounted
+            expect(mockUnmount).not.toHaveBeenCalled();
         });
 
-        it('unmount closure in readerInstance calls svelte unmount (covers lines 307-309)', async () => {
+        it('unmount closure in readerInstance calls svelte unmount (covers lines 373-376)', async () => {
             const mockStory = {
                 dialogue: { scene_1: [] },
                 choices: {},
@@ -1024,19 +1025,16 @@ describe('ReaderManager', () => {
             const manager = new ReaderManager('en');
 
             // First render: let the async import chain complete so readerInstance is set
-            // with the REAL unmount closure (lines 306-310)
+            // with the REAL unmount closure (lines 373-376)
             manager.renderReader();
             // Wait until the dynamic import .then completes and sets readerInstance
             await vi.waitFor(() => {
                 expect((manager as any).readerInstance).not.toBeNull();
             });
 
-            // Second render: the REAL readerInstance.unmount() is called (line 307-309)
-            manager.renderReader();
-            // Wait until the unmount closure fires and mockUnmount is recorded
-            await vi.waitFor(() => {
-                expect(mockUnmount).toHaveBeenCalled();
-            });
+            // Explicitly call unmount on the readerInstance to exercise the closure
+            (manager as any).readerInstance.unmount();
+            expect(mockUnmount).toHaveBeenCalled();
         });
 
         it('clears the container when container exists', () => {

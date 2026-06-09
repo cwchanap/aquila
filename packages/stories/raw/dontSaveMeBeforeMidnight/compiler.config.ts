@@ -20,6 +20,7 @@ const config: StoryCompilerConfig = {
                 /^(\u8A0A\u606F|\u7C21\u8A0A|\u624B\u6A5F\u87A2\u5E55|\u7D19\u689D|\u533F\u540D\u8A0A\u606F)$/,
             id: 'message',
         },
+        { pattern: /^\u8001\u5E2B$/, id: 'teacher' },
         { pattern: /^.*\u8072\u97F3$/, id: 'voice' },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],

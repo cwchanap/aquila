@@ -497,3 +497,11 @@ The school van driver — a passive executor of dispatch instructions, not a con
 - **Aliases**: 值班老師, 校安
 
 School gate security and duty teachers enforcing campus access rules during the centennial celebration.
+
+---
+
+## 25. 老師（Teacher）
+
+- **ID**: `teacher`
+
+Generic unnamed teacher who appears briefly in the story (e.g. the neighboring-class teacher giving reassurances during the typhoon broadcast).

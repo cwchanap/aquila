@@ -32,9 +32,9 @@ const defaultSpeaker = (() => {
 describe('dontSaveMeBeforeMidnight golden compile', () => {
     const graph = buildStoryGraph(scanStory(rawDir));
 
-    it('starts at ch1_act1 and produces all chapter 1 scenes', () => {
+    it('starts at ch1_act1 and produces all scenes across chapters 1 and 2', () => {
         expect(graph.start).toBe('ch1_act1');
-        expect(graph.scenes.length).toBe(11);
+        expect(graph.scenes.length).toBe(23);
         expect(graph.scenes.map(s => s.id)).toEqual([
             'ch1_act1',
             'ch1_act2',
@@ -47,6 +47,18 @@ describe('dontSaveMeBeforeMidnight golden compile', () => {
             'ch1_act9',
             'ch1_act10',
             'ch1_act11',
+            'ch2_act1',
+            'ch2_act2',
+            'ch2_act3',
+            'ch2_act4',
+            'ch2_act5',
+            'ch2_act6',
+            'ch2_act7',
+            'ch2_act8',
+            'ch2_act9',
+            'ch2_act10',
+            'ch2_act11',
+            'ch2_act12',
         ]);
     });
 
@@ -54,9 +66,9 @@ describe('dontSaveMeBeforeMidnight golden compile', () => {
         expect(graph.choices).toHaveLength(0);
     });
 
-    it('chains all scenes linearly ending at ch1_act11 with null next', () => {
+    it('chains all scenes linearly ending at ch2_act12 with null next', () => {
         const last = graph.scenes[graph.scenes.length - 1];
-        expect(last.id).toBe('ch1_act11');
+        expect(last.id).toBe('ch2_act12');
         expect(last.next).toBeNull();
         for (let i = 0; i < graph.scenes.length - 1; i++) {
             expect(graph.scenes[i].next).toBe(graph.scenes[i + 1].id);

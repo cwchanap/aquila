@@ -10,15 +10,50 @@
   export let open = false;
   export let locale: Locale = 'en';
 
+  let expandedChapter: string | null = null;
+
   $: t = getTranslations(locale);
-  $: acts = computeActs(storyId, currentSceneId);
+  $: chapterData = buildChapterData(storyId, currentSceneId);
   $: currentAct = extractActName(currentSceneId);
+  $: currentChapterKey = extractChapterKey(currentSceneId);
+
+  $: if (currentChapterKey) {
+    expandedChapter = currentChapterKey;
+  }
 
   interface ActInfo {
     label: string;
     sceneId: string;
     sortKey: number;
     rawName: string;
+  }
+
+  interface ChapterGroup {
+    chapterNum: number;
+    label: string;
+    acts: ActInfo[];
+  }
+
+  interface ChaptersResult {
+    mode: 'chapters';
+    chapters: ChapterGroup[];
+  }
+
+  interface BranchesResult {
+    mode: 'branches';
+    acts: ActInfo[];
+  }
+
+  type PanelData = ChaptersResult | BranchesResult;
+
+  function extractChapterKey(sceneId: string): string | null {
+    const match = sceneId.match(/^(ch\d+)_/);
+    return match ? match[1] : null;
+  }
+
+  function extractChapterNum(sceneId: string): number | null {
+    const match = sceneId.match(/^ch(\d+)_/);
+    return match ? parseInt(match[1], 10) : null;
   }
 
   function extractActName(sceneId: string): string {
@@ -60,16 +95,70 @@
     return score;
   }
 
-  function computeActs(sid: string, sceneId: string): ActInfo[] {
-    const flow = getStoryFlow(sid);
-    if (!flow) return [];
+  function chapterLabel(num: number): string {
+    return t.reader.chapterLabel.replace('{n}', String(num));
+  }
 
-    // Collect all candidate scenes grouped by act name
+  function buildChapterData(sid: string, sceneId: string): PanelData {
+    const flow = getStoryFlow(sid);
+    if (!flow) return { mode: 'branches', acts: [] };
+
+    const hasChapters = flow.nodes.some(
+      n => n.kind === 'scene' && /^ch\d+_/.test(n.sceneId)
+    );
+
+    if (hasChapters) {
+      return buildChapters(flow);
+    }
+
+    return buildBranches(flow, sceneId);
+  }
+
+  function buildChapters(flow: { nodes: Array<{ kind: string; sceneId?: string }> }): ChaptersResult {
+    const chapters: Record<number, Record<string, string>> = {};
+
+    for (const node of flow.nodes) {
+      if (node.kind !== 'scene') continue;
+      const sceneId = node.sceneId!;
+      const actMatch = sceneId.match(/(?:^|_)(act\d+|actFinal|actEpilogue)/);
+      if (!actMatch) continue;
+
+      const actName = actMatch[1];
+      const chNum = extractChapterNum(sceneId);
+      if (chNum === null) continue;
+
+      if (!chapters[chNum]) {
+        chapters[chNum] = {};
+      }
+      if (!chapters[chNum][actName]) {
+        chapters[chNum][actName] = sceneId;
+      }
+    }
+
+    const sorted = Object.entries(chapters)
+      .map(([num, actsMap]) => ({
+        chapterNum: Number(num),
+        label: chapterLabel(Number(num)),
+        acts: Object.entries(actsMap)
+          .map(([rawName, sid]) => ({
+            label: actLabel(rawName),
+            sceneId: sid,
+            sortKey: actSortKey(rawName),
+            rawName,
+          }))
+          .sort((a, b) => a.sortKey - b.sortKey),
+      }))
+      .sort((a, b) => a.chapterNum - b.chapterNum);
+
+    return { mode: 'chapters', chapters: sorted };
+  }
+
+  function buildBranches(flow: { nodes: Array<{ kind: string; sceneId?: string }> }, sceneId: string): BranchesResult {
     const actCandidates: Record<string, string[]> = {};
 
     for (const node of flow.nodes) {
       if (node.kind !== 'scene') continue;
-      const match = node.sceneId.match(
+      const match = node.sceneId!.match(
         /(?:^|_)(act\d+|actFinal|actEpilogue)/
       );
       if (!match) continue;
@@ -77,13 +166,9 @@
       if (!actCandidates[actName]) {
         actCandidates[actName] = [];
       }
-      actCandidates[actName].push(node.sceneId);
+      actCandidates[actName].push(node.sceneId!);
     }
 
-    // For each act, pick the candidate whose branch prefix best matches the current scene.
-    // Only consider candidates that are on the current branch: the candidate's prefix must
-    // be a prefix of the current branch, or vice versa. Acts with no on-branch candidates
-    // (e.g. act38 only existing on sibling b5a when reader is on b5b) are excluded.
     const currentBranch = extractBranchPrefix(sceneId);
     const currentParts = currentBranch.split('_').filter(Boolean);
 
@@ -92,7 +177,6 @@
       const candParts = candidatePrefix.split('_').filter(Boolean);
       const shorter = candParts.length <= currentParts.length ? candParts : currentParts;
       const longer = candParts.length <= currentParts.length ? currentParts : candParts;
-      // The shorter prefix must be a prefix of the longer one
       for (let i = 0; i < shorter.length; i++) {
         if (shorter[i] !== longer[i]) return false;
       }
@@ -115,7 +199,7 @@
       actMap.set(actName, bestScene);
     }
 
-    return Array.from(actMap.entries())
+    const acts = Array.from(actMap.entries())
       .map(([rawName, sid]) => ({
         label: actLabel(rawName),
         sceneId: sid,
@@ -123,6 +207,8 @@
         rawName,
       }))
       .sort((a, b) => a.sortKey - b.sortKey);
+
+    return { mode: 'branches', acts };
   }
 
   function handleSelect(sceneId: string) {
@@ -138,13 +224,11 @@
 
 <svelte:window on:keydown={handleEscape} />
 
-<div
-  class="h-full flex transition-all duration-300 ease-in-out overflow-hidden {open ? 'w-80' : 'w-12'}"
->
+<div class="h-full flex-shrink-0 relative" style="width: 48px;">
   <!-- Toggle tab -- always visible -->
   <button
     on:click={onToggle}
-    class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors"
+    class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors relative z-10"
     aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
     aria-expanded={open}
   >
@@ -172,9 +256,9 @@
     {/if}
   </button>
 
-  <!-- Panel content -- slides in -->
+  <!-- Panel content -- slides in as overlay -->
   <div
-    class="flex-1 h-full overflow-y-auto transition-opacity duration-300 {open ? 'opacity-100' : 'opacity-0 pointer-events-none'}"
+    class="absolute top-0 left-12 h-full w-72 overflow-y-auto z-20 transition-all duration-300 ease-in-out bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md {open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'}"
     aria-hidden={!open}
     inert={!open}
   >
@@ -183,19 +267,69 @@
         {t.reader.actPanel}
       </h2>
 
-      <div class="space-y-2">
-        {#each acts as act (act.rawName)}
-          <Button
-            variant="menu"
-            on:click={() => handleSelect(act.sceneId)}
-            className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 {act.rawName === currentAct
-              ? 'bg-blue-500 text-white font-semibold shadow-md text-base tracking-normal normal-case hover:scale-100 border-transparent'
-              : 'bg-white/60 hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-base tracking-normal normal-case hover:scale-100 border-transparent'}"
-          >
-            {act.label}
-          </Button>
-        {/each}
-      </div>
+      {#if chapterData.mode === 'chapters'}
+        <div class="space-y-1">
+          {#each chapterData.chapters as chapter (chapter.chapterNum)}
+            {@const chKey = 'ch' + chapter.chapterNum}
+            {@const isExpanded = expandedChapter === chKey}
+            {@const isCurrent = currentChapterKey === chKey}
+            <div>
+              <button
+                class="w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-between {isCurrent
+                  ? 'bg-slate-800 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
+                on:click={() => {
+                  expandedChapter = expandedChapter === chKey ? null : chKey;
+                }}
+              >
+                {chapter.label}
+                <svg
+                  class="w-4 h-4 transition-transform duration-200 {isExpanded ? 'rotate-180' : ''}"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {#if isExpanded}
+                <div class="ml-3 mt-1 space-y-1">
+                  {#each chapter.acts as act (act.rawName)}
+                    <Button
+                      variant="menu"
+                      on:click={() => handleSelect(act.sceneId)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 {act.rawName === currentAct && isCurrent
+                        ? 'bg-blue-500 text-white font-semibold shadow-md text-sm tracking-normal normal-case hover:scale-100 border-transparent'
+                        : 'bg-white/60 hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-sm tracking-normal normal-case hover:scale-100 border-transparent'}"
+                    >
+                      {act.label}
+                    </Button>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <div class="space-y-2">
+          {#each chapterData.acts as act (act.rawName)}
+            <Button
+              variant="menu"
+              on:click={() => handleSelect(act.sceneId)}
+              className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 {act.rawName === currentAct
+                ? 'bg-blue-500 text-white font-semibold shadow-md text-base tracking-normal normal-case hover:scale-100 border-transparent'
+                : 'bg-white/60 hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-base tracking-normal normal-case hover:scale-100 border-transparent'}"
+            >
+              {act.label}
+            </Button>
+          {/each}
+        </div>
+      {/if}
     </div>
   </div>
 </div>

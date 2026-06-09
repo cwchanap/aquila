@@ -64,6 +64,7 @@ vi.mock('@aquila/stories', () => ({
             actLabel: 'Act {n}',
             actFinal: 'Final Act',
             actEpilogue: 'Epilogue',
+            chapterLabel: 'Chapter {n}',
             openActsPanel: 'Open acts panel',
             closeActsPanel: 'Close acts panel',
         },
@@ -456,5 +457,192 @@ describe('ActPanel', () => {
         expect(act1Button).toBeDefined();
         await fireEvent.click(act1Button!);
         expect(onNavigate).toHaveBeenCalledWith('b1a_act1');
+    });
+});
+
+describe('ActPanel — chapter mode', () => {
+    const onNavigate = vi.fn();
+    const onToggle = vi.fn();
+
+    const chapterFlow = {
+        start: 'ch1_act1',
+        nodes: [
+            {
+                kind: 'scene',
+                id: 'ch1_act1',
+                sceneId: 'ch1_act1',
+                next: 'ch1_act2',
+            },
+            {
+                kind: 'scene',
+                id: 'ch1_act2',
+                sceneId: 'ch1_act2',
+                next: 'ch2_act1',
+            },
+            {
+                kind: 'scene',
+                id: 'ch2_act1',
+                sceneId: 'ch2_act1',
+                next: 'ch2_act2',
+            },
+            {
+                kind: 'scene',
+                id: 'ch2_act2',
+                sceneId: 'ch2_act2',
+                next: 'ch3_act1',
+            },
+            { kind: 'scene', id: 'ch3_act1', sceneId: 'ch3_act1', next: null },
+        ],
+    };
+
+    function findChapterButton(name: string): HTMLElement | undefined {
+        return screen
+            .getAllByRole('button')
+            .find(
+                b =>
+                    b.textContent?.includes(name) &&
+                    !b.getAttribute('aria-label')
+            );
+    }
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('renders chapter headers with only current chapter expanded', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch2_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        expect(screen.getByText('Chapter 1')).toBeInTheDocument();
+        expect(screen.getByText('Chapter 2')).toBeInTheDocument();
+        expect(screen.getByText('Chapter 3')).toBeInTheDocument();
+
+        const ch2Header = findChapterButton('Chapter 2')!;
+        const ch2Section = ch2Header.parentElement!;
+        const ch2Acts = ch2Section.querySelectorAll(':scope .ml-3 button');
+        expect(ch2Acts.length).toBe(2);
+
+        const ch1Header = findChapterButton('Chapter 1')!;
+        const ch1Section = ch1Header.parentElement!;
+        const ch1Acts = ch1Section.querySelectorAll(':scope .ml-3 button');
+        expect(ch1Acts.length).toBe(0);
+
+        const ch3Header = findChapterButton('Chapter 3')!;
+        const ch3Section = ch3Header.parentElement!;
+        const ch3Acts = ch3Section.querySelectorAll(':scope .ml-3 button');
+        expect(ch3Acts.length).toBe(0);
+    });
+
+    it('highlights the current chapter header', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch2_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        const ch2Button = findChapterButton('Chapter 2')!;
+        expect(ch2Button).toHaveClass('bg-slate-800');
+
+        const ch1Button = findChapterButton('Chapter 1')!;
+        expect(ch1Button).toHaveClass('bg-slate-100');
+    });
+
+    it('highlights the current act within the expanded chapter', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch2_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        const ch2Header = findChapterButton('Chapter 2')!;
+        const ch2Section = ch2Header.parentElement!;
+        const ch2ActButtons = ch2Section.querySelectorAll(
+            ':scope .ml-3 button'
+        );
+        expect(ch2ActButtons[0]).toHaveClass('bg-blue-500');
+    });
+
+    it('expands chapter on click without navigating', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch1_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        const ch3Button = findChapterButton('Chapter 3');
+        expect(ch3Button).toBeDefined();
+        await fireEvent.click(ch3Button!);
+
+        const ch3Header = findChapterButton('Chapter 3')!;
+        const ch3Section = ch3Header.parentElement!;
+        const ch3Acts = ch3Section.querySelectorAll(':scope .ml-3 button');
+        expect(ch3Acts.length).toBe(1);
+
+        expect(onNavigate).not.toHaveBeenCalled();
+    });
+
+    it('shows all chapter headers regardless of current position', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch1_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        expect(screen.getByText('Chapter 1')).toBeInTheDocument();
+        expect(screen.getByText('Chapter 2')).toBeInTheDocument();
+        expect(screen.getByText('Chapter 3')).toBeInTheDocument();
     });
 });

@@ -9,6 +9,7 @@ import {
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 import { LocalBookmarksStore } from './local-bookmarks-store';
+import { readerState } from './reader-state.svelte';
 
 export interface SceneState {
     storyId: string;
@@ -238,7 +239,7 @@ export class ReaderManager {
     private navigateToScene(sceneId: string): void {
         this.currentState.sceneId = sceneId;
         this.saveState(this.currentState);
-        this.renderReader();
+        this.pushReaderState();
     }
 
     handleChoice = (nextScene: string): void => {
@@ -322,26 +323,32 @@ export class ReaderManager {
         }
     };
 
-    renderReader(): void {
-        const container = document.getElementById('reader-container');
-        if (!container) return;
-
-        const translations = this.t;
-
+    private pushReaderState(): void {
         const { dialogue, choice } = this.getSceneData(
             this.currentState.storyId,
             this.currentState.sceneId,
             this.currentState.locale
         );
 
-        const canGoNext = this.hasNextScene(this.currentState.sceneId);
+        readerState.dialogue = dialogue;
+        readerState.choice = choice;
+        readerState.currentSceneId = this.currentState.sceneId;
+        readerState.storyId = this.currentState.storyId;
+        readerState.canGoNext = this.hasNextScene(this.currentState.sceneId);
+        readerState.locale = this.currentState.locale;
+    }
+
+    renderReader(): void {
+        const container = document.getElementById('reader-container');
+        if (!container) return;
+
+        this.pushReaderState();
 
         if (this.readerInstance) {
-            this.readerInstance.unmount();
+            return;
         }
 
-        // Clear container
-        container.replaceChildren();
+        const translations = this.t;
 
         // Dynamic import to avoid issues with Astro SSR
         import('@/components/NovelReader.svelte')
@@ -350,19 +357,13 @@ export class ReaderManager {
                 const mountedComponent = mount(NovelReaderComponent, {
                     target: container,
                     props: {
-                        dialogue,
-                        choice,
                         onChoice: this.handleChoice,
                         onBookmark: (dialogueNumber: number) =>
                             this.handleBookmark(dialogueNumber),
                         onNext: this.handleNext,
-                        canGoNext,
                         showBookmarkButton: true,
-                        locale: translations.locale,
-                        backUrl: `/${translations.locale}/`,
+                        backUrl: `/${this.currentState.locale}/`,
                         initialDialogueIndex: this.initialDialogueIndex,
-                        storyId: this.currentState.storyId,
-                        currentSceneId: this.currentState.sceneId,
                         onNavigate: (sceneId: string) =>
                             this.navigateToScene(sceneId),
                     },

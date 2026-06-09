@@ -35,7 +35,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這兩個字像一根針，無聲地戳進了他某個柔軟的地方。監護人。他有監護人嗎？他的父親死了。他的母親——他不太願意想那個名字。戶籍資料上的緊急聯絡人，是外婆。但外婆兩年前搬到了外縣市，行動不方便。學校資料裡「父親舊案後持續協助照看」的那一欄，填的是——", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要想這個。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "家裡有點遠。我可以自己叫車到山下。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "⋯⋯遠。我自己叫車就行。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.SecurityGuard, character: "保全", dialogue: "自己叫車？", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保全的眉頭皺了一下。不是刁難，是一個照流程做事的人聽到了流程之外的東西。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.SecurityGuard, character: "保全", dialogue: "小同學，我跟你說實話。今天外面風大得很，山路不安全。而且校門外頭那段盤山公路沒有人行道，你走路下去起碼四十分鐘。颱風還沒到，但外圍環流已經在下了。學校不會放學生自己下山的。", background: Background.Chapter_2_Ch2_Act5_S0 },

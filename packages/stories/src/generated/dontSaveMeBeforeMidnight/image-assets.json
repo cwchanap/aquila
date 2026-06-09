@@ -194,11 +194,6 @@
       "prompt": "anime visual-novel portrait, 17-year-old East Asian boy, typical high school student, slightly cocky half-grin, leaning out from a dorm doorframe, teasing expression, school uniform worn casually, warm hallway lighting, upper-body shot, clean background"
     },
     {
-      "key": "gu_yan/angry",
-      "path": "dont_save_me_before_midnight/characters/gu_yan/angry.png",
-      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, cold hard glare, jaw clenched tight, eyes narrowed to slits, school uniform, dim overcast lighting, tense shoulders, muted cool tones, upper-body shot"
-    },
-    {
       "key": "gu_yan/shocked",
       "path": "dont_save_me_before_midnight/characters/gu_yan/shocked.png",
       "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, eyes blown wide, mouth slightly parted, face drained of color, school uniform, stark lighting, upper-body shot"
@@ -222,6 +217,11 @@
       "key": "lin_zhuren/stern",
       "path": "dont_save_me_before_midnight/characters/lin_zhuren/stern.png",
       "prompt": "anime visual-novel portrait, 40-something man, dark grey suit, thin metal-frame glasses, authoritarian mask over fear, finger pointing forward, voice raised, forced rigid posture, stark lighting, upper-body shot"
+    },
+    {
+      "key": "gu_yan/angry",
+      "path": "dont_save_me_before_midnight/characters/gu_yan/angry.png",
+      "prompt": "anime visual-novel portrait, 17-year-old boy, short messy black hair, cold hard glare, jaw clenched tight, eyes narrowed to slits, school uniform, dim overcast lighting, tense shoulders, muted cool tones, upper-body shot"
     },
     {
       "key": "gu_yan/determined",

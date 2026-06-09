@@ -147,7 +147,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)但韓越在裝卸區開箱子。他打開箱子，看了一眼，合上了。動作很快。像在確認什麼東西在不在。", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他在確認的就是這個包。", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他確認完了。包在車上。車出發了。", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他在車快關門的時候走過來，看到箱子位置不對——他不是在找我。他是在看這個包有沒有按計劃在車上。", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他在車快關門的時候走過來，看到箱子位置不對——他不是在找我。他⋯⋯是在確認這個包？", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)包在車上。車在走。我在車上。", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)和這個包一起。", background: Background.Chapter_2_Ch2_Act9_S1, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "山路在繼續。車廂在搖晃。雨水從後門的縫隙裡不斷飛進來，在他的校服膝蓋上積成一小片深色的水漬。他的牙齒開始打顫——不是冷，至少不全是冷。是某種更深層的、從骨頭裡往外滲的顫慄。", background: Background.Chapter_2_Ch2_Act9_S1 },

@@ -23,6 +23,7 @@ export enum CharacterId {
     Staff = "staff",
     Driver = "driver",
     SecurityGuard = "security_guard",
+    Teacher = "teacher",
 }
 
 export interface CharacterInfo {
@@ -54,6 +55,7 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.Staff]: { id: "staff", name: "工作人員", aliases: ["搬運人員", "裝卸人員"] },
     [CharacterId.Driver]: { id: "driver", name: "司機", aliases: [] },
     [CharacterId.SecurityGuard]: { id: "security_guard", name: "保全", aliases: ["值班老師", "校安"] },
+    [CharacterId.Teacher]: { id: "teacher", name: "老師", aliases: [] },
 };
 
 const nameToId = new Map<string, string>();

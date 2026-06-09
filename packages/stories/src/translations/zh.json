@@ -196,6 +196,7 @@
     "actLabel": "第 {n} 章",
     "actFinal": "最終章",
     "actEpilogue": "尾聲",
+    "chapterLabel": "第 {n} 章",
     "openActsPanel": "開啟章節面板",
     "closeActsPanel": "關閉章節面板"
   },

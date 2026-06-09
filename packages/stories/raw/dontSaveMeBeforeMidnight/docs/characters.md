@@ -505,3 +505,25 @@ School gate security and duty teachers enforcing campus access rules during the 
 - **ID**: `teacher`
 
 Generic unnamed teacher who appears briefly in the story (e.g. the neighboring-class teacher giving reassurances during the typhoon broadcast).
+
+---
+
+## 26. 保健老師（Health Teacher）
+
+- **ID**: `health_teacher`
+- **Aliases**: 護理老師
+
+South wing infirmary nurse/health teacher on duty during the centennial celebration. Not a conspirator — she follows normal protocols and is reassigned to the auditorium by command center dispatch, leaving Gu Yan alone in the infirmary.
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 30-something East Asian woman, gentle tired eyes, hair tied back in a practical low bun, white nurse uniform with school badge, soft warm expression with professional calm, fluorescent medical room lighting, upper-body shot, clean background
+
+---
+
+## 27. 技術人員（Technician）
+
+- **ID**: `technician`
+- **Aliases**: 技術志工, 監控室人員
+
+Technical volunteer or staff operating the old surveillance system in the monitoring room. Provides the realistic explanation for the 17-minute surveillance gap (old system switching lines).

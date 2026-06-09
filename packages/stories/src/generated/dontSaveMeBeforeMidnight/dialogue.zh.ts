@@ -24,6 +24,23 @@ import { scene as s_ch2_act9 } from './scenes/ch2_act9';
 import { scene as s_ch2_act10 } from './scenes/ch2_act10';
 import { scene as s_ch2_act11 } from './scenes/ch2_act11';
 import { scene as s_ch2_act12 } from './scenes/ch2_act12';
+import { scene as s_ch3_act1 } from './scenes/ch3_act1';
+import { scene as s_ch3_act2 } from './scenes/ch3_act2';
+import { scene as s_ch3_act3 } from './scenes/ch3_act3';
+import { scene as s_ch3_act4 } from './scenes/ch3_act4';
+import { scene as s_ch3_act5 } from './scenes/ch3_act5';
+import { scene as s_ch3_act6 } from './scenes/ch3_act6';
+import { scene as s_ch3_act7 } from './scenes/ch3_act7';
+import { scene as s_ch3_act8 } from './scenes/ch3_act8';
+import { scene as s_ch3_act9 } from './scenes/ch3_act9';
+import { scene as s_ch3_act10 } from './scenes/ch3_act10';
+import { scene as s_ch3_act11 } from './scenes/ch3_act11';
+import { scene as s_ch3_act12 } from './scenes/ch3_act12';
+import { scene as s_ch3_act13 } from './scenes/ch3_act13';
+import { scene as s_ch3_act14 } from './scenes/ch3_act14';
+import { scene as s_ch3_act15 } from './scenes/ch3_act15';
+import { scene as s_ch3_act16 } from './scenes/ch3_act16';
+import { scene as s_ch3_act17 } from './scenes/ch3_act17';
 
 export const dontSaveMeBeforeMidnightZhDialogue: DialogueMap = {
     "ch1_act1": s_ch1_act1,
@@ -49,4 +66,21 @@ export const dontSaveMeBeforeMidnightZhDialogue: DialogueMap = {
     "ch2_act10": s_ch2_act10,
     "ch2_act11": s_ch2_act11,
     "ch2_act12": s_ch2_act12,
+    "ch3_act1": s_ch3_act1,
+    "ch3_act2": s_ch3_act2,
+    "ch3_act3": s_ch3_act3,
+    "ch3_act4": s_ch3_act4,
+    "ch3_act5": s_ch3_act5,
+    "ch3_act6": s_ch3_act6,
+    "ch3_act7": s_ch3_act7,
+    "ch3_act8": s_ch3_act8,
+    "ch3_act9": s_ch3_act9,
+    "ch3_act10": s_ch3_act10,
+    "ch3_act11": s_ch3_act11,
+    "ch3_act12": s_ch3_act12,
+    "ch3_act13": s_ch3_act13,
+    "ch3_act14": s_ch3_act14,
+    "ch3_act15": s_ch3_act15,
+    "ch3_act16": s_ch3_act16,
+    "ch3_act17": s_ch3_act17,
 };

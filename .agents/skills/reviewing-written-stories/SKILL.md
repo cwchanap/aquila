@@ -1,6 +1,6 @@
 ---
 name: reviewing-written-stories
-description: Use when reviewing written story acts for character consistency and plot alignment against design documents. Spawns parallel subagents — one for character voice/personality review and one for plot consistency review. Supports both per-act and chapter-level review modes.
+description: Use when reviewing written story acts for character consistency, plot alignment against design documents, and orphaned hooks (attention-grabbing elements never resolved). Spawns parallel subagents — one for character voice/personality review and one for plot consistency review. Supports both per-act and chapter-level review modes.
 ---
 
 # Reviewing Written Stories
@@ -147,6 +147,7 @@ What is NOT OK is internal contradiction — things that break the story's own l
 - Reveals information the plan explicitly forbids for this stage (check "本章不能揭露的事情" and "本章不要做的事")
 - Creates timeline impossibilities (e.g. timestamps that don't add up)
 - Introduces logic holes (e.g. a locked door opens with no explanation, evidence appears from nowhere)
+- Introduces attention-grabbing plot elements, settings, or details NOT mentioned in the chapter plan or high-level plan that are never explained or resolved within the reviewed acts (orphaned hooks)
 
 **Do NOT flag as issues:**
 - Creative additions not in the plan (new scenes, extra characters, enriched details)
@@ -154,6 +155,7 @@ What is NOT OK is internal contradiction — things that break the story's own l
 - Foreshadowing planted differently than the plan suggested
 - Minor timeline approximations (e.g. "twelve hours" when it's 12h52m)
 - Style or pacing choices that differ from the plan
+- Atmospheric or background details that don't demand explanation (a painting on a wall, weather description)
 
 ## Your Task
 Check all acts for internal consistency and logic integrity:
@@ -164,12 +166,13 @@ Check all acts for internal consistency and logic integrity:
 4. **Timeline logic**: Do timestamps and time-durations make sense?
 5. **Character positioning**: Are characters where the story previously established them to be?
 6. **Evidence chain integrity**: Are physical objects in consistent states across acts?
+7. **Orphaned hooks**: Are there plot points, mysterious objects, unusual settings, or striking details introduced that draw reader attention but are never explained or paid off by the end of the reviewed acts? Ask: "Would a reader remember this and expect it to matter?" If yes and it goes nowhere, flag it.
 
 ## Output Format
 
 For each issue found, organize BY ACT:
 - **Act**: Which act number
-- **Category**: Cross-act contradiction / Rule violation / Premature reveal / Timeline / Logic hole
+- **Category**: Cross-act contradiction / Rule violation / Premature reveal / Timeline / Logic hole / Orphaned hook
 - **Description**: What the issue is
 - **Severity**: HIGH (breaks story logic) / MEDIUM (noticeable on close reading) / LOW (nitpick)
 
@@ -256,6 +259,7 @@ What is NOT OK is internal contradiction — things that break the story's own l
 - Reveals information the plan explicitly forbids for this stage (check "本章不能揭露的事情" and "本章不要做的事")
 - Creates timeline impossibilities (e.g. timestamps that don't add up)
 - Introduces logic holes (e.g. a locked door opens with no explanation, evidence appears from nowhere)
+- Introduces attention-grabbing plot elements, settings, or details NOT mentioned in the chapter plan or high-level plan that are never explained or resolved within the reviewed acts (orphaned hooks)
 
 **Do NOT flag as issues:**
 - Creative additions not in the plan (new scenes, extra characters, enriched details)
@@ -263,6 +267,7 @@ What is NOT OK is internal contradiction — things that break the story's own l
 - Foreshadowing planted differently than the plan suggested
 - Minor timeline approximations (e.g. "twelve hours" when it's 12h52m)
 - Style or pacing choices that differ from the plan
+- Atmospheric or background details that don't demand explanation (a painting on a wall, weather description)
 
 ## Your Task
 Check the act for internal consistency and logic integrity:
@@ -273,12 +278,13 @@ Check the act for internal consistency and logic integrity:
 4. **Timeline logic**: Do timestamps and time-durations make sense?
 5. **Character positioning**: Are characters where the story previously established them to be?
 6. **Evidence chain integrity**: Are physical objects in consistent states across acts?
+7. **Orphaned hooks**: Are there plot points, mysterious objects, unusual settings, or striking details introduced that draw reader attention but are never explained or paid off? Ask: "Would a reader remember this and expect it to matter?" If yes and it goes nowhere, flag it.
 
 ## Output Format
 
 For each issue found per act:
 - **Act**: Which act number
-- **Category**: Cross-act contradiction / Rule violation / Premature reveal / Timeline / Logic hole
+- **Category**: Cross-act contradiction / Rule violation / Premature reveal / Timeline / Logic hole / Orphaned hook
 - **Description**: What the issue is
 - **Severity**: HIGH (breaks story logic) / MEDIUM (noticeable on close reading) / LOW (nitpick)
 

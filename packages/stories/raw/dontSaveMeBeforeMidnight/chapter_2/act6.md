@@ -88,7 +88,7 @@ side entrance of school auditorium, grey concrete wall and metal fire door propp
 
 **顧言**：不是這個。
 
-**許星棠** [cold]：你問過了。上一——
+**許星棠** [cold]：你剛才問了。上一——
 
 **旁白**：她頓住了。那個頓挫非常短，短到像一個被咬斷的字。她的嘴唇合上了，眼睛朝旁邊移開了一瞬，然後移回來。
 
@@ -98,7 +98,7 @@ side entrance of school auditorium, grey concrete wall and metal fire door propp
 
 **顧言**：(內心)她差點說了什麼。她咬住了。
 
-**顧言**：訊息是不是妳發的？
+**顧言**：訊息。妳發的。
 
 **旁白**：他問得很直接。不繞彎子。他沒有時間繞彎子。
 
@@ -106,9 +106,9 @@ side entrance of school auditorium, grey concrete wall and metal fire door propp
 
 **旁白**：她沒有回答。她把相機背帶從手腕上取下來，掛回了脖子上。這個動作和上一輪一模一樣，精確到手指繞背帶的方式都沒有變。
 
-**顧言**：妳知道鐘樓今晚會停電。
+**顧言**：鐘樓。停電。妳知道。
 
-**顧言**：妳知道訊息的內容。
+**顧言**：訊息。內容。妳都知道。
 
 **顧言**：妳上一——
 
@@ -122,11 +122,11 @@ side entrance of school auditorium, grey concrete wall and metal fire door propp
 
 **顧言**：(內心)她的「上一輪」和我的「上一輪」不是同一個。
 
-**顧言**：相機到底是什麼？
+**顧言**：相機。是什麼。
 
 **許星棠**：⋯⋯
 
-**顧言**：妳為什麼一直拍那些大人？
+**顧言**：那些大人。為什麼一直拍。
 
 **旁白**：他連著問了兩個。語速比平時快，聲音壓得很低，像在逼供。他知道自己的樣子不太對——一個十七歲的男生，臉色發白，瞳孔收縮，雙手攥在口袋裡，對著一個女生連珠炮似地追問。他知道這看起來像什麼。
 
@@ -216,7 +216,7 @@ side entrance of school auditorium, grey concrete wall and metal fire door propp
 
 **顧言**：(內心)上一輪他以為我在騷擾她。這一輪他大概也是。
 
-**顧言**：我只是問她幾個問題。
+**顧言**：⋯⋯沒有。
 
 **韓越** [worried]：她不需要回答你的問題。
 

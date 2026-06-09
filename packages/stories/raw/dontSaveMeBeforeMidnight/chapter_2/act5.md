@@ -62,7 +62,7 @@ school main gate security checkpoint, blue-and-white striped canopy tents, metal
 
 **顧言**：(內心)不要想這個。
 
-**顧言**：家裡有點遠。我可以自己叫車到山下。
+**顧言**：⋯⋯遠。我自己叫車就行。
 
 **保全**：自己叫車？
 

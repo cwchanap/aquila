@@ -290,7 +290,7 @@ dark interior of school van cargo area, cramped space between stacked black hard
 
 **顧言** [scared]：(內心)他確認完了。包在車上。車出發了。
 
-**顧言** [scared]：(內心)他在車快關門的時候走過來，看到箱子位置不對——他不是在找我。他是在看這個包有沒有按計劃在車上。
+**顧言** [scared]：(內心)他在車快關門的時候走過來，看到箱子位置不對——他不是在找我。他⋯⋯是在確認這個包？
 
 **顧言** [scared]：(內心)包在車上。車在走。我在車上。
 

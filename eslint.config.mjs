@@ -16,6 +16,7 @@ export default [
     name: 'ignores',
     ignores: [
       'dist',
+      '**/dist/**',
       '.astro',
       'node_modules',
       '.husky',
@@ -27,6 +28,8 @@ export default [
       'coverage/**',
       '**/*.log',
       '**/generated/**',
+      'packages/stories/raw/**',
+      'packages/stories/vitest.config.ts',
     ],
   },
   js.configs.recommended,
@@ -85,6 +88,12 @@ export default [
   },
   {
     files: ['**/*.test.{js,jsx,ts,tsx}', '**/__tests__/**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: null,
+      },
+    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },

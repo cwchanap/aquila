@@ -2,8 +2,11 @@
   /* eslint-disable svelte/infinite-reactive-loop */
   import type {
     DialogueEntry,
+    ChoiceDefinition,
+    Locale,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories';
+  import { untrack } from 'svelte';
   import ActPanel from '@/components/ActPanel.svelte';
   import { readerState } from '@/lib/reader-state.svelte';
 
@@ -15,6 +18,12 @@
     backUrl = '/',
     initialDialogueIndex = null,
     onNavigate = () => {},
+    dialogue: dialogueProp = undefined,
+    choice: choiceProp = undefined,
+    storyId: storyIdProp = undefined,
+    currentSceneId: currentSceneIdProp = undefined,
+    canGoNext: canGoNextProp = undefined,
+    locale: localeProp = undefined,
   }: {
     onChoice: (nextScene: string) => void;
     onBookmark: (dialogueNumber: number) => void;
@@ -23,14 +32,32 @@
     backUrl: string;
     initialDialogueIndex: number | null;
     onNavigate: (sceneId: string) => void;
+    dialogue?: DialogueEntry[];
+    choice?: ChoiceDefinition | null;
+    storyId?: string;
+    currentSceneId?: string;
+    canGoNext?: boolean;
+    locale?: Locale;
   } = $props();
 
-  let dialogue = $derived(readerState.dialogue);
-  let choice = $derived(readerState.choice);
-  let storyId = $derived(readerState.storyId);
-  let currentSceneId = $derived(readerState.currentSceneId);
-  let canGoNext = $derived(readerState.canGoNext);
-  let locale = $derived(readerState.locale);
+  let dialogue = $derived(
+    dialogueProp !== undefined ? dialogueProp : readerState.dialogue
+  );
+  let choice = $derived(
+    choiceProp !== undefined ? choiceProp : readerState.choice
+  );
+  let storyId = $derived(
+    storyIdProp !== undefined ? storyIdProp : readerState.storyId
+  );
+  let currentSceneId = $derived(
+    currentSceneIdProp !== undefined ? currentSceneIdProp : readerState.currentSceneId
+  );
+  let canGoNext = $derived(
+    canGoNextProp !== undefined ? canGoNextProp : readerState.canGoNext
+  );
+  let locale = $derived(
+    (localeProp !== undefined ? localeProp : readerState.locale) as Locale
+  );
 
   let t = $derived(getTranslations(locale));
 
@@ -49,6 +76,7 @@
   let hasAppliedInitialIndex = $state(false);
   let hasUserAdvanced = $state(false);
   let showActPanel = $state(false);
+  let sceneVersion = $state(0);
 
   let currentDialogue = $derived(dialogue[currentDialogueIndex]);
   let isLastDialogue = $derived(currentDialogueIndex >= dialogue.length - 1);
@@ -89,6 +117,7 @@
     const snapshot = JSON.stringify(dialogue);
     if (snapshot !== lastDialogueSnapshot) {
       lastDialogueSnapshot = snapshot;
+      sceneVersion++;
       currentDialogueIndex = 0;
       displayedDialogues = [];
       skipTyping = false;
@@ -132,7 +161,9 @@
       displayedDialogues.length === currentDialogueIndex &&
     (!hasAppliedInitialIndex || hasUserAdvanced)
     ) {
-      startTypingNewDialogue();
+      // untrack prevents skipTyping (read inside startTypingNewDialogue)
+      // from becoming an implicit dependency of this effect.
+      untrack(() => startTypingNewDialogue());
     }
   });
 
@@ -143,6 +174,8 @@
     if (!skipTyping) {
       typingText = '';
       isTyping = true;
+      // Capture current scene version for cancellation guard
+      const version = sceneVersion;
       // Scroll to bottom when starting new dialogue
       globalThis.setTimeout(() => {
         if (dialogueContainer) {
@@ -150,7 +183,7 @@
         }
       }, 50);
       const executeTyping = async () => {
-        await typeText(dialogueEntry.dialogue, dialogueEntry);
+        await typeText(dialogueEntry.dialogue, dialogueEntry, version);
       };
       void executeTyping();
     } else {
@@ -183,9 +216,14 @@
 
   async function typeText(
     text: string,
-    entry: DialogueEntry | undefined = currentDialogue
+    entry: DialogueEntry | undefined = currentDialogue,
+    version?: number
   ): Promise<void> {
     for (let i = 0; i < text.length; i++) {
+      // Cancel if scene changed since typing started
+      if (version !== undefined && version !== sceneVersion) {
+        return;
+      }
       if (skipTyping) {
         typingText = text;
         break;
@@ -194,6 +232,10 @@
       await new Promise<void>(resolve =>
         globalThis.setTimeout(resolve, typingSpeed)
       );
+    }
+    // Only finalize if scene hasn't changed
+    if (version !== undefined && version !== sceneVersion) {
+      return;
     }
     addDialogueToDisplay(text, entry);
     isTyping = false;

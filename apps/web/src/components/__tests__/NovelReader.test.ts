@@ -275,19 +275,23 @@ describe('NovelReader', () => {
                 },
             });
 
-            // Start typing
+            // Start typing — advance enough to enter the typing loop
             await vi.advanceTimersByTimeAsync(100);
 
-            // Press Enter while typing to skip animation
+            // Press Enter while typing to skip animation (sets skipTyping = true)
             await fireEvent.keyDown(window, { key: 'Enter' });
-            await vi.runAllTimersAsync();
 
-            // Should immediately show full text
-            await waitFor(() => {
-                expect(
-                    screen.getByText('First dialogue line.')
-                ).toBeInTheDocument();
-            });
+            // After skipTyping is set, the typing loop needs one more timer
+            // cycle to check the flag, break, and finalize the dialogue.
+            // advanceTimersByTimeAsync yields to microtasks between ticks,
+            // allowing the async typing loop to resume and check skipTyping.
+            await vi.advanceTimersByTimeAsync(50);
+
+            // Use direct assertion (not waitFor) because fake timers prevent
+            // waitFor's internal polling from executing.
+            expect(
+                screen.getByText('First dialogue line.')
+            ).toBeInTheDocument();
         });
     });
 

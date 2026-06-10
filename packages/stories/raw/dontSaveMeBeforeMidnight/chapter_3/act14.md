@@ -124,4 +124,4 @@ south wing infirmary outer room, dim yellow backup lighting from battery panels,
 
 **旁白**：窗外。雨。黑暗。發電機聲。
 
-**旁白**：二十一小時十八分。保健老師還沒有回來。
+**旁白**：二十一點十八分。保健老師還沒有回來。

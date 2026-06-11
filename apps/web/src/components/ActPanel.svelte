@@ -293,6 +293,8 @@
                 class="w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-between {isCurrent
                   ? 'bg-slate-800 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
+                aria-expanded={isExpanded}
+                aria-controls="chapter-{chapter.chapterNum}-acts"
                 onclick={() => {
                   expandedChapter = expandedChapter === chKey ? null : chKey;
                 }}
@@ -313,7 +315,7 @@
                 </svg>
               </button>
               {#if isExpanded}
-                <div class="ml-3 mt-1 space-y-1">
+                <div id="chapter-{chapter.chapterNum}-acts" class="ml-3 mt-1 space-y-1">
                   {#each chapter.acts as act (act.rawName)}
                     <Button
                       variant="menu"

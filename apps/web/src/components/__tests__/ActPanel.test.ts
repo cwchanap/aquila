@@ -645,4 +645,57 @@ describe('ActPanel — chapter mode', () => {
         expect(screen.getByText('Chapter 2')).toBeInTheDocument();
         expect(screen.getByText('Chapter 3')).toBeInTheDocument();
     });
+
+    it('chapter buttons have aria-expanded reflecting expansion state', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch2_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        // ch2 is the current chapter, so it starts expanded
+        const ch2Button = findChapterButton('Chapter 2')!;
+        expect(ch2Button).toHaveAttribute('aria-expanded', 'true');
+
+        const ch1Button = findChapterButton('Chapter 1')!;
+        expect(ch1Button).toHaveAttribute('aria-expanded', 'false');
+
+        const ch3Button = findChapterButton('Chapter 3')!;
+        expect(ch3Button).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('chapter buttons have aria-controls pointing to their acts container', async () => {
+        const { getStoryFlow } = await import('@aquila/stories');
+        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+            chapterFlow
+        );
+
+        render(ActPanel, {
+            props: {
+                storyId: 'chapter_story',
+                currentSceneId: 'ch2_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        const ch2Button = findChapterButton('Chapter 2')!;
+        expect(ch2Button).toHaveAttribute('aria-controls', 'chapter-2-acts');
+
+        // Verify the controlled element exists and has the matching id
+        const actsContainer = document.getElementById('chapter-2-acts');
+        expect(actsContainer).not.toBeNull();
+    });
 });

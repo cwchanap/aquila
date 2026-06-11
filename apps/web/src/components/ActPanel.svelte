@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { SvelteMap } from 'svelte/reactivity';
   import { getStoryFlow, getTranslations, type Locale } from '@aquila/stories';
   import Button from '@/components/ui/Button.svelte';
 
@@ -198,7 +197,8 @@
       return true;
     }
 
-    const actMap = new SvelteMap<string, string>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const actMap = new Map<string, string>();
     for (const [actName, candidates] of Object.entries(actCandidates)) {
       const onBranch = candidates.filter(c => isOnBranch(extractBranchPrefix(c)));
       if (onBranch.length === 0) continue;

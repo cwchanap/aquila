@@ -65,12 +65,14 @@
     text: string;
     characterName: string;
     characterId?: string;
-  } = $state([]);
+  }[] = $state([]);
   let isTyping = $state(false);
   let typingSpeed = 30;
   let skipTyping = $state(false);
   let typingText = $state('');
-  let lastDialogueSnapshot = $state('');
+  // Plain variable (not $state) — stores previous dialogue reference
+  // for O(1) scene-change detection without JSON.stringify.
+  let lastDialogueRef: DialogueEntry[] | undefined = undefined;
   let dialogueContainer: HTMLElement | null = $state(null);
   let hasAppliedInitialIndex = $state(false);
   let hasUserAdvanced = $state(false);
@@ -90,32 +92,20 @@
     }
 
     if (dialogueEntry.characterId) {
-      const characterId = dialogueEntry.characterId;
-      const localizedName =
-        (t as Record<string, unknown>).characterNames &&
-        typeof (t as Record<string, unknown>).characterNames === 'object'
-          ? ((
-              t as {
-                characterNames?: Record<string, string>;
-              }
-            ).characterNames?.[characterId] ?? undefined)
-          : undefined;
-
+      const localizedName = t.characterNames[dialogueEntry.characterId];
       if (localizedName) {
         return localizedName;
       }
-
       return t.reader.unknown;
     }
 
     return '';
   }
 
-  // Reset displayed dialogues when dialogue array changes (new scene)
+  // Reset displayed dialogues when dialogue array reference changes (new scene)
   $effect(() => {
-    const snapshot = JSON.stringify(dialogue);
-    if (snapshot !== lastDialogueSnapshot) {
-      lastDialogueSnapshot = snapshot;
+    if (dialogue !== lastDialogueRef) {
+      lastDialogueRef = dialogue;
       sceneVersion++;
       currentDialogueIndex = 0;
       displayedDialogues = [];
@@ -298,7 +288,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeyPress} />
+<svelte:window onkeydown={handleKeyPress} />
 
 <div
   class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex overflow-hidden"

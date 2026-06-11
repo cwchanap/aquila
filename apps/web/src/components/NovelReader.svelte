@@ -1,5 +1,4 @@
 <script lang="ts">
-  /* eslint-disable svelte/infinite-reactive-loop */
   import type {
     DialogueEntry,
     ChoiceDefinition,

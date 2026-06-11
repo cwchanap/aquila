@@ -1037,7 +1037,7 @@ describe('ReaderManager', () => {
             expect(mockUnmount).toHaveBeenCalled();
         });
 
-        it('clears the container when container exists', () => {
+        it('clears the container before mounting on first render', async () => {
             const mockStory = {
                 dialogue: {
                     scene_1: [{ characterId: 'narrator', dialogue: 'Hello' }],
@@ -1048,14 +1048,25 @@ describe('ReaderManager', () => {
 
             const container = document.createElement('div');
             container.id = 'reader-container';
-            // Add some existing content
-            container.innerHTML = '<p>old content</p>';
+            // Add some existing content (e.g., SSR comment placeholder)
+            const oldChild = document.createElement('p');
+            oldChild.textContent = 'old content';
+            container.appendChild(oldChild);
+            expect(container.childNodes.length).toBe(1);
             document.body.appendChild(container);
 
             const manager = new ReaderManager('en');
-            // renderReader fires import() and then clears container async
-            // We only verify it doesn't throw with a container present
-            expect(() => manager.renderReader()).not.toThrow();
+            manager.renderReader();
+
+            // Wait for the dynamic import .then to run
+            await vi.waitFor(() => {
+                expect(mockMount).toHaveBeenCalled();
+            });
+
+            // The container should have been cleared before mount,
+            // so replaceChildren() removed the old <p>
+            // After mount, only the mounted component exists (mock adds nothing)
+            expect(container.contains(oldChild)).toBe(false);
         });
 
         it('shows error UI with loadError text when component mounting throws', async () => {

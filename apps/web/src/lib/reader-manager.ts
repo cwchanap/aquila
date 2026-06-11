@@ -354,6 +354,9 @@ export class ReaderManager {
         import('@/components/NovelReader.svelte')
             .then(module => {
                 const NovelReaderComponent = module.default;
+                // Clear any stale content (SSR comments, loading placeholders)
+                // before mounting so the component replaces rather than appends.
+                container.replaceChildren();
                 const mountedComponent = mount(NovelReaderComponent, {
                     target: container,
                     props: {

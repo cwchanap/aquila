@@ -197,7 +197,7 @@
       return true;
     }
 
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map is sufficient here because reactivity is already handled by the enclosing $derived.
     const actMap = new Map<string, string>();
     for (const [actName, candidates] of Object.entries(actCandidates)) {
       const onBranch = candidates.filter(c => isOnBranch(extractBranchPrefix(c)));
@@ -303,7 +303,7 @@
               >
                 {chapter.label}
                 <svg
-                  class="w-4 h-4 transition-transform duration-200 {isExpanded ? 'rotate-180' : ''}"
+                  class="w-4 h-4 motion-safe:transition-transform motion-safe:duration-200 {isExpanded ? 'rotate-180' : ''}"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

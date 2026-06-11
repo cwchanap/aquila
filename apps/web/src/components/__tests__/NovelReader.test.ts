@@ -843,6 +843,66 @@ describe('NovelReader', () => {
             await vi.runAllTimersAsync();
             expect(screen.getByText('Anonymous dialogue.')).toBeInTheDocument();
         });
+
+        it('should fall back to "Unknown" when characterNames map is missing', async () => {
+            // Simulates a misconfigured locale where characterNames is undefined.
+            // The optional chain t.characterNames?.[id] should not throw.
+            const { getTranslations } = await import('@aquila/stories');
+            (getTranslations as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+                reader: {
+                    title: 'Novel Reader - Aquila',
+                    bookmarkPrompt: 'Enter bookmark name:',
+                    defaultBookmarkName: 'Scene:',
+                    bookmarkSaved: 'Bookmark saved!',
+                    bookmarkFailed: 'Failed to save bookmark:',
+                    bookmarkError: 'Failed to save bookmark. Please try again.',
+                    endOfStory: 'End of story!',
+                    unknown: 'Unknown',
+                    continue: 'Continue',
+                    nextScene: 'Next Scene',
+                    complete: 'Complete',
+                    bookmark: 'Bookmark',
+                    pageDisplay: '{current} / {total}',
+                    actPanel: 'Acts',
+                    actLabel: 'Act {n}',
+                    actFinal: 'Final Act',
+                    actEpilogue: 'Epilogue',
+                    openActsPanel: 'Open acts panel',
+                    closeActsPanel: 'Close acts panel',
+                },
+                // characterNames intentionally omitted
+                common: {
+                    logout: 'Logout',
+                    login: 'Login',
+                    back: 'Back',
+                    backToHome: 'Back to Home',
+                },
+                locale: 'en',
+            });
+
+            const dialogueWithCharId: DialogueEntry[] = [
+                {
+                    characterId: 'unknown_char' as any,
+                    dialogue: 'Dialogue with missing characterNames.',
+                },
+            ];
+
+            render(NovelReader, {
+                props: {
+                    dialogue: dialogueWithCharId,
+                    choice: null,
+                    locale: 'en',
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // Should not throw; should fall back to "Unknown"
+            expect(screen.getByText('Unknown')).toBeInTheDocument();
+            expect(
+                screen.getByText('Dialogue with missing characterNames.')
+            ).toBeInTheDocument();
+        });
     });
 
     describe('Uncontrolled Mode (readerState fallback)', () => {

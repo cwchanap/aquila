@@ -101,14 +101,14 @@
           <Button
             variant="menu"
             className="bulk-action-btn"
-            on:click={() => onAction('delete')}
+            onclick={() => onAction('delete')}
           >
             {t.bulkAction.delete}
           </Button>
           <Button
             variant="menu"
             className="bulk-action-btn"
-            on:click={() => onAction('archive')}
+            onclick={() => onAction('archive')}
           >
             {t.bulkAction.archive}
           </Button>
@@ -117,7 +117,7 @@
         <Button
           variant="menu"
           className="bulk-action-btn bulk-action-btn--cancel"
-          on:click={onCancel}
+          onclick={onCancel}
         >
           {t.bulkAction.cancel}
         </Button>

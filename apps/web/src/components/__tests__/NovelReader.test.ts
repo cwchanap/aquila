@@ -211,10 +211,15 @@ describe('NovelReader', () => {
             // Progress through all dialogues
             await vi.runAllTimersAsync();
 
-            const continueBtn = screen.getByText('Continue');
+            let continueBtn = screen.getByText('Continue');
             await fireEvent.click(continueBtn);
             await vi.runAllTimersAsync();
 
+            // Re-query: the typing animation toggles {#if !isTyping}, which
+            // recreates the button element. The old reference is stale when
+            // using Svelte 5's onclick (direct property) instead of on:click
+            // (event delegation).
+            continueBtn = screen.getByText('Continue');
             await fireEvent.click(continueBtn);
             await vi.runAllTimersAsync();
 

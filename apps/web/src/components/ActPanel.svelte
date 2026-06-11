@@ -239,11 +239,13 @@
 
 <svelte:window onkeydown={handleEscape} />
 
-<div class="h-full flex-shrink-0 relative" style="width: 48px;">
+<div
+  class="h-full flex flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out {open ? 'w-[336px]' : 'w-12'}"
+>
   <!-- Toggle tab -- always visible -->
   <button
     onclick={onToggle}
-    class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors relative z-10"
+    class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors"
     aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
     aria-expanded={open}
   >
@@ -271,9 +273,9 @@
     {/if}
   </button>
 
-  <!-- Panel content -- slides in as overlay -->
+  <!-- Panel content -- pushes main content -->
   <div
-    class="absolute top-0 left-12 h-full w-72 overflow-y-auto z-20 transition-all duration-300 ease-in-out bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md {open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'}"
+    class="h-full w-72 overflow-y-auto flex-shrink-0 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md transition-opacity duration-300 ease-in-out {open ? 'opacity-100' : 'opacity-0 pointer-events-none'}"
     aria-hidden={!open}
     inert={!open}
   >

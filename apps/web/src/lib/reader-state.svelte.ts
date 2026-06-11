@@ -18,4 +18,5 @@ class ReaderState {
     }
 }
 
+/** Global singleton — intentionally shared across the app for single-reader architecture. */
 export const readerState = new ReaderState();

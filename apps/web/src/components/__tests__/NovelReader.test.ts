@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import NovelReader from '../NovelReader.svelte';
+import { readerState } from '@/lib/reader-state.svelte';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
 // Mock @aquila/stories
@@ -841,6 +842,63 @@ describe('NovelReader', () => {
 
             await vi.runAllTimersAsync();
             expect(screen.getByText('Anonymous dialogue.')).toBeInTheDocument();
+        });
+    });
+
+    describe('Uncontrolled Mode (readerState fallback)', () => {
+        const stateDialogue: DialogueEntry[] = [
+            {
+                characterId: 'narrator' as any,
+                dialogue: 'Dialogue from readerState.',
+            },
+        ];
+
+        afterEach(() => {
+            readerState.reset();
+        });
+
+        it('should read dialogue from readerState when dialogue prop is omitted', async () => {
+            readerState.dialogue = stateDialogue;
+            readerState.locale = 'en';
+
+            render(NovelReader, {
+                props: {},
+            });
+
+            await vi.runAllTimersAsync();
+
+            expect(
+                screen.getByText('Dialogue from readerState.')
+            ).toBeInTheDocument();
+        });
+
+        it('should prefer explicit props over readerState', async () => {
+            readerState.dialogue = stateDialogue;
+            readerState.locale = 'en';
+
+            const propDialogue: DialogueEntry[] = [
+                {
+                    characterId: 'narrator' as any,
+                    dialogue: 'Dialogue from explicit prop.',
+                },
+            ];
+
+            render(NovelReader, {
+                props: {
+                    dialogue: propDialogue,
+                    choice: null,
+                    locale: 'en',
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            expect(
+                screen.getByText('Dialogue from explicit prop.')
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByText('Dialogue from readerState.')
+            ).not.toBeInTheDocument();
         });
     });
 });

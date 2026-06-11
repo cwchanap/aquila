@@ -3,23 +3,36 @@
   import { getStoryFlow, getTranslations, type Locale } from '@aquila/stories';
   import Button from '@/components/ui/Button.svelte';
 
-  export let storyId: string;
-  export let currentSceneId: string;
-  export let onNavigate: (sceneId: string) => void;
-  export let onToggle: () => void;
-  export let open = false;
-  export let locale: Locale = 'en';
+  let {
+    storyId,
+    currentSceneId,
+    onNavigate,
+    onToggle,
+    open = false,
+    locale = 'en',
+  }: {
+    storyId: string;
+    currentSceneId: string;
+    onNavigate: (sceneId: string) => void;
+    onToggle: () => void;
+    open?: boolean;
+    locale?: Locale;
+  } = $props();
 
-  let expandedChapter: string | null = null;
+  let expandedChapter: string | null = $state(null);
+  let previousChapterKey: string | null = $state(null);
 
-  $: t = getTranslations(locale);
-  $: chapterData = buildChapterData(storyId, currentSceneId);
-  $: currentAct = extractActName(currentSceneId);
-  $: currentChapterKey = extractChapterKey(currentSceneId);
+  let t = $derived(getTranslations(locale));
+  let chapterData = $derived(buildChapterData(storyId, currentSceneId));
+  let currentAct = $derived(extractActName(currentSceneId));
+  let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 
-  $: if (currentChapterKey) {
-    expandedChapter = currentChapterKey;
-  }
+  $effect(() => {
+    if (currentChapterKey && currentChapterKey !== previousChapterKey) {
+      expandedChapter = currentChapterKey;
+      previousChapterKey = currentChapterKey;
+    }
+  });
 
   interface ActInfo {
     label: string;
@@ -119,7 +132,8 @@
 
     for (const node of flow.nodes) {
       if (node.kind !== 'scene') continue;
-      const sceneId = node.sceneId!;
+      if (!node.sceneId) continue;
+      const sceneId = node.sceneId;
       const actMatch = sceneId.match(/(?:^|_)(act\d+|actFinal|actEpilogue)/);
       if (!actMatch) continue;
 
@@ -158,7 +172,8 @@
 
     for (const node of flow.nodes) {
       if (node.kind !== 'scene') continue;
-      const match = node.sceneId!.match(
+      if (!node.sceneId) continue;
+      const match = node.sceneId.match(
         /(?:^|_)(act\d+|actFinal|actEpilogue)/
       );
       if (!match) continue;
@@ -166,7 +181,7 @@
       if (!actCandidates[actName]) {
         actCandidates[actName] = [];
       }
-      actCandidates[actName].push(node.sceneId!);
+      actCandidates[actName].push(node.sceneId);
     }
 
     const currentBranch = extractBranchPrefix(sceneId);
@@ -222,12 +237,12 @@
   }
 </script>
 
-<svelte:window on:keydown={handleEscape} />
+<svelte:window onkeydown={handleEscape} />
 
 <div class="h-full flex-shrink-0 relative" style="width: 48px;">
   <!-- Toggle tab -- always visible -->
   <button
-    on:click={onToggle}
+    onclick={onToggle}
     class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors relative z-10"
     aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
     aria-expanded={open}
@@ -278,7 +293,7 @@
                 class="w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-between {isCurrent
                   ? 'bg-slate-800 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
-                on:click={() => {
+                onclick={() => {
                   expandedChapter = expandedChapter === chKey ? null : chKey;
                 }}
               >

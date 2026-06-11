@@ -7,6 +7,15 @@ class ReaderState {
     storyId: string = $state('');
     canGoNext: boolean = $state(false);
     locale: Locale = $state('en');
+
+    reset() {
+        this.dialogue = [];
+        this.choice = null;
+        this.currentSceneId = '';
+        this.storyId = '';
+        this.canGoNext = false;
+        this.locale = 'en';
+    }
 }
 
 export const readerState = new ReaderState();

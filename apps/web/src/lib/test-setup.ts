@@ -1,12 +1,39 @@
 import { vi, beforeEach } from 'vitest';
 
-// Define window.alert for environments (like happy-dom) that don't provide it
+const missingGlobals: Partial<typeof globalThis> = {};
+
 if (typeof window !== 'undefined' && typeof window.alert !== 'function') {
     Object.defineProperty(window, 'alert', {
         value: vi.fn(),
         writable: true,
         configurable: true,
     });
+}
+
+if (typeof localStorage === 'undefined') {
+    const store: Record<string, string> = {};
+    const storageMock = {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+            store[key] = String(value);
+        },
+        removeItem: (key: string) => {
+            delete store[key];
+        },
+        clear: () => {
+            Object.keys(store).forEach(k => delete store[k]);
+        },
+        get length() {
+            return Object.keys(store).length;
+        },
+        key: (i: number) => Object.keys(store)[i] ?? null,
+    };
+    Object.defineProperty(globalThis, 'localStorage', {
+        value: storageMock,
+        writable: true,
+        configurable: true,
+    });
+    missingGlobals.localStorage = storageMock as Storage;
 }
 
 // Mock crypto.randomUUID for consistent test results

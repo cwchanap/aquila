@@ -1,4 +1,5 @@
 import { vi, beforeEach } from 'vitest';
+import { readerState } from './reader-state.svelte';
 
 if (typeof window !== 'undefined' && typeof window.alert !== 'function') {
     Object.defineProperty(window, 'alert', {
@@ -224,6 +225,7 @@ export const resetDbMock = () => {
 // This prevents state leakage between tests that use the shared dbMockInstance
 beforeEach(() => {
     resetDbMock();
+    readerState.reset();
 });
 
 vi.mock('@/lib/drizzle/db.js', () => ({

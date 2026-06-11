@@ -19,7 +19,7 @@
   } = $props();
 
   let expandedChapter: string | null = $state(null);
-  let previousChapterKey: string | null = $state(null);
+  let previousChapterKey: string | null = null;
 
   let t = $derived(getTranslations(locale));
   let chapterData = $derived(buildChapterData(storyId, currentSceneId));

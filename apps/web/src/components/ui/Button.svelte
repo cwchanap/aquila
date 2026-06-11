@@ -25,23 +25,37 @@
     }
   );
 
-  export let variant: VariantProps<typeof buttonVariants>['variant'] = 'default';
-  export let size: VariantProps<typeof buttonVariants>['size'] = 'default';
-  export let className: string = '';
-  export let href: string | undefined = undefined;
-  // Forward common HTML button attributes
-  export let type: 'button' | 'submit' | 'reset' = 'button';
-  export let disabled: boolean = false;
+  let {
+    variant = 'default' as VariantProps<typeof buttonVariants>['variant'],
+    size = 'default' as VariantProps<typeof buttonVariants>['size'],
+    className = '',
+    href = undefined as string | undefined,
+    type = 'button' as 'button' | 'submit' | 'reset',
+    disabled = false,
+    onclick,
+    children,
+    ...restProps
+  }: {
+    variant?: VariantProps<typeof buttonVariants>['variant'];
+    size?: VariantProps<typeof buttonVariants>['size'];
+    className?: string;
+    href?: string;
+    type?: 'button' | 'submit' | 'reset';
+    disabled?: boolean;
+    onclick?: (e: MouseEvent) => void;
+    children?: import('svelte').Snippet;
+    [key: string]: unknown;
+  } = $props();
 
-  $: finalClass = cn(buttonVariants({ variant, size }), className);
+  let finalClass = $derived(cn(buttonVariants({ variant, size }), className));
 </script>
 
 {#if href}
-  <a {href} class={finalClass} on:click {...$$restProps}>
-    <slot />
+  <a {href} class={finalClass} {onclick} {...restProps}>
+    {@render children?.()}
   </a>
 {:else}
-  <button class={finalClass} on:click {type} {disabled} aria-disabled={disabled} {...$$restProps}>
-    <slot />
+  <button class={finalClass} {onclick} {type} {disabled} aria-disabled={disabled} {...restProps}>
+    {@render children?.()}
   </button>
 {/if}

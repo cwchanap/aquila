@@ -263,10 +263,6 @@
       return;
     }
 
-    if (showActPanel) {
-      return;
-    }
-
     const activeElement = globalThis.document
       .activeElement as HTMLElement | null;
     const rawTarget = (event.target ?? activeElement) as unknown;
@@ -294,7 +290,7 @@
   class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex overflow-hidden"
 >
   <!-- Left panel -- embedded toggle, slider animation -->
-  <aside class="flex-shrink-0 h-screen relative z-30">
+  <aside class="flex-shrink-0 h-screen">
     {#if storyId && currentSceneId}
       <ActPanel
         {storyId}

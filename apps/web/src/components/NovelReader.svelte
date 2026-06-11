@@ -92,7 +92,7 @@
     }
 
     if (dialogueEntry.characterId) {
-      const localizedName = t.characterNames[dialogueEntry.characterId];
+      const localizedName = t.characterNames?.[dialogueEntry.characterId];
       if (localizedName) {
         return localizedName;
       }

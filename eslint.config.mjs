@@ -61,8 +61,8 @@ export default [
       },
     },
     rules: {
-      // Enable navigation resolution checks; adjust individual callsites if noisy
-      'svelte/no-navigation-without-resolve': 'warn',
+      // Disabled: this is an Astro app, not SvelteKit — resolve() is unavailable
+      'svelte/no-navigation-without-resolve': 'off',
     },
   },
   {

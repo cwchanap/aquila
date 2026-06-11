@@ -1,7 +1,5 @@
 import { vi, beforeEach } from 'vitest';
 
-const missingGlobals: Partial<typeof globalThis> = {};
-
 if (typeof window !== 'undefined' && typeof window.alert !== 'function') {
     Object.defineProperty(window, 'alert', {
         value: vi.fn(),
@@ -33,7 +31,6 @@ if (typeof localStorage === 'undefined') {
         writable: true,
         configurable: true,
     });
-    missingGlobals.localStorage = storageMock as Storage;
 }
 
 // Mock crypto.randomUUID for consistent test results

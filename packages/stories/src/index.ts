@@ -17,4 +17,4 @@ export type {
 export { getStoryContent, getStoryFlow } from './stories';
 export type { StoryLoaderResult, StoryFlowConfig } from './stories';
 export { translations, getTranslations } from './translations';
-export type { Locale } from './translations';
+export type { Locale, Translations } from './translations';

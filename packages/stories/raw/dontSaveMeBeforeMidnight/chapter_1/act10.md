@@ -74,7 +74,7 @@ total blackout void, only faint phone screen glow falling through pure darkness,
 
 **顧言**：(內心)不知道。多久。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **旁白**：他的手機亮了。
 
@@ -88,7 +88,7 @@ total blackout void, only faint phone screen glow falling through pure darkness,
 
 **顧言**：(內心)這不是惡作劇。
 
-**顧言**：(內心)不是。照片。鐘樓。螺絲。從來。有人殺我。
+**顧言**：(內心)不是。照片。鐘樓。螺絲。從一開始。有人要殺我。
 
 **顧言** [scared]：(內心)有人要殺我。
 

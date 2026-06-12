@@ -4,7 +4,7 @@
 school auditorium interior at night, bright fluorescent ceiling lights combined with warm stage spotlights, crowded seats with students and parents, large screen testing live broadcast feed, camera tripods, humid warm atmosphere, moody cinematic visual-novel background art, wide shot from back row
 ```
 
-**旁白**：二十一點三十分。禮堂的燈全部亮著，白色的日光燈管和暖黃色的舞台聚光燈同時運作，把整個空間照得沒有一絲陰影。座位區坐了大約七成滿——大部分是學生和留校過夜的家長，少數是穿著反光背心的志工和幾個扛著攝影設備的媒體人員。空氣裡混著潮濕的外套味道和人體蒸出來的熱氣，悶而暖，像一個被塞了太多人的罐頭。
+**旁白**：二十一點三十分。禮堂的燈全部亮著，白色的日光燈管和暖黃色的舞台聚光燈同時運作，把整個空間照得沒有一絲陰影。座位區坐了大約七成滿——大部分是學生和留校過夜的家長，少數是穿著反光背心的志工和幾個扛著攝影設備的媒體人員。空氣裡混著潮濕的外套味道和幾百個人的體溫蒸出來的悶熱，悶而暖，像一個被塞了太多人的罐頭。
 
 **旁白**：舞台上的大螢幕正在測試直播訊號。畫面閃了幾下，跳出一行字：「鳴海高中百年校慶閉幕典禮——直播測試中」。字很大，白底藍字，每個筆劃都銳利得像刻出來的。畫面又閃了一下，切到了一個空鏡頭——雨夜的校園，遠處的鐘樓在雨幕後面只剩一個模糊的輪廓，像一個正在消失的影子。三秒後畫面切回測試卡。
 
@@ -32,7 +32,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言**：(內心)什麼時候放進來的。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **旁白**：他沒有立刻掏出來。他的手停留在口袋裡，指尖按在那張紙的邊緣上，感受它的質地。光滑的表面，輕微的凹凸——影印紙的質感，不是原版相紙。他的拇指在紙面上滑了一下，感覺到一個角是折過的。
 
@@ -118,7 +118,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言**：(內心)全損。
 
-**顧言**：(內心)保險清單兩個字。
+**顧言**：(內心)保險理賠清單。全損。就兩個字。
 
 **顧言**：(內心)還有東西留下。
 
@@ -138,7 +138,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言**：(內心)訊息說鐘樓。
 
-**顧言**：(內心)星棠說不要去。
+**顧言**：(內心)許星棠說不要去。
 
 **顧言**：(內心)紙上也說鐘樓。
 
@@ -180,9 +180,11 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言** [sad]：(內心)唯一確定的事。
 
-**顧言** [sad]：(內心)她知道什麼。
+**顧言**：(內心)可是那張照片。剪掉的人。
 
-**顧言** [sad]：(內心)她在警告。
+**顧言**：(內心)許星棠知道什麼。
+
+**顧言**：(內心)她在警告。
 
 **顧言** [sad]：(內心)但我的手在抖。
 
@@ -194,7 +196,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言** [trembling]：(內心)他媽的。
 
-**顧言**：(內心)不在乎那些。嗯。
+**顧言**：(內心)不在乎那些。
 
 **顧言**：(內心)只有一件事。
 
@@ -214,7 +216,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **旁白**：他把照片塞回口袋裡。動作比拿出來的時候快很多，帶著一種不願意繼續看的急躁。他靠在椅背上，仰頭看著禮堂的天花板。天花板上有很多管道和線纜，交錯縱橫，像一幅沒有邏輯的抽象畫。
 
-**顧言**：(內心)星棠說不要去。
+**顧言**：(內心)許許星棠說不要去。
 
 **顧言**：(內心)語氣很平。
 
@@ -258,7 +260,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言** [determined]：(內心)如果留下了什麼。
 
-**顧言** [determined]：(內心)百分之一。
+**顧言** [determined]：(內心)哪怕只有百分之一的可能。
 
 **顧言** [determined]：(內心)我也要知道。
 
@@ -326,7 +328,7 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 
 **顧言**：(內心)背帶顏色不對。
 
-**顧言**：(內心)不是她。嗯。
+**顧言**：(內心)不是她。
 
 **顧言**：(內心)那是誰。
 
@@ -338,17 +340,11 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 
 **顧言**：(內心)訊息裡的相機。
 
-**顧言**：(內心)被帶過去了。
-
-**顧言**：(內心)或者偽裝。
-
-**顧言**：(內心)故意出現。
-
-**顧言**：(內心)引我過去。
+**顧言**：(內心)相機被帶過去了——或者是偽裝，故意出現在我眼前，引我過去。
 
 **旁白**：他站在走廊裡，雨水從半開的鐵門飛進來，打在他的手臂上。冰涼的。和口袋裡那張照片的觸感形成了兩種完全不同的溫度——一種是冷的，一種是燙的。
 
-**顧言**：(內心)星棠說不要去。
+**顧言**：(內心)許星棠說不要去。
 
 **顧言**：(內心)口袋的紙說去。
 

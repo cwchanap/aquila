@@ -98,9 +98,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)老警察。焦慮的校方。
 
-**顧言**：(內心)但林主任焦慮的。
-
-**顧言**：(內心)不是天氣。
+**顧言**：(內心)但林主任焦慮的，不是天氣。
 
 **旁白**：他看到林主任在邵叔說完之後深吸了一口氣。那個呼吸的動作很大，大到胸口起伏明顯可見。然後林主任點了點頭，站直身體，整理了一下自己的領口，轉身往行政樓的方向走去。走路的姿勢比來的時候平穩了一些，但手指還是在無意識地搓著手機的邊緣。
 
@@ -126,7 +124,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)所有人困在裡面。
 
-**顧言**：(內心)林主任有不想被看到的。
+**顧言**：(內心)林主任有不想被看到的東西。
 
 **顧言**：(內心)這時間點。最危險。
 
@@ -194,7 +192,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **旁白**：他閉上眼睛，後腦勺抵著潮濕的牆壁。雨聲像一塊巨大的布，把所有的聲音都裹在裡面——腳步聲、說話聲、引擎聲、風聲——全部混成一團低沉的嗡鳴。他分不清哪些聲音來自外面，哪些來自自己的心跳。
 
-**顧言**：(內心)想太多了。嗯。
+**顧言**：(內心)想太多了。
 
 **顧言**：(內心)邵叔是警察。
 
@@ -250,7 +248,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言** [scared]：(內心)風暴裡的人。
 
-**顧言**：(內心)⋯⋯不。亂想。
+**顧言**：(內心)不對。別亂想。
 
 **顧言**：(內心)邵叔不會傷害我。
 
@@ -324,7 +322,7 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)找一個他們看不到的地方。
 
-**顧言**：(內心)把所有事情再想一遍。嗯。
+**顧言**：(內心)把所有事情再想一遍。
 
 **顧言** [determined]：(內心)二十二點二十二分之前。
 

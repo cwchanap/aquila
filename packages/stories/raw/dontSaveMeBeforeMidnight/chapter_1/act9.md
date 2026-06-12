@@ -12,7 +12,7 @@ clock tower exterior in heavy nighttime rain, dark weathered stone facade, rain 
 
 **顧言**：(內心)鎖著的。校慶不開放。有鑰匙的人。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **旁白**：他伸手推了一下門。木門向內滑開了大約十公分，沒有發出聲音。鉸鏈是新的——或者至少被上過油，開合的動作順滑得不像一扇在潮濕環境裡放了十年的老門。
 
@@ -36,7 +36,7 @@ clock tower interior, narrow spiral wooden staircase winding up circular stone s
 
 **顧言**：(內心)不全是消毒水。
 
-**顧言**：(內心)混塑料味。
+**顧言**：(內心)摻了塑料味。
 
 **顧言**：(內心)很淡。新鮮的。
 
@@ -68,7 +68,7 @@ clock tower interior, narrow spiral wooden staircase winding up circular stone s
 
 **顧言**：(內心)我走進去了。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **旁白**：他盯著那張公告看了五秒。然後他轉身，看向鐘樓底層的正中央。
 
@@ -240,7 +240,7 @@ clock tower interior, narrow spiral wooden staircase winding up circular stone s
 
 **顧言**：(內心)聲音不是。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **顧言** [scared]：(內心)那是誰。
 

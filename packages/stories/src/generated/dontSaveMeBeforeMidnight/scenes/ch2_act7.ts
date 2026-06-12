@@ -11,6 +11,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)車輛進出表。", background: Background.Chapter_2_Ch2_Act7_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)早上在保全室桌上瞥到的那行字——「17:40，校務廂型車，側門出發。封路前最後一班登記工作車。」", background: Background.Chapter_2_Ch2_Act7_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)我記住了。三個小時前它只是一行字。現在我需要知道它是什麼。", background: Background.Chapter_2_Ch2_Act7_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的手指碰了碰口袋。巴掌大的循環筆記本在那裡，硬殼封面隔著校服布料頂著他的大腿。早上回寢室拿的——從枕頭底下抽出來的時候，本子還攤在他抄訊息的那一頁。他把車輛表的內容也補了進去。時間、車型、路線、備註。全部。和記憶裡的一模一樣。", background: Background.Chapter_2_Ch2_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他從早上開始就在數。數所有可能離開校園的車。", background: Background.Chapter_2_Ch2_Act7_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)媒體車。早上九點之後就沒再動過，記者都進了禮堂，車停在訪客區，輪胎上積了水。", background: Background.Chapter_2_Ch2_Act7_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)餐飲補給車。卸完最後一批食材就熄火了，司機在餐廳吃飯，駕駛座的車門沒關，但沒有人上去。", background: Background.Chapter_2_Ch2_Act7_S0, portrait: Portrait.GuYan_Base },

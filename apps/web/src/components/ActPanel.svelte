@@ -26,6 +26,11 @@
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 
+  // Auto-expand the current chapter on scene change.
+  // previousChapterKey is a plain let (not $state) intentionally — it's only
+  // written here, never reactively read. The effect re-runs because
+  // currentChapterKey ($derived) changes, and we compare against the stored
+  // previous value to avoid re-expanding the same chapter.
   $effect(() => {
     if (currentChapterKey && currentChapterKey !== previousChapterKey) {
       expandedChapter = currentChapterKey;

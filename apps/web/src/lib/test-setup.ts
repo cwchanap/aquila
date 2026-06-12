@@ -1,5 +1,5 @@
 import { vi, beforeEach } from 'vitest';
-import { readerState } from './reader-state.svelte';
+import { readerState } from '@/lib/reader-state.svelte';
 
 if (typeof window !== 'undefined' && typeof window.alert !== 'function') {
     Object.defineProperty(window, 'alert', {

@@ -108,7 +108,7 @@ south wing infirmary inner room, dusk light fading through typhoon-taped frosted
 
 **顧言** [determined]：(內心)不要。
 
-**顧言** [determined]：(內心)不要自己嚇自己。禮堂有學生暈倒是真的。百年校慶加颱風加室內悶熱，學生暈倒太正常了。保健老師去處理是她的職責。校安被調去支援人流管制也是正常的。這些都是真的。
+**顧言** [determined]：(內心)不要自己嚇自己。禮堂有學生暈倒是真的。百年校慶加颱風加室內悶熱，學生暈倒太正常了。保健老師去處理也是應該的。校安被調去幫忙也是正常的。這些都是真的。
 
 **顧言** [determined]：(內心)這些都是真的。
 

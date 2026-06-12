@@ -8,7 +8,7 @@ student dormitory room interior at dawn, same grey rain outside window and same 
 
 **旁白**：天花板上那道裂紋，從左下角斜斜延伸到右上角。他認得這道裂紋。他盯著它看過無數個早晨。
 
-**旁白**：窗外傳來雨聲。細密的，安革的，打在玻璃上幾乎像呼吸一樣有節奏。遠處的海是灰色的，天和水的界線模糊成一片鉛白。
+**旁白**：窗外傳來雨聲。細密的，安靜的，打在玻璃上幾乎像呼吸一樣有節奏。遠處的海是灰色的，天和水的界線模糊成一片鉛白。
 
 **顧言**：(內心)不對。
 
@@ -30,7 +30,7 @@ student dormitory room interior at dawn, same grey rain outside window and same 
 
 **旁白**：宿舍廣播響了。那個女聲帶著特有的電流雜訊，一字一句地念著百年校慶活動的提醒。每一個措辭，每一個停頓，和昨天聽到的完全一樣。
 
-**旁白**：不——不是昨天。那是今晚。那是幾個小時前。那是一整段他已經度過、已經經歷、已經從中墜落摔死的時間。
+**旁白**：不——不是昨天。那是今晚。那是幾個小時前。那是一整段他活過了、也死在了裡面的時間。
 
 **顧言**：(內心)全一樣。
 
@@ -94,7 +94,7 @@ student dormitory room interior at dawn, same grey rain outside window and same 
 
 **顧言**：(內心)她還在嗎。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **旁白**：雨還在下。07:05 的數字還亮在螢幕上。廣播還在念百年校慶的活動安排。一切和第一次醒來時一模一樣。但顧言已經不是那個剛睡醒、迷迷糊糊的高中生了。
 
@@ -102,9 +102,9 @@ student dormitory room interior at dawn, same grey rain outside window and same 
 
 **顧言**：(內心)因為死了嗎。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
-**顧言** [determined]：(內心)不怕了。
+**顧言** [determined]：(內心)⋯⋯知道了。
 
 **旁白**：他站起來，把手機揣進睡褲口袋，走向洗手台，擰開水龍頭。冷水衝在臉上的時候他沒有閉眼，透過水珠看著鏡子裡自己的臉。那張臉沒有任何表情，但眼睛很亮，亮得不像一個剛睡醒的人。
 
@@ -122,7 +122,7 @@ student dormitory room interior at dawn, same grey rain outside window and same 
 
 **顧言**：(內心)這一次。不一樣。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯
 
 **旁白**：他的目光再次落在那條訊息上。
 
@@ -130,4 +130,4 @@ student dormitory room interior at dawn, same grey rain outside window and same 
 
 **顧言**：(內心)想知道原因。
 
-**顧言**：(內心)嗯。
+**顧言**：(內心)⋯⋯

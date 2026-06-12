@@ -1,17 +1,17 @@
 ---
 name: reviewing-written-stories
-description: Use when reviewing written story acts for character consistency, plot alignment against design documents, and orphaned hooks (attention-grabbing elements never resolved). Spawns parallel subagents — one for character voice/personality review and one for plot consistency review. Supports both per-act and chapter-level review modes.
+description: Use when reviewing written story acts for character consistency, plot alignment against design documents, and orphaned hooks (attention-grabbing elements never resolved). Spawns parallel subagents — one for character voice/personality review, one for plot consistency review, and one for dialogue naturalness review. Supports both per-act and chapter-level review modes.
 ---
 
 # Reviewing Written Stories
 
 ## Overview
 
-Review written story acts (`actN.md`) in parallel by spawning **2 subagents**: one checks character dialogue against `characters.md`, the other checks plot consistency against `high-level-plan.md` and chapter plans. Results are aggregated into a consolidated review report.
+Review written story acts (`actN.md`) in parallel by spawning subagents that check character dialogue against `characters.md`, plot consistency against `high-level-plan.md` and chapter plans, and dialogue naturalness for modern Chinese readers. Results are aggregated into a consolidated review report.
 
 Supports two review modes:
-- **Per-act mode**: Spawn 2 agents per act (or small batch of 2-3 acts). Best for targeted reviews of specific acts.
-- **Chapter-level mode**: Spawn 2 agents for the entire chapter (all acts). Best when the user says "review chapter N" or "review all acts". Agents read all acts and report issues organized by act number.
+- **Per-act mode**: Spawn 3 agents per act (or small batch of 2-3 acts) — Agent A (character), Agent B (plot), Agent C (dialogue naturalness). Best for targeted reviews of specific acts.
+- **Chapter-level mode**: Spawn 1 agent for the entire chapter (all acts) — Agent B (plot only). Best when the user says "review chapter N" or "review all acts". The agent reads all acts and reports issues organized by act number.
 
 ## When to Use
 
@@ -46,12 +46,12 @@ Determine which acts/chapters to review based on user request.
 
 ### Step 2: Choose Review Mode
 
-| Mode | When | Agent count |
+| Mode | When | Agents |
 |---|---|---|
-| **Chapter-level** | User says "review chapter N" or "review all acts" | 2 agents total (1 character + 1 plot) |
-| **Per-act** | User says "review act 3" or "review act 5-8" | 2 agents per act or per batch |
+| **Chapter-level** | User says "review chapter N" or "review all acts" | Agent B only (1 agent total — plot consistency) |
+| **Per-act** | User says "review act 3" or "review act 5-8" | Agent A + Agent B + Agent C (3 agents per act or per batch) |
 
-**Prefer chapter-level mode** when reviewing more than 3-4 acts — it gives agents cross-act context and produces more cohesive findings (especially for cross-act contradictions).
+**Prefer chapter-level mode** when reviewing more than 3-4 acts — Agent B gets cross-act context and produces more cohesive findings (especially for cross-act contradictions). Agent A (character) and Agent C (dialogue naturalness) are only available in per-act mode for detailed line-level analysis.
 
 ### Step 3: Identify Reference Document Paths
 
@@ -71,53 +71,7 @@ Agents read reference docs and act files directly from disk.
 
 #### Chapter-Level Mode (Preferred for full chapters)
 
-Spawn **2 agents in parallel** — each reads ALL acts in the chapter.
-
-**Agent A: Character Review (All Acts)**
-
-```
-You are reviewing written story acts for CHARACTER CONSISTENCY.
-
-## Step 1: Read reference documents
-
-Read this file first to understand each character's voice:
-- [FULL PATH to characters.md]
-
-## Step 2: Read the acts to review
-
-Read ALL acts in order:
-- [FULL PATH to each act file in the chapter]
-
-## Your Task
-
-Check EVERY line of dialogue against the character definitions you read from characters.md. For each character who speaks, verify:
-
-1. **Speech length**: Does the dialogue match the character's typical sentence length?
-2. **Tone/register**: Does the emotional register match?
-3. **Personality markers**: Are specific habits present?
-4. **Vocabulary range**: Does the character use words consistent with their background?
-
-Pay special attention to:
-- The Voice Comparison Table (角色聲音對照表) near the end of characters.md
-- Each character's 代表性台詞 (representative lines) section
-- Each character's 說話風格 (speech style) section
-
-## Output Format
-
-For each issue found, organize BY ACT:
-- **Act**: Which act number
-- **Line reference**: Quote the problematic line
-- **Character**: Who is speaking
-- **Issue**: What's inconsistent
-- **Expected**: What it should be like based on the character doc
-- **Severity**: HIGH (breaks character completely) / MEDIUM (noticeable deviation) / LOW (minor inconsistency)
-
-If no issues found for a character in an act, say "PASS" for that character in that act.
-
-End with a summary: total issues by severity, and which characters are most consistent.
-
-IMPORTANT: This is a read-only review. Do NOT modify any files.
-```
+Spawn **1 agent** — Agent B reads ALL acts in the chapter.
 
 **Agent B: Plot Consistency Review (All Acts)**
 
@@ -185,7 +139,7 @@ IMPORTANT: This is a read-only review. Do NOT modify any files.
 
 #### Per-Act Mode (For targeted reviews)
 
-For **each act** (or small batch of 2-3 acts), spawn **2 agents in parallel** using the Task tool. This mode is best when reviewing 1-3 specific acts rather than an entire chapter.
+For **each act** (or small batch of 2-3 acts), spawn **3 agents in parallel** using the Task tool. This mode is best when reviewing 1-3 specific acts rather than an entire chapter.
 
 **Agent A: Character Review (Per-Act)**
 
@@ -295,6 +249,50 @@ End with a summary: most critical issues first, grouped by category.
 IMPORTANT: This is a read-only review. Do NOT modify any files.
 ```
 
+**Agent C: Dialogue Naturalness Review (Per-Act)**
+
+```
+You are reviewing written story acts for DIALOGUE NATURALNESS and SMOOTHNESS, with special attention to modern Chinese reader expectations.
+
+## Step 1: Read the acts to review
+
+- [FULL PATH to specific act file(s)]
+
+## Your Task
+
+Read every line of dialogue and narration in Chinese. Evaluate whether the language sounds natural and fluent to a modern Chinese reader. Flag anything that feels:
+
+1. **Awkward phrasing**: Sentences that are grammatically correct but feel stiff, overly formal, or unnatural in spoken context
+2. **Unnatural wordings**: Expressions that native Chinese speakers would rarely use, or that sound translated/awkward
+3. **Tonal mismatch**: Dialogue that doesn't match the emotional situation (e.g. overly casual during a tense moment, or stiff during an intimate scene)
+4. **Anachronistic or out-of-place vocabulary**: Words or expressions that feel wrong for the character's age, background, or the story's setting
+5. **Clunky transitions**: Lines where the flow between consecutive dialogue lines or between narration and dialogue feels jarring or disjointed
+6. **Repetitive sentence structures**: Overuse of the same sentence pattern within a short span that makes dialogue feel monotonous
+
+Pay special attention to:
+- Spoken Chinese vs written Chinese — dialogue should sound like how people actually talk
+- Modern colloquialisms and whether they're used correctly
+- Regional or slang expressions — are they authentic or forced?
+- Formality level matching the social relationship between speakers
+- Whether the emotional beats land naturally or feel manufactured
+
+## Output Format
+
+For each issue found per act:
+- **Act**: Which act number
+- **Line reference**: Quote the problematic line
+- **Issue category**: Awkward phrasing / Unnatural wording / Tonal mismatch / Anachronistic vocabulary / Clunky transition / Repetitive structure
+- **Why it's unnatural**: Explain what sounds wrong and why a modern Chinese reader would find it jarring
+- **Suggested rephrase**: Provide a more natural alternative (optional but encouraged)
+- **Severity**: HIGH (breaks immersion completely) / MEDIUM (noticeable, pulls reader out) / LOW (minor awkwardness)
+
+If no issues for an act, say "PASS".
+
+End with a summary: total issues by severity and category, and which acts have the most natural vs most awkward dialogue.
+
+IMPORTANT: This is a read-only review. Do NOT modify any files.
+```
+
 ### Step 5: Aggregate and Report
 
 After all agents complete, combine results into a consolidated report:
@@ -303,19 +301,21 @@ After all agents complete, combine results into a consolidated report:
 # Story Review Report: <storyName>
 
 ## Summary
+- **Review mode**: Per-act / Chapter-level
 - **Acts reviewed**: act1 - act12
 - **Total character issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
 - **Total plot issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
+- **Total dialogue naturalness issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
 - **Most consistent characters**: [list]
 - **Most problematic acts**: [list]
 
 ## Character Consistency Issues
 
 ### Act 1
-[Agent A findings]
+[Agent A findings — per-act mode only, omit in chapter-level mode]
 
 ### Act 2
-[Agent A findings]
+[Agent A findings — per-act mode only, omit in chapter-level mode]
 ...
 
 ## Plot Consistency Issues
@@ -327,6 +327,15 @@ After all agents complete, combine results into a consolidated report:
 [Agent B findings]
 ...
 
+## Dialogue Naturalness Issues
+
+### Act 1
+[Agent C findings — per-act mode only, omit in chapter-level mode]
+
+### Act 2
+[Agent C findings — per-act mode only, omit in chapter-level mode]
+...
+
 ## Critical Fixes Required
 [All HIGH severity issues across all acts, sorted by act number]
 
@@ -336,9 +345,10 @@ After all agents complete, combine results into a consolidated report:
 
 ## Important Rules
 
-- **Prefer chapter-level mode** for full chapter reviews — it gives agents cross-act context and catches cross-act contradictions more reliably than per-act batches
+- **Prefer chapter-level mode** for full chapter reviews — Agent B gets cross-act context and catches cross-act contradictions more reliably than per-act batches. Chapter-level mode only spawns Agent B (plot).
+- **Per-act mode spawns all 3 agents** — Agent A (character), Agent B (plot), and Agent C (dialogue naturalness) run in parallel. This is the only mode that includes character and naturalness reviews.
 - **Internal consistency over plan adherence** — Flag contradictions and logic breaks. Don't flag creative deviations from the plan.
-- **Always spawn agents in parallel** — both agents (character + plot) should run concurrently, never sequentially
+- **Always spawn agents in parallel** — all agents for a given batch should run concurrently, never sequentially
 - **Tell agents to read files directly** — provide full file paths in prompts; agents read reference docs and act files from disk themselves. This avoids context-window waste and ensures agents see the complete documents.
 - **Don't modify story files** — this is a read-only review, not an editing pass (unless the user explicitly asks to fix issues afterward)
 - **If no chapter plan exists for a chapter**, the plot reviewer should only check against the high-level plan
@@ -348,7 +358,8 @@ After all agents complete, combine results into a consolidated report:
 ## Common Mistakes
 
 - **Forgetting to provide file paths**: If you don't give agents the paths to characters.md and the plan docs, they can't check consistency
-- **Sequential reviews**: Always use parallel Task tool calls — character and plot agents must run concurrently
+- **Sequential reviews**: Always use parallel Task tool calls — all agents for a batch must run concurrently
 - **Editing during review**: Review only. Never modify act files based on findings unless the user explicitly asks
 - **Missing chapter plans**: Some chapters may not have dedicated plans. Check `docs/` for available plans before starting
-- **Wrong review mode**: Don't spawn per-act agents when the user asks to review a whole chapter — use chapter-level mode instead to get better cross-act analysis
+- **Wrong review mode**: Don't spawn per-act agents when the user asks to review a whole chapter — use chapter-level mode (Agent B only) instead to get better cross-act analysis
+- **Spawning Agent A or C in chapter-level mode**: These agents are per-act only. Chapter-level reviews only use Agent B

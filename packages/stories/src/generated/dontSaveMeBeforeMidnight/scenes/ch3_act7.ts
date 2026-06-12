@@ -58,7 +58,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越的聲音壓得很低。不是刻意保密的那種低，而是語氣本身就像一條繃到極限的弦，隨時會斷。", background: Background.Chapter_3_Ch3_Act7_S0 },
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "寫著出口的地方，不一定能出去。", background: Background.Chapter_3_Ch3_Act7_S0, portrait: Portrait.HanYue_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯", background: Background.Chapter_3_Ch3_Act7_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)門上寫的字。校史館門上寫的是「暫停入內」。醫務室的後門貼的是「防颱期間勿開」。鐘樓維修門上貼的是「設備檢查」。", background: Background.Chapter_3_Ch3_Act7_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)門上寫的字。校史館門上寫的是「暫停入內」。鐘樓維修門上貼的是「設備檢查」。", background: Background.Chapter_3_Ch3_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)每一扇門上都有字。每一個字都告訴你「不要進去」「不要打開」「不要靠近」。", background: Background.Chapter_3_Ch3_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)但如果今天所有的門，都是同一批人貼的字呢？", background: Background.Chapter_3_Ch3_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越已經走了。他不像是在等顧言的回應。他說完就走了，走進窄巷裡，深色外套的背影很快被雨幕吞掉。", background: Background.Chapter_3_Ch3_Act7_S0 },

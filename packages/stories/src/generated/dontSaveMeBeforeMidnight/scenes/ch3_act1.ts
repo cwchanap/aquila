@@ -33,7 +33,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他睜開眼。坐起來。動作平穩，沒有多餘的力氣。腳踩上冰涼的地板，站起來，走向洗手台。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)恐懼還在。但它在更深的地方。像地下室的水管聲——你知道它在響，但你不去管它，因為現在在幹活。", background: Background.Chapter_3_Ch3_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "水龍頭擰開。冷水衝在手上。他沒有低頭，而是看著鏡子裡的自己。", background: Background.Chapter_3_Ch3_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那張臉比上一輪更瘦。不是真的瘦了——是眼神變了。上一輪的眼神是亮的，是不怕了的亮。這一輩的眼神不一樣了。它更沉。更硬。像一塊被反覆鍛打的鐵。", background: Background.Chapter_3_Ch3_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那張臉比上一輪更瘦。不是真的瘦了——是眼神變了。上一輪的眼神是亮的，是不怕了的亮。這一輪的眼神不一樣了。它更沉。更硬。像一塊被反覆鍛打的鐵。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)我死了兩次。兩次。", background: Background.Chapter_3_Ch3_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)第一次我問：這是不是夢？第二次我問：我要怎麼活？第三次——", background: Background.Chapter_3_Ch3_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他關上水龍頭。水珠順著指尖滴進水槽。滴答。滴答。", background: Background.Chapter_3_Ch3_Act1_S0 },

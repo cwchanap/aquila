@@ -117,10 +117,16 @@
     }
   });
 
+  // Tracks whether the bookmark offset has been consumed for the initial
+  // scene.  Prevents the same non-null initialDialogueIndex prop from being
+  // re-applied on every subsequent scene change.
+  let initialBookmarkConsumed = false;
+
   // Apply initial dialogue index (if provided) once per mount
   $effect(() => {
     if (
       !hasAppliedInitialIndex &&
+      !initialBookmarkConsumed &&
       initialDialogueIndex !== null &&
       initialDialogueIndex >= 0 &&
       dialogue.length > 0
@@ -140,6 +146,7 @@
 
       currentDialogueIndex = targetIndex;
       hasAppliedInitialIndex = true;
+      initialBookmarkConsumed = true;
     }
   });
 

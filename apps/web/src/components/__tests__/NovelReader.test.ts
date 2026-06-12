@@ -618,6 +618,56 @@ describe('NovelReader', () => {
             ).toBeInTheDocument();
             expect(screen.getByText('2 / 3')).toBeInTheDocument();
         });
+
+        it('should NOT re-apply initialDialogueIndex on scene change', async () => {
+            // Regression test: opening the reader with a bookmark URL sets
+            // initialDialogueIndex.  When the user navigates to a new scene,
+            // the offset must NOT be re-applied — the new scene should start
+            // at line 0, not skip the first N lines.
+            const { rerender } = render(NovelReader, {
+                props: {
+                    dialogue: mockDialogue,
+                    choice: null,
+                    locale: 'en',
+                    initialDialogueIndex: 1,
+                },
+            });
+
+            await vi.runAllTimersAsync();
+
+            // Initial scene: first two dialogues shown (index 1 = second item)
+            expect(screen.getByText('2 / 3')).toBeInTheDocument();
+
+            // Simulate scene change with a completely new dialogue array
+            const newDialogue: DialogueEntry[] = [
+                {
+                    characterId: 'narrator' as any,
+                    dialogue: 'New scene first line.',
+                },
+                {
+                    characterId: 'narrator' as any,
+                    dialogue: 'New scene second line.',
+                },
+            ];
+
+            await rerender({
+                dialogue: newDialogue,
+                choice: null,
+                locale: 'en',
+                // Prop stays non-null (same value as mount) — component must
+                // ignore it on subsequent scene changes.
+                initialDialogueIndex: 1,
+            });
+
+            await vi.runAllTimersAsync();
+
+            // The new scene should start from the beginning (1 / 2),
+            // NOT skip ahead to line 1 and show "2 / 2".
+            expect(screen.getByText('1 / 2')).toBeInTheDocument();
+            expect(
+                screen.getByText('New scene first line.')
+            ).toBeInTheDocument();
+        });
     });
 
     describe('Localization', () => {

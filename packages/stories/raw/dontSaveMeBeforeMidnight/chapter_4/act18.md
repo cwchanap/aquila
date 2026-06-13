@@ -74,7 +74,7 @@ underground drainage pump room flooding, water rising past waist level, emergenc
 
 **顧言** [trembling]：(內心)第一輪。黑雨衣問我——「相機在哪裡？」
 
-**顧言** [trembling]：(內心)第二輪。黑雨衣說——「東西沒出來。」
+**顧言** [trembling]：(內心)第二輪。黑雨衣說——「東西不在裡面。」
 
 **顧言** [trembling]：(內心)第三輪。醫務室。那道白光。像閃光燈。像相機的閃光燈。
 

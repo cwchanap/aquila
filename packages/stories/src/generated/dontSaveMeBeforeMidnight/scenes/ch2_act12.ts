@@ -70,7 +70,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那張臉比上一輪醒來時更瘦了一圈。也許不是真的瘦了——是眼神變了。上一輪的眼神是亮，是不怕了的那種亮。這一輪的眼神——", background: Background.Chapter_2_Ch2_Act12_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)冷。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)上一輪我以為不怕就能活。錯了。不怕沒有用。跑也沒有用。躲也沒有用。盲目地做相反的選擇也沒有用。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)兩輪了。我對這一天的每一次重來都更熟。我知道哪句話會在什麼時間出現。我知道哪個人在哪裡做什麼。我知道哪條路通向哪裡。這些是上一輪我沒有的東西。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)兩輪了。每重來一次，我對今天就更熟一點。我知道哪句話會在什麼時間出現。我知道哪個人在哪裡做什麼。我知道哪條路通向哪裡。這些是上一輪我沒有的東西。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)但我仍然不知道真正的規則。我不知道是誰在殺我。我不知道「相機」到底是什麼。我不知道那個「東西」是什麼。我不知道——重置的點在哪裡。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)我不知道的事，一個人根本查不完。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他關上水龍頭。拿毛巾擦臉。動作比上一輪更穩。更慢。像一個已經不再浪費動作的人。", background: Background.Chapter_2_Ch2_Act12_S0 },

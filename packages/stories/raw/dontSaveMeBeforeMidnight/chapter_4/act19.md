@@ -212,7 +212,7 @@ student dormitory room interior at dawn, fifth loop wake-up, grey rain streaking
 
 **顧言** [determined]：(內心)22:22。
 
-**顧言** [determined]：(內心)我已經死了四次。四次都沒有超過你。
+**顧言** [determined]：(內心)我已經死了四次。四次都沒有撐過你。
 
 **顧言** [determined]：(內心)但那是因為——我從來沒有活著走到你面前過。
 

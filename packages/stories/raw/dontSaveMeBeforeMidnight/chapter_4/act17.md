@@ -4,11 +4,29 @@
 underground drainage pump room, low ceiling with exposed pipes and rusted conduits, dim emergency lighting casting yellowish pools on concrete floor, iron ladder descending into a half-person-height inspection pit, water already pooling at the bottom, old machinery humming faintly then going silent, claustrophobic and oppressive atmosphere, moody cinematic visual-novel background art, wide shot
 ```
 
-**旁白**：他想走。
+**旁白**：二十二點零五分。他往外走。
 
 **旁白**：照片底稿袋被他攥在手裡，邊角已經被汗水和水氣泡軟了。紙面上的影像還在——父親、年幼的自己、姓許的女職員、年輕邵叔——但它們正在一點一點地被潮氣吃掉。他不能再待在這裡。他必須把這張照片帶出去。帶到有人能看見的地方。
 
-**顧言** [determined]：(內心)出去。沿原路。穿過維修門。走外走廊。找——
+**旁白**：他往外走了三步。然後聽到了聲音。
+
+**旁白**：從通道的另一端。不是腳步聲。是水聲。很大的水聲。不是管線裡的——是從地面灌下來的。像有什麼東西被打開了，水從更高處往低處衝。
+
+**旁白**：同時。他身後。遠處。門的方向。傳來金屬撞擊的聲音。
+
+**旁白**：門關了。
+
+**聲音**：後門封了！基座動線清空！
+
+**旁白**：他走向門的方向。快步。跑。階梯。向上。門。他推。門不動。他再推。用肩膀撞。門紋絲不動。
+
+**顧言** [scared]：(內心)鎖了。
+
+**顧言** [scared]：(內心)門從外面鎖了。
+
+**旁白**：他站在階梯頂端。面前是一扇被鎖上的、厚重的金屬維修門。身後是一條向下的、正在被水聲填滿的黑暗通道。
+
+**顧言** [determined]：(內心)原路回不去。找別的出口。
 
 **旁白**：腳步聲。
 
@@ -28,7 +46,7 @@ underground drainage pump room, low ceiling with exposed pipes and rusted condui
 
 **旁白**：他踩上鐵梯。梯面濕滑。他的手抓住扶手，一步一步往下走。七級。八級。九級。腳踩到了泵房的地面。地面也是濕的。積水從某個看不見的地方緩慢地漫過來，在腳下形成薄薄的一層。
 
-**旁白**：身後的維修門關上了。
+**旁白**：身後那扇窄門關上了。
 
 **旁白**：不是他關的。是風。或者是壓力差。或者是老舊門框上那個鏽死的彈簧終於完成了它該做的動作。門發出一聲沉悶的「哐」，然後安靜了。
 

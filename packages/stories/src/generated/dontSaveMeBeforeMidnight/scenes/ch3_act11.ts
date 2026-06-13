@@ -58,7 +58,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "通風百葉的聲音也變了。塑膠布不再是啪嗒啪嗒地拍。它被風壓得緊貼在百葉上，發出一種持續的、低沉的嗡嗡聲。像有什麼東西在外面壓著，想進來。", background: Background.Chapter_3_Ch3_Act11_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)塑膠布貼緊了。通風——", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要。", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要自己嚇自己。禮堂有學生暈倒是真的。百年校慶加颱風加室內悶熱，學生暈倒太正常了。保健老師去處理是她的職責。校安被調去支援人流管制也是正常的。這些都是真的。", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要自己嚇自己。禮堂有學生暈倒是真的。百年校慶加颱風加室內悶熱，學生暈倒太正常了。保健老師去處理也是應該的。校安被調去幫忙也是正常的。這些都是真的。", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)這些都是真的。", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯但加在一起，南翼就空了。走廊就靜了。這個房間就只剩我一個人了。", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)保健老師說「很快回來」。校安說「過去支援」。他們都是正常的。他們做的每一件事都是正常的。", background: Background.Chapter_3_Ch3_Act11_S0, portrait: Portrait.GuYan_Scared },

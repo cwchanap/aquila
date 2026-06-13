@@ -285,6 +285,126 @@
       "key": "chapter_3/ch3_act17_s0",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_3/ch3_act17_s0.png",
       "prompt": "same student dormitory room at dawn, grey rain outside window, ceiling crack visible, morning light filtered through overcast sky, phone glowing on pillow, clean unchanged bed, sparse furnishings, muted desaturated palette with cold blue-grey cast, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act1_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act1_s0.png",
+      "prompt": "same student dormitory room at dawn, fourth loop, grey rain streaking windowpane, ceiling crack now familiar like an old scar, cold morning light diffused through overcast sky, desk cleared except for pen and paper, phone face-down on mattress, sparse and orderly room, muted desaturated palette with cold blue-grey steel tones, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act2_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act2_s0.png",
+      "prompt": "same student dormitory room, close-up view of a phone screen lighting up on a desk next to hand-drawn campus map and notes, grey morning light from window, paper with death map and table visible under pen, cold blue-grey palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act3_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act3_s0.png",
+      "prompt": "school cafeteria and breakfast area during centennial celebration morning, long tables with simple breakfast trays, students in uniforms eating casually, overcast grey light from tall windows, rain visible outside, warm fluorescent interior lighting mixed with cold daylight, muted palette, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act4_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act4_s0.png",
+      "prompt": "temporary livestream broadcasting station set up in school corridor, folding tables with monitors showing grainy surveillance camera feeds, student volunteers in uniform testing cables and equipment, laptops and mixers on table, rainy grey light from nearby window, tangle of black cables on floor, warm fluorescent overhead light, centennial celebration decorations on wall behind, muted palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act5_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act5_s0.png",
+      "prompt": "school admin corridor, fluorescent ceiling lights casting cold white glare, semi-transparent plastic folder mounted on wall containing printed sheets, closed office doors with name plates, grey linoleum floor reflecting light, rain visible through window at corridor end, institutional atmosphere, muted cool palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act6_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act6_s0.png",
+      "prompt": "school history exhibition hall interior, high ceiling with wooden beams, display cases along walls showing old uniforms and newspaper clippings, a thick wooden pedestal with glass enclosure in center displaying a sealed time capsule, fluorescent and spot lighting mixed with grey ambient light from high windows, rain streaking on glass, somber museum atmosphere, muted warm wood tones with cold light accents, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_4/ch4_act7_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act7_s0.png",
+      "prompt": "auditorium side corridor, concrete walls with exposed pipes, dim fluorescent lighting, rain sounds muffled through walls, folding chairs stacked against wall, a single emergency exit sign glowing green, two figures visible at corridor end in hushed conversation, cold industrial palette, moody cinematic visual-novel background art, medium shot with depth"
+    },
+    {
+      "key": "chapter_4/ch4_act8_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act8_s0.png",
+      "prompt": "school loading area behind auditorium, concrete loading dock with metal railings, rows of equipment lockers and storage boxes along walls, rain pooling on wet ground, grey tarp covering stacked crates, a single maintenance light on wall casting warm yellow pool in grey environment, delivery truck parked with open rear doors in distance, overcast sky, cold damp palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act9_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act9_s0.png",
+      "prompt": "school hallway near the school history hall entrance, afternoon grey light through rain-streaked windows, workers laying anti-slip rubber mats on corridor floor, grey typhoon tape crisscrossing window panes, maintenance staff in rain gear carrying equipment, fluorescent overhead lighting mixed with overcast daylight, muted cool palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act10_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act10_s0.png",
+      "prompt": "temporary command center exterior, plastic-sheeted doorway with security tape, whiteboard visible through gap in partition wall showing handwritten schedules and maps, student volunteers carrying supply boxes passing by, fluorescent corridor lighting, rain-streaked windows in background, stacks of bottled water and equipment crates, muted cool palette with harsh institutional lighting, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act11_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act11_s0.png",
+      "prompt": "school history hall interior at dusk, display cases being covered with white cloth, workers disassembling exhibition ropes and stanchions, heavy wooden pedestal with time capsule visible in the center under spotlights, rain hammering against tall windows, grey typhoon tape on glass, warm exhibition lighting mixed with cold dusk through windows, muted palette with warm amber accent, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act12_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act12_s0.png",
+      "prompt": "behind the school history hall at night, a narrow concrete staging area between the building's rear wall and a low maintenance corridor, heavy wooden pedestal on roller tracks covered with grey typhoon tarp at the bottom corners, dim service lighting from wall-mounted fixtures, rain streaming down the building's brick wall, puddles on cracked concrete, equipment crates and tarpaulin-covered supplies stacked along the wall, cold blue-grey palette with harsh shadow, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act13_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act13_s0.png",
+      "prompt": "school history museum rear corridor at night, dim emergency lighting, rain hammering windows, wet footprints on tile floor, display pedestal visible in adjacent staging area covered with grey tarp, institutional corridor with metal doors and conduits along ceiling, overcast dark sky through windows, cold blue-grey palette, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act13_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act13_s1.png",
+      "prompt": "dark maintenance corridor behind school history museum, bare concrete walls with water stains, exposed conduits and pipes along ceiling, flickering fluorescent tubes casting intermittent yellow-white light, wet floor with puddles reflecting overhead lights, narrow passage descending slightly, institutional cold atmosphere, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act14_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act14_s0.png",
+      "prompt": "dark underground maintenance corridor, bare concrete walls with old water stains, flickering fluorescent tubes, narrow passage with exposed pipes overhead, dim institutional lighting creating deep shadows, wet concrete floor reflecting sparse light, cold damp atmosphere, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_4/ch4_act15_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act15_s0.png",
+      "prompt": "underground maintenance corridor junction, concrete walls and ceiling with exposed pipes, three-way split: left passage going up with faint light from above, right passage descending into darkness, straight passage leading deeper with flickering lights, wet floor with standing water, emergency exit signs casting red glow, institutional atmosphere, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act15_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act15_s1.png",
+      "prompt": "underground passage below school history museum, steep narrow concrete stairs descending, walls close to shoulders, broken fluorescent tubes overhead, deep shadows between sparse working lights, water stains on walls and ceiling, old paint peeling in patches, cold damp air, moody cinematic visual-novel background art, downward perspective shot"
+    },
+    {
+      "key": "chapter_4/ch4_act16_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act16_s0.png",
+      "prompt": "underground old document storage area, semi-enclosed room with exposed concrete walls, water-damaged ceiling with peeling paint and dark stains, old exhibition boards leaning against walls, waterlogged cardboard boxes on metal shelves, unstable fluorescent lighting casting yellow-white pools of light between deep shadows, scattered papers and newspaper proofs, cold damp atmosphere with visible moisture, moody cinematic visual-novel background art, wide atmospheric shot"
+    },
+    {
+      "key": "chapter_4/ch4_act16_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act16_s1.png",
+      "prompt": "close-up of concrete wall corner in underground storage room, dark fire damage marks visible beneath peeling new paint and debris, charred surface texture, water stains layered over burn marks, evidence of old fire partially covered up, dim yellowish light from overhead fluorescent, moody cinematic visual-novel background art, detail shot"
+    },
+    {
+      "key": "chapter_4/ch4_act16_s2",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act16_s2.png",
+      "prompt": "fragmentary burning corridor memory, smoke and steam mixing, flames at edges, a man's silhouette crouching with wet jacket covering a child, surreal fragmented quality, orange-red glow, rain falling through broken ceiling, moody cinematic visual-novel background art, surreal atmospheric shot"
+    },
+    {
+      "key": "chapter_4/ch4_act16_s3",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act16_s3.png",
+      "prompt": "close-up of an old water-damaged photograph in dim fluorescent light, the photo shows a group of people at a school safety event, young boy standing next to a man with a recording device, a female staff member with camera and ID badge visible, a young man at the edge near contractors, full background banner text in Chinese, water wrinkles and faded colors, seen through Gu Yan's trembling hands, moody cinematic visual-novel background art, intimate detail shot"
+    },
+    {
+      "key": "chapter_4/ch4_act17_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act17_s0.png",
+      "prompt": "underground drainage pump room, low ceiling with exposed pipes and rusted conduits, dim emergency lighting casting yellowish pools on concrete floor, iron ladder descending into a half-person-height inspection pit, water already pooling at the bottom, old machinery humming faintly then going silent, claustrophobic and oppressive atmosphere, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_4/ch4_act18_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act18_s0.png",
+      "prompt": "underground drainage pump room flooding, water rising past waist level, emergency lights flickering and dying, darkness encroaching from edges, old pipes and machinery half-submerged, Gu Yan standing in chest-deep murky water, single phone screen glow illuminating his face, claustrophobic and suffocating atmosphere, moody cinematic visual-novel background art, close atmospheric shot"
+    },
+    {
+      "key": "chapter_4/ch4_act19_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act19_s0.png",
+      "prompt": "student dormitory room interior at dawn, fifth loop wake-up, grey rain streaking down window glass, dim overcast morning light, messy unmade bed, empty top bunk, phone glowing on pillow edge, sparse furnishings, muted cold grey-blue palette, identical to chapter opening but with subtle sense of exhaustion and resolve, moody cinematic visual-novel background art, wide establishing shot"
     }
   ],
   "portraits": [

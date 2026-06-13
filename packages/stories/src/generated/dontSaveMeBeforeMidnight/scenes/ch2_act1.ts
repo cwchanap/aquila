@@ -28,7 +28,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這句話。這句話他聽過。不是在夢裡——是今天早上聽過。同一個聲音，同一個語調，同一個拖長的尾音。同一個卡在「集合」和後面那聲嘆息之間的哈欠。連腳步聲經過門口時那一下停頓都一樣——那個人在門口猶豫了半秒，像在考慮要不要進來，然後繼續往前走了。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)同一個人。同一句話。同一個時間。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他站起來。動作太猛，膝蓋撞上床板邊緣，一陣鈍痛從膝蓋骨射上來。他沒有管。他走到窗邊，把窗簾推開一條縫。", background: Background.Chapter_2_Ch2_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰色。全是灰色。天空壓得很低，海面是灰的，天和水的界線被雨霧吃掉了。遠處鐘樓的輪廓在霧氣裡模糊成一截插在泥裡的骨頭。雨還在下，細密的，安靜的，從昨天下到現在，像有人忘了關水龍頭。", background: Background.Chapter_2_Ch2_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰色。全是灰色。天空壓得很低，海面是灰的，天和水的界線被雨霧吃掉了。遠處鐘樓的輪廓在霧氣裡模糊成一截插在泥裡的骨頭。雨還在下，細密的，安靜的，從昨天下到現在，像有人忘了關水龍頭。偶爾有閃電在雲層深處閃一下，不劈下來，只是把灰色的天空照亮一瞬，像一隻巨大的眼睛在雲後面眨了一下。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)同樣的雨。同樣的灰。同樣的鐘樓。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他轉過身，看見了床邊的椅子。椅背上搭著一件黑色雨衣——濕的，衣角還在滴水，在椅面上匯成一小灘水漬。雨衣的左袖翻過去一半，露出裡面灰色的內襯，像一隻垂下來的手。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)雨衣。我昨晚回來的時候把它掛在這裡。位置一樣。滴水的方式一樣。連左袖翻過去的角度都——", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },

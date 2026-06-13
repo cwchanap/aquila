@@ -41,6 +41,25 @@ import { scene as s_ch3_act14 } from './scenes/ch3_act14';
 import { scene as s_ch3_act15 } from './scenes/ch3_act15';
 import { scene as s_ch3_act16 } from './scenes/ch3_act16';
 import { scene as s_ch3_act17 } from './scenes/ch3_act17';
+import { scene as s_ch4_act1 } from './scenes/ch4_act1';
+import { scene as s_ch4_act2 } from './scenes/ch4_act2';
+import { scene as s_ch4_act3 } from './scenes/ch4_act3';
+import { scene as s_ch4_act4 } from './scenes/ch4_act4';
+import { scene as s_ch4_act5 } from './scenes/ch4_act5';
+import { scene as s_ch4_act6 } from './scenes/ch4_act6';
+import { scene as s_ch4_act7 } from './scenes/ch4_act7';
+import { scene as s_ch4_act8 } from './scenes/ch4_act8';
+import { scene as s_ch4_act9 } from './scenes/ch4_act9';
+import { scene as s_ch4_act10 } from './scenes/ch4_act10';
+import { scene as s_ch4_act11 } from './scenes/ch4_act11';
+import { scene as s_ch4_act12 } from './scenes/ch4_act12';
+import { scene as s_ch4_act13 } from './scenes/ch4_act13';
+import { scene as s_ch4_act14 } from './scenes/ch4_act14';
+import { scene as s_ch4_act15 } from './scenes/ch4_act15';
+import { scene as s_ch4_act16 } from './scenes/ch4_act16';
+import { scene as s_ch4_act17 } from './scenes/ch4_act17';
+import { scene as s_ch4_act18 } from './scenes/ch4_act18';
+import { scene as s_ch4_act19 } from './scenes/ch4_act19';
 
 export const dontSaveMeBeforeMidnightZhDialogue: DialogueMap = {
     "ch1_act1": s_ch1_act1,
@@ -83,4 +102,23 @@ export const dontSaveMeBeforeMidnightZhDialogue: DialogueMap = {
     "ch3_act15": s_ch3_act15,
     "ch3_act16": s_ch3_act16,
     "ch3_act17": s_ch3_act17,
+    "ch4_act1": s_ch4_act1,
+    "ch4_act2": s_ch4_act2,
+    "ch4_act3": s_ch4_act3,
+    "ch4_act4": s_ch4_act4,
+    "ch4_act5": s_ch4_act5,
+    "ch4_act6": s_ch4_act6,
+    "ch4_act7": s_ch4_act7,
+    "ch4_act8": s_ch4_act8,
+    "ch4_act9": s_ch4_act9,
+    "ch4_act10": s_ch4_act10,
+    "ch4_act11": s_ch4_act11,
+    "ch4_act12": s_ch4_act12,
+    "ch4_act13": s_ch4_act13,
+    "ch4_act14": s_ch4_act14,
+    "ch4_act15": s_ch4_act15,
+    "ch4_act16": s_ch4_act16,
+    "ch4_act17": s_ch4_act17,
+    "ch4_act18": s_ch4_act18,
+    "ch4_act19": s_ch4_act19,
 };

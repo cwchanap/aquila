@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "世界翻了。", background: Background.Chapter_2_Ch2_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是慢慢傾斜。是突然的、完整的翻轉。車體離開了路面，越過被撞斷的護欄，向右傾倒。顧言感覺到自己的身體離開了地面——沒有安全帶，他什麼都沒有——他和器材箱、硬碟盒、攝影腳架一起，像被裝進了一個被搖晃的盒子裡的碎片，全部往一個方向砸過去。", background: Background.Chapter_2_Ch2_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "砸。", background: Background.Chapter_2_Ch2_Act11_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "器材箱砸在他的胸口。攝影腳架砸在他的肩膀。一個硬殼箱的角撞上了他的太陽穴。疼痛不是一下一下的——是同時的、疊加的、像有人把所有的痛覺通道全部同時打開了。他的嘴張開了，但什麼聲音都沒發出來。空氣被從肺裡擠出去了。", background: Background.Chapter_2_Ch2_Act11_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "器材箱砸在他的胸口。攝影腳架砸在他的肩膀。一個硬殼箱的角撞上了他的太陽穴。疼痛不是一下一下的——是同時的、疊加的、像全身的痛一下子全炸開了。他的嘴張開了，但什麼聲音都沒發出來。空氣被從肺裡擠出去了。", background: Background.Chapter_2_Ch2_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後是翻滾。一次。兩次。每一次翻滾，車廂裡的東西都在重新排列，砸在他身上不同的位置。他用雙手抱住頭，蜷成一團，但器材箱壓在他的胸口和腹部，他動不了。", background: Background.Chapter_2_Ch2_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "撞擊。最後一次。", background: Background.Chapter_2_Ch2_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車停了。停在一個傾斜的角度——車底朝向山坡，車頂朝向排水溝。歪的。顧言被卡在器材箱和車廂壁之間，整個人像被折疊了一樣。他的胸口壓著兩個器材箱，重量讓他每一次呼吸都只能吸進半口氣。", background: Background.Chapter_2_Ch2_Act11_S0 },

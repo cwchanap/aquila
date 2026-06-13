@@ -88,7 +88,7 @@ student dormitory room interior at dawn, same grey rain on window but colder and
 
 **顧言**：(內心)黑雨衣。舊相機背帶。
 
-**顧言**：(內心)他說——不是他拿的。
+**顧言**：(內心)他說——他還沒想起來。
 
 **顧言**：(內心)不要把訊息給邵叔。
 

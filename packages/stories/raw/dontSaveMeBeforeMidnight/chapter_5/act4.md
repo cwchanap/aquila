@@ -30,7 +30,7 @@ sports field rain canopy at midday, fifth loop, corrugated metal roof pinging wi
 
 **旁白**：許星棠沒有立刻接話。她的視線還停在雨上。雨下得均勻，沒有要停的意思。
 
-**許星棠** [cold]：我希望你不要把不該交出去的東西交出去。
+**許星棠** [cold]：不要把不該交的東西交出去。
 
 **顧言** [determined]：(內心)不該交出去的東西。相機。她繞了這麼大一圈，繞回來還是在說相機。
 

@@ -41,7 +41,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言的呼吸停了一拍。", background: Background.Chapter_5_Ch5_Act12_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）不要讓行政組知道。", background: Background.Chapter_5_Ch5_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）她在躲行政組。", background: Background.Chapter_5_Ch5_Act12_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）她拿著相機包。她要接入直播備份。她的截止是23:00。她不能讓行政組發現。", background: Background.Chapter_5_Ch5_Act12_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）她拿著相機包。她要接入直播備份。她的期限是23:00。她不能讓行政組發現。", background: Background.Chapter_5_Ch5_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有聽清全部。他聽不懂「備份輸入」「接檔案」具體是什麼意思。他不知道相機包裡到底是什麼。", background: Background.Chapter_5_Ch5_Act12_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但他知道四件事。", background: Background.Chapter_5_Ch5_Act12_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）第一。她在護那個相機包。從校史館到現在，一直用身體擋著。", background: Background.Chapter_5_Ch5_Act12_S0, portrait: Portrait.GuYan_Determined },

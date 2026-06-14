@@ -7,12 +7,12 @@ import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:58。禮堂的燈光為閉幕儀式暗下來。", background: Background.Chapter_5_Ch5_Act13_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是斷電，是那種緩慢的、刻意的調暗——舞台在預備最後一段影片，觀眾席的聲音被吸進暗裡，變成一片模糊的嗡鳴。顧言所在的這條走廊，只剩牆腳的應急燈。綠白色的光，貼著地面走，把每個人的影子拉得很長、很扁。", background: Background.Chapter_5_Ch5_Act13_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是斷電，是那種緩慢的、刻意的調暗——舞台在預備最後一段影片，觀眾席的聲音被吸進暗裡，變成一片模糊的嗡鳴。顧言所在的這條走廊，只剩牆腳的緊急照明燈。綠白色的光，貼著地面走，把每個人的影子拉得很長、很扁。", background: Background.Chapter_5_Ch5_Act13_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "暴雨拍打走廊盡頭那扇高窗。窗玻璃上貼著防颱膠帶，灰色，交叉成米字。透過膠帶的縫隙，能看見外面的雨是一整面牆，不是落下來，是橫著砸過來的。", background: Background.Chapter_5_Ch5_Act13_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "掌聲。音樂。遠處主持人測麥克風的回授音。這些聲音從禮堂裡漫出來，和雨聲、和發電機的低頻嗡鳴混在一起，變成一種分不清前後的噪音。像有什麼東西正在被蓋住。", background: Background.Chapter_5_Ch5_Act13_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）22:58。", background: Background.Chapter_5_Ch5_Act13_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）還活著。", background: Background.Chapter_5_Ch5_Act13_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）37 分鐘前，我看見 22:23。", background: Background.Chapter_5_Ch5_Act13_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）35 分鐘前，我看見 22:23。", background: Background.Chapter_5_Ch5_Act13_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）鐘樓停電了。訊息是真的。但我沒有在鐘樓。我沒有死。", background: Background.Chapter_5_Ch5_Act13_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）規則被我推翻了。", background: Background.Chapter_5_Ch5_Act13_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有離開。他知道 22:23 之後，許星棠不見了。韓越在後台入口被兩名校安攔住。林主任接了一通電話後臉色發白。後台側門被人從裡面關上。", background: Background.Chapter_5_Ch5_Act13_S0 },

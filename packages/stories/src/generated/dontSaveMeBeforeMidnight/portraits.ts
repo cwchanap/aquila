@@ -19,6 +19,7 @@ export enum Portrait {
     ShaoQiming_Base = "shao_qiming/base",
     ShaoQiming_Concerned = "shao_qiming/concerned",
     ShaoQiming_Serious = "shao_qiming/serious",
+    XuXingtang_Afraid = "xu_xingtang/afraid",
     XuXingtang_Base = "xu_xingtang/base",
     XuXingtang_Cold = "xu_xingtang/cold",
     XuXingtang_Regretful = "xu_xingtang/regretful",

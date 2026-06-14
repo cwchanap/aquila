@@ -42,7 +42,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)林主任在守基座。韓越在等基座被推走。許星棠在拍是誰在守、誰在等。", background: Background.Chapter_4_Ch4_Act11_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)三個人看起來像在配合。但他們配合的方向，完全不一樣。", background: Background.Chapter_4_Ch4_Act11_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他在心裡把三個人分別標了顏色。林主任——紅色。韓越——黃色。許星棠——黃色。", background: Background.Chapter_4_Ch4_Act11_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)紅色是嫌疑人。黃色是高度嫌疑。但他還不確定，黃色是指向他的危險，還是指向他不知道的東西。", background: Background.Chapter_4_Ch4_Act11_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)紅色是嫌疑人。黃色是高度嫌疑。但他還不確定，黃色代表的究竟是衝著他來的威脅，還是他不知道的某種東西。", background: Background.Chapter_4_Ch4_Act11_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:42。基座開始緩慢移動。搬運滾輪在地面上碾過，發出低沉的摩擦聲。工作人員在兩側推，基座像一座小型石棺，在校史館的展燈下被推向後門的方向。", background: Background.Chapter_4_Ch4_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言把校友通訊放回書架。他需要的資訊已經夠了。", background: Background.Chapter_4_Ch4_Act11_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)19:30 拆展完畢。基座正在往後門推。20:30 之前會被推到校史館後方暫存區。", background: Background.Chapter_4_Ch4_Act11_S0, portrait: Portrait.GuYan_Determined },

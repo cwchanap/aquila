@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "筆尖壓在紙上的時候，他的手在抖。不是冷，是一種從骨頭裡往外滲的顫。字跡歪歪扭扭的，筆畫壓得很重，像是怕紙上的字會像昨天的記憶一樣被什麼東西擦掉。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)07:05，醒來。07:12，訊息會來。22:22，鐘樓停電。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)黑雨衣。舊相機背帶。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他說——不是他拿的。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他說——他還沒想起來。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要把訊息給邵叔。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要去鐘樓。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)離開學校。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.GuYan_Base },

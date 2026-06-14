@@ -405,6 +405,106 @@
       "key": "chapter_4/ch4_act19_s0",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_4/ch4_act19_s0.png",
       "prompt": "student dormitory room interior at dawn, fifth loop wake-up, grey rain streaking down window glass, dim overcast morning light, messy unmade bed, empty top bunk, phone glowing on pillow edge, sparse furnishings, muted cold grey-blue palette, identical to chapter opening but with subtle sense of exhaustion and resolve, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_5/ch5_act1_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act1_s0.png",
+      "prompt": "same student dormitory room, 07:30 AM fifth loop, stronger grey morning light through rain-streaked window glass, desk now spread with three sheets of paper — hand-drawn photo map, death-time table, and a fresh blank page, pen in hand, muted cold grey-blue palette, moody cinematic visual-novel background art, medium side shot"
+    },
+    {
+      "key": "chapter_5/ch5_act2_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act2_s0.png",
+      "prompt": "school canteen interior, 09:00 AM, overcast morning light through tall windows, long tables with students eating breakfast, volunteer sign-in table near entrance with clipboard and blue lanyards, muted desaturated palette with cold fluorescent tones, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act2_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act2_s1.png",
+      "prompt": "school campus central courtyard, mid-morning, overcast grey sky, light drizzle, students in uniforms crossing between buildings, centennial banners hanging across pathways, muted cool palette, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act3_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act3_s0.png",
+      "prompt": "school corridor near the history museum entrance, 10:30 AM, overcast light through tall windows, polished floor reflecting grey sky, volunteer water station with stacked paper-cup trays at corridor end, history museum glass doors visible ahead, muted desaturated cool palette, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act4_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act4_s0.png",
+      "prompt": "sports field rain canopy at midday, fifth loop, corrugated metal roof pinging with steady rain, open sides letting in grey humid air, empty concrete bleachers in the distance, puddles reflecting overcast sky on cracked track surface, a few students crossing far end of field under dark umbrellas, moody cinematic visual-novel background art, desaturated cool blue-grey palette, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act5_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act5_s0.png",
+      "prompt": "school interior corridor at 15:00, fifth loop, grey afternoon daylight dimmed by heavy storm clouds, rain sheeting diagonally against tall corridor windows, distant staff folding outdoor booths and carrying awnings under cover, fluorescent ceiling lights humming on despite the hour, wet footprints and puddles near entrance mats, moody cinematic visual-novel background art, desaturated cool blue-grey palette with faint institutional green, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act6_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act6_s0.png",
+      "prompt": "public corridor overlooking the school loading area at 17:40, fifth loop, viewed through rain-streaked windows from a distance, grey afternoon dimming toward dusk, a white school van parked in the concrete loading bay under sodium floodlights, small figures in rain gear moving around it, black hard-shell cases on wet ground, moody cinematic visual-novel background art, desaturated cool blue-grey palette, wide shot through glass"
+    },
+    {
+      "key": "chapter_5/ch5_act7_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act7_s0.png",
+      "prompt": "school history exhibition hall public corridor at night, wide hallway outside the closed history museum entrance, fluorescent ceiling strips casting cold flat light, velvet display rope being unhooked from stanchions, stacked cardboard volunteer supply boxes along the wall, tall window at corridor end lashed by heavy typhoon rain with total darkness beyond, deep blue-grey shadows pooling in doorways and stairwell corners, moody desaturated cool palette, cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act8_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act8_s0.png",
+      "prompt": "school auditorium side entrance exterior corridor at night, overhead fluorescent tubes mid-flicker with brief brownout dimming, wide concrete walkway running alongside auditorium wall, parent rest area visible through glass partition with folding chairs and seated adults, temporary livestream camera on tripod in corner with steady red recording light, two student volunteers carrying folding chairs, heavy typhoon rain hammering tall windows at corridor end, total storm darkness outside, cold blue-grey palette with pale flickering interior light, moody desaturated cool palette, cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act9_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act9_s0.png",
+      "prompt": "school auditorium interior at night, packed audience hall during centennial closing ceremony rehearsal, bright stage with microphone stands and testing spotlights, rows of parents standing and holding up glowing phones to photograph, crowded aisles, livestream console glowing blue in side aisle, uniformed security guards at side doors, tall arched windows lashed by heavy typhoon rain, distant bell tower a black silhouette through rain-streaked glass, loud humid crowded atmosphere, cool blue-grey palette with warm stage light accents, moody cinematic visual-novel background art, wide shot from back row aisle"
+    },
+    {
+      "key": "chapter_5/ch5_act10_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act10_s0.png",
+      "prompt": "school auditorium interior at night, bright warm stage lights, microphone testing on stage, parents standing in audience seats taking photos, livestream control console glowing cold-white at the side, a security guard standing at the side door with hands behind back, heavy typhoon rain hammering the tall windows, distant bell tower barely visible as a dark wet silhouette through rain-streaked glass, crowded noisy centennial celebration countdown rehearsal, warm brightness inside contrasting cold blue-black storm outside, desaturated cool grey-blue palette, moody cinematic visual-novel background art, wide shot from the last row"
+    },
+    {
+      "key": "chapter_5/ch5_act10_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act10_s1.png",
+      "prompt": "same auditorium viewed from the last row toward the back exits and side corridors, the celebration continues on stage but the periphery has thinned out, red emergency exit signs glowing, the backstage side door visible in the distance as a closed dark rectangle, fewer people in the aisles now, cold draft pulling in from the corridor, the stage brightness feels further away and the back rows have grown darker and more isolated, desaturated cool grey-blue palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_5/ch5_act11_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act11_s0.png",
+      "prompt": "auditorium outer corridor at night, long dim institutional hallway running along the back of the auditorium, emergency lighting only casting green and red pools on wet linoleum floor, typhoon rain hammering a row of high narrow windows on one side, muffled sounds of stage rehearsal bleeding through the wall, black equipment cases stacked against the other wall, a few staff and student volunteers passing through, cold grey-blue palette with harsh fluorescent patches, tense isolated atmosphere, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_5/ch5_act12_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act12_s0.png",
+      "prompt": "narrow semi-public passage along the side of the auditorium at night, barely wide enough for two people, stacked black equipment cases lining one wall creating gaps and deep shadows, a single narrow wired-glass window set in a heavy metal door revealing only a sliver of the backstage staging area, red emergency exit signs casting low glow, rain visible through a high ventilation slit, wet reflections and refractions on linoleum floor, very dark and tense, cold blue-black palette with harsh accent lights, claustrophobic moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_5/ch5_act13_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act13_s0.png",
+      "prompt": "narrow semi-public corridor outside backstage at night, 22:58, auditorium lights dimming for closing ceremony prep, only cold emergency exit lights glowing greenish-white along the floor, rain hammering the high windows, blurry warm light and crowd noise bleeding from the auditorium through a single narrow side-door glass panel, equipment cases stacked against walls, claustrophobic and tense, anime visual-novel background art, desaturated cool grey-blue palette with faint amber bleed, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act13_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act13_s1.png",
+      "prompt": "view through narrow rain-streaked side-door glass, refracted reflection of backstage storage area, dim emergency-lit concrete floor, stacked black equipment cases, silhouette of a girl clutching a camera bag near a control desk door, claustrophobic distorted fishbowl perspective as if seen through a tiny dirty window, cold green-white emergency light with faint warm bleed, anime visual-novel background art, desaturated tense palette, tight claustrophobic shot"
+    },
+    {
+      "key": "chapter_5/ch5_act14_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act14_s0.png",
+      "prompt": "same narrow backstage-adjacent corridor, 22:59, time stretched thin, hand slammed against a locked side door, blurred silhouette of a crisis seen through rain-streaked narrow glass, emergency light flickering, claustrophobic desperate close composition, anime visual-novel background art, cold tense palette, extreme tension, tight shot on door and glass"
+    },
+    {
+      "key": "chapter_5/ch5_act14_s1",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act14_s1.png",
+      "prompt": "abstract split composition, left half rain-streaked narrow glass showing distorted backstage crisis, right half auditorium stage seen from far away bathed in warm countdown lights, MC silhouette at microphone, crowd silhouettes, the two worlds divided by a locked door, anime visual-novel background art, cold left vs warm right, tense divided palette, wide split-screen shot"
+    },
+    {
+      "key": "chapter_5/ch5_act14_s2",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act14_s2.png",
+      "prompt": "pure white flash, total overexposure, world dissolving, rain and applause and bell collapsing into a single point of white light, everything being erased, anime visual-novel background art, stark abstract white void, reset moment, full-frame white"
+    },
+    {
+      "key": "chapter_5/ch5_act15_s0",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_5/ch5_act15_s0.png",
+      "prompt": "student dormitory room interior at dawn, sixth loop wake-up, identical grey rain on window and identical ceiling crack but the light feels heavier and colder than before, the room is the same but the person in it is not, phone glowing on pillow edge, notebook open on desk, subtle sense of grief settling over the familiar scene, anime visual-novel background art, muted cold grey-blue palette leaning colder than previous loops, wide establishing shot"
     }
   ],
   "portraits": [
@@ -522,6 +622,11 @@
       "key": "health_teacher/base",
       "path": "dont_save_me_before_midnight/characters/health_teacher/base.png",
       "prompt": "anime visual-novel portrait, 30-something East Asian woman, gentle tired eyes, hair tied back in a practical low bun, white nurse uniform with school badge, soft warm expression with professional calm, fluorescent medical room lighting, upper-body shot, clean background"
+    },
+    {
+      "key": "xu_xingtang/afraid",
+      "path": "dont_save_me_before_midnight/characters/xu_xingtang/afraid.png",
+      "prompt": "anime visual-novel portrait, 17-year-old girl, low ponytail, controlled fear visible, tension in jaw, eyes darting sideways, photography vest, camera around neck, cold blue lighting, upper-body shot"
     }
   ]
 }

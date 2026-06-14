@@ -431,7 +431,7 @@
 ## 15. 學生（Student）
 
 - **ID**: `student`
-- **Aliases**: 同學, 隔壁同學
+- **Aliases**: 同學, 隔壁同學, 學生志工
 
 ---
 
@@ -477,7 +477,7 @@
 ## 22. 工作人員（Staff）
 
 - **ID**: `staff`
-- **Aliases**: 搬運人員, 裝卸人員
+- **Aliases**: 搬運人員, 裝卸人員, 直播志工
 
 Generic school event staff / workers handling equipment, loading, and logistics during the centennial celebration.
 
@@ -527,3 +527,12 @@ South wing infirmary nurse/health teacher on duty during the centennial celebrat
 - **Aliases**: 技術志工, 監控室人員
 
 Technical volunteer or staff operating the old surveillance system in the monitoring room. Provides the realistic explanation for the 17-minute surveillance gap (old system switching lines).
+
+---
+
+## 28. 主持人（MC）
+
+- **ID**: `mc`
+- **Aliases**: 司儀
+
+The centennial celebration's master of ceremonies on the auditorium stage. Handles the closing-ceremony announcements and the final countdown to 23:00. A voice that carries over the rain and applause — a public surface that drowns out what happens backstage.

@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這個念頭閃過腦海的時候，他自己都覺得荒謬。邵叔從小看他長大，逢年過節會來家裡，父親出事之後是邵叔幫他處理的後事手續。邵叔不是壞人。邵叔不可能傷害他。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)可是他看到那條訊息的時候，表情變了一瞬。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)那一瞬間很短，短到幾乎可以忽略。但我看見了。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他在意「相機」這兩個字。不是因為警察的職業直覺，是因為他知道那是什麼。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)尤其是「相機」這兩個字。為什麼，我不知道。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他低頭看了一眼手機。螢幕上顯示的是那個陌生號碼——早上收到訊息的號碼。他打開了搜尋引擎，把號碼輸進去，按下搜尋。結果頁面跳出來，全部是「無相關資訊」「此號碼未登記於公開資料庫」之類的回覆。他又試了一個反向查號的網站，填入號碼，驗證碼，等待。結果是一樣的。什麼都查不到。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)一個查不到的號碼。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不是普通的預付卡，就是經過特殊處理的。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.GuYan_Base },

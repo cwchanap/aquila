@@ -26,6 +26,7 @@ export enum CharacterId {
     Teacher = "teacher",
     HealthTeacher = "health_teacher",
     Technician = "technician",
+    Mc = "mc",
 }
 
 export interface CharacterInfo {
@@ -47,19 +48,20 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: [] },
     [CharacterId.Roommate]: { id: "roommate", name: "室友", aliases: [] },
     [CharacterId.FemaleVoice]: { id: "female_voice", name: "女聲", aliases: [] },
-    [CharacterId.Student]: { id: "student", name: "學生", aliases: ["同學", "隔壁同學"] },
+    [CharacterId.Student]: { id: "student", name: "學生", aliases: ["同學", "隔壁同學", "學生志工"] },
     [CharacterId.PoliceOfficer]: { id: "police_officer", name: "警察", aliases: ["警員"] },
     [CharacterId.Message]: { id: "message", name: "訊息", aliases: ["簡訊", "手機螢幕", "匿名訊息"] },
     [CharacterId.Announcement]: { id: "announcement", name: "廣播", aliases: ["廣播聲"] },
     [CharacterId.Voice]: { id: "voice", name: "聲音", aliases: [] },
     [CharacterId.Unknown]: { id: "unknown", name: "？？？", aliases: [] },
     [CharacterId.Parent]: { id: "parent", name: "家長", aliases: [] },
-    [CharacterId.Staff]: { id: "staff", name: "工作人員", aliases: ["搬運人員", "裝卸人員"] },
+    [CharacterId.Staff]: { id: "staff", name: "工作人員", aliases: ["搬運人員", "裝卸人員", "直播志工"] },
     [CharacterId.Driver]: { id: "driver", name: "司機", aliases: [] },
     [CharacterId.SecurityGuard]: { id: "security_guard", name: "保全", aliases: ["值班老師", "校安"] },
     [CharacterId.Teacher]: { id: "teacher", name: "老師", aliases: [] },
     [CharacterId.HealthTeacher]: { id: "health_teacher", name: "保健老師", aliases: ["護理老師"] },
     [CharacterId.Technician]: { id: "technician", name: "技術人員", aliases: ["技術志工", "監控室人員"] },
+    [CharacterId.Mc]: { id: "mc", name: "主持人", aliases: ["司儀"] },
 };
 
 const nameToId = new Map<string, string>();

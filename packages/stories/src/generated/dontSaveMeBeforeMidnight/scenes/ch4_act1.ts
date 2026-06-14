@@ -7,7 +7,7 @@ import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:05。", background: Background.Chapter_4_Ch4_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有看手機。天花板上那道裂紋從左下角延伸到右上角，走向他已經能閉著眼畫出來。他側過頭，看見窗外灰色的雨。聽見遠處海浪均勻的白噪音。宿舍走廊上還沒有腳步聲。", background: Background.Chapter_4_Ch4_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有看手機。天花板上那道裂紋從左下角延伸到右上角，那條線他已經能閉著眼畫出來。他側過頭，看見窗外灰色的雨。聽見遠處海浪均勻的白噪音。宿舍走廊上還沒有腳步聲。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)第四次醒來。", background: Background.Chapter_4_Ch4_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)三條命。鐘樓。校務車。醫務室。三次不同的死法，三個不同的地點。", background: Background.Chapter_4_Ch4_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他坐起來。動作比前幾輪慢——不是因為猶豫，是因為不需要急。他已經確認過太多次了：身體完好，沒有傷痕，口袋是空的，手機裡什麼都沒有。只有記憶留著。", background: Background.Chapter_4_Ch4_Act1_S0 },

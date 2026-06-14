@@ -43,7 +43,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他可以回去了。推開門。往上走。回到走廊。從後門出去。回到校史館。回到地面。回到安全的地方。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）可以回去了。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有動。", background: Background.Chapter_4_Ch4_Act15_S1 },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）韓越說了「顧澤」。韓越說了「底板」。韓越說了「害死人」。韓越說了「離她遠一點」。韓越說了「今晚不要進地下」。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）韓越說了「顧澤」，說了「底板」，說了「害死人」，說了「離她遠一點」，說了「今晚不要進地下」。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）他最後那句——「今晚不要進地下」。他在警告我。但他不是怕我受傷。他是怕我壞了什麼事。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）什麼事？", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）和他爸有關的事。和基座底板有關的事。和一張行政組後門卡有關的事。和許星棠的相機有關的事。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
@@ -58,6 +58,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不知道這句話在後來會變得多精確。他只是一個在黑暗的階梯上往下走的十七歲男孩。但這句話會留下來。像一枚釘子。釘在他下一次醒來時會寫下的筆記裡。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "階梯到底了。前面是一條更寬的通道。天花板更高。燈更少。積水更深——這裡的積水已經漫過了鞋底，踩下去的時候，冷水從鞋面灌進來。他皺了一下眉頭，但沒有停下來。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遠處有聲音。不是人的聲音。是水的聲音。流動的、持續的、從更深的地方傳來的。像地下有一條河。", background: Background.Chapter_4_Ch4_Act15_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "二十點五十八分。", background: Background.Chapter_4_Ch4_Act15_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "二十一點五十八分。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他走進了地下舊資料暫存區的入口。", background: Background.Chapter_4_Ch4_Act15_S1 },
 ];

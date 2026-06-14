@@ -8,7 +8,7 @@ import { Background } from '../backgrounds';
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:45。", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "禮堂後方的燈短促地跳了一下。", background: Background.Chapter_5_Ch5_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是停電。只是閃——天花板上的日光燈管暗了半秒，又亮起來，像有人扳了一下電閘又立刻推回去。走廊上的應急燈沒有亮，說明電壓只是波動，不是斷電。但顧言知道這一下閃動是什麼意思。", background: Background.Chapter_5_Ch5_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是停電。只是閃——天花板上的日光燈管暗了半秒，又亮起來，像有人扳了一下總開關又立刻推回去。走廊上的緊急照明燈沒有亮，說明電壓只是波動，不是斷電。但顧言知道這一下閃動是什麼意思。", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)十七分鐘。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)上一輪，就是在這段時間裡，我從監控紀錄上消失了。我走進校史館後方的通道，下到地下，進了舊機房。十七分鐘的空白。然後我死在泵房裡。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)現在是 21:45。從現在到 22:02，這片區域的監控會出現空白。這不是故障。這是有人切了線。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },
@@ -35,7 +35,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他們進去了。我沒有。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)這是對的。我守住自己了。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:48。", background: Background.Chapter_5_Ch5_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "後台暫存區的金屬門沒有再開。走廊恢復了只有雨聲和遠處禮堂喧嘩的狀態。顧言靠在牆上，看著那扇關著的門。他的計畫生效了——他活著，他清醒，他待在所有人看得到的地方。", background: Background.Chapter_5_Ch5_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "後台暫存區的金屬門沒有再開。走廊又安靜下來，只剩下雨聲和遠處禮堂傳來的喧嘩。顧言靠在牆上，看著那扇關著的門。他的計畫生效了——他活著，他清醒，他待在所有人看得到的地方。", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但他一直在看那扇門。", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)她進去了。韓越也進去了。基座也進去了。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.GuYan_Determined },

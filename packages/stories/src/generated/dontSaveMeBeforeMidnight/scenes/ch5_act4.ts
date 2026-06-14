@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)她在看我。從早上開始就在看。她知道我的習慣——前幾輪我一定會去找大人。今天我沒有。她注意到了。", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "妳希望我往那邊跑？", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "許星棠沒有立刻接話。她的視線還停在雨上。雨下得均勻，沒有要停的意思。", background: Background.Chapter_5_Ch5_Act4_S0 },
-    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "我希望你不要把不該交出去的東西交出去。", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.XuXingtang_Cold },
+    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "不要把不該交的東西交出去。", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.XuXingtang_Cold },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不該交出去的東西。相機。她繞了這麼大一圈，繞回來還是在說相機。", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "相機在妳手上？", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有回答。", background: Background.Chapter_5_Ch5_Act4_S0 },

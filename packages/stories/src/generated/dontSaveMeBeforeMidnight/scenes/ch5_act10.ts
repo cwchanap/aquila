@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）她剛才還在側門附近。現在不在了。", background: Background.Chapter_5_Ch5_Act10_S1, portrait: Portrait.GuYan_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他往另一側看。後台入口的方向。那裡有動靜。", background: Background.Chapter_5_Ch5_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越。", background: Background.Chapter_5_Ch5_Act10_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他站在後台入口前。兩名穿著反光背心的校安一前一後擋在他面前。距離太遠，聽不清在說什麼，但韓越的肩膀是繃緊的，脖子上的舞台組通行證在燈光下晃。", background: Background.Chapter_5_Ch5_Act10_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他站在後台入口外。剛才他跟著推車進去過，現在又出來了——兩名穿著反光背心的校安一前一後擋在他面前，不讓他再進去。距離太遠，聽不清在說什麼，但韓越的肩膀是繃緊的，脖子上的舞台組通行證在燈光下晃。", background: Background.Chapter_5_Ch5_Act10_S1 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）韓越。被攔住了。", background: Background.Chapter_5_Ch5_Act10_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他繼續看。禮堂側面，靠近後台通道的位置。", background: Background.Chapter_5_Ch5_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "林主任站在那裡。他剛接起手機。聽了幾秒。", background: Background.Chapter_5_Ch5_Act10_S1 },

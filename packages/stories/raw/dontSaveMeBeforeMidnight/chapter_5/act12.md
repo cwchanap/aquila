@@ -74,7 +74,7 @@ narrow semi-public passage along the side of the auditorium at night, barely wid
 
 **顧言** [determined]：（內心）她在躲行政組。
 
-**顧言** [determined]：（內心）她拿著相機包。她要接入直播備份。她的截止是23:00。她不能讓行政組發現。
+**顧言** [determined]：（內心）她拿著相機包。她要接入直播備份。她的期限是23:00。她不能讓行政組發現。
 
 **旁白**：他沒有聽清全部。他聽不懂「備份輸入」「接檔案」具體是什麼意思。他不知道相機包裡到底是什麼。
 

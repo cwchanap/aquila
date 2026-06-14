@@ -42,7 +42,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)她不只是在拍校慶。她在拍底板。她在記錄這塊板子被推去哪裡、被誰碰過、在哪個時間點離開監控。她在等一個機會靠近它。", background: Background.Chapter_5_Ch5_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)她的危險線不是我帶進來的。她在查的東西，比我想像的大得多。", background: Background.Chapter_5_Ch5_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:38。", background: Background.Chapter_5_Ch5_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "校史館的門完全關上了。林主任最後檢查了一遍門鎖，轉身往指揮室方向快步走去。他的步伐比正常人快半拍，像永遠在趕著赴一個不願意遲到的約。", background: Background.Chapter_5_Ch5_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "校史館的門完全關上了。林主任最後檢查了一遍門鎖，轉身往指揮室方向快步走去。他的步伐比正常人快半拍，像永遠在趕一場不能遲到的約。", background: Background.Chapter_5_Ch5_Act7_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要跟。不要碰。不要把自己變成這條線上的人。", background: Background.Chapter_5_Ch5_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)今天只看見 22:23。", background: Background.Chapter_5_Ch5_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言把最後一箱礦泉水擺正，站起來。膝蓋有點麻——他蹲太久了。他沒有走向校史館，而是轉向禮堂。走廊盡頭的窗外，雨比下午更大了。玻璃被風壓得嗡嗡響，像有什麼東西想從外面擠進來。", background: Background.Chapter_5_Ch5_Act7_S0 },

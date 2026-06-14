@@ -52,4 +52,4 @@ school interior corridor at 15:00, fifth loop, grey afternoon daylight dimmed by
 
 **旁白**：雨更大了。走廊盡頭的窗戶全白，什麼也看不清。他在心裡把廣播那五條又過了一遍，像把五顆棋子擺進同一個格子裡。每一顆都落在它該落的位置上。整整齊齊。
 
-**顧言** [determined]：(內心)棋盤不是我在下的。
+**顧言** [determined]：(內心)這盤棋，不是我在下的。

@@ -18,7 +18,7 @@ school auditorium interior at night, packed audience hall during centennial clos
 
 **同學**：你怎麼一直看時間？
 
-**旁白**：聲音從旁邊傳來。一個坐著的同學，他不太認識，大概是隔壁班的。那人手裡捧著一包薯片，歪著頭看他，表情是純粹的好奇。
+**旁白**：聲音從旁邊傳來。一個坐著的同學，他不太認識，大概是隔壁班的。那人手裡捧著一包洋芋片，歪著頭看他，表情是純粹的好奇。
 
 **顧言**：等一分鐘。
 
@@ -26,7 +26,7 @@ school auditorium interior at night, packed audience hall during centennial clos
 
 **顧言**：⋯⋯
 
-**旁白**：他沒有回答。同學聳聳肩，轉回去繼續吃薯片，看舞台。
+**旁白**：他沒有回答。同學聳聳肩，轉回去繼續吃洋芋片，看舞台。
 
 **顧言** [determined]：(內心)22:21。
 

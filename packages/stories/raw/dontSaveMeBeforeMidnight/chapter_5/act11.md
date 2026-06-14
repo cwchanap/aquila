@@ -8,7 +8,7 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：顧言離開了禮堂觀眾席。但沒有走遠。
 
-**旁白**：他繞到禮堂外側的走廊。這裡是半公開區域，有學生志工和家長經過，有窗，有應急燈，不需要門禁卡。
+**旁白**：他繞到禮堂外側的走廊。這裡是半公開區域，有學生志工和家長經過，有窗，有緊急照明燈，不需要門禁卡。
 
 **顧言** [determined]：（內心）規則四。監控切線期間，只待在有人看得到的地方。
 
@@ -32,7 +32,7 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **顧言** [determined]：（內心）她在護著它。
 
-**旁白**：許星棠沒有看見他。她低著頭，腳步比平時快，往禮堂側門的方向走。經過一盞應急燈時，燈光掃過她的臉。
+**旁白**：許星棠沒有看見他。她低著頭，腳步比平時快，往禮堂側門的方向走。經過一盞緊急照明燈時，燈光掃過她的臉。
 
 **旁白**：她的表情很平。太平了。那種平不是冷靜。是已經把所有表情都壓進了骨頭裡。
 
@@ -78,7 +78,7 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **校安**：行政組通知，後台清場。你不能進。
 
-**旁白**：韓越沒有再說話。他的拳頭攥了一下，又鬆開。手背上那幾道暗紅的平行刮傷，在應急燈下看得很清楚。
+**旁白**：韓越沒有再說話。他的拳頭攥了一下，又鬆開。手背上那幾道暗紅的平行刮傷，在緊急照明燈下看得很清楚。
 
 **旁白**：林主任沒有理會那句話。他轉過身，對另一名工作人員交代了什麼。然後——在轉身的動作裡——他的視線快速掃向走廊另一端。
 
@@ -146,7 +146,7 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：22:48。
 
-**旁白**：走廊裡的應急燈發出輕微的電流聲。暴雨沒有要停的意思。
+**旁白**：走廊裡的緊急照明燈發出輕微的電流聲。暴雨沒有要停的意思。
 
 **顧言** [determined]：（內心）她在裡面。
 

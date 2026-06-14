@@ -10,7 +10,7 @@ same narrow backstage-adjacent corridor, 22:59, time stretched thin, hand slamme
 
 **顧言** [angry]：後台有人出事！
 
-**旁白**：他的聲音撞上暴雨，撞上掌聲，撞上那層漸強的鼓點，變成一團聽不清的悶響。走廊裡沒有人。應急燈的綠白色光一閃一閃。
+**旁白**：他的聲音撞上暴雨，撞上掌聲，撞上那層漸強的鼓點，變成一團聽不清的悶響。走廊裡沒有人。緊急照明燈的綠白色光一閃一閃。
 
 **顧言** [angry]：開門！
 
@@ -126,7 +126,7 @@ abstract split composition, left half rain-streaked narrow glass showing distort
 
 **主持人**：——六——
 
-**旁白**：應急燈閃了一下。
+**旁白**：緊急照明燈閃了一下。
 
 **旁白**：顧言只看見一道短促的金屬反光。
 
@@ -198,7 +198,7 @@ pure white flash, total overexposure, world dissolving, rain and applause and be
 
 **旁白**：那個聲音說——
 
-**許星棠**：（內心）不要只救你自己。
+**許星棠**：（內心）不要只救自己。
 
 **旁白**：白色吞沒了最後一個字。
 

@@ -76,7 +76,23 @@ export type DontSaveMeBeforeMidnightSceneId =
     | "ch5_act12"
     | "ch5_act13"
     | "ch5_act14"
-    | "ch5_act15";
+    | "ch5_act15"
+    | "ch6_act1"
+    | "ch6_act2"
+    | "ch6_act3"
+    | "ch6_act4"
+    | "ch6_act5"
+    | "ch6_act6"
+    | "ch6_act7"
+    | "ch6_act8"
+    | "ch6_act9"
+    | "ch6_act10"
+    | "ch6_act11"
+    | "ch6_act12"
+    | "ch6_act13"
+    | "ch6_act14"
+    | "ch6_act15"
+    | "ch6_act16";
 
 export const dontSaveMeBeforeMidnightFlow: FlowConfig<DontSaveMeBeforeMidnightSceneId> = {
   start: "ch1_act1",
@@ -154,6 +170,22 @@ export const dontSaveMeBeforeMidnightFlow: FlowConfig<DontSaveMeBeforeMidnightSc
     { kind: 'scene', id: "ch5_act12", sceneId: "ch5_act12", next: "ch5_act13" },
     { kind: 'scene', id: "ch5_act13", sceneId: "ch5_act13", next: "ch5_act14" },
     { kind: 'scene', id: "ch5_act14", sceneId: "ch5_act14", next: "ch5_act15" },
-    { kind: 'scene', id: "ch5_act15", sceneId: "ch5_act15", next: null },
+    { kind: 'scene', id: "ch5_act15", sceneId: "ch5_act15", next: "ch6_act1" },
+    { kind: 'scene', id: "ch6_act1", sceneId: "ch6_act1", next: "ch6_act2" },
+    { kind: 'scene', id: "ch6_act2", sceneId: "ch6_act2", next: "ch6_act3" },
+    { kind: 'scene', id: "ch6_act3", sceneId: "ch6_act3", next: "ch6_act4" },
+    { kind: 'scene', id: "ch6_act4", sceneId: "ch6_act4", next: "ch6_act5" },
+    { kind: 'scene', id: "ch6_act5", sceneId: "ch6_act5", next: "ch6_act6" },
+    { kind: 'scene', id: "ch6_act6", sceneId: "ch6_act6", next: "ch6_act7" },
+    { kind: 'scene', id: "ch6_act7", sceneId: "ch6_act7", next: "ch6_act8" },
+    { kind: 'scene', id: "ch6_act8", sceneId: "ch6_act8", next: "ch6_act9" },
+    { kind: 'scene', id: "ch6_act9", sceneId: "ch6_act9", next: "ch6_act10" },
+    { kind: 'scene', id: "ch6_act10", sceneId: "ch6_act10", next: "ch6_act11" },
+    { kind: 'scene', id: "ch6_act11", sceneId: "ch6_act11", next: "ch6_act12" },
+    { kind: 'scene', id: "ch6_act12", sceneId: "ch6_act12", next: "ch6_act13" },
+    { kind: 'scene', id: "ch6_act13", sceneId: "ch6_act13", next: "ch6_act14" },
+    { kind: 'scene', id: "ch6_act14", sceneId: "ch6_act14", next: "ch6_act15" },
+    { kind: 'scene', id: "ch6_act15", sceneId: "ch6_act15", next: "ch6_act16" },
+    { kind: 'scene', id: "ch6_act16", sceneId: "ch6_act16", next: null },
   ],
 };

@@ -224,7 +224,7 @@ school auditorium lobby during centennial celebration mid-afternoon, high ceilin
 
 **顧言**：（內心）⋯⋯校務車。
 
-**顧言**：（內心）第二章我死在那裡。
+**顧言**：（內心）第二輪我死在那裡。
 
 **顧言**：（內心）⋯⋯他要我回去看。
 

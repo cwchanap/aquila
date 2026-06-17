@@ -14,7 +14,7 @@ school van departure point below the loading dock, late afternoon during escalat
 
 **顧言**：（內心）校務車。
 
-**顧言**：（內心）第二章，我躲進這種車的器材廂裡。
+**顧言**：（內心）第二輪，我躲進這種車的器材廂裡。
 
 **顧言**：（內心）⋯⋯車翻了。
 
@@ -132,7 +132,7 @@ school van departure point below the loading dock, late afternoon during escalat
 
 **顧言** [shocked]：（內心）我看過這個動作。
 
-**顧言** [shocked]：（內心）第二章——
+**顧言** [shocked]：（內心）第二輪——
 
 **顧言** [shocked]：（內心）黑雨衣上車，翻開包。
 
@@ -222,7 +222,7 @@ school van departure point below the loading dock, late afternoon during escalat
 
 **顧言** [shocked]：（內心）⋯⋯沒有疊加，就沒有事故。
 
-**顧言** [shocked]：（內心）第二章那場車禍——不是命運，不是精準追殺。是攔截線上的混亂：包、颱風、路況，還有我不該在那裡——四個失控因素疊在一起。
+**顧言** [shocked]：（內心）第二輪那場車禍——不是命運，不是精準追殺。是攔截線上的混亂：包、颱風、路況，還有我不該在那裡——四個失控因素疊在一起。
 
 **顧言** [determined]：（內心）⋯⋯少一個，車就會好好開下山。
 
@@ -250,7 +250,7 @@ school van departure point below the loading dock, late afternoon during escalat
 
 **許星棠** [cold]：所以——
 
-**許星棠** [cold]：上一輪你死在那輛車裡——
+**許星棠** [cold]：你說的那一次。你死在那輛車裡——
 
 **許星棠** [cold]：⋯⋯不是因為他們要殺你。
 

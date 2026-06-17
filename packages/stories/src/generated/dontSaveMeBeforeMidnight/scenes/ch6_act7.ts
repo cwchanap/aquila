@@ -116,7 +116,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "你來。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.HanYue_Worried },
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "⋯⋯有些事，親眼看一次。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.HanYue_Worried },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）⋯⋯校務車。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）第二章我死在那裡。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）第二輪我死在那裡。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）⋯⋯他要我回去看。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "⋯⋯嗯。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越沒有再說話。他把臂章正了一下，轉身走向舞台組的動線。", background: Background.Chapter_6_Ch6_Act7_S0 },

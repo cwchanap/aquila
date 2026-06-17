@@ -37,3 +37,6 @@ packages/*/.turbo/
 coverage/
 
 .claude/settings.local.json
+
+# git worktrees
+.worktrees/

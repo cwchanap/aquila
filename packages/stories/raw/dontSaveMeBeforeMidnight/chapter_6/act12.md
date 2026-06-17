@@ -48,9 +48,13 @@ auditorium broadcast control booth, 22:40, cramped room behind main hall, multip
 
 **顧言** [base]：那密碼在哪？
 
-**許星棠** [cold]：你父親設的。
+**許星棠** [cold]：（指螢幕）這三個檔案。屬性欄。
 
-**許星棠** [cold]：我母親的記憶卡。你父親加密的。
+**許星棠** [cold]：加密簽名——顧澤。
+
+**許星棠** [cold]：你父親的名字。
+
+**許星棠** [cold]：我母親的記憶卡。是你父親加密的。
 
 **許星棠** [cold]：他不可能把密碼寫在基座裡——那太容易被找到。
 

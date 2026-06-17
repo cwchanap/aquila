@@ -90,7 +90,7 @@ school loading dock at midday during centennial celebration, concrete platform u
 
 **旁白**：他沒有走近那個包。他連視線都沒有落在上面。他看著韓越。
 
-**顧言**：（內心）打開它的人，第二章見過。
+**顧言**：（內心）打開它的人，第二輪見過。
 
 **顧言**：（內心）不是他們三個裡的任何一個。
 
@@ -134,7 +134,7 @@ school loading dock at midday during centennial celebration, concrete platform u
 
 **顧言**：（內心）誘餌。
 
-**顧言**：（內心）第二章——
+**顧言**：（內心）第二輪——
 
 **顧言** [shocked]：（內心）那輛車。
 
@@ -156,7 +156,7 @@ school loading dock at midday during centennial celebration, concrete platform u
 
 **旁白**：他的呼吸慢了下來。
 
-**顧言** [sad]：（內心）第二章那場車禍。
+**顧言** [sad]：（內心）第二輪那場車禍。
 
 **顧言** [sad]：（內心）我以為是被精準追殺。
 

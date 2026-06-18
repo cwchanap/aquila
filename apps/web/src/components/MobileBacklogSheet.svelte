@@ -31,12 +31,15 @@
     aria-label={t.reader.closeHistory}
     onclick={onClose}
   ></button>
-  <section
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="backlog-title"
     class="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-3xl bg-white/95 p-6 shadow-2xl backdrop-blur-xl"
     style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
   >
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-lg font-bold text-slate-800">{t.reader.historyTitle}</h2>
+      <h2 id="backlog-title" class="text-lg font-bold text-slate-800">{t.reader.historyTitle}</h2>
       <button
         type="button"
         class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
@@ -56,5 +59,5 @@
         </li>
       {/each}
     </ul>
-  </section>
+  </div>
 {/if}

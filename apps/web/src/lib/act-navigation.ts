@@ -173,7 +173,7 @@ function buildBranches(
         return true;
     }
 
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map; this module is non-reactive.
+    // plain Map; reactivity is handled by the caller's $derived
     const actMap = new Map<string, string>();
     for (const [actName, candidates] of Object.entries(actCandidates)) {
         const onBranch = candidates.filter(c =>

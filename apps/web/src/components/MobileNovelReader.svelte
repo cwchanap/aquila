@@ -15,7 +15,6 @@
     onChoice = () => {},
     onBookmark = () => {},
     onNext = () => {},
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- consumed by Task 8 (MobileActDrawer integration)
     onNavigate = () => {},
     showBookmarkButton = true,
     backUrl = '/',
@@ -48,11 +47,9 @@
   let choice = $derived(
     choiceProp !== undefined ? choiceProp : readerState.choice
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- consumed by Task 8 (MobileActDrawer)
   let storyId = $derived(
     storyIdProp !== undefined ? storyIdProp : readerState.storyId
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- consumed by Task 8 (MobileActDrawer)
   let currentSceneId = $derived(
     currentSceneIdProp !== undefined
       ? currentSceneIdProp

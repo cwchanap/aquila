@@ -123,7 +123,11 @@ describe('MobileActDrawer', () => {
                 locale: 'en',
             },
         });
-        for (const btn of getActButtons()) {
+        const actButtons = screen
+            .getAllByRole('button', { hidden: true })
+            .filter(b => !b.getAttribute('aria-label'));
+        expect(actButtons.length).toBeGreaterThan(0); // guard: not vacuous
+        for (const btn of actButtons) {
             const inertAncestor = btn.closest('[inert]');
             expect(inertAncestor).not.toBeNull();
             expect(inertAncestor?.getAttribute('aria-hidden')).toBe('true');

@@ -8,6 +8,8 @@
   import { readerState } from '@/lib/reader-state.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
+  import MobileActDrawer from '@/components/MobileActDrawer.svelte';
+  import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
 
   let {
     onChoice = () => {},
@@ -200,6 +202,15 @@
       .replace('{current}', String(currentDialogueIndex + 1))
       .replace('{total}', String(dialogue.length))
   );
+
+  let backlogLines = $derived(
+    dialogue
+      .slice(0, currentDialogueIndex + 1)
+      .map(entry => ({
+        characterName: resolveCharacterName(entry, t),
+        text: entry.dialogue,
+      }))
+  );
 </script>
 
 <svelte:window onkeydown={handleKeyPress} />
@@ -243,7 +254,7 @@
         type="button"
         class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white/60"
         aria-label={t.reader.openActsPanel}
-        onclick={() => (drawerOpen = true)}
+        onclick={() => { drawerOpen = true; chromeVisible = false; }}
       >
         {t.reader.actPanel}
       </button>
@@ -251,7 +262,7 @@
         type="button"
         class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white/60"
         aria-label={t.reader.openHistory}
-        onclick={() => (backlogOpen = true)}
+        onclick={() => { backlogOpen = true; chromeVisible = false; }}
       >
         {t.reader.historyTitle}
       </button>
@@ -317,6 +328,24 @@
       </div>
     {/if}
   </div>
+
+  {#if storyId !== undefined && currentSceneId !== undefined}
+    <MobileActDrawer
+      {storyId}
+      {currentSceneId}
+      open={drawerOpen}
+      {locale}
+      onNavigate={(sceneId: string) => onNavigate(sceneId)}
+      onClose={() => (drawerOpen = false)}
+    />
+  {/if}
+
+  <MobileBacklogSheet
+    lines={backlogLines}
+    open={backlogOpen}
+    {locale}
+    onClose={() => (backlogOpen = false)}
+  />
 </div>
 
 <style>

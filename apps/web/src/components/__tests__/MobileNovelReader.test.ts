@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
@@ -183,5 +183,60 @@ describe('MobileNovelReader', () => {
         expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
         await fireEvent.click(screen.getByLabelText('Open menu'));
         expect(screen.getByText('Back to Home')).toBeInTheDocument();
+    });
+
+    it('opens the acts drawer from chrome and navigates', async () => {
+        const onNavigate = vi.fn();
+        render(MobileNovelReader, {
+            props: {
+                dialogue: mockDialogue,
+                choice: null,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                locale: 'en',
+            },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        // Drawer is mounted but closed: its close button lives in an
+        // aria-hidden/inert <aside>, so role queries (which honor aria-hidden)
+        // exclude it, and the scrim is not rendered.
+        expect(
+            screen.queryAllByRole('button', { name: 'Close acts panel' })
+        ).toHaveLength(0);
+        await fireEvent.click(screen.getByLabelText('Open acts panel'));
+        // Clicking "Open acts panel" sets drawerOpen → the drawer's open prop:
+        // the panel is no longer aria-hidden, so its scrim + close button
+        // become reachable, proving the open wired through.
+        expect(
+            screen.queryAllByRole('button', { name: 'Close acts panel' }).length
+        ).toBeGreaterThan(0);
+        // The drawer reads the story flow when it builds its act list.
+        const { getStoryFlow } = await import('@aquila/stories');
+        expect(getStoryFlow).toHaveBeenCalled();
+    });
+
+    it('opens the backlog with the current scene lines', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        // advance to line 2 so backlog has two entries
+        const tap = screen.getByLabelText('Tap to continue');
+        await fireEvent.click(tap);
+        await vi.runAllTimersAsync();
+        await fireEvent.click(tap);
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open history'));
+        // Opening an overlay dismisses the chrome bar (chromeVisible = false).
+        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('History')).toBeInTheDocument();
+        });
+        // Both revealed lines are listed in the backlog.
+        expect(screen.getByText('First line.')).toBeInTheDocument();
+        expect(screen.getByText('Second line.')).toBeInTheDocument();
     });
 });

@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { getStoryFlow, getTranslations, type Locale } from '@aquila/stories';
+  import { getTranslations, type Locale } from '@aquila/stories';
   import Button from '@/components/ui/Button.svelte';
+  import {
+    buildChapterData,
+    extractActName,
+    extractChapterKey,
+  } from '@/lib/act-navigation';
 
   let {
     storyId,
@@ -22,7 +27,7 @@
   let previousChapterKey: string | null = null;
 
   let t = $derived(getTranslations(locale));
-  let chapterData = $derived(buildChapterData(storyId, currentSceneId));
+  let chapterData = $derived(buildChapterData(storyId, currentSceneId, t));
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 
@@ -37,199 +42,6 @@
       previousChapterKey = currentChapterKey;
     }
   });
-
-  interface ActInfo {
-    label: string;
-    sceneId: string;
-    sortKey: number;
-    rawName: string;
-  }
-
-  interface ChapterGroup {
-    chapterNum: number;
-    label: string;
-    acts: ActInfo[];
-  }
-
-  interface ChaptersResult {
-    mode: 'chapters';
-    chapters: ChapterGroup[];
-  }
-
-  interface BranchesResult {
-    mode: 'branches';
-    acts: ActInfo[];
-  }
-
-  type PanelData = ChaptersResult | BranchesResult;
-
-  function extractChapterKey(sceneId: string): string | null {
-    const match = sceneId.match(/^(ch\d+)_/);
-    return match ? match[1] : null;
-  }
-
-  function extractChapterNum(sceneId: string): number | null {
-    const match = sceneId.match(/^ch(\d+)_/);
-    return match ? parseInt(match[1], 10) : null;
-  }
-
-  function extractActName(sceneId: string): string {
-    const match = sceneId.match(/(?:^|_)(act\d+|actFinal|actEpilogue)/);
-    return match ? match[1] : '';
-  }
-
-  function actLabel(rawName: string): string {
-    if (rawName === 'actFinal') return t.reader.actFinal;
-    if (rawName === 'actEpilogue') return t.reader.actEpilogue;
-    const numMatch = rawName.match(/act(\d+)/);
-    if (numMatch) {
-      return t.reader.actLabel.replace('{n}', numMatch[1]);
-    }
-    return rawName;
-  }
-
-  function actSortKey(rawName: string): number {
-    if (rawName === 'actFinal') return 9998;
-    if (rawName === 'actEpilogue') return 9999;
-    const numMatch = rawName.match(/act(\d+)/);
-    return numMatch ? parseInt(numMatch[1], 10) : 0;
-  }
-
-  function extractBranchPrefix(sceneId: string): string {
-    const match = sceneId.match(/^(.*?)(?:act\d+|actFinal|actEpilogue)/);
-    return match ? match[1] : '';
-  }
-
-  function branchMatchScore(candidatePrefix: string, currentPrefix: string): number {
-    if (!candidatePrefix && !currentPrefix) return 0;
-    const cParts = candidatePrefix.split('_').filter(Boolean);
-    const curParts = currentPrefix.split('_').filter(Boolean);
-    let score = 0;
-    for (let i = 0; i < Math.min(cParts.length, curParts.length); i++) {
-      if (cParts[i] === curParts[i]) score++;
-      else break;
-    }
-    return score;
-  }
-
-  function chapterLabel(num: number): string {
-    return t.reader.chapterLabel.replace('{n}', String(num));
-  }
-
-  function buildChapterData(sid: string, sceneId: string): PanelData {
-    const flow = getStoryFlow(sid);
-    if (!flow) return { mode: 'branches', acts: [] };
-
-    const hasChapters = flow.nodes.some(
-      n => n.kind === 'scene' && /^ch\d+_/.test(n.sceneId)
-    );
-
-    if (hasChapters) {
-      return buildChapters(flow);
-    }
-
-    return buildBranches(flow, sceneId);
-  }
-
-  function buildChapters(flow: { nodes: Array<{ kind: string; sceneId?: string }> }): ChaptersResult {
-    const chapters: Record<number, Record<string, string>> = {};
-
-    for (const node of flow.nodes) {
-      if (node.kind !== 'scene') continue;
-      if (!node.sceneId) continue;
-      const sceneId = node.sceneId;
-      const actMatch = sceneId.match(/(?:^|_)(act\d+|actFinal|actEpilogue)/);
-      if (!actMatch) continue;
-
-      const actName = actMatch[1];
-      const chNum = extractChapterNum(sceneId);
-      if (chNum === null) continue;
-
-      if (!chapters[chNum]) {
-        chapters[chNum] = {};
-      }
-      if (!chapters[chNum][actName]) {
-        chapters[chNum][actName] = sceneId;
-      }
-    }
-
-    const sorted = Object.entries(chapters)
-      .map(([num, actsMap]) => ({
-        chapterNum: Number(num),
-        label: chapterLabel(Number(num)),
-        acts: Object.entries(actsMap)
-          .map(([rawName, sid]) => ({
-            label: actLabel(rawName),
-            sceneId: sid,
-            sortKey: actSortKey(rawName),
-            rawName,
-          }))
-          .sort((a, b) => a.sortKey - b.sortKey),
-      }))
-      .sort((a, b) => a.chapterNum - b.chapterNum);
-
-    return { mode: 'chapters', chapters: sorted };
-  }
-
-  function buildBranches(flow: { nodes: Array<{ kind: string; sceneId?: string }> }, sceneId: string): BranchesResult {
-    const actCandidates: Record<string, string[]> = {};
-
-    for (const node of flow.nodes) {
-      if (node.kind !== 'scene') continue;
-      if (!node.sceneId) continue;
-      const match = node.sceneId.match(
-        /(?:^|_)(act\d+|actFinal|actEpilogue)/
-      );
-      if (!match) continue;
-      const actName = match[1];
-      if (!actCandidates[actName]) {
-        actCandidates[actName] = [];
-      }
-      actCandidates[actName].push(node.sceneId);
-    }
-
-    const currentBranch = extractBranchPrefix(sceneId);
-    const currentParts = currentBranch.split('_').filter(Boolean);
-
-    function isOnBranch(candidatePrefix: string): boolean {
-      if (!candidatePrefix && !currentBranch) return true;
-      const candParts = candidatePrefix.split('_').filter(Boolean);
-      const shorter = candParts.length <= currentParts.length ? candParts : currentParts;
-      const longer = candParts.length <= currentParts.length ? currentParts : candParts;
-      for (let i = 0; i < shorter.length; i++) {
-        if (shorter[i] !== longer[i]) return false;
-      }
-      return true;
-    }
-
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map is sufficient here because reactivity is already handled by the enclosing $derived.
-    const actMap = new Map<string, string>();
-    for (const [actName, candidates] of Object.entries(actCandidates)) {
-      const onBranch = candidates.filter(c => isOnBranch(extractBranchPrefix(c)));
-      if (onBranch.length === 0) continue;
-      let bestScene = onBranch[0];
-      let bestScore = branchMatchScore(extractBranchPrefix(bestScene), currentBranch);
-      for (let i = 1; i < onBranch.length; i++) {
-        const score = branchMatchScore(extractBranchPrefix(onBranch[i]), currentBranch);
-        if (score > bestScore) {
-          bestScore = score;
-          bestScene = onBranch[i];
-        }
-      }
-      actMap.set(actName, bestScene);
-    }
-
-    const acts = Array.from(actMap.entries())
-      .map(([rawName, sid]) => ({
-        label: actLabel(rawName),
-        sceneId: sid,
-        sortKey: actSortKey(rawName),
-        rawName,
-      }))
-      .sort((a, b) => a.sortKey - b.sortKey);
-
-    return { mode: 'branches', acts };
-  }
 
   function handleSelect(sceneId: string) {
     onNavigate(sceneId);

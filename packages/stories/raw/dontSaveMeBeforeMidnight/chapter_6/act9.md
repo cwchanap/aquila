@@ -84,13 +84,13 @@ school history museum interior corridor viewed through rain-streaked side window
 
 **旁白**：然後，他又說了第二句。這一句顧言沒有聽全——被一陣風灌進走廊的巨響蓋掉了一半。他只聽到末尾。
 
-**旁白**：「⋯⋯21:45 前會清乾淨。」
+**旁白**：「⋯⋯21:45 那邊。會清乾淨。」
 
 **顧言** [base]：（內心）⋯⋯21:45。
 
 **顧言** [determined]：（內心）監控切線的時間。
 
-**顧言** [determined]：（內心）他在確認。21:45 前清乾淨——他在告訴對面的人，基座底板會在監控空白之前處理掉。
+**顧言** [determined]：（內心）他在確認。21:45 那邊會清乾淨——他在告訴對面的人，基座底板會在監控空白之前處理掉。
 
 **顧言** [determined]：（內心）他在下令。
 
@@ -104,7 +104,7 @@ school history museum interior corridor viewed through rain-streaked side window
 
 **旁白**：顧言退回許星棠旁邊。
 
-**顧言** [base]：他接了通電話。說「21:45 前會清乾淨」。
+**顧言** [base]：他接了通電話。說「21:45 那邊。會清乾淨」。
 
 **許星棠** [cold]：他親口說的？
 

@@ -13,7 +13,8 @@ The **directory structure IS the branching graph**: `branch_*` subdirectories be
 
 ## Prerequisites
 
-- All speakers in markdown must resolve to a character defined in `raw/<storyName>/docs/characters.md`
+- `raw/<storyName>/docs/characters.md` MUST exist — compiler throws `compile.ts:28-32` if missing (this is fatal, not a warning)
+- All speakers in markdown must resolve to a character defined there
 - Bun runtime (runs TS directly)
 
 ## Workflow
@@ -50,23 +51,21 @@ raw/<storyName>/
     act2.md
 ```
 
-For shorter stories without chapters, acts can live at the root level (backward compatible):
+For shorter stories without chapters, acts can live at the root level (backward compatible). Branches can also nest (sub-choices):
 ```
 raw/<storyName>/
-  act1.md                         # Opening acts (shared trunk)
+  act1.md                         # Shared trunk
   act2.md
   act3.md                         # Last act before first choice
   branch_1a/                      # Choice option A
     act4.md
-    act5.md
     branch_2a/                    # Sub-choice under option A
-      act6.md
+      act5.md
     branch_2b/                    # Sub-choice under option A
-      act6.md
+      act5.md
   branch_1b/                      # Choice option B
     act4.md
-    act5.md
-    actFinal.md                   # Terminal act
+    actFinal.md
 ```
 
 **Rules:**
@@ -76,10 +75,13 @@ raw/<storyName>/
 - Letters sort alphabetically (a, b, c, ...) — this determines option order
 - When a directory has `branch_*` children, its **last act** becomes a **choice point**
 - When a directory has NO `branch_*` children, its last act either links to the next chapter (if present) or is **terminal** (story ends)
-- Chapters are linked sequentially: the last act of chapter N points to the first act of chapter N+1
-- Act numbers restart within each branch directory (siblings share numbering)
-- Acts can also restart within each chapter directory
-- Scene IDs are prefixed by chapter: `chapter_1/act1.md` → `ch1_act1`, `chapter_2/act3.md` → `ch2_act3`
+- **Chapters link sequentially**: the last act of chapter N points to chapter N+1's first act — BUT only if chapter N has no branches (see limitation below)
+- **Act numbering (asymmetry — verified against production stories):**
+  - **RESTARTS at `act1.md`** inside each `chapter_*` directory (e.g. `dontSaveMeBeforeMidnight/chapter_2/act1.md` follows `chapter_1/act11.md`)
+  - **CONTINUES from the parent's last act** inside each `branch_*` directory (e.g. `trainAdventure/` root has `act1-3.md`, then `branch_1a/act4.md` and `branch_1b/act4.md` both continue from `act3.md`; siblings share starting numbers)
+- Scene IDs are derived from path components: `act1.md` → `act1`, `chapter_1/act1.md` → `ch1_act1`, `branch_1b/act4.md` → `b1b_act4`, `chapter_1/branch_1a/act3.md` → `ch1_b1a_act3`
+
+**⚠️ Compiler limitation — branches CANNOT be followed by a chapter.** If `chapter_1` contains `branch_*` directories, each branch's last act is hard-terminal (`next: null`), and any subsequent `chapter_2` will be **orphaned (unreachable from gameplay)**. Root cause: `build-graph.ts:82-98` discards the branch recursion result and the chapter-linking guard only fires when `prev.next === null` — but a choice point sets `next: 'choice:...'`. Workarounds: (a) duplicate the post-choice content inside both branches, (b) drop the post-branch chapter and let branches be endings (matches `trainAdventure`), or (c) enhance `build-graph.ts` to support branch→chapter convergence. Verified at `build-graph.test.ts:149-190`.
 
 ### Step 2: Add Characters (if needed)
 
@@ -290,12 +292,15 @@ Two choice-related files exist:
 - `branch_1b/act4.md` → `b1b_act4` (inside a branch)
 - `chapter_1/branch_1a/act3.md` → `ch1_b1a_act3` (chapter + branch)
 
-**If the compiler throws `unknown character`**: Add the missing character to `raw/<storyName>/docs/characters.md` with an `- **ID**: \`...\`` bullet and re-run.
+**If the compiler throws `unknown character`**: Add the missing character to `raw/<storyName>/docs/characters.md` with an `- **ID**: \`...\`` bullet and re-run. For misspellings, use the `canonicalize` map in `compiler.config.ts`.
 
 **Asset warnings** (non-fatal — compilation succeeds regardless, emitted via `console.warn`):
-- **Character without portrait prompts**: a character appears in the story but has no entry in `docs/characters.md`. No portrait is assigned for that character.
+- **Character without portrait prompts**: a character appears in dialogue but has no `### Portrait Prompts` subsection. No portrait enum is emitted for that character.
 - **Unknown expression key**: an `[expression]` override doesn't match any key in that character's Portrait Prompts. The entry falls back to `base`.
-- **Missing `docs/characters.md`**: if no portrait doc is found at all, the compiler skips portrait prompts entirely.
+
+**Fatal errors** (compiler throws — not warnings):
+- **Missing `docs/characters.md`**: throws at `compile.ts:28-32`. The file is mandatory (see Prerequisites).
+- **Unknown character** (`**name**` doesn't resolve): add the character or use `canonicalize`/`rolePatterns` in config.
 
 These warnings clear as you add the missing prompts and assets.
 
@@ -404,6 +409,40 @@ export const STORY_NAMES: Record<StoryId, string> = {
 };
 ```
 
+**7d. Add to `ALLOWED_STORIES` (character creation gate)**
+
+Edit `apps/web/src/lib/local-characters.ts:1-4` — without this, character creation rejects the story ID as invalid:
+
+```typescript
+export const ALLOWED_STORIES = [
+    'train_adventure',
+    'dont_save_me_before_midnight',
+    'my_story',
+] as const;
+```
+
+**7e. Add the menu button (stories index)**
+
+Edit `apps/web/src/pages/[locale]/stories/index.astro` (~line 59) — without this, the story is unreachable from the UI:
+
+```astro
+<Button variant="menu-compact" href={`/${locale}/reader?story=${StoryId.MY_STORY}`} client:load>
+    {t("stories.myStory")}
+</Button>
+```
+
+**7f. Add story label to translations**
+
+Edit `packages/stories/src/translations/en.json` and `zh.json` — add the `stories.myStory` key referenced by the button above:
+
+```json
+{ "stories": { "myStory": "My Story" } }
+```
+
+**7g. (Optional) Export asset paths**
+
+Only if you ship image assets: edit `packages/assets/package.json` and `packages/assets/types.d.ts` to add `./my_story/backgrounds/*` and `./my_story/characters/*` exports (mirror the `train_adventure` entries).
+
 ### Step 8: Verify
 
 ```bash
@@ -437,23 +476,10 @@ The manifest is a source of truth for both the prompts and where each rendered P
 
 ## Quick Reference
 
-### Markdown format
-```markdown
-# 第一幕：Title
-
-**旁白**：Narration。
-
-**李杰**：(內心)Thought。
-
-**健談男大生**：Dialogue with full-width colon。
-```
-
-### File naming
+### File naming (consolidated — see Step 1 rules for branch/chapter behavior)
 | What | Pattern | Example |
 |---|---|---|
-| Act file | `act<N>.md` | `act1.md`, `act10.md` |
-| Terminal act | `actFinal.md` | `actFinal.md` |
-| Epilogue | `actEpilogue.md` | `actEpilogue.md` |
+| Act file | `act<N>.md`, `actFinal.md`, `actEpilogue.md` | `act1.md`, `act10.md` |
 | Chapter dir | `chapter_<N>` | `chapter_1`, `chapter_2` |
 | Branch dir | `branch_<level><letter>` | `branch_1a`, `branch_2c` |
 | Scene ID (root) | `<act>` | `act1` |
@@ -472,58 +498,39 @@ The manifest is a source of truth for both the prompts and where each rendered P
 - Portrait paths use the character's **ID** (snake_case from `characters.md`, e.g. `gu_yan`), **not** the display name. The expression key defaults to `base` when no `[override]` is given.
 - Background paths embed the **raw directory name**: root-level scenes use `_root`, otherwise the source directory (e.g. `chapter_1`, `branch_1a`).
 - `<section>` is a **zero-based** index that increments each time a new ` ```bg ` block appears in a scene (`s0` for the first, `s1` for the second, ...).
-
-### Generated enums (`Portrait` / `Background`)
-
-The compiler generates per-story enum files so scene files reference typed enum members instead of raw strings:
-
-**`portraits.ts`** — emitted when any character has portrait prompts:
-```typescript
-export enum Portrait {
-    GuYan_Base = "gu_yan/base",
-    GuYan_Determined = "gu_yan/determined",
-    // ...
-}
-```
-- Enum key = `${CharacterIdEnumKey}_${CapitalizedExpression}` (e.g. `gu_yan` → `GuYan`, `determined` → `Determined` → `GuYan_Determined`).
-
-**`backgrounds.ts`** — emitted when any scene has `bg` blocks:
-```typescript
-export enum Background {
-    Chapter_1_Ch1_Act4_S0 = "chapter_1/ch1_act4_s0",
-    // ...
-}
-```
-- Enum key = each `/`- and `_`-separated segment capitalized and joined with `_` (e.g. `chapter_1/ch1_act4_s0` → `Chapter_1_Ch1_Act4_S0`).
-
-Generated scene files import and reference these enums:
-```typescript
-import { Portrait } from '../portraits';
-import { Background } from '../backgrounds';
-
-export const scene: DialogueEntry[] = [
-    { ..., background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.GuYan_Base },
-];
-```
-
-Both files are compiler-owned — re-run `bun compile:stories` after adding or changing portrait/background prompts.
+- Generated `Portrait` / `Background` enum keys are derived mechanically (each path segment capitalized, joined with `_`). See Step 5 for emit conditions.
 
 ### Key files to touch when adding a story
 
+**Author by hand (raw/):**
 | File | Action |
 |---|---|
-| `raw/<story>/docs/characters.md` | Define characters (ID, aliases, portrait prompts) |
-| `raw/<story>/chapter_<N>/act*.md` | Write markdown dialogue (inside chapter folders) |
-| `raw/<story>/act*.md` | Or write at root level for chapterless stories |
+| `raw/<story>/docs/characters.md` | Define characters (ID, aliases, portrait prompts) — **required** |
+| `raw/<story>/chapter_<N>/act*.md` | Write markdown dialogue (or `act*.md` at root for chapterless stories) |
 | `raw/<story>/compiler.config.ts` | Create compiler config |
-| `src/stories/<story>/choices.zh.ts` | Fill choice prompts + labels |
-| `src/stories/<story>/index.ts` | Create story loader |
-| `src/stories/index.ts` | Register in dictionaries |
-| `apps/web/src/lib/story-types.ts` | Add to `StoryId` enum |
+
+**Scaffold once, then hand-maintain (src/stories/):**
+| File | Action |
+|---|---|
+| `src/stories/<story>/choices.zh.ts` | Fill choice prompts + labels (compiler never overwrites) |
+| `src/stories/<story>/index.ts` | Create story loader (use `trainAdventure/index.ts` as template) |
+
+**Register the story (edits to existing files — ALL required unless noted):**
+| File | Action |
+|---|---|
+| `src/stories/index.ts` | Add import, `StoryFlowConfig` union member, entries in `storyLoaders` + `storyFlows` |
+| `apps/web/src/lib/story-types.ts` | Add to `StoryId` enum + `STORY_NAMES` |
+| `apps/web/src/lib/local-characters.ts` | Add to `ALLOWED_STORIES` array (else character creation rejects the ID) |
+| `apps/web/src/pages/[locale]/stories/index.astro` | Add menu `<Button>` (else story is unreachable from UI) |
+| `packages/stories/src/translations/{en,zh}.json` | Add `stories.<storyName>` label key (referenced by the button) |
+| `packages/assets/{package.json,types.d.ts}` | **(Optional)** Export asset paths if shipping images |
 
 ## Common Mistakes
 
 - **Writing acts yourself instead of delegating**: Plan the act breakdown, then delegate writing to subagents. Writing directly causes context overflow for chapters with 6+ acts.
 - **Unknown character error**: Every `**name**` in markdown must resolve. Add the character to `characters.md` with an `- **ID**:` bullet. For misspellings, use the `canonicalize` map in `compiler.config.ts`.
-- **Forgetting to register**: After compiling, the story won't appear in the game until you add it to `stories/index.ts` AND `story-types.ts`.
+- **Treating `characters.md` as optional**: It is **required** — the compiler throws if missing. Not a warning.
+- **Putting a chapter after branches**: Compiler limitation — branch terminals are hard-terminal, so any following chapter is unreachable. See Step 1 limitation. Either duplicate content into both branches or drop the chapter.
+- **Wrong act numbering**: Branches CONTINUE the parent's act numbering; chapters RESTART at `act1`. Reversed, this is the most common authoring mistake.
+- **Forgetting to register**: After compiling, the story won't appear until you register in **all 5 required places** (`stories/index.ts`, `story-types.ts`, `local-characters.ts`, `stories/index.astro`, `translations/{en,zh}.json`). See Quick Reference.
 - **Editing generated files**: Everything under `src/generated/` is compiler-owned. Re-run `bun compile:stories` after any markdown change.

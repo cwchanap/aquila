@@ -9,6 +9,7 @@
   import ActPanel from '@/components/ActPanel.svelte';
   import { readerState } from '@/lib/reader-state.svelte';
   import { typeText as runTypewriter } from '@/lib/typewriter';
+  import { resolveCharacterName } from '@/lib/character-name';
 
   let {
     onChoice = () => {},
@@ -84,23 +85,7 @@
   let isLastDialogue = $derived(currentDialogueIndex >= dialogue.length - 1);
 
   function getCharacterName(dialogueEntry: DialogueEntry | undefined): string {
-    if (!dialogueEntry) return '';
-
-    // Prefer the emitted displayName (preserves author's intent for
-    // aliases / role labels like "健談男大生" before the character is named).
-    if (dialogueEntry.character) {
-      return dialogueEntry.character;
-    }
-
-    if (dialogueEntry.characterId) {
-      const localizedName = t.characterNames?.[dialogueEntry.characterId];
-      if (localizedName) {
-        return localizedName;
-      }
-      return t.reader.unknown;
-    }
-
-    return '';
+    return resolveCharacterName(dialogueEntry, t);
   }
 
   // Reset displayed dialogues when dialogue array reference changes (new scene)

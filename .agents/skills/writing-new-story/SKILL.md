@@ -151,14 +151,14 @@ Dispatch parallel subagents to write the actual markdown. Each subagent handles 
 
 **Dispatch pattern:**
 - Use the Task tool with `subagent_type: "general"` for each batch, sent in parallel
-- Each subagent must load this skill (`writing-new-story`) to learn the markdown format
+- **Each subagent must load the `writing-story-acts` skill** (NOT this skill) — it contains the markdown format, NA style guide, and character-resolution rules writers need
 - Provide the preceding act's content for continuity across batch boundaries
 
 **Each subagent prompt must include:**
-1. Which acts to write (filenames + brief scene descriptions)
-2. Reference files to read first (characters.md, chapter plan, previous act, compiler.config.ts)
-3. Key constraints (Traditional Chinese, POV rules, story-specific rules from the plan)
-4. Instructions to report back: files written, characters added, deviations from plan
+1. Which acts to write (filenames + full paths + brief scene descriptions)
+2. Reference files to read first (characters.md, chapter plan, previous act)
+3. Key constraints (POV character, story-specific rules from the plan)
+4. Instructions to report back: files written, characters they needed added, deviations from plan
 
 See `subagent-prompt-template.md` in this skill's directory for the full prompt template.
 
@@ -168,75 +168,19 @@ After all subagents complete, run a review pass:
 2. Check for POV violations across batch boundaries
 3. Check consistency of props/descriptions across acts by different subagents
 4. Check for simplified Chinese characters
-5. Optionally dispatch a dedicated review subagent for continuity checking
+5. Optionally dispatch a dedicated review subagent (using the `reviewing-written-stories` skill if available) for continuity checking
 
 ### Step 3c: Markdown Format Reference
 
-Each `actN.md` file follows this format:
+The markdown format, style guide, and character-resolution rules now live in the **`writing-story-acts`** skill — load that skill (or dispatch subagents with it) for the actual writing. The orchestrator only needs to know:
 
-```markdown
-# 第N幕：Scene Title
+- Act files use `# 第N幕：Title` H1 headers
+- Dialogue is `**SpeakerName**：Text` with full-width colon
+- Narrator is `**旁白**：`; inner thoughts use `(內心)` parentheticals
+- ` ```bg ` blocks set scene backgrounds; `[expression]` tags override portraits
+- Every `**name**` must resolve to `characters.md`
 
-**旁白**：Narration text here.
-
-**李杰**：(內心)Inner monologue here.
-
-**CharacterName**：Dialogue text here.
-```
-
-**Format rules:**
-- **H1 title** (`# ...`): First line, becomes scene metadata. Format: `# 第N幕：Title`
-- **Separator**: Blank line between every paragraph
-- **Dialogue lines**: `**SpeakerName**：Text` — speaker label in bold, followed by a **full-width colon** (`：`) or half-width colon (`:`)
-- **Inner thoughts**: Keep parentheticals like `(內心)` or `（內心）` verbatim in the dialogue text — the runtime displays them
-- **Narrator**: Use `**旁白**：` for narration
-- All paragraphs must be valid `**name**：text` headers (unless `defaultSpeaker` is set in config, which treats non-header paragraphs as narration)
-
-**Important:** The character name in bold must resolve to a character ID defined in `docs/characters.md`. If it doesn't, the compiler will throw an error with the file and the unknown name.
-
-**Background image prompts** — a ` ```bg ` fenced block sets the background starting from the next dialogue entry. That background **persists** for all subsequent entries until another `bg` block changes it (standard visual-novel behaviour — you only need a new block when the scene/location shifts):
-
-````markdown
-```bg
-train platform at night, cold blue lighting, empty platform
-```
-
-**李杰**：這裡是哪裡？
-
-**旁白**：風很冷。
-
-```bg
-train interior, warm fluorescent lighting, empty seats
-```
-
-**李杰**：車裡好多了。
-````
-
-- A `bg` block applies starting from the **next** dialogue entry.
-- The background **carries forward** to all following entries — no need to repeat it.
-- Multiple `bg` blocks in one scene create distinct **sections** (indexed `s0`, `s1`, `s2`, …). Each section gets its own background image.
-- **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
-
-**Expression override tags** — put a `[key]` between the bold name and the colon to override the portrait for that line:
-
-```markdown
-**李杰** [angry]：妳做什麼！
-```
-
-- The tag sits between `**Name**` and the colon: `**Name** [key]：`.
-- It overrides the portrait expression for that specific dialogue entry.
-- Keys must match entries in the character's Portrait Prompts section (case-insensitive).
-- Unknown keys fall back to `base` (and emit a compiler warning — see Step 5).
-
-**Combining both:**
-
-````markdown
-```bg
-rooftop at dusk, warm orange light
-```
-
-**李杰** [scared]：這是什麼？
-````
+Full details: `.agents/skills/writing-story-acts/SKILL.md`.
 
 ### Step 4: Create `compiler.config.ts`
 

@@ -33,8 +33,8 @@ vi.mock('../ui-dialogs', () => ({
     showPrompt: vi.fn().mockResolvedValue('My Bookmark'),
 }));
 
-vi.mock('@/components/NovelReader.svelte', () => ({
-    default: class MockNovelReader {},
+vi.mock('@/components/ReaderShell.svelte', () => ({
+    default: class MockReaderShell {},
 }));
 
 import { getStoryContent, getStoryFlow } from '@aquila/stories';

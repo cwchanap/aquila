@@ -351,13 +351,13 @@ export class ReaderManager {
         const translations = this.t;
 
         // Dynamic import to avoid issues with Astro SSR
-        import('@/components/NovelReader.svelte')
+        import('@/components/ReaderShell.svelte')
             .then(module => {
-                const NovelReaderComponent = module.default;
+                const ReaderShellComponent = module.default;
                 // Clear any stale content (SSR comments, loading placeholders)
                 // before mounting so the component replaces rather than appends.
                 container.replaceChildren();
-                const mountedComponent = mount(NovelReaderComponent, {
+                const mountedComponent = mount(ReaderShellComponent, {
                     target: container,
                     props: {
                         onChoice: this.handleChoice,

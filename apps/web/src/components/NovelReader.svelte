@@ -8,6 +8,7 @@
   import { untrack } from 'svelte';
   import ActPanel from '@/components/ActPanel.svelte';
   import { readerState } from '@/lib/reader-state.svelte';
+  import { typeText as runTypewriter } from '@/lib/typewriter';
 
   let {
     onChoice = () => {},
@@ -215,24 +216,18 @@
     entry: DialogueEntry | undefined = currentDialogue,
     version?: number
   ): Promise<void> {
-    for (let i = 0; i < text.length; i++) {
-      // Cancel if scene changed since typing started
-      if (version !== undefined && version !== sceneVersion) {
-        return;
-      }
-      if (skipTyping) {
-        typingText = text;
-        break;
-      }
-      typingText = text.slice(0, i + 1);
-      await new Promise<void>(resolve =>
-        globalThis.setTimeout(resolve, typingSpeed)
-      );
-    }
-    // Only finalize if scene hasn't changed
-    if (version !== undefined && version !== sceneVersion) {
-      return;
-    }
+    const result = await runTypewriter({
+      text,
+      speed: typingSpeed,
+      onTick: (partial: string) => {
+        typingText = partial;
+      },
+      isSkipped: () => skipTyping,
+      isCancelled: () => version !== undefined && version !== sceneVersion,
+    });
+
+    if (result === 'cancelled') return;
+
     addDialogueToDisplay(text, entry);
     isTyping = false;
   }

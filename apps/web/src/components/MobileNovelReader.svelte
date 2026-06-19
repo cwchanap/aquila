@@ -281,15 +281,6 @@
         </button>
         <button
           type="button"
-          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60 disabled:opacity-40"
-          aria-label={t.reader.previousLine}
-          disabled={currentDialogueIndex === 0}
-          onclick={goBack}
-        >
-          <ChevronLeft size={20} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
           class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
           aria-label={t.reader.openHistory}
           onclick={() => {
@@ -342,15 +333,29 @@
         {/each}
       </div>
     {:else}
-      <div class="min-h-[7rem] rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
+      <!-- Persistent back-one-line control, above the dialogue box. Its own
+           pointer-events-auto re-enables clicks (the panel is none while reading). -->
+      <div class="pointer-events-auto mb-2 flex">
+        <button
+          type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm disabled:opacity-40"
+          aria-label={t.reader.previousLine}
+          disabled={currentDialogueIndex === 0}
+          onclick={goBack}
+        >
+          <ChevronLeft size={20} aria-hidden="true" />
+        </button>
+      </div>
+      <!-- Fixed-height reading box: chip · scrollable text · pinned indicator. -->
+      <div class="flex h-52 flex-col rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
         {#if currentName}
           <span
-            class="mb-2 inline-block rounded-xl bg-blue-100/80 px-3 py-1 text-base font-bold text-blue-600"
+            class="mb-2 inline-block self-start rounded-xl bg-blue-100/80 px-3 py-1 text-base font-bold text-blue-600"
           >
             {currentName}
           </span>
         {/if}
-        <p class="text-lg leading-relaxed text-slate-800">
+        <p class="flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800">
           {typingText}{#if isTyping}<span
               class="ml-0.5 inline-block h-5 w-2 animate-pulse bg-blue-600 align-middle"
             ></span>{/if}

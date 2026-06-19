@@ -85,8 +85,8 @@
   <!-- Soft cloud wisps -->
   <div class="absolute inset-0 pointer-events-none overflow-hidden">
     <div class="absolute top-[12%] left-[15%] w-40 h-10 bg-white/25 rounded-full blur-2xl"></div>
-    <div class="absolute top-[8%] right-[22%] w-28 h-8 bg-white/20 rounded-full blur-2xl" style="animation-delay:1.5s;"></div>
-    <div class="absolute top-[18%] right-[10%] w-36 h-9 bg-white/15 rounded-full blur-2xl" style="animation-delay:3s;"></div>
+    <div class="absolute top-[8%] right-[22%] w-28 h-8 bg-white/20 rounded-full blur-2xl"></div>
+    <div class="absolute top-[18%] right-[10%] w-36 h-9 bg-white/15 rounded-full blur-2xl"></div>
   </div>
 
   <!-- User status -->

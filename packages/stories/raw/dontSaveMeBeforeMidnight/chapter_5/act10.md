@@ -8,15 +8,15 @@ school auditorium interior at night, bright warm stage lights, microphone testin
 
 **旁白**：舞台上的麥克風發出一聲短促的嘯叫，被工作人員伸手壓下去。家長席有人站起來調整拍攝角度。直播控制台的螢幕在側面投出一塊冷白的光。校安站在側門，雙手背在身後。窗外暴雨拍打玻璃，節奏急促而不均勻。
 
-**顧言** [scared]：（內心）22:22。
+**顧言** [scared]：(內心)22:22。
 
 **旁白**：他盯著手機螢幕。數字沒有跳。還是22:22。他的手指握著手機邊緣，指節發白。
 
-**顧言** [scared]：（內心）前四次，這個數字都是終點。鐘樓的風。車廂翻覆時的金屬聲。醫務室悶住的空氣。地下泵房倒灌的水。每一次，世界都在這附近斷掉。
+**顧言** [scared]：(內心)前四次，這個數字都是終點。鐘樓的風。車廂翻覆時的金屬聲。醫務室悶住的空氣。地下泵房倒灌的水。每一次，世界都在這附近斷掉。
 
 **旁白**：他強迫自己呼吸。一次。兩次。胸腔裡像塞了一團吸飽水的棉花，按不下去。
 
-**顧言** [scared]：（內心）不在鐘樓。沒有靠近校務車。沒有進醫務室。沒有下地下。今天什麼都沒碰。我站在這裡。
+**顧言** [scared]：(內心)不在鐘樓。沒有靠近校務車。沒有進醫務室。沒有下地下。今天什麼都沒碰。我站在這裡。
 
 **旁白**：他站在禮堂最後一排靠走道的位置。左邊是坐滿人的觀眾席。右邊是通往後台的走道。腳下是被人踩過幾十年的磁磚。周圍全是聲音——麥克風、掌聲、談話、雨。
 
@@ -30,11 +30,11 @@ school auditorium interior at night, bright warm stage lights, microphone testin
 
 **旁白**：不是雷。比雷更悶、更短。更像什麼東西被拔掉了插頭。
 
-**顧言** [shocked]：（內心）斷電了。
+**顧言** [shocked]：(內心)斷電了。
 
-**顧言** [shocked]：（內心）鐘樓真的停電了。
+**顧言** [shocked]：(內心)鐘樓真的停電了。
 
-**顧言** [shocked]：（內心）訊息是真的。
+**顧言** [shocked]：(內心)訊息是真的。
 
 **旁白**：他的身體先於意識做出反應。肩膀縮起來。重心往下沉。後背的肌肉繃成一塊硬的東西。像在等一個從上方砸下來的重物。
 
@@ -46,7 +46,7 @@ school auditorium interior at night, bright warm stage lights, microphone testin
 
 **旁白**：他沒有墜落。沒有被撞。沒有窒息。沒有被困。腳下還是那塊磁磚。周圍還是那些人——活著的、吵鬧的、正在為閉幕倒數排練的人。
 
-**顧言** [trembling]：（內心）還在。
+**顧言** [trembling]：(內心)還在。
 
 **旁白**：三秒。
 
@@ -56,9 +56,9 @@ school auditorium interior at night, bright warm stage lights, microphone testin
 
 **旁白**：顧言盯著那兩個數字。盯了很久。手指在抖，抖到螢幕上的字跟著微微晃動。
 
-**顧言** [trembling]：（內心）22:23。
+**顧言** [trembling]：(內心)22:23。
 
-**顧言** [trembling]：（內心）我看見了。
+**顧言** [trembling]：(內心)我看見了。
 
 **旁白**：世界沒有崩塌。沒有白色的光把他吞回去。沒有耳鳴。沒有那種從身體內部被抽空的感覺。
 
@@ -68,7 +68,7 @@ school auditorium interior at night, bright warm stage lights, microphone testin
 
 **旁白**：世界只是繼續往前走。像從來沒有答應過他什麼。
 
-**顧言** [trembling]：（內心）我活過來了。
+**顧言** [trembling]：(內心)我活過來了。
 
 **旁白**：他把這句話在腦子裡重複了三次。每一次都比上一次更輕。因為每一次，他都等著那個「但是」。
 
@@ -84,9 +84,9 @@ same auditorium viewed from the last row toward the back exits and side corridor
 
 **旁白**：現在不在了。
 
-**顧言** [shocked]：（內心）許星棠。
+**顧言** [shocked]：(內心)許星棠。
 
-**顧言** [shocked]：（內心）她剛才還在側門附近。現在不在了。
+**顧言** [shocked]：(內心)她剛才還在側門附近。現在不在了。
 
 **旁白**：他往另一側看。後台入口的方向。那裡有動靜。
 
@@ -94,7 +94,7 @@ same auditorium viewed from the last row toward the back exits and side corridor
 
 **旁白**：他站在後台入口外。剛才他跟著推車進去過，現在又出來了——兩名穿著反光背心的校安一前一後擋在他面前，不讓他再進去。距離太遠，聽不清在說什麼，但韓越的肩膀是繃緊的，脖子上的舞台組通行證在燈光下晃。
 
-**顧言** [determined]：（內心）韓越。被攔住了。
+**顧言** [determined]：(內心)韓越。被攔住了。
 
 **旁白**：他繼續看。禮堂側面，靠近後台通道的位置。
 
@@ -102,7 +102,7 @@ same auditorium viewed from the last row toward the back exits and side corridor
 
 **旁白**：然後他的臉變了。
 
-**顧言** [scared]：（內心）變白了。整張臉的血色，在兩秒之內褪掉。
+**顧言** [scared]：(內心)變白了。整張臉的血色，在兩秒之內褪掉。
 
 **旁白**：林主任沒有說話。他只是把手機貼在耳朵上，嘴唇動了動，像在重複同一個字。然後他轉過身，看向後台側門的方向。
 
@@ -110,17 +110,17 @@ same auditorium viewed from the last row toward the back exits and side corridor
 
 **旁白**：不是有人走過去順手帶上。是從裡面被拉住、扣上的那種關法。門縫裡透出的那條光，斷了。
 
-**顧言** [determined]：（內心）許星棠不見了。
+**顧言** [determined]：(內心)許星棠不見了。
 
-**顧言** [determined]：（內心）韓越被攔。
+**顧言** [determined]：(內心)韓越被攔。
 
-**顧言** [determined]：（內心）林主任接到電話變臉。
+**顧言** [determined]：(內心)林主任接到電話變臉。
 
-**顧言** [determined]：（內心）後台側門關上了。
+**顧言** [determined]：(內心)後台側門關上了。
 
-**顧言** [determined]：（內心）22:23。我活過來了。
+**顧言** [determined]：(內心)22:23。我活過來了。
 
-**顧言** [determined]：（內心）但是有什麼東西，在我不在的地方，開始了。
+**顧言** [determined]：(內心)但是有什麼東西，在我不在的地方，開始了。
 
 **旁白**：他站在原地。手機螢幕亮著。22:23。
 
@@ -128,6 +128,6 @@ same auditorium viewed from the last row toward the back exits and side corridor
 
 **旁白**：顧言沒有動。
 
-**顧言** [determined]：（內心）活過一個時間點不等於安全。
+**顧言** [determined]：(內心)活過一個時間點不等於安全。
 
-**顧言** [determined]：（內心）有時候，那只是讓你看見下一場死亡。
+**顧言** [determined]：(內心)有時候，那只是讓你看見下一場死亡。

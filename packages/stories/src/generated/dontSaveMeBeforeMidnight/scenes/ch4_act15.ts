@@ -55,7 +55,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）在這十七分鐘裡，我不存在於任何紀錄裡。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）那十七分鐘不是用來殺人的時間。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）而是用來讓一個人從紀錄裡消失的時間。", background: Background.Chapter_4_Ch4_Act15_S1, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不知道這句話在後來會變得多精確。他只是一個在黑暗的階梯上往下走的十七歲男孩。但這句話會留下來。像一枚釘子。釘在他下一次醒來時會寫下的筆記裡。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "階梯到底了。前面是一條更寬的通道。天花板更高。燈更少。積水更深——這裡的積水已經漫過了鞋底，踩下去的時候，冷水從鞋面灌進來。他皺了一下眉頭，但沒有停下來。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遠處有聲音。不是人的聲音。是水的聲音。流動的、持續的、從更深的地方傳來的。像地下有一條河。", background: Background.Chapter_4_Ch4_Act15_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "二十一點五十八分。", background: Background.Chapter_4_Ch4_Act15_S1 },

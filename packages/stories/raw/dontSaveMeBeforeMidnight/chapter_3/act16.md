@@ -204,6 +204,4 @@ close up of smoke-filled darkness, a man's voice emanating from unseen source, n
 
 **旁白**：沒有人知道。
 
-**旁白**：這間房間還會繼續安靜很長一段時間。長到足夠讓客觀世界繼續轉動。長到足夠讓某個人在另一個地方，做另一件改變一切的事。
-
 **旁白**：黑。

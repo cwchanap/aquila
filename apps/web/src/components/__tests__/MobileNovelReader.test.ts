@@ -142,7 +142,7 @@ describe('MobileNovelReader', () => {
         });
         await vi.runAllTimersAsync();
         await fireEvent.click(screen.getByLabelText('Open menu'));
-        await fireEvent.click(screen.getByText('Bookmark'));
+        await fireEvent.click(screen.getByLabelText('Bookmark'));
         expect(onBookmark).toHaveBeenCalledWith(1);
     });
 
@@ -180,9 +180,9 @@ describe('MobileNovelReader', () => {
             props: { dialogue: mockDialogue, choice: null, locale: 'en' },
         });
         await vi.runAllTimersAsync();
-        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Back to Home')).not.toBeInTheDocument();
         await fireEvent.click(screen.getByLabelText('Open menu'));
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
     });
 
     it('opens the acts drawer from chrome and navigates', async () => {
@@ -217,6 +217,26 @@ describe('MobileNovelReader', () => {
         expect(getStoryFlow).toHaveBeenCalled();
     });
 
+    it('renders the chrome as labeled icon buttons with a progress bar', async () => {
+        render(MobileNovelReader, {
+            props: {
+                dialogue: mockDialogue,
+                choice: null,
+                showBookmarkButton: true,
+                locale: 'en',
+            },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        // Icon buttons expose their action via aria-label (no visible text label).
+        expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+        expect(screen.getByLabelText('Open acts panel')).toBeInTheDocument();
+        expect(screen.getByLabelText('Open history')).toBeInTheDocument();
+        expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
+        // The numeric progress caption is retained.
+        expect(screen.getByText('Line 1 of 3')).toBeInTheDocument();
+    });
+
     it('opens the backlog with the current scene lines', async () => {
         render(MobileNovelReader, {
             props: { dialogue: mockDialogue, choice: null, locale: 'en' },
@@ -231,7 +251,7 @@ describe('MobileNovelReader', () => {
         await fireEvent.click(screen.getByLabelText('Open menu'));
         await fireEvent.click(screen.getByLabelText('Open history'));
         // Opening an overlay dismisses the chrome bar (chromeVisible = false).
-        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Back to Home')).not.toBeInTheDocument();
         await waitFor(() => {
             expect(screen.getByText('History')).toBeInTheDocument();
         });

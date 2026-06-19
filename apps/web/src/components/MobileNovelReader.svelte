@@ -10,6 +10,7 @@
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
+  import { House, Layers, History, Bookmark } from 'lucide-svelte';
 
   let {
     onChoice = () => {},
@@ -200,6 +201,12 @@
       .replace('{total}', String(dialogue.length))
   );
 
+  let progressFraction = $derived(
+    dialogue.length > 0
+      ? ((currentDialogueIndex + 1) / dialogue.length) * 100
+      : 0
+  );
+
   let backlogLines = $derived(
     dialogue
       .slice(0, currentDialogueIndex + 1)
@@ -235,44 +242,60 @@
     {#if chromeVisible}✕{:else}☰{/if}
   </button>
 
-  <!-- Auto-hiding chrome bar. -->
+  <!-- Auto-hiding chrome bar (icon toolbar + slim progress). -->
   {#if chromeVisible}
     <div
-      class="absolute inset-x-0 top-0 z-20 flex items-center gap-2 bg-white/80 px-3 py-2 pl-16 shadow backdrop-blur-md"
+      class="absolute inset-x-0 top-0 z-20 bg-white/80 shadow backdrop-blur-md"
       style="padding-top: calc(0.5rem + env(safe-area-inset-top));"
     >
-      <a
-        href={backUrl}
-        class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white/60"
-      >
-        {t.common.backToHome}
-      </a>
-      <button
-        type="button"
-        class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white/60"
-        aria-label={t.reader.openActsPanel}
-        onclick={() => { drawerOpen = true; chromeVisible = false; }}
-      >
-        {t.reader.actPanel}
-      </button>
-      <button
-        type="button"
-        class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white/60"
-        aria-label={t.reader.openHistory}
-        onclick={() => { backlogOpen = true; chromeVisible = false; }}
-      >
-        {t.reader.historyTitle}
-      </button>
-      {#if showBookmarkButton}
+      <div class="flex items-center gap-1 px-2 py-2 pl-16">
+        <a
+          href={backUrl}
+          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+          aria-label={t.common.backToHome}
+        >
+          <House size={20} aria-hidden="true" />
+        </a>
         <button
           type="button"
-          class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white/60"
-          onclick={() => onBookmark(currentDialogueIndex + 1)}
+          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+          aria-label={t.reader.openActsPanel}
+          onclick={() => {
+            drawerOpen = true;
+            chromeVisible = false;
+          }}
         >
-          {t.reader.bookmark}
+          <Layers size={20} aria-hidden="true" />
         </button>
-      {/if}
-      <span class="ml-auto text-xs font-medium text-slate-600">{progressText}</span>
+        <button
+          type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+          aria-label={t.reader.openHistory}
+          onclick={() => {
+            backlogOpen = true;
+            chromeVisible = false;
+          }}
+        >
+          <History size={20} aria-hidden="true" />
+        </button>
+        {#if showBookmarkButton}
+          <button
+            type="button"
+            class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+            aria-label={t.reader.bookmark}
+            onclick={() => onBookmark(currentDialogueIndex + 1)}
+          >
+            <Bookmark size={20} aria-hidden="true" />
+          </button>
+        {/if}
+        <span class="ml-auto pr-2 text-xs font-medium text-slate-600">{progressText}</span>
+      </div>
+      <div class="h-1 w-full bg-slate-200/70" aria-hidden="true">
+        <div
+          class="h-full bg-blue-500 motion-safe:transition-[width] motion-safe:duration-200"
+          style="width: {progressFraction}%;"
+        ></div>
+      </div>
     </div>
   {/if}
 

@@ -98,7 +98,9 @@
     "title": "Select Story",
     "heading": "Select Your Story",
     "trainAdventure": "Train Adventure",
+    "trainAdventureDesc": "A journey across borders, strangers becoming something more.",
     "dontSaveMeBeforeMidnight": "Don't Save Me Before Midnight",
+    "dontSaveMeBeforeMidnightDesc": "A quiet confession whispered at the edge of night.",
     "chooseYourAdventure": "Choose Your Adventure"
   },
   "characters": {

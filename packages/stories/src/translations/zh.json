@@ -98,7 +98,9 @@
     "title": "選擇故事",
     "heading": "選擇您的故事",
     "trainAdventure": "火車冒險",
+    "trainAdventureDesc": "跨越邊境的旅程，陌生人之間萌生的情感。",
     "dontSaveMeBeforeMidnight": "午夜前別救我",
+    "dontSaveMeBeforeMidnightDesc": "在黑夜邊緣輕聲訴說的悄悄話。",
     "chooseYourAdventure": "選擇您的冒險"
   },
   "characters": {

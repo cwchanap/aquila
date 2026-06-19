@@ -21,6 +21,7 @@ vi.mock('@aquila/stories', () => ({
             closeActsPanel: 'Close acts panel',
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
+            previousLine: 'Previous line',
             actLabel: 'Act {n}',
             actFinal: 'Final',
             actEpilogue: 'Epilogue',
@@ -235,6 +236,39 @@ describe('MobileNovelReader', () => {
         expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
         // The numeric progress caption is retained.
         expect(screen.getByText('Line 1 of 3')).toBeInTheDocument();
+    });
+
+    it('disables the previous-line button on the first line', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        expect(screen.getByLabelText('Previous line')).toBeDisabled();
+    });
+
+    it('steps back one line within the scene without leaving it', async () => {
+        const onNext = vi.fn();
+        render(MobileNovelReader, {
+            props: {
+                dialogue: mockDialogue,
+                choice: null,
+                onNext,
+                locale: 'en',
+            },
+        });
+        const tap = screen.getByLabelText('Tap to continue');
+        await fireEvent.click(tap); // complete typing of line 1
+        await vi.runAllTimersAsync();
+        await fireEvent.click(tap); // advance to line 2 (index 1)
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Second line.')).toBeInTheDocument();
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Previous line'));
+        expect(screen.getByText('First line.')).toBeInTheDocument();
+        expect(screen.queryByText('Second line.')).not.toBeInTheDocument();
+        expect(onNext).not.toHaveBeenCalled();
     });
 
     it('opens the backlog with the current scene lines', async () => {

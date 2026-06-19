@@ -205,7 +205,8 @@
     "openMenu": "開啟選單",
     "closeMenu": "關閉選單",
     "tapToContinue": "點擊繼續",
-    "lineProgress": "第 {current} / {total} 行"
+    "lineProgress": "第 {current} / {total} 行",
+    "previousLine": "上一行"
   },
   "storyWriter": {
     "title": "故事編輯器",

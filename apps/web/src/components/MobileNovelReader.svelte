@@ -10,7 +10,7 @@
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
-  import { House, Layers, History, Bookmark } from 'lucide-svelte';
+  import { House, Layers, ChevronLeft, History, Bookmark } from 'lucide-svelte';
 
   let {
     onChoice = () => {},
@@ -173,6 +173,18 @@
     }
   }
 
+  function goBack(): void {
+    // Overlays own their own taps; never step the scene from under them.
+    if (hasOverlay) return;
+    // At the start of the scene there is nowhere to go back to.
+    if (currentDialogueIndex <= 0) return;
+    skipTyping = false;
+    isTyping = false;
+    sceneVersion++; // cancel any in-flight typewriter for this scene
+    currentDialogueIndex--;
+    typingText = dialogue[currentDialogueIndex]?.dialogue ?? '';
+  }
+
   function handleKeyPress(event: globalThis.KeyboardEvent): void {
     if (event.defaultPrevented) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -266,6 +278,15 @@
           }}
         >
           <Layers size={20} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60 disabled:opacity-40"
+          aria-label={t.reader.previousLine}
+          disabled={currentDialogueIndex === 0}
+          onclick={goBack}
+        >
+          <ChevronLeft size={20} aria-hidden="true" />
         </button>
         <button
           type="button"

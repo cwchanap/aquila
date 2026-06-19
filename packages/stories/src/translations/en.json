@@ -205,7 +205,8 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "tapToContinue": "Tap to continue",
-    "lineProgress": "Line {current} of {total}"
+    "lineProgress": "Line {current} of {total}",
+    "previousLine": "Previous line"
   },
   "storyWriter": {
     "title": "Story Writer",

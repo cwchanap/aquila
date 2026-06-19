@@ -8,7 +8,7 @@ Use this template when dispatching subagents to write story acts. Replace all `[
 You are writing acts [N]-[M] of chapter [C] for the story "[Story Name]" (story ID: [story_id]).
 
 ## Your task
-Load the writing-story-acts skill first (NOT writing-new-story — that's the orchestrator skill), then write the following act files:
+Load the writing-story-acts skill first (NOT orchestrating-stories — that's the orchestrator skill), then write the following act files:
 - [chapter directory]/act[N].md — [brief scene description]
 - [chapter directory]/act[N+1].md — [brief scene description]
 - ...

@@ -1,13 +1,13 @@
 ---
 name: writing-story-acts
-description: Use when writing actual act markdown dialogue for an Aquila story — formatting, style, character resolution. Loaded by writing subagents dispatched by the orchestrator (writing-new-story skill).
+description: Use when writing actual act markdown dialogue for an Aquila story — formatting, style, character resolution. Loaded by writing subagents dispatched by the orchestrator (orchestrating-stories skill).
 ---
 
 # Writing Story Acts
 
 ## Overview
 
-You are a **writing subagent**. The orchestrator (main agent using the `writing-new-story` skill) has already:
+You are a **writing subagent**. The orchestrator (main agent using the `orchestrating-stories` skill) has already:
 - Created the story directory structure under `packages/stories/raw/<storyName>/`
 - Defined all characters in `docs/characters.md`
 - Planned the act breakdown (mapping scenes → act files)

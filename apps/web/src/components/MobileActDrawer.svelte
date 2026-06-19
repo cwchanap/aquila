@@ -5,6 +5,7 @@
     extractActName,
     extractChapterKey,
   } from '@/lib/act-navigation';
+  import { ChevronDown, ChevronRight } from 'lucide-svelte';
 
   let {
     storyId,
@@ -26,6 +27,33 @@
   let chapterData = $derived(buildChapterData(storyId, currentSceneId, t));
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
+
+  let expandedChapters = $state<number[]>([]);
+  let seededFor: string | undefined = undefined;
+
+  function isExpanded(num: number): boolean {
+    return expandedChapters.includes(num);
+  }
+
+  function toggleChapter(num: number): void {
+    expandedChapters = isExpanded(num)
+      ? expandedChapters.filter(n => n !== num)
+      : [...expandedChapters, num];
+  }
+
+  // Seed the open chapter once per current scene: expand the chapter that
+  // holds the current act, collapse the rest. User toggles persist until the
+  // current scene changes.
+  $effect(() => {
+    if (chapterData.mode !== 'chapters') return;
+    if (seededFor === currentSceneId) return;
+    seededFor = currentSceneId;
+    expandedChapters = chapterData.chapters
+      .filter(ch =>
+        ch.acts.some(a => extractChapterKey(a.sceneId) === currentChapterKey)
+      )
+      .map(ch => ch.chapterNum);
+  });
 
   function handleSelect(sceneId: string) {
     onNavigate(sceneId);
@@ -74,25 +102,41 @@
       <div class="space-y-3">
         {#each chapterData.chapters as chapter (chapter.chapterNum)}
           <div>
-            <p class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">
-              {chapter.label}
-            </p>
-            <div class="ml-3 mt-1 space-y-1">
-              {#each chapter.acts as act (act.rawName)}
-                {@const isActive =
-                  act.rawName === currentAct &&
-                  extractChapterKey(act.sceneId) === currentChapterKey}
-                <button
-                  type="button"
-                  class="w-full rounded-lg px-3 py-3 text-left text-sm {isActive
-                    ? 'bg-blue-500 font-semibold text-white'
-                    : 'bg-white/60 text-slate-700 hover:bg-blue-50'}"
-                  onclick={() => handleSelect(act.sceneId)}
-                >
-                  {act.label}
-                </button>
-              {/each}
-            </div>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+              aria-expanded={isExpanded(chapter.chapterNum)}
+              aria-controls={`chapter-acts-${chapter.chapterNum}`}
+              onclick={() => toggleChapter(chapter.chapterNum)}
+            >
+              <span>{chapter.label}</span>
+              {#if isExpanded(chapter.chapterNum)}
+                <ChevronDown size={18} aria-hidden="true" />
+              {:else}
+                <ChevronRight size={18} aria-hidden="true" />
+              {/if}
+            </button>
+            {#if isExpanded(chapter.chapterNum)}
+              <div
+                id={`chapter-acts-${chapter.chapterNum}`}
+                class="ml-3 mt-1 space-y-1"
+              >
+                {#each chapter.acts as act (act.rawName)}
+                  {@const isActive =
+                    act.rawName === currentAct &&
+                    extractChapterKey(act.sceneId) === currentChapterKey}
+                  <button
+                    type="button"
+                    class="w-full rounded-lg px-3 py-3 text-left text-sm {isActive
+                      ? 'bg-blue-500 font-semibold text-white'
+                      : 'bg-white/60 text-slate-700 hover:bg-blue-50'}"
+                    onclick={() => handleSelect(act.sceneId)}
+                  >
+                    {act.label}
+                  </button>
+                {/each}
+              </div>
+            {/if}
           </div>
         {/each}
       </div>

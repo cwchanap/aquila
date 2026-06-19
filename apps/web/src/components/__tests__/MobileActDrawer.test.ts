@@ -1,6 +1,8 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
+import { getStoryFlow } from '@aquila/stories';
+import type { Mock } from 'vitest';
 
 const branchFlow = {
     start: 'b1a_act1',
@@ -45,6 +47,50 @@ describe('MobileActDrawer', () => {
     const onClose = vi.fn();
 
     afterEach(() => vi.clearAllMocks());
+
+    beforeEach(() => {
+        (getStoryFlow as unknown as Mock).mockReturnValue(branchFlow);
+    });
+
+    const chaptersFlow = {
+        start: 'ch1_act1',
+        nodes: [
+            { kind: 'scene', sceneId: 'ch1_act1' },
+            { kind: 'scene', sceneId: 'ch1_act2' },
+            { kind: 'scene', sceneId: 'ch2_act3' },
+        ],
+    };
+
+    it('expands only the current chapter and toggles others', async () => {
+        (getStoryFlow as unknown as Mock).mockReturnValue(chaptersFlow);
+        render(MobileActDrawer, {
+            props: {
+                storyId: 's',
+                currentSceneId: 'ch1_act1',
+                onNavigate,
+                onClose,
+                open: true,
+                locale: 'en',
+            },
+        });
+        // Chapter 1 (holds the current act) is expanded by default…
+        expect(screen.getByText('Act 1')).toBeInTheDocument();
+        expect(screen.getByText('Act 2')).toBeInTheDocument();
+        // …Chapter 2 is collapsed, so its act is not rendered.
+        expect(screen.queryByText('Act 3')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Chapter 2' })
+        ).toHaveAttribute('aria-expanded', 'false');
+
+        // Expanding Chapter 2 reveals its act.
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Chapter 2' })
+        );
+        expect(screen.getByText('Act 3')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Chapter 2' })
+        ).toHaveAttribute('aria-expanded', 'true');
+    });
 
     it('renders an act button per act when open', () => {
         render(MobileActDrawer, {

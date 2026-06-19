@@ -238,12 +238,15 @@ describe('MobileNovelReader', () => {
         expect(screen.getByText('Line 1 of 3')).toBeInTheDocument();
     });
 
-    it('disables the previous-line button on the first line', async () => {
+    it('shows a disabled previous-line button on the first line without opening the menu', async () => {
         render(MobileNovelReader, {
             props: { dialogue: mockDialogue, choice: null, locale: 'en' },
         });
         await vi.runAllTimersAsync();
-        await fireEvent.click(screen.getByLabelText('Open menu'));
+        // The back control is persistent: visible with the hamburger chrome closed…
+        expect(screen.queryByLabelText('Back to Home')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Previous line')).toBeInTheDocument();
+        // …and disabled on the first line.
         expect(screen.getByLabelText('Previous line')).toBeDisabled();
     });
 
@@ -264,7 +267,7 @@ describe('MobileNovelReader', () => {
         await vi.runAllTimersAsync();
         expect(screen.getByText('Second line.')).toBeInTheDocument();
 
-        await fireEvent.click(screen.getByLabelText('Open menu'));
+        // The persistent back button works without opening the hamburger menu.
         await fireEvent.click(screen.getByLabelText('Previous line'));
         expect(screen.getByText('First line.')).toBeInTheDocument();
         expect(screen.queryByText('Second line.')).not.toBeInTheDocument();

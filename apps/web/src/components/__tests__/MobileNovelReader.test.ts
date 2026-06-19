@@ -274,6 +274,22 @@ describe('MobileNovelReader', () => {
         expect(onNext).not.toHaveBeenCalled();
     });
 
+    it('reveals an icon label on long-press and hides it on release', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        const acts = screen.getByLabelText('Open acts panel');
+        await fireEvent.pointerDown(acts);
+        await vi.advanceTimersByTimeAsync(450);
+        // The icon button has no visible text (only its aria-label), so this
+        // visible text can only be the tooltip bubble.
+        expect(screen.getByText('Open acts panel')).toBeInTheDocument();
+        await fireEvent.pointerUp(acts);
+        expect(screen.queryByText('Open acts panel')).not.toBeInTheDocument();
+    });
+
     it('opens the backlog with the current scene lines', async () => {
         render(MobileNovelReader, {
             props: { dialogue: mockDialogue, choice: null, locale: 'en' },

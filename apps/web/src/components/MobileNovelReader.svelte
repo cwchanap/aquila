@@ -11,6 +11,7 @@
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
   import { House, Layers, ChevronLeft, History, Bookmark } from 'lucide-svelte';
+  import { longpress } from '@/lib/longpress';
 
   let {
     onChoice = () => {},
@@ -77,6 +78,7 @@
   let chromeVisible = $state(false);
   let drawerOpen = $state(false);
   let backlogOpen = $state(false);
+  let activeTooltip = $state<string | null>(null);
 
   // Plain (non-reactive) trackers.
   let lastDialogueRef: DialogueEntry[] | undefined = undefined;
@@ -265,6 +267,10 @@
           href={backUrl}
           class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
           aria-label={t.common.backToHome}
+          use:longpress={{
+            onLongPress: () => (activeTooltip = t.common.backToHome),
+            onRelease: () => (activeTooltip = null),
+          }}
         >
           <House size={20} aria-hidden="true" />
         </a>
@@ -275,6 +281,10 @@
           onclick={() => {
             drawerOpen = true;
             chromeVisible = false;
+          }}
+          use:longpress={{
+            onLongPress: () => (activeTooltip = t.reader.openActsPanel),
+            onRelease: () => (activeTooltip = null),
           }}
         >
           <Layers size={20} aria-hidden="true" />
@@ -287,6 +297,10 @@
             backlogOpen = true;
             chromeVisible = false;
           }}
+          use:longpress={{
+            onLongPress: () => (activeTooltip = t.reader.openHistory),
+            onRelease: () => (activeTooltip = null),
+          }}
         >
           <History size={20} aria-hidden="true" />
         </button>
@@ -296,6 +310,10 @@
             class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
             aria-label={t.reader.bookmark}
             onclick={() => onBookmark(currentDialogueIndex + 1)}
+            use:longpress={{
+              onLongPress: () => (activeTooltip = t.reader.bookmark),
+              onRelease: () => (activeTooltip = null),
+            }}
           >
             <Bookmark size={20} aria-hidden="true" />
           </button>
@@ -342,6 +360,10 @@
           aria-label={t.reader.previousLine}
           disabled={currentDialogueIndex === 0}
           onclick={goBack}
+          use:longpress={{
+            onLongPress: () => (activeTooltip = t.reader.previousLine),
+            onRelease: () => (activeTooltip = null),
+          }}
         >
           <ChevronLeft size={20} aria-hidden="true" />
         </button>
@@ -374,6 +396,18 @@
       </div>
     {/if}
   </div>
+
+  <!-- Visual-only long-press tooltip. Controls already expose their name via
+       aria-label, so this bubble is aria-hidden to avoid double-announcement. -->
+  {#if activeTooltip}
+    <div
+      class="pointer-events-none absolute left-1/2 z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
+      style="top: calc(3.5rem + env(safe-area-inset-top));"
+      aria-hidden="true"
+    >
+      {activeTooltip}
+    </div>
+  {/if}
 
   {#if storyId !== undefined && currentSceneId !== undefined}
     <MobileActDrawer

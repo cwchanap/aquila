@@ -154,6 +154,4 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "院子裡只剩下風聲，和一塊被磚頭壓出的、正在慢慢消散的鞋印。", background: Background.Chapter_2_Ch2_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩雙。一大一小。一大是韓越的，深，用力，像在追。一小是許星棠的，淺，輕，像怕踩碎什麼。", background: Background.Chapter_2_Ch2_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言的鞋印不在裡面。他一直站在入口處，沒有走進去。", background: Background.Chapter_2_Ch2_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但從現在開始，他會走進去了。走進所有他不該走進的地方。一步一步地。", background: Background.Chapter_2_Ch2_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "頭也不回地。", background: Background.Chapter_2_Ch2_Act6_S0 },
 ];

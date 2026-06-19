@@ -16,11 +16,11 @@ same narrow backstage-adjacent corridor, 22:59, time stretched thin, hand slamme
 
 **旁白**：門紋絲不動。他拉。推。拍。金屬把手是鎖死的。他把臉貼上玻璃——看見門後堆著幾個臨時設備箱，擋住了門開的幅度。安全扣扣在最上面。這扇門從裡面被固定了。
 
-**顧言** [scared]：（內心）鎖了。
+**顧言** [scared]：(內心)鎖了。
 
-**顧言** [scared]：（內心）⋯⋯為什麼鎖了。
+**顧言** [scared]：(內心)⋯⋯為什麼鎖了。
 
-**顧言** [scared]：（內心）後台清場的時候，扣上的。
+**顧言** [scared]：(內心)後台清場的時候，扣上的。
 
 **旁白**：他回頭。走廊另一端，一個穿志工背心的學生正抱著一疋流程表走過來。
 
@@ -44,19 +44,19 @@ same narrow backstage-adjacent corridor, 22:59, time stretched thin, hand slamme
 
 **旁白**：學生轉身跑了。腳步聲很快地消失在走廊盡頭。
 
-**顧言** [scared]：（內心）來不及。
+**顧言** [scared]：(內心)來不及。
 
-**顧言** [scared]：（內心）行政組在側台。跑過去，登記，找人——至少兩分鐘。
+**顧言** [scared]：(內心)行政組在側台。跑過去，登記，找人——至少兩分鐘。
 
-**顧言** [scared]：（內心）我沒有兩分鐘。
+**顧言** [scared]：(內心)我沒有兩分鐘。
 
 **旁白**：他掏出手機。手指發抖。螢幕亮起來——信號只剩一格。直播組的備援設備佔掉了大部分頻寬，校園網路在閉幕峰值裡幾乎是癱的。撥號轉了三圈。沒有接通。
 
-**顧言** [scared]：（內心）⋯⋯打不通。
+**顧言** [scared]：(內心)⋯⋯打不通。
 
-**顧言** [scared]：（內心）錄影。
+**顧言** [scared]：(內心)錄影。
 
-**顧言** [scared]：（內心）至少錄下來——
+**顧言** [scared]：(內心)至少錄下來——
 
 **旁白**：他舉起手機，把鏡頭對準那塊窄玻璃。
 
@@ -76,9 +76,9 @@ same narrow backstage-adjacent corridor, 22:59, time stretched thin, hand slamme
 
 **旁白**：他停下來。喘。額頭抵在冰涼的玻璃上。
 
-**顧言** [trembling]：（內心）⋯⋯我進不去。
+**顧言** [trembling]：(內心)⋯⋯我進不去。
 
-**顧言** [trembling]：（內心）我進不去。
+**顧言** [trembling]：(內心)我進不去。
 
 ```bg
 abstract split composition, left half rain-streaked narrow glass showing distorted backstage crisis, right half auditorium stage seen from far away bathed in warm countdown lights, MC silhouette at microphone, crowd silhouettes, the two worlds divided by a locked door, anime visual-novel background art, cold left vs warm right, tense divided palette, wide split-screen shot
@@ -96,11 +96,11 @@ abstract split composition, left half rain-streaked narrow glass showing distort
 
 **旁白**：後台沒有人看。
 
-**顧言** [trembling]：（內心）⋯⋯
+**顧言** [trembling]：(內心)⋯⋯
 
-**顧言** [trembling]：（內心）沒有人看。
+**顧言** [trembling]：(內心)沒有人看。
 
-**顧言** [trembling]：（內心）所有人都在倒數明天的時候，只有後台——
+**顧言** [trembling]：(內心)所有人都在倒數明天的時候，只有後台——
 
 **旁白**：他的眼睛釘在玻璃上。
 
@@ -110,11 +110,11 @@ abstract split composition, left half rain-streaked narrow glass showing distort
 
 **旁白**：不是投降。不是把包遞出去。是——她在把相機包往門口的方向推。往他這邊。往那扇鎖住的、她不知道有沒有人會開的側門。
 
-**顧言** [shocked]：（內心）她在扔。
+**顧言** [shocked]：(內心)她在扔。
 
-**顧言** [shocked]：（內心）她想把包扔過來。
+**顧言** [shocked]：(內心)她想把包扔過來。
 
-**顧言** [shocked]：（內心）她知道她出不去了。她想把那個東西——扔到門外——
+**顧言** [shocked]：(內心)她知道她出不去了。她想把那個東西——扔到門外——
 
 **旁白**：她的手臂舉到最高點。
 
@@ -156,37 +156,37 @@ pure white flash, total overexposure, world dissolving, rain and applause and be
 
 **旁白**：他活過了 22:22。他活過了 22:59。他活過了剛才那一秒。他的心臟還在跳。他的手還是燙的。他還站在這裡。
 
-**顧言** [shocked]：（內心）⋯⋯我活著。
+**顧言** [shocked]：(內心)⋯⋯我活著。
 
-**顧言** [shocked]：（內心）我沒有死。
+**顧言** [shocked]：(內心)我沒有死。
 
 **旁白**：但世界開始重置了。
 
 **旁白**：不是慢慢褪色。是從邊緣開始，被白色吃掉。走廊的牆壁變白。玻璃變白。他的手變白。聲音先消失了——掌聲沒了，雨聲沒了，他自己的喘息也沒了。然後形狀開始消失。門沒了。地板沒了。
 
-**顧言** [shocked]：（內心）⋯⋯不對。
+**顧言** [shocked]：(內心)⋯⋯不對。
 
-**顧言** [shocked]：（內心）我沒有死。
+**顧言** [shocked]：(內心)我沒有死。
 
-**顧言** [shocked]：（內心）為什麼——
+**顧言** [shocked]：(內心)為什麼——
 
 **旁白**：在一切被白色抹掉之前，三個念頭擠進同一個瞬間。
 
-**顧言** [shocked]：（內心）我活過了 22:22。
+**顧言** [shocked]：(內心)我活過了 22:22。
 
-**顧言** [shocked]：（內心）我沒有死。
+**顧言** [shocked]：(內心)我沒有死。
 
-**顧言** [shocked]：（內心）她死了。
+**顧言** [shocked]：(內心)她死了。
 
-**顧言** [shocked]：（內心）⋯⋯世界才回來。
+**顧言** [shocked]：(內心)⋯⋯世界才回來。
 
 **旁白**：白色填滿了一切。
 
-**顧言** [trembling]：（內心）不是我。
+**顧言** [trembling]：(內心)不是我。
 
-**顧言** [trembling]：（內心）至少這一次——
+**顧言** [trembling]：(內心)至少這一次——
 
-**顧言** [trembling]：（內心）不是我。
+**顧言** [trembling]：(內心)不是我。
 
 **旁白**：然後，在那片什麼都沒有的白色裡，有一個聲音浮上來。
 
@@ -198,7 +198,7 @@ pure white flash, total overexposure, world dissolving, rain and applause and be
 
 **旁白**：那個聲音說——
 
-**許星棠**：（內心）不要只救自己。
+**許星棠**：(內心)不要只救自己。
 
 **旁白**：白色吞沒了最後一個字。
 

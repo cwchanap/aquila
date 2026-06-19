@@ -264,13 +264,11 @@ school main gate on overcast day, blue-and-white security tents, metal detector 
 temporary security command center interior, prefab mobile office unit, folding table with campus map spread out and radios, uniformed officers moving about, monitors and equipment, fluorescent lighting, cramped functional space, moody cinematic visual-novel background art
 ```
 
-**旁白**：在指揮室裡，邵啟明坐在桌前，面前的對講機安靜了下來。他把剛才顧言給他看的手機畫面在腦子裡又過了一遍。
-
-**旁白**：他的手指無意識地敲了兩下桌面。然後他拿起對講機，按了一個頻道。
+**旁白**：在指揮室裡，邵啟明坐在桌前，面前的對講機安靜了下來。他拿起對講機，按了一個頻道。
 
 **邵叔** [serious]：鐘樓那邊的監控，調一下。確認今天所有攝像頭都在線。
 
-**旁白**：他說這話的語氣很平，是工作語氣，沒有任何多餘的東西。但他的目光在說這句話的時候，落在了桌面上一張攤開的校園平面圖上——準確地說，落在了鐘樓的位置。
+**旁白**：他的目光落在桌面上一張攤開的校園平面圖上——鐘樓的位置。
 
 **旁白**：他在那個位置上畫了一個很小的圈，用鉛筆，力道很輕，像是怕紙被戳破。
 

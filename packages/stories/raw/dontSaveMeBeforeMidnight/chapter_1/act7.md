@@ -114,6 +114,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)焦躁。踱步。
 
+**旁白**：一陣風灌進走廊，屋簷的水簾被打歪了，幾滴冰涼的雨水甩進來，落在他的手背上。
+
 **顧言**：(內心)找邵叔。壓低聲音。
 
 **顧言**：(內心)不像學校主任。
@@ -125,6 +127,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)所有人困在裡面。
 
 **顧言**：(內心)林主任有不想被看到的東西。
+
+**旁白**：校門口的廣播喇叭又響了一聲，被風切成斷斷續續的碎片，聽不清字。
 
 **顧言**：(內心)這時間點。最危險。
 
@@ -152,6 +156,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)正常。
 
+**旁白**：他的後背貼著潮濕的牆面，磚頭的涼意隔著校服慢慢滲進來。
+
 **顧言**：(內心)但只是這樣。
 
 **顧言**：(內心)不需要壓低聲音。
@@ -175,6 +181,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)攝影機。鏡頭。
 
 **顧言**：(內心)全部困在這裡。
+
+**旁白**：轉播車側門那個人換了個角度，攝影機的紅色錄影燈在雨幕裡亮了一下。
 
 **顧言**：(內心)今晚有事。
 
@@ -202,6 +210,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)有什麼問題。
 
+**旁白**：雨勢又大了一截，打在屋簷上的聲音變成了連續的轟鳴，蓋過了人聲。
+
 **顧言**：(內心)但林主任的表情。
 
 **顧言**：(內心)不對。
@@ -211,6 +221,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)是擔心被揭穿。
 
 **顧言**：(內心)邵叔拍肩。也不對。
+
+**旁白**：他感覺到自己的指甲掐進掌心，皮膚濕冷的。
 
 **顧言**：(內心)不是安慰。是控制。
 
@@ -229,6 +241,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)鏡頭拍不到的地方。
 
 **顧言**：(內心)他都清楚。
+
+**旁白**：一輛車的遠光燈掃過雨幕，把帳篷的深藍色布面照得發白，又暗下去。
 
 **顧言**：(內心)山路封了。校門管了。
 
@@ -250,6 +264,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 
 **顧言**：(內心)不對。別亂想。
 
+**旁白**：他吸了一口氣，空氣裡全是雨水和柏油路面被打濕之後的那股腥味。
+
 **顧言**：(內心)邵叔不會傷害我。
 
 **顧言**：(內心)訊息是真的。
@@ -259,6 +275,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)許星棠的警告是真的。
 
 **顧言**：(內心)林主任的表情是真的。
+
+**旁白**：他的心跳在耳膜裡撞，比雨聲更近、更悶。
 
 **顧言**：(內心)有什麼在發生。
 
@@ -275,6 +293,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)出口都關著。
 
 **顧言**：(內心)學校變成了容器。
+
+**旁白**：窗外停車場的水窪裡，車燈的倒影被雨點砸成碎片，又聚攏，又被砸碎。
 
 **顧言**：(內心)六點了。天快黑。
 
@@ -299,6 +319,8 @@ school gate area in torrential rain at dusk, rain falling like a solid wall, car
 **顧言**：(內心)或者某個我不知道的人。
 
 **顧言**：(內心)想知道我爸留下了什麼。
+
+**旁白**：廣播喇叭的金屬支架在風裡微微發顫，發出很輕的嗡嗡聲。
 
 **顧言**：(內心)或者用我引出什麼。
 

@@ -10,9 +10,9 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：他繞到禮堂外側的走廊。這裡是半公開區域，有學生志工和家長經過，有窗，有緊急照明燈，不需要門禁卡。
 
-**顧言** [determined]：（內心）規則四。監控切線期間，只待在有人看得到的地方。
+**顧言** [determined]：(內心)規則四。監控切線期間，只待在有人看得到的地方。
 
-**顧言** [determined]：（內心）現在過了22:23。但規則還在。不進後台。
+**顧言** [determined]：(內心)現在過了22:23。但規則還在。不進後台。
 
 **旁白**：走廊很長。一側是高窗，暴雨打在上面，像有人用指甲不停地刮。另一側是通往後台暫存區的幾道門，門上貼著行政組的公告：「晚間後台限工作人員進入」。
 
@@ -22,15 +22,15 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：走廊盡頭的轉角，出現了一個人。
 
-**顧言** [scared]：（內心）許星棠。
+**顧言** [scared]：(內心)許星棠。
 
 **旁白**：她從校史館的方向走過來。外套濕了一半，頭髮的碎髮黏在耳側和下頷。她懷裡護著一個東西。
 
 **旁白**：不是掛在脖子上的相機。是一個深色的相機包，被她用雙臂夾在胸前，像抱著什麼不能掉下來的東西。
 
-**顧言** [determined]：（內心）她去校史館了。外套全濕了。她懷裡的東西——
+**顧言** [determined]：(內心)她去校史館了。外套全濕了。她懷裡的東西——
 
-**顧言** [determined]：（內心）她在護著它。
+**顧言** [determined]：(內心)她在護著它。
 
 **旁白**：許星棠沒有看見他。她低著頭，腳步比平時快，往禮堂側門的方向走。經過一盞緊急照明燈時，燈光掃過她的臉。
 
@@ -38,9 +38,9 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：她繞進禮堂側門的方向，消失在走廊盡頭。
 
-**顧言** [determined]：（內心）不要跟。
+**顧言** [determined]：(內心)不要跟。
 
-**顧言** [determined]：（內心）今天不進死角。
+**顧言** [determined]：(內心)今天不進死角。
 
 **旁白**：22:39。
 
@@ -84,9 +84,9 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：指揮室的方向。
 
-**顧言** [determined]：（內心）他在看指揮室。
+**顧言** [determined]：(內心)他在看指揮室。
 
-**顧言** [determined]：（內心）他在等什麼人的指示。
+**顧言** [determined]：(內心)他在等什麼人的指示。
 
 **旁白**：顧言把這些都記下來。但他沒有動。他靠在牆邊，手機螢幕亮著，假裝什麼都沒在看。
 
@@ -102,9 +102,9 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：走路的步伐很穩。不急，不慢。像走過很多次這條路。
 
-**顧言** [scared]：（內心）黑雨衣。
+**顧言** [scared]：(內心)黑雨衣。
 
-**顧言** [scared]：（內心）第一輪。第二輪。同一件。
+**顧言** [scared]：(內心)第一輪。第二輪。同一件。
 
 **旁白**：黑雨衣沒有走向後台入口。那裡有校安。
 
@@ -114,33 +114,33 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：走廊恢復安靜。只有雨聲。
 
-**顧言** [determined]：（內心）許星棠。
+**顧言** [determined]：(內心)許星棠。
 
-**顧言** [determined]：（內心）韓越被攔。
+**顧言** [determined]：(內心)韓越被攔。
 
-**顧言** [determined]：（內心）林主任等指示。
+**顧言** [determined]：(內心)林主任等指示。
 
-**顧言** [determined]：（內心）黑雨衣進去了。
+**顧言** [determined]：(內心)黑雨衣進去了。
 
-**顧言** [determined]：（內心）四個人。四條線。全部指向後台。
+**顧言** [determined]：(內心)四個人。四條線。全部指向後台。
 
 **旁白**：他靠在牆上。呼吸放慢。
 
-**顧言** [determined]：（內心）韓越剛才說的那句話。
+**顧言** [determined]：(內心)韓越剛才說的那句話。
 
-**顧言** [determined]：（內心）「讓她一個人進去會出事。」
+**顧言** [determined]：(內心)「讓她一個人進去會出事。」
 
-**顧言** [determined]：（內心）他的語氣不是威脅。
+**顧言** [determined]：(內心)他的語氣不是威脅。
 
 **旁白**：顧言沒有把那個詞想完。
 
-**顧言** [determined]：（內心）不。不能這麼快下結論。前四輪，韓越每一次都出現在可疑的位置。他可能是在演戲。
+**顧言** [determined]：(內心)不。不能這麼快下結論。前四輪，韓越每一次都出現在可疑的位置。他可能是在演戲。
 
-**顧言** [determined]：（內心）但他被攔住了。如果他想害她，為什麼要硬闖？為什麼要被兩名校安扣住？
+**顧言** [determined]：(內心)但他被攔住了。如果他想害她，為什麼要硬闖？為什麼要被兩名校安扣住？
 
-**顧言** [determined]：（內心）……
+**顧言** [determined]：(內心)……
 
-**顧言** [determined]：（內心）先記下來。不要現在判斷。
+**顧言** [determined]：(內心)先記下來。不要現在判斷。
 
 **旁白**：他沒有進去。他靠在牆邊，手機螢幕上的時間一格一格地跳。
 
@@ -148,8 +148,8 @@ auditorium outer corridor at night, long dim institutional hallway running along
 
 **旁白**：走廊裡的緊急照明燈發出輕微的電流聲。暴雨沒有要停的意思。
 
-**顧言** [determined]：（內心）她在裡面。
+**顧言** [determined]：(內心)她在裡面。
 
-**顧言** [determined]：（內心）他也在裡面。
+**顧言** [determined]：(內心)他也在裡面。
 
-**顧言** [determined]：（內心）而我在外面。
+**顧言** [determined]：(內心)而我在外面。

@@ -30,6 +30,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言**：(內心)只有衛生紙和手機。
 
+**旁白**：舞台上的主持人正說到一半，麥克風突然發出一聲尖銳的回授，前排有人摀住耳朵。
+
 **顧言**：(內心)什麼時候放進來的。
 
 **顧言**：(內心)⋯⋯
@@ -48,6 +50,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言**：(內心)校門口。
 
+**旁白**：前排響起一陣掌聲，震得座椅的靠背跟著共鳴。
+
 **顧言**：(內心)長廊。
 
 **顧言**：(內心)教學樓。
@@ -55,6 +59,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 **顧言**：(內心)走廊。
 
 **顧言**：(內心)禮堂。
+
+**旁白**：他感覺到口袋裡那張紙的硬邊抵著指節，薄的、涼的。
 
 **顧言**：(內心)坐著沒動。沒有接觸。
 
@@ -120,6 +126,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言**：(內心)保險理賠清單。全損。就兩個字。
 
+**旁白**：禮堂走道邊有人正收攏滴水的傘，水珠落在塑膠地板上，啪、啪。
+
 **顧言**：(內心)還有東西留下。
 
 **顧言**：(內心)在哪裡。
@@ -139,6 +147,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 **顧言**：(內心)訊息說鐘樓。
 
 **顧言**：(內心)許星棠說不要去。
+
+**旁白**：舞台上的校友合唱團正唱到副歌，擴音器把人聲推得很滿，震得空氣都在嗡。
 
 **顧言**：(內心)紙上也說鐘樓。
 
@@ -168,6 +178,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言** [sad]：(內心)空洞。
 
+**旁白**：影印紙的表面很粗糙，指腹摸過去有一層細細的顆粒感。
+
 **顧言** [sad]：(內心)像被定了罪。
 
 **顧言** [sad]：(內心)十年了。
@@ -177,6 +189,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 **顧言** [sad]：(內心)不在乎別人怎麼說。
 
 **顧言** [sad]：(內心)你不在了。
+
+**旁白**：他的眼眶有點發熱，但他沒有眨眼，怕一眨就有什麼掉下來。
 
 **顧言** [sad]：(內心)唯一確定的事。
 
@@ -206,6 +220,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **顧言** [sad]：(內心)一句話。
 
+**旁白**：禮堂的冷氣出風口正對著他的後頸，吹得那裡一小塊皮膚起了一層疙瘩。
+
 **顧言** [sad]：(內心)一樣東西。
 
 **顧言** [sad]：(內心)離開之前。
@@ -216,7 +232,7 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 
 **旁白**：他把照片塞回口袋裡。動作比拿出來的時候快很多，帶著一種不願意繼續看的急躁。他靠在椅背上，仰頭看著禮堂的天花板。天花板上有很多管道和線纜，交錯縱橫，像一幅沒有邏輯的抽象畫。
 
-**顧言**：(內心)許許星棠說不要去。
+**顧言**：(內心)許星棠說不要去。
 
 **顧言**：(內心)語氣很平。
 
@@ -225,6 +241,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 **顧言**：(內心)說一件確定的事。
 
 **顧言**：(內心)她知道什麼。
+
+**旁白**：天花板的日光燈管閃了一下，發出很輕的電流聲。
 
 **顧言**：(內心)她在警告。
 
@@ -235,6 +253,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 **顧言**：(內心)其他的能忍。
 
 **顧言**：(內心)這個不行。
+
+**旁白**：他把拇指按在扶手上，金屬的涼意順著指腹傳上來。
 
 **顧言**：(內心)他們知道。
 
@@ -251,6 +271,8 @@ school auditorium interior at night, bright fluorescent ceiling lights combined 
 **顧言**：(內心)太精準了。
 
 **顧言**：(內心)精準到噁心。
+
+**旁白**：鄰座那個家長的手機螢幕亮著，冷白的光從側面打過來，在他的視線邊緣晃了一下。
 
 **顧言** [determined]：(內心)知道是陷阱。
 
@@ -322,6 +344,8 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 
 **顧言**：(內心)許星棠⋯⋯
 
+**旁白**：走廊盡頭的應急燈投下昏黃的光，把鐵門外的雨絲照成一根根斜斜的細針。
+
 **顧言**：(內心)不是她。
 
 **顧言**：(內心)身形不對。
@@ -352,6 +376,8 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 
 **顧言**：(內心)他的字跡。
 
+**旁白**：雨聲從鐵門外面灌進來，在狹窄的走廊裡來回撞，像一個封閉的共鳴箱。
+
 **顧言**：(內心)不在新聞裡的笑臉。
 
 **顧言**：(內心)鐘樓等你。
@@ -361,6 +387,8 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 **顧言**：(內心)她說得對。
 
 **顧言**：(內心)陷阱。我知道。
+
+**旁白**：半開的鐵門被風推得輕輕晃動，門軸發出細細的金屬摩擦聲。
 
 **顧言**：(內心)但我爸在裡面。
 
@@ -388,6 +416,8 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 
 **顧言**：(內心)我要去。
 
+**旁白**：走廊另一頭傳來一陣腳步聲，又很快消失，像有人探頭看了一眼就走了。
+
 **顧言**：(內心)第二。
 
 **顧言**：(內心)雨衣。相機。
@@ -397,6 +427,8 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 **顧言**：(內心)訊息裡的相機。
 
 **顧言**：(內心)我要看到。
+
+**旁白**：他的手握成了拳，指甲陷進掌心，那一點刺痛讓他清醒過來。
 
 **顧言**：(內心)第三。
 
@@ -409,6 +441,8 @@ side corridor backstage of auditorium, half-open iron door at far end, rain slan
 **顧言**：(內心)或陷阱的人。
 
 **顧言**：(內心)我需要答案。
+
+**旁白**：鐵門外的雨幕裡，遠處什麼都看不清，只有雨在路燈下織成一張密網。
 
 **顧言** [determined]：(內心)三個理由。
 

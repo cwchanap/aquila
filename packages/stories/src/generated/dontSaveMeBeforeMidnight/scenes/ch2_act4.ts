@@ -94,6 +94,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他收回目光，轉身繼續走。腳步比剛才快了一點。背後是指揮室的板房、是監控、是車輛調度、是邵啟明和他那張溫暖的、可靠的、露著白牙的臉。", background: Background.Chapter_2_Ch2_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有回頭。", background: Background.Chapter_2_Ch2_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "九點零五分。風更大了。雲層的縫隙裡擠不出一絲光。遠處的鐘樓灰撲撲地矗在天際線上，指針在走，像一個不會停下的計時器。", background: Background.Chapter_2_Ch2_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "校慶的人群在主道上湧動，歡笑、抱怨、寒暄、拍照。沒有人注意到，一個十七歲的少年剛剛從一個他信任了十年的男人面前轉身走開，口袋裡揣著一條可能救他命、也可能害死他的訊息。", background: Background.Chapter_2_Ch2_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "校慶的人群在主道上湧動，歡笑、抱怨、寒暄、拍照。", background: Background.Chapter_2_Ch2_Act4_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)這一次，我自己來。", background: Background.Chapter_2_Ch2_Act4_S0, portrait: Portrait.GuYan_Determined },
 ];

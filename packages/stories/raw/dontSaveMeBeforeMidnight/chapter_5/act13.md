@@ -12,23 +12,23 @@ narrow semi-public corridor outside backstage at night, 22:58, auditorium lights
 
 **旁白**：掌聲。音樂。遠處主持人測麥克風的回授音。這些聲音從禮堂裡漫出來，和雨聲、和發電機的低頻嗡鳴混在一起，變成一種分不清前後的噪音。像有什麼東西正在被蓋住。
 
-**顧言** [determined]：（內心）22:58。
+**顧言** [determined]：(內心)22:58。
 
-**顧言** [determined]：（內心）還活著。
+**顧言** [determined]：(內心)還活著。
 
-**顧言** [determined]：（內心）35 分鐘前，我看見 22:23。
+**顧言** [determined]：(內心)35 分鐘前，我看見 22:23。
 
-**顧言** [determined]：（內心）鐘樓停電了。訊息是真的。但我沒有在鐘樓。我沒有死。
+**顧言** [determined]：(內心)鐘樓停電了。訊息是真的。但我沒有在鐘樓。我沒有死。
 
-**顧言** [determined]：（內心）規則被我推翻了。
+**顧言** [determined]：(內心)規則被我推翻了。
 
 **旁白**：他沒有離開。他知道 22:23 之後，許星棠不見了。韓越在後台入口被兩名校安攔住。林主任接了一通電話後臉色發白。後台側門被人從裡面關上。
 
 **旁白**：所以他繞到了這裡。禮堂側面一條半公開的通道——不是後台內部，不需要門禁卡，但能透過側門上那塊窄玻璃、設備箱的縫隙、和玻璃上的反光，看見後台暫存區的一部分動線。
 
-**顧言** [determined]：（內心）不進去。
+**顧言** [determined]：(內心)不進去。
 
-**顧言** [determined]：（內心）只看。
+**顧言** [determined]：(內心)只看。
 
 **旁白**：他把臉貼近那塊窄玻璃。玻璃很小，只有半個巴掌大，被雨水和防颱膠帶遮掉了一半。能看見的角度很窄——一段暫存區的水泥地面、幾個堆疊的器材箱、直播控制台外側的一角。
 
@@ -40,27 +40,27 @@ narrow semi-public corridor outside backstage at night, 22:58, auditorium lights
 view through narrow rain-streaked side-door glass, refracted reflection of backstage storage area, dim emergency-lit concrete floor, stacked black equipment cases, silhouette of a girl clutching a camera bag near a control desk door, claustrophobic distorted fishbowl perspective as if seen through a tiny dirty window, cold green-white emergency light with faint warm bleed, anime visual-novel background art, desaturated tense palette, tight claustrophobic shot
 ```
 
-**顧言** [determined]：（內心）她在那裡。
+**顧言** [determined]：(內心)她在那裡。
 
-**顧言** [determined]：（內心）相機包還在她手上。
+**顧言** [determined]：(內心)相機包還在她手上。
 
-**顧言** [determined]：（內心）⋯⋯她在等什麼。
+**顧言** [determined]：(內心)⋯⋯她在等什麼。
 
 **旁白**：然後，另一個人影從玻璃的邊緣走進了他的視野。
 
 **旁白**：黑色雨衣。帽沿壓得很低。走路的方式很穩——不是學生那種急著躲雨的樣子，是一種早就知道目的地在哪裡的、直線的穩。那個人影走到許星棠身後兩步的地方，停下來。
 
-**顧言** [determined]：（內心）⋯⋯黑雨衣。
+**顧言** [determined]：(內心)⋯⋯黑雨衣。
 
-**顧言** [determined]：（內心）又是黑雨衣。
+**顧言** [determined]：(內心)又是黑雨衣。
 
 **旁白**：他的第一個反應不是恐懼。是判斷。
 
-**顧言** [determined]：（內心）行政組。或者校安。
+**顧言** [determined]：(內心)行政組。或者校安。
 
-**顧言** [determined]：（內心）後台剛清過場。有人來攔她，不奇怪。
+**顧言** [determined]：(內心)後台剛清過場。有人來攔她，不奇怪。
 
-**顧言** [determined]：（內心）⋯⋯只是攔人嗎。
+**顧言** [determined]：(內心)⋯⋯只是攔人嗎。
 
 **旁白**：聲音傳過來了。很模糊。被玻璃、被雨、被禮堂的噪音一起壓著，像隔著一層水聽人說話。他聽不清完整的句子，只有幾個字從那層水裡浮上來。
 
@@ -70,9 +70,9 @@ view through narrow rain-streaked side-door glass, refracted reflection of backs
 
 **旁白**：一個詞。不是請求。
 
-**顧言** [determined]：（內心）⋯⋯相機。
+**顧言** [determined]：(內心)⋯⋯相機。
 
-**顧言** [determined]：（內心）他在要那個包。
+**顧言** [determined]：(內心)他在要那個包。
 
 **旁白**：更多的字浮上來。斷的。碎的。像被剪刀剪過的錄音。
 
@@ -88,21 +88,21 @@ view through narrow rain-streaked side-door glass, refracted reflection of backs
 
 **旁白**：但她沒有喊。
 
-**顧言** [scared]：（內心）她為什麼不喊。
+**顧言** [scared]：(內心)她為什麼不喊。
 
-**顧言** [scared]：（內心）後台有人。控制台有人。她只要喊一聲——
+**顧言** [scared]：(內心)後台有人。控制台有人。她只要喊一聲——
 
-**顧言** [scared]：（內心）⋯⋯
+**顧言** [scared]：(內心)⋯⋯
 
-**顧言** [scared]：（內心）不。
+**顧言** [scared]：(內心)不。
 
-**顧言** [scared]：（內心）她不會喊。
+**顧言** [scared]：(內心)她不會喊。
 
-**顧言** [scared]：（內心）她知道現在喊了，只會被當成後台的混亂。閉幕倒數、暴雨、掌聲——沒有人會回頭看一個後台傳出來的聲音。
+**顧言** [scared]：(內心)她知道現在喊了，只會被當成後台的混亂。閉幕倒數、暴雨、掌聲——沒有人會回頭看一個後台傳出來的聲音。
 
-**顧言** [scared]：（內心）而且⋯⋯
+**顧言** [scared]：(內心)而且⋯⋯
 
-**顧言** [scared]：（內心）她認得那個聲音。
+**顧言** [scared]：(內心)她認得那個聲音。
 
 **旁白**：這是顧言後來才完全想明白的事。但那一刻，他從許星棠的反應裡讀到了一件事——
 
@@ -116,27 +116,27 @@ view through narrow rain-streaked side-door glass, refracted reflection of backs
 
 **旁白**：她沒有出聲。但她的嘴唇動了一下。玻璃、雨、噪音把那句話吞掉了。顧言什麼都沒聽見。他只看見她的嘴型——很緊、很扁、像在壓住一個字。
 
-**顧言** [scared]：（內心）她在怕。
+**顧言** [scared]：(內心)她在怕。
 
-**顧言** [scared]：（內心）她不是怕一個陌生人。
+**顧言** [scared]：(內心)她不是怕一個陌生人。
 
-**顧言** [scared]：（內心）她怕的是一個她認識的人。
+**顧言** [scared]：(內心)她怕的是一個她認識的人。
 
 **旁白**：22:59。
 
 **旁白**：顧言還在判斷。他的手抵在門框上，指尖發涼。禮堂裡的音樂換了——開始出現那種倒數前才會放的、漸強的鼓點。掌聲鬆了又緊。雨一陣一陣地砸。
 
-**顧言** [scared]：（內心）這是攔截。
+**顧言** [scared]：(內心)這是攔截。
 
-**顧言** [scared]：（內心）⋯⋯還是威脅。
+**顧言** [scared]：(內心)⋯⋯還是威脅。
 
-**顧言** [scared]：（內心）⋯⋯
+**顧言** [scared]：(內心)⋯⋯
 
-**顧言** [scared]：（內心）如果是攔截，她把包交出去，就結束了。
+**顧言** [scared]：(內心)如果是攔截，她把包交出去，就結束了。
 
-**顧言** [scared]：（內心）如果是威脅——
+**顧言** [scared]：(內心)如果是威脅——
 
-**顧言** [scared]：（內心）她不會交。她死也不會交。
+**顧言** [scared]：(內心)她不會交。她死也不會交。
 
 **旁白**：他看見了一樣東西。
 
@@ -144,15 +144,15 @@ view through narrow rain-streaked side-door glass, refracted reflection of backs
 
 **旁白**：冷白色的。很亮。不刺眼，但是那種穩定的、均勻的、像儀器一樣的強光。它從黑雨衣的手邊亮起來，打在許星棠的臉上。
 
-**顧言** [scared]：（內心）⋯⋯手電。
+**顧言** [scared]：(內心)⋯⋯手電。
 
-**顧言** [scared]：（內心）不。不只是手電。
+**顧言** [scared]：(內心)不。不只是手電。
 
-**顧言** [scared]：（內心）校安有手電。但校安不會這樣用。校安會把光打在地上、打在通道上，不會把光直接按在一個學生臉上。
+**顧言** [scared]：(內心)校安有手電。但校安不會這樣用。校安會把光打在地上、打在通道上，不會把光直接按在一個學生臉上。
 
-**顧言** [scared]：（內心）這不是在照明。
+**顧言** [scared]：(內心)這不是在照明。
 
-**顧言** [scared]：（內心）這是在告訴她——我看見你了。你跑不掉。
+**顧言** [scared]：(內心)這是在告訴她——我看見你了。你跑不掉。
 
 **旁白**：冷白強光把許星棠的臉照得很白。她的眼睛在光裡眯起來。她的身體又退了半步，後背撞上了控制台的金屬邊緣。
 
@@ -168,8 +168,8 @@ view through narrow rain-streaked side-door glass, refracted reflection of backs
 
 **旁白**：動作很快。很準。沒有猶豫。那不是一個在管理秩序的人會做的動作。那是——
 
-**顧言** [shocked]：（內心）⋯⋯不對。
+**顧言** [shocked]：(內心)⋯⋯不對。
 
-**顧言** [shocked]：（內心）不是攔截。
+**顧言** [shocked]：(內心)不是攔截。
 
-**顧言** [shocked]：（內心）她會死。
+**顧言** [shocked]：(內心)她會死。

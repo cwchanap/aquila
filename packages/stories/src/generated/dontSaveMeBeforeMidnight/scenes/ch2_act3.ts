@@ -70,7 +70,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他邁下台階，走進雨裡。腳步比來的時候快了一點。不是跑，是一種有方向的走——像一個終於知道自己要去哪裡的人。", background: Background.Chapter_2_Ch2_Act3_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)先找到出口。趁天還沒黑，趁路還沒封，離開這座學校。", background: Background.Chapter_2_Ch2_Act3_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "八點。雨勢不減。校慶的人群在主道上湧動，歡笑、抱怨、寒暄、拍照。廣播的女聲在天花板上循環播放著同一段百年校慶提醒。", background: Background.Chapter_2_Ch2_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有人知道，一個十七歲的少年剛剛在食堂裡用一杯豆漿做了一個實驗。也沒有人知道，那個實驗的結果正在改變他今天接下來每一步的方向。", background: Background.Chapter_2_Ch2_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他朝校門的方向走去。", background: Background.Chapter_2_Ch2_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "口袋裡的手機安靜地躺著。那條訊息還在裡面，像一顆埋在土裡的種子，等著天黑。", background: Background.Chapter_2_Ch2_Act3_S0 },
 ];

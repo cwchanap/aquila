@@ -115,8 +115,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯死過一次的地方，我不會再去第二次。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十點十分。校門口的安檢隊伍又長了一些。有人在抱怨天氣，有人在打電話聯繫接駁車，有人在催前面的人快點。喧嘩聲在灰色的天空下面擴散開來，像一層看不見的霧。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保全桌後面，那本車輛進出登記簿靜靜地攤開著。17:20，校務廂型車，直播備份器材，側門出發，封路前最後一班。路線：視天候調整。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "它不知道自己已經被一雙少年的眼睛記住了。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "它也不知道，那雙眼睛的主人，正在朝它走過去。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一步一步地。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "頭也不回地。", background: Background.Chapter_2_Ch2_Act5_S0 },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)17:20。直播備份器材車。側門。封路前最後一班。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他朝側門的方向走去。一步比一步快。", background: Background.Chapter_2_Ch2_Act5_S0 },
 ];

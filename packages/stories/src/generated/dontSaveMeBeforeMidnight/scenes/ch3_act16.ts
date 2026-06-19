@@ -100,6 +100,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "二十一點五十五分。南翼醫務室內間。雨還在下。發電機還在轉。通風口的塑膠布一鼓一癟。地上那台手機的螢幕暗著。", background: Background.Chapter_3_Ch3_Act16_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有人來。", background: Background.Chapter_3_Ch3_Act16_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有人知道。", background: Background.Chapter_3_Ch3_Act16_S3 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這間房間還會繼續安靜很長一段時間。長到足夠讓客觀世界繼續轉動。長到足夠讓某個人在另一個地方，做另一件改變一切的事。", background: Background.Chapter_3_Ch3_Act16_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑。", background: Background.Chapter_3_Ch3_Act16_S3 },
 ];

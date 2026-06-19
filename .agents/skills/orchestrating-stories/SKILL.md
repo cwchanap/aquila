@@ -1,5 +1,5 @@
 ---
-name: writing-new-story
+name: orchestrating-stories
 description: Use when creating a new branching story, adding a new chapter to an existing story, adding new characters, or extending the branching tree of an existing story. Also use when the task involves `packages/stories/raw/` markdown dialogue or `bun compile:stories`.
 ---
 

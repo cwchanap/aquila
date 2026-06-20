@@ -1,5 +1,5 @@
 export interface LongpressParams {
-    onLongPress: () => void;
+    onLongPress: (node: HTMLElement) => void;
     onRelease: () => void;
     delay?: number;
 }
@@ -8,9 +8,10 @@ const DEFAULT_DELAY = 450;
 
 /**
  * Svelte action: hold the pointer for `delay` ms to "peek" — fires
- * `onLongPress` (e.g. show a tooltip) and suppresses the click that would
- * otherwise follow, so holding a control to read its label never triggers it.
- * A short tap is untouched.
+ * `onLongPress` with the pressed node (e.g. so a tooltip can anchor to it via
+ * getBoundingClientRect) and suppresses the click that would otherwise follow,
+ * so holding a control to read its label never triggers it. A short tap is
+ * untouched.
  */
 export function longpress(node: HTMLElement, params: LongpressParams) {
     let current = params;
@@ -30,7 +31,7 @@ export function longpress(node: HTMLElement, params: LongpressParams) {
         timer = setTimeout(() => {
             timer = undefined;
             fired = true;
-            current.onLongPress();
+            current.onLongPress(node);
         }, current.delay ?? DEFAULT_DELAY);
     }
 

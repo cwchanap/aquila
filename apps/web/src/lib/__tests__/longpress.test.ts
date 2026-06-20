@@ -14,6 +14,9 @@ describe('longpress action', () => {
         expect(onLongPress).not.toHaveBeenCalled();
         vi.advanceTimersByTime(450);
         expect(onLongPress).toHaveBeenCalledTimes(1);
+        // The callback receives the pressed node so callers can anchor UI
+        // (e.g. a tooltip) to the specific control that was held.
+        expect(onLongPress).toHaveBeenCalledWith(node);
 
         node.dispatchEvent(new Event('pointerup'));
         expect(onRelease).toHaveBeenCalledTimes(1);

@@ -116,6 +116,12 @@ export class MobileReaderPage {
         return this.page.getByLabel('Open history');
     }
 
+    // Persistent ◀ control rendered above the dialogue box in reading mode,
+    // without opening the hamburger menu.
+    get previousLineButton() {
+        return this.page.getByLabel('Previous line');
+    }
+
     get backToHomeLink() {
         return this.page.getByRole('link', { name: /Back to Home/i });
     }

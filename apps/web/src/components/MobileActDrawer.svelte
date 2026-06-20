@@ -7,6 +7,7 @@
   } from '@/lib/act-navigation';
   import { ChevronDown, ChevronRight } from 'lucide-svelte';
   import { cn } from '@/lib/utils';
+  import { focusTrap } from '@/lib/focus-trap';
 
   let {
     storyId,
@@ -79,17 +80,21 @@
   ></button>
 {/if}
 
-<aside
+<div
+  use:focusTrap={open}
   class={cn(
     'fixed inset-y-0 left-0 z-50 w-4/5 max-w-xs overflow-y-auto bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ease-in-out',
     open ? 'translate-x-0' : '-translate-x-full'
   )}
+  role="dialog"
+  aria-modal={open ? 'true' : undefined}
+  aria-labelledby="acts-panel-title"
   aria-hidden={!open}
   inert={!open}
 >
   <div class="p-6" style="padding-top: calc(1.5rem + env(safe-area-inset-top));">
     <div class="mb-6 flex items-center justify-between">
-      <h2 class="text-xl font-bold text-slate-800">{t.reader.actPanel}</h2>
+      <h2 id="acts-panel-title" class="text-xl font-bold text-slate-800">{t.reader.actPanel}</h2>
       <button
         type="button"
         class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
@@ -164,4 +169,4 @@
       </div>
     {/if}
   </div>
-</aside>
+</div>

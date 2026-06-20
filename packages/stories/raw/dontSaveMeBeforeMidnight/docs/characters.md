@@ -477,7 +477,7 @@
 ## 22. 工作人員（Staff）
 
 - **ID**: `staff`
-- **Aliases**: 搬運人員, 裝卸人員, 直播志工
+- **Aliases**: 搬運人員, 裝卸人員, 直播志工, 行政組人員
 
 Generic school event staff / workers handling equipment, loading, and logistics during the centennial celebration.
 

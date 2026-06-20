@@ -44,12 +44,15 @@ export function getStoryContent(
 /**
  * Get the flow configuration for a story.
  * Flow configs are locale-independent as they define structure, not content.
+ *
+ * Returns `undefined` for an unrecognized `storyId` (including a typo or an
+ * unregistered id) so callers can render an explicit empty/error state instead
+ * of silently substituting another story's structure — which would navigate
+ * players into foreign scene ids with no signal. Only an absent (`undefined`)
+ * id falls back to the canonical default story.
  */
 export function getStoryFlow(
     storyId: string | undefined
 ): StoryFlowConfig | undefined {
-    return (
-        storyFlows[storyId ?? 'train_adventure'] ??
-        storyFlows['train_adventure']
-    );
+    return storyFlows[storyId ?? 'train_adventure'];
 }

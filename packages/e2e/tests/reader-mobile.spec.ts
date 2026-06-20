@@ -79,6 +79,82 @@ test.describe('Mobile reader', () => {
         await expect(reader.historyHeadingLocator).toBeVisible();
     });
 
+    test('moves focus into the acts drawer on open and restores it on close', async ({
+        page,
+    }) => {
+        // Real-browser coverage of the focus trap that unit tests can't provide
+        // (happy-dom doesn't model inert / real focus). Verifies the two
+        // load-bearing a11y guarantees that hold across every browser/engine:
+        // opening the drawer moves focus INTO the dialog, and closing restores
+        // focus to the persistent menu toggle instead of stranding it on <body>.
+        // (Tab-wrap is asserted separately, chromium-only — see the test below.)
+        const reader = new MobileReaderPage(page);
+        await reader.goto();
+
+        await reader.openMenu();
+        await reader.openActs();
+        await expect(reader.actsHeadingLocator).toBeVisible();
+
+        const focusInsideDialog = () =>
+            page.evaluate(() => {
+                const el = document.activeElement as Element | null;
+                return el ? el.closest('[role="dialog"]') !== null : false;
+            });
+
+        // Opening must move focus into the dialog (auto-retry covers the trap's
+        // one-microtask inert-deferral).
+        await expect
+            .poll(focusInsideDialog, { message: 'focus enters the drawer' })
+            .toBe(true);
+
+        // Escape closes the drawer and restores focus to the menu toggle (which
+        // lives in the background wrapper that was inert while the drawer was
+        // open). toBeFocused auto-retries to cover the restore deferral.
+        await page.keyboard.press('Escape');
+        await expect(reader.actsHeadingLocator).not.toBeVisible();
+        await expect(reader.menuButton).toBeFocused();
+    });
+
+    test('keeps Tab focus inside the acts drawer', async ({
+        page,
+        browserName,
+    }) => {
+        // Tab-as-input is a desktop-keyboard interaction model. On iOS WebKit
+        // (the mobile-safari project, an iPhone 12 touch profile) <button>
+        // elements are not in the default Tab order without the user's "Press
+        // Tab to highlight each item" option, so a single Tab can leave the
+        // dialog before the trap's boundary handler re-catches it — and a touch
+        // device has no Tab key anyway. Scope this assertion to chromium.
+        test.skip(
+            browserName === 'webkit',
+            'Tab focus order is a desktop concern'
+        );
+
+        const reader = new MobileReaderPage(page);
+        await reader.goto();
+
+        await reader.openMenu();
+        await reader.openActs();
+        await expect(reader.actsHeadingLocator).toBeVisible();
+
+        const focusInsideDialog = () =>
+            page.evaluate(() => {
+                const el = document.activeElement as Element | null;
+                return el ? el.closest('[role="dialog"]') !== null : false;
+            });
+        await expect.poll(focusInsideDialog).toBe(true);
+
+        // Repeated Tabs must never escape the dialog to controls behind the scrim.
+        for (let i = 0; i < 6; i++) {
+            await page.keyboard.press('Tab');
+            await expect
+                .poll(focusInsideDialog, {
+                    message: `Tab #${i + 1} stays in the drawer`,
+                })
+                .toBe(true);
+        }
+    });
+
     test('saves a bookmark tagged with the current dialogue number', async ({
         page,
     }) => {

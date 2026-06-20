@@ -7,7 +7,7 @@ import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十五點整。廣播響了。", background: Background.Chapter_2_Ch2_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是校慶背景音樂那種柔和的播報，而是一段更短、更急的語調，帶著行政指令特有的斬釘截鐵。聲音從分布在教學樓、禮堂、宿舍和餐廳外牆上的喇叭裡同時傳出來，在雨聲裡像一把鈍刀，一個字一個字地切。", background: Background.Chapter_2_Ch2_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是校慶背景音樂那種柔和的播報，而是一段更短、更急的語調，帶著行政指令特有的冷硬。聲音從分布在教學樓、禮堂、宿舍和餐廳外牆上的喇叭裡同時傳出來，在雨聲裡生硬地敲出每一個字。", background: Background.Chapter_2_Ch2_Act8_S0 },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "全校師生注意——接氣象署最新預報，颱風外圍環流持續增強，本日下午起風雨逐漸加大。為確保安全，原定晚間舉行的部分戶外活動即日起取消，相關節目調整至禮堂室內進行。", background: Background.Chapter_2_Ch2_Act8_S0 },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "傍晚後，聯外山路可能實施交通管制。請各班導師協助確認學生人數，晚間統一於禮堂集合。蒞校貴賓及媒體朋友請移步室內接待區等候，校方將視天候狀況安排後續行程。", background: Background.Chapter_2_Ch2_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播結束後，校園的空氣裡有一種微妙的變化——不是溫度，不是風向，而是某種無形的收縮。像一隻手掌慢慢地、安靜地合攏。", background: Background.Chapter_2_Ch2_Act8_S0 },

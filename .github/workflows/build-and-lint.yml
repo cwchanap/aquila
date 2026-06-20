@@ -35,5 +35,8 @@ jobs:
       - name: Lint workspace
         run: bun run lint
 
+      - name: Verify generated stories match compiler output
+        run: bun run compile:check
+
       - name: Build workspace
         run: bun run build

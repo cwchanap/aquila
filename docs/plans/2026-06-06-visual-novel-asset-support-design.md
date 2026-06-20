@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-06
 **Status:** Approved
-**Scope:** Story compiler extensions + writing-new-story skill updates
+**Scope:** Story compiler extensions + orchestrating-stories skill updates
 
 ## Problem
 
@@ -312,7 +312,7 @@ Both fields are optional. All existing code that destructures `DialogueEntry` co
 
 ### 5.1 Implementation Note
 
-**Load the `writing-skills` skill before editing `writing-new-story/SKILL.md`.** This ensures proper skill authoring conventions are followed.
+**Load the `writing-skills` skill before editing `orchestrating-stories/SKILL.md`.** This ensures proper skill authoring conventions are followed.
 
 ### 5.2 Step 2 (Add Characters) — Extended
 

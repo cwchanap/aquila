@@ -173,4 +173,4 @@ Characters to define (18 total):
 6. Update runtime: `types.ts`, `BaseScene.ts`, `NovelReader.svelte`, `Character.ts`, `instances.ts`
 7. Delete global `CharacterId.ts` + update barrel exports
 8. Update tests
-9. Update `writing-new-story` skill docs
+9. Update `orchestrating-stories` skill docs

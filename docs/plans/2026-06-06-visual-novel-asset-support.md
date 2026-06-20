@@ -1420,16 +1420,16 @@ git commit -m "test(stories): verify golden compile with asset support"
 
 ---
 
-### Task 12: Update writing-new-story skill
+### Task 12: Update orchestrating-stories skill
 
 **Files:**
-- Modify: `.agents/skills/writing-new-story/SKILL.md`
+- Modify: `.agents/skills/orchestrating-stories/SKILL.md`
 
 **Prerequisite:** Load the `writing-skills` skill first for skill authoring best practices.
 
 **Step 1: Read the current SKILL.md**
 
-Read `.agents/skills/writing-new-story/SKILL.md` fully.
+Read `.agents/skills/orchestrating-stories/SKILL.md` fully.
 
 **Step 2: Add new content**
 
@@ -1467,8 +1467,8 @@ Read the updated SKILL.md to ensure formatting is consistent.
 **Step 4: Commit**
 
 ```bash
-git add .agents/skills/writing-new-story/SKILL.md
-git commit -m "docs: update writing-new-story skill with visual novel asset support"
+git add .agents/skills/orchestrating-stories/SKILL.md
+git commit -m "docs: update orchestrating-stories skill with visual novel asset support"
 ```
 
 ---

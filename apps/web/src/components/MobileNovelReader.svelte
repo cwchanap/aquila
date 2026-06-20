@@ -208,6 +208,10 @@
   }
   function hideTooltip(): void {
     activeTooltip = null;
+    // Clear the anchor too so a stale rect can't leak into a future render
+    // (the render guard at the bottom already hides the bubble, but keeping
+    // orphan viewport coords around is just confusing state hygiene).
+    tooltipAnchor = null;
   }
 
   function handleKeyPress(event: globalThis.KeyboardEvent): void {
@@ -337,12 +341,12 @@
           <button
             type="button"
             class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
-          aria-label={t.reader.bookmark}
-          onclick={() => onBookmark(currentDialogueIndex + 1)}
-          use:longpress={{
-            onLongPress: (node) => showTooltip(node, t.reader.bookmark),
-            onRelease: hideTooltip,
-          }}
+            aria-label={t.reader.bookmark}
+            onclick={() => onBookmark(currentDialogueIndex + 1)}
+            use:longpress={{
+              onLongPress: (node) => showTooltip(node, t.reader.bookmark),
+              onRelease: hideTooltip,
+            }}
           >
             <Bookmark size={20} aria-hidden="true" />
           </button>

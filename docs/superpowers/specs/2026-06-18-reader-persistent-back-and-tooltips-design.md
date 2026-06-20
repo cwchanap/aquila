@@ -48,8 +48,9 @@ Native `title` tooltips are unreliable on touch (notably iOS Safari), so tooltip
 **`apps/web/src/lib/longpress.ts`** — `longpress(node, params)`:
 - `params`: `{ onLongPress: () => void; onRelease: () => void; delay?: number }` (default `delay = 450`).
 - On `pointerdown`: start a `delay`ms timer. If it elapses without an intervening `pointerup` / `pointerleave` / `pointercancel`, call `onLongPress()` and set an internal `firedFlag`.
-- On `pointerup` / `pointerleave` / `pointercancel`: clear the timer; if it had fired, call `onRelease()`.
-- **Click suppression (peek-only):** when a long-press fired, the action swallows the immediately-following `click` (capture-phase listener that `stopImmediatePropagation()` + `preventDefault()` once), so holding an icon to read its label does not also trigger its action. A normal short tap is unaffected.
+- On `pointerup`: clear the timer; if it had fired, call `onRelease()`. **Keep** `firedFlag` true so the immediately-following `click` is still suppressed (a real click follows `pointerup`).
+- On `pointerleave` / `pointercancel`: clear the timer; if it had fired, call `onRelease()` and **clear** `firedFlag`. No `click` follows these events, so leaving the flag set would only swallow a later keyboard-activated click on the same control.
+- **Click suppression (peek-only):** when a long-press fired and was released via `pointerup`, the action swallows the immediately-following `click` (capture-phase listener that `stopImmediatePropagation()` + `preventDefault()` once), so holding an icon to read its label does not also trigger its action. A normal short tap is unaffected.
 - Cleanup: returns `{ destroy() }` removing all listeners and clearing any pending timer. Svelte 5 runes mode supports `use:` actions; this stays a plain action.
 
 **In `MobileNovelReader.svelte`:**
@@ -62,7 +63,7 @@ Native `title` tooltips are unreliable on touch (notably iOS Safari), so tooltip
 
 - **Back at line 0:** `disabled` attribute + `goBack()`'s `<= 0` guard — double-guarded, no-op.
 - **Back while an overlay is open:** the persistent ◀ sits at a lower z-index than the drawer/backlog overlays (z-40/z-50), so it is visually covered; `goBack()`'s `hasOverlay` guard is the belt-and-suspenders backstop.
-- **Long-press then drag off the button:** `pointerleave`/`pointercancel` clears the timer and hides the tooltip; if it had already fired, the click is still suppressed (peek-only).
+- **Long-press then drag off the button:** `pointerleave`/`pointercancel` clears the timer and hides the tooltip; the `fired` suppression flag is also cleared so a subsequent keyboard-activated click on the same control is not swallowed (no click follows `pointerleave`/`pointercancel`, so suppression would only harm legitimate later clicks).
 - **Long-press vs. short tap:** under `delay`, no tooltip, click fires normally (existing behavior preserved).
 - **Overlong dialogue line:** scrolls within the fixed-height text region; the indicator stays pinned at the box bottom via flex.
 

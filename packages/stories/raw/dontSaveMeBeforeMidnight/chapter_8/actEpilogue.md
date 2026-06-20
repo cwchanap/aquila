@@ -138,6 +138,10 @@ school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet
 
 **旁白**：⋯⋯
 
+**顧言** [determined]：（內心）也許這只是第八次。
+
+**顧言** [determined]：（內心）但這一刻是真的。
+
 **旁白**：他只是站在那裡。
 
 **旁白**：站在 05:51 的天台上。

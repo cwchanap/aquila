@@ -413,7 +413,7 @@
         {/if}
         <p class="flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800">
           {typingText}{#if isTyping}<span
-              class="ml-0.5 inline-block h-5 w-2 animate-pulse bg-blue-600 align-middle"
+              class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
             ></span>{/if}
         </p>
         {#if !isTyping}

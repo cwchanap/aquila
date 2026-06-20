@@ -132,4 +132,26 @@ describe('longpress action', () => {
         vi.advanceTimersByTime(450);
         expect(onLongPress).not.toHaveBeenCalled();
     });
+
+    it('releases on destroy if a long-press is still active', () => {
+        // If the host node is removed mid-press (e.g. the chrome bar hides
+        // while a tooltip is showing), destroy() must clear the tooltip so it
+        // does not stick around with stale anchor coordinates.
+        const node = document.createElement('button');
+        const onLongPress = vi.fn();
+        const onRelease = vi.fn();
+        const handle = longpress(node, {
+            onLongPress,
+            onRelease,
+            delay: 450,
+        });
+
+        node.dispatchEvent(new Event('pointerdown'));
+        vi.advanceTimersByTime(450);
+        expect(onLongPress).toHaveBeenCalledTimes(1);
+        expect(onRelease).not.toHaveBeenCalled();
+
+        handle.destroy();
+        expect(onRelease).toHaveBeenCalledTimes(1);
+    });
 });

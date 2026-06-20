@@ -216,7 +216,7 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **顧言** [determined]：（內心）密碼。
 
-**顧言** [determined]：（內心）父親的加密檔。提示是「給小言：不要回頭，____。」
+**顧言** [determined]：（內心）父親的加密檔。提示是「給小言：不要回頭，」後面的話他忘了。
 
 **顧言** [determined]：（內心）我記得「不要回頭」。但後半句一直模糊。像隔著一層霧。
 
@@ -472,7 +472,7 @@ school history museum public computer area, 09:30, centennial celebration mornin
 
 **旁白**：顧言坐下來。移動滑鼠。點開瀏覽器。
 
-**旁白**：他沒有回頭看。但他知道——林主任的辦公室在校史館二樓。樓梯口的角度剛好能看見這排電腦的螢幕。
+**旁白**：他沒有回頭看。但他記得——林主任的辦公室在校史館二樓。樓梯口的角度剛好能看見這排電腦的螢幕。
 
 **顧言** [determined]：（內心）查。
 

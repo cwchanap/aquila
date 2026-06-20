@@ -46,7 +46,7 @@ old library room, second floor of east wing, 15:00, laptop screen showing decryp
 
 **顧言** [determined]：（內心）爸錄下了這段對話。
 
-**韓越** [worried]：這是誰在說話？
+**韓越** [worried]：誰在說話。
 
 **許星棠** [cold]：第一個聲音不清楚。第二個——
 

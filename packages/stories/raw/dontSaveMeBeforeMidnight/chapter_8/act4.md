@@ -216,7 +216,7 @@ school history museum main exhibition hall, 10:30, centennial celebration mornin
 
 **旁白**：他還沒準備好聽見它。
 
-**旁白**但它已經在那裡了。一直在。
+**旁白**：但它已經在那裡了。一直在。
 
 **旁白**：10:50。
 

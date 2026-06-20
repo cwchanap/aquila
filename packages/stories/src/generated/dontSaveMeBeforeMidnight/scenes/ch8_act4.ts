@@ -112,7 +112,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不知道的是——答案不在鐘樓裡。不在校史館裡。不在任何一個他查過的地方裡。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "答案在他七歲那年的火裡。在父親把他推向窗邊的那一秒。在他一直以為是拋棄、其實是保護的那句話裡。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他還沒準備好聽見它。", background: Background.Chapter_8_Ch8_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "**旁白**但它已經在那裡了。一直在。", background: Background.Chapter_8_Ch8_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但它已經在那裡了。一直在。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:50。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "雨。走廊。灰色的光。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "和每一輪一樣的雨。一樣的密度。一樣的角度。", background: Background.Chapter_8_Ch8_Act4_S0 },

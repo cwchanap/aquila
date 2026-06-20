@@ -27,7 +27,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）⋯⋯材料被換過。", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）A級防火塗料換成B級。驗收單造假。", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）爸錄下了這段對話。", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.HanYue, character: "韓越", dialogue: "這是誰在說話？", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.HanYue_Worried },
+    { characterId: CharacterId.HanYue, character: "韓越", dialogue: "誰在說話。", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.HanYue_Worried },
     { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "第一個聲音不清楚。第二個——", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.XuXingtang_Cold },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停了一下。", background: Background.Chapter_8_Ch8_Act8_S0 },
     { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "我媽的調查筆記裡提過一個承包商名字。", background: Background.Chapter_8_Ch8_Act8_S0, portrait: Portrait.XuXingtang_Cold },

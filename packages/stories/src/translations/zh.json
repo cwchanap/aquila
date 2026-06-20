@@ -226,5 +226,9 @@
     "delete": "刪除",
     "archive": "封存",
     "cancel": "取消"
+  },
+  "languages": {
+    "english": "English",
+    "chinese": "中文"
   }
 }

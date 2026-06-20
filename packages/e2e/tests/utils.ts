@@ -149,6 +149,17 @@ export class MobileReaderPage {
         return this.page.getByRole('heading', { name: this.historyHeading });
     }
 
+    /**
+     * Locator for the act buttons inside the acts drawer. Excludes the chapter
+     * toggle buttons (which have aria-expanded) and the close button (✕).
+     * In branches mode these are the flat list of "Act N" buttons.
+     */
+    get actButtons() {
+        return this.page
+            .locator('[role="dialog"] button:not([aria-expanded])')
+            .filter({ hasNotText: '✕' });
+    }
+
     async goto() {
         await this.page.goto(`/${this.locale}/reader`);
     }

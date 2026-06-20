@@ -15,6 +15,10 @@ vi.mock('@aquila/stories', () => ({
         },
         bookmarks: {
             english: 'English',
+            chinese: 'Chinese',
+        },
+        languages: {
+            english: 'English',
             chinese: '中文',
         },
         common: {

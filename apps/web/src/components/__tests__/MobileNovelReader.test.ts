@@ -290,6 +290,43 @@ describe('MobileNovelReader', () => {
         expect(screen.queryByText('Open acts panel')).not.toBeInTheDocument();
     });
 
+    it('anchors the tooltip next to the pressed control, not at a fixed screen position', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        const acts = screen.getByLabelText('Open acts panel');
+        // happy-dom has no layout, so getBoundingClientRect returns zeros.
+        // Force a deterministic rect so the anchoring math is testable.
+        acts.getBoundingClientRect = vi.fn(() => ({
+            left: 120,
+            right: 160,
+            top: 48,
+            bottom: 92,
+            width: 40,
+            height: 44,
+            x: 120,
+            y: 48,
+            toJSON() {},
+        })) as typeof acts.getBoundingClientRect;
+
+        await fireEvent.pointerDown(acts);
+        await vi.advanceTimersByTimeAsync(450);
+
+        const bubble = screen.getByText('Open acts panel');
+        const style = bubble.getAttribute('style') ?? '';
+        // Horizontal center = (120 + 160) / 2 = 140; top sits just below bottom.
+        expect(style).toContain('left: 140px');
+        expect(style).toContain('top: calc(92px');
+        // Regression guard: the old fixed top-center offset must be gone.
+        expect(style).not.toContain('3.5rem');
+        expect(bubble.className).not.toContain('left-1/2');
+
+        await fireEvent.pointerUp(acts);
+        expect(screen.queryByText('Open acts panel')).not.toBeInTheDocument();
+    });
+
     it('opens the backlog with the current scene lines', async () => {
         render(MobileNovelReader, {
             props: { dialogue: mockDialogue, choice: null, locale: 'en' },

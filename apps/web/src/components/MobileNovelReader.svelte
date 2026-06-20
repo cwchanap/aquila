@@ -81,6 +81,10 @@
   let drawerOpen = $state(false);
   let backlogOpen = $state(false);
   let activeTooltip = $state<string | null>(null);
+  // Viewport-space anchor (horizontal center + bottom edge of the held control)
+  // so the tooltip bubble renders next to the icon that was long-pressed,
+  // never at a fixed screen position.
+  let tooltipAnchor = $state<{ left: number; bottom: number } | null>(null);
 
   // Plain (non-reactive) trackers.
   let lastDialogueRef: DialogueEntry[] | undefined = undefined;
@@ -195,6 +199,17 @@
     typingText = dialogue[currentDialogueIndex]?.dialogue ?? '';
   }
 
+  // Long-press peek handlers: capture the held control's viewport rect so the
+  // tooltip anchors next to that specific icon rather than at a fixed spot.
+  function showTooltip(node: HTMLElement, label: string): void {
+    const r = node.getBoundingClientRect();
+    tooltipAnchor = { left: r.left + r.width / 2, bottom: r.bottom };
+    activeTooltip = label;
+  }
+  function hideTooltip(): void {
+    activeTooltip = null;
+  }
+
   function handleKeyPress(event: globalThis.KeyboardEvent): void {
     if (event.defaultPrevented) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -276,8 +291,8 @@
           class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
           aria-label={t.common.backToHome}
           use:longpress={{
-            onLongPress: () => (activeTooltip = t.common.backToHome),
-            onRelease: () => (activeTooltip = null),
+            onLongPress: (node) => showTooltip(node, t.common.backToHome),
+            onRelease: hideTooltip,
           }}
         >
           <House size={20} aria-hidden="true" />
@@ -291,8 +306,8 @@
             chromeVisible = false;
           }}
           use:longpress={{
-            onLongPress: () => (activeTooltip = t.reader.openActsPanel),
-            onRelease: () => (activeTooltip = null),
+            onLongPress: (node) => showTooltip(node, t.reader.openActsPanel),
+            onRelease: hideTooltip,
           }}
         >
           <Layers size={20} aria-hidden="true" />
@@ -306,8 +321,8 @@
             chromeVisible = false;
           }}
           use:longpress={{
-            onLongPress: () => (activeTooltip = t.reader.openHistory),
-            onRelease: () => (activeTooltip = null),
+            onLongPress: (node) => showTooltip(node, t.reader.openHistory),
+            onRelease: hideTooltip,
           }}
         >
           <History size={20} aria-hidden="true" />
@@ -316,12 +331,12 @@
           <button
             type="button"
             class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
-            aria-label={t.reader.bookmark}
-            onclick={() => onBookmark(currentDialogueIndex + 1)}
-            use:longpress={{
-              onLongPress: () => (activeTooltip = t.reader.bookmark),
-              onRelease: () => (activeTooltip = null),
-            }}
+          aria-label={t.reader.bookmark}
+          onclick={() => onBookmark(currentDialogueIndex + 1)}
+          use:longpress={{
+            onLongPress: (node) => showTooltip(node, t.reader.bookmark),
+            onRelease: hideTooltip,
+          }}
           >
             <Bookmark size={20} aria-hidden="true" />
           </button>
@@ -370,8 +385,8 @@
           disabled={currentDialogueIndex === 0}
           onclick={goBack}
           use:longpress={{
-            onLongPress: () => (activeTooltip = t.reader.previousLine),
-            onRelease: () => (activeTooltip = null),
+            onLongPress: (node) => showTooltip(node, t.reader.previousLine),
+            onRelease: hideTooltip,
           }}
         >
           <ChevronLeft size={20} aria-hidden="true" />
@@ -407,11 +422,13 @@
   </div>
 
   <!-- Visual-only long-press tooltip. Controls already expose their name via
-       aria-label, so this bubble is aria-hidden to avoid double-announcement. -->
-  {#if activeTooltip}
+       aria-label, so this bubble is aria-hidden to avoid double-announcement.
+       It is positioned at the held control's horizontal center and just below
+       its bottom edge, so the label appears next to the icon that was held. -->
+  {#if activeTooltip && tooltipAnchor}
     <div
-      class="pointer-events-none absolute left-1/2 z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
-      style="top: calc(3.5rem + env(safe-area-inset-top));"
+      class="pointer-events-none absolute z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
+      style="left: {tooltipAnchor.left}px; top: calc({tooltipAnchor.bottom}px + 0.25rem);"
       aria-hidden="true"
     >
       {activeTooltip}

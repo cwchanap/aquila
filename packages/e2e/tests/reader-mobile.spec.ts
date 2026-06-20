@@ -15,6 +15,20 @@ test.describe('Mobile reader', () => {
         await expect(reader.tapLayer).toBeVisible();
     });
 
+    test('shows the persistent back button without opening the menu', async ({
+        page,
+    }) => {
+        const reader = new MobileReaderPage(page);
+        await reader.goto();
+
+        // The ◀ control is persistent: visible while the hamburger chrome is
+        // closed, and disabled on the first line.
+        await expect(reader.previousLineButton).toBeVisible();
+        await expect(reader.previousLineButton).toBeDisabled();
+        // The chrome-only Home link must NOT be reachable without opening menu.
+        await expect(reader.backToHomeLink).not.toBeVisible();
+    });
+
     test('opens the menu and the acts drawer', async ({ page }) => {
         const reader = new MobileReaderPage(page);
         await reader.goto();

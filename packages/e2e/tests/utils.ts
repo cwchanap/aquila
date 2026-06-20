@@ -116,6 +116,21 @@ export class MobileReaderPage {
         return this.page.getByLabel('Open history');
     }
 
+    // Bookmark control lives in the chrome bar, so the menu must be open first.
+    get bookmarkButton() {
+        return this.page.getByLabel('📖 Bookmark');
+    }
+
+    // Custom prompt dialog rendered by lib/ui-dialogs.ts showPrompt().
+    get promptDialog() {
+        return this.page.getByRole('dialog', { name: 'Prompt' });
+    }
+
+    // Custom alert dialog rendered by lib/ui-dialogs.ts showAlert().
+    get alertDialog() {
+        return this.page.getByRole('alertdialog', { name: 'Alert' });
+    }
+
     // Persistent ◀ control rendered above the dialogue box in reading mode,
     // without opening the hamburger menu.
     get previousLineButton() {
@@ -154,5 +169,36 @@ export class MobileReaderPage {
         for (let i = 0; i < times; i++) {
             await this.tapLayer.click();
         }
+    }
+
+    /**
+     * Saves a bookmark via the chrome-bar bookmark control. The menu must be
+     * open so the chrome bar is visible. Fills the prompt dialog and submits.
+     */
+    async saveBookmark(name: string) {
+        await this.bookmarkButton.click();
+        await this.promptDialog.waitFor();
+        const input = this.promptDialog.locator('input[type="text"]');
+        await input.fill(name);
+        await this.promptDialog.getByRole('button', { name: 'OK' }).click();
+    }
+
+    /**
+     * Reads the local bookmarks store for this locale. Returns the parsed
+     * array (empty if absent). Mirrors LocalBookmarksStore's storage key.
+     */
+    async localBookmarks(): Promise<
+        { bookmarkName: string; storyId: string; sceneId: string }[]
+    > {
+        return this.page.evaluate(key => {
+            const raw = localStorage.getItem(key);
+            if (!raw) return [];
+            try {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }, `aquila:bookmarks:${this.locale}`);
     }
 }

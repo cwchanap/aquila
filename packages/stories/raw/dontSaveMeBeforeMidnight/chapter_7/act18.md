@@ -116,7 +116,7 @@ backstage dark corner near equipment rack, 22:59:40, Xu Xingtang fallen against 
 
 **旁白**：邵叔的手抓住了相機包的背帶。
 
-**許星棠** [afraid]：——不要。
+**許星棠** [afraid]：不。
 
 **旁白**：許星棠的聲音很小。不是喊。是那種被壓到最低的、像從牙縫裡擠出來的拒絕。她的手指扣在拉鏈上，扣得指節發白。
 

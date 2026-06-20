@@ -98,7 +98,7 @@ school campus path near the old clock tower, 20:40, centennial celebration night
 
 **韓越** [angry]：沒有。
 
-**韓越** [angry]：沒有人動天線屋。沒有新增封鎖。沒有校安。什麼都沒有。
+**韓越** [angry]：天線屋沒人動，沒新增封鎖，也沒校安。什麼都沒有。
 
 **韓越** [angry]：我沒有跟任何人說過你給我的那條情報。
 

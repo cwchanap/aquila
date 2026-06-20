@@ -64,7 +64,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "桌上。登記表。學生物品暫存。醫療器材盤點。", background: Background.Chapter_7_Ch7_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他一條一條地說。聲音很平。平到像在念一份清單。沒有起伏。沒有顫抖。沒有憤怒。", background: Background.Chapter_7_Ch7_Act12_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但許星棠聽出了別的東西。她聽出的是——他太平了。平到不正常。像一個人在崩潰之前，把所有情緒先搬走了，只留下一個空殼在說話。", background: Background.Chapter_7_Ch7_Act12_S0 },
-    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "除了我們，這句話你還告訴過誰？", background: Background.Chapter_7_Ch7_Act12_S0, portrait: Portrait.XuXingtang_Urgent },
+    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "除了我們，這句話你還告訴過誰。", background: Background.Chapter_7_Ch7_Act12_S0, portrait: Portrait.XuXingtang_Urgent },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的聲音很低。低到只有兩個人能聽見。但每個字都很清楚。", background: Background.Chapter_7_Ch7_Act12_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言沒有立刻回答。", background: Background.Chapter_7_Ch7_Act12_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看著走廊盡頭的窗戶。雨在玻璃上。熒光燈在水膜上反光。他的眼睛對著那片光，但焦距不在那裡。焦距在更遠的地方。在記憶裡。在今天早上。在禮堂側廊。在邵叔按住他肩膀的那隻手裡。", background: Background.Chapter_7_Ch7_Act12_S0 },

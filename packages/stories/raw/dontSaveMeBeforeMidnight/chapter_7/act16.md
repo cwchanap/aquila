@@ -22,9 +22,9 @@ backstage side access door corridor, 22:52, fluorescent institutional lighting, 
 
 **旁白**：仍然亮紅。
 
-**韓越** [angry]：⋯⋯不對。
+**韓越** [angry]：不對。
 
-**韓越** [angry]：我剛剛還能進！
+**韓越** [angry]：剛才還能。
 
 **旁白**：顧言從走廊另一端走過來。他聽見了那聲嗶。看見了韓越站在門前，手裡捏著通行卡，指節發白。
 
@@ -40,9 +40,9 @@ backstage side access door corridor, 22:52, fluorescent institutional lighting, 
 
 **校安**：行政組通知，舞台組臨時卡全部重新登記。
 
-**韓越** [angry]：什麼重新登記？
+**韓越** [angry]：重新登記？
 
-**韓越** [angry]：我十分鐘前還用這張卡搬器材進去！
+**韓越** [angry]：十分鐘前還能用。
 
 **校安**：閉幕清場，權限重整。
 
@@ -50,7 +50,7 @@ backstage side access door corridor, 22:52, fluorescent institutional lighting, 
 
 **旁白**：閉幕清場，權限重整。
 
-**韓越** [angry]：那為什麼剛才還能用！
+**韓越** [angry]：那為什麼剛才還能用。
 
 **校安**：行政組剛發的通知。全部臨時卡統一重新登記。
 

@@ -60,7 +60,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言撐著設備箱站起來。腰還在痛。膝蓋還在抖。但他站起來了。", background: Background.Chapter_7_Ch7_Act18_S1 },
     { characterId: CharacterId.Mc, character: "主持人", dialogue: "——九——", background: Background.Chapter_7_Ch7_Act18_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "邵叔的手抓住了相機包的背帶。", background: Background.Chapter_7_Ch7_Act18_S1 },
-    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "——不要。", background: Background.Chapter_7_Ch7_Act18_S1, portrait: Portrait.XuXingtang_Afraid },
+    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "不。", background: Background.Chapter_7_Ch7_Act18_S1, portrait: Portrait.XuXingtang_Afraid },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "許星棠的聲音很小。不是喊。是那種被壓到最低的、像從牙縫裡擠出來的拒絕。她的手指扣在拉鏈上，扣得指節發白。", background: Background.Chapter_7_Ch7_Act18_S1 },
     { characterId: CharacterId.Mc, character: "主持人", dialogue: "——八——", background: Background.Chapter_7_Ch7_Act18_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "邵叔拉。許星棠不鬆。", background: Background.Chapter_7_Ch7_Act18_S1 },

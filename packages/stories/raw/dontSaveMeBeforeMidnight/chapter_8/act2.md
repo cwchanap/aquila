@@ -58,11 +58,7 @@ old library darkroom, 08:10, centennial celebration morning, small windowless ro
 
 **旁白**：韓越沒有說話。他的手插在外套口袋裡。肩膀的線條繃著。通行證在他脖子上晃了一下——不是風，是他深呼吸的時候胸腔撐開了。
 
-**顧言** [determined]：（內心）他不信我。
-
-**顧言** [determined]：（內心）但他不反駁了。
-
-**顧言** [determined]：（內心）因為他知道的和我說的一樣。他沒有洩密。他只是不知道上一輪到底出了什麼問題。
+**顧言** [determined]：（內心）他不信我。但他不反駁了。
 
 **顧言** [determined]：問題出在邵叔。
 
@@ -104,7 +100,7 @@ old library darkroom, 08:10, centennial celebration morning, small windowless ro
 
 **旁白**：韓越沉默了。很久。暗房裡只有紅色安全燈的嗡響和三個人的呼吸。
 
-**旁白**：他不是被顧言說服的。他的眼睛裡沒有「我信了」的光。
+**旁白**：他不是被顧言說服的。他沒有被說服。
 
 **旁白**：他是被「邵叔」這兩個字嚇到的。
 
@@ -120,7 +116,7 @@ old library darkroom, 08:10, centennial celebration morning, small windowless ro
 
 **韓越** [angry]：你說要假死。
 
-**旁白**：他的聲音變了。比剛才低。比剛才平。平到像在念一個已經不重要的結論——但他還在念，說明他還沒有放棄。
+**旁白**：他的聲音變了。比剛才低。比剛才平。平到像在念一個已經決定了的事——但他還在念，說明他還沒有放棄。
 
 **韓越** [angry]：你上次差點每一步都害死她。
 

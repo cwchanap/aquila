@@ -108,7 +108,7 @@ back preparation staging area behind exhibition hall, harsh white fluorescent tu
 
 **顧言**：(內心)⋯⋯林主任？
 
-**林主任**：這些是還沒有分類的檔案，不應該在開放區域。誰讓你動這些的？
+**林主任**：這些是還沒有分類的檔案，不應該在開放區域。誰叫你動這些的？
 
 **顧言**：⋯⋯整理。
 

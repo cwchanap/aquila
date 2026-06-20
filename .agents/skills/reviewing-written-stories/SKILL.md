@@ -1,16 +1,16 @@
 ---
 name: reviewing-written-stories
-description: Use when reviewing written story acts for character consistency, plot alignment against design documents, and orphaned hooks (attention-grabbing elements never resolved). Spawns parallel subagents — one for character voice/personality review, one for plot consistency review, and one for dialogue naturalness review. Supports both per-act and chapter-level review modes.
+description: Use when reviewing written story acts for character consistency, plot alignment against design documents, style adherence to the house style guide, and orphaned hooks (attention-grabbing elements never resolved). Spawns parallel subagents — one for character voice/personality review, one for plot consistency review, and one for dialogue naturalness & style review. Supports both per-act and chapter-level review modes.
 ---
 
 # Reviewing Written Stories
 
 ## Overview
 
-Review written story acts (`actN.md`) in parallel by spawning subagents that check character dialogue against `characters.md`, plot consistency against `high-level-plan.md` and chapter plans, and dialogue naturalness for modern Chinese readers. Results are aggregated into a consolidated review report.
+Review written story acts (`actN.md`) in parallel by spawning subagents that check character dialogue against `characters.md`, plot consistency against `high-level-plan.md` and chapter plans, and dialogue naturalness & style adherence for modern Chinese readers. Results are aggregated into a consolidated review report.
 
 Supports two review modes:
-- **Per-act mode**: Spawn 3 agents per act (or small batch of 2-3 acts) — Agent A (character), Agent B (plot), Agent C (dialogue naturalness). Best for targeted reviews of specific acts.
+- **Per-act mode**: Spawn 3 agents per act (or small batch of 2-3 acts) — Agent A (character), Agent B (plot), Agent C (dialogue naturalness & style). Best for targeted reviews of specific acts.
 - **Chapter-level mode**: Spawn 1 agent for the entire chapter (all acts) — Agent B (plot only). Best when the user says "review chapter N" or "review all acts". The agent reads all acts and reports issues organized by act number.
 
 ## When to Use
@@ -19,6 +19,39 @@ Supports two review modes:
 - User asks to review a whole chapter (e.g. "review chapter 1", "review all acts in chapter 1")
 - User wants character consistency or plot alignment feedback on written stories
 - User says "check the dialogue" or "review the story" in context of `packages/stories/raw/`
+
+## House Style Guide (New Adult 18-25)
+
+Stories target **New Adult readers (18-25)** — college/early-career protagonists, adult themes, contemporary Taiwanese setting. The existing canon (`dontSaveMeBeforeMidnight`, `trainAdventure`) defines the house style. Agent C checks adherence to the dimensions below.
+
+**Voice — mixed register:**
+- ✅ **Narrator** may use sensory metaphors and elevated imagery (`像一具剛解凍的木偶`, `像沒充飽電的手機`)
+- ✅ **Protagonist inner voice** is clipped, fragmentary, blunt (`又是校慶。` / `做夢了吧。` / `帥。`)
+- ❌ Not YA-earnest, not adult-literary-remote. Aim for "smart enough to be lyrical, insecure enough to mock itself"
+- ❌ No authorial exposition — reveal only what the POV character perceives
+
+**Pacing — mobile-reading rhythm:**
+- ✅ **Standalone one-line paragraphs for emphasis** (`07:05。` / `鐘樓。` / `然後是一隻手。`)
+- ✅ Long sensory accumulations in narrator beats, broken by short inner-monologue punches
+- ✅ One beat per paragraph — never pack multiple ideas into one `**旁白**：` block
+- ❌ No purple prose blocks; no wall-of-text inner monologue
+
+**POV — third-person close:**
+- ✅ Locked to one POV character's perception per scene
+- ✅ Filter every description through their sensory/emotional state
+- ❌ Never reveal information the POV character can't perceive (no omniscient cuts to other characters' thoughts)
+
+**Tone — dry, melancholic, self-aware:**
+- ✅ Deadpan humor at protagonist's expense (the canon's `帥。` after describing a haggard reflection)
+- ✅ Melancholic undertone permitted; maudlin is not
+- ❌ No slapstick, no meme humor, no dad-joke tone
+
+**References — modern but timeless:**
+- ✅ Taiwanese school/campus texture (宿舍、食堂、校慶、關東煮、豆漿、騎樓)
+- ✅ Generic modern devices (手機、簡訊、螢幕) — no brand names or app names unless diegetically required
+- ❌ No internet slang, no memes, no trend-of-the-moment references (they date the text)
+
+**Reference examples:** `packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md` (narrator + inner voice balance), `chapter_3/act2.md` (sustained inner-monologue investigation).
 
 ## Workflow
 
@@ -249,18 +282,28 @@ End with a summary: most critical issues first, grouped by category.
 IMPORTANT: This is a read-only review. Do NOT modify any files.
 ```
 
-**Agent C: Dialogue Naturalness Review (Per-Act)**
+**Agent C: Dialogue Naturalness & Style Review (Per-Act)**
 
 ```
-You are reviewing written story acts for DIALOGUE NATURALNESS and SMOOTHNESS, with special attention to modern Chinese reader expectations.
+You are reviewing written story acts for DIALOGUE NATURALNESS, SMOOTHNESS, and STYLE ADHERENCE to the Aquila house style, with special attention to modern Chinese reader expectations.
 
 ## Step 1: Read the acts to review
 
 - [FULL PATH to specific act file(s)]
 
+## Step 2: Read a canon reference for voice calibration
+
+Read one of these to calibrate the house voice before reviewing:
+- packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md (narrator + inner voice balance)
+- packages/stories/raw/dontSaveMeBeforeMidnight/chapter_3/act2.md (sustained inner-monologue investigation)
+
 ## Your Task
 
-Read every line of dialogue and narration in Chinese. Evaluate whether the language sounds natural and fluent to a modern Chinese reader. Flag anything that feels:
+Read every line of dialogue and narration in Chinese. Evaluate two dimensions:
+
+### Dimension 1: Dialogue Naturalness
+
+Flag anything that feels:
 
 1. **Awkward phrasing**: Sentences that are grammatically correct but feel stiff, overly formal, or unnatural in spoken context
 2. **Unnatural wordings**: Expressions that native Chinese speakers would rarely use, or that sound translated/awkward
@@ -276,14 +319,24 @@ Pay special attention to:
 - Formality level matching the social relationship between speakers
 - Whether the emotional beats land naturally or feel manufactured
 
+### Dimension 2: House Style Adherence (New Adult 18-25)
+
+Check the act against the house style guide:
+
+1. **Voice register**: Does the narrator use sensory metaphors/elevated imagery while the protagonist's inner voice stays clipped, fragmentary, blunt? Flag narrator blocks that drift into YA-earnest or adult-literary-remote register, or protagonist inner voice that becomes flowery/expository. Flag authorial exposition that reveals information the POV character can't perceive.
+2. **Pacing**: Are there standalone one-line paragraphs for emphasis? Are long sensory accumulations broken by short inner-monologue punches? Flag purple prose blocks (narrator beats running past ~3 sentences without a punch), wall-of-text inner monologue, and paragraphs packing multiple ideas into one `**旁白**：` block.
+3. **POV**: Is the scene locked to one POV character's perception? Flag any omniscient cuts revealing information the POV character can't perceive, or descriptions not filtered through their sensory/emotional state.
+4. **Tone**: Is it dry, melancholic, self-aware? Flag slapstick, meme humor, dad-joke tone, and maudlin (vs permitted melancholic undertone).
+5. **References**: Flag brand names, app names, internet slang, memes, or trend-of-the-moment references that date the text. Expect Taiwanese campus texture (宿舍、食堂、校慶、關東煮、豆漿、騎樓) and generic modern devices (手機、簡訊、螢幕).
+
 ## Output Format
 
 For each issue found per act:
 - **Act**: Which act number
 - **Line reference**: Quote the problematic line
-- **Issue category**: Awkward phrasing / Unnatural wording / Tonal mismatch / Anachronistic vocabulary / Clunky transition / Repetitive structure
-- **Why it's unnatural**: Explain what sounds wrong and why a modern Chinese reader would find it jarring
-- **Suggested rephrase**: Provide a more natural alternative (optional but encouraged)
+- **Issue category**: Awkward phrasing / Unnatural wording / Tonal mismatch / Anachronistic vocabulary / Clunky transition / Repetitive structure / Voice register / Pacing / POV violation / Tone / Dated reference
+- **Why it's wrong**: Explain what sounds wrong (naturalness) or what style dimension it violates and why
+- **Suggested rephrase**: Provide a more natural/style-compliant alternative (optional but encouraged)
 - **Severity**: HIGH (breaks immersion completely) / MEDIUM (noticeable, pulls reader out) / LOW (minor awkwardness)
 
 If no issues for an act, say "PASS".
@@ -305,7 +358,7 @@ After all agents complete, combine results into a consolidated report:
 - **Acts reviewed**: act1 - act12
 - **Total character issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
 - **Total plot issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
-- **Total dialogue naturalness issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
+- **Total dialogue naturalness & style issues**: X (HIGH: Y, MEDIUM: Z, LOW: W)
 - **Most consistent characters**: [list]
 - **Most problematic acts**: [list]
 
@@ -327,7 +380,7 @@ After all agents complete, combine results into a consolidated report:
 [Agent B findings]
 ...
 
-## Dialogue Naturalness Issues
+## Dialogue Naturalness & Style Issues
 
 ### Act 1
 [Agent C findings — per-act mode only, omit in chapter-level mode]
@@ -345,9 +398,10 @@ After all agents complete, combine results into a consolidated report:
 
 ## Important Rules
 
-- **Prefer chapter-level mode** for full chapter reviews — Agent B gets cross-act context and catches cross-act contradictions more reliably than per-act batches. Chapter-level mode only spawns Agent B (plot).
-- **Per-act mode spawns all 3 agents** — Agent A (character), Agent B (plot), and Agent C (dialogue naturalness) run in parallel. This is the only mode that includes character and naturalness reviews.
+- **Prefer chapter-level mode** for full chapter reviews — Agent B gets cross-act context and catches cross-act contradictions more reliably than per-act batches. Chapter-level mode only spawns Agent B (plot). Note: chapter-level mode does NOT include style review; if style adherence matters for a full-chapter review, run a per-act pass on a representative sample of acts.
+- **Per-act mode spawns all 3 agents** — Agent A (character), Agent B (plot), and Agent C (dialogue naturalness & style) run in parallel. This is the only mode that includes character, naturalness, and style reviews.
 - **Internal consistency over plan adherence** — Flag contradictions and logic breaks. Don't flag creative deviations from the plan.
+- **Style is about house-voice adherence, not personal taste** — Agent C flags deviations from the documented house style guide (voice register, pacing, POV, tone, references). Don't flag legitimate creative choices that still fit the house style.
 - **Always spawn agents in parallel** — all agents for a given batch should run concurrently, never sequentially
 - **Tell agents to read files directly** — provide full file paths in prompts; agents read reference docs and act files from disk themselves. This avoids context-window waste and ensures agents see the complete documents.
 - **Don't modify story files** — this is a read-only review, not an editing pass (unless the user explicitly asks to fix issues afterward)
@@ -363,3 +417,5 @@ After all agents complete, combine results into a consolidated report:
 - **Missing chapter plans**: Some chapters may not have dedicated plans. Check `docs/` for available plans before starting
 - **Wrong review mode**: Don't spawn per-act agents when the user asks to review a whole chapter — use chapter-level mode (Agent B only) instead to get better cross-act analysis
 - **Spawning Agent A or C in chapter-level mode**: These agents are per-act only. Chapter-level reviews only use Agent B
+- **Flagging style as personal taste**: Agent C must check against the documented house style guide, not impose the reviewer's own stylistic preferences. A line that fits the house voice is not an issue even if the reviewer would have written it differently.
+- **Skipping the canon reference read**: Agent C should read a canon act (e.g. `dontSaveMeBeforeMidnight/chapter_1/act1.md`) to calibrate the house voice before flagging style deviations.

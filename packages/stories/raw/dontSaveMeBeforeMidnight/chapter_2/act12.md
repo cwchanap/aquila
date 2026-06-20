@@ -146,7 +146,7 @@ same student dormitory room at dawn as before, same grey rain outside window and
 
 **顧言** [determined]：(內心)信不信他，結果一樣。那就不是「信不信」的問題。是「用不用」的問題。
 
-**顧言** [determined]：(內心)他能調監視器。他能查車輛紀錄。他能封鐘樓。他能調動校安和警員。這些權限，我沒有。這些權限，是這所學校裡唯一能讓我看見「線」在哪裡的東西。
+**顧言** [determined]：(內心)他能調監視器、查車輛紀錄、封鐘樓、調動校安和警員。這些權限我沒有，但它們是這所學校裡唯一能讓我看見「線」在哪裡的東西。
 
 **顧言** [determined]：(內心)我要把邵叔拉進局裡。
 

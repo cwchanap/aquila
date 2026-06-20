@@ -77,7 +77,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)第一輪我信邵叔。我死了。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)第二輪我躲邵叔。我也死了。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)信不信他，結果一樣。那就不是「信不信」的問題。是「用不用」的問題。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他能調監視器。他能查車輛紀錄。他能封鐘樓。他能調動校安和警員。這些權限，我沒有。這些權限，是這所學校裡唯一能讓我看見「線」在哪裡的東西。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他能調監視器、查車輛紀錄、封鐘樓、調動校安和警員。這些權限我沒有，但它們是這所學校裡唯一能讓我看見「線」在哪裡的東西。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)我要把邵叔拉進局裡。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不是因為我信他。是因為我要看他到底是什麼。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)保護傘，還是那把刀。", background: Background.Chapter_2_Ch2_Act12_S0, portrait: Portrait.GuYan_Determined },

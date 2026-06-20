@@ -13,6 +13,10 @@ vi.mock('@aquila/stories', () => ({
             settings: 'Settings',
             settingsComingSoon: 'Settings coming soon!',
         },
+        bookmarks: {
+            english: 'English',
+            chinese: '中文',
+        },
         common: {
             logout: 'Logout',
             login: 'Login',

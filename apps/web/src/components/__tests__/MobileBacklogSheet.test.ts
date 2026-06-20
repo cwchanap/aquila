@@ -9,7 +9,7 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
-import MobileBacklogSheet from '../MobileBacklogSheet.svelte';
+import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
 
 const lines = [
     { characterName: 'Narrator', text: 'Line one.' },

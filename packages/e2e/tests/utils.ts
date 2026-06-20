@@ -83,3 +83,70 @@ export class StoriesPage {
         await expect(this.trainAdventureLink).toBeVisible();
     }
 }
+
+export class MobileReaderPage {
+    constructor(
+        private page: Page,
+        private locale: 'en' | 'zh' = 'en'
+    ) {}
+
+    private get actsHeading() {
+        const headings = { en: 'Acts', zh: '章節' };
+        return headings[this.locale];
+    }
+
+    private get historyHeading() {
+        const headings = { en: 'History', zh: '歷史' };
+        return headings[this.locale];
+    }
+
+    get tapLayer() {
+        return this.page.getByLabel('Tap to continue');
+    }
+
+    get menuButton() {
+        return this.page.getByLabel('Open menu');
+    }
+
+    get actsButton() {
+        return this.page.getByLabel('Open acts panel');
+    }
+
+    get historyButton() {
+        return this.page.getByLabel('Open history');
+    }
+
+    get backToHomeLink() {
+        return this.page.getByRole('link', { name: /Back to Home/i });
+    }
+
+    get actsHeadingLocator() {
+        return this.page.getByRole('heading', { name: this.actsHeading });
+    }
+
+    get historyHeadingLocator() {
+        return this.page.getByRole('heading', { name: this.historyHeading });
+    }
+
+    async goto() {
+        await this.page.goto(`/${this.locale}/reader`);
+    }
+
+    async openMenu() {
+        await this.menuButton.click();
+    }
+
+    async openActs() {
+        await this.actsButton.click();
+    }
+
+    async openHistory() {
+        await this.historyButton.click();
+    }
+
+    async tapToAdvance(times = 1) {
+        for (let i = 0; i < times; i++) {
+            await this.tapLayer.click();
+        }
+    }
+}

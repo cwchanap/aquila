@@ -37,5 +37,10 @@ export default defineConfig({
             use: { ...devices['Pixel 5'] },
             testMatch: /reader-mobile\.spec\.ts/,
         },
+        {
+            name: 'mobile-safari',
+            use: { ...devices['iPhone 12'] },
+            testMatch: /reader-mobile\.spec\.ts/,
+        },
     ],
 });

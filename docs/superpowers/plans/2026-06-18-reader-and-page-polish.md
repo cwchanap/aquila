@@ -45,7 +45,9 @@ it('renders the chrome as labeled icon buttons with a progress bar', async () =>
     await vi.runAllTimersAsync();
     await fireEvent.click(screen.getByLabelText('Open menu'));
     // Icon buttons expose their action via aria-label (no visible text label).
-    expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+    // `Back to Home` is matched by regex because the real translation renders
+    // the accessible name with a leading arrow ("← Back to Home").
+    expect(screen.getByLabelText(/Back to Home/)).toBeInTheDocument();
     expect(screen.getByLabelText('Open acts panel')).toBeInTheDocument();
     expect(screen.getByLabelText('Open history')).toBeInTheDocument();
     expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
@@ -57,7 +59,7 @@ it('renders the chrome as labeled icon buttons with a progress bar', async () =>
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `bun --filter web test src/components/__tests__/MobileNovelReader.test.ts -t "labeled icon buttons"`
-Expected: FAIL — `getByLabelText('Back to Home')` / `getByLabelText('Bookmark')` throw, because today those controls are text links/buttons with no `aria-label`.
+Expected: FAIL — `getByLabelText(/Back to Home/)` / `getByLabelText('Bookmark')` throw, because today those controls are text links/buttons with no `aria-label`.
 
 - [ ] **Step 3: Add the icon imports and the progress fraction**
 
@@ -167,9 +169,9 @@ In `it('toggles chrome with the menu button', …)`, change the two `Back to Hom
 to:
 
 ```ts
-    expect(screen.queryByLabelText('Back to Home')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Back to Home/)).not.toBeInTheDocument();
     await fireEvent.click(screen.getByLabelText('Open menu'));
-    expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Back to Home/)).toBeInTheDocument();
 ```
 
 In `it('opens the backlog with the current scene lines', …)`, change:

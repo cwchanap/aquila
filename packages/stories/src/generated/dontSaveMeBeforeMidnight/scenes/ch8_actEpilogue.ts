@@ -71,6 +71,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有醒來。", background: Background.Chapter_8_Ch8_ActEpilogue_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有醒來。", background: Background.Chapter_8_Ch8_ActEpilogue_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "⋯⋯", background: Background.Chapter_8_Ch8_ActEpilogue_S1 },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）也許這只是第八次。", background: Background.Chapter_8_Ch8_ActEpilogue_S1, portrait: Portrait.GuYan_Determined },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）但這一刻是真的。", background: Background.Chapter_8_Ch8_ActEpilogue_S1, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他只是站在那裡。", background: Background.Chapter_8_Ch8_ActEpilogue_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站在 05:51 的天台上。", background: Background.Chapter_8_Ch8_ActEpilogue_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站在這一天的早晨裡。", background: Background.Chapter_8_Ch8_ActEpilogue_S1 },

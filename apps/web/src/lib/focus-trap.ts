@@ -7,8 +7,18 @@
  *
  * Pair with `inert` on the background content so screen readers that ignore
  * `aria-modal` still can't reach the concealed controls (defense in depth).
+ *
+ * `params` may be a plain boolean (back-compat) or an object with:
+ *   - `enabled`: whether the trap is active
+ *   - `restoreFocus`: optional element to focus on deactivate. Use this when the
+ *     element that opened the overlay is unmounted in the same reactive batch as
+ *     activation (so `activeElement` is already detached when the trap records
+ *     it). The restore target should be an always-mounted control such as the
+ *     app's persistent menu toggle.
  */
-export type FocusTrapParams = boolean;
+export type FocusTrapParams =
+    | boolean
+    | { enabled: boolean; restoreFocus?: HTMLElement | null };
 
 const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), textarea:not([disabled]), ' +
@@ -26,9 +36,23 @@ function getFocusable(node: HTMLElement): HTMLElement[] {
     });
 }
 
-export function focusTrap(node: HTMLElement, enabled: FocusTrapParams = true) {
+function normalizeParams(params: FocusTrapParams): {
+    enabled: boolean;
+    restoreFocus?: HTMLElement | null;
+} {
+    if (typeof params === 'boolean') {
+        return { enabled: params };
+    }
+    return {
+        enabled: params.enabled,
+        restoreFocus: params.restoreFocus,
+    };
+}
+
+export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
     let active = false;
     let previouslyFocused: HTMLElement | null = null;
+    let restoreFocus: HTMLElement | null | undefined = undefined;
 
     function activate(): void {
         if (active) return;
@@ -52,7 +76,15 @@ export function focusTrap(node: HTMLElement, enabled: FocusTrapParams = true) {
 
     function deactivate(): void {
         active = false;
-        const target = previouslyFocused;
+        // Prefer the explicit restoreFocus target when provided (the opener
+        // button may have been unmounted in the same batch as activation, in
+        // which case `previouslyFocused` points at a detached node and focusing
+        // it would strand focus on <body>). Fall back to the recorded element
+        // only when no explicit target was supplied.
+        const target =
+            restoreFocus && restoreFocus.isConnected
+                ? restoreFocus
+                : previouslyFocused;
         previouslyFocused = null;
         // Restore focus to whatever opened the overlay (e.g. the toolbar
         // button), matching the modal-dialog contract.
@@ -96,11 +128,15 @@ export function focusTrap(node: HTMLElement, enabled: FocusTrapParams = true) {
     }
 
     node.addEventListener('keydown', onKeydown);
-    setEnabled(enabled);
+    const initial = normalizeParams(params);
+    restoreFocus = initial.restoreFocus ?? null;
+    setEnabled(initial.enabled);
 
     return {
         update(next: FocusTrapParams): void {
-            setEnabled(next);
+            const normalized = normalizeParams(next);
+            restoreFocus = normalized.restoreFocus ?? null;
+            setEnabled(normalized.enabled);
         },
         destroy(): void {
             node.removeEventListener('keydown', onKeydown);

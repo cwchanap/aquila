@@ -148,4 +148,61 @@ describe('focusTrap', () => {
         expect(document.activeElement).toBe(a);
         handle.destroy();
     });
+
+    it('restores focus to the explicit restoreFocus target instead of the detached opener', () => {
+        // Simulate the overlay scenario: the opener button is unmounted in the
+        // same batch as activation, so by the time the trap records
+        // activeElement the opener is already detached from the DOM. Without an
+        // explicit restore target, deactivate would strand focus on <body>.
+        const persistentToggle = makeButton('menu');
+        document.body.append(persistentToggle);
+
+        const opener = makeButton('opener');
+        document.body.append(opener);
+        opener.focus();
+
+        const container = document.createElement('div');
+        const closeBtn = makeButton('close');
+        container.append(closeBtn);
+        document.body.append(container);
+
+        // Activate with the opener still focused…
+        const handle = focusTrap(container, {
+            enabled: true,
+            restoreFocus: persistentToggle,
+        });
+        expect(document.activeElement).toBe(closeBtn);
+
+        // …then detach the opener (mimicking the chrome bar unmounting).
+        opener.remove();
+
+        // Deactivate must restore focus to the persistent toggle, not the
+        // detached opener (which would leave focus on <body>).
+        handle.update({ enabled: false, restoreFocus: persistentToggle });
+        expect(document.activeElement).toBe(persistentToggle);
+        handle.destroy();
+    });
+
+    it('falls back to the previously focused element when restoreFocus is disconnected', () => {
+        const outside = makeButton('outside');
+        const container = document.createElement('div');
+        const a = makeButton('a');
+        container.append(a);
+        document.body.append(outside, container);
+
+        outside.focus();
+        const staleToggle = makeButton('stale');
+        const handle = focusTrap(container, {
+            enabled: true,
+            restoreFocus: staleToggle,
+        });
+        expect(document.activeElement).toBe(a);
+
+        // The restore target was removed from the DOM before close. The trap
+        // must fall back to the recorded previously-focused element.
+        staleToggle.remove();
+        handle.update({ enabled: false, restoreFocus: staleToggle });
+        expect(document.activeElement).toBe(outside);
+        handle.destroy();
+    });
 });

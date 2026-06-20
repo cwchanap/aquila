@@ -7,11 +7,13 @@
     open = false,
     onClose,
     locale = 'en',
+    restoreFocusTarget = null,
   }: {
     lines: { characterName: string; text: string }[];
     open?: boolean;
     onClose: () => void;
     locale?: Locale;
+    restoreFocusTarget?: HTMLElement | null;
   } = $props();
 
   let t = $derived(getTranslations(locale));
@@ -36,7 +38,7 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="backlog-title"
-    use:focusTrap={open}
+    use:focusTrap={{ enabled: open, restoreFocus: restoreFocusTarget }}
     class="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-3xl bg-white/95 p-6 shadow-2xl backdrop-blur-xl"
     style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
   >

@@ -48,13 +48,9 @@ school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet
 
 **顧言** [determined]：（內心）爸說——不要回頭看火，去看海上的燈。
 
-**顧言** [determined]：（內心）我看了七次火。
+**顧言** [determined]：（內心）我看了七次火。我看了七次許星棠倒下。
 
-**顧言** [determined]：（內心）我看了七次許星棠倒下。
-
-**顧言** [determined]：（內心）我看了七次白色。
-
-**顧言** [determined]：（內心）我看了七次 07:05。
+**顧言** [determined]：（內心）我看了七次白色。我看了七次 07:05。
 
 **顧言** [determined]：（內心）⋯⋯
 
@@ -72,7 +68,7 @@ school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet
 
 **旁白**：顧言看著它。
 
-**旁白**：他的眼眶又熱了。但這一次不是憋不住的熱。是那種——終於看見了找了很久的東西的熱。不是悲傷。不是解脫。是更安靜的東西。是「它在那裡」的熱。
+**旁白**：他的眼眶又熱了。但這一次不是憋不住的熱。是那種——終於看見了什麼東西的熱。那種找了很久才看見的熱。不是悲傷。不是解脫。是更安靜的東西。是「它在那裡」的熱。
 
 **顧言** [determined]：（內心）⋯⋯
 
@@ -104,6 +100,8 @@ school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet
 
 **顧言** [determined]：⋯⋯嗯。
 
+**旁白**：許星棠沒有立刻接話。她看著海面上的光。
+
 **許星棠** [regretful]：你看了嗎。
 
 **旁白**：顧言沒有立刻回答。
@@ -128,13 +126,11 @@ school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet
 
 **旁白**：暖的。
 
-**旁白**：不是螢幕的光。不是應急燈的光。不是直播補光燈的光。是太陽的光。是這一天的太陽的光。是 05:51 的太陽的光。
+**旁白**：不是螢幕的光。不是應急燈的光。是太陽的光。是 05:51 的太陽的光。
 
 **旁白**：顧言閉上眼睛。
 
 **旁白**：他讓光打在臉上。他讓暖意停在皮膚表面。他聽見海風從東邊吹過來，帶著一點鹹味。他聽見遠處有鳥在叫。他聽見許星棠旁邊的呼吸聲，很淺、很穩。
-
-**旁白**：他沒有醒來。
 
 **旁白**：他沒有醒來。
 
@@ -158,7 +154,7 @@ school rooftop at dawn, 05:55, full sunrise, golden light flooding the scene, we
 
 **旁白**：天亮了。
 
-**旁白**：不是 07:05 的天亮。不是同一場雨之後的天亮。不是循環的天亮。
+**旁白**：不是循環的天亮。
 
 **旁白**：是這一天的天亮。
 
@@ -240,7 +236,7 @@ school rooftop at dawn, 05:55, full sunrise, golden light flooding the scene, we
 
 **旁白**：不是結束。
 
-**旁白**是下一分鐘。
+**旁白**：是下一分鐘。
 
 ```bg
 school rooftop at dawn, 06:00, full morning light, the two figures turning to leave the rooftop, the railing behind them, the ocean and town spread out below in clear warm light, the school beginning to wake with distant voices and footsteps, anime visual-novel background art, warm golden palette, final composition — two figures walking toward the stairwell door, light ahead of them, the sky wide and open and no longer grey
@@ -278,11 +274,11 @@ school rooftop at dawn, 06:00, full morning light, the two figures turning to le
 
 **旁白**：一步。
 
-**旁白**：每一一步都是新的。
+**旁白**：每一步都是新的。
 
-**旁白**：每一一步都是他沒有走過的。
+**旁白**：每一步都是他沒有走過的。
 
-**旁白**：每一一步都是 23:01 之後的下一分鐘。
+**旁白**：每一步都是 23:01 之後的下一分鐘。
 
 **旁白**：——
 

@@ -114,6 +114,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "後面那個字。就一個字。他幾乎——幾乎——", background: Background.Chapter_7_Ch7_Act14_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）⋯⋯", background: Background.Chapter_7_Ch7_Act14_S0, portrait: Portrait.GuYan_Trembling },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）不要只⋯⋯什麼——", background: Background.Chapter_7_Ch7_Act14_S0, portrait: Portrait.GuYan_Trembling },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後呢。後面應該還有什麼。不是一個字——是一整句。他的記憶在這裡斷了。不是空的。是有一個東西在那裡，但他抓不住。像黑暗裡有一點白光，很遠，一閃一閃的，他還沒有看見。", background: Background.Chapter_7_Ch7_Act14_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "斷了。", background: Background.Chapter_7_Ch7_Act14_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "又斷了。像一根快要接上的電線，在最后一毫米的地方被剪斷。", background: Background.Chapter_7_Ch7_Act14_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "⋯⋯", background: Background.Chapter_7_Ch7_Act14_S0, portrait: Portrait.GuYan_Trembling },

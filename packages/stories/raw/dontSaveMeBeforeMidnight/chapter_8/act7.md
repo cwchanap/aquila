@@ -50,6 +50,8 @@ abstract dark soundscape visualization, eyes-closed perspective, audio waveform 
 
 **旁白**：學校的鐘。不是正常報時的那種均勻的噹——噹——噹。是不規則的。短的。急的。像有人在拼命搖。像在示警。
 
+**顧言** [trembling]：（內心）⋯⋯鐘。
+
 **旁白**：第二十秒。另一種聲音混進來了。
 
 **旁白**：低沉的。持續的。不是雷。不是雨。是一種從建築結構裡傳出來的、像動物在呻吟一樣的聲音。木頭在燒。鋼筋在膨脹。水泥在裂。
@@ -192,6 +194,8 @@ split composition, left half the old library room with screen glow and rain-stre
 
 **旁白**：父親把他推向窗邊。不是推開他——是推向他能活下去的方向。濕外套蓋在他頭上，擋住火星和煙。父親的手按在他後背上，推著他往前走。
 
+**顧言** [trembling]：（內心）⋯⋯他在推我。往前。
+
 **旁白**：透過外套的縫隙，他看見了窗外。
 
 **旁白**：雨。夜。火光把走廊照成橘紅色。但窗外——更遠的地方——海面上有一點光。
@@ -263,6 +267,8 @@ split composition, left half the old library room with screen glow and rain-stre
 **旁白**：不要回頭看火，去看海上的燈。
 
 **旁白**：按確認。
+
+**顧言** [determined]：（內心）⋯⋯拜託。
 
 **旁白**：螢幕閃了一下。
 

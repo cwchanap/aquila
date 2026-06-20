@@ -9,6 +9,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言的眼睛猛地睜開。不是緩緩清醒，不是迷迷糊糊地從夢裡浮上來——是像溺水的人突然被拉出水面，粗暴的，尖銳的。", background: Background.Chapter_1_Ch1_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "天花板上那道裂紋，從左下角斜斜延伸到右上角。他認得這道裂紋。他盯著它看過無數個早晨。", background: Background.Chapter_1_Ch1_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗外傳來雨聲。細密的，安靜的，打在玻璃上幾乎像呼吸一樣有節奏。遠處的海是灰色的，天和水的界線模糊成一片鉛白。", background: Background.Chapter_1_Ch1_Act11_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰白的海面上，有一點光。很淡。一閃一閃的，像遠處什麼東西在亮。他看見的那一瞬間，胃裡翻了一下——像夢裡的什麼東西，像火。然後他眨了眼。只是燈塔。只是很遠的一盞燈。", background: Background.Chapter_1_Ch1_Act11_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不對。", background: Background.Chapter_1_Ch1_Act11_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他撐起上半身，動作太急，肩胛骨撞上床板，一陣鈍痛。但他沒有停下。他低頭看自己的雙手——完整，乾淨，指甲縫裡什麼都沒有。", background: Background.Chapter_1_Ch1_Act11_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他摸胸口。摸肋骨。摸手臂。摸後背。每一寸皮膚都是完整的。沒有傷口，沒有血，沒有碎裂的骨頭穿透皮肉的感覺。", background: Background.Chapter_1_Ch1_Act11_S0 },

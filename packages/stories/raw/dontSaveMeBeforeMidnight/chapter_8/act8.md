@@ -46,9 +46,11 @@ old library room, second floor of east wing, 15:00, laptop screen showing decryp
 
 **顧言** [determined]：（內心）爸錄下了這段對話。
 
-**韓越** [worried]：這是誰在說話。
+**韓越** [worried]：這是誰在說話？
 
 **許星棠** [cold]：第一個聲音不清楚。第二個——
+
+**旁白**：她停了一下。
 
 **許星棠** [cold]：我媽的調查筆記裡提過一個承包商名字。
 
@@ -166,6 +168,8 @@ old library room, second floor of east wing, 15:00, laptop screen showing decryp
 
 **韓越** [worried]：舞台組的筆電裡只有這個。不是專業的。
 
+**旁白**：他看了螢幕一眼。
+
 **韓越** [worried]：能剪。能加字。能貼圖。但效果——
 
 **許星棠** [cold]：不需要效果。
@@ -244,6 +248,8 @@ close-up of laptop screen showing a simple video editing timeline, black backgro
 
 **許星棠** [cold]：前面兩分半現在做好。後面三十秒留空。今晚接上。
 
+**旁白**：最後三十秒的畫面來自兩個來源——許星棠當天拍攝的後台素材，和門禁系統的監視器截圖。都是合法取得的。
+
 **韓越** [worried]：來得及嗎。
 
 **許星棠** [cold]：23:00 前接入就行。
@@ -261,6 +267,8 @@ close-up of laptop screen showing a simple video editing timeline, black backgro
 **顧言** [determined]：（內心）我坐在這裡。看著他們把我爸的錄音、許阿姨的照片、林主任的簽名、承包商的名字——一條一條放進時間軸。
 
 **顧言** [determined]：（內心）這不是我做的。
+
+**旁白**：他坐在椅子上。看著螢幕。
 
 **顧言** [determined]：（內心）這是爸和許阿姨十年前開始做的。我只是——把它打開了。
 
@@ -287,6 +295,8 @@ close-up of laptop screen showing a simple video editing timeline, black backgro
 **許星棠** [cold]：你的口袋。最裡面那層。
 
 **旁白**：顧言接過備用卡。很小。一張指甲蓋大小的記憶卡。他把它放進校服內側口袋——靠近胸口的位置。和第四章那張未裁切照片同一個位置。
+
+**顧言** [determined]：（內心）短版已經在閉幕素材流程裡了。這張是備份的備份。
 
 **顧言** [determined]：（內心）⋯⋯
 
@@ -336,7 +346,7 @@ close-up of laptop screen showing a simple video editing timeline, black backgro
 
 **韓越** [worried]：⋯⋯
 
-**韓越** [worried]：別真的死。
+**韓越** [worried]：活著回來。
 
 **旁白**：他沒有等回答。推開門。走了。腳步聲在走廊裡很快地消失了。
 

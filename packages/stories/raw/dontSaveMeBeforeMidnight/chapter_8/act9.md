@@ -32,6 +32,8 @@ school loading dock behind the auditorium, 17:40, centennial celebration evening
 
 **顧言** [determined]：（內心）是有人在用安全檢查的名義，攔下這條線上所有可能帶走證據的東西。
 
+**顧言** [determined]：（內心）17:40，他在指揮室處理閉幕前的家長投訴。每一輪都是。這十五分鐘，他不看監控。
+
 **旁白**：校安檢查完，揮手放行。學生志工把箱子推回去，關上後門。校安在板夾上簽了什麼，轉身往裝卸區側門走。
 
 **旁白**：車沒有翻。
@@ -54,7 +56,7 @@ school loading dock behind the auditorium, 17:40, centennial celebration evening
 
 **許星棠** [cold]：真相機不在那條線上。
 
-**顧言**：嗯。
+**顧言** [determined]：嗯。
 
 **許星棠** [cold]：走吧。19:30 拆展。
 
@@ -116,7 +118,7 @@ school history museum interior, 19:30, centennial celebration night, exhibition 
 
 **旁白**：聲音不大。但穿透力強。像在問一件很正常的事，又像在命令對方回答。
 
-**行政組人員**：走側門。走廊寬度夠。
+**行政組人員**：走側門。走廊夠寬。
 
 **韓越**：側門那邊坡度夠嗎。基座將近兩百公斤，輪子卡住了誰負責。
 
@@ -146,7 +148,7 @@ school history museum interior, 19:30, centennial celebration night, exhibition 
 
 **旁白**：他看見了許星棠在基座旁邊。
 
-**林主任** [stern]：你在拍什麼。
+**林主任** [stern]：你在拍什麼？
 
 **旁白**：聲音急促。帶著掩飾的緊張。他的步伐比正常快了半拍，走過來的時候手從背後抽出來——手指在發抖。
 

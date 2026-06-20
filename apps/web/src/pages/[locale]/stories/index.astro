@@ -156,7 +156,15 @@ try {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [class*="animate-"] {
+    /* Scope to this page's own decorative animation classes only — a broad
+       `[class*="animate-"]` selector would also suppress legitimate Tailwind
+       `animate-*` utilities on shared components (e.g. UserStatus) rendered on
+       this route. The elements above already gate animations with
+       `motion-safe:`, so this is a belt-and-braces fallback for the keyframe
+       helpers defined in this block. */
+    .story-card,
+    [class*="fadeSlide"],
+    [class*="tidePulse"] {
       animation: none !important;
     }
   }

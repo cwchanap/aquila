@@ -53,4 +53,35 @@ test.describe('Mobile reader', () => {
         await reader.openHistory();
         await expect(reader.historyHeadingLocator).toBeVisible();
     });
+
+    test('saves a bookmark tagged with the current dialogue number', async ({
+        page,
+    }) => {
+        const reader = new MobileReaderPage(page);
+        await reader.goto();
+
+        // Two taps: first completes the typewriter on line 0, second advances
+        // to line 1 (currentDialogueIndex = 1). The bookmark control reports
+        // currentDialogueIndex + 1, so the stored tag must be [dlg:2].
+        await reader.tapToAdvance(2);
+
+        await reader.openMenu();
+        await reader.saveBookmark('E2E checkpoint');
+
+        // The bookmark flow posts to /api/bookmarks; without a session the API
+        // returns 401 and the reader-manager falls back to LocalBookmarksStore.
+        // Wait for the success alert (or dismiss it) before reading storage.
+        await expect(reader.alertDialog).toBeVisible();
+        await reader.alertDialog.getByRole('button', { name: 'OK' }).click();
+
+        const bookmarks = await reader.localBookmarks();
+        expect(bookmarks.length).toBeGreaterThan(0);
+        const saved = bookmarks.find(b =>
+            b.bookmarkName.includes('E2E checkpoint')
+        );
+        expect(saved).toBeDefined();
+        // The [dlg:N] tag is the load-bearing contract with the reader-manager
+        // deep-link format — verifies the +1 offset survived the round trip.
+        expect(saved?.bookmarkName).toMatch(/\[dlg:2\]/);
+    });
 });

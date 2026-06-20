@@ -38,6 +38,26 @@
 
   let isMobile = $state(readMatch());
 
+  // Live dialogue index reported by whichever reader is currently mounted.
+  // Once a layout swap has occurred, this takes precedence over the static
+  // `initialDialogueIndex` prop so that swapping readers across the
+  // mobile/desktop breakpoint re-seeds the newly mounted reader at the user's
+  // current line rather than resetting to 0 or re-applying a stale bookmark
+  // offset captured at first mount.
+  //
+  // `hasSwapped` gates the feedback loop: on the first mount we must NOT let
+  // the reader's initial `onIndexChange(0)` report clobber a bookmark
+  // `initialDialogueIndex` prop before the reader's own initial-index effect
+  // has applied it. Only after the first media-query transition do we trust
+  // `liveIndex` over the original prop.
+  let liveIndex = $state<number | null>(null);
+  let hasSwapped = $state(false);
+  let effectiveInitialDialogueIndex = $derived(
+    hasSwapped
+      ? (liveIndex !== null ? liveIndex : (props.initialDialogueIndex ?? null))
+      : (props.initialDialogueIndex ?? null)
+  );
+
   onMount(() => {
     if (
       typeof window === 'undefined' ||
@@ -48,6 +68,7 @@
     const mql = window.matchMedia(MOBILE_QUERY);
     const update = (e: globalThis.MediaQueryListEvent) => {
       isMobile = e.matches;
+      hasSwapped = true;
     };
     isMobile = mql.matches;
     mql.addEventListener('change', update);
@@ -56,7 +77,15 @@
 </script>
 
 {#if isMobile}
-  <MobileNovelReader {...props} />
+  <MobileNovelReader
+    {...props}
+    initialDialogueIndex={effectiveInitialDialogueIndex}
+    onIndexChange={(index: number) => (liveIndex = index)}
+  />
 {:else}
-  <NovelReader {...props} />
+  <NovelReader
+    {...props}
+    initialDialogueIndex={effectiveInitialDialogueIndex}
+    onIndexChange={(index: number) => (liveIndex = index)}
+  />
 {/if}

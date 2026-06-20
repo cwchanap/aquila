@@ -20,6 +20,7 @@
     onBookmark = () => {},
     onNext = () => {},
     onNavigate = () => {},
+    onIndexChange = () => {},
     showBookmarkButton = true,
     backUrl = '/',
     initialDialogueIndex = null,
@@ -34,6 +35,7 @@
     onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
+    onIndexChange?: (index: number) => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
     initialDialogueIndex?: number | null;
@@ -112,6 +114,17 @@
       lastDialogueRef = dialogue;
       initScene();
     }
+  });
+
+  // Report the active dialogue index to the parent (ReaderShell) so a layout
+  // swap across the mobile/desktop breakpoint can re-seed the newly mounted
+  // reader at the user's current line instead of resetting to 0 or re-applying
+  // a stale bookmark offset.  Declared AFTER the scene-init effect so that on
+  // mount the seeded index is applied before this report runs, preventing the
+  // report from clobbering the parent's `liveIndex` (and thus the
+  // `initialDialogueIndex` prop) with the pre-seed value of 0.
+  $effect(() => {
+    onIndexChange(currentDialogueIndex);
   });
 
   function initScene(): void {

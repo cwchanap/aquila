@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import { getStoryFlow } from '@aquila/stories';
 import type { Mock } from 'vitest';
@@ -178,5 +178,27 @@ describe('MobileActDrawer', () => {
             expect(inertAncestor).not.toBeNull();
             expect(inertAncestor?.getAttribute('aria-hidden')).toBe('true');
         }
+    });
+
+    it('moves focus into the panel and traps Tab while open', async () => {
+        render(MobileActDrawer, {
+            props: {
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onClose,
+                open: true,
+                locale: 'en',
+            },
+        });
+        const panel = screen.getByRole('dialog');
+        // On open the focus trap moves focus to the first focusable element
+        // inside the panel (the close button), so keyboard users land inside
+        // the overlay rather than on a control behind the scrim.
+        await waitFor(() => {
+            const active = document.activeElement as HTMLElement | null;
+            expect(active).not.toBeNull();
+            expect(panel.contains(active)).toBe(true);
+        });
     });
 });

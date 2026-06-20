@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getTranslations, type Locale } from '@aquila/stories';
+  import { focusTrap } from '@/lib/focus-trap';
 
   let {
     lines = [],
@@ -35,6 +36,7 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="backlog-title"
+    use:focusTrap={open}
     class="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-3xl bg-white/95 p-6 shadow-2xl backdrop-blur-xl"
     style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
   >

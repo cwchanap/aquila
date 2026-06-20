@@ -17,6 +17,11 @@ export function resolveCharacterName(
     }
 
     if (entry.characterId) {
+        // Defensive `?.`: the type says `characterNames` is required, but a
+        // misconfigured locale (or partial mock) can yield `undefined` at
+        // runtime. Falling back to `t.reader.unknown` is the tested contract
+        // (see character-name.test.ts + NovelReader.test.ts "characterNames map
+        // is missing"), so keep the optional chain.
         const localizedName = t.characterNames?.[entry.characterId];
         if (localizedName) {
             return localizedName;

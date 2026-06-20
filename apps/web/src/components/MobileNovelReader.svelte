@@ -259,6 +259,12 @@
 <div
   class="mobile-reader relative h-[100dvh] w-full overflow-hidden bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"
 >
+  <!-- Background content (reader + chrome). `inert` propagates to descendants,
+       so we inert this wrapper — NOT the reader root — when an overlay is open.
+       Inerting the root would disable the drawer/sheet too, since they mount as
+       its children. This static wrapper is skipped as a containing block, so the
+       absolutely-positioned children keep resolving against .mobile-reader. -->
+  <div inert={hasOverlay}>
   <!-- Tap-to-advance layer (full screen, below chrome and overlays). -->
   <button
     type="button"
@@ -424,16 +430,20 @@
   <!-- Visual-only long-press tooltip. Controls already expose their name via
        aria-label, so this bubble is aria-hidden to avoid double-announcement.
        It is positioned at the held control's horizontal center and just below
-       its bottom edge, so the label appears next to the icon that was held. -->
+       its bottom edge, so the label appears next to the icon that was held.
+       Anchor coords are viewport-space (getBoundingClientRect), so the bubble
+       uses position:fixed to match that coordinate system rather than relying
+       on the reader happening to be full-bleed. -->
   {#if activeTooltip && tooltipAnchor}
     <div
-      class="pointer-events-none absolute z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
+      class="pointer-events-none fixed z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
       style="left: {tooltipAnchor.left}px; top: calc({tooltipAnchor.bottom}px + 0.25rem);"
       aria-hidden="true"
     >
       {activeTooltip}
     </div>
   {/if}
+  </div><!-- /background-inert wrapper -->
 
   {#if storyId !== undefined && currentSceneId !== undefined}
     <MobileActDrawer

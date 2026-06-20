@@ -322,6 +322,9 @@ describe('MobileNovelReader', () => {
         // Regression guard: the old fixed top-center offset must be gone.
         expect(style).not.toContain('3.5rem');
         expect(bubble.className).not.toContain('left-1/2');
+        // Anchor coords are viewport-space, so the bubble must be position:fixed
+        // (absolute only worked because the reader happened to be full-bleed).
+        expect(bubble.className).toContain('fixed');
 
         await fireEvent.pointerUp(acts);
         expect(screen.queryByText('Open acts panel')).not.toBeInTheDocument();
@@ -362,5 +365,50 @@ describe('MobileNovelReader', () => {
         expect(
             screen.queryByLabelText('Tap to continue')
         ).not.toBeInTheDocument();
+    });
+
+    it('inerts the reader background while an overlay is open and restores it on close', async () => {
+        render(MobileNovelReader, {
+            props: {
+                dialogue: mockDialogue,
+                choice: null,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                locale: 'en',
+            },
+        });
+        await vi.runAllTimersAsync();
+
+        const tap = screen.getByLabelText('Tap to continue');
+        // Closed overlay: the reader background is interactive (not inert).
+        expect(tap.closest('[inert]')).toBeNull();
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open acts panel'));
+
+        // While the drawer is open, the reader background (tap layer) is inert
+        // so keyboard / AT users can't reach controls hidden behind the scrim.
+        // The overlay itself must NOT be inert (it remains interactive).
+        expect(tap.closest('[inert]')).not.toBeNull();
+        const closeBtn = screen.getAllByRole('button', {
+            name: 'Close acts panel',
+        })[0];
+        expect(closeBtn.closest('[inert]')).toBeNull();
+
+        // Closing the overlay re-enables the background.
+        await fireEvent.click(closeBtn);
+        expect(tap.closest('[inert]')).toBeNull();
+    });
+
+    it('inerts the reader background while the backlog sheet is open', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open history'));
+
+        const tap = screen.getByLabelText('Tap to continue');
+        expect(tap.closest('[inert]')).not.toBeNull();
     });
 });

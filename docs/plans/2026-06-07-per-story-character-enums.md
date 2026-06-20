@@ -1402,10 +1402,10 @@ git commit -m "test: update all tests for per-story character enums"
 
 ---
 
-## Task 15: Update writing-new-story Skill Docs
+## Task 15: Update orchestrating-stories Skill Docs
 
 **Files:**
-- Modify: `.agents/skills/writing-new-story/SKILL.md`
+- Modify: `.agents/skills/orchestrating-stories/SKILL.md`
 
 ### Step 1: Update Step 2 section
 
@@ -1421,8 +1421,8 @@ Key changes:
 ### Step 2: Commit
 
 ```bash
-git add .agents/skills/writing-new-story/SKILL.md
-git commit -m "docs: update writing-new-story skill for per-story character definitions"
+git add .agents/skills/orchestrating-stories/SKILL.md
+git commit -m "docs: update orchestrating-stories skill for per-story character definitions"
 ```
 
 ---

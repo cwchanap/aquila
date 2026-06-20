@@ -24,15 +24,9 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **旁白**：顧言不能在 22:22 後被邵叔確認活著。
 
-**顧言** [determined]：第一條。
+**顧言** [determined]：第一條。22:22 之後，邵叔不能確認我還活著。否則他會同時盯著我和星棠。
 
-**顧言** [determined]：22:22 之後。邵叔不能確認我還活著。
-
-**顧言** [determined]：否則他會同時盯著我和星棠。
-
-**韓越** [angry]：⋯⋯
-
-**韓越** [angry]：你假死就是為了這個。
+**韓越** [angry]：⋯⋯你假死就是為了這個。
 
 **顧言** [determined]：嗯。
 
@@ -40,37 +34,43 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **旁白**：真相機不能離開許星棠太久。
 
-**顧言** [determined]：第二條。
+**顧言** [determined]：第二條。真相機不能離開星棠——他會用安全流程搶走證據。
 
-**顧言** [determined]：真相機不能離開星棠。
-
-**顧言** [determined]：他會用安全流程搶走證據。
-
-**許星棠** [cold]：相機一直在。
-
-**許星棠** [cold]：不交給任何人。
+**許星棠** [cold]：相機一直在。不交給任何人。
 
 **顧言** [determined]：包括我。
 
-**許星棠** [cold]：⋯⋯
-
-**許星棠** [cold]：包括你。
+**許星棠** [cold]：⋯⋯包括你。
 
 **旁白**：第三行。
 
 **旁白**：證據不能只存在單一設備裡。
 
-**顧言** [determined]：第三條。
-
-**顧言** [determined]：證據不能只在一個地方。
+**顧言** [determined]：第三條。證據不能只在一個地方。
 
 **顧言** [determined]：否則拔線、搶相機、關門——任何一個都能讓計畫失敗。
 
 **韓越** [angry]：所以備援。
 
-**顧言** [determined]：嗯。
+**顧言** [determined]：嗯。不只一條線。不只一台設備。
 
-**顧言** [determined]：不只一條線。不只一台設備。
+**韓越** [angry]：備援放在哪裡。
+
+**顧言** [determined]：分開放。不同的人。不同的地方。
+
+**許星棠** [cold]：如果其中一條被拔呢。
+
+**顧言** [determined]：剩下的還能跑。
+
+**韓越** [angry]：⋯⋯兩條都被拔呢。
+
+**顧言** [determined]：那就是計畫失敗。
+
+**顧言** [determined]：所以不能讓他同時拔兩條。
+
+**許星棠** [cold]：怎麼保證。
+
+**顧言** [determined]：因為他不知道有幾條。
 
 **旁白**：三條規則寫完了。筆跡歪歪扭扭，但每一行都看得清楚。顧言把筆放下，把筆記本轉過來，讓另外兩個人看。
 
@@ -176,23 +176,29 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **旁白**：顧言翻到下一頁。計畫拆分。
 
-**顧言** [determined]：四條線。
+**顧言** [determined]：（內心）四條線。
 
-**顧言** [determined]：解密線。我和星棠。
+**顧言** [determined]：（內心）⋯⋯解密。基座。假死。直播。
 
-**顧言** [determined]：找出父親的密碼。解開關鍵檔案。
+**旁白**：他在紙上寫著。筆跡開始穩了。
 
-**顧言** [determined]：基座線。星棠和韓越。
+**顧言** [determined]：（內心）每一條都不能斷。
 
-**顧言** [determined]：取得工程付款紀錄影像。不偷原件。
+**顧言** [determined]：解密線。我和星棠。找出父親的密碼，解開關鍵檔案。
 
-**顧言** [determined]：假死線。我和韓越。
+**旁白**：筆尖停在紙上。雨聲填進來。
 
-**顧言** [determined]：22:22 讓邵叔相信我已經失去行動能力。
+**顧言** [determined]：基座線。星棠和韓越。取得工程付款紀錄影像。不偷原件。
 
-**顧言** [determined]：直播線。三個人。
+**顧言** [determined]：（內心）⋯⋯只拍。不碰。
 
-**顧言** [determined]：23:00 前接入證據。讓星棠活過 23:00。
+**顧言** [determined]：假死線。我和韓越。22:22 讓邵叔相信我已經失去行動能力。
+
+**旁白**：他的手停了一下。然後繼續寫。
+
+**顧言** [determined]：直播線。三個人。23:00 前接入證據。讓星棠活過 23:00。
+
+**顧言** [determined]：（內心）⋯⋯每一條都通向 23:00。
 
 **旁白**：四條線寫在紙上。橫向排列。像一張作戰圖。
 
@@ -242,7 +248,9 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **旁白**：許星棠看著他。沒有追問。她知道有些東西不能被催出來。
 
-**旁白**：韓越一直沒有說話。他看著那張紙。四條線。六項物件。三條規則。他的手指在桌面上點了兩下——不是不耐煩，是在確認每一條都站得住。
+**旁白**：韓越一直沒有說話。他看著那張紙。四條線。六項物件。三條規則。他的手指在桌面上點了兩下。
+
+**顧言** [determined]：（內心）⋯⋯他在確認。每一條都站得住。
 
 **韓越** [angry]：⋯⋯
 
@@ -292,6 +300,12 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **顧言** [determined]：用校史館的公用電腦。不藏。
 
+**旁白**：韓越的眉頭動了一下。
+
+**韓越** [angry]：公開查。不藏。
+
+**顧言** [determined]：嗯。讓他覺得我急了。
+
 **顧言** [determined]：第二步。
 
 **顧言** [determined]：我在林主任或行政組能聽見的地方，說半句話。
@@ -304,13 +318,13 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **顧言** [determined]：像自言自語。像在想辦法的時候不小心說出來的。
 
-**許星棠** [cold]：林主任會回報。
+**許星棠** [cold]：林主任會通知他。
 
 **顧言** [determined]：嗯。
 
 **顧言** [determined]：他每次都會。
 
-**顧言** [determined]：他怕邵叔。他聽見任何和證據有關的東西，第一反應都是回報。
+**顧言** [determined]：他怕邵叔。他聽見任何和證據有關的東西，第一反應都是馬上告訴他。
 
 **韓越** [angry]：邵叔收到之後呢。
 
@@ -320,11 +334,17 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **顧言** [determined]：因為他已經習慣把鐘樓當成清除我的可用死角。
 
+**顧言** [determined]：（內心）他習慣在鐘樓、醫務室、校務車上都留了後手。每一輪都是。
+
 **顧言** [determined]：我查鐘樓。我說了半句話。我帶著疑似相機包往鐘樓方向走。
 
 **顧言** [determined]：三條線索拼在一起——他會相信我今晚走鐘樓備用線。
 
 **顧言** [determined]：他不會覺得被騙。他會覺得自己贏了。
+
+**顧言** [determined]：（內心）⋯⋯只能一次。這條餌用完就沒了。
+
+**顧言** [determined]：（內心）如果服務走廊被封——走公共區域。慢。但能走。
 
 **旁白**：舊社團室裡安靜了。
 
@@ -356,13 +376,23 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **許星棠** [cold]：⋯⋯
 
+**許星棠** [cold]：10:30 校史館。人多的時候去。
+
+**顧言** [determined]：嗯。越多人越好。
+
+**許星棠** [cold]：基座在二樓還是一樓。
+
+**顧言** [determined]：一樓。工程資料櫃。韓越知道位置。
+
+**許星棠** [cold]：⋯⋯
+
 **許星棠** [cold]：好。
 
 **旁白**：她說「好」的時候，聲音比平時低了半個音階。低到像在對自己說話。
 
 **旁白**：顧言合上筆記本。
 
-**顧言** [determined]：08:55。
+**顧言** [determined]：08:55。時間到。
 
 **顧言** [determined]：散。各自走。不要一起出去。
 
@@ -388,25 +418,17 @@ old unused clubroom behind the library, 08:40, centennial celebration morning, s
 
 **許星棠** [cold]：⋯⋯
 
-**許星棠** [cold]：你是怎麼知道這些的。
-
-**旁白**：第三次了。她問了第三次。
+**許星棠** [cold]：如果邵叔沒有上鉤呢。
 
 **顧言** [determined]：⋯⋯
 
-**顧言** [determined]：（內心）她問了三次了。
+**顧言** [determined]：（內心）她問的不是「會不會成功」。
 
-**顧言** [determined]：（內心）第一次在校史館側廊。第二次在暗房。第三次在這裡。
+**顧言** [determined]：（內心）⋯⋯她問的是「失敗了怎麼辦」。
 
-**顧言** [determined]：（內心）她不會放棄這個問題。
+**顧言** [determined]：那就不走鐘樓。退到直播線。
 
-**顧言** [determined]：（內心）⋯⋯但現在還不是時候。
-
-**顧言** [determined]：等今天結束。
-
-**顧言** [determined]：如果我們活過 23:00。
-
-**顧言** [determined]：我告訴妳。
+**顧言** [determined]：證據還在。相機還在。我們還能撐到 23:00。
 
 **許星棠** [cold]：⋯⋯
 

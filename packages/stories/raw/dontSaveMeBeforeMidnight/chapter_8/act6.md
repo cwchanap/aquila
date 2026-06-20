@@ -12,7 +12,11 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **旁白**：沒有人會來這裡。這就是為什麼他們選了這裡。
 
-**旁白**：許星棠坐在靠窗的桌子旁邊。筆電打開了。螢幕上是記憶卡的檔案目錄。大部分是圖片縮圖和音訊片段——沒有鎖的。但最上面一個檔案是紅色的。鎖住的。
+**旁白**：許星棠坐在靠窗的桌子旁邊。筆電打開了。螢幕上是記憶卡的檔案目錄。大部分是圖片縮圖和音訊片段——沒有鎖的。
+
+**顧言** [determined]：（內心）最上面那個——
+
+**旁白**：一個檔案是紅色的。鎖住的。
 
 **旁白**：檔名——
 
@@ -60,11 +64,15 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **旁白**：他重新輸入。完整的年月日。八位數字。
 
-**旁白**：紅字。密碼錯誤。
+**旁白**：紅字。
+
+**顧言** [determined]：（內心）又錯了。不是日期。他根本不是用日期的人。
 
 **旁白**：他再試。校慶日期。百年校慶。今天的日期。
 
-**旁白**：紅字。密碼錯誤。
+**旁白**：密碼錯誤。
+
+**旁白**：他的手指停在鍵盤上。指節有點白。
 
 **顧言** [trembling]：（內心）⋯⋯也不對。
 
@@ -74,11 +82,11 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **顧言** [determined]：（內心）我的生日。
 
-**旁白**：他輸入。自己的生日。
+**旁白**：他輸入。自己的生日。數字一個一個敲下去。
 
 **旁白**：按確認。
 
-**旁白**：紅字。密碼錯誤。
+**旁白**：螢幕上又跳出一行紅字。密碼錯誤。
 
 **顧言** [trembling]：（內心）⋯⋯
 
@@ -94,7 +102,7 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **旁白**：按確認。
 
-**旁白**：紅字。密碼錯誤。
+**旁白**：又是紅字。密碼錯誤。
 
 **顧言** [trembling]：（內心）⋯⋯
 
@@ -114,11 +122,9 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **顧言** [trembling]：⋯⋯嗯。
 
-**許星棠** [cold]：你爸是記者。
+**許星棠** [cold]：你爸是記者，不是工程師。
 
-**許星棠** [cold]：他不是工程師。不是程式設計師。
-
-**許星棠** [cold]：他留給你的東西——不會是一串數字。
+**許星棠** [cold]：他留東西不會留一串數字。
 
 **旁白**：她看著螢幕。看著那行提示。
 
@@ -170,13 +176,9 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **旁白**：顧言抬頭看她。
 
-**許星棠** [cold]：第七輪你差一個字。你說「想不起來」。
+**許星棠** [cold]：第七輪你差一個字。你說想不起來。
 
-**許星棠** [cold]：但你不是想不起來。
-
-**許星棠** [cold]：你是不敢想起來。
-
-**許星棠** [cold]：那句話後面——是你不敢碰的東西。
+**許星棠** [cold]：不是想不起來。是後面的東西你不敢碰。
 
 **顧言** [trembling]：（內心）⋯⋯
 
@@ -190,13 +192,15 @@ old library room, second floor of east wing, dusty and dim, tall windows with ra
 
 **顧言** [trembling]：（內心）就等於承認他真的離開了。
 
-**許星棠** [cold]：你現在需要把它聽完。
+**許星棠** [cold]：那句話留了十年了。
 
-**許星棠** [cold]：不是為了密碼。
+**許星棠** [cold]：你還沒聽完。
 
-**許星棠** [cold]：是因為你爸把那句話留給你。十年了。你還沒有打開它。
+**旁白**：舊圖書室裡很安靜。雨聲被厚重的書架吸掉了一半。
 
-**旁白**：舊圖書室裡很安靜。雨聲從窗外傳進來，被厚重的書架和舊文件箱吸掉了一半，變成一種低沉的、持續的白噪音。螢幕上的光標還在閃。
+**顧言** [determined]：（內心）那句話。我一直在躲它。
+
+**旁白**：螢幕上的光標還在閃。
 
 **顧言** [determined]：（內心）⋯⋯
 

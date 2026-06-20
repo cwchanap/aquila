@@ -1,5 +1,11 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import {
+    render,
+    screen,
+    fireEvent,
+    waitFor,
+    within,
+} from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
@@ -462,5 +468,68 @@ describe('MobileNovelReader', () => {
 
         const tap = screen.getByLabelText('Tap to continue');
         expect(tap.closest('[inert]')).not.toBeNull();
+    });
+
+    it('hides the line-progress count when the dialogue is empty', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: [], choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        // Spec: when dialogue.length === 0 the count is hidden (not "Line 1 of 0").
+        expect(screen.queryByText('Line 1 of 0')).not.toBeInTheDocument();
+    });
+
+    it('restores focus to the persistent menu toggle after closing the acts drawer', async () => {
+        render(MobileNovelReader, {
+            props: {
+                dialogue: mockDialogue,
+                choice: null,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                locale: 'en',
+            },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open acts panel'));
+
+        // The opener (acts panel icon) unmounts with the chrome bar in the
+        // same batch the drawer opens, so the trap can't restore focus to it.
+        // Closing the drawer must land focus on the always-mounted ☰ toggle
+        // instead of stranding it on <body>.
+        const closeBtn = screen.getAllByRole('button', {
+            name: 'Close acts panel',
+        })[0];
+        await fireEvent.click(closeBtn);
+
+        await waitFor(() => {
+            expect(document.activeElement).toBe(
+                screen.getByLabelText('Open menu')
+            );
+        });
+    });
+
+    it('restores focus to the persistent menu toggle after closing the backlog sheet', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open history'));
+
+        // Both the scrim and the in-dialog ✕ carry the "Close history" label;
+        // pick the in-dialog close button (the one inside the [role="dialog"]).
+        const dialog = screen.getByRole('dialog');
+        const closeBtn = within(dialog).getByRole('button', {
+            name: 'Close history',
+        });
+        await fireEvent.click(closeBtn);
+
+        await waitFor(() => {
+            expect(document.activeElement).toBe(
+                screen.getByLabelText('Open menu')
+            );
+        });
     });
 });

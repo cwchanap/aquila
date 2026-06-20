@@ -16,6 +16,7 @@
     onClose,
     open = false,
     locale = 'en',
+    restoreFocusTarget = null,
   }: {
     storyId: string;
     currentSceneId: string;
@@ -23,6 +24,7 @@
     onClose: () => void;
     open?: boolean;
     locale?: Locale;
+    restoreFocusTarget?: HTMLElement | null;
   } = $props();
 
   let t = $derived(getTranslations(locale));
@@ -81,7 +83,7 @@
 {/if}
 
 <div
-  use:focusTrap={open}
+  use:focusTrap={{ enabled: open, restoreFocus: restoreFocusTarget }}
   class={cn(
     'fixed inset-y-0 left-0 z-50 w-4/5 max-w-xs overflow-y-auto bg-white/95 backdrop-blur-xl shadow-2xl motion-safe:transition-transform motion-safe:duration-300 ease-in-out',
     open ? 'translate-x-0' : '-translate-x-full'

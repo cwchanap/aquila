@@ -89,6 +89,10 @@
   // Plain (non-reactive) trackers.
   let lastDialogueRef: DialogueEntry[] | undefined = undefined;
   let initialBookmarkConsumed = false;
+  // Always-mounted menu toggle; passed to overlays as the focus-restore target
+  // so closing a drawer/sheet lands focus on a stable control instead of <body>
+  // (the opener icon unmounts with the chrome bar in the same batch as open).
+  let menuToggleButton: HTMLElement | undefined = $state();
 
   let currentDialogue = $derived(dialogue[currentDialogueIndex]);
   let isLastDialogue = $derived(currentDialogueIndex >= dialogue.length - 1);
@@ -280,6 +284,7 @@
   <!-- Persistent menu toggle (above the tap layer). -->
   <button
     type="button"
+    bind:this={menuToggleButton}
     class="absolute left-3 top-3 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 text-slate-700 shadow backdrop-blur-sm"
     style="top: calc(0.75rem + env(safe-area-inset-top));"
     aria-label={chromeVisible ? t.reader.closeMenu : t.reader.openMenu}
@@ -351,7 +356,9 @@
             <Bookmark size={20} aria-hidden="true" />
           </button>
         {/if}
-        <span class="ml-auto pr-2 text-xs font-medium text-slate-600">{progressText}</span>
+        {#if dialogue.length > 0}
+          <span class="ml-auto pr-2 text-xs font-medium text-slate-600">{progressText}</span>
+        {/if}
       </div>
       <div class="h-1 w-full bg-slate-200/70" aria-hidden="true">
         <div
@@ -455,6 +462,7 @@
       {currentSceneId}
       open={drawerOpen}
       {locale}
+      restoreFocusTarget={menuToggleButton ?? null}
       onNavigate={(sceneId: string) => onNavigate(sceneId)}
       onClose={() => (drawerOpen = false)}
     />
@@ -464,6 +472,7 @@
     lines={backlogLines}
     open={backlogOpen}
     {locale}
+    restoreFocusTarget={menuToggleButton ?? null}
     onClose={() => (backlogOpen = false)}
   />
 </div>

@@ -149,6 +149,101 @@ describe('focusTrap', () => {
         handle.destroy();
     });
 
+    it('focuses the container itself when there are no focusable descendants', () => {
+        const container = document.createElement('div');
+        document.body.append(container);
+
+        const handle = focusTrap(container, true);
+        // No focusable child and not inert: the container becomes the focus
+        // target (tabindex=-1) so Esc / SR commands still reach the dialog.
+        expect(document.activeElement).toBe(container);
+        handle.destroy();
+    });
+
+    it('defers the focus move when the container is inert at activation, then moves focus once inert clears', async () => {
+        // Mirrors MobileActDrawer: the trap (`enabled: open`) and `inert={!open}`
+        // flip in the same reactive batch. If the action update runs before the
+        // attribute has cleared, no descendant is focusable and focusing the
+        // inert container would strand focus on <body>. The trap must defer and
+        // retry once the inert attribute settles.
+        const container = document.createElement('div');
+        container.setAttribute('inert', '');
+        const first = makeButton('first');
+        container.append(first);
+        document.body.append(container);
+
+        const handle = focusTrap(container, { enabled: true });
+        // Synchronously still inert: focus NOT moved off <body>.
+        expect(document.activeElement).toBe(document.body);
+
+        // Attribute settles after the flush; clearing it lets the deferred
+        // microtask retry see the now-reachable button.
+        container.removeAttribute('inert');
+        await Promise.resolve();
+
+        expect(document.activeElement).toBe(first);
+        handle.destroy();
+    });
+
+    it('aborts the deferred focus move if the trap is deactivated before inert clears', async () => {
+        const container = document.createElement('div');
+        container.setAttribute('inert', '');
+        const first = makeButton('first');
+        container.append(first);
+        document.body.append(container);
+
+        const outside = makeButton('outside');
+        document.body.append(outside);
+
+        const handle = focusTrap(container, { enabled: true });
+        // Deactivate while still inert (overlay closed again same-frame).
+        handle.update({ enabled: false });
+        // Inert never clears in this scenario.
+        await Promise.resolve();
+
+        // The deferred retry must bail (active === false), so it does NOT steal
+        // focus onto the (still inert) first button after the fact.
+        expect(document.activeElement).not.toBe(first);
+        handle.destroy();
+    });
+
+    it('defers focus restore when the restore target is inert at deactivate, then restores once it clears', async () => {
+        // Mirrors MobileNovelReader: the menu-toggle restore target lives in a
+        // background wrapper that is `inert` while an overlay is open. When the
+        // overlay closes, the trap's enabled:false update and the wrapper's
+        // inert removal happen in the same flush — so deactivate may see an
+        // inert target. Restore must defer and land focus once inert clears,
+        // not strand it on <body>.
+        const backdrop = document.createElement('div');
+        backdrop.setAttribute('inert', '');
+        const toggle = makeButton('menu');
+        backdrop.append(toggle);
+        document.body.append(backdrop);
+
+        const container = document.createElement('div');
+        const closeBtn = makeButton('close');
+        container.append(closeBtn);
+        document.body.append(container);
+
+        const handle = focusTrap(container, {
+            enabled: true,
+            restoreFocus: toggle,
+        });
+        expect(document.activeElement).toBe(closeBtn);
+
+        // Deactivate while the restore target is still inert.
+        handle.update({ enabled: false, restoreFocus: toggle });
+        // Synchronously still inert: focus NOT moved onto the toggle.
+        expect(document.activeElement).not.toBe(toggle);
+
+        // Attribute settles after the flush; clear it and flush the retry.
+        backdrop.removeAttribute('inert');
+        await Promise.resolve();
+
+        expect(document.activeElement).toBe(toggle);
+        handle.destroy();
+    });
+
     it('restores focus to the explicit restoreFocus target instead of the detached opener', () => {
         // Simulate the overlay scenario: the opener button is unmounted in the
         // same batch as activation, so by the time the trap records

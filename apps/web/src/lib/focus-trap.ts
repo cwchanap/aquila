@@ -59,19 +59,43 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
         const doc = node.ownerDocument;
         previouslyFocused = (doc?.activeElement as HTMLElement | null) ?? null;
         active = true;
+        moveFocusIn();
+    }
+
+    /**
+     * Move focus onto the first reachable focusable descendant, or onto the
+     * container itself if there is none.
+     *
+     * Handles the "inert race": an overlay such as MobileActDrawer keeps its
+     * dialog permanently mounted and toggles both the trap (`enabled: open`)
+     * and `inert={!open}` from the same prop. If this action's update runs in
+     * the same reactive flush as the attribute removal — before the browser has
+     * actually dropped `inert` — `getFocusable` sees an empty list (every
+     * descendant is masked by the inert subtree) and focusing the still-inert
+     * container would strand focus on <body>. When we detect that situation we
+     * defer one microtask (which runs after the synchronous flush settles, so
+     * the attribute has cleared) and retry. `getFocusable`/`closest` queries
+     * the live DOM each pass, so the retry sees the post-flush state.
+     */
+    function moveFocusIn(): void {
+        if (!active) return;
         const focusable = getFocusable(node);
-        // Move focus into the overlay so the user lands inside the dialog
-        // rather than on a control behind the scrim.
         if (focusable.length > 0) {
+            // Move focus into the overlay so the user lands inside the dialog
+            // rather than on a control behind the scrim.
             focusable[0].focus();
-        } else {
-            // No focusable child: make the container itself focusable so Esc
-            // and screen-reader commands still target the dialog.
-            if (!node.hasAttribute('tabindex')) {
-                node.setAttribute('tabindex', '-1');
-            }
-            node.focus();
+            return;
         }
+        if (node.closest('[inert]')) {
+            queueMicrotask(moveFocusIn);
+            return;
+        }
+        // No focusable child and not inert: make the container itself focusable
+        // so Esc and screen-reader commands still target the dialog.
+        if (!node.hasAttribute('tabindex')) {
+            node.setAttribute('tabindex', '-1');
+        }
+        node.focus();
     }
 
     function deactivate(): void {
@@ -86,11 +110,34 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
                 ? restoreFocus
                 : previouslyFocused;
         previouslyFocused = null;
-        // Restore focus to whatever opened the overlay (e.g. the toolbar
-        // button), matching the modal-dialog contract.
-        if (target && typeof target.focus === 'function') {
-            target.focus();
+        restoreFocusTo(target);
+    }
+
+    /**
+     * Restore focus to the element that opened the overlay, matching the
+     * modal-dialog contract. Mirrors the `moveFocusIn` inert handling: the
+     * restore target can live in a subtree whose `inert` is cleared in the
+     * same flush as the overlay closing (MobileNovelReader inerts the whole
+     * background wrapper while an overlay is open). Focusing an inert element
+     * is a no-op, so without deferral focus would strand on <body>. Retry once
+     * the attribute has settled.
+     */
+    function restoreFocusTo(target: HTMLElement | null): void {
+        if (!target || typeof target.focus !== 'function') return;
+        if (target.closest('[inert]')) {
+            const retry = (): void => {
+                // Abandon if the target was removed before inert cleared.
+                if (!target.isConnected) return;
+                if (target.closest('[inert]')) {
+                    queueMicrotask(retry);
+                    return;
+                }
+                target.focus();
+            };
+            queueMicrotask(retry);
+            return;
         }
+        target.focus();
     }
 
     function setEnabled(value: boolean): void {

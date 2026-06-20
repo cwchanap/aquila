@@ -1,4 +1,8 @@
-import { getStoryFlow, type Translations } from '@aquila/stories';
+import {
+    getStoryFlow,
+    type Translations,
+    type StoryFlowConfig,
+} from '@aquila/stories';
 
 export interface ActInfo {
     label: string;
@@ -25,7 +29,13 @@ export interface BranchesResult {
 
 export type PanelData = ChaptersResult | BranchesResult;
 
-type LooseFlow = { nodes: Array<{ kind: string; sceneId?: string }> };
+// Minimal slice of a FlowConfig: the panel builders only read `nodes`, and
+// narrowing on `kind === 'scene'` makes `sceneId` non-optional (the union is
+// designed so sceneId is present exactly for scene nodes). Typing against the
+// real config — not a loose `{ kind: string; sceneId?: string }` — keeps the
+// illegal "choice node with a sceneId" state from compiling and couples a
+// sceneId rename upstream to this module at compile time.
+type Flow = Pick<StoryFlowConfig, 'nodes'>;
 
 export function extractChapterKey(sceneId: string): string | null {
     const match = sceneId.match(/^(ch\d+)_/);
@@ -102,12 +112,11 @@ export function buildChapterData(
     return buildBranches(flow, sceneId, t);
 }
 
-function buildChapters(flow: LooseFlow, t: Translations): ChaptersResult {
+function buildChapters(flow: Flow, t: Translations): ChaptersResult {
     const chapters: Record<number, Record<string, string>> = {};
 
     for (const node of flow.nodes) {
         if (node.kind !== 'scene') continue;
-        if (!node.sceneId) continue;
         const sceneId = node.sceneId;
         const actMatch = sceneId.match(/(?:^|_)(act\d+|actFinal|actEpilogue)/);
         if (!actMatch) continue;
@@ -139,7 +148,7 @@ function buildChapters(flow: LooseFlow, t: Translations): ChaptersResult {
 }
 
 function buildBranches(
-    flow: LooseFlow,
+    flow: Flow,
     sceneId: string,
     t: Translations
 ): BranchesResult {
@@ -147,7 +156,6 @@ function buildBranches(
 
     for (const node of flow.nodes) {
         if (node.kind !== 'scene') continue;
-        if (!node.sceneId) continue;
         const match = node.sceneId.match(
             /(?:^|_)(act\d+|actFinal|actEpilogue)/
         );

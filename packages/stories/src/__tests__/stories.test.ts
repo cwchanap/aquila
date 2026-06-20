@@ -146,13 +146,15 @@ describe('getStoryFlow', () => {
         expect(flow?.start).toBe('act1');
     });
 
-    it('falls back to train_adventure for unknown storyId', () => {
+    it('returns undefined for an unknown storyId (no silent substitution)', () => {
+        // An unregistered/typo'd id must NOT fall back to train_adventure —
+        // doing so would render a different story's act list and navigate into
+        // foreign scene ids with no signal. Callers handle the undefined.
         const flow = getStoryFlow('nonexistent');
-        expect(flow).toBeDefined();
-        expect(flow?.start).toBe('act1');
+        expect(flow).toBeUndefined();
     });
 
-    it('falls back to train_adventure for undefined storyId', () => {
+    it('falls back to train_adventure only for an absent (undefined) storyId', () => {
         const flow = getStoryFlow(undefined);
         expect(flow).toBeDefined();
         expect(flow?.nodes).toBeDefined();

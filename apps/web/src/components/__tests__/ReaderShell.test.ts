@@ -103,7 +103,6 @@ describe('ReaderShell', () => {
         });
         expect(screen.getByText('Back to Home')).toBeInTheDocument();
         mm.setMatches(true);
-        await vi.runAllTimersAsync();
         await waitFor(() => {
             expect(
                 screen.getByLabelText('Tap to continue')

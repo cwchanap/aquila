@@ -478,25 +478,39 @@ Add `use:longpress={{ onLongPress: () => (activeTooltip = LABEL), onRelease: () 
         }}
   ```
 
-Add the directive alongside the existing attributes on each element; do not change any `aria-label`, `href`, `onclick`, or `disabled`.
+Add the directive alongside the existing attributes on each element; do not change any `aria-label`, `href`, `onclick`, or `disabled`. Each `onLongPress` callback also captures the pressed control's viewport position so the tooltip can anchor near it (see Step 5):
+
+```svelte
+        use:longpress={{
+          onLongPress: (node) => {
+            const r = node.getBoundingClientRect();
+            activeTooltip = t.reader.openActsPanel;
+            tooltipAnchor = { left: r.left + r.width / 2, bottom: r.bottom };
+          },
+          onRelease: () => (activeTooltip = null),
+        }}
+  ```
+  (Repeat the `getBoundingClientRect` capture for the Home, History, Bookmark, and previous-line controls, swapping in the matching translation key.)
 
 - [ ] **Step 5: Render the tooltip bubble**
 
-Immediately after the bottom-panel container's closing `</div>` (currently `:371`, before the `{#if storyId !== undefined …}` MobileActDrawer block), add:
+Immediately after the bottom-panel container's closing `</div>` (currently `:371`, before the `{#if storyId !== undefined …}` MobileActDrawer block), add a `tooltipAnchor` state (`{ left: number; bottom: number } | null`) alongside `activeTooltip`, then render the bubble positioned relative to the captured coordinates instead of a fixed top offset:
 
 ```svelte
   <!-- Visual-only long-press tooltip. Controls already expose their name via
        aria-label, so this bubble is aria-hidden to avoid double-announcement. -->
-  {#if activeTooltip}
+  {#if activeTooltip && tooltipAnchor}
     <div
-      class="pointer-events-none absolute left-1/2 z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
-      style="top: calc(3.5rem + env(safe-area-inset-top));"
+      class="pointer-events-none absolute z-40 -translate-x-1/2 rounded-md bg-slate-900/90 px-3 py-1 text-sm font-medium text-white shadow-lg"
+      style="left: {tooltipAnchor.left}px; top: calc({tooltipAnchor.bottom}px + 0.25rem);"
       aria-hidden="true"
     >
       {activeTooltip}
     </div>
   {/if}
 ```
+
+The `left` is the pressed control's horizontal center and `top` sits just below the control, so the bubble appears next to the icon that was held rather than at a fixed screen position.
 
 - [ ] **Step 6: Run the reader tests**
 

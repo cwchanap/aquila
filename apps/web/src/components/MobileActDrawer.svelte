@@ -6,6 +6,7 @@
     extractChapterKey,
   } from '@/lib/act-navigation';
   import { ChevronDown, ChevronRight } from 'lucide-svelte';
+  import { cn } from '@/lib/utils';
 
   let {
     storyId,
@@ -79,9 +80,10 @@
 {/if}
 
 <aside
-  class="fixed inset-y-0 left-0 z-50 w-4/5 max-w-xs overflow-y-auto bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ease-in-out {open
-    ? 'translate-x-0'
-    : '-translate-x-full'}"
+  class={cn(
+    'fixed inset-y-0 left-0 z-50 w-4/5 max-w-xs overflow-y-auto bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ease-in-out',
+    open ? 'translate-x-0' : '-translate-x-full'
+  )}
   aria-hidden={!open}
   inert={!open}
 >
@@ -127,9 +129,12 @@
                     extractChapterKey(act.sceneId) === currentChapterKey}
                   <button
                     type="button"
-                    class="w-full rounded-lg px-3 py-3 text-left text-sm {isActive
-                      ? 'bg-blue-500 font-semibold text-white'
-                      : 'bg-white/60 text-slate-700 hover:bg-blue-50'}"
+                    class={cn(
+                      'w-full rounded-lg px-3 py-3 text-left text-sm',
+                      isActive
+                        ? 'bg-blue-500 font-semibold text-white'
+                        : 'bg-white/60 text-slate-700 hover:bg-blue-50'
+                    )}
                     onclick={() => handleSelect(act.sceneId)}
                   >
                     {act.label}
@@ -145,10 +150,12 @@
         {#each chapterData.acts as act (act.rawName)}
           <button
             type="button"
-            class="w-full rounded-xl px-4 py-3 text-left text-base {act.rawName ===
-            currentAct
-              ? 'bg-blue-500 font-semibold text-white'
-              : 'bg-white/60 text-slate-700 hover:bg-blue-50'}"
+            class={cn(
+              'w-full rounded-xl px-4 py-3 text-left text-base',
+              act.rawName === currentAct
+                ? 'bg-blue-500 font-semibold text-white'
+                : 'bg-white/60 text-slate-700 hover:bg-blue-50'
+            )}
             onclick={() => handleSelect(act.sceneId)}
           >
             {act.label}

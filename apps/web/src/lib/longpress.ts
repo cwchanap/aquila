@@ -34,11 +34,22 @@ export function longpress(node: HTMLElement, params: LongpressParams) {
         }, current.delay ?? DEFAULT_DELAY);
     }
 
-    function onPointerEnd(): void {
+    function onPointerUp(): void {
         clearTimer();
         if (fired) {
             current.onRelease();
         }
+        // Keep `fired` true: a click follows pointerup and must be suppressed.
+    }
+
+    function onPointerLeave(): void {
+        clearTimer();
+        if (fired) {
+            current.onRelease();
+        }
+        // No click follows pointerleave/pointercancel, so clear the suppression
+        // flag — otherwise a later keyboard-activated click would be swallowed.
+        fired = false;
     }
 
     // Capture-phase: a long-press swallows the subsequent click before it can
@@ -52,9 +63,9 @@ export function longpress(node: HTMLElement, params: LongpressParams) {
     }
 
     node.addEventListener('pointerdown', onPointerDown);
-    node.addEventListener('pointerup', onPointerEnd);
-    node.addEventListener('pointerleave', onPointerEnd);
-    node.addEventListener('pointercancel', onPointerEnd);
+    node.addEventListener('pointerup', onPointerUp);
+    node.addEventListener('pointerleave', onPointerLeave);
+    node.addEventListener('pointercancel', onPointerLeave);
     node.addEventListener('click', onClickCapture, true);
 
     return {
@@ -64,9 +75,9 @@ export function longpress(node: HTMLElement, params: LongpressParams) {
         destroy(): void {
             clearTimer();
             node.removeEventListener('pointerdown', onPointerDown);
-            node.removeEventListener('pointerup', onPointerEnd);
-            node.removeEventListener('pointerleave', onPointerEnd);
-            node.removeEventListener('pointercancel', onPointerEnd);
+            node.removeEventListener('pointerup', onPointerUp);
+            node.removeEventListener('pointerleave', onPointerLeave);
+            node.removeEventListener('pointercancel', onPointerLeave);
             node.removeEventListener('click', onClickCapture, true);
         },
     };

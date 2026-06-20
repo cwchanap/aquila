@@ -33,7 +33,7 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
-import MobileNovelReader from '../MobileNovelReader.svelte';
+import MobileNovelReader from '@/components/MobileNovelReader.svelte';
 
 const mockDialogue: DialogueEntry[] = [
     { characterId: 'narrator', dialogue: 'First line.' },
@@ -311,5 +311,19 @@ describe('MobileNovelReader', () => {
         // Both revealed lines are listed in the backlog.
         expect(screen.getByText('First line.')).toBeInTheDocument();
         expect(screen.getByText('Second line.')).toBeInTheDocument();
+    });
+
+    it('cancels in-flight typing without errors when unmounted mid-typewriter', async () => {
+        const { unmount } = render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        // Unmount before flushing the typewriter timers. The onDestroy hook
+        // bumps sceneVersion so pending onTick callbacks become no-ops.
+        unmount();
+        // Flushing timers after unmount must not throw or mutate destroyed state.
+        await vi.runAllTimersAsync();
+        expect(
+            screen.queryByLabelText('Tap to continue')
+        ).not.toBeInTheDocument();
     });
 });

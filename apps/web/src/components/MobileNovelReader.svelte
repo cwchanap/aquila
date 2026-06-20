@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import type {
     DialogueEntry,
     ChoiceDefinition,
@@ -8,6 +9,7 @@
   import { readerState } from '@/lib/reader-state.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
+  import { cn } from '@/lib/utils';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
   import { House, Layers, ChevronLeft, History, Bookmark } from 'lucide-svelte';
@@ -89,6 +91,12 @@
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let showChoices = $derived(!!choice && !isTyping && isLastDialogue);
   let hasOverlay = $derived(drawerOpen || backlogOpen);
+
+  // Cancel any in-flight typewriter when the component unmounts so pending
+  // onTick callbacks don't mutate state on a destroyed component.
+  onDestroy(() => {
+    sceneVersion++;
+  });
 
   // Initialize each scene when the dialogue array reference changes.
   $effect(() => {
@@ -332,9 +340,10 @@
   <!-- Bottom text panel. pointer-events-none lets taps fall through to the
        advance layer except when choices need to be clickable. -->
   <div
-    class="absolute inset-x-0 bottom-0 z-20 mx-auto max-w-2xl px-4 pb-4 {showChoices
-      ? 'pointer-events-auto'
-      : 'pointer-events-none'}"
+    class={cn(
+      'absolute inset-x-0 bottom-0 z-20 mx-auto max-w-2xl px-4 pb-4',
+      showChoices ? 'pointer-events-auto' : 'pointer-events-none'
+    )}
     style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));"
   >
     {#if showChoices}

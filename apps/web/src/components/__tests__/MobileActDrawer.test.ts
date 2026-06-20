@@ -32,7 +32,7 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
-import MobileActDrawer from '../MobileActDrawer.svelte';
+import MobileActDrawer from '@/components/MobileActDrawer.svelte';
 
 // Act buttons are the buttons that carry no aria-label (scrim and close
 // button both have aria-label "Close acts panel").

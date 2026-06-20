@@ -101,7 +101,7 @@
         style="font-family: 'Exo 2', sans-serif;"
         on:click={() => handleLanguageClick('en')}
       >
-        English
+        {translations.bookmarks.english}
       </a>
       <a
         href="/zh/"
@@ -109,7 +109,7 @@
         style="font-family: 'Exo 2', sans-serif;"
         on:click={() => handleLanguageClick('zh')}
       >
-        中文
+        {translations.bookmarks.chinese}
       </a>
     </div>
   </div>

@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { longpress } from '../longpress';
+import { longpress } from '@/lib/longpress';
 
 describe('longpress action', () => {
     afterEach(() => vi.clearAllTimers());
@@ -82,6 +82,36 @@ describe('longpress action', () => {
             new Event('click', { bubbles: true, cancelable: true })
         );
 
+        expect(delegated).toHaveBeenCalledTimes(1);
+        handle.destroy();
+    });
+
+    it('does not suppress a later click when a long-press ends via pointercancel/pointerleave', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('button');
+        parent.appendChild(node);
+        const delegated = vi.fn();
+        parent.addEventListener('click', delegated);
+
+        const handle = longpress(node, {
+            onLongPress: vi.fn(),
+            onRelease: vi.fn(),
+            delay: 450,
+        });
+
+        node.dispatchEvent(new Event('pointerdown'));
+        vi.advanceTimersByTime(450);
+        // Long-press fires, then the gesture is cancelled (e.g. browser scroll
+        // takes over) — no click follows this pointer sequence.
+        node.dispatchEvent(new Event('pointercancel'));
+        node.dispatchEvent(new Event('pointerleave'));
+
+        // A subsequent click (e.g. keyboard activation on a focused control)
+        // must bubble normally — the suppression flag was cleared on cancel.
+        const click = new Event('click', { bubbles: true, cancelable: true });
+        node.dispatchEvent(click);
+
+        expect(click.defaultPrevented).toBe(false);
         expect(delegated).toHaveBeenCalledTimes(1);
         handle.destroy();
     });

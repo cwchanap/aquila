@@ -330,6 +330,58 @@ describe('MobileNovelReader', () => {
         expect(screen.queryByText('Open acts panel')).not.toBeInTheDocument();
     });
 
+    it('clears the tooltip anchor on release so stale coords cannot leak into a later long-press', async () => {
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        const acts = screen.getByLabelText('Open acts panel');
+
+        // First long-press with one rect.
+        acts.getBoundingClientRect = vi.fn(() => ({
+            left: 120,
+            right: 160,
+            top: 48,
+            bottom: 92,
+            width: 40,
+            height: 44,
+            x: 120,
+            y: 48,
+            toJSON() {},
+        })) as typeof acts.getBoundingClientRect;
+        await fireEvent.pointerDown(acts);
+        await vi.advanceTimersByTimeAsync(450);
+        let bubble = screen.getByText('Open acts panel');
+        expect(bubble.getAttribute('style') ?? '').toContain('left: 140px');
+
+        await fireEvent.pointerUp(acts);
+        expect(screen.queryByText('Open acts panel')).not.toBeInTheDocument();
+
+        // Move the control (e.g. layout shift) and long-press again. If the
+        // anchor were not cleared on release, the bubble could re-render with
+        // the previous rect for a frame before the next pointerdown updated it.
+        acts.getBoundingClientRect = vi.fn(() => ({
+            left: 200,
+            right: 240,
+            top: 80,
+            bottom: 124,
+            width: 40,
+            height: 44,
+            x: 200,
+            y: 80,
+            toJSON() {},
+        })) as typeof acts.getBoundingClientRect;
+        await fireEvent.pointerDown(acts);
+        await vi.advanceTimersByTimeAsync(450);
+        bubble = screen.getByText('Open acts panel');
+        // New center = (200 + 240) / 2 = 220 — the stale 140 must be gone.
+        expect(bubble.getAttribute('style') ?? '').toContain('left: 220px');
+        expect(bubble.getAttribute('style') ?? '').not.toContain('left: 140px');
+
+        await fireEvent.pointerUp(acts);
+    });
+
     it('opens the backlog with the current scene lines', async () => {
         render(MobileNovelReader, {
             props: { dialogue: mockDialogue, choice: null, locale: 'en' },

@@ -75,6 +75,10 @@ export function longpress(node: HTMLElement, params: LongpressParams) {
         },
         destroy(): void {
             clearTimer();
+            if (fired) {
+                current.onRelease();
+                fired = false;
+            }
             node.removeEventListener('pointerdown', onPointerDown);
             node.removeEventListener('pointerup', onPointerUp);
             node.removeEventListener('pointerleave', onPointerLeave);

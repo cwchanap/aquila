@@ -34,7 +34,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "許星棠站在顧言旁邊。她的相機已經舉起來了。鏡頭對著展廳裡面。快門聲很輕——她把驅動模式調成了靜音。但顧言能聽見她的呼吸變了。變慢了。像在等一個更清楚的畫面。", background: Background.Chapter_7_Ch7_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她連拍了五張。林主任蹲在基座旁邊的姿勢。手電筒的光。工作人員站在後面等。底座裸露的木紋。", background: Background.Chapter_7_Ch7_Act9_S0 },
     { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "拍到了。", background: Background.Chapter_7_Ch7_Act9_S0, portrait: Portrait.XuXingtang_Cold },
-    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "他蹲在底板旁邊。手電筒照的方向是左側。", background: Background.Chapter_7_Ch7_Act9_S0, portrait: Portrait.XuXingtang_Cold },
+    { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "底板左側。他在找。", background: Background.Chapter_7_Ch7_Act9_S0, portrait: Portrait.XuXingtang_Cold },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）⋯⋯不急。先看完整。", background: Background.Chapter_7_Ch7_Act9_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "林主任站起來之後，沒有離開基座。他繞到基座後方，用手指摸了一遍底板的邊緣。動作很快，像在找什麼東西的接縫。然後他停住了。他的手指卡在底板左側的一個位置上，不動了。", background: Background.Chapter_7_Ch7_Act9_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "（內心）他找到了暗槽的位置。", background: Background.Chapter_7_Ch7_Act9_S0, portrait: Portrait.GuYan_Determined },

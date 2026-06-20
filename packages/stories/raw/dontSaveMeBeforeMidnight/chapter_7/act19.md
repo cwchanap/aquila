@@ -42,7 +42,7 @@ student dormitory room interior at dawn, eighth loop wake-up, the same grey rain
 
 **旁白**：他寫下第一行。
 
-**旁白**：醫務室線命中。
+**旁白**：醫務室線索成立。
 
 **旁白**：第二行。
 
@@ -256,7 +256,7 @@ student dormitory room interior at dawn, eighth loop wake-up, the same grey rain
 
 **旁白**：不要上去。
 
-**旁白**：⋯⋯或者說——上去。然後讓所有人以為你沒有下來。
+**旁白**：⋯⋯或者說——上去。然後讓所有人以為他沒有下來。
 
 **顧言** [determined]：（內心）這一次。
 

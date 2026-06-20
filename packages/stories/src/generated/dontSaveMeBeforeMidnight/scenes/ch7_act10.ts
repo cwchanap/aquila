@@ -53,7 +53,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "嗯。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越的下巴抬了一下。嘴唇壓緊。他的眼睛在雨裡很亮——不是那種冷的亮。是那種被刺到之後、還沒決定要不要發火的亮。", background: Background.Chapter_7_Ch7_Act10_S0 },
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "沒有。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.HanYue_Angry },
-    { characterId: CharacterId.HanYue, character: "韓越", dialogue: "沒有人動天線屋。沒有新增封鎖。沒有校安。什麼都沒有。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.HanYue_Angry },
+    { characterId: CharacterId.HanYue, character: "韓越", dialogue: "天線屋沒人動，沒新增封鎖，也沒校安。什麼都沒有。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.HanYue_Angry },
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "我沒有跟任何人說過你給我的那條情報。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.HanYue_Angry },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "我知道。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "你知道。", background: Background.Chapter_7_Ch7_Act10_S0, portrait: Portrait.HanYue_Angry },

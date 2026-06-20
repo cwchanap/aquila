@@ -60,7 +60,7 @@ school history hall interior, 19:30, centennial celebration evening, exhibition 
 
 **許星棠** [cold]：拍到了。
 
-**許星棠** [cold]：他蹲在底板旁邊。手電筒照的方向是左側。
+**許星棠** [cold]：底板左側。他在找。
 
 **顧言** [determined]：（內心）⋯⋯不急。先看完整。
 

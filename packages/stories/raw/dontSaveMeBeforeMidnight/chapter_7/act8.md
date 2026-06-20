@@ -50,7 +50,7 @@ school loading dock, 17:40, centennial celebration late afternoon, concrete plat
 
 **顧言** [sad]：（內心）我闖進了一條已經有人盯著的線。
 
-**顧言** [sad]：（內心）他們放空包上車，是為了釣攔截者。黑雨衣上車翻包——「不是這個。東西沒出來。」
+**顧言** [sad]：（內心）他們放空包上車，是為了釣攔截者。那個穿黑雨衣的人上車翻包——「不是這個。東西沒出來。」
 
 **顧言** [sad]：（內心）他不是來找我的。他不知道我在車廂裡。
 
@@ -66,7 +66,7 @@ school loading dock, 17:40, centennial celebration late afternoon, concrete plat
 
 **旁白**：工作人員推著器材車往裝卸區側門走了。輪子碾過濕瀝青的聲音被雨蓋住大半。裝卸平台上空了，只剩防水布綁過的痕跡和地上幾灘積水。
 
-**顧言** [determined]：（內心）本章不需要校務車出大事。
+**顧言** [determined]：（內心）這一輪不能在裝卸區出事。
 
 **顧言** [determined]：（內心）主線在醫務室。在基座。在後台。在23:00。
 

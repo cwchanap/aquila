@@ -22,7 +22,7 @@ same student dormitory room, 07:30 AM fifth loop, stronger grey morning light th
 
 **旁白**：他在地圖上方那座細長的塔狀符號上，重重塗了一層陰影。然後在旁邊寫了兩個字。
 
-**旁白**：**危險。**
+**旁白**：危險。
 
 **旁白**：第一輪。22:22。停電。監控空白。黑雨衣。從那裡墜落。
 
@@ -56,7 +56,7 @@ same student dormitory room, 07:30 AM fifth loop, stronger grey morning light th
 
 **旁白**：圈旁邊寫了三個字。
 
-**旁白**：**危險區。**
+**旁白**：危險區。
 
 **顧言** [determined]：(內心)今天——這五個地方，一個都不進。
 
@@ -68,7 +68,7 @@ same student dormitory room, 07:30 AM fifth loop, stronger grey morning light th
 
 **旁白**：虛線圈旁邊，他寫了六個字。
 
-**旁白**：**可觀察，不進入。**
+**旁白**：可觀察，不進入。
 
 **顧言** [determined]：(內心)上一輪我就是停在這條線上太久，才被拉進地下的。今天走到這條線，看一眼，就走。
 
@@ -82,7 +82,7 @@ same student dormitory room, 07:30 AM fifth loop, stronger grey morning light th
 
 **旁白**：圈旁寫了四個字。
 
-**旁白**：**相對安全。**
+**旁白**：相對安全。
 
 **顧言** [determined]：(內心)今天，我只待在這裡面。
 

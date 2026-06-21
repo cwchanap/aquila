@@ -7,7 +7,7 @@ import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "邵叔沒有讓他進核心區。", background: Background.Chapter_3_Ch3_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "臨時指揮室設在南翼行政樓一樓的走廊盡頭，三張摺疊桌拼在一起，桌上擺著六七部對講機、一疊門禁卡登記表、一台開著試算表的舊筆電。走廊兩端各站一名校安，腰間的對講機此起彼落，像一群不安分的蟬。", background: Background.Chapter_3_Ch3_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "臨時指揮室設在南翼行政樓一樓的走廊盡頭，三張摺疊桌拼在一起，桌上擺著六七部對講機、一疊門禁卡登記表、一台開著試算表的舊筆電。走廊兩端各站一名校安，腰間的對講機此起彼落，沒有一刻安靜。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "邵叔把他安置在外側——一張靠牆的塑料椅，旁邊是飲水機和一箱礦泉水。從這裡能看見白板，能聽見對講機的碎片對話，但摸不到桌上的任何一張表。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他把我放在這裡。看得見，碰不到。像展覽廳裡的玻璃櫃。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言的視線落在那面白板上。", background: Background.Chapter_3_Ch3_Act5_S0 },
@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShaoQiming, character: "邵叔", dialogue: "怎麼樣？不習慣這種場面吧。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.ShaoQiming_Concerned },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "⋯⋯嗯。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.ShaoQiming, character: "邵叔", dialogue: "你做得對。這種事不能自己查。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.ShaoQiming_Concerned },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)你做得對。三個字，像一顆糖。含在嘴裡是甜的，吞下去才知道裡面有什麼。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)你做得對。三個字，聽著安心。但安心這種東西，我已經付不起代價了。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.ShaoQiming, character: "邵叔", dialogue: "你先在這裡坐一下，我把監控和車輛查完，再帶你去安全的地方休息。今天你不適合一個人跑來跑去。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.ShaoQiming_Concerned },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "⋯⋯好。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "邵叔拍了拍他的肩膀，力道不重，掌心的溫度透過校服布料傳過來。然後他站起來，走回白板前，繼續和警員核對細節。", background: Background.Chapter_3_Ch3_Act5_S0 },

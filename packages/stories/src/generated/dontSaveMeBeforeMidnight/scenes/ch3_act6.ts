@@ -23,7 +23,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Technician, character: "技術人員", dialogue: "這次⋯⋯十七分鐘。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)十七。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Shocked },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)十七分鐘。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那三個字像三根釘子，釘進他的腦子裡。", background: Background.Chapter_3_Ch3_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那三個字卡在他的腦子裡，甩不掉。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)第一輪。鐘樓停電前後。監控有空白。我那時候以為是停電造成的。但——停電前就已經斷了？還是停電後才斷的？我記不清了。我只記得當時沒人在意那段空白。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)第二輪。裝卸區。校務車出發前後。畫面有缺失。我那時候以為是角度問題。但——裝卸區的攝像頭不是壞了，是那段時間根本沒有紀錄。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)兩次。兩段空白。都在關鍵事件前後。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Determined },
@@ -71,5 +71,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言從椅子上站起來，跟在邵叔身後往樓梯走。經過林主任身邊的時候，他聞到了一股很淡的氣味——機器的，微熱的，像這棟樓裡到處都有的那種電子設備散熱的味道。林主任的衣服上沾著它，大概是在這間悶熱的監控室裡待久了。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)十七分鐘。我記住了。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)一個舊系統的固定漏洞。一個可以被任何人利用的窗口。關鍵不是漏洞存不存在。關鍵是——誰知道它什麼時候會打開。", background: Background.Chapter_3_Ch3_Act6_S0, portrait: Portrait.GuYan_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他走上樓梯。身後的監控室裡，九面螢幕繼續閃爍著。灰綠色的、破碎的、充滿雜訊的畫面，像九隻瞎了的眼睛，在暴雨裡反覆眨動。", background: Background.Chapter_3_Ch3_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他走上樓梯。身後的監控室裡，九面螢幕繼續閃爍著灰綠色的、充滿雜訊的畫面。", background: Background.Chapter_3_Ch3_Act6_S0 },
 ];

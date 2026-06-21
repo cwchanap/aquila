@@ -45,7 +45,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "有一個人蹲在他面前。", background: Background.Chapter_3_Ch3_Act16_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個男人。白襯衫。袖子捲到手肘。他的手裡拿著什麼——一件外套。濕的。他把濕外套展開，蓋在小孩的頭上和肩膀上，動作很輕、很快，像在藏一樣東西。", background: Background.Chapter_3_Ch3_Act16_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他湊近小孩的耳朵。", background: Background.Chapter_3_Ch3_Act16_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聲音很低。壓到了幾乎是氣音的程度。像怕被第三個人聽到。", background: Background.Chapter_3_Ch3_Act16_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聲音很低。壓到了幾乎是氣音的程度。像怕被別人聽到。", background: Background.Chapter_3_Ch3_Act16_S1 },
     { characterId: CharacterId.GuZe, character: "顧澤", dialogue: "別出聲。", background: Background.Chapter_3_Ch3_Act16_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小孩——他——屏住了呼吸。", background: Background.Chapter_3_Ch3_Act16_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "碎片斷了。", background: Background.Chapter_3_Ch3_Act16_S1 },

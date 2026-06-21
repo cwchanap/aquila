@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他畫了一張表格。", background: Background.Chapter_3_Ch3_Act17_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "橫軸是三個欄位：第一輪、第二輪、第三輪。縱軸是五個項目。他用非常工整、非常小的字體填寫，像在寫一份報告。", background: Background.Chapter_3_Ch3_Act17_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一行：「地點」。下面三格分別寫了：鐘樓、後山維修路、醫務室。", background: Background.Chapter_3_Ch3_Act17_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二行：「表面危險」。下面三格：停電墜落、車輛事故、局部停電與廢氣。", background: Background.Chapter_3_Ch3_Act17_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二行：「表面危險」。下面三格：停電墜落、車輛事故、停電與廢氣。", background: Background.Chapter_3_Ch3_Act17_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第三行：「共通物」。下面三格分別寫了：灰色膠帶、黑雨衣、相機；黑色相機包、車輛表；南翼門禁、設備區、灰色膠帶。", background: Background.Chapter_3_Ch3_Act17_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第四行：「控制來源」。下面三格：門禁／電力、車輛／路線、指揮室／醫務室／校安。", background: Background.Chapter_3_Ch3_Act17_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第五行：「監控」。三格全部寫了同一個詞：空白。在最後一格的旁邊，他加了一行小字：十七分鐘。", background: Background.Chapter_3_Ch3_Act17_S0 },

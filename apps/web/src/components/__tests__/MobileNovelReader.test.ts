@@ -256,6 +256,26 @@ describe('MobileNovelReader', () => {
         expect(screen.getByLabelText('Previous line')).toBeDisabled();
     });
 
+    it('advances when tapping the dialogue text and keeps the box scrollable', async () => {
+        // Regression guard: the bottom reading panel is pointer-events-none
+        // so taps fall through to the full-screen advance button, but the
+        // scrollable text box must re-enable pointer events (so overflowed
+        // lines can be scrolled) while still advancing on tap.
+        render(MobileNovelReader, {
+            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
+        });
+        // Let line 1 finish typing, then tap the text itself (not the
+        // full-screen advance button) to advance to line 2.
+        await vi.runAllTimersAsync();
+        const line1 = screen.getByText('First line.');
+        // The scrollable text box carries pointer-events-auto so touch/wheel
+        // events reach it instead of falling through to the advance layer.
+        expect(line1.closest('p')?.className).toContain('pointer-events-auto');
+        await fireEvent.click(line1);
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Second line.')).toBeInTheDocument();
+    });
+
     it('steps back one line within the scene without leaving it', async () => {
         const onNext = vi.fn();
         render(MobileNovelReader, {

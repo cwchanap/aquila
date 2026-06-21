@@ -422,7 +422,14 @@
           <ChevronLeft size={20} aria-hidden="true" />
         </button>
       </div>
-      <!-- Fixed-height reading box: chip · scrollable text · pinned indicator. -->
+      <!-- Fixed-height reading box: chip · scrollable text · pinned indicator.
+           The box stays pointer-events-none (inherited from the panel) so taps
+           on the chip/indicator fall through to the advance layer, but the
+           scrollable text re-enables pointer events so overflowed lines can be
+           scrolled. Its onclick forwards to advance() so a tap on the text
+           still advances — scroll gestures don't fire click, so scrolling is
+           unaffected. The local keydown mirrors the global <svelte:window>
+           handler and calls preventDefault() so advance isn't triggered twice. -->
       <div class="flex h-52 flex-col rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
         {#if currentName}
           <span
@@ -431,7 +438,17 @@
             {currentName}
           </span>
         {/if}
-        <p class="flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800">
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <p
+          class="pointer-events-auto flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800"
+          onclick={advance}
+          onkeydown={(e) => {
+            if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            advance();
+          }}
+        >
           {typingText}{#if isTyping}<span
               class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
             ></span>{/if}

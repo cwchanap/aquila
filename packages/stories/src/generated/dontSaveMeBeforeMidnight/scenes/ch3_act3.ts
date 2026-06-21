@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個聲音從側面傳來。", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.HanYue, character: "韓越", dialogue: "今天別去碰那些箱子。", background: Background.Chapter_3_Ch3_Act3_S0, portrait: Portrait.HanYue_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "顧言轉頭。", background: Background.Chapter_3_Ch3_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越站在帳篷柱子旁邊，雙手插在外套口袋裡。他的校服外面罩著那件沾灰塵的深色外套，脖子上掛著「舞台組」的臨時通行證。右手擺動幅度比左手小——上一輪他注意過這個細節。手背上有暗紅的刮傷薄痂。", background: Background.Chapter_3_Ch3_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越站在帳篷柱子旁邊，雙手插在外套口袋裡。他的校服外面罩著那件沾灰塵的深色外套，脖子上掛著「舞台組」的臨時通行證。右手擺動幅度比左手小——上一輪他注意過這個細節。手背上有幾道暗紅的刮傷薄痂，像是剛搬完器材被金屬邊緣劃的。", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)韓越。上一輪他在這一帶出現過。和許星棠在一起的時候，他看起來像在威脅她。但事後想想，那個距離和語氣——不對。那不像威脅。那更像——", background: Background.Chapter_3_Ch3_Act3_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "你知道裡面是什麼？", background: Background.Chapter_3_Ch3_Act3_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "韓越沒有回答。他的眼神從器材箱上移開，掃了一眼顧言，然後看向更遠的地方——臨時指揮區的方向。", background: Background.Chapter_3_Ch3_Act3_S0 },

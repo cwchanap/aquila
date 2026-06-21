@@ -1,7 +1,7 @@
 # 第十六幕：我到底看見了誰
 
 ```bg
-south wing infirmary inner room at night, nearly pitch black except for faint amber glow from backup battery light, rain hammering window, generator drone vibrating through walls, plastic sheeting at ventilation louver pulsing like a dying lung, Gu Yan collapsed on floor against bed frame, air thick and suffocating, shadows eating the room, moody cinematic visual-novel background art, extreme close atmosphere shot
+south wing infirmary inner room at night, nearly pitch black except for faint amber glow from backup battery light, rain hammering window, generator drone vibrating through walls, plastic sheeting at ventilation louver pulsing rhythmically, Gu Yan collapsed on floor against bed frame, air thick and suffocating, shadows eating the room, moody cinematic visual-novel background art, extreme close atmosphere shot
 ```
 
 **旁白**：二十一點四十五分。
@@ -86,7 +86,7 @@ black void with faint orange-red glow, burning building corridor, smoke and stea
 
 **旁白**：然後他湊近小孩的耳朵。
 
-**旁白**：聲音很低。壓到了幾乎是氣音的程度。像怕被第三個人聽到。
+**旁白**：聲音很低。壓到了幾乎是氣音的程度。像怕被別人聽到。
 
 **顧澤**：別出聲。
 

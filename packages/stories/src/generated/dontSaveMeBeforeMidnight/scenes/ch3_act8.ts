@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "這不是保護嗎？", background: Background.Chapter_3_Ch3_Act8_S0, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他問了。不是反駁，不是質疑。是真的在問。他的聲音比平時低了一點，像是在確認一件他不確定的事。", background: Background.Chapter_3_Ch3_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "許星棠看了他一眼。", background: Background.Chapter_3_Ch3_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那一眼很短，但裡面的東西很重。不是同情，不是嘲諷，不是居高臨下。說不上是什麼——像是有人在深水底下，朝他伸了一下手，但立刻又縮回去。", background: Background.Chapter_3_Ch3_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那一眼很短，但裡面的東西很重。不是同情，不是嘲諷，不是居高臨下。說不上是什麼——像是有什麼東西動了一下，又立刻收回去。", background: Background.Chapter_3_Ch3_Act8_S0 },
     { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "被保護起來，不代表安全。", background: Background.Chapter_3_Ch3_Act8_S0, portrait: Portrait.XuXingtang_Cold },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她頓了一下。", background: Background.Chapter_3_Ch3_Act8_S0 },
     { characterId: CharacterId.XuXingtang, character: "許星棠", dialogue: "也可能只是比較好找。", background: Background.Chapter_3_Ch3_Act8_S0, portrait: Portrait.XuXingtang_Cold },

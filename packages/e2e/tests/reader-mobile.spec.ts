@@ -55,7 +55,10 @@ test.describe('Mobile reader', () => {
 
         // The active act (Act 1) is rendered with bg-blue-500; pick a button
         // that is NOT the active one. Act 2 is the linear next scene.
-        const act2Button = reader.actButtons.filter({ hasText: 'Act 2' });
+        // hasText is a substring match, so 'Act 2' would also match 'Act 20'…
+        // 'Act 29' (train_adventure has 48 acts). Anchor the regex to pick the
+        // exact label only and keep Playwright strict mode happy.
+        const act2Button = reader.actButtons.filter({ hasText: /^Act 2$/ });
         await expect(act2Button).toBeVisible();
         await act2Button.click();
 

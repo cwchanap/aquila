@@ -3,13 +3,19 @@ name: orchestrating-stories
 description: Use when creating a new branching story, adding a new chapter to an existing story, adding new characters, or extending the branching tree of an existing story. Also use when the task involves `packages/stories/raw/` markdown dialogue or `bun compile:stories`.
 ---
 
-# Writing a New Story
+# Orchestrating Stories
 
 ## Overview
 
 Stories are authored as **Chinese markdown** under `packages/stories/raw/<storyName>/`. A deterministic compiler (`bun compile:stories`) turns the markdown + folder structure into runtime TypeScript (dialogue maps, flow graphs, choice scaffolds). You then wire the generated output into the game and web app.
 
 The **directory structure IS the branching graph**: `branch_*` subdirectories become player choices. The compiler is generic — any story with a `compiler.config.ts` is discovered automatically.
+
+## Scope Boundary
+
+You are the **orchestrator** (main agent). Your job is to plan the story structure, define characters, plan the act breakdown, dispatch writing subagents, run the compiler, and wire the generated output into the game and web app.
+
+You do NOT write act markdown dialogue yourself — that is delegated to writing subagents that load the `writing-story-acts` skill. You do NOT review acts yourself in detail — dispatch review subagents using the `reviewing-written-stories` skill when needed. The house prose style is defined in the `house-style` skill; reference it, don't restate it.
 
 ## Prerequisites
 
@@ -365,22 +371,59 @@ export const ALLOWED_STORIES = [
 ] as const;
 ```
 
-**7e. Add the menu button (stories index)**
+**7e. Add the story card (stories index)**
 
-Edit `apps/web/src/pages/[locale]/stories/index.astro` (~line 59) — without this, the story is unreachable from the UI:
+Edit `apps/web/src/pages/[locale]/stories/index.astro` — add a new `<a class="story-card ...">` block inside the `Story Cards Grid` `<div>` (mirroring the existing `Train Adventure` / `Don't Save Me Before Midnight` cards). Without this, the story is unreachable from the UI.
+
+The page uses anchor-based cards (NOT a `<Button>` component) — each card is an `<a>` with a `story-card` class, a glassmorphism inner `<div>`, an emblem, a title, and an aria-hidden descriptor. Copy an existing card block and adapt the accent color, emblem SVG, and translation keys:
 
 ```astro
-<Button variant="menu-compact" href={`/${locale}/reader?story=${StoryId.MY_STORY}`} client:load>
-    {t("stories.myStory")}
-</Button>
+<!-- My Story Card -->
+<a
+  href={`/${locale}/reader?story=${StoryId.MY_STORY}`}
+  class="story-card group block rounded-2xl overflow-hidden motion-safe:animate-[fadeSlideUp_0.6s_0.4s_ease_both]"
+>
+  <div class="relative h-full p-8 bg-white/[0.08] hover:bg-white/[0.14] backdrop-blur-xl border border-white/15 hover:border-emerald-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(110,231,183,0.12)]">
+    <!-- Chapter emblem -->
+    <div class="mb-5 flex items-start justify-between">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/30 to-teal-500/30 border border-emerald-300/30 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-300/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <!-- replace with a story-appropriate icon path -->
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.121 4.5 7.203 4.5 5.203 6.253m6.797 0C13.879 4.5 16.797 4.5 18.797 6.253M12 6.253C10.121 8.006 7.203 8.006 5.203 6.253m6.797 0C13.879 8.006 16.797 8.006 18.797 6.253M5.203 6.253C4.222 7.13 3.708 8.252 3.708 9.5v8a2 2 0 002 2h12.584a2 2 0 002-2v-8c0-1.248-.514-2.37-1.495-3.247" />
+        </svg>
+      </div>
+      <!-- Arrow hint -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/20 motion-safe:transition-all motion-safe:duration-300 motion-safe:group-hover:text-emerald-300/70 motion-safe:group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </div>
+
+    <!-- Story title -->
+    <h2 class="text-xl font-serif font-semibold text-white/90 mb-2 leading-snug group-hover:text-white transition-colors duration-300">
+      {t("stories.myStory")}
+    </h2>
+
+    <!-- Descriptor — aria-hidden so accessible name stays as the title -->
+    <p class="text-white/45 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors duration-300" aria-hidden="true">
+      {t("stories.myStoryDesc")}
+    </p>
+
+    <!-- Bottom shimmer line -->
+    <div class="mt-6 h-px bg-gradient-to-r from-emerald-400/0 via-emerald-400/30 to-emerald-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+  </div>
+</a>
 ```
+
+Notes:
+- Stagger the `fadeSlideUp` animation delay (the existing cards use `0.1s` and `0.25s`; pick the next slot, e.g. `0.4s`).
+- Add the descriptor translation key (`stories.myStoryDesc`) alongside the title key in Step 7f — the card grid expects both.
 
 **7f. Add story label to translations**
 
-Edit `packages/stories/src/translations/en.json` and `zh.json` — add the `stories.myStory` key referenced by the button above:
+Edit `packages/stories/src/translations/en.json` and `zh.json` — add the `stories.myStory` (title) and `stories.myStoryDesc` (descriptor) keys referenced by the card above:
 
 ```json
-{ "stories": { "myStory": "My Story" } }
+{ "stories": { "myStory": "My Story", "myStoryDesc": "A short, evocative one-line descriptor." } }
 ```
 
 **7g. (Optional) Export asset paths**

@@ -31,7 +31,7 @@ Read ALL of these before writing any dialogue:
 1. **`packages/stories/raw/<storyName>/docs/characters.md`** — every speaker ID, alias, and voice definition. Every `**name**` you write must resolve here.
 2. **The chapter/act plan** (e.g. `docs/chapter_N_plan.md`) — the source of truth for scene content, time, location, and required plot beats.
 3. **The previous act** (if you're not writing the first in a batch) — for voice/POV/prop continuity across the seam.
-4. **One reference act from the canon** — `packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md` is the house voice reference. Read it first to calibrate tone.
+4. **The house style guide** — load the `house-style` skill. It defines voice, pacing, POV, tone, and references, and lists reference example acts to read for voice calibration. Read one of those canon acts before writing to calibrate tone.
 
 ## Step 2: Markdown Format
 
@@ -103,36 +103,15 @@ rooftop at dusk, warm orange light
 
 ## Step 3: Style Guide (New Adult 18-25)
 
-Stories target **New Adult readers (18-25)** — college/early-career protagonists, adult themes, contemporary Taiwanese setting. The existing canon (`dontSaveMeBeforeMidnight`, `trainAdventure`) defines the house style; mimic it.
+The house style guide lives in the **`house-style`** skill — load it. It is the single source of truth for voice register, pacing, POV, tone, and references, and lists reference example acts to read for voice calibration.
 
-**Voice — mixed register:**
-- ✅ **Narrator** may use sensory metaphors and elevated imagery (`像一具剛解凍的木偶`, `像沒充飽電的手機`)
-- ✅ **Protagonist inner voice** is clipped, fragmentary, blunt (`又是校慶。` / `做夢了吧。` / `帥。`)
-- ❌ Not YA-earnest, not adult-literary-remote. Aim for "smart enough to be lyrical, insecure enough to mock itself"
-- ❌ No authorial exposition — reveal only what the POV character perceives
+**Do not duplicate the guide here.** Always reference the `house-style` skill to prevent drift. The quick rules below are a memory aid only — if they ever disagree with the `house-style` skill, the `house-style` skill wins:
 
-**Pacing — mobile-reading rhythm:**
-- ✅ **Standalone one-line paragraphs for emphasis** (`07:05。` / `鐘樓。` / `然後是一隻手。`)
-- ✅ Long sensory accumulations in narrator beats, broken by short inner-monologue punches
-- ✅ One beat per paragraph — never pack multiple ideas into one `**旁白**：` block
-- ❌ No purple prose blocks; no wall-of-text inner monologue
-
-**POV — third-person close:**
-- ✅ Locked to one POV character's perception per scene
-- ✅ Filter every description through their sensory/emotional state
-- ❌ Never reveal information the POV character can't perceive (no omniscient cuts to other characters' thoughts)
-
-**Tone — dry, melancholic, self-aware:**
-- ✅ Deadpan humor at protagonist's expense (the canon's `帥。` after describing a haggard reflection)
-- ✅ Melancholic undertone permitted; maudlin is not
-- ❌ No slapstick, no meme humor, no dad-joke tone
-
-**References — modern but timeless:**
-- ✅ Taiwanese school/campus texture (宿舍、食堂、校慶、關東煮、豆漿、騎樓)
-- ✅ Generic modern devices (手機、簡訊、螢幕) — no brand names or app names unless diegetically required
-- ❌ No internet slang, no memes, no trend-of-the-moment references (they date the text)
-
-**Reference examples:** `packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md` (narrator + inner voice balance), `chapter_3/act2.md` (sustained inner-monologue investigation).
+- Narrator may use sensory metaphors; protagonist inner voice stays clipped and blunt
+- One beat per `**旁白**：` paragraph; break long sensory beats with short inner-monologue punches
+- Third-person close POV — never reveal what the POV character can't perceive
+- Dry, melancholic, self-aware tone — no slapstick, no memes, no maudlin
+- Traditional Chinese only; Taiwanese campus texture; generic modern devices; no brand/app names, no internet slang
 
 ## Step 4: Character Resolution
 

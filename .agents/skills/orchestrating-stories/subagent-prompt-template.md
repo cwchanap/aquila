@@ -18,7 +18,9 @@ Load the writing-story-acts skill first (NOT orchestrating-stories — that's th
 - packages/stories/raw/[storyName]/docs/chapter_[C]_plan.md — detailed scene plan (source of truth)
 - packages/stories/raw/[storyName]/chapter_[C-1]/act[last].md — previous chapter's last act (for continuity)
 - packages/stories/raw/[storyName]/chapter_[C]/act[N-1].md — previous act (if not first batch)
-- packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md — house voice reference (read first to calibrate tone)
+
+## House voice calibration
+Load the `house-style` skill — it defines the prose style (voice, pacing, POV, tone, references) and lists reference example acts. Read one of those canon acts before writing to calibrate tone. (If the story you're writing has its own previously-shipped acts, prefer the most recent one in this story for voice continuity.)
 
 ## Key rules
 - All rules for markdown format, style, and character resolution are in the writing-story-acts skill — follow them

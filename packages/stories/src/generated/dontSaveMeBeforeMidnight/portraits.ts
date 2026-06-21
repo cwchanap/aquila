@@ -16,6 +16,7 @@ export enum Portrait {
     LinZhuren_Base = "lin_zhuren/base",
     LinZhuren_Panicked = "lin_zhuren/panicked",
     LinZhuren_Stern = "lin_zhuren/stern",
+    Mc_Base = "mc/base",
     ShaoQiming_Base = "shao_qiming/base",
     ShaoQiming_Concerned = "shao_qiming/concerned",
     ShaoQiming_Serious = "shao_qiming/serious",

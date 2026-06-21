@@ -226,7 +226,7 @@ student dormitory room interior at dawn, fifth loop wake-up, grey rain streaking
 
 **旁白**：字跡很大。很重。像刻進去的。
 
-**旁白**：**今天，我要看見 22:23。**
+**旁白**：今天，我要看見 22:23。
 
 **旁白**：窗外，雨還在下。鐘樓還站在雨霧裡。廣播還沒有響。宿舍走廊上的腳步聲還沒有傳來。一切都是第五次。一切都是第一次。
 

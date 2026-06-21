@@ -1024,6 +1024,11 @@
       "prompt": "anime visual-novel portrait, 17-year-old girl, low ponytail, controlled fear visible, tension in jaw, eyes darting sideways, photography vest, camera around neck, cold blue lighting, upper-body shot"
     },
     {
+      "key": "mc/base",
+      "path": "dont_save_me_before_midnight/characters/mc/base.png",
+      "prompt": "anime visual-novel portrait, 40-something East Asian man, neat side-parted hair with a few grey strands, dark suit jacket over a crisp white shirt, school-badge lapel pin, confident stage smile that doesn't quite reach the eyes, handheld microphone, warm auditorium spotlights, upper-body shot, clean background"
+    },
+    {
       "key": "shao_qiming/shocked",
       "path": "dont_save_me_before_midnight/characters/shao_qiming/shocked.png",
       "prompt": "anime visual-novel portrait, 40-something East Asian man, not tall, dark tanned skin, very short buzzcut following scalp curve, warm reliable smile showing white teeth, deep laugh lines, dark blue police uniform with shoulder insignia catching light, arms crossed or hands behind back, fatherly presence, warm even lighting, upper-body shot, clean background"

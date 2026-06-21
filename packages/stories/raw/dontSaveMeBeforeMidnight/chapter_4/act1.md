@@ -38,7 +38,7 @@ same student dormitory room at dawn, fourth loop, grey rain streaking windowpane
 
 **旁白**：他在這些詞上面畫了一個大圈，圈裡寫了兩個字。
 
-**旁白**：**權限。**
+**旁白**：權限。
 
 **顧言** [determined]：(內心)三次死亡。三個地點。三種死法。但控制每一個地點的東西，都需要權限。
 

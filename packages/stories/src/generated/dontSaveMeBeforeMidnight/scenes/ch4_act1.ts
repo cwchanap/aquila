@@ -23,7 +23,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他把三組加註裡共同的字圈起來。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門禁。電力。車輛。路線。設備。校安。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他在這些詞上面畫了一個大圈，圈裡寫了兩個字。", background: Background.Chapter_4_Ch4_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "**權限。**", background: Background.Chapter_4_Ch4_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "權限。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)三次死亡。三個地點。三種死法。但控制每一個地點的東西，都需要權限。", background: Background.Chapter_4_Ch4_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)誰有權限開鐘樓的門、切鐘樓的電？誰有權限改校務車的路線表？誰有權限開南翼醫務室的門、調度校安？", background: Background.Chapter_4_Ch4_Act1_S0, portrait: Portrait.GuYan_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他在地圖上繼續標記其他位置——校史館、臨時指揮室。指揮室他畫了一個較大的圓圈，裡面寫了「指揮室」三個字，然後從這個圓圈向三個死亡地點各畫了一條細線。", background: Background.Chapter_4_Ch4_Act1_S0 },

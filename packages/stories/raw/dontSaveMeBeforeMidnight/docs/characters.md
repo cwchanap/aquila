@@ -536,3 +536,9 @@ Technical volunteer or staff operating the old surveillance system in the monito
 - **Aliases**: 司儀
 
 The centennial celebration's master of ceremonies on the auditorium stage. Handles the closing-ceremony announcements and the final countdown to 23:00. A voice that carries over the rain and applause — a public surface that drowns out what happens backstage.
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-something East Asian man, neat side-parted hair with a few grey strands, dark suit jacket over a crisp white shirt, school-badge lapel pin, confident stage smile that doesn't quite reach the eyes, handheld microphone, warm auditorium spotlights, upper-body shot, clean background
+
+---

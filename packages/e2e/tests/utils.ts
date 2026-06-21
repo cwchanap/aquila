@@ -100,25 +100,63 @@ export class MobileReaderPage {
         return headings[this.locale];
     }
 
+    // Localized control labels. The reader components render these as
+    // aria-labels via the translation tables (packages/stories/src/translations),
+    // so the locators must match the active locale or they fail under `zh`.
+    private get tapToContinueLabel() {
+        const labels = { en: 'Tap to continue', zh: '點擊繼續' };
+        return labels[this.locale];
+    }
+
+    private get openMenuLabel() {
+        const labels = { en: 'Open menu', zh: '開啟選單' };
+        return labels[this.locale];
+    }
+
+    private get openActsPanelLabel() {
+        const labels = { en: 'Open acts panel', zh: '開啟章節面板' };
+        return labels[this.locale];
+    }
+
+    private get openHistoryLabel() {
+        const labels = { en: 'Open history', zh: '開啟歷史' };
+        return labels[this.locale];
+    }
+
+    private get bookmarkLabel() {
+        const labels = { en: '📖 Bookmark', zh: '📖 書籤' };
+        return labels[this.locale];
+    }
+
+    private get previousLineLabel() {
+        const labels = { en: 'Previous line', zh: '上一行' };
+        return labels[this.locale];
+    }
+
+    private get backToHomeLabel() {
+        const labels = { en: '← Back to Home', zh: '← 返回主頁' };
+        return labels[this.locale];
+    }
+
     get tapLayer() {
-        return this.page.getByLabel('Tap to continue');
+        return this.page.getByLabel(this.tapToContinueLabel);
     }
 
     get menuButton() {
-        return this.page.getByLabel('Open menu');
+        return this.page.getByLabel(this.openMenuLabel);
     }
 
     get actsButton() {
-        return this.page.getByLabel('Open acts panel');
+        return this.page.getByLabel(this.openActsPanelLabel);
     }
 
     get historyButton() {
-        return this.page.getByLabel('Open history');
+        return this.page.getByLabel(this.openHistoryLabel);
     }
 
     // Bookmark control lives in the chrome bar, so the menu must be open first.
     get bookmarkButton() {
-        return this.page.getByLabel('📖 Bookmark');
+        return this.page.getByLabel(this.bookmarkLabel);
     }
 
     // Custom prompt dialog rendered by lib/ui-dialogs.ts showPrompt().
@@ -134,11 +172,11 @@ export class MobileReaderPage {
     // Persistent ◀ control rendered above the dialogue box in reading mode,
     // without opening the hamburger menu.
     get previousLineButton() {
-        return this.page.getByLabel('Previous line');
+        return this.page.getByLabel(this.previousLineLabel);
     }
 
     get backToHomeLink() {
-        return this.page.getByRole('link', { name: /Back to Home/i });
+        return this.page.getByRole('link', { name: this.backToHomeLabel });
     }
 
     get actsHeadingLocator() {

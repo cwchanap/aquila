@@ -20,6 +20,16 @@ export type FocusTrapParams =
     | boolean
     | { enabled: boolean; restoreFocus?: HTMLElement | null };
 
+/**
+ * Maximum number of microtask retries to spend waiting for an `inert`
+ * attribute to clear before giving up. The retry exists for a one-flush race
+ * (the trap's `enabled` update and the attribute removal land in the same
+ * reactive batch); in practice inert clears within a single microtask. The cap
+ * is a safety net so a bug that never removes `inert` cannot flood the
+ * microtask queue and freeze the page.
+ */
+const MAX_INERT_RETRIES = 10;
+
 const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), textarea:not([disabled]), ' +
     'input:not([disabled]):not([type="hidden"]), select:not([disabled]), ' +
@@ -53,12 +63,16 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
     let active = false;
     let previouslyFocused: HTMLElement | null = null;
     let restoreFocus: HTMLElement | null | undefined = undefined;
+    // Per-activation retry budget for the moveFocusIn inert race. Reset on each
+    // activate() so a fresh open gets a full budget.
+    let focusInertRetries = 0;
 
     function activate(): void {
         if (active) return;
         const doc = node.ownerDocument;
         previouslyFocused = (doc?.activeElement as HTMLElement | null) ?? null;
         active = true;
+        focusInertRetries = 0;
         moveFocusIn();
     }
 
@@ -75,7 +89,9 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
      * container would strand focus on <body>. When we detect that situation we
      * defer one microtask (which runs after the synchronous flush settles, so
      * the attribute has cleared) and retry. `getFocusable`/`closest` queries
-     * the live DOM each pass, so the retry sees the post-flush state.
+     * the live DOM each pass, so the retry sees the post-flush state. The
+     * retry is bounded by `MAX_INERT_RETRIES` so an `inert` attribute that
+     * never clears cannot spin forever.
      */
     function moveFocusIn(): void {
         if (!active) return;
@@ -87,7 +103,10 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
             return;
         }
         if (node.closest('[inert]')) {
-            queueMicrotask(moveFocusIn);
+            if (focusInertRetries < MAX_INERT_RETRIES) {
+                focusInertRetries++;
+                queueMicrotask(moveFocusIn);
+            }
             return;
         }
         // No focusable child and not inert: make the container itself focusable
@@ -120,16 +139,21 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
      * same flush as the overlay closing (MobileNovelReader inerts the whole
      * background wrapper while an overlay is open). Focusing an inert element
      * is a no-op, so without deferral focus would strand on <body>. Retry once
-     * the attribute has settled.
+     * the attribute has settled. The retry is bounded by `MAX_INERT_RETRIES`
+     * so an `inert` attribute that never clears cannot spin forever.
      */
     function restoreFocusTo(target: HTMLElement | null): void {
         if (!target || typeof target.focus !== 'function') return;
         if (target.closest('[inert]')) {
+            let retries = 0;
             const retry = (): void => {
                 // Abandon if the target was removed before inert cleared.
                 if (!target.isConnected) return;
                 if (target.closest('[inert]')) {
-                    queueMicrotask(retry);
+                    if (retries < MAX_INERT_RETRIES) {
+                        retries++;
+                        queueMicrotask(retry);
+                    }
                     return;
                 }
                 target.focus();

@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { focusTrap } from '@/lib/focus-trap';
 
 /**
@@ -26,7 +26,7 @@ function makeButton(text: string): HTMLButtonElement {
 
 describe('focusTrap', () => {
     afterEach(() => {
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
     });
 
     it('moves focus into the container and onto the first focusable element when enabled', () => {
@@ -204,6 +204,45 @@ describe('focusTrap', () => {
         // The deferred retry must bail (active === false), so it does NOT steal
         // focus onto the (still inert) first button after the fact.
         expect(document.activeElement).not.toBe(first);
+        handle.destroy();
+    });
+
+    it('stops retrying moveFocusIn after a bounded number of attempts when inert never clears', async () => {
+        // Guards against an unbounded microtask flood: if the `inert` attribute
+        // is never removed (a bug elsewhere), the retry loop must give up after
+        // a small, bounded number of attempts instead of rescheduling forever.
+        // (This test uses the global fake-timer setup, so we drain microtasks
+        // directly rather than waiting on a real timer.)
+        const queueMicrotaskSpy = vi.spyOn(globalThis, 'queueMicrotask');
+
+        const container = document.createElement('div');
+        container.setAttribute('inert', '');
+        const first = makeButton('first');
+        container.append(first);
+        document.body.append(container);
+
+        const handle = focusTrap(container, { enabled: true });
+
+        // Drain the microtask retry chain (well past the MAX_INERT_RETRIES cap).
+        for (let i = 0; i < 20; i++) {
+            await Promise.resolve();
+        }
+        const countAfterDrain = queueMicrotaskSpy.mock.calls.length;
+
+        // A few more drains: if the retry were unbounded, each would add
+        // another queueMicrotask call. With the cap, the count is frozen.
+        for (let i = 0; i < 5; i++) {
+            await Promise.resolve();
+        }
+
+        // Focus was never moved into the permanently-inert container.
+        expect(document.activeElement).not.toBe(first);
+        // The retry stopped (no growth) and is clearly bounded — not the
+        // thousands of calls an unbounded loop would produce.
+        expect(queueMicrotaskSpy.mock.calls.length).toBe(countAfterDrain);
+        expect(countAfterDrain).toBeLessThan(50);
+
+        queueMicrotaskSpy.mockRestore();
         handle.destroy();
     });
 

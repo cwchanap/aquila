@@ -7,7 +7,7 @@ description: Use when reviewing written story acts for character consistency, pl
 
 ## Overview
 
-Review written story acts (`actN.md`) in parallel by spawning subagents that check character dialogue against `characters.md`, plot consistency against `high-level-plan.md` and chapter plans, and dialogue naturalness & style adherence for modern Chinese readers. Results are aggregated into a consolidated review report.
+Review written story acts (`actN.md`) in parallel by spawning subagents that check character dialogue against `characters.md`, plot consistency against `high-level-plan.md` (when present) and chapter plans, and dialogue naturalness & style adherence for modern Chinese readers. Results are aggregated into a consolidated review report.
 
 Supports two review modes:
 - **Per-act mode**: Spawn 3 agents per act (or small batch of 2-3 acts) — Agent A (character), Agent B (plot), Agent C (dialogue naturalness & style). Best for targeted reviews of specific acts.
@@ -18,40 +18,14 @@ Supports two review modes:
 - User asks to review story acts (e.g. "review act 1-12")
 - User asks to review a whole chapter (e.g. "review chapter 1", "review all acts in chapter 1")
 - User wants character consistency or plot alignment feedback on written stories
+- User wants style or voice feedback (e.g. "check the prose", "does this sound right", "review the tone/voice", "is the narration on-style") — Agent C checks house style adherence
 - User says "check the dialogue" or "review the story" in context of `packages/stories/raw/`
 
 ## House Style Guide (New Adult 18-25)
 
-Stories target **New Adult readers (18-25)** — college/early-career protagonists, adult themes, contemporary Taiwanese setting. The existing canon (`dontSaveMeBeforeMidnight`, `trainAdventure`) defines the house style. Agent C checks adherence to the dimensions below.
+The house style guide lives in the **`house-style`** skill — it is the single source of truth for voice register, pacing, POV, tone, and references. Agent C (dialogue naturalness & style review) loads it to check adherence.
 
-**Voice — mixed register:**
-- ✅ **Narrator** may use sensory metaphors and elevated imagery (`像一具剛解凍的木偶`, `像沒充飽電的手機`)
-- ✅ **Protagonist inner voice** is clipped, fragmentary, blunt (`又是校慶。` / `做夢了吧。` / `帥。`)
-- ❌ Not YA-earnest, not adult-literary-remote. Aim for "smart enough to be lyrical, insecure enough to mock itself"
-- ❌ No authorial exposition — reveal only what the POV character perceives
-
-**Pacing — mobile-reading rhythm:**
-- ✅ **Standalone one-line paragraphs for emphasis** (`07:05。` / `鐘樓。` / `然後是一隻手。`)
-- ✅ Long sensory accumulations in narrator beats, broken by short inner-monologue punches
-- ✅ One beat per paragraph — never pack multiple ideas into one `**旁白**：` block
-- ❌ No purple prose blocks; no wall-of-text inner monologue
-
-**POV — third-person close:**
-- ✅ Locked to one POV character's perception per scene
-- ✅ Filter every description through their sensory/emotional state
-- ❌ Never reveal information the POV character can't perceive (no omniscient cuts to other characters' thoughts)
-
-**Tone — dry, melancholic, self-aware:**
-- ✅ Deadpan humor at protagonist's expense (the canon's `帥。` after describing a haggard reflection)
-- ✅ Melancholic undertone permitted; maudlin is not
-- ❌ No slapstick, no meme humor, no dad-joke tone
-
-**References — modern but timeless:**
-- ✅ Taiwanese school/campus texture (宿舍、食堂、校慶、關東煮、豆漿、騎樓)
-- ✅ Generic modern devices (手機、簡訊、螢幕) — no brand names or app names unless diegetically required
-- ❌ No internet slang, no memes, no trend-of-the-moment references (they date the text)
-
-**Reference examples:** `packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md` (narrator + inner voice balance), `chapter_3/act2.md` (sustained inner-monologue investigation).
+**Do not duplicate the guide here.** Always reference the `house-style` skill to prevent drift. The dimensions Agent C checks (voice, pacing, POV, tone, references) are defined there, along with reference example acts for voice calibration.
 
 ## Workflow
 
@@ -71,7 +45,7 @@ packages/stories/raw/<storyName>/
     act1.md ... actN.md
   docs/
     characters.md
-    high-level-plan.md
+    high-level-plan.md   (may not exist — e.g. trainAdventure has none; Agent B falls back to chapter plans only)
     chapter_N_plan.md   (may not exist for every chapter)
 ```
 
@@ -79,10 +53,10 @@ Determine which acts/chapters to review based on user request.
 
 ### Step 2: Choose Review Mode
 
-| Mode | When | Agents |
-|---|---|---|
-| **Chapter-level** | User says "review chapter N" or "review all acts" | Agent B only (1 agent total — plot consistency) |
-| **Per-act** | User says "review act 3" or "review act 5-8" | Agent A + Agent B + Agent C (3 agents per act or per batch) |
+| Mode | When | Agents | Tradeoff |
+|---|---|---|---|
+| **Chapter-level** | User says "review chapter N" or "review all acts" | Agent B only (1 agent total — plot consistency) | **No character or style review** — Agent A and Agent C do not run. If style/voice adherence matters for a full-chapter review, run a per-act pass on a representative sample of acts afterward. |
+| **Per-act** | User says "review act 3" or "review act 5-8" | Agent A + Agent B + Agent C (3 agents per act or per batch) | Full coverage (character + plot + style) but loses some cross-act context vs. chapter-level Agent B. |
 
 **Prefer chapter-level mode** when reviewing more than 3-4 acts — Agent B gets cross-act context and produces more cohesive findings (especially for cross-act contradictions). Agent A (character) and Agent C (dialogue naturalness) are only available in per-act mode for detailed line-level analysis.
 
@@ -93,7 +67,7 @@ Before spawning agents, identify the file paths for:
 | Document | Purpose |
 |---|---|
 | `docs/characters.md` | Character personalities, speech patterns, representative lines |
-| `docs/high-level-plan.md` | Overall plot structure, loop rules, character arcs, reveals schedule |
+| `docs/high-level-plan.md` | Overall plot structure, loop rules, character arcs, reveals schedule. **May not exist** (e.g. `trainAdventure` has none) — if absent, Agent B relies on chapter plans and internal consistency only |
 | `docs/chapter_N_plan.md` | Specific chapter plan (if exists for the chapter being reviewed) |
 
 Agents will read these files directly themselves — do NOT copy file contents into prompts.
@@ -114,7 +88,7 @@ You are reviewing written story acts for PLOT CONSISTENCY.
 ## Step 1: Read reference documents
 
 Read these files first:
-- [FULL PATH to high-level-plan.md]
+- [FULL PATH to high-level-plan.md] (omit if the story has none — e.g. trainAdventure)
 - [FULL PATH to chapter_N_plan.md] (omit if none exists)
 
 ## Step 2: Read the acts to review
@@ -227,7 +201,7 @@ You are reviewing written story acts for PLOT CONSISTENCY.
 ## Step 1: Read reference documents
 
 Read these files first:
-- [FULL PATH to high-level-plan.md]
+- [FULL PATH to high-level-plan.md] (omit if the story has none — e.g. trainAdventure)
 - [FULL PATH to chapter_N_plan.md] (omit if none exists)
 
 ## Step 2: Read the acts to review
@@ -291,11 +265,9 @@ You are reviewing written story acts for DIALOGUE NATURALNESS, SMOOTHNESS, and S
 
 - [FULL PATH to specific act file(s)]
 
-## Step 2: Read a canon reference for voice calibration
+## Step 2: Load the house style guide and calibrate voice
 
-Read one of these to calibrate the house voice before reviewing:
-- packages/stories/raw/dontSaveMeBeforeMidnight/chapter_1/act1.md (narrator + inner voice balance)
-- packages/stories/raw/dontSaveMeBeforeMidnight/chapter_3/act2.md (sustained inner-monologue investigation)
+Load the **`house-style`** skill. It defines the five style dimensions (voice, pacing, POV, tone, references) and lists reference example acts. Read one of those canon acts to calibrate the house voice before reviewing.
 
 ## Your Task
 
@@ -321,13 +293,7 @@ Pay special attention to:
 
 ### Dimension 2: House Style Adherence (New Adult 18-25)
 
-Check the act against the house style guide:
-
-1. **Voice register**: Does the narrator use sensory metaphors/elevated imagery while the protagonist's inner voice stays clipped, fragmentary, blunt? Flag narrator blocks that drift into YA-earnest or adult-literary-remote register, or protagonist inner voice that becomes flowery/expository. Flag authorial exposition that reveals information the POV character can't perceive.
-2. **Pacing**: Are there standalone one-line paragraphs for emphasis? Are long sensory accumulations broken by short inner-monologue punches? Flag purple prose blocks (narrator beats running past ~3 sentences without a punch), wall-of-text inner monologue, and paragraphs packing multiple ideas into one `**旁白**：` block.
-3. **POV**: Is the scene locked to one POV character's perception? Flag any omniscient cuts revealing information the POV character can't perceive, or descriptions not filtered through their sensory/emotional state.
-4. **Tone**: Is it dry, melancholic, self-aware? Flag slapstick, meme humor, dad-joke tone, and maudlin (vs permitted melancholic undertone).
-5. **References**: Flag brand names, app names, internet slang, memes, or trend-of-the-moment references that date the text. Expect Taiwanese campus texture (宿舍、食堂、校慶、關東煮、豆漿、騎樓) and generic modern devices (手機、簡訊、螢幕).
+Check the act against the **`house-style`** skill you loaded in Step 2. The five dimensions to check are defined there (voice register, pacing, POV, tone, references) — apply each one to the act. Flag any line or block that violates a dimension. The `house-style` skill is the source of truth; if anything here ever disagrees with it, the skill wins.
 
 ## Output Format
 
@@ -405,7 +371,7 @@ After all agents complete, combine results into a consolidated report:
 - **Always spawn agents in parallel** — all agents for a given batch should run concurrently, never sequentially
 - **Tell agents to read files directly** — provide full file paths in prompts; agents read reference docs and act files from disk themselves. This avoids context-window waste and ensures agents see the complete documents.
 - **Don't modify story files** — this is a read-only review, not an editing pass (unless the user explicitly asks to fix issues afterward)
-- **If no chapter plan exists for a chapter**, the plot reviewer should only check against the high-level plan
+- **If no chapter plan exists for a chapter**, the plot reviewer should check against the high-level plan (if it exists) and otherwise rely on internal consistency only
 - **Respect the "do not reveal" lists** — premature reveals are real issues because they break the planned reader experience
 - **Cross-act contradictions are the highest priority** — a message that says one thing in act 1 and another in act 4 is worse than a missing scene from the plan
 
@@ -417,5 +383,5 @@ After all agents complete, combine results into a consolidated report:
 - **Missing chapter plans**: Some chapters may not have dedicated plans. Check `docs/` for available plans before starting
 - **Wrong review mode**: Don't spawn per-act agents when the user asks to review a whole chapter — use chapter-level mode (Agent B only) instead to get better cross-act analysis
 - **Spawning Agent A or C in chapter-level mode**: These agents are per-act only. Chapter-level reviews only use Agent B
-- **Flagging style as personal taste**: Agent C must check against the documented house style guide, not impose the reviewer's own stylistic preferences. A line that fits the house voice is not an issue even if the reviewer would have written it differently.
-- **Skipping the canon reference read**: Agent C should read a canon act (e.g. `dontSaveMeBeforeMidnight/chapter_1/act1.md`) to calibrate the house voice before flagging style deviations.
+- **Flagging style as personal taste**: Agent C must check against the `house-style` skill, not impose the reviewer's own stylistic preferences. A line that fits the house voice is not an issue even if the reviewer would have written it differently.
+- **Skipping the canon reference read**: Agent C should read one of the reference example acts listed in the `house-style` skill to calibrate the house voice before flagging style deviations.

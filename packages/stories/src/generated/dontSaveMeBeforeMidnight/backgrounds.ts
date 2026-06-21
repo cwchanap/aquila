@@ -179,4 +179,6 @@ export enum Background {
     Chapter_8_Ch8_ActEpilogue_S1 = "chapter_8/ch8_actEpilogue_s1",
     Chapter_8_Ch8_ActEpilogue_S2 = "chapter_8/ch8_actEpilogue_s2",
     Chapter_8_Ch8_ActEpilogue_S3 = "chapter_8/ch8_actEpilogue_s3",
+    Chapter_8_Ch8_ActEpilogue_S4 = "chapter_8/ch8_actEpilogue_s4",
+    Chapter_8_Ch8_ActEpilogue_S5 = "chapter_8/ch8_actEpilogue_s5",
 }

@@ -874,22 +874,32 @@
     {
       "key": "chapter_8/ch8_actEpilogue_s0",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_8/ch8_actEpilogue_s0.png",
-      "prompt": "school rooftop at dawn, 05:47, rain has stopped, grey-blue sky brightening toward the horizon, wet concrete reflecting early light, distant ocean visible past the town rooftops, a lighthouse far offshore faint against the brightening sky, two figures standing at the roof railing looking east, school buildings quiet below, no crowds no chaos just the morning after, anime visual-novel background art, cool grey-blue palette warming at the horizon, wide contemplative composition"
+      "prompt": "backstage equipment corridor, 23:59, green emergency lighting, corridor mostly emptied, auditorium chaos absorbed by external police and parents, Gu Yan and Xu Xingtang sitting against the wall, Han Yue slumped nearby possibly asleep, a digital clock on the wall showing 23:59, rain lighter against high windows, anime visual-novel background art, cold green palette, quiet still composition"
     },
     {
       "key": "chapter_8/ch8_actEpilogue_s1",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_8/ch8_actEpilogue_s1.png",
-      "prompt": "school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet concrete underfoot, distant ocean and lighthouse, town rooftops in mist, quiet and empty, anime visual-novel background art, cool palette warming toward the east, solitary contemplative composition"
+      "prompt": "school rooftop at dawn, 05:47, rain has stopped, grey-blue sky brightening toward the horizon, wet concrete reflecting early light, distant ocean visible past the town rooftops, a lighthouse far offshore faint against the brightening sky, two figures standing at the roof railing looking east, school buildings quiet below, no crowds no chaos just the morning after, anime visual-novel background art, cool grey-blue palette warming at the horizon, wide contemplative composition"
     },
     {
       "key": "chapter_8/ch8_actEpilogue_s2",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_8/ch8_actEpilogue_s2.png",
-      "prompt": "school rooftop at dawn, 05:55, full sunrise, golden light flooding the scene, wet concrete drying, ocean and lighthouse visible in clear morning light, two figures at the railing no longer silhouettes but lit by warm sun, the school below beginning to stir with distant voices, anime visual-novel background art, warm golden palette replacing the cold grey of the night, wide hopeful composition"
+      "prompt": "school rooftop at dawn, 05:50, sky brightening, Gu Yan alone at the railing, wet concrete underfoot, distant ocean and lighthouse, town rooftops in mist, quiet and empty, anime visual-novel background art, cool palette warming toward the east, solitary contemplative composition"
     },
     {
       "key": "chapter_8/ch8_actEpilogue_s3",
       "path": "dont_save_me_before_midnight/backgrounds/chapter_8/ch8_actEpilogue_s3.png",
+      "prompt": "school rooftop at dawn, 05:55, full sunrise, golden light flooding the scene, wet concrete drying, ocean and lighthouse visible in clear morning light, two figures at the railing no longer silhouettes but lit by warm sun, the school below beginning to stir with distant voices, anime visual-novel background art, warm golden palette replacing the cold grey of the night, wide hopeful composition"
+    },
+    {
+      "key": "chapter_8/ch8_actEpilogue_s4",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_8/ch8_actEpilogue_s4.png",
       "prompt": "school rooftop at dawn, 06:00, full morning light, the two figures turning to leave the rooftop, the railing behind them, the ocean and town spread out below in clear warm light, the school beginning to wake with distant voices and footsteps, anime visual-novel background art, warm golden palette, final composition — two figures walking toward the stairwell door, light ahead of them, the sky wide and open and no longer grey"
+    },
+    {
+      "key": "chapter_8/ch8_actEpilogue_s5",
+      "path": "dont_save_me_before_midnight/backgrounds/chapter_8/ch8_actEpilogue_s5.png",
+      "prompt": "school ground floor near the building exit, 07:12, full morning light, a few early staff and parents in the distance, Gu Yan standing with his phone in hand, Xu Xingtang nearby, the school slowly waking, anime visual-novel background art, warm morning palette, quiet everyday composition"
     }
   ],
   "portraits": [

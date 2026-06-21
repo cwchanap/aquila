@@ -1,6 +1,56 @@
 # 尾聲：海上的燈
 
 ```bg
+backstage equipment corridor, 23:59, green emergency lighting, corridor mostly emptied, auditorium chaos absorbed by external police and parents, Gu Yan and Xu Xingtang sitting against the wall, Han Yue slumped nearby possibly asleep, a digital clock on the wall showing 23:59, rain lighter against high windows, anime visual-novel background art, cold green palette, quiet still composition
+```
+
+**旁白**：23:59。
+
+**旁白**：後台設備通道。數位鐘的綠色數字掛在牆上。
+
+**旁白**：顧言坐在地上。背靠著牆。許星棠在旁邊。韓越在走廊那頭，靠著設備箱，可能睡著了。
+
+**旁白**：禮堂的混亂已經被外部警員和家長接管。聲音遠了。雨小了。
+
+**旁白**：顧言看著那個鐘。
+
+**旁白**：他看了七次這個數字。七次它跳到 00:00——然後世界變白，然後他在 07:05 的床上睜開眼睛。
+
+**顧言** [determined]：（內心）⋯⋯
+
+**旁白**：數位鐘最後一位在跳。
+
+**旁白**：59。
+
+**旁白**：00。
+
+**旁白**：00:00。
+
+**旁白**：午夜過去了。
+
+**旁白**：沒有白色。沒有裂紋。沒有 07:05 的天花板。
+
+**旁白**：綠色的數字停在 00:00。安靜地。像它本來就應該這樣。
+
+**顧言** [determined]：（內心）過了。
+
+**顧言** [determined]：（內心）午夜過了。
+
+**顧言** [determined]：（內心）今天真的過去了。
+
+**旁白**：許星棠也看著那個鐘。她沒有說話。她的相機放在膝蓋上。
+
+**旁白**：00:01。
+
+**旁白**：數字往前走了一格。
+
+**旁白**：時間沒有停。沒有重來。
+
+**旁白**：它只是往前走。
+
+**旁白**：——
+
+```bg
 school rooftop at dawn, 05:47, rain has stopped, grey-blue sky brightening toward the horizon, wet concrete reflecting early light, distant ocean visible past the town rooftops, a lighthouse far offshore faint against the brightening sky, two figures standing at the roof railing looking east, school buildings quiet below, no crowds no chaos just the morning after, anime visual-novel background art, cool grey-blue palette warming at the horizon, wide contemplative composition
 ```
 
@@ -291,5 +341,73 @@ school rooftop at dawn, 06:00, full morning light, the two figures turning to le
 **旁白**：他沒有醒來。
 
 **旁白**：他只是往前走。
+
+**旁白**：——
+
+```bg
+school ground floor near the building exit, 07:12, full morning light, a few early staff and parents in the distance, Gu Yan standing with his phone in hand, Xu Xingtang nearby, the school slowly waking, anime visual-novel background art, warm morning palette, quiet everyday composition
+```
+
+**旁白**：07:12。
+
+**旁白**：顧言的手伸進口袋。
+
+**旁白**：不是刻意的。是身體記住的——07:05 醒來，07:12 拿起手機，看那則訊息。
+
+**旁白**：他拿出手機。螢幕亮了。
+
+**旁白**：沒有訊息。
+
+**旁白**：收件箱是空的。沒有未知號碼。沒有排程訊息。沒有那則匿名訊息。
+
+**顧言** [determined]：（內心）⋯⋯
+
+**顧言** [determined]：（內心）沒有。
+
+**顧言** [determined]：（內心）今天沒有。
+
+**旁白**：七次。七次那則訊息在 07:12 出現。七次它告訴他不要去禮堂。七次它把他拉進這一天。
+
+**旁白**：第八次。沒有。
+
+**旁白**：許星棠看見他盯著手機。
+
+**許星棠** [cold]：你在找那則訊息。
+
+**旁白**：不是問句。
+
+**顧言** [determined]：⋯⋯你知道？
+
+**許星棠** [cold]：排程訊息。校慶前一天晚上設的。如果我不取消，07:12 自動發到你的號碼。
+
+**許星棠** [cold]：我沒有打算取消。
+
+**許星棠** [cold]：保險。如果我出了什麼事，至少有人會知道不該去禮堂。
+
+**旁白**：她說完了。她沒有再解釋。
+
+**顧言** [determined]：（內心）保險。
+
+**顧言** [determined]：（內心）她設了一則排程訊息。當保險。
+
+**顧言** [determined]：（內心）她不知道循環。
+
+**顧言** [determined]：（內心）她不知道那則訊息在每一個 07:12 重新送達。
+
+**顧言** [determined]：（內心）她不知道她救了我七次。
+
+**旁白**：他看著她。她的表情沒有變。對她來說，那只是一則排程訊息。設了。沒取消。就這樣。
+
+**顧言** [determined]：（內心）她不知道。
+
+**顧言** [determined]：（內心）她只是——設了一則排程訊息。
+
+**旁白**：他把手機收起來。螢幕暗了。
+
+**旁白**：07:13。
+
+**旁白**：沒有訊息。沒有循環。沒有 07:05。
+
+**旁白**：只有這一天的早晨。
 
 **旁白**：——完——

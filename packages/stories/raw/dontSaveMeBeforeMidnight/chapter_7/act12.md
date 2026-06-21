@@ -188,6 +188,18 @@ south wing infirmary interior seen through a half-open door, 22:05, centennial c
 
 **顧言** [sad]：（內心）是他。
 
+**顧言** [determined]：（內心）22:05。醫務室。命中。
+
+**顧言** [determined]：（內心）三條線。交叉確認。
+
+**顧言** [determined]：（內心）天線屋——空。基座——執行者。醫務室——源頭。
+
+**顧言** [determined]：（內心）三條交叉完畢。
+
+**顧言** [determined]：（內心）同一個人。
+
+**顧言** [sad]：（內心）邵叔。
+
 **旁白**：顧言的手從牆上滑下來。他低頭看了一眼自己的手。手指在抖。很輕。不仔細看看不出來。但在抖。
 
 **旁白**：他沒有哭。他沒有喊。他沒有砸牆。他沒有跑。

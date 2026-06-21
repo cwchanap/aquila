@@ -40,6 +40,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)掉。往下。", background: Background.Chapter_1_Ch1_Act10_S1, portrait: Portrait.GuYan_Scared },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不知道。多久。", background: Background.Chapter_1_Ch1_Act10_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯", background: Background.Chapter_1_Ch1_Act10_S1, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "鐘樓背面。一個封閉的維修庭院。三面石牆，沒有路燈，沒有窗。暴雨把地面的積水灌到腳踝深。從禮堂看不見這裡，從校門口看不見這裡，從任何有燈、有人的地方都看不見這裡。他往那裡墜落。", background: Background.Chapter_1_Ch1_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的手機亮了。", background: Background.Chapter_1_Ch1_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕在黑暗中像一顆突然睜開的眼睛。白光刺目。他沒有去按它。它自己亮了。螢幕上顯示著鎖定畫面：22:22。沒有通知。沒有訊息。只有時間。那個數字在黑暗中發著冷白色的光，像一塊嵌入虛空的墓碑。", background: Background.Chapter_1_Ch1_Act10_S1 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)22:22。", background: Background.Chapter_1_Ch1_Act10_S1, portrait: Portrait.GuYan_Base },

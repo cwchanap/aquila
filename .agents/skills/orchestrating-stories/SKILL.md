@@ -508,7 +508,7 @@ The manifest is a source of truth for both the prompts and where each rendered P
 | `src/stories/index.ts` | Add import, `StoryFlowConfig` union member, entries in `storyLoaders` + `storyFlows` |
 | `apps/web/src/lib/story-types.ts` | Add to `StoryId` enum + `STORY_NAMES` |
 | `apps/web/src/lib/local-characters.ts` | Add to `ALLOWED_STORIES` array (else character creation rejects the ID) |
-| `apps/web/src/pages/[locale]/stories/index.astro` | Add menu `<Button>` (else story is unreachable from UI) |
+| `apps/web/src/pages/[locale]/stories/index.astro` | Add `<a class="story-card">` card (else story is unreachable from UI) |
 | `packages/stories/src/translations/{en,zh}.json` | Add `stories.<storyName>` label key (referenced by the button) |
 | `packages/assets/{package.json,types.d.ts}` | **(Optional)** Export asset paths if shipping images |
 

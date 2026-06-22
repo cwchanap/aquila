@@ -1,6 +1,6 @@
 ---
 name: house-style
-description: The Aquila house style guide for story prose (New Adult 18-25). Loaded by writing subagents (via writing-story-acts) and review subagents (via reviewing-written-stories) to calibrate voice, pacing, POV, tone, and references. Single source of truth — do not duplicate inline in other skills.
+description: The Aquila house style guide for story prose (New Adult 18-25) — voice, pacing, POV, tone, and references.
 ---
 
 # Aquila House Style Guide (New Adult 18-25)

@@ -131,4 +131,17 @@ Some bio prose.
         // and ### headings are not character headings
         expect(dir.getById('gu_ze')).toBeUndefined();
     });
+
+    it('accepts decimal numbering (e.g. 7.5) in headings', () => {
+        const decimal = `## 7.5. 司機（Driver）
+
+- **ID**: \`driver\`
+- **Aliases**: 校務車司機
+`;
+        const dir = parseCharacters(decimal);
+        expect(dir.getById('driver')).toBeDefined();
+        expect(dir.getById('driver')?.name).toBe('司機');
+        expect(dir.getIdByName('司機')).toBe('driver');
+        expect(dir.getIdByName('校務車司機')).toBe('driver');
+    });
 });

@@ -15,7 +15,7 @@ interface HeadingMatch {
     name: string;
 }
 
-const HEADING_RE = /^##\s+\d+\.\s+(.+?)（.*?）\s*$/;
+const HEADING_RE = /^##\s+\d+(?:\.\d+)?\.\s+(.+?)（.*?）\s*$/;
 const ID_RE = /^-\s+\*\*ID\*\*:\s*`([^`]+)`\s*$/;
 const ALIASES_RE = /^-\s+\*\*Aliases\*\*:\s*(.+)$/;
 const PROMPT_SECTION_RE = /^###\s+Portrait Prompts\s*$/;

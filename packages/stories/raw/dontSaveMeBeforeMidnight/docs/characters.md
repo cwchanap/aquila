@@ -483,15 +483,7 @@ Generic school event staff / workers handling equipment, loading, and logistics 
 
 ---
 
-## 23. 司機（Driver）
-
-- **ID**: `driver`
-
-The school van driver — a passive executor of dispatch instructions, not a conspirator.
-
----
-
-## 24. 保全（Security Guard）
+## 23. 保全（Security Guard）
 
 - **ID**: `security_guard`
 - **Aliases**: 值班老師, 校安
@@ -500,7 +492,7 @@ School gate security and duty teachers enforcing campus access rules during the 
 
 ---
 
-## 25. 老師（Teacher）
+## 24. 老師（Teacher）
 
 - **ID**: `teacher`
 
@@ -508,7 +500,7 @@ Generic unnamed teacher who appears briefly in the story (e.g. the neighboring-c
 
 ---
 
-## 26. 保健老師（Health Teacher）
+## 25. 保健老師（Health Teacher）
 
 - **ID**: `health_teacher`
 - **Aliases**: 護理老師
@@ -521,7 +513,7 @@ South wing infirmary nurse/health teacher on duty during the centennial celebrat
 
 ---
 
-## 27. 技術人員（Technician）
+## 26. 技術人員（Technician）
 
 - **ID**: `technician`
 - **Aliases**: 技術志工, 監控室人員
@@ -530,7 +522,7 @@ Technical volunteer or staff operating the old surveillance system in the monito
 
 ---
 
-## 28. 主持人（MC）
+## 27. 主持人（MC）
 
 - **ID**: `mc`
 - **Aliases**: 司儀
@@ -540,5 +532,3 @@ The centennial celebration's master of ceremonies on the auditorium stage. Handl
 ### Portrait Prompts
 
 - **base**: anime visual-novel portrait, 40-something East Asian man, neat side-parted hair with a few grey strands, dark suit jacket over a crisp white shirt, school-badge lapel pin, confident stage smile that doesn't quite reach the eyes, handheld microphone, warm auditorium spotlights, upper-body shot, clean background
-
----

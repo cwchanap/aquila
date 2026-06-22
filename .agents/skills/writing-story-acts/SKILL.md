@@ -105,13 +105,7 @@ rooftop at dusk, warm orange light
 
 The house style guide lives in the **`house-style`** skill — load it. It is the single source of truth for voice register, pacing, POV, tone, and references, and lists reference example acts to read for voice calibration.
 
-**Do not duplicate the guide here.** Always reference the `house-style` skill to prevent drift. The quick rules below are a memory aid only — if they ever disagree with the `house-style` skill, the `house-style` skill wins:
-
-- Narrator may use sensory metaphors; protagonist inner voice stays clipped and blunt
-- One beat per `**旁白**：` paragraph; break long sensory beats with short inner-monologue punches
-- Third-person close POV — never reveal what the POV character can't perceive
-- Dry, melancholic, self-aware tone — no slapstick, no memes, no maudlin
-- Traditional Chinese only; Taiwanese campus texture; generic modern devices; no brand/app names, no internet slang
+**Do not duplicate the guide here.** Always reference the `house-style` skill to prevent drift — load it and read one of its reference example acts to calibrate voice before writing.
 
 ## Step 4: Character Resolution
 

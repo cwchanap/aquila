@@ -194,6 +194,7 @@
 - **concerned**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, brows furrowed with warmth, leaning in with paternal worry, police uniform, soft warm lighting, upper-body shot
 - **serious**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, flat professional expression with no smile, eyes coldly evaluating, police uniform, hard directional lighting, upper-body shot
 - **sinister**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, smile unchanged but eyes gone completely cold, a flicker of something predatory behind the warmth, police uniform, shadow falling across half the face, upper-body shot
+- **shocked**: anime visual-novel portrait, 40-something man, dark skin, buzzcut, warm smile gone completely, eyes blown wide and emptied of all control, mouth slack and slightly parted, face drained of color, the blank stare of a man watching the impossible stand before him, police uniform, stark harsh lighting, upper-body shot
 
 ---
 

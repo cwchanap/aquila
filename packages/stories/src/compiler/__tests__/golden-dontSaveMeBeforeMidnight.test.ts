@@ -79,14 +79,30 @@ describe('dontSaveMeBeforeMidnight golden compile', () => {
                 sourcePath: s.sourcePath,
             };
         });
-        expect(() =>
-            validateStory({
+        const portraitMap = Object.fromEntries(
+            charDir.characters.map(c => [c.id, c.portraits])
+        );
+        const warnings = validateStory(
+            {
                 storyId: config.storyId,
                 name: 'dontSaveMeBeforeMidnight',
                 start: graph.start,
                 scenes,
                 choices: graph.choices,
-            })
-        ).not.toThrow();
+            },
+            portraitMap
+        );
+        // Every [expression] used in the raw markdown must resolve to a
+        // prompt defined in that character's Portrait Prompts section. When
+        // a key is missing the compiler silently falls back to base and
+        // renders the wrong portrait (e.g. a warm smile during a shock
+        // reveal). Catch that regression class here.
+        // ("no portrait prompts" / "missing required base" are intentionally
+        // excluded — they legitimately fire for background speaker IDs like
+        // narrator/message/crowd that have no portrait entry by design.)
+        const expressionWarnings = warnings.filter(w =>
+            /unknown expression/.test(w)
+        );
+        expect(expressionWarnings).toEqual([]);
     });
 });

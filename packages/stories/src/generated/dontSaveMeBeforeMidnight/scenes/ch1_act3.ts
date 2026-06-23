@@ -117,7 +117,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)邵叔在那張照片裡。", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)他說他認識我爸，原來不只是認識。他們看起來很熟。那邵叔知不知道這張照片？知不知道林主任把它收走了？", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)還有那個女人。她是誰？", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },
-    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)四個人裡面，我認識兩個。我爸、邵叔。剩下兩個，我和那個女人。", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },
+    { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)四個人裡面，我認識三個。我爸、我、邵叔。只有那個女人，我不知道她是誰。", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)那個女人的表情很奇怪。不像是在合照，倒像是在⋯⋯站崗。", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他搖了搖頭，把這些念頭推開。想太多也沒用，照片已經被收走了，他連再看一眼的機會都沒有。", background: Background.Chapter_1_Ch1_Act3_S1 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)算了。", background: Background.Chapter_1_Ch1_Act3_S1, portrait: Portrait.GuYan_Base },

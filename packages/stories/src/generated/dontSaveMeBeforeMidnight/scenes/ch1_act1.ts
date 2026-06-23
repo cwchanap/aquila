@@ -61,7 +61,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)不要把相機交給任何大人。", background: Background.Chapter_1_Ch1_Act1_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)我根本沒有相機。", background: Background.Chapter_1_Ch1_Act1_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這句話不對勁。前面那句「22:22 鐘樓會停電」像是惡作劇，像是那些喜歡拿火災舊案嚇他的人會編出來的東西。但「相機」這兩個字太具體了，不像隨手打出的玩笑。", background: Background.Chapter_1_Ch1_Act1_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而且為什麼是「任何大人」？不是「任何人」，是「任何大人」。這句話感覺怪怪的，像是在警告他：不要相信大人。", background: Background.Chapter_1_Ch1_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而且為什麼是「任何大人」？不是「任何人」，是「任何大人」。這個措辭帶著一種很奇怪的警惕，像是在警告他：不要相信大人。", background: Background.Chapter_1_Ch1_Act1_S1 },
     { characterId: CharacterId.GuYan, character: "顧言", dialogue: "(內心)⋯⋯算了。", background: Background.Chapter_1_Ch1_Act1_S1, portrait: Portrait.GuYan_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他鬆開了手。拇指離開確認鍵，訊息還在。", background: Background.Chapter_1_Ch1_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕暗下去的瞬間，他看見自己的倒影。一張沒什麼表情的臉，眉心有一條很深的皺紋，那是從國中就開始有的，現在已經壓不平了。", background: Background.Chapter_1_Ch1_Act1_S1 },

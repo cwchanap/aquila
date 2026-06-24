@@ -19,6 +19,8 @@
   },
   "login": {
     "title": "Login - Game App",
+    "heading": "Login",
+    "subheading": "Access Your Adventure",
     "continueWithGoogle": "Continue with Google",
     "signInError": "Sign-in failed. Please try again."
   },

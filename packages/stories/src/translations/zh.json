@@ -19,6 +19,8 @@
   },
   "login": {
     "title": "登入 - 遊戲應用",
+    "heading": "登入",
+    "subheading": "進入您的冒險",
     "continueWithGoogle": "使用 Google 繼續",
     "signInError": "登入失敗。請重試。"
   },

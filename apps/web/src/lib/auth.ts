@@ -24,10 +24,6 @@ export const auth = betterAuth({
     verification: {
         modelName: 'verificationTokens',
     },
-    emailAndPassword: {
-        enabled: true,
-        requireEmailVerification: false,
-    },
     trustedOrigins: (() => {
         const raw =
             import.meta.env?.TRUSTED_ORIGINS || process.env.TRUSTED_ORIGINS;
@@ -53,6 +49,40 @@ export const auth = betterAuth({
         }
         return secret || 'development-only-secret-do-not-use-in-prod';
     })(),
+    socialProviders: {
+        google: {
+            clientId: (() => {
+                const id =
+                    import.meta.env?.GOOGLE_CLIENT_ID ||
+                    process.env.GOOGLE_CLIENT_ID;
+                if (
+                    !id &&
+                    (import.meta.env?.PROD ||
+                        process.env.NODE_ENV === 'production')
+                ) {
+                    throw new Error(
+                        'GOOGLE_CLIENT_ID must be set in production environment'
+                    );
+                }
+                return id || '';
+            })(),
+            clientSecret: (() => {
+                const secret =
+                    import.meta.env?.GOOGLE_CLIENT_SECRET ||
+                    process.env.GOOGLE_CLIENT_SECRET;
+                if (
+                    !secret &&
+                    (import.meta.env?.PROD ||
+                        process.env.NODE_ENV === 'production')
+                ) {
+                    throw new Error(
+                        'GOOGLE_CLIENT_SECRET must be set in production environment'
+                    );
+                }
+                return secret || '';
+            })(),
+        },
+    },
 });
 
 export type Session = typeof auth.$Infer.Session;

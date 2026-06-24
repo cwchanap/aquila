@@ -1,11 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import {
-    authClient,
-    signIn,
-    signUp,
-    signOut,
-    useSession,
-} from '../auth-client';
+import { authClient, signIn, signOut, useSession } from '../auth-client';
 
 // Mock better-auth client
 vi.mock('better-auth/client', () => ({
@@ -25,7 +19,6 @@ describe('Auth Client', () => {
 
         it('should have expected methods', () => {
             expect(authClient).toHaveProperty('signIn');
-            expect(authClient).toHaveProperty('signUp');
             expect(authClient).toHaveProperty('signOut');
             expect(authClient).toHaveProperty('useSession');
         });
@@ -34,7 +27,6 @@ describe('Auth Client', () => {
             // Since we're mocking, we can't test the actual baseURL
             // but we can verify the client was created
             expect(typeof authClient.signIn).toBe('function');
-            expect(typeof authClient.signUp).toBe('function');
             expect(typeof authClient.signOut).toBe('function');
             expect(typeof authClient.useSession).toBe('function');
         });
@@ -44,11 +36,6 @@ describe('Auth Client', () => {
         it('should export signIn function', () => {
             expect(signIn).toBeDefined();
             expect(typeof signIn).toBe('function');
-        });
-
-        it('should export signUp function', () => {
-            expect(signUp).toBeDefined();
-            expect(typeof signUp).toBe('function');
         });
 
         it('should export signOut function', () => {
@@ -66,7 +53,6 @@ describe('Auth Client', () => {
         it('should call authClient methods when exported functions are called', () => {
             // Test that the exported functions are actually the methods from authClient
             expect(signIn).toBe(authClient.signIn);
-            expect(signUp).toBe(authClient.signUp);
             expect(signOut).toBe(authClient.signOut);
             expect(useSession).toBe(authClient.useSession);
         });

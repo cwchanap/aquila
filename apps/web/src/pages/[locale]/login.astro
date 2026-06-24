@@ -9,7 +9,7 @@ interface Props {
 const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 const clientTranslations = {
-  invalidCredentials: t('login.invalidCredentials'),
+  signInError: t('login.signInError'),
 };
 const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g, '<\\/');
 ---
@@ -95,65 +95,23 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 						</div>
 					</div>
 
-					<form id="login-form" class="space-y-6">
-						<div>
-							<label for="email" class="block text-slate-700 font-bold mb-3 tracking-wide" style="font-family: 'Orbitron', monospace;">
-								Email
-							</label>
-							<input
-								type="email"
-								id="email"
-								name="email"
-								required
-								class="w-full py-4 px-5 bg-white/70 text-slate-800 placeholder-slate-500 rounded-2xl border-2 border-slate-300/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50 transition-all duration-300 shadow-lg"
-								placeholder="Enter your email"
-								style="font-family: 'Exo 2', sans-serif;"
-							/>
-						</div>
-
-						<div>
-							<label for="password" class="block text-slate-700 font-bold mb-3 tracking-wide" style="font-family: 'Orbitron', monospace;">
-								Password
-							</label>
-							<input
-								type="password"
-								id="password"
-								name="password"
-								required
-								class="w-full py-4 px-5 bg-white/70 text-slate-800 placeholder-slate-500 rounded-2xl border-2 border-slate-300/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50 transition-all duration-300 shadow-lg"
-								placeholder="Enter your password"
-								style="font-family: 'Exo 2', sans-serif;"
-							/>
-						</div>
-
+					<div class="space-y-6">
 						<button
-							type="submit"
-							class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden"
+							id="google-signin-btn"
+							type="button"
+							class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden flex items-center justify-center gap-3"
 							style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
 						>
-							<!-- Button glow effect -->
 							<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-							<span class="relative text-xl tracking-wider uppercase font-black">Login</span>
-							<!-- Gaming accent corners -->
-							<div class="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
-							<div class="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
-							<div class="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
-							<div class="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+							<svg class="relative w-6 h-6 bg-white rounded-full p-0.5" viewBox="0 0 24 24" aria-hidden="true">
+								<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"/>
+								<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/>
+								<path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z"/>
+								<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"/>
+							</svg>
+							<span class="relative text-xl tracking-wider uppercase font-black">{t('login.continueWithGoogle')}</span>
 						</button>
-
-						<div class="mt-8 text-center">
-							<p class="text-slate-600 text-sm" style="font-family: 'Exo 2', sans-serif;">
-								Don't have an account?
-								<a
-									href={`/${locale}/signup`}
-									class="text-blue-600 font-bold hover:text-cyan-500 underline ml-1 transition-colors duration-300"
-									style="font-family: 'Orbitron', monospace;"
-								>
-									Sign up here
-								</a>
-							</p>
-						</div>
-					</form>
+					</div>
 
 					<div id="error-message" class="mt-4 text-red-600 text-sm font-semibold hidden p-3 bg-red-100 rounded-lg border border-red-300"></div>
 
@@ -186,18 +144,19 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 		<script>
 			import { signIn } from '../../lib/auth-client';
 
-			function getLoginTranslations(): { invalidCredentials: string } {
+			function getLoginTranslations(): { signInError: string } {
 				try {
 					const el = document.getElementById('login-translations');
 					if (el?.textContent) return JSON.parse(el.textContent);
 				} catch { /* fallback */ }
-				return { invalidCredentials: 'Invalid credentials' };
+				return { signInError: 'Sign-in failed. Please try again.' };
 			}
 
 			document.addEventListener('DOMContentLoaded', () => {
-				const loginForm = document.getElementById('login-form') as HTMLFormElement;
+				const btn = document.getElementById('google-signin-btn') as HTMLButtonElement | null;
 				const errorMessage = document.getElementById('error-message');
 				const translations = getLoginTranslations();
+				const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
 
 				function showError(message: string) {
 					if (errorMessage) {
@@ -205,44 +164,31 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 						errorMessage.classList.remove('hidden');
 					}
 				}
-
 				function hideError() {
-					if (errorMessage) {
-						errorMessage.classList.add('hidden');
+					if (errorMessage) errorMessage.classList.add('hidden');
+				}
+
+				btn?.addEventListener('click', async () => {
+					hideError();
+					btn.disabled = true;
+					try {
+						const { error } = await signIn.social({
+							provider: 'google',
+							callbackURL: `/${locale}/`,
+						});
+						if (error) {
+							showError(error.message || translations.signInError);
+							btn.disabled = false;
+						}
+						// On success the browser navigates to Google; nothing else to do.
+					} catch (e) {
+						if (import.meta.env.DEV) {
+							console.error('Google sign-in failed:', e instanceof Error ? e.message : 'unknown');
+						}
+						showError(translations.signInError);
+						btn.disabled = false;
 					}
-				}
-
-				if (loginForm) {
-					loginForm.addEventListener('submit', async (e) => {
-						e.preventDefault();
-						hideError();
-
-						const formData = new FormData(loginForm);
-						const email = formData.get('email');
-						const password = formData.get('password');
-
-						if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
-							showError(translations.invalidCredentials);
-							return;
-						}
-
-						try {
-							const { error } = await signIn.email({ email, password });
-
-							if (error) {
-								showError(error.message || translations.invalidCredentials);
-							} else {
-								const locale = document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'en';
-								window.location.href = `/${locale}/`;
-							}
-						} catch (error) {
-							if (import.meta.env.DEV) {
-								console.error('Login failed:', error instanceof Error ? error.message : 'unknown');
-							}
-							showError(translations.invalidCredentials);
-						}
-					});
-				}
+				});
 			});
 		</script>
 </MainLayout>

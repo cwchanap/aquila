@@ -11,6 +11,8 @@ afterEach(() => {
     process.env.NODE_ENV = 'test';
     process.env.BETTER_AUTH_SECRET = 'test-secret';
     delete process.env.TRUSTED_ORIGINS;
+    delete process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_SECRET;
 });
 
 describe('auth production environment branches', () => {
@@ -55,6 +57,41 @@ describe('auth production environment branches', () => {
 
         await expect(import('../auth')).rejects.toThrow(
             'BETTER_AUTH_SECRET must be set in production environment'
+        );
+    });
+
+    it('throws when GOOGLE_CLIENT_ID is not set in production', async () => {
+        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        delete process.env.GOOGLE_CLIENT_ID;
+        vi.stubEnv('GOOGLE_CLIENT_ID', '');
+        process.env.NODE_ENV = 'production';
+
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn(() => ({ $Infer: { Session: { user: {} } } })),
+        }));
+        vi.resetModules();
+
+        await expect(import('../auth')).rejects.toThrow(
+            'GOOGLE_CLIENT_ID must be set in production environment'
+        );
+    });
+
+    it('throws when GOOGLE_CLIENT_SECRET is not set in production', async () => {
+        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.GOOGLE_CLIENT_ID = 'test-google-id';
+        delete process.env.GOOGLE_CLIENT_SECRET;
+        vi.stubEnv('GOOGLE_CLIENT_SECRET', '');
+        process.env.NODE_ENV = 'production';
+
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn(() => ({ $Infer: { Session: { user: {} } } })),
+        }));
+        vi.resetModules();
+
+        await expect(import('../auth')).rejects.toThrow(
+            'GOOGLE_CLIENT_SECRET must be set in production environment'
         );
     });
 });

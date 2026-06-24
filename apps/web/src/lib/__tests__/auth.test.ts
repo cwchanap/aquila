@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { betterAuth } from 'better-auth';
 import { auth } from '../auth';
 import type { Session, User } from '../auth';
 
@@ -76,6 +77,20 @@ describe('Auth Configuration', () => {
             expect(userType).toBeDefined();
             expect(userType.id).toBe('user-123');
             expect(userType.email).toBe('test@example.com');
+        });
+    });
+
+    describe('provider configuration', () => {
+        it('configures the Google social provider and disables email/password', () => {
+            const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
+                | Record<string, unknown>
+                | undefined;
+            expect(config).toBeDefined();
+            const social = config?.socialProviders as
+                | { google?: unknown }
+                | undefined;
+            expect(social?.google).toBeDefined();
+            expect(config?.emailAndPassword).toBeUndefined();
         });
     });
 });

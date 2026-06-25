@@ -210,7 +210,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **Node/Runtime Version**: Bun v1.1.26+ (includes TypeScript 5.9+)
 - **Database**: PostgreSQL-compatible database (CockroachDB staging or managed PostgreSQL in production)
 - **Required Environment Variables**: `DATABASE_URL` for PostgreSQL connection
-- **Required in Production**: `BETTER_AUTH_SECRET` for auth session encryption
+- **Required in Production**: `BETTER_AUTH_SECRET` for auth session encryption; `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` for Google sign-in (see `docs/auth-google-setup.md`)
 - **Optional Environment Variables**: `DB_ALLOW_SELF_SIGNED`, `DB_POOL_MAX`, `BETTER_AUTH_URL`, `ALLOW_COCKROACH_MIGRATIONS`
 - **Migration Tools**: `drizzle-kit` for migrations, Bun's native TypeScript execution for scripts
 - **Development Tools**: ESLint with Astro + Svelte plugins, Prettier with lint-staged (Husky hooks)

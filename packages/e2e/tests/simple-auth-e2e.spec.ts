@@ -1,8 +1,19 @@
 import { test, expect } from '@playwright/test';
-import { uniqueEmail } from './utils';
 
 test.describe('Auth Flow', () => {
-    test('should sign up, log out, and log back in', async ({
+    test('login offers Google sign-in and signup redirects to login', async ({
+        page,
+    }) => {
+        await page.goto('/en/login');
+        await expect(
+            page.getByRole('button', { name: /continue with google/i })
+        ).toBeVisible();
+
+        await page.goto('/en/signup');
+        await expect(page).toHaveURL('/en/login');
+    });
+
+    test('clicking Continue with Google initiates the social sign-in request', async ({
         page,
         request,
     }) => {
@@ -12,29 +23,15 @@ test.describe('Auth Flow', () => {
             'Auth backend unavailable for E2E (database adapter failed to initialize).'
         );
 
-        const email = uniqueEmail('auth');
-        const password = 'password123';
-        const name = 'Test User';
-
-        await page.goto('/en/signup');
-        await page.fill('input[name="email"]', email);
-        await page.fill('input[name="password"]', password);
-        await page.fill('input[name="name"]', name);
-        await page.click('button#signup-btn');
-
-        await expect(page).toHaveURL('/en/');
-        await expect(page.getByRole('button', { name })).toBeVisible();
-
-        await page.getByRole('button', { name }).click();
-        await page.getByRole('button', { name: 'Logout' }).click();
-        await expect(page.getByRole('link', { name: 'Login' })).toBeVisible();
-
         await page.goto('/en/login');
-        await page.fill('input[name="email"]', email);
-        await page.fill('input[name="password"]', password);
-        await page.click('button[type="submit"]');
 
-        await expect(page).toHaveURL('/en/');
-        await expect(page.getByRole('button', { name })).toBeVisible();
+        const [socialRequest] = await Promise.all([
+            page.waitForRequest(/\/api\/auth\/sign-in\/social/, {
+                timeout: 15000,
+            }),
+            page.getByRole('button', { name: /continue with google/i }).click(),
+        ]);
+
+        expect(socialRequest.url()).toContain('/api/auth/sign-in/social');
     });
 });

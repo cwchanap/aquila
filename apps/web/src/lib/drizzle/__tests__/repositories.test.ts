@@ -45,7 +45,6 @@ import {
     ChapterRepository,
     SceneRepository,
     BookmarkRepository,
-    AccountRepository,
 } from '../repositories';
 
 describe('Repositories', () => {
@@ -1001,68 +1000,6 @@ describe('Repositories', () => {
                 expect(set).toHaveProperty('locale', 'zh');
                 expect(set).toHaveProperty('updatedAt');
                 expect(set.updatedAt).toBeInstanceOf(Date);
-            });
-        });
-    });
-
-    describe('AccountRepository', () => {
-        let repo: AccountRepository;
-
-        beforeEach(() => {
-            repo = new AccountRepository(mockDb as any);
-        });
-
-        describe('findCredentialAccount()', () => {
-            it('returns credential account when found', async () => {
-                const account = {
-                    id: 'acct-1',
-                    userId: 'user-1',
-                    providerId: 'credential',
-                };
-                mockDb.limit.mockResolvedValue([account]);
-
-                const result = await repo.findCredentialAccount('user-1');
-
-                expect(result).toEqual(account);
-                expect(mockDb.select).toHaveBeenCalled();
-                expect(mockDb.where).toHaveBeenCalled();
-            });
-
-            it('returns null when no credential account exists', async () => {
-                mockDb.limit.mockResolvedValue([]);
-
-                const result = await repo.findCredentialAccount('user-1');
-
-                expect(result).toBeNull();
-            });
-        });
-
-        describe('updatePassword()', () => {
-            it('updates the password for the account', async () => {
-                mockDb.where.mockResolvedValue(undefined);
-
-                await repo.updatePassword('user-1', 'hashed-password');
-
-                expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.set).toHaveBeenCalled();
-                expect(mockDb.where).toHaveBeenCalled();
-            });
-
-            it('includes updatedAt in the set data', async () => {
-                const setCalls: Array<Record<string, unknown>> = [];
-                mockDb.set.mockImplementation(
-                    (data: Record<string, unknown>) => {
-                        setCalls.push(data);
-                        return mockDb;
-                    }
-                );
-                mockDb.where.mockResolvedValue(undefined);
-
-                await repo.updatePassword('user-1', 'new-hash');
-
-                expect(setCalls[0]).toHaveProperty('password', 'new-hash');
-                expect(setCalls[0]).toHaveProperty('updatedAt');
-                expect(setCalls[0].updatedAt).toBeInstanceOf(Date);
             });
         });
     });

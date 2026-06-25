@@ -58,14 +58,6 @@ process.env.BETTER_AUTH_SECRET = 'test-secret';
 process.env.TURSO_DATABASE_URL = 'http://127.0.0.1:8080';
 process.env.TURSO_AUTH_TOKEN = 'test-token';
 
-// Mock bcryptjs
-vi.mock('bcryptjs', () => ({
-    default: {
-        hash: vi.fn().mockResolvedValue('hashed-password'),
-        compare: vi.fn().mockResolvedValue(true),
-    },
-}));
-
 // Mock better-auth
 vi.mock('better-auth', () => ({
     betterAuth: vi.fn(() => ({

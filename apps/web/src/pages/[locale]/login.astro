@@ -179,8 +179,12 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 						if (error) {
 							showError(error.message || translations.signInError);
 							btn.disabled = false;
+						} else {
+							// Success: the browser is redirecting to Google. Re-enable as a
+							// safety net so a stalled or blocked redirect doesn't strand the
+							// button in a permanently disabled state.
+							btn.disabled = false;
 						}
-						// On success the browser navigates to Google; nothing else to do.
 					} catch (e) {
 						if (import.meta.env.DEV) {
 							console.error('Google sign-in failed:', e instanceof Error ? e.message : 'unknown');

@@ -6,16 +6,8 @@
     "name": "姓名",
     "email": "電子郵件",
     "notSet": "未設定",
-    "changePassword": "修改密碼",
-    "currentPassword": "目前密碼",
-    "newPassword": "新密碼",
-    "confirmPassword": "確認新密碼",
-    "updatePassword": "更新密碼",
     "backToMenu": "返回選單",
-    "failedToLoad": "載入使用者資料失敗",
-    "passwordChanged": "密碼修改成功",
-    "failedPasswordChange": "修改密碼失敗",
-    "networkError": "網路錯誤。請重試。"
+    "failedToLoad": "載入使用者資料失敗"
   },
   "login": {
     "title": "登入 - 遊戲應用",

@@ -6,16 +6,8 @@
     "name": "Name",
     "email": "Email",
     "notSet": "Not set",
-    "changePassword": "Change Password",
-    "currentPassword": "Current Password",
-    "newPassword": "New Password",
-    "confirmPassword": "Confirm New Password",
-    "updatePassword": "Update Password",
     "backToMenu": "Back to Menu",
-    "failedToLoad": "Failed to load user data",
-    "passwordChanged": "Password changed successfully",
-    "failedPasswordChange": "Failed to change password",
-    "networkError": "Network error. Please try again."
+    "failedToLoad": "Failed to load user data"
   },
   "login": {
     "title": "Login - Game App",

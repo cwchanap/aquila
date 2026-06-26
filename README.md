@@ -66,7 +66,7 @@ bun drizzle:migrate
 bun drizzle:studio
 ```
 
-> **Note on CockroachDB**: Drizzle's CockroachDB dialect is pre-release. The default migrate command guards against CockroachDB URLs. Use `ALLOW_COCKROACH_MIGRATIONS=true` only after validating in staging. Prefer managed PostgreSQL for production.
+> **Database**: Prisma Postgres (managed PostgreSQL). Migrations run with `bun drizzle:migrate`.
 
 ## Project Structure
 
@@ -120,7 +120,7 @@ packages/
 ### Database
 
 - `bun drizzle:generate` - Generate SQL migrations from schema
-- `bun drizzle:migrate` - Apply migrations (with CockroachDB guard)
+- `bun drizzle:migrate` - Apply migrations
 - `bun drizzle:studio` - Open Drizzle Studio database GUI
 
 ### Code Quality
@@ -192,7 +192,6 @@ bun --filter web test src/lib/__tests__/utils.test.ts
 - `BETTER_AUTH_SECRET` - Auth encryption key (auto-generated in dev)
 - `DB_ALLOW_SELF_SIGNED` - Allow self-signed SSL certs (`true`/`false`)
 - `DB_POOL_MAX` - PostgreSQL connection pool size (default: 10)
-- `ALLOW_COCKROACH_MIGRATIONS` - Explicitly enable CockroachDB migrations
 
 ## Deployment
 

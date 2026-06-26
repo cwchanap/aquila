@@ -8,15 +8,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `bun dev` - Start web app (port 5090), desktop app via Turbo
 - `bun dev:web` - Start Astro web app only on port 5090
-- `bun dev:db` - Instructions for starting CockroachDB locally (port 26257 insecure mode, HTTP on 8080)
+- `bun dev:db` - Prints a reminder that Prisma Postgres is managed remotely (no local DB to start)
 
 ### Database Operations
 
 - `bun drizzle:generate` - Generate SQL migrations from the Drizzle schema
-- `bun drizzle:migrate` - Run Drizzle migrations (guards against CockroachDB URLs)
-- `bun drizzle:migrate:allow-cockroach` - Opt-in CockroachDB migration once staging is verified (requires `ALLOW_COCKROACH_MIGRATIONS=true`)
+- `bun drizzle:migrate` - Run Drizzle migrations against Postgres
 - `bun drizzle:studio` - Open Drizzle Studio GUI (web app only)
-- **Reminder:** Drizzle's CockroachDB dialect is pre-release. Only set `ALLOW_COCKROACH_MIGRATIONS=true` after validating migrations in staging. Prefer managed PostgreSQL when in doubt.
 
 ### Testing
 
@@ -208,9 +206,9 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **Package Manager**: Bun 1.1.26+ (enforced via `packageManager` field in `package.json`)
 - **Monorepo Tool**: Turbo for parallel task execution and caching
 - **Node/Runtime Version**: Bun v1.1.26+ (includes TypeScript 5.9+)
-- **Database**: PostgreSQL-compatible database (CockroachDB staging or managed PostgreSQL in production)
+- **Database**: Prisma Postgres (managed PostgreSQL)
 - **Required Environment Variables**: `DATABASE_URL` for PostgreSQL connection
 - **Required in Production**: `BETTER_AUTH_SECRET` for auth session encryption; `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` for Google sign-in (see `docs/auth-google-setup.md`)
-- **Optional Environment Variables**: `DB_ALLOW_SELF_SIGNED`, `DB_POOL_MAX`, `BETTER_AUTH_URL`, `ALLOW_COCKROACH_MIGRATIONS`
+- **Optional Environment Variables**: `DB_ALLOW_SELF_SIGNED`, `DB_POOL_MAX`, `BETTER_AUTH_URL`
 - **Migration Tools**: `drizzle-kit` for migrations, Bun's native TypeScript execution for scripts
 - **Development Tools**: ESLint with Astro + Svelte plugins, Prettier with lint-staged (Husky hooks)

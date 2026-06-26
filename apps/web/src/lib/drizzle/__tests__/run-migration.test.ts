@@ -35,7 +35,7 @@ describe('run-migration.ts', () => {
     const savedEnv: Record<string, string | undefined> = {};
 
     beforeEach(() => {
-        for (const key of ['DATABASE_URL', 'NODE_ENV', 'DB_CA_PATH']) {
+        for (const key of ['DATABASE_URL', 'NODE_ENV']) {
             savedEnv[key] = process.env[key];
         }
 
@@ -74,6 +74,26 @@ describe('run-migration.ts', () => {
             expect.objectContaining({
                 connectionString: 'postgres://localhost/testdb',
                 ssl: false,
+                max: 1,
+            })
+        );
+    });
+
+    it('creates Pool with verifying SSL for a remote sslmode=require connection', async () => {
+        process.env.DATABASE_URL =
+            'postgres://u:p@db.prisma.io:5432/postgres?sslmode=require';
+        process.env.NODE_ENV = 'test';
+
+        mockReaddirSync.mockReturnValue([]);
+        mockQuery.mockResolvedValue({ rows: [] });
+
+        await import('../run-migration');
+
+        expect(mockPoolConstructor).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connectionString:
+                    'postgres://u:p@db.prisma.io:5432/postgres?sslmode=require',
+                ssl: { rejectUnauthorized: true },
                 max: 1,
             })
         );
@@ -219,30 +239,6 @@ describe('run-migration.ts', () => {
 
         // Only 0001_init.sql should be processed: tracking table (1) + check (1) + execute (1) + insert (1) = 4
         await vi.waitFor(() => expect(mockQuery).toHaveBeenCalledTimes(4));
-    });
-
-    it('creates Pool with ssl.ca object in production when DB_CA_PATH is set', async () => {
-        process.env.DATABASE_URL = 'postgres://localhost/testdb';
-        process.env.NODE_ENV = 'production';
-        process.env.DB_CA_PATH = '/fake/ca.pem';
-
-        const fakeCert = Buffer.from('fake-cert');
-        mockReadFileSync.mockImplementation((p: unknown) => {
-            if (String(p).includes('ca.pem')) return fakeCert;
-            return 'SELECT 1;';
-        });
-        mockReaddirSync.mockReturnValue([]);
-        mockQuery.mockResolvedValue({ rows: [] });
-
-        await import('../run-migration');
-
-        expect(mockPoolConstructor).toHaveBeenCalledWith(
-            expect.objectContaining({
-                connectionString: 'postgres://localhost/testdb',
-                ssl: { ca: fakeCert },
-                max: 1,
-            })
-        );
     });
 
     it('inserts migration filename into tracking table after successful application', async () => {
@@ -412,22 +408,6 @@ describe('run-migration.ts', () => {
 
         expect(reason).toMatchObject({
             message: expect.stringContaining('DATABASE_URL'),
-        });
-    });
-
-    it('throws when in production and DB_CA_PATH is not set (lines 40-43)', async () => {
-        process.env.DATABASE_URL = 'postgres://localhost/testdb';
-        process.env.NODE_ENV = 'production';
-        delete process.env.DB_CA_PATH;
-
-        vi.spyOn(console, 'error').mockImplementation(() => {});
-
-        const reason = await captureNextUnhandledRejection(async () => {
-            await import('../run-migration');
-        });
-
-        expect(reason).toMatchObject({
-            message: expect.stringContaining('DB_CA_PATH'),
         });
     });
 

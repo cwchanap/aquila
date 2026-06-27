@@ -24,7 +24,11 @@ function isRemoteHost(connectionString: string): boolean {
     try {
         const host = new URL(connectionString).hostname.toLowerCase();
         if (!host) return false;
-        return !LOCAL_HOSTS.has(host);
+        // new URL().hostname returns IPv6 addresses bracketed (e.g. "[::1]"),
+        // but LOCAL_HOSTS stores the unbracketed form ("::1"). Strip brackets
+        // so loopback IPv6 addresses are correctly recognized as local.
+        const normalized = host.replace(/^\[|\]$/g, '');
+        return !LOCAL_HOSTS.has(normalized);
     } catch {
         return false;
     }

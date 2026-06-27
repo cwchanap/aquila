@@ -33,5 +33,11 @@ test.describe('Auth Flow', () => {
         ]);
 
         expect(socialRequest.url()).toContain('/api/auth/sign-in/social');
+        // Verify the request specifically targets the Google provider, not
+        // just any social sign-in endpoint. Better Auth sends the provider
+        // identifier in the POST body.
+        const postData = socialRequest.postData();
+        expect(postData).toBeTruthy();
+        expect(postData).toContain('google');
     });
 });

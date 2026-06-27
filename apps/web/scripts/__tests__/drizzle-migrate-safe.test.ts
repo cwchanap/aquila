@@ -1,5 +1,5 @@
 /**
- * Tests for scripts/drizzle-migrate-safe.mjs
+ * Tests for scripts/drizzle-migrate-safe.ts
  *
  * The script is a pure ESM runner: it is a thin wrapper that calls
  * spawnSync(drizzle-kit migrate) + process.exit.
@@ -28,7 +28,7 @@ class ProcessExitError extends Error {
 
 /** Dynamically (re-)imports the script after the module registry is reset. */
 async function runScript(): Promise<void> {
-    await import('../../scripts/drizzle-migrate-safe.mjs');
+    await import('../../scripts/drizzle-migrate-safe.ts');
 }
 
 // ─── Suite ─────────────────────────────────────────────────────────────────

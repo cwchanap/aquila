@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /* eslint-env node */
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
@@ -11,17 +11,17 @@ const { console } = globalThis;
 
 const drizzleConfig = resolve(__dirname, '../drizzle.config.ts');
 const result = spawnSync(
-  'bunx',
-  ['drizzle-kit', 'migrate', '--config', drizzleConfig],
-  {
-    stdio: 'inherit',
-    env: process.env,
-  }
+    'bunx',
+    ['drizzle-kit', 'migrate', '--config', drizzleConfig],
+    {
+        stdio: 'inherit',
+        env: process.env,
+    }
 );
 
 if (result.error) {
-  console.error('\n❌ Failed to spawn drizzle-kit migrate:', result.error);
-  process.exit(result.status ?? 1);
+    console.error('\n❌ Failed to spawn drizzle-kit migrate:', result.error);
+    process.exit(result.status ?? 1);
 }
 
 process.exit(result.status ?? 0);

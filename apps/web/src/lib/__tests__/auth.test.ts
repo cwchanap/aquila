@@ -81,7 +81,7 @@ describe('Auth Configuration', () => {
     });
 
     describe('provider configuration', () => {
-        it('configures the Google social provider and disables email/password', () => {
+        it('omits the Google social provider when credentials are not set', () => {
             const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
                 | Record<string, unknown>
                 | undefined;
@@ -89,8 +89,32 @@ describe('Auth Configuration', () => {
             const social = config?.socialProviders as
                 | { google?: unknown }
                 | undefined;
-            expect(social?.google).toBeDefined();
+            // Without GOOGLE_CLIENT_ID/SECRET (test env), the provider is
+            // omitted to avoid registering a broken sign-in path.
+            expect(social?.google).toBeUndefined();
             expect(config?.emailAndPassword).toBeUndefined();
+        });
+
+        it('configures the Google social provider when credentials are present', async () => {
+            vi.resetModules();
+            vi.mocked(betterAuth).mockClear();
+            vi.stubEnv('GOOGLE_CLIENT_ID', 'test-client-id');
+            vi.stubEnv('GOOGLE_CLIENT_SECRET', 'test-client-secret');
+
+            await import('../auth');
+
+            const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
+                | Record<string, unknown>
+                | undefined;
+            expect(config).toBeDefined();
+            const social = config?.socialProviders as
+                | { google?: { clientId?: string; clientSecret?: string } }
+                | undefined;
+            expect(social?.google).toBeDefined();
+            expect(social?.google?.clientId).toBe('test-client-id');
+            expect(social?.google?.clientSecret).toBe('test-client-secret');
+
+            vi.unstubAllEnvs();
         });
     });
 });

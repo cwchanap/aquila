@@ -55,6 +55,14 @@ describe('resolveSsl', () => {
         ).toBe(false);
     });
 
+    it('returns false for bracketed IPv6 loopback [::1]', () => {
+        expect(
+            resolveSsl('postgres://user:pass@[::1]:5432/db', {
+                NODE_ENV: 'test',
+            } as NodeJS.ProcessEnv)
+        ).toBe(false);
+    });
+
     it('enables verifying SSL for a remote host even outside production', () => {
         expect(
             resolveSsl(remote, { NODE_ENV: 'test' } as NodeJS.ProcessEnv)

@@ -49,40 +49,42 @@ export const auth = betterAuth({
         }
         return secret || 'development-only-secret-do-not-use-in-prod';
     })(),
-    socialProviders: {
-        google: {
-            clientId: (() => {
-                const id =
-                    import.meta.env?.GOOGLE_CLIENT_ID ||
-                    process.env.GOOGLE_CLIENT_ID;
-                if (
-                    !id &&
-                    (import.meta.env?.PROD ||
-                        process.env.NODE_ENV === 'production')
-                ) {
-                    throw new Error(
-                        'GOOGLE_CLIENT_ID must be set in production environment'
-                    );
-                }
-                return id || '';
-            })(),
-            clientSecret: (() => {
-                const secret =
-                    import.meta.env?.GOOGLE_CLIENT_SECRET ||
-                    process.env.GOOGLE_CLIENT_SECRET;
-                if (
-                    !secret &&
-                    (import.meta.env?.PROD ||
-                        process.env.NODE_ENV === 'production')
-                ) {
-                    throw new Error(
-                        'GOOGLE_CLIENT_SECRET must be set in production environment'
-                    );
-                }
-                return secret || '';
-            })(),
-        },
-    },
+    socialProviders: (() => {
+        const clientId =
+            import.meta.env?.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+        const clientSecret =
+            import.meta.env?.GOOGLE_CLIENT_SECRET ||
+            process.env.GOOGLE_CLIENT_SECRET;
+        const isProduction =
+            import.meta.env?.PROD || process.env.NODE_ENV === 'production';
+
+        if (isProduction && !clientId) {
+            throw new Error(
+                'GOOGLE_CLIENT_ID must be set in production environment'
+            );
+        }
+        if (isProduction && !clientSecret) {
+            throw new Error(
+                'GOOGLE_CLIENT_SECRET must be set in production environment'
+            );
+        }
+
+        // Only register the google provider when both credentials are
+        // present. In dev/preview without credentials, omitting the provider
+        // prevents a broken sign-in path (better-auth returns a clear
+        // "provider not configured" error instead of redirecting to Google
+        // with empty values).
+        if (!clientId || !clientSecret) {
+            return {};
+        }
+
+        return {
+            google: {
+                clientId,
+                clientSecret,
+            },
+        };
+    })(),
 });
 
 export type Session = typeof auth.$Infer.Session;

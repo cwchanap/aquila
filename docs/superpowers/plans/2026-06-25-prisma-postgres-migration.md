@@ -392,7 +392,7 @@ In `apps/web/src/lib/drizzle/run-migration.ts`:
 import { resolveSsl } from './connection';
 ```
 
-2. Replace the SSL block (the `console.log('🔗 Connecting to CockroachDB...')` line and the entire `let ssl ... ` / `if (process.env.NODE_ENV === 'production') { ... }` block, currently lines ~34-46) with:
+2. Replace the SSL block (the `console.log('🔗 Connecting to CockroachDB...')` line and the entire `let ssl ...` / `if (process.env.NODE_ENV === 'production') { ... }` block, currently lines ~34-46) with:
 
 ```typescript
     console.log('🔗 Connecting to Postgres...');
@@ -536,8 +536,17 @@ Keep the existing `# Google OAuth (Better Auth social provider)` block (`GOOGLE_
 
 - [ ] **Step 3: `CLAUDE.md`**
 
-- Line for `bun dev:db`: change to `- `bun dev:db` - Prints a reminder that Prisma Postgres is managed remotely (no local DB to start)`.
-- Line for `bun drizzle:migrate`: change to `- `bun drizzle:migrate` - Run Drizzle migrations against Postgres`.
+- Line for `bun dev:db`: change to:
+
+  ```text
+  - bun dev:db - Prints a reminder that Prisma Postgres is managed remotely (no local DB to start)
+  ```
+
+- Line for `bun drizzle:migrate`: change to:
+
+  ```text
+  - bun drizzle:migrate - Run Drizzle migrations against Postgres
+  ```
 - Delete the `bun drizzle:migrate:allow-cockroach` bullet.
 - Delete the `**Reminder:** Drizzle's CockroachDB dialect is pre-release …` bullet.
 - In Environment Requirements, change `PostgreSQL-compatible database (CockroachDB staging or managed PostgreSQL in production)` to `Prisma Postgres (managed PostgreSQL)`.
@@ -545,9 +554,29 @@ Keep the existing `# Google OAuth (Better Auth social provider)` block (`GOOGLE_
 
 - [ ] **Step 4: `README.md`**
 
-- Delete the `> **Note on CockroachDB**: …` note (line ~69), or replace with: `> **Database**: Prisma Postgres (managed PostgreSQL). Migrations run with `bun drizzle:migrate`.`
-- Change `- `bun drizzle:migrate` - Apply migrations (with CockroachDB guard)` to `- `bun drizzle:migrate` - Apply migrations`.
-- Delete the `- `ALLOW_COCKROACH_MIGRATIONS` - Explicitly enable CockroachDB migrations` line.
+- Delete the `> **Note on CockroachDB**: …` note (line ~69), or replace with:
+
+  ```text
+  > **Database**: Prisma Postgres (managed PostgreSQL). Migrations run with `bun drizzle:migrate`.
+  ```
+
+- Change the line:
+
+  ```text
+  - bun drizzle:migrate - Apply migrations (with CockroachDB guard)
+  ```
+
+  to:
+
+  ```text
+  - bun drizzle:migrate - Apply migrations
+  ```
+
+- Delete the line:
+
+  ```text
+  - ALLOW_COCKROACH_MIGRATIONS - Explicitly enable CockroachDB migrations
+  ```
 
 - [ ] **Step 5: Verify no stale references remain**
 

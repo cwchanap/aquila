@@ -2,6 +2,7 @@
 import MainLayout from '../../layouts/main.astro';
 // Component Imports
 import MainMenu from '../../components/MainMenu.svelte';
+import { getSessionUser } from '../../lib/auth-utils.js';
 import { t as translate } from '../../lib/utils';
 
 interface Props {
@@ -10,10 +11,20 @@ interface Props {
 
 const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
+
+// Resolve the session server-side so the menu renders the authenticated state
+// in the initial HTML — avoids a flash of the unauthenticated (login) state
+// while UserStatus would otherwise client-fetch /api/auth/get-session.
+let user = null;
+try {
+  user = await getSessionUser(Astro.request);
+} catch (error) {
+  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
+}
 ---
 
 <MainLayout title={t("menu.title")}>
-	<MainMenu client:load locale={locale} />
+	<MainMenu client:load locale={locale} user={user} />
 
 	<script>
 		// Handle language preference persistence

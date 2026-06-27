@@ -1,14 +1,24 @@
 ---
 import MainLayout from '@/layouts/main.astro';
 import MainMenu from '@/components/MainMenu.svelte';
+import { getSessionUser } from '@/lib/auth-utils.js';
 import { t as translate } from '@/lib/utils';
 
 const locale = Astro.currentLocale || 'en';
 const t = (key: string) => translate(locale, key);
+
+// Resolve the session server-side to avoid a flash of the unauthenticated
+// state before UserStatus would client-fetch the session.
+let user = null;
+try {
+  user = await getSessionUser(Astro.request);
+} catch (error) {
+  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
+}
 ---
 
 <MainLayout title={t('menu.title')}>
-    <MainMenu client:load locale={Astro.currentLocale ?? 'en'} />
+    <MainMenu client:load locale={Astro.currentLocale ?? 'en'} user={user} />
 
     <script>
         // Handle language preference persistence

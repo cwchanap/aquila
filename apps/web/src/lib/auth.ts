@@ -1,44 +1,35 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './drizzle/db.js';
+import {
+    resolveBaseURL,
+    resolveTrustedOrigins,
+    type AuthConfigEnv,
+} from './auth-config.js';
+
+const isProduction = Boolean(
+    import.meta.env?.PROD || process.env.NODE_ENV === 'production'
+);
+
+// Both the base URL and the trusted origins are deduced from the request
+// hostname on Vercel (VERCEL_* system vars), so neither BETTER_AUTH_URL nor
+// TRUSTED_ORIGINS needs to be set by hand in production. Explicit values still
+// win as overrides for local dev and non-Vercel hosts.
+const authConfigEnv: AuthConfigEnv = {
+    BETTER_AUTH_URL:
+        import.meta.env?.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL,
+    TRUSTED_ORIGINS:
+        import.meta.env?.TRUSTED_ORIGINS || process.env.TRUSTED_ORIGINS,
+    VERCEL_PROJECT_PRODUCTION_URL:
+        import.meta.env?.VERCEL_PROJECT_PRODUCTION_URL ||
+        process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    VERCEL_URL: import.meta.env?.VERCEL_URL || process.env.VERCEL_URL,
+    VERCEL_BRANCH_URL:
+        import.meta.env?.VERCEL_BRANCH_URL || process.env.VERCEL_BRANCH_URL,
+};
 
 export const auth = betterAuth({
-    baseURL: (() => {
-        const baseURL =
-            import.meta.env?.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL;
-        const isProduction =
-            import.meta.env?.PROD || process.env.NODE_ENV === 'production';
-        // In production, Better Auth builds OAuth redirect URIs from baseURL.
-        // Without BETTER_AUTH_URL the localhost fallback produces a redirect
-        // URI mismatch at the provider (e.g. Google). Email/password login was
-        // removed, so Google is the only sign-in path — require an explicit,
-        // non-local baseURL in production.
-        if (isProduction) {
-            if (!baseURL) {
-                throw new Error(
-                    'BETTER_AUTH_URL must be set in production environment'
-                );
-            }
-            let host = '';
-            try {
-                host = new URL(baseURL).hostname.toLowerCase();
-            } catch {
-                throw new Error(
-                    'BETTER_AUTH_URL must be a valid URL in production environment'
-                );
-            }
-            if (
-                host === 'localhost' ||
-                host === '127.0.0.1' ||
-                host === '::1'
-            ) {
-                throw new Error(
-                    'BETTER_AUTH_URL must be a non-local URL in production environment'
-                );
-            }
-        }
-        return baseURL || 'http://localhost:5090';
-    })(),
+    baseURL: resolveBaseURL(authConfigEnv, isProduction),
     database: drizzleAdapter(db, {
         provider: 'pg',
     }),
@@ -56,22 +47,7 @@ export const auth = betterAuth({
     verification: {
         modelName: 'verificationTokens',
     },
-    trustedOrigins: (() => {
-        const raw =
-            import.meta.env?.TRUSTED_ORIGINS || process.env.TRUSTED_ORIGINS;
-        if (raw) {
-            return raw
-                .split(',')
-                .map((o: string) => o.trim())
-                .filter(Boolean);
-        }
-        if (import.meta.env?.PROD || process.env.NODE_ENV === 'production') {
-            throw new Error(
-                'TRUSTED_ORIGINS must be set in production environment'
-            );
-        }
-        return ['http://localhost:5090'];
-    })(),
+    trustedOrigins: resolveTrustedOrigins(authConfigEnv, isProduction),
     secret: (() => {
         const secret = process.env.BETTER_AUTH_SECRET;
         if (!secret && process.env.NODE_ENV === 'production') {
@@ -87,8 +63,6 @@ export const auth = betterAuth({
         const clientSecret =
             import.meta.env?.GOOGLE_CLIENT_SECRET ||
             process.env.GOOGLE_CLIENT_SECRET;
-        const isProduction =
-            import.meta.env?.PROD || process.env.NODE_ENV === 'production';
 
         if (isProduction && !clientId) {
             throw new Error(

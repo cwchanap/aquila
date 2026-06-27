@@ -117,13 +117,17 @@ describe('drizzle-migrate-safe', () => {
             expect(exitSpy).toHaveBeenCalledWith(2);
         });
 
-        it('passes process.env to spawnSync', async () => {
+        it('passes env with resolved DATABASE_URL to spawnSync', async () => {
             await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
 
             expect(spawnSyncMock).toHaveBeenCalledWith(
                 'bunx',
                 expect.any(Array),
-                expect.objectContaining({ env: process.env })
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgresql://localhost:5432/aquila_test',
+                    }),
+                })
             );
         });
 
@@ -137,6 +141,66 @@ describe('drizzle-migrate-safe', () => {
                     expect.stringContaining('drizzle.config.ts'),
                 ]),
                 expect.any(Object)
+            );
+        });
+    });
+
+    // ── connection-string fallback chain ───────────────────────────────────
+
+    describe('connection-string fallback', () => {
+        let originalPostgresUrl: string | undefined;
+        let originalAquilaDbUrl: string | undefined;
+
+        beforeEach(() => {
+            originalPostgresUrl = process.env.POSTGRES_URL;
+            originalAquilaDbUrl = process.env.aquila_DATABASE_URL;
+            // Remove DATABASE_URL so the fallback chain is exercised
+            delete process.env.DATABASE_URL;
+        });
+
+        afterEach(() => {
+            if (originalPostgresUrl === undefined) {
+                delete process.env.POSTGRES_URL;
+            } else {
+                process.env.POSTGRES_URL = originalPostgresUrl;
+            }
+            if (originalAquilaDbUrl === undefined) {
+                delete process.env.aquila_DATABASE_URL;
+            } else {
+                process.env.aquila_DATABASE_URL = originalAquilaDbUrl;
+            }
+        });
+
+        it('injects POSTGRES_URL as DATABASE_URL when DATABASE_URL is unset', async () => {
+            process.env.POSTGRES_URL = 'postgres://remote-host:5432/db';
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            expect(spawnSyncMock).toHaveBeenCalledWith(
+                'bunx',
+                expect.any(Array),
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgres://remote-host:5432/db',
+                    }),
+                })
+            );
+        });
+
+        it('injects aquila_DATABASE_URL when DATABASE_URL and POSTGRES_URL are unset', async () => {
+            delete process.env.POSTGRES_URL;
+            process.env.aquila_DATABASE_URL = 'postgres://aquila-host:5432/db';
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            expect(spawnSyncMock).toHaveBeenCalledWith(
+                'bunx',
+                expect.any(Array),
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgres://aquila-host:5432/db',
+                    }),
+                })
             );
         });
     });

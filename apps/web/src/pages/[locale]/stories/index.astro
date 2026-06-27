@@ -62,6 +62,40 @@ const authFailed = sessionResult.status === 'error';
       <!-- Story Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
 
+        <!-- The Seventh Mirror Card -->
+        <a
+          href={`/${locale}/reader?story=${StoryId.THE_SEVENTH_MIRROR}`}
+          class="story-card group block rounded-2xl overflow-hidden motion-safe:animate-[fadeSlideUp_0.6s_0.4s_ease_both]"
+        >
+          <div class="relative h-full p-8 bg-white/[0.08] hover:bg-white/[0.14] backdrop-blur-xl border border-white/15 hover:border-rose-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(251,113,133,0.12)]">
+            <!-- Chapter emblem -->
+            <div class="mb-5 flex items-start justify-between">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400/30 to-amber-500/30 border border-rose-300/30 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-300/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 8v4l2 2M3.6 9h2M3.6 15h2M18.4 9h2M18.4 15h2M12 3.6v2M12 18.4v2" />
+                </svg>
+              </div>
+              <!-- Arrow hint -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/20 motion-safe:transition-all motion-safe:duration-300 motion-safe:group-hover:text-rose-300/70 motion-safe:group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+
+            <!-- Story title -->
+            <h2 class="text-xl font-serif font-semibold text-white/90 mb-2 leading-snug group-hover:text-white transition-colors duration-300">
+              {t("stories.theSeventhMirror")}
+            </h2>
+
+            <!-- Descriptor — aria-hidden -->
+            <p class="text-white/45 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors duration-300" aria-hidden="true">
+              {t("stories.theSeventhMirrorDesc")}
+            </p>
+
+            <!-- Bottom shimmer line -->
+            <div class="mt-6 h-px bg-gradient-to-r from-rose-400/0 via-rose-400/30 to-rose-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+          </div>
+        </a>
+
         <!-- Train Adventure Card -->
         <a
           href={`/${locale}/reader?story=${StoryId.TRAIN_ADVENTURE}`}

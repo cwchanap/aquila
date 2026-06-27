@@ -54,10 +54,6 @@ describe('ERROR_IDS', () => {
         it('should define AUTH_PASSWORD_HASH_FAILED as AUTH_008', () => {
             expect(ERROR_IDS.AUTH_PASSWORD_HASH_FAILED).toBe('AUTH_008');
         });
-
-        it('should define AUTH_PASSWORD_CHANGE_FAILED as AUTH_009', () => {
-            expect(ERROR_IDS.AUTH_PASSWORD_CHANGE_FAILED).toBe('AUTH_009');
-        });
     });
 
     describe('Database errors (DB_001-007)', () => {

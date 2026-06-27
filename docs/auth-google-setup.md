@@ -9,7 +9,7 @@ Authentication is Google-only via Better Auth's `socialProviders.google`.
 | `GOOGLE_CLIENT_ID` | Google OAuth 2.0 Web client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth 2.0 Web client secret |
 | `BETTER_AUTH_URL` | Base URL Better Auth runs under (e.g. `http://localhost:5090`) |
-| `PUBLIC_AUTH_URL` | Public base URL used by the browser auth client |
+| `PUBLIC_AUTH_URL` | SSR/build fallback base URL for the auth client (browser uses `window.location.origin`) |
 | `BETTER_AUTH_SECRET` | Session encryption secret (required in production) |
 | `TRUSTED_ORIGINS` | Comma-separated allowed origins (required in production) |
 

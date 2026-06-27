@@ -22,7 +22,7 @@ describe('ERROR_IDS', () => {
         });
     });
 
-    describe('Authentication errors (AUTH_001-009)', () => {
+    describe('Authentication errors (AUTH_001-007)', () => {
         it('should define AUTH_SIGNUP_FAILED as AUTH_001', () => {
             expect(ERROR_IDS.AUTH_SIGNUP_FAILED).toBe('AUTH_001');
         });
@@ -49,10 +49,6 @@ describe('ERROR_IDS', () => {
 
         it('should define AUTH_INVALID_CREDENTIALS as AUTH_007', () => {
             expect(ERROR_IDS.AUTH_INVALID_CREDENTIALS).toBe('AUTH_007');
-        });
-
-        it('should define AUTH_PASSWORD_HASH_FAILED as AUTH_008', () => {
-            expect(ERROR_IDS.AUTH_PASSWORD_HASH_FAILED).toBe('AUTH_008');
         });
     });
 

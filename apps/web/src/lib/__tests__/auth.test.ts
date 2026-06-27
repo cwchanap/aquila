@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { betterAuth } from 'better-auth';
 import { auth } from '../auth';
 import type { Session, User } from '../auth';
@@ -81,6 +81,11 @@ describe('Auth Configuration', () => {
     });
 
     describe('provider configuration', () => {
+        afterEach(() => {
+            vi.unstubAllEnvs();
+            vi.resetModules();
+        });
+
         it('omits the Google social provider when credentials are not set', () => {
             const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
                 | Record<string, unknown>
@@ -113,8 +118,6 @@ describe('Auth Configuration', () => {
             expect(social?.google).toBeDefined();
             expect(social?.google?.clientId).toBe('test-client-id');
             expect(social?.google?.clientSecret).toBe('test-client-secret');
-
-            vi.unstubAllEnvs();
         });
     });
 });

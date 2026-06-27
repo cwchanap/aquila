@@ -11,6 +11,8 @@ const t = (key: string) => translate(locale, key);
 const clientTranslations = {
   signInError: t('login.signInError'),
 };
+// Escape `</` so the JSON payload cannot close the <script> tag early.
+// Required when using set:html to embed JSON inside a script element.
 const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g, '<\\/');
 ---
 

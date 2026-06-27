@@ -437,6 +437,9 @@ export class BookmarkRepository extends BaseRepository<
 }
 
 // ============= Account Repository =============
+// Retained as a thin typed wrapper for future app-level account queries.
+// Better Auth owns OAuth account CRUD via the Drizzle adapter directly, so no
+// methods are needed here today.
 export class AccountRepository extends BaseRepository<
     typeof accounts,
     Account

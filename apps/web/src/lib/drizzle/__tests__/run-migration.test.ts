@@ -35,7 +35,13 @@ describe('run-migration.ts', () => {
     const savedEnv: Record<string, string | undefined> = {};
 
     beforeEach(() => {
-        for (const key of ['DATABASE_URL', 'NODE_ENV']) {
+        for (const key of [
+            'DATABASE_URL',
+            'POSTGRES_URL',
+            'aquila_DATABASE_URL',
+            'aquila_POSTGRES_URL',
+            'NODE_ENV',
+        ]) {
             savedEnv[key] = process.env[key];
         }
 
@@ -396,7 +402,13 @@ describe('run-migration.ts', () => {
     });
 
     it('throws when DATABASE_URL is not set (line 31-32)', async () => {
+        // Clear every name resolveConnectionString() checks, not just the
+        // canonical one — otherwise a CI-inherited fallback var would satisfy
+        // resolution and the throw would never happen.
         delete process.env.DATABASE_URL;
+        delete process.env.POSTGRES_URL;
+        delete process.env.aquila_DATABASE_URL;
+        delete process.env.aquila_POSTGRES_URL;
         process.env.NODE_ENV = 'test';
 
         // Silence the console.error from the outer catch

@@ -36,8 +36,12 @@ function isRemoteHost(connectionString: string): boolean {
 
 /**
  * Decide the `pg` SSL config. SSL is enabled whenever the target requires it:
- * production, an explicit `sslmode=require`, a remote (non-local) host, or
+ * an explicit `sslmode=require`, a remote (non-local) host, or
  * DB_ALLOW_SELF_SIGNED. Local/insecure connections stay SSL-off.
+ *
+ * `isProduction` is an intentional belt-and-suspenders trigger on top of the
+ * spec's `sslmode`/remote-host checks: production must never talk to an
+ * unencrypted localhost, so it forces SSL on even for a local-looking host.
  */
 export function resolveSsl(
     connectionString: string,

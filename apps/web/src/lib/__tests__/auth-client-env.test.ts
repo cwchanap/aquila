@@ -9,7 +9,6 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 function mockCreateAuthClient() {
     const createAuthClient = vi.fn(() => ({
         signIn: vi.fn(),
-        signUp: vi.fn(),
         signOut: vi.fn(),
         useSession: vi.fn(),
     }));

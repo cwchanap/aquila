@@ -53,7 +53,13 @@ describe('Database module (db.ts)', () => {
     });
 
     it('throws when DATABASE_URL is not set', async () => {
+        // Clear every name resolveConnectionString() checks, not just the
+        // canonical one — otherwise a CI-inherited fallback var would satisfy
+        // resolution and the throw would never happen.
         delete process.env.DATABASE_URL;
+        delete process.env.POSTGRES_URL;
+        delete process.env.aquila_DATABASE_URL;
+        delete process.env.aquila_POSTGRES_URL;
         const { db } = await import('../db');
         expect(() => (db as unknown as Record<string, unknown>).select).toThrow(
             'DATABASE_URL environment variable is not set'

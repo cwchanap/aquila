@@ -5,7 +5,6 @@ import { authClient, signIn, signOut, useSession } from '../auth-client';
 vi.mock('better-auth/client', () => ({
     createAuthClient: vi.fn(() => ({
         signIn: vi.fn(),
-        signUp: vi.fn(),
         signOut: vi.fn(),
         useSession: vi.fn(),
     })),

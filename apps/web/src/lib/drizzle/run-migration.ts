@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
-import { resolveSsl } from './connection';
+import { resolveSsl, resolveConnectionString } from './connection';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,7 +26,11 @@ function extractDbErrorDetails(error: unknown): {
 }
 
 async function runMigration() {
-    const connectionString = process.env.DATABASE_URL;
+    // Use the shared fallback chain (DATABASE_URL → POSTGRES_URL →
+    // aquila_DATABASE_URL → aquila_POSTGRES_URL) so this runner works in
+    // Vercel environments that only provision a prefixed var. Matches the
+    // resolution used by db.ts and the drizzle-migrate-safe wrapper.
+    const connectionString = resolveConnectionString();
 
     if (!connectionString) {
         throw new Error('DATABASE_URL environment variable is not set');

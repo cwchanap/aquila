@@ -1,8 +1,8 @@
 /**
- * Tests for scripts/drizzle-migrate-safe.mjs
+ * Tests for scripts/drizzle-migrate-safe.ts
  *
- * The script is a pure ESM runner: it reads env, optionally blocks on
- * CockroachDB detection, then always calls spawnSync + process.exit.
+ * The script is a pure ESM runner: it is a thin wrapper that calls
+ * spawnSync(drizzle-kit migrate) + process.exit.
  * We use vi.resetModules() + dynamic import so each test gets a fresh
  * module execution, and we make the process.exit mock throw so that
  * execution stops at the exit point (matching real semantics).
@@ -28,7 +28,7 @@ class ProcessExitError extends Error {
 
 /** Dynamically (re-)imports the script after the module registry is reset. */
 async function runScript(): Promise<void> {
-    await import('../../scripts/drizzle-migrate-safe.mjs');
+    await import('../../scripts/drizzle-migrate-safe.ts');
 }
 
 // ─── Suite ─────────────────────────────────────────────────────────────────
@@ -37,12 +37,9 @@ describe('drizzle-migrate-safe', () => {
     let exitSpy: ReturnType<typeof vi.spyOn>;
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
     let originalDatabaseUrl: string | undefined;
-    let originalAllowCockroachMigrations: string | undefined;
 
     beforeEach(() => {
         originalDatabaseUrl = process.env.DATABASE_URL;
-        originalAllowCockroachMigrations =
-            process.env.ALLOW_COCKROACH_MIGRATIONS;
 
         vi.resetModules();
         vi.clearAllMocks();
@@ -58,7 +55,6 @@ describe('drizzle-migrate-safe', () => {
 
         // Default: regular PostgreSQL URL, successful spawn
         process.env.DATABASE_URL = 'postgresql://localhost:5432/aquila_test';
-        delete process.env.ALLOW_COCKROACH_MIGRATIONS;
         spawnSyncMock.mockReturnValue({ status: 0, error: undefined });
     });
 
@@ -70,81 +66,6 @@ describe('drizzle-migrate-safe', () => {
         } else {
             process.env.DATABASE_URL = originalDatabaseUrl;
         }
-        if (originalAllowCockroachMigrations === undefined) {
-            delete process.env.ALLOW_COCKROACH_MIGRATIONS;
-        } else {
-            process.env.ALLOW_COCKROACH_MIGRATIONS =
-                originalAllowCockroachMigrations;
-        }
-    });
-
-    // ── hasCockroachSignature paths ────────────────────────────────────────
-
-    describe('CockroachDB URL detection', () => {
-        it('blocks migration for URL containing port 26257', async () => {
-            process.env.DATABASE_URL = 'postgresql://localhost:26257/test';
-
-            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
-
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('WARNING')
-            );
-            expect(exitSpy).toHaveBeenCalledWith(1);
-            expect(spawnSyncMock).not.toHaveBeenCalled();
-        });
-
-        it('blocks migration for URL containing "cockroach"', async () => {
-            process.env.DATABASE_URL =
-                'postgresql://free-tier.cockroachlabs.cloud/db';
-
-            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
-
-            expect(exitSpy).toHaveBeenCalledWith(1);
-            expect(spawnSyncMock).not.toHaveBeenCalled();
-        });
-
-        it('blocks migration for URL containing "crdb"', async () => {
-            process.env.DATABASE_URL =
-                'postgresql://crdb-host.example.com:5432/db';
-
-            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
-
-            expect(exitSpy).toHaveBeenCalledWith(1);
-            expect(spawnSyncMock).not.toHaveBeenCalled();
-        });
-
-        it('allows CockroachDB URL when ALLOW_COCKROACH_MIGRATIONS=true', async () => {
-            process.env.DATABASE_URL = 'postgresql://localhost:26257/test';
-            process.env.ALLOW_COCKROACH_MIGRATIONS = 'true';
-
-            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
-
-            // Should not have blocked — spawnSync is called before exit
-            expect(spawnSyncMock).toHaveBeenCalledWith(
-                'bunx',
-                expect.arrayContaining(['drizzle-kit', 'migrate']),
-                expect.objectContaining({ stdio: 'inherit' })
-            );
-            expect(exitSpy).toHaveBeenCalledWith(0);
-        });
-
-        it('treats empty DATABASE_URL as non-cockroach and runs migration', async () => {
-            process.env.DATABASE_URL = '';
-
-            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
-
-            expect(exitSpy).not.toHaveBeenCalledWith(1);
-            expect(spawnSyncMock).toHaveBeenCalled();
-        });
-
-        it('treats missing DATABASE_URL as non-cockroach and runs migration', async () => {
-            delete process.env.DATABASE_URL;
-
-            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
-
-            expect(exitSpy).not.toHaveBeenCalledWith(1);
-            expect(spawnSyncMock).toHaveBeenCalled();
-        });
     });
 
     // ── spawnSync result paths ─────────────────────────────────────────────
@@ -196,13 +117,17 @@ describe('drizzle-migrate-safe', () => {
             expect(exitSpy).toHaveBeenCalledWith(2);
         });
 
-        it('passes process.env to spawnSync', async () => {
+        it('passes env with resolved DATABASE_URL to spawnSync', async () => {
             await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
 
             expect(spawnSyncMock).toHaveBeenCalledWith(
                 'bunx',
                 expect.any(Array),
-                expect.objectContaining({ env: process.env })
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgresql://localhost:5432/aquila_test',
+                    }),
+                })
             );
         });
 
@@ -216,6 +141,66 @@ describe('drizzle-migrate-safe', () => {
                     expect.stringContaining('drizzle.config.ts'),
                 ]),
                 expect.any(Object)
+            );
+        });
+    });
+
+    // ── connection-string fallback chain ───────────────────────────────────
+
+    describe('connection-string fallback', () => {
+        let originalPostgresUrl: string | undefined;
+        let originalAquilaDbUrl: string | undefined;
+
+        beforeEach(() => {
+            originalPostgresUrl = process.env.POSTGRES_URL;
+            originalAquilaDbUrl = process.env.aquila_DATABASE_URL;
+            // Remove DATABASE_URL so the fallback chain is exercised
+            delete process.env.DATABASE_URL;
+        });
+
+        afterEach(() => {
+            if (originalPostgresUrl === undefined) {
+                delete process.env.POSTGRES_URL;
+            } else {
+                process.env.POSTGRES_URL = originalPostgresUrl;
+            }
+            if (originalAquilaDbUrl === undefined) {
+                delete process.env.aquila_DATABASE_URL;
+            } else {
+                process.env.aquila_DATABASE_URL = originalAquilaDbUrl;
+            }
+        });
+
+        it('injects POSTGRES_URL as DATABASE_URL when DATABASE_URL is unset', async () => {
+            process.env.POSTGRES_URL = 'postgres://remote-host:5432/db';
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            expect(spawnSyncMock).toHaveBeenCalledWith(
+                'bunx',
+                expect.any(Array),
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgres://remote-host:5432/db',
+                    }),
+                })
+            );
+        });
+
+        it('injects aquila_DATABASE_URL when DATABASE_URL and POSTGRES_URL are unset', async () => {
+            delete process.env.POSTGRES_URL;
+            process.env.aquila_DATABASE_URL = 'postgres://aquila-host:5432/db';
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            expect(spawnSyncMock).toHaveBeenCalledWith(
+                'bunx',
+                expect.any(Array),
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgres://aquila-host:5432/db',
+                    }),
+                })
             );
         });
     });

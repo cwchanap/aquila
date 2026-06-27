@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
+import { resolveSsl } from './connection';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,19 +32,9 @@ async function runMigration() {
         throw new Error('DATABASE_URL environment variable is not set');
     }
 
-    console.log('🔗 Connecting to CockroachDB...');
+    console.log('🔗 Connecting to Postgres...');
 
-    let ssl: boolean | { ca: Buffer } = false;
-    if (process.env.NODE_ENV === 'production') {
-        const caPath = process.env.DB_CA_PATH;
-        if (!caPath) {
-            throw new Error(
-                'DB_CA_PATH environment variable must be set in production to enable certificate verification.'
-            );
-        }
-
-        ssl = { ca: readFileSync(caPath) };
-    }
+    const ssl = resolveSsl(connectionString);
 
     const pool = new Pool({
         connectionString,

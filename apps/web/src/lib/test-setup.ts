@@ -55,16 +55,16 @@ vi.setSystemTime(mockNow);
 // Mock environment variables
 process.env.BETTER_AUTH_URL = 'http://localhost:5090';
 process.env.BETTER_AUTH_SECRET = 'test-secret';
-process.env.TURSO_DATABASE_URL = 'http://127.0.0.1:8080';
-process.env.TURSO_AUTH_TOKEN = 'test-token';
 
-// Mock bcryptjs
-vi.mock('bcryptjs', () => ({
-    default: {
-        hash: vi.fn().mockResolvedValue('hashed-password'),
-        compare: vi.fn().mockResolvedValue(true),
-    },
-}));
+// Scrub OAuth credentials so the static `import { auth } from '../auth'`
+// (evaluated at module-load in auth.test.ts) reliably sees the no-creds
+// branch of the socialProviders IIFE. Tests that need credentials present
+// (e.g. auth.test.ts "configures the Google social provider") stub them
+// explicitly via vi.stubEnv + vi.resetModules + dynamic import, so they
+// are independent of this scrub. This prevents CI breakage when a test
+// job inherits GOOGLE_CLIENT_ID/SECRET from the surrounding environment.
+delete process.env.GOOGLE_CLIENT_ID;
+delete process.env.GOOGLE_CLIENT_SECRET;
 
 // Mock better-auth
 vi.mock('better-auth', () => ({

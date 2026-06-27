@@ -1,12 +1,35 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './drizzle/db.js';
+import {
+    resolveBaseURL,
+    resolveTrustedOrigins,
+    type AuthConfigEnv,
+} from './auth-config.js';
+
+const isProduction = Boolean(
+    import.meta.env?.PROD || process.env.NODE_ENV === 'production'
+);
+
+// Both the base URL and the trusted origins are deduced from the request
+// hostname on Vercel (VERCEL_* system vars), so neither BETTER_AUTH_URL nor
+// TRUSTED_ORIGINS needs to be set by hand in production. Explicit values still
+// win as overrides for local dev and non-Vercel hosts.
+const authConfigEnv: AuthConfigEnv = {
+    BETTER_AUTH_URL:
+        import.meta.env?.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL,
+    TRUSTED_ORIGINS:
+        import.meta.env?.TRUSTED_ORIGINS || process.env.TRUSTED_ORIGINS,
+    VERCEL_PROJECT_PRODUCTION_URL:
+        import.meta.env?.VERCEL_PROJECT_PRODUCTION_URL ||
+        process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    VERCEL_URL: import.meta.env?.VERCEL_URL || process.env.VERCEL_URL,
+    VERCEL_BRANCH_URL:
+        import.meta.env?.VERCEL_BRANCH_URL || process.env.VERCEL_BRANCH_URL,
+};
 
 export const auth = betterAuth({
-    baseURL:
-        import.meta.env?.BETTER_AUTH_URL ||
-        process.env.BETTER_AUTH_URL ||
-        'http://localhost:5090',
+    baseURL: resolveBaseURL(authConfigEnv, isProduction),
     database: drizzleAdapter(db, {
         provider: 'pg',
     }),
@@ -24,26 +47,7 @@ export const auth = betterAuth({
     verification: {
         modelName: 'verificationTokens',
     },
-    emailAndPassword: {
-        enabled: true,
-        requireEmailVerification: false,
-    },
-    trustedOrigins: (() => {
-        const raw =
-            import.meta.env?.TRUSTED_ORIGINS || process.env.TRUSTED_ORIGINS;
-        if (raw) {
-            return raw
-                .split(',')
-                .map((o: string) => o.trim())
-                .filter(Boolean);
-        }
-        if (import.meta.env?.PROD || process.env.NODE_ENV === 'production') {
-            throw new Error(
-                'TRUSTED_ORIGINS must be set in production environment'
-            );
-        }
-        return ['http://localhost:5090'];
-    })(),
+    trustedOrigins: resolveTrustedOrigins(authConfigEnv, isProduction),
     secret: (() => {
         const secret = process.env.BETTER_AUTH_SECRET;
         if (!secret && process.env.NODE_ENV === 'production') {
@@ -52,6 +56,40 @@ export const auth = betterAuth({
             );
         }
         return secret || 'development-only-secret-do-not-use-in-prod';
+    })(),
+    socialProviders: (() => {
+        const clientId =
+            import.meta.env?.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+        const clientSecret =
+            import.meta.env?.GOOGLE_CLIENT_SECRET ||
+            process.env.GOOGLE_CLIENT_SECRET;
+
+        if (isProduction && !clientId) {
+            throw new Error(
+                'GOOGLE_CLIENT_ID must be set in production environment'
+            );
+        }
+        if (isProduction && !clientSecret) {
+            throw new Error(
+                'GOOGLE_CLIENT_SECRET must be set in production environment'
+            );
+        }
+
+        // Only register the google provider when both credentials are
+        // present. In dev/preview without credentials, omitting the provider
+        // prevents a broken sign-in path (better-auth returns a clear
+        // "provider not configured" error instead of redirecting to Google
+        // with empty values).
+        if (!clientId || !clientSecret) {
+            return {};
+        }
+
+        return {
+            google: {
+                clientId,
+                clientSecret,
+            },
+        };
     })(),
 });
 

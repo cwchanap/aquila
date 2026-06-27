@@ -1,4 +1,4 @@
-import { eq, and, asc, desc, isNull, or } from 'drizzle-orm';
+import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { BaseRepository } from './base-repository';
 import {
     users,
@@ -443,44 +443,4 @@ export class AccountRepository extends BaseRepository<
 > {
     protected table = accounts;
     protected idColumn = accounts.id;
-
-    async findCredentialAccount(userId: string): Promise<Account | null> {
-        const [account] = await this.db
-            .select()
-            .from(accounts)
-            .where(
-                and(
-                    eq(accounts.userId, userId),
-                    // Support both Better Auth ('credential') and legacy Simple Auth ('email') provider IDs
-                    or(
-                        eq(accounts.providerId, 'credential'),
-                        eq(accounts.providerId, 'email')
-                    )
-                )
-            )
-            .limit(1);
-        return account ?? null;
-    }
-
-    async updatePassword(
-        userId: string,
-        hashedPassword: string
-    ): Promise<void> {
-        await this.db
-            .update(accounts)
-            .set({
-                password: hashedPassword,
-                updatedAt: new Date(),
-            })
-            .where(
-                and(
-                    eq(accounts.userId, userId),
-                    // Support both Better Auth ('credential') and legacy Simple Auth ('email') provider IDs
-                    or(
-                        eq(accounts.providerId, 'credential'),
-                        eq(accounts.providerId, 'email')
-                    )
-                )
-            );
-    }
 }

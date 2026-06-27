@@ -21,6 +21,9 @@ describe('Database module (db.ts)', () => {
         // Save env vars that db.ts reads
         for (const key of [
             'DATABASE_URL',
+            'POSTGRES_URL',
+            'aquila_DATABASE_URL',
+            'aquila_POSTGRES_URL',
             'NODE_ENV',
             'DB_ALLOW_SELF_SIGNED',
             'DB_POOL_MAX',
@@ -232,5 +235,50 @@ describe('Database module (db.ts)', () => {
         const selectProp = (db as unknown as Record<string, unknown>).select;
 
         expect(selectProp).toBe(mockSelectFn);
+    });
+
+    it('falls back to POSTGRES_URL when DATABASE_URL is unset', async () => {
+        delete process.env.DATABASE_URL;
+        process.env.POSTGRES_URL = 'postgres://localhost/fallbackdb';
+        process.env.NODE_ENV = 'test';
+
+        const { db } = await import('../db');
+        void (db as unknown as Record<string, unknown>).select;
+
+        expect(mockPoolConstructor).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connectionString: 'postgres://localhost/fallbackdb',
+            })
+        );
+    });
+
+    it('falls back to aquila_DATABASE_URL when DATABASE_URL and POSTGRES_URL are unset', async () => {
+        delete process.env.DATABASE_URL;
+        delete process.env.POSTGRES_URL;
+        process.env.aquila_DATABASE_URL = 'postgres://localhost/prismadb';
+        process.env.NODE_ENV = 'test';
+
+        const { db } = await import('../db');
+        void (db as unknown as Record<string, unknown>).select;
+
+        expect(mockPoolConstructor).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connectionString: 'postgres://localhost/prismadb',
+            })
+        );
+    });
+
+    it('enables verifying SSL for a remote host outside production', async () => {
+        process.env.DATABASE_URL =
+            'postgres://u:p@db.prisma.io:5432/postgres?sslmode=require';
+        process.env.NODE_ENV = 'test';
+        delete process.env.DB_ALLOW_SELF_SIGNED;
+
+        const { db } = await import('../db');
+        void (db as unknown as Record<string, unknown>).select;
+
+        expect(mockPoolConstructor).toHaveBeenCalledWith(
+            expect.objectContaining({ ssl: { rejectUnauthorized: true } })
+        );
     });
 });

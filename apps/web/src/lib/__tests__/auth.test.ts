@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { betterAuth } from 'better-auth';
 import { auth } from '../auth';
 import type { Session, User } from '../auth';
 
@@ -76,6 +77,44 @@ describe('Auth Configuration', () => {
             expect(userType).toBeDefined();
             expect(userType.id).toBe('user-123');
             expect(userType.email).toBe('test@example.com');
+        });
+    });
+
+    describe('provider configuration', () => {
+        it('omits the Google social provider when credentials are not set', () => {
+            const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
+                | Record<string, unknown>
+                | undefined;
+            expect(config).toBeDefined();
+            const social = config?.socialProviders as
+                | { google?: unknown }
+                | undefined;
+            // Without GOOGLE_CLIENT_ID/SECRET (test env), the provider is
+            // omitted to avoid registering a broken sign-in path.
+            expect(social?.google).toBeUndefined();
+            expect(config?.emailAndPassword).toBeUndefined();
+        });
+
+        it('configures the Google social provider when credentials are present', async () => {
+            vi.resetModules();
+            vi.mocked(betterAuth).mockClear();
+            vi.stubEnv('GOOGLE_CLIENT_ID', 'test-client-id');
+            vi.stubEnv('GOOGLE_CLIENT_SECRET', 'test-client-secret');
+
+            await import('../auth');
+
+            const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
+                | Record<string, unknown>
+                | undefined;
+            expect(config).toBeDefined();
+            const social = config?.socialProviders as
+                | { google?: { clientId?: string; clientSecret?: string } }
+                | undefined;
+            expect(social?.google).toBeDefined();
+            expect(social?.google?.clientId).toBe('test-client-id');
+            expect(social?.google?.clientSecret).toBe('test-client-secret');
+
+            vi.unstubAllEnvs();
         });
     });
 });

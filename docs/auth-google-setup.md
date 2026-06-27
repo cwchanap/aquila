@@ -2,16 +2,27 @@
 
 Authentication is Google-only via Better Auth's `socialProviders.google`.
 
-## Required environment variables
+## Environment variables
+
+In production, three secrets are required. The URL/origin config is deduced
+from the request hostname on Vercel (via `VERCEL_PROJECT_PRODUCTION_URL`,
+`VERCEL_URL`, `VERCEL_BRANCH_URL`), so you normally do not set it by hand.
+
+### Required (production)
 
 | Variable | Purpose |
 | --- | --- |
 | `GOOGLE_CLIENT_ID` | Google OAuth 2.0 Web client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth 2.0 Web client secret |
-| `BETTER_AUTH_URL` | Base URL Better Auth runs under (e.g. `http://localhost:5090`) |
-| `PUBLIC_AUTH_URL` | SSR/build fallback base URL for the auth client (browser uses `window.location.origin`) |
-| `BETTER_AUTH_SECRET` | Session encryption secret (required in production) |
-| `TRUSTED_ORIGINS` | Comma-separated allowed origins (required in production) |
+| `BETTER_AUTH_SECRET` | Session-cookie signing key (generate with `openssl rand -base64 32`) |
+
+### Optional (auto-derived on Vercel; set only to override)
+
+| Variable | Purpose |
+| --- | --- |
+| `BETTER_AUTH_URL` | Base URL Better Auth runs under. On Vercel, deduced from `VERCEL_PROJECT_PRODUCTION_URL`. Defaults to `http://localhost:5090` locally. Set only for non-Vercel hosts or to pin a custom value. |
+| `TRUSTED_ORIGINS` | Comma-separated allowed origins. On Vercel, deduced from the `VERCEL_*` system vars. Set only to override. |
+| `PUBLIC_AUTH_URL` | SSR/build fallback base URL for the auth client. The browser client uses `window.location.origin` (same-origin), so this only matters for non-browser code paths. Defaults to `http://localhost:5090`. |
 
 ## Google Cloud Console steps
 

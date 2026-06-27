@@ -93,7 +93,6 @@ vi.mock('better-auth', () => ({
 vi.mock('better-auth/client', () => ({
     createAuthClient: vi.fn(() => ({
         signIn: vi.fn(),
-        signUp: vi.fn(),
         signOut: vi.fn(),
         useSession: vi.fn(),
     })),

@@ -59,19 +59,9 @@
       "prompt": "anime visual-novel portrait, 15-year-old Japanese boy, slightly messy medium-length black hair, youthful round face, middle school uniform (dark blazer), quiet observant expression, large dark eyes, soft natural light, muted palette, upper-body shot, clean background"
     },
     {
-      "key": "asakura_mio/angry",
-      "path": "the_seventh_mirror/characters/asakura_mio/angry.png",
-      "prompt": "anime visual-novel portrait, 19-year-old woman, jaw set firm, eyes sharp with cold fury, brows lowered, leaning slightly forward, dark jacket, tense shoulders, harsh directional light, upper-body shot"
-    },
-    {
       "key": "kusakube_satoru/base",
       "path": "the_seventh_mirror/characters/kusakube_satoru/base.png",
       "prompt": "anime visual-novel portrait, 45-year-old Japanese man, short greying hair, tired weathered face, stubble, dark suit with loosened tie, sharp watchful eyes beneath heavy lids, guarded neutral expression, dim office lighting, muted cool palette, upper-body shot, clean background"
-    },
-    {
-      "key": "kusakube_satoru/sad",
-      "path": "the_seventh_mirror/characters/kusakube_satoru/sad.png",
-      "prompt": "anime visual-novel portrait, 45-year-old man, eyes downcast, heavy sigh visible in posture, shoulders dropped, dark suit, dim lighting, upper-body shot"
     },
     {
       "key": "shiraishi_kotone/base",

@@ -88,10 +88,12 @@ packages/
 │   └── src/
 │       ├── scenes/     # BaseScene, StoryScene
 │       └── types.ts    # Game type definitions
-├── dialogue/           # @aquila/dialogue - Story content
+├── stories/            # @aquila/stories - Story content (raw markdown → compiled)
+│   ├── raw/            # Hand-authored markdown acts + compiler.config.ts
 │   └── src/
-│       ├── characters/ # Character definitions
-│       ├── stories/    # Localized dialogue files
+│       ├── compiler/   # Markdown → dialogue/flow compiler
+│       ├── generated/  # Compiled output (do not edit; run bun compile:stories)
+│       ├── stories/    # Generated loaders + index.ts registry
 │       └── translations/ # UI text (en.json, zh.json)
 ├── e2e/                # Playwright E2E test suite
 │   └── tests/          # E2E specs, setup, utilities
@@ -148,17 +150,17 @@ packages/
 ### Shared Packages
 
 - **Game Engine**: [Phaser](https://phaser.io/) 3.x (`@aquila/game`)
-- **Content**: TypeScript dialogue system (`@aquila/dialogue`)
+- **Content**: Story content package (`@aquila/stories`, compile-from-raw)
 - **Build Tool**: [Turborepo](https://turbo.build/repo)
 
 ## Development Workflow
 
 ### Adding a New Story
 
-1. Create dialogue files in `packages/dialogue/src/stories/[storyName]/`
-2. Add locale-specific content (`en.ts`, `zh.ts`)
-3. Export via story loader function
-4. Register in `packages/dialogue/src/stories/index.ts`
+1. Author story as markdown acts in `packages/stories/raw/[storyName]/` with a `compiler.config.ts`
+2. Compile with `bun compile:stories` (generates `packages/stories/src/generated/[storyName]/` and loaders)
+3. Register the loader in `packages/stories/src/stories/index.ts`
+4. Add the story id to the `StoryId` enum in `apps/web/src/lib/story-types.ts`
 
 ### Database Schema Changes
 
@@ -227,7 +229,6 @@ This project uses:
 
 - [CLAUDE.md](./CLAUDE.md) - Detailed architecture and development patterns
 - [E2E Tests](./packages/e2e/tests/README.md) - Playwright E2E testing guide
-- [Dialogue Package](./packages/dialogue/README.md) - Content structure
 - [Desktop App](./apps/desktop/README.md) - Desktop-specific setup
 
 ## License

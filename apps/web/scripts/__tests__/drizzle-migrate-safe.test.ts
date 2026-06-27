@@ -150,10 +150,12 @@ describe('drizzle-migrate-safe', () => {
     describe('connection-string fallback', () => {
         let originalPostgresUrl: string | undefined;
         let originalAquilaDbUrl: string | undefined;
+        let originalAquilaPostgresUrl: string | undefined;
 
         beforeEach(() => {
             originalPostgresUrl = process.env.POSTGRES_URL;
             originalAquilaDbUrl = process.env.aquila_DATABASE_URL;
+            originalAquilaPostgresUrl = process.env.aquila_POSTGRES_URL;
             // Remove DATABASE_URL so the fallback chain is exercised
             delete process.env.DATABASE_URL;
         });
@@ -168,6 +170,11 @@ describe('drizzle-migrate-safe', () => {
                 delete process.env.aquila_DATABASE_URL;
             } else {
                 process.env.aquila_DATABASE_URL = originalAquilaDbUrl;
+            }
+            if (originalAquilaPostgresUrl === undefined) {
+                delete process.env.aquila_POSTGRES_URL;
+            } else {
+                process.env.aquila_POSTGRES_URL = originalAquilaPostgresUrl;
             }
         });
 
@@ -202,6 +209,24 @@ describe('drizzle-migrate-safe', () => {
                     }),
                 })
             );
+        });
+
+        it('passes process.env unchanged when no connection string env var is set', async () => {
+            delete process.env.DATABASE_URL;
+            delete process.env.POSTGRES_URL;
+            delete process.env.aquila_DATABASE_URL;
+            delete process.env.aquila_POSTGRES_URL;
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            // resolvedUrl is undefined → childEnv === process.env (no
+            // DATABASE_URL injection). Verify the spawn env is exactly
+            // process.env and that no DATABASE_URL was injected.
+            const callArgs = spawnSyncMock.mock.calls[0][2] as {
+                env: Record<string, string | undefined>;
+            };
+            expect(callArgs.env).toBe(process.env);
+            expect(callArgs.env.DATABASE_URL).toBeUndefined();
         });
     });
 });

@@ -89,4 +89,15 @@ describe('resolveSsl', () => {
             } as NodeJS.ProcessEnv)
         ).toEqual({ rejectUnauthorized: false });
     });
+
+    it('returns false when the connection string is not a parseable URL', () => {
+        // new URL() throws on a bare/non-URL string; isRemoteHost's catch
+        // treats it as non-remote, so with no other SSL trigger present SSL
+        // stays off.
+        expect(
+            resolveSsl('not-a-valid-url', {
+                NODE_ENV: 'test',
+            } as NodeJS.ProcessEnv)
+        ).toBe(false);
+    });
 });

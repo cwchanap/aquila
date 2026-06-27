@@ -1,0 +1,97 @@
+{
+  "storyId": "the_seventh_mirror",
+  "backgrounds": [
+    {
+      "key": "chapter_1/ch1_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act1_s0.png",
+      "prompt": "small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin curtains, unmade single bed, glowing phone screen on futon edge, cheap electronic wall clock, sparse furnishings, muted cold palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_1/ch1_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act1_s1.png",
+      "prompt": "small Japanese teenager's bedroom, morning light through curtains, unmade bed with school uniform draped on chair, game controller on desk, cheap earbuds, unopened snack bag, half-finished math homework, spare glasses case on desk corner, sneakers in corner, school bag, lived-in but empty, muted warm-cool palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_1/ch1_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png",
+      "prompt": "small Japanese teenager's bedroom, morning light through curtains, unmade bed with school uniform draped on chair, game controller on desk, cheap earbuds, unopened snack bag, half-finished math homework, spare glasses case on desk corner, sneakers in corner, school bag, lived-in but empty, muted warm-cool palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_1/ch1_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png",
+      "prompt": "small Tokyo apartment bedroom, desk by window, morning light, cheap small plastic mirror on desk surface among notebooks and phone, sparse furnishings, muted cold palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_1/ch1_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act3_s0.png",
+      "prompt": "Japanese police station reception counter, morning, fluorescent lighting, institutional form racks, plastic chairs, muted cool palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_1/ch1_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act4_s0.png",
+      "prompt": "small cafe near university campus at early afternoon, warm soft light through large windows, wooden tables, whiteboard with colorful sticky notes on one wall, laptop open on table, half-eaten bento boxes and a teapot, cozy cluttered investigative-media workspace vibe, muted warm palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_1/ch1_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act5_s0.png",
+      "prompt": "bright clinical waiting area of a sleep research clinic, automatic glass doors, clean white walls, free sleep hygiene posters, rows of plastic chairs, a parent and child filling out questionnaires at a low table, reception counter with polite smiling staff, fluorescent lighting, pale blue accents, calm institutional atmosphere, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_1/ch1_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act6_s0.png",
+      "prompt": "Tokyo street at evening dusk, convenience store exterior with warm fluorescent glow spilling onto sidewalk, vending machine light, sparse pedestrians, sky deep indigo fading to black, cold blue ambient light, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_1/ch1_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act7_s0.png",
+      "prompt": "Wangan New Transit elevated platform at night, cold blue lighting, glass partition walls reflecting Tokyo Bay lights in distance, sparse waiting passengers, electronic departure board glowing, automated driverless train approaching through elevated track, moody cinematic visual-novel background art, wide establishing shot"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "asakura_mio/base",
+      "path": "the_seventh_mirror/characters/asakura_mio/base.png",
+      "prompt": "anime visual-novel portrait, 19-year-old Japanese woman, shoulder-length dark brown hair with loose strands framing face, sharp analytical eyes, casual street clothes (dark jacket over plain top), faint dark circles from poor sleep, guarded but alert expression, soft overcast Tokyo light, muted cool grey-blue palette, upper-body shot, clean background"
+    },
+    {
+      "key": "asakura_yuma/base",
+      "path": "the_seventh_mirror/characters/asakura_yuma/base.png",
+      "prompt": "anime visual-novel portrait, 15-year-old Japanese boy, slightly messy medium-length black hair, youthful round face, middle school uniform (dark blazer), quiet observant expression, large dark eyes, soft natural light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "asakura_mio/angry",
+      "path": "the_seventh_mirror/characters/asakura_mio/angry.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, jaw set firm, eyes sharp with cold fury, brows lowered, leaning slightly forward, dark jacket, tense shoulders, harsh directional light, upper-body shot"
+    },
+    {
+      "key": "kusakube_satoru/base",
+      "path": "the_seventh_mirror/characters/kusakube_satoru/base.png",
+      "prompt": "anime visual-novel portrait, 45-year-old Japanese man, short greying hair, tired weathered face, stubble, dark suit with loosened tie, sharp watchful eyes beneath heavy lids, guarded neutral expression, dim office lighting, muted cool palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kusakube_satoru/sad",
+      "path": "the_seventh_mirror/characters/kusakube_satoru/sad.png",
+      "prompt": "anime visual-novel portrait, 45-year-old man, eyes downcast, heavy sigh visible in posture, shoulders dropped, dark suit, dim lighting, upper-body shot"
+    },
+    {
+      "key": "shiraishi_kotone/base",
+      "path": "the_seventh_mirror/characters/shiraishi_kotone/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese woman, long straight black hair, gentle warm smile that doesn't quite reach the eyes, casual cozy clothes (knit cardigan over blouse), soft warm lighting, slightly muted warm palette, upper-body shot, clean background"
+    },
+    {
+      "key": "asakura_mio/exhausted",
+      "path": "the_seventh_mirror/characters/asakura_mio/exhausted.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, heavy-lidded eyes with deep dark circles, pale skin, hair disheveled, hand partially covering face, dark jacket wrinkled, dim cold lighting, upper-body shot"
+    },
+    {
+      "key": "asakura_mio/sad",
+      "path": "the_seventh_mirror/characters/asakura_mio/sad.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, downcast eyes, lips pressed thin, shoulders dropped, hair falling forward to partially hide face, dark jacket, soft desaturated lighting, upper-body shot"
+    },
+    {
+      "key": "asakura_mio/determined",
+      "path": "the_seventh_mirror/characters/asakura_mio/determined.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, jaw clenched, eyes bright with resolve, chin slightly raised, dark jacket, strong directional light cutting across face, upper-body shot"
+    }
+  ]
+}

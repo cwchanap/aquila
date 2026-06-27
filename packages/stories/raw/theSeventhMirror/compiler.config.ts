@@ -20,6 +20,11 @@ const config: StoryCompilerConfig = {
             pattern: /^(\u5922\u8A71|\u5922\u4E2D\u7684\u8072\u97F3)$/,
             id: 'dream_voice',
         },
+        {
+            pattern:
+                /^(\u6AC3\u53F0\u4EBA\u54E1|\u8077\u54E1|\u7814\u7A76\u4EBA\u54E1|\u6AC3\u53F0)$/,
+            id: 'clinic_staff',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

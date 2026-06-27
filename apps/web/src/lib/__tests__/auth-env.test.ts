@@ -13,6 +13,7 @@ afterEach(() => {
     delete process.env.TRUSTED_ORIGINS;
     delete process.env.GOOGLE_CLIENT_ID;
     delete process.env.GOOGLE_CLIENT_SECRET;
+    delete process.env.BETTER_AUTH_URL;
 });
 
 describe('auth production environment branches', () => {
@@ -22,6 +23,7 @@ describe('auth production environment branches', () => {
         vi.stubEnv('TRUSTED_ORIGINS', '');
         process.env.NODE_ENV = 'production';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.BETTER_AUTH_URL = 'https://example.com';
 
         vi.doMock('better-auth', () => ({
             betterAuth: vi.fn(config => {
@@ -44,6 +46,7 @@ describe('auth production environment branches', () => {
         // Clear BETTER_AUTH_SECRET and set production mode
         delete process.env.BETTER_AUTH_SECRET;
         process.env.NODE_ENV = 'production';
+        process.env.BETTER_AUTH_URL = 'https://example.com';
 
         vi.doMock('better-auth', () => ({
             betterAuth: vi.fn(config => {
@@ -63,6 +66,7 @@ describe('auth production environment branches', () => {
     it('throws when GOOGLE_CLIENT_ID is not set in production', async () => {
         process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.BETTER_AUTH_URL = 'https://example.com';
         delete process.env.GOOGLE_CLIENT_ID;
         vi.stubEnv('GOOGLE_CLIENT_ID', '');
         process.env.NODE_ENV = 'production';
@@ -80,6 +84,7 @@ describe('auth production environment branches', () => {
     it('throws when GOOGLE_CLIENT_SECRET is not set in production', async () => {
         process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.BETTER_AUTH_URL = 'https://example.com';
         process.env.GOOGLE_CLIENT_ID = 'test-google-id';
         delete process.env.GOOGLE_CLIENT_SECRET;
         vi.stubEnv('GOOGLE_CLIENT_SECRET', '');
@@ -92,6 +97,55 @@ describe('auth production environment branches', () => {
 
         await expect(import('../auth')).rejects.toThrow(
             'GOOGLE_CLIENT_SECRET must be set in production environment'
+        );
+    });
+
+    it('throws when BETTER_AUTH_URL is not set in production', async () => {
+        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        delete process.env.BETTER_AUTH_URL;
+        vi.stubEnv('BETTER_AUTH_URL', '');
+        process.env.NODE_ENV = 'production';
+
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn(() => ({ $Infer: { Session: { user: {} } } })),
+        }));
+        vi.resetModules();
+
+        await expect(import('../auth')).rejects.toThrow(
+            'BETTER_AUTH_URL must be set in production environment'
+        );
+    });
+
+    it('throws when BETTER_AUTH_URL is localhost in production', async () => {
+        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.BETTER_AUTH_URL = 'http://localhost:5090';
+        process.env.NODE_ENV = 'production';
+
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn(() => ({ $Infer: { Session: { user: {} } } })),
+        }));
+        vi.resetModules();
+
+        await expect(import('../auth')).rejects.toThrow(
+            'BETTER_AUTH_URL must be a non-local URL in production environment'
+        );
+    });
+
+    it('throws when BETTER_AUTH_URL is not a valid URL in production', async () => {
+        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.BETTER_AUTH_URL = 'not-a-url';
+        process.env.NODE_ENV = 'production';
+
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn(() => ({ $Infer: { Session: { user: {} } } })),
+        }));
+        vi.resetModules();
+
+        await expect(import('../auth')).rejects.toThrow(
+            'BETTER_AUTH_URL must be a valid URL in production environment'
         );
     });
 });

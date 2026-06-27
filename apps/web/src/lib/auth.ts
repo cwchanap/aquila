@@ -3,10 +3,42 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './drizzle/db.js';
 
 export const auth = betterAuth({
-    baseURL:
-        import.meta.env?.BETTER_AUTH_URL ||
-        process.env.BETTER_AUTH_URL ||
-        'http://localhost:5090',
+    baseURL: (() => {
+        const baseURL =
+            import.meta.env?.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL;
+        const isProduction =
+            import.meta.env?.PROD || process.env.NODE_ENV === 'production';
+        // In production, Better Auth builds OAuth redirect URIs from baseURL.
+        // Without BETTER_AUTH_URL the localhost fallback produces a redirect
+        // URI mismatch at the provider (e.g. Google). Email/password login was
+        // removed, so Google is the only sign-in path — require an explicit,
+        // non-local baseURL in production.
+        if (isProduction) {
+            if (!baseURL) {
+                throw new Error(
+                    'BETTER_AUTH_URL must be set in production environment'
+                );
+            }
+            let host = '';
+            try {
+                host = new URL(baseURL).hostname.toLowerCase();
+            } catch {
+                throw new Error(
+                    'BETTER_AUTH_URL must be a valid URL in production environment'
+                );
+            }
+            if (
+                host === 'localhost' ||
+                host === '127.0.0.1' ||
+                host === '::1'
+            ) {
+                throw new Error(
+                    'BETTER_AUTH_URL must be a non-local URL in production environment'
+                );
+            }
+        }
+        return baseURL || 'http://localhost:5090';
+    })(),
     database: drizzleAdapter(db, {
         provider: 'pg',
     }),

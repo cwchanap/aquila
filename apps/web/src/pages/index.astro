@@ -13,7 +13,7 @@ let user = null;
 try {
   user = await getSessionUser(Astro.request);
 } catch (error) {
-  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
+  console.error('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
 }
 ---
 

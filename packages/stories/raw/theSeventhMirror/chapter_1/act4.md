@@ -4,15 +4,15 @@
 small cafe near university campus at early afternoon, warm soft light through large windows, wooden tables, whiteboard with colorful sticky notes on one wall, laptop open on table, half-eaten bento boxes and a teapot, cozy cluttered investigative-media workspace vibe, muted warm palette, moody cinematic visual-novel background art, medium shot
 ```
 
-**旁白**：咖啡店在大學西門外那條騎樓的盡頭，門面不大，招牌上的字掉了一半漆。二樓是調查媒體借來堆資料的小辦公室，一樓借給學生當自習空間，點一杯飲料就能坐一整個下午。
+**旁白**：咖啡店在大學西門外那條商店街的盡頭，門面不大，招牌上的字掉了一半漆。二樓是調查媒體借來堆資料的小辦公室，一樓借給學生當自習空間，點一杯飲料就能坐一整個下午。
 
-**旁白**：澪推門進去的時候，琴音已經坐在靠窗的位子。桌上擺了兩個便當盒、一壺熱茶，和一台開著筆記軟體的筆電。她身後那面白板貼滿了彩色便利貼，是上週某篇查核報告殘留下來的。
+**旁白**：澪推門進去的時候，琴音已經坐在靠窗的位子。桌上擺了兩個便當盒、一壺熱茶，和一台開著文件的筆電。她身後那面白板貼滿了彩色便利貼，是上週某篇查核報告殘留下來的。
 
 **白石琴音**：坐。
 
 **旁白**：琴音沒有多問。她把其中一個便當推到澪面前，掀開蓋子——炸雞、玉子燒、白飯，還有一小格醃蘿蔔。
 
-**白石琴音**：妳上次好好吃飯是什麼時候？
+**白石琴音**：妳上次好好吃一頓是什麼時候？
 
 **朝倉澪**：⋯⋯昨天有吃。
 
@@ -30,7 +30,7 @@ small cafe near university campus at early afternoon, warm soft light through la
 
 **旁白**：澪一邊吃，一邊把悠真失蹤前後的時間點報出來。琴音的手指在鍵盤上很快地敲，把每個節點排進模板裡，字距整齊，像在幫一份還沒寫完的報告排骨架。
 
-**朝倉澪**：兩週前。悠真透過學校收到「關東青少年睡眠支援計畫」的通知。
+**朝倉澪**：兩週前。悠真收到學校轉發的「關東青少年睡眠支援計畫」通知。
 
 **旁白**：琴音的手指停了半拍。
 
@@ -112,7 +112,7 @@ small cafe near university campus at early afternoon, warm soft light through la
 
 **朝倉澪**：妳今天沒喝那個？
 
-**白石琴音**：胃不太舒服。改喝茶了。
+**白石琴音**：胃有點不舒服，就改喝茶了。
 
 **旁白**：琴音搖了搖手裡的綠茶杯，笑了一下，像在解釋一件微不足道的小事。
 
@@ -148,7 +148,7 @@ small cafe near university campus at early afternoon, warm soft light through la
 
 **旁白**：她的語氣很輕，像在哄一個不肯睡覺的小孩。
 
-**白石琴音**：該查的妳都查了。研究中心那邊，妳打算什麼時候去？
+**白石琴音**：該查的妳都查了。那研究中心，妳打算什麼時候去？
 
 **朝倉澪**：下午。
 

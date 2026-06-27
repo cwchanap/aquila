@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import MainMenu from '../MainMenu.svelte';
+import UserStatus from '../UserStatus.svelte';
 
 // Mock @aquila/stories
 vi.mock('@aquila/stories', () => ({
@@ -282,6 +283,25 @@ describe('MainMenu', () => {
                     props: { user: mockUser as any, locale: 'en' },
                 });
             }).not.toThrow();
+        });
+
+        it('forwards the user prop to UserStatus (so it renders authed without a client fetch / flash)', () => {
+            render(MainMenu, {
+                props: { user: mockUser as any, locale: 'en' },
+            });
+
+            expect(UserStatus).toHaveBeenCalled();
+            // Find the props object Svelte passed to UserStatus and assert the
+            // user was forwarded — if MainMenu drops it, UserStatus would fall
+            // back to a client-side session fetch and flash the unauthed state.
+            const forwardedProps = vi
+                .mocked(UserStatus)
+                .mock.calls.flat()
+                .find(
+                    (arg): arg is { user?: unknown } =>
+                        !!arg && typeof arg === 'object' && 'user' in arg
+                );
+            expect(forwardedProps?.user).toEqual(mockUser);
         });
     });
 });

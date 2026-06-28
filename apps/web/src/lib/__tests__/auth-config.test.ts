@@ -113,7 +113,7 @@ describe('resolveTrustedOrigins', () => {
         expect(origins).toEqual(['https://aquila-abc123.vercel.app']);
     });
 
-    it('prefers an explicit TRUSTED_ORIGINS over the derived Vercel origins', () => {
+    it('merges an explicit TRUSTED_ORIGINS with the derived Vercel origins (deduped)', () => {
         const origins = resolveTrustedOrigins(
             {
                 TRUSTED_ORIGINS: 'https://pinned.example.com',
@@ -121,7 +121,21 @@ describe('resolveTrustedOrigins', () => {
             },
             true
         );
-        expect(origins).toEqual(['https://pinned.example.com']);
+        expect(origins).toEqual([
+            'https://pinned.example.com',
+            'https://aquila-abc123.vercel.app',
+        ]);
+    });
+
+    it('dedupes when an explicit origin overlaps a Vercel-derived origin', () => {
+        const origins = resolveTrustedOrigins(
+            {
+                TRUSTED_ORIGINS: 'https://aquila.cwchanap.dev',
+                VERCEL_PROJECT_PRODUCTION_URL: 'aquila.cwchanap.dev',
+            },
+            true
+        );
+        expect(origins).toEqual(['https://aquila.cwchanap.dev']);
     });
 
     it('throws in production when neither explicit origins nor Vercel URLs are available', () => {

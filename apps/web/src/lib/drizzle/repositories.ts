@@ -1,5 +1,5 @@
 import { eq, and, asc, desc, isNull } from 'drizzle-orm';
-import { BaseRepository } from './base-repository';
+import { BaseRepository } from './base-repository.js';
 import {
     users,
     characterSetups,
@@ -21,7 +21,7 @@ import {
     type Bookmark,
     type NewBookmark,
     type Account,
-} from './schema';
+} from './schema.js';
 import { nanoid } from 'nanoid';
 
 // ============= User Repository =============

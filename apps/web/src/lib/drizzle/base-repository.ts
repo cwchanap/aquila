@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { PgTable, TableConfig, PgColumn } from 'drizzle-orm/pg-core';
-import { db, type DrizzleDB } from './db';
+import { db, type DrizzleDB } from './db.js';
 
 /**
  * Abstract base repository providing common CRUD operations.

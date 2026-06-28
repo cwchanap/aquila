@@ -4,8 +4,9 @@
  * The goal is to require as little manual configuration as possible: on Vercel
  * the request hostname is already injected as system env vars, so we can deduce
  * both the canonical base URL and the set of trusted origins without anyone
- * setting BETTER_AUTH_URL or TRUSTED_ORIGINS by hand. Explicit values remain
- * supported as overrides (local dev, non-Vercel hosts).
+ * setting BETTER_AUTH_URL or TRUSTED_ORIGINS by hand. Explicit BETTER_AUTH_URL
+ * overrides the derived URL; explicit TRUSTED_ORIGINS is merged with the derived
+ * origins (so pinning production origins does not break preview deploys).
  *
  * Vercel system env vars used (all bare hostnames, no protocol):
  *   - VERCEL_PROJECT_PRODUCTION_URL: the project's stable production domain
@@ -26,10 +27,15 @@ export interface AuthConfigEnv {
 const DEV_URL = 'http://localhost:5090';
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 
-/** Prefix a bare Vercel host (no protocol) with https://. Empty input -> undefined. */
+/**
+ * Prefix a bare Vercel host (no protocol) with https://. Empty input -> undefined.
+ * If the value already carries a scheme (defensive against future Vercel API
+ * changes), return it untouched rather than double-prefixing.
+ */
 function vercelOrigin(host: string | undefined): string | undefined {
     const trimmed = host?.trim();
-    return trimmed ? `https://${trimmed}` : undefined;
+    if (!trimmed) return undefined;
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
 /**
@@ -75,28 +81,31 @@ export function resolveBaseURL(
 
 /**
  * Resolve the list of trusted origins.
- * Priority: explicit TRUSTED_ORIGINS (comma-separated) > Vercel-derived origins
- * (production domain + per-deploy URL + branch URL) > dev fallback.
- * In production with no source available, throws.
+ *
+ * Explicit TRUSTED_ORIGINS (comma-separated) are merged with the Vercel-derived
+ * origins (production domain + per-deploy URL + branch URL) and deduped, so that
+ * pinning origins for production does not silently 403 preview deploys whose
+ * per-deploy/branch URLs differ. In production with no source available, throws.
  */
 export function resolveTrustedOrigins(
     env: AuthConfigEnv,
     isProduction: boolean
 ): string[] {
     const explicit = env.TRUSTED_ORIGINS?.trim();
-    if (explicit) {
-        return explicit
-            .split(',')
-            .map(o => o.trim())
-            .filter(Boolean);
-    }
+    const explicitList = explicit
+        ? explicit
+              .split(',')
+              .map(o => o.trim())
+              .filter(Boolean)
+        : [];
 
     const derived = [
         vercelOrigin(env.VERCEL_PROJECT_PRODUCTION_URL),
         vercelOrigin(env.VERCEL_URL),
         vercelOrigin(env.VERCEL_BRANCH_URL),
     ].filter((o): o is string => Boolean(o));
-    const unique = [...new Set(derived)];
+
+    const unique = [...new Set([...explicitList, ...derived])];
 
     if (unique.length > 0) {
         return unique;

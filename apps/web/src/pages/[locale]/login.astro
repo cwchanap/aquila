@@ -11,8 +11,10 @@ const t = (key: string) => translate(locale, key);
 const clientTranslations = {
   signInError: t('login.signInError'),
 };
-// Escape `</` so the JSON payload cannot close the <script> tag early.
-// Required when using set:html to embed JSON inside a script element.
+// Sanitized exception to the "no innerHTML" rule: set:html is required to embed
+// JSON inside a <script type="application/json"> element (Astro offers no other way
+// to hydrate a JSON blob into the DOM). The OWASP-recommended `</` escape below
+// prevents </script> breakout; the browser never parses this content as HTML.
 const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g, '<\\/');
 ---
 

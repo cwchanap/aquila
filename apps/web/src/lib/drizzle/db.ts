@@ -1,7 +1,7 @@
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './schema';
-import { resolveConnectionString, resolveSsl } from './connection';
+import * as schema from './schema.js';
+import { resolveConnectionString, resolveSsl } from './connection.js';
 
 // Lazy-load db instance to avoid loading before env vars are available
 let _db: NodePgDatabase<typeof schema> | null = null;

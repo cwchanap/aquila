@@ -34,7 +34,7 @@ Wangan New Transit car 7 interior at night, white cold lighting restored but dim
 
 **旁白**：她想追問。他又開口了，這次聲音更碎，像一條被剪成幾段的錄音。
 
-**千田浩介** [scared]：別先看畫面。血比較老實。
+**千田浩介** [scared]：別先看畫面。傷口不會說謊。
 
 **旁白**：他說完這句，身體往前一沉。
 

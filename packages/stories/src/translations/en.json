@@ -16,6 +16,9 @@
     "continueWithGoogle": "Continue with Google",
     "signInError": "Sign-in failed. Please try again."
   },
+  "auth": {
+    "degradedBanner": "Sign-in is temporarily unavailable. Some features may not work correctly."
+  },
   "email": {
     "notString": "Email must be a string",
     "required": "Email is required",

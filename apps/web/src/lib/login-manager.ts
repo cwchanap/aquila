@@ -1,4 +1,6 @@
 import { signIn } from './auth-client';
+import { logger } from './logger.js';
+import { ERROR_IDS } from '../constants/errorIds.js';
 
 interface LoginTranslations {
     signInError: string;
@@ -51,6 +53,18 @@ export function initLogin(): void {
                     callbackURL: `/${locale}/`,
                 });
                 if (error) {
+                    // better-auth returned a structured error (e.g. provider
+                    // misconfigured, OAuth rejected). Surface it to the user
+                    // and log with an errorId so production sign-in failures
+                    // are visible in log aggregators (previously DEV-only).
+                    logger.error(
+                        'Google sign-in returned an error',
+                        undefined,
+                        {
+                            errorId: ERROR_IDS.AUTH_SIGNIN_FAILED,
+                            error: error.message,
+                        }
+                    );
                     showError(error.message || translations.signInError);
                     btn.disabled = false;
                 } else {
@@ -60,12 +74,16 @@ export function initLogin(): void {
                     btn.disabled = false;
                 }
             } catch (e) {
-                if (import.meta.env.DEV) {
-                    console.error(
-                        'Google sign-in failed:',
-                        e instanceof Error ? e.message : 'unknown'
-                    );
-                }
+                // Log in all environments (not just DEV) so production
+                // sign-in failures are visible. Wrap non-Error throws so the
+                // original message is preserved in the log entry.
+                logger.error(
+                    'Google sign-in failed',
+                    e instanceof Error
+                        ? e
+                        : new Error(typeof e === 'string' ? e : 'unknown'),
+                    { errorId: ERROR_IDS.AUTH_SIGNIN_FAILED }
+                );
                 showError(translations.signInError);
                 btn.disabled = false;
             }

@@ -6,11 +6,29 @@ vi.mock('../auth-client', () => ({
     signIn: Object.assign(vi.fn(), { social: vi.fn() }),
 }));
 
+// Mock the logger so tests can assert production telemetry routing without
+// relying on console.error formatting or NODE_ENV-dependent level filtering.
+vi.mock('../logger', () => ({
+    logger: {
+        error: vi.fn(),
+        warn: vi.fn(),
+        info: vi.fn(),
+        debug: vi.fn(),
+    },
+}));
+
+vi.mock('../../constants/errorIds', () => ({
+    ERROR_IDS: { AUTH_SIGNIN_FAILED: 'AUTH_002' },
+}));
+
 // Import after mock so the module sees the mocked signIn.
 import { signIn } from '../auth-client';
+import { logger } from '../logger';
+import { ERROR_IDS } from '../../constants/errorIds';
 import { initLogin } from '../login-manager';
 
 const signInSocial = vi.mocked(signIn.social);
+const loggerErrorSpy = vi.mocked(logger.error);
 
 /**
  * Build the DOM scaffold initLogin() expects:
@@ -60,18 +78,13 @@ function fireReady(): void {
 }
 
 describe('initLogin', () => {
-    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-
     beforeEach(() => {
         signInSocial.mockReset();
         signIn.mockReset();
-        consoleErrorSpy = vi
-            .spyOn(console, 'error')
-            .mockImplementation(() => undefined);
+        loggerErrorSpy.mockReset();
     });
 
     afterEach(() => {
-        consoleErrorSpy.mockRestore();
         document.body.replaceChildren();
     });
 
@@ -144,6 +157,16 @@ describe('initLogin', () => {
 
         expect(errorMessage.textContent).toBe('Google says no');
         expect(errorMessage.classList.contains('hidden')).toBe(false);
+        // Structured-error branch also routes through logger with an errorId
+        // so production sign-in failures are visible.
+        expect(loggerErrorSpy).toHaveBeenCalledWith(
+            'Google sign-in returned an error',
+            undefined,
+            {
+                errorId: ERROR_IDS.AUTH_SIGNIN_FAILED,
+                error: 'Google says no',
+            }
+        );
     });
 
     it('falls back to the embedded translation when the returned error has no message', async () => {
@@ -162,7 +185,7 @@ describe('initLogin', () => {
         expect(errorMessage.classList.contains('hidden')).toBe(false);
     });
 
-    it('logs to console.error (in DEV) and shows the fallback message when signIn.social throws', async () => {
+    it('logs via logger (in all envs) and shows the fallback message when signIn.social throws', async () => {
         const { btn, errorMessage } = setupDom({
             translations: JSON.stringify({ signInError: 'Fallback msg' }),
         });
@@ -174,15 +197,20 @@ describe('initLogin', () => {
         btn.click();
         await vi.waitFor(() => expect(btn.disabled).toBe(false));
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-            'Google sign-in failed:',
+        expect(loggerErrorSpy).toHaveBeenCalledWith(
+            'Google sign-in failed',
+            expect.any(Error),
+            { errorId: ERROR_IDS.AUTH_SIGNIN_FAILED }
+        );
+        expect(loggerErrorSpy.mock.calls[0][1]).toBeInstanceOf(Error);
+        expect((loggerErrorSpy.mock.calls[0][1] as Error).message).toBe(
             'network down'
         );
         expect(errorMessage.textContent).toBe('Fallback msg');
         expect(errorMessage.classList.contains('hidden')).toBe(false);
     });
 
-    it('logs "unknown" when the thrown value is not an Error', async () => {
+    it('wraps a non-Error throw as an Error (preserving string messages) before logging', async () => {
         const { btn } = setupDom();
         signInSocial.mockRejectedValue('string thrown');
 
@@ -192,8 +220,32 @@ describe('initLogin', () => {
         btn.click();
         await vi.waitFor(() => expect(btn.disabled).toBe(false));
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-            'Google sign-in failed:',
+        expect(loggerErrorSpy).toHaveBeenCalledWith(
+            'Google sign-in failed',
+            expect.any(Error),
+            { errorId: ERROR_IDS.AUTH_SIGNIN_FAILED }
+        );
+        expect((loggerErrorSpy.mock.calls[0][1] as Error).message).toBe(
+            'string thrown'
+        );
+    });
+
+    it('falls back to "unknown" for a non-string, non-Error throw', async () => {
+        const { btn } = setupDom();
+        signInSocial.mockRejectedValue({ weird: 'object' });
+
+        initLogin();
+        fireReady();
+
+        btn.click();
+        await vi.waitFor(() => expect(btn.disabled).toBe(false));
+
+        expect(loggerErrorSpy).toHaveBeenCalledWith(
+            'Google sign-in failed',
+            expect.any(Error),
+            { errorId: ERROR_IDS.AUTH_SIGNIN_FAILED }
+        );
+        expect((loggerErrorSpy.mock.calls[0][1] as Error).message).toBe(
             'unknown'
         );
     });

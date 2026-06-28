@@ -1,6 +1,7 @@
 ---
 import { getSessionUser } from '../../lib/auth-utils.js'
 import MainLayout from '../../layouts/main.astro'
+import AuthDegradedBanner from '../../components/AuthDegradedBanner.astro'
 import { t as translate } from '../../lib/utils';
 
 interface Props {
@@ -9,20 +10,20 @@ interface Props {
 
 const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
-let user = null;
+const sessionResult = await getSessionUser(Astro.request);
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+const authFailed = sessionResult.status === 'error';
 
-try {
-  user = await getSessionUser(Astro.request);
-} catch (err) {
-  console.error('Auth session error:', err instanceof Error ? err.message : 'Unknown error')
-}
-
-if (!user) {
+// Only redirect to login if the auth system is healthy but there's no
+// session. If auth failed to boot, show the degraded banner instead of
+// bouncing to a login page that will also fail.
+if (!authFailed && !user) {
   return Astro.redirect(`/${locale}/login`)
 }
 ---
 
 <MainLayout title={t("profile.title")}>
+  {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
   <!-- Ocean Background with animated waves -->
   <div class="min-h-screen relative overflow-hidden">
     <!-- Gradient Ocean Background -->
@@ -104,26 +105,31 @@ if (!user) {
         </div>
 
         <div class="space-y-8">
-          <!-- User Info Display -->
-          <div>
-            <h2 class="text-2xl font-bold text-slate-800 mb-6 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.userInfo")}</h2>
+          {user ? (
+            <div>
+              <h2 class="text-2xl font-bold text-slate-800 mb-6 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.userInfo")}</h2>
 
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-bold text-slate-700 mb-2 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.name")}</label>
-                <div class="px-4 py-3 bg-white/70 border-2 border-slate-300/60 rounded-2xl text-slate-800 backdrop-blur-sm shadow-lg" style="font-family: 'Exo 2', sans-serif;">
-                  {user.name || t('profile.notSet')}
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 mb-2 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.name")}</label>
+                  <div class="px-4 py-3 bg-white/70 border-2 border-slate-300/60 rounded-2xl text-slate-800 backdrop-blur-sm shadow-lg" style="font-family: 'Exo 2', sans-serif;">
+                    {user.name || t('profile.notSet')}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label class="block text-sm font-bold text-slate-700 mb-2 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.email")}</label>
-                <div class="px-4 py-3 bg-white/70 border-2 border-slate-300/60 rounded-2xl text-slate-800 backdrop-blur-sm shadow-lg" style="font-family: 'Exo 2', sans-serif;">
-                  {user.email}
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 mb-2 tracking-wide" style="font-family: 'Orbitron', monospace;">{t("profile.email")}</label>
+                  <div class="px-4 py-3 bg-white/70 border-2 border-slate-300/60 rounded-2xl text-slate-800 backdrop-blur-sm shadow-lg" style="font-family: 'Exo 2', sans-serif;">
+                    {user.email}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div class="text-center py-8 text-slate-600" style="font-family: 'Exo 2', sans-serif;">
+              {t("profile.failedToLoad")}
+            </div>
+          )}
 
           <!-- Back to Menu Button -->
           <a

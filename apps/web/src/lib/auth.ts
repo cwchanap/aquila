@@ -76,10 +76,18 @@ export const auth = betterAuth({
         }
 
         // Only register the google provider when both credentials are
-        // present. In dev/preview without credentials, omitting the provider
-        // prevents a broken sign-in path (better-auth returns a clear
-        // "provider not configured" error instead of redirecting to Google
-        // with empty values).
+        // present. In non-production (local dev) without credentials, omitting
+        // the provider prevents a broken sign-in path (better-auth returns a
+        // clear "provider not configured" error instead of redirecting to
+        // Google with empty values).
+        //
+        // Note: `isProduction` is true on Vercel preview builds too, because
+        // Vercel sets NODE_ENV=production for all builds. So a preview deploy
+        // missing GOOGLE_CLIENT_* hits the throw above at module load — it
+        // does NOT reach this fallback. The throw is caught by getSessionUser
+        // (auth-utils.ts), which logs via logger.error and returns null,
+        // rendering pages logged-out. Preview deploys therefore require the
+        // Google credentials to be present in the preview environment.
         if (!clientId || !clientSecret) {
             return {};
         }

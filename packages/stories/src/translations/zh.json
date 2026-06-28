@@ -16,6 +16,9 @@
     "continueWithGoogle": "使用 Google 繼續",
     "signInError": "登入失敗。請重試。"
   },
+  "auth": {
+    "degradedBanner": "登入功能暫時無法使用，部分功能可能無法正常運作。"
+  },
   "email": {
     "notString": "電子郵件必須為字串",
     "required": "電子郵件為必填",

@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/main.astro';
 import UserStatus from '../../../components/UserStatus.svelte';
+import AuthDegradedBanner from '../../../components/AuthDegradedBanner.astro';
 import { getSessionUser } from '../../../lib/auth-utils.js';
 import { CharacterSetupRepository } from '../../../lib/drizzle/repositories.js';
 import { isValidStoryId, StoryId } from '../../../lib/story-types.js';
@@ -24,13 +25,9 @@ if (!storyParam || !isValidStoryId(storyParam)) {
 
 const storyId = storyParam as StoryId;
 
-// Try to get session
-let user = null;
-try {
-  user = await getSessionUser(Astro.request);
-} catch (error) {
-  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
-}
+const sessionResult = await getSessionUser(Astro.request);
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+const authFailed = sessionResult.status === 'error';
 const isAuthed = Boolean(user?.id);
 
 // If authenticated, check if character setup already exists in DB
@@ -44,6 +41,7 @@ if (isAuthed && user?.id) {
 ---
 
 <MainLayout title={t("setup.title")}>
+  {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
   <!-- Ocean Background with animated waves -->
   <div id="setup-root" data-authed={isAuthed} data-story={storyId} data-locale={locale} class="min-h-screen relative overflow-hidden">
     <!-- Gradient Ocean Background -->

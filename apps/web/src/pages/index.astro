@@ -1,6 +1,7 @@
 ---
 import MainLayout from '@/layouts/main.astro';
 import MainMenu from '@/components/MainMenu.svelte';
+import AuthDegradedBanner from '@/components/AuthDegradedBanner.astro';
 import { getSessionUser } from '@/lib/auth-utils.js';
 import { t as translate } from '@/lib/utils';
 
@@ -8,16 +9,16 @@ const locale = Astro.currentLocale || 'en';
 const t = (key: string) => translate(locale, key);
 
 // Resolve the session server-side to avoid a flash of the unauthenticated
-// state before UserStatus would client-fetch the session.
-let user = null;
-try {
-  user = await getSessionUser(Astro.request);
-} catch (error) {
-  console.error('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
-}
+// state before UserStatus would client-fetch the session. getSessionUser
+// never throws — it returns a discriminated union so we can distinguish
+// "auth system failed to boot" from "no session."
+const sessionResult = await getSessionUser(Astro.request);
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+const authFailed = sessionResult.status === 'error';
 ---
 
 <MainLayout title={t('menu.title')}>
+    {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
     <MainMenu client:load locale={Astro.currentLocale ?? 'en'} user={user} />
 
     <script>

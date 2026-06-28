@@ -73,7 +73,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "座位邊緣。救護人員把千田搬起來之後，座椅上留下一灘血。那灘血的形狀不對——不是從坐姿的位置往下積的。是從靠背和坐墊的交界處、從更低的位置開始，往坐墊前方蔓延的。血痕的起點比她以為的更低。", background: Background.Chapter_3_Ch3_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他上車的時候就已經在流血了。", background: Background.Chapter_3_Ch3_Act2_S1, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這個念頭比剛才更清楚了。但她沒有時間想。擔架已經推走了。安全人員在拉封鎖帶。一個警察走過來，站在她面前。", background: Background.Chapter_3_Ch3_Act2_S1 },
-    { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "朝倉澪小姐，請跟我們到站務室。需要做一些記錄。", background: Background.Chapter_3_Ch3_Act2_S1 },
+    { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "朝倉澪小姐，請跟我們到站務室。需要做筆錄。", background: Background.Chapter_3_Ch3_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是詢問。是通知。語氣不算凶，但沒有留空間。", background: Background.Chapter_3_Ch3_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看了一眼身後的第七車。車門還開著，裡面的燈還亮著，座椅上的血痕在白光下像一幅被展開的、她看不懂的圖。", background: Background.Chapter_3_Ch3_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車門開了。她從車廂裡出來了。但她沒有覺得自己到了外面。她只是從一個系統，被移交給了另一個系統。", background: Background.Chapter_3_Ch3_Act2_S1 },

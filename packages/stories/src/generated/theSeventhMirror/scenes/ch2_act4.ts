@@ -24,7 +24,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是遞。是塞。他的手指連同那塊金屬一起壓進她的掌心，用力，像怕她反射性地縮手。", background: Background.Chapter_2_Ch2_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)冷。", background: Background.Chapter_2_Ch2_Act4_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "冰的。金屬被他的體溫捂了一路，卻還是冰的，或者說比它應該有的溫度冷太多。翹起的那片三角邊壓在她食指側面，有一點濕，一點黏，她不確定那是什麼。汗水？還是車廂清潔劑？她沒有低頭看。", background: Background.Chapter_2_Ch2_Act4_S0 },
-    { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "警局別打開。", background: Background.Chapter_2_Ch2_Act4_S0, portrait: Portrait.ChidaKosuke_Determined },
+    { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "不要在警局打開。", background: Background.Chapter_2_Ch2_Act4_S0, portrait: Portrait.ChidaKosuke_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "就這麼一句。壓在廣播聲底下，幾乎是氣音。他沒有補充裡面是什麼，沒有說為什麼警局不能開，沒有說這東西從哪裡來。他只說了這一句，然後他的手從她掌心抽回去。", background: Background.Chapter_2_Ch2_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "為了把東西塞過來，他鬆開了一直壓在外套內側的那隻手。", background: Background.Chapter_2_Ch2_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他身體往前傾了一個角度。那個角度不對。不是刻意靠近，是撐不住，像一張桌子的腳斷了一根，重心突然往那邊倒。", background: Background.Chapter_2_Ch2_Act4_S0 },

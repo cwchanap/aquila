@@ -25,7 +25,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他把第二句也說了出來，聲音更低。" },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "那封「想冷靜幾天」——不是他打的。", portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂裡的白色冷光沒有變。空調聲沒有變。" },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "東京灣的燈還在窗外往後掠。什麼都沒有變。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "東京灣的燈還在窗外往後掠。什麼都還是原來的樣子。" },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)⋯⋯", portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但澪聽見這句話的時候，像有人在她胸口很安靜地按下一個開關。不是轟的一聲。是七天下來一直繃著的那根線，被一個陌生人用一句話碰到了。" },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他說的不是「可能沒有離家」。他說的是「沒有離家」。", portrait: Portrait.AsakuraMio_Base },

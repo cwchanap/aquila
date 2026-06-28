@@ -43,7 +43,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "⋯⋯妳知道為什麼那個紅點一直在那裡嗎。", portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "什麼？", portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "不是為了安全。", portrait: Portrait.ChidaKosuke_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音又斷了。這次不是被廣播蓋掉——是他自己撐不住。他的上半身往前微微一沉，手在外套內側壓得更緊，眉心那條紋又擠出來。他閉了一下眼，像在等一陣什麼從身體裡過去。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音又斷了。這次不是被廣播蓋掉——是他自己撐不住。他的肩膀往前垮了下來，手在外套內側壓得更緊，眉心那條紋又擠出來。他閉了一下眼，像在等一陣什麼從身體裡過去。" },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "你到底——", portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播又響了。" },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "同步測試第三段，請乘客留意車內資訊顯示。" },

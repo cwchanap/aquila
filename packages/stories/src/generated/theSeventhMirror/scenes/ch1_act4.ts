@@ -44,7 +44,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "最後定位在研究中心附近，但警方查的方向是自願離家。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "對。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有說「也許真的是離家」。她只是看著那條線，像在幫澪檢查有沒有漏掉的環節。", background: Background.Chapter_1_Ch1_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這就是琴音。她不會說「妳想太多了」，也不會說「妳是對的」。她只是把東西排好，讓澪自己看。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)如果每個人都像她這樣就好了。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的便當已經吃了大半。她沒有意識到自己什麼時候開始吃快的。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音從袋子裡拿出一包零食，放在桌角——抹茶口味的軟糖，包裝上印著一隻歪歪扭扭的兔子。", background: Background.Chapter_1_Ch1_Act4_S0 },

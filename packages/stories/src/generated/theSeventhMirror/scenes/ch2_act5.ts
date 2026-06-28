@@ -21,7 +21,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三個字。氣音。他的嘴唇已經開始發白，那種失去血色的白，像紙。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)不是這裡——什麼意思？", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她想追問。他又開口了，這次聲音更碎，像一條被剪成幾段的錄音。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "別先看畫面。血比較老實。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.ChidaKosuke_Scared },
+    { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "別先看畫面。傷口不會說謊。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.ChidaKosuke_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他說完這句，身體往前一沉。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的右手本能地伸出去，扶住他的肩。他比她想像中輕，也比她想像中燙——隔著外套都能感覺到那股不正常的熱。她的背包從肩上滑下來，咚地落在車廂地板上。她沒有去管它。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田的手在半空中抓了一下，抓住了她握著銀色外殼的那隻左手。他的手指覆上來，最後一次用力收緊，把那塊金屬連同她的手指一起攥死，壓進她掌心。", background: Background.Chapter_2_Ch2_Act5_S0 },

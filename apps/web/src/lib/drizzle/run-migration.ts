@@ -130,8 +130,17 @@ async function runMigration() {
 
         console.log('\n🎉 All migrations completed successfully!');
     } catch (error) {
-        console.error('❌ Migration failed:', error);
-        throw error;
+        const { message, code } = extractDbErrorDetails(error);
+        console.error(
+            '❌ Migration failed:',
+            code ? `[${code}]` : '',
+            message ?? 'unknown error'
+        );
+        // Rethrow a sanitized error so the unhandled-rejection printout
+        // doesn't leak the connection string a raw pg error may carry.
+        throw new Error(
+            `Migration failed${code ? ` [${code}]` : ''}: ${message ?? 'unknown error'}`
+        );
     } finally {
         await pool.end();
     }

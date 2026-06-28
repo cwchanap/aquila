@@ -7,6 +7,8 @@ import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
 import { getTranslations, type Locale } from '@aquila/stories';
 import { t as translate } from '../../lib/utils';
+import { logger } from '../../lib/logger.js';
+import { ERROR_IDS } from '../../constants/errorIds.js';
 
 interface Props {
   locale?: string;
@@ -20,11 +22,26 @@ const sessionResult = await getSessionUser(Astro.request);
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
 let characterSetups: CharacterSetup[] = [];
+// `loadFailed` distinguishes "DB read threw" from "user has no characters".
+// Without it, a transient DB outage renders the empty-state CTA, which looks
+// identical to a brand-new account and can lead to duplicate setup work.
+let loadFailed = false;
 
-// Get character setups from database if authenticated
+// Get character setups from database if authenticated. A DB read failure here
+// (e.g. transient connection error) must not 500 the whole page — fall back to
+// the empty state so the user still sees the page shell, but flag it so we
+// render an error message instead of the no-characters CTA.
 if (user?.id) {
-  const characterSetupRepo = new CharacterSetupRepository();
-  characterSetups = await characterSetupRepo.findByUser(user.id);
+  try {
+    const characterSetupRepo = new CharacterSetupRepository();
+    characterSetups = await characterSetupRepo.findByUser(user.id);
+  } catch (error) {
+    logger.error('Failed to load character setups', error, {
+      errorId: ERROR_IDS.DB_QUERY_FAILED,
+    });
+    characterSetups = [];
+    loadFailed = true;
+  }
 }
 ---
 
@@ -171,7 +188,19 @@ if (user?.id) {
                   </div>
                 ))}
               </div>
-             ) : (
+            ) : loadFailed ? (
+              <div class="text-center py-16">
+                <div class="text-red-600 text-xl mb-3 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.loadFailed")}</div>
+                <div class="text-slate-600 text-base mb-6" style="font-family: 'Exo 2', sans-serif;">{t("characters.loadFailedDescription")}</div>
+                <a
+                  href={`/${locale}/characters`}
+                  class="inline-block py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60"
+                  style="font-family: 'Orbitron', monospace;"
+                >
+                  {t("characters.retry")}
+                </a>
+              </div>
+            ) : (
               <div class="text-center py-16">
                 <div class="text-slate-600 text-xl mb-6 font-semibold" style="font-family: 'Exo 2', sans-serif;">{t("characters.noCharacters")}</div>
                 <a

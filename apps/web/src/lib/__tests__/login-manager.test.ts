@@ -313,4 +313,26 @@ describe('initLogin', () => {
             fireReady();
         }).not.toThrow();
     });
+
+    it('wires the click handler immediately when the document is already interactive (no DOMContentLoaded needed)', async () => {
+        const { btn } = setupDom({ locale: 'en' });
+        signInSocial.mockResolvedValue({ error: null });
+
+        // Force the "already ready" branch: readyState is 'interactive', so
+        // initLogin must wire up synchronously instead of waiting for
+        // DOMContentLoaded (which never fires in this scenario).
+        const readyStateSpy = vi
+            .spyOn(document, 'readyState', 'get')
+            .mockReturnValue('interactive');
+
+        try {
+            initLogin();
+            // Deliberately do NOT call fireReady() — the handler must already
+            // be attached.
+            btn.click();
+            await vi.waitFor(() => expect(signInSocial).toHaveBeenCalled());
+        } finally {
+            readyStateSpy.mockRestore();
+        }
+    });
 });

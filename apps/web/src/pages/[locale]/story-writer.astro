@@ -21,92 +21,124 @@ const isAuthenticated = Boolean(user?.id);
 const userName = user?.name || user?.email || t('storyWriter.guest');
 
 // Only redirect to login if the auth system is healthy but there's no
-// session. If auth failed to boot, show the degraded banner instead of
-// bouncing to a login page that will also fail.
+// session. If auth failed to boot, fall through to the degraded render below
+// (no redirect — the login page would also fail to boot).
 if (!authFailed && !isAuthenticated) {
     return Astro.redirect(`/${locale}/login`);
 }
 ---
 
-<MainLayout title={t('storyWriter.title')}>
-    {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
-    <div class="min-h-screen relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
+{
+    authFailed ? (
+        // Auth bootstrap failed: do NOT mount <MainLayout> or the protected
+        // writer UI. Surface only the degraded banner + an unavailable notice
+        // so a production auth outage is visible and the editor is not
+        // rendered in a half-broken state.
+        <html lang={locale}>
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width" />
+                <title>{t('storyWriter.title')}</title>
+            </head>
+            <body class="min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400">
+                <AuthDegradedBanner message={t('auth.degradedBanner')} />
+                <div class="min-h-screen flex items-center justify-center px-6 py-20">
+                    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-xl w-full text-center">
+                        <h1 class="text-3xl font-black tracking-wider uppercase text-slate-800" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif;">
+                            {t('storyWriter.title')}
+                        </h1>
+                        <p class="mt-4 text-slate-600 leading-relaxed">{t('storyWriter.unavailable')}</p>
+                        <a
+                            href={`/${locale}`}
+                            class="inline-block mt-8 px-6 py-3 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 text-white font-semibold rounded-xl shadow-md border border-cyan-300/60 transition-transform duration-300 transform hover:scale-105"
+                        >
+                            {t('storyWriter.mainMenu')}
+                        </a>
+                    </div>
+                </div>
+            </body>
+        </html>
+    ) : (
+        <MainLayout title={t('storyWriter.title')}>
+            <div class="min-h-screen relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
-        <div class="absolute inset-0">
-            <svg class="absolute bottom-0 w-full h-96" viewBox="0 0 1440 320" preserveAspectRatio="none">
-                <path
-                    fill="rgba(59, 130, 246, 0.3)"
-                    fill-opacity="1"
-                    d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                >
-                    <animateTransform attributeName="transform" type="translate" values="0 0; 50 0; 0 0" dur="6s" repeatCount="indefinite" />
-                </path>
-            </svg>
+                <div class="absolute inset-0">
+                    <svg class="absolute bottom-0 w-full h-96" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                        <path
+                            fill="rgba(59, 130, 246, 0.3)"
+                            fill-opacity="1"
+                            d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                        >
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 50 0; 0 0" dur="6s" repeatCount="indefinite" />
+                        </path>
+                    </svg>
 
-            <svg class="absolute bottom-0 w-full h-80" viewBox="0 0 1440 320" preserveAspectRatio="none">
-                <path
-                    fill="rgba(59, 130, 246, 0.4)"
-                    fill-opacity="1"
-                    d="M0,192L48,176C96,160,192,128,288,128C384,128,480,160,576,176C672,192,768,192,864,176C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                >
-                    <animateTransform attributeName="transform" type="translate" values="0 0; -30 0; 0 0" dur="8s" repeatCount="indefinite" />
-                </path>
-            </svg>
+                    <svg class="absolute bottom-0 w-full h-80" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                        <path
+                            fill="rgba(59, 130, 246, 0.4)"
+                            fill-opacity="1"
+                            d="M0,192L48,176C96,160,192,128,288,128C384,128,480,160,576,176C672,192,768,192,864,176C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                        >
+                            <animateTransform attributeName="transform" type="translate" values="0 0; -30 0; 0 0" dur="8s" repeatCount="indefinite" />
+                        </path>
+                    </svg>
 
-            <svg class="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
-                <path
-                    fill="rgba(59, 130, 246, 0.6)"
-                    fill-opacity="1"
-                    d="M0,256L48,240C96,224,192,192,288,192C384,192,480,224,576,240C672,256,768,256,864,240C960,224,1056,192,1152,192C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                >
-                    <animateTransform attributeName="transform" type="translate" values="0 0; 40 0; 0 0" dur="10s" repeatCount="indefinite" />
-                </path>
-            </svg>
-        </div>
+                    <svg class="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                        <path
+                            fill="rgba(59, 130, 246, 0.6)"
+                            fill-opacity="1"
+                            d="M0,256L48,240C96,224,192,192,288,192C384,192,480,224,576,240C672,256,768,256,864,240C960,224,1056,192,1152,192C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                        >
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 40 0; 0 0" dur="10s" repeatCount="indefinite" />
+                        </path>
+                    </svg>
+                </div>
 
-        <div class="absolute inset-0 opacity-20">
-            <div class="absolute top-20 left-1/4 w-32 h-16 bg-white rounded-full blur-xl animate-pulse"></div>
-            <div class="absolute top-32 right-1/3 w-24 h-12 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 2s;"></div>
-            <div class="absolute top-16 right-1/4 w-28 h-14 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
-        </div>
+                <div class="absolute inset-0 opacity-20">
+                    <div class="absolute top-20 left-1/4 w-32 h-16 bg-white rounded-full blur-xl animate-pulse"></div>
+                    <div class="absolute top-32 right-1/3 w-24 h-12 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 2s;"></div>
+                    <div class="absolute top-16 right-1/4 w-28 h-14 bg-white rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
+                </div>
 
-        <UserStatus client:load user={user} currentLocale={locale} />
+                <UserStatus client:load user={user} currentLocale={locale} />
 
-        <div class="min-h-screen flex items-center justify-center relative px-6 py-20">
-            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-6xl w-full mx-auto">
-                <div class="flex flex-col lg:flex-row lg:items-start gap-10">
-                    <div class="lg:w-1/3 space-y-6 text-center lg:text-left">
-                        <div>
-                            <h1 class="text-4xl font-black tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif;">
-                                {t('storyWriter.title')}
-                            </h1>
-                            <div class="w-24 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto lg:mx-0 rounded-full animate-pulse mt-2"></div>
-                            <p class="text-sm font-semibold text-slate-600 mt-4 tracking-widest uppercase opacity-70" style="font-family: 'Orbitron', monospace;">
-                                {t('storyWriter.subtitle')}
-                            </p>
-                        </div>
-                        <div class="space-y-4">
-                            <p class="text-slate-600 text-sm leading-relaxed">
-                                {t('storyWriter.description')}
-                            </p>
-                            <div class="bg-white/70 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between text-slate-700">
-                                <span class="font-semibold">{t('storyWriter.welcome')}{userName}</span>
-                                <a
-                                    href={`/${locale}`}
-                                    class="px-4 py-2 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 text-white font-semibold rounded-xl shadow-md border border-cyan-300/60 transition-transform duration-300 transform hover:scale-105"
-                                >
-                                    {t('storyWriter.mainMenu')}
-                                </a>
+                <div class="min-h-screen flex items-center justify-center relative px-6 py-20">
+                    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-6xl w-full mx-auto">
+                        <div class="flex flex-col lg:flex-row lg:items-start gap-10">
+                            <div class="lg:w-1/3 space-y-6 text-center lg:text-left">
+                                <div>
+                                    <h1 class="text-4xl font-black tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif;">
+                                        {t('storyWriter.title')}
+                                    </h1>
+                                    <div class="w-24 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto lg:mx-0 rounded-full animate-pulse mt-2"></div>
+                                    <p class="text-sm font-semibold text-slate-600 mt-4 tracking-widest uppercase opacity-70" style="font-family: 'Orbitron', monospace;">
+                                        {t('storyWriter.subtitle')}
+                                    </p>
+                                </div>
+                                <div class="space-y-4">
+                                    <p class="text-slate-600 text-sm leading-relaxed">
+                                        {t('storyWriter.description')}
+                                    </p>
+                                    <div class="bg-white/70 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between text-slate-700">
+                                        <span class="font-semibold">{t('storyWriter.welcome')}{userName}</span>
+                                        <a
+                                            href={`/${locale}`}
+                                            class="px-4 py-2 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 text-white font-semibold rounded-xl shadow-md border border-cyan-300/60 transition-transform duration-300 transform hover:scale-105"
+                                        >
+                                            {t('storyWriter.mainMenu')}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lg:flex-1 bg-white/80 border border-white/60 rounded-3xl shadow-inner p-6 lg:p-8 backdrop-blur">
+                                <StoryWriterApp client:load />
                             </div>
                         </div>
                     </div>
-
-                    <div class="lg:flex-1 bg-white/80 border border-white/60 rounded-3xl shadow-inner p-6 lg:p-8 backdrop-blur">
-                        <StoryWriterApp client:load />
-                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</MainLayout>
+        </MainLayout>
+    )
+}

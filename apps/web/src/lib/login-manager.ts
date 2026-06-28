@@ -23,7 +23,7 @@ function getLoginTranslations(): LoginTranslations {
 }
 
 export function initLogin(): void {
-    document.addEventListener('DOMContentLoaded', () => {
+    function setupLogin(): void {
         const btn = document.getElementById(
             'google-signin-btn'
         ) as HTMLButtonElement | null;
@@ -88,5 +88,18 @@ export function initLogin(): void {
                 btn.disabled = false;
             }
         });
-    });
+    }
+
+    // If the document is already interactive/complete (e.g. the script loaded
+    // after DOMContentLoaded fired via defer or late injection), wire up
+    // immediately — otherwise the listener below never fires and the sign-in
+    // button stays dead.
+    if (
+        document.readyState === 'interactive' ||
+        document.readyState === 'complete'
+    ) {
+        setupLogin();
+    } else {
+        document.addEventListener('DOMContentLoaded', setupLogin);
+    }
 }

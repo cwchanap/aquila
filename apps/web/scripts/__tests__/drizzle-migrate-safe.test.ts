@@ -108,6 +108,21 @@ describe('drizzle-migrate-safe', () => {
             expect(exitSpy).toHaveBeenCalledWith(1);
         });
 
+        it('exits 1 when drizzle-kit is terminated by a signal', async () => {
+            spawnSyncMock.mockReturnValue({
+                status: null,
+                signal: 'SIGTERM',
+                error: undefined,
+            });
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                expect.stringContaining('terminated by signal')
+            );
+            expect(exitSpy).toHaveBeenCalledWith(1);
+        });
+
         it('uses spawnSync status (not 1) when error and non-null status', async () => {
             const spawnError = new Error('spawn failed');
             spawnSyncMock.mockReturnValue({ status: 2, error: spawnError });
@@ -206,6 +221,25 @@ describe('drizzle-migrate-safe', () => {
                 expect.objectContaining({
                     env: expect.objectContaining({
                         DATABASE_URL: 'postgres://aquila-host:5432/db',
+                    }),
+                })
+            );
+        });
+
+        it('injects aquila_POSTGRES_URL as the last fallback when DATABASE_URL, POSTGRES_URL, and aquila_DATABASE_URL are unset', async () => {
+            delete process.env.POSTGRES_URL;
+            delete process.env.aquila_DATABASE_URL;
+            process.env.aquila_POSTGRES_URL =
+                'postgres://aquila-pg-host:5432/db';
+
+            await expect(runScript()).rejects.toBeInstanceOf(ProcessExitError);
+
+            expect(spawnSyncMock).toHaveBeenCalledWith(
+                'bunx',
+                expect.any(Array),
+                expect.objectContaining({
+                    env: expect.objectContaining({
+                        DATABASE_URL: 'postgres://aquila-pg-host:5432/db',
                     }),
                 })
             );

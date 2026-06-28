@@ -48,7 +48,7 @@ police station temporary interview room at night, cold fluorescent lighting, met
 
 **警員**：接觸了多久？
 
-**朝倉澪** [base]：⋯⋯我不知道。一直到救護來。
+**朝倉澪** [base]：⋯⋯我不知道。一直到救護來為止。
 
 **旁白**：她聽見自己的話在房間裡停了一秒。然後她意識到——「一直到救護來」代表她一直握著它。從千田交給她到救護到場，她一直握著一個沾血的、破邊像刀的金屬物。她知道原因。她是在急救，她忘了鬆手。但紀錄不會寫「她忘了鬆手」。紀錄只會寫時間長度。
 
@@ -108,7 +108,7 @@ police station temporary interview room at night, cold fluorescent lighting, met
 
 **警員**：這些是你的推測？
 
-**朝倉澪** [base]：⋯⋯這是事實的先後順序。
+**朝倉澪** [base]：⋯⋯事情就是按這個順序發生的。
 
 **警員**：先後順序不等於因果關係。目前沒有證據顯示朝倉悠真失蹤案與千田浩介傷害案有關聯。
 

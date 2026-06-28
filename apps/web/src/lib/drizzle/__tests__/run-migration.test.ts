@@ -362,13 +362,12 @@ describe('run-migration.ts', () => {
             expect(reason).toMatchObject({
                 message: expect.stringContaining('Duplicate object detected'),
             });
+            // Outer catch logs sanitized details (no raw error object that
+            // could leak the connection string) and rethrows a sanitized error.
             expect(console.error).toHaveBeenCalledWith(
                 '❌ Migration failed:',
-                expect.objectContaining({
-                    message: expect.stringContaining(
-                        'Duplicate object detected'
-                    ),
-                })
+                '',
+                expect.stringContaining('Duplicate object detected')
             );
         }
     );
@@ -393,11 +392,15 @@ describe('run-migration.ts', () => {
             await vi.waitFor(() => expect(mockPoolEnd).toHaveBeenCalled());
         });
 
-        // The outer catch re-throws the original error unchanged
-        expect(reason).toBe(genericError);
+        // The outer catch re-throws a sanitized error (message preserved, no
+        // raw error object that could leak the connection string).
+        expect(reason).toMatchObject({
+            message: expect.stringContaining('column "bad_col" does not exist'),
+        });
         expect(console.error).toHaveBeenCalledWith(
             '❌ Migration failed:',
-            genericError
+            '',
+            expect.stringContaining('column "bad_col" does not exist')
         );
     });
 
@@ -445,7 +448,10 @@ describe('run-migration.ts', () => {
         });
 
         // extractDbErrorDetails returns {} for non-objects → no duplicate code
-        // so the generic re-throw path is hit
-        expect(reason).toBe(stringError);
+        // so the generic re-throw path is hit. The outer catch sanitizes the
+        // rethrown error, so the reason is a new Error with no original ref.
+        expect(reason).toMatchObject({
+            message: 'Migration failed: unknown error',
+        });
     });
 });

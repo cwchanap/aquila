@@ -49,6 +49,15 @@ export function resolveSsl(
 ): SslConfig {
     const allowSelfSigned = env.DB_ALLOW_SELF_SIGNED === 'true';
     const isProduction = env.NODE_ENV === 'production';
+    if (allowSelfSigned && isProduction) {
+        // Defense-in-depth: the flag is documented as non-production only, but
+        // surface a loud warning if it is ever enabled in production so a
+        // misconfiguration doesn't silently disable TLS verification on the
+        // database connection.
+        console.warn(
+            'DB_ALLOW_SELF_SIGNED is enabled in production — TLS certificate verification is disabled on the database connection.'
+        );
+    }
     const requiresSsl =
         allowSelfSigned ||
         isProduction ||

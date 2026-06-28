@@ -212,4 +212,63 @@ describe('auth production environment branches', () => {
             'https://aquila-abc123.vercel.app',
         ]);
     });
+
+    it('prefers import.meta.env.BETTER_AUTH_URL over process.env in production', async () => {
+        process.env.BETTER_AUTH_URL = 'https://from-process-env.example.com';
+        // Simulate a Vite-injected env var taking priority over process.env.
+        const ime = import.meta.env as Record<string, string | undefined>;
+        ime.BETTER_AUTH_URL = 'https://from-import-meta.example.com';
+        process.env.TRUSTED_ORIGINS = 'https://from-import-meta.example.com';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.GOOGLE_CLIENT_ID = 'test-google-id';
+        process.env.GOOGLE_CLIENT_SECRET = 'test-google-secret';
+        process.env.NODE_ENV = 'production';
+
+        let captured: { baseURL?: string } = {};
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn((config: { baseURL?: string }) => {
+                captured = config;
+                return { $Infer: { Session: { user: {} } } };
+            }),
+        }));
+        vi.resetModules();
+
+        try {
+            await import('../auth');
+            expect(captured.baseURL).toBe(
+                'https://from-import-meta.example.com'
+            );
+        } finally {
+            delete ime.BETTER_AUTH_URL;
+        }
+    });
+
+    it('prefers import.meta.env.TRUSTED_ORIGINS over process.env in production', async () => {
+        process.env.BETTER_AUTH_URL = 'https://aquila.cwchanap.dev';
+        process.env.TRUSTED_ORIGINS = 'https://from-process-env.example.com';
+        const ime = import.meta.env as Record<string, string | undefined>;
+        ime.TRUSTED_ORIGINS = 'https://from-import-meta.example.com';
+        process.env.BETTER_AUTH_SECRET = 'prod-secret';
+        process.env.GOOGLE_CLIENT_ID = 'test-google-id';
+        process.env.GOOGLE_CLIENT_SECRET = 'test-google-secret';
+        process.env.NODE_ENV = 'production';
+
+        let captured: { trustedOrigins?: string[] } = {};
+        vi.doMock('better-auth', () => ({
+            betterAuth: vi.fn((config: { trustedOrigins?: string[] }) => {
+                captured = config;
+                return { $Infer: { Session: { user: {} } } };
+            }),
+        }));
+        vi.resetModules();
+
+        try {
+            await import('../auth');
+            expect(captured.trustedOrigins).toEqual([
+                'https://from-import-meta.example.com',
+            ]);
+        } finally {
+            delete ime.TRUSTED_ORIGINS;
+        }
+    });
 });

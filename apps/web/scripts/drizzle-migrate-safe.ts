@@ -37,4 +37,14 @@ if (result.error) {
     process.exit(result.status ?? 1);
 }
 
+// A signal-terminated child (status === null, signal set) is a failure, not
+// success. Without this guard `result.status ?? 0` would exit 0 when the child
+// was killed (e.g. OOM, SIGTERM), masking the failure from CI.
+if (result.signal) {
+    console.error(
+        `\n❌ drizzle-kit migrate terminated by signal ${result.signal}`
+    );
+    process.exit(1);
+}
+
 process.exit(result.status ?? 0);

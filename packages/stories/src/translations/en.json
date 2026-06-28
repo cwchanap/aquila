@@ -88,6 +88,9 @@
     "subtitle": "Your Story Companions",
     "description": "Here are your configured characters for different stories.",
     "noCharacters": "No characters configured yet",
+    "loadFailed": "Couldn't load your characters",
+    "loadFailedDescription": "A temporary error prevented your saved characters from loading. Your data is safe — please try again.",
+    "retry": "Retry",
     "startFirstStory": "Start Your First Story",
     "guestDescription": "Sign in to save your characters permanently, or view your local characters below.",
     "loadingLocal": "Loading local characters...",
@@ -195,7 +198,8 @@
     "subtitle": "Craft immersive adventures",
     "description": "Build rich stories with branching dialogues, memorable characters, and dynamic scenes.",
     "welcome": "Welcome, ",
-    "mainMenu": "Main Menu"
+    "mainMenu": "Main Menu",
+    "unavailable": "The story writer is currently unavailable because authentication could not be initialized. Please try again later."
   },
   "bulkAction": {
     "title": "Bulk Actions",

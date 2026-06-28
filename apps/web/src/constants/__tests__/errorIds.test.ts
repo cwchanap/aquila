@@ -50,6 +50,20 @@ describe('ERROR_IDS', () => {
         it('should define AUTH_INVALID_CREDENTIALS as AUTH_007', () => {
             expect(ERROR_IDS.AUTH_INVALID_CREDENTIALS).toBe('AUTH_007');
         });
+
+        // AUTH_008 and AUTH_009 are retired (were password-hash / password-
+        // change IDs, removed when Google-only auth landed). They are reserved
+        // so historical Sentry data stays stable — guard against accidental
+        // reuse by ensuring no exported constant maps to either value.
+        it('should not reuse retired AUTH_008', () => {
+            const values = Object.values(ERROR_IDS);
+            expect(values).not.toContain('AUTH_008');
+        });
+
+        it('should not reuse retired AUTH_009', () => {
+            const values = Object.values(ERROR_IDS);
+            expect(values).not.toContain('AUTH_009');
+        });
     });
 
     describe('Database errors (DB_001-007)', () => {

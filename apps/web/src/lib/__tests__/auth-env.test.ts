@@ -54,7 +54,7 @@ describe('auth production environment branches', () => {
 
     it('throws when BETTER_AUTH_SECRET is not set in production', async () => {
         // Set TRUSTED_ORIGINS so the first check passes
-        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.TRUSTED_ORIGINS = 'https://example.com';
         // Clear BETTER_AUTH_SECRET and set production mode
         delete process.env.BETTER_AUTH_SECRET;
         process.env.NODE_ENV = 'production';
@@ -76,7 +76,7 @@ describe('auth production environment branches', () => {
     });
 
     it('throws when GOOGLE_CLIENT_ID is not set in production', async () => {
-        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.TRUSTED_ORIGINS = 'https://example.com';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
         process.env.BETTER_AUTH_URL = 'https://example.com';
         delete process.env.GOOGLE_CLIENT_ID;
@@ -94,7 +94,7 @@ describe('auth production environment branches', () => {
     });
 
     it('throws when GOOGLE_CLIENT_SECRET is not set in production', async () => {
-        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.TRUSTED_ORIGINS = 'https://example.com';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
         process.env.BETTER_AUTH_URL = 'https://example.com';
         process.env.GOOGLE_CLIENT_ID = 'test-google-id';
@@ -113,7 +113,7 @@ describe('auth production environment branches', () => {
     });
 
     it('throws when BETTER_AUTH_URL is not set in production', async () => {
-        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.TRUSTED_ORIGINS = 'https://example.com';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
         delete process.env.BETTER_AUTH_URL;
         vi.stubEnv('BETTER_AUTH_URL', '');
@@ -130,7 +130,7 @@ describe('auth production environment branches', () => {
     });
 
     it('throws when BETTER_AUTH_URL is localhost in production', async () => {
-        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.TRUSTED_ORIGINS = 'https://example.com';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
         process.env.BETTER_AUTH_URL = 'http://localhost:5090';
         process.env.NODE_ENV = 'production';
@@ -146,7 +146,7 @@ describe('auth production environment branches', () => {
     });
 
     it('throws when BETTER_AUTH_URL is not a valid URL in production', async () => {
-        process.env.TRUSTED_ORIGINS = 'http://localhost:5090';
+        process.env.TRUSTED_ORIGINS = 'https://example.com';
         process.env.BETTER_AUTH_SECRET = 'prod-secret';
         process.env.BETTER_AUTH_URL = 'not-a-url';
         process.env.NODE_ENV = 'production';

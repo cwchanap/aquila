@@ -50,6 +50,14 @@ describe('resolveBaseURL', () => {
         ).toThrow(/non-local URL in production/);
     });
 
+    it('throws in production when the explicit URL is a bracketed IPv6 loopback', () => {
+        // `new URL('http://[::1]:5090').hostname` returns `[::1]` (bracketed),
+        // so the loopback check must strip the brackets to recognize `::1`.
+        expect(() =>
+            resolveBaseURL({ BETTER_AUTH_URL: 'http://[::1]:5090' }, true)
+        ).toThrow(/non-local URL in production/);
+    });
+
     it('throws in production when the explicit URL is not a valid URL', () => {
         expect(() =>
             resolveBaseURL({ BETTER_AUTH_URL: 'not-a-url' }, true)
@@ -148,5 +156,237 @@ describe('resolveTrustedOrigins', () => {
         expect(resolveTrustedOrigins({}, false)).toEqual([
             'http://localhost:5090',
         ]);
+    });
+
+    it('drops malformed explicit origins', () => {
+        const origins = resolveTrustedOrigins(
+            {
+                TRUSTED_ORIGINS: 'not-a-url, https://valid.example.com',
+            },
+            true
+        );
+        expect(origins).toEqual(['https://valid.example.com']);
+    });
+
+    it('rejects non-http(s) explicit origins', () => {
+        const origins = resolveTrustedOrigins(
+            {
+                TRUSTED_ORIGINS:
+                    'javascript:alert(1), data:text/html,foo, https://valid.example.com',
+            },
+            true
+        );
+        expect(origins).toEqual(['https://valid.example.com']);
+    });
+
+    it('normalizes explicit origins to .origin (strips path/query)', () => {
+        const origins = resolveTrustedOrigins(
+            {
+                TRUSTED_ORIGINS:
+                    'https://a.example.com/some/path?x=1, https://b.example.com',
+            },
+            true
+        );
+        expect(origins).toEqual([
+            'https://a.example.com',
+            'https://b.example.com',
+        ]);
+    });
+
+    it('rejects localhost explicit origins in production', () => {
+        const origins = resolveTrustedOrigins(
+            {
+                TRUSTED_ORIGINS:
+                    'http://localhost:5090, https://valid.example.com',
+            },
+            true
+        );
+        expect(origins).toEqual(['https://valid.example.com']);
+    });
+
+    it('rejects a bracketed IPv6 loopback explicit origin in production', () => {
+        // `new URL('http://[::1]:5090').hostname` returns `[::1]` (bracketed),
+        // so the loopback check must strip the brackets to recognize `::1`.
+        const origins = resolveTrustedOrigins(
+            {
+                TRUSTED_ORIGINS: 'http://[::1]:5090, https://valid.example.com',
+            },
+            true
+        );
+        expect(origins).toEqual(['https://valid.example.com']);
+    });
+
+    it('allows localhost explicit origins in development', () => {
+        const origins = resolveTrustedOrigins(
+            { TRUSTED_ORIGINS: 'http://localhost:3000' },
+            false
+        );
+        expect(origins).toEqual(['http://localhost:3000']);
+    });
+
+    it('throws in production when all explicit origins are invalid and no Vercel URLs are set', () => {
+        expect(() =>
+            resolveTrustedOrigins({ TRUSTED_ORIGINS: 'not-a-url' }, true)
+        ).toThrow(/TRUSTED_ORIGINS must be set in production/);
+    });
+
+    describe('wildcard patterns', () => {
+        it('preserves a bare wildcard host pattern (no scheme)', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*.example.com' },
+                true
+            );
+            expect(origins).toEqual(['*.example.com']);
+        });
+
+        it('preserves a scheme-qualified wildcard origin pattern', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: 'https://*.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://*.example.com']);
+        });
+
+        it('merges wildcard patterns with derived Vercel origins', () => {
+            const origins = resolveTrustedOrigins(
+                {
+                    TRUSTED_ORIGINS: '*.example.com',
+                    VERCEL_URL: 'aquila-abc123.vercel.app',
+                },
+                true
+            );
+            expect(origins).toEqual([
+                '*.example.com',
+                'https://aquila-abc123.vercel.app',
+            ]);
+        });
+
+        it('does not throw in production when only a wildcard is set (no Vercel URLs)', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*.example.com' },
+                true
+            );
+            expect(origins).toEqual(['*.example.com']);
+        });
+
+        it('rejects a non-http(s) scheme on a wildcard pattern', () => {
+            const origins = resolveTrustedOrigins(
+                {
+                    TRUSTED_ORIGINS:
+                        'file://*.example.com, https://valid.example.com',
+                },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects wildcard patterns with multiple stars', () => {
+            const origins = resolveTrustedOrigins(
+                {
+                    TRUSTED_ORIGINS:
+                        '*.*.example.com, https://valid.example.com',
+                },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects a bare `*` wildcard', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*, https://valid.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects a wildcard with no literal label (`*.`)', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*., https://valid.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects a glued wildcard label (`*example.com`)', () => {
+            // Better Auth compiles `*example.com` to `.*?example\.com`, which
+            // matches any host ending in `example.com` (e.g. `evil-example.com`).
+            // The `*` must occupy its own DNS label.
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*example.com, https://valid.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects a trailing glued wildcard label (`example.*com`)', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: 'example.*com, https://valid.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects a wildcard that can only match loopback in production', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*.localhost, https://valid.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects a wildcard loopback label with a port in production', () => {
+            // `https://*.localhost:3000` splits into labels `['*', 'localhost:3000']`;
+            // the loopback check must strip the `:port` to recognize `localhost`.
+            const origins = resolveTrustedOrigins(
+                {
+                    TRUSTED_ORIGINS:
+                        'https://*.localhost:3000, https://valid.example.com',
+                },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects an IPv4 loopback wildcard in production', () => {
+            // `*.127.0.0.1` splits into labels `['*', '127', '0', '0', '1']`;
+            // the loopback check must reconstruct the full suffix `127.0.0.1`
+            // rather than only inspecting the last dot label `1`.
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*.127.0.0.1, https://valid.example.com' },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('rejects an IPv4 loopback wildcard with a port in production', () => {
+            // `https://*.127.0.0.1:3000` splits into labels
+            // `['*', '127', '0', '0', '1:3000']`; the loopback check must
+            // reconstruct `127.0.0.1:3000` and strip the port to recognize
+            // the loopback suffix.
+            const origins = resolveTrustedOrigins(
+                {
+                    TRUSTED_ORIGINS:
+                        'https://*.127.0.0.1:3000, https://valid.example.com',
+                },
+                true
+            );
+            expect(origins).toEqual(['https://valid.example.com']);
+        });
+
+        it('allows a loopback wildcard in development', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '*.localhost' },
+                false
+            );
+            expect(origins).toEqual(['*.localhost']);
+        });
+
+        it('trims surrounding whitespace on a wildcard pattern', () => {
+            const origins = resolveTrustedOrigins(
+                { TRUSTED_ORIGINS: '  *.example.com  ' },
+                true
+            );
+            expect(origins).toEqual(['*.example.com']);
+        });
     });
 });

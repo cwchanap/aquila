@@ -11,7 +11,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "近期不要離開都內。需要離開，先通知我們。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她接過那張紙。上面印著幾行字。她沒有逐行讀。她看見了幾個關鍵詞——「重大參考人」「配合再次問話」「手機資料已備份不得刪除相關訊息」「染血外套暫時作為證物保全」「銀色外殼將送鑑定」「千田浩介死亡已確認死因仍待鑑定」。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她被允許離開了。", background: Background.Chapter_3_Ch3_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是無罪釋放。不是不起訴。是「暫時」。暫時可以走。暫時不是嫌疑人。暫時是重大參考人。暫時不要離開都內。暫時不要刪資料。暫時不要——", background: Background.Chapter_3_Ch3_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是無罪釋放。不是不起訴。是「暫時」。暫時可以走。暫時不是嫌疑人。暫時是重大參考人。不要離開都內。不要刪資料。不要——", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來的時候膝蓋是軟的。不是因為恐懼。是因為坐太久了。她的身體在問話的兩個多小時裡一直維持著同一個姿勢——背挺直，手放在桌上，回答問題。現在姿勢鬆了，肌肉才開始抗議。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出問話室。走廊很長。燈光是那種省電的冷白色，照得地面反光，像一條被消毒過的河。她的腳步聲在走廊裡彈，一下一下，很規律。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭有一扇半開的門。", background: Background.Chapter_3_Ch3_Act6_S0 },

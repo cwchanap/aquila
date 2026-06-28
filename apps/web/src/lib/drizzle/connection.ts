@@ -1,3 +1,6 @@
+import { logger } from '../logger.js';
+import { ERROR_IDS } from '../../constants/errorIds.js';
+
 export type SslConfig = boolean | { rejectUnauthorized: boolean };
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
@@ -51,11 +54,16 @@ export function resolveSsl(
     const isProduction = env.NODE_ENV === 'production';
     if (allowSelfSigned && isProduction) {
         // Defense-in-depth: the flag is documented as non-production only, but
-        // surface a loud warning if it is ever enabled in production so a
-        // misconfiguration doesn't silently disable TLS verification on the
-        // database connection.
-        console.warn(
-            'DB_ALLOW_SELF_SIGNED is enabled in production — TLS certificate verification is disabled on the database connection.'
+        // surface a loud, structured, alertable error if it is ever enabled in
+        // production so a misconfiguration doesn't silently disable TLS
+        // verification on the database connection. Routed through the project
+        // logger (not raw console) so it lands in log aggregators with an
+        // errorId that can be alerted on. Non-blocking: the connection still
+        // proceeds with verification disabled, matching prior behavior.
+        logger.error(
+            'DB_ALLOW_SELF_SIGNED is enabled in production — TLS certificate verification is disabled on the database connection.',
+            undefined,
+            { errorId: ERROR_IDS.DB_CONNECTION_FAILED }
         );
     }
     const requiresSsl =

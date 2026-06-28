@@ -1,0 +1,20 @@
+---
+/**
+ * Banner shown when the auth system failed to boot (e.g. missing secrets,
+ * DB unreachable). Renders a non-blocking warning so a production auth
+ * outage is visible to the user rather than silently rendering logged-out.
+ *
+ * Usage: render only when `getSessionUser` returns `{ status: 'error' }`.
+ */
+interface Props {
+  message: string;
+}
+const { message } = Astro.props;
+---
+
+<div
+  role="alert"
+  class="fixed top-0 left-0 right-0 z-50 px-4 py-3 bg-amber-500/90 text-white text-center text-sm font-medium backdrop-blur-sm border-b border-amber-600/50"
+>
+  {message}
+</div>

@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/main.astro';
 import UserStatus from '../../components/UserStatus.svelte';
+import AuthDegradedBanner from '../../components/AuthDegradedBanner.astro';
 import { getSessionUser } from '../../lib/auth-utils.js';
 import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
@@ -15,24 +16,20 @@ const locale = ((Astro.props.locale as string | undefined) || (Astro.params.loca
 const t = (key: string) => translate(locale, key);
 const translations = getTranslations(locale);
 
-// Get user session
-let user: Awaited<ReturnType<typeof getSessionUser>> = null;
+const sessionResult = await getSessionUser(Astro.request);
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+const authFailed = sessionResult.status === 'error';
 let characterSetups: CharacterSetup[] = [];
 
-try {
-  user = await getSessionUser(Astro.request);
-
-  // Get character setups from database if authenticated
-  if (user?.id) {
-    const characterSetupRepo = new CharacterSetupRepository();
-    characterSetups = await characterSetupRepo.findByUser(user.id);
-  }
-} catch (error) {
-  console.log('Auth session error:', error instanceof Error ? error.message : 'Unknown error');
+// Get character setups from database if authenticated
+if (user?.id) {
+  const characterSetupRepo = new CharacterSetupRepository();
+  characterSetups = await characterSetupRepo.findByUser(user.id);
 }
 ---
 
 <MainLayout title={t("characters.title")}>
+  {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
   <!-- Ocean Background with animated waves -->
   <div class="min-h-screen relative overflow-hidden">
     <!-- Gradient Ocean Background -->

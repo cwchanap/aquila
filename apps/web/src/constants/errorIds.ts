@@ -18,8 +18,11 @@ export const ERROR_IDS = {
     AUTH_USER_ALREADY_EXISTS: 'AUTH_006',
     AUTH_INVALID_CREDENTIALS: 'AUTH_007',
     // AUTH_008 was AUTH_PASSWORD_HASH_FAILED (bcrypt); retired when
-    // change-password was removed for Google-only auth. Gap left intentionally
-    // to avoid renumbering stable IDs.
+    // change-password was removed for Google-only auth.
+    // AUTH_009 was AUTH_PASSWORD_CHANGE_FAILED (wired into the deleted
+    // change-password endpoint); retired in the same change. Both gaps are
+    // left intentionally to avoid renumbering stable IDs — do NOT reuse these
+    // IDs for new errors, as they may already exist in historical Sentry data.
 
     // Database errors (DB_001-099)
     DB_CONNECTION_FAILED: 'DB_001',

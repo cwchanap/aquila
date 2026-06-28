@@ -19,9 +19,14 @@ vi.mock('../logger.js', () => ({
     },
 }));
 
+vi.mock('../../constants/errorIds.js', () => ({
+    ERROR_IDS: { AUTH_SESSION_GET_FAILED: 'AUTH_005' },
+}));
+
 import { getSessionUser } from '../auth-utils';
 import { auth } from '../auth.js';
 import { logger } from '../logger.js';
+import { ERROR_IDS } from '../../constants/errorIds.js';
 
 const mockGetSession = vi.mocked(auth.api.getSession);
 const mockLoggerError = vi.mocked(logger.error);
@@ -64,7 +69,7 @@ describe('getSessionUser', () => {
 
             const result = await getSessionUser(makeRequest('session=abc'));
 
-            expect(result).toEqual(mockUser);
+            expect(result).toEqual({ status: 'ok', user: mockUser });
             expect(mockGetSession).toHaveBeenCalledOnce();
         });
 
@@ -82,41 +87,45 @@ describe('getSessionUser', () => {
     });
 
     describe('unauthenticated / missing session', () => {
-        it('returns null when session is null', async () => {
+        it('returns { status: "ok", user: null } when session is null', async () => {
             mockGetSession.mockResolvedValue(null as any);
 
             const result = await getSessionUser(makeRequest());
 
-            expect(result).toBeNull();
+            expect(result).toEqual({ status: 'ok', user: null });
         });
 
-        it('returns null when session has no user (undefined)', async () => {
+        it('returns { status: "ok", user: null } when session has no user (undefined)', async () => {
             mockGetSession.mockResolvedValue({ user: undefined } as any);
 
             const result = await getSessionUser(makeRequest());
 
-            expect(result).toBeNull();
+            expect(result).toEqual({ status: 'ok', user: null });
         });
 
-        it('returns null when session object has no user property', async () => {
+        it('returns { status: "ok", user: null } when session object has no user property', async () => {
             mockGetSession.mockResolvedValue({} as any);
 
             const result = await getSessionUser(makeRequest());
 
-            expect(result).toBeNull();
+            expect(result).toEqual({ status: 'ok', user: null });
         });
     });
 
     describe('error handling', () => {
-        it('returns null when auth.api.getSession throws', async () => {
-            mockGetSession.mockRejectedValue(new Error('DB connection failed'));
+        it('returns { status: "error" } when auth.api.getSession throws', async () => {
+            const error = new Error('DB connection failed');
+            mockGetSession.mockRejectedValue(error);
 
             const result = await getSessionUser(makeRequest());
 
-            expect(result).toBeNull();
+            expect(result.status).toBe('error');
+            if (result.status === 'error') {
+                expect(result.error).toBe(error);
+            }
         });
 
-        it('logs the error when auth.api.getSession throws', async () => {
+        it('logs the error with AUTH_SESSION_GET_FAILED errorId when auth.api.getSession throws', async () => {
             const error = new Error('Auth service unavailable');
             mockGetSession.mockRejectedValue(error);
 
@@ -124,16 +133,20 @@ describe('getSessionUser', () => {
 
             expect(mockLoggerError).toHaveBeenCalledWith(
                 'Failed to retrieve session',
-                error
+                error,
+                { errorId: ERROR_IDS.AUTH_SESSION_GET_FAILED }
             );
         });
 
-        it('returns null when auth throws a non-Error rejection', async () => {
+        it('returns { status: "error" } when auth throws a non-Error rejection', async () => {
             mockGetSession.mockRejectedValue('string error');
 
             const result = await getSessionUser(makeRequest());
 
-            expect(result).toBeNull();
+            expect(result.status).toBe('error');
+            if (result.status === 'error') {
+                expect(result.error).toBe('string error');
+            }
         });
     });
 });

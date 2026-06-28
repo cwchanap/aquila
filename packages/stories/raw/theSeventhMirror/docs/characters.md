@@ -323,7 +323,7 @@
 ### 基本資料
 
 - **身份**：災害警報系統底層設計工程師，神鏡計畫知情者
-- **年齡**：35 歲
+- **年齡**：四十多歲
 - **現狀**：第一日死亡，遺言「不要救東京」
 
 ### 背景與處境
@@ -353,9 +353,9 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 35-year-old Japanese man, short neat black hair, glasses, tired face with stubble, dark casual jacket over shirt, anxious but focused expression, dim night lighting, muted cool palette, upper-body shot, clean background
-- **scared**: anime visual-novel portrait, 35-year-old man, face pale and sweating, hand pressing blood-soaked cloth against ribs, eyes desperate but still focused, glasses askew, dark jacket, cold lighting, upper-body shot
-- **determined**: anime visual-novel portrait, 35-year-old man, jaw set despite pain, eyes sharp with urgency, handing something forward, dark jacket, stark lighting, upper-body shot
+- **base**: anime visual-novel portrait, 42-year-old Japanese man, short neat black hair, glasses, tired face with stubble, dark casual jacket over shirt, anxious but focused expression, dim night lighting, muted cool palette, upper-body shot, clean background
+- **scared**: anime visual-novel portrait, 42-year-old man, face pale and sweating, hand pressing blood-soaked cloth against ribs, eyes desperate but still focused, glasses askew, dark jacket, cold lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 42-year-old man, jaw set despite pain, eyes sharp with urgency, handing something forward, dark jacket, stark lighting, upper-body shot
 
 ---
 

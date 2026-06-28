@@ -5,7 +5,12 @@ export enum Portrait {
     AsakuraMio_Determined = "asakura_mio/determined",
     AsakuraMio_Exhausted = "asakura_mio/exhausted",
     AsakuraMio_Sad = "asakura_mio/sad",
+    AsakuraMio_Scared = "asakura_mio/scared",
+    AsakuraMio_Shocked = "asakura_mio/shocked",
     AsakuraYuma_Base = "asakura_yuma/base",
+    ChidaKosuke_Base = "chida_kosuke/base",
+    ChidaKosuke_Determined = "chida_kosuke/determined",
+    ChidaKosuke_Scared = "chida_kosuke/scared",
     KusakubeSatoru_Base = "kusakube_satoru/base",
     ShiraishiKotone_Base = "shiraishi_kotone/base",
 }

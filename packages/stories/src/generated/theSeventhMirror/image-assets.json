@@ -45,6 +45,26 @@
       "key": "chapter_1/ch1_act7_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_1/ch1_act7_s0.png",
       "prompt": "Wangan New Transit elevated platform at night, cold blue lighting, glass partition walls reflecting Tokyo Bay lights in distance, sparse waiting passengers, electronic departure board glowing, automated driverless train approaching through elevated track, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_2/ch2_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
+      "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_2/ch2_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act4_s0.png",
+      "prompt": "Wangan New Transit car 7 interior at night, overly clean white cold lighting, empty seats, monitor red dot glowing, window showing blurred bridge maintenance zone lights streaking past, visual-novel background art, tense enclosed atmosphere"
+    },
+    {
+      "key": "chapter_2/ch2_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act5_s0.png",
+      "prompt": "Wangan New Transit car 7 interior at night, white cold lighting restored but dimmer, single passenger slumping forward in seat, dark wet stain spreading on seat edge, monitor red dot steadily glowing, visual-novel background art, suffocating enclosed atmosphere"
+    },
+    {
+      "key": "chapter_2/ch2_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act6_s0.png",
+      "prompt": "Wangan New Transit car 7 interior at night, cold white lighting, single passenger standing pressed against wall near emergency call button, a man slumped unconscious in seat, dark blood visible on seat and floor, monitor red dot glowing steadily, train beginning emergency deceleration, visual-novel background art, oppressive surveillance atmosphere"
     }
   ],
   "portraits": [
@@ -82,6 +102,31 @@
       "key": "asakura_mio/determined",
       "path": "the_seventh_mirror/characters/asakura_mio/determined.png",
       "prompt": "anime visual-novel portrait, 19-year-old woman, jaw clenched, eyes bright with resolve, chin slightly raised, dark jacket, strong directional light cutting across face, upper-body shot"
+    },
+    {
+      "key": "chida_kosuke/base",
+      "path": "the_seventh_mirror/characters/chida_kosuke/base.png",
+      "prompt": "anime visual-novel portrait, 42-year-old Japanese man, short neat black hair, glasses, tired face with stubble, dark casual jacket over shirt, anxious but focused expression, dim night lighting, muted cool palette, upper-body shot, clean background"
+    },
+    {
+      "key": "asakura_mio/shocked",
+      "path": "the_seventh_mirror/characters/asakura_mio/shocked.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, eyes blown wide, mouth slightly parted, face drained of color, dark jacket, stark lighting, upper-body shot"
+    },
+    {
+      "key": "chida_kosuke/determined",
+      "path": "the_seventh_mirror/characters/chida_kosuke/determined.png",
+      "prompt": "anime visual-novel portrait, 42-year-old man, jaw set despite pain, eyes sharp with urgency, handing something forward, dark jacket, stark lighting, upper-body shot"
+    },
+    {
+      "key": "chida_kosuke/scared",
+      "path": "the_seventh_mirror/characters/chida_kosuke/scared.png",
+      "prompt": "anime visual-novel portrait, 42-year-old man, face pale and sweating, hand pressing blood-soaked cloth against ribs, eyes desperate but still focused, glasses askew, dark jacket, cold lighting, upper-body shot"
+    },
+    {
+      "key": "asakura_mio/scared",
+      "path": "the_seventh_mirror/characters/asakura_mio/scared.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, eyes wide with whites showing, breath held, body rigid, loose strands of hair stuck to forehead with cold sweat, dark jacket, cold blue-grey lighting, upper-body shot"
     }
   ]
 }

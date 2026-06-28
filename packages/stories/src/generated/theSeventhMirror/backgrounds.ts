@@ -10,4 +10,8 @@ export enum Background {
     Chapter_1_Ch1_Act5_S0 = "chapter_1/ch1_act5_s0",
     Chapter_1_Ch1_Act6_S0 = "chapter_1/ch1_act6_s0",
     Chapter_1_Ch1_Act7_S0 = "chapter_1/ch1_act7_s0",
+    Chapter_2_Ch2_Act1_S0 = "chapter_2/ch2_act1_s0",
+    Chapter_2_Ch2_Act4_S0 = "chapter_2/ch2_act4_s0",
+    Chapter_2_Ch2_Act5_S0 = "chapter_2/ch2_act5_s0",
+    Chapter_2_Ch2_Act6_S0 = "chapter_2/ch2_act6_s0",
 }

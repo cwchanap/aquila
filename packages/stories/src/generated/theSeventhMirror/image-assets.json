@@ -65,6 +65,51 @@
       "key": "chapter_2/ch2_act6_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act6_s0.png",
       "prompt": "Wangan New Transit car 7 interior at night, cold white lighting, single passenger standing pressed against wall near emergency call button, a man slumped unconscious in seat, dark blood visible on seat and floor, monitor red dot glowing steadily, train beginning emergency deceleration, visual-novel background art, oppressive surveillance atmosphere"
+    },
+    {
+      "key": "chapter_3/ch3_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act1_s0.png",
+      "prompt": "Wangan New Transit car 7 interior at night, train stopped at sealed maintenance platform, cold white lighting, a man slumped unconscious in seat with dark blood spreading on seat and floor, a young woman standing with bloodied hands, one hand holding a silver metal object, monitor red dot glowing steadily, closed doors, oppressive surveillance atmosphere, visual-novel background art"
+    },
+    {
+      "key": "chapter_3/ch3_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act2_s0.png",
+      "prompt": "sealed maintenance platform at night, overhead industrial lights, transit car 7 door open, railway safety personnel in reflective vests, paramedics with equipment, control center staff with tablets, cold clinical atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_3/ch3_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act2_s1.png",
+      "prompt": "sealed maintenance platform near transit car 7 door, railway safety personnel guiding a young woman with bloodied hands away from the car, paramedics working inside the car visible through open door, cold industrial lighting, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_3/ch3_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act3_s0.png",
+      "prompt": "small station office converted to temporary control room at night, cold white fluorescent lighting, desk with paper cup of water, surveillance monitors showing frozen frames, transit car floor plan on wall, institutional clean atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_3/ch3_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act3_s1.png",
+      "prompt": "surveillance monitor screen in small office room, showing frozen frame of transit car 7 interior from ceiling camera angle, a young woman standing near a seated man, cold grainy image with timestamp overlay, visual-novel background art, close shot on screen"
+    },
+    {
+      "key": "chapter_3/ch3_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act4_s0.png",
+      "prompt": "small station office or temporary police interview room at night, cold white fluorescent lighting, metal desk with scattered documents and evidence bags, monitor showing transit car schematic, paper cup of water, institutional claustrophobic atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_3/ch3_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act5_s0.png",
+      "prompt": "police station temporary interview room at night, cold fluorescent lighting, metal table with laptop and printed forms, two chairs facing each other, one-way observation glass on side wall, institutional claustrophobic atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_3/ch3_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act6_s0.png",
+      "prompt": "police station corridor at night, long fluorescent-lit hallway, reflective floor, doors with small windows along both sides, cold institutional lighting, a young woman in a thin grey jacket walking alone with a crossbody bag, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_3/ch3_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_3/ch3_act6_s1.png",
+      "prompt": "frozen surveillance camera frame on a wall-mounted monitor, transit car 7 interior from ceiling angle, a man slumped against seat and window, a young woman standing beside him holding a silver metal object in her left hand, broken edge catching cold light like a blade, her hands covered in dark blood, cold blue-white monitor glow, visual-novel background art, close shot"
     }
   ],
   "portraits": [
@@ -127,6 +172,16 @@
       "key": "asakura_mio/scared",
       "path": "the_seventh_mirror/characters/asakura_mio/scared.png",
       "prompt": "anime visual-novel portrait, 19-year-old woman, eyes wide with whites showing, breath held, body rigid, loose strands of hair stuck to forehead with cold sweat, dark jacket, cold blue-grey lighting, upper-body shot"
+    },
+    {
+      "key": "asakura_mio/angry",
+      "path": "the_seventh_mirror/characters/asakura_mio/angry.png",
+      "prompt": "anime visual-novel portrait, 19-year-old woman, jaw set firm, eyes sharp with cold fury, brows lowered, leaning slightly forward, dark jacket, tense shoulders, harsh directional light, upper-body shot"
+    },
+    {
+      "key": "kusakube_satoru/determined",
+      "path": "the_seventh_mirror/characters/kusakube_satoru/determined.png",
+      "prompt": "anime visual-novel portrait, 45-year-old man, jaw set, eyes sharp with grim resolve, leaning forward, dark suit, strong directional light, upper-body shot"
     }
   ]
 }

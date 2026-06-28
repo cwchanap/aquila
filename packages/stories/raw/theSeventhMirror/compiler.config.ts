@@ -25,6 +25,24 @@ const config: StoryCompilerConfig = {
                 /^(\u6AC3\u53F0\u4EBA\u54E1|\u8077\u54E1|\u7814\u7A76\u4EBA\u54E1|\u6AC3\u53F0)$/,
             id: 'clinic_staff',
         },
+        {
+            pattern:
+                /^(\u7AD9\u52D9\u4E3B\u7BA1|\u7AD9\u52D9\u4EBA\u54E1|\u7AD9\u52D9|\u6280\u8853\u4EBA\u54E1|\u6280\u8853\u73ED)$/,
+            id: 'station_staff',
+        },
+        {
+            pattern: /^(\u6551\u8B77\u4EBA\u54E1|\u6551\u8B77)$/,
+            id: 'paramedic',
+        },
+        {
+            pattern:
+                /^(\u9435\u9053\u5B89\u5168\u4EBA\u54E1|\u5B89\u5168\u4EBA\u54E1)$/,
+            id: 'railway_safety',
+        },
+        {
+            pattern: /^(\u9451\u8B58\u4EBA\u54E1|\u9451\u8B58)$/,
+            id: 'forensics',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

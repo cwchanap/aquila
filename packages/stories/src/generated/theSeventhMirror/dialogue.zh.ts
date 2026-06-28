@@ -14,6 +14,12 @@ import { scene as s_ch2_act3 } from './scenes/ch2_act3';
 import { scene as s_ch2_act4 } from './scenes/ch2_act4';
 import { scene as s_ch2_act5 } from './scenes/ch2_act5';
 import { scene as s_ch2_act6 } from './scenes/ch2_act6';
+import { scene as s_ch3_act1 } from './scenes/ch3_act1';
+import { scene as s_ch3_act2 } from './scenes/ch3_act2';
+import { scene as s_ch3_act3 } from './scenes/ch3_act3';
+import { scene as s_ch3_act4 } from './scenes/ch3_act4';
+import { scene as s_ch3_act5 } from './scenes/ch3_act5';
+import { scene as s_ch3_act6 } from './scenes/ch3_act6';
 
 export const theSeventhMirrorZhDialogue: DialogueMap = {
     "ch1_act1": s_ch1_act1,
@@ -29,4 +35,10 @@ export const theSeventhMirrorZhDialogue: DialogueMap = {
     "ch2_act4": s_ch2_act4,
     "ch2_act5": s_ch2_act5,
     "ch2_act6": s_ch2_act6,
+    "ch3_act1": s_ch3_act1,
+    "ch3_act2": s_ch3_act2,
+    "ch3_act3": s_ch3_act3,
+    "ch3_act4": s_ch3_act4,
+    "ch3_act5": s_ch3_act5,
+    "ch3_act6": s_ch3_act6,
 };

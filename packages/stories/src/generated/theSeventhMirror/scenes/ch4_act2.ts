@@ -14,7 +14,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但發生過。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著鏡子。鏡面很小，映出她的一隻眼睛和半邊額頭。額頭上有冷汗乾掉的痕跡。眼睛下面的暗圈比早上更深。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)悠真說，妳總是看別人的破綻，偶爾也該看看自己。", background: Background.Chapter_4_Ch4_Act2_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真送她這面鏡子的時候，她嫌它幼稚。一個十五歲的男生在學校合作社買的，塑膠外殼，背面印著一隻很醜的貓。她說這什麼。悠真說鏡子啊。她說我知道是鏡子，我問的是為什麼。悠真說，因為妳從來不照鏡子。", background: Background.Chapter_4_Ch4_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真送她這面鏡子的時候，她嫌它幼稚。一個十五歲的男生在學校合作社買的，塑膠外殼，背面印著一隻很醜的貓。她問這是什麼。悠真說鏡子。她說我知道是鏡子，我問的是為什麼送我這個。悠真說，因為妳從來不照鏡子。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有丟掉它。她把它放在書桌上，放在悠真失蹤時間線旁邊。她每天出門前不照鏡子，但她會看一眼它還在不在。像在確認悠真還沒有被完全抹掉。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "現在她不敢把它交出去。她剛看見外殼進了證物袋。血衣進了證物袋。手機被備份。每一樣東西進入流程之後，都變成別人的語言——「金屬外殼狀物」「染血衣物」「數位資料初步保全」。鏡子如果進去，會變成什麼？「塑膠製反射器具」？她不知道。她不想知道。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子留在書桌上。然後她坐下來。", background: Background.Chapter_4_Ch4_Act2_S0 },

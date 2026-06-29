@@ -15,4 +15,7 @@ export enum Portrait {
     KusakubeSatoru_Base = "kusakube_satoru/base",
     KusakubeSatoru_Determined = "kusakube_satoru/determined",
     ShiraishiKotone_Base = "shiraishi_kotone/base",
+    ShiraishiKotone_Guilty = "shiraishi_kotone/guilty",
+    ShiraishiKotone_Sad = "shiraishi_kotone/sad",
+    ShiraishiKotone_Shocked = "shiraishi_kotone/shocked",
 }

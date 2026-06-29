@@ -11,6 +11,7 @@ describe('Story Types', () => {
             const expectedIds = [
                 'train_adventure',
                 'dont_save_me_before_midnight',
+                'the_seventh_mirror',
             ];
             const actualIds = Object.values(StoryId);
             expect(actualIds).toEqual(expectedIds);

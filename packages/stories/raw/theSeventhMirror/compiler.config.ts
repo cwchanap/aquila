@@ -43,6 +43,20 @@ const config: StoryCompilerConfig = {
             pattern: /^(\u9451\u8B58\u4EBA\u54E1|\u9451\u8B58)$/,
             id: 'forensics',
         },
+        {
+            pattern:
+                /^(\u8ABF\u67E5\u5A92\u9AD4\u524D\u8F29|\u5A92\u9AD4\u524D\u8F29|\u524D\u8F29)$/,
+            id: 'media_senior',
+        },
+        {
+            pattern:
+                /^(\u5BA2\u670D|\u7063\u5CB8\u65B0\u4EA4\u901A\u5BA2\u670D)$/,
+            id: 'customer_service',
+        },
+        {
+            pattern: /^(\u4FDD\u5168|\u57FA\u5730\u4FDD\u5168)$/,
+            id: 'security_guard',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

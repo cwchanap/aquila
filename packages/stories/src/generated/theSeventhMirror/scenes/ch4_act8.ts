@@ -23,7 +23,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Message, character: "訊息", dialogue: "防災同步測試。防災同步測試。", background: Background.Chapter_4_Ch4_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）七秒。", background: Background.Chapter_4_Ch4_Act8_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手機比街上所有公共螢幕晚了七秒。不是第一次了。上週的測試也是。每一次都這樣。她以為是手機的問題，是推播延遲，是網路。但現在所有螢幕都在她面前同時亮著，而她的手機剛剛才震——整整晚了七秒。", background: Background.Chapter_4_Ch4_Act8_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不是我的手機慢。是別的東西比我的手機快。這些公共系統在同步，而我的手機不在那個同步裡。", background: Background.Chapter_4_Ch4_Act8_S0, portrait: Portrait.AsakuraMio_Scared },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不是手機慢。是別的東西比它快。公共系統在同步，我的不在。", background: Background.Chapter_4_Ch4_Act8_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她還沒想完。", background: Background.Chapter_4_Ch4_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遠處。東京灣人工島方向。白光。", background: Background.Chapter_4_Ch4_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有聲音。沒有爆炸。沒有衝擊波。沒有熱。她的臉沒有被灼傷。她的衣服沒有被吹動。她只是看見——遠處的海面上方，有一團白色的光，無聲地亮起來。", background: Background.Chapter_4_Ch4_Act8_S0 },

@@ -16,6 +16,9 @@ export type DontSaveMeBeforeMidnightFlowConfig =
 
 type DontSaveMeBeforeMidnightLocale = 'en' | 'zh';
 
+// English is not yet authored; fall back to the generated zh content as a
+// visible placeholder so the default-locale ('en') reader stays functional.
+// TODO: author/compile real en source.
 const dialogueByLocale: Record<DontSaveMeBeforeMidnightLocale, DialogueMap> = {
     zh: dontSaveMeBeforeMidnightZhDialogue,
     en: dontSaveMeBeforeMidnightZhDialogue,

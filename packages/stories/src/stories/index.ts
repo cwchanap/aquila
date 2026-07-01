@@ -9,6 +9,11 @@ import {
     dontSaveMeBeforeMidnightFlow,
     type DontSaveMeBeforeMidnightFlowConfig,
 } from './dontSaveMeBeforeMidnight';
+import {
+    getTheSeventhMirrorStory,
+    theSeventhMirrorFlow,
+    type TheSeventhMirrorFlowConfig,
+} from './theSeventhMirror';
 
 export type StoryLoaderResult = {
     dialogue: DialogueMap;
@@ -17,16 +22,19 @@ export type StoryLoaderResult = {
 
 export type StoryFlowConfig =
     | TrainAdventureFlowConfig
-    | DontSaveMeBeforeMidnightFlowConfig;
+    | DontSaveMeBeforeMidnightFlowConfig
+    | TheSeventhMirrorFlowConfig;
 
 const storyLoaders: Record<string, (locale: string) => StoryLoaderResult> = {
     train_adventure: getTrainAdventureStory,
     dont_save_me_before_midnight: getDontSaveMeBeforeMidnightStory,
+    the_seventh_mirror: getTheSeventhMirrorStory,
 };
 
 const storyFlows: Record<string, StoryFlowConfig> = {
     train_adventure: trainAdventureFlow,
     dont_save_me_before_midnight: dontSaveMeBeforeMidnightFlow,
+    the_seventh_mirror: theSeventhMirrorFlow,
 };
 
 export function getStoryContent(

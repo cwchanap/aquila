@@ -14,7 +14,7 @@ export type { DontSaveMeBeforeMidnightSceneId };
 export type DontSaveMeBeforeMidnightFlowConfig =
     FlowConfig<DontSaveMeBeforeMidnightSceneId>;
 
-export type DontSaveMeBeforeMidnightLocale = 'en' | 'zh';
+type DontSaveMeBeforeMidnightLocale = 'en' | 'zh';
 
 const dialogueByLocale: Record<DontSaveMeBeforeMidnightLocale, DialogueMap> = {
     zh: dontSaveMeBeforeMidnightZhDialogue,

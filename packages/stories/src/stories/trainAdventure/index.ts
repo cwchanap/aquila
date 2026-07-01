@@ -14,7 +14,7 @@ export type { TrainAdventureSceneId };
 // Convenience alias consumed by the story registry (stories/index.ts).
 export type TrainAdventureFlowConfig = FlowConfig<TrainAdventureSceneId>;
 
-export type TrainAdventureLocale = 'en' | 'zh';
+type TrainAdventureLocale = 'en' | 'zh';
 
 // English is not yet authored; fall back to the generated zh content as a
 // visible placeholder so the default-locale ('en') reader stays functional.

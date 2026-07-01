@@ -13,7 +13,7 @@ export type { TheSeventhMirrorSceneId };
 
 export type TheSeventhMirrorFlowConfig = FlowConfig<TheSeventhMirrorSceneId>;
 
-export type TheSeventhMirrorLocale = 'en' | 'zh';
+type TheSeventhMirrorLocale = 'en' | 'zh';
 
 // English is not yet authored; fall back to the generated zh content as a
 // visible placeholder so the default-locale ('en') reader stays functional.

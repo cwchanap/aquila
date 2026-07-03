@@ -32,12 +32,10 @@ export class BookmarksManager {
     initializeUI(): void {
         const titleEl = document.getElementById('page-title');
         const descEl = document.getElementById('page-description');
-        const backBtn = document.getElementById('back-button');
         const loadingEl = document.getElementById('loading-text');
 
         if (titleEl) titleEl.textContent = this.t.bookmarks.title;
         if (descEl) descEl.textContent = this.t.bookmarks.description;
-        if (backBtn) backBtn.textContent = this.t.bookmarks.backToHome;
         if (loadingEl) loadingEl.textContent = this.t.bookmarks.loading;
     }
 
@@ -77,7 +75,7 @@ export class BookmarksManager {
     private createCard(): HTMLDivElement {
         const card = document.createElement('div');
         card.className =
-            'bg-white/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 text-center';
+            'bg-white/[0.08] backdrop-blur-xl rounded-2xl p-8 border border-white/15 text-center';
         return card;
     }
 
@@ -90,8 +88,8 @@ export class BookmarksManager {
         link.href = href;
         link.textContent = text;
         link.className = isPrimary
-            ? 'inline-block px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300'
-            : 'px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-300';
+            ? 'inline-block px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300'
+            : 'px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white/80 font-medium transition-all duration-300';
         return link;
     }
 
@@ -115,7 +113,7 @@ export class BookmarksManager {
         if (!this.isLoggedIn && this.localBookmarksList.length === 0) {
             const card = this.createCard();
             const message = document.createElement('p');
-            message.className = 'text-lg text-slate-700 mb-6';
+            message.className = 'text-white/70 mb-6';
             message.textContent = this.t.bookmarks.notLoggedIn;
             const loginBtn = this.createButton(
                 this.t.bookmarks.loginButton,
@@ -137,13 +135,14 @@ export class BookmarksManager {
         section.className = 'mb-8';
 
         const heading = document.createElement('h2');
-        heading.className = 'text-2xl font-bold text-slate-800 mb-4';
+        heading.className =
+            'text-xl font-serif font-semibold text-white/90 mb-4 tracking-tight';
         heading.textContent = title;
         section.appendChild(heading);
 
         if (bookmarks.length === 0) {
             const empty = document.createElement('p');
-            empty.className = 'text-slate-500 mb-4';
+            empty.className = 'text-white/65 mb-4';
             empty.textContent = this.t.bookmarks.noBookmarks;
             section.appendChild(empty);
 
@@ -168,20 +167,21 @@ export class BookmarksManager {
         section.className = 'mb-8';
 
         const heading = document.createElement('h2');
-        heading.className = 'text-2xl font-bold text-slate-800 mb-4';
+        heading.className =
+            'text-xl font-serif font-semibold text-white/90 mb-4 tracking-tight';
         heading.textContent = this.t.bookmarks.localBookmarks;
         section.appendChild(heading);
 
         if (this.localBookmarksList.length === 0) {
             const empty = document.createElement('p');
-            empty.className = 'text-slate-500';
+            empty.className = 'text-white/65';
             empty.textContent = this.t.bookmarks.noLocalBookmarks;
             section.appendChild(empty);
         } else {
             if (this.isLoggedIn) {
                 const bulkBtn = document.createElement('button');
                 bulkBtn.className =
-                    'mb-4 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300';
+                    'mb-4 px-6 py-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium shadow-lg transition-all duration-300';
                 bulkBtn.textContent = this.t.bookmarks.syncAllToCloud;
                 bulkBtn.onclick = () => this.syncAllToCloud();
                 section.appendChild(bulkBtn);
@@ -194,7 +194,7 @@ export class BookmarksManager {
 
         if (!this.isLoggedIn && this.localBookmarksList.length > 0) {
             const hint = document.createElement('p');
-            hint.className = 'text-sm text-slate-500 mt-4';
+            hint.className = 'text-sm text-white/45 mt-4';
             hint.textContent = this.t.bookmarks.loginToSync;
             section.appendChild(hint);
         }
@@ -208,7 +208,7 @@ export class BookmarksManager {
     ): void {
         const banner = document.createElement('div');
         banner.className =
-            'mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm';
+            'mb-4 p-4 bg-rose-500/10 border border-rose-300/30 rounded-xl text-rose-100 text-sm';
         banner.textContent = message;
         container.prepend(banner);
     }
@@ -221,13 +221,13 @@ export class BookmarksManager {
         const card = this.createCard();
 
         const message = document.createElement('p');
-        message.className = 'text-lg text-red-600 mb-4';
+        message.className = 'text-rose-200 mb-6';
         message.textContent = this.t.bookmarks.error;
 
         const retryBtn = document.createElement('button');
         retryBtn.textContent = this.t.bookmarks.retry;
         retryBtn.className =
-            'px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-300';
+            'px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium shadow-lg transition-all duration-300';
         retryBtn.onclick = () => location.reload();
 
         card.appendChild(message);
@@ -242,7 +242,7 @@ export class BookmarksManager {
     ): HTMLDivElement {
         const card = document.createElement('div');
         card.className =
-            'bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300 mb-4';
+            'bg-gradient-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-white/15 hover:border-white/30 transition-all duration-300 mb-4';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'flex items-start justify-between';
@@ -251,7 +251,7 @@ export class BookmarksManager {
         content.className = 'flex-1';
 
         const title = document.createElement('h3');
-        title.className = 'text-xl font-bold text-slate-800 mb-2';
+        title.className = 'text-lg font-serif font-semibold text-white mb-2';
 
         let dialogueNumber: number | null = null;
         let displayName = bookmark.bookmarkName;
@@ -266,7 +266,7 @@ export class BookmarksManager {
         title.textContent = displayName;
 
         const details = document.createElement('div');
-        details.className = 'space-y-1 text-sm text-slate-600';
+        details.className = 'space-y-1 text-sm text-white/65';
 
         const date = new Date(bookmark.updatedAt).toLocaleDateString(
             this.locale === 'zh' ? 'zh-CN' : 'en-US',
@@ -294,7 +294,7 @@ export class BookmarksManager {
         infos.forEach(info => {
             const p = document.createElement('p');
             const label = document.createElement('span');
-            label.className = 'font-semibold';
+            label.className = 'text-white/45 font-medium';
             label.textContent = info.label;
             p.appendChild(label);
             p.appendChild(document.createTextNode(' ' + info.value));
@@ -311,13 +311,13 @@ export class BookmarksManager {
         }
         continueLink.href = href;
         continueLink.className =
-            'px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-center text-sm';
+            'px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-center text-sm shadow-lg transition-all duration-300';
         continueLink.textContent = this.t.bookmarks.continueReading;
 
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = this.t.bookmarks.delete;
         deleteBtn.className =
-            'px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm';
+            'px-4 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-300/30 text-rose-100 font-medium text-sm transition-all duration-300';
         deleteBtn.onclick = () => this.deleteBookmark(bookmark.id);
 
         actions.appendChild(continueLink);
@@ -334,7 +334,7 @@ export class BookmarksManager {
     private createLocalBookmarkCard(bookmark: LocalBookmark): HTMLDivElement {
         const card = document.createElement('div');
         card.className =
-            'bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-amber-200/50 hover:shadow-2xl transition-all duration-300 mb-4';
+            'bg-gradient-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-amber-300/25 hover:border-amber-300/40 transition-all duration-300 mb-4';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'flex items-start justify-between';
@@ -343,7 +343,7 @@ export class BookmarksManager {
         content.className = 'flex-1';
 
         const title = document.createElement('h3');
-        title.className = 'text-xl font-bold text-slate-800 mb-2';
+        title.className = 'text-lg font-serif font-semibold text-white mb-2';
 
         let dialogueNumber: number | null = null;
         let displayName = bookmark.bookmarkName;
@@ -358,7 +358,7 @@ export class BookmarksManager {
         title.textContent = displayName;
 
         const details = document.createElement('div');
-        details.className = 'space-y-1 text-sm text-slate-600';
+        details.className = 'space-y-1 text-sm text-white/65';
 
         const date = new Date(bookmark.updatedAt).toLocaleDateString(
             this.locale === 'zh' ? 'zh-CN' : 'en-US',
@@ -380,7 +380,7 @@ export class BookmarksManager {
         infos.forEach(info => {
             const p = document.createElement('p');
             const label = document.createElement('span');
-            label.className = 'font-semibold';
+            label.className = 'text-white/45 font-medium';
             label.textContent = info.label;
             p.appendChild(label);
             p.appendChild(document.createTextNode(' ' + info.value));
@@ -397,13 +397,13 @@ export class BookmarksManager {
         }
         continueLink.href = href;
         continueLink.className =
-            'px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-center text-sm';
+            'px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-center text-sm shadow-lg transition-all duration-300';
         continueLink.textContent = this.t.bookmarks.continueReading;
 
         if (this.isLoggedIn) {
             const syncBtn = document.createElement('button');
             syncBtn.className =
-                'px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm';
+                'px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium text-sm transition-all duration-300';
             syncBtn.textContent = this.t.bookmarks.syncToCloud;
             syncBtn.onclick = () => this.syncSingleToCloud(bookmark.id);
             actions.appendChild(syncBtn);
@@ -412,7 +412,7 @@ export class BookmarksManager {
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = this.t.bookmarks.deleteLocal;
         deleteBtn.className =
-            'px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm';
+            'px-4 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-300/30 text-rose-100 font-medium text-sm transition-all duration-300';
         deleteBtn.onclick = () => this.deleteLocalBookmark(bookmark.id);
 
         actions.appendChild(continueLink);

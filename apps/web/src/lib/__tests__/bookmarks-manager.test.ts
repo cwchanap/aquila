@@ -321,7 +321,7 @@ describe('BookmarksManager', () => {
 
             // Cloud section contains one card per bookmark
             const cloudCards = sections[0]!.querySelectorAll(
-                ':scope > .bg-white\\/90'
+                ':scope > [data-testid="bookmark-card"]'
             );
             expect(cloudCards.length).toBe(sampleBookmarks.length);
         });
@@ -752,7 +752,7 @@ describe('BookmarksManager', () => {
                 buttons.find(
                     b =>
                         b.textContent === 'Delete' &&
-                        b.className.includes('bg-red-500')
+                        b.dataset.testid === 'delete-local-bookmark'
                 )
             ).toBeDefined();
         });
@@ -1192,7 +1192,7 @@ describe('BookmarksManager', () => {
             ].find(
                 b =>
                     b.textContent === 'Delete' &&
-                    b.className.includes('bg-red-500')
+                    b.dataset.testid === 'delete-local-bookmark'
             );
 
             mockShowConfirm.mockResolvedValue(true);
@@ -1230,7 +1230,7 @@ describe('BookmarksManager', () => {
             ].find(
                 b =>
                     b.textContent === 'Delete' &&
-                    b.className.includes('bg-red-500')
+                    b.dataset.testid === 'delete-local-bookmark'
             );
 
             mockShowConfirm.mockResolvedValue(false);

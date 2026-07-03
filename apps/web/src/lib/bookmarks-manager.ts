@@ -217,6 +217,7 @@ export class BookmarksManager {
         const card = document.createElement('div');
         card.className =
             'bg-gradient-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-white/15 hover:border-white/30 transition-all duration-300 mb-4';
+        card.dataset.testid = 'bookmark-card';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'flex items-start justify-between';
@@ -292,6 +293,7 @@ export class BookmarksManager {
         deleteBtn.textContent = this.t.bookmarks.delete;
         deleteBtn.className =
             'px-4 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-300/30 text-rose-100 font-medium text-sm transition-all duration-300';
+        deleteBtn.dataset.testid = 'delete-cloud-bookmark';
         deleteBtn.onclick = () => this.deleteBookmark(bookmark.id);
 
         actions.appendChild(continueLink);
@@ -309,6 +311,7 @@ export class BookmarksManager {
         const card = document.createElement('div');
         card.className =
             'bg-gradient-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-amber-300/25 hover:border-amber-300/40 transition-all duration-300 mb-4';
+        card.dataset.testid = 'local-bookmark-card';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'flex items-start justify-between';
@@ -387,6 +390,7 @@ export class BookmarksManager {
         deleteBtn.textContent = this.t.bookmarks.deleteLocal;
         deleteBtn.className =
             'px-4 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-300/30 text-rose-100 font-medium text-sm transition-all duration-300';
+        deleteBtn.dataset.testid = 'delete-local-bookmark';
         deleteBtn.onclick = () => this.deleteLocalBookmark(bookmark.id);
 
         actions.appendChild(continueLink);

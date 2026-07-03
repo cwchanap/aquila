@@ -1,5 +1,9 @@
 ---
 import MainLayout from '@/layouts/main.astro';
+import OceanBackground from '@/components/OceanBackground.astro';
+import UserStatus from '@/components/UserStatus.svelte';
+import AuthDegradedBanner from '@/components/AuthDegradedBanner.astro';
+import { getSessionUser } from '@/lib/auth-utils.js';
 import { t as translate } from '@/lib/utils';
 
 interface Props {
@@ -9,45 +13,96 @@ interface Props {
 // Derive locale from the prop (set by zh proxies) or route param
 const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
+
+const sessionResult = await getSessionUser(Astro.request);
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+const authFailed = sessionResult.status === 'error';
 ---
 
 <MainLayout title={t("bookmarks.title")}>
-    <div class="min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 py-12 px-6">
-        <div class="max-w-4xl mx-auto">
-            <!-- Header -->
-            <div class="mb-8">
-                <h1 id="page-title" class="text-4xl font-black text-white mb-2 drop-shadow-lg"></h1>
-                <p id="page-description" class="text-white/90"></p>
-            </div>
+  {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
+  <OceanBackground>
 
-            <!-- Back button -->
-            <div class="mb-6">
-                <a
-                    href={`/${locale}/`}
-                    id="back-button"
-                    class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-                >
-                </a>
-            </div>
+    <!-- Back button — refined glass pill -->
+    <a
+      href={`/${locale}/`}
+      aria-label={t("common.backLabel")}
+      class="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-white/40 text-white/80 hover:text-white transition-all duration-300 motion-safe:hover:scale-105 text-sm font-light tracking-wide"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>{t("common.back")}</span>
+    </a>
 
-            <!-- Bookmarks list -->
-            <div id="bookmarks-container" class="space-y-4" data-locale={locale}>
-                <div class="text-center py-12">
-                    <div id="loading-text" class="text-white/80"></div>
-                </div>
-            </div>
+    <!-- User status -->
+    <UserStatus client:load user={user} currentLocale={locale} />
+
+    <!-- Main content -->
+    <div class="min-h-screen flex flex-col items-center px-6 py-24">
+
+      <!-- Header -->
+      <div class="w-full max-w-4xl text-center mb-12 motion-safe:animate-[fadeSlideDown_0.7s_ease_forwards]">
+        <!-- Ambient divider above -->
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <div class="h-px w-16 bg-gradient-to-r from-transparent to-cyan-300/50"></div>
+          <div class="w-2 h-2 rounded-full bg-cyan-300/60 motion-safe:animate-[tidePulse_4s_ease-in-out_infinite]"></div>
+          <div class="h-px w-16 bg-gradient-to-l from-transparent to-cyan-300/50"></div>
         </div>
+
+        <h1 id="page-title" class="text-4xl sm:text-5xl font-serif font-bold text-white/95 tracking-tight drop-shadow-lg mb-3">
+          {t("bookmarks.title")}
+        </h1>
+        <p id="page-description" class="text-white/55 text-sm font-light">
+          {t("bookmarks.description")}
+        </p>
+      </div>
+
+      <!-- Bookmarks list -->
+      <div id="bookmarks-container" class="w-full max-w-4xl space-y-10" data-locale={locale}>
+        <div class="text-center py-12">
+          <div id="loading-text" class="text-white/70"></div>
+        </div>
+      </div>
+
     </div>
 
-    <script>
-        import { BookmarksManager } from '@/lib/bookmarks-manager';
+  </OceanBackground>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('bookmarks-container');
-            const locale = container?.getAttribute('data-locale') || 'en';
-            const manager = new BookmarksManager(locale);
-            manager.initializeUI();
-            manager.loadBookmarks();
-        });
-    </script>
+  <style is:global>
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes tidePulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50%       { opacity: 0.9; transform: scale(1.4); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      /* Scope to this page's own decorative animation classes only. */
+      [class*="fadeSlide"],
+      [class*="tidePulse"] {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <script>
+    import { BookmarksManager } from '@/lib/bookmarks-manager';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('bookmarks-container');
+      const locale = container?.getAttribute('data-locale') || 'en';
+      const manager = new BookmarksManager(locale);
+      manager.initializeUI();
+      manager.loadBookmarks();
+    });
+  </script>
 </MainLayout>

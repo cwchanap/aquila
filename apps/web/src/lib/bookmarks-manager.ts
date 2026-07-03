@@ -30,12 +30,8 @@ export class BookmarksManager {
     }
 
     initializeUI(): void {
-        const titleEl = document.getElementById('page-title');
-        const descEl = document.getElementById('page-description');
         const loadingEl = document.getElementById('loading-text');
 
-        if (titleEl) titleEl.textContent = this.t.bookmarks.title;
-        if (descEl) descEl.textContent = this.t.bookmarks.description;
         if (loadingEl) loadingEl.textContent = this.t.bookmarks.loading;
     }
 
@@ -194,7 +190,7 @@ export class BookmarksManager {
 
         if (!this.isLoggedIn && this.localBookmarksList.length > 0) {
             const hint = document.createElement('p');
-            hint.className = 'text-sm text-white/45 mt-4';
+            hint.className = 'text-sm text-white/70 mt-4';
             hint.textContent = this.t.bookmarks.loginToSync;
             section.appendChild(hint);
         }
@@ -211,28 +207,6 @@ export class BookmarksManager {
             'mb-4 p-4 bg-rose-500/10 border border-rose-300/30 rounded-xl text-rose-100 text-sm';
         banner.textContent = message;
         container.prepend(banner);
-    }
-
-    private renderError(): void {
-        const container = document.getElementById('bookmarks-container');
-        if (!container) return;
-
-        container.textContent = '';
-        const card = this.createCard();
-
-        const message = document.createElement('p');
-        message.className = 'text-rose-200 mb-6';
-        message.textContent = this.t.bookmarks.error;
-
-        const retryBtn = document.createElement('button');
-        retryBtn.textContent = this.t.bookmarks.retry;
-        retryBtn.className =
-            'px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium shadow-lg transition-all duration-300';
-        retryBtn.onclick = () => location.reload();
-
-        card.appendChild(message);
-        card.appendChild(retryBtn);
-        container.appendChild(card);
     }
 
     private createBookmarkCard(
@@ -294,7 +268,7 @@ export class BookmarksManager {
         infos.forEach(info => {
             const p = document.createElement('p');
             const label = document.createElement('span');
-            label.className = 'text-white/45 font-medium';
+            label.className = 'text-white/70 font-medium';
             label.textContent = info.label;
             p.appendChild(label);
             p.appendChild(document.createTextNode(' ' + info.value));
@@ -380,7 +354,7 @@ export class BookmarksManager {
         infos.forEach(info => {
             const p = document.createElement('p');
             const label = document.createElement('span');
-            label.className = 'text-white/45 font-medium';
+            label.className = 'text-white/70 font-medium';
             label.textContent = info.label;
             p.appendChild(label);
             p.appendChild(document.createTextNode(' ' + info.value));

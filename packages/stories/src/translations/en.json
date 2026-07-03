@@ -130,7 +130,6 @@
   "bookmarks": {
     "title": "📖 My Bookmarks",
     "description": "Your saved reading progress",
-    "backToHome": "← Back to Home",
     "loading": "Loading bookmarks...",
     "notLoggedIn": "Please log in to view your bookmarks",
     "loginButton": "Log in",

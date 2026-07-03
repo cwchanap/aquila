@@ -130,7 +130,6 @@
   "bookmarks": {
     "title": "📖 我的書籤",
     "description": "您儲存的閱讀進度",
-    "backToHome": "← 返回主頁",
     "loading": "載入書籤中...",
     "notLoggedIn": "請登入以查看您的書籤",
     "loginButton": "登入",

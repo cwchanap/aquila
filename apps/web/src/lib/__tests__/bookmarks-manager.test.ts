@@ -6,7 +6,6 @@ vi.mock('@aquila/stories', () => ({
         bookmarks: {
             title: 'My Bookmarks',
             description: 'Your saved reading positions',
-            backToHome: 'Back to Home',
             loading: 'Loading...',
             notLoggedIn: 'You must be logged in to view bookmarks.',
             loginButton: 'Log In',
@@ -131,32 +130,14 @@ describe('BookmarksManager', () => {
     });
 
     describe('initializeUI', () => {
-        it('sets text content of all UI elements', () => {
-            const title = document.createElement('div');
-            title.id = 'page-title';
-            const desc = document.createElement('div');
-            desc.id = 'page-description';
-            const back = document.createElement('a');
-            back.id = 'back-button';
+        it('sets loading text content', () => {
             const loading = document.createElement('div');
             loading.id = 'loading-text';
-            document.body.appendChild(title);
-            document.body.appendChild(desc);
-            document.body.appendChild(back);
             document.body.appendChild(loading);
 
             const manager = new BookmarksManager('en');
             manager.initializeUI();
 
-            expect(document.getElementById('page-title')!.textContent).toBe(
-                'My Bookmarks'
-            );
-            expect(
-                document.getElementById('page-description')!.textContent
-            ).toBe('Your saved reading positions');
-            expect(document.getElementById('back-button')!.textContent).toBe(
-                'Back to Home'
-            );
             expect(document.getElementById('loading-text')!.textContent).toBe(
                 'Loading...'
             );
@@ -169,13 +150,13 @@ describe('BookmarksManager', () => {
         });
 
         it('only updates elements that are present', () => {
-            const title = document.createElement('div');
-            title.id = 'page-title';
-            document.body.appendChild(title);
+            const loading = document.createElement('div');
+            loading.id = 'loading-text';
+            document.body.appendChild(loading);
             const manager = new BookmarksManager('en');
             manager.initializeUI();
-            expect(document.getElementById('page-title')!.textContent).toBe(
-                'My Bookmarks'
+            expect(document.getElementById('loading-text')!.textContent).toBe(
+                'Loading...'
             );
         });
     });

@@ -57,6 +57,11 @@ const config: StoryCompilerConfig = {
             pattern: /^(\u4FDD\u5168|\u57FA\u5730\u4FDD\u5168)$/,
             id: 'security_guard',
         },
+        {
+            pattern:
+                /^(\u7DAD\u4FEE\u4EBA\u54E1|\u7DAD\u4FEE|\u7DAD\u4FEE\u54E1|\u7DAD\u4FEE\u5DE5\u4EBA|\u5DE5\u4F5C\u4EBA\u54E1)$/,
+            id: 'maintenance_worker',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

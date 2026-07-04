@@ -190,6 +190,91 @@
       "key": "chapter_4/ch4_act8_s2",
       "path": "the_seventh_mirror/backgrounds/chapter_4/ch4_act8_s2.png",
       "prompt": "small Japanese teenager's bedroom, morning light through curtains, unmade bed with school uniform draped on chair, game controller on desk, cheap earbuds, unopened snack bag, half-finished math homework, spare glasses case on desk corner, sneakers in corner, school bag, lived-in but empty, muted warm-cool palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_5/ch5_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act1_s0.png",
+      "prompt": "small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin curtains, unmade single bed, glowing phone screen, cheap electronic wall clock, sparse furnishings, a small hand mirror on a desk next to scattered handwritten notes, muted cold palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_5/ch5_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act1_s1.png",
+      "prompt": "small Japanese teenager's bedroom, morning light through curtains, unmade bed with school uniform draped on chair, game controller on desk, cheap earbuds, unopened snack bag, half-finished math homework, spare glasses case on desk corner, sneakers in corner, school bag, lived-in but empty, muted warm-cool palette, moody cinematic visual-novel background art"
+    },
+    {
+      "key": "chapter_5/ch5_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act2_s0.png",
+      "prompt": "small Tokyo apartment living room, early morning grey light, low table with notebook and pen, television on low volume showing disaster-sync test news, a young woman sitting on the floor hunched over paper notes, muted cold palette, moody cinematic visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act2_s1.png",
+      "prompt": "close-up of handwritten notes on a low table, three small sticky notes with traditional Chinese characters, a pen, soft grey morning light, a young woman's hand resting on the table edge, muted cool palette, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_5/ch5_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act3_s0.png",
+      "prompt": "small Tokyo apartment desk, laptop screen glowing in morning light, scattered handwritten notes, a young woman leaning forward typing intently, muted cool palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_5/ch5_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act3_s1.png",
+      "prompt": "close-up of a smartphone screen showing a corporate contact page with a phone number, soft morning light, a young woman's thumb hovering over the call button, muted cool palette, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_5/ch5_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act4_s0.png",
+      "prompt": "cozy Japanese cafe near a university campus, lunchtime, warm ambient lighting, wooden tables, a few students with laptops, two young women sitting across from each other with drinks and a sandwich, muted warm palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_5/ch5_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act5_s0.png",
+      "prompt": "small Tokyo apartment desk in afternoon light, notebook open with handwritten lists and crossed-out options, a pen, a small hand mirror nearby, a young woman leaning over the page with focused expression, muted warm-cool palette, moody cinematic visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_5/ch5_act5_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act5_s1.png",
+      "prompt": "close-up of a notebook page with a handwritten option list, five crossed-out lines and one underlined line, a pen resting on the page, soft afternoon light, muted cool palette, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_5/ch5_act5_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act5_s2.png",
+      "prompt": "small Tokyo apartment desk, a young woman's hand placing a small hand mirror into the inner pouch of a crossbody bag, soft afternoon light, muted cool palette, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_5/ch5_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act6_s0.png",
+      "prompt": "Tokyo street at dusk, young woman walking alone on a sidewalk under sodium streetlights, crossbody bag, phone vibrating in hand, distant elevated railway and station lights, cold blue-grey evening palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_5/ch5_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act6_s1.png",
+      "prompt": "entrance of a modern Tokyo waterfront transit station at evening, glass and steel architecture, scattered commuters, automated ticket gates glowing, station signage, disaster-sync test notice poster on a pillar, cold blue evening light mixed with warm interior lighting, visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_5/ch5_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act7_s0.png",
+      "prompt": "modern Tokyo waterfront transit station interior at night, wide concourse with multiple platforms, scattered commuters, escalators, internal connecting bridge overhead, construction zone with plastic sheeting and reflective tape to one side, station signage, surveillance camera red dots, convenience store glow in the distance, cold blue-white fluorescent lighting mixed with warm accent lights, visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "chapter_5/ch5_act7_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act7_s1.png",
+      "prompt": "view from behind a pillar in a Tokyo station concourse at night, partial view of a construction passage entrance with plastic sheeting and a warning sign, scattered commuters in the background, surveillance camera red dot visible overhead, cold fluorescent lighting, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_5/ch5_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act8_s0.png",
+      "prompt": "Tokyo waterfront transit station concourse at night, view through crowd and pillars toward a construction passage entrance, a middle-aged man in a dark jacket visible among commuters, cold fluorescent lighting mixed with warm accent lights, scattered passengers, surveillance camera red dots, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_5/ch5_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act8_s1.png",
+      "prompt": "Tokyo waterfront transit station, closer view of a construction passage entrance from behind a pillar, a middle-aged man in a dark jacket standing near a maintenance worker in uniform with mask and hat, scattered commuters passing in the background, cold fluorescent lighting, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_5/ch5_act8_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act8_s2.png",
+      "prompt": "Tokyo waterfront transit station construction passage entrance at night, heavy door half-closed, plastic sheeting, reflective tape, warning sign reading \"maintenance personnel only\", a young woman's hand reaching toward the door edge, cold fluorescent lighting from inside the passage, dark corridor beyond, visual-novel background art, close shot"
     }
   ],
   "portraits": [

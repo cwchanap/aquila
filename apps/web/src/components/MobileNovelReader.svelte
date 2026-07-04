@@ -278,7 +278,7 @@
 <svelte:window onkeydown={handleKeyPress} />
 
 <div
-  class="mobile-reader relative h-[100dvh] w-full overflow-hidden bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"
+  class="mobile-reader relative h-[100dvh] w-full overflow-hidden bg-linear-to-b from-sky-200 via-sky-300 to-blue-400"
 >
   <!-- Background content (reader + chrome). `inert` propagates to descendants,
        so we inert this wrapper — NOT the reader root — when an overlay is open.

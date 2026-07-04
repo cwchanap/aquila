@@ -59,7 +59,7 @@ export function createCharacterCard(
 
     const avatar = document.createElement('div');
     avatar.className =
-        'w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30';
+        'w-16 h-16 bg-linear-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold character-avatar shadow-lg border-2 border-white/30';
     avatar.textContent = characterName.charAt(0).toUpperCase();
 
     const info = document.createElement('div');
@@ -97,7 +97,7 @@ export function createCharacterCard(
     const playLink = document.createElement('a');
     playLink.href = `/${locale}/story/${encodeURIComponent(storyId)}`;
     playLink.className =
-        'character-play-link flex-1 min-w-0 py-3 px-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50';
+        'character-play-link flex-1 min-w-0 py-3 px-6 bg-linear-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.05] text-center border-2 border-cyan-300/50';
     playLink.style.cssText =
         "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
     playLink.textContent = translations.playStory;
@@ -105,14 +105,14 @@ export function createCharacterCard(
     const editBtn = document.createElement('button');
     editBtn.type = 'button';
     editBtn.className =
-        'character-edit-btn py-3 px-6 bg-gradient-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60';
+        'character-edit-btn py-3 px-6 bg-linear-to-r from-slate-200 to-white hover:from-white hover:to-slate-100 text-slate-700 hover:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-300/60';
     editBtn.style.fontFamily = "'Orbitron', monospace";
     editBtn.textContent = translations.edit;
 
     const saveBtn = document.createElement('button');
     saveBtn.type = 'button';
     saveBtn.className =
-        'character-save-btn py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden';
+        'character-save-btn py-3 px-6 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-400/50 hidden';
     saveBtn.style.cssText =
         "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
     saveBtn.textContent = translations.save;
@@ -120,7 +120,7 @@ export function createCharacterCard(
     const cancelBtn = document.createElement('button');
     cancelBtn.type = 'button';
     cancelBtn.className =
-        'character-cancel-btn py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden';
+        'character-cancel-btn py-3 px-6 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-red-400/50 hidden';
     cancelBtn.style.cssText =
         "font-family: 'Orbitron', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
     cancelBtn.textContent = translations.cancel;
@@ -151,7 +151,7 @@ export function createEmptyState(
     const link = document.createElement('a');
     link.href = `/${locale}/stories`;
     link.className =
-        'group relative inline-block py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden';
+        'group relative inline-block py-6 px-8 bg-linear-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden';
     link.style.cssText =
         "font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);";
 

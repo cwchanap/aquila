@@ -45,10 +45,10 @@ const authFailed = sessionResult.status === 'error';
       <div class="text-center mb-12 motion-safe:animate-[fadeSlideDown_0.7s_ease_forwards]">
         <!-- Ambient divider above -->
         <div class="flex items-center justify-center gap-3 mb-6">
-          <div class="h-px w-16 bg-gradient-to-r from-transparent to-cyan-300/50"></div>
+          <div class="h-px w-16 bg-linear-to-r from-transparent to-cyan-300/50"></div>
           <!-- Subtle accent: slow-drifting tide mark -->
           <div class="w-2 h-2 rounded-full bg-cyan-300/60 motion-safe:animate-[tidePulse_4s_ease-in-out_infinite]"></div>
-          <div class="h-px w-16 bg-gradient-to-l from-transparent to-cyan-300/50"></div>
+          <div class="h-px w-16 bg-linear-to-l from-transparent to-cyan-300/50"></div>
         </div>
 
         <h1 class="text-4xl sm:text-5xl font-serif font-bold text-white/95 tracking-tight drop-shadow-lg mb-3">
@@ -65,12 +65,14 @@ const authFailed = sessionResult.status === 'error';
         <!-- The Seventh Mirror Card -->
         <a
           href={`/${locale}/reader?story=${StoryId.THE_SEVENTH_MIRROR}`}
+          aria-labelledby="story-seventh-mirror-title"
+          aria-describedby="story-seventh-mirror-desc"
           class="story-card group block rounded-2xl overflow-hidden motion-safe:animate-[fadeSlideUp_0.6s_0.4s_ease_both]"
         >
-          <div class="relative h-full p-8 bg-gradient-to-br from-blue-950/30 to-slate-900/20 hover:from-blue-950/40 hover:to-slate-900/30 backdrop-blur-xl border border-white/15 hover:border-rose-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(251,113,133,0.12)]">
+          <div class="relative h-full p-8 bg-linear-to-br from-blue-950/30 to-slate-900/20 hover:from-blue-950/40 hover:to-slate-900/30 backdrop-blur-xl border border-white/15 hover:border-rose-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(251,113,133,0.12)]">
             <!-- Chapter emblem -->
             <div class="mb-5 flex items-start justify-between">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400/30 to-amber-500/30 border border-rose-300/30 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-xl bg-linear-to-br from-rose-400/30 to-amber-500/30 border border-rose-300/30 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-300/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 8v4l2 2M3.6 9h2M3.6 15h2M18.4 9h2M18.4 15h2M12 3.6v2M12 18.4v2" />
                 </svg>
@@ -82,29 +84,31 @@ const authFailed = sessionResult.status === 'error';
             </div>
 
             <!-- Story title -->
-            <h2 class="text-xl font-serif font-semibold text-white mb-2 leading-snug transition-colors duration-300">
+            <h2 id="story-seventh-mirror-title" class="text-xl font-serif font-semibold text-white mb-2 leading-snug transition-colors duration-300">
               {t("stories.theSeventhMirror")}
             </h2>
 
-            <!-- Descriptor — aria-hidden -->
-            <p class="text-white/75 text-sm font-light leading-relaxed group-hover:text-white/90 transition-colors duration-300" aria-hidden="true">
+            <!-- Descriptor — exposed via aria-describedby -->
+            <p id="story-seventh-mirror-desc" class="text-white/75 text-sm font-light leading-relaxed group-hover:text-white/90 transition-colors duration-300">
               {t("stories.theSeventhMirrorDesc")}
             </p>
 
             <!-- Bottom shimmer line -->
-            <div class="mt-6 h-px bg-gradient-to-r from-rose-400/0 via-rose-400/30 to-rose-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            <div class="mt-6 h-px bg-linear-to-r from-rose-400/0 via-rose-400/30 to-rose-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
           </div>
         </a>
 
         <!-- Train Adventure Card -->
         <a
           href={`/${locale}/reader?story=${StoryId.TRAIN_ADVENTURE}`}
+          aria-labelledby="story-train-adventure-title"
+          aria-describedby="story-train-adventure-desc"
           class="story-card group block rounded-2xl overflow-hidden motion-safe:animate-[fadeSlideUp_0.6s_0.1s_ease_both]"
         >
-          <div class="relative h-full p-8 bg-gradient-to-br from-blue-950/30 to-slate-900/20 hover:from-blue-950/40 hover:to-slate-900/30 backdrop-blur-xl border border-white/15 hover:border-cyan-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(103,232,249,0.15)]">
+          <div class="relative h-full p-8 bg-linear-to-br from-blue-950/30 to-slate-900/20 hover:from-blue-950/40 hover:to-slate-900/30 backdrop-blur-xl border border-white/15 hover:border-cyan-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(103,232,249,0.15)]">
             <!-- Chapter emblem -->
             <div class="mb-5 flex items-start justify-between">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400/30 to-blue-500/30 border border-cyan-300/30 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-xl bg-linear-to-br from-cyan-400/30 to-blue-500/30 border border-cyan-300/30 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-cyan-300/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M8 17h8m-8 0a2 2 0 01-2-2V7a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2m-8 0H6m10 0h2M9 11h6M9 7h2" />
                 </svg>
@@ -116,29 +120,31 @@ const authFailed = sessionResult.status === 'error';
             </div>
 
             <!-- Story title -->
-            <h2 class="text-xl font-serif font-semibold text-white mb-2 leading-snug transition-colors duration-300">
+            <h2 id="story-train-adventure-title" class="text-xl font-serif font-semibold text-white mb-2 leading-snug transition-colors duration-300">
               {t("stories.trainAdventure")}
             </h2>
 
-            <!-- Descriptor — aria-hidden so accessible name stays as the title -->
-            <p class="text-white/75 text-sm font-light leading-relaxed group-hover:text-white/90 transition-colors duration-300" aria-hidden="true">
+            <!-- Descriptor — exposed via aria-describedby -->
+            <p id="story-train-adventure-desc" class="text-white/75 text-sm font-light leading-relaxed group-hover:text-white/90 transition-colors duration-300">
               {t("stories.trainAdventureDesc")}
             </p>
 
             <!-- Bottom shimmer line -->
-            <div class="mt-6 h-px bg-gradient-to-r from-cyan-400/0 via-cyan-400/30 to-cyan-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            <div class="mt-6 h-px bg-linear-to-r from-cyan-400/0 via-cyan-400/30 to-cyan-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
           </div>
         </a>
 
         <!-- Don't Save Me Before Midnight Card -->
         <a
           href={`/${locale}/reader?story=${StoryId.DONT_SAVE_ME_BEFORE_MIDNIGHT}`}
+          aria-labelledby="story-dont-save-me-title"
+          aria-describedby="story-dont-save-me-desc"
           class="story-card group block rounded-2xl overflow-hidden motion-safe:animate-[fadeSlideUp_0.6s_0.25s_ease_both]"
         >
-          <div class="relative h-full p-8 bg-gradient-to-br from-blue-950/30 to-slate-900/20 hover:from-blue-950/40 hover:to-slate-900/30 backdrop-blur-xl border border-white/15 hover:border-indigo-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(165,180,252,0.12)]">
+          <div class="relative h-full p-8 bg-linear-to-br from-blue-950/30 to-slate-900/20 hover:from-blue-950/40 hover:to-slate-900/30 backdrop-blur-xl border border-white/15 hover:border-indigo-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(165,180,252,0.12)]">
             <!-- Chapter emblem -->
             <div class="mb-5 flex items-start justify-between">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400/30 to-violet-500/30 border border-indigo-300/30 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-400/30 to-violet-500/30 border border-indigo-300/30 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-200/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
@@ -150,17 +156,17 @@ const authFailed = sessionResult.status === 'error';
             </div>
 
             <!-- Story title -->
-            <h2 class="text-xl font-serif font-semibold text-white mb-2 leading-snug transition-colors duration-300">
+            <h2 id="story-dont-save-me-title" class="text-xl font-serif font-semibold text-white mb-2 leading-snug transition-colors duration-300">
               {t("stories.dontSaveMeBeforeMidnight")}
             </h2>
 
-            <!-- Descriptor — aria-hidden -->
-            <p class="text-white/75 text-sm font-light leading-relaxed group-hover:text-white/90 transition-colors duration-300" aria-hidden="true">
+            <!-- Descriptor — exposed via aria-describedby -->
+            <p id="story-dont-save-me-desc" class="text-white/75 text-sm font-light leading-relaxed group-hover:text-white/90 transition-colors duration-300">
               {t("stories.dontSaveMeBeforeMidnightDesc")}
             </p>
 
             <!-- Bottom shimmer line -->
-            <div class="mt-6 h-px bg-gradient-to-r from-indigo-400/0 via-indigo-400/30 to-indigo-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            <div class="mt-6 h-px bg-linear-to-r from-indigo-400/0 via-indigo-400/30 to-indigo-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
           </div>
         </a>
 

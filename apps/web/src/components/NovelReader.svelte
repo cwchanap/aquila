@@ -287,7 +287,7 @@
 <svelte:window onkeydown={handleKeyPress} />
 
 <div
-  class="novel-reader min-h-screen bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400 flex overflow-hidden"
+  class="novel-reader min-h-screen bg-linear-to-b from-sky-200 via-sky-300 to-blue-400 flex overflow-hidden"
 >
   <!-- Left panel -- embedded toggle, slider animation -->
   <aside class="flex-shrink-0 h-screen">
@@ -384,7 +384,7 @@
         <div class="text-center">
           <button
             onclick={handleNext}
-            class="group px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            class="group px-8 py-3 bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             {#if isLastDialogue && canGoNext}
               {t.reader.nextScene}
@@ -406,7 +406,7 @@
           {#each choice.options as option (option.id)}
             <button
               onclick={() => handleChoice(option.nextScene)}
-              class="w-full p-4 bg-gradient-to-r from-slate-100 to-white hover:from-blue-100 hover:to-cyan-50 text-slate-800 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] border-2 border-slate-200 hover:border-blue-300 text-left"
+              class="w-full p-4 bg-linear-to-r from-slate-100 to-white hover:from-blue-100 hover:to-cyan-50 text-slate-800 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] border-2 border-slate-200 hover:border-blue-300 text-left"
             >
               {option.label}
             </button>

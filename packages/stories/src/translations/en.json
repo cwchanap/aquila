@@ -133,8 +133,6 @@
     "loading": "Loading bookmarks...",
     "notLoggedIn": "Please log in to view your bookmarks",
     "loginButton": "Log in",
-    "error": "Failed to load bookmarks. Please try again.",
-    "retry": "Retry",
     "noBookmarks": "No bookmarks yet. Start reading to save your progress!",
     "startReading": "Start Reading",
     "story": "Story:",

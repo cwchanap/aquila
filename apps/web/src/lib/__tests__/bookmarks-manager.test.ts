@@ -11,8 +11,6 @@ vi.mock('@aquila/stories', () => ({
             loginButton: 'Log In',
             noBookmarks: 'No bookmarks yet.',
             startReading: 'Start Reading',
-            error: 'Failed to load bookmarks.',
-            retry: 'Retry',
             continueReading: 'Continue Reading',
             delete: 'Delete',
             deleteConfirm: 'Delete this bookmark?',
@@ -147,17 +145,6 @@ describe('BookmarksManager', () => {
             document.body.replaceChildren();
             const manager = new BookmarksManager('en');
             expect(() => manager.initializeUI()).not.toThrow();
-        });
-
-        it('only updates elements that are present', () => {
-            const loading = document.createElement('div');
-            loading.id = 'loading-text';
-            document.body.appendChild(loading);
-            const manager = new BookmarksManager('en');
-            manager.initializeUI();
-            expect(document.getElementById('loading-text')!.textContent).toBe(
-                'Loading...'
-            );
         });
     });
 

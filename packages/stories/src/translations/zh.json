@@ -133,8 +133,6 @@
     "loading": "載入書籤中...",
     "notLoggedIn": "請登入以查看您的書籤",
     "loginButton": "登入",
-    "error": "載入書籤失敗，請重試",
-    "retry": "重試",
     "noBookmarks": "還沒有書籤。開始閱讀以儲存您的進度！",
     "startReading": "開始閱讀",
     "story": "故事：",

@@ -16,18 +16,16 @@ export interface Bookmark {
 }
 
 interface BookmarkCardData {
-    id: string;
     bookmarkName: string;
     storyId: string;
     sceneId: string;
     locale: string;
-    updatedAt: string | number;
 }
 
 export class BookmarksManager {
     private cloudBookmarks: Bookmark[] = [];
     private localBookmarksList: LocalBookmark[] = [];
-    private isLoggedIn = false;
+    private authState: 'unknown' | 'logged-out' | 'logged-in' = 'unknown';
     private readonly t: ReturnType<typeof getTranslations>;
     private readonly locale: Locale;
     private readonly localStore: LocalBookmarksStore;
@@ -51,7 +49,7 @@ export class BookmarksManager {
             const response = await fetch('/api/bookmarks');
 
             if (response.status === 401) {
-                this.isLoggedIn = false;
+                this.authState = 'logged-out';
                 this.renderAll();
                 return;
             }
@@ -60,7 +58,7 @@ export class BookmarksManager {
                 throw new Error('Failed to fetch bookmarks');
             }
 
-            this.isLoggedIn = true;
+            this.authState = 'logged-in';
             const data = await response.json();
             this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
             this.renderAll();
@@ -96,7 +94,7 @@ export class BookmarksManager {
 
         container.textContent = '';
 
-        if (this.isLoggedIn) {
+        if (this.authState === 'logged-in') {
             this.renderSection(
                 container,
                 this.t.bookmarks.cloudBookmarks,
@@ -106,7 +104,10 @@ export class BookmarksManager {
 
         this.renderLocalSection(container);
 
-        if (!this.isLoggedIn && this.localBookmarksList.length === 0) {
+        if (
+            this.authState === 'logged-out' &&
+            this.localBookmarksList.length === 0
+        ) {
             const card = this.createCard();
             const message = document.createElement('p');
             message.className = 'text-white/70 mb-6';
@@ -156,7 +157,11 @@ export class BookmarksManager {
     }
 
     private renderLocalSection(container: HTMLElement): void {
-        if (this.localBookmarksList.length === 0 && !this.isLoggedIn) return;
+        if (
+            this.localBookmarksList.length === 0 &&
+            this.authState !== 'logged-in'
+        )
+            return;
 
         const section = document.createElement('div');
         section.className = 'mb-8';
@@ -173,7 +178,7 @@ export class BookmarksManager {
             empty.textContent = this.t.bookmarks.noLocalBookmarks;
             section.appendChild(empty);
         } else {
-            if (this.isLoggedIn) {
+            if (this.authState === 'logged-in') {
                 const bulkBtn = document.createElement('button');
                 bulkBtn.className =
                     'mb-4 px-6 py-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium shadow-lg transition-all duration-300';
@@ -187,7 +192,10 @@ export class BookmarksManager {
             });
         }
 
-        if (!this.isLoggedIn && this.localBookmarksList.length > 0) {
+        if (
+            this.authState === 'logged-out' &&
+            this.localBookmarksList.length > 0
+        ) {
             const hint = document.createElement('p');
             hint.className = 'text-sm text-white/70 mt-4';
             hint.textContent = this.t.bookmarks.loginToSync;
@@ -203,6 +211,19 @@ export class BookmarksManager {
             'mb-4 p-4 bg-rose-500/10 border border-rose-300/30 rounded-xl text-rose-100 text-sm';
         banner.textContent = this.t.bookmarks.error;
         container.prepend(banner);
+    }
+
+    private formatDate(value: string | number | Date): string {
+        return new Date(value).toLocaleDateString(
+            this.locale === 'zh' ? 'zh-CN' : 'en-US',
+            {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            }
+        );
     }
 
     private buildBookmarkCard(
@@ -282,16 +303,7 @@ export class BookmarksManager {
     }
 
     private createBookmarkCard(bookmark: Bookmark): HTMLDivElement {
-        const date = new Date(bookmark.updatedAt).toLocaleDateString(
-            this.locale === 'zh' ? 'zh-CN' : 'en-US',
-            {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }
-        );
+        const date = this.formatDate(bookmark.updatedAt);
 
         const languageText =
             bookmark.locale === 'zh'
@@ -321,19 +333,10 @@ export class BookmarksManager {
     }
 
     private createLocalBookmarkCard(bookmark: LocalBookmark): HTMLDivElement {
-        const date = new Date(bookmark.updatedAt).toLocaleDateString(
-            this.locale === 'zh' ? 'zh-CN' : 'en-US',
-            {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }
-        );
+        const date = this.formatDate(bookmark.updatedAt);
 
         const leadingActions: HTMLButtonElement[] = [];
-        if (this.isLoggedIn) {
+        if (this.authState === 'logged-in') {
             const syncBtn = document.createElement('button');
             syncBtn.className =
                 'px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium text-sm transition-all duration-300';

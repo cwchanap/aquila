@@ -239,7 +239,7 @@ describe('BookmarksManager', () => {
                 expect(loginLink?.getAttribute('href')).toBe('/en/login');
             });
 
-            it('renders not-logged-in state with error banner on non-401 error response', async () => {
+            it('renders error banner without not-logged-in CTA on non-401 error response', async () => {
                 setupContainer();
                 global.fetch = vi.fn().mockResolvedValue({
                     ok: false,
@@ -251,14 +251,14 @@ describe('BookmarksManager', () => {
 
                 const container = getContainer();
                 expect(container.textContent).toContain(
-                    'You must be logged in'
-                );
-                expect(container.textContent).toContain(
                     'Failed to load bookmarks. Please try again.'
+                );
+                expect(container.textContent).not.toContain(
+                    'You must be logged in'
                 );
             });
 
-            it('renders login link on non-401 error', async () => {
+            it('does not render login link on non-401 error (auth unknown)', async () => {
                 setupContainer();
                 global.fetch = vi.fn().mockResolvedValue({
                     ok: false,
@@ -268,13 +268,15 @@ describe('BookmarksManager', () => {
                 const manager = new BookmarksManager('en');
                 await manager.loadBookmarks();
 
-                const loginLink = getContainer().querySelector('a');
-                expect(loginLink?.getAttribute('href')).toBe('/en/login');
+                const loginLink = getContainer().querySelector(
+                    'a[href="/en/login"]'
+                );
+                expect(loginLink).toBeNull();
             });
         });
 
         describe('network / fetch errors', () => {
-            it('renders not-logged-in state with error banner when fetch throws', async () => {
+            it('renders error banner without not-logged-in CTA when fetch throws', async () => {
                 setupContainer();
                 global.fetch = vi
                     .fn()
@@ -285,10 +287,10 @@ describe('BookmarksManager', () => {
 
                 const container = getContainer();
                 expect(container.textContent).toContain(
-                    'You must be logged in'
-                );
-                expect(container.textContent).toContain(
                     'Failed to load bookmarks. Please try again.'
+                );
+                expect(container.textContent).not.toContain(
+                    'You must be logged in'
                 );
             });
         });

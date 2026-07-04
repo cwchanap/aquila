@@ -23,7 +23,7 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 		<div class="min-h-screen relative overflow-hidden" data-locale={locale}>
 			<script type="application/json" id="login-translations" set:html={safeClientTranslations} />
 			<!-- Gradient Ocean Background -->
-			<div class="absolute inset-0 bg-gradient-to-b from-sky-200 via-sky-300 to-blue-400"></div>
+			<div class="absolute inset-0 bg-linear-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
 			<!-- Animated Ocean Waves (Background Layer) -->
 			<div class="absolute inset-0">
@@ -90,10 +90,10 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 				<div class="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/50 max-w-lg w-full mx-6 transform hover:scale-[1.02] transition-all duration-500">
 					<!-- Title with Gaming-inspired styling -->
 					<div class="text-center mb-12">
-						<h1 class="text-5xl font-black text-slate-800 mb-4 tracking-wider uppercase bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
+						<h1 class="text-5xl font-black text-slate-800 mb-4 tracking-wider uppercase bg-linear-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent drop-shadow-lg" style="font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace, sans-serif; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
 							{t('login.heading')}
 						</h1>
-						<div class="w-24 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>
+						<div class="w-24 h-1 bg-linear-to-r from-transparent via-cyan-400 to-transparent mx-auto rounded-full animate-pulse"></div>
 						<div class="text-sm font-semibold text-slate-600 mt-2 tracking-widest uppercase opacity-70" style="font-family: 'Orbitron', monospace;">
 							{t('login.subheading')}
 						</div>
@@ -103,10 +103,10 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 						<button
 							id="google-signin-btn"
 							type="button"
-							class="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden flex items-center justify-center gap-3"
+							class="group relative w-full py-6 px-8 bg-linear-to-r from-blue-500 via-cyan-400 to-blue-500 hover:from-blue-600 hover:via-cyan-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.05] hover:-translate-y-2 border-2 border-cyan-300/50 overflow-hidden flex items-center justify-center gap-3"
 							style="font-family: 'Orbitron', 'Exo 2', monospace; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"
 						>
-							<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+							<div class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
 							<svg class="relative w-6 h-6 bg-white rounded-full p-0.5" viewBox="0 0 24 24" aria-hidden="true">
 								<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"/>
 								<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/>
@@ -130,7 +130,7 @@ const safeClientTranslations = JSON.stringify(clientTranslations).replace(/<\//g
 
 						<!-- Gaming hexagon (smaller) -->
 						<div class="relative">
-							<div class="w-4 h-4 bg-gradient-to-r from-blue-400 to-cyan-400 transform rotate-45 animate-spin" style="animation-duration: 8s; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"></div>
+							<div class="w-4 h-4 bg-linear-to-r from-blue-400 to-cyan-400 transform rotate-45 animate-spin" style="animation-duration: 8s; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"></div>
 							<div class="absolute inset-0 w-4 h-4 bg-white/30 transform rotate-45" style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"></div>
 						</div>
 

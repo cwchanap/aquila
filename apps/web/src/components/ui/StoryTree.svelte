@@ -57,7 +57,7 @@
 <div class="story-tree bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
     <!-- Story Root -->
     <div class="story-root mb-4">
-        <div class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg border border-purple-300/30 hover:border-purple-300/50 transition-colors">
+        <div class="flex items-center justify-between p-3 bg-linear-to-r from-purple-500/20 to-blue-500/20 rounded-lg border border-purple-300/30 hover:border-purple-300/50 transition-colors">
             <div class="flex items-center gap-2 flex-1">
                 <button
                     onclick={() => expandedStory = !expandedStory}

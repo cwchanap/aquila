@@ -15,6 +15,15 @@ export interface Bookmark {
     updatedAt: string;
 }
 
+interface BookmarkCardData {
+    id: string;
+    bookmarkName: string;
+    storyId: string;
+    sceneId: string;
+    locale: string;
+    updatedAt: string | number;
+}
+
 export class BookmarksManager {
     private cloudBookmarks: Bookmark[] = [];
     private localBookmarksList: LocalBookmark[] = [];
@@ -80,7 +89,7 @@ export class BookmarksManager {
         link.href = href;
         link.textContent = text;
         link.className =
-            'inline-block px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300';
+            'inline-block px-6 py-2.5 rounded-xl bg-linear-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300';
         return link;
     }
 
@@ -204,15 +213,19 @@ export class BookmarksManager {
         container.prepend(banner);
     }
 
-    private createBookmarkCard(
-        bookmark: Bookmark,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _isLocal: boolean
+    private buildBookmarkCard(
+        bookmark: BookmarkCardData,
+        options: {
+            cardClassName: string;
+            cardTestId: string;
+            infos: { label: string; value: string }[];
+            leadingActions: HTMLButtonElement[];
+            deleteButton: HTMLButtonElement;
+        }
     ): HTMLDivElement {
         const card = document.createElement('div');
-        card.className =
-            'bg-gradient-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-white/15 hover:border-white/30 transition-all duration-300 mb-4';
-        card.dataset.testid = 'bookmark-card';
+        card.className = options.cardClassName;
+        card.dataset.testid = options.cardTestId;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'flex items-start justify-between';
@@ -238,6 +251,49 @@ export class BookmarksManager {
         const details = document.createElement('div');
         details.className = 'space-y-1 text-sm text-white/65';
 
+        options.infos.forEach(info => {
+            const p = document.createElement('p');
+            const label = document.createElement('span');
+            label.className = 'text-white/70 font-medium';
+            label.textContent = info.label;
+            p.appendChild(label);
+            p.appendChild(document.createTextNode(' ' + info.value));
+            details.appendChild(p);
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'flex flex-col gap-2 ml-4';
+
+        for (const btn of options.leadingActions) {
+            actions.appendChild(btn);
+        }
+
+        const continueLink = document.createElement('a');
+        let href = `/${bookmark.locale}/reader?story=${encodeURIComponent(bookmark.storyId)}&scene=${encodeURIComponent(bookmark.sceneId)}`;
+        if (dialogueNumber && dialogueNumber > 0) {
+            href += `&dialogue=${encodeURIComponent(dialogueNumber.toString())}`;
+        }
+        continueLink.href = href;
+        continueLink.className =
+            'px-4 py-2 rounded-lg bg-linear-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-center text-sm shadow-lg transition-all duration-300';
+        continueLink.textContent = this.t.bookmarks.continueReading;
+        actions.appendChild(continueLink);
+
+        actions.appendChild(options.deleteButton);
+
+        content.appendChild(title);
+        content.appendChild(details);
+        wrapper.appendChild(content);
+        wrapper.appendChild(actions);
+        card.appendChild(wrapper);
+        return card;
+    }
+
+    private createBookmarkCard(
+        bookmark: Bookmark,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _isLocal: boolean
+    ): HTMLDivElement {
         const date = new Date(bookmark.updatedAt).toLocaleDateString(
             this.locale === 'zh' ? 'zh-CN' : 'en-US',
             {
@@ -254,36 +310,6 @@ export class BookmarksManager {
                 ? this.t.bookmarks.chinese
                 : this.t.bookmarks.english;
 
-        const infos = [
-            { label: this.t.bookmarks.story, value: bookmark.storyId },
-            { label: this.t.bookmarks.scene, value: bookmark.sceneId },
-            { label: this.t.bookmarks.language, value: languageText },
-            { label: this.t.bookmarks.savedAt, value: date },
-        ];
-
-        infos.forEach(info => {
-            const p = document.createElement('p');
-            const label = document.createElement('span');
-            label.className = 'text-white/70 font-medium';
-            label.textContent = info.label;
-            p.appendChild(label);
-            p.appendChild(document.createTextNode(' ' + info.value));
-            details.appendChild(p);
-        });
-
-        const actions = document.createElement('div');
-        actions.className = 'flex flex-col gap-2 ml-4';
-
-        const continueLink = document.createElement('a');
-        let href = `/${bookmark.locale}/reader?story=${encodeURIComponent(bookmark.storyId)}&scene=${encodeURIComponent(bookmark.sceneId)}`;
-        if (dialogueNumber && dialogueNumber > 0) {
-            href += `&dialogue=${encodeURIComponent(dialogueNumber.toString())}`;
-        }
-        continueLink.href = href;
-        continueLink.className =
-            'px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-center text-sm shadow-lg transition-all duration-300';
-        continueLink.textContent = this.t.bookmarks.continueReading;
-
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = this.t.bookmarks.delete;
         deleteBtn.className =
@@ -291,47 +317,22 @@ export class BookmarksManager {
         deleteBtn.dataset.testid = 'delete-cloud-bookmark';
         deleteBtn.onclick = () => this.deleteBookmark(bookmark.id);
 
-        actions.appendChild(continueLink);
-        actions.appendChild(deleteBtn);
-
-        content.appendChild(title);
-        content.appendChild(details);
-        wrapper.appendChild(content);
-        wrapper.appendChild(actions);
-        card.appendChild(wrapper);
-        return card;
+        return this.buildBookmarkCard(bookmark, {
+            cardClassName:
+                'bg-linear-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-white/15 hover:border-white/30 transition-all duration-300 mb-4',
+            cardTestId: 'bookmark-card',
+            infos: [
+                { label: this.t.bookmarks.story, value: bookmark.storyId },
+                { label: this.t.bookmarks.scene, value: bookmark.sceneId },
+                { label: this.t.bookmarks.language, value: languageText },
+                { label: this.t.bookmarks.savedAt, value: date },
+            ],
+            leadingActions: [],
+            deleteButton: deleteBtn,
+        });
     }
 
     private createLocalBookmarkCard(bookmark: LocalBookmark): HTMLDivElement {
-        const card = document.createElement('div');
-        card.className =
-            'bg-gradient-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-amber-300/25 hover:border-amber-300/40 transition-all duration-300 mb-4';
-        card.dataset.testid = 'local-bookmark-card';
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-start justify-between';
-
-        const content = document.createElement('div');
-        content.className = 'flex-1';
-
-        const title = document.createElement('h3');
-        title.className = 'text-lg font-serif font-semibold text-white mb-2';
-
-        let dialogueNumber: number | null = null;
-        let displayName = bookmark.bookmarkName;
-        const dlgMatch = bookmark.bookmarkName.match(/^\[dlg:(\d+)\]\s*(.*)$/);
-        if (dlgMatch) {
-            const parsed = parseInt(dlgMatch[1], 10);
-            if (!Number.isNaN(parsed) && parsed > 0) {
-                dialogueNumber = parsed;
-            }
-            displayName = dlgMatch[2] || bookmark.bookmarkName;
-        }
-        title.textContent = displayName;
-
-        const details = document.createElement('div');
-        details.className = 'space-y-1 text-sm text-white/65';
-
         const date = new Date(bookmark.updatedAt).toLocaleDateString(
             this.locale === 'zh' ? 'zh-CN' : 'en-US',
             {
@@ -343,42 +344,14 @@ export class BookmarksManager {
             }
         );
 
-        const infos = [
-            { label: this.t.bookmarks.story, value: bookmark.storyId },
-            { label: this.t.bookmarks.scene, value: bookmark.sceneId },
-            { label: this.t.bookmarks.savedAt, value: date },
-        ];
-
-        infos.forEach(info => {
-            const p = document.createElement('p');
-            const label = document.createElement('span');
-            label.className = 'text-white/70 font-medium';
-            label.textContent = info.label;
-            p.appendChild(label);
-            p.appendChild(document.createTextNode(' ' + info.value));
-            details.appendChild(p);
-        });
-
-        const actions = document.createElement('div');
-        actions.className = 'flex flex-col gap-2 ml-4';
-
-        const continueLink = document.createElement('a');
-        let href = `/${bookmark.locale}/reader?story=${encodeURIComponent(bookmark.storyId)}&scene=${encodeURIComponent(bookmark.sceneId)}`;
-        if (dialogueNumber && dialogueNumber > 0) {
-            href += `&dialogue=${encodeURIComponent(dialogueNumber.toString())}`;
-        }
-        continueLink.href = href;
-        continueLink.className =
-            'px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-center text-sm shadow-lg transition-all duration-300';
-        continueLink.textContent = this.t.bookmarks.continueReading;
-
+        const leadingActions: HTMLButtonElement[] = [];
         if (this.isLoggedIn) {
             const syncBtn = document.createElement('button');
             syncBtn.className =
                 'px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium text-sm transition-all duration-300';
             syncBtn.textContent = this.t.bookmarks.syncToCloud;
             syncBtn.onclick = () => this.syncSingleToCloud(bookmark.id);
-            actions.appendChild(syncBtn);
+            leadingActions.push(syncBtn);
         }
 
         const deleteBtn = document.createElement('button');
@@ -388,15 +361,18 @@ export class BookmarksManager {
         deleteBtn.dataset.testid = 'delete-local-bookmark';
         deleteBtn.onclick = () => this.deleteLocalBookmark(bookmark.id);
 
-        actions.appendChild(continueLink);
-        actions.appendChild(deleteBtn);
-
-        content.appendChild(title);
-        content.appendChild(details);
-        wrapper.appendChild(content);
-        wrapper.appendChild(actions);
-        card.appendChild(wrapper);
-        return card;
+        return this.buildBookmarkCard(bookmark, {
+            cardClassName:
+                'bg-linear-to-br from-blue-950/30 to-slate-900/20 backdrop-blur-xl rounded-2xl p-6 border border-amber-300/25 hover:border-amber-300/40 transition-all duration-300 mb-4',
+            cardTestId: 'local-bookmark-card',
+            infos: [
+                { label: this.t.bookmarks.story, value: bookmark.storyId },
+                { label: this.t.bookmarks.scene, value: bookmark.sceneId },
+                { label: this.t.bookmarks.savedAt, value: date },
+            ],
+            leadingActions,
+            deleteButton: deleteBtn,
+        });
     }
 
     private async syncSingleToCloud(id: string): Promise<void> {

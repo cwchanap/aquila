@@ -69,10 +69,7 @@ export class BookmarksManager {
             this.renderAll();
             const container = document.getElementById('bookmarks-container');
             if (container) {
-                this.renderCloudErrorBanner(
-                    container,
-                    error instanceof Error ? error.message : String(error)
-                );
+                this.renderCloudErrorBanner(container);
             }
         }
     }
@@ -103,8 +100,7 @@ export class BookmarksManager {
             this.renderSection(
                 container,
                 this.t.bookmarks.cloudBookmarks,
-                this.cloudBookmarks,
-                false
+                this.cloudBookmarks
             );
         }
 
@@ -128,8 +124,7 @@ export class BookmarksManager {
     private renderSection(
         container: HTMLElement,
         title: string,
-        bookmarks: Bookmark[],
-        isLocal: boolean
+        bookmarks: Bookmark[]
     ): void {
         const section = document.createElement('div');
         section.className = 'mb-8';
@@ -153,7 +148,7 @@ export class BookmarksManager {
             section.appendChild(startBtn);
         } else {
             bookmarks.forEach(bookmark => {
-                section.appendChild(this.createBookmarkCard(bookmark, isLocal));
+                section.appendChild(this.createBookmarkCard(bookmark));
             });
         }
 
@@ -202,14 +197,11 @@ export class BookmarksManager {
         container.appendChild(section);
     }
 
-    private renderCloudErrorBanner(
-        container: HTMLElement,
-        message: string
-    ): void {
+    private renderCloudErrorBanner(container: HTMLElement): void {
         const banner = document.createElement('div');
         banner.className =
             'mb-4 p-4 bg-rose-500/10 border border-rose-300/30 rounded-xl text-rose-100 text-sm';
-        banner.textContent = message;
+        banner.textContent = this.t.bookmarks.error;
         container.prepend(banner);
     }
 
@@ -289,11 +281,7 @@ export class BookmarksManager {
         return card;
     }
 
-    private createBookmarkCard(
-        bookmark: Bookmark,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _isLocal: boolean
-    ): HTMLDivElement {
+    private createBookmarkCard(bookmark: Bookmark): HTMLDivElement {
         const date = new Date(bookmark.updatedAt).toLocaleDateString(
             this.locale === 'zh' ? 'zh-CN' : 'en-US',
             {

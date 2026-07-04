@@ -118,3 +118,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Decorative keyframe helpers shared across pages (bookmarks, stories).
+   Previously duplicated per-page in <style is:global> blocks. */
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tidePulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.9; transform: scale(1.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt-and-braces fallback for the decorative keyframe helpers above.
+     Animations are already gated with motion-safe:, but this guarantees
+     they are suppressed when the page is viewed without it. */
+  [class*="fadeSlide"],
+  [class*="tidePulse"] {
+    animation: none !important;
+  }
+}

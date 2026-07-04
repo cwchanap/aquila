@@ -72,26 +72,6 @@ const authFailed = sessionResult.status === 'error';
 
   </OceanBackground>
 
-  <style is:global>
-    @keyframes fadeSlideDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes tidePulse {
-      0%, 100% { opacity: 0.4; transform: scale(1); }
-      50%       { opacity: 0.9; transform: scale(1.4); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      /* Scope to this page's own decorative animation classes only. */
-      [class*="fadeSlide"],
-      [class*="tidePulse"] {
-        animation: none !important;
-      }
-    }
-  </style>
-
   <script>
     import { BookmarksManager } from '@/lib/bookmarks-manager';
 

@@ -251,3 +251,83 @@ export class MobileReaderPage {
         }, `aquila:bookmarks:${this.locale}`);
     }
 }
+
+export class BookmarksPage {
+    constructor(
+        private page: Page,
+        private locale: 'en' | 'zh' = 'en'
+    ) {}
+
+    private get titleText() {
+        const titles = { en: 'My Bookmarks', zh: '我的書籤' };
+        return titles[this.locale];
+    }
+
+    private get localBookmarksHeading() {
+        const headings = { en: 'Local Bookmarks', zh: '本機書籤' };
+        return headings[this.locale];
+    }
+
+    private get loginButtonText() {
+        const labels = { en: 'Log in', zh: '登入' };
+        return labels[this.locale];
+    }
+
+    get heading() {
+        return this.page.locator('#page-title');
+    }
+
+    get container() {
+        return this.page.locator('#bookmarks-container');
+    }
+
+    get loginLink() {
+        return this.container.getByRole('link', { name: this.loginButtonText });
+    }
+
+    localBookmarkCards() {
+        return this.container.locator('[data-testid="local-bookmark-card"]');
+    }
+
+    async goto() {
+        await this.page.goto(`/${this.locale}/bookmarks`);
+    }
+
+    async seedLocalBookmark(bookmark: {
+        bookmarkName: string;
+        storyId: string;
+        sceneId: string;
+    }) {
+        const entry = {
+            id: `e2e-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            storyId: bookmark.storyId,
+            sceneId: bookmark.sceneId,
+            bookmarkName: bookmark.bookmarkName,
+            locale: this.locale,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        };
+        await this.page.addInitScript(
+            ([key, value]) => {
+                const existing = localStorage.getItem(key);
+                const list = existing ? JSON.parse(existing) : [];
+                list.push(value);
+                localStorage.setItem(key, JSON.stringify(list));
+            },
+            [`aquila:bookmarks:${this.locale}`, entry] as const
+        );
+    }
+
+    async expectToBeVisible() {
+        await expect(this.heading).toContainText(this.titleText);
+        await expect(this.container).toBeVisible();
+    }
+
+    async expectLocalSectionVisible() {
+        await expect(
+            this.container.getByRole('heading', {
+                name: this.localBookmarksHeading,
+            })
+        ).toBeVisible();
+    }
+}

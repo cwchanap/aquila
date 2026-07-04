@@ -9,6 +9,7 @@ vi.mock('@aquila/stories', () => ({
             loading: 'Loading...',
             notLoggedIn: 'You must be logged in to view bookmarks.',
             loginButton: 'Log In',
+            error: 'Failed to load bookmarks. Please try again.',
             noBookmarks: 'No bookmarks yet.',
             startReading: 'Start Reading',
             continueReading: 'Continue Reading',
@@ -253,7 +254,7 @@ describe('BookmarksManager', () => {
                     'You must be logged in'
                 );
                 expect(container.textContent).toContain(
-                    'Failed to fetch bookmarks'
+                    'Failed to load bookmarks. Please try again.'
                 );
             });
 
@@ -286,7 +287,9 @@ describe('BookmarksManager', () => {
                 expect(container.textContent).toContain(
                     'You must be logged in'
                 );
-                expect(container.textContent).toContain('Network error');
+                expect(container.textContent).toContain(
+                    'Failed to load bookmarks. Please try again.'
+                );
             });
         });
     });

@@ -71,21 +71,16 @@ export class BookmarksManager {
     private createCard(): HTMLDivElement {
         const card = document.createElement('div');
         card.className =
-            'bg-white/[0.08] backdrop-blur-xl rounded-2xl p-8 border border-white/15 text-center';
+            'bg-blue-950/40 backdrop-blur-xl rounded-2xl p-8 border border-white/15 text-center';
         return card;
     }
 
-    private createButton(
-        text: string,
-        href: string,
-        isPrimary = true
-    ): HTMLAnchorElement {
+    private createButton(text: string, href: string): HTMLAnchorElement {
         const link = document.createElement('a');
         link.href = href;
         link.textContent = text;
-        link.className = isPrimary
-            ? 'inline-block px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300'
-            : 'px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white/80 font-medium transition-all duration-300';
+        link.className =
+            'inline-block px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300';
         return link;
     }
 

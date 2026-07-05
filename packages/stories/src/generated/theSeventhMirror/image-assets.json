@@ -275,6 +275,41 @@
       "key": "chapter_5/ch5_act8_s2",
       "path": "the_seventh_mirror/backgrounds/chapter_5/ch5_act8_s2.png",
       "prompt": "Tokyo waterfront transit station construction passage entrance at night, heavy door half-closed, plastic sheeting, reflective tape, warning sign reading \"maintenance personnel only\", a young woman's hand reaching toward the door edge, cold fluorescent lighting from inside the passage, dark corridor beyond, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_6/ch6_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act1_s0.png",
+      "prompt": "construction passage interior at night, cold white fluorescent corridor, plastic sheeting draped along walls, reflective safety tape on floor edges, exposed pipes and cable trays overhead, low ventilation hum, sterile industrial atmosphere, visual-novel background art, medium shot looking down the corridor"
+    },
+    {
+      "key": "chapter_6/ch6_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act2_s0.png",
+      "prompt": "construction passage corner at night, plastic sheeting partitions creating a blind corner, cold white fluorescent light flickering slightly, reflective tape strips on floor and equipment, a maintenance toolbox with reflective strips visible, side door with card reader in the far wall, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_6/ch6_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act3_s0.png",
+      "prompt": "construction passage wall corner at night, a man slumped against the wall pressing his ribs, dark jacket visibly dampening, first pool of blood forming on the floor against the wall base, cold white fluorescent light from above, plastic sheeting in background, reflective tape on floor edge, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_6/ch6_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act5_s0.png",
+      "prompt": "construction passage entrance at night, station staff and security guards rushing in through the plastic curtain gap, cold white fluorescent light, reflective tape on floor edges, emergency alert panel glowing red on the wall, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_6/ch6_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act6_s0.png",
+      "prompt": "ambulance loading area outside the station at night, paramedics loading a stretcher into the back of an ambulance, red emergency lights flashing, wet pavement reflecting light, Tokyo waterfront in the far background, cold blue night sky, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_6/ch6_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act7_s0.png",
+      "prompt": "station safety room at night, small windowless office with fluorescent ceiling light, metal desk with incident report forms, plastic chair, security monitor showing frozen camera feeds on the wall, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_6/ch6_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act8_s0.png",
+      "prompt": "outside the station at night, Tokyo waterfront, empty sidewalk with wet pavement, distant city lights reflected on the bay, cold blue night sky, ambulance tail lights already gone, quiet urban stillness, visual-novel background art, wide shot"
     }
   ],
   "portraits": [

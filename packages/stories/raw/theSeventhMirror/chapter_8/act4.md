@@ -28,7 +28,7 @@ hospital ER waiting area corner at night, vending machine glow casting cold blue
 
 **旁白**：她接了。
 
-**白石琴音** [base]：妳還在那裡嗎？拜託回我。
+**白石琴音** [base]：妳還在那裡嗎？拜託跟我說句話。
 
 **旁白**：聲音是軟的。比上次更急。像一個人打了好幾通都沒人接，終於接通了，反而不知道從哪裡開始。
 

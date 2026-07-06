@@ -18,7 +18,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那個名字。第二次了。今晚第二次。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯接。不要讓她覺得我在躲。越躲她越急。越急她越會說出不該說的。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她接了。", background: Background.Chapter_8_Ch8_Act4_S0 },
-    { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "妳還在那裡嗎？拜託回我。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
+    { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "妳還在那裡嗎？拜託跟我說句話。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聲音是軟的。比上次更急。像一個人打了好幾通都沒人接，終於接通了，反而不知道從哪裡開始。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "我還在等。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個字。她沒有說在哪裡等。等什麼。也沒有說千田。沒有說袋子。沒有說外殼。", background: Background.Chapter_8_Ch8_Act4_S0 },

@@ -310,6 +310,46 @@
       "key": "chapter_6/ch6_act8_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_6/ch6_act8_s0.png",
       "prompt": "outside the station at night, Tokyo waterfront, empty sidewalk with wet pavement, distant city lights reflected on the bay, cold blue night sky, ambulance tail lights already gone, quiet urban stillness, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_7/ch7_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act1_s0.png",
+      "prompt": "station safety area corridor at night, fluorescent ceiling light, plastic chairs along the wall, small desk with incident report forms and a paper cup, wet wipes packet, cold institutional atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_7/ch7_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act1_s1.png",
+      "prompt": "station platform at night, seen from the staff exit corridor, platform 7 still operating, a train quietly docked with doors open, a few passengers boarding, normal fluorescent lighting, no police tape, no封锁, eerie normalcy, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_7/ch7_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act2_s0.png",
+      "prompt": "Tokyo waterfront road at night, seen from inside a moving taxi, wet asphalt reflecting traffic lights, distant high-rise buildings with scattered lit windows, cold blue night sky, quiet urban landscape, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_7/ch7_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act2_s1.png",
+      "prompt": "hospital emergency reception area at night, bright fluorescent lighting, white tiled floor, reception counter with acrylic partition, waiting chairs along the wall, a few people sitting quietly, nurses moving efficiently in the background, clean clinical atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_7/ch7_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act3_s0.png",
+      "prompt": "hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vending machine glow at the far end, half-open staff door with a narrow gap, quiet clinical atmosphere, visual-novel background art, medium shot looking down the corridor"
+    },
+    {
+      "key": "chapter_7/ch7_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act4_s0.png",
+      "prompt": "hospital ER waiting area at night, rows of plastic chairs under bright fluorescent light, a vending machine glowing in the corner, phone screen light reflected on a tired face, quiet institutional atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_7/ch7_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act5_s0.png",
+      "prompt": "hospital ER corridor at night, fluorescent lighting, a nurse pushing a cart with an opaque storage box, a security officer in uniform waiting by a staff elevator, institutional blue-grey tones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_7/ch7_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act6_s0.png",
+      "prompt": "hospital ER treatment area corridor at night, fluorescent lighting, a row of curtained patient bays, one curtain slightly parted showing a narrow gap, oxygen equipment and monitors visible inside, cold clinical atmosphere, visual-novel background art, medium shot"
     }
   ],
   "portraits": [

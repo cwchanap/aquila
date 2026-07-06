@@ -52,7 +52,7 @@ hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vend
 
 **旁白**：她又往前一步。門縫被她的肩膀推開了一點。裡面的光變寬了。
 
-**醫院保安**：小姐。
+**醫院保安**：不好意思。
 
 **旁白**：聲音從她身後傳來。她轉頭。
 
@@ -60,7 +60,7 @@ hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vend
 
 **醫院保安**：這裡不能進。
 
-**朝倉澪** [base]：那袋東西⋯⋯跟事故有關。
+**朝倉澪** [base]：那袋東西⋯⋯跟剛才的事故有關。
 
 **醫院保安**：已經按流程保管了。警方會處理。
 
@@ -88,7 +88,7 @@ hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vend
 
 **朝倉澪** [determined]：（內心）⋯⋯記住三件事。病人物袋確實存在。袋內有薄硬反光物。保管編號WCE-07——後面看不清。
 
-**朝倉澪** [determined]：（內心）⋯⋯其餘的模糊。不要像專業調查員。記住這三個就夠了。
+**朝倉澪** [determined]：（內心）⋯⋯其餘的模糊。不要像專業調查員。記住這三個。夠了。
 
 **旁白**：她轉身走回等候區的方向。背後那扇關上的門在走廊盡頭反著光。
 

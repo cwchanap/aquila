@@ -66,7 +66,7 @@ hospital ER treatment area corridor at night, fluorescent lighting, a row of cur
 
 **朝倉澪** [sad]：（內心）⋯⋯急診室裡也暫時沒有。
 
-**朝倉澪** [sad]：（內心）⋯⋯但有些死亡，不需要立刻發生。它只要找到下一個比較安靜的地方。
+**朝倉澪** [sad]：（內心）⋯⋯但有些死亡，不需要立刻發生。它只要找到下一個安靜的地方。
 
 **旁白**：簾子後面的監測儀還在響。嗶。嗶。嗶。
 

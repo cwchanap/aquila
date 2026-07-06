@@ -16,7 +16,7 @@ hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vend
 
 **旁白**：門縫裡傳出聲音。
 
-**醫護**：千田さんの私物、臨時保管からこちらへ。
+**醫護**：千田的私物，從臨時保管轉到這邊來。
 
 **旁白**：澪的腳步停了。
 

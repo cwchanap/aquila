@@ -350,6 +350,51 @@
       "key": "chapter_7/ch7_act6_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_7/ch7_act6_s0.png",
       "prompt": "hospital ER treatment area corridor at night, fluorescent lighting, a row of curtained patient bays, one curtain slightly parted showing a narrow gap, oxygen equipment and monitors visible inside, cold clinical atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act1_s0.png",
+      "prompt": "hospital ER waiting area at night, rows of plastic chairs mostly empty, vending machine glow in the corner, fluorescent ceiling light, cold institutional atmosphere, a few people sitting with their heads down, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_8/ch8_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act2_s0.png",
+      "prompt": "hospital security office corridor at night, dim fluorescent lighting, half-open administrative window with a clipboard visible through the glass, security door with narrow wire-glass panel, cold institutional atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act3_s0.png",
+      "prompt": "hospital observation area corridor at night, fluorescent lighting, a wheeled bed being moved past partially drawn curtains, oxygen equipment on a mobile stand, medical staff silhouettes behind fabric dividers, cold clinical atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act4_s0.png",
+      "prompt": "hospital ER waiting area corner at night, vending machine glow casting cold blue-white light on a row of empty plastic chairs, one figure slumped against the wall under bright fluorescent ceiling light, quiet institutional atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act5_s0.png",
+      "prompt": "hospital administrative corridor at night, fluorescent ceiling light, polished linoleum floor reflecting overhead tubes, a security office door half-visible at the far end, an opaque storage box on a wheeled cart being pushed along the corridor, cold clinical atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act6_s0.png",
+      "prompt": "hospital waiting area at night, rows of empty plastic chairs, vending machine glow in the corner, fluorescent ceiling light dimmed to night mode, a clock on the wall reading past 2 AM, cold institutional silence, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act7_s0.png",
+      "prompt": "hospital ER corridor at night, observation area door now closed, fluorescent lighting dimmed, a few medical staff walking slowly out of the observation area, one person on the phone, heavy quiet atmosphere, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_8/ch8_act7_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act7_s1.png",
+      "prompt": "hospital lobby at night, automatic glass doors leading outside, dark sky visible beyond, a few dim ceiling lights, an unobtrusive poster on the wall near the exit, cold empty atrium, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_8/ch8_act7_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act7_s2.png",
+      "prompt": "hospital exterior at night, empty road leading toward the bay, dark sky with no stars, distant black water surface of Tokyo Bay visible beyond the road, cold wind, a single street lamp casting long shadow, visual-novel background art, wide shot"
     }
   ],
   "portraits": [

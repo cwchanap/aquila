@@ -71,4 +71,13 @@ export enum Background {
     Chapter_7_Ch7_Act4_S0 = "chapter_7/ch7_act4_s0",
     Chapter_7_Ch7_Act5_S0 = "chapter_7/ch7_act5_s0",
     Chapter_7_Ch7_Act6_S0 = "chapter_7/ch7_act6_s0",
+    Chapter_8_Ch8_Act1_S0 = "chapter_8/ch8_act1_s0",
+    Chapter_8_Ch8_Act2_S0 = "chapter_8/ch8_act2_s0",
+    Chapter_8_Ch8_Act3_S0 = "chapter_8/ch8_act3_s0",
+    Chapter_8_Ch8_Act4_S0 = "chapter_8/ch8_act4_s0",
+    Chapter_8_Ch8_Act5_S0 = "chapter_8/ch8_act5_s0",
+    Chapter_8_Ch8_Act6_S0 = "chapter_8/ch8_act6_s0",
+    Chapter_8_Ch8_Act7_S0 = "chapter_8/ch8_act7_s0",
+    Chapter_8_Ch8_Act7_S1 = "chapter_8/ch8_act7_s1",
+    Chapter_8_Ch8_Act7_S2 = "chapter_8/ch8_act7_s2",
 }

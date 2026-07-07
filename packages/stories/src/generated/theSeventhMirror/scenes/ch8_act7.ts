@@ -10,7 +10,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門後面的聲音停了。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是突然停。是慢慢變少。腳步聲先少。然後器械碰撞的聲音少了。然後低語少了。最後什麼都沒了。像一條河退潮。退到只剩地板縫裡的水痕。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門開了。", background: Background.Chapter_8_Ch8_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "醫護走出來。一個。兩個。第三個把口罩拉到下巴上。他們走得很慢。不是累的那種慢。是做完一件事情之後、還沒決定下一步的那種慢。", background: Background.Chapter_8_Ch8_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "醫護走出來。一個。兩個。第三個把口罩拉到下巴上。他們走得很慢。不是累的那種慢。是做完一件事、還沒決定下一步的慢。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "跟在後面的是兩個人。一個穿警察制服。一個穿站務人員的反光背心。他們和醫護在走廊中段停下來。站得很近。聲音壓得很低。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在牆邊。她沒有走過去。她不需要走過去。她看得見他們的臉。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "醫護的臉。不是驚慌。不是悲傷。是一種很平的、很乾的東西。像做完一件沒有成功的事。像把一個沒救回來的結果收進格式裡。", background: Background.Chapter_8_Ch8_Act7_S0 },

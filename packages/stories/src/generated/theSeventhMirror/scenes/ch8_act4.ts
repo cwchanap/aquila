@@ -50,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不要立刻把她定成敵人。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她在擔心。她怕我碰案件證物。她怕我被捲進去。這些都是真的。一個朋友會說這些話。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但「那個人的」不是朋友會說的詞。朋友會說「現場的東西」「警察的東西」。不會說「那個人的」。除非她知道那個人是誰。除非她知道那個人有什麼。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從外套內袋摸出那張紙。攤開。紙已經被摺了很多次。摺痕變成字的格子。她用指甲在上面壓。沒有筆。她用力摺，讓摺痕變成字的形狀。", background: Background.Chapter_8_Ch8_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從外套內袋摸出那張紙。攤開。紙已經被摺了很多次。摺痕變成字的格子。沒有筆。她用指甲在上面壓出字的筆畫。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯琴音：醫院名。東西。資訊來源不明。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來。塞回內袋。手指碰到了小鏡子的布套。涼的。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我還在替她找理由。也許她只是太擔心。也許她猜的。也許她聽到我聲音裡的疲憊，知道我在硬撐，所以說「不要碰」。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Sad },

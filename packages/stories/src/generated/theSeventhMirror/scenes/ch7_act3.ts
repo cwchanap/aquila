@@ -12,7 +12,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊很長。左邊是等候區的玻璃門。右邊是一排關著的診間。盡頭有一扇半開的門。門上沒有標誌。門縫透出裡面的光。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走過去。沒有刻意。只是走到了走廊盡頭。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門縫裡傳出聲音。", background: Background.Chapter_7_Ch7_Act3_S0 },
-    { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "千田さんの私物、臨時保管からこちらへ。", background: Background.Chapter_7_Ch7_Act3_S0 },
+    { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "千田的私物，從臨時保管轉到這邊來。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的腳步停了。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田的私物。臨時保管，要轉交。不是剛才生成的。是從急診內部臨時保管轉出來的。一直在這棟樓裡。只是不在她能看見的地方。", background: Background.Chapter_7_Ch7_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她回頭看了一眼走廊。沒有人。她轉回來，透過門縫往裡面看。", background: Background.Chapter_7_Ch7_Act3_S0 },

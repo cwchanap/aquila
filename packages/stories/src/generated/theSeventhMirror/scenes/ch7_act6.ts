@@ -37,7 +37,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在走廊中間。背後是拉上的簾子。簾子後面是千田。還在呼吸。但隔著一層布。隔著一句「先觀察」。隔著一句「等警察來」。", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第七車裡沒有屍體。", background: Background.Chapter_7_Ch7_Act6_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯急診室裡也暫時沒有。", background: Background.Chapter_7_Ch7_Act6_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但有些死亡，不需要立刻發生。它只要找到下一個比較安靜的地方。", background: Background.Chapter_7_Ch7_Act6_S0, portrait: Portrait.AsakuraMio_Sad },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但有些死亡，不需要立刻發生。它只要找到下一個安靜的地方。", background: Background.Chapter_7_Ch7_Act6_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "簾子後面的監測儀還在響。嗶。嗶。嗶。", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很規律。很安靜。", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "像在倒數。", background: Background.Chapter_7_Ch7_Act6_S0 },

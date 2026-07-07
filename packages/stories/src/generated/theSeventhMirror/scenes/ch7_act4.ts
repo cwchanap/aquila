@@ -55,7 +55,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯男性送醫。年輕女性目擊者。那是千田。那是我。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "搬送醫院未公開。", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯未公開。沒有一條新聞寫搬送醫院的名字。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她又搜。交通公司公告。社群目擊帖。制式文字。事故路段已恢復通行。受傷者已由救護車搬送。搬送先基於傷者隱私不予公開。", background: Background.Chapter_7_Ch7_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她又搜。交通公司公告。社群目擊帖。制式文字。事故路段已恢復通行。受傷者已由救護車搬送。基於傷者隱私，搬送醫院暫不公開。", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不予公開。基於隱私。正常流程。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但結果是——沒有人能從公開資訊知道搬送醫院。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她再搜。灣岸一帶的急救醫療機構。地圖和列表跳出來。", background: Background.Chapter_7_Ch7_Act4_S0 },

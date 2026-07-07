@@ -50,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著這一頁。五條線。上面四個詞。下面一行備註。沒有箭頭。沒有圈。沒有把任何兩條連起來。", background: Background.Chapter_9_Ch9_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我沒有證據說這些是同一件事。災害壓力反應是合理的研究題目。追加評估也可能是正常流程。單獨看，每一個都說得通。", background: Background.Chapter_9_Ch9_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但排在一起。災害。睡眠。青少年。反應。追加評估。外部。", background: Background.Chapter_9_Ch9_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯詞重複得不自然。", background: Background.Chapter_9_Ch9_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這些詞湊在一起，不對勁。", background: Background.Chapter_9_Ch9_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把筆放下。筆尖在紙上留了一個小小的墨點。她沒有擦掉。", background: Background.Chapter_9_Ch9_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不要推太快。腦子不夠用了。先記下來。全部記下來。等能想的時候再想。", background: Background.Chapter_9_Ch9_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機螢幕關掉。光滅了。桌面上只剩那張說明單和那頁筆記。說明單背面那行小字朝上。「本研究亦協助災害時青少年心理支援資料建置。」", background: Background.Chapter_9_Ch9_Act5_S0 },

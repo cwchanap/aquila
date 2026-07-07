@@ -92,7 +92,7 @@ small Tokyo apartment desk by window, morning light filtering through thin curta
 
 **朝倉澪** [exhausted]：（內心）⋯⋯但排在一起。災害。睡眠。青少年。反應。追加評估。外部。
 
-**朝倉澪** [exhausted]：（內心）⋯⋯詞重複得不自然。
+**朝倉澪** [exhausted]：（內心）⋯⋯這些詞湊在一起，不對勁。
 
 **旁白**：她把筆放下。筆尖在紙上留了一個小小的墨點。她沒有擦掉。
 

@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在底下寫：核心不是「搭第七車」。核心是「千田上車前發生了什麼」。", background: Background.Chapter_5_Ch5_Act5_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這一次，我不是被那封訊息推著走。是我自己選擇去那裡。", background: Background.Chapter_5_Ch5_Act5_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來。她從衣架上拿下斜背包。她從書桌上拿起小鏡子。", background: Background.Chapter_5_Ch5_Act5_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著它。悠真刻的那串數字在背面。受試者編號。她用拇指摸了一下那串數字。凹痕很淺。她記得第一次摸到它的時候，以為那只是弟弟的塗鴉。", background: Background.Chapter_5_Ch5_Act5_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著它。悠真在背面刻了一些痕跡。她用拇指摸了一下那些痕跡。凹痕很淺。她一直以為那只是弟弟的塗鴉。", background: Background.Chapter_5_Ch5_Act5_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真。", background: Background.Chapter_5_Ch5_Act5_S2, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子放進斜背包內層的小布套裡。她拉上拉鍊。她把背包掛在肩上。她調了一下帶子。", background: Background.Chapter_5_Ch5_Act5_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）這一次，是我自己帶上它的。不是因為那封訊息叫我帶。", background: Background.Chapter_5_Ch5_Act5_S2, portrait: Portrait.AsakuraMio_Determined },

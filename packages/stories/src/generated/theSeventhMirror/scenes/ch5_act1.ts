@@ -26,7 +26,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她記得。她記得星期二傍晚去有明車輛基地之前，她把它留下來。她記得那個決定——悠真的東西不能跟著她進入任何一個流程。她記得她把它放回書桌。她記得。", background: Background.Chapter_5_Ch5_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但鏡子還在這裡。像從來沒有被拿起來過。像那一週從來沒有發生過。", background: Background.Chapter_5_Ch5_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）沒有跟我回來。", background: Background.Chapter_5_Ch5_Act1_S0, portrait: Portrait.AsakuraMio_Scared },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來。赤腳。她走到書桌前，拿起小鏡子。鏡面朝上。背面朝下。她翻過來——受試者編號還在。悠真刻的那串數字還在。鏡子是真的。鏡子是這個星期一的鏡子。", background: Background.Chapter_5_Ch5_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來。赤腳。她走到書桌前，拿起小鏡子。鏡面朝上。背面朝下。她翻過來——悠真刻的痕跡還在。那些刮痕還在。鏡子是真的。鏡子是這個星期一的鏡子。", background: Background.Chapter_5_Ch5_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）物品沒有回去。只有我。", background: Background.Chapter_5_Ch5_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子放回書桌。放回原來的位置。旁邊是悠真失蹤時間線的筆記——她上週一早上整理的那一份。她低頭看。筆記上只有悠真的事。沒有千田。沒有外殼。沒有第七車。", background: Background.Chapter_5_Ch5_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "因為那些還沒有發生。", background: Background.Chapter_5_Ch5_Act1_S0 },

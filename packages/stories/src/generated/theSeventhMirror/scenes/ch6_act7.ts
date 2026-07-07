@@ -40,7 +40,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "「帶上悠真留下的那件東西。」", background: Background.Chapter_6_Ch6_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他抬頭。", background: Background.Chapter_6_Ch6_Act7_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "那件東西是什麼？", background: Background.Chapter_6_Ch6_Act7_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小鏡子。悠真書桌上的那面小鏡子。背面有受試者編號。我帶在身上。現在。就在我的口袋裡。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小鏡子。悠真書桌上的那面小鏡子。背面有悠真刻的痕跡。我帶在身上。現在。就在我的口袋裡。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不能拿出來。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯一旦拿出來，它就會變成證物。被登記。被拍照。被放進證物袋。然後悠真的最後一條線索就會消失在流程裡。和銀色外殼一樣。被送進去。不代表安全。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "我不確定。訊息沒有明說是什麼。我弟弟失蹤前留了一些東西。我還在查。", background: Background.Chapter_6_Ch6_Act7_S0, portrait: Portrait.AsakuraMio_Base },

@@ -27,6 +27,7 @@ export enum CharacterId {
     HospitalClerk = "hospital_clerk",
     HospitalSecurity = "hospital_security",
     MedicalStaff = "medical_staff",
+    NoMoon = "no_moon",
 }
 
 export interface CharacterInfo {
@@ -62,6 +63,7 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.HospitalClerk]: { id: "hospital_clerk", name: "醫院櫃台", aliases: ["急診櫃台", "接待人員"] },
     [CharacterId.HospitalSecurity]: { id: "hospital_security", name: "醫院保安", aliases: ["行政人員", "醫院行政"] },
     [CharacterId.MedicalStaff]: { id: "medical_staff", name: "醫護", aliases: ["護理人員", "護士", "醫生", "醫護人員", "醫療團隊"] },
+    [CharacterId.NoMoon]: { id: "no_moon", name: "no_moon", aliases: ["陌生帳號", "陌生遊戲帳號"] },
 };
 
 const nameToId = new Map<string, string>();

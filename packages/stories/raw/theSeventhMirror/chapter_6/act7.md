@@ -72,7 +72,7 @@ station safety room at night, small windowless office with fluorescent ceiling l
 
 **警察**：那件東西是什麼？
 
-**朝倉澪** [base]：（內心）⋯⋯小鏡子。悠真書桌上的那面小鏡子。背面有受試者編號。我帶在身上。現在。就在我的口袋裡。
+**朝倉澪** [base]：（內心）⋯⋯小鏡子。悠真書桌上的那面小鏡子。背面有悠真刻的痕跡。我帶在身上。現在。就在我的口袋裡。
 
 **朝倉澪** [base]：（內心）⋯⋯不能拿出來。
 

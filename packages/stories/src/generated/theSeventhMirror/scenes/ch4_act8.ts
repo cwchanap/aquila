@@ -77,7 +77,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "只有澪記得。", background: Background.Chapter_4_Ch4_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她記得千田的手攥住她的手指。她記得外殼破邊在冷光下像刀。她記得監視器裡那個站在死者旁邊、滿手是血的女孩。她記得日下部說「妳父親以前也是這樣」。她記得東京灣的水黑得像夢裡的海。她記得白光。她記得那七秒。", background: Background.Chapter_4_Ch4_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她合上筆記本。把它放回抽屜。", background: Background.Chapter_4_Ch4_Act8_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有喊。她沒有哭。她坐在書桌前，看著那面小鏡子。鏡子背面朝上。受試者編號還在。悠真失蹤第七天還在。窗外灰藍色的光正在變白。", background: Background.Chapter_4_Ch4_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有喊。她沒有哭。她坐在書桌前，看著那面小鏡子。鏡子背面朝上。悠真刻的痕跡還在。悠真失蹤第七天還在。窗外灰藍色的光正在變白。", background: Background.Chapter_4_Ch4_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕上的時間停在 6:13。", background: Background.Chapter_4_Ch4_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "書桌上的世界還沒有開始那一週。", background: Background.Chapter_4_Ch4_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "只有澪已經失去過一次。", background: Background.Chapter_4_Ch4_Act8_S2 },

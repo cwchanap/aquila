@@ -395,6 +395,56 @@
       "key": "chapter_8/ch8_act7_s2",
       "path": "the_seventh_mirror/backgrounds/chapter_8/ch8_act7_s2.png",
       "prompt": "hospital exterior at night, empty road leading toward the bay, dark sky with no stars, distant black water surface of Tokyo Bay visible beyond the road, cold wind, a single street lamp casting long shadow, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_9/ch9_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act1_s0.png",
+      "prompt": "small Tokyo apartment room before dawn, desk lamp casting weak yellow circle on a cluttered table, notebook open with handwritten columns, pen lying across the page, window showing deep blue-black sky with no light yet, faint smell of antiseptic and rain clinging to a jacket draped over the chair, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_9/ch9_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act2_s0.png",
+      "prompt": "small Tokyo apartment room at early morning, pale grey-blue light through window, desk lamp still on but dimmer against the growing daylight, phone face-down on the desk next to the closed notebook, jacket still on the chair, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_9/ch9_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act3_s0.png",
+      "prompt": "teenager's bedroom in a small Tokyo apartment, morning light filtering through half-closed curtains, desk cluttered with sports drink bottle, highlighters, game controller, cheap earphones, a printed sheet about a sleep study, snack wrapper peeking from under the bed, wall corner with a dark crayon drawing of a black sea, lived-in but abandoned feeling, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_9/ch9_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act4_s0.png",
+      "prompt": "teenager's bedroom desk close-up, morning light, a printed screenshot of a text message lying on the desk surface, pen and notebook beside it, three sorted piles of papers visible at the edges of the frame, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_9/ch9_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act5_s0.png",
+      "prompt": "small Tokyo apartment desk by window, morning light filtering through thin curtains, scattered handwritten notes and printed forms spread across desk surface, a phone showing calendar screenshots, a cup of cold tea, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_9/ch9_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act6_s0.png",
+      "prompt": "small Tokyo apartment desk, close shot of a phone screen showing an audio waveform timeline, earbud cable trailing from the phone, a notebook page with handwritten words visible at the edge of frame, dim morning light, muted cool palette, visual-novel background art"
+    },
+    {
+      "key": "chapter_9/ch9_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act7_s0.png",
+      "prompt": "small Tokyo apartment desk, a small cheap plastic hand mirror resting on a notebook page, a phone flashlight beam raking across the mirror's back surface at a low angle, scratches catching the light, morning light dimmed in background, muted cool palette, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_9/ch9_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act8_s0.png",
+      "prompt": "Yuma's bedroom, morning light through curtains, desk with game console still powered on, small monitor glowing, scattered game notes and empty drink cans, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_9/ch9_act9_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act9_s0.png",
+      "prompt": "game interface, private message folder view, small thumbnails in a grid, some locked with key icons, dim blue-grey UI, text labels barely legible, visual-novel background art, close-up on screen"
+    },
+    {
+      "key": "chapter_9/ch9_act10_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act10_s0.png",
+      "prompt": "game private message interface, a new chat window opening on screen, dim blue-grey UI, single message bubble appearing, Yuma's room in soft morning light behind the monitor, visual-novel background art, close-up on screen"
     }
   ],
   "portraits": [

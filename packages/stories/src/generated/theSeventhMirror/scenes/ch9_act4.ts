@@ -13,7 +13,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我想冷靜幾天，不用找我。", background: Background.Chapter_9_Ch9_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她唸了一遍。出聲的。很小聲。像在嘴裡試那幾個字的重量。", background: Background.Chapter_9_Ch9_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪我看到這條訊息的時候，只是覺得不對。說不出哪裡不對。就是不對。像看到一幅畫掛歪了。你知道歪了。但你說不出歪了幾度。", background: Background.Chapter_9_Ch9_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯現在千田兩輪都說「簡訊不是他」。我不能再只是覺得不對。我要說出哪裡不對。", background: Background.Chapter_9_Ch9_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯現在千田兩次都說「簡訊不是他」。我不能再只是覺得不對。我要說出哪裡不對。", background: Background.Chapter_9_Ch9_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從右邊那一堆裡翻出悠真的遊戲帳號筆記。翻到最後幾頁。那裡有他和遊戲群友的聊天截圖。她以前看過。沒有仔細看。現在她把它攤開。和簡訊並排。", background: Background.Chapter_9_Ch9_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她打開自己的手機。翻到和悠真的聊天紀錄。往上滑。很久。滑到三個月前。四個月前。半年前。一條一條。", background: Background.Chapter_9_Ch9_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯看。全部看。比對。", background: Background.Chapter_9_Ch9_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },

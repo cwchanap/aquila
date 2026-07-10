@@ -569,3 +569,75 @@
 ### 說明
 
 透過悠真遊戲帳號私訊出現的陌生帳號。帳號名帶有倒月感，看起來像普通遊戲帳號而非組織招牌。對方知道悠真、知道黑色海、知道澪正在使用悠真帳號——可能是失蹤者家屬、幫手、陷阱、或神鏡外圍監視者，本章不揭露立場。說話風格短、試探性、像在確認暗號與身份，不主動提供完整答案。
+
+---
+
+## 28. 水瀨佳乃（Minase Yoshino）
+
+- **ID**: `minase_yoshino`
+- **Aliases**: 水瀨, 女性
+
+### 基本資料
+
+- **身份**：失蹤少女水瀨葵的母親，失蹤者家屬互助圈邊緣成員
+- **年齡**：四十多歲
+- **家庭**：女兒水瀨葵失蹤已 41 日
+
+### 背景與處境
+
+水瀨佳乃不是情報組織成員，也不是邪教信徒。她是一名被制度反覆拒絕後，學會用笨拙方式自保的普通母親。女兒葵失蹤後，她自己做尋人頁、自己轉發、自己回覆每條留言。警方初期以「自行離家」處理，學校與研究單位互推責任。她學會不在網路上打孩子真名、不直接說研究名稱、先用共同圖像確認對方是否真的相關。
+
+她帶著女兒的黑色海塗鴉影印紙，反覆拿給不同單位看過，卻沒人願意把它當證據。那張紙有皺摺、有咖啡痕，像被太多人翻過。
+
+### 性格
+
+- **疲憊但警覺**：長期等待消耗了她，但她對陌生人仍有戒心
+- **不輕易信任**：遇過亂猜的網友、蹭流量的自媒體、要她「接受孩子離家」的路人
+- **保護女兒的圖像**：不願把葵的塗鴉拿給不相關的人消費，先要求對方證明自己也是家屬
+- **痛苦比神秘感更重要**：她不是神秘組織成員，只是一個等孩子等太久的母親
+
+### 說話風格
+
+- **簡短而口語**：不像情報人員，像普通人被嚇怕後的笨拙自保
+- **不說全名**：先問「妳是 no_moon 說的那個姐姐？」再由對方自報姓名
+- **陳述痛苦時語氣變平**：不是冷漠，是已經說過太多次
+- **提到女兒生活細節時最柔軟**：討厭游泳、愛畫魚、收集冰棒棍
+
+### 代表性台詞
+
+- `妳是 no_moon 說的那個姐姐？`——見面第一句，不報全名
+- `不要給我看照片。你先說，他畫的海裡有什麼。`——信任門檻
+- `警察說這是壓力。學校說這是青春期。研究那邊說這是睡眠品質低下。可是我女兒不認識你弟弟。`——被制度拒絕的痛
+- `你弟弟也畫了這個，對不對？`——章末確認共同圖像
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 43-year-old Japanese woman, shoulder-length dark brown hair tied back loosely, tired face with faint lines, casual clothes (wrinkled blouse over cardigan), guarded but weary expression, deep shadows under eyes from poor sleep, soft overcast afternoon light, muted warm-grey palette, upper-body shot, clean background
+- **sad**: anime visual-novel portrait, 43-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose from tie, cardigan, dim soft lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 43-year-old woman, eyes sharp and watchful despite exhaustion, jaw tight, leaning back slightly, cardigan, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 43-year-old woman, eyes wide, breath caught, face pale, cardigan, stark lighting, upper-body shot
+
+---
+
+## 29. 水瀨葵（Minase Aoi）
+
+- **ID**: `minase_aoi`
+- **Aliases**: 葵, bluefish_7
+
+### 基本資料
+
+- **身份**：14 歲中學生，睡眠研究受試者，失蹤已 41 日
+- **年齡**：14 歲
+- **現狀**：失蹤中，未在本章直接出場
+
+### 背景與處境
+
+水瀨葵是第一名被具體化的其他失蹤孩子。她不是案例代號，而是一個有生活細節的少女：討厭游泳課，卻總在美術作業裡畫魚；會把便利店冰棒的棍子收集起來，在上面寫日期。bluefish_7 是她的遊戲帳號——朋友笑她「怕水的魚」。
+
+她的遊戲帳號最後登入約 41 日前，最後一張公開圖像地面像黑色水面，角落有倒過來的月亮，說明文字只有一句：「明天檢查，不想睡。」
+
+她失蹤前參加學校合作的睡眠健康檢查，晚間未回家。警方初期以自行離家或網友接觸方向處理。家屬頁提到「最後訊息不像她」。
+
+### 說明
+
+本章不直接出場。透過遊戲帳號 bluefish_7、公開尋人頁、母親水瀨佳乃的描述與塗鴉影印紙呈現。她的生活細節讓黑色海更反常——她不是沉迷海洋題材的孩子，她畫的魚是日常，她畫的黑色海不是。

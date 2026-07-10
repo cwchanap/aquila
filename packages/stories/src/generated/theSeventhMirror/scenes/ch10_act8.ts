@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她沒有放鬆。她更難過了。她的肩膀往下沉了一點。嘴角的線更緊了。因為這代表不是只有她。不是只有葵。又一個家庭。又一個孩子。又一個掉進同一個洞裡的人。她等了四十一天。她以為也許只有她。也許真的是壓力。也許真的是青春期。也許她瘋了。可是現在坐在她對面的人說「悠真也畫了」。她沒有被證明是對的。她被證明不是唯一一個。", background: Background.Chapter_10_Ch10_Act8_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而那比被證明是對的更難承受。", background: Background.Chapter_10_Ch10_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "水瀨佳乃把視線從澪臉上移開。落在那張影印紙上。看了很久。像在看一個她已經看了四十一天的東西，試圖從裡面再讀出任何還沒被讀完的字。", background: Background.Chapter_10_Ch10_Act8_S0 },
-    { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "那他有沒有說，海的另一邊是亮的？", background: Background.Chapter_10_Ch10_Act8_S0, portrait: Portrait.MinaseYoshino_Sad },
+    { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "那他有沒有說過，海的另一邊是亮的？", background: Background.Chapter_10_Ch10_Act8_S0, portrait: Portrait.MinaseYoshino_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯⋯⋯海的另一邊。是亮的。那邊會亮。悠真說過。那邊會亮。她女兒也說過嗎。她也在問同一件事。海的另一邊。亮。悠真和葵。兩個不認識的孩子。畫了同一片黑海。說了同一句話。", background: Background.Chapter_10_Ch10_Act8_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有回答。不是不想回答。是喉嚨堵住了。", background: Background.Chapter_10_Ch10_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她低頭看著那張影印紙。皺摺。咖啡漬。折痕。被太多人翻過。被太多人還回去。被太多人說「這只是壓力」。被太多人說「這只是青春期」。被太多人說「這只是睡眠品質低下」。", background: Background.Chapter_10_Ch10_Act8_S0 },

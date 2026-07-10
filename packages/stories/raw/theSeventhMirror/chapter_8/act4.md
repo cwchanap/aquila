@@ -48,7 +48,7 @@ hospital ER waiting area corner at night, vending machine glow casting cold blue
 
 **旁白**：琴音沒有立刻接上。
 
-**旁白**：一秒。兩秒。那種停頓不是在想措辭。是發現自己說了不該說的話。
+**旁白**：一秒。兩秒。那種停頓很長。長到像在找話，又像在後悔。
 
 **白石琴音** [base]：我是說……案件裡那些東西。現場的、警察要查的、那個人的……都不要碰。
 

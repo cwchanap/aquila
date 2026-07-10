@@ -28,7 +28,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "什麼東西？", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "販賣機的馬達停了一下。又開始響。她聽見自己的呼吸。很淺。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有立刻接上。", background: Background.Chapter_8_Ch8_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一秒。兩秒。那種停頓不是在想措辭。是發現自己說了不該說的話。", background: Background.Chapter_8_Ch8_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一秒。兩秒。那種停頓很長。長到像在找話，又像在後悔。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "我是說……案件裡那些東西。現場的、警察要查的、那個人的……都不要碰。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把「那些東西」補成了「案件裡那些東西」。把「東西」拆成「現場的」「警察要查的」「那個人的」。一串普通的擔心。像在念一份清單。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯那個人的。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Shocked },

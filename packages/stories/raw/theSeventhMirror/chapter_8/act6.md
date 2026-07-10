@@ -56,7 +56,7 @@ hospital waiting area at night, rows of empty plastic chairs, vending machine gl
 
 **醫護**：請在外面等。
 
-**朝倉澪** [scared]：⋯⋯觀察區那個⋯⋯是千田嗎。
+**朝倉澪** [scared]：觀察區那個⋯⋯是千田嗎。
 
 **醫護**：請在外面等。不要靠近。
 

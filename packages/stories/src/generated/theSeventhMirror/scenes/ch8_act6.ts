@@ -32,7 +32,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走了幾步。一個人擋在她前面。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是保安。是護理人員。很年輕。臉上有那種被突然叫起來的疲憊。但擋住她的動作很穩。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "請在外面等。", background: Background.Chapter_8_Ch8_Act6_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯觀察區那個⋯⋯是千田嗎。", background: Background.Chapter_8_Ch8_Act6_S0, portrait: Portrait.AsakuraMio_Scared },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "觀察區那個⋯⋯是千田嗎。", background: Background.Chapter_8_Ch8_Act6_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "請在外面等。不要靠近。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "語氣沒有惡意。也沒有解釋。只有一個重複的指令。像背過很多遍的台詞。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪停下來。她站在走廊中間。背後是等候區的燈。前面是觀察區的方向。腳步聲越來越多。但都被走廊的轉角擋住了。她看不見裡面。", background: Background.Chapter_8_Ch8_Act6_S0 },

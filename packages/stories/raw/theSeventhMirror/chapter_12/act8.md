@@ -99,7 +99,7 @@ public library reference area, rows of data terminals with beige monitors, shelv
 
 **旁白**：佐伯看了她一眼。沒有追問「陌生人」是什麼意思。
 
-**佐伯達也** [determined]：書面結論只能寫到這裡。
+**佐伯達也** [determined]：結論只能寫到這裡。
 
 **旁白**：他拿出一張紙。寫下——
 
@@ -115,4 +115,4 @@ public library reference area, rows of data terminals with beige monitors, shelv
 
 **旁白**：他把列印件折好。放進文件套。
 
-**佐伯達也** [determined]：走。外面整理。
+**佐伯達也** [determined]：走。我們去外面整理。

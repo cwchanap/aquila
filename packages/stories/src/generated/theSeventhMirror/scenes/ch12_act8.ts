@@ -53,7 +53,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "同一家公司替研究做資料，也替政府做警報，不代表兩套系統是同一個東西。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.SaekiTatsuya_Guarded },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "至少，他不再只是碰巧懂警報系統的陌生人。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯看了她一眼。沒有追問「陌生人」是什麼意思。", background: Background.Chapter_12_Ch12_Act8_S0 },
-    { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "書面結論只能寫到這裡。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.SaekiTatsuya_Determined },
+    { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "結論只能寫到這裡。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他拿出一張紙。寫下——", background: Background.Chapter_12_Ch12_Act8_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "千田任職的公司，確實出現在悠真的研究文件上。兩條業務線是否相交，仍待確認。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著那行字。", background: Background.Chapter_12_Ch12_Act8_S0 },
@@ -61,5 +61,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是證據。是結構。是讓「完全無關」這四個字再也說不出口的結構。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:55。佐伯把螢幕上的資料列印了一份。圖書館的印表機在角落。吐紙的聲音很慢。", background: Background.Chapter_12_Ch12_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他把列印件折好。放進文件套。", background: Background.Chapter_12_Ch12_Act8_S0 },
-    { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "走。外面整理。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.SaekiTatsuya_Determined },
+    { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "走。我們去外面整理。", background: Background.Chapter_12_Ch12_Act8_S0, portrait: Portrait.SaekiTatsuya_Determined },
 ];

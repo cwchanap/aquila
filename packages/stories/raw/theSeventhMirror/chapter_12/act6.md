@@ -4,9 +4,13 @@
 community center reading room, approaching noon light, sun high enough to wash out shadows on the table, documents being reorganized into stacks, four folders closed and aligned, two coffee cups empty at the corner, warm bright palette with muted grey undertones, visual-novel background art, medium shot
 ```
 
-**旁白**：11:35。佐伯把四個資料夾重新排成一列。藍色。灰色。米色。白色。每一個都翻到招募說明那一頁。
+**旁白**：11:35。
 
-**佐伯達也** [determined]：四個研究。看入口。
+**旁白**：佐伯把四個資料夾重新排成一列。藍色。灰色。米色。白色。
+
+**旁白**：每一個都翻到招募說明那一頁。
+
+**佐伯達也** [determined]：四個研究。看招募入口。
 
 **旁白**：他把四份文件的第一頁並排。不是比條款。不是比頁尾。是看這些研究怎麼把孩子收進來的。
 
@@ -14,7 +18,7 @@ community center reading room, approaching noon light, sun high enough to wash o
 
 **旁白**：他用筆在紙上畫了兩條橫線。上面一條標「第一層」。下面一條標「第二層」。
 
-**佐伯達也** [determined]：第一層。大規模普通入口。
+**佐伯達也** [determined]：第一層。面向所有人的入口。
 
 **佐伯達也** [determined]：學校健康問卷。免費睡眠評估。壓力與災害反應調查。家長線上說明。
 
@@ -26,11 +30,13 @@ community center reading room, approaching noon light, sun high enough to wash o
 
 **佐伯達也** [determined]：配戴裝置。提交異常夜醒錄音。前往合作診所。接受追加檢查。取得 G 開頭的管理碼。
 
-**旁白**：他把每一項寫在第二層那條線下面。字很小。間距很勻。像在填一張流程圖。
+**旁白**：他把每一項寫在第二層那條線下面。
+
+**旁白**：字很小。間距很勻。像在填一張流程圖。
 
 **朝倉澪** [determined]：（內心）⋯⋯第二層。漏斗的頸部。很窄。不是所有人都進得來。只有被選中的才進得來。被選中的人拿到裝置。被選中的人提交錄音。被選中的人去診所。被選中的人拿到 G07。
 
-**朝倉澪** [determined]：他們用什麼標準選？
+**朝倉澪** [determined]：他們用什麼標準篩選？
 
 **佐伯達也** [determined]：不知道。文件上沒有寫篩選條件。
 
@@ -52,7 +58,7 @@ community center reading room, approaching noon light, sun high enough to wash o
 
 **朝倉澪** [determined]：我明白。
 
-**佐伯達也** [determined]：明白也要寫進去。書面結論裡要有這一條。
+**佐伯達也** [determined]：明白也要寫進去。這條要放進書面結論。
 
 **旁白**：澪拿起筆。在官方筆記上寫。
 

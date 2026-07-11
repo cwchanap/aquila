@@ -10,7 +10,7 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：佐伯拿出一張空白紙。在上面畫了兩條直線。把紙分成左右兩欄。
 
-**佐伯達也** [determined]：左邊寫可以成立的。右邊寫仍不能成立的。
+**佐伯達也** [determined]：左邊寫確定的。右邊寫還不能確定的。
 
 **旁白**：他開始念。像在讀清單。每一條之間停一下。像在確認每一條都站得住。
 
@@ -20,19 +20,27 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **佐伯達也** [determined]：第二。一份失蹤前已存在的文件明確使用「管理群：G07」。
 
+**旁白**：筆尖在紙上停了一下。
+
 **佐伯達也** [determined]：第三。至少三名目前已知異常孩子的材料含有 G07。
 
 **佐伯達也** [determined]：第四。若斜線後為個體號，G07 編號至少可見到十二。但人數與編號規則未知。
 
+**旁白**：澪看著他寫。他的字很慢。每一筆都像在稱重量。
+
 **佐伯達也** [determined]：第五。不同表面裝置的報告，在零六點十三分記錄相似系統事件。
 
 **佐伯達也** [determined]：第六。我們缺少普通參加者與非 G07 對照資料。
+
+**旁白**：巷子裡有一輛腳踏車經過。鈴聲響了一下。消失。
 
 **佐伯達也** [determined]：第七。悠真與美空可能把自己的管理碼刻在私人物上。
 
 **佐伯達也** [determined]：第八。四個研究都有大規模第一階段與少數第二階段。
 
 **佐伯達也** [determined]：第九。TKS 是共同資料處理公司。
+
+**旁白**：他寫完第九條。手指鬆開筆。又握住。
 
 **佐伯達也** [determined]：第十。千田曾任職 TKS 的公共警報同步產品線。
 
@@ -44,6 +52,8 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **佐伯達也** [determined]：第二。G07 會導致失蹤或昏迷。
 
+**旁白**：他寫得比左欄快。像在清場。
+
 **佐伯達也** [determined]：第三。十二一定代表第十二名孩子。
 
 **佐伯達也** [determined]：第四。零六點十三分是孩子共同醒來或時間循環的客觀證明。
@@ -53,6 +63,8 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 **朝倉澪** [determined]：（內心）⋯⋯時間循環。他寫了時間循環。他不知道。他只是把所有不能成立的東西列出來。可是這四個字穿過了我的皮膚。
 
 **佐伯達也** [determined]：第五。TKS 綁架孩子。
+
+**旁白**：他沒有停。筆尖在紙上劃過。
 
 **佐伯達也** [determined]：第六。孩子研究後台與警報同步是同一套系統。
 
@@ -66,6 +78,8 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **朝倉澪** [determined]：（內心）⋯⋯他不知道。他不可能知道。他只是在寫所有過度結論。小鏡子能解鎖什麼——這只是他列出的可能性之一。他不知道千田塞給我的是什麼。他不知道我把它藏在家裡。他不知道那個銀色的東西可能和這面鏡子有關。
 
+**旁白**：佐伯的筆停了一秒。然後繼續。
+
 **佐伯達也** [determined]：第九。東京不是城市。
 
 **佐伯達也** [determined]：第十。筑波一定關著悠真。
@@ -74,11 +88,11 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：佐伯把筆放下。看著那張紙。左欄和右欄。各十條。像一個平衡的表格。像一份還沒有被回答的考卷。
 
-**佐伯達也** [determined]：妳找到的不是答案。是讓人不能再說「完全無關」的結構。
+**佐伯達也** [determined]：妳找到的不是答案。是一個讓人沒法再說「完全無關」的證據鏈。
 
 **旁白**：澪看著左欄。看著右欄。
 
-**朝倉澪** [determined]：（內心）⋯⋯不是答案。是結構。十條可以成立的。十條仍不能成立的。中間那條線不是結論。是一個還沒有被跨過的邊界。可是這個邊界已經移動了。在今天之前，「完全無關」是一個可以說出口的詞。現在不是了。
+**朝倉澪** [determined]：（內心）⋯⋯不是答案。是證據鏈。十條可以成立的。十條仍不能成立的。中間那條線不是結論。是一個還沒有被跨過的邊界。可是這個邊界已經移動了。在今天之前，「完全無關」是一個可以說出口的詞。現在不是了。
 
 **旁白**：她翻開私人筆記。找到早上寫的那一行。
 
@@ -144,7 +158,7 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **佐伯達也** [determined]：今天的東西夠了。
 
-**佐伯達也** [determined]：固定了。接下來是妳自己的事。
+**佐伯達也** [determined]：資料都固定好了。接下來是妳自己的事。
 
 **旁白**：他朝車站的方向走。走了幾步。停了一下。沒有回頭。
 

@@ -122,6 +122,56 @@
       "prompt": "public community center rest area, afternoon light shifting to early evening, vending machines humming, chess game still in progress at the corner table, two women sitting across from each other at a window table, a blue umbrella leaning against the table leg, muted warm-grey palette with faint amber from low sun through glass, visual-novel background art, medium shot"
     },
     {
+      "key": "chapter_11/ch11_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act1_s0.png",
+      "prompt": "small Tokyo apartment room, afternoon light through curtains, cluttered desk with old laptop and notebooks, a small hand mirror lying on white paper beside a plastic ruler, muted warm-grey palette with faint amber from low afternoon sun, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act2_s0.png",
+      "prompt": "community center third floor corridor, fluorescent ceiling lights, linoleum floor, bulletin boards with flyers for calligraphy class and parenting consultation, ordinary municipal building interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act2_s1.png",
+      "prompt": "small municipal meeting room, fluorescent lights at normal brightness, folding tables arranged in a loose rectangle, chairs with metal legs, a cardboard box on the corner table with numbered opaque ziplock bags inside, blank projector screen, folders lying face-down on tables, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_11/ch11_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act3_s0.png",
+      "prompt": "small municipal meeting room interior, fluorescent lights at normal brightness, folding tables in loose rectangle, eight to ten adults seated, blank white projector screen, folders face-down on tables, convenience store rice balls, school uniform photos in frames, hospital bills, transit cards in clear sleeves, reflective work vests, half-used medicine packets, paper shift schedules on laps, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_11/ch11_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act4_s0.png",
+      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table with grey folders face-down, convenience store rice balls and hospital receipts scattered among photocopies, numbered opaque pouches visible in a corner box, muted institutional palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act5_s0.png",
+      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table covered with de-identified case cards arranged in rows, grey folder open at center, convenience store wrappers and hospital receipts pushed to one side, muted institutional palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act6_s0.png",
+      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, three de-identified case cards arranged in a row at center, grey folder open nearby, an unopened envelope placed at the table edge, document sleeves and label tape set aside, muted institutional palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act7_s0.png",
+      "prompt": "small community center meeting room, lights partially dimmed, old projector and low-brightness screen, chairs arranged in a semicircle around a table with an old offline laptop and a single speaker, numbered opaque bags visible in a box at the corner of the table, muted cool-grey palette with faint amber from the dimmed ceiling lights, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act8_s0.png",
+      "prompt": "small community center meeting room, lights returning to normal brightness, people gathering folders and bags, numbered phone bags being retrieved from the corner box, ordinary clutter of rice balls and paper schedules and hospital receipts on the table, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act8_s1.png",
+      "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, notice boards with calligraphy class and parenting workshop flyers, evening quiet, two women walking toward the exit, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"
@@ -587,6 +637,36 @@
       "key": "minase_yoshino/shocked",
       "path": "the_seventh_mirror/characters/minase_yoshino/shocked.png",
       "prompt": "anime visual-novel portrait, 43-year-old woman, eyes wide, breath caught, face pale, cardigan, stark lighting, upper-body shot"
+    },
+    {
+      "key": "saeki_tatsuya/guarded",
+      "path": "the_seventh_mirror/characters/saeki_tatsuya/guarded.png",
+      "prompt": "anime visual-novel portrait, 46-year-old man, eyes sharp and watchful, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot"
+    },
+    {
+      "key": "fujikawa_mari/sad",
+      "path": "the_seventh_mirror/characters/fujikawa_mari/sad.png",
+      "prompt": "anime visual-novel portrait, 38-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose, faded sweater, dim soft lighting, upper-body shot"
+    },
+    {
+      "key": "saeki_tatsuya/angry",
+      "path": "the_seventh_mirror/characters/saeki_tatsuya/angry.png",
+      "prompt": "anime visual-novel portrait, 46-year-old man, jaw clenched, eyes hard and commanding, brows lowered, leaning forward, dark jacket, tense posture, harsh lighting, upper-body shot"
+    },
+    {
+      "key": "fujikawa_mari/determined",
+      "path": "the_seventh_mirror/characters/fujikawa_mari/determined.png",
+      "prompt": "anime visual-novel portrait, 38-year-old woman, jaw set with quiet desperation, eyes bright with fragile hope, leaning forward, faded sweater, soft directional light, upper-body shot"
+    },
+    {
+      "key": "saeki_tatsuya/determined",
+      "path": "the_seventh_mirror/characters/saeki_tatsuya/determined.png",
+      "prompt": "anime visual-novel portrait, 46-year-old man, jaw set, eyes sharp with grim resolve, leaning forward with hands on table, dark jacket, strong directional light, upper-body shot"
+    },
+    {
+      "key": "fujikawa_mari/shocked",
+      "path": "the_seventh_mirror/characters/fujikawa_mari/shocked.png",
+      "prompt": "anime visual-novel portrait, 38-year-old woman, eyes wide, breath caught, face pale, faded sweater, stark lighting, upper-body shot"
     },
     {
       "key": "chida_kosuke/base",

@@ -30,6 +30,10 @@ export enum CharacterId {
     NoMoon = "no_moon",
     MinaseYoshino = "minase_yoshino",
     MinaseAoi = "minase_aoi",
+    SaekiTatsuya = "saeki_tatsuya",
+    FujikawaMari = "fujikawa_mari",
+    SaekiRen = "saeki_ren",
+    FujikawaMisora = "fujikawa_misora",
 }
 
 export interface CharacterInfo {
@@ -68,6 +72,10 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.NoMoon]: { id: "no_moon", name: "no_moon", aliases: ["陌生帳號", "陌生遊戲帳號"] },
     [CharacterId.MinaseYoshino]: { id: "minase_yoshino", name: "水瀨佳乃", aliases: ["水瀨", "女性"] },
     [CharacterId.MinaseAoi]: { id: "minase_aoi", name: "水瀨葵", aliases: ["葵", "bluefish_7"] },
+    [CharacterId.SaekiTatsuya]: { id: "saeki_tatsuya", name: "佐伯達也", aliases: ["佐伯"] },
+    [CharacterId.FujikawaMari]: { id: "fujikawa_mari", name: "藤川真理", aliases: ["藤川"] },
+    [CharacterId.SaekiRen]: { id: "saeki_ren", name: "佐伯蓮", aliases: ["蓮"] },
+    [CharacterId.FujikawaMisora]: { id: "fujikawa_misora", name: "藤川美空", aliases: ["美空"] },
 };
 
 const nameToId = new Map<string, string>();

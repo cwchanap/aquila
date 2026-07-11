@@ -641,3 +641,145 @@
 ### 說明
 
 本章不直接出場。透過遊戲帳號 bluefish_7、公開尋人頁、母親水瀨佳乃的描述與塗鴉影印紙呈現。她的生活細節讓黑色海更反常——她不是沉迷海洋題材的孩子，她畫的魚是日常，她畫的黑色海不是。
+
+---
+
+## 30. 佐伯達也（Saeki Tatsuya）
+
+- **ID**: `saeki_tatsuya`
+- **Aliases**: 佐伯
+
+### 基本資料
+
+- **身份**：物流公司倉儲排班主管；失蹤少年佐伯蓮的父親
+- **年齡**：約 46 歲
+- **家庭**：兒子佐伯蓮 16 歲，失蹤約第 24 日
+
+### 背景與處境
+
+佐伯達也是家屬資料整理會的資料驗證者。他負責整理日期、收據、學校回覆與文件格式，把證據品質分成強、中、弱三級。他不相信單靠夢話可以證明超自然，害怕家屬越像邪教，警方越有理由忽略他們。對新加入者先確認「看過什麼、何時看過」，防止資料污染。
+
+他不是冷血。越嚴格，越表示他害怕自己也會被錯誤希望欺騙。
+
+### 性格
+
+- **說話直接**：不喜歡含糊預言，用詞像在核對報表
+- **制度意識強**：知道警方只看外部日期，不相信家屬口述
+- **害怕被當成邪教**：嚴格是因為恐懼，不是因為冷血
+- **對兒子的愛藏在程序背後**：越是用文件格式保護自己，越表示他不敢直接面對悲傷
+
+### 說話風格
+
+- **短句陳述**：像在讀清單，不帶情緒色彩
+- **反駁過度結論**：聽到「至少海是一樣的」會立刻回「像不等於來源一樣」
+- **提到兒子時語氣變平**：不是冷漠，是已經把情緒壓進文件格式裡
+- **對新加入者先審查再歡迎**：不先問圖畫內容，先問看過什麼
+
+### 代表性台詞
+
+- `檔案時間本身不算證明。外面的人在那一天以前就收到過，才算。`——證據驗證核心
+- `像，不等於來源一樣。先把妳看過什麼分清楚。`——反駁藤川真理
+- `我討厭這個名字。說出去，別人只會覺得我們在等世界末日。`——對「第七曙光」的態度
+- `今天只記錄「兩個孩子都在私人物背面刻過東西」。不要現在比數字，也不要先決定它們相同。`——阻止當場解讀
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 46-year-old Japanese man, short greying hair receding at temples, stocky build, tired weathered face with deep lines, casual work clothes (dark jacket over polo shirt), sharp watchful eyes despite exhaustion, direct no-nonsense expression, neutral indoor lighting, muted cool-grey palette, upper-body shot, clean background
+- **angry**: anime visual-novel portrait, 46-year-old man, jaw clenched, eyes hard and commanding, brows lowered, leaning forward, dark jacket, tense posture, harsh lighting, upper-body shot
+- **sad**: anime visual-novel portrait, 46-year-old man, eyes downcast, heavy sigh visible in posture, shoulders dropped, dark jacket, dim lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 46-year-old man, eyes sharp and watchful, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
+- **determined**: anime visual-novel portrait, 46-year-old man, jaw set, eyes sharp with grim resolve, leaning forward with hands on table, dark jacket, strong directional light, upper-body shot
+
+---
+
+## 31. 藤川真理（Fujikawa Mari）
+
+- **ID**: `fujikawa_mari`
+- **Aliases**: 藤川
+
+### 基本資料
+
+- **身份**：13 歲少女藤川美空的母親
+- **年齡**：約 38 歲
+- **家庭**：女兒藤川美空 13 歲，曾失蹤兩日後被尋獲，至今未恢復清醒
+
+### 背景與處境
+
+藤川真理的女兒美空曾失蹤兩日，之後在外縣市一所地區醫療設施入口附近被發現。身上沒有明顯外傷，也沒有勒索或綁架證據。失蹤人口程序因本人被尋獲而結束，後續被拆成「未成年人自行外出」與「不明原因意識障礙」兩條程序。家屬無法證明失蹤兩日內有人控制過她。
+
+她保存女兒失蹤前的睡夢錄音，比其他家屬更容易相信孩子仍在另一邊呼救。她的語氣可能讓家屬圈看似信仰團體，但來源是絕望。女兒曾在藥盒背面刻過一組人工痕跡。
+
+### 性格
+
+- **絕望驅動信念**：不是迷信，是失去女兒意識後唯一能抓住的東西
+- **比其他家屬更願意相信超自然解釋**：因為現實解釋已經用完
+- **保存女兒錄音像保存女兒本人**：錄音是她唯一還能聽到女兒聲音的方式
+- **與佐伯形成對照**：佐伯要證據，她要希望
+
+### 說話風格
+
+- **語氣柔軟但執著**：不是激動，是已經哭到沒有眼淚後的平
+- **提到女兒時最柔軟**：會不自覺說出女兒的生活細節
+- **聽到錄音時想立刻解釋**：需要佐伯攔住她
+- **陳述痛苦時像在陳述天氣**：已經說過太多次，情緒被磨平了
+
+### 代表性台詞
+
+- `她回來了。可是回來的只有身體。`——核心台詞
+- `至少海是真的一樣。`——被佐伯反駁
+- `可孩子們一直說會亮。`——對「第七曙光」名稱的辯護
+- `警察說她回來了。醫院說她還活著。可是沒有一個人能告訴我，她去哪裡了。`——制度切割的痛
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 38-year-old Japanese woman, shoulder-length dark hair with loose strands, thin pale face with premature lines, casual clothes (faded sweater over blouse), exhausted but gentle expression, deep shadows under eyes, soft dim lighting, muted warm-grey palette, upper-body shot, clean background
+- **sad**: anime visual-novel portrait, 38-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose, faded sweater, dim soft lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 38-year-old woman, eyes watchful despite exhaustion, jaw tight, leaning back slightly, faded sweater, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 38-year-old woman, eyes wide, breath caught, face pale, faded sweater, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 38-year-old woman, jaw set with quiet desperation, eyes bright with fragile hope, leaning forward, faded sweater, soft directional light, upper-body shot
+
+---
+
+## 32. 佐伯蓮（Saeki Ren）
+
+- **ID**: `saeki_ren`
+- **Aliases**: 蓮
+
+### 基本資料
+
+- **身份**：16 歲中學生，學校轉介壓力反應追蹤受試者，失蹤約第 24 日
+- **年齡**：16 歲
+- **現狀**：失蹤中，未直接出場
+
+### 背景與處境
+
+佐伯蓮是佐伯達也的兒子，16 歲，失蹤約第 24 日。他參加學校轉介的壓力反應追蹤，失蹤前常在清晨六點十分到十五分之間驚醒。他在學校健康問卷背面畫過七條平行線，校方掃描版本留有日期，早於共用資料夾建立。
+
+他的完整睡夢錄音只有家庭原始裝置保存，外部單位只收到其中一小段文字說明。
+
+### 說明
+
+本章不直接出場。透過父親佐伯達也的描述、案例卡、校方掃描文件與睡夢錄音呈現。錄音中的夢話聲音使用 `dream_voice` 角色標籤。
+
+---
+
+## 33. 藤川美空（Fujikawa Misora）
+
+- **ID**: `fujikawa_misora`
+- **Aliases**: 美空
+
+### 基本資料
+
+- **身份**：13 歲中學生，曾失蹤兩日後被尋獲，至今未恢復清醒
+- **年齡**：13 歲
+- **現狀**：身體被尋獲，意識未恢復
+
+### 背景與處境
+
+藤川美空是藤川真理的女兒，13 歲。曾失蹤兩日，交通卡與車站畫面顯示她曾自行移動。在外縣市地區醫療設施入口附近被發現，身上沒有明顯外傷。本人被尋獲後失蹤程序結束，後續被拆為自行外出與不明意識障礙。
+
+她失蹤前的夢話錄音曾上傳醫院病患系統，系統保留檔名、長度與提交日期，門診紀錄引用過其中一句「不要讓海翻過來」。她曾在透明藥盒背面刻過一組人工痕跡。
+
+### 說明
+
+本章不直接出場。透過母親藤川真理的描述、案例卡、醫院系統紀錄與睡夢錄音呈現。錄音中的夢話聲音使用 `dream_voice` 角色標籤。

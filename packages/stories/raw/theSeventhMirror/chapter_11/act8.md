@@ -18,7 +18,7 @@ small community center meeting room, lights returning to normal brightness, peop
 
 **旁白**：不是奉獻。是下次會議室的場地費。區民館三樓一小時八百日圓。他們在分。
 
-**佐伯達也** [determined]：上次我出全額。這次三家庭分。藤川妳不用出，妳上次補了列印費。
+**佐伯達也** [determined]：上次我出全額。這次三家庭分。藤川妳不用付，妳上次補了列印費。
 
 **藤川真理** [sad]：⋯⋯好。
 
@@ -114,7 +114,7 @@ community center corridor, fluorescent ceiling lights, linoleum floor, notice bo
 
 **旁白**：第二則。來自灣岸署。
 
-**訊息**：關於前次筆錄所述小鏡子，請於明日上午十時前回覆可攜帶原件到署確認之時段。
+**訊息**：關於上次筆錄提到的小鏡子，請在明天上午十點前回覆方便帶原件到警署確認的時間。
 
 **旁白**：上午十時。明天。距離現在不到十二個小時。
 

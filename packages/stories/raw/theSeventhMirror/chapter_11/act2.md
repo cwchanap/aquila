@@ -40,7 +40,7 @@ community center third floor corridor, fluorescent ceiling lights, linoleum floo
 
 **旁白**：門開了。水瀨佳乃從裡面走出來。她看到澪，點了一下頭。沒有笑。也沒有客套。
 
-**水瀨佳乃** [guarded]：裡面的人不會因為我帶妳來就相信妳。
+**水瀨佳乃** [guarded]：我帶妳來，不代表裡面的人會相信妳。
 
 **朝倉澪** [determined]：（內心）⋯⋯我知道。
 
@@ -56,13 +56,13 @@ small municipal meeting room, fluorescent lights at normal brightness, folding t
 
 **旁白**：水瀨佳乃站在門邊。她指了一下那個箱子。
 
-**水瀨佳乃** [guarded]：手機。先關通知預覽。飛航模式。然後自己放進袋子。自己封口。散場憑編號拿回。
+**水瀨佳乃** [guarded]：手機。先關掉通知預覽，開飛航模式。然後自己放進袋子，自己封口。散場的時候憑編號拿回。
 
 **朝倉澪** [determined]：（內心）⋯⋯⋯⋯為什麼？
 
 **旁白**：她沒有問出口。但水瀨佳乃好像讀到了。
 
-**水瀨佳乃** [guarded]：有人把孩子夢話剪成怪談影片。有人假扮家屬進來套話。自媒體。網友。記者。
+**水瀨佳乃** [guarded]：有人把孩子夢話剪成怪談影片。有人假扮家屬進來套話。自媒體、網友、記者，什麼人都有。
 
 **水瀨佳乃** [guarded]：我們不是在搞神祕。我們是被嚇怕了。
 
@@ -74,7 +74,7 @@ small municipal meeting room, fluorescent lights at normal brightness, folding t
 
 **旁白**：門邊有一張簽到紙。水瀨佳乃指了一下。
 
-**水瀨佳乃** [guarded]：不寫全名。寫代號。寫失蹤或昏迷日數。
+**水瀨佳乃** [guarded]：不要寫全名。寫代號，還有失蹤或昏迷的天數。
 
 **旁白**：澪拿起筆。她寫了「姐姐」。後面寫「9」。
 

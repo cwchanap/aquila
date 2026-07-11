@@ -172,6 +172,56 @@
       "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, notice boards with calligraphy class and parenting workshop flyers, evening quiet, two women walking toward the exit, muted cool palette, visual-novel background art, medium shot"
     },
     {
+      "key": "chapter_12/ch12_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act1_s0.png",
+      "prompt": "Japanese family restaurant interior, early morning, booths by large windows, soft overcast light from left, nearly empty restaurant, paper menus and salt shakers on tables, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act2_s0.png",
+      "prompt": "public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications and newspapers, quiet, few elderly people reading, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act3_s0.png",
+      "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, morning light from exit door at far end, notice boards with calligraphy class and parenting workshop flyers, quiet, one person standing by the window checking phone, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act3_s1.png",
+      "prompt": "public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications, quiet, two people seated at a table with documents, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act4_s0.png",
+      "prompt": "community center reading room, late morning light through large windows growing warmer, long table covered with printed documents and highlighters, four folder colors neatly separated, quiet weekday morning, muted warm-grey palette with increasing amber tones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act5_s0.png",
+      "prompt": "community center reading room, mid-morning light now fully illuminating the table, sun past the rooftop opposite, documents and folders spread out with a PDF printout placed center, two sealed envelopes set aside, warm amber-tinged natural light, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act6_s0.png",
+      "prompt": "community center reading room, approaching noon light, sun high enough to wash out shadows on the table, documents being reorganized into stacks, four folders closed and aligned, two coffee cups empty at the corner, warm bright palette with muted grey undertones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act7_s0.png",
+      "prompt": "community center lounge area, vending machines humming along one wall, plastic chairs and low table with convenience store rice balls and bottled tea, afternoon light through frosted windows, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act8_s0.png",
+      "prompt": "public library reference area, rows of data terminals with beige monitors, shelves of bound government bulletins and corporate registry volumes, fluorescent ceiling lighting, quiet afternoon atmosphere, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act9_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act9_s0.png",
+      "prompt": "outside public library, stone steps and low concrete wall beside the entrance, afternoon light slanting across a quiet residential street, distant elevated train tracks, muted warm-grey palette with faint amber from low sun, visual-novel background art, medium shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"

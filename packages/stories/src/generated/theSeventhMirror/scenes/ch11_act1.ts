@@ -18,7 +18,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Message, character: "訊息", dialogue: "關於上次筆錄提到的小鏡子，請在明天上午十點前回覆方便帶原件到警署確認的時間。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯明日上午十時。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那行字。看很久。像在看一個已經在倒數的鐘。", background: Background.Chapter_11_Ch11_Act1_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他們知道它是一面小鏡子。他們還沒扣押。但他們要我了。明天十點以前。如果我回覆了時段，帶過去，他們可能當場收走，暫時保管，甚至再也不還給我。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他們知道是一面小鏡子。還沒扣押。但他們要我了。明天十點以前。回覆時段。帶過去。可能當場收走。暫時保管。甚至不還。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯在那之前，我要留下普通人能完成的紀錄。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把兩則訊息都截圖。存在手機裡。然後把手機螢幕朝下扣在桌上。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從抽屜深處拿出一台舊數位相機。不是手機。是她高中時用過的那台。沒有自動上傳。沒有雲端同步。拍完只存在記憶卡裡。", background: Background.Chapter_11_Ch11_Act1_S0 },

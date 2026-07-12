@@ -222,6 +222,51 @@
       "prompt": "outside public library, stone steps and low concrete wall beside the entrance, afternoon light slanting across a quiet residential street, distant elevated train tracks, muted warm-grey palette with faint amber from low sun, visual-novel background art, medium shot"
     },
     {
+      "key": "chapter_13/ch13_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act1_s0.png",
+      "prompt": "small Tokyo apartment interior, late afternoon light through a single window, cluttered desk with notebooks and a closed drawer, muted warm-grey palette with thin amber from low sun, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act2_s0.png",
+      "prompt": "small police station interview room, fluorescent ceiling lighting, plain table with two chairs, institutional grey walls, a camera tripod in the corner, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act3_s0.png",
+      "prompt": "police station technical briefing room, fluorescent lighting, long table with a laptop and printed documents, projector screen showing a de-identified cropped image, institutional grey walls, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act4_s0.png",
+      "prompt": "police station evidence confirmation room, cold white fluorescent lighting, metal desk with evidence log forms and a transparent evidence bag, scale ruler and measuring tools, institutional claustrophobic atmosphere, late afternoon light filtered through frosted window, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act5_s0.png",
+      "prompt": "police station evidence confirmation room, cold white fluorescent lighting, metal desk cleared of most documents, evidence log forms stacked neatly, transparent evidence bag containing a small mirror, scale ruler, institutional claustrophobic atmosphere, evening light nearly gone through frosted window, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act5_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act5_s1.png",
+      "prompt": "police station reception counter, evening, cold fluorescent lighting, low counter with a sign-in sheet and stamp tray, institutional hallway extending into background, quiet, few people, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act6_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, stacks of document folders and printed web archives on every surface, window showing dark residential street with distant elevated train tracks, muted cool palette with faint monitor glow, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act7_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing procurement database search results, stacks of document folders, window showing dark residential street, muted cool palette with stronger monitor glow on face, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act8_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing an archived attachment cache from a local council security committee meeting, older document format with different table structure, window showing dark residential street with fewer lights, deeper night palette with monitor glow dominant, visual-novel background art, medium shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"
@@ -717,6 +762,11 @@
       "key": "fujikawa_mari/shocked",
       "path": "the_seventh_mirror/characters/fujikawa_mari/shocked.png",
       "prompt": "anime visual-novel portrait, 38-year-old woman, eyes wide, breath caught, face pale, faded sweater, stark lighting, upper-body shot"
+    },
+    {
+      "key": "onodera_naoki/guarded",
+      "path": "the_seventh_mirror/characters/onodera_naoki/guarded.png",
+      "prompt": "anime visual-novel portrait, 37-year-old man, eyes sharp and watchful behind glasses, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot"
     },
     {
       "key": "chida_kosuke/base",

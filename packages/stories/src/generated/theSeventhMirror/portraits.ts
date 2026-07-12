@@ -20,6 +20,7 @@ export enum Portrait {
     MinaseYoshino_Guarded = "minase_yoshino/guarded",
     MinaseYoshino_Sad = "minase_yoshino/sad",
     MinaseYoshino_Shocked = "minase_yoshino/shocked",
+    OnoderaNaoki_Guarded = "onodera_naoki/guarded",
     SaekiTatsuya_Angry = "saeki_tatsuya/angry",
     SaekiTatsuya_Determined = "saeki_tatsuya/determined",
     SaekiTatsuya_Guarded = "saeki_tatsuya/guarded",

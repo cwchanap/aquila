@@ -783,3 +783,52 @@
 ### 說明
 
 本章不直接出場。透過母親藤川真理的描述、案例卡、醫院系統紀錄與睡夢錄音呈現。錄音中的夢話聲音使用 `dream_voice` 角色標籤。
+
+---
+
+## 34. 小野寺直樹（Onodera Naoki）
+
+- **ID**: `onodera_naoki`
+- **Aliases**: 小野寺
+
+### 基本資料
+
+- **身份**：東都危機システム株式会社／公共安全系統部技術協力人員
+- **年齡**：約 35–40 歲
+
+### 背景與處境
+
+小野寺是 TKS 公共安全系統部的技術協力人員，負責協助警方說明灣岸新交通事件中的防災同步測試、中央流時間碼與 TKS-SYNC 表記格式。他不是黑衣人，也不是核心反派——只是一個睡眠不足、習慣精確用詞的工程師，對刑事程序不自在。
+
+他只熟悉公共安全產品線，未必知道教育資料部門的真實用途。當他看見熟悉格式出現在兒少研究頁上，先產生職業反射，說完後才意識到自己可能碰到跨部門責任問題。
+
+後續弧線定位為**受壓改口的有限度證人**：Chapter 14 中澪再聯絡時，由 TKS 法務接手，他的正式說法收窄，不再主動回答個案問題。
+
+### 性格
+
+- **睡眠不足**：長期維護公共安全系統的工程師，眼下常有深色陰影
+- **習慣精確用詞**：技術語言不帶情緒，像在讀手冊
+- **對刑事程序不自在**：不是因為有罪，是因為工程師不習慣被當證人
+- **職業反射強**：看見熟悉格式會先辨認，後才考慮後果
+- **說完後意識到風險**：普通工程師的自我保護意識，不是陰謀者
+
+### 說話風格
+
+- **條件式陳述**：「如果只看這串⋯⋯」「我只能說表記相似⋯⋯」
+- **技術語言為主**：用產品術語解釋，不涉及個案判斷
+- **被追問時加限制句**：每次回答後都補充「這不能證明⋯⋯」
+- **對跨部門問題變謹慎**：提到其他部門時用「分開運作」「不一定知道」等措辭
+
+### 代表性台詞
+
+- `如果只看這串，它和我們同步產品的地址表記很像。`——職業反射
+- `G07 會是第七同步群，斜線後的 12 是群內端點。`——條件式解讀
+- `我只能說表記相似。這不能證明它就是 TKS-SYNC 地址。`——自我限制
+- `設定檔名稱和群組映射會隨版本更新，現行手冊未必等於事件當晚配置。`——普通技術說明，非祕密提示
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 37-year-old Japanese man, short neat black hair, glasses, tired face with stubble and dark circles, dark casual jacket over collared shirt, guarded but precise expression, sharp analytical eyes, dim office lighting, muted cool-grey palette, upper-body shot, clean background
+- **guarded**: anime visual-novel portrait, 37-year-old man, eyes sharp and watchful behind glasses, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 37-year-old man, eyes wide behind glasses, face frozen for a moment, dark jacket, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 37-year-old man, jaw set, eyes sharp with professional focus, leaning forward, dark jacket, strong directional light, upper-body shot

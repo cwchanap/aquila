@@ -267,6 +267,41 @@
       "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing an archived attachment cache from a local council security committee meeting, older document format with different table structure, window showing dark residential street with fewer lights, deeper night palette with monitor glow dominant, visual-novel background art, medium shot"
     },
     {
+      "key": "chapter_14/ch14_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act1_s0.png",
+      "prompt": "small Tokyo apartment interior, early morning grey light through a single window, cluttered desk with open notebook and scattered printouts, muted cold blue palette with faint warmth from desk lamp, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act1_s1.png",
+      "prompt": "small investigation media office, cramped room with two desks and a public data terminal, morning light through a single window mixing with fluorescent ceiling light, neat stacks of documents and reference binders, muted cool palette with warm desk lamp, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act2_s0.png",
+      "prompt": "local council archive reading room, rows of wooden tables with green banker's lamps, shelves of bound documents behind glass doors, quiet institutional atmosphere, cool fluorescent overhead lighting with warm lamp accents, muted beige and grey-green palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act3_s0.png",
+      "prompt": "family restaurant near the council building, bright daytime interior, booth seating by window, simple table with water glass and notebook, warm overhead lighting mixing with afternoon sun through glass, casual muted palette with soft yellows and beiges, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act4_s0.png",
+      "prompt": "small investigation media office, cramped room with two desks and a public data terminal, early afternoon light through a single window, fluorescent ceiling light mixing with warm desk lamp, documents and notebooks spread across desk, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act5_s0.png",
+      "prompt": "local council archive reading room, rows of wooden desks with green-shaded lamps, shelves of bound documents behind glass, afternoon light through high windows, quiet institutional atmosphere, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act6_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen off, desk lamp providing warm focused light on notebook and documents, window showing dark residential street, deeper night palette with lamp glow dominant, visual-novel background art, medium shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"
@@ -767,6 +802,11 @@
       "key": "onodera_naoki/guarded",
       "path": "the_seventh_mirror/characters/onodera_naoki/guarded.png",
       "prompt": "anime visual-novel portrait, 37-year-old man, eyes sharp and watchful behind glasses, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot"
+    },
+    {
+      "key": "saeki_tatsuya/base",
+      "path": "the_seventh_mirror/characters/saeki_tatsuya/base.png",
+      "prompt": "anime visual-novel portrait, 46-year-old Japanese man, short greying hair receding at temples, stocky build, tired weathered face with deep lines, casual work clothes (dark jacket over polo shirt), sharp watchful eyes despite exhaustion, direct no-nonsense expression, neutral indoor lighting, muted cool-grey palette, upper-body shot, clean background"
     },
     {
       "key": "chida_kosuke/base",

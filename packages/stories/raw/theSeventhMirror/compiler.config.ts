@@ -77,6 +77,16 @@ const config: StoryCompilerConfig = {
                 /^(\u91AB\u8B77|\u8B77\u7406\u4EBA\u54E1|\u8B77\u58EB|\u91AB\u751F|\u91AB\u8B77\u4EBA\u54E1|\u91AB\u7642\u5718\u968A)$/,
             id: 'medical_staff',
         },
+        {
+            pattern:
+                /^(\u8CC7\u6599\u5BA4\u8077\u54E1|\u95B1\u89BD\u5BA4\u8077\u54E1|\u8077\u54E1)$/,
+            id: 'archive_staff',
+        },
+        {
+            pattern:
+                /^(TKS\u6CD5\u52D9|TKS\u516C\u95DC|\u6CD5\u52D9|\u516C\u95DC)$/,
+            id: 'tks_legal',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

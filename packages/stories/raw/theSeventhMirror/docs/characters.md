@@ -832,3 +832,25 @@
 - **guarded**: anime visual-novel portrait, 37-year-old man, eyes sharp and watchful behind glasses, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
 - **shocked**: anime visual-novel portrait, 37-year-old man, eyes wide behind glasses, face frozen for a moment, dark jacket, stark lighting, upper-body shot
 - **determined**: anime visual-novel portrait, 37-year-old man, jaw set, eyes sharp with professional focus, leaning forward, dark jacket, strong directional light, upper-body shot
+
+---
+
+## 35. 資料室職員（Archive Staff）
+
+- **ID**: `archive_staff`
+- **Aliases**: 閱覽室職員
+
+### 說明
+
+泛指地方議會／都政資料閱覽室的職員。無人格，純功能性角色，負責核對身分證件、處理閱覽申請、調取資料包、確認拍攝程序與閉館提醒。代表公共資料體系的程序與秩序。
+
+---
+
+## 36. TKS法務（TKS Legal）
+
+- **ID**: `tks_legal`
+- **Aliases**: TKS公關, 法務, 公關
+
+### 說明
+
+泛指 TKS（東都危機システム株式会社）法務與公關部門的正式回覆。無人格，純功能性角色，代表公司體制的統一對外口徑——以最安全的時態回答現行問題，以系統安全為由拒答歷史配置。回覆語言精確、制式、不帶情緒，像在讀既有模板。

@@ -10,33 +10,33 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：佐伯拿出一張空白紙。在上面畫了兩條直線。把紙分成左右兩欄。
 
-**佐伯達也** [determined]：左邊寫確定的。右邊寫還不能確定的。
+**佐伯達也** [determined]：左邊寫確定的，右邊寫不確定的。
 
 **旁白**：他開始念。像在讀清單。每一條之間停一下。像在確認每一條都站得住。
 
-**佐伯達也** [determined]：可以成立。第一。四個公開名稱不同的研究共享同一資料處理層。
+**佐伯達也** [determined]：可以確定。第一，四個公開名稱不同的研究，共用同一個資料處理層。
 
 **旁白**：他在左欄寫下第一條。
 
-**佐伯達也** [determined]：第二。一份失蹤前已存在的文件明確使用「管理群：G07」。
+**佐伯達也** [determined]：第二，一份失蹤前就存在的文件，寫著「管理群：G07」。
 
 **旁白**：筆尖在紙上停了一下。
 
-**佐伯達也** [determined]：第三。至少三名目前已知異常孩子的材料含有 G07。
+**佐伯達也** [determined]：第三，至少三個已知異常孩子的材料裡有 G07。
 
-**佐伯達也** [determined]：第四。若斜線後為個體號，G07 編號至少可見到十二。但人數與編號規則未知。
+**佐伯達也** [determined]：第四，如果斜線後面是個體編號，G07 編號至少能看到十二。但人數跟編號規則還不知道。
 
 **旁白**：澪看著他寫。他的字很慢。每一筆都像在稱重量。
 
-**佐伯達也** [determined]：第五。不同表面裝置的報告，在零六點十三分記錄相似系統事件。
+**佐伯達也** [determined]：第五，不同裝置的報告，在零六點十三分都記錄了類似的系統事件。
 
-**佐伯達也** [determined]：第六。我們缺少普通參加者與非 G07 對照資料。
+**佐伯達也** [determined]：第六，我們沒有普通參加者跟非 G07 的對照資料。
 
 **旁白**：巷子裡有一輛腳踏車經過。鈴聲響了一下。消失。
 
-**佐伯達也** [determined]：第七。悠真與美空可能把自己的管理碼刻在私人物上。
+**佐伯達也** [determined]：第七，悠真跟美空可能把自己的管理碼刻在私人物品上。
 
-**佐伯達也** [determined]：第八。四個研究都有大規模第一階段與少數第二階段。
+**佐伯達也** [determined]：第八，四個研究都有大規模第一階段，和少數第二階段。
 
 **佐伯達也** [determined]：第九。TKS 是共同資料處理公司。
 
@@ -48,7 +48,7 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：然後他換到右欄。
 
-**佐伯達也** [determined]：仍不能成立。第一。G07 一定是能力或實驗等級。
+**佐伯達也** [determined]：還不能確定。第一，G07 不一定是能力或實驗等級。
 
 **佐伯達也** [determined]：第二。G07 會導致失蹤或昏迷。
 
@@ -88,7 +88,7 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：佐伯把筆放下。看著那張紙。左欄和右欄。各十條。像一個平衡的表格。像一份還沒有被回答的考卷。
 
-**佐伯達也** [determined]：妳找到的不是答案。是一個讓人沒法再說「完全無關」的證據鏈。
+**佐伯達也** [determined]：妳找到的不是答案，是一串讓人沒法再說「完全無關」的證據。
 
 **旁白**：澪看著左欄。看著右欄。
 
@@ -118,7 +118,7 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：他把其他家庭的資料收回文件套。水瀨的。藤川的。佐伯自己的。一份一份放進去。拉鏈拉好。
 
-**佐伯達也** [determined]：妳只能帶走四樣東西。
+**佐伯達也** [determined]：妳只能帶四樣東西走。
 
 **旁白**：他列。像在核對一張清單。
 
@@ -126,11 +126,11 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **佐伯達也** [determined]：第二。TKS 的公開法人資料。圖書館列印的那份。
 
-**佐伯達也** [determined]：第三。千田研討會的公開影印頁。
+**佐伯達也** [determined]：第三，千田研討會的影印資料。
 
 **佐伯達也** [determined]：第四。一張共同點摘要。上面沒有其他孩子的個人資料。
 
-**佐伯達也** [determined]：其他家庭的文件留在我這裡。妳不帶走。
+**佐伯達也** [determined]：其他家庭的文件留在我這裡，妳不能帶走。
 
 **朝倉澪** [determined]：（內心）⋯⋯他在保護其他家庭。也在保護我。如果我帶著其他孩子的個資被攔下——被警方、被任何人——那些家庭就會暴露。他只讓我帶走屬於我的，和屬於公開的。
 
@@ -156,13 +156,13 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：14:25。佐伯把文件包背上。站起來。
 
-**佐伯達也** [determined]：今天的東西夠了。
+**佐伯達也** [determined]：今天查得夠了。
 
-**佐伯達也** [determined]：資料都固定好了。接下來是妳自己的事。
+**佐伯達也** [determined]：資料都存好了。接下來是妳自己的事。
 
 **旁白**：他朝車站的方向走。走了幾步。停了一下。沒有回頭。
 
-**佐伯達也** [determined]：悠真的欄位表。填得很清楚。
+**佐伯達也** [determined]：悠真的欄位表填得很清楚。
 
 **旁白**：然後他走了。
 

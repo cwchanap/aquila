@@ -42,9 +42,9 @@ community center lounge area, vending machines humming along one wall, plastic c
 
 **朝倉澪** [determined]：所以不是有人阻止你們去。
 
-**佐伯達也** [guarded]：沒有人阻止。是去了之後，東西會消失。
+**佐伯達也** [guarded]：沒有人阻止。是去了之後，資料會不見。
 
-**佐伯達也** [guarded]：也許只是機構發現個資外洩，開始補洞。也許不是。但結果一樣——妳去得太早，留下的資料就會變少。
+**佐伯達也** [guarded]：也許機構發現資料外洩，開始刪東西。也許不是。但結果一樣——妳去得太早，能留住的資料就變少了。
 
 **旁白**：澪看著桌上那瓶沒有打開的茶。
 
@@ -54,13 +54,13 @@ community center lounge area, vending machines humming along one wall, plastic c
 
 **佐伯達也** [determined]：我們不是不去。是還不能去。
 
-**佐伯達也** [determined]：今天比的就是這個。先把紙上的東西固定下來。等它們固定了，再決定下一步。
+**佐伯達也** [determined]：今天就是要做這個。先把紙上的東西存好。存好了，再決定下一步。
 
 **旁白**：12:25。飯糰吃完了。茶還沒打開。
 
 **旁白**：佐伯把包裝紙揉成一團。站起來。把電腦包背上。
 
-**佐伯達也** [determined]：附近有一間公共圖書館。有資料終端。不連外網，但可以查法人登記和舊研討會資料。
+**佐伯達也** [determined]：附近有間公共圖書館，有資料終端。雖然不連外網，但可以查法人登記和舊研討會資料。
 
 **佐伯達也** [determined]：TKS。去查它。
 

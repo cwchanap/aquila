@@ -42,7 +42,7 @@ police station technical briefing room, fluorescent lighting, long table with a 
 
 **旁白**：小野寺停了一下。像在確認自己要說什麼。
 
-**小野寺直樹** [guarded]：G07 會是第七同步群。斜線後的 12 是群內端點。
+**小野寺直樹** [guarded]：G07 應該是第七同步群。斜線後的 12 是群內端點。
 
 **旁白**：他說完。立刻補了一句。
 
@@ -62,7 +62,7 @@ police station technical briefing room, fluorescent lighting, long table with a 
 
 **警察**：端點是什麼？
 
-**小野寺直樹** [guarded]：同一則警報要同時出現在很多地方。螢幕、月台面板、廣播閘道，都需要有自己的位置號。
+**小野寺直樹** [guarded]：同一則警報要同時出現在很多地方。螢幕、月台面板、廣播系統，都需要有自己的位置號。
 
 **旁白**：他說的時候語氣變平了。像在讀手冊。
 
@@ -70,7 +70,7 @@ police station technical briefing room, fluorescent lighting, long table with a 
 
 **旁白**：刑警看了一眼桌上封袋裡的鏡子。
 
-**小野寺直樹** [guarded]：所以我只能解釋字串格式。不能解釋它為什麼會出現在兒少研究頁上。
+**小野寺直樹** [guarded]：所以我只能解釋字串格式。不能解釋它為什麼會出現在那份研究文件上。
 
 **朝倉澪** [determined]：（內心）⋯⋯他在退。他在把自己縮回格式說明的範圍裡。他不碰「為什麼」。只碰「怎麼讀」。這是一個知道邊界在哪裡的工程師。
 
@@ -94,7 +94,7 @@ police station technical briefing room, fluorescent lighting, long table with a 
 
 **小野寺直樹** [guarded]：公司不同部門有時候會共用版號與表記規範。
 
-**小野寺直樹** [guarded]：設定檔名稱和群組映射會隨版本更新。現行手冊未必等於事件當晚配置。
+**小野寺直樹** [guarded]：設定檔名稱和群組映射會隨版本更新。現行手冊不一定等於事件當晚的配置。
 
 **朝倉澪** [determined]：（內心）⋯⋯他在解釋。不是在暗示。他說的是任何維護系統的工程師都會知道的事。版本會變。設定檔會換。手冊不一定反映當晚的配置。這不是祕密提示。這只是普通技術說明。可是——
 

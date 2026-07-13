@@ -22,7 +22,7 @@ public library reference area, rows of data terminals with beige monitors, shelv
 
 **朝倉澪** [determined]：（內心）⋯⋯東都危機システム。Tōto Kiki Systems。TKS。頁尾那三個字母。不是隨機碼。不是版本號。是一間公司的名字。
 
-**佐伯達也** [determined]：中型系統整合公司。分部獨立運作。
+**佐伯達也** [determined]：是中型系統整合公司，各分部獨立運作。
 
 **旁白**：他往下翻。螢幕上的資料很乾淨。沒有多餘的設計。只有欄位和文字。
 
@@ -34,9 +34,9 @@ public library reference area, rows of data terminals with beige monitors, shelv
 
 **旁白**：佐伯的語氣像在關一扇門。
 
-**佐伯達也** [guarded]：公開資料上，各部門業務彼此合理且不必互通。公共警報系統維護。學校與醫療資料匿名化。災害時青少年支援平台。交通與地方政府資訊同步。
+**佐伯達也** [guarded]：公開資料上看，各部門業務彼此合理，不需要互通。像公共警報系統維護、學校醫療資料匿名化、災害時青少年支援平台、交通跟地方政府資訊同步——這些都是分開的。
 
-**佐伯達也** [guarded]：中型系統整合公司接到不同公家標案，各做各的。這在日本很常見。不代表四個部門共享同一個計畫。
+**佐伯達也** [guarded]：中型系統整合公司接到不同公家標案，各做各的，這在日本很常見。不代表四個部門共用同一個計畫。
 
 **朝倉澪** [determined]：（內心）⋯⋯他在擋我。不是因為他不想知道。是因為他知道「同一家公司」仍然不等於「同一個秘密」。四個部門可以共用一個法人、一個客服窗口、一套個資模板，然後彼此完全不知道對方在做什麼。這是普通外包。這是制度常態。
 
@@ -99,11 +99,11 @@ public library reference area, rows of data terminals with beige monitors, shelv
 
 **旁白**：佐伯看了她一眼。沒有追問「陌生人」是什麼意思。
 
-**佐伯達也** [determined]：結論只能寫到這裡。
+**佐伯達也** [determined]：只能確定到這裡。
 
 **旁白**：他拿出一張紙。寫下——
 
-**佐伯達也** [determined]：千田任職的公司，確實出現在悠真的研究文件上。兩條業務線是否相交，仍待確認。
+**佐伯達也** [determined]：千田任職的公司，確實出現在悠真的研究文件上。但兩條業務線有沒有交集，還不知道。
 
 **旁白**：澪看著那行字。
 
@@ -115,4 +115,4 @@ public library reference area, rows of data terminals with beige monitors, shelv
 
 **旁白**：他把列印件折好。放進文件套。
 
-**佐伯達也** [determined]：走。我們去外面整理。
+**佐伯達也** [determined]：走吧，去外面整理。

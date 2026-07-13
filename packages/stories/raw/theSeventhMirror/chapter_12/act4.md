@@ -10,9 +10,9 @@ community center reading room, late morning light through large windows growing 
 
 **旁白**：佐伯把咖啡杯挪到桌角，杯底在紙面上留了一個淺色的圓印。他沒有擦。
 
-**佐伯達也** [determined]：接下來比較異常時間。
+**佐伯達也** [determined]：接下來比對異常時間。
 
-**佐伯達也** [determined]：不要先想答案。各自抄寫。抄完再疊起來。
+**佐伯達也** [determined]：不要先想答案。各自抄下來。抄完再一起對。
 
 **朝倉澪** [determined]：（內心）⋯⋯不先想答案。他在防確認偏誤。如果我們先說「找六點十三」，就會只看見六點十三。
 
@@ -22,7 +22,7 @@ community center reading room, late morning light through large windows growing 
 
 **旁白**：悠真的簡易結果畫面放在旁邊，但他先碰都沒碰。
 
-**佐伯達也** [determined]：妳抄葵。我抄美空。蓮的我們一起看。悠真的最後再說。
+**佐伯達也** [determined]：妳抄葵的。我抄美空的。蓮的我們一起看。悠真的最後再說。
 
 **旁白**：澪拿起葵的裝置報告。A4 影本，左上角有裝置型號，正文是表格。每一行是一個日期，旁邊標記當晚的睡眠事件類型。
 
@@ -46,7 +46,7 @@ community center reading room, late morning light through large windows growing 
 
 **旁白**：佐伯拿一支螢光筆。不畫。先看。
 
-**佐伯達也** [determined]：找重複的分鐘。不是找重複的時間。是分鐘。
+**佐伯達也** [determined]：找重複的分鐘數。不是整個時間，只要分鐘。
 
 **朝倉澪** [determined]：（內心）⋯⋯分鐘。不是小時。不是秒。是分鐘。他知道分鐘層級的同步才是後台的行為。秒太細，可能是巧合。小時太粗，什麼都重複。分鐘——
 
@@ -78,7 +78,7 @@ community center reading room, late morning light through large windows growing 
 
 **佐伯達也** [determined]：如果後台一樣，這可能只是每天六點十三分做同步。不是三個孩子同時醒，是三套報表同時被寫了一筆。
 
-**朝倉澪** [determined]：但兩份報告都寫覺醒。為什麼是這個詞？
+**朝倉澪** [determined]：但兩份報告都寫覺醒。為什麼用這個詞？
 
 **旁白**：她聽見自己的聲音。穩的。沒有抖。她不知道怎麼做到的。
 
@@ -94,7 +94,7 @@ community center reading room, late morning light through large windows growing 
 
 **佐伯達也** [guarded]：還有一件事。
 
-**佐伯達也** [guarded]：我們沒有普通參加者的報告。沒有不出事的。沒有非 G07 的。
+**佐伯達也** [guarded]：我們沒有普通參加者的報告，沒有不出事的案例，也沒有非 G07 的資料。
 
 **佐伯達也** [guarded]：六點十三可能是 G07 的事。也可能是所有 TKS 裝置每天都會寫的一行。我們分不出來。
 
@@ -106,9 +106,9 @@ community center reading room, late morning light through large windows growing 
 
 **旁白**：她看著疊表上那三個 06:13。螢光筆還沒有畫下去。佐伯在等。
 
-**佐伯達也** [determined]：書面結論。
+**佐伯達也** [determined]：來寫結論。
 
-**佐伯達也** [determined]：三份不同表面裝置的報告，在同一分鐘記錄相似類型的系統事件。它們很可能共用資料轉譯或同步層。
+**佐伯達也** [determined]：三份不同裝置的報告，在同一分鐘記錄了相似的系統事件。它們可能共用同一個資料轉譯或同步層。
 
 **佐伯達也** [determined]：不能寫三個孩子在六點十三同時醒來。
 
@@ -124,11 +124,11 @@ community center reading room, late morning light through large windows growing 
 
 **旁白**：悠真的簡易結果畫面還在旁邊。佐伯拿起來看了一眼。
 
-**佐伯達也** [determined]：悠真的只能看到 6:10 到 6:15 之間有尖峰。分鐘不精確。
+**佐伯達也** [determined]：悠真的報告只能看出 6:10 到 6:15 之間有尖峰，無法精確到分鐘。
 
 **朝倉澪** [determined]：但 06:13 在範圍裡。
 
-**佐伯達也** [determined]：在範圍裡不等於就是。記下來。6:10 到 6:15。尖峰。不能精確到分鐘。
+**佐伯達也** [determined]：在範圍內不代表就是。記下來：6:10 到 6:15 有尖峰，但無法精確到分鐘。
 
 **朝倉澪** [determined]：（內心）⋯⋯在範圍裡。06:13 在 6:10 到 6:15 之間。悠真的報告不夠精確。但 06:13 在那裡面。他的尖峰。我的錨點。同一個範圍。
 
@@ -142,7 +142,7 @@ community center reading room, late morning light through large windows growing 
 
 **旁白**：10:38。窗外的光又亮了一層。上午的太陽越過了對面公寓的屋頂，直接照進閱覽室。桌上的紙被曬得有點刺眼。佐伯把葵的裝置報告往陰影那邊挪了挪。
 
-**佐伯達也** [determined]：休息五分鐘。下一項是 G07。
+**佐伯達也** [determined]：休息五分鐘，下一項看 G07。
 
 **朝倉澪** [determined]：（內心）⋯⋯G07。他說的是 G07。悠真的預約頁上寫的那個代碼。G07／12。今天早上在家庭餐廳填欄位時看見的。佐伯在旁邊寫了「意義未明」。我在私人筆記裡寫了「悠真」。
 

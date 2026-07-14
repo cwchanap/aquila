@@ -126,7 +126,7 @@ small investigation media office, cramped room with two desks and a public data 
 
 **旁白**：她翻開筆記本。找到昨晚記下的東西。
 
-**旁白**：委員會日期。採購案號。Chapter 13 找到的舊附件引用編號。
+**旁白**：委員會日期。採購案號。昨晚找到的舊附件引用編號。
 
 **旁白**：她在旁邊列出一個清單。
 

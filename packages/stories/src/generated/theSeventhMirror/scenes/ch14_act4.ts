@@ -21,7 +21,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.TksLegal, character: "TKS法務", dialogue: "四、個別歷史測試之參數配置與改訂履歷，涉及供應契約及系統安全，不透過一般媒體詢問提供。", background: Background.Chapter_14_Ch14_Act4_S0 },
     { characterId: CharacterId.TksLegal, character: "TKS法務", dialogue: "五、後續技術人員個別聯絡由公司法務／公關部門統一管理。如有進一步詢問，請透過本信箱辦理。", background: Background.Chapter_14_Ch14_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪把這五條看完。從第一條到第五條。一個字一個字看。", background: Background.Chapter_14_Ch14_Act4_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一條。TOKYO 是一般城市／測試設定檔。回答了。確認了 Chapter 13 的發現。沒有否認。沒有迴避。它是設定檔。", background: Background.Chapter_14_Ch14_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一條。TOKYO 是一般城市／測試設定檔。回答了。確認了那天晚上的發現。沒有否認。沒有迴避。它是設定檔。", background: Background.Chapter_14_Ch14_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第二條。映射可調整。也回答了。設定檔和同步群的對應關係不是固定的。可以換。這和小野寺說的一樣——設定檔名稱和群組映射會隨版本更新。但小野寺是條件式說法。法務是正式確認。", background: Background.Chapter_14_Ch14_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第三條。現行標準規格不固定綁定 G07。回答了。但——「現行」。它只說現行不綁定。它沒有說星期一那晚綁不綁定。它沒有說過去綁不綁定。它用現在式。最安全的時態。", background: Background.Chapter_14_Ch14_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第四條。歷史配置涉及供應契約及系統安全，不提供。拒答了。星期一灣岸同步試驗的歷史映射——他們不回答。以安全為由。", background: Background.Chapter_14_Ch14_Act4_S0, portrait: Portrait.AsakuraMio_Determined },

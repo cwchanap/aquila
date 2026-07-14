@@ -65,7 +65,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐到自己的位置。打開另一個畫面。她開始整理文件引用鏈。", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯信寄出去以後，等回覆的時間不能浪費。我需要先準備好紙本資料的調閱。如果 TKS 不回答星期一的歷史配置——我就自己去查。", background: Background.Chapter_14_Ch14_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻開筆記本。找到昨晚記下的東西。", background: Background.Chapter_14_Ch14_Act1_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "委員會日期。採購案號。Chapter 13 找到的舊附件引用編號。", background: Background.Chapter_14_Ch14_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "委員會日期。採購案號。昨晚找到的舊附件引用編號。", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在旁邊列出一個清單。", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "可能保存紙本配布資料的地方——地方議會／都政資料閱覽室。", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她需要調取的資料包——安全委員會會議附件。灣岸新交通測試相關。星期一同步試驗前後。", background: Background.Chapter_14_Ch14_Act1_S1 },

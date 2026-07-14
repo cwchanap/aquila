@@ -22,7 +22,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十五個字。沒有標點。語氣軟的。像在照顧人。像以前一樣。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她知道。她知道今天要補筆錄。我沒有告訴她。警方訊息剛到。她怎麼知道。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯⋯⋯也許是猜的。施工通道事件。千田死了。目擊者補筆錄。任何人都能猜到。不是只有她會知道。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但她在 Chapter 7 說過「灣岸中央」。在 Chapter 8 說過「案件裡那些東西」。她知道醫院名。她知道有東西。她現在又知道我要補筆錄。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但她之前說過「灣岸中央」。後來又說過「案件裡那些東西」。她知道醫院名。她知道有東西。她現在又知道我要補筆錄。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯可以解釋。每一條都可以單獨解釋。朋友會關心。朋友會追新聞。朋友會猜到流程。可以。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著琴音的訊息。拇指停在輸入框上面。她打了一行字。刪掉。又打了一行。又刪掉。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪我會回「嗯，等下要去」。第二輪我會回「沒事，我撐得住」。我會告訴她我在做什麼。我會把所有東西告訴她。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },

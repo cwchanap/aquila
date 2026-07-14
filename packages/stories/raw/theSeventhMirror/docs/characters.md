@@ -514,3 +514,343 @@
 ### 說明
 
 泛指有明車輛基地外圍保全人員。無人格，純功能性角色，負責制止未經授權者接近事故車與拍照。
+
+---
+
+## 23. 維修人員（Maintenance Worker）
+
+- **ID**: `maintenance_worker`
+- **Aliases**: 維修, 工作人員
+
+### 說明
+
+泛指灣岸新交通車站內穿著維修制服、戴口罩與帽子的人員。第二輪中引導千田浩介進入施工通道的人即以此身分出現，身分被刻意遮蔽。無人格，純功能性角色——本章不揭露其真實身分。
+
+---
+
+## 24. 醫院櫃台（Hospital Reception）
+
+- **ID**: `hospital_clerk`
+- **Aliases**: 急診櫃台, 接待人員
+
+### 說明
+
+泛指灣岸中央急救醫療中心急診接待區的櫃台人員。無人格，純功能性角色，代表醫院的個資規定與禮貌外皮——以「非家屬無法提供病情」擋住澪的詢問。
+
+---
+
+## 25. 醫院保安（Hospital Security）
+
+- **ID**: `hospital_security`
+- **Aliases**: 行政人員, 醫院行政
+
+### 說明
+
+泛指灣岸中央急救醫療中心的保安與行政人員。無人格，純功能性角色，負責保管病人物、控制動線、執行「交通案件安全保管」流程。看起來都只是在照流程辦事——這正是可怕之處。
+
+---
+
+## 26. 醫護（Medical Staff）
+
+- **ID**: `medical_staff`
+- **Aliases**: 護理人員, 護士, 醫生, 醫護人員, 醫療團隊
+
+### 說明
+
+泛指灣岸中央急救醫療中心的護理人員、醫生與急救團隊。無人格，純功能性角色，只專注救人、不參與陰謀。代表醫院裡「正常且善意」的那一面。
+
+---
+
+## 27. no_moon（陌生帳號）
+
+- **ID**: `no_moon`
+- **Aliases**: 陌生帳號, 陌生遊戲帳號
+
+### 說明
+
+透過悠真遊戲帳號私訊出現的陌生帳號。帳號名帶有倒月感，看起來像普通遊戲帳號而非組織招牌。對方知道悠真、知道黑色海、知道澪正在使用悠真帳號——可能是失蹤者家屬、幫手、陷阱、或神鏡外圍監視者，本章不揭露立場。說話風格短、試探性、像在確認暗號與身份，不主動提供完整答案。
+
+---
+
+## 28. 水瀨佳乃（Minase Yoshino）
+
+- **ID**: `minase_yoshino`
+- **Aliases**: 水瀨, 女性
+
+### 基本資料
+
+- **身份**：失蹤少女水瀨葵的母親，失蹤者家屬互助圈邊緣成員
+- **年齡**：四十多歲
+- **家庭**：女兒水瀨葵失蹤已 41 日
+
+### 背景與處境
+
+水瀨佳乃不是情報組織成員，也不是邪教信徒。她是一名被制度反覆拒絕後，學會用笨拙方式自保的普通母親。女兒葵失蹤後，她自己做尋人頁、自己轉發、自己回覆每條留言。警方初期以「自行離家」處理，學校與研究單位互推責任。她學會不在網路上打孩子真名、不直接說研究名稱、先用共同圖像確認對方是否真的相關。
+
+她帶著女兒的黑色海塗鴉影印紙，反覆拿給不同單位看過，卻沒人願意把它當證據。那張紙有皺摺、有咖啡痕，像被太多人翻過。
+
+### 性格
+
+- **疲憊但警覺**：長期等待消耗了她，但她對陌生人仍有戒心
+- **不輕易信任**：遇過亂猜的網友、蹭流量的自媒體、要她「接受孩子離家」的路人
+- **保護女兒的圖像**：不願把葵的塗鴉拿給不相關的人消費，先要求對方證明自己也是家屬
+- **痛苦比神秘感更重要**：她不是神秘組織成員，只是一個等孩子等太久的母親
+
+### 說話風格
+
+- **簡短而口語**：不像情報人員，像普通人被嚇怕後的笨拙自保
+- **不說全名**：先問「妳是 no_moon 說的那個姐姐？」再由對方自報姓名
+- **陳述痛苦時語氣變平**：不是冷漠，是已經說過太多次
+- **提到女兒生活細節時最柔軟**：討厭游泳、愛畫魚、收集冰棒棍
+
+### 代表性台詞
+
+- `妳是 no_moon 說的那個姐姐？`——見面第一句，不報全名
+- `不要給我看照片。你先說，他畫的海裡有什麼。`——信任門檻
+- `警察說這是壓力。學校說這是青春期。研究那邊說這是睡眠品質低下。可是我女兒不認識你弟弟。`——被制度拒絕的痛
+- `你弟弟也畫了這個，對不對？`——章末確認共同圖像
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 43-year-old Japanese woman, shoulder-length dark brown hair tied back loosely, tired face with faint lines, casual clothes (wrinkled blouse over cardigan), guarded but weary expression, deep shadows under eyes from poor sleep, soft overcast afternoon light, muted warm-grey palette, upper-body shot, clean background
+- **sad**: anime visual-novel portrait, 43-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose from tie, cardigan, dim soft lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 43-year-old woman, eyes sharp and watchful despite exhaustion, jaw tight, leaning back slightly, cardigan, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 43-year-old woman, eyes wide, breath caught, face pale, cardigan, stark lighting, upper-body shot
+
+---
+
+## 29. 水瀨葵（Minase Aoi）
+
+- **ID**: `minase_aoi`
+- **Aliases**: 葵, bluefish_7
+
+### 基本資料
+
+- **身份**：14 歲中學生，睡眠研究受試者，失蹤已 41 日
+- **年齡**：14 歲
+- **現狀**：失蹤中，未在本章直接出場
+
+### 背景與處境
+
+水瀨葵是第一名被具體化的其他失蹤孩子。她不是案例代號，而是一個有生活細節的少女：討厭游泳課，卻總在美術作業裡畫魚；會把便利店冰棒的棍子收集起來，在上面寫日期。bluefish_7 是她的遊戲帳號——朋友笑她「怕水的魚」。
+
+她的遊戲帳號最後登入約 41 日前，最後一張公開圖像地面像黑色水面，角落有倒過來的月亮，說明文字只有一句：「明天檢查，不想睡。」
+
+她失蹤前參加學校合作的睡眠健康檢查，晚間未回家。警方初期以自行離家或網友接觸方向處理。家屬頁提到「最後訊息不像她」。
+
+### 說明
+
+本章不直接出場。透過遊戲帳號 bluefish_7、公開尋人頁、母親水瀨佳乃的描述與塗鴉影印紙呈現。她的生活細節讓黑色海更反常——她不是沉迷海洋題材的孩子，她畫的魚是日常，她畫的黑色海不是。
+
+---
+
+## 30. 佐伯達也（Saeki Tatsuya）
+
+- **ID**: `saeki_tatsuya`
+- **Aliases**: 佐伯
+
+### 基本資料
+
+- **身份**：物流公司倉儲排班主管；失蹤少年佐伯蓮的父親
+- **年齡**：約 46 歲
+- **家庭**：兒子佐伯蓮 16 歲，失蹤約第 24 日
+
+### 背景與處境
+
+佐伯達也是家屬資料整理會的資料驗證者。他負責整理日期、收據、學校回覆與文件格式，把證據品質分成強、中、弱三級。他不相信單靠夢話可以證明超自然，害怕家屬越像邪教，警方越有理由忽略他們。對新加入者先確認「看過什麼、何時看過」，防止資料污染。
+
+他不是冷血。越嚴格，越表示他害怕自己也會被錯誤希望欺騙。
+
+### 性格
+
+- **說話直接**：不喜歡含糊預言，用詞像在核對報表
+- **制度意識強**：知道警方只看外部日期，不相信家屬口述
+- **害怕被當成邪教**：嚴格是因為恐懼，不是因為冷血
+- **對兒子的愛藏在程序背後**：越是用文件格式保護自己，越表示他不敢直接面對悲傷
+
+### 說話風格
+
+- **短句陳述**：像在讀清單，不帶情緒色彩
+- **反駁過度結論**：聽到「至少海是一樣的」會立刻回「像不等於來源一樣」
+- **提到兒子時語氣變平**：不是冷漠，是已經把情緒壓進文件格式裡
+- **對新加入者先審查再歡迎**：不先問圖畫內容，先問看過什麼
+
+### 代表性台詞
+
+- `檔案時間本身不算證明。外面的人在那一天以前就收到過，才算。`——證據驗證核心
+- `像，不等於來源一樣。先把妳看過什麼分清楚。`——反駁藤川真理
+- `我討厭這個名字。說出去，別人只會覺得我們在等世界末日。`——對「第七曙光」的態度
+- `今天只記錄「兩個孩子都在私人物背面刻過東西」。不要現在比數字，也不要先決定它們相同。`——阻止當場解讀
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 46-year-old Japanese man, short greying hair receding at temples, stocky build, tired weathered face with deep lines, casual work clothes (dark jacket over polo shirt), sharp watchful eyes despite exhaustion, direct no-nonsense expression, neutral indoor lighting, muted cool-grey palette, upper-body shot, clean background
+- **angry**: anime visual-novel portrait, 46-year-old man, jaw clenched, eyes hard and commanding, brows lowered, leaning forward, dark jacket, tense posture, harsh lighting, upper-body shot
+- **sad**: anime visual-novel portrait, 46-year-old man, eyes downcast, heavy sigh visible in posture, shoulders dropped, dark jacket, dim lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 46-year-old man, eyes sharp and watchful, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
+- **determined**: anime visual-novel portrait, 46-year-old man, jaw set, eyes sharp with grim resolve, leaning forward with hands on table, dark jacket, strong directional light, upper-body shot
+
+---
+
+## 31. 藤川真理（Fujikawa Mari）
+
+- **ID**: `fujikawa_mari`
+- **Aliases**: 藤川
+
+### 基本資料
+
+- **身份**：13 歲少女藤川美空的母親
+- **年齡**：約 38 歲
+- **家庭**：女兒藤川美空 13 歲，曾失蹤兩日後被尋獲，至今未恢復清醒
+
+### 背景與處境
+
+藤川真理的女兒美空曾失蹤兩日，之後在外縣市一所地區醫療設施入口附近被發現。身上沒有明顯外傷，也沒有勒索或綁架證據。失蹤人口程序因本人被尋獲而結束，後續被拆成「未成年人自行外出」與「不明原因意識障礙」兩條程序。家屬無法證明失蹤兩日內有人控制過她。
+
+她保存女兒失蹤前的睡夢錄音，比其他家屬更容易相信孩子仍在另一邊呼救。她的語氣可能讓家屬圈看似信仰團體，但來源是絕望。女兒曾在藥盒背面刻過一組人工痕跡。
+
+### 性格
+
+- **絕望驅動信念**：不是迷信，是失去女兒意識後唯一能抓住的東西
+- **比其他家屬更願意相信超自然解釋**：因為現實解釋已經用完
+- **保存女兒錄音像保存女兒本人**：錄音是她唯一還能聽到女兒聲音的方式
+- **與佐伯形成對照**：佐伯要證據，她要希望
+
+### 說話風格
+
+- **語氣柔軟但執著**：不是激動，是已經哭到沒有眼淚後的平
+- **提到女兒時最柔軟**：會不自覺說出女兒的生活細節
+- **聽到錄音時想立刻解釋**：需要佐伯攔住她
+- **陳述痛苦時像在陳述天氣**：已經說過太多次，情緒被磨平了
+
+### 代表性台詞
+
+- `她回來了。可是回來的只有身體。`——核心台詞
+- `至少海是真的一樣。`——被佐伯反駁
+- `可孩子們一直說會亮。`——對「第七曙光」名稱的辯護
+- `警察說她回來了。醫院說她還活著。可是沒有一個人能告訴我，她去哪裡了。`——制度切割的痛
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 38-year-old Japanese woman, shoulder-length dark hair with loose strands, thin pale face with premature lines, casual clothes (faded sweater over blouse), exhausted but gentle expression, deep shadows under eyes, soft dim lighting, muted warm-grey palette, upper-body shot, clean background
+- **sad**: anime visual-novel portrait, 38-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose, faded sweater, dim soft lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 38-year-old woman, eyes watchful despite exhaustion, jaw tight, leaning back slightly, faded sweater, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 38-year-old woman, eyes wide, breath caught, face pale, faded sweater, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 38-year-old woman, jaw set with quiet desperation, eyes bright with fragile hope, leaning forward, faded sweater, soft directional light, upper-body shot
+
+---
+
+## 32. 佐伯蓮（Saeki Ren）
+
+- **ID**: `saeki_ren`
+- **Aliases**: 蓮
+
+### 基本資料
+
+- **身份**：16 歲中學生，學校轉介壓力反應追蹤受試者，失蹤約第 24 日
+- **年齡**：16 歲
+- **現狀**：失蹤中，未直接出場
+
+### 背景與處境
+
+佐伯蓮是佐伯達也的兒子，16 歲，失蹤約第 24 日。他參加學校轉介的壓力反應追蹤，失蹤前常在清晨六點十分到十五分之間驚醒。他在學校健康問卷背面畫過七條平行線，校方掃描版本留有日期，早於共用資料夾建立。
+
+他的完整睡夢錄音只有家庭原始裝置保存，外部單位只收到其中一小段文字說明。
+
+### 說明
+
+本章不直接出場。透過父親佐伯達也的描述、案例卡、校方掃描文件與睡夢錄音呈現。錄音中的夢話聲音使用 `dream_voice` 角色標籤。
+
+---
+
+## 33. 藤川美空（Fujikawa Misora）
+
+- **ID**: `fujikawa_misora`
+- **Aliases**: 美空
+
+### 基本資料
+
+- **身份**：13 歲中學生，曾失蹤兩日後被尋獲，至今未恢復清醒
+- **年齡**：13 歲
+- **現狀**：身體被尋獲，意識未恢復
+
+### 背景與處境
+
+藤川美空是藤川真理的女兒，13 歲。曾失蹤兩日，交通卡與車站畫面顯示她曾自行移動。在外縣市地區醫療設施入口附近被發現，身上沒有明顯外傷。本人被尋獲後失蹤程序結束，後續被拆為自行外出與不明意識障礙。
+
+她失蹤前的夢話錄音曾上傳醫院病患系統，系統保留檔名、長度與提交日期，門診紀錄引用過其中一句「不要讓海翻過來」。她曾在透明藥盒背面刻過一組人工痕跡。
+
+### 說明
+
+本章不直接出場。透過母親藤川真理的描述、案例卡、醫院系統紀錄與睡夢錄音呈現。錄音中的夢話聲音使用 `dream_voice` 角色標籤。
+
+---
+
+## 34. 小野寺直樹（Onodera Naoki）
+
+- **ID**: `onodera_naoki`
+- **Aliases**: 小野寺
+
+### 基本資料
+
+- **身份**：東都危機システム株式会社／公共安全系統部技術協力人員
+- **年齡**：約 35–40 歲
+
+### 背景與處境
+
+小野寺是 TKS 公共安全系統部的技術協力人員，負責協助警方說明灣岸新交通事件中的防災同步測試、中央流時間碼與 TKS-SYNC 表記格式。他不是黑衣人，也不是核心反派——只是一個睡眠不足、習慣精確用詞的工程師，對刑事程序不自在。
+
+他只熟悉公共安全產品線，未必知道教育資料部門的真實用途。當他看見熟悉格式出現在兒少研究頁上，先產生職業反射，說完後才意識到自己可能碰到跨部門責任問題。
+
+後續弧線定位為**受壓改口的有限度證人**：Chapter 14 中澪再聯絡時，由 TKS 法務接手，他的正式說法收窄，不再主動回答個案問題。
+
+### 性格
+
+- **睡眠不足**：長期維護公共安全系統的工程師，眼下常有深色陰影
+- **習慣精確用詞**：技術語言不帶情緒，像在讀手冊
+- **對刑事程序不自在**：不是因為有罪，是因為工程師不習慣被當證人
+- **職業反射強**：看見熟悉格式會先辨認，後才考慮後果
+- **說完後意識到風險**：普通工程師的自我保護意識，不是陰謀者
+
+### 說話風格
+
+- **條件式陳述**：「如果只看這串⋯⋯」「我只能說表記相似⋯⋯」
+- **技術語言為主**：用產品術語解釋，不涉及個案判斷
+- **被追問時加限制句**：每次回答後都補充「這不能證明⋯⋯」
+- **對跨部門問題變謹慎**：提到其他部門時用「分開運作」「不一定知道」等措辭
+
+### 代表性台詞
+
+- `如果只看這串，它和我們同步產品的地址表記很像。`——職業反射
+- `G07 會是第七同步群，斜線後的 12 是群內端點。`——條件式解讀
+- `我只能說表記相似。這不能證明它就是 TKS-SYNC 地址。`——自我限制
+- `設定檔名稱和群組映射會隨版本更新，現行手冊未必等於事件當晚配置。`——普通技術說明，非祕密提示
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 37-year-old Japanese man, short neat black hair, glasses, tired face with stubble and dark circles, dark casual jacket over collared shirt, guarded but precise expression, sharp analytical eyes, dim office lighting, muted cool-grey palette, upper-body shot, clean background
+- **guarded**: anime visual-novel portrait, 37-year-old man, eyes sharp and watchful behind glasses, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 37-year-old man, eyes wide behind glasses, face frozen for a moment, dark jacket, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 37-year-old man, jaw set, eyes sharp with professional focus, leaning forward, dark jacket, strong directional light, upper-body shot
+
+---
+
+## 35. 資料室職員（Archive Staff）
+
+- **ID**: `archive_staff`
+- **Aliases**: 閱覽室職員
+
+### 說明
+
+泛指地方議會／都政資料閱覽室的職員。無人格，純功能性角色，負責核對身分證件、處理閱覽申請、調取資料包、確認拍攝程序與閉館提醒。代表公共資料體系的程序與秩序。
+
+---
+
+## 36. TKS法務（TKS Legal）
+
+- **ID**: `tks_legal`
+- **Aliases**: TKS公關, 法務, 公關
+
+### 說明
+
+泛指 TKS（東都危機システム株式会社）法務與公關部門的正式回覆。無人格，純功能性角色，代表公司體制的統一對外口徑——以最安全的時態回答現行問題，以系統安全為由拒答歷史配置。回覆語言精確、制式、不帶情緒，像在讀既有模板。

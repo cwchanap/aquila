@@ -57,6 +57,36 @@ const config: StoryCompilerConfig = {
             pattern: /^(\u4FDD\u5168|\u57FA\u5730\u4FDD\u5168)$/,
             id: 'security_guard',
         },
+        {
+            pattern:
+                /^(\u7DAD\u4FEE\u4EBA\u54E1|\u7DAD\u4FEE|\u7DAD\u4FEE\u54E1|\u7DAD\u4FEE\u5DE5\u4EBA|\u5DE5\u4F5C\u4EBA\u54E1)$/,
+            id: 'maintenance_worker',
+        },
+        {
+            pattern:
+                /^(\u91AB\u9662\u6AC3\u53F0|\u6025\u8A3A\u6AC3\u53F0|\u63A5\u5F85\u4EBA\u54E1)$/,
+            id: 'hospital_clerk',
+        },
+        {
+            pattern:
+                /^(\u91AB\u9662\u4FDD\u5B89|\u91AB\u9662\u884C\u653F|\u884C\u653F\u4EBA\u54E1)$/,
+            id: 'hospital_security',
+        },
+        {
+            pattern:
+                /^(\u91AB\u8B77|\u8B77\u7406\u4EBA\u54E1|\u8B77\u58EB|\u91AB\u751F|\u91AB\u8B77\u4EBA\u54E1|\u91AB\u7642\u5718\u968A)$/,
+            id: 'medical_staff',
+        },
+        {
+            pattern:
+                /^(\u8CC7\u6599\u5BA4\u8077\u54E1|\u95B1\u89BD\u5BA4\u8077\u54E1|\u8077\u54E1)$/,
+            id: 'archive_staff',
+        },
+        {
+            pattern:
+                /^(TKS\u6CD5\u52D9|TKS\u516C\u95DC|\u6CD5\u52D9|\u516C\u95DC)$/,
+            id: 'tks_legal',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

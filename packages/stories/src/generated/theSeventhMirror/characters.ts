@@ -23,6 +23,20 @@ export enum CharacterId {
     MediaSenior = "media_senior",
     CustomerService = "customer_service",
     SecurityGuard = "security_guard",
+    MaintenanceWorker = "maintenance_worker",
+    HospitalClerk = "hospital_clerk",
+    HospitalSecurity = "hospital_security",
+    MedicalStaff = "medical_staff",
+    NoMoon = "no_moon",
+    MinaseYoshino = "minase_yoshino",
+    MinaseAoi = "minase_aoi",
+    SaekiTatsuya = "saeki_tatsuya",
+    FujikawaMari = "fujikawa_mari",
+    SaekiRen = "saeki_ren",
+    FujikawaMisora = "fujikawa_misora",
+    OnoderaNaoki = "onodera_naoki",
+    ArchiveStaff = "archive_staff",
+    TksLegal = "tks_legal",
 }
 
 export interface CharacterInfo {
@@ -54,6 +68,20 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.MediaSenior]: { id: "media_senior", name: "調查媒體前輩", aliases: ["前輩", "媒體前輩"] },
     [CharacterId.CustomerService]: { id: "customer_service", name: "客服", aliases: ["灣岸新交通客服"] },
     [CharacterId.SecurityGuard]: { id: "security_guard", name: "保全", aliases: ["基地保全"] },
+    [CharacterId.MaintenanceWorker]: { id: "maintenance_worker", name: "維修人員", aliases: ["維修", "工作人員"] },
+    [CharacterId.HospitalClerk]: { id: "hospital_clerk", name: "醫院櫃台", aliases: ["急診櫃台", "接待人員"] },
+    [CharacterId.HospitalSecurity]: { id: "hospital_security", name: "醫院保安", aliases: ["行政人員", "醫院行政"] },
+    [CharacterId.MedicalStaff]: { id: "medical_staff", name: "醫護", aliases: ["護理人員", "護士", "醫生", "醫護人員", "醫療團隊"] },
+    [CharacterId.NoMoon]: { id: "no_moon", name: "no_moon", aliases: ["陌生帳號", "陌生遊戲帳號"] },
+    [CharacterId.MinaseYoshino]: { id: "minase_yoshino", name: "水瀨佳乃", aliases: ["水瀨", "女性"] },
+    [CharacterId.MinaseAoi]: { id: "minase_aoi", name: "水瀨葵", aliases: ["葵", "bluefish_7"] },
+    [CharacterId.SaekiTatsuya]: { id: "saeki_tatsuya", name: "佐伯達也", aliases: ["佐伯"] },
+    [CharacterId.FujikawaMari]: { id: "fujikawa_mari", name: "藤川真理", aliases: ["藤川"] },
+    [CharacterId.SaekiRen]: { id: "saeki_ren", name: "佐伯蓮", aliases: ["蓮"] },
+    [CharacterId.FujikawaMisora]: { id: "fujikawa_misora", name: "藤川美空", aliases: ["美空"] },
+    [CharacterId.OnoderaNaoki]: { id: "onodera_naoki", name: "小野寺直樹", aliases: ["小野寺"] },
+    [CharacterId.ArchiveStaff]: { id: "archive_staff", name: "資料室職員", aliases: ["閱覽室職員"] },
+    [CharacterId.TksLegal]: { id: "tks_legal", name: "TKS法務", aliases: ["TKS公關", "法務", "公關"] },
 };
 
 const nameToId = new Map<string, string>();

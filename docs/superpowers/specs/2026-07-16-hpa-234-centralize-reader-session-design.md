@@ -68,7 +68,9 @@ holds `dialogue`/`choice`/`currentSceneId`/`storyId`/`canGoNext`/`locale`, so
 adding `dialogueIndex` makes it the full reactive progression owner. `readerState`
 remains the single reactive store; `ReaderManager` remains the orchestrator that
 owns behavior (restore, navigation, URL sync, persistence, popstate) and
-reads/writes the store. `ReaderManager` never becomes reactive.
+reads/writes the store. `ReaderManager` never becomes reactive. The existing
+`readerState.reset()` must also reset `dialogueIndex` to `0` so a reset never
+leaves a stale index.
 
 Reader-mode preference (text vs visual) is intentionally **not** part of this
 state, so swapping modes never forks a save.
@@ -82,7 +84,9 @@ validateSessionState(state, flow, dialogue): ReaderSessionState | null
 It checks story existence (flow present), scene existence (node in flow),
 locale ∈ {en, zh}, and dialogueIndex bounds. Returns a valid (possibly clamped)
 state or `null`. Restore, popstate, and persisted-state migration share this one
-validator.
+validator. `flow` and `dialogue` are passed as parameters (not imported inside
+the helper), so per-precedence-tier unit tests can stub them without mocking the
+`@aquila/stories` module.
 
 ### Section 2 — Controlled reader contract & ReaderShell
 
@@ -129,6 +133,21 @@ free. The `initialDialogueIndex` prop is removed entirely — initial seeding
 happens once in the orchestrator before mount, so there is no initial-index
 callback clobbering a bookmark to guard against.
 
+**Desktop history must derive from the index.** Today `NovelReader` accumulates
+a `displayedDialogues` array (`NovelReader.svelte:68-72`) back-filled only by the
+initial-index effect (`NovelReader.svelte:129-133`). Under the controlled model a
+`popstate` can jump `dialogueIndex` within the same scene (e.g. 5 → 3, or 0 → 5)
+without the dialogue array reference changing, so the scene-reset effect would
+not fire and `displayedDialogues` would disagree with the index (six lines shown
+while index says 3). The desktop reader must therefore derive its visible history
+from the index, exactly as `MobileNovelReader` already does with
+`backlogLines = dialogue.slice(0, currentDialogueIndex + 1)`
+(`MobileNovelReader.svelte:268`). The `displayedDialogues` accumulator is deleted
+in favor of a derived slice; the active line renders `typingText` while typing
+and the full text once complete. This makes both readers consistent under any
+index jump (popstate, breakpoint swap, bookmark seed) and removes the
+initial-index back-fill loop entirely.
+
 ### Section 3 — ReaderManager orchestration & URL/history
 
 `ReaderManager` narrows to behavior, delegating progression to `readerState`:
@@ -142,7 +161,9 @@ callback clobbering a bookmark to guard against.
   URL `replaceState`, and schedules a debounced localStorage persist. Navigation
   actions (`handleNext`, `handleChoice`, `onNavigate`) call a shared
   `goToScene(sceneId)` that resets `dialogueIndex` to 0, pushes scene data into
-  the store, and does a `pushState`.
+  the store, and does a `pushState`. `goToScene` **flushes (or cancels) any
+  pending throttled `replaceState` before its `pushState`**, so a delayed
+  line-position write can never land on the new scene's history entry.
 
 **URL/history strategy — three tiers:**
 
@@ -158,9 +179,14 @@ frame, so holding Enter does not spam history.
 
 **`popstate` handler** (new): on browser back/forward, parse
 `story`/`scene`/`dialogue` from the URL, run them through the same validator,
-and write the restored state into `readerState`. If the scene differs from
+and write the restored state into `readerState`. The handler **cancels any
+pending throttled `replaceState`** first, so the browser-driven entry is not
+overwritten by a stale queued line-position write. If the scene differs from
 current, reload scene dialogue; always restore the exact validated
-`dialogueIndex`. Registered in `initialize`, removed on teardown.
+`dialogueIndex`. The reader is a full-page Astro app (`reader.astro` constructs
+the manager on `DOMContentLoaded` with no SPA teardown), so `popstate`,
+`pagehide`, and `visibilitychange` listeners live for the page lifetime and are
+reaped on page unload — there is no explicit `destroy()` call site.
 
 **Initial-seed race, solved:** the orchestrator seeds
 `readerState.dialogueIndex` to the resolved value *before* the shell mounts, and
@@ -170,8 +196,10 @@ happens.
 
 **Persistence cadence:** localStorage writes are debounced (~500ms) on
 `onIndexChange`, plus an immediate write on scene change and on
-`pagehide`/`visibilitychange=hidden`. Avoids per-keystroke writes while
-guaranteeing the latest line survives a refresh or tab close.
+`pagehide`/`visibilitychange=hidden`. The `pagehide`/`visibilitychange=hidden`
+handler also **flushes any pending throttled `replaceState`** so the URL is
+correct if the user later restores the tab via history. Avoids per-keystroke
+writes while guaranteeing the latest line survives a refresh or tab close.
 
 ### Section 4 — Restore precedence, legacy migration & testing
 
@@ -181,8 +209,10 @@ guaranteeing the latest line survives a refresh or tab close.
    validation (story has flow, scene is a node, dialogueIndex in bounds). URL
    wins so direct links are deterministic.
 2. **Explicit bookmark restoration** — a bookmark URL/link carrying
-   `dialogue=N`. Handled via the same URL path (bookmarks encode `[dlg:N]` into
-   links), so it folds into tier 1. Authenticated and anonymous
+   `dialogue=N`. Handled via the same URL path: bookmarks parse `[dlg:N]` from
+   the name and build a `…reader?story=&scene=&dialogue=N` href
+   (`bookmarks-manager.ts:254` parse, `bookmarks-manager.ts:285-287` href build),
+   so tier 2 genuinely folds into tier 1. Authenticated and anonymous
    (`LocalBookmarksStore`) bookmarks are unaffected — only *resolution* of where
    to start moves into the central resolver.
 3. **Valid persisted session state** — localStorage
@@ -206,17 +236,19 @@ data loss for existing users.
 
 | Area | Type | Coverage |
 | --- | --- | --- |
-| `validateSessionState` / `resolveInitialState` | Unit | Each precedence tier, fallthrough, bounds clamping, locale mismatch, invalid story/scene |
-| URL serialize/parse round-trip | Unit | `dialogue=N` ↔ index, throttle behavior, `pushState` vs `replaceState` calls |
+| `validateSessionState` / `resolveInitialState` | Unit | Each precedence tier, fallthrough, bounds clamping, locale mismatch, invalid story/scene; `flow`/`dialogue` injected so no `@aquila/stories` mock needed |
+| URL serialize/parse round-trip | Unit | `dialogue=N` ↔ index, throttle behavior, `pushState` vs `replaceState` calls, pending `replaceState` flushed on `goToScene`/`popstate` |
 | `popstate` restore | Unit (jsdom) | Back/forward restores exact line; invalid URL falls back safely; scene reload on mismatch |
-| Controlled reader contract | Component | `onIndexChange` fires on advance/back; renders `dialogueIndex` prop; no local index state |
+| `NovelReader` controlled contract | Component (`NovelReader.test.ts`) | Renders `dialogueIndex` prop; `onIndexChange` fires on advance/back; **tap during typing does NOT call `onIndexChange`** (sets local `skipTyping`); visible history derives from index under a popstate jump |
+| `MobileNovelReader` controlled contract | Component (`MobileNovelReader.test.ts`) | Renders `dialogueIndex` prop; `onIndexChange` fires on advance/goBack; tap during typing does not call `onIndexChange`; backlog derives from index |
 | Breakpoint swap | Component (`ReaderShell.test.ts`) | Preserve exact line across mobile/desktop swap (now trivial) |
 | Regression | Existing | Bookmarks (auth + local), choices, locale routing, scene progression — keep green |
 
-`reader-manager.test.ts` and `ReaderShell.test.ts` are updated to the new
-contract. New pure helpers get dedicated unit tests. A short **architecture
-note** documents: `readerState` owns progression; `ReaderManager` orchestrates;
-readers are controlled; URL = scene→pushState / line→replaceState.
+`reader-manager.test.ts`, `ReaderShell.test.ts`, `NovelReader.test.ts`, and
+`MobileNovelReader.test.ts` are updated to the controlled contract. New pure
+helpers get dedicated unit tests. A short **architecture note** documents:
+`readerState` owns progression; `ReaderManager` orchestrates; readers are
+controlled; URL = scene→pushState / line→replaceState.
 
 ## Deliverables mapping
 

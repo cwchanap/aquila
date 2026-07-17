@@ -81,7 +81,6 @@
 {:else}
   <NovelReader
     {dialogueIndex}
-    initialDialogueIndex={dialogueIndex}
     {onIndexChange}
     {dialogue}
     {choice}

@@ -1,8 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import NovelReader from '../NovelReader.svelte';
-import { readerState } from '@/lib/reader-state.svelte';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
 // Mock @aquila/stories
@@ -68,947 +67,514 @@ vi.mock('@aquila/stories', () => {
     };
 });
 
-describe('NovelReader', () => {
-    const mockDialogue: DialogueEntry[] = [
-        {
-            characterId: 'narrator' as any,
-            dialogue: 'First dialogue line.',
-        },
-        {
-            characterId: 'narrator' as any,
-            dialogue: 'Second dialogue line.',
-        },
-        {
-            characterId: 'narrator' as any,
-            dialogue: 'Third dialogue line.',
-        },
-    ];
-
-    const mockChoice: ChoiceDefinition = {
-        prompt: 'What do you want to do?',
-        options: [
-            { id: 'option1', label: 'Option 1', nextScene: 'scene_2' },
-            { id: 'option2', label: 'Option 2', nextScene: 'scene_3' },
-        ],
+// Controlled-component helper: tracks the index the parent would own and
+// re-renders with the full prop bag when asked, simulating the store->props
+// bridge (ReaderShell) lifting onIndexChange into a new dialogueIndex prop.
+function renderReader(overrides: Record<string, unknown> = {}) {
+    const onIndexChange = vi.fn();
+    let current: Record<string, unknown> = {
+        dialogue: mockDialogue,
+        choice: null,
+        locale: 'en',
+        dialogueIndex: 0,
+        ...overrides,
+        onIndexChange: overrides.onIndexChange ?? onIndexChange,
     };
+    const result = render(NovelReader, { props: current });
+    const rerenderRaw = async (next: Record<string, unknown> = {}) => {
+        current = { ...current, ...next };
+        await result.rerender(current);
+    };
+    // Convenience: rerender then settle all timers (used when the test does not
+    // need to inspect mid-animation state).
+    const rerenderAt = async (next: Record<string, unknown> = {}) => {
+        await rerenderRaw(next);
+        await vi.runAllTimersAsync();
+    };
+    return {
+        ...result,
+        onIndexChange,
+        rerenderAt,
+        rerenderRaw,
+        props: () => current,
+    };
+}
 
-    beforeEach(() => {
-        // Timers are mocked globally in test-setup.ts via vi.useFakeTimers().
-        // Do not override them here so tests can use vi.runAllTimersAsync / advanceTimersByTimeAsync.
+const mockDialogue: DialogueEntry[] = [
+    { characterId: 'narrator' as any, dialogue: 'First dialogue line.' },
+    { characterId: 'narrator' as any, dialogue: 'Second dialogue line.' },
+    { characterId: 'narrator' as any, dialogue: 'Third dialogue line.' },
+];
+
+const mockChoice: ChoiceDefinition = {
+    prompt: 'What do you want to do?',
+    options: [
+        { id: 'option1', label: 'Option 1', nextScene: 'scene_2' },
+        { id: 'option2', label: 'Option 2', nextScene: 'scene_3' },
+    ],
+};
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
+describe('NovelReader — controlled contract', () => {
+    it('renders the active line at the dialogueIndex prop', async () => {
+        renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
     });
 
-    afterEach(() => {
-        vi.clearAllMocks();
+    it('emits onIndexChange on Enter/click advance (and not while typing)', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync(); // finish typing first line
+        // Second Enter advances (emits onIndexChange); parent does NOT update
+        // the prop here, so the component must still have emitted.
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
     });
 
-    describe('Basic Rendering', () => {
-        it('should render the component with dialogue', () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            expect(screen.getByText('Back to Home')).toBeInTheDocument();
-        });
-
-        it('should display character name', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await waitFor(() => {
-                expect(screen.getByText('Narrator')).toBeInTheDocument();
-            });
-        });
-
-        it('should show bookmark button when enabled', () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    showBookmarkButton: true,
-                    locale: 'en',
-                },
-            });
-
-            expect(screen.getByText('Bookmark')).toBeInTheDocument();
-        });
-
-        it('should hide bookmark button when disabled', () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    showBookmarkButton: false,
-                    locale: 'en',
-                },
-            });
-
-            expect(screen.queryByText('Bookmark')).not.toBeInTheDocument();
-        });
+    it('does NOT emit onIndexChange when a key during typing only skips', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        // Start typing but do not run all timers
+        await vi.advanceTimersByTimeAsync(60);
+        await fireEvent.keyDown(window, { key: 'Enter' }); // skip typing only
+        await vi.advanceTimersByTimeAsync(50);
+        expect(onIndexChange).not.toHaveBeenCalled();
     });
 
-    describe('Dialogue Accumulation', () => {
-        it('should display first dialogue initially', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
+    it('renders visible history as the lines before dialogueIndex', async () => {
+        // Parent has advanced to index 1: line 0 is history, line 1 animates.
+        renderReader({ dialogueIndex: 1 });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+        // Line 2 (index 2) should not yet be visible.
+        expect(
+            screen.queryByText('Third dialogue line.')
+        ).not.toBeInTheDocument();
+    });
 
-            await vi.runAllTimersAsync();
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-        });
+    it('animates the first line when a new scene loads at dialogueIndex 0', async () => {
+        const { rerenderRaw } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        const newDialogue: DialogueEntry[] = [
+            { characterId: 'narrator', dialogue: 'New scene first line.' },
+        ];
+        // Swap the scene (new dialogue ref) at index 0, without settling
+        // timers so we can observe the typewriter mid-animation.
+        await rerenderRaw({ dialogue: newDialogue, dialogueIndex: 0 });
+        expect(
+            document.querySelectorAll('.animate-pulse').length
+        ).toBeGreaterThan(0);
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('New scene first line.')).toBeInTheDocument();
+    });
 
-        it('should accumulate dialogues when continuing', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
+    it('snaps to full text (no animation) on an external dialogueIndex change', async () => {
+        const { rerenderRaw } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync(); // line 0 fully typed
+        // Simulate popstate/restore: parent bumps index without an advance.
+        await rerenderRaw({ dialogueIndex: 1 });
+        // No typewriter cursor should be present (snap, not animate).
+        expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
+        // Active line is fully visible right away (no timers needed to reveal it).
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+    });
+});
 
-            // Wait for first dialogue to finish typing
-            await vi.runAllTimersAsync();
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
+describe('NovelReader — basic rendering', () => {
+    it('renders the component shell', () => {
+        renderReader({ dialogueIndex: 0 });
+        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+    });
 
-            // Click continue button
-            const continueBtn = screen.getByText('Continue');
-            await fireEvent.click(continueBtn);
-            await vi.runAllTimersAsync();
-
-            // Both dialogues should be visible
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('Second dialogue line.')
-            ).toBeInTheDocument();
-        });
-
-        it('should keep all previous dialogues visible', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            // Progress through all dialogues
-            await vi.runAllTimersAsync();
-
-            let continueBtn = screen.getByText('Continue');
-            await fireEvent.click(continueBtn);
-            await vi.runAllTimersAsync();
-
-            // Re-query: the typing animation toggles {#if !isTyping}, which
-            // recreates the button element. The old reference is stale when
-            // using Svelte 5's onclick (direct property) instead of on:click
-            // (event delegation).
-            continueBtn = screen.getByText('Continue');
-            await fireEvent.click(continueBtn);
-            await vi.runAllTimersAsync();
-
-            // All three dialogues should be visible
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('Second dialogue line.')
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('Third dialogue line.')
-            ).toBeInTheDocument();
+    it('displays the resolved character name', async () => {
+        renderReader({ dialogueIndex: 0 });
+        await waitFor(() => {
+            expect(screen.getAllByText('Narrator').length).toBeGreaterThan(0);
         });
     });
 
-    describe('Typing Animation', () => {
-        it('should show typing cursor while typing', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            // Advance timers partially
-            await vi.advanceTimersByTimeAsync(100);
-
-            // Should be typing, cursor should be visible
-            const cursors = document.querySelectorAll('.animate-pulse');
-            expect(cursors.length).toBeGreaterThan(0);
-        });
-
-        it('should complete typing when finished', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Full text should be displayed
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-        });
-
-        it('should skip typing animation on key press during typing', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            // Start typing — advance enough to enter the typing loop
-            await vi.advanceTimersByTimeAsync(100);
-
-            // Press Enter while typing to skip animation (sets skipTyping = true)
-            await fireEvent.keyDown(window, { key: 'Enter' });
-
-            // After skipTyping is set, the typing loop needs one more timer
-            // cycle to check the flag, break, and finalize the dialogue.
-            // advanceTimersByTimeAsync yields to microtasks between ticks,
-            // allowing the async typing loop to resume and check skipTyping.
-            await vi.advanceTimersByTimeAsync(50);
-
-            // Use direct assertion (not waitFor) because fake timers prevent
-            // waitFor's internal polling from executing.
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-        });
+    it('shows the bookmark button when enabled', () => {
+        renderReader({ showBookmarkButton: true });
+        expect(screen.getByText('Bookmark')).toBeInTheDocument();
     });
 
-    describe('Keyboard Navigation', () => {
-        it('should advance dialogue on Enter key press', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
+    it('hides the bookmark button when disabled', () => {
+        renderReader({ showBookmarkButton: false });
+        expect(screen.queryByText('Bookmark')).not.toBeInTheDocument();
+    });
+});
 
-            await vi.runAllTimersAsync();
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-
-            // Press Enter
-            await fireEvent.keyDown(window, { key: 'Enter' });
-            await vi.runAllTimersAsync();
-
-            expect(
-                screen.getByText('Second dialogue line.')
-            ).toBeInTheDocument();
+describe('NovelReader — dialogue accumulation (controlled advance)', () => {
+    it('accumulates dialogues when the parent lifts onIndexChange into the prop', async () => {
+        const { onIndexChange, rerenderAt } = renderReader({
+            dialogueIndex: 0,
         });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
 
-        it('should advance dialogue on Space key press', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
+        const continueBtn = screen.getByText('Continue');
+        await fireEvent.click(continueBtn);
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+        // Parent lifts the emitted index back into the prop.
+        await rerenderAt({ dialogueIndex: 1 });
 
-            await vi.runAllTimersAsync();
-
-            // Press Space
-            await fireEvent.keyDown(window, { key: ' ' });
-            await vi.runAllTimersAsync();
-
-            expect(
-                screen.getByText('Second dialogue line.')
-            ).toBeInTheDocument();
-        });
-
-        it('should not advance on other key presses', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Press a random key
-            await fireEvent.keyDown(window, { key: 'a' });
-            await vi.runAllTimersAsync();
-
-            // Should still show only first dialogue
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-            expect(
-                screen.queryByText('Second dialogue line.')
-            ).not.toBeInTheDocument();
-        });
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
 
-    describe('Scene Changes', () => {
-        it('should clear dialogues when scene changes', async () => {
-            const { rerender } = render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
+    it('keeps all previous dialogues visible across multiple advances', async () => {
+        const { rerenderAt } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
 
-            // Progress to second dialogue
-            await vi.runAllTimersAsync();
-            const continueBtn = screen.getByText('Continue');
-            await fireEvent.click(continueBtn);
-            await vi.runAllTimersAsync();
+        let continueBtn = screen.getByText('Continue');
+        await fireEvent.click(continueBtn);
+        await rerenderAt({ dialogueIndex: 1 });
+        continueBtn = screen.getByText('Continue');
+        await fireEvent.click(continueBtn);
+        await rerenderAt({ dialogueIndex: 2 });
 
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('Second dialogue line.')
-            ).toBeInTheDocument();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+        expect(screen.getByText('Third dialogue line.')).toBeInTheDocument();
+    });
+});
 
-            // New scene with different dialogue
-            const newDialogue: DialogueEntry[] = [
-                {
-                    characterId: 'narrator',
-                    dialogue: 'New scene dialogue.',
-                },
-            ];
-
-            await rerender({
-                dialogue: newDialogue,
-                choice: null,
-                locale: 'en',
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Old dialogues should be cleared
-            expect(
-                screen.queryByText('First dialogue line.')
-            ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText('Second dialogue line.')
-            ).not.toBeInTheDocument();
-
-            // New dialogue should be visible
-            expect(screen.getByText('New scene dialogue.')).toBeInTheDocument();
-        });
+describe('NovelReader — typing animation', () => {
+    it('shows the typing cursor while typing', async () => {
+        renderReader({ dialogueIndex: 0 });
+        await vi.advanceTimersByTimeAsync(100);
+        expect(
+            document.querySelectorAll('.animate-pulse').length
+        ).toBeGreaterThan(0);
     });
 
-    describe('Choice Handling', () => {
-        it('should display choices after last dialogue', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: [mockDialogue[0]],
-                    choice: mockChoice,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            expect(
-                screen.getByText('What do you want to do?')
-            ).toBeInTheDocument();
-            expect(screen.getByText('Option 1')).toBeInTheDocument();
-            expect(screen.getByText('Option 2')).toBeInTheDocument();
-        });
-
-        it('should call onChoice when choice is clicked', async () => {
-            const onChoice = vi.fn();
-
-            render(NovelReader, {
-                props: {
-                    dialogue: [mockDialogue[0]],
-                    choice: mockChoice,
-                    onChoice,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            const option1Btn = screen.getByText('Option 1');
-            await fireEvent.click(option1Btn);
-
-            expect(onChoice).toHaveBeenCalledWith('scene_2');
-        });
-
-        it('should not show choices before last dialogue', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: mockChoice,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // First dialogue shown, choices should not be visible
-            expect(
-                screen.queryByText('What do you want to do?')
-            ).not.toBeInTheDocument();
-        });
+    it('completes the full text after timers elapse', async () => {
+        renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
     });
 
-    describe('Navigation Buttons', () => {
-        it('should show "Continue" button for non-last dialogue', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    canGoNext: false,
-                    locale: 'en',
-                },
-            });
+    it('skips to the full line when Enter is pressed during typing', async () => {
+        renderReader({ dialogueIndex: 0 });
+        await vi.advanceTimersByTimeAsync(100);
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        await vi.advanceTimersByTimeAsync(50);
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+    });
+});
 
-            await vi.runAllTimersAsync();
-            expect(screen.getByText('Continue')).toBeInTheDocument();
+describe('NovelReader — keyboard navigation', () => {
+    it('emits onIndexChange on Enter', async () => {
+        const { onIndexChange, rerenderAt } = renderReader({
+            dialogueIndex: 0,
         });
-
-        it('should show "Next Scene" button when canGoNext is true on last dialogue', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: [mockDialogue[0]],
-                    choice: null,
-                    canGoNext: true,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-            expect(screen.getByText('Next Scene')).toBeInTheDocument();
-        });
-
-        it('should show "Complete" button on last dialogue when cannot go next', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: [mockDialogue[0]],
-                    choice: null,
-                    canGoNext: false,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-            expect(screen.getByText('Complete')).toBeInTheDocument();
-        });
-
-        it('should call onNext when next scene button is clicked', async () => {
-            const onNext = vi.fn();
-
-            render(NovelReader, {
-                props: {
-                    dialogue: [mockDialogue[0]],
-                    choice: null,
-                    canGoNext: true,
-                    onNext,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            const nextBtn = screen.getByText('Next Scene');
-            await fireEvent.click(nextBtn);
-
-            expect(onNext).toHaveBeenCalled();
-        });
+        await vi.runAllTimersAsync();
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+        await rerenderAt({ dialogueIndex: 1 });
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
 
-    describe('Bookmark Functionality', () => {
-        it('should call onBookmark when bookmark button is clicked', async () => {
-            const onBookmark = vi.fn();
-
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    onBookmark,
-                    showBookmarkButton: true,
-                    locale: 'en',
-                },
-            });
-
-            const bookmarkBtn = screen.getByText('Bookmark');
-            await fireEvent.click(bookmarkBtn);
-
-            expect(onBookmark).toHaveBeenCalledWith(1);
-        });
+    it('emits onIndexChange on Space', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        await fireEvent.keyDown(window, { key: ' ' });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
     });
 
-    describe('Progress Display', () => {
-        it('should show correct progress for first dialogue', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
+    it('ignores unrelated keys', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        await fireEvent.keyDown(window, { key: 'a' });
+        expect(onIndexChange).not.toHaveBeenCalled();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+    });
+});
 
-            await vi.runAllTimersAsync();
-            expect(screen.getByText('1 / 3')).toBeInTheDocument();
+describe('NovelReader — scene changes', () => {
+    it('clears history and animates the new scene first line', async () => {
+        const { rerenderAt } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByText('Continue'));
+        await rerenderAt({ dialogueIndex: 1 });
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+
+        const newDialogue: DialogueEntry[] = [
+            { characterId: 'narrator', dialogue: 'New scene dialogue.' },
+        ];
+        await rerenderAt({ dialogue: newDialogue, dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+
+        expect(
+            screen.queryByText('First dialogue line.')
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('Second dialogue line.')
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('New scene dialogue.')).toBeInTheDocument();
+    });
+});
+
+describe('NovelReader — choice handling', () => {
+    it('shows choices after the last dialogue', async () => {
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            choice: mockChoice,
         });
-
-        it('should update progress as dialogues advance', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            const continueBtn = screen.getByText('Continue');
-            await fireEvent.click(continueBtn);
-            await vi.runAllTimersAsync();
-
-            expect(screen.getByText('2 / 3')).toBeInTheDocument();
-        });
-
-        it('should respect initialDialogueIndex when provided', async () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                    initialDialogueIndex: 1,
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // First two dialogues should be fully visible, and progress should reflect that
-            expect(
-                screen.getByText('First dialogue line.')
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('Second dialogue line.')
-            ).toBeInTheDocument();
-            expect(screen.getByText('2 / 3')).toBeInTheDocument();
-        });
-
-        it('should NOT re-apply initialDialogueIndex on scene change', async () => {
-            // Regression test: opening the reader with a bookmark URL sets
-            // initialDialogueIndex.  When the user navigates to a new scene,
-            // the offset must NOT be re-applied — the new scene should start
-            // at line 0, not skip the first N lines.
-            const { rerender } = render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                    initialDialogueIndex: 1,
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Initial scene: first two dialogues shown (index 1 = second item)
-            expect(screen.getByText('2 / 3')).toBeInTheDocument();
-
-            // Simulate scene change with a completely new dialogue array
-            const newDialogue: DialogueEntry[] = [
-                {
-                    characterId: 'narrator' as any,
-                    dialogue: 'New scene first line.',
-                },
-                {
-                    characterId: 'narrator' as any,
-                    dialogue: 'New scene second line.',
-                },
-            ];
-
-            await rerender({
-                dialogue: newDialogue,
-                choice: null,
-                locale: 'en',
-                // Prop stays non-null (same value as mount) — component must
-                // ignore it on subsequent scene changes.
-                initialDialogueIndex: 1,
-            });
-
-            await vi.runAllTimersAsync();
-
-            // The new scene should start from the beginning (1 / 2),
-            // NOT skip ahead to line 1 and show "2 / 2".
-            expect(screen.getByText('1 / 2')).toBeInTheDocument();
-            expect(
-                screen.getByText('New scene first line.')
-            ).toBeInTheDocument();
-        });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('What do you want to do?')).toBeInTheDocument();
+        expect(screen.getByText('Option 1')).toBeInTheDocument();
+        expect(screen.getByText('Option 2')).toBeInTheDocument();
     });
 
-    describe('Localization', () => {
-        it('should support Chinese locale', async () => {
-            // Simply render with Chinese locale and check the result
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'zh',
-                },
-            });
-
-            // The mock in vi.mock already handles Chinese translations
-            expect(screen.getByText('Back to Home')).toBeInTheDocument();
+    it('calls onChoice when an option is clicked', async () => {
+        const onChoice = vi.fn();
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            choice: mockChoice,
+            onChoice,
         });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByText('Option 1'));
+        expect(onChoice).toHaveBeenCalledWith('scene_2');
     });
 
-    describe('Back Button', () => {
-        it('should render back button with correct URL', () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    backUrl: '/en/stories',
-                    locale: 'en',
-                },
-            });
+    it('hides choices before the last dialogue', async () => {
+        renderReader({ dialogueIndex: 0, choice: mockChoice });
+        await vi.runAllTimersAsync();
+        expect(
+            screen.queryByText('What do you want to do?')
+        ).not.toBeInTheDocument();
+    });
+});
 
-            const backLink = screen.getByText('Back to Home').closest('a');
-            expect(backLink).toHaveAttribute('href', '/en/stories');
-        });
-
-        it('should use default back URL when not provided', () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            const backLink = screen.getByText('Back to Home').closest('a');
-            expect(backLink).toHaveAttribute('href', '/');
-        });
+describe('NovelReader — navigation buttons', () => {
+    it('shows Continue for a non-last dialogue', async () => {
+        renderReader({ dialogueIndex: 0, canGoNext: false });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Continue')).toBeInTheDocument();
     });
 
-    describe('Character Display Name Priority', () => {
-        it('should prefer emitted character displayName over localized character name', async () => {
-            // Simulates compiler-emitted entries where the source uses an alias
-            // (e.g. "健談男大生") instead of the canonical name ("田中健太").
-            const aliasDialogue: DialogueEntry[] = [
+    it('shows Next Scene on the last dialogue when canGoNext', async () => {
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: true,
+        });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Next Scene')).toBeInTheDocument();
+    });
+
+    it('shows Complete on the last dialogue when not canGoNext', async () => {
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: false,
+        });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Complete')).toBeInTheDocument();
+    });
+
+    it('calls onNext when the next-scene button is clicked', async () => {
+        const onNext = vi.fn();
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: true,
+            onNext,
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByText('Next Scene'));
+        expect(onNext).toHaveBeenCalled();
+    });
+});
+
+describe('NovelReader — bookmark & progress', () => {
+    it('calls onBookmark with dialogueIndex + 1', async () => {
+        const onBookmark = vi.fn();
+        renderReader({
+            dialogueIndex: 0,
+            onBookmark,
+            showBookmarkButton: true,
+        });
+        await fireEvent.click(screen.getByText('Bookmark'));
+        expect(onBookmark).toHaveBeenCalledWith(1);
+    });
+
+    it('shows progress (dialogueIndex + 1) / total', async () => {
+        renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    });
+
+    it('updates progress as the index advances', async () => {
+        const { rerenderAt } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByText('Continue'));
+        await rerenderAt({ dialogueIndex: 1 });
+        expect(screen.getByText('2 / 3')).toBeInTheDocument();
+    });
+});
+
+describe('NovelReader — localization & back button', () => {
+    it('renders with the Chinese locale', () => {
+        renderReader({ locale: 'zh' });
+        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+    });
+
+    it('uses the provided backUrl', () => {
+        renderReader({ backUrl: '/en/stories' });
+        const backLink = screen.getByText('Back to Home').closest('a');
+        expect(backLink).toHaveAttribute('href', '/en/stories');
+    });
+
+    it('defaults the back URL to /', () => {
+        renderReader({});
+        const backLink = screen.getByText('Back to Home').closest('a');
+        expect(backLink).toHaveAttribute('href', '/');
+    });
+});
+
+describe('NovelReader — character display name priority', () => {
+    it('prefers the emitted character displayName over the localized name', async () => {
+        renderReader({
+            dialogue: [
                 {
                     characterId: 'tanaka_kenta' as any,
                     character: '健談男大生',
-                    dialogue: 'Some dialogue line.',
+                    dialogue: 'Some line.',
                 },
-            ];
-
-            render(NovelReader, {
-                props: {
-                    dialogue: aliasDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Should show the emitted displayName, not the localized character name
-            expect(screen.getByText('健談男大生')).toBeInTheDocument();
-            // Should NOT show the localized character name (tanaka_kenta -> '田中健太')
-            expect(screen.queryByText('田中健太')).not.toBeInTheDocument();
+            ],
+            dialogueIndex: 0,
         });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('健談男大生')).toBeInTheDocument();
+        expect(screen.queryByText('田中健太')).not.toBeInTheDocument();
+    });
 
-        it('should fall back to localized character name when character field is absent', async () => {
-            const noCharField: DialogueEntry[] = [
-                {
-                    characterId: 'narrator' as any,
-                    dialogue: 'Narrator dialogue.',
-                },
-            ];
-
-            render(NovelReader, {
-                props: {
-                    dialogue: noCharField,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Falls back to characterNames['narrator'] → 'Narrator'
-            expect(screen.getByText('Narrator')).toBeInTheDocument();
+    it('falls back to the localized name when the character field is absent', async () => {
+        renderReader({
+            dialogue: [
+                { characterId: 'narrator' as any, dialogue: 'Narrator line.' },
+            ],
+            dialogueIndex: 0,
         });
+        await vi.runAllTimersAsync();
+        expect(screen.getAllByText('Narrator').length).toBeGreaterThan(0);
+    });
 
-        it('should prefer character field even when localized name exists', async () => {
-            // Even with characterNames in translations, the emitted displayName
-            // should take priority to preserve narrative intent.
-            const aliasDialogue: DialogueEntry[] = [
+    it('prefers the character field even when a localized name exists', async () => {
+        renderReader({
+            dialogue: [
                 {
                     characterId: 'narrator' as any,
                     character: '旁白',
-                    dialogue: 'Chinese narrator line.',
+                    dialogue: 'Chinese line.',
                 },
-            ];
-
-            render(NovelReader, {
-                props: {
-                    dialogue: aliasDialogue,
-                    choice: null,
-                    locale: 'zh',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            expect(screen.getByText('旁白')).toBeInTheDocument();
+            ],
+            dialogueIndex: 0,
+            locale: 'zh',
         });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('旁白')).toBeInTheDocument();
+    });
+});
+
+describe('NovelReader — act panel navigation guard', () => {
+    it('does not call onNavigate when closing on the same sceneId', async () => {
+        const onNavigate = vi.fn();
+        renderReader({
+            dialogueIndex: 0,
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+            onNavigate,
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        );
+        await waitFor(() =>
+            expect(screen.getByText('Act 1')).toBeInTheDocument()
+        );
+        await fireEvent.keyDown(window, { key: 'Escape' });
+        expect(onNavigate).not.toHaveBeenCalled();
     });
 
-    describe('Act Panel Navigation Guard', () => {
-        it('should not call onNavigate when act panel closes with same sceneId', async () => {
-            const onNavigate = vi.fn();
-
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                    storyId: 'test_story',
-                    currentSceneId: 'b1a_act1',
-                    onNavigate,
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Click the "Acts" toggle button to show the panel
-            const actPanelToggle = screen.getByRole('button', {
-                name: 'Open acts panel',
-            });
-            await fireEvent.click(actPanelToggle);
-
-            // Wait for panel to render
-            await waitFor(() => {
-                expect(screen.getByText('Act 1')).toBeInTheDocument();
-            });
-
-            // Press Escape to close the panel
-            await fireEvent.keyDown(window, { key: 'Escape' });
-
-            // onNavigate should NOT have been called since sceneId === currentSceneId
-            expect(onNavigate).not.toHaveBeenCalled();
+    it('calls onNavigate when the act panel selects a different scene', async () => {
+        const onNavigate = vi.fn();
+        renderReader({
+            dialogueIndex: 0,
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+            onNavigate,
         });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        );
+        await waitFor(() =>
+            expect(screen.getByText('Act 2')).toBeInTheDocument()
+        );
+        await fireEvent.click(screen.getByText('Act 2'));
+        expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
+    });
+});
 
-        it('should call onNavigate when act panel navigates to a different scene', async () => {
-            const onNavigate = vi.fn();
-
-            render(NovelReader, {
-                props: {
-                    dialogue: mockDialogue,
-                    choice: null,
-                    locale: 'en',
-                    storyId: 'test_story',
-                    currentSceneId: 'b1a_act1',
-                    onNavigate,
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Click the "Acts" toggle button to show the panel
-            const actPanelToggle = screen.getByRole('button', {
-                name: 'Open acts panel',
-            });
-            await fireEvent.click(actPanelToggle);
-
-            // Wait for dynamic import to resolve and panel to render
-            await waitFor(() => {
-                expect(screen.getByText('Act 2')).toBeInTheDocument();
-            });
-
-            // Click a different act button
-            const act2Button = screen.getByText('Act 2');
-            await fireEvent.click(act2Button);
-
-            // onNavigate SHOULD have been called with the new scene ID
-            expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
-        });
+describe('NovelReader — edge cases', () => {
+    it('handles an empty dialogue array without crashing', () => {
+        renderReader({ dialogue: [], dialogueIndex: 0 });
+        expect(screen.getByText('Back to Home')).toBeInTheDocument();
     });
 
-    describe('Edge Cases', () => {
-        it('should handle empty dialogue array', () => {
-            render(NovelReader, {
-                props: {
-                    dialogue: [],
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            // Should render without crashing
-            expect(screen.getByText('Back to Home')).toBeInTheDocument();
+    it('handles a dialogue without a character', async () => {
+        renderReader({
+            dialogue: [{ dialogue: 'Anonymous dialogue.' }],
+            dialogueIndex: 0,
         });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Anonymous dialogue.')).toBeInTheDocument();
+    });
 
-        it('should handle dialogue without character', async () => {
-            const dialogueNoChar: DialogueEntry[] = [
-                {
-                    dialogue: 'Anonymous dialogue.',
-                },
-            ];
-
-            render(NovelReader, {
-                props: {
-                    dialogue: dialogueNoChar,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-            expect(screen.getByText('Anonymous dialogue.')).toBeInTheDocument();
+    it('falls back to "Unknown" when characterNames is missing', async () => {
+        const { getTranslations } = await import('@aquila/stories');
+        (getTranslations as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+            reader: {
+                unknown: 'Unknown',
+                continue: 'Continue',
+                nextScene: 'Next Scene',
+                complete: 'Complete',
+                bookmark: 'Bookmark',
+                pageDisplay: '{current} / {total}',
+                actPanel: 'Acts',
+                actLabel: 'Act {n}',
+                openActsPanel: 'Open acts panel',
+                closeActsPanel: 'Close acts panel',
+            },
+            common: {
+                logout: 'Logout',
+                login: 'Login',
+                back: 'Back',
+                backToHome: 'Back to Home',
+            },
+            locale: 'en',
         });
-
-        it('should fall back to "Unknown" when characterNames map is missing', async () => {
-            // Simulates a misconfigured locale where characterNames is undefined.
-            // The optional chain t.characterNames?.[id] should not throw.
-            const { getTranslations } = await import('@aquila/stories');
-            (getTranslations as ReturnType<typeof vi.fn>).mockReturnValueOnce({
-                reader: {
-                    title: 'Novel Reader - Aquila',
-                    bookmarkPrompt: 'Enter bookmark name:',
-                    defaultBookmarkName: 'Scene:',
-                    bookmarkSaved: 'Bookmark saved!',
-                    bookmarkFailed: 'Failed to save bookmark:',
-                    bookmarkError: 'Failed to save bookmark. Please try again.',
-                    endOfStory: 'End of story!',
-                    unknown: 'Unknown',
-                    continue: 'Continue',
-                    nextScene: 'Next Scene',
-                    complete: 'Complete',
-                    bookmark: 'Bookmark',
-                    pageDisplay: '{current} / {total}',
-                    actPanel: 'Acts',
-                    actLabel: 'Act {n}',
-                    actFinal: 'Final Act',
-                    actEpilogue: 'Epilogue',
-                    openActsPanel: 'Open acts panel',
-                    closeActsPanel: 'Close acts panel',
-                },
-                // characterNames intentionally omitted
-                common: {
-                    logout: 'Logout',
-                    login: 'Login',
-                    back: 'Back',
-                    backToHome: 'Back to Home',
-                },
-                locale: 'en',
-            });
-
-            const dialogueWithCharId: DialogueEntry[] = [
+        renderReader({
+            dialogue: [
                 {
                     characterId: 'unknown_char' as any,
-                    dialogue: 'Dialogue with missing characterNames.',
+                    dialogue: 'Missing names line.',
                 },
-            ];
-
-            render(NovelReader, {
-                props: {
-                    dialogue: dialogueWithCharId,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            // Should not throw; should fall back to "Unknown"
-            expect(screen.getByText('Unknown')).toBeInTheDocument();
-            expect(
-                screen.getByText('Dialogue with missing characterNames.')
-            ).toBeInTheDocument();
+            ],
+            dialogueIndex: 0,
         });
-    });
-
-    describe('Uncontrolled Mode (readerState fallback)', () => {
-        const stateDialogue: DialogueEntry[] = [
-            {
-                characterId: 'narrator' as any,
-                dialogue: 'Dialogue from readerState.',
-            },
-        ];
-
-        afterEach(() => {
-            readerState.reset();
-        });
-
-        it('should read dialogue from readerState when dialogue prop is omitted', async () => {
-            readerState.dialogue = stateDialogue;
-            readerState.locale = 'en';
-
-            render(NovelReader, {
-                props: {},
-            });
-
-            await vi.runAllTimersAsync();
-
-            expect(
-                screen.getByText('Dialogue from readerState.')
-            ).toBeInTheDocument();
-        });
-
-        it('should prefer explicit props over readerState', async () => {
-            readerState.dialogue = stateDialogue;
-            readerState.locale = 'en';
-
-            const propDialogue: DialogueEntry[] = [
-                {
-                    characterId: 'narrator' as any,
-                    dialogue: 'Dialogue from explicit prop.',
-                },
-            ];
-
-            render(NovelReader, {
-                props: {
-                    dialogue: propDialogue,
-                    choice: null,
-                    locale: 'en',
-                },
-            });
-
-            await vi.runAllTimersAsync();
-
-            expect(
-                screen.getByText('Dialogue from explicit prop.')
-            ).toBeInTheDocument();
-            expect(
-                screen.queryByText('Dialogue from readerState.')
-            ).not.toBeInTheDocument();
-        });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Unknown')).toBeInTheDocument();
+        expect(screen.getByText('Missing names line.')).toBeInTheDocument();
     });
 });

@@ -181,6 +181,37 @@ describe('NovelReader — controlled contract', () => {
         // Active line is fully visible right away (no timers needed to reveal it).
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
+
+    it('animates (does not snap) when scene ref and index both change — lastIndex race regression', async () => {
+        // Regression guard for `lastIndex = dialogueIndex` in Signal 1.
+        // When a rerender swaps the dialogue array reference AND resets
+        // dialogueIndex in the same tick, BOTH signals fire. Signal 1 must
+        // sync `lastIndex = dialogueIndex` so Signal 2 does not mistake the
+        // scene change for an external index change and snap away the
+        // animation. Deleting that line makes this test fail.
+        const { rerenderRaw } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync(); // line 0 fully typed, lastIndex == 0
+
+        // Parent jumps to index 2: Signal 2 snaps, lastIndex becomes 2.
+        await rerenderRaw({ dialogueIndex: 2 });
+        await vi.runAllTimersAsync();
+
+        // Scene change: NEW dialogue array reference AND reset to index 0.
+        // Without `lastIndex = dialogueIndex` in Signal 1, Signal 2 sees
+        // 0 !== 2 and snaps (isTyping stays false, cursor never appears).
+        const newDialogue: DialogueEntry[] = [
+            { characterId: 'narrator' as any, dialogue: 'New scene first.' },
+            { characterId: 'narrator' as any, dialogue: 'New scene second.' },
+            { characterId: 'narrator' as any, dialogue: 'New scene third.' },
+        ];
+        await rerenderRaw({ dialogue: newDialogue, dialogueIndex: 0 });
+
+        // Do NOT settle timers — observe the mid-typing state. Signal 1
+        // started animating (cursor visible) and Signal 2 did NOT snap.
+        expect(
+            document.querySelectorAll('.animate-pulse').length
+        ).toBeGreaterThan(0);
+    });
 });
 
 describe('NovelReader — basic rendering', () => {

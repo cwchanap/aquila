@@ -1,5 +1,5 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry } from '@aquila/stories';
 
@@ -27,6 +27,7 @@ vi.mock('@aquila/stories', () => ({
             closeHistory: 'Close history',
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
+            previousLine: 'Previous line',
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
@@ -35,6 +36,7 @@ vi.mock('@aquila/stories', () => ({
 }));
 
 import ReaderShell from '../ReaderShell.svelte';
+import { readerState } from '@/lib/reader-state.svelte';
 
 const mockDialogue: DialogueEntry[] = [
     { characterId: 'narrator', dialogue: 'First dialogue line.' },
@@ -77,13 +79,17 @@ function stubMatchMedia(initial: boolean) {
 }
 
 describe('ReaderShell', () => {
+    // The global beforeEach in test-setup.ts resets readerState; seed the
+    // store here so the bridge derives non-empty dialogue/locale.
+    beforeEach(() => {
+        readerState.dialogue = mockDialogue;
+        readerState.locale = 'en';
+    });
     afterEach(() => vi.clearAllMocks());
 
     it('renders the desktop reader at >= lg', async () => {
         stubMatchMedia(false);
-        render(ReaderShell, {
-            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
-        });
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
         expect(screen.getByText('Back to Home')).toBeInTheDocument();
         expect(
             screen.queryByLabelText('Tap to continue')
@@ -92,17 +98,13 @@ describe('ReaderShell', () => {
 
     it('renders the mobile reader below lg', async () => {
         stubMatchMedia(true);
-        render(ReaderShell, {
-            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
-        });
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
         expect(screen.getByLabelText('Tap to continue')).toBeInTheDocument();
     });
 
     it('switches readers when the media query changes', async () => {
         const mm = stubMatchMedia(false);
-        render(ReaderShell, {
-            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
-        });
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
         expect(screen.getByText('Back to Home')).toBeInTheDocument();
         mm.setMatches(true);
         await waitFor(() => {
@@ -112,18 +114,18 @@ describe('ReaderShell', () => {
         });
     });
 
-    it('preserves the current dialogue index when switching layouts', async () => {
-        const mm = stubMatchMedia(false);
-        render(ReaderShell, {
-            props: { dialogue: mockDialogue, choice: null, locale: 'en' },
-        });
-
-        // Let the desktop reader finish typing the first line.
+    it('forwards store-derived dialogueIndex to whichever reader is mounted', async () => {
+        stubMatchMedia(false);
+        readerState.dialogueIndex = 1;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
         await vi.runAllTimersAsync();
-        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+    });
 
-        // Advance to the second line on the desktop reader.
-        await fireEvent.keyDown(window, { key: 'Enter' });
+    it('preserves the store-derived index when switching layouts', async () => {
+        const mm = stubMatchMedia(false);
+        readerState.dialogueIndex = 1;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
         await vi.runAllTimersAsync();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
 
@@ -134,8 +136,9 @@ describe('ReaderShell', () => {
                 screen.getByLabelText('Tap to continue')
             ).toBeInTheDocument();
         });
+        await vi.runAllTimersAsync();
 
-        // The mobile reader should resume at the second line, not reset to 0.
+        // The mobile reader should resume at the store-derived index (1).
         // The backlog sheet is closed by default, so only the current line's
         // text is in the DOM.
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
@@ -144,35 +147,25 @@ describe('ReaderShell', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('does not re-apply a stale bookmark offset when switching layouts', async () => {
+    it('uses the latest readerState.dialogueIndex on layout swap, not a stale value', async () => {
         const mm = stubMatchMedia(false);
-        render(ReaderShell, {
-            props: {
-                dialogue: mockDialogue,
-                choice: null,
-                locale: 'en',
-                initialDialogueIndex: 1,
-            },
-        });
-
-        // Desktop reader seeds at the bookmark (index 1 = second line).
+        readerState.dialogueIndex = 1;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
         await vi.runAllTimersAsync();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
 
-        // User advances forward past the bookmark to the third line.
-        await fireEvent.keyDown(window, { key: 'Enter' });
-        await vi.runAllTimersAsync();
-        expect(screen.getByText('Third dialogue line.')).toBeInTheDocument();
+        // Advance the store index after the desktop reader has mounted.
+        readerState.dialogueIndex = 2;
 
-        // Swap to mobile: must NOT jump back to the stale bookmark (index 1).
+        // Swap to mobile: must pick up the latest store value (2), not the
+        // value that was current at desktop mount time (1).
         mm.setMatches(true);
         await waitFor(() => {
             expect(
                 screen.getByLabelText('Tap to continue')
             ).toBeInTheDocument();
         });
-        // The mobile reader should resume at the third line (the user's
-        // current position), not the stale bookmark at the second line.
+        await vi.runAllTimersAsync();
         expect(screen.getByText('Third dialogue line.')).toBeInTheDocument();
         expect(
             screen.queryByText('Second dialogue line.')

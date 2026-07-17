@@ -365,7 +365,6 @@ export class ReaderManager {
                         onNext: this.handleNext,
                         showBookmarkButton: true,
                         backUrl: `/${readerState.locale}/`,
-                        initialDialogueIndex: readerState.dialogueIndex,
                         onNavigate: this.goToScene,
                         onIndexChange: this.onIndexChange,
                     },

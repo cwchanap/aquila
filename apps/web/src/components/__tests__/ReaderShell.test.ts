@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry } from '@aquila/stories';
 
@@ -170,5 +171,39 @@ describe('ReaderShell', () => {
         expect(
             screen.queryByText('Second dialogue line.')
         ).not.toBeInTheDocument();
+    });
+
+    // End-to-end regression: drive the full loop through the canonical store —
+    // keyboard advance on desktop fires onIndexChange, which writes
+    // readerState.dialogueIndex; flipping the media query mounts the mobile
+    // reader, which must resume at that store-owned index. Proves the store
+    // survives the layout swap with no liveIndex/hasSwapped machinery.
+    it('preserves the exact line across a desktop->mobile swap via the store', async () => {
+        const mm = stubMatchMedia(false);
+        const onIndexChange = (i: number) => {
+            readerState.dialogueIndex = i;
+        };
+        render(ReaderShell, { props: { onIndexChange } });
+        // Let mount effects flush so the typewriter is in-flight (isTyping
+        // === true) before the first Enter — do NOT runAllTimers here, or
+        // typing would already be complete and the first Enter would advance.
+        await tick();
+
+        // First Enter only skips the typewriter (parent owns the index).
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        await vi.runAllTimersAsync(); // typewriter breaks out, isTyping = false
+        // Second Enter advances via onIndexChange -> readerState.dialogueIndex.
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        await vi.runAllTimersAsync();
+        expect(readerState.dialogueIndex).toBe(1);
+
+        // Swap layouts across the breakpoint. The mobile reader mounts fresh
+        // and must read the store-owned index (1), not a mount-time snapshot.
+        mm.setMatches(true);
+        await waitFor(() =>
+            expect(screen.getByLabelText('Tap to continue')).toBeInTheDocument()
+        );
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
 });

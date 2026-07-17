@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ReaderManager } from '../reader-manager';
+import { readerState } from '../reader-state.svelte';
 
 // Mock the @aquila/stories module
 vi.mock('@aquila/stories', () => ({
@@ -44,13 +45,16 @@ const mockGetStoryFlow = vi.mocked(getStoryFlow);
 const mockShowAlert = vi.mocked(showAlert);
 const mockShowPrompt = vi.mocked(showPrompt);
 
-// Helper to build a URLSearchParams mock with specific params
-function makeUrlParamsMock(params: Record<string, string> = {}) {
-    return class {
-        get(key: string): string | null {
-            return params[key] ?? null;
-        }
-    };
+// Point window.location at a controlled search string (real URLSearchParams parses it).
+function setLocation(search: string) {
+    Object.defineProperty(window, 'location', {
+        value: {
+            search,
+            href: `http://localhost:3000/en/reader${search}`,
+            reload: vi.fn(),
+        },
+        writable: true,
+    });
 }
 
 // Shared localStorage mock
@@ -78,6 +82,9 @@ describe('ReaderManager', () => {
             ],
         });
 
+        // Default empty story content so applySession never throws on missing dialogue.
+        mockGetStoryContent.mockReturnValue({ dialogue: {}, choices: {} });
+
         mockStorage = makeMockStorage();
 
         Object.defineProperty(window, 'localStorage', {
@@ -85,33 +92,28 @@ describe('ReaderManager', () => {
             writable: true,
         });
 
-        Object.defineProperty(window, 'location', {
-            value: {
-                search: '',
-                href: 'http://localhost:3000/en/reader',
-            },
-            writable: true,
-        });
-
-        Object.defineProperty(window, 'URLSearchParams', {
-            value: makeUrlParamsMock(),
-            writable: true,
-        });
+        setLocation('');
 
         Object.defineProperty(window, 'history', {
             value: {
                 pushState: vi.fn(),
+                replaceState: vi.fn(),
             },
             writable: true,
         });
 
         // Reset fetch mock
         global.fetch = vi.fn();
+
+        // readerState is a shared singleton — reset between tests so each manager
+        // starts from a clean store.
+        readerState.reset();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
         document.body.innerHTML = '';
+        readerState.reset();
     });
 
     describe('getSceneData', () => {
@@ -313,250 +315,43 @@ describe('ReaderManager', () => {
         });
     });
 
-    describe('validateSceneState', () => {
-        it('returns true for a valid scene state object', () => {
+    describe('restore (initialize)', () => {
+        it('resolves default state into readerState when no URL params and no localStorage', () => {
             const manager = new ReaderManager('en');
-            expect(
-                (manager as any).validateSceneState({
-                    storyId: 'trainAdventure',
-                    sceneId: 'scene_1',
-                    locale: 'en',
-                })
-            ).toBe(true);
+            manager.initialize();
+
+            expect(readerState.storyId).toBe('train_adventure');
+            expect(readerState.currentSceneId).toBe('act1');
+            expect(readerState.locale).toBe('en');
+            expect(readerState.dialogueIndex).toBe(0);
         });
 
-        it('returns true for zh locale', () => {
-            const manager = new ReaderManager('en');
-            expect(
-                (manager as any).validateSceneState({
-                    storyId: 'trainAdventure',
-                    sceneId: 'scene_1',
-                    locale: 'zh',
-                })
-            ).toBe(true);
-        });
-
-        it('returns false for null', () => {
-            const manager = new ReaderManager('en');
-            expect((manager as any).validateSceneState(null)).toBe(false);
-        });
-
-        it('returns false for non-object (string)', () => {
-            const manager = new ReaderManager('en');
-            expect((manager as any).validateSceneState('string')).toBe(false);
-        });
-
-        it('returns false for non-object (number)', () => {
-            const manager = new ReaderManager('en');
-            expect((manager as any).validateSceneState(42)).toBe(false);
-        });
-
-        it('returns false when storyId is not a string', () => {
-            const manager = new ReaderManager('en');
-            expect(
-                (manager as any).validateSceneState({
-                    storyId: 123,
-                    sceneId: 'scene_1',
-                    locale: 'en',
-                })
-            ).toBe(false);
-        });
-
-        it('returns false when sceneId is not a string', () => {
-            const manager = new ReaderManager('en');
-            expect(
-                (manager as any).validateSceneState({
-                    storyId: 'trainAdventure',
-                    sceneId: null,
-                    locale: 'en',
-                })
-            ).toBe(false);
-        });
-
-        it('returns false for unsupported locale', () => {
-            const manager = new ReaderManager('en');
-            expect(
-                (manager as any).validateSceneState({
-                    storyId: 'trainAdventure',
-                    sceneId: 'scene_1',
-                    locale: 'fr',
-                })
-            ).toBe(false);
-        });
-    });
-
-    describe('loadInitialState', () => {
-        it('returns default state when no URL params and no localStorage', () => {
-            const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
-
-            expect(state.storyId).toBe('train_adventure');
-            expect(state.sceneId).toBe('act1');
-            expect(state.locale).toBe('en');
-        });
-
-        it('returns state from URL when scene param is present and valid in flow', () => {
-            // act1 is valid in the default mock flow
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({
-                    scene: 'act1',
-                    story: 'train_adventure',
-                }),
-                writable: true,
+        it('writes readerState from a valid URL story+scene', () => {
+            setLocation('?story=train_adventure&scene=act2');
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act2: [{ characterId: 'narrator', dialogue: 'Act 2' }],
+                },
+                choices: {},
             });
 
             const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
+            manager.initialize();
 
-            expect(state.sceneId).toBe('act1');
-            expect(state.storyId).toBe('train_adventure');
+            expect(readerState.storyId).toBe('train_adventure');
+            expect(readerState.currentSceneId).toBe('act2');
         });
 
-        it('ignores URL scene param when scene does not exist in flow', () => {
-            // 'scene_5' does not exist in the default mock flow (act1, act2)
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({
-                    scene: 'scene_5',
-                    story: 'train_adventure',
-                }),
-                writable: true,
-            });
+        it('falls back to start scene when URL scene is not in flow', () => {
+            setLocation('?story=train_adventure&scene=scene_5');
 
             const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
+            manager.initialize();
 
-            // Falls through to default state since scene_5 is not in the flow
-            expect(state.sceneId).toBe('act1');
-            expect(state.storyId).toBe('train_adventure');
+            expect(readerState.currentSceneId).toBe('act1');
         });
 
-        it('uses current storyId when URL has scene but no story', () => {
-            // act2 is valid in the default mock flow
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({ scene: 'act2' }),
-                writable: true,
-            });
-
-            const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
-
-            expect(state.sceneId).toBe('act2');
-            expect(state.storyId).toBe('train_adventure');
-        });
-
-        it('ignores URL scene when scene is valid string but not in flow', () => {
-            // 'scene_3' is a valid string but not in the default mock flow
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({ scene: 'scene_3' }),
-                writable: true,
-            });
-
-            const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
-
-            expect(state.sceneId).toBe('act1');
-        });
-
-        it('sets initialDialogueIndex from dialogue URL param', () => {
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({
-                    scene: 'act1',
-                    dialogue: '3',
-                }),
-                writable: true,
-            });
-
-            const manager = new ReaderManager('en');
-            manager.loadInitialState();
-
-            expect((manager as any).initialDialogueIndex).toBe(2); // 3 - 1 = 2
-        });
-
-        it('clamps dialogue index to 0 when dialogue param is 0', () => {
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({
-                    scene: 'act1',
-                    dialogue: '0',
-                }),
-                writable: true,
-            });
-
-            const manager = new ReaderManager('en');
-            manager.loadInitialState();
-
-            expect((manager as any).initialDialogueIndex).toBe(0);
-        });
-
-        it('ignores non-numeric dialogue param', () => {
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({
-                    scene: 'act1',
-                    dialogue: 'abc',
-                }),
-                writable: true,
-            });
-
-            const manager = new ReaderManager('en');
-            manager.loadInitialState();
-
-            expect((manager as any).initialDialogueIndex).toBeNull();
-        });
-
-        it('loads state from localStorage when valid in flow', () => {
-            mockStorage.getItem.mockReturnValueOnce(
-                JSON.stringify({
-                    storyId: 'train_adventure',
-                    sceneId: 'act2',
-                    locale: 'en',
-                })
-            );
-
-            const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
-
-            expect(state.sceneId).toBe('act2');
-            expect(state.storyId).toBe('train_adventure');
-        });
-
-        it('discards saved state when sceneId is not in flow', () => {
-            mockStorage.getItem.mockReturnValueOnce(
-                JSON.stringify({
-                    storyId: 'train_adventure',
-                    sceneId: 'scene_7',
-                    locale: 'en',
-                })
-            );
-
-            const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
-
-            // scene_7 is not in the mock flow (act1, act2), so fall back to default
-            expect(state.sceneId).toBe('act1');
-            expect(mockStorage.removeItem).toHaveBeenCalledWith(
-                'aquila:readerState:en'
-            );
-        });
-
-        it('ignores localStorage state with different locale', () => {
-            mockStorage.getItem.mockReturnValueOnce(
-                JSON.stringify({
-                    storyId: 'train_adventure',
-                    sceneId: 'act1',
-                    locale: 'zh',
-                })
-            );
-
-            const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
-
-            // Different locale means the saved state is discarded
-            expect(state.sceneId).toBe('act1');
-            expect(mockStorage.removeItem).toHaveBeenCalledWith(
-                'aquila:readerState:en'
-            );
-        });
-
-        it('uses URL story start scene when URL has story but no scene and story differs from default', () => {
+        it('resolves URL story start scene when story differs from default', () => {
             mockGetStoryFlow.mockImplementation((sid: string) => {
                 if (sid === 'other_story') {
                     return {
@@ -589,16 +384,13 @@ describe('ReaderManager', () => {
                     ],
                 };
             });
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({ story: 'other_story' }),
-                writable: true,
-            });
+            setLocation('?story=other_story');
 
             const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
+            manager.initialize();
 
-            expect(state.storyId).toBe('other_story');
-            expect(state.sceneId).toBe('other_act1');
+            expect(readerState.storyId).toBe('other_story');
+            expect(readerState.currentSceneId).toBe('other_act1');
         });
 
         it('ignores URL story when getStoryFlow returns undefined for it', () => {
@@ -616,31 +408,83 @@ describe('ReaderManager', () => {
                     ],
                 };
             });
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({ story: 'unknown_story' }),
-                writable: true,
+            setLocation('?story=unknown_story');
+
+            const manager = new ReaderManager('en');
+            manager.initialize();
+
+            expect(readerState.storyId).toBe('train_adventure');
+        });
+
+        it('resolves dialogue index from URL dialogue param (1-based)', () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [
+                        { characterId: 'narrator', dialogue: 'a' },
+                        { characterId: 'narrator', dialogue: 'b' },
+                        { characterId: 'narrator', dialogue: 'c' },
+                        { characterId: 'narrator', dialogue: 'd' },
+                    ],
+                },
+                choices: {},
+            });
+            setLocation('?story=train_adventure&scene=act1&dialogue=3');
+
+            const manager = new ReaderManager('en');
+            manager.initialize();
+
+            expect(readerState.dialogueIndex).toBe(2);
+        });
+
+        it('restores from localStorage when no URL story is present', () => {
+            mockStorage.getItem.mockReturnValueOnce(
+                JSON.stringify({
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    locale: 'en',
+                })
+            );
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act2: [{ characterId: 'narrator', dialogue: 'Act 2' }],
+                },
+                choices: {},
             });
 
             const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
+            manager.initialize();
 
-            expect(state.storyId).toBe('train_adventure');
+            expect(readerState.currentSceneId).toBe('act2');
         });
 
-        it('warns and falls back to default when localStorage state is invalid', () => {
-            const warnSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
+        it('falls back to default when saved sceneId is not in flow', () => {
             mockStorage.getItem.mockReturnValueOnce(
-                JSON.stringify({ bad: 'data' })
+                JSON.stringify({
+                    storyId: 'train_adventure',
+                    sceneId: 'scene_7',
+                    locale: 'en',
+                })
             );
 
             const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
+            manager.initialize();
 
-            expect(state.sceneId).toBe('act1');
-            expect(warnSpy).toHaveBeenCalled();
-            warnSpy.mockRestore();
+            expect(readerState.currentSceneId).toBe('act1');
+        });
+
+        it('ignores localStorage with a mismatched locale', () => {
+            mockStorage.getItem.mockReturnValueOnce(
+                JSON.stringify({
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    locale: 'zh',
+                })
+            );
+
+            const manager = new ReaderManager('en');
+            manager.initialize();
+
+            expect(readerState.currentSceneId).toBe('act1');
         });
 
         it('handles invalid JSON in localStorage gracefully', () => {
@@ -650,73 +494,135 @@ describe('ReaderManager', () => {
             mockStorage.getItem.mockReturnValueOnce('{invalid json}');
 
             const manager = new ReaderManager('en');
-            const state = manager.loadInitialState();
+            manager.initialize();
 
-            expect(state.sceneId).toBe('act1');
+            expect(readerState.currentSceneId).toBe('act1');
             expect(errorSpy).toHaveBeenCalled();
             errorSpy.mockRestore();
         });
-    });
 
-    describe('saveState', () => {
-        it('saves state to localStorage with the storage key', () => {
+        it('persists the v2 schema (version=2) to localStorage on initialize', () => {
             const manager = new ReaderManager('en');
-            manager.saveState({
-                storyId: 'train_adventure',
-                sceneId: 'act2',
-                locale: 'en',
+            manager.initialize();
+
+            const storedCall = mockStorage.setItem.mock.calls.find(
+                (call: [string, string]) => call[0] === 'aquila:readerState:en'
+            );
+            expect(storedCall).toBeDefined();
+            const saved = JSON.parse(storedCall![1]);
+            expect(saved.version).toBe(2);
+            expect(saved.storyId).toBe('train_adventure');
+            expect(saved.sceneId).toBe('act1');
+            expect(saved.dialogueIndex).toBe(0);
+        });
+
+        it('uses replaceState on initial restore, not pushState', () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [] },
+                choices: {},
             });
 
+            const manager = new ReaderManager('en');
+            manager.initialize();
+
+            expect(window.history.replaceState).toHaveBeenCalled();
+            expect(window.history.pushState).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('navigation', () => {
+        it('handleChoice updates readerState and persists the new scene', () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { scene_4a: [] },
+                choices: {},
+            });
+
+            const manager = new ReaderManager('en');
+            manager.handleChoice('scene_4a');
+
+            expect(readerState.currentSceneId).toBe('scene_4a');
+            expect(mockStorage.setItem).toHaveBeenCalledWith(
+                'aquila:readerState:en',
+                expect.stringContaining('scene_4a')
+            );
+        });
+
+        it('handleChoice uses pushState for subsequent navigation', () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { scene_4a: [] },
+                choices: {},
+            });
+
+            const manager = new ReaderManager('en');
+            manager.handleChoice('scene_4a');
+
+            expect(window.history.pushState).toHaveBeenCalled();
+        });
+
+        it('handleNext advances to the linear next scene', async () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ characterId: 'narrator', dialogue: 'Scene 1' }],
+                    act2: [{ characterId: 'narrator', dialogue: 'Scene 2' }],
+                },
+                choices: {},
+            });
+
+            const manager = new ReaderManager('en');
+            await manager.handleNext();
+
+            expect(readerState.currentSceneId).toBe('act2');
             expect(mockStorage.setItem).toHaveBeenCalledWith(
                 'aquila:readerState:en',
                 expect.stringContaining('act2')
             );
         });
 
-        it('updates the URL with story and scene params', () => {
-            const manager = new ReaderManager('en');
-            manager.saveState({
-                storyId: 'train_adventure',
-                sceneId: 'act2',
-                locale: 'en',
+        it('handleNext shows end-of-story alert at a terminal scene', async () => {
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act2',
+                nodes: [
+                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+                ],
             });
-
-            expect(window.history.pushState).toHaveBeenCalled();
-        });
-
-        it('normalizes locale to initialLocale', () => {
-            const manager = new ReaderManager('en');
-            manager.saveState({
-                storyId: 'train_adventure',
-                sceneId: 'act2',
-                locale: 'zh', // different from initialLocale
-            });
-
-            const savedData = JSON.parse(
-                (mockStorage.setItem as ReturnType<typeof vi.fn>).mock
-                    .calls[0][1]
-            );
-            expect(savedData.locale).toBe('en');
-        });
-    });
-
-    describe('handleChoice', () => {
-        it('navigates to the chosen scene', () => {
-            const mockStory = {
+            mockGetStoryContent.mockReturnValue({
                 dialogue: {
-                    scene_4a: [],
+                    act2: [{ characterId: 'narrator', dialogue: 'Last scene' }],
                 },
                 choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
+            });
 
             const manager = new ReaderManager('en');
-            manager.handleChoice('scene_4a');
+            await manager.handleNext();
 
-            expect(mockStorage.setItem).toHaveBeenCalledWith(
-                'aquila:readerState:en',
-                expect.stringContaining('scene_4a')
-            );
+            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
+        });
+
+        it('handleNext shows end-of-story alert at a choice point', async () => {
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act3',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'act3',
+                        sceneId: 'act3',
+                        next: 'choice:choice_act3',
+                    },
+                ],
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act3: [
+                        { characterId: 'narrator', dialogue: 'Choice scene' },
+                    ],
+                },
+                choices: {},
+            });
+
+            const manager = new ReaderManager('en');
+            await manager.handleNext();
+
+            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
         });
     });
 
@@ -899,81 +805,6 @@ describe('ReaderManager', () => {
         });
     });
 
-    describe('handleNext', () => {
-        it('navigates to the linear next scene when flow node has a plain next', async () => {
-            // Default flow: act1 -> act2 (plain next). Manager starts at act1.
-            const mockStory = {
-                dialogue: {
-                    act1: [{ characterId: 'narrator', dialogue: 'Scene 1' }],
-                    act2: [{ characterId: 'narrator', dialogue: 'Scene 2' }],
-                },
-                choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
-
-            const manager = new ReaderManager('en');
-            await manager.handleNext();
-
-            expect(mockStorage.setItem).toHaveBeenCalledWith(
-                'aquila:readerState:en',
-                expect.stringContaining('act2')
-            );
-        });
-
-        it('shows end-of-story alert when flow node next is null (terminal)', async () => {
-            // Override flow so manager starts at act2 (terminal)
-            mockGetStoryFlow.mockReturnValue({
-                start: 'act2',
-                nodes: [
-                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
-                ],
-            });
-
-            const mockStory = {
-                dialogue: {
-                    act2: [{ characterId: 'narrator', dialogue: 'Last scene' }],
-                },
-                choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
-
-            const manager = new ReaderManager('en');
-            await manager.handleNext();
-
-            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
-        });
-
-        it('shows end-of-story alert when flow node next is a choice ref', async () => {
-            // A choice-branching scene has no linear next; showAlert is expected
-            mockGetStoryFlow.mockReturnValue({
-                start: 'act3',
-                nodes: [
-                    {
-                        kind: 'scene',
-                        id: 'act3',
-                        sceneId: 'act3',
-                        next: 'choice:choice_act3',
-                    },
-                ],
-            });
-
-            const mockStory = {
-                dialogue: {
-                    act3: [
-                        { characterId: 'narrator', dialogue: 'Choice scene' },
-                    ],
-                },
-                choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
-
-            const manager = new ReaderManager('en');
-            await manager.handleNext();
-
-            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
-        });
-    });
-
     describe('renderReader', () => {
         it('returns early without throwing when container does not exist', () => {
             const mockStory = {
@@ -1151,58 +982,6 @@ describe('ReaderManager', () => {
                 errorSpy.mockRestore();
                 mockMount.mockImplementation(() => ({}));
             }
-        });
-    });
-
-    describe('initialize', () => {
-        it('does not throw when called', () => {
-            const mockStory = {
-                dialogue: { scene_1: [] },
-                choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
-
-            const manager = new ReaderManager('en');
-            expect(() => manager.initialize()).not.toThrow();
-        });
-
-        it('saves state to localStorage on initialization', () => {
-            const mockStory = {
-                dialogue: { act1: [] },
-                choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
-
-            const manager = new ReaderManager('en');
-            manager.initialize();
-
-            expect(mockStorage.setItem).toHaveBeenCalledWith(
-                'aquila:readerState:en',
-                expect.stringContaining('act1')
-            );
-        });
-
-        it('loads URL state and uses it during initialization', () => {
-            Object.defineProperty(window, 'URLSearchParams', {
-                value: makeUrlParamsMock({ scene: 'act2' }),
-                writable: true,
-            });
-
-            const mockStory = {
-                dialogue: {
-                    act2: [{ characterId: 'narrator', dialogue: 'Act 2' }],
-                },
-                choices: {},
-            };
-            mockGetStoryContent.mockReturnValue(mockStory);
-
-            const manager = new ReaderManager('en');
-            manager.initialize();
-
-            expect(mockStorage.setItem).toHaveBeenCalledWith(
-                'aquila:readerState:en',
-                expect.stringContaining('act2')
-            );
         });
     });
 });

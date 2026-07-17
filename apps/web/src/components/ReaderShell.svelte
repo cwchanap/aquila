@@ -1,31 +1,37 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { readerState } from '@/lib/reader-state.svelte';
   import NovelReader from '@/components/NovelReader.svelte';
   import MobileNovelReader from '@/components/MobileNovelReader.svelte';
-  import type {
-    DialogueEntry,
-    ChoiceDefinition,
-    Locale,
-  } from '@aquila/stories';
 
-  let props: {
+  let {
+    onChoice = () => {},
+    onBookmark = () => {},
+    onNext = () => {},
+    onNavigate = () => {},
+    onIndexChange = () => {},
+    showBookmarkButton = true,
+    backUrl = '/',
+  }: {
     onChoice?: (nextScene: string) => void;
     onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
+    onIndexChange?: (index: number) => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
-    initialDialogueIndex?: number | null;
-    dialogue?: DialogueEntry[];
-    choice?: ChoiceDefinition | null;
-    storyId?: string;
-    currentSceneId?: string;
-    canGoNext?: boolean;
-    locale?: Locale;
   } = $props();
 
-  const MOBILE_QUERY = '(max-width: 1023px)';
+  // Full reactive store->props bridge: every progressive field is derived here.
+  let dialogue = $derived(readerState.dialogue);
+  let choice = $derived(readerState.choice);
+  let storyId = $derived(readerState.storyId);
+  let currentSceneId = $derived(readerState.currentSceneId);
+  let canGoNext = $derived(readerState.canGoNext);
+  let locale = $derived(readerState.locale);
+  let dialogueIndex = $derived(readerState.dialogueIndex);
 
+  const MOBILE_QUERY = '(max-width: 1023px)';
   function readMatch(): boolean {
     if (
       typeof window === 'undefined' ||
@@ -35,28 +41,7 @@
     }
     return window.matchMedia(MOBILE_QUERY).matches;
   }
-
   let isMobile = $state(readMatch());
-
-  // Live dialogue index reported by whichever reader is currently mounted.
-  // Once a layout swap has occurred, this takes precedence over the static
-  // `initialDialogueIndex` prop so that swapping readers across the
-  // mobile/desktop breakpoint re-seeds the newly mounted reader at the user's
-  // current line rather than resetting to 0 or re-applying a stale bookmark
-  // offset captured at first mount.
-  //
-  // `hasSwapped` gates the feedback loop: on the first mount we must NOT let
-  // the reader's initial `onIndexChange(0)` report clobber a bookmark
-  // `initialDialogueIndex` prop before the reader's own initial-index effect
-  // has applied it. Only after the first media-query transition do we trust
-  // `liveIndex` over the original prop.
-  let liveIndex = $state<number | null>(null);
-  let hasSwapped = $state(false);
-  let effectiveInitialDialogueIndex = $derived(
-    hasSwapped
-      ? (liveIndex !== null ? liveIndex : (props.initialDialogueIndex ?? null))
-      : (props.initialDialogueIndex ?? null)
-  );
 
   onMount(() => {
     if (
@@ -68,7 +53,6 @@
     const mql = window.matchMedia(MOBILE_QUERY);
     const update = (e: globalThis.MediaQueryListEvent) => {
       isMobile = e.matches;
-      hasSwapped = true;
     };
     isMobile = mql.matches;
     mql.addEventListener('change', update);
@@ -78,14 +62,38 @@
 
 {#if isMobile}
   <MobileNovelReader
-    {...props}
-    initialDialogueIndex={effectiveInitialDialogueIndex}
-    onIndexChange={(index: number) => (liveIndex = index)}
+    {dialogueIndex}
+    initialDialogueIndex={dialogueIndex}
+    {onIndexChange}
+    {dialogue}
+    {choice}
+    {storyId}
+    {currentSceneId}
+    {canGoNext}
+    {locale}
+    {onChoice}
+    {onBookmark}
+    {onNext}
+    {onNavigate}
+    {backUrl}
+    {showBookmarkButton}
   />
 {:else}
   <NovelReader
-    {...props}
-    initialDialogueIndex={effectiveInitialDialogueIndex}
-    onIndexChange={(index: number) => (liveIndex = index)}
+    {dialogueIndex}
+    initialDialogueIndex={dialogueIndex}
+    {onIndexChange}
+    {dialogue}
+    {choice}
+    {storyId}
+    {currentSceneId}
+    {canGoNext}
+    {locale}
+    {onChoice}
+    {onBookmark}
+    {onNext}
+    {onNavigate}
+    {backUrl}
+    {showBookmarkButton}
   />
 {/if}

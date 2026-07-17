@@ -91,10 +91,6 @@
     sceneVersion++;
   });
 
-  // Scroll not needed on mobile (fixed-height reading box handles its own
-  // overflow), but keep a no-op-friendly helper in case future callers expect
-  // post-advance scrolling behavior parity with the desktop reader.
-
   // Typewriter runner. Captures sceneVersion for cancellation when a new
   // scene or a new line supersedes the in-flight animation.
   async function startTyping(index: number): Promise<void> {

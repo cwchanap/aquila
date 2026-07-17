@@ -84,6 +84,9 @@
     if (!entry) return;
     typingText = '';
     isTyping = true;
+    // Cleared as soon as typing kicks in (not on completion) so a popstate
+    // during active typing takes the snap branch instead of the animate one.
+    selfAdvance = false;
     skipTyping = false;
     const version = sceneVersion;
     scrollToBottom();
@@ -99,7 +102,6 @@
     if (result === 'cancelled') return;
     typingText = entry.dialogue;
     isTyping = false;
-    selfAdvance = false;
   }
 
   // Signal 1 — new scene (dialogue reference change): ALWAYS animate the line
@@ -129,9 +131,10 @@
         void startTyping(dialogueIndex);
       } else {
         // External change: reveal the full line immediately, no animation.
+        // (typingText write intentionally omitted — the template renders
+        // currentDialogue.dialogue directly when isTyping === false.)
         sceneVersion++;
         isTyping = false;
-        typingText = currentDialogue?.dialogue ?? '';
       }
     }
     lastIndex = dialogueIndex;

@@ -81,12 +81,23 @@ A pure validator centralizes bounds checking:
 validateSessionState(state, flow, dialogue): ReaderSessionState | null
 ```
 
-It checks story existence (flow present), scene existence (node in flow),
-locale ∈ {en, zh}, and dialogueIndex bounds. Returns a valid (possibly clamped)
-state or `null`. Restore, popstate, and persisted-state migration share this one
-validator. `flow` and `dialogue` are passed as parameters (not imported inside
-the helper), so per-precedence-tier unit tests can stub them without mocking the
-`@aquila/stories` module.
+It checks story existence (flow present), scene existence (node in flow), and
+locale ∈ {en, zh}. For `dialogueIndex`: a **non-negative** number is **clamped**
+into `[0, dialogue.length-1]`; a negative number, `NaN`, or non-number makes the
+whole state `null`. Thus an over-range `dialogue=999` clamps to the last line
+(friendly), while a malformed/zero/negative value is structurally invalid and
+falls through per the precedence rules. Restore, popstate, and persisted-state
+migration share this one validator. `flow` and `dialogue` are passed as
+parameters (not imported inside the helper), so per-precedence-tier unit tests
+can stub them without mocking the `@aquila/stories` module.
+
+**One source of truth, no mirror.** `readerState` already holds
+`storyId`/`currentSceneId`/`locale` fields that duplicate `ReaderManager`'s
+private `currentState` (`reader-manager.ts:21`). `ReaderManager` **drops the
+`currentState` mirror** and reads story/scene/locale from `readerState`. Every
+write path — restore, `goToScene`, `onIndexChange`, `popstate` — updates the
+`readerState` fields in one place, so navigation/bookmark/scene-data methods can
+never operate on a stale mirror.
 
 ### Section 2 — Controlled reader contract & ReaderShell
 
@@ -96,7 +107,7 @@ consume/report it through props:
 
 ```ts
 interface ControlledReaderProps {
-  dialogueIndex: number;                  // the active line (read from store)
+  dialogueIndex: number;                  // the active line (forwarded by ReaderShell)
   onIndexChange: (index: number) => void; // report forward/back navigation
   // ...existing props: dialogue, choice, onChoice, onBookmark, onNext,
   //    onNavigate, locale, backUrl, showBookmarkButton
@@ -115,9 +126,22 @@ interface ControlledReaderProps {
   convention), sourced from the canonical index rather than
   `displayedDialogues.length`.
 
-**ReaderShell shrinks** to a thin responsive switch with no index state:
+**ReaderShell shrinks** to a thin responsive switch with no index state, but it
+becomes the **reactive bridge** between the store and the controlled readers:
 
 ```svelte
+<script>
+  import { readerState } from '@/lib/reader-state.svelte';
+  // ReaderManager mounts ReaderShell once with non-reactive props. Because
+  // ReaderShell is a Svelte component, it derives the index reactively from the
+  // store and forwards it as a prop — so popstate/onIndexChange updates flow
+  // through without ReaderManager needing to re-push props.
+  // The WRITE side (onIndexChange) is supplied by the orchestrator as a prop,
+  // keeping URL/history/persistence logic out of the component.
+  let { onIndexChange, ...sharedProps } = $props();
+  let dialogueIndex = $derived(readerState.dialogueIndex);
+</script>
+
 {#if isMobile}
   <MobileNovelReader {...sharedProps} {dialogueIndex} {onIndexChange} />
 {:else}
@@ -125,13 +149,26 @@ interface ControlledReaderProps {
 {/if}
 ```
 
+`ReaderManager` (a plain-TS class) calls `mount()` exactly once; it cannot push
+updated prop values afterward. `ReaderShell`, being a Svelte component,
+re-derives `dialogueIndex` from `readerState` via `$derived` (the **read** side),
+so any store mutation — `onIndexChange`, `popstate` restore, `goToScene` —
+propagates to the leaf readers automatically. The **write** side
+(`onIndexChange`) is supplied by the orchestrator as a prop, so URL/history and
+persistence logic stay in the unit-testable `ReaderManager`, not in the
+component. The leaf readers (`NovelReader`/`MobileNovelReader`) remain pure
+controlled components: they read `dialogueIndex` as a prop and emit
+`onIndexChange`, never importing the store directly. (`dialogue`/`choice`/etc.
+also flow through `ReaderShell` from `readerState` as props, so leaf readers hold
+no store import at all.)
+
 The `MOBILE_QUERY` matchMedia listener stays (to swap which reader mounts), but
 `liveIndex`, `hasSwapped`, `effectiveInitialDialogueIndex`, and the
-`onIndexChange` interception are deleted. Both readers read the same
-`readerState.dialogueIndex`, so a breakpoint swap preserves the exact line for
-free. The `initialDialogueIndex` prop is removed entirely — initial seeding
-happens once in the orchestrator before mount, so there is no initial-index
-callback clobbering a bookmark to guard against.
+`onIndexChange` interception are deleted. Both readers receive the same
+`dialogueIndex`, so a breakpoint swap preserves the exact line for free. The
+`initialDialogueIndex` prop is removed entirely — initial seeding happens once in
+the orchestrator before mount, so there is no initial-index callback clobbering a
+bookmark to guard against.
 
 **Desktop history must derive from the index.** Today `NovelReader` accumulates
 a `displayedDialogues` array (`NovelReader.svelte:68-72`) back-filled only by the
@@ -142,11 +179,28 @@ not fire and `displayedDialogues` would disagree with the index (six lines shown
 while index says 3). The desktop reader must therefore derive its visible history
 from the index, exactly as `MobileNovelReader` already does with
 `backlogLines = dialogue.slice(0, currentDialogueIndex + 1)`
-(`MobileNovelReader.svelte:268`). The `displayedDialogues` accumulator is deleted
-in favor of a derived slice; the active line renders `typingText` while typing
-and the full text once complete. This makes both readers consistent under any
-index jump (popstate, breakpoint swap, bookmark seed) and removes the
-initial-index back-fill loop entirely.
+(`MobileNovelReader.svelte:268`). The `displayedDialogues` accumulator is
+deleted.
+
+**History rendering (no active-line duplication).** Completed lines are
+`dialogue.slice(0, dialogueIndex)` (indices **strictly before** the active line).
+The active line at `dialogueIndex` is rendered **separately**, showing
+`typingText` + cursor while `isTyping`, and the full text once typing completes.
+This avoids the duplication that would occur from slicing *through* the active
+index and then rendering it again. (Equivalently: render one list
+`slice(0, dialogueIndex + 1)` where only the final item is in the "active"
+state.)
+
+**External index jumps snap, not animate.** When `dialogueIndex` changes for a
+reason other than the reader's own advance — `popstate`, breakpoint swap, initial
+restore — the typewriter must reconcile: cancel any in-flight typewriter (bump
+the `sceneVersion`/generation token), set `isTyping = false`, and set
+`typingText` to the target line's full text immediately (**snap**, no animation).
+The leaf reader distinguishes self-initiated changes from external ones via a
+flag it sets immediately before calling `onIndexChange`; only self-initiated
+advances animate the typewriter. This guarantees a `popstate` jump from line 5 to
+line 3 (or 0 → 5) shows the correct full line with no stale typewriter running,
+on both desktop and mobile.
 
 ### Section 3 — ReaderManager orchestration & URL/history
 
@@ -155,15 +209,27 @@ initial-index back-fill loop entirely.
 - **Restore** (`initialize`): runs the precedence resolver once, writes the
   resolved `ReaderSessionState` into `readerState` (storyId, sceneId, locale,
   dialogueIndex), loads scene dialogue/choice, then mounts the shell.
-- **Index glue**: passes `dialogueIndex={readerState.dialogueIndex}` and
-  `onIndexChange` into the mounted `ReaderShell`. `onIndexChange(i)` is the
-  single write path: sets `readerState.dialogueIndex = i`, schedules a throttled
-  URL `replaceState`, and schedules a debounced localStorage persist. Navigation
+- **Index glue**: passes the static action props (`onChoice`, `onBookmark`,
+  `onNext`, `onNavigate`, `backUrl`) plus its orchestrator-owned `onIndexChange`
+  into the mounted `ReaderShell`. `ReaderShell` derives `dialogueIndex`
+  reactively from `readerState` (read side) and forwards both as props to the
+  leaf readers. The orchestrator's `onIndexChange(i)` is the single write path:
+  it sets `readerState.dialogueIndex = i`, schedules a throttled URL
+  `replaceState`, and schedules a debounced localStorage persist. Navigation
   actions (`handleNext`, `handleChoice`, `onNavigate`) call a shared
   `goToScene(sceneId)` that resets `dialogueIndex` to 0, pushes scene data into
-  the store, and does a `pushState`. `goToScene` **flushes (or cancels) any
-  pending throttled `replaceState` before its `pushState`**, so a delayed
-  line-position write can never land on the new scene's history entry.
+  the store, and does a `pushState`. `goToScene` **flushes** any pending
+  throttled `replaceState` before its `pushState`, so the scene being left
+  records its accurate last line position (Back lands on the right line, not a
+  stale one).
+
+  **Flush vs cancel is decided per call site, not globally:**
+  - `goToScene` → **flush** (preserve the accurate line for Back).
+  - `popstate` → **cancel** (the queued `replaceState` would otherwise mutate the
+    *destination* history entry after navigation has already switched to it,
+    corrupting it with the old scene's line position).
+  - `pagehide`/`visibilitychange=hidden` → **flush** (so the URL is correct if
+    the tab is later restored).
 
 **URL/history strategy — three tiers:**
 
@@ -205,9 +271,19 @@ writes while guaranteeing the latest line survives a refresh or tab close.
 
 **Restore precedence** (single pure function `resolveInitialState`, in order):
 
-1. **Valid explicit URL params** — `story`+`scene`+`dialogue` that pass
-   validation (story has flow, scene is a node, dialogueIndex in bounds). URL
-   wins so direct links are deterministic.
+1. **Valid explicit URL params** — if the URL carries a valid `story` (flow
+   exists), the URL tier **wins and fully resolves**, never falling through to
+   persisted state. Fields are resolved independently:
+   - `story` = url story (required for this tier).
+   - `scene` = url `scene` if it is a node in that story's flow; otherwise the
+     story's `start` scene. (Covers story-only links like the story cards'
+     `?story=THE_SEVENTH_MIRROR` at `stories/index.astro:67`, and story+scene
+     links from bookmarks without `[dlg:N]`.)
+   - `dialogueIndex` = url `dialogue=N` clamped into bounds if present and
+     non-negative; otherwise `0`.
+   A URL with an *invalid* story (no flow) does not lock the tier and falls
+   through. This makes story-card and bookmark links deterministic — they never
+   accidentally resume an unrelated persisted session.
 2. **Explicit bookmark restoration** — a bookmark URL/link carrying
    `dialogue=N`. Handled via the same URL path: bookmarks parse `[dlg:N]` from
    the name and build a `…reader?story=&scene=&dialogue=N` href
@@ -215,8 +291,8 @@ writes while guaranteeing the latest line survives a refresh or tab close.
    so tier 2 genuinely folds into tier 1. Authenticated and anonymous
    (`LocalBookmarksStore`) bookmarks are unaffected — only *resolution* of where
    to start moves into the central resolver.
-3. **Valid persisted session state** — localStorage
-   `aquila:readerState:{locale}` now stores
+3. **Valid persisted session state** — fires only when the URL has **no** valid
+   `story`. localStorage `aquila:readerState:{locale}` now stores
    `{storyId, sceneId, dialogueIndex, locale, version}`. Validated against
    current flow + dialogue bounds; locale must match the page locale.
 4. **Story start/default** — `getStoryFlow(storyId).start ?? 'act1'`,
@@ -236,12 +312,14 @@ data loss for existing users.
 
 | Area | Type | Coverage |
 | --- | --- | --- |
-| `validateSessionState` / `resolveInitialState` | Unit | Each precedence tier, fallthrough, bounds clamping, locale mismatch, invalid story/scene; `flow`/`dialogue` injected so no `@aquila/stories` mock needed |
-| URL serialize/parse round-trip | Unit | `dialogue=N` ↔ index, throttle behavior, `pushState` vs `replaceState` calls, pending `replaceState` flushed on `goToScene`/`popstate` |
-| `popstate` restore | Unit (jsdom) | Back/forward restores exact line; invalid URL falls back safely; scene reload on mismatch |
-| `NovelReader` controlled contract | Component (`NovelReader.test.ts`) | Renders `dialogueIndex` prop; `onIndexChange` fires on advance/back; **tap during typing does NOT call `onIndexChange`** (sets local `skipTyping`); visible history derives from index under a popstate jump |
-| `MobileNovelReader` controlled contract | Component (`MobileNovelReader.test.ts`) | Renders `dialogueIndex` prop; `onIndexChange` fires on advance/goBack; tap during typing does not call `onIndexChange`; backlog derives from index |
-| Breakpoint swap | Component (`ReaderShell.test.ts`) | Preserve exact line across mobile/desktop swap (now trivial) |
+| `validateSessionState` / `resolveInitialState` | Unit | Each precedence tier, fallthrough, bounds clamping (over-range clamps; negative/zero/NaN → invalid), locale mismatch, invalid story/scene; `flow`/`dialogue` injected so no `@aquila/stories` mock needed |
+| Partial-URL precedence | Unit | story-only → story start, no persisted fallthrough; story+scene (no dialogue) → that scene, index 0; invalid story → falls through to persisted/default |
+| Single source of truth | Unit | `handleNext`/`handleBookmark`/`getSceneData` read from `readerState` (no `currentState` mirror); invoke next/bookmark after a `popstate` restore and assert they operate on the restored scene |
+| URL serialize/parse round-trip | Unit | `dialogue=N` ↔ index, throttle behavior, `pushState` vs `replaceState` calls, flush-on-`goToScene`, cancel-on-`popstate`, flush-on-`pagehide` |
+| `popstate` restore | Unit (jsdom) | Back/forward restores exact line; invalid URL falls back safely; scene reload on mismatch; pending `replaceState` cancelled |
+| `NovelReader` controlled contract | Component (`NovelReader.test.ts`) | Renders `dialogueIndex` prop; `onIndexChange` fires on advance/back; **tap during typing does NOT call `onIndexChange`**; visible history = `slice(0, index)` + active line (no duplication); **external index jump snaps full text and cancels typewriter** |
+| `MobileNovelReader` controlled contract | Component (`MobileNovelReader.test.ts`) | Renders `dialogueIndex` prop; `onIndexChange` fires on advance/goBack; tap during typing does not call `onIndexChange`; external index jump snaps; backlog derives from index |
+| Reactive propagation | Component (`ReaderShell.test.ts`) | `dialogueIndex` prop updates when `readerState` mutates (popstate/onIndexChange) without remount; breakpoint swap preserves exact line |
 | Regression | Existing | Bookmarks (auth + local), choices, locale routing, scene progression — keep green |
 
 `reader-manager.test.ts`, `ReaderShell.test.ts`, `NovelReader.test.ts`, and

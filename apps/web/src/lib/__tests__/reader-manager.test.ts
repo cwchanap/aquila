@@ -984,4 +984,155 @@ describe('ReaderManager', () => {
             }
         });
     });
+
+    describe('index glue and history policy', () => {
+        // Fake timers are global (test-setup.ts) but do NOT auto-stub rAF.
+        // Stub both requestAnimationFrame and cancelAnimationFrame so the
+        // manager's throttle/cancel paths are observable via pending().
+        function stubRaf() {
+            let cb: FrameRequestCallback | null = null;
+            Object.defineProperty(window, 'requestAnimationFrame', {
+                value: (fn: FrameRequestCallback) => {
+                    cb = fn;
+                    return 1;
+                },
+                writable: true,
+                configurable: true,
+            });
+            Object.defineProperty(window, 'cancelAnimationFrame', {
+                value: () => {
+                    cb = null;
+                },
+                writable: true,
+                configurable: true,
+            });
+            return {
+                flush: () => {
+                    const f = cb;
+                    cb = null;
+                    if (f) f(performance.now());
+                },
+                pending: () => cb !== null,
+            };
+        }
+
+        // renderReader early-returns without a #reader-container in the DOM,
+        // so each test must mount one before calling initialize().
+        function setupContainer() {
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+        }
+
+        it('onIndexChange writes readerState.dialogueIndex and schedules throttled replaceState', async () => {
+            const raf = stubRaf();
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }] },
+                choices: {},
+            });
+            setupContainer();
+            const manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            // initialize() already invoked replaceState once via syncUrl(true);
+            // clear it so the assertion below specifically verifies that
+            // onIndexChange itself is throttled (does not call replaceState
+            // synchronously).
+            replaceState.mockClear();
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(2);
+            expect(readerState.dialogueIndex).toBe(2);
+            expect(raf.pending()).toBe(true);
+            expect(replaceState).not.toHaveBeenCalled(); // throttled
+            raf.flush();
+            expect(replaceState).toHaveBeenCalled();
+        });
+
+        it('goToScene flushes pending replaceState before pushState', async () => {
+            const raf = stubRaf();
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }],
+                    act2: [{ dialogue: 'b' }],
+                },
+                choices: {},
+            });
+            setupContainer();
+            const manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(1); // schedule a replaceState
+            expect(raf.pending()).toBe(true);
+            manager.goToScene('act2'); // navigate
+            expect(raf.pending()).toBe(false); // flushed
+            expect(replaceState).toHaveBeenCalled(); // the line write happened
+            expect(pushState).toHaveBeenCalled(); // then the scene entry
+        });
+
+        it('popstate restores validated state and cancels pending replaceState', async () => {
+            const raf = stubRaf();
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                },
+                choices: {},
+            });
+            setupContainer();
+            const manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(1);
+            expect(raf.pending()).toBe(true);
+            // dispatch popstate with a valid URL (use the helper so href is valid)
+            setLocation('?story=train_adventure&scene=act1&dialogue=1');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            expect(raf.pending()).toBe(false); // cancelled, not flushed
+            expect(readerState.dialogueIndex).toBe(0); // restored to line 1 -> index 0
+        });
+
+        it('invalid popstate soft-rejects: store unchanged, canonical URL replaceStated', async () => {
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }] },
+                choices: {},
+            });
+            setupContainer();
+            const manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const before = readerState.currentSceneId;
+            // Make 'bogus' an unknown story so popstate takes the soft-reject branch.
+            mockGetStoryFlow.mockReturnValue(undefined);
+            setLocation('?story=bogus&scene=nope');
+            replaceState.mockClear(); // ignore initialize's call
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            expect(readerState.currentSceneId).toBe(before); // unchanged
+            expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
+        });
+    });
 });

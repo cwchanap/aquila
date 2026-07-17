@@ -26,6 +26,12 @@ export class ReaderManager {
     private readonly deps: ResolveDeps;
     private readonly localBookmarks: LocalBookmarksStore;
 
+    // Throttled-write state for line-by-line index changes. rAF coalesces
+    // rapid onIndexChange reports so each animation frame produces at most one
+    // replaceState; persistTimer debounces the localStorage write.
+    private rafId: number | null = null;
+    private persistTimer: ReturnType<typeof setTimeout> | null = null;
+
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
     private static readonly LEGACY_KEYS = [
         'aquila:currentScene',
@@ -164,6 +170,45 @@ export class ReaderManager {
         else window.history.pushState({}, '', url);
     }
 
+    /** Flush a pending throttled replaceState immediately (scene change / pagehide). */
+    private flushPendingReplace(): void {
+        if (this.rafId !== null) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+            this.syncUrl(true);
+        }
+    }
+
+    /** Cancel a pending throttled replaceState without writing (popstate). */
+    private cancelPendingReplace(): void {
+        if (this.rafId !== null) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+    }
+
+    /** Coalesce index changes into one replaceState per animation frame. */
+    private scheduleReplace(): void {
+        if (this.rafId !== null) return; // already scheduled -> coalesce
+        const raf =
+            typeof window !== 'undefined' && window.requestAnimationFrame
+                ? window.requestAnimationFrame.bind(window)
+                : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 0);
+        this.rafId = raf(() => {
+            this.rafId = null;
+            this.syncUrl(true);
+        });
+    }
+
+    /** Debounce the localStorage write so rapid line changes hit storage once. */
+    private schedulePersist(): void {
+        if (this.persistTimer !== null) clearTimeout(this.persistTimer);
+        this.persistTimer = setTimeout(() => {
+            this.persistTimer = null;
+            this.persist();
+        }, 500);
+    }
+
     private getSceneData(
         storyId: string,
         sceneId: string,
@@ -188,22 +233,36 @@ export class ReaderManager {
         return { dialogue, choice };
     }
 
-    private navigateToScene(sceneId: string): void {
-        // A fresh scene always starts at dialogue index 0. (The throttled
-        // index-write path that keeps an in-scene index live lands in Task 4.)
-        const state: ReaderSessionState = {
-            storyId: readerState.storyId,
+    /** The orchestrator write path passed to ReaderShell as the onIndexChange
+     *  prop. Writes the canonical store, then schedules a throttled URL
+     *  replaceState and a debounced persist. */
+    onIndexChange = (i: number): void => {
+        readerState.dialogueIndex = i;
+        this.scheduleReplace();
+        this.schedulePersist();
+    };
+
+    /** Shared scene-navigation method. Flushes any pending line replace so the
+     *  Back button lands on an accurate line, then writes the new scene to the
+     *  store and pushes a fresh history entry. */
+    goToScene = (sceneId: string): void => {
+        this.flushPendingReplace(); // preserve accurate line for Back
+        readerState.currentSceneId = sceneId;
+        readerState.dialogueIndex = 0;
+        const { dialogue, choice } = this.getSceneData(
+            readerState.storyId,
             sceneId,
-            dialogueIndex: 0,
-            locale: readerState.locale,
-        };
-        this.applySession(state);
-        this.syncUrl(false);
+            readerState.locale
+        );
+        readerState.dialogue = dialogue;
+        readerState.choice = choice;
+        readerState.canGoNext = this.hasNextScene(sceneId);
+        this.syncUrl(false); // pushState (new history entry)
         this.persist();
-    }
+    };
 
     handleChoice = (nextScene: string): void => {
-        this.navigateToScene(nextScene);
+        this.goToScene(nextScene);
     };
 
     handleBookmark = async (dialogueNumber?: number): Promise<void> => {
@@ -274,7 +333,7 @@ export class ReaderManager {
         const translations = this.t;
         const next = this.getLinearNextScene(readerState.currentSceneId);
         if (next !== null) {
-            this.navigateToScene(next);
+            this.goToScene(next);
         } else {
             await showAlert(translations.reader.endOfStory);
         }
@@ -307,8 +366,8 @@ export class ReaderManager {
                         showBookmarkButton: true,
                         backUrl: `/${readerState.locale}/`,
                         initialDialogueIndex: readerState.dialogueIndex,
-                        onNavigate: (sceneId: string) =>
-                            this.navigateToScene(sceneId),
+                        onNavigate: this.goToScene,
+                        onIndexChange: this.onIndexChange,
                     },
                 });
 
@@ -347,10 +406,60 @@ export class ReaderManager {
             });
     }
 
+    /** popstate handler: cancel any pending line replace (so the destination
+     *  history entry is not mutated), then either soft-reject (invalid URL ->
+     *  reconverge canonical URL via replaceState) or restore the validated
+     *  URL state into the store. */
+    private onPopState = (): void => {
+        this.cancelPendingReplace(); // do NOT flush -> avoid mutating destination entry
+        const params = new URLSearchParams(window.location.search);
+        const urlStory = params.get('story');
+        const flowForUrl = urlStory ? this.deps.flow(urlStory) : undefined;
+        if (!urlStory || !flowForUrl) {
+            // invalid popstate -> soft-reject: keep store, reconverge URL
+            this.syncUrl(true);
+            return;
+        }
+        const state = resolveInitialState(
+            params,
+            null, // popstate never falls through to persisted
+            readerState.locale,
+            this.deps
+        );
+        if (
+            state.sceneId !== readerState.currentSceneId ||
+            state.storyId !== readerState.storyId
+        ) {
+            this.applySession(state);
+        } else {
+            readerState.dialogueIndex = state.dialogueIndex;
+        }
+    };
+
+    /** pagehide / visibilitychange->hidden handler: flush any pending line
+     *  replace and persist so the URL and storage are coherent if the tab is
+     *  restored. */
+    private onPageHide = (): void => {
+        this.flushPendingReplace();
+        if (this.persistTimer !== null) {
+            clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+            this.persist();
+        }
+    };
+
     initialize(): void {
         this.resolveAndApply();
         this.syncUrl(true); // first sync collapses the duplicate history entry
         this.persist();
         this.renderReader();
+
+        // Full-page app: no destroy(). Listeners stay registered for the
+        // lifetime of the page and react to browser Back/Forward and tab hide.
+        window.addEventListener('popstate', this.onPopState);
+        window.addEventListener('pagehide', this.onPageHide);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') this.onPageHide();
+        });
     }
 }

@@ -10,18 +10,20 @@ import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 import { LocalBookmarksStore } from './local-bookmarks-store';
 import { readerState } from './reader-state.svelte';
-
-export interface SceneState {
-    storyId: string;
-    sceneId: string;
-    locale: Locale;
-}
+import {
+    resolveInitialState,
+    migratePersisted,
+    serializeSessionParams,
+    STORAGE_VERSION,
+    type ResolveDeps,
+    type ReaderSessionState,
+    type PersistedSession,
+} from './reader-session';
 
 export class ReaderManager {
-    private currentState: SceneState;
     private readerInstance: { unmount: () => void } | null = null;
     private readonly initialLocale: Locale;
-    private initialDialogueIndex: number | null = null;
+    private readonly deps: ResolveDeps;
     private readonly localBookmarks: LocalBookmarksStore;
 
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
@@ -33,12 +35,21 @@ export class ReaderManager {
 
     constructor(locale: Locale, defaultStoryId?: string) {
         this.initialLocale = locale;
-        const storyId = defaultStoryId || 'train_adventure';
-        this.currentState = {
-            storyId,
-            sceneId: getStoryFlow(storyId)?.start ?? 'act1',
-            locale,
+        this.deps = {
+            flow: sid => getStoryFlow(sid) ?? undefined,
+            dialogue: (sid, sceneId, loc) =>
+                getStoryContent(sid, loc).dialogue[sceneId] ?? [],
+            defaultStoryId: defaultStoryId || 'train_adventure',
         };
+
+        // Seed the canonical store with progression defaults so helper methods
+        // (hasNextScene, getLinearNextScene) have a storyId to read before the
+        // first resolveAndApply() runs.
+        const storyId = this.deps.defaultStoryId;
+        readerState.storyId = storyId;
+        readerState.currentSceneId = getStoryFlow(storyId)?.start ?? 'act1';
+        readerState.locale = locale;
+        readerState.dialogueIndex = 0;
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
@@ -46,10 +57,6 @@ export class ReaderManager {
 
     private get storageKey(): string {
         return `${ReaderManager.STORAGE_KEY_PREFIX}:${this.initialLocale}`;
-    }
-
-    private isLocale(value: unknown): value is Locale {
-        return value === 'en' || value === 'zh';
     }
 
     private purgeLegacyState(): void {
@@ -63,21 +70,7 @@ export class ReaderManager {
     }
 
     private get t() {
-        return getTranslations(this.currentState.locale);
-    }
-
-    private validateSceneState(data: unknown): data is SceneState {
-        if (!data || typeof data !== 'object') {
-            return false;
-        }
-
-        const { storyId, sceneId, locale } = data as Record<string, unknown>;
-
-        return (
-            typeof storyId === 'string' &&
-            typeof sceneId === 'string' &&
-            this.isLocale(locale)
-        );
+        return getTranslations(readerState.locale);
     }
 
     private getSceneNode(storyId: string, sceneId: string) {
@@ -90,126 +83,85 @@ export class ReaderManager {
 
     /** The next SCENE id when the scene advances linearly; null at a terminal
      *  scene or a choice point (a choice point is driven by the choice UI). */
-    private getLinearNextScene(
-        storyId: string,
-        sceneId: string
-    ): string | null {
-        const next = this.getSceneNode(storyId, sceneId)?.next;
+    private getLinearNextScene(sceneId: string): string | null {
+        const next = this.getSceneNode(readerState.storyId, sceneId)?.next;
         if (!next || next.startsWith('choice:')) return null;
         return next;
     }
 
     private hasNextScene(sceneId: string): boolean {
-        return (
-            this.getLinearNextScene(this.currentState.storyId, sceneId) !== null
-        );
+        return this.getLinearNextScene(sceneId) !== null;
     }
 
-    /** Check whether a scene ID exists in the flow graph for the given story. */
-    private isValidSceneId(storyId: string, sceneId: string): boolean {
-        return this.getSceneNode(storyId, sceneId) !== undefined;
-    }
-
-    loadInitialState(): SceneState {
+    /**
+     * Resolve the session (URL > localStorage > default) via the pure helpers in
+     * reader-session, then apply the result to the canonical readerState.
+     */
+    private resolveAndApply(): ReaderSessionState {
         const params = new URLSearchParams(window.location.search);
-        const urlScene = params.get('scene');
-        const urlStory = params.get('story');
-        const urlDialogue = params.get('dialogue');
-
-        if (urlDialogue) {
-            const parsed = parseInt(urlDialogue, 10);
-            if (!Number.isNaN(parsed)) {
-                // dialogue=N means N dialogues shown; index is N-1 (clamped to >=0)
-                const idx = parsed > 0 ? parsed - 1 : 0;
-                this.initialDialogueIndex = idx;
-            }
-        }
-
-        // Resolve story from URL, falling back to current default
-        const storyId =
-            urlStory && getStoryFlow(urlStory)
-                ? urlStory
-                : this.currentState.storyId;
-
-        if (urlScene) {
-            if (this.isValidSceneId(storyId, urlScene)) {
-                return {
-                    storyId,
-                    sceneId: urlScene,
-                    locale: this.currentState.locale,
-                };
-            }
-        }
-
-        // URL story overrides default/saved when no scene is specified
-        if (urlStory && storyId !== this.currentState.storyId) {
-            const flow = getStoryFlow(storyId);
-            return {
-                storyId,
-                sceneId: flow?.start ?? 'act1',
-                locale: this.currentState.locale,
-            };
-        }
-
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
+        const raw = localStorage.getItem(this.storageKey);
+        let persisted: PersistedSession | null = null;
+        if (raw) {
             try {
-                const parsed = JSON.parse(saved);
-                if (this.validateSceneState(parsed)) {
-                    if (
-                        parsed.locale &&
-                        this.isLocale(parsed.locale) &&
-                        parsed.locale !== this.initialLocale
-                    ) {
-                        // Saved state belongs to a different locale; ignore it
-                        localStorage.removeItem(this.storageKey);
-                    } else {
-                        // Validate saved scene ID against the current flow
-                        if (
-                            !this.isValidSceneId(parsed.storyId, parsed.sceneId)
-                        ) {
-                            // Stale saved state (e.g. old scene_1); discard it
-                            localStorage.removeItem(this.storageKey);
-                        } else {
-                            const state: SceneState = {
-                                storyId: parsed.storyId,
-                                sceneId: parsed.sceneId,
-                                locale: this.initialLocale,
-                            };
-                            localStorage.setItem(
-                                this.storageKey,
-                                JSON.stringify(state)
-                            );
-                            return state;
-                        }
-                    }
-                } else {
-                    console.warn('Saved state has invalid structure, ignoring');
-                }
+                persisted = migratePersisted(
+                    JSON.parse(raw),
+                    this.initialLocale
+                );
             } catch (e) {
                 console.error('Failed to parse saved state', e);
             }
         }
-
-        return this.currentState;
+        const state = resolveInitialState(
+            params,
+            persisted,
+            this.initialLocale,
+            this.deps
+        );
+        this.applySession(state);
+        return state;
     }
 
-    saveState(state: SceneState): void {
-        const updatedState: SceneState = {
-            storyId: state.storyId,
-            sceneId: state.sceneId,
-            locale: this.initialLocale,
+    /** Write a resolved session into readerState and reload the scene payload. */
+    private applySession(state: ReaderSessionState): void {
+        readerState.storyId = state.storyId;
+        readerState.currentSceneId = state.sceneId;
+        readerState.locale = state.locale;
+        readerState.dialogueIndex = state.dialogueIndex;
+        const { dialogue, choice } = this.getSceneData(
+            state.storyId,
+            state.sceneId,
+            state.locale
+        );
+        readerState.dialogue = dialogue;
+        readerState.choice = choice;
+        readerState.canGoNext = this.hasNextScene(state.sceneId);
+    }
+
+    /** Persist the current progression as the v2 schema. */
+    private persist(): void {
+        const data = {
+            storyId: readerState.storyId,
+            sceneId: readerState.currentSceneId,
+            dialogueIndex: readerState.dialogueIndex,
+            locale: readerState.locale,
+            version: STORAGE_VERSION,
         };
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+    }
 
-        this.currentState = updatedState;
-
-        localStorage.setItem(this.storageKey, JSON.stringify(updatedState));
-
+    /** Sync the URL query to the current progression. First restore uses
+     *  replaceState so the initial entry is not duplicated in history. */
+    private syncUrl(useReplace: boolean): void {
         const url = new URL(window.location.href);
-        url.searchParams.set('story', updatedState.storyId);
-        url.searchParams.set('scene', updatedState.sceneId);
-        // Do not persist dialogue index here; it is provided via explicit links/bookmarks
-        window.history.pushState({}, '', url);
+        const params = serializeSessionParams({
+            storyId: readerState.storyId,
+            sceneId: readerState.currentSceneId,
+            dialogueIndex: readerState.dialogueIndex,
+            locale: readerState.locale,
+        });
+        url.search = params.toString();
+        if (useReplace) window.history.replaceState({}, '', url);
+        else window.history.pushState({}, '', url);
     }
 
     private getSceneData(
@@ -237,9 +189,17 @@ export class ReaderManager {
     }
 
     private navigateToScene(sceneId: string): void {
-        this.currentState.sceneId = sceneId;
-        this.saveState(this.currentState);
-        this.pushReaderState();
+        // A fresh scene always starts at dialogue index 0. (The throttled
+        // index-write path that keeps an in-scene index live lands in Task 4.)
+        const state: ReaderSessionState = {
+            storyId: readerState.storyId,
+            sceneId,
+            dialogueIndex: 0,
+            locale: readerState.locale,
+        };
+        this.applySession(state);
+        this.syncUrl(false);
+        this.persist();
     }
 
     handleChoice = (nextScene: string): void => {
@@ -253,7 +213,7 @@ export class ReaderManager {
             translations.reader.bookmarkPrompt,
             translations.reader.defaultBookmarkName +
                 ' ' +
-                this.currentState.sceneId
+                readerState.currentSceneId
         );
         if (!bookmarkName) return;
 
@@ -269,10 +229,10 @@ export class ReaderManager {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    storyId: this.currentState.storyId,
-                    sceneId: this.currentState.sceneId,
+                    storyId: readerState.storyId,
+                    sceneId: readerState.currentSceneId,
                     bookmarkName: storedBookmarkName,
-                    locale: this.currentState.locale,
+                    locale: readerState.locale,
                 }),
             });
 
@@ -283,8 +243,8 @@ export class ReaderManager {
 
             if (response.status === 401) {
                 const saved = this.localBookmarks.create({
-                    storyId: this.currentState.storyId,
-                    sceneId: this.currentState.sceneId,
+                    storyId: readerState.storyId,
+                    sceneId: readerState.currentSceneId,
                     bookmarkName: storedBookmarkName,
                 });
                 if (saved) {
@@ -312,10 +272,7 @@ export class ReaderManager {
 
     handleNext = async (): Promise<void> => {
         const translations = this.t;
-        const next = this.getLinearNextScene(
-            this.currentState.storyId,
-            this.currentState.sceneId
-        );
+        const next = this.getLinearNextScene(readerState.currentSceneId);
         if (next !== null) {
             this.navigateToScene(next);
         } else {
@@ -323,26 +280,9 @@ export class ReaderManager {
         }
     };
 
-    private pushReaderState(): void {
-        const { dialogue, choice } = this.getSceneData(
-            this.currentState.storyId,
-            this.currentState.sceneId,
-            this.currentState.locale
-        );
-
-        readerState.dialogue = dialogue;
-        readerState.choice = choice;
-        readerState.currentSceneId = this.currentState.sceneId;
-        readerState.storyId = this.currentState.storyId;
-        readerState.canGoNext = this.hasNextScene(this.currentState.sceneId);
-        readerState.locale = this.currentState.locale;
-    }
-
     renderReader(): void {
         const container = document.getElementById('reader-container');
         if (!container) return;
-
-        this.pushReaderState();
 
         if (this.readerInstance) {
             return;
@@ -365,15 +305,12 @@ export class ReaderManager {
                             this.handleBookmark(dialogueNumber),
                         onNext: this.handleNext,
                         showBookmarkButton: true,
-                        backUrl: `/${this.currentState.locale}/`,
-                        initialDialogueIndex: this.initialDialogueIndex,
+                        backUrl: `/${readerState.locale}/`,
+                        initialDialogueIndex: readerState.dialogueIndex,
                         onNavigate: (sceneId: string) =>
                             this.navigateToScene(sceneId),
                     },
                 });
-
-                // Only apply the initial dialogue index on the first render.
-                this.initialDialogueIndex = null;
 
                 this.readerInstance = {
                     unmount: () => {
@@ -411,8 +348,9 @@ export class ReaderManager {
     }
 
     initialize(): void {
-        this.currentState = this.loadInitialState();
-        this.saveState(this.currentState);
+        this.resolveAndApply();
+        this.syncUrl(true); // first sync collapses the duplicate history entry
+        this.persist();
         this.renderReader();
     }
 }

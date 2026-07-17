@@ -63,7 +63,6 @@
 {#if isMobile}
   <MobileNovelReader
     {dialogueIndex}
-    initialDialogueIndex={dialogueIndex}
     {onIndexChange}
     {dialogue}
     {choice}

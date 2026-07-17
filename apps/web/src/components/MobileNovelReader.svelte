@@ -6,7 +6,6 @@
     Locale,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories';
-  import { readerState } from '@/lib/reader-state.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
@@ -15,70 +14,51 @@
   import { House, Layers, ChevronLeft, History, Bookmark } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
 
+  // Pure controlled reader. All session state arrives via props; the only
+  // outward signal is onIndexChange. No readerState import.
   let {
+    dialogueIndex = 0,
+    onIndexChange = () => {},
+    dialogue = [],
+    choice = null,
+    storyId,
+    currentSceneId,
+    canGoNext = false,
+    locale = 'en',
     onChoice = () => {},
     onBookmark = () => {},
     onNext = () => {},
     onNavigate = () => {},
-    onIndexChange = () => {},
-    showBookmarkButton = true,
     backUrl = '/',
-    initialDialogueIndex = null,
-    dialogue: dialogueProp = undefined,
-    choice: choiceProp = undefined,
-    storyId: storyIdProp = undefined,
-    currentSceneId: currentSceneIdProp = undefined,
-    canGoNext: canGoNextProp = undefined,
-    locale: localeProp = undefined,
+    showBookmarkButton = true,
   }: {
-    onChoice?: (nextScene: string) => void;
-    onBookmark?: (dialogueNumber: number) => void;
-    onNext?: () => void;
-    onNavigate?: (sceneId: string) => void;
+    dialogueIndex?: number;
     onIndexChange?: (index: number) => void;
-    showBookmarkButton?: boolean;
-    backUrl?: string;
-    initialDialogueIndex?: number | null;
     dialogue?: DialogueEntry[];
     choice?: ChoiceDefinition | null;
     storyId?: string;
     currentSceneId?: string;
     canGoNext?: boolean;
     locale?: Locale;
+    onChoice?: (nextScene: string) => void;
+    onBookmark?: (dialogueNumber: number) => void;
+    onNext?: () => void;
+    onNavigate?: (sceneId: string) => void;
+    backUrl?: string;
+    showBookmarkButton?: boolean;
   } = $props();
 
-  let dialogue = $derived(
-    dialogueProp !== undefined ? dialogueProp : readerState.dialogue
-  );
-  let choice = $derived(
-    choiceProp !== undefined ? choiceProp : readerState.choice
-  );
-  let storyId = $derived(
-    storyIdProp !== undefined ? storyIdProp : readerState.storyId
-  );
-  let currentSceneId = $derived(
-    currentSceneIdProp !== undefined
-      ? currentSceneIdProp
-      : readerState.currentSceneId
-  );
-  let canGoNext = $derived(
-    canGoNextProp !== undefined ? canGoNextProp : readerState.canGoNext
-  );
-  let locale = $derived(
-    (localeProp !== undefined ? localeProp : readerState.locale) as Locale
-  );
-
-  let t = $derived(getTranslations(locale));
+  let t = $derived(getTranslations(locale as Locale));
 
   const typingSpeed = 30;
 
-  let currentDialogueIndex = $state(0);
+  // Component-local presentation state only.
   let isTyping = $state(false);
   let typingText = $state('');
   let skipTyping = $state(false);
   let sceneVersion = $state(0);
 
-  // Mobile UI state (Task 8 renders drawer/backlog from these flags).
+  // Mobile UI state.
   let chromeVisible = $state(false);
   let drawerOpen = $state(false);
   let backlogOpen = $state(false);
@@ -88,16 +68,19 @@
   // never at a fixed screen position.
   let tooltipAnchor = $state<{ left: number; bottom: number } | null>(null);
 
-  // Plain (non-reactive) trackers.
+  // Two-signal typewriter bookkeeping (plain variables — must NOT be reactive,
+  // otherwise writing them would re-trigger these effects).
   let lastDialogueRef: DialogueEntry[] | undefined = undefined;
-  let initialBookmarkConsumed = false;
+  let lastIndex = dialogueIndex;
+  let selfAdvance = false;
   // Always-mounted menu toggle; passed to overlays as the focus-restore target
   // so closing a drawer/sheet lands focus on a stable control instead of <body>
   // (the opener icon unmounts with the chrome bar in the same batch as open).
   let menuToggleButton: HTMLElement | undefined = $state();
 
-  let currentDialogue = $derived(dialogue[currentDialogueIndex]);
-  let isLastDialogue = $derived(currentDialogueIndex >= dialogue.length - 1);
+  // Derived view state — the visible reader is a pure function of the index.
+  let currentDialogue = $derived(dialogue[dialogueIndex]);
+  let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let showChoices = $derived(!!choice && !isTyping && isLastDialogue);
   let hasOverlay = $derived(drawerOpen || backlogOpen);
@@ -108,50 +91,12 @@
     sceneVersion++;
   });
 
-  // Initialize each scene when the dialogue array reference changes.
-  $effect(() => {
-    if (dialogue !== lastDialogueRef) {
-      lastDialogueRef = dialogue;
-      initScene();
-    }
-  });
+  // Scroll not needed on mobile (fixed-height reading box handles its own
+  // overflow), but keep a no-op-friendly helper in case future callers expect
+  // post-advance scrolling behavior parity with the desktop reader.
 
-  // Report the active dialogue index to the parent (ReaderShell) so a layout
-  // swap across the mobile/desktop breakpoint can re-seed the newly mounted
-  // reader at the user's current line instead of resetting to 0 or re-applying
-  // a stale bookmark offset.  Declared AFTER the scene-init effect so that on
-  // mount the seeded index is applied before this report runs, preventing the
-  // report from clobbering the parent's `liveIndex` (and thus the
-  // `initialDialogueIndex` prop) with the pre-seed value of 0.
-  $effect(() => {
-    onIndexChange(currentDialogueIndex);
-  });
-
-  function initScene(): void {
-    sceneVersion++;
-    skipTyping = false;
-    isTyping = false;
-    drawerOpen = false;
-    backlogOpen = false;
-
-    if (
-      !initialBookmarkConsumed &&
-      initialDialogueIndex !== null &&
-      initialDialogueIndex >= 0 &&
-      dialogue.length > 0
-    ) {
-      const target = Math.min(initialDialogueIndex, dialogue.length - 1);
-      currentDialogueIndex = target;
-      typingText = dialogue[target]?.dialogue ?? '';
-      initialBookmarkConsumed = true;
-      return;
-    }
-
-    currentDialogueIndex = 0;
-    typingText = '';
-    void startTyping(0);
-  }
-
+  // Typewriter runner. Captures sceneVersion for cancellation when a new
+  // scene or a new line supersedes the in-flight animation.
   async function startTyping(index: number): Promise<void> {
     const entry = dialogue[index];
     if (!entry) {
@@ -159,11 +104,13 @@
       typingText = '';
       return;
     }
-    skipTyping = false;
-    isTyping = true;
     typingText = '';
+    isTyping = true;
+    // Cleared as soon as typing kicks in (not on completion) so a popstate
+    // during active typing takes the snap branch instead of the animate one.
+    selfAdvance = false;
+    skipTyping = false;
     const version = sceneVersion;
-
     const result = await runTypewriter({
       text: entry.dialogue,
       speed: typingSpeed,
@@ -173,11 +120,50 @@
       isSkipped: () => skipTyping,
       isCancelled: () => version !== sceneVersion,
     });
-
     if (result === 'cancelled') return;
     typingText = entry.dialogue;
     isTyping = false;
   }
+
+  // Signal 1 — new scene (dialogue reference change): ALWAYS animate the line
+  // at dialogueIndex, even at index 0. Reset all presentation state first.
+  $effect(() => {
+    if (dialogue !== lastDialogueRef) {
+      lastDialogueRef = dialogue;
+      sceneVersion++;
+      isTyping = false;
+      skipTyping = false;
+      typingText = '';
+      selfAdvance = false;
+      // New scene dismisses any open overlay (the old scene's acts/history no
+      // longer apply).
+      drawerOpen = false;
+      backlogOpen = false;
+      // Sync lastIndex so Signal 2 does not also fire for this same tick.
+      lastIndex = dialogueIndex;
+      if (dialogue.length > 0) {
+        void startTyping(dialogueIndex);
+      }
+    }
+  });
+
+  // Signal 2 — index change within the SAME scene. selfAdvance distinguishes
+  // a user-driven advance (animate) from an external change like popstate (snap).
+  $effect(() => {
+    if (dialogue === lastDialogueRef && dialogueIndex !== lastIndex) {
+      if (selfAdvance) {
+        sceneVersion++;
+        void startTyping(dialogueIndex);
+      } else {
+        // External change: reveal the full line immediately, no animation.
+        // (typingText write intentionally omitted — the template renders
+        // currentDialogue.dialogue directly when isTyping === false.)
+        sceneVersion++;
+        isTyping = false;
+      }
+    }
+    lastIndex = dialogueIndex;
+  });
 
   function advance(): void {
     // An open overlay swallows the tap to close itself.
@@ -186,7 +172,8 @@
       else drawerOpen = false;
       return;
     }
-    // First tap during typing completes the line.
+    // First tap during typing only skips the animation; it must NOT advance
+    // the index (the parent owns the index).
     if (isTyping) {
       skipTyping = true;
       return;
@@ -196,9 +183,9 @@
       chromeVisible = false;
       return;
     }
-    if (currentDialogueIndex < dialogue.length - 1) {
-      currentDialogueIndex++;
-      void startTyping(currentDialogueIndex);
+    if (dialogueIndex < dialogue.length - 1) {
+      selfAdvance = true;
+      onIndexChange(dialogueIndex + 1);
     } else if (canGoNext && !choice) {
       onNext();
     }
@@ -208,12 +195,10 @@
     // Overlays own their own taps; never step the scene from under them.
     if (hasOverlay) return;
     // At the start of the scene there is nowhere to go back to.
-    if (currentDialogueIndex <= 0) return;
-    skipTyping = false;
-    isTyping = false;
-    sceneVersion++; // cancel any in-flight typewriter for this scene
-    currentDialogueIndex--;
-    typingText = dialogue[currentDialogueIndex]?.dialogue ?? '';
+    if (dialogueIndex <= 0) return;
+    // Parent owns the index; emit and let Signal 2 animate the prior line.
+    selfAdvance = true;
+    onIndexChange(dialogueIndex - 1);
   }
 
   // Long-press peek handlers: capture the held control's viewport rect so the
@@ -255,19 +240,19 @@
 
   let progressText = $derived(
     t.reader.lineProgress
-      .replace('{current}', String(currentDialogueIndex + 1))
+      .replace('{current}', String(dialogueIndex + 1))
       .replace('{total}', String(dialogue.length))
   );
 
   let progressFraction = $derived(
     dialogue.length > 0
-      ? ((currentDialogueIndex + 1) / dialogue.length) * 100
+      ? ((dialogueIndex + 1) / dialogue.length) * 100
       : 0
   );
 
   let backlogLines = $derived(
     dialogue
-      .slice(0, currentDialogueIndex + 1)
+      .slice(0, dialogueIndex + 1)
       .map(entry => ({
         characterName: resolveCharacterName(entry, t),
         text: entry.dialogue,
@@ -360,7 +345,7 @@
             type="button"
             class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
             aria-label={t.reader.bookmark}
-            onclick={() => onBookmark(currentDialogueIndex + 1)}
+            onclick={() => onBookmark(dialogueIndex + 1)}
             use:longpress={{
               onLongPress: (node) => showTooltip(node, t.reader.bookmark),
               onRelease: hideTooltip,
@@ -412,7 +397,7 @@
           type="button"
           class="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm disabled:opacity-40"
           aria-label={t.reader.previousLine}
-          disabled={currentDialogueIndex === 0}
+          disabled={dialogueIndex === 0}
           onclick={goBack}
           use:longpress={{
             onLongPress: (node) => showTooltip(node, t.reader.previousLine),
@@ -449,9 +434,9 @@
             advance();
           }}
         >
-          {typingText}{#if isTyping}<span
-              class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
-            ></span>{/if}
+          {#if isTyping}{typingText}<span
+            class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
+          ></span>{:else}{currentDialogue?.dialogue}{/if}
         </p>
         {#if !isTyping}
           <div class="mt-2 text-right text-blue-500">

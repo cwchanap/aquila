@@ -44,6 +44,11 @@ export class ReaderManager {
     // write.
     private replaceGen = 0;
     private persistTimer: ReturnType<typeof setTimeout> | null = null;
+    // Guard against double-invocation: a second initialize() would register
+    // a duplicate set of popstate/pagehide/visibilitychange listeners and
+    // re-run resolveAndApply/syncUrl/persist. renderReader has its own
+    // readerInstance guard, but the listeners do not.
+    private initialized = false;
 
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
     private static readonly LEGACY_KEYS = [
@@ -157,7 +162,10 @@ export class ReaderManager {
         readerState.canGoNext = this.hasNextScene(state.sceneId);
     }
 
-    /** Persist the current progression as the v2 schema. */
+    /** Persist the current progression as the v2 schema. Catches storage
+     *  errors (Safari private mode throws QuotaExceededError; quota-exceeded
+     *  throws on other browsers) so the pagehide path and normal navigation
+     *  do not propagate an uncaught throw out of the event handler. */
     private persist(): void {
         const data = {
             storyId: readerState.storyId,
@@ -166,7 +174,11 @@ export class ReaderManager {
             locale: readerState.locale,
             version: STORAGE_VERSION,
         };
-        localStorage.setItem(this.storageKey, JSON.stringify(data));
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to persist reader state', e);
+        }
     }
 
     /** Sync the URL query to the current progression. First restore uses
@@ -519,6 +531,8 @@ export class ReaderManager {
     };
 
     initialize(): void {
+        if (this.initialized) return;
+        this.initialized = true;
         this.resolveAndApply();
         this.syncUrl(true); // first sync collapses the duplicate history entry
         this.persist();
@@ -549,5 +563,8 @@ export class ReaderManager {
             clearTimeout(this.persistTimer);
             this.persistTimer = null;
         }
+        // Reset so a future SPA teardown path could re-initialize the same
+        // manager. Not used by the full-page reader app today.
+        this.initialized = false;
     }
 }

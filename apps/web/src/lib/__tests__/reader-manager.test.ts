@@ -1487,4 +1487,90 @@ describe('ReaderManager', () => {
             expect(mockStorage.setItem).not.toHaveBeenCalled();
         });
     });
+
+    describe('persist error handling', () => {
+        it('persist() swallows QuotaExceededError from setItem (Safari private mode)', () => {
+            // Safari private mode + quota-exceeded throw on setItem. An
+            // uncaught throw on the pagehide path would propagate to the
+            // browser and prevent any subsequent pagehide logic from running.
+            // persist() must catch, log, and continue.
+            const errorSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+            mockStorage.setItem.mockImplementationOnce(() => {
+                throw new DOMException('QuotaExceededError');
+            });
+
+            manager = new ReaderManager('en');
+            // initialize() calls persist() internally — must not throw.
+            manager.initialize();
+
+            expect(mockStorage.setItem).toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalled();
+            errorSpy.mockRestore();
+        });
+
+        it('pagehide does not throw when persist() fails', async () => {
+            // The pagehide path is the most critical: an uncaught throw here
+            // would escape the event handler and could prevent flushPendingReplace
+            // side effects from being observed by the browser. Verify the
+            // pagehide event handler completes without rethrowing.
+            const errorSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+            mockStorage.setItem.mockImplementation(() => {
+                throw new DOMException('QuotaExceededError');
+            });
+
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }] },
+                choices: {},
+            });
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+
+            expect(() =>
+                window.dispatchEvent(new Event('pagehide'))
+            ).not.toThrow();
+            errorSpy.mockRestore();
+        });
+    });
+
+    describe('initialize double-invocation guard', () => {
+        it('initialize() is idempotent — second call does not duplicate listeners', () => {
+            // Without a guard, a second initialize() would add a duplicate
+            // set of popstate/pagehide/visibilitychange listeners; stale
+            // handlers would then fire twice on each event. Verify by
+            // counting addEventListener calls across two initialize() calls.
+            const popstateSpy = vi.spyOn(window, 'addEventListener');
+            const popstateBefore = popstateSpy.mock.calls.filter(
+                ([type]) => type === 'popstate'
+            ).length;
+
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [] },
+                choices: {},
+            });
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+            manager = new ReaderManager('en');
+            manager.initialize();
+            const afterFirst = popstateSpy.mock.calls.filter(
+                ([type]) => type === 'popstate'
+            ).length;
+            expect(afterFirst).toBe(popstateBefore + 1);
+
+            manager.initialize(); // second call must be a no-op for listeners
+            const afterSecond = popstateSpy.mock.calls.filter(
+                ([type]) => type === 'popstate'
+            ).length;
+            expect(afterSecond).toBe(afterFirst); // no new popstate listener
+            popstateSpy.mockRestore();
+        });
+    });
 });

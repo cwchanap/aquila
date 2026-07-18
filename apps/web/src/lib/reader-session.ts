@@ -163,6 +163,10 @@ export function resolveInitialState(
     }
 
     // Tier 2: persisted (only when URL had no valid story); ignore locale mismatch.
+    // The locale check is resolveInitialState's own contract — it is exercised
+    // by direct unit tests that pass a persisted object bypassing
+    // migratePersisted, so it is NOT dead despite migratePersisted also
+    // filtering locale mismatches when called via ReaderManager.resolveAndApply.
     if (persisted && persisted.locale === locale) {
         const flow = deps.flow(persisted.storyId);
         const validated = validateSessionState(

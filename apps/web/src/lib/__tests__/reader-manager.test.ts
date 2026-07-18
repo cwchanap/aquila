@@ -112,7 +112,7 @@ describe('ReaderManager', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
-        document.body.innerHTML = '';
+        document.body.replaceChildren();
         readerState.reset();
     });
 

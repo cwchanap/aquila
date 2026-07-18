@@ -31,6 +31,15 @@ export class ReaderManager {
     // rapid onIndexChange reports so each animation frame produces at most one
     // replaceState; persistTimer debounces the localStorage write.
     private rafId: number | null = null;
+    // True when rafId holds a setTimeout fallback handle (rAF unavailable).
+    // The cancel path branches on this so setTimeout handles are cleared with
+    // clearTimeout and rAF handles with cancelAnimationFrame.
+    private rafIsTimeout = false;
+    // Generation counter for the pending replaceState callback. Bumped on
+    // cancel/flush/destroy so a queued fallback (setTimeout) callback cannot
+    // later invoke syncUrl after popstate/pagehide has torn down the pending
+    // write.
+    private replaceGen = 0;
     private persistTimer: ReturnType<typeof setTimeout> | null = null;
 
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
@@ -174,8 +183,10 @@ export class ReaderManager {
     /** Flush a pending throttled replaceState immediately (scene change / pagehide). */
     private flushPendingReplace(): void {
         if (this.rafId !== null) {
-            cancelAnimationFrame(this.rafId);
+            if (this.rafIsTimeout) clearTimeout(this.rafId);
+            else cancelAnimationFrame(this.rafId);
             this.rafId = null;
+            this.replaceGen++; // invalidate any queued fallback callback
             this.syncUrl(true);
         }
     }
@@ -183,25 +194,33 @@ export class ReaderManager {
     /** Cancel a pending throttled replaceState without writing (popstate). */
     private cancelPendingReplace(): void {
         if (this.rafId !== null) {
-            cancelAnimationFrame(this.rafId);
+            if (this.rafIsTimeout) clearTimeout(this.rafId);
+            else cancelAnimationFrame(this.rafId);
             this.rafId = null;
         }
+        this.replaceGen++; // invalidate any queued fallback callback
     }
 
     /** Coalesce index changes into one replaceState per animation frame. */
     private scheduleReplace(): void {
         if (this.rafId !== null) return; // already scheduled -> coalesce
         // The setTimeout fallback is practically dead code (rAF is always
-        // available in the browser, the only environment this module runs in);
-        // the `number` cast keeps rafId a plain number so cancelAnimationFrame
-        // works uniformly without a Timeout/number union.
-        const raf: (cb: FrameRequestCallback) => number =
-            typeof window !== 'undefined' && window.requestAnimationFrame
-                ? window.requestAnimationFrame.bind(window)
-                : (cb: FrameRequestCallback) =>
-                      setTimeout(() => cb(0), 0) as unknown as number;
+        // available in the browser, the only environment this module runs in),
+        // but we still track rafIsTimeout so the cancel path uses clearTimeout
+        // for fallback handles and cancelAnimationFrame for rAF handles. The
+        // replaceGen guard also ensures a queued fallback callback cannot fire
+        // syncUrl after popstate/pagehide has cancelled the pending replace.
+        const hasRaf =
+            typeof window !== 'undefined' && !!window.requestAnimationFrame;
+        const gen = ++this.replaceGen;
+        const raf: (cb: FrameRequestCallback) => number = hasRaf
+            ? window.requestAnimationFrame.bind(window)
+            : (cb: FrameRequestCallback) =>
+                  setTimeout(() => cb(0), 0) as unknown as number;
+        this.rafIsTimeout = !hasRaf;
         this.rafId = raf(() => {
             this.rafId = null;
+            if (gen !== this.replaceGen) return; // superseded/cancelled
             this.syncUrl(true);
         });
     }
@@ -453,14 +472,22 @@ export class ReaderManager {
 
     /** pagehide / visibilitychange->hidden handler: flush any pending line
      *  replace and persist so the URL and storage are coherent if the tab is
-     *  restored. */
+     *  restored. persist() runs unconditionally because popstate navigation
+     *  mutates readerState without scheduling a debounce timer — storage must
+     *  be reconciled here regardless of whether a persistTimer was pending. */
     private onPageHide = (): void => {
         this.flushPendingReplace();
         if (this.persistTimer !== null) {
             clearTimeout(this.persistTimer);
             this.persistTimer = null;
-            this.persist();
         }
+        this.persist();
+    };
+
+    /** Named visibilitychange handler so destroy() can remove the exact
+     *  listener reference that initialize() registered. */
+    private onVisibilityChange = (): void => {
+        if (document.visibilityState === 'hidden') this.onPageHide();
     };
 
     initialize(): void {
@@ -469,12 +496,29 @@ export class ReaderManager {
         this.persist();
         this.renderReader();
 
-        // Full-page app: no destroy(). Listeners stay registered for the
-        // lifetime of the page and react to browser Back/Forward and tab hide.
+        // Listeners stay registered for the lifetime of the page and react to
+        // browser Back/Forward and tab hide. destroy() tears them down for
+        // test isolation and any future SPA teardown path.
         window.addEventListener('popstate', this.onPopState);
         window.addEventListener('pagehide', this.onPageHide);
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') this.onPageHide();
-        });
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
+
+    /** Remove lifecycle listeners and clear pending timers. Intended for test
+     *  isolation and any future SPA teardown path; the full-page app does not
+     *  call this in production. Uses the same handler references registered in
+     *  initialize() so removeEventListener actually detaches them. */
+    destroy(): void {
+        window.removeEventListener('popstate', this.onPopState);
+        window.removeEventListener('pagehide', this.onPageHide);
+        document.removeEventListener(
+            'visibilitychange',
+            this.onVisibilityChange
+        );
+        this.cancelPendingReplace();
+        if (this.persistTimer !== null) {
+            clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+        }
     }
 }

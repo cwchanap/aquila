@@ -50,6 +50,13 @@ describe('parseDialogueParam', () => {
         expect(parseDialogueParam('abc')).toBeNull();
         expect(parseDialogueParam(null)).toBeNull();
     });
+    it('returns null for partially numeric values (no silent coercion)', () => {
+        expect(parseDialogueParam('2junk')).toBeNull();
+        expect(parseDialogueParam('1.5')).toBeNull();
+        expect(parseDialogueParam(' 3')).toBeNull();
+        expect(parseDialogueParam('3 ')).toBeNull();
+        expect(parseDialogueParam('+2')).toBeNull();
+    });
 });
 
 describe('validateSessionState', () => {

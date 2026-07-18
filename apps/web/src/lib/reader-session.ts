@@ -40,9 +40,12 @@ function clampIndex(index: number, length: number): number {
     return Math.min(Math.max(0, Math.trunc(index)), length - 1);
 }
 
-/** Parse URL `dialogue=N` (1-based). Returns 0-based index, or null if absent/invalid. */
+/** Parse URL `dialogue=N` (1-based). Returns 0-based index, or null if absent/invalid.
+ *  The entire raw value must consist only of digits, so partially numeric
+ *  inputs like "2junk" or "1.5" are rejected rather than silently coerced. */
 export function parseDialogueParam(raw: string | null): number | null {
     if (raw === null) return null;
+    if (!/^\d+$/.test(raw)) return null;
     const n = parseInt(raw, 10);
     if (Number.isNaN(n) || n < 1) return null;
     return n - 1;

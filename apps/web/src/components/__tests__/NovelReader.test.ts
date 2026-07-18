@@ -234,6 +234,22 @@ describe('NovelReader — controlled contract', () => {
             document.querySelectorAll('.animate-pulse').length
         ).toBeGreaterThan(0);
     });
+
+    it('snaps (does not animate) on first mount with a nonzero dialogueIndex (bookmark/deep-link restore)', async () => {
+        // Regression guard for the first-mount restore case. When the reader
+        // mounts with dialogueIndex > 0 (bookmark, deep link, or breakpoint
+        // remount), Signal 1 must NOT animate the active line — the user
+        // expects it fully revealed. A first Enter/click must advance, not
+        // just skip typing.
+        const { onIndexChange } = renderReader({ dialogueIndex: 1 });
+        // No typewriter cursor should be present (snap, not animate).
+        expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
+        // Active line is fully visible immediately, no timers needed.
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+        // First Enter advances (does NOT consume the tap as a skip-typing).
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onIndexChange).toHaveBeenCalledWith(2);
+    });
 });
 
 describe('NovelReader — basic rendering', () => {

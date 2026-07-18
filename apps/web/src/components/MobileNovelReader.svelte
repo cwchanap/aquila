@@ -127,8 +127,15 @@
 
   // Signal 1 — new scene (dialogue reference change): ALWAYS animate the line
   // at dialogueIndex, even at index 0. Reset all presentation state first.
+  // EXCEPTION: on the very first mount (lastDialogueRef === undefined) with a
+  // nonzero dialogueIndex, the index came from a bookmark/deep-link restore or
+  // a responsive-breakpoint remount — the user expects the active line fully
+  // revealed, not re-typed. Snapping (isTyping stays false) makes the template
+  // render currentDialogue?.dialogue directly. A first mount at index 0 is a
+  // fresh scene and still animates per spec.
   $effect(() => {
     if (dialogue !== lastDialogueRef) {
+      const isFirstMount = lastDialogueRef === undefined;
       lastDialogueRef = dialogue;
       sceneVersion++;
       isTyping = false;
@@ -141,7 +148,7 @@
       backlogOpen = false;
       // Sync lastIndex so Signal 2 does not also fire for this same tick.
       lastIndex = dialogueIndex;
-      if (dialogue.length > 0) {
+      if (dialogue.length > 0 && !(isFirstMount && dialogueIndex > 0)) {
         void startTyping(dialogueIndex);
       }
     }
@@ -485,7 +492,11 @@
       open={drawerOpen}
       {locale}
       restoreFocusTarget={menuToggleButton ?? null}
-      onNavigate={(sceneId: string) => onNavigate(sceneId)}
+      onNavigate={(sceneId: string) => {
+        if (sceneId !== currentSceneId) {
+          onNavigate(sceneId);
+        }
+      }}
       onClose={() => (drawerOpen = false)}
     />
   {/if}

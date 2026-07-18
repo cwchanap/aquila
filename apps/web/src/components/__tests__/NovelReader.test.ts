@@ -182,6 +182,28 @@ describe('NovelReader — controlled contract', () => {
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
 
+    it('snaps (does not animate) when a popstate overrides the index in the same tick as an advance', async () => {
+        // Regression guard for the same-tick selfAdvance race (spec §239-241).
+        // A user advance sets selfAdvanceTarget = currentIndex + 1 and emits
+        // onIndexChange. If a popstate lands in the same effect batch and the
+        // parent rerenders with a DIFFERENT index, Signal 2 must snap (the
+        // popstate's index !== the advance's target) rather than animate.
+        // Under the old boolean selfAdvance, the flag would still be true and
+        // the popstate's line would animate — violating the spec requirement
+        // that popstate always snaps.
+        const { rerenderRaw } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync(); // line 0 fully typed
+        // User clicks Continue: sets selfAdvanceTarget = 1, emits onIndexChange(1).
+        await fireEvent.click(screen.getByText('Continue'));
+        // Before the parent lifts the index, a popstate overrides to index 2.
+        // Do NOT settle timers — observe the snap state immediately after rerender.
+        await rerenderRaw({ dialogueIndex: 2 });
+        // No typewriter cursor → Signal 2 took the snap branch, not the animate one.
+        expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
+        // The popstate's target line is fully visible (snap reveals it immediately).
+        expect(screen.getByText('Third dialogue line.')).toBeInTheDocument();
+    });
+
     it('animates (does not snap) when scene ref and index both change — lastIndex race regression', async () => {
         // Regression guard for `lastIndex = dialogueIndex` in Signal 1.
         // When a rerender swaps the dialogue array reference AND resets

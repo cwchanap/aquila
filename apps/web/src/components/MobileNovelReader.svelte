@@ -72,7 +72,14 @@
   // otherwise writing them would re-trigger these effects).
   let lastDialogueRef: DialogueEntry[] | undefined = undefined;
   let lastIndex = dialogueIndex;
-  let selfAdvance = false;
+  // The exact index a self-initiated advance/goBack expects to land on, or null
+  // when the next index change is external (popstate/restore/breakpoint swap).
+  // Tying the flag to the TARGET index rather than a boolean fixes the
+  // same-tick race where a popstate overrides the index between advance/goBack
+  // and Signal 2: a boolean would still be true and animate the popstate's
+  // line, but the target-index check fails (popstate's index !== target) and
+  // snaps per spec §239-241.
+  let selfAdvanceTarget: number | null = null;
   // Always-mounted menu toggle; passed to overlays as the focus-restore target
   // so closing a drawer/sheet lands focus on a stable control instead of <body>
   // (the opener icon unmounts with the chrome bar in the same batch as open).
@@ -102,9 +109,6 @@
     }
     typingText = '';
     isTyping = true;
-    // Cleared as soon as typing kicks in (not on completion) so a popstate
-    // during active typing takes the snap branch instead of the animate one.
-    selfAdvance = false;
     skipTyping = false;
     const version = sceneVersion;
     const result = await runTypewriter({
@@ -130,7 +134,7 @@
       isTyping = false;
       skipTyping = false;
       typingText = '';
-      selfAdvance = false;
+      selfAdvanceTarget = null;
       // New scene dismisses any open overlay (the old scene's acts/history no
       // longer apply).
       drawerOpen = false;
@@ -143,11 +147,18 @@
     }
   });
 
-  // Signal 2 — index change within the SAME scene. selfAdvance distinguishes
-  // a user-driven advance (animate) from an external change like popstate (snap).
+  // Signal 2 — index change within the SAME scene. selfAdvanceTarget
+  // distinguishes a user-driven advance/goBack (animate) from an external
+  // change like popstate (snap). The target is cleared BEFORE branching so a
+  // same-tick popstate that overrides the index cannot see a stale target on a
+  // later run; and the target-index check (=== dialogueIndex) ensures that
+  // even if the popstate lands in the SAME effect batch as the advance, the
+  // popstate's index won't match the advance's target → snap, per spec §239-241.
   $effect(() => {
     if (dialogue === lastDialogueRef && dialogueIndex !== lastIndex) {
-      if (selfAdvance) {
+      const wasSelfAdvance = selfAdvanceTarget === dialogueIndex;
+      selfAdvanceTarget = null;
+      if (wasSelfAdvance) {
         sceneVersion++;
         void startTyping(dialogueIndex);
       } else {
@@ -180,7 +191,7 @@
       return;
     }
     if (dialogueIndex < dialogue.length - 1) {
-      selfAdvance = true;
+      selfAdvanceTarget = dialogueIndex + 1;
       onIndexChange(dialogueIndex + 1);
     } else if (canGoNext && !choice) {
       onNext();
@@ -193,7 +204,7 @@
     // At the start of the scene there is nowhere to go back to.
     if (dialogueIndex <= 0) return;
     // Parent owns the index; emit and let Signal 2 animate the prior line.
-    selfAdvance = true;
+    selfAdvanceTarget = dialogueIndex - 1;
     onIndexChange(dialogueIndex - 1);
   }
 

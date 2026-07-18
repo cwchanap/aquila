@@ -16,6 +16,7 @@ import {
     serializeSessionParams,
     sceneExists,
     STORAGE_VERSION,
+    DEFAULT_SCENE_ID,
     type ResolveDeps,
     type ReaderSessionState,
     type PersistedSession,
@@ -30,10 +31,10 @@ export class ReaderManager {
     // Throttled-write state for line-by-line index changes. rAF coalesces
     // rapid onIndexChange reports so each animation frame produces at most one
     // replaceState; persistTimer debounces the localStorage write.
-    private rafId: number | null = null;
-    // True when rafId holds a setTimeout fallback handle (rAF unavailable).
-    // The cancel path branches on this so setTimeout handles are cleared with
-    // clearTimeout and rAF handles with cancelAnimationFrame.
+    // rafId holds either a rAF handle (number) or a setTimeout fallback handle
+    // (ReturnType<typeof setTimeout>); rafIsTimeout discriminates which so the
+    // cancel path uses clearTimeout vs cancelAnimationFrame.
+    private rafId: number | ReturnType<typeof setTimeout> | null = null;
     private rafIsTimeout = false;
     // Generation counter for the pending replaceState callback. Bumped on
     // cancel/flush/destroy so a queued fallback (setTimeout) callback cannot
@@ -63,7 +64,8 @@ export class ReaderManager {
         // first resolveAndApply() runs.
         const storyId = this.deps.defaultStoryId;
         readerState.storyId = storyId;
-        readerState.currentSceneId = getStoryFlow(storyId)?.start ?? 'act1';
+        readerState.currentSceneId =
+            getStoryFlow(storyId)?.start ?? DEFAULT_SCENE_ID;
         readerState.locale = locale;
         readerState.dialogueIndex = 0;
 
@@ -184,7 +186,7 @@ export class ReaderManager {
     private flushPendingReplace(): void {
         if (this.rafId !== null) {
             if (this.rafIsTimeout) clearTimeout(this.rafId);
-            else cancelAnimationFrame(this.rafId);
+            else cancelAnimationFrame(this.rafId as number);
             this.rafId = null;
             this.replaceGen++; // invalidate any queued fallback callback
             this.syncUrl(true);
@@ -195,7 +197,7 @@ export class ReaderManager {
     private cancelPendingReplace(): void {
         if (this.rafId !== null) {
             if (this.rafIsTimeout) clearTimeout(this.rafId);
-            else cancelAnimationFrame(this.rafId);
+            else cancelAnimationFrame(this.rafId as number);
             this.rafId = null;
         }
         this.replaceGen++; // invalidate any queued fallback callback
@@ -213,12 +215,15 @@ export class ReaderManager {
         const hasRaf =
             typeof window !== 'undefined' && !!window.requestAnimationFrame;
         const gen = ++this.replaceGen;
-        const raf: (cb: FrameRequestCallback) => number = hasRaf
-            ? window.requestAnimationFrame.bind(window)
-            : (cb: FrameRequestCallback) =>
-                  setTimeout(() => cb(0), 0) as unknown as number;
         this.rafIsTimeout = !hasRaf;
-        this.rafId = raf(() => {
+        const schedule = (cb: FrameRequestCallback): void => {
+            if (hasRaf) {
+                this.rafId = window.requestAnimationFrame(cb);
+            } else {
+                this.rafId = setTimeout(() => cb(0), 0);
+            }
+        };
+        schedule(() => {
             this.rafId = null;
             if (gen !== this.replaceGen) return; // superseded/cancelled
             this.syncUrl(true);

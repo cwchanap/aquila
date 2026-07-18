@@ -17,6 +17,12 @@ export interface PersistedSession {
 
 export const STORAGE_VERSION = 2;
 
+/** Fallback scene id when a flow has no `start` field. Used by both
+ *  `defaultState` (here) and `ReaderManager`'s constructor seeding of
+ *  `readerState` before the first `resolveAndApply()`. Centralized so the two
+ *  sites cannot drift. */
+export const DEFAULT_SCENE_ID = 'act1';
+
 export type StoryFlowProvider = (storyId: string) => FlowConfig | undefined;
 export type DialogueProvider = (
     storyId: string,
@@ -113,7 +119,7 @@ function defaultState(deps: ResolveDeps, locale: Locale): ReaderSessionState {
     const flow = deps.flow(deps.defaultStoryId);
     return {
         storyId: deps.defaultStoryId,
-        sceneId: flow?.start ?? 'act1',
+        sceneId: flow?.start ?? DEFAULT_SCENE_ID,
         dialogueIndex: 0,
         locale,
     };

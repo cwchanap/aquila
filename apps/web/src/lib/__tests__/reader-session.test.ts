@@ -288,4 +288,35 @@ describe('migratePersisted', () => {
         };
         expect(migratePersisted(v2, 'en')).toBeNull();
     });
+    it('preserves a negative dialogueIndex so validateSessionState can reject it', () => {
+        // Regression: Math.max(0, ...) previously coerced -1 to 0, bypassing
+        // the validator's "negative = invalid" contract and accepting a
+        // malformed record that should fall through to the default session.
+        const corrupted = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            dialogueIndex: -1,
+            locale: 'en',
+            version: 2,
+        };
+        const migrated = migratePersisted(corrupted, 'en');
+        expect(migrated).not.toBeNull();
+        expect(migrated?.dialogueIndex).toBe(-1);
+        // The full Tier-2 path must reject the malformed record and fall
+        // through to the default session, not restore scene act2.
+        const params = new URLSearchParams(); // no URL story -> Tier 2
+        const state = resolveInitialState(params, migrated, 'en', {
+            flow: () => ({
+                start: 'act1',
+                nodes: [
+                    { kind: 'scene', id: 'act1', sceneId: 'act1', next: null },
+                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+                ],
+            }),
+            dialogue: () => [],
+            defaultStoryId: 'train_adventure',
+        });
+        expect(state.sceneId).toBe('act1');
+        expect(state.dialogueIndex).toBe(0);
+    });
 });

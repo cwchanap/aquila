@@ -182,9 +182,14 @@ export function migratePersisted(
     if (typeof s.storyId !== 'string' || typeof s.sceneId !== 'string')
         return null;
     if (!isLocale(s.locale) || s.locale !== locale) return null;
+    // Preserve the raw numeric value so validateSessionState can enforce its
+    // own contract: negative/NaN indices are invalid and must fall through to
+    // the default session. Coercing negatives to 0 here would bypass the
+    // validator and accept a malformed record (restoring a non-default scene).
+    // Missing/non-numeric values default to 0 (the "allow absent as 0" rule).
     const dialogueIndex =
         typeof s.dialogueIndex === 'number' && !Number.isNaN(s.dialogueIndex)
-            ? Math.max(0, s.dialogueIndex)
+            ? s.dialogueIndex
             : 0;
     return {
         storyId: s.storyId,

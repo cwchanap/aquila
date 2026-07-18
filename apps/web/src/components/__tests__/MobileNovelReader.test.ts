@@ -335,6 +335,60 @@ describe('MobileNovelReader', () => {
             expect(getStoryFlow).toHaveBeenCalled();
         });
 
+        it('does NOT call onNavigate when the drawer selects the already-current act (same-scene guard)', async () => {
+            // Regression: MobileNovelReader previously forwarded every drawer
+            // selection to onNavigate without the desktop reader's same-scene
+            // guard. goToScene unconditionally resets dialogueIndex to 0 and
+            // pushes/persists, so tapping the current act lost the user's
+            // line progress. The guard must skip onNavigate for the current
+            // scene while still forwarding a different-scene selection.
+            const { getStoryFlow } = await import('@aquila/stories');
+            const flowWithScenes = {
+                start: 'b1a_act1',
+                nodes: [
+                    {
+                        kind: 'scene',
+                        id: 'b1a_act1',
+                        sceneId: 'b1a_act1',
+                        next: 'b1a_act2',
+                    },
+                    {
+                        kind: 'scene',
+                        id: 'b1a_act2',
+                        sceneId: 'b1a_act2',
+                        next: null,
+                    },
+                ],
+            };
+            vi.mocked(getStoryFlow).mockReturnValue(
+                flowWithScenes as ReturnType<typeof getStoryFlow>
+            );
+
+            const onNavigate = vi.fn();
+            renderReader({
+                dialogueIndex: 2,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            // Act buttons are the buttons inside the dialog without aria-label
+            // (the scrim/close button carry aria-label "Close acts panel").
+            const dialog = screen.getByRole('dialog');
+            const actButtons = within(dialog)
+                .getAllByRole('button')
+                .filter(b => !b.getAttribute('aria-label'));
+            const currentAct = actButtons.find(
+                b => b.textContent?.trim() === 'Act 1'
+            )!;
+            await fireEvent.click(currentAct);
+            // Same-scene selection: guard must suppress onNavigate so the
+            // manager's goToScene does not reset dialogueIndex to 0.
+            expect(onNavigate).not.toHaveBeenCalled();
+        });
+
         it('renders the chrome as labeled icon buttons with a progress bar', async () => {
             renderReader({
                 dialogueIndex: 0,

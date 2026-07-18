@@ -1042,7 +1042,13 @@ describe('ReaderManager', () => {
                 writable: true,
             });
             mockGetStoryContent.mockReturnValue({
-                dialogue: { act1: [{ dialogue: 'a' }] },
+                dialogue: {
+                    act1: [
+                        { dialogue: 'a' },
+                        { dialogue: 'b' },
+                        { dialogue: 'c' },
+                    ],
+                },
                 choices: {},
             });
             setupContainer();
@@ -1062,6 +1068,54 @@ describe('ReaderManager', () => {
             expect(replaceState).not.toHaveBeenCalled(); // throttled
             raf.flush();
             expect(replaceState).toHaveBeenCalled();
+        });
+
+        it('onIndexChange clamps out-of-range indices into dialogue bounds (defense-in-depth)', async () => {
+            // The spec's invariant is that readerState.dialogueIndex is always
+            // in [0, dialogue.length-1]. The controlled readers bound their
+            // own navigation, but the write path enforces the invariant too
+            // rather than trusting every caller. An over-range index clamps
+            // to the last valid line; a negative index clamps to 0.
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState: vi.fn() },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [
+                        { dialogue: 'a' },
+                        { dialogue: 'b' },
+                        { dialogue: 'c' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            // Over-range -> clamp to last valid index (2).
+            onIndexChange(99);
+            expect(readerState.dialogueIndex).toBe(2);
+            // Negative -> clamp to 0.
+            onIndexChange(-5);
+            expect(readerState.dialogueIndex).toBe(0);
+            // In-range passes through unchanged.
+            onIndexChange(1);
+            expect(readerState.dialogueIndex).toBe(1);
+            // Empty-dialogue scene -> index 0 is the only valid value.
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [] },
+                choices: {},
+            });
+            manager.goToScene('act1');
+            onIndexChange(5);
+            expect(readerState.dialogueIndex).toBe(0);
+            // The clamp's contract is solely about the stored value;
+            // scheduleReplace still runs (it does not short-circuit on
+            // same-value writes), so rAF state is not part of this contract.
         });
 
         it('goToScene flushes pending replaceState before pushState', async () => {
@@ -1304,6 +1358,133 @@ describe('ReaderManager', () => {
             window.dispatchEvent(new PopStateEvent('popstate'));
             expect(readerState.currentSceneId).toBe('act2');
             expect(readerState.dialogueIndex).toBe(0); // restored to 0
+        });
+
+        it('pagehide flushes pending replaceState and persists current line', async () => {
+            // Spec coverage (design.md:373): flush-on-pagehide. The pagehide
+            // handler must (1) flush any pending throttled replaceState so the
+            // URL carries the accurate last line position if the tab is later
+            // restored, and (2) persist to localStorage unconditionally
+            // (popstate navigation mutates readerState without scheduling a
+            // debounce, so storage must be reconciled here regardless of
+            // whether a persistTimer was pending).
+            const raf = stubRaf();
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [
+                        { dialogue: 'a' },
+                        { dialogue: 'b' },
+                        { dialogue: 'c' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(2); // schedule a pending replaceState
+            expect(raf.pending()).toBe(true);
+            replaceState.mockClear(); // ignore initialize's replaceState
+            mockStorage.setItem.mockClear(); // ignore initialize's persist
+            // Dispatch pagehide — simulates tab close / mobile backgrounding.
+            window.dispatchEvent(new Event('pagehide'));
+            expect(raf.pending()).toBe(false); // flushed, not cancelled
+            expect(replaceState).toHaveBeenCalled(); // accurate line written to URL
+            // Storage reconciled unconditionally (debounce timer cleared + immediate persist).
+            expect(mockStorage.setItem).toHaveBeenCalledWith(
+                'aquila:readerState:en',
+                expect.stringContaining('"dialogueIndex":2')
+            );
+        });
+
+        it('visibilitychange->hidden flushes pending replaceState and persists', async () => {
+            // Spec coverage (design.md:373): the visibilitychange->hidden path
+            // funnels through the same onPageHide handler as pagehide, so it
+            // must also flush + persist. Mobile backgrounding fires
+            // visibilitychange (not pagehide) on many platforms, so this path
+            // is the primary save trigger on mobile.
+            const raf = stubRaf();
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(1); // schedule a pending replaceState
+            expect(raf.pending()).toBe(true);
+            replaceState.mockClear();
+            mockStorage.setItem.mockClear();
+            // Switch to hidden so onVisibilityChange forwards to onPageHide.
+            Object.defineProperty(document, 'visibilityState', {
+                value: 'hidden',
+                configurable: true,
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+            expect(raf.pending()).toBe(false); // flushed
+            expect(replaceState).toHaveBeenCalled();
+            expect(mockStorage.setItem).toHaveBeenCalledWith(
+                'aquila:readerState:en',
+                expect.stringContaining('"dialogueIndex":1')
+            );
+            // Restore visible state so later tests in this file are not affected.
+            Object.defineProperty(document, 'visibilityState', {
+                value: 'visible',
+                configurable: true,
+            });
+        });
+
+        it('visibilitychange->visible does NOT flush or persist', async () => {
+            // Guard: only the ->hidden transition should trigger the flush
+            // path. A ->visible transition (tab refocus) must be a no-op so
+            // we don't write stale state or spam replaceState on every focus.
+            const raf = stubRaf();
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }, { dialogue: 'b' }] },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(1); // schedule a pending replaceState
+            expect(raf.pending()).toBe(true);
+            replaceState.mockClear();
+            mockStorage.setItem.mockClear();
+            Object.defineProperty(document, 'visibilityState', {
+                value: 'visible',
+                configurable: true,
+            });
+            document.dispatchEvent(new Event('visibilitychange'));
+            // Pending replace must remain scheduled (not flushed, not cancelled).
+            expect(raf.pending()).toBe(true);
+            expect(replaceState).not.toHaveBeenCalled();
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
         });
     });
 });

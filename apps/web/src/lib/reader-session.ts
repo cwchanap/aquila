@@ -40,7 +40,12 @@ function isLocale(v: unknown): v is Locale {
     return v === 'en' || v === 'zh';
 }
 
-function clampIndex(index: number, length: number): number {
+/** Clamp a 0-based dialogue index into `[0, length-1]`. Empty dialogue
+ *  (`length <= 0`) -> index 0 is valid (the UI shows its empty/end state).
+ *  Never produces a negative or NaN value. Shared by `validateSessionState`
+ *  (restore/popstate) and `ReaderManager.onIndexChange` (write-path
+ *  defense-in-depth). */
+export function clampIndex(index: number, length: number): number {
     // Empty dialogue -> index 0 valid; never produce negative/NaN.
     if (length <= 0) return 0;
     return Math.min(Math.max(0, Math.trunc(index)), length - 1);
@@ -146,7 +151,7 @@ export function resolveInitialState(
         const sceneId =
             urlScene && sceneExists(flowForUrl, urlScene)
                 ? urlScene
-                : (flowForUrl.start as string);
+                : (flowForUrl.start ?? DEFAULT_SCENE_ID);
         const dialogue = deps.dialogue(urlStory, sceneId, locale);
         const idx = parseDialogueParam(params.get('dialogue'));
         return {
@@ -187,6 +192,16 @@ export function migratePersisted(
     // the default session. Coercing negatives to 0 here would bypass the
     // validator and accept a malformed record (restoring a non-default scene).
     // Missing/non-numeric values default to 0 (the "allow absent as 0" rule).
+    //
+    // Spec says "missing dialogueIndex OR version < 2 -> legacy -> default to
+    // 0". This checks `dialogueIndex` presence instead of `version`, which is
+    // functionally equivalent today AND more robust: a v1 record never carried
+    // a `dialogueIndex` field, so "missing dialogueIndex" and "version < 2"
+    // select the same records; but a naive `version < 2` check would wrongly
+    // accept a record with a missing `version` field (`undefined < 2` is
+    // `false`), whereas "missing/non-number dialogueIndex -> 0" handles that
+    // edge case correctly. If a future schema adds another v1-only field that
+    // needs migration, switch to an explicit version check here.
     const dialogueIndex =
         typeof s.dialogueIndex === 'number' && !Number.isNaN(s.dialogueIndex)
             ? s.dialogueIndex

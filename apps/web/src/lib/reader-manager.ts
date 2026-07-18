@@ -14,6 +14,7 @@ import {
     resolveInitialState,
     migratePersisted,
     serializeSessionParams,
+    sceneExists,
     STORAGE_VERSION,
     type ResolveDeps,
     type ReaderSessionState,
@@ -190,10 +191,15 @@ export class ReaderManager {
     /** Coalesce index changes into one replaceState per animation frame. */
     private scheduleReplace(): void {
         if (this.rafId !== null) return; // already scheduled -> coalesce
-        const raf =
+        // The setTimeout fallback is practically dead code (rAF is always
+        // available in the browser, the only environment this module runs in);
+        // the `number` cast keeps rafId a plain number so cancelAnimationFrame
+        // works uniformly without a Timeout/number union.
+        const raf: (cb: FrameRequestCallback) => number =
             typeof window !== 'undefined' && window.requestAnimationFrame
                 ? window.requestAnimationFrame.bind(window)
-                : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 0);
+                : (cb: FrameRequestCallback) =>
+                      setTimeout(() => cb(0), 0) as unknown as number;
         this.rafId = raf(() => {
             this.rafId = null;
             this.syncUrl(true);
@@ -416,6 +422,16 @@ export class ReaderManager {
         const flowForUrl = urlStory ? this.deps.flow(urlStory) : undefined;
         if (!urlStory || !flowForUrl) {
             // invalid popstate -> soft-reject: keep store, reconverge URL
+            this.syncUrl(true);
+            return;
+        }
+        // Stale scene: URL requested a scene that does not exist in the flow
+        // (e.g. a removed/renamed scene). Soft-reject rather than silently
+        // Tier-1-resolving to the story START, which would clobber the user's
+        // current position. (Malformed dialogue falls through to resolveInitialState,
+        // which clamps the index safely.)
+        const urlScene = params.get('scene');
+        if (urlScene && !sceneExists(flowForUrl, urlScene)) {
             this.syncUrl(true);
             return;
         }

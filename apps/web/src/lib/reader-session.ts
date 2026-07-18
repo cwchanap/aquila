@@ -48,7 +48,11 @@ export function parseDialogueParam(raw: string | null): number | null {
     return n - 1;
 }
 
-function sceneExists(flow: FlowConfig | undefined, sceneId: string): boolean {
+/** True if a scene node with this sceneId exists anywhere in the flow graph. */
+export function sceneExists(
+    flow: FlowConfig | undefined,
+    sceneId: string
+): boolean {
     return (
         !!flow &&
         flow.nodes.some(n => n.kind === 'scene' && n.sceneId === sceneId)

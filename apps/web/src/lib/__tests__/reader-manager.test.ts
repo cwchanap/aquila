@@ -1134,5 +1134,37 @@ describe('ReaderManager', () => {
             expect(readerState.currentSceneId).toBe(before); // unchanged
             expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
         });
+
+        it('popstate with valid story but stale scene soft-rejects (store unchanged, URL reconverged)', async () => {
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }],
+                    act2: [{ dialogue: 'b' }],
+                },
+                choices: {},
+            });
+            setupContainer();
+            const manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            // Move off the START scene so a soft-reject is observable: without
+            // the fix, a stale-scene popstate would silently Tier-1-resolve to
+            // the story START (act1), clobbering the current scene (act2).
+            manager.goToScene('act2');
+            expect(readerState.currentSceneId).toBe('act2');
+            const before = readerState.currentSceneId;
+            // popstate carries a VALID story but a scene absent from its flow.
+            setLocation('?story=train_adventure&scene=deleted_scene');
+            replaceState.mockClear(); // ignore initialize + goToScene calls
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            expect(readerState.currentSceneId).toBe(before); // act2, unchanged
+            expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
+        });
     });
 });

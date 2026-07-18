@@ -1176,5 +1176,92 @@ describe('ReaderManager', () => {
             expect(readerState.currentSceneId).toBe(before); // act2, unchanged
             expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
         });
+
+        it('popstate with a malformed dialogue param soft-rejects (store unchanged, URL reconverged)', async () => {
+            // Regression guard: a popstate carrying a partially-numeric
+            // dialogue value (e.g. "2junk") must NOT silently fall through to
+            // resolveInitialState, which treats parseDialogueParam=null as
+            // "absent" and moves the reader to index 0, leaving the malformed
+            // URL in place. The handler must soft-reject: keep the store and
+            // reconverge the canonical URL via replaceState.
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            // Move to act2 and advance to a non-zero line so a soft-reject is
+            // observable: without the fix, the malformed popstate would reset
+            // dialogueIndex to 0 (same scene), which is a silent state change.
+            manager.goToScene('act2');
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(2);
+            expect(readerState.dialogueIndex).toBe(2);
+            const beforeScene = readerState.currentSceneId;
+            const beforeIndex = readerState.dialogueIndex;
+            // popstate carries a VALID story+scene but a malformed dialogue.
+            setLocation('?story=train_adventure&scene=act2&dialogue=2junk');
+            replaceState.mockClear(); // ignore initialize + goToScene + onIndexChange
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            expect(readerState.currentSceneId).toBe(beforeScene); // act2
+            expect(readerState.dialogueIndex).toBe(beforeIndex); // 2, unchanged
+            expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
+        });
+
+        it('popstate with dialogue=0 restores index 0 (not treated as malformed)', async () => {
+            // Guard for the special absent/`0` sentinel: parseDialogueParam
+            // returns null for "0" (n < 1), but popstate must NOT soft-reject
+            // it — "0" is the documented "no explicit line" sentinel and must
+            // restore the reader to index 0. Only non-zero unparseable values
+            // are malformed.
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            manager.goToScene('act2');
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(2);
+            expect(readerState.dialogueIndex).toBe(2);
+            // popstate with dialogue=0 on the same scene must restore to 0
+            // (NOT soft-reject and leave the reader at index 2).
+            setLocation('?story=train_adventure&scene=act2&dialogue=0');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(readerState.dialogueIndex).toBe(0); // restored to 0
+        });
     });
 });

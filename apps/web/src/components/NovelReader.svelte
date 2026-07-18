@@ -59,25 +59,40 @@
   let sceneVersion = $state(0);
   let showActPanel = $state(false);
   let dialogueContainer: HTMLElement | null = $state(null);
+  // Tracked so onDestroy can clear a pending scroll-to-bottom; otherwise the
+  // 50ms timer can fire after unmount and touch a nulled dialogueContainer.
+  let scrollTimer: ReturnType<typeof globalThis.setTimeout> | null = null;
 
   // Cancel any in-flight typewriter when the component unmounts so pending
   // onTick callbacks don't mutate state on a destroyed component.
   onDestroy(() => {
     sceneVersion++;
+    if (scrollTimer !== null) {
+      globalThis.clearTimeout(scrollTimer);
+      scrollTimer = null;
+    }
   });
 
   // Two-signal typewriter bookkeeping (plain variables — must NOT be reactive,
   // otherwise writing them would re-trigger these effects).
   let lastDialogueRef: DialogueEntry[] | undefined = undefined;
   let lastIndex = dialogueIndex;
-  let selfAdvance = false;
+  // The exact index a self-initiated advance expects to land on, or null when
+  // the next index change is external (popstate/restore/breakpoint swap). Tying
+  // the flag to the TARGET index rather than a boolean fixes the same-tick
+  // race where a popstate overrides the index between handleNext and Signal 2:
+  // a boolean would still be true and animate the popstate's line, but the
+  // target-index check fails (popstate's index !== target) and snaps per spec.
+  let selfAdvanceTarget: number | null = null;
 
   function getCharacterName(dialogueEntry: DialogueEntry | undefined): string {
     return resolveCharacterName(dialogueEntry, t);
   }
 
   function scrollToBottom() {
-    globalThis.setTimeout(() => {
+    if (scrollTimer !== null) globalThis.clearTimeout(scrollTimer);
+    scrollTimer = globalThis.setTimeout(() => {
+      scrollTimer = null;
       if (dialogueContainer) {
         dialogueContainer.scrollTop = dialogueContainer.scrollHeight;
       }
@@ -91,9 +106,6 @@
     if (!entry) return;
     typingText = '';
     isTyping = true;
-    // Cleared as soon as typing kicks in (not on completion) so a popstate
-    // during active typing takes the snap branch instead of the animate one.
-    selfAdvance = false;
     skipTyping = false;
     const version = sceneVersion;
     scrollToBottom();
@@ -120,7 +132,7 @@
       isTyping = false;
       skipTyping = false;
       typingText = '';
-      selfAdvance = false;
+      selfAdvanceTarget = null;
       // Sync lastIndex so Signal 2 does not also fire for this same tick.
       lastIndex = dialogueIndex;
       if (dialogue.length > 0) {
@@ -129,11 +141,18 @@
     }
   });
 
-  // Signal 2 — index change within the SAME scene. selfAdvance distinguishes
-  // a user-driven advance (animate) from an external change like popstate (snap).
+  // Signal 2 — index change within the SAME scene. selfAdvanceTarget
+  // distinguishes a user-driven advance (animate) from an external change like
+  // popstate (snap). The target is cleared BEFORE branching so a same-tick
+  // popstate that overrides the index cannot see a stale target on a later
+  // run; and the target-index check (=== dialogueIndex) ensures that even if
+  // the popstate lands in the SAME effect batch as the advance, the popstate's
+  // index won't match the advance's target → snap, per spec §239-241.
   $effect(() => {
     if (dialogue === lastDialogueRef && dialogueIndex !== lastIndex) {
-      if (selfAdvance) {
+      const wasSelfAdvance = selfAdvanceTarget === dialogueIndex;
+      selfAdvanceTarget = null;
+      if (wasSelfAdvance) {
         sceneVersion++;
         void startTyping(dialogueIndex);
       } else {
@@ -155,7 +174,7 @@
       return;
     }
     if (dialogueIndex < dialogue.length - 1) {
-      selfAdvance = true;
+      selfAdvanceTarget = dialogueIndex + 1;
       onIndexChange(dialogueIndex + 1);
       skipTyping = false;
     } else if (canGoNext && !choice) {

@@ -69,6 +69,12 @@ function makeMockStorage() {
 
 describe('ReaderManager', () => {
     let mockStorage: ReturnType<typeof makeMockStorage>;
+    // Hoisted so afterEach can call destroy() — tests create a manager and
+    // call initialize(), which registers popstate/pagehide/visibilitychange
+    // listeners. Without destroy() in afterEach, listeners accumulate across
+    // tests and stale handlers fire in later tests, reading the shared
+    // readerState and interfering with assertions.
+    let manager: ReaderManager | null = null;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -111,6 +117,10 @@ describe('ReaderManager', () => {
     });
 
     afterEach(() => {
+        // Tear down lifecycle listeners registered by initialize() so stale
+        // handlers do not accumulate across tests (see comment on `manager`).
+        manager?.destroy();
+        manager = null;
         vi.restoreAllMocks();
         document.body.replaceChildren();
         readerState.reset();
@@ -178,7 +188,7 @@ describe('ReaderManager', () => {
             };
             mockGetStoryContent.mockReturnValue(mockStory);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
                 'act3',
@@ -206,7 +216,7 @@ describe('ReaderManager', () => {
             };
             mockGetStoryContent.mockReturnValue(mockStory);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
                 'act1',
@@ -227,7 +237,7 @@ describe('ReaderManager', () => {
             };
             mockGetStoryContent.mockReturnValue(mockStory);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
                 'act2',
@@ -245,7 +255,7 @@ describe('ReaderManager', () => {
             };
             mockGetStoryContent.mockReturnValue(mockStory);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
                 'unknown_scene',
@@ -263,7 +273,7 @@ describe('ReaderManager', () => {
             };
             mockGetStoryContent.mockReturnValue(mockStory);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).getSceneData(
                 'trainAdventure',
                 'act1',
@@ -278,14 +288,14 @@ describe('ReaderManager', () => {
     describe('hasNextScene', () => {
         it('returns true when scene node has a plain scene id as next', () => {
             // Default flow: act1 -> act2 (plain next)
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).hasNextScene('act1');
             expect(result).toBe(true);
         });
 
         it('returns false when scene node next is null (terminal scene)', () => {
             // Default flow: act2 is terminal
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).hasNextScene('act2');
             expect(result).toBe(false);
         });
@@ -303,13 +313,13 @@ describe('ReaderManager', () => {
                 ],
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).hasNextScene('act3');
             expect(result).toBe(false);
         });
 
         it('returns false when scene id is not found in flow', () => {
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             const result = (manager as any).hasNextScene('unknown_scene');
             expect(result).toBe(false);
         });
@@ -317,7 +327,7 @@ describe('ReaderManager', () => {
 
     describe('restore (initialize)', () => {
         it('resolves default state into readerState when no URL params and no localStorage', () => {
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.storyId).toBe('train_adventure');
@@ -335,7 +345,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.storyId).toBe('train_adventure');
@@ -345,7 +355,7 @@ describe('ReaderManager', () => {
         it('falls back to start scene when URL scene is not in flow', () => {
             setLocation('?story=train_adventure&scene=scene_5');
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.currentSceneId).toBe('act1');
@@ -386,7 +396,7 @@ describe('ReaderManager', () => {
             });
             setLocation('?story=other_story');
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.storyId).toBe('other_story');
@@ -410,7 +420,7 @@ describe('ReaderManager', () => {
             });
             setLocation('?story=unknown_story');
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.storyId).toBe('train_adventure');
@@ -430,7 +440,7 @@ describe('ReaderManager', () => {
             });
             setLocation('?story=train_adventure&scene=act1&dialogue=3');
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.dialogueIndex).toBe(2);
@@ -451,7 +461,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.currentSceneId).toBe('act2');
@@ -466,7 +476,7 @@ describe('ReaderManager', () => {
                 })
             );
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.currentSceneId).toBe('act1');
@@ -481,7 +491,7 @@ describe('ReaderManager', () => {
                 })
             );
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.currentSceneId).toBe('act1');
@@ -493,7 +503,7 @@ describe('ReaderManager', () => {
                 .mockImplementation(() => {});
             mockStorage.getItem.mockReturnValueOnce('{invalid json}');
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(readerState.currentSceneId).toBe('act1');
@@ -502,7 +512,7 @@ describe('ReaderManager', () => {
         });
 
         it('persists the v2 schema (version=2) to localStorage on initialize', () => {
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             const storedCall = mockStorage.setItem.mock.calls.find(
@@ -522,7 +532,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
 
             expect(window.history.replaceState).toHaveBeenCalled();
@@ -537,7 +547,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.handleChoice('scene_4a');
 
             expect(readerState.currentSceneId).toBe('scene_4a');
@@ -553,7 +563,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.handleChoice('scene_4a');
 
             expect(window.history.pushState).toHaveBeenCalled();
@@ -568,7 +578,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleNext();
 
             expect(readerState.currentSceneId).toBe('act2');
@@ -592,7 +602,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleNext();
 
             expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
@@ -619,7 +629,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleNext();
 
             expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
@@ -630,7 +640,7 @@ describe('ReaderManager', () => {
         it('does nothing when user cancels the prompt (null)', async () => {
             mockShowPrompt.mockResolvedValueOnce(null);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(global.fetch).not.toHaveBeenCalled();
@@ -639,7 +649,7 @@ describe('ReaderManager', () => {
         it('does nothing when user provides empty string', async () => {
             mockShowPrompt.mockResolvedValueOnce('');
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(global.fetch).not.toHaveBeenCalled();
@@ -652,7 +662,7 @@ describe('ReaderManager', () => {
                 json: vi.fn().mockResolvedValueOnce({}),
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(global.fetch).toHaveBeenCalledWith(
@@ -669,7 +679,7 @@ describe('ReaderManager', () => {
                 json: vi.fn().mockResolvedValueOnce({ error: 'Server error' }),
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(mockShowAlert).toHaveBeenCalledWith(
@@ -684,7 +694,7 @@ describe('ReaderManager', () => {
                 json: vi.fn().mockResolvedValueOnce({}),
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(mockShowAlert).toHaveBeenCalledWith(
@@ -701,7 +711,7 @@ describe('ReaderManager', () => {
                 .fn()
                 .mockRejectedValueOnce(new Error('Network error'));
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(mockShowAlert).toHaveBeenCalledWith('Error saving bookmark');
@@ -715,7 +725,7 @@ describe('ReaderManager', () => {
                 status: 401,
             });
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark();
 
             expect(global.fetch).toHaveBeenCalledWith(
@@ -747,7 +757,7 @@ describe('ReaderManager', () => {
             });
             global.fetch = mockFetch;
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark(5);
 
             const callArgs = mockFetch.mock.calls[0];
@@ -764,7 +774,7 @@ describe('ReaderManager', () => {
             });
             global.fetch = mockFetch;
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             await manager.handleBookmark(0);
 
             const callArgs = mockFetch.mock.calls[0];
@@ -783,7 +793,7 @@ describe('ReaderManager', () => {
             container.id = 'reader-container';
             document.body.appendChild(container);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.renderReader();
 
             // Wait for the dynamic import .then to run and call mount
@@ -813,7 +823,7 @@ describe('ReaderManager', () => {
             };
             mockGetStoryContent.mockReturnValue(mockStory);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             expect(() => manager.renderReader()).not.toThrow();
         });
 
@@ -828,7 +838,7 @@ describe('ReaderManager', () => {
             container.id = 'reader-container';
             document.body.appendChild(container);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
 
             // Set a fake existing reader instance
             const mockUnmount = vi.fn();
@@ -853,7 +863,7 @@ describe('ReaderManager', () => {
             container.id = 'reader-container';
             document.body.appendChild(container);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
 
             // First render: let the async import chain complete so readerInstance is set
             // with the REAL unmount closure (lines 373-376)
@@ -886,7 +896,7 @@ describe('ReaderManager', () => {
             expect(container.childNodes.length).toBe(1);
             document.body.appendChild(container);
 
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.renderReader();
 
             // Wait for the dynamic import .then to run
@@ -921,7 +931,7 @@ describe('ReaderManager', () => {
                 container.id = 'reader-container';
                 document.body.appendChild(container);
 
-                const manager = new ReaderManager('en');
+                manager = new ReaderManager('en');
                 manager.renderReader();
 
                 // Wait until the .catch handler has built the error UI in the DOM
@@ -965,7 +975,7 @@ describe('ReaderManager', () => {
                 container.id = 'reader-container';
                 document.body.appendChild(container);
 
-                const manager = new ReaderManager('en');
+                manager = new ReaderManager('en');
                 manager.renderReader();
 
                 // Wait until the retry button appears
@@ -1036,7 +1046,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
             setupContainer();
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
             // initialize() already invoked replaceState once via syncUrl(true);
@@ -1070,7 +1080,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
             setupContainer();
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
             const onIndexChange = mockMount.mock.calls.at(-1)![1].props
@@ -1097,7 +1107,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
             setupContainer();
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
             const onIndexChange = mockMount.mock.calls.at(-1)![1].props
@@ -1122,7 +1132,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
             setupContainer();
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
             const before = readerState.currentSceneId;
@@ -1150,7 +1160,7 @@ describe('ReaderManager', () => {
                 choices: {},
             });
             setupContainer();
-            const manager = new ReaderManager('en');
+            manager = new ReaderManager('en');
             manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
             // Move off the START scene so a soft-reject is observable: without

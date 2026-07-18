@@ -8,6 +8,7 @@
   import ActPanel from '@/components/ActPanel.svelte';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { resolveCharacterName } from '@/lib/character-name';
+  import { onDestroy } from 'svelte';
 
   // Pure controlled reader. All session state arrives via props; the only
   // outward signal is onIndexChange. No readerState import.
@@ -58,6 +59,12 @@
   let sceneVersion = $state(0);
   let showActPanel = $state(false);
   let dialogueContainer: HTMLElement | null = $state(null);
+
+  // Cancel any in-flight typewriter when the component unmounts so pending
+  // onTick callbacks don't mutate state on a destroyed component.
+  onDestroy(() => {
+    sceneVersion++;
+  });
 
   // Two-signal typewriter bookkeeping (plain variables — must NOT be reactive,
   // otherwise writing them would re-trigger these effects).

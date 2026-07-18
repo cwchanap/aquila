@@ -249,12 +249,10 @@ describe('MobileNovelReader', () => {
         });
 
         it('advances with the Enter key', async () => {
-            const { rerenderAt } = renderReader({ dialogueIndex: 0 });
+            const { onIndexChange } = renderReader({ dialogueIndex: 0 });
             await vi.runAllTimersAsync();
             await fireEvent.keyDown(window, { key: 'Enter' });
-            await rerenderAt({ dialogueIndex: 1 });
-            await vi.runAllTimersAsync();
-            expect(screen.getByText('Second line.')).toBeInTheDocument();
+            expect(onIndexChange).toHaveBeenCalledWith(1);
         });
 
         it('shows line progress', async () => {

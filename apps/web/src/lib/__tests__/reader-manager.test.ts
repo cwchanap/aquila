@@ -1263,5 +1263,47 @@ describe('ReaderManager', () => {
             expect(readerState.currentSceneId).toBe('act2');
             expect(readerState.dialogueIndex).toBe(0); // restored to 0
         });
+
+        it('popstate with dialogue=00 restores index 0 (zero-equivalent, not malformed)', async () => {
+            // Regression guard: parseDialogueParam returns null for "00"
+            // (parseInt("00") = 0, which fails n < 1), exactly as it does for
+            // "0". Initial restore maps both to index 0. The popstate guard
+            // must classify all zero-equivalent values (all-zeros strings)
+            // the same way it classifies "0" — as valid restore targets —
+            // rather than soft-rejecting and leaving the reader on its
+            // previous line. Aligns popstate with initial-restore semantics.
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            manager.goToScene('act2');
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(2);
+            expect(readerState.dialogueIndex).toBe(2);
+            // popstate with dialogue=00 on the same scene must restore to 0,
+            // NOT soft-reject and leave the reader at index 2.
+            setLocation('?story=train_adventure&scene=act2&dialogue=00');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(readerState.dialogueIndex).toBe(0); // restored to 0
+        });
     });
 });

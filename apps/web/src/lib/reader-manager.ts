@@ -459,20 +459,21 @@ export class ReaderManager {
             this.syncUrl(true);
             return;
         }
-        // Malformed dialogue: a raw value that is present, non-empty, not the
-        // special "0" sentinel, and unparseable by parseDialogueParam (e.g.
+        // Malformed dialogue: a raw value that is present, non-empty, not
+        // zero-equivalent, and unparseable by parseDialogueParam (e.g.
         // "2junk", "1.5"). resolveInitialState treats parseDialogueParam=null
         // as "absent" and silently moves the reader to index 0, leaving the
         // malformed URL in place — soft-reject instead so the canonical URL
-        // is reconverged. The absent (param missing) and "0" sentinels both
-        // map to index 0 and must be retained as valid restore targets.
+        // is reconverged. Zero-equivalent values (absent, empty, or all-zeros
+        // like "0", "00", "000") all map to index 0 in initial restore and
+        // must be retained as valid restore targets here, so the popstate
+        // classification stays aligned with the initial-restore classification.
         const rawDialogue = params.get('dialogue');
-        if (
-            rawDialogue !== null &&
-            rawDialogue !== '' &&
-            rawDialogue !== '0' &&
-            parseDialogueParam(rawDialogue) === null
-        ) {
+        const isZeroEquivalent =
+            rawDialogue === null ||
+            rawDialogue === '' ||
+            /^0+$/.test(rawDialogue);
+        if (!isZeroEquivalent && parseDialogueParam(rawDialogue) === null) {
             this.syncUrl(true);
             return;
         }

@@ -16,6 +16,7 @@ import {
     serializeSessionParams,
     sceneExists,
     parseDialogueParam,
+    clampIndex,
     STORAGE_VERSION,
     DEFAULT_SCENE_ID,
     type ResolveDeps,
@@ -266,9 +267,13 @@ export class ReaderManager {
 
     /** The orchestrator write path passed to ReaderShell as the onIndexChange
      *  prop. Writes the canonical store, then schedules a throttled URL
-     *  replaceState and a debounced persist. */
+     *  replaceState and a debounced persist. Clamps the incoming index into
+     *  `[0, dialogue.length-1]` as defense-in-depth: the controlled readers
+     *  bound their own navigation, but the spec's invariant is that
+     *  `dialogueIndex` is always in range, so the write path enforces it too
+     *  rather than trusting every caller. */
     onIndexChange = (i: number): void => {
-        readerState.dialogueIndex = i;
+        readerState.dialogueIndex = clampIndex(i, readerState.dialogue.length);
         this.scheduleReplace();
         this.schedulePersist();
     };
@@ -521,16 +526,17 @@ export class ReaderManager {
 
         // Listeners stay registered for the lifetime of the page and react to
         // browser Back/Forward and tab hide. destroy() tears them down for
-        // test isolation and any future SPA teardown path.
+        // test isolation only (the full-page reader app has no SPA teardown).
         window.addEventListener('popstate', this.onPopState);
         window.addEventListener('pagehide', this.onPageHide);
         document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
     /** Remove lifecycle listeners and clear pending timers. Intended for test
-     *  isolation and any future SPA teardown path; the full-page app does not
-     *  call this in production. Uses the same handler references registered in
-     *  initialize() so removeEventListener actually detaches them. */
+     *  isolation only; the full-page reader app does not call this in
+     *  production and the reader component is not unmounted here. Uses the
+     *  same handler references registered in initialize() so
+     *  removeEventListener actually detaches them. */
     destroy(): void {
         window.removeEventListener('popstate', this.onPopState);
         window.removeEventListener('pagehide', this.onPageHide);

@@ -250,6 +250,36 @@ describe('NovelReader — controlled contract', () => {
         await fireEvent.keyDown(window, { key: 'Enter' });
         expect(onIndexChange).toHaveBeenCalledWith(2);
     });
+
+    it('schedules a scroll to the active line on first-mount restore with dialogueIndex > 0', async () => {
+        // Regression guard: when the reader mounts at a non-zero index
+        // (bookmark, deep link, breakpoint remount), Signal 1 snaps (no
+        // animation) but must still schedule a scroll so the active line is
+        // visible inside the overflowing dialogue container (max-h-[70vh]
+        // overflow-y-auto). startTyping — the only path that calls
+        // scrollToBottom — is skipped on first-mount restores, so the snap
+        // branch must schedule the scroll itself. Without the fix, the
+        // restored active line can remain below the viewport.
+        const { container } = renderReader({ dialogueIndex: 2 });
+        const dialogueContainer = container.querySelector(
+            '.overflow-y-auto'
+        ) as HTMLElement;
+        expect(dialogueContainer).not.toBeNull();
+        let capturedScrollTop = -1;
+        Object.defineProperty(dialogueContainer, 'scrollHeight', {
+            configurable: true,
+            get: () => 1000,
+        });
+        Object.defineProperty(dialogueContainer, 'scrollTop', {
+            configurable: true,
+            get: () => capturedScrollTop,
+            set: (v: number) => {
+                capturedScrollTop = v;
+            },
+        });
+        await vi.runAllTimersAsync();
+        expect(capturedScrollTop).toBe(1000);
+    });
 });
 
 describe('NovelReader — basic rendering', () => {

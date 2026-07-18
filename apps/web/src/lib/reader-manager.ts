@@ -15,6 +15,7 @@ import {
     migratePersisted,
     serializeSessionParams,
     sceneExists,
+    parseDialogueParam,
     STORAGE_VERSION,
     DEFAULT_SCENE_ID,
     type ResolveDeps,
@@ -452,10 +453,26 @@ export class ReaderManager {
         // Stale scene: URL requested a scene that does not exist in the flow
         // (e.g. a removed/renamed scene). Soft-reject rather than silently
         // Tier-1-resolving to the story START, which would clobber the user's
-        // current position. (Malformed dialogue falls through to resolveInitialState,
-        // which clamps the index safely.)
+        // current position.
         const urlScene = params.get('scene');
         if (urlScene && !sceneExists(flowForUrl, urlScene)) {
+            this.syncUrl(true);
+            return;
+        }
+        // Malformed dialogue: a raw value that is present, non-empty, not the
+        // special "0" sentinel, and unparseable by parseDialogueParam (e.g.
+        // "2junk", "1.5"). resolveInitialState treats parseDialogueParam=null
+        // as "absent" and silently moves the reader to index 0, leaving the
+        // malformed URL in place — soft-reject instead so the canonical URL
+        // is reconverged. The absent (param missing) and "0" sentinels both
+        // map to index 0 and must be retained as valid restore targets.
+        const rawDialogue = params.get('dialogue');
+        if (
+            rawDialogue !== null &&
+            rawDialogue !== '' &&
+            rawDialogue !== '0' &&
+            parseDialogueParam(rawDialogue) === null
+        ) {
             this.syncUrl(true);
             return;
         }

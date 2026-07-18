@@ -142,8 +142,18 @@
       selfAdvanceTarget = null;
       // Sync lastIndex so Signal 2 does not also fire for this same tick.
       lastIndex = dialogueIndex;
-      if (dialogue.length > 0 && !(isFirstMount && dialogueIndex > 0)) {
-        void startTyping(dialogueIndex);
+      if (dialogue.length > 0) {
+        if (isFirstMount && dialogueIndex > 0) {
+          // Snap restore (bookmark/deep-link/breakpoint remount): reveal the
+          // full line immediately (no animation) AND schedule a scroll so the
+          // active line is visible inside the overflowing dialogue container
+          // (max-h-[70vh] overflow-y-auto). startTyping — the only path that
+          // calls scrollToBottom — is skipped here, so without this the
+          // restored active line can remain below the viewport.
+          scrollToBottom();
+        } else {
+          void startTyping(dialogueIndex);
+        }
       }
     }
   });

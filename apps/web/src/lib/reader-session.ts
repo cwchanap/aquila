@@ -196,36 +196,46 @@ export function migratePersisted(
     if (typeof s.storyId !== 'string' || typeof s.sceneId !== 'string')
         return null;
     if (!isLocale(s.locale) || s.locale !== locale) return null;
-    // Preserve the raw numeric value so validateSessionState can enforce its
-    // own contract: negative/NaN indices are invalid and must fall through to
-    // the default session. Coercing negatives to 0 here would bypass the
-    // validator and accept a malformed record (restoring a non-default scene).
+    // Branch on the persisted schema version rather than on `dialogueIndex`
+    // presence, so unsupported future versions aren't silently rewritten as
+    // v2 and so legacy detection is explicit and extensible.
     //
-    // Only a MISSING `dialogueIndex` (the legacy v1 case — v1 records never
-    // carried the field) defaults to 0. A v2-shaped record with a non-number
-    // value (null, "bad", true) is corrupted, not legacy: coercing it to 0
-    // would make the record look valid and restore its scene instead of
-    // following the validator's invalid-state path. Reject the whole record.
+    // A missing or non-number `version` (including NaN) is treated as legacy:
+    // `undefined < 2` is `false`, so a naive `version < 2` check would wrongly
+    // accept a record with no `version` field; the explicit `typeof`/NaN guard
+    // routes those to the legacy path instead.
     //
-    // Spec says "missing dialogueIndex OR version < 2 -> legacy -> default to
-    // 0". This checks `dialogueIndex` presence instead of `version`, which is
-    // functionally equivalent today AND more robust: a v1 record never carried
-    // a `dialogueIndex` field, so "missing dialogueIndex" and "version < 2"
-    // select the same records; but a naive `version < 2` check would wrongly
-    // accept a record with a missing `version` field (`undefined < 2` is
-    // `false`), whereas "missing dialogueIndex -> 0" handles that edge case
-    // correctly. If a future schema adds another v1-only field that needs
-    // migration, switch to an explicit version check here.
+    // Legacy records (version < 2, missing, or invalid) never carried a
+    // reliable `dialogueIndex`, so default to 0 regardless of any value
+    // present. A supported v2 record must carry a valid numeric
+    // `dialogueIndex`; a missing or non-number value (null, string, boolean,
+    // NaN) is a corrupted v2 record, not legacy, and is rejected so the full
+    // Tier-2 path falls through to the default session. The raw numeric value
+    // is preserved as-is (including negatives) so `validateSessionState` can
+    // enforce its own contract: negative/NaN indices are invalid and must
+    // fall through; coercing negatives to 0 here would bypass the validator
+    // and accept a malformed record (restoring a non-default scene).
+    //
+    // An unsupported future version (version > 2) is rejected rather than
+    // silently downgraded, so state stored under a schema this code doesn't
+    // understand is not restored under v2 semantics.
+    const version = s.version;
     let dialogueIndex: number;
-    if (s.dialogueIndex === undefined) {
+    if (typeof version !== 'number' || Number.isNaN(version) || version < 2) {
+        // Legacy (v1, missing, or invalid version) -> default to 0.
         dialogueIndex = 0;
-    } else if (
-        typeof s.dialogueIndex === 'number' &&
-        !Number.isNaN(s.dialogueIndex)
-    ) {
-        dialogueIndex = s.dialogueIndex;
+    } else if (version === 2) {
+        if (
+            typeof s.dialogueIndex === 'number' &&
+            !Number.isNaN(s.dialogueIndex)
+        ) {
+            dialogueIndex = s.dialogueIndex;
+        } else {
+            // Missing or non-number dialogueIndex on a v2 record is corrupted.
+            return null;
+        }
     } else {
-        // null, string, boolean, NaN, etc. -> corrupted v2 record, reject.
+        // version > 2: unsupported future version -> don't silently rewrite as v2.
         return null;
     }
     return {

@@ -207,4 +207,73 @@ describe('ReaderShell', () => {
         await vi.runAllTimersAsync();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
+
+    // Regression guard for the breakpoint-remount-at-index-0 case. When the
+    // user resizes across the 1023px breakpoint while the current scene is at
+    // index 0, the new leaf mounts with `lastDialogueRef === undefined` and
+    // `dialogueIndex === 0`. Without the `isInitialMount` signal from
+    // ReaderShell, the leaf cannot tell this apart from a genuine fresh scene
+    // start at index 0 and would re-type the already-completed line 0. The
+    // signal (`isInitialMount=false` on a swap) makes Signal 1 snap instead.
+    it('snaps (does not re-type) line 0 across a desktop->mobile breakpoint swap', async () => {
+        const mm = stubMatchMedia(false);
+        readerState.dialogueIndex = 0;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
+        // Let the desktop leaf finish typing line 0.
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+
+        // Swap across the breakpoint -> mobile leaf mounts at index 0.
+        mm.setMatches(true);
+        await waitFor(() =>
+            expect(screen.getByLabelText('Tap to continue')).toBeInTheDocument()
+        );
+        // The mobile leaf must NOT re-animate line 0 (no typewriter cursor).
+        // Do NOT settle timers — observe the snap state immediately after swap.
+        expect(
+            document.querySelectorAll('[class*="animate-pulse"]').length
+        ).toBe(0);
+        // Line 0 is fully visible immediately (snap reveals it).
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+    });
+
+    it('snaps (does not re-type) line 0 across a mobile->desktop breakpoint swap', async () => {
+        const mm = stubMatchMedia(true);
+        readerState.dialogueIndex = 0;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
+        // Let the mobile leaf finish typing line 0.
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+
+        // Swap across the breakpoint -> desktop leaf mounts at index 0.
+        mm.setMatches(false);
+        await waitFor(() =>
+            expect(screen.getByText('Back to Home')).toBeInTheDocument()
+        );
+        // The desktop leaf must NOT re-animate line 0 (no typewriter cursor).
+        expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+    });
+
+    // The very first leaf mount at index 0 (genuine fresh scene start) must
+    // STILL animate — the breakpoint-remount snap must not regress this. The
+    // `isInitialMount=true` signal (everMounted is false on the first render)
+    // distinguishes a fresh start from a swap.
+    it('animates line 0 on the very first desktop mount (fresh scene start)', async () => {
+        stubMatchMedia(false);
+        readerState.dialogueIndex = 0;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
+        // Do NOT settle timers — observe the in-flight typewriter immediately.
+        expect(
+            document.querySelectorAll('.animate-pulse').length
+        ).toBeGreaterThan(0);
+    });
+    it('animates line 0 on the very first mobile mount (fresh scene start)', async () => {
+        stubMatchMedia(true);
+        readerState.dialogueIndex = 0;
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
+        expect(
+            document.querySelectorAll('[class*="animate-pulse"]').length
+        ).toBeGreaterThan(0);
+    });
 });

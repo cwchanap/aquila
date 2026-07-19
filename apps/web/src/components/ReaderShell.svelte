@@ -43,7 +43,23 @@
   }
   let isMobile = $state(readMatch());
 
+  // Tracks whether ANY leaf reader has ever mounted in this ReaderShell
+  // instance. The first leaf to mount sees `isInitialMount=true` (a genuine
+  // fresh scene start — animate line 0 per spec). On a responsive-breakpoint
+  // swap, the old leaf unmounts and a NEW leaf mounts; that new leaf sees
+  // `isInitialMount=false` and snaps the current line instead of re-typing it,
+  // even at index 0. Without this signal the leaf cannot distinguish a
+  // breakpoint remount at index 0 from a fresh scene start at index 0.
+  //
+  // The flip happens in onMount (NOT $effect) so it runs strictly AFTER the
+  // first leaf's mount effects have flushed with `isInitialMount=true`. An
+  // $effect could race with the leaf's Signal 1 effect and flip the prop
+  // before the leaf read it, making the first mount snap instead of animate.
+  let everMounted = $state(false);
+  let isInitialMount = $derived(!everMounted);
+
   onMount(() => {
+    everMounted = true;
     if (
       typeof window === 'undefined' ||
       typeof window.matchMedia !== 'function'
@@ -76,6 +92,7 @@
     {onNavigate}
     {backUrl}
     {showBookmarkButton}
+    {isInitialMount}
   />
 {:else}
   <NovelReader
@@ -93,5 +110,6 @@
     {onNavigate}
     {backUrl}
     {showBookmarkButton}
+    {isInitialMount}
   />
 {/if}

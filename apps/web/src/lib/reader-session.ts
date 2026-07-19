@@ -48,6 +48,11 @@ function isLocale(v: unknown): v is Locale {
 export function clampIndex(index: number, length: number): number {
     // Empty dialogue -> index 0 valid; never produce negative/NaN.
     if (length <= 0) return 0;
+    // NaN slips through Math.trunc/Math.max/Math.min (all return NaN), so guard
+    // it explicitly to honor the "never produces NaN" invariant. A NaN write
+    // would otherwise propagate to the URL as `dialogue=NaN` and to persisted
+    // state as a corrupted index. Default NaN to 0 (the start-of-scene line).
+    if (Number.isNaN(index)) return 0;
     return Math.min(Math.max(0, Math.trunc(index)), length - 1);
 }
 
@@ -195,7 +200,12 @@ export function migratePersisted(
     // own contract: negative/NaN indices are invalid and must fall through to
     // the default session. Coercing negatives to 0 here would bypass the
     // validator and accept a malformed record (restoring a non-default scene).
-    // Missing/non-numeric values default to 0 (the "allow absent as 0" rule).
+    //
+    // Only a MISSING `dialogueIndex` (the legacy v1 case — v1 records never
+    // carried the field) defaults to 0. A v2-shaped record with a non-number
+    // value (null, "bad", true) is corrupted, not legacy: coercing it to 0
+    // would make the record look valid and restore its scene instead of
+    // following the validator's invalid-state path. Reject the whole record.
     //
     // Spec says "missing dialogueIndex OR version < 2 -> legacy -> default to
     // 0". This checks `dialogueIndex` presence instead of `version`, which is
@@ -203,13 +213,21 @@ export function migratePersisted(
     // a `dialogueIndex` field, so "missing dialogueIndex" and "version < 2"
     // select the same records; but a naive `version < 2` check would wrongly
     // accept a record with a missing `version` field (`undefined < 2` is
-    // `false`), whereas "missing/non-number dialogueIndex -> 0" handles that
-    // edge case correctly. If a future schema adds another v1-only field that
-    // needs migration, switch to an explicit version check here.
-    const dialogueIndex =
-        typeof s.dialogueIndex === 'number' && !Number.isNaN(s.dialogueIndex)
-            ? s.dialogueIndex
-            : 0;
+    // `false`), whereas "missing dialogueIndex -> 0" handles that edge case
+    // correctly. If a future schema adds another v1-only field that needs
+    // migration, switch to an explicit version check here.
+    let dialogueIndex: number;
+    if (s.dialogueIndex === undefined) {
+        dialogueIndex = 0;
+    } else if (
+        typeof s.dialogueIndex === 'number' &&
+        !Number.isNaN(s.dialogueIndex)
+    ) {
+        dialogueIndex = s.dialogueIndex;
+    } else {
+        // null, string, boolean, NaN, etc. -> corrupted v2 record, reject.
+        return null;
+    }
     return {
         storyId: s.storyId,
         sceneId: s.sceneId,

@@ -27,6 +27,7 @@
     onNavigate = () => {},
     backUrl = '/',
     showBookmarkButton = true,
+    isInitialMount = true,
   }: {
     dialogueIndex?: number;
     onIndexChange?: (index: number) => void;
@@ -42,6 +43,7 @@
     onNavigate?: (sceneId: string) => void;
     backUrl?: string;
     showBookmarkButton?: boolean;
+    isInitialMount?: boolean;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -125,15 +127,24 @@
 
   // Signal 1 — new scene (dialogue reference change): ALWAYS animate the line
   // at dialogueIndex, even at index 0. Reset all presentation state first.
-  // EXCEPTION: on the very first mount (lastDialogueRef === undefined) with a
-  // nonzero dialogueIndex, the index came from a bookmark/deep-link restore or
-  // a responsive-breakpoint remount — the user expects the active line fully
-  // revealed, not re-typed. Snapping (isTyping stays false) makes the template
-  // render currentDialogue.dialogue directly. A first mount at index 0 is a
-  // fresh scene and still animates per spec.
+  // EXCEPTIONS (snap — reveal the full line immediately, no animation):
+  //   1. First mount (lastDialogueRef === undefined) with a nonzero
+  //      dialogueIndex: the index came from a bookmark/deep-link restore — the
+  //      user expects the active line fully revealed, not re-typed.
+  //   2. First mount that is NOT the initial scene mount (`isInitialMount ===
+  //      false`): this is a responsive-breakpoint remount — ReaderShell swapped
+  //      desktop/mobile leaves across the 1023px breakpoint. The line at
+  //      dialogueIndex was already visible (typed or revealed) on the prior
+  //      leaf, so re-typing it — including at index 0 — would restart an
+  //      already-completed animation. Snap preserves the user's reading
+  //      position across the layout change.
+  // A first mount at index 0 WITH `isInitialMount === true` is a genuine fresh
+  // scene start and still animates per spec.
   $effect(() => {
     if (dialogue !== lastDialogueRef) {
       const isFirstMount = lastDialogueRef === undefined;
+      const isBreakpointRemount = isFirstMount && !isInitialMount;
+      const isRestoreAtNonzero = isFirstMount && dialogueIndex > 0;
       lastDialogueRef = dialogue;
       sceneVersion++;
       isTyping = false;
@@ -143,7 +154,7 @@
       // Sync lastIndex so Signal 2 does not also fire for this same tick.
       lastIndex = dialogueIndex;
       if (dialogue.length > 0) {
-        if (isFirstMount && dialogueIndex > 0) {
+        if (isRestoreAtNonzero || isBreakpointRemount) {
           // Snap restore (bookmark/deep-link/breakpoint remount): reveal the
           // full line immediately (no animation) AND schedule a scroll so the
           // active line is visible inside the overflowing dialogue container

@@ -7,6 +7,7 @@ import {
     parseDialogueParam,
     serializeSessionParams,
     migratePersisted,
+    clampIndex,
     STORAGE_VERSION,
     type ResolveDeps,
 } from '../reader-session';
@@ -36,6 +37,30 @@ const deps: ResolveDeps = {
 describe('STORAGE_VERSION', () => {
     it('is 2', () => {
         expect(STORAGE_VERSION).toBe(2);
+    });
+});
+
+describe('clampIndex', () => {
+    it('clamps into [0, length-1]', () => {
+        expect(clampIndex(0, 3)).toBe(0);
+        expect(clampIndex(2, 3)).toBe(2);
+        expect(clampIndex(99, 3)).toBe(2);
+        expect(clampIndex(-5, 3)).toBe(0);
+    });
+    it('empty dialogue -> 0 (never negative)', () => {
+        expect(clampIndex(5, 0)).toBe(0);
+        expect(clampIndex(-1, 0)).toBe(0);
+    });
+    it('truncates fractional indices', () => {
+        expect(clampIndex(1.9, 3)).toBe(1);
+    });
+    it('returns 0 for NaN (never produces NaN)', () => {
+        // Regression guard: Math.trunc/Math.max/Math.min all return NaN for a
+        // NaN input, so without an explicit guard clampIndex(NaN, n) would
+        // return NaN — violating the documented invariant and propagating
+        // `dialogue=NaN` to the URL and persisted state. Default NaN to 0.
+        expect(clampIndex(NaN, 3)).toBe(0);
+        expect(clampIndex(NaN, 0)).toBe(0);
     });
 });
 
@@ -318,5 +343,41 @@ describe('migratePersisted', () => {
         });
         expect(state.sceneId).toBe('act1');
         expect(state.dialogueIndex).toBe(0);
+    });
+    it('rejects a v2-shaped record with a non-number dialogueIndex (null/string/boolean)', () => {
+        // Regression guard: a v2-shaped record carrying a non-number
+        // dialogueIndex is corrupted, not legacy. Coercing it to 0 would make
+        // the record look valid and restore its scene, bypassing the
+        // validator's "non-number = invalid" contract. Only a MISSING
+        // dialogueIndex (the legacy v1 case) defaults to 0; everything else
+        // is rejected by migratePersisted so the full Tier-2 path falls
+        // through to the default session.
+        const base = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            locale: 'en',
+            version: 2,
+        };
+        for (const bad of [null, 'bad', true, false, {}]) {
+            const corrupted = { ...base, dialogueIndex: bad };
+            expect(migratePersisted(corrupted, 'en')).toBeNull();
+        }
+        // NaN is a number type but still invalid -> reject.
+        expect(
+            migratePersisted({ ...base, dialogueIndex: NaN }, 'en')
+        ).toBeNull();
+    });
+    it('still defaults a MISSING dialogueIndex (legacy v1) to 0', () => {
+        // The legacy v1 case (no dialogueIndex field) must still migrate to 0,
+        // distinguishing it from a corrupted v2 record with an explicit
+        // non-number value.
+        const v1 = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            locale: 'en',
+        };
+        const migrated = migratePersisted(v1, 'en');
+        expect(migrated).not.toBeNull();
+        expect(migrated?.dialogueIndex).toBe(0);
     });
 });

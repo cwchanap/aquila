@@ -302,6 +302,41 @@
       "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen off, desk lamp providing warm focused light on notebook and documents, window showing dark residential street, deeper night palette with lamp glow dominant, visual-novel background art, medium shot"
     },
     {
+      "key": "chapter_15/ch15_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act1_s0.png",
+      "prompt": "small investigation media office, Saturday morning pale light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light mixing with cool grey daylight, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act1_s1.png",
+      "prompt": "Tokyo street near a public disaster prevention learning center, Saturday morning, pale overcast light, wide pedestrian walkway with a few weekend visitors, low institutional building with signage visible in the distance, muted grey-blue and concrete palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act2_s0.png",
+      "prompt": "public disaster prevention learning center archive room, shelves of boxed CD-ROMs and bound binders behind glass doors, paper catalog drawers along one wall, fluorescent ceiling light, school-group murmur audible from the floor below, neutral institutional beige and grey-green palette, reading table with two archival boxes and a notebook, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act3_s0.png",
+      "prompt": "same archive retired-hardware viewing area, display cases of retired emergency communication equipment along one wall, fluorescent ceiling light, reading table with an open manual and an archival box, muted institutional palette with grey-green and beige tones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act4_s0.png",
+      "prompt": "archive technical-records area, public query terminal with microfilm reader, rows of metal shelves holding retired public-safety equipment manuals and bound procurement records, faded institutional green walls, afternoon light through high windows casting long pale rectangles on linoleum floor, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act5_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks, fluorescent ceiling light off, desk lamp casting warm focused circle of light on sketch pages and printed manual photos and open notebook, dark street visible through window, deep evening palette with lamp glow dominant, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act6_s0.png",
+      "prompt": "small investigation media office late at night, same cramped room, desk lamp turned lower casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"

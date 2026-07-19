@@ -368,9 +368,10 @@ describe('migratePersisted', () => {
         ).toBeNull();
     });
     it('still defaults a MISSING dialogueIndex (legacy v1) to 0', () => {
-        // The legacy v1 case (no dialogueIndex field) must still migrate to 0,
-        // distinguishing it from a corrupted v2 record with an explicit
-        // non-number value.
+        // The legacy v1 case (no version field) must still migrate to 0.
+        // Under the version-based branch, this is detected as "missing
+        // version -> legacy" rather than "missing dialogueIndex -> legacy",
+        // but the outcome is the same.
         const v1 = {
             storyId: 'train_adventure',
             sceneId: 'act2',
@@ -379,5 +380,63 @@ describe('migratePersisted', () => {
         const migrated = migratePersisted(v1, 'en');
         expect(migrated).not.toBeNull();
         expect(migrated?.dialogueIndex).toBe(0);
+    });
+    it('treats a missing or non-number version as legacy -> dialogueIndex 0', () => {
+        // Regression guard for the `undefined < 2` edge case: a naive
+        // version check would let a missing version fall through to the v2
+        // preserve path; the explicit typeof/NaN guard routes it to legacy.
+        const base = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            locale: 'en',
+            dialogueIndex: 5,
+        };
+        // Missing version -> legacy -> 0 (dialogueIndex ignored).
+        expect(migratePersisted({ ...base }, 'en')?.dialogueIndex).toBe(0);
+        // Non-number versions -> legacy -> 0.
+        for (const bad of [null, '2', true, NaN]) {
+            expect(
+                migratePersisted({ ...base, version: bad }, 'en')?.dialogueIndex
+            ).toBe(0);
+        }
+    });
+    it('treats version < 2 as legacy -> dialogueIndex 0', () => {
+        const legacy = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            locale: 'en',
+            version: 1,
+            dialogueIndex: 7,
+        };
+        // A v1 record carrying a stale dialogueIndex must still default to 0;
+        // legacy indices are not preserved under the v2 schema contract.
+        expect(migratePersisted(legacy, 'en')?.dialogueIndex).toBe(0);
+    });
+    it('rejects a v2 record with a missing dialogueIndex (corrupted, not legacy)', () => {
+        // Behavior change vs. the prior "missing dialogueIndex -> 0" rule:
+        // under version-based detection, a v2 record missing its
+        // dialogueIndex is a corrupted v2 record, not legacy v1. Reject so
+        // the Tier-2 path falls through to the default session.
+        const v2MissingIndex = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            locale: 'en',
+            version: 2,
+        };
+        expect(migratePersisted(v2MissingIndex, 'en')).toBeNull();
+    });
+    it('rejects an unsupported future version (no silent downgrade to v2)', () => {
+        // Regression guard: a version > STORAGE_VERSION must not be silently
+        // rewritten as v2 with its dialogueIndex preserved — that would
+        // restore state under a schema this code doesn't understand. Reject
+        // so the caller falls through to the default session.
+        const future = {
+            storyId: 'train_adventure',
+            sceneId: 'act2',
+            dialogueIndex: 3,
+            locale: 'en',
+            version: 99,
+        };
+        expect(migratePersisted(future, 'en')).toBeNull();
     });
 });

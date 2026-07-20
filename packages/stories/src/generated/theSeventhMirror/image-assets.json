@@ -337,6 +337,56 @@
       "prompt": "small investigation media office late at night, same cramped room, desk lamp turned lower casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
     },
     {
+      "key": "chapter_16/ch16_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act1_s0.png",
+      "prompt": "small investigation media office, Sunday morning pale grey light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light off, cool daylight mixing with screen glow, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act1_s1.png",
+      "prompt": "Tokyo street on Sunday morning, pale overcast light, quiet weekend pedestrian walkway, low institutional buildings in the distance, muted grey-blue and concrete palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act2_s0.png",
+      "prompt": "local government council archive reading room, Sunday morning, rows of metal shelving with bound documents, a few reading desks with desk lamps, fluorescent ceiling light, institutional grey walls, large windows with pale overcast light, quiet and nearly empty, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act3_s0.png",
+      "prompt": "decommissioned equipment declassification reading area, same government building different floor, dimmer institutional lighting, rows of archived technical manuals in protective sleeves, reading desk with adjustable lamp, grey walls, small high windows, quiet and cold, muted desaturated palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act3_s1.png",
+      "prompt": "Tokyo street on Sunday afternoon, pale overcast light, quiet weekend pedestrian walkway between two institutional buildings, muted grey-blue and concrete palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act4_s0.png",
+      "prompt": "supervisory committee public reference catalog terminal room, Sunday afternoon, small institutional room with a few query terminals against the wall, pale fluorescent light, grey walls, no windows, quiet and cold, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act4_s1.png",
+      "prompt": "Tokyo street on Sunday late afternoon, low overcast light starting to dim, quiet weekend pedestrian walkway, institutional buildings, muted grey-blue palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act5_s0.png",
+      "prompt": "small investigation media office, Sunday evening, desk lamp casting warm circle of light on open notebook and three printed pages, fluorescent light off, darker than afternoon, quiet evening Tokyo street silence outside window, muted warm and cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act6_s0.png",
+      "prompt": "small investigation media office late at night, same cramped room, desk lamp turned low casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act6_s1.png",
+      "prompt": "Tokyo street late at night, deep darkness, single streetlight casting cold pool of light on empty sidewalk, distant buildings dark, no people, no cars, muted blue-black palette, visual-novel background art, wide shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"

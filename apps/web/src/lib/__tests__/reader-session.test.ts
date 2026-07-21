@@ -3,13 +3,11 @@ import type { DialogueEntry, Locale } from '@aquila/stories';
 import type { FlowConfig } from '@aquila/stories';
 import {
     validateSessionState,
-    resolveInitialState,
     parseDialogueParam,
     serializeSessionParams,
     migratePersisted,
     clampIndex,
     STORAGE_VERSION,
-    type ResolveDeps,
 } from '../reader-session';
 
 const flow: FlowConfig = {
@@ -22,16 +20,6 @@ const flow: FlowConfig = {
 const dialogue: Record<string, DialogueEntry[]> = {
     act1: [{ dialogue: 'a' }, { dialogue: 'b' }, { dialogue: 'c' }],
     act2: [{ dialogue: 'x' }],
-};
-const emptySceneDialogue: Record<string, DialogueEntry[]> = { act3: [] };
-
-const deps: ResolveDeps = {
-    flow: sid => (sid === 'train_adventure' ? flow : undefined),
-    dialogue: (sid, sceneId) =>
-        sid === 'train_adventure'
-            ? (dialogue[sceneId] ?? emptySceneDialogue[sceneId] ?? [])
-            : [],
-    defaultStoryId: 'train_adventure',
 };
 
 describe('STORAGE_VERSION', () => {
@@ -141,125 +129,6 @@ describe('validateSessionState', () => {
     });
 });
 
-describe('resolveInitialState', () => {
-    it('URL with valid story wins fully (story-only -> story start)', () => {
-        const p = new URLSearchParams('story=train_adventure');
-        const r = resolveInitialState(p, null, 'en', deps);
-        expect(r).toEqual({
-            storyId: 'train_adventure',
-            sceneId: 'act1',
-            dialogueIndex: 0,
-            locale: 'en',
-        });
-    });
-    it('story+scene URL -> that scene, index 0', () => {
-        const r = resolveInitialState(
-            new URLSearchParams('story=train_adventure&scene=act2'),
-            null,
-            'en',
-            deps
-        );
-        expect(r.sceneId).toBe('act2');
-        expect(r.dialogueIndex).toBe(0);
-    });
-    it('dialogue=N -> N-1 clamped', () => {
-        const r = resolveInitialState(
-            new URLSearchParams('story=train_adventure&scene=act1&dialogue=99'),
-            null,
-            'en',
-            deps
-        );
-        expect(r.dialogueIndex).toBe(2);
-    });
-    it('dialogue=0 -> absent -> index 0 (no contract break)', () => {
-        const r = resolveInitialState(
-            new URLSearchParams('story=train_adventure&scene=act1&dialogue=0'),
-            null,
-            'en',
-            deps
-        );
-        expect(r.dialogueIndex).toBe(0);
-    });
-    it('same-story card link does NOT resume persisted scene of same story', () => {
-        const persisted = {
-            storyId: 'train_adventure',
-            sceneId: 'act2',
-            dialogueIndex: 0,
-            locale: 'en',
-            version: 2,
-        };
-        const r = resolveInitialState(
-            new URLSearchParams('story=train_adventure'),
-            persisted,
-            'en',
-            deps
-        );
-        expect(r.sceneId).toBe('act1'); // story start, not persisted act2
-    });
-    it('invalid story falls through to persisted', () => {
-        const persisted = {
-            storyId: 'train_adventure',
-            sceneId: 'act2',
-            dialogueIndex: 0,
-            locale: 'en',
-            version: 2,
-        };
-        const r = resolveInitialState(
-            new URLSearchParams('story=bogus'),
-            persisted,
-            'en',
-            deps
-        );
-        expect(r.sceneId).toBe('act2');
-    });
-    it('no URL -> persisted', () => {
-        const persisted = {
-            storyId: 'train_adventure',
-            sceneId: 'act2',
-            dialogueIndex: 0,
-            locale: 'en',
-            version: 2,
-        };
-        const r = resolveInitialState(
-            new URLSearchParams(''),
-            persisted,
-            'en',
-            deps
-        );
-        expect(r.sceneId).toBe('act2');
-    });
-    it('no URL, no persisted -> default story start', () => {
-        const r = resolveInitialState(
-            new URLSearchParams(''),
-            null,
-            'en',
-            deps
-        );
-        expect(r).toEqual({
-            storyId: 'train_adventure',
-            sceneId: 'act1',
-            dialogueIndex: 0,
-            locale: 'en',
-        });
-    });
-    it('persisted with wrong locale is ignored', () => {
-        const persisted = {
-            storyId: 'train_adventure',
-            sceneId: 'act2',
-            dialogueIndex: 0,
-            locale: 'zh',
-            version: 2,
-        };
-        const r = resolveInitialState(
-            new URLSearchParams(''),
-            persisted,
-            'en',
-            deps
-        );
-        expect(r.sceneId).toBe('act1');
-    });
-});
-
 describe('serializeSessionParams', () => {
     it('produces story/scene/dialogue=N', () => {
         const s = serializeSessionParams({
@@ -327,22 +196,7 @@ describe('migratePersisted', () => {
         const migrated = migratePersisted(corrupted, 'en');
         expect(migrated).not.toBeNull();
         expect(migrated?.dialogueIndex).toBe(-1);
-        // The full Tier-2 path must reject the malformed record and fall
-        // through to the default session, not restore scene act2.
-        const params = new URLSearchParams(); // no URL story -> Tier 2
-        const state = resolveInitialState(params, migrated, 'en', {
-            flow: () => ({
-                start: 'act1',
-                nodes: [
-                    { kind: 'scene', id: 'act1', sceneId: 'act1', next: null },
-                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
-                ],
-            }),
-            dialogue: () => [],
-            defaultStoryId: 'train_adventure',
-        });
-        expect(state.sceneId).toBe('act1');
-        expect(state.dialogueIndex).toBe(0);
+        expect(validateSessionState(migrated, flow, dialogue.act2)).toBeNull();
     });
     it('rejects a v2-shaped record with a non-number dialogueIndex (null/string/boolean)', () => {
         // Regression guard: a v2-shaped record carrying a non-number

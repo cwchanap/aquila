@@ -49,6 +49,13 @@ vi.mock('../ui-dialogs', () => ({
 describe('ReaderManager — SSR guard (lines 50-52)', () => {
     it('does not throw when constructed in a window-less environment', async () => {
         const { ReaderManager } = await import('../reader-manager');
-        expect(() => new ReaderManager('en')).not.toThrow();
+        const loadStoryContent = vi.fn();
+        expect(
+            () =>
+                new ReaderManager('en', undefined, {
+                    loadStoryContent,
+                })
+        ).not.toThrow();
+        expect(loadStoryContent).not.toHaveBeenCalled();
     });
 });

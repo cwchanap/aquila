@@ -17,24 +17,8 @@ export interface PersistedSession {
 
 export const STORAGE_VERSION = 2;
 
-/** Fallback scene id when a flow has no `start` field. Used by both
- *  `defaultState` (here) and `ReaderManager`'s constructor seeding of
- *  `readerState` before the first `resolveAndApply()`. Centralized so the two
- *  sites cannot drift. */
+/** Fallback scene id when a loaded flow has no `start` field. */
 export const DEFAULT_SCENE_ID = 'act1';
-
-export type StoryFlowProvider = (storyId: string) => FlowConfig | undefined;
-export type DialogueProvider = (
-    storyId: string,
-    sceneId: string,
-    locale: Locale
-) => DialogueEntry[];
-
-export interface ResolveDeps {
-    flow: StoryFlowProvider;
-    dialogue: DialogueProvider;
-    defaultStoryId: string;
-}
 
 function isLocale(v: unknown): v is Locale {
     return v === 'en' || v === 'zh';
@@ -123,71 +107,6 @@ export function serializeSessionParams(
     p.set('scene', state.sceneId);
     p.set('dialogue', String(state.dialogueIndex + 1));
     return p;
-}
-
-function defaultState(deps: ResolveDeps, locale: Locale): ReaderSessionState {
-    const flow = deps.flow(deps.defaultStoryId);
-    return {
-        storyId: deps.defaultStoryId,
-        sceneId: flow?.start ?? DEFAULT_SCENE_ID,
-        dialogueIndex: 0,
-        locale,
-    };
-}
-
-/**
- * Three-tier precedence:
- * 1. Valid explicit URL (valid `story` locks the tier; fields resolved independently)
- * 2. Valid persisted session (only when URL has no valid story)
- * 3. Story start/default
- *
- * @deprecated Compatibility resolver for the synchronous ReaderManager. Task 7
- * will replace its consumer with the two-phase reader intent API before this
- * legacy combined resolver is removed.
- */
-export function resolveInitialState(
-    params: URLSearchParams,
-    persisted: PersistedSession | null,
-    locale: Locale,
-    deps: ResolveDeps
-): ReaderSessionState {
-    const urlStory = params.get('story');
-    const urlScene = params.get('scene');
-    const flowForUrl = urlStory ? deps.flow(urlStory) : undefined;
-
-    // Tier 1: URL carries a valid story -> fully resolve, never fall through.
-    if (urlStory && flowForUrl) {
-        const sceneId =
-            urlScene && sceneExists(flowForUrl, urlScene)
-                ? urlScene
-                : (flowForUrl.start ?? DEFAULT_SCENE_ID);
-        const dialogue = deps.dialogue(urlStory, sceneId, locale);
-        const idx = parseDialogueParam(params.get('dialogue'));
-        return {
-            storyId: urlStory,
-            sceneId,
-            dialogueIndex: idx !== null ? clampIndex(idx, dialogue.length) : 0,
-            locale,
-        };
-    }
-
-    // Tier 2: persisted (only when URL had no valid story); ignore locale mismatch.
-    // The locale check is resolveInitialState's own contract — it is exercised
-    // by direct unit tests that pass a persisted object bypassing
-    // migratePersisted, so it is NOT dead despite migratePersisted also
-    // filtering locale mismatches when called via ReaderManager.resolveAndApply.
-    if (persisted && persisted.locale === locale) {
-        const flow = deps.flow(persisted.storyId);
-        const validated = validateSessionState(
-            persisted,
-            flow,
-            deps.dialogue(persisted.storyId, persisted.sceneId, locale)
-        );
-        if (validated) return validated;
-    }
-
-    // Tier 3: default.
-    return defaultState(deps, locale);
 }
 
 /** Migrate a raw localStorage value to PersistedSession v2, or null if unusable. */

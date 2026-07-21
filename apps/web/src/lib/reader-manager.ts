@@ -32,6 +32,9 @@ import {
 export interface ReaderManagerDependencies {
     loadStoryContent?: typeof loadStoryContent;
     selectReaderIntent?: typeof selectReaderIntent;
+    loadReaderShell?: () => Promise<
+        typeof import('@/components/ReaderShell.svelte')
+    >;
 }
 
 export class ReaderManager {
@@ -40,6 +43,9 @@ export class ReaderManager {
     private readonly deps: {
         loadStoryContent: typeof loadStoryContent;
         selectReaderIntent: typeof selectReaderIntent;
+        loadReaderShell: () => Promise<
+            typeof import('@/components/ReaderShell.svelte')
+        >;
         defaultStoryId: string;
     };
     private readonly localBookmarks: LocalBookmarksStore;
@@ -65,8 +71,8 @@ export class ReaderManager {
     private persistTimer: ReturnType<typeof setTimeout> | null = null;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
-    // re-run resolveAndApply/syncUrl/persist. renderReader has its own
-    // readerInstance guard, but the listeners do not.
+    // start a second initial load. renderReader has its own mount guard, but
+    // the listeners do not.
     private initialized = false;
 
     private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
@@ -86,6 +92,9 @@ export class ReaderManager {
             loadStoryContent: dependencies.loadStoryContent ?? loadStoryContent,
             selectReaderIntent:
                 dependencies.selectReaderIntent ?? selectReaderIntent,
+            loadReaderShell:
+                dependencies.loadReaderShell ??
+                (() => import('@/components/ReaderShell.svelte')),
             defaultStoryId: defaultStoryId || 'train_adventure',
         };
 
@@ -211,6 +220,7 @@ export class ReaderManager {
         if (!this.isCurrent(generation)) return;
 
         if (selection.kind === 'unknown-story') {
+            this.pendingIntent = null;
             readerState.loadStatus = 'error';
             readerState.loadError = new StoryLoadError(
                 'unknown-story',
@@ -500,7 +510,8 @@ export class ReaderManager {
         const translations = this.t;
 
         // Dynamic import to avoid issues with Astro SSR
-        this.readerMountPromise = import('@/components/ReaderShell.svelte')
+        this.readerMountPromise = this.deps
+            .loadReaderShell()
             .then(module => {
                 const ReaderShellComponent = module.default;
                 // Clear any stale content (SSR comments, loading placeholders)
@@ -529,6 +540,7 @@ export class ReaderManager {
                 if (this.destroyed) this.unmountReader();
             })
             .catch(error => {
+                if (this.destroyed) return;
                 console.error('Failed to load reader component:', error);
 
                 // Clear container and build DOM safely
@@ -558,6 +570,15 @@ export class ReaderManager {
         return this.readerMountPromise;
     }
 
+    private async loadPrePayloadPopState(
+        selection: IntentSelection,
+        generation: number
+    ): Promise<void> {
+        await this.renderReader();
+        if (!this.isCurrent(generation)) return;
+        await this.loadIntent(selection, 'popstate', generation);
+    }
+
     /** popstate handler: cancel any pending line replace (so the destination
      *  history entry is not mutated), then either soft-reject (invalid URL ->
      *  reconverge canonical URL via replaceState) or restore the validated
@@ -571,9 +592,15 @@ export class ReaderManager {
             readerState.locale,
             { defaultStoryId: this.deps.defaultStoryId }
         );
+        if (!this.activeStory || !readerState.hasActivePayload) {
+            const generation = ++this.loadGeneration;
+            void this.loadPrePayloadPopState(selection, generation).catch(
+                error => console.error('Reader popstate load failed', error)
+            );
+            return;
+        }
         if (
             selection.kind !== 'load' ||
-            !this.activeStory ||
             selection.intent.storyId !== readerState.storyId
         ) {
             // invalid popstate -> soft-reject: keep store, reconverge URL

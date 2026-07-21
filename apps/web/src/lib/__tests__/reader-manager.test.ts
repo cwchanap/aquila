@@ -463,6 +463,106 @@ describe('ReaderManager', () => {
             });
         });
 
+        it('supersedes the initial load when popstate selects a new story before payload apply', async () => {
+            const initial = deferred<AsyncStoryLoaderResult>();
+            const destination = deferred<AsyncStoryLoaderResult>();
+            const loadStoryContent = vi.fn((storyId: string) =>
+                storyId === 'train_adventure'
+                    ? initial.promise
+                    : destination.promise
+            );
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mountReaderContainer();
+            setLocation('?story=train_adventure&scene=act1&dialogue=1');
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            const initializing = manager.initialize();
+            await vi.waitFor(() =>
+                expect(loadStoryContent).toHaveBeenCalledWith(
+                    'train_adventure',
+                    'en'
+                )
+            );
+
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act&dialogue=2'
+            );
+            window.dispatchEvent(new PopStateEvent('popstate'));
+
+            expect(replaceState).not.toHaveBeenCalled();
+            await vi.waitFor(() =>
+                expect(loadStoryContent).toHaveBeenCalledWith(
+                    'dont_save_me_before_midnight',
+                    'en'
+                )
+            );
+
+            destination.resolve(
+                storyPayload({
+                    flow: {
+                        start: 'midnight_act',
+                        nodes: [
+                            {
+                                kind: 'scene',
+                                id: 'midnight_act',
+                                sceneId: 'midnight_act',
+                                next: null,
+                            },
+                        ],
+                    },
+                    dialogue: {
+                        midnight_act: [
+                            { dialogue: 'first' },
+                            { dialogue: 'second' },
+                        ],
+                    },
+                })
+            );
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('ready')
+            );
+
+            expect(readerState).toMatchObject({
+                storyId: 'dont_save_me_before_midnight',
+                currentSceneId: 'midnight_act',
+                dialogueIndex: 1,
+                dialogue: [{ dialogue: 'first' }, { dialogue: 'second' }],
+            });
+            expect(replaceState).toHaveBeenCalledOnce();
+            const appliedUrl = replaceState.mock.calls[0][2] as URL;
+            expect(appliedUrl.searchParams.get('story')).toBe(
+                'dont_save_me_before_midnight'
+            );
+            const persistedBeforeInitialSettles =
+                mockStorage.setItem.mock.calls.filter(
+                    ([key]) => key === 'aquila:readerState:en'
+                );
+            expect(persistedBeforeInitialSettles).toHaveLength(1);
+            expect(
+                JSON.parse(persistedBeforeInitialSettles[0][1])
+            ).toMatchObject({
+                storyId: 'dont_save_me_before_midnight',
+                sceneId: 'midnight_act',
+                dialogueIndex: 1,
+            });
+
+            initial.resolve(storyPayload());
+            await initializing;
+            expect(readerState.storyId).toBe('dont_save_me_before_midnight');
+            expect(readerState.currentSceneId).toBe('midnight_act');
+            expect(replaceState).toHaveBeenCalledOnce();
+            expect(
+                mockStorage.setItem.mock.calls.filter(
+                    ([key]) => key === 'aquila:readerState:en'
+                )
+            ).toHaveLength(1);
+        });
+
         it('ignores stale persisted unknown IDs and loads only the default story', async () => {
             const loadStoryContent = vi.fn().mockResolvedValue(storyPayload());
             mockStorage.getItem.mockReturnValueOnce(
@@ -1094,6 +1194,27 @@ describe('ReaderManager', () => {
     });
 
     describe('renderReader', () => {
+        it('does not replace container content when destroyed before shell loading rejects', async () => {
+            const shellLoad =
+                deferred<typeof import('@/components/ReaderShell.svelte')>();
+            void shellLoad.promise.catch(() => undefined);
+            const container = mountReaderContainer();
+            const sentinel = document.createElement('span');
+            sentinel.textContent = 'keep me';
+            container.appendChild(sentinel);
+            manager = new ReaderManager('en', undefined, {
+                loadReaderShell: vi.fn(() => shellLoad.promise),
+            });
+            const rendering = manager.renderReader();
+
+            manager.destroy();
+            shellLoad.reject(new Error('deferred shell failure'));
+            await rendering;
+
+            expect([...container.childNodes]).toEqual([sentinel]);
+            expect(container.textContent).toBe('keep me');
+        });
+
         it('memoizes the mount promise across calls', async () => {
             mountReaderContainer();
             manager = new ReaderManager('en');

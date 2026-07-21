@@ -7,7 +7,6 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./story-metadata": "./src/story-metadata.ts",
     "./async": "./src/async/index.ts",
     "./async/testing": "./src/async/testing.ts",
     "./generated/trainAdventure/characters": "./src/generated/trainAdventure/characters.ts",

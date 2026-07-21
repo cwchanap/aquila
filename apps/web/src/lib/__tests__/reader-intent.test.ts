@@ -24,6 +24,7 @@ const payload: StoryPayload = {
 };
 
 const deps = { defaultStoryId: 'train_adventure' };
+const overflowDialogue = '9'.repeat(400);
 
 function intent(overrides: Partial<ReaderIntent> = {}): ReaderIntent {
     return {
@@ -120,6 +121,35 @@ describe('selectReaderIntent', () => {
             });
         }
     );
+
+    it('marks an overflow-sized dialogue parameter as malformed', () => {
+        const selection = selectReaderIntent(
+            new URLSearchParams(
+                `story=train_adventure&scene=act1&dialogue=${overflowDialogue}`
+            ),
+            null,
+            'en',
+            deps
+        );
+
+        expect(selection).toMatchObject({
+            kind: 'load',
+            intent: {
+                requestedDialogueIndex: Infinity,
+                malformedDialogue: true,
+            },
+        });
+        if (selection.kind !== 'load') throw new Error('expected load');
+        expect(
+            validateLoadedIntent(selection.intent, payload, 'initial')
+        ).toMatchObject({
+            kind: 'apply',
+            state: { dialogueIndex: 0 },
+        });
+        expect(
+            validateLoadedIntent(selection.intent, payload, 'popstate')
+        ).toEqual({ kind: 'soft-reject' });
+    });
 });
 
 describe('validateLoadedIntent', () => {

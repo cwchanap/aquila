@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import type { StoryFlowConfig, StoryLoaderResult } from '../../stories';
 import { StoryLoadError } from '../errors';
 import { createStoryContentLoader } from '../loader';
+import {
+    REGISTERED_STORY_IDS,
+    isRegisteredStoryId,
+    normalizeStoryLocale,
+} from '..';
 
 const flow = { start: 'act1', nodes: [] } as StoryFlowConfig;
 const payload: StoryLoaderResult = {
@@ -11,6 +16,12 @@ const payload: StoryLoaderResult = {
 const importer = vi.fn(async () => ({ ...payload, flow }));
 
 describe('createStoryContentLoader', () => {
+    it('re-exports story registry metadata for async consumers', () => {
+        expect(REGISTERED_STORY_IDS).toContain('train_adventure');
+        expect(isRegisteredStoryId('train_adventure')).toBe(true);
+        expect(normalizeStoryLocale('EN-ca')).toBe('en');
+    });
+
     it('deduplicates concurrent requests and caches success by normalized locale', async () => {
         const loader = createStoryContentLoader({ train_adventure: importer });
         const [a, b] = await Promise.all([

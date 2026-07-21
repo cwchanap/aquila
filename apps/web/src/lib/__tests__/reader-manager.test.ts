@@ -960,6 +960,148 @@ describe('ReaderManager', () => {
     });
 
     describe('asynchronous navigation intents', () => {
+        it('soft-rejects a missing-story popstate against an active non-default session', async () => {
+            let pendingFrame: FrameRequestCallback | null = null;
+            const requestAnimationFrame = vi.fn(
+                (callback: FrameRequestCallback) => {
+                    pendingFrame = callback;
+                    return 17;
+                }
+            );
+            const cancelAnimationFrame = vi.fn();
+            Object.defineProperties(window, {
+                requestAnimationFrame: {
+                    value: requestAnimationFrame,
+                    configurable: true,
+                },
+                cancelAnimationFrame: {
+                    value: cancelAnimationFrame,
+                    configurable: true,
+                },
+            });
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            const loadStoryContent = vi
+                .fn()
+                .mockResolvedValue(midnightPayload());
+            mountReaderContainer();
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act&dialogue=2'
+            );
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            await manager.initialize();
+            const activeDialogue = readerState.dialogue;
+            const activeFlow = readerState.activeFlow;
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(0);
+            expect(pendingFrame).not.toBeNull();
+            readerState.loadStatus = 'error';
+            readerState.loadError = new StoryLoadError(
+                'load-failed',
+                'stale replacement error'
+            );
+            replaceState.mockClear();
+            mockStorage.setItem.mockClear();
+
+            setLocation('?scene=ignored&dialogue=99');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await Promise.resolve();
+
+            expect(cancelAnimationFrame).toHaveBeenCalledWith(17);
+            expect(loadStoryContent).toHaveBeenCalledOnce();
+            expect(readerState).toMatchObject({
+                storyId: 'dont_save_me_before_midnight',
+                currentSceneId: 'midnight_act',
+                dialogueIndex: 0,
+                hasActivePayload: true,
+                loadStatus: 'ready',
+                loadError: null,
+            });
+            expect(readerState.dialogue).toBe(activeDialogue);
+            expect(readerState.activeFlow).toBe(activeFlow);
+            expect(replaceState).toHaveBeenCalledOnce();
+            const canonicalUrl = replaceState.mock.calls[0][2] as URL;
+            expect(canonicalUrl.searchParams.get('story')).toBe(
+                'dont_save_me_before_midnight'
+            );
+            expect(canonicalUrl.searchParams.get('scene')).toBe('midnight_act');
+            expect(canonicalUrl.searchParams.get('dialogue')).toBe('1');
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+        });
+
+        it('invalidates a pending replacement when active popstate omits story', async () => {
+            const replacement = deferred<AsyncStoryLoaderResult>();
+            const loadStoryContent = vi.fn((storyId: string) =>
+                storyId === 'dont_save_me_before_midnight'
+                    ? Promise.resolve(midnightPayload())
+                    : replacement.promise
+            );
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mountReaderContainer();
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act&dialogue=2'
+            );
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            await manager.initialize();
+            const activeDialogue = readerState.dialogue;
+            const activeFlow = readerState.activeFlow;
+            replaceState.mockClear();
+            mockStorage.setItem.mockClear();
+
+            setLocation('?story=train_adventure&scene=act2');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(loadStoryContent).toHaveBeenCalledWith(
+                    'train_adventure',
+                    'en'
+                )
+            );
+            expect(readerState.loadStatus).toBe('loading');
+
+            setLocation('');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await Promise.resolve();
+
+            expect(loadStoryContent.mock.calls).toEqual([
+                ['dont_save_me_before_midnight', 'en'],
+                ['train_adventure', 'en'],
+            ]);
+            expect((manager as any).pendingIntent).toBeNull();
+            expect(readerState).toMatchObject({
+                storyId: 'dont_save_me_before_midnight',
+                currentSceneId: 'midnight_act',
+                dialogueIndex: 1,
+                hasActivePayload: true,
+                loadStatus: 'ready',
+                loadError: null,
+            });
+            expect(readerState.dialogue).toBe(activeDialogue);
+            expect(readerState.activeFlow).toBe(activeFlow);
+            expect(replaceState).toHaveBeenCalledOnce();
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+
+            replacement.resolve(storyPayload());
+            await Promise.resolve();
+            await Promise.resolve();
+
+            expect(readerState.storyId).toBe('dont_save_me_before_midnight');
+            expect(readerState.currentSceneId).toBe('midnight_act');
+            expect(replaceState).toHaveBeenCalledOnce();
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+        });
+
         it('reuses a cached A payload when popstate returns from ready B', async () => {
             const cache = new Map<string, AsyncStoryLoaderResult>();
             const importer = vi.fn(async (storyId: string) =>

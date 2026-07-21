@@ -589,6 +589,14 @@ export class ReaderManager {
     private onPopState = (): void => {
         this.cancelPendingReplace(); // do NOT flush -> avoid mutating destination entry
         const params = new URLSearchParams(window.location.search);
+        if (readerState.hasActivePayload && !params.has('story')) {
+            this.loadGeneration++;
+            this.pendingIntent = null;
+            readerState.loadStatus = 'ready';
+            readerState.loadError = null;
+            this.syncUrl(true);
+            return;
+        }
         const selection = this.deps.selectReaderIntent(
             params,
             null,

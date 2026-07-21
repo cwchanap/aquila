@@ -34,6 +34,63 @@ describe('createStoryContentLoader', () => {
         expect(a.locale).toBe('en');
     });
 
+    it('isolates cached payloads for distinct stories', async () => {
+        const trainImporter = vi.fn(async () => ({
+            ...payload,
+            dialogue: { act1: [{ dialogue: 'train' }] },
+            flow,
+        }));
+        const midnightImporter = vi.fn(async () => ({
+            ...payload,
+            dialogue: { act1: [{ dialogue: 'midnight' }] },
+            flow,
+        }));
+        const loader = createStoryContentLoader({
+            train_adventure: trainImporter,
+            dont_save_me_before_midnight: midnightImporter,
+        });
+
+        const train = await loader.load('train_adventure', 'en');
+        const midnight = await loader.load(
+            'dont_save_me_before_midnight',
+            'en'
+        );
+
+        await expect(loader.load('train_adventure', 'en')).resolves.toBe(train);
+        await expect(
+            loader.load('dont_save_me_before_midnight', 'en')
+        ).resolves.toBe(midnight);
+        expect(train.dialogue.act1[0]?.dialogue).toBe('train');
+        expect(midnight.dialogue.act1[0]?.dialogue).toBe('midnight');
+        expect(trainImporter).toHaveBeenCalledOnce();
+        expect(midnightImporter).toHaveBeenCalledOnce();
+    });
+
+    it('isolates cached payloads for English and Chinese locale keys', async () => {
+        const localizedImporter = vi.fn(async locale => ({
+            ...payload,
+            dialogue: { act1: [{ dialogue: locale }] },
+            flow,
+        }));
+        const loader = createStoryContentLoader({
+            train_adventure: localizedImporter,
+        });
+
+        const english = await loader.load('train_adventure', 'en');
+        const chinese = await loader.load('train_adventure', 'zh');
+
+        await expect(loader.load('train_adventure', 'en')).resolves.toBe(
+            english
+        );
+        await expect(loader.load('train_adventure', 'zh')).resolves.toBe(
+            chinese
+        );
+        expect(english).not.toBe(chinese);
+        expect(english.dialogue.act1[0]?.dialogue).toBe('en');
+        expect(chinese.dialogue.act1[0]?.dialogue).toBe('zh');
+        expect(localizedImporter.mock.calls).toEqual([['en'], ['zh']]);
+    });
+
     it('removes rejected promises so application state is not poisoned', async () => {
         const retrying = vi
             .fn()

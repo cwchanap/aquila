@@ -30,7 +30,9 @@ const title = translations.reader.title;
             const attr = container.getAttribute('data-locale');
             const locale = attr === 'zh' || attr === 'en' ? attr : 'en';
             const manager = new ReaderManager(locale);
-            manager.initialize();
+            void manager.initialize().catch(error =>
+                console.error('Reader initialization failed', error)
+            );
         });
     </script>
 </MainLayout>

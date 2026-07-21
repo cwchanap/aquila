@@ -1,34 +1,53 @@
 import {
-    getStoryContent,
-    getStoryFlow,
     type Locale,
     type DialogueEntry,
     type ChoiceDefinition,
 } from '@aquila/stories';
+import {
+    loadStoryContent,
+    StoryLoadError,
+    type AsyncStoryLoaderResult,
+} from '@aquila/stories/async';
 import { getTranslations } from '@aquila/stories/translations';
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 import { LocalBookmarksStore } from './local-bookmarks-store';
 import { readerState } from './reader-state.svelte';
 import {
-    resolveInitialState,
     migratePersisted,
     serializeSessionParams,
-    sceneExists,
-    parseDialogueParam,
     clampIndex,
     STORAGE_VERSION,
-    DEFAULT_SCENE_ID,
-    type ResolveDeps,
     type ReaderSessionState,
     type PersistedSession,
 } from './reader-session';
+import {
+    selectReaderIntent,
+    validateLoadedIntent,
+    type IntentSelection,
+    type LoadedIntentPhase,
+    type ReaderIntent,
+} from './reader-intent';
+
+export interface ReaderManagerDependencies {
+    loadStoryContent?: typeof loadStoryContent;
+    selectReaderIntent?: typeof selectReaderIntent;
+}
 
 export class ReaderManager {
     private readerInstance: { unmount: () => void } | null = null;
     private readonly initialLocale: Locale;
-    private readonly deps: ResolveDeps;
+    private readonly deps: {
+        loadStoryContent: typeof loadStoryContent;
+        selectReaderIntent: typeof selectReaderIntent;
+        defaultStoryId: string;
+    };
     private readonly localBookmarks: LocalBookmarksStore;
+    private activeStory: AsyncStoryLoaderResult | null = null;
+    private pendingIntent: ReaderIntent | null = null;
+    private loadGeneration = 0;
+    private destroyed = false;
+    private readerMountPromise: Promise<void> | null = null;
 
     // Throttled-write state for line-by-line index changes. rAF coalesces
     // rapid onIndexChange reports so each animation frame produces at most one
@@ -57,24 +76,30 @@ export class ReaderManager {
         'aquila:currentScene:zh',
     ];
 
-    constructor(locale: Locale, defaultStoryId?: string) {
+    constructor(
+        locale: Locale,
+        defaultStoryId?: string,
+        dependencies: ReaderManagerDependencies = {}
+    ) {
         this.initialLocale = locale;
         this.deps = {
-            flow: sid => getStoryFlow(sid) ?? undefined,
-            dialogue: (sid, sceneId, loc) =>
-                getStoryContent(sid, loc).dialogue[sceneId] ?? [],
+            loadStoryContent: dependencies.loadStoryContent ?? loadStoryContent,
+            selectReaderIntent:
+                dependencies.selectReaderIntent ?? selectReaderIntent,
             defaultStoryId: defaultStoryId || 'train_adventure',
         };
 
-        // Seed the canonical store with progression defaults so helper methods
-        // (hasNextScene, getLinearNextScene) have a storyId to read before the
-        // first resolveAndApply() runs.
-        const storyId = this.deps.defaultStoryId;
-        readerState.storyId = storyId;
-        readerState.currentSceneId =
-            getStoryFlow(storyId)?.start ?? DEFAULT_SCENE_ID;
+        readerState.dialogue = [];
+        readerState.choice = null;
+        readerState.currentSceneId = '';
+        readerState.storyId = '';
+        readerState.canGoNext = false;
         readerState.locale = locale;
         readerState.dialogueIndex = 0;
+        readerState.loadStatus = 'idle';
+        readerState.loadError = null;
+        readerState.hasActivePayload = false;
+        readerState.activeFlow = null;
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
@@ -99,7 +124,10 @@ export class ReaderManager {
     }
 
     private getSceneNode(storyId: string, sceneId: string) {
-        const flow = getStoryFlow(storyId);
+        const flow =
+            this.activeStory && storyId === readerState.storyId
+                ? this.activeStory.flow
+                : null;
         return flow?.nodes.find(
             (n): n is Extract<typeof n, { kind: 'scene' }> =>
                 n.kind === 'scene' && n.sceneId === sceneId
@@ -118,11 +146,7 @@ export class ReaderManager {
         return this.getLinearNextScene(sceneId) !== null;
     }
 
-    /**
-     * Resolve the session (URL > localStorage > default) via the pure helpers in
-     * reader-session, then apply the result to the canonical readerState.
-     */
-    private resolveAndApply(): ReaderSessionState {
+    private selectInitialIntent(): IntentSelection {
         const params = new URLSearchParams(window.location.search);
         const raw = localStorage.getItem(this.storageKey);
         let persisted: PersistedSession | null = null;
@@ -136,40 +160,105 @@ export class ReaderManager {
                 console.error('Failed to parse saved state', e);
             }
         }
-        const state = resolveInitialState(
+        return this.deps.selectReaderIntent(
             params,
             persisted,
             this.initialLocale,
-            this.deps
+            { defaultStoryId: this.deps.defaultStoryId }
         );
-        this.applySession(state);
-        return state;
     }
 
-    /** Write a resolved session into readerState and reload the scene payload. */
-    private applySession(state: ReaderSessionState): void {
+    private applySession(
+        state: ReaderSessionState,
+        payload: AsyncStoryLoaderResult
+    ): void {
+        this.activeStory = payload;
+        readerState.activeFlow = payload.flow;
         readerState.storyId = state.storyId;
         readerState.currentSceneId = state.sceneId;
         readerState.locale = state.locale;
         readerState.dialogueIndex = state.dialogueIndex;
         const { dialogue, choice } = this.getSceneData(
             state.storyId,
-            state.sceneId,
-            state.locale
+            state.sceneId
         );
         readerState.dialogue = dialogue;
         readerState.choice = choice;
         readerState.canGoNext = this.hasNextScene(state.sceneId);
-
-        // Temporary synchronous compatibility bridge. Task 7 replaces this
-        // block when ReaderManager applies the asynchronously loaded payload
-        // atomically; until then, expose the same ready-store contract to the
-        // reactive ReaderShell without introducing async/race behavior here.
-        const activeFlow = getStoryFlow(state.storyId);
-        readerState.activeFlow = activeFlow ?? null;
-        readerState.hasActivePayload = activeFlow !== undefined;
-        readerState.loadStatus = activeFlow ? 'ready' : 'idle';
+        readerState.hasActivePayload = true;
+        readerState.loadStatus = 'ready';
         readerState.loadError = null;
+    }
+
+    private isCurrent(generation: number): boolean {
+        return !this.destroyed && generation === this.loadGeneration;
+    }
+
+    private defaultIntent(): IntentSelection {
+        return this.deps.selectReaderIntent(
+            new URLSearchParams(),
+            null,
+            this.initialLocale,
+            { defaultStoryId: this.deps.defaultStoryId }
+        );
+    }
+
+    private async loadIntent(
+        selection: IntentSelection,
+        phase: LoadedIntentPhase,
+        generation: number
+    ): Promise<void> {
+        if (!this.isCurrent(generation)) return;
+
+        if (selection.kind === 'unknown-story') {
+            readerState.loadStatus = 'error';
+            readerState.loadError = new StoryLoadError(
+                'unknown-story',
+                `Unknown story: ${selection.storyId}`
+            );
+            return;
+        }
+
+        const { intent } = selection;
+        this.pendingIntent = intent;
+        readerState.loadStatus = 'loading';
+        readerState.loadError = null;
+
+        let payload: AsyncStoryLoaderResult;
+        try {
+            payload = await this.deps.loadStoryContent(
+                intent.storyId,
+                intent.locale
+            );
+        } catch (error) {
+            if (!this.isCurrent(generation)) return;
+            if (error instanceof StoryLoadError) {
+                readerState.loadStatus = 'error';
+                readerState.loadError = error;
+                return;
+            }
+            throw error;
+        }
+
+        if (!this.isCurrent(generation)) return;
+        const result = validateLoadedIntent(intent, payload, phase);
+        if (result.kind === 'fallback-default') {
+            await this.loadIntent(this.defaultIntent(), phase, generation);
+            return;
+        }
+        if (result.kind === 'soft-reject') {
+            this.pendingIntent = null;
+            if (readerState.hasActivePayload) {
+                readerState.loadStatus = 'ready';
+                this.syncUrl(true);
+            }
+            return;
+        }
+
+        this.applySession(result.state, payload);
+        this.pendingIntent = null;
+        this.syncUrl(true);
+        this.persist();
     }
 
     /** Persist the current progression as the v2 schema. Catches storage
@@ -265,13 +354,15 @@ export class ReaderManager {
 
     private getSceneData(
         storyId: string,
-        sceneId: string,
-        locale: Locale
+        sceneId: string
     ): {
         dialogue: DialogueEntry[];
         choice: ChoiceDefinition | null;
     } {
-        const story = getStoryContent(storyId, locale);
+        const story = this.activeStory;
+        if (!story || storyId !== readerState.storyId) {
+            return { dialogue: [], choice: null };
+        }
         const dialogue = story.dialogue[sceneId] || [];
 
         // Derive the choice from the flow graph: if the scene node's next
@@ -304,13 +395,13 @@ export class ReaderManager {
      *  Back button lands on an accurate line, then writes the new scene to the
      *  store and pushes a fresh history entry. */
     goToScene = (sceneId: string): void => {
+        if (!this.activeStory || readerState.loadStatus !== 'ready') return;
         this.flushPendingReplace(); // preserve accurate line for Back
         readerState.currentSceneId = sceneId;
         readerState.dialogueIndex = 0;
         const { dialogue, choice } = this.getSceneData(
             readerState.storyId,
-            sceneId,
-            readerState.locale
+            sceneId
         );
         readerState.dialogue = dialogue;
         readerState.choice = choice;
@@ -397,18 +488,19 @@ export class ReaderManager {
         }
     };
 
-    renderReader(): void {
+    renderReader(): Promise<void> {
+        if (this.readerMountPromise) return this.readerMountPromise;
         const container = document.getElementById('reader-container');
-        if (!container) return;
+        if (!container) return Promise.resolve();
 
         if (this.readerInstance) {
-            return;
+            return Promise.resolve();
         }
 
         const translations = this.t;
 
         // Dynamic import to avoid issues with Astro SSR
-        import('@/components/ReaderShell.svelte')
+        this.readerMountPromise = import('@/components/ReaderShell.svelte')
             .then(module => {
                 const ReaderShellComponent = module.default;
                 // Clear any stale content (SSR comments, loading placeholders)
@@ -434,6 +526,7 @@ export class ReaderManager {
                         unmount(mountedComponent);
                     },
                 };
+                if (this.destroyed) this.unmountReader();
             })
             .catch(error => {
                 console.error('Failed to load reader component:', error);
@@ -462,6 +555,7 @@ export class ReaderManager {
                 wrapper.appendChild(retryBtn);
                 container.appendChild(wrapper);
             });
+        return this.readerMountPromise;
     }
 
     /** popstate handler: cancel any pending line replace (so the destination
@@ -471,53 +565,37 @@ export class ReaderManager {
     private onPopState = (): void => {
         this.cancelPendingReplace(); // do NOT flush -> avoid mutating destination entry
         const params = new URLSearchParams(window.location.search);
-        const urlStory = params.get('story');
-        const flowForUrl = urlStory ? this.deps.flow(urlStory) : undefined;
-        if (!urlStory || !flowForUrl) {
+        const selection = this.deps.selectReaderIntent(
+            params,
+            null,
+            readerState.locale,
+            { defaultStoryId: this.deps.defaultStoryId }
+        );
+        if (
+            selection.kind !== 'load' ||
+            !this.activeStory ||
+            selection.intent.storyId !== readerState.storyId
+        ) {
             // invalid popstate -> soft-reject: keep store, reconverge URL
             this.syncUrl(true);
             return;
         }
-        // Stale scene: URL requested a scene that does not exist in the flow
-        // (e.g. a removed/renamed scene). Soft-reject rather than silently
-        // Tier-1-resolving to the story START, which would clobber the user's
-        // current position.
-        const urlScene = params.get('scene');
-        if (urlScene && !sceneExists(flowForUrl, urlScene)) {
-            this.syncUrl(true);
-            return;
-        }
-        // Malformed dialogue: a raw value that is present, non-empty, not
-        // zero-equivalent, and unparseable by parseDialogueParam (e.g.
-        // "2junk", "1.5"). resolveInitialState treats parseDialogueParam=null
-        // as "absent" and silently moves the reader to index 0, leaving the
-        // malformed URL in place — soft-reject instead so the canonical URL
-        // is reconverged. Zero-equivalent values (absent, empty, or all-zeros
-        // like "0", "00", "000") all map to index 0 in initial restore and
-        // must be retained as valid restore targets here, so the popstate
-        // classification stays aligned with the initial-restore classification.
-        const rawDialogue = params.get('dialogue');
-        const isZeroEquivalent =
-            rawDialogue === null ||
-            rawDialogue === '' ||
-            /^0+$/.test(rawDialogue);
-        if (!isZeroEquivalent && parseDialogueParam(rawDialogue) === null) {
-            this.syncUrl(true);
-            return;
-        }
-        const state = resolveInitialState(
-            params,
-            null, // popstate never falls through to persisted
-            readerState.locale,
-            this.deps
+        const result = validateLoadedIntent(
+            selection.intent,
+            this.activeStory,
+            'popstate'
         );
+        if (result.kind !== 'apply') {
+            this.syncUrl(true);
+            return;
+        }
         if (
-            state.sceneId !== readerState.currentSceneId ||
-            state.storyId !== readerState.storyId
+            result.state.sceneId !== readerState.currentSceneId ||
+            result.state.storyId !== readerState.storyId
         ) {
-            this.applySession(state);
+            this.applySession(result.state, this.activeStory);
         } else {
-            readerState.dialogueIndex = state.dialogueIndex;
+            readerState.dialogueIndex = result.state.dialogueIndex;
         }
     };
 
@@ -527,6 +605,7 @@ export class ReaderManager {
      *  mutates readerState without scheduling a debounce timer — storage must
      *  be reconciled here regardless of whether a persistTimer was pending. */
     private onPageHide = (): void => {
+        if (!readerState.hasActivePayload) return;
         this.flushPendingReplace();
         if (this.persistTimer !== null) {
             clearTimeout(this.persistTimer);
@@ -541,28 +620,40 @@ export class ReaderManager {
         if (document.visibilityState === 'hidden') this.onPageHide();
     };
 
-    initialize(): void {
-        if (this.initialized) return;
-        this.initialized = true;
-        this.resolveAndApply();
-        this.syncUrl(true); // first sync collapses the duplicate history entry
-        this.persist();
-        this.renderReader();
-
-        // Listeners stay registered for the lifetime of the page and react to
-        // browser Back/Forward and tab hide. destroy() tears them down for
-        // test isolation only (the full-page reader app has no SPA teardown).
+    private addLifecycleListeners(): void {
         window.addEventListener('popstate', this.onPopState);
         window.addEventListener('pagehide', this.onPageHide);
         document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
-    /** Remove lifecycle listeners and clear pending timers. Intended for test
-     *  isolation only; the full-page reader app does not call this in
-     *  production and the reader component is not unmounted here. Uses the
-     *  same handler references registered in initialize() so
-     *  removeEventListener actually detaches them. */
+    async initialize(): Promise<void> {
+        if (this.initialized) return;
+        this.initialized = true;
+        this.destroyed = false;
+        this.addLifecycleListeners();
+        const generation = ++this.loadGeneration;
+        await this.renderReader();
+        if (!this.isCurrent(generation)) return;
+        await this.loadIntent(
+            this.selectInitialIntent(),
+            'initial',
+            generation
+        );
+    }
+
+    private unmountReader(): void {
+        const instance = this.readerInstance;
+        if (!instance) return;
+        this.readerInstance = null;
+        instance.unmount();
+    }
+
+    /** Invalidate pending work, remove lifecycle listeners/timers, and unmount
+     *  the shell. Uses the same handler references registered in initialize()
+     *  so removeEventListener actually detaches them. */
     destroy(): void {
+        this.destroyed = true;
+        this.loadGeneration++;
         window.removeEventListener('popstate', this.onPopState);
         window.removeEventListener('pagehide', this.onPageHide);
         document.removeEventListener(
@@ -574,8 +665,7 @@ export class ReaderManager {
             clearTimeout(this.persistTimer);
             this.persistTimer = null;
         }
-        // Reset so a future SPA teardown path could re-initialize the same
-        // manager. Not used by the full-page reader app today.
-        this.initialized = false;
+        this.unmountReader();
+        void this.readerMountPromise?.then(() => this.unmountReader());
     }
 }

@@ -1,6 +1,5 @@
 import type { Locale } from '@aquila/stories';
-import type { StoryPayload } from '@aquila/stories/async';
-import { isRegisteredStoryId } from '@aquila/stories/story-metadata';
+import { isRegisteredStoryId, type StoryPayload } from '@aquila/stories/async';
 import {
     DEFAULT_SCENE_ID,
     clampIndex,
@@ -68,7 +67,8 @@ export function selectReaderIntent(
                 malformedDialogue:
                     rawDialogue !== null &&
                     !isZeroEquivalentDialogue &&
-                    requestedDialogueIndex === null,
+                    (requestedDialogueIndex === null ||
+                        !Number.isFinite(requestedDialogueIndex)),
                 locale,
             },
         };

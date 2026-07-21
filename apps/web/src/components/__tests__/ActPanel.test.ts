@@ -56,22 +56,6 @@ const mockFlow = {
     ],
 };
 
-vi.mock('@aquila/stories', async importOriginal => ({
-    ...(await importOriginal<typeof import('@aquila/stories')>()),
-    getTranslations: vi.fn(() => ({
-        reader: {
-            actPanel: 'Acts',
-            actLabel: 'Act {n}',
-            actFinal: 'Final Act',
-            actEpilogue: 'Epilogue',
-            chapterLabel: 'Chapter {n}',
-            openActsPanel: 'Open acts panel',
-            closeActsPanel: 'Close acts panel',
-        },
-        locale: 'en',
-    })),
-}));
-
 vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         reader: {

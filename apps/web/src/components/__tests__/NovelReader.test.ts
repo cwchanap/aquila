@@ -65,10 +65,6 @@ const { mockGetTranslations } = vi.hoisted(() => ({
     })),
 }));
 
-vi.mock('@aquila/stories', async importOriginal => ({
-    ...(await importOriginal<typeof import('@aquila/stories')>()),
-    getTranslations: mockGetTranslations,
-}));
 vi.mock('@aquila/stories/translations', () => ({
     getTranslations: mockGetTranslations,
 }));
@@ -717,7 +713,9 @@ describe('NovelReader — edge cases', () => {
     });
 
     it('falls back to "Unknown" when characterNames is missing', async () => {
-        const { getTranslations } = await import('@aquila/stories');
+        const { getTranslations } = await import(
+            '@aquila/stories/translations'
+        );
         (getTranslations as ReturnType<typeof vi.fn>).mockReturnValueOnce({
             reader: {
                 unknown: 'Unknown',

@@ -2,7 +2,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 
-vi.mock('@aquila/stories', () => ({
+vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         reader: { historyTitle: 'History', closeHistory: 'Close history' },
         locale: 'en',

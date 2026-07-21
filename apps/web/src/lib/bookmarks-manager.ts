@@ -1,4 +1,5 @@
-import { getTranslations, type Locale } from '@aquila/stories';
+import { getTranslations } from '@aquila/stories/translations';
+import type { Locale } from '@aquila/stories';
 import { showAlert, showConfirm } from './ui-dialogs';
 import {
     LocalBookmarksStore,

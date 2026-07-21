@@ -56,10 +56,6 @@ const { mockGetTranslations } = vi.hoisted(() => ({
     })),
 }));
 
-vi.mock('@aquila/stories', async importOriginal => ({
-    ...(await importOriginal<typeof import('@aquila/stories')>()),
-    getTranslations: mockGetTranslations,
-}));
 vi.mock('@aquila/stories/translations', () => ({
     getTranslations: mockGetTranslations,
 }));

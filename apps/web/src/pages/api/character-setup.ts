@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getTranslations } from '@aquila/stories';
+import { getTranslations } from '@aquila/stories/translations';
 import { CharacterSetupRepository } from '@/lib/drizzle/repositories.js';
 import { StoryId, isValidStoryId } from '@/lib/story-types.js';
 import { logger } from '@/lib/logger.js';

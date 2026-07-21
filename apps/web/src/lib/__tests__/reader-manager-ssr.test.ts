@@ -6,9 +6,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@aquila/stories', () => ({
-    getStoryContent: vi.fn().mockReturnValue({ dialogue: {}, choices: {} }),
-    getStoryFlow: vi.fn().mockReturnValue({ start: 'act1', nodes: [] }),
+vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         reader: {
             bookmarkPrompt: 'Save as:',
@@ -24,20 +22,9 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
-vi.mock('@aquila/stories/translations', () => ({
-    getTranslations: vi.fn(() => ({
-        reader: {
-            bookmarkPrompt: 'Save as:',
-            defaultBookmarkName: 'Bookmark',
-            bookmarkSaved: 'Saved',
-            bookmarkFailed: 'Failed',
-            bookmarkError: 'Error',
-            endOfStory: 'End',
-            loadError: 'Load error',
-            retry: 'Retry',
-        },
-        locale: 'en',
-    })),
+vi.mock('@aquila/stories/async', () => ({
+    loadStoryContent: vi.fn(),
+    StoryLoadError: class StoryLoadError extends Error {},
 }));
 
 vi.mock('svelte', () => ({ mount: vi.fn(), unmount: vi.fn() }));

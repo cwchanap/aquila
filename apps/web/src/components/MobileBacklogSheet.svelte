@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getTranslations, type Locale } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
+  import type { Locale } from '@aquila/stories';
   import { focusTrap } from '@/lib/focus-trap';
 
   let {

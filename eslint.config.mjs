@@ -98,4 +98,22 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  {
+    files: ['apps/web/src/**/*.{ts,svelte,astro}'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@aquila/stories',
+              message:
+                'Use @aquila/stories/async or /translations for runtime values; root imports must be type-only.',
+              allowTypeImports: true,
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

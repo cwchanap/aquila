@@ -1,8 +1,4 @@
-import {
-    type Locale,
-    type DialogueEntry,
-    type ChoiceDefinition,
-} from '@aquila/stories';
+import type { Locale, DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 import {
     loadStoryContent,
     StoryLoadError,

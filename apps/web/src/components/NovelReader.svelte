@@ -30,6 +30,7 @@
     backUrl = '/',
     showBookmarkButton = true,
     isInitialMount = true,
+    interactionDisabled = false,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -47,6 +48,7 @@
     backUrl?: string;
     showBookmarkButton?: boolean;
     isInitialMount?: boolean;
+    interactionDisabled?: boolean;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -198,6 +200,7 @@
   });
 
   function handleNext() {
+    if (interactionDisabled) return;
     if (isTyping) {
       // First interaction during typing only skips the animation; it must NOT
       // advance the index (the parent owns the index).
@@ -218,6 +221,7 @@
   }
 
   function handleKeyPress(event: globalThis.KeyboardEvent) {
+    if (interactionDisabled) return;
     if (event.defaultPrevented) {
       return;
     }

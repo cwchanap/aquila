@@ -144,6 +144,71 @@ describe('MobileNovelReader', () => {
             expect(onIndexChange).not.toHaveBeenCalled();
         });
 
+        it.each([
+            ['loading', 'Enter'],
+            ['loading', ' '],
+            ['error', 'Enter'],
+            ['error', ' '],
+        ])(
+            'ignores %s replacement overlay key %j without advancing the visible line',
+            async (_overlay, key) => {
+                const onNext = vi.fn();
+                const { onIndexChange, rerenderAt } = renderReader({
+                    dialogueIndex: 0,
+                    interactionDisabled: true,
+                    onNext,
+                });
+                await vi.runAllTimersAsync();
+
+                await fireEvent.keyDown(window, { key });
+
+                const emittedIndex = onIndexChange.mock.lastCall?.[0];
+                if (emittedIndex !== undefined) {
+                    await rerenderAt({ dialogueIndex: emittedIndex });
+                }
+                expect(onIndexChange).not.toHaveBeenCalled();
+                expect(onNext).not.toHaveBeenCalled();
+                expect(screen.getByText('First line.')).toBeInTheDocument();
+                expect(
+                    screen.queryByText('Second line.')
+                ).not.toBeInTheDocument();
+            }
+        );
+
+        it('does not skip the active typewriter while interaction is disabled', async () => {
+            renderReader({ interactionDisabled: true });
+            await fireEvent.keyDown(window, { key: 'Enter' });
+            await vi.advanceTimersByTimeAsync(30);
+
+            expect(screen.queryByText('First line.')).not.toBeInTheDocument();
+            expect(
+                document.querySelector('[class*="animate-pulse"]')
+            ).not.toBeNull();
+        });
+
+        it.each([
+            ['loading', 'Enter'],
+            ['error', ' '],
+        ])(
+            'blocks terminal navigation during replacement %s',
+            async (_overlay, key) => {
+                const onNext = vi.fn();
+                renderReader({
+                    dialogue: [mockDialogue[0]],
+                    dialogueIndex: 0,
+                    canGoNext: true,
+                    interactionDisabled: true,
+                    onNext,
+                });
+                await vi.runAllTimersAsync();
+
+                await fireEvent.keyDown(window, { key });
+
+                expect(onNext).not.toHaveBeenCalled();
+                expect(screen.getByText('First line.')).toBeInTheDocument();
+            }
+        );
+
         it('emits onIndexChange when goBack is invoked', async () => {
             const { onIndexChange, rerenderAt } = renderReader({
                 dialogueIndex: 0,

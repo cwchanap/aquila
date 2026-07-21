@@ -150,6 +150,75 @@ describe('NovelReader — controlled contract', () => {
         expect(onIndexChange).not.toHaveBeenCalled();
     });
 
+    it.each([
+        ['loading', 'Enter'],
+        ['loading', ' '],
+        ['error', 'Enter'],
+        ['error', ' '],
+    ])(
+        'ignores %s replacement overlay key %j without advancing the visible line',
+        async (_overlay, key) => {
+            const onNext = vi.fn();
+            const { onIndexChange, rerenderAt } = renderReader({
+                dialogueIndex: 0,
+                interactionDisabled: true,
+                onNext,
+            });
+            await vi.runAllTimersAsync();
+
+            await fireEvent.keyDown(window, { key });
+
+            const emittedIndex = onIndexChange.mock.lastCall?.[0];
+            if (emittedIndex !== undefined) {
+                await rerenderAt({ dialogueIndex: emittedIndex });
+            }
+            expect(onIndexChange).not.toHaveBeenCalled();
+            expect(onNext).not.toHaveBeenCalled();
+            expect(
+                screen.getByText('First dialogue line.')
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByText('Second dialogue line.')
+            ).not.toBeInTheDocument();
+        }
+    );
+
+    it('does not skip the active typewriter while interaction is disabled', async () => {
+        renderReader({ interactionDisabled: true });
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        await vi.advanceTimersByTimeAsync(30);
+
+        expect(
+            screen.queryByText('First dialogue line.')
+        ).not.toBeInTheDocument();
+        expect(document.querySelector('.animate-pulse')).not.toBeNull();
+    });
+
+    it.each([
+        ['loading', 'Enter'],
+        ['error', ' '],
+    ])(
+        'blocks terminal navigation during replacement %s',
+        async (_overlay, key) => {
+            const onNext = vi.fn();
+            renderReader({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 0,
+                canGoNext: true,
+                interactionDisabled: true,
+                onNext,
+            });
+            await vi.runAllTimersAsync();
+
+            await fireEvent.keyDown(window, { key });
+
+            expect(onNext).not.toHaveBeenCalled();
+            expect(
+                screen.getByText('First dialogue line.')
+            ).toBeInTheDocument();
+        }
+    );
+
     it('renders visible history as the lines before dialogueIndex', async () => {
         // Parent has advanced to index 1: line 0 is history, line 1 animates.
         renderReader({ dialogueIndex: 1 });

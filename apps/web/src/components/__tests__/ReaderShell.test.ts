@@ -145,7 +145,9 @@ describe('ReaderShell', () => {
 
     it('keeps the same reader leaf mounted and inert under replacement loading', async () => {
         stubMatchMedia(false);
-        render(ReaderShell, { props: { onIndexChange: () => {} } });
+        const onIndexChange = vi.fn();
+        render(ReaderShell, { props: { onIndexChange } });
+        await vi.runAllTimersAsync();
         const ready = screen.getByTestId('reader-ready');
 
         readerState.loadStatus = 'loading';
@@ -155,6 +157,9 @@ describe('ReaderShell', () => {
         expect(ready).toHaveAttribute('inert');
         expect(ready).toHaveAttribute('aria-hidden', 'true');
         expect(screen.getByRole('status')).toHaveTextContent('Loading story');
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onIndexChange).not.toHaveBeenCalled();
+        expect(readerState.dialogueIndex).toBe(0);
 
         readerState.loadStatus = 'ready';
         await tick();
@@ -181,6 +186,23 @@ describe('ReaderShell', () => {
         );
         await fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
         expect(onRetry).toHaveBeenCalledOnce();
+    });
+
+    it('blocks the mobile window keyboard path under a replacement error', async () => {
+        const onIndexChange = vi.fn();
+        stubMatchMedia(true);
+        render(ReaderShell, { props: { onIndexChange } });
+        await vi.runAllTimersAsync();
+
+        readerState.loadError = new StoryLoadError('load-failed', 'failed');
+        readerState.loadStatus = 'error';
+        await tick();
+        await fireEvent.keyDown(window, { key: ' ' });
+
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+        expect(onIndexChange).not.toHaveBeenCalled();
+        expect(readerState.dialogueIndex).toBe(0);
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
     });
 
     it.each([

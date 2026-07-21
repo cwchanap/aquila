@@ -84,6 +84,18 @@ export class StoriesPage {
     }
 }
 
+export class ReaderPage {
+    constructor(private page: Page) {}
+
+    get ready() {
+        return this.page.getByTestId('reader-ready');
+    }
+
+    get loadError() {
+        return this.page.getByRole('alert');
+    }
+}
+
 export class MobileReaderPage {
     constructor(
         private page: Page,

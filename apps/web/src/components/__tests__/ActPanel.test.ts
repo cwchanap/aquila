@@ -56,8 +56,23 @@ const mockFlow = {
     ],
 };
 
-vi.mock('@aquila/stories', () => ({
-    getStoryFlow: vi.fn(() => mockFlow),
+vi.mock('@aquila/stories', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories')>()),
+    getTranslations: vi.fn(() => ({
+        reader: {
+            actPanel: 'Acts',
+            actLabel: 'Act {n}',
+            actFinal: 'Final Act',
+            actEpilogue: 'Epilogue',
+            chapterLabel: 'Chapter {n}',
+            openActsPanel: 'Open acts panel',
+            closeActsPanel: 'Close acts panel',
+        },
+        locale: 'en',
+    })),
+}));
+
+vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         reader: {
             actPanel: 'Acts',
@@ -96,6 +111,7 @@ describe('ActPanel', () => {
     it('renders act buttons for all acts in the flow', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -120,7 +136,6 @@ describe('ActPanel', () => {
     it('filters out acts from divergent branches', async () => {
         // When on b1a_b2b branch which terminates at act4,
         // acts that only exist on the sibling b1a_b2a branch should not appear.
-        const { getStoryFlow } = await import('@aquila/stories');
         const divergentFlow = {
             start: 'act1',
             nodes: [
@@ -162,12 +177,9 @@ describe('ActPanel', () => {
                 },
             ],
         };
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            divergentFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: divergentFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1b_act2',
                 onNavigate,
@@ -186,6 +198,7 @@ describe('ActPanel', () => {
     it('highlights the current act button', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act2',
                 onNavigate,
@@ -204,6 +217,7 @@ describe('ActPanel', () => {
     it('calls onNavigate when an act button is clicked', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -225,6 +239,7 @@ describe('ActPanel', () => {
     it('calls onToggle when Escape is pressed while open', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -242,6 +257,7 @@ describe('ActPanel', () => {
     it('does not call onToggle when Escape is pressed while closed', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -259,6 +275,7 @@ describe('ActPanel', () => {
     it('renders epilogue label for actEpilogue', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'actEpilogue',
                 onNavigate,
@@ -274,6 +291,7 @@ describe('ActPanel', () => {
     it('sorts acts by numeric order with Final and Epilogue last', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -299,6 +317,7 @@ describe('ActPanel', () => {
     it('does not call onNavigate on non-Escape key press', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -314,13 +333,9 @@ describe('ActPanel', () => {
     });
 
     it('renders only toggle tab when story has no flow', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            undefined
-        );
-
         render(ActPanel, {
             props: {
+                flow: { start: 'act1', nodes: [] },
                 storyId: 'unknown',
                 currentSceneId: 'act1',
                 onNavigate,
@@ -342,6 +357,7 @@ describe('ActPanel', () => {
     it('uses translated aria-label for toggle button when open', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -359,6 +375,7 @@ describe('ActPanel', () => {
     it('uses translated aria-label for toggle button when closed', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -376,6 +393,7 @@ describe('ActPanel', () => {
     it('marks panel content inert and aria-hidden when closed', () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -399,6 +417,7 @@ describe('ActPanel', () => {
     it('navigates to branch-matching act when on b1a_b2a branch', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_b2a_act4',
                 onNavigate,
@@ -420,6 +439,7 @@ describe('ActPanel', () => {
     it('navigates to branch-matching act when on b1a_b2b branch', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_b2b_act4',
                 onNavigate,
@@ -441,6 +461,7 @@ describe('ActPanel', () => {
     it('navigates to shared root acts regardless of current branch', async () => {
         render(ActPanel, {
             props: {
+                flow: mockFlow,
                 storyId: 'test_story',
                 currentSceneId: 'b1a_b2b_act4',
                 onNavigate,
@@ -510,13 +531,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('renders chapter headers with only current chapter expanded', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch2_act1',
                 onNavigate,
@@ -547,13 +564,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('highlights the current chapter header', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch2_act1',
                 onNavigate,
@@ -571,13 +584,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('highlights the current act within the expanded chapter', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch2_act1',
                 onNavigate,
@@ -596,13 +605,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('expands chapter on click without navigating', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch1_act1',
                 onNavigate,
@@ -625,13 +630,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('shows all chapter headers regardless of current position', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch1_act1',
                 onNavigate,
@@ -647,13 +648,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('chapter buttons have aria-expanded reflecting expansion state', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch2_act1',
                 onNavigate,
@@ -675,13 +672,9 @@ describe('ActPanel — chapter mode', () => {
     });
 
     it('chapter buttons have aria-controls pointing to their acts container', async () => {
-        const { getStoryFlow } = await import('@aquila/stories');
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
-        );
-
         render(ActPanel, {
             props: {
+                flow: chapterFlow,
                 storyId: 'chapter_story',
                 currentSceneId: 'ch2_act1',
                 onNavigate,

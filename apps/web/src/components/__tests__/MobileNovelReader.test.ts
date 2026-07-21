@@ -9,9 +9,26 @@ import {
 import '@testing-library/jest-dom';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
-vi.mock('@aquila/stories', () => ({
-    getStoryFlow: vi.fn(() => ({ start: 'a1', nodes: [] })),
-    getTranslations: vi.fn((locale: string) => ({
+const readerFlow = {
+    start: 'b1a_act1',
+    nodes: [
+        {
+            kind: 'scene',
+            id: 'b1a_act1',
+            sceneId: 'b1a_act1',
+            next: 'b1a_act2',
+        },
+        {
+            kind: 'scene',
+            id: 'b1a_act2',
+            sceneId: 'b1a_act2',
+            next: null,
+        },
+    ],
+};
+
+const { mockGetTranslations } = vi.hoisted(() => ({
+    mockGetTranslations: vi.fn((locale: string) => ({
         reader: {
             unknown: 'Unknown',
             nextScene: 'Next Scene',
@@ -39,6 +56,14 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
+vi.mock('@aquila/stories', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories')>()),
+    getTranslations: mockGetTranslations,
+}));
+vi.mock('@aquila/stories/translations', () => ({
+    getTranslations: mockGetTranslations,
+}));
+
 import MobileNovelReader from '@/components/MobileNovelReader.svelte';
 
 const mockDialogue: DialogueEntry[] = [
@@ -61,6 +86,7 @@ const mockChoice: ChoiceDefinition = {
 function renderReader(overrides: Record<string, unknown> = {}) {
     const onIndexChange = vi.fn();
     let current: Record<string, unknown> = {
+        flow: readerFlow,
         dialogue: mockDialogue,
         choice: null,
         locale: 'en',
@@ -331,8 +357,7 @@ describe('MobileNovelReader', () => {
                 screen.queryAllByRole('button', { name: 'Close acts panel' })
                     .length
             ).toBeGreaterThan(0);
-            const { getStoryFlow } = await import('@aquila/stories');
-            expect(getStoryFlow).toHaveBeenCalled();
+            expect(screen.getByText('Act 1')).toBeInTheDocument();
         });
 
         it('does NOT call onNavigate when the drawer selects the already-current act (same-scene guard)', async () => {
@@ -342,7 +367,6 @@ describe('MobileNovelReader', () => {
             // pushes/persists, so tapping the current act lost the user's
             // line progress. The guard must skip onNavigate for the current
             // scene while still forwarding a different-scene selection.
-            const { getStoryFlow } = await import('@aquila/stories');
             const flowWithScenes = {
                 start: 'b1a_act1',
                 nodes: [
@@ -360,12 +384,9 @@ describe('MobileNovelReader', () => {
                     },
                 ],
             };
-            vi.mocked(getStoryFlow).mockReturnValue(
-                flowWithScenes as ReturnType<typeof getStoryFlow>
-            );
-
             const onNavigate = vi.fn();
             renderReader({
+                flow: flowWithScenes,
                 dialogueIndex: 2,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',

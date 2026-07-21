@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 const branchFlow = {
     start: 'b1a_act1',
@@ -124,11 +124,7 @@ const branchingFlow = {
     ],
 };
 
-vi.mock('@aquila/stories', () => ({
-    getStoryFlow: vi.fn(() => branchFlow),
-}));
-
-import { getStoryFlow, type Translations } from '@aquila/stories';
+import type { StoryFlowConfig, Translations } from '@aquila/stories';
 import {
     buildChapterData,
     extractActName,
@@ -147,8 +143,6 @@ const t = {
     },
 } as unknown as Translations;
 
-afterEach(() => vi.clearAllMocks());
-
 describe('act-navigation', () => {
     it('extractActName / extractChapterKey parse ids', () => {
         expect(extractActName('ch2_act1')).toBe('act1');
@@ -164,7 +158,11 @@ describe('act-navigation', () => {
     });
 
     it('builds branches mode for a non-chapter flow, sorted', () => {
-        const data = buildChapterData('s', 'b1a_act1', t);
+        const data = buildChapterData(
+            branchFlow as unknown as StoryFlowConfig,
+            'b1a_act1',
+            t
+        );
         expect(data.mode).toBe('branches');
         if (data.mode !== 'branches') throw new Error('expected branches');
         expect(data.acts.map(a => a.label)).toEqual([
@@ -176,10 +174,11 @@ describe('act-navigation', () => {
     });
 
     it('builds chapters mode for a chapter flow', () => {
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            chapterFlow
+        const data = buildChapterData(
+            chapterFlow as unknown as StoryFlowConfig,
+            'ch1_act1',
+            t
         );
-        const data = buildChapterData('s', 'ch1_act1', t);
         expect(data.mode).toBe('chapters');
         if (data.mode !== 'chapters') throw new Error('expected chapters');
         expect(data.chapters.map(c => c.label)).toEqual([
@@ -192,11 +191,12 @@ describe('act-navigation', () => {
         ]);
     });
 
-    it('returns empty branches when flow is missing', () => {
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            undefined
+    it('returns empty branches for a loaded flow with no scene nodes', () => {
+        const data = buildChapterData(
+            { start: 'act1', nodes: [] } as unknown as StoryFlowConfig,
+            'act1',
+            t
         );
-        const data = buildChapterData('s', 'act1', t);
         expect(data).toEqual({ mode: 'branches', acts: [] });
     });
 });
@@ -246,10 +246,11 @@ describe('buildBranches disambiguation', () => {
     // Helper: resolve the branching fixture from a given current scene and
     // return a map of act rawName -> chosen sceneId.
     function resolveFrom(currentSceneId: string): Record<string, string> {
-        (getStoryFlow as ReturnType<typeof vi.fn>).mockReturnValueOnce(
-            branchingFlow
+        const data = buildChapterData(
+            branchingFlow as unknown as StoryFlowConfig,
+            currentSceneId,
+            t
         );
-        const data = buildChapterData('s', currentSceneId, t);
         if (data.mode !== 'branches') throw new Error('expected branches');
         return Object.fromEntries(data.acts.map(a => [a.rawName, a.sceneId]));
     }

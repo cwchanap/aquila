@@ -1,11 +1,11 @@
 import {
     getStoryContent,
     getStoryFlow,
-    getTranslations,
     type Locale,
     type DialogueEntry,
     type ChoiceDefinition,
 } from '@aquila/stories';
+import { getTranslations } from '@aquila/stories/translations';
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 import { LocalBookmarksStore } from './local-bookmarks-store';
@@ -160,6 +160,16 @@ export class ReaderManager {
         readerState.dialogue = dialogue;
         readerState.choice = choice;
         readerState.canGoNext = this.hasNextScene(state.sceneId);
+
+        // Temporary synchronous compatibility bridge. Task 7 replaces this
+        // block when ReaderManager applies the asynchronously loaded payload
+        // atomically; until then, expose the same ready-store contract to the
+        // reactive ReaderShell without introducing async/race behavior here.
+        const activeFlow = getStoryFlow(state.storyId);
+        readerState.activeFlow = activeFlow ?? null;
+        readerState.hasActivePayload = activeFlow !== undefined;
+        readerState.loadStatus = activeFlow ? 'ready' : 'idle';
+        readerState.loadError = null;
     }
 
     /** Persist the current progression as the v2 schema. Catches storage
@@ -415,6 +425,7 @@ export class ReaderManager {
                         backUrl: `/${readerState.locale}/`,
                         onNavigate: this.goToScene,
                         onIndexChange: this.onIndexChange,
+                        onRetry: () => location.reload(),
                     },
                 });
 

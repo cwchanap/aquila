@@ -163,6 +163,11 @@
   "reader": {
     "title": "Novel Reader - Aquila",
     "loadError": "Failed to load reader",
+    "loadingStory": "Loading story",
+    "storyLoadFailed": "Story failed to load",
+    "unknownStory": "Unknown story",
+    "unsupportedLocale": "Unsupported locale",
+    "backToStories": "Back to stories",
     "retry": "Retry",
     "bookmarkPrompt": "Enter bookmark name:",
     "defaultBookmarkName": "Scene:",

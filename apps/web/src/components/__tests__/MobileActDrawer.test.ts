@@ -1,8 +1,6 @@
-import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
-import { getStoryFlow } from '@aquila/stories';
-import type { Mock } from 'vitest';
 
 const branchFlow = {
     start: 'b1a_act1',
@@ -17,8 +15,22 @@ const branchFlow = {
     ],
 };
 
-vi.mock('@aquila/stories', () => ({
-    getStoryFlow: vi.fn(() => branchFlow),
+vi.mock('@aquila/stories', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories')>()),
+    getTranslations: vi.fn(() => ({
+        reader: {
+            actPanel: 'Acts',
+            actLabel: 'Act {n}',
+            actFinal: 'Final',
+            actEpilogue: 'Epilogue',
+            chapterLabel: 'Chapter {n}',
+            closeActsPanel: 'Close acts panel',
+        },
+        locale: 'en',
+    })),
+}));
+
+vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         reader: {
             actPanel: 'Acts',
@@ -48,10 +60,6 @@ describe('MobileActDrawer', () => {
 
     afterEach(() => vi.clearAllMocks());
 
-    beforeEach(() => {
-        (getStoryFlow as unknown as Mock).mockReturnValue(branchFlow);
-    });
-
     const chaptersFlow = {
         start: 'ch1_act1',
         nodes: [
@@ -62,9 +70,9 @@ describe('MobileActDrawer', () => {
     };
 
     it('expands only the current chapter and toggles others', async () => {
-        (getStoryFlow as unknown as Mock).mockReturnValue(chaptersFlow);
         render(MobileActDrawer, {
             props: {
+                flow: chaptersFlow,
                 storyId: 's',
                 currentSceneId: 'ch1_act1',
                 onNavigate,
@@ -95,6 +103,7 @@ describe('MobileActDrawer', () => {
     it('renders an act button per act when open', () => {
         render(MobileActDrawer, {
             props: {
+                flow: branchFlow,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -112,6 +121,7 @@ describe('MobileActDrawer', () => {
     it('calls onNavigate then onClose when an act is selected', async () => {
         render(MobileActDrawer, {
             props: {
+                flow: branchFlow,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -131,6 +141,7 @@ describe('MobileActDrawer', () => {
     it('calls onClose on Escape when open', async () => {
         render(MobileActDrawer, {
             props: {
+                flow: branchFlow,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -146,6 +157,7 @@ describe('MobileActDrawer', () => {
     it('does not call onClose on Escape when closed', async () => {
         render(MobileActDrawer, {
             props: {
+                flow: branchFlow,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -161,6 +173,7 @@ describe('MobileActDrawer', () => {
     it('marks the panel inert and aria-hidden when closed', () => {
         render(MobileActDrawer, {
             props: {
+                flow: branchFlow,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',
                 onNavigate,
@@ -183,6 +196,7 @@ describe('MobileActDrawer', () => {
     it('moves focus into the panel and traps Tab while open', async () => {
         render(MobileActDrawer, {
             props: {
+                flow: branchFlow,
                 storyId: 's',
                 currentSceneId: 'b1a_act1',
                 onNavigate,

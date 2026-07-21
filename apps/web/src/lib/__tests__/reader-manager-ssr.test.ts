@@ -24,6 +24,22 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
+vi.mock('@aquila/stories/translations', () => ({
+    getTranslations: vi.fn(() => ({
+        reader: {
+            bookmarkPrompt: 'Save as:',
+            defaultBookmarkName: 'Bookmark',
+            bookmarkSaved: 'Saved',
+            bookmarkFailed: 'Failed',
+            bookmarkError: 'Error',
+            endOfStory: 'End',
+            loadError: 'Load error',
+            retry: 'Retry',
+        },
+        locale: 'en',
+    })),
+}));
+
 vi.mock('svelte', () => ({ mount: vi.fn(), unmount: vi.fn() }));
 vi.mock('../ui-dialogs', () => ({
     showAlert: vi.fn(),

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getTranslations, type Locale } from '@aquila/stories';
+  import type { Locale, StoryFlowConfig } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
   import Button from '@/components/ui/Button.svelte';
   import {
     buildChapterData,
@@ -8,6 +9,7 @@
   } from '@/lib/act-navigation';
 
   let {
+    flow,
     storyId,
     currentSceneId,
     onNavigate,
@@ -15,6 +17,7 @@
     open = false,
     locale = 'en',
   }: {
+    flow: StoryFlowConfig;
     storyId: string;
     currentSceneId: string;
     onNavigate: (sceneId: string) => void;
@@ -27,7 +30,7 @@
   let previousChapterKey: string | null = null;
 
   let t = $derived(getTranslations(locale));
-  let chapterData = $derived(buildChapterData(storyId, currentSceneId, t));
+  let chapterData = $derived(buildChapterData(flow, currentSceneId, t));
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 
@@ -57,6 +60,7 @@
 <svelte:window onkeydown={handleEscape} />
 
 <div
+  data-story-id={storyId}
   class="h-full flex flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out {open ? 'w-[336px]' : 'w-12'}"
 >
   <!-- Toggle tab -- always visible -->

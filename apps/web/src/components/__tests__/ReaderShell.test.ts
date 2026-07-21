@@ -3,11 +3,11 @@ import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import '@testing-library/jest-dom';
-import type { DialogueEntry } from '@aquila/stories';
+import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
+import { StoryLoadError } from '@aquila/stories/async';
 
-vi.mock('@aquila/stories', () => ({
-    getStoryFlow: vi.fn(() => ({ start: 'a1', nodes: [] })),
-    getTranslations: vi.fn((locale: string) => ({
+const { mockGetTranslations } = vi.hoisted(() => ({
+    mockGetTranslations: vi.fn((locale: string) => ({
         reader: {
             unknown: 'Unknown',
             continue: 'Continue',
@@ -30,11 +30,25 @@ vi.mock('@aquila/stories', () => ({
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
             previousLine: 'Previous line',
+            loadingStory: 'Loading story',
+            storyLoadFailed: 'Story failed to load',
+            unknownStory: 'Unknown story',
+            unsupportedLocale: 'Unsupported locale',
+            backToStories: 'Back to stories',
+            retry: 'Retry',
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
         locale,
     })),
+}));
+
+vi.mock('@aquila/stories', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories')>()),
+    getTranslations: mockGetTranslations,
+}));
+vi.mock('@aquila/stories/translations', () => ({
+    getTranslations: mockGetTranslations,
 }));
 
 import ReaderShell from '../ReaderShell.svelte';
@@ -45,6 +59,11 @@ const mockDialogue: DialogueEntry[] = [
     { characterId: 'narrator', dialogue: 'Second dialogue line.' },
     { characterId: 'narrator', dialogue: 'Third dialogue line.' },
 ];
+
+const flow = {
+    start: 'act1',
+    nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
+} as unknown as StoryFlowConfig;
 
 function stubMatchMedia(initial: boolean) {
     let listeners: Array<(e: { matches: boolean }) => void> = [];
@@ -86,8 +105,107 @@ describe('ReaderShell', () => {
     beforeEach(() => {
         readerState.dialogue = mockDialogue;
         readerState.locale = 'en';
+        readerState.activeFlow = flow;
+        readerState.hasActivePayload = true;
+        readerState.loadStatus = 'ready';
     });
     afterEach(() => vi.clearAllMocks());
+
+    it('renders only a standalone status while the initial payload is loading', () => {
+        stubMatchMedia(false);
+        readerState.activeFlow = null;
+        readerState.hasActivePayload = false;
+        readerState.loadStatus = 'loading';
+
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
+
+        expect(screen.getByRole('status')).toHaveTextContent('Loading story');
+        expect(screen.queryByTestId('reader-ready')).not.toBeInTheDocument();
+        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+    });
+
+    it('treats the first leaf mounted after initial loading as a fresh scene', async () => {
+        stubMatchMedia(false);
+        readerState.activeFlow = null;
+        readerState.hasActivePayload = false;
+        readerState.loadStatus = 'loading';
+        render(ReaderShell);
+        await tick();
+
+        readerState.activeFlow = flow;
+        readerState.hasActivePayload = true;
+        readerState.loadStatus = 'ready';
+        await tick();
+
+        expect(screen.getByTestId('reader-ready')).toBeInTheDocument();
+        expect(
+            document.querySelectorAll('.animate-pulse').length
+        ).toBeGreaterThan(0);
+    });
+
+    it('keeps the same reader leaf mounted and inert under replacement loading', async () => {
+        stubMatchMedia(false);
+        render(ReaderShell, { props: { onIndexChange: () => {} } });
+        const ready = screen.getByTestId('reader-ready');
+
+        readerState.loadStatus = 'loading';
+        await tick();
+
+        expect(screen.getByTestId('reader-ready')).toBe(ready);
+        expect(ready).toHaveAttribute('inert');
+        expect(ready).toHaveAttribute('aria-hidden', 'true');
+        expect(screen.getByRole('status')).toHaveTextContent('Loading story');
+
+        readerState.loadStatus = 'ready';
+        await tick();
+        expect(screen.getByTestId('reader-ready')).toBe(ready);
+        expect(ready).not.toHaveAttribute('inert');
+        expect(ready).not.toHaveAttribute('aria-hidden');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('renders a retryable alert without unmounting the active reader', async () => {
+        const onRetry = vi.fn();
+        stubMatchMedia(false);
+        render(ReaderShell, { props: { onRetry } });
+        const ready = screen.getByTestId('reader-ready');
+
+        readerState.loadError = new StoryLoadError('load-failed', 'failed');
+        readerState.loadStatus = 'error';
+        await tick();
+
+        expect(screen.getByTestId('reader-ready')).toBe(ready);
+        expect(ready).toHaveAttribute('inert');
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Story failed to load'
+        );
+        await fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+        expect(onRetry).toHaveBeenCalledOnce();
+    });
+
+    it.each([
+        ['unknown-story', 'Unknown story'],
+        ['unsupported-locale', 'Unsupported locale'],
+    ] as const)(
+        'renders %s as a terminal error with a locale story-list link',
+        (code, message) => {
+            stubMatchMedia(false);
+            readerState.activeFlow = null;
+            readerState.hasActivePayload = false;
+            readerState.loadError = new StoryLoadError(code, 'failed');
+            readerState.loadStatus = 'error';
+
+            render(ReaderShell);
+
+            expect(screen.getByRole('alert')).toHaveTextContent(message);
+            expect(
+                screen.getByRole('link', { name: 'Back to stories' })
+            ).toHaveAttribute('href', '/en/stories');
+            expect(
+                screen.queryByRole('button', { name: 'Retry' })
+            ).not.toBeInTheDocument();
+        }
+    );
 
     it('renders the desktop reader at >= lg', async () => {
         stubMatchMedia(false);

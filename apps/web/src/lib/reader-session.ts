@@ -140,6 +140,10 @@ function defaultState(deps: ResolveDeps, locale: Locale): ReaderSessionState {
  * 1. Valid explicit URL (valid `story` locks the tier; fields resolved independently)
  * 2. Valid persisted session (only when URL has no valid story)
  * 3. Story start/default
+ *
+ * @deprecated Compatibility resolver for the synchronous ReaderManager. Task 7
+ * will replace its consumer with the two-phase reader intent API before this
+ * legacy combined resolver is removed.
  */
 export function resolveInitialState(
     params: URLSearchParams,

@@ -387,6 +387,56 @@
       "prompt": "Tokyo street late at night, deep darkness, single streetlight casting cold pool of light on empty sidewalk, distant buildings dark, no people, no cars, muted blue-black palette, visual-novel background art, wide shot"
     },
     {
+      "key": "chapter_17/ch17_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act1_s0.png",
+      "prompt": "small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and bookshelf visible, small hand mirror on desk surface, phone screen glowing in the dark, muted blue-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act1_s1.png",
+      "prompt": "Tokyo residential street early Monday morning, grey predawn light, narrow lanes between old houses, a 24-hour convenience store sign glowing in the distance, few pedestrians, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act2_s0.png",
+      "prompt": "24-hour convenience store interior early Monday morning, fluorescent lighting, glass windows showing grey dawn street, a small table by the window with two plastic chairs, shelves of drinks and onigiri in background, muted cool palette with warm fluorescent patches, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act3_s0.png",
+      "prompt": "unmarked police car interior, early Monday morning, grey dashboard, windshield showing convenience store parking lot and grey dawn sky, two figures in front seats, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act3_s1.png",
+      "prompt": "convenience store parking lot early Monday morning, grey dawn light brightening, a man in dark suit standing beside parked car making a phone call, store sign glowing softly, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act4_s0.png",
+      "prompt": "highway interior of unmarked police sedan, early morning grey light through windshield, Metropolitan Expressway concrete walls streaming past, dashboard clock glowing 07:40, overcast sky, muted cool grey-blue palette, visual-novel background art, medium shot from passenger seat"
+    },
+    {
+      "key": "chapter_17/ch17_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act5_s0.png",
+      "prompt": "public roadside parking area outside Tsukuba research support building, overcast morning light, low grey institutional buildings behind chain-link fence and hedge, public walkway with legal sightline to rear service gate, muted cool grey-green palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act6_s0.png",
+      "prompt": "same public roadside parking area outside Tsukuba research support building, overcast morning light, rear service gate now closed after vehicle entered underground ramp, tension in still air, muted cool grey-green palette, visual-novel background art, medium shot from passenger seat"
+    },
+    {
+      "key": "chapter_17/ch17_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act7_s0.png",
+      "prompt": "public parking area on the outskirts of Tsukuba research district, late morning overcast light, grey asphalt, low concrete boundary wall, distant grey-white research buildings behind a perimeter fence, a few parked cars, muted cool grey-blue palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act8_s0.png",
+      "prompt": "same public parking area on the outskirts of Tsukuba research district, late morning turning toward midday, overcast light slightly brighter, grey asphalt, low concrete wall, distant research buildings behind perimeter fence, muted cool grey-blue palette, visual-novel background art, medium shot"
+    },
+    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"

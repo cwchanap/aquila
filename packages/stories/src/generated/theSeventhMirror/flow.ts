@@ -61,6 +61,14 @@ export type TheSeventhMirrorSceneId =
     | "ch16_act4"
     | "ch16_act5"
     | "ch16_act6"
+    | "ch17_act1"
+    | "ch17_act2"
+    | "ch17_act3"
+    | "ch17_act4"
+    | "ch17_act5"
+    | "ch17_act6"
+    | "ch17_act7"
+    | "ch17_act8"
     | "ch2_act1"
     | "ch2_act2"
     | "ch2_act3"
@@ -181,7 +189,15 @@ export const theSeventhMirrorFlow: FlowConfig<TheSeventhMirrorSceneId> = {
     { kind: 'scene', id: "ch16_act3", sceneId: "ch16_act3", next: "ch16_act4" },
     { kind: 'scene', id: "ch16_act4", sceneId: "ch16_act4", next: "ch16_act5" },
     { kind: 'scene', id: "ch16_act5", sceneId: "ch16_act5", next: "ch16_act6" },
-    { kind: 'scene', id: "ch16_act6", sceneId: "ch16_act6", next: "ch2_act1" },
+    { kind: 'scene', id: "ch16_act6", sceneId: "ch16_act6", next: "ch17_act1" },
+    { kind: 'scene', id: "ch17_act1", sceneId: "ch17_act1", next: "ch17_act2" },
+    { kind: 'scene', id: "ch17_act2", sceneId: "ch17_act2", next: "ch17_act3" },
+    { kind: 'scene', id: "ch17_act3", sceneId: "ch17_act3", next: "ch17_act4" },
+    { kind: 'scene', id: "ch17_act4", sceneId: "ch17_act4", next: "ch17_act5" },
+    { kind: 'scene', id: "ch17_act5", sceneId: "ch17_act5", next: "ch17_act6" },
+    { kind: 'scene', id: "ch17_act6", sceneId: "ch17_act6", next: "ch17_act7" },
+    { kind: 'scene', id: "ch17_act7", sceneId: "ch17_act7", next: "ch17_act8" },
+    { kind: 'scene', id: "ch17_act8", sceneId: "ch17_act8", next: "ch2_act1" },
     { kind: 'scene', id: "ch2_act1", sceneId: "ch2_act1", next: "ch2_act2" },
     { kind: 'scene', id: "ch2_act2", sceneId: "ch2_act2", next: "ch2_act3" },
     { kind: 'scene', id: "ch2_act3", sceneId: "ch2_act3", next: "ch2_act4" },

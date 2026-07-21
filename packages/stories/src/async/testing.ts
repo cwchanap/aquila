@@ -1,0 +1,1 @@
+export { resetStoryContentCacheForTests } from './registry';

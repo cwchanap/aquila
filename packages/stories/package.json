@@ -7,10 +7,13 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./async": "./src/async/index.ts",
+    "./async/testing": "./src/async/testing.ts",
     "./generated/trainAdventure/characters": "./src/generated/trainAdventure/characters.ts",
     "./generated/dontSaveMeBeforeMidnight/characters": "./src/generated/dontSaveMeBeforeMidnight/characters.ts",
     "./types": "./src/types.ts",
     "./stories": "./src/stories/index.ts",
+    "./translations": "./src/translations/index.ts",
     "./translations/en.json": "./src/translations/en.json",
     "./translations/zh.json": "./src/translations/zh.json"
   },

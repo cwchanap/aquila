@@ -173,6 +173,7 @@
           {backUrl}
           {showBookmarkButton}
           {isInitialMount}
+          interactionDisabled={isBlocking}
         />
       {:else}
         <NovelReader
@@ -192,6 +193,7 @@
           {backUrl}
           {showBookmarkButton}
           {isInitialMount}
+          interactionDisabled={isBlocking}
         />
       {/if}
     </div>

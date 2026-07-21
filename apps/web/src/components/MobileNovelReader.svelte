@@ -34,6 +34,7 @@
     backUrl = '/',
     showBookmarkButton = true,
     isInitialMount = true,
+    interactionDisabled = false,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -51,6 +52,7 @@
     backUrl?: string;
     showBookmarkButton?: boolean;
     isInitialMount?: boolean;
+    interactionDisabled?: boolean;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -195,6 +197,7 @@
   });
 
   function advance(): void {
+    if (interactionDisabled) return;
     // An open overlay swallows the tap to close itself.
     if (hasOverlay) {
       if (backlogOpen) backlogOpen = false;
@@ -221,6 +224,7 @@
   }
 
   function goBack(): void {
+    if (interactionDisabled) return;
     // Overlays own their own taps; never step the scene from under them.
     if (hasOverlay) return;
     // At the start of the scene there is nowhere to go back to.
@@ -246,6 +250,7 @@
   }
 
   function handleKeyPress(event: globalThis.KeyboardEvent): void {
+    if (interactionDisabled) return;
     if (event.defaultPrevented) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;

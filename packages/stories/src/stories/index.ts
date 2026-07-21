@@ -1,4 +1,5 @@
 import type { ChoiceMap, DialogueMap } from '../types';
+import type { RegisteredStoryId } from '../story-metadata';
 import {
     getTrainAdventureStory,
     trainAdventureFlow,
@@ -25,24 +26,25 @@ export type StoryFlowConfig =
     | DontSaveMeBeforeMidnightFlowConfig
     | TheSeventhMirrorFlowConfig;
 
-const storyLoaders: Record<string, (locale: string) => StoryLoaderResult> = {
+const storyLoaders = {
     train_adventure: getTrainAdventureStory,
     dont_save_me_before_midnight: getDontSaveMeBeforeMidnightStory,
     the_seventh_mirror: getTheSeventhMirrorStory,
-};
+} satisfies Record<RegisteredStoryId, (locale: string) => StoryLoaderResult>;
 
-const storyFlows: Record<string, StoryFlowConfig> = {
+const storyFlows = {
     train_adventure: trainAdventureFlow,
     dont_save_me_before_midnight: dontSaveMeBeforeMidnightFlow,
     the_seventh_mirror: theSeventhMirrorFlow,
-};
+} satisfies Record<RegisteredStoryId, StoryFlowConfig>;
 
 export function getStoryContent(
     storyId: string | undefined,
     locale: string | undefined
 ): StoryLoaderResult {
     const normalizedLocale = (locale || 'en').toLowerCase();
-    const loader = storyLoaders[storyId ?? 'train_adventure'];
+    const loader =
+        storyLoaders[(storyId ?? 'train_adventure') as RegisteredStoryId];
     if (loader) {
         return loader(normalizedLocale);
     }
@@ -62,5 +64,5 @@ export function getStoryContent(
 export function getStoryFlow(
     storyId: string | undefined
 ): StoryFlowConfig | undefined {
-    return storyFlows[storyId ?? 'train_adventure'];
+    return storyFlows[(storyId ?? 'train_adventure') as RegisteredStoryId];
 }

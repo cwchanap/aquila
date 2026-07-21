@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun --cwd . scripts/generate-zh-proxy-pages.ts && astro dev --port 5090",
     "dev:db": "echo 'Prisma Postgres is managed remotely — no local DB to start. Set DATABASE_URL to your Prisma Postgres connection string (Vercel → Storage).'",
-    "build": "bun --cwd . scripts/generate-zh-proxy-pages.ts && astro build",
+    "build": "bun --cwd . scripts/generate-zh-proxy-pages.ts && astro build && bun scripts/assert-story-chunks.ts",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint src",

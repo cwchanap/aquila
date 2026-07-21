@@ -20,6 +20,7 @@ export default defineConfig({
     routing: 'manual',
   },
   vite: {
+    build: { manifest: true },
     plugins: [tailwindcss()],
     resolve: {
       alias: {

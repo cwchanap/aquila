@@ -513,6 +513,7 @@ export class ReaderManager {
         this.readerMountPromise = this.deps
             .loadReaderShell()
             .then(module => {
+                if (this.destroyed) return;
                 const ReaderShellComponent = module.default;
                 // Clear any stale content (SSR comments, loading placeholders)
                 // before mounting so the component replaces rather than appends.

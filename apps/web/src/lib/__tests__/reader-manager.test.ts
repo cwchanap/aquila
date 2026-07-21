@@ -1215,6 +1215,31 @@ describe('ReaderManager', () => {
             expect(container.textContent).toBe('keep me');
         });
 
+        it('does not mount or replace content when a deferred shell resolves after destroy', async () => {
+            const shellModule = await import('@/components/ReaderShell.svelte');
+            const shellLoad =
+                deferred<typeof import('@/components/ReaderShell.svelte')>();
+            const container = mountReaderContainer();
+            const sentinel = document.createElement('span');
+            sentinel.textContent = 'keep me';
+            container.appendChild(sentinel);
+            mockMount.mockImplementationOnce(() => {
+                throw new Error('mount must not run after destroy');
+            });
+            manager = new ReaderManager('en', undefined, {
+                loadReaderShell: vi.fn(() => shellLoad.promise),
+            });
+            const rendering = manager.renderReader();
+
+            manager.destroy();
+            shellLoad.resolve(shellModule);
+            await rendering;
+
+            expect(mockMount).not.toHaveBeenCalled();
+            expect([...container.childNodes]).toEqual([sentinel]);
+            expect(container.textContent).toBe('keep me');
+        });
+
         it('memoizes the mount promise across calls', async () => {
             mountReaderContainer();
             manager = new ReaderManager('en');

@@ -94,6 +94,10 @@ export class ReaderPage {
     get loadError() {
         return this.page.getByRole('alert');
     }
+
+    progressAt(line: number) {
+        return this.ready.getByText(new RegExp(`^Page ${line} of \\d+$`));
+    }
 }
 
 export class MobileReaderPage {

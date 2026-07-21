@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
 import { ReaderPage } from './utils';
 
 const SEVENTH_MIRROR_DIRECT_LINK =
@@ -12,6 +12,11 @@ const STORY_MODULE_SEGMENTS = {
     trainAdventure: '/stories/trainAdventure/',
     midnight: '/stories/dontSaveMeBeforeMidnight/',
 } as const;
+
+const isSeventhMirrorEntryUrl = (url: URL) =>
+    isStoryEntryRequest(url.href, STORY_MODULE_SEGMENTS.seventhMirror);
+const isMidnightEntryUrl = (url: URL) =>
+    isStoryEntryRequest(url.href, STORY_MODULE_SEGMENTS.midnight);
 
 function isStoryModuleRequest(url: string, segment: string): boolean {
     return decodeURIComponent(new URL(url).pathname).includes(segment);
@@ -85,7 +90,7 @@ test.describe('Reader lazy story loading', () => {
             )
         ).toBe(false);
         await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
-        await expect(reader.ready.getByText(/^Page 3 of \d+$/)).toBeVisible();
+        await expect(reader.progressAt(3)).toBeVisible();
     });
 
     test('retries a one-shot aborted module import by reloading the preserved URL', async ({
@@ -93,7 +98,7 @@ test.describe('Reader lazy story loading', () => {
     }) => {
         const reader = new ReaderPage(page);
         let aborted = false;
-        await page.route(/theSeventhMirror/, async route => {
+        await page.route(isSeventhMirrorEntryUrl, async route => {
             if (!aborted) {
                 aborted = true;
                 await route.abort();
@@ -106,10 +111,16 @@ test.describe('Reader lazy story loading', () => {
         await expect(reader.loadError).toBeVisible();
         await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
 
-        await reader.loadError.getByRole('button', { name: 'Retry' }).click();
+        const [navigation] = await Promise.all([
+            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+            reader.loadError.getByRole('button', { name: 'Retry' }).click(),
+        ]);
+        expect(navigation).not.toBeNull();
+        expect(navigation?.request().resourceType()).toBe('document');
+        expect(navigation?.request().frame()).toBe(page.mainFrame());
         await expectReadyStory(reader, 'the_seventh_mirror');
         await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
-        await expect(reader.ready.getByText(/^Page 3 of \d+$/)).toBeVisible();
+        await expect(reader.progressAt(3)).toBeVisible();
         expect(aborted).toBe(true);
     });
 
@@ -147,46 +158,52 @@ test.describe('Reader lazy story loading', () => {
         await page.goto(SEVENTH_MIRROR_DIRECT_LINK);
         await expectReadyStory(reader, 'the_seventh_mirror');
 
-        let midnightRequestStarted = false;
+        let midnightEntryUrl: string | undefined;
         let releaseMidnight!: () => void;
         const releaseMidnightPromise = new Promise<void>(resolve => {
             releaseMidnight = resolve;
         });
 
-        await page.route(/dontSaveMeBeforeMidnight/, async route => {
-            midnightRequestStarted = true;
+        const blockMidnightEntry = async (route: Route) => {
+            midnightEntryUrl = route.request().url();
             await releaseMidnightPromise;
             await route.continue();
-        });
+        };
+        await page.route(isMidnightEntryUrl, blockMidnightEntry);
 
-        await dispatchPopstate(page, MIDNIGHT_DIRECT_LINK);
-        await expect
-            .poll(() => midnightRequestStarted, {
-                message: 'the intermediate story module request starts',
-            })
-            .toBe(true);
+        try {
+            await dispatchPopstate(page, MIDNIGHT_DIRECT_LINK);
+            await expect
+                .poll(() => midnightEntryUrl, {
+                    message:
+                        'the exact intermediate story entry request starts',
+                })
+                .toBeTruthy();
 
-        await dispatchPopstate(page, SEVENTH_MIRROR_DIRECT_LINK);
-        await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
-        await expectReadyStory(reader, 'the_seventh_mirror');
+            await dispatchPopstate(page, SEVENTH_MIRROR_DIRECT_LINK);
+            await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
+            await expectReadyStory(reader, 'the_seventh_mirror');
 
-        const midnightResponse = page.waitForResponse(response =>
-            isStoryEntryRequest(response.url(), STORY_MODULE_SEGMENTS.midnight)
-        );
-        releaseMidnight();
-        await midnightResponse;
-        await page.evaluate(() => {
-            const browser = globalThis as unknown as {
-                requestAnimationFrame: (callback: () => void) => number;
-            };
-            return new Promise<void>(resolve =>
-                browser.requestAnimationFrame(() =>
-                    browser.requestAnimationFrame(resolve)
-                )
-            );
-        });
+            const capturedEntryUrl = midnightEntryUrl!;
+            releaseMidnight();
+            const moduleEvaluation = await page.evaluate(async entryUrl => {
+                await import(entryUrl);
+                return 'module-evaluated';
+            }, capturedEntryUrl);
+            expect(moduleEvaluation).toBe('module-evaluated');
 
-        await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
-        await expectReadyStory(reader, 'the_seventh_mirror');
+            const loaderChainDrain = await page.evaluate(async () => {
+                await Promise.resolve();
+                await Promise.resolve();
+                return 'loader-chain-drained';
+            });
+            expect(loaderChainDrain).toBe('loader-chain-drained');
+
+            await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
+            await expectReadyStory(reader, 'the_seventh_mirror');
+        } finally {
+            releaseMidnight();
+            await page.unroute(isMidnightEntryUrl, blockMidnightEntry);
+        }
     });
 });

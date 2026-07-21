@@ -1,8 +1,4 @@
-import {
-    getStoryFlow,
-    type Translations,
-    type StoryFlowConfig,
-} from '@aquila/stories';
+import type { Translations, StoryFlowConfig } from '@aquila/stories';
 
 export interface ActInfo {
     label: string;
@@ -94,13 +90,10 @@ export function chapterLabel(num: number, t: Translations): string {
 }
 
 export function buildChapterData(
-    storyId: string,
+    flow: Flow,
     sceneId: string,
     t: Translations
 ): PanelData {
-    const flow = getStoryFlow(storyId);
-    if (!flow) return { mode: 'branches', acts: [] };
-
     const hasChapters = flow.nodes.some(
         n => n.kind === 'scene' && /^ch\d+_/.test(n.sceneId)
     );

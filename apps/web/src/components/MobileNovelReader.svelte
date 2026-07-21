@@ -4,8 +4,9 @@
     DialogueEntry,
     ChoiceDefinition,
     Locale,
+    StoryFlowConfig,
   } from '@aquila/stories';
-  import { getTranslations } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
@@ -17,6 +18,7 @@
   // Pure controlled reader. All session state arrives via props; the only
   // outward signal is onIndexChange. No readerState import.
   let {
+    flow,
     dialogueIndex = 0,
     onIndexChange = () => {},
     dialogue = [],
@@ -33,6 +35,7 @@
     showBookmarkButton = true,
     isInitialMount = true,
   }: {
+    flow: StoryFlowConfig;
     dialogueIndex?: number;
     onIndexChange?: (index: number) => void;
     dialogue?: DialogueEntry[];
@@ -499,6 +502,7 @@
 
   {#if storyId !== undefined && currentSceneId !== undefined}
     <MobileActDrawer
+      {flow}
       {storyId}
       {currentSceneId}
       open={drawerOpen}

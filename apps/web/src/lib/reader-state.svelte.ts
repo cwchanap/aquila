@@ -6,7 +6,15 @@
 // (restore, URL/history, persistence, popstate) and reads/writes this store.
 // ReaderShell is the reactive store->props bridge; NovelReader/MobileNovelReader
 // are pure controlled components with no store import.
-import type { DialogueEntry, ChoiceDefinition, Locale } from '@aquila/stories';
+import type {
+    DialogueEntry,
+    ChoiceDefinition,
+    Locale,
+    StoryFlowConfig,
+} from '@aquila/stories';
+import type { StoryLoadError } from '@aquila/stories/async';
+
+export type ReaderLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 class ReaderState {
     dialogue: DialogueEntry[] = $state([]);
@@ -16,6 +24,10 @@ class ReaderState {
     canGoNext: boolean = $state(false);
     locale: Locale = $state('en');
     dialogueIndex: number = $state(0);
+    loadStatus: ReaderLoadStatus = $state('idle');
+    loadError: StoryLoadError | null = $state(null);
+    hasActivePayload: boolean = $state(false);
+    activeFlow: StoryFlowConfig | null = $state(null);
 
     reset() {
         this.dialogue = [];
@@ -25,6 +37,10 @@ class ReaderState {
         this.canGoNext = false;
         this.locale = 'en';
         this.dialogueIndex = 0;
+        this.loadStatus = 'idle';
+        this.loadError = null;
+        this.hasActivePayload = false;
+        this.activeFlow = null;
     }
 }
 

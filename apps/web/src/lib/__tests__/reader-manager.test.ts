@@ -21,6 +21,22 @@ vi.mock('@aquila/stories', () => ({
     })),
 }));
 
+vi.mock('@aquila/stories/translations', () => ({
+    getTranslations: vi.fn(() => ({
+        reader: {
+            bookmarkPrompt: 'Save bookmark as:',
+            defaultBookmarkName: 'Bookmark',
+            bookmarkSaved: 'Bookmark saved!',
+            bookmarkFailed: 'Failed to save bookmark',
+            bookmarkError: 'Error saving bookmark',
+            endOfStory: 'End of story reached',
+            loadError: 'Failed to load reader',
+            retry: 'Retry',
+        },
+        locale: 'en',
+    })),
+}));
+
 const mockMount = vi.hoisted(() => vi.fn(() => ({})));
 const mockUnmount = vi.hoisted(() => vi.fn());
 
@@ -334,6 +350,16 @@ describe('ReaderManager', () => {
             expect(readerState.currentSceneId).toBe('act1');
             expect(readerState.locale).toBe('en');
             expect(readerState.dialogueIndex).toBe(0);
+        });
+
+        it('temporarily bridges the synchronous payload into ready load state', () => {
+            manager = new ReaderManager('en');
+            manager.initialize();
+
+            expect(readerState.activeFlow).toMatchObject({ start: 'act1' });
+            expect(readerState.hasActivePayload).toBe(true);
+            expect(readerState.loadStatus).toBe('ready');
+            expect(readerState.loadError).toBeNull();
         });
 
         it('writes readerState from a valid URL story+scene', () => {
@@ -908,6 +934,22 @@ describe('ReaderManager', () => {
             // so replaceChildren() removed the old <p>
             // After mount, only the mounted component exists (mock adds nothing)
             expect(container.contains(oldChild)).toBe(false);
+        });
+
+        it('supplies ReaderShell a retry callback that reloads the document', async () => {
+            const container = document.createElement('div');
+            container.id = 'reader-container';
+            document.body.appendChild(container);
+            manager = new ReaderManager('en');
+
+            manager.renderReader();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onRetry = mockMount.mock.calls.at(-1)![1].props
+                .onRetry as () => void;
+
+            onRetry();
+
+            expect(window.location.reload).toHaveBeenCalledOnce();
         });
 
         it('shows error UI with loadError text when component mounting throws', async () => {

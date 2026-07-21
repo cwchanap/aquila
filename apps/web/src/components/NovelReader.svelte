@@ -3,8 +3,9 @@
     DialogueEntry,
     ChoiceDefinition,
     Locale,
+    StoryFlowConfig,
   } from '@aquila/stories';
-  import { getTranslations } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
   import ActPanel from '@/components/ActPanel.svelte';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { resolveCharacterName } from '@/lib/character-name';
@@ -13,6 +14,7 @@
   // Pure controlled reader. All session state arrives via props; the only
   // outward signal is onIndexChange. No readerState import.
   let {
+    flow,
     dialogueIndex = 0,
     onIndexChange = () => {},
     dialogue = [],
@@ -29,6 +31,7 @@
     showBookmarkButton = true,
     isInitialMount = true,
   }: {
+    flow: StoryFlowConfig;
     dialogueIndex?: number;
     onIndexChange?: (index: number) => void;
     dialogue?: DialogueEntry[];
@@ -257,6 +260,7 @@
   <aside class="flex-shrink-0 h-screen">
     {#if storyId && currentSceneId}
       <ActPanel
+        {flow}
         {storyId}
         {currentSceneId}
         open={showActPanel}

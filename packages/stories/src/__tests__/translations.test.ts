@@ -56,6 +56,17 @@ describe('translations', () => {
             expect(en.characters).toBeDefined();
         });
 
+        it('has localized reader story-load messages in both locales', () => {
+            for (const locale of ['en', 'zh'] as const) {
+                const reader = getTranslations(locale).reader;
+                expect(reader.loadingStory).toBeTruthy();
+                expect(reader.storyLoadFailed).toBeTruthy();
+                expect(reader.unknownStory).toBeTruthy();
+                expect(reader.unsupportedLocale).toBeTruthy();
+                expect(reader.backToStories).toBeTruthy();
+            }
+        });
+
         it('has validation translations', () => {
             const en = getTranslations('en');
             expect(en.email).toBeDefined();

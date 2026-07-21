@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getTranslations, type Locale } from '@aquila/stories';
+  import type { Locale, StoryFlowConfig } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
   import {
     buildChapterData,
     extractActName,
@@ -10,6 +11,7 @@
   import { focusTrap } from '@/lib/focus-trap';
 
   let {
+    flow,
     storyId,
     currentSceneId,
     onNavigate,
@@ -18,6 +20,7 @@
     locale = 'en',
     restoreFocusTarget = null,
   }: {
+    flow: StoryFlowConfig;
     storyId: string;
     currentSceneId: string;
     onNavigate: (sceneId: string) => void;
@@ -28,7 +31,7 @@
   } = $props();
 
   let t = $derived(getTranslations(locale));
-  let chapterData = $derived(buildChapterData(storyId, currentSceneId, t));
+  let chapterData = $derived(buildChapterData(flow, currentSceneId, t));
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 
@@ -84,6 +87,7 @@
 
 <div
   use:focusTrap={{ enabled: open, restoreFocus: restoreFocusTarget }}
+  data-story-id={storyId}
   class={cn(
     'fixed inset-y-0 left-0 z-50 w-4/5 max-w-xs overflow-y-auto bg-white/95 backdrop-blur-xl shadow-2xl motion-safe:transition-transform motion-safe:duration-300 ease-in-out',
     open ? 'translate-x-0' : '-translate-x-full'

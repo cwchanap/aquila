@@ -4,68 +4,74 @@ import '@testing-library/jest-dom';
 import NovelReader from '../NovelReader.svelte';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
 
-// Mock @aquila/stories
-vi.mock('@aquila/stories', () => {
-    return {
-        getStoryFlow: vi.fn(() => ({
-            start: 'b1a_act1',
-            nodes: [
-                {
-                    kind: 'scene',
-                    id: 'b1a_act1',
-                    sceneId: 'b1a_act1',
-                    next: 'b1a_act2',
-                },
-                {
-                    kind: 'scene',
-                    id: 'b1a_act2',
-                    sceneId: 'b1a_act2',
-                    next: 'b1a_act3',
-                },
-                {
-                    kind: 'scene',
-                    id: 'b1a_act3',
-                    sceneId: 'b1a_act3',
-                    next: null,
-                },
-            ],
-        })),
-        getTranslations: vi.fn((locale: string) => ({
-            reader: {
-                title: 'Novel Reader - Aquila',
-                bookmarkPrompt: 'Enter bookmark name:',
-                defaultBookmarkName: 'Scene:',
-                bookmarkSaved: 'Bookmark saved!',
-                bookmarkFailed: 'Failed to save bookmark:',
-                bookmarkError: 'Failed to save bookmark. Please try again.',
-                endOfStory: 'End of story!',
-                unknown: 'Unknown',
-                continue: 'Continue',
-                nextScene: 'Next Scene',
-                complete: 'Complete',
-                bookmark: 'Bookmark',
-                pageDisplay: '{current} / {total}',
-                actPanel: 'Acts',
-                actLabel: 'Act {n}',
-                actFinal: 'Final Act',
-                actEpilogue: 'Epilogue',
-                openActsPanel: 'Open acts panel',
-                closeActsPanel: 'Close acts panel',
-            },
-            characterNames: {
-                narrator: 'Narrator',
-                tanaka_kenta: '田中健太',
-            },
-            common: {
-                logout: 'Logout',
-                login: 'Login',
-                back: 'Back',
-                backToHome: 'Back to Home',
-            },
-            locale,
-        })),
-    };
-});
+const readerFlow = {
+    start: 'b1a_act1',
+    nodes: [
+        {
+            kind: 'scene',
+            id: 'b1a_act1',
+            sceneId: 'b1a_act1',
+            next: 'b1a_act2',
+        },
+        {
+            kind: 'scene',
+            id: 'b1a_act2',
+            sceneId: 'b1a_act2',
+            next: 'b1a_act3',
+        },
+        {
+            kind: 'scene',
+            id: 'b1a_act3',
+            sceneId: 'b1a_act3',
+            next: null,
+        },
+    ],
+};
+
+const { mockGetTranslations } = vi.hoisted(() => ({
+    mockGetTranslations: vi.fn((locale: string) => ({
+        reader: {
+            title: 'Novel Reader - Aquila',
+            bookmarkPrompt: 'Enter bookmark name:',
+            defaultBookmarkName: 'Scene:',
+            bookmarkSaved: 'Bookmark saved!',
+            bookmarkFailed: 'Failed to save bookmark:',
+            bookmarkError: 'Failed to save bookmark. Please try again.',
+            endOfStory: 'End of story!',
+            unknown: 'Unknown',
+            continue: 'Continue',
+            nextScene: 'Next Scene',
+            complete: 'Complete',
+            bookmark: 'Bookmark',
+            pageDisplay: '{current} / {total}',
+            actPanel: 'Acts',
+            actLabel: 'Act {n}',
+            actFinal: 'Final Act',
+            actEpilogue: 'Epilogue',
+            openActsPanel: 'Open acts panel',
+            closeActsPanel: 'Close acts panel',
+        },
+        characterNames: {
+            narrator: 'Narrator',
+            tanaka_kenta: '田中健太',
+        },
+        common: {
+            logout: 'Logout',
+            login: 'Login',
+            back: 'Back',
+            backToHome: 'Back to Home',
+        },
+        locale,
+    })),
+}));
+
+vi.mock('@aquila/stories', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories')>()),
+    getTranslations: mockGetTranslations,
+}));
+vi.mock('@aquila/stories/translations', () => ({
+    getTranslations: mockGetTranslations,
+}));
 
 // Controlled-component helper: tracks the index the parent would own and
 // re-renders with the full prop bag when asked, simulating the store->props
@@ -73,6 +79,7 @@ vi.mock('@aquila/stories', () => {
 function renderReader(overrides: Record<string, unknown> = {}) {
     const onIndexChange = vi.fn();
     let current: Record<string, unknown> = {
+        flow: readerFlow,
         dialogue: mockDialogue,
         choice: null,
         locale: 'en',

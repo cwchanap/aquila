@@ -163,6 +163,11 @@
   "reader": {
     "title": "小說閱讀器 - Aquila",
     "loadError": "載入閱讀器失敗",
+    "loadingStory": "正在載入故事",
+    "storyLoadFailed": "故事載入失敗",
+    "unknownStory": "找不到故事",
+    "unsupportedLocale": "不支援此語言",
+    "backToStories": "返回故事列表",
     "retry": "重試",
     "bookmarkPrompt": "輸入書籤名稱：",
     "defaultBookmarkName": "場景：",

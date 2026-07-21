@@ -215,7 +215,7 @@ export class ReaderManager {
     private async loadIntent(
         selection: IntentSelection,
         phase: LoadedIntentPhase,
-        generation: number
+        generation: number = ++this.loadGeneration
     ): Promise<void> {
         if (!this.isCurrent(generation)) return;
 
@@ -234,12 +234,23 @@ export class ReaderManager {
         readerState.loadStatus = 'loading';
         readerState.loadError = null;
 
+        if (!this.readerInstance) {
+            await this.renderReader();
+            if (!this.isCurrent(generation)) return;
+        }
+
         let payload: AsyncStoryLoaderResult;
         try {
-            payload = await this.deps.loadStoryContent(
-                intent.storyId,
-                intent.locale
-            );
+            payload =
+                this.activeStory &&
+                readerState.hasActivePayload &&
+                intent.storyId === readerState.storyId &&
+                intent.locale === readerState.locale
+                    ? this.activeStory
+                    : await this.deps.loadStoryContent(
+                          intent.storyId,
+                          intent.locale
+                      );
         } catch (error) {
             if (!this.isCurrent(generation)) return;
             if (error instanceof StoryLoadError) {
@@ -260,6 +271,7 @@ export class ReaderManager {
             this.pendingIntent = null;
             if (readerState.hasActivePayload) {
                 readerState.loadStatus = 'ready';
+                readerState.loadError = null;
                 this.syncUrl(true);
             }
             return;
@@ -425,6 +437,7 @@ export class ReaderManager {
     };
 
     handleBookmark = async (dialogueNumber?: number): Promise<void> => {
+        if (!this.activeStory || readerState.loadStatus !== 'ready') return;
         const translations = this.t;
 
         const bookmarkName = await showPrompt(
@@ -489,6 +502,7 @@ export class ReaderManager {
     };
 
     handleNext = async (): Promise<void> => {
+        if (!this.activeStory || readerState.loadStatus !== 'ready') return;
         const translations = this.t;
         const next = this.getLinearNextScene(readerState.currentSceneId);
         if (next !== null) {
@@ -529,7 +543,7 @@ export class ReaderManager {
                         backUrl: `/${readerState.locale}/`,
                         onNavigate: this.goToScene,
                         onIndexChange: this.onIndexChange,
-                        onRetry: () => location.reload(),
+                        onRetry: () => window.location.reload(),
                     },
                 });
 
@@ -562,7 +576,9 @@ export class ReaderManager {
                     'px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors';
                 const retryText = translations?.reader?.retry ?? 'Retry';
                 retryBtn.textContent = retryText;
-                retryBtn.addEventListener('click', () => location.reload());
+                retryBtn.addEventListener('click', () =>
+                    window.location.reload()
+                );
 
                 wrapper.appendChild(errorMsg);
                 wrapper.appendChild(retryBtn);
@@ -571,19 +587,9 @@ export class ReaderManager {
         return this.readerMountPromise;
     }
 
-    private async loadPrePayloadPopState(
-        selection: IntentSelection,
-        generation: number
-    ): Promise<void> {
-        await this.renderReader();
-        if (!this.isCurrent(generation)) return;
-        await this.loadIntent(selection, 'popstate', generation);
-    }
-
     /** popstate handler: cancel any pending line replace (so the destination
-     *  history entry is not mutated), then either soft-reject (invalid URL ->
-     *  reconverge canonical URL via replaceState) or restore the validated
-     *  URL state into the store. */
+     *  history entry is not mutated), then start one generation-guarded intent
+     *  path for active, replacement, and pre-payload destinations. */
     private onPopState = (): void => {
         this.cancelPendingReplace(); // do NOT flush -> avoid mutating destination entry
         const params = new URLSearchParams(window.location.search);
@@ -593,38 +599,9 @@ export class ReaderManager {
             readerState.locale,
             { defaultStoryId: this.deps.defaultStoryId }
         );
-        if (!this.activeStory || !readerState.hasActivePayload) {
-            const generation = ++this.loadGeneration;
-            void this.loadPrePayloadPopState(selection, generation).catch(
-                error => console.error('Reader popstate load failed', error)
-            );
-            return;
-        }
-        if (
-            selection.kind !== 'load' ||
-            selection.intent.storyId !== readerState.storyId
-        ) {
-            // invalid popstate -> soft-reject: keep store, reconverge URL
-            this.syncUrl(true);
-            return;
-        }
-        const result = validateLoadedIntent(
-            selection.intent,
-            this.activeStory,
-            'popstate'
+        void this.loadIntent(selection, 'popstate').catch(error =>
+            console.error('Reader popstate load failed', error)
         );
-        if (result.kind !== 'apply') {
-            this.syncUrl(true);
-            return;
-        }
-        if (
-            result.state.sceneId !== readerState.currentSceneId ||
-            result.state.storyId !== readerState.storyId
-        ) {
-            this.applySession(result.state, this.activeStory);
-        } else {
-            readerState.dialogueIndex = result.state.dialogueIndex;
-        }
     };
 
     /** pagehide / visibilitychange->hidden handler: flush any pending line

@@ -131,6 +131,25 @@ function storyPayload(
     };
 }
 
+function midnightPayload(): AsyncStoryLoaderResult {
+    return storyPayload({
+        flow: {
+            start: 'midnight_act',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'midnight_act',
+                    sceneId: 'midnight_act',
+                    next: null,
+                },
+            ],
+        },
+        dialogue: {
+            midnight_act: [{ dialogue: 'first' }, { dialogue: 'second' }],
+        },
+    });
+}
+
 function seedActiveStory(manager: ReaderManager, storyId = 'train_adventure') {
     const flow = mockGetStoryFlow(storyId);
     if (!flow) throw new Error(`Missing test flow for ${storyId}`);
@@ -463,7 +482,7 @@ describe('ReaderManager', () => {
             });
         });
 
-        it('supersedes the initial load when popstate selects a new story before payload apply', async () => {
+        it('applies only popstate B when initial A resolves before B', async () => {
             const initial = deferred<AsyncStoryLoaderResult>();
             const destination = deferred<AsyncStoryLoaderResult>();
             const loadStoryContent = vi.fn((storyId: string) =>
@@ -502,6 +521,18 @@ describe('ReaderManager', () => {
                 )
             );
 
+            initial.resolve(storyPayload());
+            await initializing;
+
+            expect(readerState).toMatchObject({
+                storyId: '',
+                currentSceneId: '',
+                hasActivePayload: false,
+                loadStatus: 'loading',
+            });
+            expect(replaceState).not.toHaveBeenCalled();
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+
             destination.resolve(
                 storyPayload({
                     flow: {
@@ -538,29 +569,56 @@ describe('ReaderManager', () => {
             expect(appliedUrl.searchParams.get('story')).toBe(
                 'dont_save_me_before_midnight'
             );
-            const persistedBeforeInitialSettles =
-                mockStorage.setItem.mock.calls.filter(
-                    ([key]) => key === 'aquila:readerState:en'
-                );
-            expect(persistedBeforeInitialSettles).toHaveLength(1);
-            expect(
-                JSON.parse(persistedBeforeInitialSettles[0][1])
-            ).toMatchObject({
+            const persisted = mockStorage.setItem.mock.calls.filter(
+                ([key]) => key === 'aquila:readerState:en'
+            );
+            expect(persisted).toHaveLength(1);
+            expect(JSON.parse(persisted[0][1])).toMatchObject({
                 storyId: 'dont_save_me_before_midnight',
                 sceneId: 'midnight_act',
                 dialogueIndex: 1,
             });
+        });
 
-            initial.resolve(storyPayload());
+        it('keeps pre-payload popstate loading behind the memoized shell mount', async () => {
+            const shellModule = await import('@/components/ReaderShell.svelte');
+            const shellLoad =
+                deferred<typeof import('@/components/ReaderShell.svelte')>();
+            const loadReaderShell = vi.fn(() => shellLoad.promise);
+            const loadStoryContent = vi.fn(async (storyId: string) =>
+                storyId === 'train_adventure'
+                    ? storyPayload()
+                    : midnightPayload()
+            );
+            mountReaderContainer();
+            setLocation('?story=train_adventure&scene=act1');
+            manager = new ReaderManager('en', undefined, {
+                loadReaderShell,
+                loadStoryContent,
+            });
+            const initializing = manager.initialize();
+            await vi.waitFor(() =>
+                expect(loadReaderShell).toHaveBeenCalledOnce()
+            );
+
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act'
+            );
+            window.dispatchEvent(new PopStateEvent('popstate'));
+
+            expect(readerState.loadStatus).toBe('loading');
+            expect(loadStoryContent).not.toHaveBeenCalled();
+
+            shellLoad.resolve(shellModule);
             await initializing;
-            expect(readerState.storyId).toBe('dont_save_me_before_midnight');
-            expect(readerState.currentSceneId).toBe('midnight_act');
-            expect(replaceState).toHaveBeenCalledOnce();
-            expect(
-                mockStorage.setItem.mock.calls.filter(
-                    ([key]) => key === 'aquila:readerState:en'
-                )
-            ).toHaveLength(1);
+            await vi.waitFor(() =>
+                expect(readerState.storyId).toBe('dont_save_me_before_midnight')
+            );
+            expect(loadStoryContent).toHaveBeenCalledTimes(1);
+            expect(loadStoryContent).toHaveBeenCalledWith(
+                'dont_save_me_before_midnight',
+                'en'
+            );
         });
 
         it('ignores stale persisted unknown IDs and loads only the default story', async () => {
@@ -913,7 +971,236 @@ describe('ReaderManager', () => {
         });
     });
 
+    describe('asynchronous navigation intents', () => {
+        it('reuses a cached A payload when popstate returns from ready B', async () => {
+            const cache = new Map<string, AsyncStoryLoaderResult>();
+            const importer = vi.fn(async (storyId: string) =>
+                storyId === 'train_adventure'
+                    ? storyPayload()
+                    : midnightPayload()
+            );
+            const loadStoryContent = vi.fn(
+                async (storyId: string, locale: 'en' | 'zh') => {
+                    const key = `${storyId}:${locale}`;
+                    const cached = cache.get(key);
+                    if (cached) return cached;
+                    const payload = await importer(storyId);
+                    cache.set(key, payload);
+                    return payload;
+                }
+            );
+            mountReaderContainer();
+            setLocation('?story=train_adventure&scene=act1');
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            await manager.initialize();
+
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act&dialogue=2'
+            );
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.storyId).toBe('dont_save_me_before_midnight')
+            );
+
+            setLocation('?story=train_adventure&scene=act2');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.storyId).toBe('train_adventure')
+            );
+
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(
+                importer.mock.calls.filter(
+                    ([storyId]) => storyId === 'train_adventure'
+                )
+            ).toHaveLength(1);
+            expect(importer).toHaveBeenCalledTimes(2);
+        });
+
+        it('keeps active A and its persistence when popstate B fails', async () => {
+            const loadError = new StoryLoadError(
+                'load-failed',
+                'Failed to load B'
+            );
+            const loadStoryContent = vi.fn(async (storyId: string) => {
+                if (storyId === 'dont_save_me_before_midnight') {
+                    throw loadError;
+                }
+                return storyPayload();
+            });
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mountReaderContainer();
+            setLocation('?story=train_adventure&scene=act1');
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            await manager.initialize();
+            const activeDialogue = readerState.dialogue;
+            replaceState.mockClear();
+            mockStorage.setItem.mockClear();
+
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act&dialogue=2'
+            );
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('error')
+            );
+
+            expect(readerState).toMatchObject({
+                storyId: 'train_adventure',
+                currentSceneId: 'act1',
+                hasActivePayload: true,
+                loadError,
+            });
+            expect(readerState.dialogue).toBe(activeDialogue);
+            expect((manager as any).pendingIntent).toMatchObject({
+                storyId: 'dont_save_me_before_midnight',
+                requestedSceneId: 'midnight_act',
+                requestedDialogueIndex: 1,
+            });
+            expect(window.location.search).toBe(
+                '?story=dont_save_me_before_midnight&scene=midnight_act&dialogue=2'
+            );
+            expect(replaceState).not.toHaveBeenCalled();
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+            expect(mockMount).toHaveBeenCalledOnce();
+        });
+
+        it('supersedes failed B with popstate back to active A and clears the overlay', async () => {
+            const loadStoryContent = vi.fn(async (storyId: string) => {
+                if (storyId === 'dont_save_me_before_midnight') {
+                    throw new StoryLoadError('load-failed', 'Failed to load B');
+                }
+                return storyPayload();
+            });
+            mountReaderContainer();
+            setLocation('?story=train_adventure&scene=act1');
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            await manager.initialize();
+
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act'
+            );
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('error')
+            );
+
+            setLocation('?story=train_adventure&scene=act2&dialogue=1');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('ready')
+            );
+
+            expect(readerState).toMatchObject({
+                storyId: 'train_adventure',
+                currentSceneId: 'act2',
+                dialogueIndex: 0,
+                loadError: null,
+                hasActivePayload: true,
+            });
+            expect((manager as any).pendingIntent).toBeNull();
+            expect(
+                loadStoryContent.mock.calls.filter(
+                    ([storyId]) => storyId === 'train_adventure'
+                )
+            ).toHaveLength(1);
+        });
+
+        it.each([
+            ['stale scene', 'scene=deleted_scene'],
+            ['malformed dialogue', 'scene=midnight_act&dialogue=2junk'],
+        ])(
+            'loads known B then soft-rejects its %s and reconverges to A',
+            async (_caseName, destinationParams) => {
+                const loadStoryContent = vi.fn(async (storyId: string) =>
+                    storyId === 'train_adventure'
+                        ? storyPayload()
+                        : midnightPayload()
+                );
+                const replaceState = vi.fn();
+                Object.defineProperty(window, 'history', {
+                    value: { pushState: vi.fn(), replaceState },
+                    writable: true,
+                });
+                mountReaderContainer();
+                setLocation('?story=train_adventure&scene=act2');
+                manager = new ReaderManager('en', undefined, {
+                    loadStoryContent,
+                });
+                await manager.initialize();
+                replaceState.mockClear();
+                mockStorage.setItem.mockClear();
+
+                setLocation(
+                    `?story=dont_save_me_before_midnight&${destinationParams}`
+                );
+                window.dispatchEvent(new PopStateEvent('popstate'));
+                await vi.waitFor(() =>
+                    expect(loadStoryContent).toHaveBeenCalledWith(
+                        'dont_save_me_before_midnight',
+                        'en'
+                    )
+                );
+                await vi.waitFor(() =>
+                    expect(replaceState).toHaveBeenCalledOnce()
+                );
+
+                expect(readerState).toMatchObject({
+                    storyId: 'train_adventure',
+                    currentSceneId: 'act2',
+                    loadStatus: 'ready',
+                    loadError: null,
+                });
+                const canonicalUrl = replaceState.mock.calls[0][2] as URL;
+                expect(canonicalUrl.searchParams.get('story')).toBe(
+                    'train_adventure'
+                );
+                expect(mockStorage.setItem).not.toHaveBeenCalled();
+            }
+        );
+
+        it('does not call the story loader for shell re-render or ready same-story navigation', async () => {
+            const loadStoryContent = vi.fn().mockResolvedValue(storyPayload());
+            mountReaderContainer();
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            await manager.initialize();
+
+            await manager.renderReader();
+            manager.goToScene('act2');
+            manager.handleChoice('act1');
+            await manager.handleNext();
+
+            expect(loadStoryContent).toHaveBeenCalledOnce();
+            expect(mockMount).toHaveBeenCalledOnce();
+        });
+    });
+
     describe('navigation', () => {
+        it('guards choices, next, and bookmarks until an active payload is ready', async () => {
+            manager = new ReaderManager('en');
+
+            manager.handleChoice('act2');
+            await manager.handleNext();
+            await manager.handleBookmark(1);
+
+            expect(window.history.pushState).not.toHaveBeenCalled();
+            expect(mockShowAlert).not.toHaveBeenCalled();
+            expect(mockShowPrompt).not.toHaveBeenCalled();
+            expect(global.fetch).not.toHaveBeenCalled();
+        });
+
         it('handleChoice updates readerState and persists the new scene', async () => {
             mockGetStoryContent.mockReturnValue({
                 dialogue: { scene_4a: [] },
@@ -979,6 +1266,7 @@ describe('ReaderManager', () => {
             });
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleNext();
 
             expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
@@ -1006,6 +1294,7 @@ describe('ReaderManager', () => {
             });
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleNext();
 
             expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
@@ -1027,6 +1316,7 @@ describe('ReaderManager', () => {
             mockShowPrompt.mockResolvedValueOnce('');
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark();
 
             expect(global.fetch).not.toHaveBeenCalled();
@@ -1040,6 +1330,7 @@ describe('ReaderManager', () => {
             });
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark();
 
             expect(global.fetch).toHaveBeenCalledWith(
@@ -1057,6 +1348,7 @@ describe('ReaderManager', () => {
             });
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark();
 
             expect(mockShowAlert).toHaveBeenCalledWith(
@@ -1072,6 +1364,7 @@ describe('ReaderManager', () => {
             });
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark();
 
             expect(mockShowAlert).toHaveBeenCalledWith(
@@ -1089,6 +1382,7 @@ describe('ReaderManager', () => {
                 .mockRejectedValueOnce(new Error('Network error'));
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark();
 
             expect(mockShowAlert).toHaveBeenCalledWith('Error saving bookmark');
@@ -1136,6 +1430,7 @@ describe('ReaderManager', () => {
             global.fetch = mockFetch;
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark(5);
 
             const callArgs = mockFetch.mock.calls[0];
@@ -1153,6 +1448,7 @@ describe('ReaderManager', () => {
             global.fetch = mockFetch;
 
             manager = new ReaderManager('en');
+            await manager.initialize();
             await manager.handleBookmark(0);
 
             const callArgs = mockFetch.mock.calls[0];
@@ -1172,7 +1468,7 @@ describe('ReaderManager', () => {
             document.body.appendChild(container);
 
             manager = new ReaderManager('en');
-            manager.renderReader();
+            await manager.initialize();
 
             // Wait for the dynamic import .then to run and call mount
             await vi.waitFor(() => {
@@ -1439,7 +1735,7 @@ describe('ReaderManager', () => {
                     container.querySelector<HTMLButtonElement>('button');
                 retryBtn?.click();
 
-                expect(reloadMock).toHaveBeenCalled();
+                expect(reloadMock).toHaveBeenCalledOnce();
             } finally {
                 errorSpy.mockRestore();
                 mockMount.mockImplementation(() => ({}));
@@ -1624,7 +1920,7 @@ describe('ReaderManager', () => {
             expect(readerState.dialogueIndex).toBe(0); // restored to line 1 -> index 0
         });
 
-        it('invalid popstate soft-rejects: store unchanged, canonical URL replaceStated', async () => {
+        it('explicit unknown-story popstate preserves its URL and shows unknown-story', async () => {
             const replaceState = vi.fn();
             Object.defineProperty(window, 'history', {
                 value: { pushState: vi.fn(), replaceState },
@@ -1639,13 +1935,20 @@ describe('ReaderManager', () => {
             await manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
             const before = readerState.currentSceneId;
-            // Make 'bogus' an unknown story so popstate takes the soft-reject branch.
-            mockGetStoryFlow.mockReturnValue(undefined);
             setLocation('?story=bogus&scene=nope');
             replaceState.mockClear(); // ignore initialize's call
+            mockStorage.setItem.mockClear();
             window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('error')
+            );
+
             expect(readerState.currentSceneId).toBe(before); // unchanged
-            expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
+            expect(readerState.loadError?.code).toBe('unknown-story');
+            expect(readerState.hasActivePayload).toBe(true);
+            expect(window.location.search).toBe('?story=bogus&scene=nope');
+            expect(replaceState).not.toHaveBeenCalled();
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
         });
 
         it('popstate with valid story but stale scene soft-rejects (store unchanged, URL reconverged)', async () => {

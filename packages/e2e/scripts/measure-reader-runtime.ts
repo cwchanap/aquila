@@ -4,6 +4,7 @@ import {
     type Browser,
     type BrowserContextOptions,
     type Page,
+    type Response,
 } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -14,6 +15,7 @@ const READER_ROUTE =
 const READER_READY_SELECTOR = '.novel-reader, .mobile-reader';
 const RUN_COUNT = 5;
 const READER_READY_TIMEOUT_MS = 300_000;
+const RESOURCE_TIMING_BUFFER_SIZE = 5_000;
 const FULL_RESULTS_ARTIFACT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     '../../../.superpowers/sdd/hpa-232-reader-runtime.json'
@@ -108,6 +110,19 @@ async function resourceDurations(page: Page): Promise<Map<string, number>> {
     return new Map(entries.map(entry => [entry.url, entry.durationMs]));
 }
 
+function responseDuration(
+    response: Response,
+    durations: Map<string, number>
+): number | null {
+    const resourceDuration = durations.get(response.url());
+    if (resourceDuration !== undefined) {
+        return resourceDuration;
+    }
+
+    const { responseEnd } = response.request().timing();
+    return responseEnd >= 0 ? responseEnd : null;
+}
+
 async function measureRun(
     browser: Browser,
     contextOptions: BrowserContextOptions,
@@ -116,17 +131,20 @@ async function measureRun(
     const context = await browser.newContext(contextOptions);
     const page = await context.newPage();
     const cdp = await context.newCDPSession(page);
-    const scriptResponseUrls: string[] = [];
+    const scriptResponses: Response[] = [];
     let readerReady = false;
 
     page.on('response', response => {
         if (!readerReady && response.request().resourceType() === 'script') {
-            scriptResponseUrls.push(response.url());
+            scriptResponses.push(response);
         }
     });
 
     try {
         await cdp.send('Performance.enable');
+        await page.evaluate(bufferSize => {
+            performance.setResourceTimingBufferSize(bufferSize);
+        }, RESOURCE_TIMING_BUFFER_SIZE);
         if (useMobileThrottling) {
             await cdp.send('Emulation.setCPUThrottlingRate', {
                 rate: MOBILE_CPU_THROTTLING_RATE,
@@ -145,16 +163,27 @@ async function measureRun(
         });
         readerReady = true;
         const afterMetrics = await cdp.send('Performance.getMetrics');
+        await Promise.all(scriptResponses.map(response => response.finished()));
         const durations = await resourceDurations(page);
+        const resources = scriptResponses.map(response => ({
+            url: response.url(),
+            durationMs: responseDuration(response, durations),
+        }));
+        const missingDurations = resources.filter(
+            resource => resource.durationMs === null
+        );
+
+        if (missingDurations.length > 0) {
+            throw new Error(
+                `Missing resource timing for ${missingDurations.length} pre-readiness JavaScript response(s).`
+            );
+        }
 
         return {
             scriptDurationMs:
                 getScriptDurationMs(afterMetrics.metrics) -
                 getScriptDurationMs(beforeMetrics.metrics),
-            resources: scriptResponseUrls.map(url => ({
-                url,
-                durationMs: durations.get(url) ?? null,
-            })),
+            resources,
         };
     } finally {
         await context.close();

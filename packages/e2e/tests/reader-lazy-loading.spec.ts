@@ -155,8 +155,32 @@ test.describe('Reader lazy story loading', () => {
         page,
     }) => {
         const reader = new ReaderPage(page);
+        const storyEntryRequests = {
+            seventhMirror: [] as string[],
+            midnight: [] as string[],
+        };
+        page.on('request', request => {
+            if (
+                isStoryEntryRequest(
+                    request.url(),
+                    STORY_MODULE_SEGMENTS.seventhMirror
+                )
+            ) {
+                storyEntryRequests.seventhMirror.push(request.url());
+            }
+            if (
+                isStoryEntryRequest(
+                    request.url(),
+                    STORY_MODULE_SEGMENTS.midnight
+                )
+            ) {
+                storyEntryRequests.midnight.push(request.url());
+            }
+        });
         await page.goto(SEVENTH_MIRROR_DIRECT_LINK);
         await expectReadyStory(reader, 'the_seventh_mirror');
+        expect(storyEntryRequests.seventhMirror).toHaveLength(1);
+        expect(storyEntryRequests.midnight).toHaveLength(0);
 
         let midnightEntryUrl: string | undefined;
         let releaseMidnight!: () => void;
@@ -179,6 +203,7 @@ test.describe('Reader lazy story loading', () => {
                         'the exact intermediate story entry request starts',
                 })
                 .toBeTruthy();
+            expect(storyEntryRequests.midnight).toHaveLength(1);
 
             await dispatchPopstate(page, SEVENTH_MIRROR_DIRECT_LINK);
             await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
@@ -201,6 +226,8 @@ test.describe('Reader lazy story loading', () => {
 
             await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
             await expectReadyStory(reader, 'the_seventh_mirror');
+            expect(storyEntryRequests.seventhMirror).toHaveLength(1);
+            expect(storyEntryRequests.midnight).toHaveLength(1);
         } finally {
             releaseMidnight();
             await page.unroute(isMidnightEntryUrl, blockMidnightEntry);

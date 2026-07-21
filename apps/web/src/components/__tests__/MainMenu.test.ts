@@ -4,8 +4,8 @@ import '@testing-library/jest-dom';
 import MainMenu from '../MainMenu.svelte';
 import UserStatus from '../UserStatus.svelte';
 
-// Mock @aquila/stories
-vi.mock('@aquila/stories', () => ({
+// Mock the lightweight translations boundary used by MainMenu.
+vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         menu: {
             heading: 'AQUILA',

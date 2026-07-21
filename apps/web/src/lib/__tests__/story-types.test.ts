@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { REGISTERED_STORY_IDS } from '@aquila/stories/async';
 import { StoryId, STORY_NAMES, isValidStoryId } from '../story-types';
 
 describe('Story Types', () => {
@@ -15,6 +16,12 @@ describe('Story Types', () => {
             ];
             const actualIds = Object.values(StoryId);
             expect(actualIds).toEqual(expectedIds);
+        });
+
+        it('matches the stories package async registry', () => {
+            expect([...REGISTERED_STORY_IDS].sort()).toEqual(
+                Object.values(StoryId).sort()
+            );
         });
     });
 

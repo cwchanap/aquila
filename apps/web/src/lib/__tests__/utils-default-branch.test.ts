@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@aquila/stories', () => ({
+vi.mock('@aquila/stories/translations', () => ({
     translations: {
         en: {
             default: {

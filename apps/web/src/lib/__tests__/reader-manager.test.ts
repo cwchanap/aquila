@@ -6,25 +6,6 @@ import {
     type AsyncStoryLoaderResult,
 } from '@aquila/stories/async';
 
-// Mock the @aquila/stories module
-vi.mock('@aquila/stories', () => ({
-    getStoryContent: vi.fn(),
-    getStoryFlow: vi.fn(),
-    getTranslations: vi.fn(() => ({
-        reader: {
-            bookmarkPrompt: 'Save bookmark as:',
-            defaultBookmarkName: 'Bookmark',
-            bookmarkSaved: 'Bookmark saved!',
-            bookmarkFailed: 'Failed to save bookmark',
-            bookmarkError: 'Error saving bookmark',
-            endOfStory: 'End of story reached',
-            loadError: 'Failed to load reader',
-            retry: 'Retry',
-        },
-        locale: 'en',
-    })),
-}));
-
 vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
         reader: {
@@ -41,9 +22,19 @@ vi.mock('@aquila/stories/translations', () => ({
     })),
 }));
 
-const mockMount = vi.hoisted(() => vi.fn(() => ({})));
-const mockUnmount = vi.hoisted(() => vi.fn());
-const mockLoadStoryContent = vi.hoisted(() => vi.fn());
+const {
+    mockMount,
+    mockUnmount,
+    mockLoadStoryContent,
+    mockGetStoryContent,
+    mockGetStoryFlow,
+} = vi.hoisted(() => ({
+    mockMount: vi.fn(() => ({})),
+    mockUnmount: vi.fn(),
+    mockLoadStoryContent: vi.fn(),
+    mockGetStoryContent: vi.fn(),
+    mockGetStoryFlow: vi.fn(),
+}));
 
 vi.mock('@aquila/stories/async', async importOriginal => ({
     ...(await importOriginal<typeof import('@aquila/stories/async')>()),
@@ -64,10 +55,7 @@ vi.mock('@/components/ReaderShell.svelte', () => ({
     default: class MockReaderShell {},
 }));
 
-import { getStoryContent, getStoryFlow } from '@aquila/stories';
 import { showAlert, showPrompt } from '../ui-dialogs';
-const mockGetStoryContent = vi.mocked(getStoryContent);
-const mockGetStoryFlow = vi.mocked(getStoryFlow);
 const mockShowAlert = vi.mocked(showAlert);
 const mockShowPrompt = vi.mocked(showPrompt);
 

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import UserStatus from './UserStatus.svelte';
-  import { getTranslations, type Locale } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
+  import type { Locale } from '@aquila/stories';
   import type { User } from '../lib/drizzle/schema.js';
 
   export let user: User | null = null;

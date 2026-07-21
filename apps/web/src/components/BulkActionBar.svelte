@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getTranslations } from '@aquila/stories';
+  import { getTranslations } from '@aquila/stories/translations';
   import type { Locale } from '@aquila/stories';
   import Button from './ui/Button.svelte';
 

@@ -75,25 +75,25 @@
 
 The user-approved compact format records the five run timings, resource counts, and selected-story resource URLs/durations below. The complete per-response JSON is reproducible with `bun --filter e2e measure:reader` and is intentionally retained only in the ignored local artifact `.superpowers/sdd/hpa-232-reader-runtime.json`.
 
-Resource URL suffixes (durations are milliseconds):
+Complete story-related resource URLs (durations are milliseconds):
 
-- `/packages/stories/src/stories/theSeventhMirror/index.ts`
-- `/packages/stories/src/generated/theSeventhMirror/dialogue.zh.ts`
-- `/packages/stories/src/stories/theSeventhMirror/choices.zh.ts`
-- `/packages/stories/src/generated/theSeventhMirror/flow.ts`
+- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/stories/theSeventhMirror/index.ts`
+- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/generated/theSeventhMirror/dialogue.zh.ts`
+- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/stories/theSeventhMirror/choices.zh.ts`
+- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/generated/theSeventhMirror/flow.ts`
 
 | Profile / run | ScriptDuration (ms) | JS responses |  Entry | Dialogue | Choices |   Flow |
 | ------------- | ------------------: | -----------: | -----: | -------: | ------: | -----: |
-| Desktop 1     |              75.894 |          829 |   13.2 |      5.6 |     7.6 |   10.2 |
-| Desktop 2     |              63.354 |          829 |   10.7 |     10.5 |    11.4 |   12.5 |
-| Desktop 3     |               68.05 |          829 |    9.7 |      6.4 |     8.3 |    8.5 |
-| Desktop 4     |               67.23 |          829 |    6.7 |     60.2 |    68.3 |     69 |
-| Desktop 5     |              70.224 |          829 |    5.4 |      4.1 |     5.9 |    6.1 |
-| Mobile 1      |              279.12 |          829 | 1692.7 |   3283.7 |  3124.9 | 3335.1 |
-| Mobile 2      |             267.812 |          829 | 1686.2 |   3298.4 |  3148.4 | 3358.1 |
-| Mobile 3      |              467.63 |          829 | 1686.5 |   3304.9 |  3103.4 | 3350.3 |
-| Mobile 4      |              284.82 |          829 | 1692.8 |   3306.8 |    3097 | 3365.5 |
-| Mobile 5      |             260.245 |          829 | 1693.8 |   3283.4 |  3139.7 | 3341.9 |
+| Desktop 1     |              59.878 |          829 |    5.8 |      3.7 |     4.3 |    4.3 |
+| Desktop 2     |              59.389 |          829 |    3.3 |      2.1 |     2.3 |    2.3 |
+| Desktop 3     |              59.699 |          829 |    3.8 |      2.7 |     4.2 |    4.3 |
+| Desktop 4     |              58.274 |          829 |    3.1 |      1.8 |     2.5 |    2.5 |
+| Desktop 5     |              62.951 |          829 |    3.6 |      1.7 |     1.9 |    1.8 |
+| Mobile 1      |             246.875 |          829 | 1686.0 |   3307.1 |  3141.5 | 3351.9 |
+| Mobile 2      |             245.641 |          829 | 1706.6 |   3277.7 |  3073.2 | 3344.4 |
+| Mobile 3      |             244.231 |          829 | 1684.7 |   3298.8 |  3112.0 | 3365.7 |
+| Mobile 4      |             242.912 |          829 | 1702.0 |   3283.0 |  3078.5 | 3349.6 |
+| Mobile 5      |             247.627 |          829 | 1699.7 |   3284.9 |  3082.0 | 3336.5 |
 
-- Desktop median `ScriptDuration`: 68.05 ms
-- Mobile median `ScriptDuration`: 279.12 ms
+- Desktop median `ScriptDuration`: 59.699 ms
+- Mobile median `ScriptDuration`: 245.641 ms

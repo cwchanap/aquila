@@ -73,7 +73,12 @@
 
 ### Runtime evidence
 
-The user-approved compact format records the five run timings, resource counts, and selected-story resource URLs/durations below. The complete per-response JSON is reproducible with `bun --filter e2e measure:reader` and is intentionally retained only in the ignored local artifact `.superpowers/sdd/hpa-232-reader-runtime.json`.
+The user-approved compact format records the five run timings, resource counts,
+and selected-story resource URLs/durations below. The original ignored baseline
+raw runtime artifact was overwritten by the required after run and is not still
+available. The committed table below is therefore the retained baseline compact
+evidence; no missing raw data is reconstructed. The after run used the exact
+unchanged `bun --filter e2e measure:reader` harness and method.
 
 Complete story-related resource URLs (durations are milliseconds):
 
@@ -154,8 +159,8 @@ and module-membership proof are reproducible at
 `bun --filter e2e measure:reader` completed five normal cold runs per profile.
 Every run observed 197 pre-readiness JavaScript responses: 112 belonged to The
 Seventh Mirror, and zero belonged to Train Adventure or Don't Save Me Before
-Midnight. The complete per-response request list and timings are retained at
-the ignored `.superpowers/sdd/hpa-232-reader-runtime.json`.
+Midnight. The complete after-only per-response request list and timings are
+retained at the ignored `.superpowers/sdd/hpa-232-reader-runtime.json`.
 
 | Profile / run | ScriptDuration (ms) | JS responses | Entry | Dialogue | Choices |  Flow |
 | ------------- | ------------------: | -----------: | ----: | -------: | ------: | ----: |
@@ -207,26 +212,98 @@ then load the default Train Adventure story.
 
 ### Compatibility and request verification
 
-All Task 11 commands passed at the after checkout:
+The full Task 11 matrix was rerun after review. These are compact excerpts from
+the final terminal output; all listed commands exited 0.
 
-- `bun compile:check` — pass; generated story output had no drift.
-- `bun --filter @aquila/stories test` — 16 files and 126 tests passed.
-- `bun --filter @aquila/stories typecheck` — pass.
-- `bun --filter web test` — 63 files and 1,307 tests passed.
-- `bun --filter @aquila/game test` — 18 files and 412 tests passed.
-- `bun --filter @aquila/game typecheck` — pass.
-- `bun --filter desktop test` — exit 0; this workspace currently has no test files.
-- `bun --filter desktop check` — 0 errors and 0 warnings.
-- `bun --filter web lint` — pass.
-- `bun --filter web build` — pass, including the manifest/module-membership assertion.
-- `bun --filter e2e test:e2e tests/reader-lazy-loading.spec.ts --project=chromium` — 4/4 passed. The first sandboxed launch was blocked by macOS Mach-port permissions; the same command passed outside the sandbox.
-- `git diff --check` — pass.
+```text
+$ bun compile:check
+$ bun run compile:stories && git diff --exit-code -- packages/stories/src/generated packages/stories/src/stories
+@aquila/stories compile: [story-compiler] theSeventhMirror: 105 scenes, 0 choices
+@aquila/stories compile: [story-compiler] dontSaveMeBeforeMidnight: 129 scenes, 0 choices
+@aquila/stories compile: [story-compiler] trainAdventure: 495 scenes, 30 choices
+@aquila/stories compile: Exited with code 0
+```
 
-The Chromium journeys additionally prove exact direct-link restoration,
-selected-only loading, reload retry after a one-shot module failure, no
-same-story redownload during scene navigation, and latest-wins behavior under
-rapid history navigation. Stories, game, and desktop verification preserve the
-synchronous compatibility path.
+The trailing `git diff --exit-code` emitted no diff, proving generated-story
+output had no drift.
+
+```text
+$ bun --filter @aquila/stories test
+@aquila/stories test:  ✓ src/async/__tests__/loader.test.ts (4 tests) 4ms
+@aquila/stories test:  Test Files  16 passed (16)
+@aquila/stories test:       Tests  126 passed (126)
+@aquila/stories test: Exited with code 0
+
+$ bun --filter @aquila/stories typecheck
+@aquila/stories typecheck: Exited with code 0
+
+$ bun --filter web test
+web test:  ✓ src/lib/__tests__/reader-manager.test.ts (78 tests) 862ms
+web test:  ✓ src/components/__tests__/ReaderShell.test.ts (18 tests) 461ms
+web test:  Test Files  63 passed (63)
+web test:       Tests  1307 passed (1307)
+web test: Exited with code 0
+```
+
+```text
+$ bun --filter @aquila/game test
+@aquila/game test:  ✓ src/__tests__/PreloadScene.test.ts (17 tests) 9ms
+@aquila/game test:  Test Files  18 passed (18)
+@aquila/game test:       Tests  412 passed (412)
+@aquila/game test: Exited with code 0
+
+$ bun --filter @aquila/game typecheck
+@aquila/game typecheck: Exited with code 0
+
+$ bun --filter desktop test
+desktop test: No test files found, exiting with code 0
+desktop test: Exited with code 0
+
+$ bun --filter desktop check
+desktop check: svelte-check found 0 errors and 0 warnings
+desktop check: Exited with code 0
+
+$ bun --filter web lint
+web lint: Exited with code 0
+```
+
+```text
+$ bun --filter web build
+web build: 13:49:35 [build] Complete!
+web build: Story chunk boundaries verified:
+web build:   stories/trainAdventure/index.ts -> _astro/index.DWUGgw2l.js
+web build:   stories/dontSaveMeBeforeMidnight/index.ts -> _astro/index.D2EuYMAa.js
+web build:   stories/theSeventhMirror/index.ts -> _astro/index.dFD9wf6K.js
+web build: Exited with code 0
+
+$ bun --filter e2e test:e2e tests/reader-lazy-loading.spec.ts --project=chromium
+e2e test:e2e:   ✓  4 [chromium] › tests/reader-lazy-loading.spec.ts:63:5 › Reader lazy story loading › requests only the selected story and restores the exact direct link (1.6s)
+e2e test:e2e:   ✓  3 [chromium] › tests/reader-lazy-loading.spec.ts:127:5 › Reader lazy story loading › navigates within a loaded story without downloading its entry again (1.8s)
+e2e test:e2e:   ✓  2 [chromium] › tests/reader-lazy-loading.spec.ts:96:5 › Reader lazy story loading › retries a one-shot aborted module import by reloading the preserved URL (1.9s)
+e2e test:e2e:   ✓  1 [chromium] › tests/reader-lazy-loading.spec.ts:154:5 › Reader lazy story loading › keeps the latest story after rapid A to B to A popstate navigation (2.1s)
+e2e test:e2e:   4 passed (6.7s)
+e2e test:e2e: Exited with code 0
+```
+
+Chromium was run outside the sandbox because its macOS Mach-port registration
+is blocked inside the sandbox.
+
+`git diff --check` produced no output and exited 0 both before and after the
+report update.
+
+Behavior-specific acceptance evidence is anchored to these named checks rather
+than inferred from aggregate suite totals:
+
+| Contract                                                                                              | Named test or assertion evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Async cache, deduplication, normalization, failure cleanup, and explicit errors                       | `packages/stories/src/async/__tests__/loader.test.ts`: `deduplicates concurrent requests and caches success by normalized locale`, `removes rejected promises so application state is not poisoned`, and `rejects unknown stories and unsupported locales explicitly`.                                                                                                                                                                                                                                           |
+| Metadata/registry parity                                                                              | `apps/web/src/lib/__tests__/story-types.test.ts`: `matches the stories package async registry`.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Async mount, exact URL/persisted restoration, fallback, stale guards, retry, and no same-story reload | `apps/web/src/lib/__tests__/reader-manager.test.ts`: `mounts and listens while initial state stays empty/loading until the loader resolves`, `resolves dialogue index from URL dialogue param (1-based)`, `performs one guarded default load when a loaded persisted intent is invalid`, `applies only popstate B when initial A resolves before B`, `supplies ReaderShell a retry callback that reloads the document`, and `does not call the story loader for shell re-render or ready same-story navigation`. |
+| Initial/replacement loading remains accessible and inert                                              | `apps/web/src/components/__tests__/ReaderShell.test.ts`: `renders only a standalone status while the initial payload is loading`, `keeps the same reader leaf mounted and inert under replacement loading`, and `renders a retryable alert without unmounting the active reader`.                                                                                                                                                                                                                                |
+| Selected-only requests, direct links, retry, no redownload, and latest-wins history                   | The four named journeys in `packages/e2e/tests/reader-lazy-loading.spec.ts`, shown in the terminal excerpt above.                                                                                                                                                                                                                                                                                                                                                                                                |
+| Static reader boundary and independent/cross-story chunks                                             | `apps/web/scripts/assert-story-chunks.ts` rejects `Reader static graph eagerly reaches a story registry/generated dialogue module`, missing dynamic entries, and a story that `statically reaches another story's source/generated modules`; the production build printed `Story chunk boundaries verified`.                                                                                                                                                                                                     |
+| Synchronous Phaser compatibility                                                                      | `packages/game/src/__tests__/PreloadScene.test.ts`: `sets dialogueMap in registry`, `sets choiceMap in registry`, and `sets flowConfig in registry`, plus the full game typecheck.                                                                                                                                                                                                                                                                                                                               |
+| Desktop compatibility                                                                                 | `bun --filter desktop check`: `svelte-check found 0 errors and 0 warnings`; the desktop workspace currently has no Vitest files.                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ## Chapter-splitting decision
 

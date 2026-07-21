@@ -123,10 +123,10 @@ verified by the manifest and contains the reader entry, lightweight translation
 
 | Delivery surface                 | Before raw / gzip bytes | After raw / gzip bytes |
 | -------------------------------- | ----------------------- | ---------------------- |
-| Reader entry                     | 11,502 / 4,175          | 15,977 / 5,341         |
+| Reader entry                     | 11,502 / 4,175          | 16,131 / 5,369         |
 | Shared `index`                   | 9,524,129 / 2,045,238   | 13,392 / 5,397         |
-| Initial reader delivery envelope | 9,570,578 / 2,062,819   | 64,316 / 24,145        |
-| All emitted client JavaScript    | 9,736,545 / 2,119,335   | 9,743,999 / 2,121,322  |
+| Initial reader delivery envelope | 9,570,578 / 2,062,819   | 64,470 / 24,173        |
+| All emitted client JavaScript    | 9,736,545 / 2,119,335   | 9,744,153 / 2,121,349  |
 
 The total emitted bytes remain nearly flat because the same story payloads are
 now emitted as dynamic chunks. The delivery change is that the web reader's
@@ -229,19 +229,19 @@ output had no drift.
 
 ```text
 $ bun --filter @aquila/stories test
-@aquila/stories test:  ✓ src/async/__tests__/loader.test.ts (4 tests) 4ms
+@aquila/stories test:  ✓ src/async/__tests__/loader.test.ts (6 tests)
 @aquila/stories test:  Test Files  16 passed (16)
-@aquila/stories test:       Tests  126 passed (126)
+@aquila/stories test:       Tests  128 passed (128)
 @aquila/stories test: Exited with code 0
 
 $ bun --filter @aquila/stories typecheck
 @aquila/stories typecheck: Exited with code 0
 
 $ bun --filter web test
-web test:  ✓ src/lib/__tests__/reader-manager.test.ts (78 tests) 862ms
-web test:  ✓ src/components/__tests__/ReaderShell.test.ts (18 tests) 461ms
+web test:  ✓ src/lib/__tests__/reader-manager.test.ts (80 tests)
+web test:  ✓ src/components/__tests__/ReaderShell.test.ts (18 tests)
 web test:  Test Files  63 passed (63)
-web test:       Tests  1307 passed (1307)
+web test:       Tests  1309 passed (1309)
 web test: Exited with code 0
 ```
 

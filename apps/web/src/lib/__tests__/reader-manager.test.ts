@@ -2158,6 +2158,86 @@ describe('ReaderManager', () => {
             expect(replaceState).toHaveBeenCalled(); // canonical URL reconverged
         });
 
+        it('soft-reject popstate with no active payload applies a safe loaded state instead of stalling on loading', async () => {
+            // Regression guard: when a popstate with a known story but a
+            // stale scene (or malformed dialogue) arrives WHILE the initial
+            // payload is still in flight, validation returns soft-reject but
+            // hasActivePayload is false — there is no current reader state to
+            // preserve. The handler must not leave loadStatus='loading' with
+            // no payload and no URL canonicalization (reader stuck on the
+            // loading surface). Instead it applies a safe loaded state for
+            // the requested story (start scene, index 0), reconverges the
+            // URL, and persists.
+            const pending = deferred<AsyncStoryLoaderResult>();
+            const loadStoryContent = vi.fn(() => pending.promise);
+            const replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState: vi.fn(), replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [{ dialogue: 'x' }],
+                },
+                choices: {},
+            });
+            mountReaderContainer();
+            setLocation('?story=train_adventure&scene=act1&dialogue=1');
+            manager = new ReaderManager('en', undefined, {
+                loadStoryContent,
+            });
+            const initializing = manager.initialize();
+            await vi.waitFor(() =>
+                expect(loadStoryContent).toHaveBeenCalledWith(
+                    'train_adventure',
+                    'en'
+                )
+            );
+            // Initial payload still in flight, no active payload yet.
+            expect(readerState.hasActivePayload).toBe(false);
+            expect(readerState.loadStatus).toBe('loading');
+
+            // popstate carries a VALID story but a scene absent from its
+            // flow, while the initial load is still pending.
+            setLocation('?story=train_adventure&scene=deleted_scene');
+            replaceState.mockClear(); // ignore initialize's call
+            mockStorage.setItem.mockClear();
+            window.dispatchEvent(new PopStateEvent('popstate'));
+
+            pending.resolve(storyPayload());
+            await initializing;
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('ready')
+            );
+
+            // Safe loaded state applied for the requested story: start scene,
+            // index 0 — not stuck on 'loading' with no payload.
+            expect(readerState).toMatchObject({
+                storyId: 'train_adventure',
+                currentSceneId: 'act1',
+                dialogueIndex: 0,
+                hasActivePayload: true,
+                loadStatus: 'ready',
+                loadError: null,
+            });
+            expect(readerState.dialogue).toEqual([
+                { dialogue: 'one' },
+                { dialogue: 'two' },
+            ]);
+            // URL canonicalized to the safe state and persisted.
+            expect(replaceState).toHaveBeenCalled();
+            const appliedUrl = replaceState.mock.calls[0][2] as URL;
+            expect(appliedUrl.searchParams.get('story')).toBe(
+                'train_adventure'
+            );
+            expect(appliedUrl.searchParams.get('scene')).toBe('act1');
+            expect(mockStorage.setItem).toHaveBeenCalledWith(
+                'aquila:readerState:en',
+                expect.stringContaining('"storyId":"train_adventure"')
+            );
+        });
+
         it('popstate with dialogue=0 restores index 0 (not treated as malformed)', async () => {
             // Guard for the special absent/`0` sentinel: parseDialogueParam
             // returns null for "0" (n < 1), but popstate must NOT soft-reject

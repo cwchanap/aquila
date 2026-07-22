@@ -1,0 +1,7 @@
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: false
+
+comment:
+  after_n_builds: 2

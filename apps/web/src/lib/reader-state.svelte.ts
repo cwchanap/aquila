@@ -35,7 +35,11 @@ class ReaderState {
         this.currentSceneId = '';
         this.storyId = '';
         this.canGoNext = false;
-        this.locale = 'en';
+        // Preserve locale across reset: callers (logout, in-place locale
+        // switch, SSR hydration re-init) expect reset() to clear progression
+        // and runtime payload, not to silently rewrite the active locale back
+        // to 'en'. ReaderManager's constructor re-assigns locale after reset()
+        // in the current prod path, but reset() must hold its own contract.
         this.dialogueIndex = 0;
         this.loadStatus = 'idle';
         this.loadError = null;

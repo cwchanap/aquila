@@ -28,6 +28,8 @@ export default defineConfig({
                 '**/*.test.ts',
                 '**/test-utils/**',
                 '**/test-setup.ts',
+                'scripts/assert-story-chunks.ts',
+                'scripts/measure-reader-bundles.ts',
             ],
         },
     },

@@ -3,24 +3,13 @@ export type StoryLoadErrorCode =
     | 'unsupported-locale'
     | 'load-failed';
 
-type ErrorOptions = {
-    cause?: unknown;
-};
-
 export class StoryLoadError extends Error {
     constructor(
         public readonly code: StoryLoadErrorCode,
         message: string,
         options?: ErrorOptions
     ) {
-        super(message);
-        if (options && 'cause' in options) {
-            Object.defineProperty(this, 'cause', {
-                configurable: true,
-                value: options.cause,
-                writable: true,
-            });
-        }
+        super(message, options);
         this.name = 'StoryLoadError';
     }
 }

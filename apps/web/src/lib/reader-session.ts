@@ -1,4 +1,4 @@
-import type { Locale, DialogueEntry, FlowConfig } from '@aquila/stories';
+import type { Locale, FlowConfig } from '@aquila/stories';
 
 export interface ReaderSessionState {
     storyId: string;
@@ -26,8 +26,8 @@ function isLocale(v: unknown): v is Locale {
 
 /** Clamp a 0-based dialogue index into `[0, length-1]`. Empty dialogue
  *  (`length <= 0`) -> index 0 is valid (the UI shows its empty/end state).
- *  Never produces a negative or NaN value. Shared by `validateSessionState`
- *  (restore/popstate) and `ReaderManager.onIndexChange` (write-path
+ *  Never produces a negative or NaN value. Shared by `validateLoadedIntent`
+ *  (reader-intent.ts) and `ReaderManager.onIndexChange` (write-path
  *  defense-in-depth). */
 export function clampIndex(index: number, length: number): number {
     // Empty dialogue -> index 0 valid; never produce negative/NaN.
@@ -60,47 +60,6 @@ export function sceneExists(
         !!flow &&
         flow.nodes.some(n => n.kind === 'scene' && n.sceneId === sceneId)
     );
-}
-
-/**
- * Validate a resolved 0-based session. Non-negative index is clamped into bounds
- * (empty dialogue -> 0). Negative/NaN index or unknown story/scene -> null.
- *
- * Retained primitive: not currently called from the prod manager path
- * (reader-manager.ts imports migratePersisted/serializeSessionParams/clampIndex
- * only); kept here as a pure, tested validator for future restore/popstate
- * callers and covered by reader-session.test.ts.
- */
-export function validateSessionState(
-    state: unknown,
-    flow: FlowConfig | undefined,
-    dialogue: DialogueEntry[]
-): ReaderSessionState | null {
-    if (!state || typeof state !== 'object') return null;
-    const s = state as Record<string, unknown>;
-    const { storyId, sceneId, dialogueIndex, locale } = s;
-    if (typeof storyId !== 'string') return null;
-    if (typeof sceneId !== 'string') return null;
-    if (!isLocale(locale)) return null;
-    if (!flow) return null;
-    if (!sceneExists(flow, sceneId)) return null;
-    if (
-        typeof dialogueIndex !== 'number' ||
-        Number.isNaN(dialogueIndex) ||
-        dialogueIndex < 0
-    ) {
-        // negative/NaN -> invalid; but allow missing/undefined as 0
-        if (dialogueIndex === undefined) {
-            return { storyId, sceneId, dialogueIndex: 0, locale };
-        }
-        return null;
-    }
-    return {
-        storyId,
-        sceneId,
-        dialogueIndex: clampIndex(dialogueIndex, dialogue.length),
-        locale,
-    };
 }
 
 /** Build the canonical URL query for a session (story/scene/dialogue=N). */
@@ -139,10 +98,11 @@ export function migratePersisted(
     // `dialogueIndex`; a missing or non-number value (null, string, boolean,
     // NaN) is a corrupted v2 record, not legacy, and is rejected so the full
     // Tier-2 path falls through to the default session. The raw numeric value
-    // is preserved as-is (including negatives) so `validateSessionState` can
-    // enforce its own contract: negative/NaN indices are invalid and must
-    // fall through; coercing negatives to 0 here would bypass the validator
-    // and accept a malformed record (restoring a non-default scene).
+    // is preserved as-is (including negatives) so `validateLoadedIntent`
+    // can enforce its own contract: negative/NaN indices are invalid and
+    // must fall through; coercing negatives to 0 here would bypass the
+    // validator and accept a malformed record (restoring a non-default
+    // scene).
     //
     // An unsupported future version (version > 2) is rejected rather than
     // silently downgraded, so state stored under a schema this code doesn't

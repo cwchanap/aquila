@@ -1,5 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import {
+    REGISTERED_STORY_IDS,
+    type RegisteredStoryId,
+} from '../../../packages/stories/src/story-metadata';
 
 type ManifestEntry = {
     file: string;
@@ -35,20 +39,19 @@ type StoryBoundary = {
     generatedDirectory: string;
 };
 
-const stories: StoryBoundary[] = [
-    {
-        source: 'stories/trainAdventure/index.ts',
-        generatedDirectory: 'generated/trainAdventure/',
-    },
-    {
-        source: 'stories/dontSaveMeBeforeMidnight/index.ts',
-        generatedDirectory: 'generated/dontSaveMeBeforeMidnight/',
-    },
-    {
-        source: 'stories/theSeventhMirror/index.ts',
-        generatedDirectory: 'generated/theSeventhMirror/',
-    },
-];
+const storyDirectories = {
+    train_adventure: 'trainAdventure',
+    dont_save_me_before_midnight: 'dontSaveMeBeforeMidnight',
+    the_seventh_mirror: 'theSeventhMirror',
+} satisfies Record<RegisteredStoryId, string>;
+
+const stories: StoryBoundary[] = REGISTERED_STORY_IDS.map(storyId => {
+    const directory = storyDirectories[storyId];
+    return {
+        source: `stories/${directory}/index.ts`,
+        generatedDirectory: `generated/${directory}/`,
+    };
+});
 
 function normalize(value: string): string {
     const slashNormalized = value.replaceAll('\\', '/');

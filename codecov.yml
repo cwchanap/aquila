@@ -6,3 +6,7 @@ codecov:
 
 comment:
   after_n_builds: 2
+
+ignore:
+  - "apps/web/scripts/assert-story-chunks.ts"
+  - "apps/web/scripts/measure-reader-bundles.ts"

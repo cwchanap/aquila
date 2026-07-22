@@ -221,4 +221,27 @@ describe('validateLoadedIntent', () => {
             state: { dialogueIndex: 1 },
         });
     });
+
+    it('falls back when persisted dialogue state has a negative index', () => {
+        expect(
+            validateLoadedIntent(
+                intent({
+                    source: 'persisted',
+                    requestedDialogueIndex: -1,
+                }),
+                payload,
+                'initial'
+            )
+        ).toEqual({ kind: 'fallback-default' });
+    });
+
+    it('soft-rejects a non-finite URL dialogue index not marked malformed', () => {
+        expect(
+            validateLoadedIntent(
+                intent({ requestedDialogueIndex: Number.POSITIVE_INFINITY }),
+                payload,
+                'initial'
+            )
+        ).toEqual({ kind: 'soft-reject' });
+    });
 });

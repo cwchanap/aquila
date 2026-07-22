@@ -203,7 +203,10 @@ benchmark; the threshold decision uses the exact `measure:reader` result above.
 This exceptional path was measured separately and excluded from all normal
 medians. A fresh context was seeded with a valid Midnight story ID but a removed
 scene, causing the manager to load Midnight, reject the persisted position,
-then load the default Train Adventure story.
+then load the default Train Adventure story. At measurement time the default
+was Train Adventure; it has since been changed to The Seventh Mirror (see the
+chapter-splitting decision below). The recovery path structure is unchanged;
+only the fallback story ID and its chunk size differ.
 
 | Profile           | Runs | Ready duration (ms) | ScriptDuration (ms) | JS responses | Story entry order |
 | ----------------- | ---: | ------------------: | ------------------: | -----------: | ----------------- |
@@ -323,3 +326,8 @@ chapter-level dynamic imports before it can be considered compliant with the
 500 kB delivery gate. This follow-up should be tracked and completed before
 Train Adventure is promoted as a default or featured story; until then, the
 current single-chunk delivery remains functional but exceeds the gate.
+
+The reader default story has been changed from Train Adventure to The Seventh
+Mirror so that opening `/en/reader` without query parameters no longer
+requests the oversized chunk. Train Adventure remains available via explicit
+`?story=train_adventure` URLs.

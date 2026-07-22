@@ -48,9 +48,7 @@ function storyPayload(): AsyncStoryLoaderResult {
     return {
         flow: {
             start: 'act1',
-            nodes: [
-                { kind: 'scene', id: 'act1', sceneId: 'act1', next: null },
-            ],
+            nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
         },
         dialogue: { act1: [{ dialogue: 'line' }] },
         choices: {},
@@ -177,7 +175,7 @@ describe('ReaderManager defensive coverage', () => {
         });
         await manager.initialize();
 
-        setLocation('?story=the_seventh_mirror&scene=act1');
+        setLocation('?story=train_adventure&scene=act1');
         window.dispatchEvent(new PopStateEvent('popstate'));
 
         await vi.waitFor(() =>
@@ -186,7 +184,7 @@ describe('ReaderManager defensive coverage', () => {
                 unexpected
             )
         );
-        expect(readerState.storyId).toBe('train_adventure');
+        expect(readerState.storyId).toBe('the_seventh_mirror');
     });
 
     it('ignores a rejected replacement after a newer popstate supersedes it', async () => {
@@ -206,7 +204,9 @@ describe('ReaderManager defensive coverage', () => {
 
         setLocation('?story=dont_save_me_before_midnight&scene=act1');
         window.dispatchEvent(new PopStateEvent('popstate'));
-        await vi.waitFor(() => expect(loadStoryContent).toHaveBeenCalledTimes(2));
+        await vi.waitFor(() =>
+            expect(loadStoryContent).toHaveBeenCalledTimes(2)
+        );
 
         setLocation('?story=train_adventure&scene=act1');
         window.dispatchEvent(new PopStateEvent('popstate'));

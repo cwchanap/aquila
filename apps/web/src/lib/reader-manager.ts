@@ -269,7 +269,24 @@ export class ReaderManager {
                 readerState.loadStatus = 'ready';
                 readerState.loadError = null;
                 this.syncUrl(true);
+                return;
             }
+            // No active payload to preserve: the popstate destination is
+            // invalid but the reader has nothing to fall back to. Re-validate
+            // with initial semantics to canonicalize the stale scene / malformed
+            // dialogue into a safe loaded state for the requested story (start
+            // scene, index 0). If even that cannot produce an applyable state,
+            // fall back to the default intent so the reader reaches a working
+            // surface instead of stalling on 'loading' with no payload and no
+            // URL canonicalization.
+            const safeResult = validateLoadedIntent(intent, payload, 'initial');
+            if (safeResult.kind === 'apply') {
+                this.applySession(safeResult.state, payload);
+                this.syncUrl(true);
+                this.persist();
+                return;
+            }
+            await this.loadIntent(this.defaultIntent(), phase, generation);
             return;
         }
 

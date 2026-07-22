@@ -82,10 +82,10 @@ unchanged `bun --filter e2e measure:reader` harness and method.
 
 Complete story-related resource URLs (durations are milliseconds):
 
-- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/stories/theSeventhMirror/index.ts`
-- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/generated/theSeventhMirror/dialogue.zh.ts`
-- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/stories/theSeventhMirror/choices.zh.ts`
-- `http://localhost:5090/@fs/Users/chanwaichan/workspace/Aquila/packages/stories/src/generated/theSeventhMirror/flow.ts`
+- `packages/stories/src/stories/theSeventhMirror/index.ts`
+- `packages/stories/src/generated/theSeventhMirror/dialogue.zh.ts`
+- `packages/stories/src/stories/theSeventhMirror/choices.zh.ts`
+- `packages/stories/src/generated/theSeventhMirror/flow.ts`
 
 | Profile / run | ScriptDuration (ms) | JS responses |  Entry | Dialogue | Choices |   Flow |
 | ------------- | ------------------: | -----------: | -----: | -------: | ------: | -----: |

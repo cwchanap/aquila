@@ -1,5 +1,7 @@
 # Lazy-load Aquila Story Dialogue Bundles Implementation Plan
 
+> **Status: archived implementation plan.** This document preserves the original task sequence and unchecked checkboxes as historical planning context; it is not a live execution-status tracker. Completed verification and final evidence are recorded in `docs/performance/2026-07-20-hpa-232-reader-bundles.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the Aquila web reader download only its selected story payload while preserving HPA-234 session/history behavior and the synchronous Phaser/desktop story API.

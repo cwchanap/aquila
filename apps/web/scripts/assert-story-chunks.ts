@@ -1,3 +1,24 @@
+/**
+ * Build-time guard that the Vite client manifest keeps each story's generated
+ * chunk graph isolated so per-story dynamic import() actually defers work.
+ *
+ * Strategy:
+ *   1. Locate the Vite client manifest (known paths, then a bounded walk).
+ *   2. For each story boundary (source entry + generated/ directory), find its
+ *      entry chunk in the manifest.
+ *   3. Walk the manifest's import graph from that entry and assert:
+ *        a. No STATIC import chain reaches another story's generated/
+ *           directory (would bundle story B into story A's chunk and defeat
+ *           lazy loading). Dynamic imports are allowed.
+ *        b. No STATIC import chain reaches an eager story module from the
+ *           reader entry (would load all stories up front).
+ *   4. Report the offending static chain (with the import step list) on
+ *      violation; exit non-zero so CI fails the build.
+ *
+ * The check runs against emitted chunks, not source, so it catches real
+ * bundling regressions introduced by changes to imports, aliases, or the
+ * compiler's generated output.
+ */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import {

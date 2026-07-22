@@ -132,6 +132,23 @@ describe('createStoryContentLoader', () => {
         expect(retrying).toHaveBeenCalledTimes(2);
     });
 
+    it('short-circuits sequential loads on the success cache without re-invoking the importer', async () => {
+        // Distinct from the concurrent-dedup test above: that test issues two
+        // loads in Promise.all and asserts a single importer call. This test
+        // issues two loads SEQUENTIALLY (the first fully resolves before the
+        // second is issued), exercising the loadedStories.get(cacheKey)
+        // short-circuit at loader.ts:56-59 rather than the inFlightLoads
+        // dedup path. Both paths must return the same cached object reference.
+        const importer = vi.fn(async () => ({ ...payload, flow }));
+        const loader = createStoryContentLoader({ train_adventure: importer });
+
+        const first = await loader.load('train_adventure', 'en');
+        const second = await loader.load('train_adventure', 'en');
+
+        expect(importer).toHaveBeenCalledOnce();
+        expect(second).toBe(first);
+    });
+
     it('keeps pre-reset loads from affecting the new cache generation', async () => {
         const pending: Deferred<StoryPayload>[] = [];
         const racingImporter = vi.fn(() => {

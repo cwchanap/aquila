@@ -199,7 +199,7 @@
     </div>
 
     {#if isBlocking}
-      <div class="absolute inset-0 z-60 flex items-center justify-center bg-slate-950/45 p-6">
+      <div class="absolute inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-6">
         {@render loadSurface()}
       </div>
     {/if}

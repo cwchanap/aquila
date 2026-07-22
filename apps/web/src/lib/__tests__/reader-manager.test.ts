@@ -845,6 +845,36 @@ describe('ReaderManager', () => {
             expect(mockLoadStoryContent).not.toHaveBeenCalled();
         });
 
+        it('propagates an unsupported-locale StoryLoadError from the loader to readerState', async () => {
+            // Mirrors the unknown-story test above but exercises the
+            // manager → state → shell path for unsupported-locale: the loader
+            // rejects with a StoryLoadError, the manager's catch block
+            // propagates it unchanged (reader-manager.ts:252-254), and
+            // ReaderShell.svelte:58 branches on loadError.code to render the
+            // locale-specific message. The loader boundary itself is covered
+            // in loader.test.ts:121; this test covers the manager wiring.
+            mockLoadStoryContent.mockRejectedValueOnce(
+                new StoryLoadError(
+                    'unsupported-locale',
+                    'Unsupported story locale: fr'
+                )
+            );
+            setLocation('?story=train_adventure&scene=act1');
+
+            manager = new ReaderManager('en');
+            await manager.initialize();
+
+            expect(readerState.storyId).toBe('');
+            expect(readerState.loadStatus).toBe('error');
+            expect(readerState.loadError).toMatchObject({
+                code: 'unsupported-locale',
+            });
+            expect(mockLoadStoryContent).toHaveBeenCalledWith(
+                'train_adventure',
+                'en'
+            );
+        });
+
         it('resolves dialogue index from URL dialogue param (1-based)', async () => {
             mockGetStoryContent.mockReturnValue({
                 dialogue: {

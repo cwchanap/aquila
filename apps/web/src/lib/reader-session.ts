@@ -65,6 +65,11 @@ export function sceneExists(
 /**
  * Validate a resolved 0-based session. Non-negative index is clamped into bounds
  * (empty dialogue -> 0). Negative/NaN index or unknown story/scene -> null.
+ *
+ * Retained primitive: not currently called from the prod manager path
+ * (reader-manager.ts imports migratePersisted/serializeSessionParams/clampIndex
+ * only); kept here as a pure, tested validator for future restore/popstate
+ * callers and covered by reader-session.test.ts.
  */
 export function validateSessionState(
     state: unknown,

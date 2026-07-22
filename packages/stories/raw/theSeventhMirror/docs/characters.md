@@ -854,3 +854,136 @@
 ### 說明
 
 泛指 TKS（東都危機システム株式会社）法務與公關部門的正式回覆。無人格，純功能性角色，代表公司體制的統一對外口徑——以最安全的時態回答現行問題，以系統安全為由拒答歷史配置。回覆語言精確、制式、不帶情緒，像在讀既有模板。
+
+---
+
+## 37. 三浦奈緒子（Miura Naoko）
+
+- **ID**: `miura_naoko`
+- **Aliases**: 三浦, 三浦警部補, 警部補
+
+### 基本資料
+
+- **身份**：茨城縣警筑波方面聯絡人，警部補
+- **年齡**：約 40 歲
+
+### 背景與處境
+
+三浦是茨城縣警派駐筑波方面的聯絡人。Chapter 17 起參與外圍查驗，負責建築、消防與搬送公司的正式照會協調。她不是主角的盟友或敵人，而是地方程序線的實務合作人——按正式警察程序推進，不替澪冒險，也不替設施掩蓋。
+
+她不知道循環、神鏡、母親與外星真相。她只看見一樁失蹤未成年人安否查證案件，並按制度能容許的速度推進。
+
+### 性格
+
+- **程序意識強**：所有動作走正式書面照會，不靠私人交情
+- **不冒進也不推諉**：能保全的先保全，不能立刻取得的就等正式程序
+- **對跨縣合作保持距離**：東京端是別人的案子，她只負責筑波這一側
+- **對未成年人案件格外謹慎**：知道這類案件的程序門檻與輿論風險
+
+### 說話風格
+
+- **簡短陳述程序狀態**：像在讀勤務日誌
+- **不替別人下結論**：只說「至少建築資料說⋯⋯」這類有限度陳述
+- **被追問時回到程序**：「這要等正式照會」「這要法務遮蔽後才能回覆」
+- **對澪保持禮貌距離**：不把她當刑警，也不把她當家屬情緒發洩對象
+
+### 代表性台詞
+
+- `至少建築資料說，它真的是地下二層。裡面放人還是放機器，等維護資料。`
+- `這個班次，是設備類嗎？`
+- `夜間不安排外部轉送。允許警方監看出口。`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-year-old Japanese woman, neat short black hair, police-issue dark jacket over collared shirt, composed no-nonsense expression, sharp watchful eyes, neutral indoor office lighting, muted cool-grey palette, upper-body shot, clean background
+- **determined**: anime visual-novel portrait, 40-year-old woman, jaw set, eyes sharp with professional focus, leaning forward, dark jacket, strong directional light, upper-body shot
+- **guarded**: anime visual-novel portrait, 40-year-old woman, eyes sharp and watchful, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
+
+---
+
+## 38. 長野的母方阿姨（Nagano Aunt）
+
+- **ID**: `nagano_aunt`
+- **Aliases**: 阿姨, 監護人, 母方阿姨
+
+### 基本資料
+
+- **身份**：悠真的正式監護人，住在長野
+- **年齡**：約 48 歲
+
+### 背景與處境
+
+悠真失蹤後，實際照顧者是澪，但法律上的正式監護人是住在長野的母方阿姨。她曾在悠真參加學校合作的普通睡眠／健康研究時簽過同意書，不知道筑波 B2、介助搬送、過夜或地下待機。
+
+她不是壞監護人，只是一個被廣泛條款誤導、距離遙遠、無法及時看見實際流程的親屬。Chapter 18 夜間正式聯絡她時，她才第一次理解自己簽的同意書可能被解讀成涵蓋了這次搬送。
+
+### 性格
+
+- **盡責但距離遠**：簽同意書時相信學校與研究單位，沒有理由懷疑
+- **被揭露時的震驚與內疚**：不是冷漠，是從未被告訴需要追問
+- **對澪有複雜情緒**：知道澪才是實際照顧者，自己只是法律上的名字
+- **不擅長程序語言**：用自己的話描述同意內容，與設施的條款措辭對不上
+
+### 說話風格
+
+- **口語而遲疑**：不是法律語言，是一個被嚇到的普通人
+- **重複確認**：「我沒有同意過那個吧？」「他們沒有跟我說⋯⋯」
+- **提到悠真時聲音變軟**：內疚與想念混在一起
+- **被問到條款細節時坦承不懂**：不假裝理解過
+
+### 代表性台詞
+
+- `我簽的是睡眠檢查。學校轉介的。`
+- `我不知道筑波。我不知道什麼 B2。`
+- `悠真在筑波嗎？`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 48-year-old Japanese woman, shoulder-length greying dark hair tied back, tired kind face with faint lines, casual home clothes (knit sweater over blouse), worried but composed expression, soft warm indoor lighting, muted warm-grey palette, upper-body shot, clean background
+- **sad**: anime visual-novel portrait, 48-year-old woman, eyes downcast with deep worry, lips pressed thin, hand near mouth, sweater, dim soft lighting, upper-body shot
+- **shocked**: anime visual-novel portrait, 48-year-old woman, eyes wide, breath caught, face pale, sweater, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 48-year-old woman, jaw set with quiet protective anger, eyes bright with fragile resolve, leaning forward, sweater, soft directional light, upper-body shot
+
+---
+
+## 39. 搬送公司合規主管（Transport Compliance）
+
+- **ID**: `transport_compliance`
+- **Aliases**: 合規主管, 合規部, 搬送公司合規
+
+### 說明
+
+泛指東關東災害支援搬送協同組合的合規部門主管。無人格，純功能性角色，代表搬送公司的正式對外程序回覆——以責任鏈與遮蔽欄位程序回答警方照會，不日常查看研究協力者姓名，相信委託方已完成合法監護與研究同意。回覆語言精確、制式、不帶情緒。
+
+---
+
+## 40. 設施夜間責任人（Facility Night Staff）
+
+- **ID**: `facility_night_staff`
+- **Aliases**: 夜間責任人, 關聯法人, 夜間負責人
+
+### 說明
+
+泛指筑波關聯法人／設施的夜間責任人。無人格，純功能性角色，代表設施夜間的表面安否保障回覆——生命徵象穩定、有夜間安全／醫療相關人員、無即時危險、真名與同意文件由翌晨倫理主管保管。回覆語言制式、不帶情緒，像在讀值班手冊。
+
+---
+
+## 41. 律師（Lawyer）
+
+- **ID**: `lawyer`
+- **Aliases**: 千田律師, 公益通報律師, 支援律師
+
+### 說明
+
+泛指公益通報者支援機構指派的律師。無人格，純功能性角色，負責在面談現場封存千田的常用手機與排程建立憑證副本、見證 18:42 訊息到達、維護程序合規。極少開口，開口時只確認程序動作（「副本已封存」「時間我記下了」）。
+
+---
+
+## 42. 公益通報支援人員（Whistleblower Support）
+
+- **ID**: `whistleblower_support`
+- **Aliases**: 支援人員, 通報支援
+
+### 說明
+
+泛指公益通報者支援機構的在場支援人員。無人格，純功能性角色，負責維持面談程序中立性、確認場地監視器與多出口條件、不參與實質證詞內容。極少開口，開口時只說明場地與程序規則。

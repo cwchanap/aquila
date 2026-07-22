@@ -37,6 +37,12 @@ export enum CharacterId {
     OnoderaNaoki = "onodera_naoki",
     ArchiveStaff = "archive_staff",
     TksLegal = "tks_legal",
+    MiuraNaoko = "miura_naoko",
+    NaganoAunt = "nagano_aunt",
+    TransportCompliance = "transport_compliance",
+    FacilityNightStaff = "facility_night_staff",
+    Lawyer = "lawyer",
+    WhistleblowerSupport = "whistleblower_support",
 }
 
 export interface CharacterInfo {
@@ -82,6 +88,12 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.OnoderaNaoki]: { id: "onodera_naoki", name: "小野寺直樹", aliases: ["小野寺"] },
     [CharacterId.ArchiveStaff]: { id: "archive_staff", name: "資料室職員", aliases: ["閱覽室職員"] },
     [CharacterId.TksLegal]: { id: "tks_legal", name: "TKS法務", aliases: ["TKS公關", "法務", "公關"] },
+    [CharacterId.MiuraNaoko]: { id: "miura_naoko", name: "三浦奈緒子", aliases: ["三浦", "三浦警部補", "警部補"] },
+    [CharacterId.NaganoAunt]: { id: "nagano_aunt", name: "長野的母方阿姨", aliases: ["阿姨", "監護人", "母方阿姨"] },
+    [CharacterId.TransportCompliance]: { id: "transport_compliance", name: "搬送公司合規主管", aliases: ["合規主管", "合規部", "搬送公司合規"] },
+    [CharacterId.FacilityNightStaff]: { id: "facility_night_staff", name: "設施夜間責任人", aliases: ["夜間責任人", "關聯法人", "夜間負責人"] },
+    [CharacterId.Lawyer]: { id: "lawyer", name: "律師", aliases: ["千田律師", "公益通報律師", "支援律師"] },
+    [CharacterId.WhistleblowerSupport]: { id: "whistleblower_support", name: "公益通報支援人員", aliases: ["支援人員", "通報支援"] },
 };
 
 const nameToId = new Map<string, string>();

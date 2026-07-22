@@ -87,6 +87,26 @@ const config: StoryCompilerConfig = {
                 /^(TKS\u6CD5\u52D9|TKS\u516C\u95DC|\u6CD5\u52D9|\u516C\u95DC)$/,
             id: 'tks_legal',
         },
+        {
+            pattern:
+                /^(\u64BC\u9001\u516C\u53F8\u5408\u898F\u4E3B\u7BA1|\u5408\u898F\u4E3B\u7BA1|\u5408\u898F\u90E8|\u64BC\u9001\u516C\u53F8\u5408\u898F)$/,
+            id: 'transport_compliance',
+        },
+        {
+            pattern:
+                /^(\u8A2D\u65BD\u591C\u9593\u8CAC\u4EFB\u4EBA|\u591C\u9593\u8CAC\u4EFB\u4EBA|\u95DC\u806F\u6CD5\u4EBA|\u591C\u9593\u8CA0\u8CAC\u4EBA)$/,
+            id: 'facility_night_staff',
+        },
+        {
+            pattern:
+                /^(\u5F8B\u5E2B|\u5343\u7530\u5F8B\u5E2B|\u516C\u76CA\u901A\u5831\u5F8B\u5E2B|\u652F\u63F4\u5F8B\u5E2B)$/,
+            id: 'lawyer',
+        },
+        {
+            pattern:
+                /^(\u516C\u76CA\u901A\u5831\u652F\u63F4\u4EBA\u54E1|\u652F\u63F4\u4EBA\u54E1|\u901A\u5831\u652F\u63F4)$/,
+            id: 'whistleblower_support',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

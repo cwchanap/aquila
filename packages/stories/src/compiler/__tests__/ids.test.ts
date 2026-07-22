@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { makeSceneId, optionIdFromDirRel, actSortKey } from '../ids';
+import {
+    makeSceneId,
+    optionIdFromDirRel,
+    actSortKey,
+    chapterSortKey,
+} from '../ids';
 
 describe('makeSceneId', () => {
     it('handles root acts', () => {
@@ -42,5 +47,26 @@ describe('actSortKey', () => {
     });
     it('throws on unexpected names', () => {
         expect(() => actSortKey('readme')).toThrow();
+    });
+});
+
+describe('chapterSortKey', () => {
+    it('orders numeric chapters ascending', () => {
+        const ordered = [
+            'chapter_10',
+            'chapter_2',
+            'chapter_1',
+            'chapter_9',
+        ].sort((a, b) => chapterSortKey(a) - chapterSortKey(b));
+        expect(ordered).toEqual([
+            'chapter_1',
+            'chapter_2',
+            'chapter_9',
+            'chapter_10',
+        ]);
+    });
+    it('returns NaN for non-chapter names (caller falls back to localeCompare)', () => {
+        expect(Number.isNaN(chapterSortKey('branch_1a'))).toBe(true);
+        expect(Number.isNaN(chapterSortKey(''))).toBe(true);
     });
 });

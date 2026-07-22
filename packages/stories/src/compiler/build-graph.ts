@@ -1,5 +1,10 @@
 import type { DirNode } from './scan-story';
-import { actSortKey, makeSceneId, optionIdFromDirRel } from './ids';
+import {
+    actSortKey,
+    chapterSortKey,
+    makeSceneId,
+    optionIdFromDirRel,
+} from './ids';
 import type { ChoiceIR } from './ir';
 
 export interface GraphScene {
@@ -40,9 +45,14 @@ export function buildStoryGraph(root: DirNode): StoryGraph {
         const sortedChildren = [...node.children].sort((a, b) =>
             a.rel.localeCompare(b.rel)
         );
-        const sortedChapters = [...node.chapters].sort((a, b) =>
-            a.rel.localeCompare(b.rel)
-        );
+        const sortedChapters = [...node.chapters].sort((a, b) => {
+            const ka = chapterSortKey(a.rel);
+            const kb = chapterSortKey(b.rel);
+            if (Number.isNaN(ka) || Number.isNaN(kb)) {
+                return a.rel.localeCompare(b.rel);
+            }
+            return ka - kb;
+        });
 
         let firstSceneId: string | null = null;
         let lastSceneId: string | null = null;

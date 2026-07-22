@@ -8,65 +8,6 @@ import { scene as s_ch1_act4 } from './scenes/ch1_act4';
 import { scene as s_ch1_act5 } from './scenes/ch1_act5';
 import { scene as s_ch1_act6 } from './scenes/ch1_act6';
 import { scene as s_ch1_act7 } from './scenes/ch1_act7';
-import { scene as s_ch10_act1 } from './scenes/ch10_act1';
-import { scene as s_ch10_act2 } from './scenes/ch10_act2';
-import { scene as s_ch10_act3 } from './scenes/ch10_act3';
-import { scene as s_ch10_act4 } from './scenes/ch10_act4';
-import { scene as s_ch10_act5 } from './scenes/ch10_act5';
-import { scene as s_ch10_act6 } from './scenes/ch10_act6';
-import { scene as s_ch10_act7 } from './scenes/ch10_act7';
-import { scene as s_ch10_act8 } from './scenes/ch10_act8';
-import { scene as s_ch11_act1 } from './scenes/ch11_act1';
-import { scene as s_ch11_act2 } from './scenes/ch11_act2';
-import { scene as s_ch11_act3 } from './scenes/ch11_act3';
-import { scene as s_ch11_act4 } from './scenes/ch11_act4';
-import { scene as s_ch11_act5 } from './scenes/ch11_act5';
-import { scene as s_ch11_act6 } from './scenes/ch11_act6';
-import { scene as s_ch11_act7 } from './scenes/ch11_act7';
-import { scene as s_ch11_act8 } from './scenes/ch11_act8';
-import { scene as s_ch12_act1 } from './scenes/ch12_act1';
-import { scene as s_ch12_act2 } from './scenes/ch12_act2';
-import { scene as s_ch12_act3 } from './scenes/ch12_act3';
-import { scene as s_ch12_act4 } from './scenes/ch12_act4';
-import { scene as s_ch12_act5 } from './scenes/ch12_act5';
-import { scene as s_ch12_act6 } from './scenes/ch12_act6';
-import { scene as s_ch12_act7 } from './scenes/ch12_act7';
-import { scene as s_ch12_act8 } from './scenes/ch12_act8';
-import { scene as s_ch12_act9 } from './scenes/ch12_act9';
-import { scene as s_ch13_act1 } from './scenes/ch13_act1';
-import { scene as s_ch13_act2 } from './scenes/ch13_act2';
-import { scene as s_ch13_act3 } from './scenes/ch13_act3';
-import { scene as s_ch13_act4 } from './scenes/ch13_act4';
-import { scene as s_ch13_act5 } from './scenes/ch13_act5';
-import { scene as s_ch13_act6 } from './scenes/ch13_act6';
-import { scene as s_ch13_act7 } from './scenes/ch13_act7';
-import { scene as s_ch13_act8 } from './scenes/ch13_act8';
-import { scene as s_ch14_act1 } from './scenes/ch14_act1';
-import { scene as s_ch14_act2 } from './scenes/ch14_act2';
-import { scene as s_ch14_act3 } from './scenes/ch14_act3';
-import { scene as s_ch14_act4 } from './scenes/ch14_act4';
-import { scene as s_ch14_act5 } from './scenes/ch14_act5';
-import { scene as s_ch14_act6 } from './scenes/ch14_act6';
-import { scene as s_ch15_act1 } from './scenes/ch15_act1';
-import { scene as s_ch15_act2 } from './scenes/ch15_act2';
-import { scene as s_ch15_act3 } from './scenes/ch15_act3';
-import { scene as s_ch15_act4 } from './scenes/ch15_act4';
-import { scene as s_ch15_act5 } from './scenes/ch15_act5';
-import { scene as s_ch15_act6 } from './scenes/ch15_act6';
-import { scene as s_ch16_act1 } from './scenes/ch16_act1';
-import { scene as s_ch16_act2 } from './scenes/ch16_act2';
-import { scene as s_ch16_act3 } from './scenes/ch16_act3';
-import { scene as s_ch16_act4 } from './scenes/ch16_act4';
-import { scene as s_ch16_act5 } from './scenes/ch16_act5';
-import { scene as s_ch16_act6 } from './scenes/ch16_act6';
-import { scene as s_ch17_act1 } from './scenes/ch17_act1';
-import { scene as s_ch17_act2 } from './scenes/ch17_act2';
-import { scene as s_ch17_act3 } from './scenes/ch17_act3';
-import { scene as s_ch17_act4 } from './scenes/ch17_act4';
-import { scene as s_ch17_act5 } from './scenes/ch17_act5';
-import { scene as s_ch17_act6 } from './scenes/ch17_act6';
-import { scene as s_ch17_act7 } from './scenes/ch17_act7';
-import { scene as s_ch17_act8 } from './scenes/ch17_act8';
 import { scene as s_ch2_act1 } from './scenes/ch2_act1';
 import { scene as s_ch2_act2 } from './scenes/ch2_act2';
 import { scene as s_ch2_act3 } from './scenes/ch2_act3';
@@ -126,6 +67,73 @@ import { scene as s_ch9_act7 } from './scenes/ch9_act7';
 import { scene as s_ch9_act8 } from './scenes/ch9_act8';
 import { scene as s_ch9_act9 } from './scenes/ch9_act9';
 import { scene as s_ch9_act10 } from './scenes/ch9_act10';
+import { scene as s_ch10_act1 } from './scenes/ch10_act1';
+import { scene as s_ch10_act2 } from './scenes/ch10_act2';
+import { scene as s_ch10_act3 } from './scenes/ch10_act3';
+import { scene as s_ch10_act4 } from './scenes/ch10_act4';
+import { scene as s_ch10_act5 } from './scenes/ch10_act5';
+import { scene as s_ch10_act6 } from './scenes/ch10_act6';
+import { scene as s_ch10_act7 } from './scenes/ch10_act7';
+import { scene as s_ch10_act8 } from './scenes/ch10_act8';
+import { scene as s_ch11_act1 } from './scenes/ch11_act1';
+import { scene as s_ch11_act2 } from './scenes/ch11_act2';
+import { scene as s_ch11_act3 } from './scenes/ch11_act3';
+import { scene as s_ch11_act4 } from './scenes/ch11_act4';
+import { scene as s_ch11_act5 } from './scenes/ch11_act5';
+import { scene as s_ch11_act6 } from './scenes/ch11_act6';
+import { scene as s_ch11_act7 } from './scenes/ch11_act7';
+import { scene as s_ch11_act8 } from './scenes/ch11_act8';
+import { scene as s_ch12_act1 } from './scenes/ch12_act1';
+import { scene as s_ch12_act2 } from './scenes/ch12_act2';
+import { scene as s_ch12_act3 } from './scenes/ch12_act3';
+import { scene as s_ch12_act4 } from './scenes/ch12_act4';
+import { scene as s_ch12_act5 } from './scenes/ch12_act5';
+import { scene as s_ch12_act6 } from './scenes/ch12_act6';
+import { scene as s_ch12_act7 } from './scenes/ch12_act7';
+import { scene as s_ch12_act8 } from './scenes/ch12_act8';
+import { scene as s_ch12_act9 } from './scenes/ch12_act9';
+import { scene as s_ch13_act1 } from './scenes/ch13_act1';
+import { scene as s_ch13_act2 } from './scenes/ch13_act2';
+import { scene as s_ch13_act3 } from './scenes/ch13_act3';
+import { scene as s_ch13_act4 } from './scenes/ch13_act4';
+import { scene as s_ch13_act5 } from './scenes/ch13_act5';
+import { scene as s_ch13_act6 } from './scenes/ch13_act6';
+import { scene as s_ch13_act7 } from './scenes/ch13_act7';
+import { scene as s_ch13_act8 } from './scenes/ch13_act8';
+import { scene as s_ch14_act1 } from './scenes/ch14_act1';
+import { scene as s_ch14_act2 } from './scenes/ch14_act2';
+import { scene as s_ch14_act3 } from './scenes/ch14_act3';
+import { scene as s_ch14_act4 } from './scenes/ch14_act4';
+import { scene as s_ch14_act5 } from './scenes/ch14_act5';
+import { scene as s_ch14_act6 } from './scenes/ch14_act6';
+import { scene as s_ch15_act1 } from './scenes/ch15_act1';
+import { scene as s_ch15_act2 } from './scenes/ch15_act2';
+import { scene as s_ch15_act3 } from './scenes/ch15_act3';
+import { scene as s_ch15_act4 } from './scenes/ch15_act4';
+import { scene as s_ch15_act5 } from './scenes/ch15_act5';
+import { scene as s_ch15_act6 } from './scenes/ch15_act6';
+import { scene as s_ch16_act1 } from './scenes/ch16_act1';
+import { scene as s_ch16_act2 } from './scenes/ch16_act2';
+import { scene as s_ch16_act3 } from './scenes/ch16_act3';
+import { scene as s_ch16_act4 } from './scenes/ch16_act4';
+import { scene as s_ch16_act5 } from './scenes/ch16_act5';
+import { scene as s_ch16_act6 } from './scenes/ch16_act6';
+import { scene as s_ch17_act1 } from './scenes/ch17_act1';
+import { scene as s_ch17_act2 } from './scenes/ch17_act2';
+import { scene as s_ch17_act3 } from './scenes/ch17_act3';
+import { scene as s_ch17_act4 } from './scenes/ch17_act4';
+import { scene as s_ch17_act5 } from './scenes/ch17_act5';
+import { scene as s_ch17_act6 } from './scenes/ch17_act6';
+import { scene as s_ch17_act7 } from './scenes/ch17_act7';
+import { scene as s_ch17_act8 } from './scenes/ch17_act8';
+import { scene as s_ch18_act1 } from './scenes/ch18_act1';
+import { scene as s_ch18_act2 } from './scenes/ch18_act2';
+import { scene as s_ch18_act3 } from './scenes/ch18_act3';
+import { scene as s_ch18_act4 } from './scenes/ch18_act4';
+import { scene as s_ch18_act5 } from './scenes/ch18_act5';
+import { scene as s_ch18_act6 } from './scenes/ch18_act6';
+import { scene as s_ch18_act7 } from './scenes/ch18_act7';
+import { scene as s_ch18_act8 } from './scenes/ch18_act8';
 
 export const theSeventhMirrorZhDialogue: DialogueMap = {
     "ch1_act1": s_ch1_act1,
@@ -135,65 +143,6 @@ export const theSeventhMirrorZhDialogue: DialogueMap = {
     "ch1_act5": s_ch1_act5,
     "ch1_act6": s_ch1_act6,
     "ch1_act7": s_ch1_act7,
-    "ch10_act1": s_ch10_act1,
-    "ch10_act2": s_ch10_act2,
-    "ch10_act3": s_ch10_act3,
-    "ch10_act4": s_ch10_act4,
-    "ch10_act5": s_ch10_act5,
-    "ch10_act6": s_ch10_act6,
-    "ch10_act7": s_ch10_act7,
-    "ch10_act8": s_ch10_act8,
-    "ch11_act1": s_ch11_act1,
-    "ch11_act2": s_ch11_act2,
-    "ch11_act3": s_ch11_act3,
-    "ch11_act4": s_ch11_act4,
-    "ch11_act5": s_ch11_act5,
-    "ch11_act6": s_ch11_act6,
-    "ch11_act7": s_ch11_act7,
-    "ch11_act8": s_ch11_act8,
-    "ch12_act1": s_ch12_act1,
-    "ch12_act2": s_ch12_act2,
-    "ch12_act3": s_ch12_act3,
-    "ch12_act4": s_ch12_act4,
-    "ch12_act5": s_ch12_act5,
-    "ch12_act6": s_ch12_act6,
-    "ch12_act7": s_ch12_act7,
-    "ch12_act8": s_ch12_act8,
-    "ch12_act9": s_ch12_act9,
-    "ch13_act1": s_ch13_act1,
-    "ch13_act2": s_ch13_act2,
-    "ch13_act3": s_ch13_act3,
-    "ch13_act4": s_ch13_act4,
-    "ch13_act5": s_ch13_act5,
-    "ch13_act6": s_ch13_act6,
-    "ch13_act7": s_ch13_act7,
-    "ch13_act8": s_ch13_act8,
-    "ch14_act1": s_ch14_act1,
-    "ch14_act2": s_ch14_act2,
-    "ch14_act3": s_ch14_act3,
-    "ch14_act4": s_ch14_act4,
-    "ch14_act5": s_ch14_act5,
-    "ch14_act6": s_ch14_act6,
-    "ch15_act1": s_ch15_act1,
-    "ch15_act2": s_ch15_act2,
-    "ch15_act3": s_ch15_act3,
-    "ch15_act4": s_ch15_act4,
-    "ch15_act5": s_ch15_act5,
-    "ch15_act6": s_ch15_act6,
-    "ch16_act1": s_ch16_act1,
-    "ch16_act2": s_ch16_act2,
-    "ch16_act3": s_ch16_act3,
-    "ch16_act4": s_ch16_act4,
-    "ch16_act5": s_ch16_act5,
-    "ch16_act6": s_ch16_act6,
-    "ch17_act1": s_ch17_act1,
-    "ch17_act2": s_ch17_act2,
-    "ch17_act3": s_ch17_act3,
-    "ch17_act4": s_ch17_act4,
-    "ch17_act5": s_ch17_act5,
-    "ch17_act6": s_ch17_act6,
-    "ch17_act7": s_ch17_act7,
-    "ch17_act8": s_ch17_act8,
     "ch2_act1": s_ch2_act1,
     "ch2_act2": s_ch2_act2,
     "ch2_act3": s_ch2_act3,
@@ -253,4 +202,71 @@ export const theSeventhMirrorZhDialogue: DialogueMap = {
     "ch9_act8": s_ch9_act8,
     "ch9_act9": s_ch9_act9,
     "ch9_act10": s_ch9_act10,
+    "ch10_act1": s_ch10_act1,
+    "ch10_act2": s_ch10_act2,
+    "ch10_act3": s_ch10_act3,
+    "ch10_act4": s_ch10_act4,
+    "ch10_act5": s_ch10_act5,
+    "ch10_act6": s_ch10_act6,
+    "ch10_act7": s_ch10_act7,
+    "ch10_act8": s_ch10_act8,
+    "ch11_act1": s_ch11_act1,
+    "ch11_act2": s_ch11_act2,
+    "ch11_act3": s_ch11_act3,
+    "ch11_act4": s_ch11_act4,
+    "ch11_act5": s_ch11_act5,
+    "ch11_act6": s_ch11_act6,
+    "ch11_act7": s_ch11_act7,
+    "ch11_act8": s_ch11_act8,
+    "ch12_act1": s_ch12_act1,
+    "ch12_act2": s_ch12_act2,
+    "ch12_act3": s_ch12_act3,
+    "ch12_act4": s_ch12_act4,
+    "ch12_act5": s_ch12_act5,
+    "ch12_act6": s_ch12_act6,
+    "ch12_act7": s_ch12_act7,
+    "ch12_act8": s_ch12_act8,
+    "ch12_act9": s_ch12_act9,
+    "ch13_act1": s_ch13_act1,
+    "ch13_act2": s_ch13_act2,
+    "ch13_act3": s_ch13_act3,
+    "ch13_act4": s_ch13_act4,
+    "ch13_act5": s_ch13_act5,
+    "ch13_act6": s_ch13_act6,
+    "ch13_act7": s_ch13_act7,
+    "ch13_act8": s_ch13_act8,
+    "ch14_act1": s_ch14_act1,
+    "ch14_act2": s_ch14_act2,
+    "ch14_act3": s_ch14_act3,
+    "ch14_act4": s_ch14_act4,
+    "ch14_act5": s_ch14_act5,
+    "ch14_act6": s_ch14_act6,
+    "ch15_act1": s_ch15_act1,
+    "ch15_act2": s_ch15_act2,
+    "ch15_act3": s_ch15_act3,
+    "ch15_act4": s_ch15_act4,
+    "ch15_act5": s_ch15_act5,
+    "ch15_act6": s_ch15_act6,
+    "ch16_act1": s_ch16_act1,
+    "ch16_act2": s_ch16_act2,
+    "ch16_act3": s_ch16_act3,
+    "ch16_act4": s_ch16_act4,
+    "ch16_act5": s_ch16_act5,
+    "ch16_act6": s_ch16_act6,
+    "ch17_act1": s_ch17_act1,
+    "ch17_act2": s_ch17_act2,
+    "ch17_act3": s_ch17_act3,
+    "ch17_act4": s_ch17_act4,
+    "ch17_act5": s_ch17_act5,
+    "ch17_act6": s_ch17_act6,
+    "ch17_act7": s_ch17_act7,
+    "ch17_act8": s_ch17_act8,
+    "ch18_act1": s_ch18_act1,
+    "ch18_act2": s_ch18_act2,
+    "ch18_act3": s_ch18_act3,
+    "ch18_act4": s_ch18_act4,
+    "ch18_act5": s_ch18_act5,
+    "ch18_act6": s_ch18_act6,
+    "ch18_act7": s_ch18_act7,
+    "ch18_act8": s_ch18_act8,
 };

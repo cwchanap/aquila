@@ -47,396 +47,6 @@
       "prompt": "Wangan New Transit elevated platform at night, cold blue lighting, glass partition walls reflecting Tokyo Bay lights in distance, sparse waiting passengers, electronic departure board glowing, automated driverless train approaching through elevated track, moody cinematic visual-novel background art, wide establishing shot"
     },
     {
-      "key": "chapter_10/ch10_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act1_s0.png",
-      "prompt": "hallway outside a boy's bedroom door, morning light filtering through a window at the end of the corridor, dust motes suspended in grey air, the door just closed, visual-novel background art, narrow shot"
-    },
-    {
-      "key": "chapter_10/ch10_act1_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act1_s1.png",
-      "prompt": "Yuma's room, morning light through curtain gap, desk with gaming monitor dark, old game device on the desk, chair pushed back, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s0.png",
-      "prompt": "small Tokyo apartment room, morning light, desk cluttered with two notebooks side by side, pen in hand, jacket draped over chair, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act2_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s1.png",
-      "prompt": "apartment entrance hallway, shoes being put on, backpack on shoulders, morning light from the door crack, visual-novel background art, narrow shot"
-    },
-    {
-      "key": "chapter_10/ch10_act2_s2",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s2.png",
-      "prompt": "street near a police station, coin lockers lined up outside a small station building, morning overcast light, pedestrians passing, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act2_s3",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s3.png",
-      "prompt": "train interior, morning commute, half-empty seats, fluorescent lighting, notebook open on lap, pen in hand, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act3_s0.png",
-      "prompt": "police station questioning room, fluorescent ceiling light, small table with recording device, two chairs facing each other, grey walls, institutional interior, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act4_s0.png",
-      "prompt": "police station exit, overcast midday light, concrete steps leading down to a sidewalk, Mio standing outside with phone in hand, tired figure in dark jacket, grey Tokyo sky, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act4_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act4_s1.png",
-      "prompt": "convenience store corner seating, small table by window, overcast light through glass, a handheld game device and a bottle of water on the table, tired young woman sitting alone, muted fluorescent lighting, visual-novel background art, close shot"
-    },
-    {
-      "key": "chapter_10/ch10_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act5_s0.png",
-      "prompt": "station corner bench, overcast afternoon, concrete platform with metal railing, a small handheld game device glowing in Mio's lap, tired young woman sitting alone, grey Tokyo sky, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act6_s0.png",
-      "prompt": "Tokyo sidewalk under overcast sky, afternoon, Mio walking past low residential buildings, tired figure with bag strap held tight, grey light, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act6_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act6_s1.png",
-      "prompt": "small quiet coffee shop corner table, afternoon, a cup of coffee on the table, phone screen glowing with a simple webpage, tired young woman hunched over the screen, muted warm lighting from overhead lamp, visual-novel background art, close shot"
-    },
-    {
-      "key": "chapter_10/ch10_act6_s2",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act6_s2.png",
-      "prompt": "Tokyo sidewalk, afternoon, overcast grey sky, Mio walking with purpose, bag strap held tight, residential street with power lines overhead, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_10/ch10_act7_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act7_s0.png",
-      "prompt": "public community center rest area, afternoon light through large windows, vending machines humming along one wall, small children's reading corner with low bookshelves, elderly men playing chess at a corner table, bulletin board with disaster preparedness lecture poster, a blue umbrella leaning against a table, muted warm-grey palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_10/ch10_act8_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act8_s0.png",
-      "prompt": "public community center rest area, afternoon light shifting to early evening, vending machines humming, chess game still in progress at the corner table, two women sitting across from each other at a window table, a blue umbrella leaning against the table leg, muted warm-grey palette with faint amber from low sun through glass, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act1_s0.png",
-      "prompt": "small Tokyo apartment room, afternoon light through curtains, cluttered desk with old laptop and notebooks, a small hand mirror lying on white paper beside a plastic ruler, muted warm-grey palette with faint amber from low afternoon sun, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act2_s0.png",
-      "prompt": "community center third floor corridor, fluorescent ceiling lights, linoleum floor, bulletin boards with flyers for calligraphy class and parenting consultation, ordinary municipal building interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act2_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act2_s1.png",
-      "prompt": "small municipal meeting room, fluorescent lights at normal brightness, folding tables arranged in a loose rectangle, chairs with metal legs, a cardboard box on the corner table with numbered opaque ziplock bags inside, blank projector screen, folders lying face-down on tables, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_11/ch11_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act3_s0.png",
-      "prompt": "small municipal meeting room interior, fluorescent lights at normal brightness, folding tables in loose rectangle, eight to ten adults seated, blank white projector screen, folders face-down on tables, convenience store rice balls, school uniform photos in frames, hospital bills, transit cards in clear sleeves, reflective work vests, half-used medicine packets, paper shift schedules on laps, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_11/ch11_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act4_s0.png",
-      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table with grey folders face-down, convenience store rice balls and hospital receipts scattered among photocopies, numbered opaque pouches visible in a corner box, muted institutional palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act5_s0.png",
-      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table covered with de-identified case cards arranged in rows, grey folder open at center, convenience store wrappers and hospital receipts pushed to one side, muted institutional palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act6_s0.png",
-      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, three de-identified case cards arranged in a row at center, grey folder open nearby, an unopened envelope placed at the table edge, document sleeves and label tape set aside, muted institutional palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act7_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act7_s0.png",
-      "prompt": "small community center meeting room, lights partially dimmed, old projector and low-brightness screen, chairs arranged in a semicircle around a table with an old offline laptop and a single speaker, numbered opaque bags visible in a box at the corner of the table, muted cool-grey palette with faint amber from the dimmed ceiling lights, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act8_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act8_s0.png",
-      "prompt": "small community center meeting room, lights returning to normal brightness, people gathering folders and bags, numbered phone bags being retrieved from the corner box, ordinary clutter of rice balls and paper schedules and hospital receipts on the table, muted warm-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_11/ch11_act8_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act8_s1.png",
-      "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, notice boards with calligraphy class and parenting workshop flyers, evening quiet, two women walking toward the exit, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act1_s0.png",
-      "prompt": "Japanese family restaurant interior, early morning, booths by large windows, soft overcast light from left, nearly empty restaurant, paper menus and salt shakers on tables, muted warm-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act2_s0.png",
-      "prompt": "public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications and newspapers, quiet, few elderly people reading, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act3_s0.png",
-      "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, morning light from exit door at far end, notice boards with calligraphy class and parenting workshop flyers, quiet, one person standing by the window checking phone, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act3_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act3_s1.png",
-      "prompt": "public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications, quiet, two people seated at a table with documents, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act4_s0.png",
-      "prompt": "community center reading room, late morning light through large windows growing warmer, long table covered with printed documents and highlighters, four folder colors neatly separated, quiet weekday morning, muted warm-grey palette with increasing amber tones, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act5_s0.png",
-      "prompt": "community center reading room, mid-morning light now fully illuminating the table, sun past the rooftop opposite, documents and folders spread out with a PDF printout placed center, two sealed envelopes set aside, warm amber-tinged natural light, muted warm-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act6_s0.png",
-      "prompt": "community center reading room, approaching noon light, sun high enough to wash out shadows on the table, documents being reorganized into stacks, four folders closed and aligned, two coffee cups empty at the corner, warm bright palette with muted grey undertones, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act7_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act7_s0.png",
-      "prompt": "community center lounge area, vending machines humming along one wall, plastic chairs and low table with convenience store rice balls and bottled tea, afternoon light through frosted windows, muted warm-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act8_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act8_s0.png",
-      "prompt": "public library reference area, rows of data terminals with beige monitors, shelves of bound government bulletins and corporate registry volumes, fluorescent ceiling lighting, quiet afternoon atmosphere, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_12/ch12_act9_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act9_s0.png",
-      "prompt": "outside public library, stone steps and low concrete wall beside the entrance, afternoon light slanting across a quiet residential street, distant elevated train tracks, muted warm-grey palette with faint amber from low sun, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act1_s0.png",
-      "prompt": "small Tokyo apartment interior, late afternoon light through a single window, cluttered desk with notebooks and a closed drawer, muted warm-grey palette with thin amber from low sun, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act2_s0.png",
-      "prompt": "small police station interview room, fluorescent ceiling lighting, plain table with two chairs, institutional grey walls, a camera tripod in the corner, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act3_s0.png",
-      "prompt": "police station technical briefing room, fluorescent lighting, long table with a laptop and printed documents, projector screen showing a de-identified cropped image, institutional grey walls, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act4_s0.png",
-      "prompt": "police station evidence confirmation room, cold white fluorescent lighting, metal desk with evidence log forms and a transparent evidence bag, scale ruler and measuring tools, institutional claustrophobic atmosphere, late afternoon light filtered through frosted window, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act5_s0.png",
-      "prompt": "police station evidence confirmation room, cold white fluorescent lighting, metal desk cleared of most documents, evidence log forms stacked neatly, transparent evidence bag containing a small mirror, scale ruler, institutional claustrophobic atmosphere, evening light nearly gone through frosted window, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act5_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act5_s1.png",
-      "prompt": "police station reception counter, evening, cold fluorescent lighting, low counter with a sign-in sheet and stamp tray, institutional hallway extending into background, quiet, few people, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act6_s0.png",
-      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, stacks of document folders and printed web archives on every surface, window showing dark residential street with distant elevated train tracks, muted cool palette with faint monitor glow, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act7_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act7_s0.png",
-      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing procurement database search results, stacks of document folders, window showing dark residential street, muted cool palette with stronger monitor glow on face, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_13/ch13_act8_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act8_s0.png",
-      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing an archived attachment cache from a local council security committee meeting, older document format with different table structure, window showing dark residential street with fewer lights, deeper night palette with monitor glow dominant, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act1_s0.png",
-      "prompt": "small Tokyo apartment interior, early morning grey light through a single window, cluttered desk with open notebook and scattered printouts, muted cold blue palette with faint warmth from desk lamp, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act1_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act1_s1.png",
-      "prompt": "small investigation media office, cramped room with two desks and a public data terminal, morning light through a single window mixing with fluorescent ceiling light, neat stacks of documents and reference binders, muted cool palette with warm desk lamp, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act2_s0.png",
-      "prompt": "local council archive reading room, rows of wooden tables with green banker's lamps, shelves of bound documents behind glass doors, quiet institutional atmosphere, cool fluorescent overhead lighting with warm lamp accents, muted beige and grey-green palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act3_s0.png",
-      "prompt": "family restaurant near the council building, bright daytime interior, booth seating by window, simple table with water glass and notebook, warm overhead lighting mixing with afternoon sun through glass, casual muted palette with soft yellows and beiges, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act4_s0.png",
-      "prompt": "small investigation media office, cramped room with two desks and a public data terminal, early afternoon light through a single window, fluorescent ceiling light mixing with warm desk lamp, documents and notebooks spread across desk, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act5_s0.png",
-      "prompt": "local council archive reading room, rows of wooden desks with green-shaded lamps, shelves of bound documents behind glass, afternoon light through high windows, quiet institutional atmosphere, muted warm-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_14/ch14_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act6_s0.png",
-      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen off, desk lamp providing warm focused light on notebook and documents, window showing dark residential street, deeper night palette with lamp glow dominant, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act1_s0.png",
-      "prompt": "small investigation media office, Saturday morning pale light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light mixing with cool grey daylight, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act1_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act1_s1.png",
-      "prompt": "Tokyo street near a public disaster prevention learning center, Saturday morning, pale overcast light, wide pedestrian walkway with a few weekend visitors, low institutional building with signage visible in the distance, muted grey-blue and concrete palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act2_s0.png",
-      "prompt": "public disaster prevention learning center archive room, shelves of boxed CD-ROMs and bound binders behind glass doors, paper catalog drawers along one wall, fluorescent ceiling light, school-group murmur audible from the floor below, neutral institutional beige and grey-green palette, reading table with two archival boxes and a notebook, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act3_s0.png",
-      "prompt": "same archive retired-hardware viewing area, display cases of retired emergency communication equipment along one wall, fluorescent ceiling light, reading table with an open manual and an archival box, muted institutional palette with grey-green and beige tones, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act4_s0.png",
-      "prompt": "archive technical-records area, public query terminal with microfilm reader, rows of metal shelves holding retired public-safety equipment manuals and bound procurement records, faded institutional green walls, afternoon light through high windows casting long pale rectangles on linoleum floor, muted warm-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act5_s0.png",
-      "prompt": "small investigation media office at night, cramped room with two desks, fluorescent ceiling light off, desk lamp casting warm focused circle of light on sketch pages and printed manual photos and open notebook, dark street visible through window, deep evening palette with lamp glow dominant, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_15/ch15_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act6_s0.png",
-      "prompt": "small investigation media office late at night, same cramped room, desk lamp turned lower casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act1_s0.png",
-      "prompt": "small investigation media office, Sunday morning pale grey light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light off, cool daylight mixing with screen glow, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act1_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act1_s1.png",
-      "prompt": "Tokyo street on Sunday morning, pale overcast light, quiet weekend pedestrian walkway, low institutional buildings in the distance, muted grey-blue and concrete palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act2_s0.png",
-      "prompt": "local government council archive reading room, Sunday morning, rows of metal shelving with bound documents, a few reading desks with desk lamps, fluorescent ceiling light, institutional grey walls, large windows with pale overcast light, quiet and nearly empty, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act3_s0.png",
-      "prompt": "decommissioned equipment declassification reading area, same government building different floor, dimmer institutional lighting, rows of archived technical manuals in protective sleeves, reading desk with adjustable lamp, grey walls, small high windows, quiet and cold, muted desaturated palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act3_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act3_s1.png",
-      "prompt": "Tokyo street on Sunday afternoon, pale overcast light, quiet weekend pedestrian walkway between two institutional buildings, muted grey-blue and concrete palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act4_s0.png",
-      "prompt": "supervisory committee public reference catalog terminal room, Sunday afternoon, small institutional room with a few query terminals against the wall, pale fluorescent light, grey walls, no windows, quiet and cold, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act4_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act4_s1.png",
-      "prompt": "Tokyo street on Sunday late afternoon, low overcast light starting to dim, quiet weekend pedestrian walkway, institutional buildings, muted grey-blue palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act5_s0.png",
-      "prompt": "small investigation media office, Sunday evening, desk lamp casting warm circle of light on open notebook and three printed pages, fluorescent light off, darker than afternoon, quiet evening Tokyo street silence outside window, muted warm and cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act6_s0.png",
-      "prompt": "small investigation media office late at night, same cramped room, desk lamp turned low casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_16/ch16_act6_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act6_s1.png",
-      "prompt": "Tokyo street late at night, deep darkness, single streetlight casting cold pool of light on empty sidewalk, distant buildings dark, no people, no cars, muted blue-black palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_17/ch17_act1_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act1_s0.png",
-      "prompt": "small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and bookshelf visible, small hand mirror on desk surface, phone screen glowing in the dark, muted blue-grey palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_17/ch17_act1_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act1_s1.png",
-      "prompt": "Tokyo residential street early Monday morning, grey predawn light, narrow lanes between old houses, a 24-hour convenience store sign glowing in the distance, few pedestrians, muted cool palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_17/ch17_act2_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act2_s0.png",
-      "prompt": "24-hour convenience store interior early Monday morning, fluorescent lighting, glass windows showing grey dawn street, a small table by the window with two plastic chairs, shelves of drinks and onigiri in background, muted cool palette with warm fluorescent patches, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_17/ch17_act3_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act3_s0.png",
-      "prompt": "unmarked police car interior, early Monday morning, grey dashboard, windshield showing convenience store parking lot and grey dawn sky, two figures in front seats, muted cool palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_17/ch17_act3_s1",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act3_s1.png",
-      "prompt": "convenience store parking lot early Monday morning, grey dawn light brightening, a man in dark suit standing beside parked car making a phone call, store sign glowing softly, muted cool palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_17/ch17_act4_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act4_s0.png",
-      "prompt": "highway interior of unmarked police sedan, early morning grey light through windshield, Metropolitan Expressway concrete walls streaming past, dashboard clock glowing 07:40, overcast sky, muted cool grey-blue palette, visual-novel background art, medium shot from passenger seat"
-    },
-    {
-      "key": "chapter_17/ch17_act5_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act5_s0.png",
-      "prompt": "public roadside parking area outside Tsukuba research support building, overcast morning light, low grey institutional buildings behind chain-link fence and hedge, public walkway with legal sightline to rear service gate, muted cool grey-green palette, visual-novel background art, wide shot"
-    },
-    {
-      "key": "chapter_17/ch17_act6_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act6_s0.png",
-      "prompt": "same public roadside parking area outside Tsukuba research support building, overcast morning light, rear service gate now closed after vehicle entered underground ramp, tension in still air, muted cool grey-green palette, visual-novel background art, medium shot from passenger seat"
-    },
-    {
-      "key": "chapter_17/ch17_act7_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act7_s0.png",
-      "prompt": "public parking area on the outskirts of Tsukuba research district, late morning overcast light, grey asphalt, low concrete boundary wall, distant grey-white research buildings behind a perimeter fence, a few parked cars, muted cool grey-blue palette, visual-novel background art, medium shot"
-    },
-    {
-      "key": "chapter_17/ch17_act8_s0",
-      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act8_s0.png",
-      "prompt": "same public parking area on the outskirts of Tsukuba research district, late morning turning toward midday, overcast light slightly brighter, grey asphalt, low concrete wall, distant research buildings behind perimeter fence, muted cool grey-blue palette, visual-novel background art, medium shot"
-    },
-    {
       "key": "chapter_2/ch2_act1_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_2/ch2_act1_s0.png",
       "prompt": "interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot"
@@ -835,6 +445,446 @@
       "key": "chapter_9/ch9_act10_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_9/ch9_act10_s0.png",
       "prompt": "game private message interface, a new chat window opening on screen, dim blue-grey UI, single message bubble appearing, Yuma's room in soft morning light behind the monitor, visual-novel background art, close-up on screen"
+    },
+    {
+      "key": "chapter_10/ch10_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act1_s0.png",
+      "prompt": "hallway outside a boy's bedroom door, morning light filtering through a window at the end of the corridor, dust motes suspended in grey air, the door just closed, visual-novel background art, narrow shot"
+    },
+    {
+      "key": "chapter_10/ch10_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act1_s1.png",
+      "prompt": "Yuma's room, morning light through curtain gap, desk with gaming monitor dark, old game device on the desk, chair pushed back, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s0.png",
+      "prompt": "small Tokyo apartment room, morning light, desk cluttered with two notebooks side by side, pen in hand, jacket draped over chair, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s1.png",
+      "prompt": "apartment entrance hallway, shoes being put on, backpack on shoulders, morning light from the door crack, visual-novel background art, narrow shot"
+    },
+    {
+      "key": "chapter_10/ch10_act2_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s2.png",
+      "prompt": "street near a police station, coin lockers lined up outside a small station building, morning overcast light, pedestrians passing, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act2_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act2_s3.png",
+      "prompt": "train interior, morning commute, half-empty seats, fluorescent lighting, notebook open on lap, pen in hand, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act3_s0.png",
+      "prompt": "police station questioning room, fluorescent ceiling light, small table with recording device, two chairs facing each other, grey walls, institutional interior, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act4_s0.png",
+      "prompt": "police station exit, overcast midday light, concrete steps leading down to a sidewalk, Mio standing outside with phone in hand, tired figure in dark jacket, grey Tokyo sky, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act4_s1.png",
+      "prompt": "convenience store corner seating, small table by window, overcast light through glass, a handheld game device and a bottle of water on the table, tired young woman sitting alone, muted fluorescent lighting, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_10/ch10_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act5_s0.png",
+      "prompt": "station corner bench, overcast afternoon, concrete platform with metal railing, a small handheld game device glowing in Mio's lap, tired young woman sitting alone, grey Tokyo sky, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act6_s0.png",
+      "prompt": "Tokyo sidewalk under overcast sky, afternoon, Mio walking past low residential buildings, tired figure with bag strap held tight, grey light, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act6_s1.png",
+      "prompt": "small quiet coffee shop corner table, afternoon, a cup of coffee on the table, phone screen glowing with a simple webpage, tired young woman hunched over the screen, muted warm lighting from overhead lamp, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_10/ch10_act6_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act6_s2.png",
+      "prompt": "Tokyo sidewalk, afternoon, overcast grey sky, Mio walking with purpose, bag strap held tight, residential street with power lines overhead, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_10/ch10_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act7_s0.png",
+      "prompt": "public community center rest area, afternoon light through large windows, vending machines humming along one wall, small children's reading corner with low bookshelves, elderly men playing chess at a corner table, bulletin board with disaster preparedness lecture poster, a blue umbrella leaning against a table, muted warm-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_10/ch10_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_10/ch10_act8_s0.png",
+      "prompt": "public community center rest area, afternoon light shifting to early evening, vending machines humming, chess game still in progress at the corner table, two women sitting across from each other at a window table, a blue umbrella leaning against the table leg, muted warm-grey palette with faint amber from low sun through glass, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act1_s0.png",
+      "prompt": "small Tokyo apartment room, afternoon light through curtains, cluttered desk with old laptop and notebooks, a small hand mirror lying on white paper beside a plastic ruler, muted warm-grey palette with faint amber from low afternoon sun, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act2_s0.png",
+      "prompt": "community center third floor corridor, fluorescent ceiling lights, linoleum floor, bulletin boards with flyers for calligraphy class and parenting consultation, ordinary municipal building interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act2_s1.png",
+      "prompt": "small municipal meeting room, fluorescent lights at normal brightness, folding tables arranged in a loose rectangle, chairs with metal legs, a cardboard box on the corner table with numbered opaque ziplock bags inside, blank projector screen, folders lying face-down on tables, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_11/ch11_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act3_s0.png",
+      "prompt": "small municipal meeting room interior, fluorescent lights at normal brightness, folding tables in loose rectangle, eight to ten adults seated, blank white projector screen, folders face-down on tables, convenience store rice balls, school uniform photos in frames, hospital bills, transit cards in clear sleeves, reflective work vests, half-used medicine packets, paper shift schedules on laps, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_11/ch11_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act4_s0.png",
+      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table with grey folders face-down, convenience store rice balls and hospital receipts scattered among photocopies, numbered opaque pouches visible in a corner box, muted institutional palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act5_s0.png",
+      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table covered with de-identified case cards arranged in rows, grey folder open at center, convenience store wrappers and hospital receipts pushed to one side, muted institutional palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act6_s0.png",
+      "prompt": "small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, three de-identified case cards arranged in a row at center, grey folder open nearby, an unopened envelope placed at the table edge, document sleeves and label tape set aside, muted institutional palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act7_s0.png",
+      "prompt": "small community center meeting room, lights partially dimmed, old projector and low-brightness screen, chairs arranged in a semicircle around a table with an old offline laptop and a single speaker, numbered opaque bags visible in a box at the corner of the table, muted cool-grey palette with faint amber from the dimmed ceiling lights, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act8_s0.png",
+      "prompt": "small community center meeting room, lights returning to normal brightness, people gathering folders and bags, numbered phone bags being retrieved from the corner box, ordinary clutter of rice balls and paper schedules and hospital receipts on the table, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_11/ch11_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_11/ch11_act8_s1.png",
+      "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, notice boards with calligraphy class and parenting workshop flyers, evening quiet, two women walking toward the exit, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act1_s0.png",
+      "prompt": "Japanese family restaurant interior, early morning, booths by large windows, soft overcast light from left, nearly empty restaurant, paper menus and salt shakers on tables, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act2_s0.png",
+      "prompt": "public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications and newspapers, quiet, few elderly people reading, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act3_s0.png",
+      "prompt": "community center corridor, fluorescent ceiling lights, linoleum floor, morning light from exit door at far end, notice boards with calligraphy class and parenting workshop flyers, quiet, one person standing by the window checking phone, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act3_s1.png",
+      "prompt": "public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications, quiet, two people seated at a table with documents, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act4_s0.png",
+      "prompt": "community center reading room, late morning light through large windows growing warmer, long table covered with printed documents and highlighters, four folder colors neatly separated, quiet weekday morning, muted warm-grey palette with increasing amber tones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act5_s0.png",
+      "prompt": "community center reading room, mid-morning light now fully illuminating the table, sun past the rooftop opposite, documents and folders spread out with a PDF printout placed center, two sealed envelopes set aside, warm amber-tinged natural light, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act6_s0.png",
+      "prompt": "community center reading room, approaching noon light, sun high enough to wash out shadows on the table, documents being reorganized into stacks, four folders closed and aligned, two coffee cups empty at the corner, warm bright palette with muted grey undertones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act7_s0.png",
+      "prompt": "community center lounge area, vending machines humming along one wall, plastic chairs and low table with convenience store rice balls and bottled tea, afternoon light through frosted windows, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act8_s0.png",
+      "prompt": "public library reference area, rows of data terminals with beige monitors, shelves of bound government bulletins and corporate registry volumes, fluorescent ceiling lighting, quiet afternoon atmosphere, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_12/ch12_act9_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_12/ch12_act9_s0.png",
+      "prompt": "outside public library, stone steps and low concrete wall beside the entrance, afternoon light slanting across a quiet residential street, distant elevated train tracks, muted warm-grey palette with faint amber from low sun, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act1_s0.png",
+      "prompt": "small Tokyo apartment interior, late afternoon light through a single window, cluttered desk with notebooks and a closed drawer, muted warm-grey palette with thin amber from low sun, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act2_s0.png",
+      "prompt": "small police station interview room, fluorescent ceiling lighting, plain table with two chairs, institutional grey walls, a camera tripod in the corner, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act3_s0.png",
+      "prompt": "police station technical briefing room, fluorescent lighting, long table with a laptop and printed documents, projector screen showing a de-identified cropped image, institutional grey walls, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act4_s0.png",
+      "prompt": "police station evidence confirmation room, cold white fluorescent lighting, metal desk with evidence log forms and a transparent evidence bag, scale ruler and measuring tools, institutional claustrophobic atmosphere, late afternoon light filtered through frosted window, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act5_s0.png",
+      "prompt": "police station evidence confirmation room, cold white fluorescent lighting, metal desk cleared of most documents, evidence log forms stacked neatly, transparent evidence bag containing a small mirror, scale ruler, institutional claustrophobic atmosphere, evening light nearly gone through frosted window, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act5_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act5_s1.png",
+      "prompt": "police station reception counter, evening, cold fluorescent lighting, low counter with a sign-in sheet and stamp tray, institutional hallway extending into background, quiet, few people, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act6_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, stacks of document folders and printed web archives on every surface, window showing dark residential street with distant elevated train tracks, muted cool palette with faint monitor glow, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act7_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing procurement database search results, stacks of document folders, window showing dark residential street, muted cool palette with stronger monitor glow on face, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_13/ch13_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_13/ch13_act8_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing an archived attachment cache from a local council security committee meeting, older document format with different table structure, window showing dark residential street with fewer lights, deeper night palette with monitor glow dominant, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act1_s0.png",
+      "prompt": "small Tokyo apartment interior, early morning grey light through a single window, cluttered desk with open notebook and scattered printouts, muted cold blue palette with faint warmth from desk lamp, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act1_s1.png",
+      "prompt": "small investigation media office, cramped room with two desks and a public data terminal, morning light through a single window mixing with fluorescent ceiling light, neat stacks of documents and reference binders, muted cool palette with warm desk lamp, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act2_s0.png",
+      "prompt": "local council archive reading room, rows of wooden tables with green banker's lamps, shelves of bound documents behind glass doors, quiet institutional atmosphere, cool fluorescent overhead lighting with warm lamp accents, muted beige and grey-green palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act3_s0.png",
+      "prompt": "family restaurant near the council building, bright daytime interior, booth seating by window, simple table with water glass and notebook, warm overhead lighting mixing with afternoon sun through glass, casual muted palette with soft yellows and beiges, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act4_s0.png",
+      "prompt": "small investigation media office, cramped room with two desks and a public data terminal, early afternoon light through a single window, fluorescent ceiling light mixing with warm desk lamp, documents and notebooks spread across desk, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act5_s0.png",
+      "prompt": "local council archive reading room, rows of wooden desks with green-shaded lamps, shelves of bound documents behind glass, afternoon light through high windows, quiet institutional atmosphere, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_14/ch14_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_14/ch14_act6_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen off, desk lamp providing warm focused light on notebook and documents, window showing dark residential street, deeper night palette with lamp glow dominant, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act1_s0.png",
+      "prompt": "small investigation media office, Saturday morning pale light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light mixing with cool grey daylight, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act1_s1.png",
+      "prompt": "Tokyo street near a public disaster prevention learning center, Saturday morning, pale overcast light, wide pedestrian walkway with a few weekend visitors, low institutional building with signage visible in the distance, muted grey-blue and concrete palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act2_s0.png",
+      "prompt": "public disaster prevention learning center archive room, shelves of boxed CD-ROMs and bound binders behind glass doors, paper catalog drawers along one wall, fluorescent ceiling light, school-group murmur audible from the floor below, neutral institutional beige and grey-green palette, reading table with two archival boxes and a notebook, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act3_s0.png",
+      "prompt": "same archive retired-hardware viewing area, display cases of retired emergency communication equipment along one wall, fluorescent ceiling light, reading table with an open manual and an archival box, muted institutional palette with grey-green and beige tones, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act4_s0.png",
+      "prompt": "archive technical-records area, public query terminal with microfilm reader, rows of metal shelves holding retired public-safety equipment manuals and bound procurement records, faded institutional green walls, afternoon light through high windows casting long pale rectangles on linoleum floor, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act5_s0.png",
+      "prompt": "small investigation media office at night, cramped room with two desks, fluorescent ceiling light off, desk lamp casting warm focused circle of light on sketch pages and printed manual photos and open notebook, dark street visible through window, deep evening palette with lamp glow dominant, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_15/ch15_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_15/ch15_act6_s0.png",
+      "prompt": "small investigation media office late at night, same cramped room, desk lamp turned lower casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act1_s0.png",
+      "prompt": "small investigation media office, Sunday morning pale grey light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light off, cool daylight mixing with screen glow, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act1_s1.png",
+      "prompt": "Tokyo street on Sunday morning, pale overcast light, quiet weekend pedestrian walkway, low institutional buildings in the distance, muted grey-blue and concrete palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act2_s0.png",
+      "prompt": "local government council archive reading room, Sunday morning, rows of metal shelving with bound documents, a few reading desks with desk lamps, fluorescent ceiling light, institutional grey walls, large windows with pale overcast light, quiet and nearly empty, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act3_s0.png",
+      "prompt": "decommissioned equipment declassification reading area, same government building different floor, dimmer institutional lighting, rows of archived technical manuals in protective sleeves, reading desk with adjustable lamp, grey walls, small high windows, quiet and cold, muted desaturated palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act3_s1.png",
+      "prompt": "Tokyo street on Sunday afternoon, pale overcast light, quiet weekend pedestrian walkway between two institutional buildings, muted grey-blue and concrete palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act4_s0.png",
+      "prompt": "supervisory committee public reference catalog terminal room, Sunday afternoon, small institutional room with a few query terminals against the wall, pale fluorescent light, grey walls, no windows, quiet and cold, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act4_s1.png",
+      "prompt": "Tokyo street on Sunday late afternoon, low overcast light starting to dim, quiet weekend pedestrian walkway, institutional buildings, muted grey-blue palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act5_s0.png",
+      "prompt": "small investigation media office, Sunday evening, desk lamp casting warm circle of light on open notebook and three printed pages, fluorescent light off, darker than afternoon, quiet evening Tokyo street silence outside window, muted warm and cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act6_s0.png",
+      "prompt": "small investigation media office late at night, same cramped room, desk lamp turned low casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_16/ch16_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_16/ch16_act6_s1.png",
+      "prompt": "Tokyo street late at night, deep darkness, single streetlight casting cold pool of light on empty sidewalk, distant buildings dark, no people, no cars, muted blue-black palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act1_s0.png",
+      "prompt": "small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and bookshelf visible, small hand mirror on desk surface, phone screen glowing in the dark, muted blue-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act1_s1.png",
+      "prompt": "Tokyo residential street early Monday morning, grey predawn light, narrow lanes between old houses, a 24-hour convenience store sign glowing in the distance, few pedestrians, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act2_s0.png",
+      "prompt": "24-hour convenience store interior early Monday morning, fluorescent lighting, glass windows showing grey dawn street, a small table by the window with two plastic chairs, shelves of drinks and onigiri in background, muted cool palette with warm fluorescent patches, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act3_s0.png",
+      "prompt": "unmarked police car interior, early Monday morning, grey dashboard, windshield showing convenience store parking lot and grey dawn sky, two figures in front seats, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act3_s1.png",
+      "prompt": "convenience store parking lot early Monday morning, grey dawn light brightening, a man in dark suit standing beside parked car making a phone call, store sign glowing softly, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act4_s0.png",
+      "prompt": "highway interior of unmarked police sedan, early morning grey light through windshield, Metropolitan Expressway concrete walls streaming past, dashboard clock glowing 07:40, overcast sky, muted cool grey-blue palette, visual-novel background art, medium shot from passenger seat"
+    },
+    {
+      "key": "chapter_17/ch17_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act5_s0.png",
+      "prompt": "public roadside parking area outside Tsukuba research support building, overcast morning light, low grey institutional buildings behind chain-link fence and hedge, public walkway with legal sightline to rear service gate, muted cool grey-green palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_17/ch17_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act6_s0.png",
+      "prompt": "same public roadside parking area outside Tsukuba research support building, overcast morning light, rear service gate now closed after vehicle entered underground ramp, tension in still air, muted cool grey-green palette, visual-novel background art, medium shot from passenger seat"
+    },
+    {
+      "key": "chapter_17/ch17_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act7_s0.png",
+      "prompt": "public parking area on the outskirts of Tsukuba research district, late morning overcast light, grey asphalt, low concrete boundary wall, distant grey-white research buildings behind a perimeter fence, a few parked cars, muted cool grey-blue palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_17/ch17_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_17/ch17_act8_s0.png",
+      "prompt": "same public parking area on the outskirts of Tsukuba research district, late morning turning toward midday, overcast light slightly brighter, grey asphalt, low concrete wall, distant research buildings behind perimeter fence, muted cool grey-blue palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act1_s0.png",
+      "prompt": "Tsukuba central police station, small administrative office room, overcast midday light through frosted windows, desk with stacked binders and a desktop monitor showing building records, fluorescent ceiling light, muted cool grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act2_s0.png",
+      "prompt": "Tsukuba central police station, slightly larger meeting room with long table, overhead fluorescent light, frosted windows facing interior corridor, chairs arranged for formal inquiry, documents and a recording device on table, muted cool grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act3_s0.png",
+      "prompt": "public whistleblower support organization interview room, neutral government building interior, clean white walls, ceiling-mounted security camera visible, two exits marked with green signs, long table with chairs on both sides, soft even fluorescent lighting, muted neutral palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act4_s0.png",
+      "prompt": "public whistleblower support interview room, neutral institutional interior, fluorescent ceiling lighting, plain table and chairs, wall-mounted security camera with red indicator light, two visible exits, muted cool grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act5_s0.png",
+      "prompt": "neutral protection point near the interview room, institutional waiting area with plain walls, fluorescent lighting, multiple exits, security camera, a few chairs and a low table, evening light fading outside windows, muted cool grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act6_s0.png",
+      "prompt": "neutral protection point interior, night, fluorescent lighting, plain waiting area with chairs and low table, window showing dark sky, security camera red light, muted cool grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act7_s0.png",
+      "prompt": "neutral protection site interior, night, plain meeting room with overhead fluorescent light, laptop and documents on table, video call screen glowing, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act8_s0.png",
+      "prompt": "neutral protection site interior, night, plain meeting room with overhead fluorescent light, phone on table set to speakerphone, documents spread out, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_18/ch18_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act8_s1.png",
+      "prompt": "Tsukuba research facility interior, deep underground corridor, cold fluorescent lighting, sealed doors, no windows, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_18/ch18_act8_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act8_s2.png",
+      "prompt": "neutral protection site interior, night, plain meeting room with overhead fluorescent light, phone and documents on table, muted cool palette, visual-novel background art, medium shot"
     }
   ],
   "portraits": [
@@ -874,9 +924,24 @@
       "prompt": "anime visual-novel portrait, 19-year-old woman, jaw clenched, eyes bright with resolve, chin slightly raised, dark jacket, strong directional light cutting across face, upper-body shot"
     },
     {
+      "key": "chida_kosuke/base",
+      "path": "the_seventh_mirror/characters/chida_kosuke/base.png",
+      "prompt": "anime visual-novel portrait, 42-year-old Japanese man, short neat black hair, glasses, tired face with stubble, dark casual jacket over shirt, anxious but focused expression, dim night lighting, muted cool palette, upper-body shot, clean background"
+    },
+    {
       "key": "asakura_mio/shocked",
       "path": "the_seventh_mirror/characters/asakura_mio/shocked.png",
       "prompt": "anime visual-novel portrait, 19-year-old woman, eyes blown wide, mouth slightly parted, face drained of color, dark jacket, stark lighting, upper-body shot"
+    },
+    {
+      "key": "chida_kosuke/determined",
+      "path": "the_seventh_mirror/characters/chida_kosuke/determined.png",
+      "prompt": "anime visual-novel portrait, 42-year-old man, jaw set despite pain, eyes sharp with urgency, handing something forward, dark jacket, stark lighting, upper-body shot"
+    },
+    {
+      "key": "chida_kosuke/scared",
+      "path": "the_seventh_mirror/characters/chida_kosuke/scared.png",
+      "prompt": "anime visual-novel portrait, 42-year-old man, face pale and sweating, hand pressing blood-soaked cloth against ribs, eyes desperate but still focused, glasses askew, dark jacket, cold lighting, upper-body shot"
     },
     {
       "key": "asakura_mio/scared",
@@ -887,6 +952,26 @@
       "key": "asakura_mio/angry",
       "path": "the_seventh_mirror/characters/asakura_mio/angry.png",
       "prompt": "anime visual-novel portrait, 19-year-old woman, jaw set firm, eyes sharp with cold fury, brows lowered, leaning slightly forward, dark jacket, tense shoulders, harsh directional light, upper-body shot"
+    },
+    {
+      "key": "kusakube_satoru/determined",
+      "path": "the_seventh_mirror/characters/kusakube_satoru/determined.png",
+      "prompt": "anime visual-novel portrait, 45-year-old man, jaw set, eyes sharp with grim resolve, leaning forward, dark suit, strong directional light, upper-body shot"
+    },
+    {
+      "key": "shiraishi_kotone/guilty",
+      "path": "the_seventh_mirror/characters/shiraishi_kotone/guilty.png",
+      "prompt": "anime visual-novel portrait, 20-year-old woman, eyes avoiding contact, lips pressed thin, expression flat and hollow, hair falling forward, knit cardigan, cold desaturated lighting, upper-body shot"
+    },
+    {
+      "key": "shiraishi_kotone/sad",
+      "path": "the_seventh_mirror/characters/shiraishi_kotone/sad.png",
+      "prompt": "anime visual-novel portrait, 20-year-old woman, eyes downcast, smile faded to thin line, shoulders dropped, hair falling forward to hide face, knit cardigan, dim warm lighting, upper-body shot"
+    },
+    {
+      "key": "shiraishi_kotone/shocked",
+      "path": "the_seventh_mirror/characters/shiraishi_kotone/shocked.png",
+      "prompt": "anime visual-novel portrait, 20-year-old woman, eyes wide, hand covering mouth, face pale, knit cardigan, stark lighting, upper-body shot"
     },
     {
       "key": "minase_yoshino/guarded",
@@ -944,39 +1029,14 @@
       "prompt": "anime visual-novel portrait, 46-year-old Japanese man, short greying hair receding at temples, stocky build, tired weathered face with deep lines, casual work clothes (dark jacket over polo shirt), sharp watchful eyes despite exhaustion, direct no-nonsense expression, neutral indoor lighting, muted cool-grey palette, upper-body shot, clean background"
     },
     {
-      "key": "chida_kosuke/base",
-      "path": "the_seventh_mirror/characters/chida_kosuke/base.png",
-      "prompt": "anime visual-novel portrait, 42-year-old Japanese man, short neat black hair, glasses, tired face with stubble, dark casual jacket over shirt, anxious but focused expression, dim night lighting, muted cool palette, upper-body shot, clean background"
+      "key": "miura_naoko/base",
+      "path": "the_seventh_mirror/characters/miura_naoko/base.png",
+      "prompt": "anime visual-novel portrait, 40-year-old Japanese woman, neat short black hair, police-issue dark jacket over collared shirt, composed no-nonsense expression, sharp watchful eyes, neutral indoor office lighting, muted cool-grey palette, upper-body shot, clean background"
     },
     {
-      "key": "chida_kosuke/determined",
-      "path": "the_seventh_mirror/characters/chida_kosuke/determined.png",
-      "prompt": "anime visual-novel portrait, 42-year-old man, jaw set despite pain, eyes sharp with urgency, handing something forward, dark jacket, stark lighting, upper-body shot"
-    },
-    {
-      "key": "chida_kosuke/scared",
-      "path": "the_seventh_mirror/characters/chida_kosuke/scared.png",
-      "prompt": "anime visual-novel portrait, 42-year-old man, face pale and sweating, hand pressing blood-soaked cloth against ribs, eyes desperate but still focused, glasses askew, dark jacket, cold lighting, upper-body shot"
-    },
-    {
-      "key": "kusakube_satoru/determined",
-      "path": "the_seventh_mirror/characters/kusakube_satoru/determined.png",
-      "prompt": "anime visual-novel portrait, 45-year-old man, jaw set, eyes sharp with grim resolve, leaning forward, dark suit, strong directional light, upper-body shot"
-    },
-    {
-      "key": "shiraishi_kotone/guilty",
-      "path": "the_seventh_mirror/characters/shiraishi_kotone/guilty.png",
-      "prompt": "anime visual-novel portrait, 20-year-old woman, eyes avoiding contact, lips pressed thin, expression flat and hollow, hair falling forward, knit cardigan, cold desaturated lighting, upper-body shot"
-    },
-    {
-      "key": "shiraishi_kotone/sad",
-      "path": "the_seventh_mirror/characters/shiraishi_kotone/sad.png",
-      "prompt": "anime visual-novel portrait, 20-year-old woman, eyes downcast, smile faded to thin line, shoulders dropped, hair falling forward to hide face, knit cardigan, dim warm lighting, upper-body shot"
-    },
-    {
-      "key": "shiraishi_kotone/shocked",
-      "path": "the_seventh_mirror/characters/shiraishi_kotone/shocked.png",
-      "prompt": "anime visual-novel portrait, 20-year-old woman, eyes wide, hand covering mouth, face pale, knit cardigan, stark lighting, upper-body shot"
+      "key": "nagano_aunt/base",
+      "path": "the_seventh_mirror/characters/nagano_aunt/base.png",
+      "prompt": "anime visual-novel portrait, 48-year-old Japanese woman, shoulder-length greying dark hair tied back, tired kind face with faint lines, casual home clothes (knit sweater over blouse), worried but composed expression, soft warm indoor lighting, muted warm-grey palette, upper-body shot, clean background"
     }
   ]
 }

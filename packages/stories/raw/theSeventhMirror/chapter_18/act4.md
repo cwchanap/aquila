@@ -1,7 +1,7 @@
 # 第四幕：他故意選錯分類
 
 ```bg
-public whistleblower support interview room, neutral institutional interior, fluorescent ceiling lighting, plain table and chairs, wall-mounted security camera with red indicator light, two visible exits, muted cool grey palette, visual-novel background art, medium shot
+public whistleblower support interview room, neutral institutional interior, fluorescent ceiling lighting, plain table and chairs, wall-mounted security camera with green indicator light, two visible exits, muted cool grey palette, visual-novel background art, medium shot
 ```
 
 **旁白**：15:45。同一間面談室。
@@ -34,7 +34,7 @@ public whistleblower support interview room, neutral institutional interior, flu
 
 **朝倉澪**：什麼意思？
 
-**千田浩介**：不是解鎖什麼的鑰匙。不是離線載體的開鎖工具。你弟弟把鏡子留給妳，不是因為它能打開什麼。
+**千田浩介**：不是用來解鎖的鑰匙。不是離線載體的開鎖工具。你弟弟把鏡子留給妳，不是因為它能打開什麼。
 
 **朝倉澪**：（內心）⋯⋯鏡子不是鑰匙。不是物理鑰匙。不是解鎖器。悠真留給我——是因為別的理由。
 
@@ -64,7 +64,7 @@ public whistleblower support interview room, neutral institutional interior, flu
 
 **千田浩介**：他在回報裡附了四樣東西。G07／12。鏡背局部照片。「如果我聯絡不上，找我姐姐」。「訊息可能不是我自己送出去的」。
 
-**旁白**：面談室裡只有空調的聲音。律師在角落做筆記。公益通報支援人員坐在門邊。監視器的紅燈亮著。
+**旁白**：面談室裡只有空調的聲音。律師在角落做筆記。公益通報支援人員坐在門邊。監視器的綠燈亮著。
 
 **朝倉澪**：「訊息可能不是我自己送出去的」——
 
@@ -118,11 +118,11 @@ public whistleblower support interview room, neutral institutional interior, flu
 
 **朝倉澪**：第 5 日？
 
-**千田浩介**：透過倫理／內部安全通報。結果——資料回到同一條受管理系統。同一條線。通報等於告訴他們有人在查。
+**千田浩介**：透過倫理／內部安全通報。結果——資料回到同一個被管控的系統。同一條線。通報等於告訴他們有人在查。
 
 **朝倉澪**：第 6 日？
 
-**千田浩介**：確認星期一晚上有維護窗口。TOKYO-7 的離線歷史版本只在星期一晚間維護時短暫進入可接觸流程。
+**千田浩介**：確認星期一晚上有維護窗口。TOKYO-7 的離線歷史版本只在星期一晚間維護時短暫開放接觸。
 
 **朝倉澪**：第 7 日。
 
@@ -140,11 +140,11 @@ public whistleblower support interview room, neutral institutional interior, flu
 
 **朝倉澪**：離線載體是什麼？
 
-**千田浩介**：TOKYO-7 的離線歷史版本。保存了原始映射、簽署紀錄與回復鏈。不在線上系統裡。不能截圖。不能普通複製。
+**千田浩介**：TOKYO-7 的離線歷史版本。保存了原始映射、簽署紀錄與回復鏈。不在線上系統裡。不能截圖。不能用一般方式複製。
 
 **朝倉澪**：它在哪裡？
 
-**千田浩介**：星期一晚間維護時，退役或異常載體會被送進施工區附近的封緘交接櫃。20:40。載體進入交接流程。
+**千田浩介**：星期一晚間維護時，退役或異常載體會被送進施工區附近的密封交接櫃。20:40。載體進入交接流程。
 
 **朝倉澪**：你原定——？
 
@@ -188,7 +188,7 @@ public whistleblower support interview room, neutral institutional interior, flu
 
 **日下部悟**：為什麼？
 
-**千田浩介**：跨部門系統的資料會回到同一條受管理線。我內部通報試過一次。第 5 日。結果——回到同一條線。
+**千田浩介**：跨部門系統的資料會回到同一條被管控的線。我內部通報試過一次。第 5 日。結果——回到同一條線。
 
 **日下部悟**：具體的交接櫃位置？
 

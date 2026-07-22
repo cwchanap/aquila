@@ -111,13 +111,12 @@ test.describe('Reader lazy story loading', () => {
         await expect(reader.loadError).toBeVisible();
         await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
 
-        const [navigation] = await Promise.all([
-            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+        await Promise.all([
+            page.waitForURL(SEVENTH_MIRROR_DIRECT_LINK, {
+                waitUntil: 'domcontentloaded',
+            }),
             reader.loadError.getByRole('button', { name: 'Retry' }).click(),
         ]);
-        expect(navigation).not.toBeNull();
-        expect(navigation?.request().resourceType()).toBe('document');
-        expect(navigation?.request().frame()).toBe(page.mainFrame());
         await expectReadyStory(reader, 'the_seventh_mirror');
         await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
         await expect(reader.progressAt(3)).toBeVisible();

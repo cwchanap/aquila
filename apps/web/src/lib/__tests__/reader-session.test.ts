@@ -1,26 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type { DialogueEntry, Locale } from '@aquila/stories';
-import type { FlowConfig } from '@aquila/stories';
 import {
-    validateSessionState,
     parseDialogueParam,
     serializeSessionParams,
     migratePersisted,
     clampIndex,
     STORAGE_VERSION,
 } from '../reader-session';
-
-const flow: FlowConfig = {
-    start: 'act1',
-    nodes: [
-        { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
-        { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
-    ],
-};
-const dialogue: Record<string, DialogueEntry[]> = {
-    act1: [{ dialogue: 'a' }, { dialogue: 'b' }, { dialogue: 'c' }],
-    act2: [{ dialogue: 'x' }],
-};
 
 describe('STORAGE_VERSION', () => {
     it('is 2', () => {
@@ -69,63 +54,6 @@ describe('parseDialogueParam', () => {
         expect(parseDialogueParam(' 3')).toBeNull();
         expect(parseDialogueParam('3 ')).toBeNull();
         expect(parseDialogueParam('+2')).toBeNull();
-    });
-});
-
-describe('validateSessionState', () => {
-    const base = {
-        storyId: 'train_adventure',
-        sceneId: 'act1',
-        dialogueIndex: 1,
-        locale: 'en' as Locale,
-    };
-    it('clamps a non-negative index into bounds', () => {
-        expect(
-            validateSessionState(
-                { ...base, dialogueIndex: 99 },
-                flow,
-                dialogue.act1
-            )?.dialogueIndex
-        ).toBe(2);
-    });
-    it('keeps an in-bounds index', () => {
-        expect(
-            validateSessionState(base, flow, dialogue.act1)?.dialogueIndex
-        ).toBe(1);
-    });
-    it('empty dialogue -> index 0 valid', () => {
-        expect(
-            validateSessionState(
-                { ...base, dialogueId: undefined, dialogueIndex: 0 },
-                flow,
-                []
-            )?.dialogueIndex
-        ).toBe(0);
-    });
-    it('returns null for negative or NaN index', () => {
-        expect(
-            validateSessionState(
-                { ...base, dialogueIndex: -1 },
-                flow,
-                dialogue.act1
-            )
-        ).toBeNull();
-        expect(
-            validateSessionState(
-                { ...base, dialogueIndex: NaN },
-                flow,
-                dialogue.act1
-            )
-        ).toBeNull();
-    });
-    it('returns null for unknown scene', () => {
-        expect(
-            validateSessionState({ ...base, sceneId: 'nope' }, flow, [])
-        ).toBeNull();
-    });
-    it('returns null for non-object', () => {
-        expect(validateSessionState(null, flow, [])).toBeNull();
-        expect(validateSessionState('x', flow, [])).toBeNull();
     });
 });
 
@@ -182,7 +110,7 @@ describe('migratePersisted', () => {
         };
         expect(migratePersisted(v2, 'en')).toBeNull();
     });
-    it('preserves a negative dialogueIndex so validateSessionState can reject it', () => {
+    it('preserves a negative dialogueIndex so validateLoadedIntent can reject it', () => {
         // Regression: Math.max(0, ...) previously coerced -1 to 0, bypassing
         // the validator's "negative = invalid" contract and accepting a
         // malformed record that should fall through to the default session.
@@ -196,7 +124,6 @@ describe('migratePersisted', () => {
         const migrated = migratePersisted(corrupted, 'en');
         expect(migrated).not.toBeNull();
         expect(migrated?.dialogueIndex).toBe(-1);
-        expect(validateSessionState(migrated, flow, dialogue.act2)).toBeNull();
     });
     it('rejects a v2-shaped record with a non-number dialogueIndex (null/string/boolean)', () => {
         // Regression guard: a v2-shaped record carrying a non-number

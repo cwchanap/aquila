@@ -309,6 +309,17 @@ than inferred from aggregate suite totals:
 
 The Seventh Mirror is 276,244 bytes gzip, below the 500 kB delivery gate, and
 its exact-method mobile median `ScriptDuration` is 193.433 ms, below the 200 ms
-gate. Neither threshold is exceeded, so no HPA-216 follow-up is proposed.
+gate. Neither threshold is exceeded for The Seventh Mirror, so no
+chapter-level splitting is needed for that story.
 
-Chapter-level splitting is unnecessary under the HPA-232 thresholds.
+Don't Save Me Before Midnight is 406,582 bytes gzip, also below the 500 kB
+delivery gate. No chapter-level splitting is needed for that story either.
+
+Train Adventure is 1,356,791 bytes gzip (1.36 MB), which exceeds the 500 kB
+delivery gate by 2.7x. The HPA-232 chapter-split gate was only evaluated
+against The Seventh Mirror (the smallest story). Train Adventure requires a
+separate HPA-216 follow-up to split its single 495-scene chunk into
+chapter-level dynamic imports before it can be considered compliant with the
+500 kB delivery gate. This follow-up should be tracked and completed before
+Train Adventure is promoted as a default or featured story; until then, the
+current single-chunk delivery remains functional but exceeds the gate.

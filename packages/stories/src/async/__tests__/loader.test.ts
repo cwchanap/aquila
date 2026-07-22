@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { StoryFlowConfig, StoryLoaderResult } from '../../stories';
 import { StoryLoadError } from '../errors';
-import { createStoryContentLoader } from '../loader';
+import {
+    createStoryContentLoader,
+    type StoryPayload,
+} from '../loader';
 import {
     REGISTERED_STORY_IDS,
     isRegisteredStoryId,
@@ -14,6 +17,23 @@ const payload: StoryLoaderResult = {
     choices: {},
 };
 const importer = vi.fn(async () => ({ ...payload, flow }));
+
+type Deferred<T> = {
+    promise: Promise<T>;
+    resolve: (value: T) => void;
+    reject: (reason?: unknown) => void;
+};
+
+function createDeferred<T>(): Deferred<T> {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+
+    return { promise, resolve, reject };
+}
 
 describe('createStoryContentLoader', () => {
     it('re-exports story registry metadata for async consumers', () => {
@@ -110,6 +130,57 @@ describe('createStoryContentLoader', () => {
         });
 
         expect(retrying).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps pre-reset loads from affecting the new cache generation', async () => {
+        const pending: Deferred<StoryPayload>[] = [];
+        const racingImporter = vi.fn(() => {
+            const next = createDeferred<StoryPayload>();
+            pending.push(next);
+            return next.promise;
+        });
+        const loader = createStoryContentLoader({
+            train_adventure: racingImporter,
+        });
+        const stalePayload: StoryPayload = {
+            ...payload,
+            dialogue: { act1: [{ dialogue: 'stale' }] },
+            flow,
+        };
+        const freshPayload: StoryPayload = {
+            ...payload,
+            dialogue: { act1: [{ dialogue: 'fresh' }] },
+            flow,
+        };
+
+        const staleLoad = loader.load('train_adventure', 'en');
+        await vi.waitFor(() => expect(racingImporter).toHaveBeenCalledOnce());
+
+        loader.reset();
+        const freshLoad = loader.load('train_adventure', 'en');
+        await vi.waitFor(() =>
+            expect(racingImporter).toHaveBeenCalledTimes(2)
+        );
+
+        pending[0]!.resolve(stalePayload);
+        await staleLoad;
+
+        const joinedFreshLoad = loader.load('train_adventure', 'en');
+        await Promise.resolve();
+        expect(racingImporter).toHaveBeenCalledTimes(2);
+
+        pending[1]!.resolve(freshPayload);
+        const [freshResult, joinedFreshResult] = await Promise.all([
+            freshLoad,
+            joinedFreshLoad,
+        ]);
+
+        expect(joinedFreshResult).toBe(freshResult);
+        expect(joinedFreshResult.dialogue.act1[0]?.dialogue).toBe('fresh');
+        await expect(loader.load('train_adventure', 'en')).resolves.toBe(
+            freshResult
+        );
+        expect(racingImporter).toHaveBeenCalledTimes(2);
     });
 
     it('rejects unknown stories and unsupported locales explicitly', async () => {

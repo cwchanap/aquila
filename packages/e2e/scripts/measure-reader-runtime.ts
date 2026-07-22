@@ -142,7 +142,7 @@ async function measureRun(
 
     try {
         await cdp.send('Performance.enable');
-        await page.evaluate(bufferSize => {
+        await page.addInitScript(bufferSize => {
             performance.setResourceTimingBufferSize(bufferSize);
         }, RESOURCE_TIMING_BUFFER_SIZE);
         if (useMobileThrottling) {

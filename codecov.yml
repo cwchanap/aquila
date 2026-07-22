@@ -1,0 +1,11 @@
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: false
+
+comment:
+  after_n_builds: 2
+
+ignore:
+  - "apps/web/scripts/assert-story-chunks.ts"
+  - "apps/web/scripts/measure-reader-bundles.ts"

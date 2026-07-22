@@ -30,6 +30,7 @@ export type StoryContentLoader = {
 export function createStoryContentLoader(
     importers: Partial<Record<RegisteredStoryId, StoryPayloadImporter>>
 ): StoryContentLoader {
+    let cacheGeneration = 0;
     const inFlightLoads = new Map<string, Promise<AsyncStoryLoaderResult>>();
     const loadedStories = new Map<string, AsyncStoryLoaderResult>();
 
@@ -63,6 +64,7 @@ export function createStoryContentLoader(
             return inFlightLoad;
         }
 
+        const generation = cacheGeneration;
         const importer = importers[storyId];
         const loadPromise = Promise.resolve()
             .then(async () => {
@@ -80,7 +82,9 @@ export function createStoryContentLoader(
                     locale: normalizedLocale,
                 };
 
-                loadedStories.set(cacheKey, result);
+                if (generation === cacheGeneration) {
+                    loadedStories.set(cacheKey, result);
+                }
                 return result;
             })
             .catch((error: unknown) => {
@@ -91,7 +95,12 @@ export function createStoryContentLoader(
                 );
             })
             .finally(() => {
-                inFlightLoads.delete(cacheKey);
+                if (
+                    generation === cacheGeneration &&
+                    inFlightLoads.get(cacheKey) === loadPromise
+                ) {
+                    inFlightLoads.delete(cacheKey);
+                }
             });
 
         inFlightLoads.set(cacheKey, loadPromise);
@@ -101,6 +110,7 @@ export function createStoryContentLoader(
     return {
         load,
         reset() {
+            cacheGeneration += 1;
             inFlightLoads.clear();
             loadedStories.clear();
         },

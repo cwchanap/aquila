@@ -629,10 +629,10 @@ describe('ReaderManager', () => {
 
             expect(loadStoryContent).toHaveBeenCalledTimes(1);
             expect(loadStoryContent).toHaveBeenCalledWith(
-                'train_adventure',
+                'the_seventh_mirror',
                 'en'
             );
-            expect(readerState.storyId).toBe('train_adventure');
+            expect(readerState.storyId).toBe('the_seventh_mirror');
         });
 
         it('performs one guarded default load when a loaded persisted intent is invalid', async () => {
@@ -658,10 +658,10 @@ describe('ReaderManager', () => {
 
             expect(loadStoryContent.mock.calls).toEqual([
                 ['dont_save_me_before_midnight', 'en'],
-                ['train_adventure', 'en'],
+                ['the_seventh_mirror', 'en'],
             ]);
             expect(readerState).toMatchObject({
-                storyId: 'train_adventure',
+                storyId: 'the_seventh_mirror',
                 currentSceneId: 'act1',
                 hasActivePayload: true,
                 loadStatus: 'ready',
@@ -748,7 +748,7 @@ describe('ReaderManager', () => {
             manager = new ReaderManager('en');
             await manager.initialize();
 
-            expect(readerState.storyId).toBe('train_adventure');
+            expect(readerState.storyId).toBe('the_seventh_mirror');
             expect(readerState.currentSceneId).toBe('act1');
             expect(readerState.locale).toBe('en');
             expect(readerState.dialogueIndex).toBe(0);
@@ -970,7 +970,7 @@ describe('ReaderManager', () => {
             expect(storedCall).toBeDefined();
             const saved = JSON.parse(storedCall![1]);
             expect(saved.version).toBe(2);
-            expect(saved.storyId).toBe('train_adventure');
+            expect(saved.storyId).toBe('the_seventh_mirror');
             expect(saved.sceneId).toBe('act1');
             expect(saved.dialogueIndex).toBe(0);
         });
@@ -1577,7 +1577,7 @@ describe('ReaderManager', () => {
             const stored = JSON.parse(storedCall![1]);
             expect(stored).toHaveLength(1);
             expect(stored[0].bookmarkName).toBe('Local Save');
-            expect(stored[0].storyId).toBe('train_adventure');
+            expect(stored[0].storyId).toBe('the_seventh_mirror');
             expect(stored[0].sceneId).toBe('act1');
         });
 
@@ -2074,7 +2074,7 @@ describe('ReaderManager', () => {
             onIndexChange(1);
             expect(raf.pending()).toBe(true);
             // dispatch popstate with a valid URL (use the helper so href is valid)
-            setLocation('?story=train_adventure&scene=act1&dialogue=1');
+            setLocation('?story=the_seventh_mirror&scene=act1&dialogue=1');
             window.dispatchEvent(new PopStateEvent('popstate'));
             expect(raf.pending()).toBe(false); // cancelled, not flushed
             expect(readerState.dialogueIndex).toBe(0); // restored to line 1 -> index 0
@@ -2136,7 +2136,7 @@ describe('ReaderManager', () => {
             expect(readerState.currentSceneId).toBe('act2');
             const before = readerState.currentSceneId;
             // popstate carries a VALID story but a scene absent from its flow.
-            setLocation('?story=train_adventure&scene=deleted_scene');
+            setLocation('?story=the_seventh_mirror&scene=deleted_scene');
             replaceState.mockClear(); // ignore initialize + goToScene calls
             window.dispatchEvent(new PopStateEvent('popstate'));
             expect(readerState.currentSceneId).toBe(before); // act2, unchanged
@@ -2180,7 +2180,7 @@ describe('ReaderManager', () => {
             const beforeScene = readerState.currentSceneId;
             const beforeIndex = readerState.dialogueIndex;
             // popstate carries a VALID story+scene but a malformed dialogue.
-            setLocation('?story=train_adventure&scene=act2&dialogue=2junk');
+            setLocation('?story=the_seventh_mirror&scene=act2&dialogue=2junk');
             replaceState.mockClear(); // ignore initialize + goToScene + onIndexChange
             window.dispatchEvent(new PopStateEvent('popstate'));
             expect(readerState.currentSceneId).toBe(beforeScene); // act2
@@ -2302,7 +2302,7 @@ describe('ReaderManager', () => {
             expect(readerState.dialogueIndex).toBe(2);
             // popstate with dialogue=0 on the same scene must restore to 0
             // (NOT soft-reject and leave the reader at index 2).
-            setLocation('?story=train_adventure&scene=act2&dialogue=0');
+            setLocation('?story=the_seventh_mirror&scene=act2&dialogue=0');
             window.dispatchEvent(new PopStateEvent('popstate'));
             expect(readerState.currentSceneId).toBe('act2');
             expect(readerState.dialogueIndex).toBe(0); // restored to 0
@@ -2344,7 +2344,7 @@ describe('ReaderManager', () => {
             expect(readerState.dialogueIndex).toBe(2);
             // popstate with dialogue=00 on the same scene must restore to 0,
             // NOT soft-reject and leave the reader at index 2.
-            setLocation('?story=train_adventure&scene=act2&dialogue=00');
+            setLocation('?story=the_seventh_mirror&scene=act2&dialogue=00');
             window.dispatchEvent(new PopStateEvent('popstate'));
             expect(readerState.currentSceneId).toBe('act2');
             expect(readerState.dialogueIndex).toBe(0); // restored to 0

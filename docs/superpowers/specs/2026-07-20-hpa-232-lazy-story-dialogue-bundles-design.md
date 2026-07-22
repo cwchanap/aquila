@@ -327,9 +327,9 @@ When a `popstate` soft-rejection occurs and the reader has no active payload
 (e.g. the initial load itself was soft-rejected, or a prior load failed and
 left no ready session), there is no active session to preserve. In that case
 the manager re-validates the same intent with initial-phase semantics against
-the loaded payload: if the start scene and index 0 produce an applyable state,
+the loaded payload: if the start scene and index 0 produce an applicable state,
 that state is applied, the URL is canonicalized, and the session is persisted;
-if even that fallback cannot produce an applyable state, the manager falls
+if even that fallback cannot produce an applicable state, the manager falls
 back to the default intent so the reader reaches a working surface instead of
 stalling on `loading` with no payload and no URL canonicalization.
 

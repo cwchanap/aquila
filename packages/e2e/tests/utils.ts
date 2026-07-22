@@ -215,7 +215,7 @@ export class MobileReaderPage {
     }
 
     async goto() {
-        await this.page.goto(`/${this.locale}/reader`);
+        await this.page.goto(`/${this.locale}/reader?story=train_adventure`);
     }
 
     async openMenu() {

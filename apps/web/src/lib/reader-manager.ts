@@ -91,7 +91,7 @@ export class ReaderManager {
             loadReaderShell:
                 dependencies.loadReaderShell ??
                 (() => import('@/components/ReaderShell.svelte')),
-            defaultStoryId: defaultStoryId || 'train_adventure',
+            defaultStoryId: defaultStoryId || 'the_seventh_mirror',
         };
 
         readerState.dialogue = [];
@@ -275,7 +275,7 @@ export class ReaderManager {
             // invalid but the reader has nothing to fall back to. Re-validate
             // with initial semantics to canonicalize the stale scene / malformed
             // dialogue into a safe loaded state for the requested story (start
-            // scene, index 0). If even that cannot produce an applyable state,
+            // scene, index 0). If even that cannot produce an applicable state,
             // fall back to the default intent so the reader reaches a working
             // surface instead of stalling on 'loading' with no payload and no
             // URL canonicalization.

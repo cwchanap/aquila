@@ -53,7 +53,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原沒有反對。她看著桌面。手指碰了一下膝蓋。一下。然後收回。和之前一樣。同一個動作。同一個位置。", background: Background.Chapter_20_Ch20_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "妳做了備援嗎。", background: Background.Chapter_20_Ch20_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪問的。不是追問。是確認。她的聲音回到了查核模式。像在讀資料。", background: Background.Chapter_20_Ch20_Act3_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "妳說——只要再多一天就能做出不需要她的版本。那妳做了嗎。替代品。備援。有沒有。", background: Background.Chapter_20_Ch20_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "妳說——只要再多一天就能做出不需要她的版本。那妳做了嗎。有沒有做替代品。有沒有做備援。", background: Background.Chapter_20_Ch20_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "有。", background: Background.Chapter_20_Ch20_Act3_S0, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "成功嗎。", background: Background.Chapter_20_Ch20_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原停了一下。不是猶豫。是在選擇措辭。", background: Background.Chapter_20_Ch20_Act3_S0 },

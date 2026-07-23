@@ -98,7 +98,7 @@ Tsukuba research facility M-zone, temporary command room in emergency observatio
 
 **旁白**：澪問的。不是追問。是確認。她的聲音回到了查核模式。像在讀資料。
 
-**朝倉澪** [determined]：妳說——只要再多一天就能做出不需要她的版本。那妳做了嗎。替代品。備援。有沒有。
+**朝倉澪** [determined]：妳說——只要再多一天就能做出不需要她的版本。那妳做了嗎。有沒有做替代品。有沒有做備援。
 
 **凪原唯**：有。
 

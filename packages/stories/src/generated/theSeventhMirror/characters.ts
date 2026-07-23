@@ -48,6 +48,10 @@ export enum CharacterId {
     SakumaRito = "sakuma_rito",
     ExternalDoctor = "external_doctor",
     FacilityCompliance = "facility_compliance",
+    CabinetLegalAdvisor = "cabinet_legal_advisor",
+    NationalMedicalCoordinator = "national_medical_coordinator",
+    RespiratoryTherapist = "respiratory_therapist",
+    DesignatedExpert = "designated_expert",
 }
 
 export interface CharacterInfo {
@@ -61,7 +65,7 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.AsakuraYuma]: { id: "asakura_yuma", name: "朝倉悠真", aliases: ["悠真", "弟弟"] },
     [CharacterId.ShiraishiKotone]: { id: "shiraishi_kotone", name: "白石琴音", aliases: ["琴音"] },
     [CharacterId.KusakubeSatoru]: { id: "kusakube_satoru", name: "日下部悟", aliases: ["日下部", "刑警"] },
-    [CharacterId.NagiharaYui]: { id: "nagihara_yui", name: "凪原唯", aliases: ["凪原", "研究中心負責人"] },
+    [CharacterId.NagiharaYui]: { id: "nagihara_yui", name: "凪原唯", aliases: ["凪原", "研究中心負責人", "統括調整官", "危機科學負責人"] },
     [CharacterId.AsakuraSae]: { id: "asakura_sae", name: "朝倉紗英", aliases: ["母親", "紗英"] },
     [CharacterId.ChidaKosuke]: { id: "chida_kosuke", name: "千田浩介", aliases: ["千田", "死者"] },
     [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: [] },
@@ -104,6 +108,10 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.SakumaRito]: { id: "sakuma_rito", name: "佐久間理人", aliases: ["佐久間", "佐久間醫師"] },
     [CharacterId.ExternalDoctor]: { id: "external_doctor", name: "外部醫師", aliases: ["外部醫療", "獨立醫師", "外部醫療團隊"] },
     [CharacterId.FacilityCompliance]: { id: "facility_compliance", name: "設施合規主管", aliases: ["設施合規"] },
+    [CharacterId.CabinetLegalAdvisor]: { id: "cabinet_legal_advisor", name: "內閣法律顧問", aliases: ["法律顧問"] },
+    [CharacterId.NationalMedicalCoordinator]: { id: "national_medical_coordinator", name: "國家級醫療協調人", aliases: ["醫療協調人"] },
+    [CharacterId.RespiratoryTherapist]: { id: "respiratory_therapist", name: "呼吸治療師", aliases: ["呼吸治療人員"] },
+    [CharacterId.DesignatedExpert]: { id: "designated_expert", name: "指定專家", aliases: ["技術專家", "獨立專家"] },
 };
 
 const nameToId = new Map<string, string>();

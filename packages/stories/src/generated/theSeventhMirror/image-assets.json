@@ -945,6 +945,51 @@
       "key": "chapter_19/ch19_act10_s1",
       "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act10_s1.png",
       "prompt": "Tsukuba research facility M-zone, emergency observation corridor, evening, dimmed lighting, reinforced glass observation window, medical monitoring equipment visible through glass, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act1_s0.png",
+      "prompt": "Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, evening, cold fluorescent lighting, folding tables with laptops and document boxes, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act2_s0.png",
+      "prompt": "Tsukuba research facility M-zone, medical workstation alcove outside M-00 room, evening, cold fluorescent lighting, monitoring screens showing respiratory and neural waveforms, medical equipment readouts, muted sterile palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_20/ch20_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act3_s0.png",
+      "prompt": "Tsukuba research facility M-zone, temporary command room in emergency observation corridor, late evening, cold fluorescent lighting, folding tables with document boxes and laptops, reinforced glass observation window in background with dim green monitor glow, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act4_s0.png",
+      "prompt": "Tsukuba research facility M-zone, controlled incident archive room, night, cold fluorescent lighting, long table with sealed document boxes and terminal screens, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act5_s0.png",
+      "prompt": "Tsukuba research facility M-zone, controlled incident archive room, night, cold fluorescent lighting, long table with sealed document boxes and terminal screens, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act6_s0.png",
+      "prompt": "Tsukuba research facility M-zone, designated expert data terminal / temporary command room, deep night, cold fluorescent lighting, multiple monitors showing signal analysis data, folding tables with documents, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act7_s0.png",
+      "prompt": "Tsukuba research facility M-zone, temporary command room, deep night, cold fluorescent lighting, monitors and documents spread across folding tables, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act8_s0.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical area corridor, pre-dawn, dimmed lighting, reinforced glass observation window, medical monitoring equipment visible through glass, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_20/ch20_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act8_s1.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical room interior, pre-dawn, dimmed clinical lighting, long-term life-support bed, ventilator, infusion pumps, neural monitoring leads, muted desaturated palette, visual-novel background art, medium shot"
     }
   ],
   "portraits": [
@@ -1127,6 +1172,16 @@
       "key": "external_doctor/base",
       "path": "the_seventh_mirror/characters/external_doctor/base.png",
       "prompt": "anime visual-novel portrait, 40-year-old Japanese doctor, short neat hair, stethoscope around neck, plain dark blue medical jacket over scrubs, calm clinical focused expression, sharp assessing eyes, neutral medical room lighting, muted cool palette, upper-body shot, clean background"
+    },
+    {
+      "key": "nagihara_yui/base",
+      "path": "the_seventh_mirror/characters/nagihara_yui/base.png",
+      "prompt": "anime visual-novel portrait, 38-year-old Japanese woman, sleek bob-cut black hair, silver-framed glasses, white lab coat over dark turtleneck, composed neutral expression with faint analytical coldness, sharp intelligent eyes, clean clinical lighting, cool desaturated palette, upper-body shot, clean background"
+    },
+    {
+      "key": "asakura_sae/base",
+      "path": "the_seventh_mirror/characters/asakura_sae/base.png",
+      "prompt": "anime visual-novel portrait, 46-year-old Japanese woman, long dark brown hair loose and thin, pale delicate features, hospital gown, eyes half-open in semi-conscious state, soft diffused light, muted desaturated palette, upper-body shot, clean clinical background"
     }
   ]
 }

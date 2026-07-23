@@ -990,6 +990,76 @@
       "key": "chapter_20/ch20_act8_s1",
       "path": "the_seventh_mirror/backgrounds/chapter_20/ch20_act8_s1.png",
       "prompt": "Tsukuba research facility M-zone, M-00 medical room interior, pre-dawn, dimmed clinical lighting, long-term life-support bed, ventilator, infusion pumps, neural monitoring leads, muted desaturated palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_21/ch21_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act1_s0.png",
+      "prompt": "Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, morning, cold fluorescent lighting, folding tables with sealed document envelopes and evidence bags, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act2_s0.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical room interior, morning, dimmed clinical lighting, long-term life-support bed, ventilator, infusion pumps, neural monitoring leads, eye-tracking device mounted at bedside, letter board on adjustable arm, muted desaturated palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_21/ch21_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act2_s1.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical area corridor outside observation window, morning, cold fluorescent lighting, folding table with laptops and monitoring screens, muted sterile palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_21/ch21_act2_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act2_s2.png",
+      "prompt": "Tsukuba research facility M-zone, emergency observation corridor, late morning, cold fluorescent lighting, folding tables with laptops and document boxes, sealed evidence bags, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act3_s0.png",
+      "prompt": "Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, late morning, cold fluorescent lighting, folding tables with document boxes and sealed evidence files, laptops displaying case management systems, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act4_s0.png",
+      "prompt": "Tsukuba research facility, child-friendly interview room, afternoon, soft natural light through frosted windows, low table with drawing paper and colored pencils, muted warm palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act5_s0.png",
+      "prompt": "Tsukuba research facility M-zone, temporary command room, afternoon, cold fluorescent lighting, multiple monitors showing configuration data, documents and laptops spread across folding tables, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act6_s0.png",
+      "prompt": "Tsukuba research facility M-zone, temporary command room, early evening, cold fluorescent lighting, whiteboard covered with configuration data and version lineage notes, documents spread across tables, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act6_s1.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical area corridor, evening, dimmed lighting, reinforced glass observation window, medical monitoring equipment visible through glass, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_21/ch21_act6_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act6_s2.png",
+      "prompt": "Tsukuba research facility M-zone, temporary command room, early evening, cold fluorescent lighting, whiteboard covered with version lineage notes and two parallel lines, documents spread across tables, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act7_s0.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical area, night, dimmed clinical lighting, ventilator and infusion pumps humming, eye-tracking letter board mounted on adjustable arm beside bed, muted desaturated palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_21/ch21_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act8_s0.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical area corridor outside observation window, late night, dimmed fluorescent lighting, monitors reflecting off reinforced glass, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_21/ch21_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act8_s1.png",
+      "prompt": "mirror island floor plan, blueprint overlay on dark surface, KAGAMI-01 label in corner, document with R4 notation in margin, Yuma's name circled in red ink as first priority, cold blue-white lighting, visual-novel background art, close shot"
+    },
+    {
+      "key": "chapter_21/ch21_act8_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act8_s2.png",
+      "prompt": "Tsukuba research facility M-zone, M-00 medical area corridor outside observation window, late night, dimmed fluorescent lighting, monitors reflecting off reinforced glass, muted cool palette, visual-novel background art, wide shot"
     }
   ],
   "portraits": [

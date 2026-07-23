@@ -117,6 +117,15 @@ const config: StoryCompilerConfig = {
                 /^(\u8A2D\u65BD\u5408\u898F\u4E3B\u7BA1|\u8A2D\u65BD\u5408\u898F)$/,
             id: 'facility_compliance',
         },
+        {
+            pattern:
+                /^(獨立神經心理專業人員|神經心理人員|神經心理專業人員|神經心理學家|測試主持人)$/,
+            id: 'neuropsych_professional',
+        },
+        {
+            pattern: /^(兒童相談所人員|兒少人員|兒少專業|兒少專業人員)$/,
+            id: 'child_welfare_officer',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

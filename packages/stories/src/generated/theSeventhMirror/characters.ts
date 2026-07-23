@@ -52,6 +52,8 @@ export enum CharacterId {
     NationalMedicalCoordinator = "national_medical_coordinator",
     RespiratoryTherapist = "respiratory_therapist",
     DesignatedExpert = "designated_expert",
+    NeuropsychProfessional = "neuropsych_professional",
+    ChildWelfareOfficer = "child_welfare_officer",
 }
 
 export interface CharacterInfo {
@@ -112,6 +114,8 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.NationalMedicalCoordinator]: { id: "national_medical_coordinator", name: "國家級醫療協調人", aliases: ["醫療協調人"] },
     [CharacterId.RespiratoryTherapist]: { id: "respiratory_therapist", name: "呼吸治療師", aliases: ["呼吸治療人員"] },
     [CharacterId.DesignatedExpert]: { id: "designated_expert", name: "指定專家", aliases: ["技術專家", "獨立專家"] },
+    [CharacterId.NeuropsychProfessional]: { id: "neuropsych_professional", name: "獨立神經心理專業人員", aliases: ["神經心理人員", "神經心理專業人員", "神經心理學家", "測試主持人"] },
+    [CharacterId.ChildWelfareOfficer]: { id: "child_welfare_officer", name: "兒少專業人員", aliases: ["兒童相談所人員", "兒少人員", "兒少專業"] },
 };
 
 const nameToId = new Map<string, string>();

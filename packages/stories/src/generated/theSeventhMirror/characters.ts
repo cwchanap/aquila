@@ -43,6 +43,11 @@ export enum CharacterId {
     FacilityNightStaff = "facility_night_staff",
     Lawyer = "lawyer",
     WhistleblowerSupport = "whistleblower_support",
+    AharaMaho = "ahara_maho",
+    TakagiShuichi = "takagi_shuichi",
+    SakumaRito = "sakuma_rito",
+    ExternalDoctor = "external_doctor",
+    FacilityCompliance = "facility_compliance",
 }
 
 export interface CharacterInfo {
@@ -94,6 +99,11 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.FacilityNightStaff]: { id: "facility_night_staff", name: "設施夜間責任人", aliases: ["夜間責任人", "關聯法人", "夜間負責人"] },
     [CharacterId.Lawyer]: { id: "lawyer", name: "律師", aliases: ["千田律師", "公益通報律師", "支援律師"] },
     [CharacterId.WhistleblowerSupport]: { id: "whistleblower_support", name: "公益通報支援人員", aliases: ["支援人員", "通報支援"] },
+    [CharacterId.AharaMaho]: { id: "ahara_maho", name: "相原真帆", aliases: ["相原", "兒童相談所", "安否確認職員", "兒少安否"] },
+    [CharacterId.TakagiShuichi]: { id: "takagi_shuichi", name: "高城修一", aliases: ["高城", "倫理主管", "運用管理責任人", "研究倫理"] },
+    [CharacterId.SakumaRito]: { id: "sakuma_rito", name: "佐久間理人", aliases: ["佐久間", "佐久間醫師"] },
+    [CharacterId.ExternalDoctor]: { id: "external_doctor", name: "外部醫師", aliases: ["外部醫療", "獨立醫師", "外部醫療團隊"] },
+    [CharacterId.FacilityCompliance]: { id: "facility_compliance", name: "設施合規主管", aliases: ["設施合規"] },
 };
 
 const nameToId = new Map<string, string>();

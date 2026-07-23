@@ -885,6 +885,66 @@
       "key": "chapter_18/ch18_act8_s2",
       "path": "the_seventh_mirror/backgrounds/chapter_18/ch18_act8_s2.png",
       "prompt": "neutral protection site interior, night, plain meeting room with overhead fluorescent light, phone and documents on table, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act1_s0.png",
+      "prompt": "Tsukuba central police station, early morning, plain office room with overhead fluorescent light, monitors showing perimeter camera feeds, documents and thermos on desk, cold blue-grey dawn light through window blinds, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act2_s0.png",
+      "prompt": "Tsukuba central police station video room, morning, plain room with large wall-mounted monitor showing video call interface, table with laptop and documents, overhead fluorescent light, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act3_s0.png",
+      "prompt": "Tsukuba public research building conference room, morning, institutional meeting room with long table, overhead projector showing document pages, plain white walls, fluorescent lighting, muted cool-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_19/ch19_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act4_s0.png",
+      "prompt": "Tsukuba research facility underground floor B2, common research support area, cleaned workstations, plain medical-grade walls, fluorescent lighting, wheelchair-accessible corridor, no windows, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_19/ch19_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act5_s0.png",
+      "prompt": "Tsukuba central police station, plain office room, laptop and documents on table, phone set to speakerphone, fluorescent lighting, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act6_s0.png",
+      "prompt": "Tsukuba research facility B2 underground floor, controlled waiting area, plain bench, fluorescent lighting, security door with access indicator lights, radio on table, muted sterile palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act7_s0.png",
+      "prompt": "M zone research room interior, late afternoon, white soundproofed walls, single research bed with thin mattress, IV stand, sensor cables to monitoring equipment, soft ambient light shielding on windows, sterile clinical palette, no restraints, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act8_s0.png",
+      "prompt": "M zone research room interior, late afternoon shifting to early evening, medical staff around bed, monitoring equipment, IV stand, police officer at doorway, child guidance worker with tablet, sterile clinical palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act8_s1.png",
+      "prompt": "M zone white soundproofed corridor exterior, early evening, empty hallway, closed medical-grade door, dim sterile lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_19/ch19_act9_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act9_s0.png",
+      "prompt": "Tsukuba research facility M-zone, workstation alcove outside a sealed medical room, evening, cold fluorescent lighting, monitor glow on white walls, muted sterile palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act10_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act10_s0.png",
+      "prompt": "Tsukuba research facility M-zone, workstation alcove outside a sealed medical room, evening, cold fluorescent lighting, monitor glow on white walls, muted sterile palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_19/ch19_act10_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_19/ch19_act10_s1.png",
+      "prompt": "Tsukuba research facility M-zone, emergency observation corridor, evening, dimmed lighting, reinforced glass observation window, medical monitoring equipment visible through glass, muted cool palette, visual-novel background art, wide shot"
     }
   ],
   "portraits": [
@@ -1037,6 +1097,36 @@
       "key": "nagano_aunt/base",
       "path": "the_seventh_mirror/characters/nagano_aunt/base.png",
       "prompt": "anime visual-novel portrait, 48-year-old Japanese woman, shoulder-length greying dark hair tied back, tired kind face with faint lines, casual home clothes (knit sweater over blouse), worried but composed expression, soft warm indoor lighting, muted warm-grey palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ahara_maho/base",
+      "path": "the_seventh_mirror/characters/ahara_maho/base.png",
+      "prompt": "anime visual-novel portrait, 35-year-old Japanese woman, neat chin-length black hair, plain dark blazer over white blouse, calm steady gaze, composed unshakable expression, neutral indoor office lighting, muted warm-neutral palette, upper-body shot, clean background"
+    },
+    {
+      "key": "nagano_aunt/determined",
+      "path": "the_seventh_mirror/characters/nagano_aunt/determined.png",
+      "prompt": "anime visual-novel portrait, 48-year-old woman, jaw set with quiet protective anger, eyes bright with fragile resolve, leaning forward, sweater, soft directional light, upper-body shot"
+    },
+    {
+      "key": "takagi_shuichi/base",
+      "path": "the_seventh_mirror/characters/takagi_shuichi/base.png",
+      "prompt": "anime visual-novel portrait, 52-year-old Japanese man, thinning greying hair combed neatly, wire-rimmed glasses, dark grey suit with pressed shirt, composed bureaucratic expression, calm but guarded eyes, neutral office lighting, muted cool-grey palette, upper-body shot, clean background"
+    },
+    {
+      "key": "takagi_shuichi/guarded",
+      "path": "the_seventh_mirror/characters/takagi_shuichi/guarded.png",
+      "prompt": "anime visual-novel portrait, 52-year-old man, eyes watchful behind glasses, slight frown, chin lifted, suit, cool directional light, upper-body shot"
+    },
+    {
+      "key": "ahara_maho/determined",
+      "path": "the_seventh_mirror/characters/ahara_maho/determined.png",
+      "prompt": "anime visual-novel portrait, 35-year-old woman, jaw set with quiet authority, eyes direct and unwavering, leaning forward slightly, blazer, strong directional light, upper-body shot"
+    },
+    {
+      "key": "external_doctor/base",
+      "path": "the_seventh_mirror/characters/external_doctor/base.png",
+      "prompt": "anime visual-novel portrait, 40-year-old Japanese doctor, short neat hair, stethoscope around neck, plain dark blue medical jacket over scrubs, calm clinical focused expression, sharp assessing eyes, neutral medical room lighting, muted cool palette, upper-body shot, clean background"
     }
   ]
 }

@@ -107,6 +107,16 @@ const config: StoryCompilerConfig = {
                 /^(\u516C\u76CA\u901A\u5831\u652F\u63F4\u4EBA\u54E1|\u652F\u63F4\u4EBA\u54E1|\u901A\u5831\u652F\u63F4)$/,
             id: 'whistleblower_support',
         },
+        {
+            pattern:
+                /^(\u5916\u90E8\u91AB\u5E2B|\u5916\u90E8\u91AB\u7642|\u7368\u7ACB\u91AB\u5E2B|\u5916\u90E8\u91AB\u7642\u5718\u968A)$/,
+            id: 'external_doctor',
+        },
+        {
+            pattern:
+                /^(\u8A2D\u65BD\u5408\u898F\u4E3B\u7BA1|\u8A2D\u65BD\u5408\u898F)$/,
+            id: 'facility_compliance',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

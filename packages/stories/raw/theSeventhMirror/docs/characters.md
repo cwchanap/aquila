@@ -987,3 +987,159 @@
 ### 說明
 
 泛指公益通報者支援機構的在場支援人員。無人格，純功能性角色，負責維持面談程序中立性、確認場地監視器與多出口條件、不參與實質證詞內容。極少開口，開口時只說明場地與程序規則。
+
+---
+
+## 43. 相原真帆（Ahara Maho）
+
+- **ID**: `ahara_maho`
+- **Aliases**: 相原, 兒童相談所, 安否確認職員, 兒少安否
+
+### 基本資料
+
+- **身份**：茨城兒童相談所，兒少安否確認職員
+- **年齡**：約 35 歲
+
+### 背景與處境
+
+相原真帆是茨城兒童相談所指派的安否確認職員，Chapter 19 首次正式登場。她的權限不是搜索或扣押，而是要求直接確認未成年人本人安否、記錄監護人撤回同意、評估是否需要一時保護。她不參與科幻或技術解釋，只以最樸素的程序要求突破制度語言——「我不是來確認狀態燈。我是來見孩子。」
+
+她不是澪的盟友或敵人，而是一個獨立的外部程序角色。她的存在讓研究單位失去單獨決定悠真去留的權力。
+
+### 性格
+
+- **以本人安否為唯一軸心**：不被代碼、狀態欄或法人名稱帶走
+- **程序精確但不冷**：每一句話都有法律依據，但目的永遠是見到孩子
+- **不替警方發言也不替設施辯護**：清楚自己的權限邊界
+- **面對制度語言時回到最簡單的要求**：把所有技術詞彙翻譯成「那孩子在哪裡」
+
+### 說話風格
+
+- **短句、平靜、不可動搖**：不提高音量，但每一句都像在釘釘子
+- **重複核心要求**：「請讓我見本人」「我不是來看狀態頁」
+- **把制度語言翻譯回人話**：「這不是你們格式裡的撤回書。但這是孩子在說，他不想留在這裡。」
+- **不推測、不定罪**：只陳述事實與要求，把判斷留給程序
+
+### 代表性台詞
+
+- `我不是來確認狀態燈。我是來見孩子。`
+- `這不是你們格式裡的撤回書。但這是孩子在說，他不想留在這裡。`
+- `警察負責找人和資料。我負責確認這個孩子是否安全。`
+- `請讓我見本人。`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 35-year-old Japanese woman, neat chin-length black hair, plain dark blazer over white blouse, calm steady gaze, composed unshakable expression, neutral indoor office lighting, muted warm-neutral palette, upper-body shot, clean background
+- **determined**: anime visual-novel portrait, 35-year-old woman, jaw set with quiet authority, eyes direct and unwavering, leaning forward slightly, blazer, strong directional light, upper-body shot
+- **sad**: anime visual-novel portrait, 35-year-old woman, eyes downcast with controlled empathy, lips pressed thin, blazer, soft dim lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 35-year-old woman, eyes watchful and measuring, slight frown, blazer, cool directional light, upper-body shot
+
+---
+
+## 44. 高城修一（Takagi Shuichi）
+
+- **ID**: `takagi_shuichi`
+- **Aliases**: 高城, 倫理主管, 運用管理責任人, 研究倫理
+
+### 基本資料
+
+- **身份**：筑波公開研究棟，研究倫理／運用管理責任人
+- **年齡**：約 52 歲
+
+### 背景與處境
+
+高城修一是筑波公開研究棟的研究倫理與運用管理責任人。他不是最終反派，而是真心相信（或被告知）程序已合法的中層管理者。他能看見同意狀態、醫療安全命令、生命狀態與法人管理欄，但看不到 M-00 完整真相、神鏡核心或外星來源。
+
+他之所以同意開放已清空的 B2，是因為他相信封緘受個資保護、即使開啟也只會證明某名協力者曾停留、人目前已由另一法人管理。他的恐怖不在於邪惡，而在於他永遠有文件證明「上一個單位已確認」。
+
+### 性格
+
+- **真心相信程序合法**：不是在掩蓋，而是被同一套制度語言說服
+- **文件導向**：每一個質疑都能用一張表回應
+- **不邪惡但危險**：他的配合是表面的，他的制度語言是真正的障礙
+- **在監護人否認與本人求助後開始動搖**：但動搖不等於背叛體制
+
+### 說話風格
+
+- **制式而禮貌**：像在讀內部規程，不帶個人情緒
+- **以文件回應一切**：「這一欄顯示同意確認済」「依搬送規程⋯⋯」
+- **被追問時回到法人邊界**：「本人現不由本法人管理」
+- **動搖時沉默比語言多**：不辯護，但也不主動交出更多
+
+### 代表性台詞
+
+- `本人現在不由本法人管理。`
+- `這一欄顯示——同意確認済。`
+- `封緘屬個人資料保護範圍。警方不能隨意開啟。`
+- `⋯⋯我需要確認。`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 52-year-old Japanese man, thinning greying hair combed neatly, wire-rimmed glasses, dark grey suit with pressed shirt, composed bureaucratic expression, calm but guarded eyes, neutral office lighting, muted cool-grey palette, upper-body shot, clean background
+- **guarded**: anime visual-novel portrait, 52-year-old man, eyes watchful behind glasses, slight frown, chin lifted, suit, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 52-year-old man, eyes wide behind glasses, face pale, mouth slightly open, suit, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 52-year-old man, jaw set, eyes sharp with institutional resolve, glasses catching light, suit, strong directional light, upper-body shot
+
+---
+
+## 45. 佐久間理人（Sakuma Rito）
+
+- **ID**: `sakuma_rito`
+- **Aliases**: 佐久間, 佐久間醫師
+
+### 基本資料
+
+- **身份**：關聯神經／睡眠醫師
+- **年齡**：約 43 歲
+
+### 背景與處境
+
+佐久間理人是下達悠真初始醫療安全指示的具名醫師。悠真失蹤當晚，他以初次視訊評估與監測資料為基礎，下達了為期六小時的短期醫療安全命令，理由是急性神經反應、長時間難以喚醒與抽搐風險。初始處置可能具有醫療合理性，但問題在於：後續命令由值班醫師依數據反覆續期，佐久間本人再未親自見過悠真，家屬未被具體告知地下轉送與延長鎮靜。
+
+本章中佐久間本人不一定到場，但他的名字與命令出現在研究方提出的文件鏈中，是相原與日下部追問的核心：「佐久間醫師最後一次親眼看見悠真，是什麼時候？」
+
+### 性格
+
+- **技術自信**：相信自己的初始判斷有醫學依據
+- **距離型醫師**：後續只看數據，不再親自評估
+- **不認為自己有錯**：續期是依數據，不是他的決定
+- **被追問時回到初始合理性**：迴避後續延長的責任
+
+### 說話風格
+
+- **醫學術語精確**：但被追問「最後一次親眼見本人」時開始迴避
+- **以數據替代觀察**：「監測數據顯示⋯⋯」
+- **沉默多於辯護**：被相原追問時不直接回答
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 43-year-old Japanese man, short neat black hair, thin metal-frame glasses, white coat over collared shirt, calm clinical expression, detached analytical gaze, neutral hospital lighting, muted cool-white palette, upper-body shot, clean background
+- **guarded**: anime visual-novel portrait, 43-year-old man, eyes avoiding direct contact, slight jaw clench, glasses, white coat, cool directional light, upper-body shot
+
+---
+
+## 46. 外部醫師（External Doctor）
+
+- **ID**: `external_doctor`
+- **Aliases**: 外部醫療, 獨立醫師, 外部醫療團隊
+
+### 說明
+
+泛指不隸屬研究設施的獨立兒科／急重症或神經相關醫師，由警方與兒童相談所安排到場。負責悠真的身分與生命安否確認、鎮靜與停藥風險評估、停止研究性刺激、判斷可否安全轉院，以及確認 M-00 參照源性質是否直接關係悠真安全。有明確的醫療判斷權與安全優先意識，不替設施辯護，也不替警方發言。說話風格簡潔、臨床、以安全為唯一軸心。
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-year-old Japanese doctor, short neat hair, stethoscope around neck, plain dark blue medical jacket over scrubs, calm clinical focused expression, sharp assessing eyes, neutral medical room lighting, muted cool palette, upper-body shot, clean background
+- **determined**: anime visual-novel portrait, 40-year-old doctor, jaw set with urgent focus, eyes sharp, leaning forward, stethoscope, medical jacket, strong directional light, upper-body shot
+- **guarded**: anime visual-novel portrait, 40-year-old doctor, eyes narrowed in careful assessment, slight frown, stethoscope, medical jacket, cool directional light, upper-body shot
+
+---
+
+## 47. 設施合規主管（Facility Compliance）
+
+- **ID**: `facility_compliance`
+- **Aliases**: 設施合規
+
+### 說明
+
+泛指筑波公開研究棟的設施合規主管。無人格，純功能性角色，負責在搬送規程與個資保護之間判斷是否同意開啟緊急身分封緘。在未成年後見人在場、兒童相談所進行直接安否確認、警方處理失蹤未成年人等條件下，依規程同意開封。回覆語言制式、不帶情緒。

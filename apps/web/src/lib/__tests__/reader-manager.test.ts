@@ -114,6 +114,13 @@ function storyPayload(
             act2: [{ dialogue: 'three' }],
         },
         choices: {},
+        presentation: {
+            portrait: {
+                activeLimit: 1,
+                defaultSlot: 'center',
+                slotsByCharacterId: {},
+            },
+        },
         locale: 'en',
         ...overrides,
     };

@@ -230,6 +230,44 @@ describe('runtime asset wire contracts', () => {
         expect(empty.assets).toEqual([]);
     });
 
+    it('rejects a release-plan omitted entry that carries a source path', () => {
+        // Spec: an omitted entry "has no source path". A publisher that supplies
+        // one must be told, not silently stripped — release plans are publisher
+        // input, so the entry schemas are strict.
+        const omittedWithSourcePath = structuredClone(planFixture);
+        (
+            omittedWithSourcePath.entries[2] as Record<string, unknown>
+        ).sourcePath = 'fixture_story/backgrounds/chapter_1/mirror_room.png';
+        expectCode(
+            () => parseStoryAssetReleasePlan(omittedWithSourcePath),
+            'validation'
+        );
+    });
+
+    it('rejects unknown keys on release-plan entries', () => {
+        const includedWithReason = structuredClone(planFixture);
+        (includedWithReason.entries[0] as Record<string, unknown>).reason =
+            'should not appear on an included entry';
+        expectCode(
+            () => parseStoryAssetReleasePlan(includedWithReason),
+            'validation'
+        );
+    });
+
+    it('requires byteLength on every asset variant', () => {
+        // byteLength is part of canonical release content; making it required
+        // keeps the releaseId deterministic across manifests for identical
+        // content.
+        const missingByteLength = structuredClone(manifestFixture);
+        delete (
+            missingByteLength.assets[0].variants.webp as Record<string, unknown>
+        ).byteLength;
+        expectCode(
+            () => parseRuntimeAssetManifest(missingByteLength),
+            'validation'
+        );
+    });
+
     it('validates pointer path and pointer-manifest integrity', () => {
         const pointer = parseActiveReleasePointer(currentFixture);
         const manifest = parseRuntimeAssetManifest(manifestFixture);
@@ -382,7 +420,10 @@ describe('runtime asset wire contracts', () => {
         function compileTimeOnly() {
             // @ts-expect-error - ManifestByteSha256 is not a ReleaseContentSha256
             assertReleaseIdMatchesContentSha256(manifest, manifestBytesDigest);
-            // @ts-expect-error - ReleaseContentSha256 is not a ManifestByteSha256
+            // @ts-expect-error - ReleaseContentSha256 is not a ManifestByteSha256.
+            // Kept on one line so the directive covers the erroring argument
+            // (a multi-line call reports the type error on the argument line,
+            // which the directive on the call-start line does not cover).
             validatePointerManifestPair(
                 pointer,
                 manifest,

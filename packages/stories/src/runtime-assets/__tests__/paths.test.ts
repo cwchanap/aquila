@@ -137,6 +137,9 @@ describe('runtime asset paths', () => {
     it('rejects control characters, non-NFC forms, and out-of-bounds logical keys', () => {
         expect(isSafeLogicalKey('chapter\nsecret')).toBe(false);
         expect(isSafeLogicalKey('chapter\x7fsecret')).toBe(false);
+        // C1 control range (U+0080-009F) is rejected alongside C0/DEL.
+        expect(isSafeLogicalKey('chapter\u0080secret')).toBe(false);
+        expect(isSafeLogicalKey('chapter\u009Fsecret')).toBe(false);
         // 'A' + combining ring above (U+030A) is a valid decomposed (NFD)
         // form that is not equal to its NFC composition (U+00C5), so it must
         // be rejected; otherwise one visible key could yield two qualified

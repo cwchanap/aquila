@@ -27,7 +27,14 @@ function hasUnsafeSegments(value: string): boolean {
 function hasControlCharacters(value: string): boolean {
     return [...value].some(character => {
         const codePoint = character.codePointAt(0) ?? 0;
-        return codePoint <= 0x1f || codePoint === 0x7f;
+        // Reject C0 controls (U+0000-001F), DEL (U+007F), and the C1 control
+        // range (U+0080-009F). C1 characters are rarely rendered but are still
+        // control codes and have no place in a human-authored logical key.
+        return (
+            codePoint <= 0x1f ||
+            codePoint === 0x7f ||
+            (codePoint >= 0x80 && codePoint <= 0x9f)
+        );
     });
 }
 

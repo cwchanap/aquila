@@ -10,6 +10,7 @@ import {
     type LogicalAssetIdentity,
     type PublicationTarget,
     type RuntimeAssetManifestV1,
+    type Sha256,
     type StoryAssetReleasePlanV1,
 } from './schemas';
 
@@ -24,21 +25,36 @@ const FORBIDDEN_RUNTIME_KEY_PARTS = [
     'apikey',
 ] as const;
 
+// Recognize numbers and numeric strings so a stringified version like "2" is
+// reported as an unsupported version rather than a generic schema error.
+function toVersionNumber(version: unknown): number | undefined {
+    if (typeof version === 'number') return version;
+    if (typeof version === 'string' && /^\d+$/.test(version)) {
+        return Number(version);
+    }
+    return undefined;
+}
+
 function assertKnownVersion(
     input: unknown,
     expectedVersion: number,
     contractName: string
 ): void {
     if (
-        typeof input === 'object' &&
-        input !== null &&
-        'schemaVersion' in input &&
-        typeof input.schemaVersion === 'number' &&
-        input.schemaVersion !== expectedVersion
+        typeof input !== 'object' ||
+        input === null ||
+        !('schemaVersion' in input)
     ) {
+        // An absent version is a malformed document; leave it to the schema's
+        // `z.literal` to reject as a plain validation error.
+        return;
+    }
+    const version = (input as { schemaVersion: unknown }).schemaVersion;
+    const numericVersion = toVersionNumber(version);
+    if (numericVersion !== undefined && numericVersion !== expectedVersion) {
         throw new AssetResolverError(
             'unknown-schema-version',
-            `Unsupported ${contractName} schema version: ${input.schemaVersion}`
+            `Unsupported ${contractName} schema version: ${String(version)}`
         );
     }
 }
@@ -181,7 +197,7 @@ export function parseStoryAssetReleasePlan(
 export function validatePointerManifestPair(
     pointer: ActiveReleasePointerV1,
     manifest: RuntimeAssetManifestV1,
-    actualManifestSha256: string
+    actualManifestSha256: Sha256
 ): void {
     if (pointer.storyId !== manifest.storyId) {
         throw new AssetResolverError(
@@ -215,25 +231,42 @@ export type AuthoringAssetCatalog = {
 };
 
 export type CoverageCounts = {
+    readonly total: number;
+    readonly included: number;
+    readonly omitted: number;
+    readonly unclassified: number;
+};
+
+export type StoryAssetCoverageReport = {
+    readonly storyId: string;
+    readonly byType: Readonly<Record<AssetType, CoverageCounts>>;
+    readonly bySection: Readonly<Record<string, CoverageCounts>>;
+    readonly totals: CoverageCounts;
+};
+
+// The report is assembled with mutable counters and handed back as the readonly
+// public shape, so the `total === included + omitted + unclassified` invariant
+// maintained by `increment` cannot be broken by a caller after construction.
+type MutableCoverageCounts = {
     total: number;
     included: number;
     omitted: number;
     unclassified: number;
 };
 
-export type StoryAssetCoverageReport = {
+type MutableCoverageReport = {
     storyId: string;
-    byType: Record<AssetType, CoverageCounts>;
-    bySection: Record<string, CoverageCounts>;
-    totals: CoverageCounts;
+    byType: Record<AssetType, MutableCoverageCounts>;
+    bySection: Record<string, MutableCoverageCounts>;
+    totals: MutableCoverageCounts;
 };
 
-function emptyCounts(): CoverageCounts {
+function emptyCounts(): MutableCoverageCounts {
     return { total: 0, included: 0, omitted: 0, unclassified: 0 };
 }
 
 function increment(
-    counts: CoverageCounts,
+    counts: MutableCoverageCounts,
     disposition: 'included' | 'omitted' | 'unclassified'
 ): void {
     counts.total += 1;
@@ -279,7 +312,7 @@ export function validateReleaseCoverage(
         );
     }
 
-    const report: StoryAssetCoverageReport = {
+    const report: MutableCoverageReport = {
         storyId: plan.storyId,
         byType: {
             background: emptyCounts(),

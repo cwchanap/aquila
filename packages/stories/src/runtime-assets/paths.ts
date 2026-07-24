@@ -3,6 +3,7 @@ import type {
     AssetFormat,
     LogicalAssetIdentity,
     PublicationTarget,
+    Sha256,
 } from './schemas';
 
 const STORY_ID_RE = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
@@ -91,6 +92,16 @@ export function encodeLogicalAssetIdentity(
         .map(segment => encodeURIComponent(segment))
         .join('/');
     return `${identity.type}/${encodedKey}`;
+}
+
+export function assertSha256(value: string): Sha256 {
+    if (!isSha256(value)) {
+        throw new AssetResolverError(
+            'integrity',
+            `Expected a lowercase SHA-256 digest: ${value}`
+        );
+    }
+    return value as Sha256;
 }
 
 export function getObjectPath(sha256: string, format: AssetFormat): string {

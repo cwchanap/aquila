@@ -5,6 +5,7 @@ import planFixture from '../__fixtures__/release-plan.v1.json';
 import {
     AssetResolverError,
     assertReleaseIdMatchesContentSha256,
+    assertSha256,
     canonicalReleaseContent,
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
@@ -73,6 +74,17 @@ describe('runtime asset wire contracts', () => {
                 parseStoryAssetReleasePlan({
                     ...planFixture,
                     schemaVersion: 2,
+                }),
+            'unknown-schema-version'
+        );
+    });
+
+    it('reports a stringified unknown version as a version error, not validation', () => {
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    schemaVersion: '2',
                 }),
             'unknown-schema-version'
         );
@@ -150,7 +162,7 @@ describe('runtime asset wire contracts', () => {
                 validatePointerManifestPair(
                     pointer,
                     manifest,
-                    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                    assertSha256('a'.repeat(64))
                 ),
             'integrity'
         );
@@ -226,14 +238,14 @@ describe('runtime asset wire contracts', () => {
         expect(() =>
             assertReleaseIdMatchesContentSha256(
                 manifest,
-                'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+                assertSha256('e'.repeat(64))
             )
         ).not.toThrow();
         expectCode(
             () =>
                 assertReleaseIdMatchesContentSha256(
                     manifest,
-                    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                    assertSha256('a'.repeat(64))
                 ),
             'integrity'
         );

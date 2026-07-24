@@ -19,8 +19,6 @@ export type AssetType = z.infer<typeof AssetTypeSchema>;
 export const AssetFormatSchema = z.enum(['webp', 'avif']);
 export type AssetFormat = z.infer<typeof AssetFormatSchema>;
 
-export const PortraitSlotSchema = z.enum(['left', 'center', 'right']);
-
 const StoryIdSchema = z
     .string()
     .refine(isStoryId, 'Story id must be a lowercase underscore slug');
@@ -28,10 +26,20 @@ const ReleaseIdSchema = z.string().refine(isReleaseId, {
     message: 'Release id must be sha256-<64 lowercase hex>',
     params: { assetErrorCode: 'integrity' },
 });
-const Sha256Schema = z.string().refine(isSha256, {
-    message: 'SHA-256 must contain 64 lowercase hex characters',
-    params: { assetErrorCode: 'integrity' },
-});
+// A validated SHA-256 digest is branded so an arbitrary, unvalidated string
+// cannot be passed to the integrity-critical helpers that consume one. On the
+// read path the brand flows automatically from parsing; other callers mint it
+// with `assertSha256`. (storyId/releaseId/previewId are deliberately left
+// unbranded — they are compared field-to-field within already-typed contract
+// objects rather than passed as bare, transposable positional arguments.)
+const Sha256Schema = z
+    .string()
+    .refine(isSha256, {
+        message: 'SHA-256 must contain 64 lowercase hex characters',
+        params: { assetErrorCode: 'integrity' },
+    })
+    .brand<'Sha256'>();
+export type Sha256 = z.infer<typeof Sha256Schema>;
 const RelativePathSchema = z.string().refine(isSafeRelativePath, {
     message: 'Expected a safe relative path',
     params: { assetErrorCode: 'unsafe-path' },
@@ -47,6 +55,25 @@ export const LogicalAssetIdentitySchema = z.object({
 });
 export type LogicalAssetIdentity = z.infer<typeof LogicalAssetIdentitySchema>;
 
+function addObjectPathIssue(
+    context: z.RefinementCtx,
+    format: AssetFormat,
+    value: { path: string; sha256: string },
+    message: string
+): void {
+    if (
+        isSha256(value.sha256) &&
+        value.path !== `vn/objects/${value.sha256}.${format}`
+    ) {
+        context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message,
+            path: ['path'],
+            params: { assetErrorCode: 'integrity' },
+        });
+    }
+}
+
 function variantSchema<T extends AssetFormat>(format: T) {
     return z
         .object({
@@ -55,20 +82,14 @@ function variantSchema<T extends AssetFormat>(format: T) {
             sha256: Sha256Schema,
             byteLength: z.number().int().positive().optional(),
         })
-        .superRefine((variant, context) => {
-            if (
-                isSha256(variant.sha256) &&
-                variant.path !== `vn/objects/${variant.sha256}.${format}`
-            ) {
-                context.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message:
-                        'Object path must match its SHA-256 digest and format',
-                    path: ['path'],
-                    params: { assetErrorCode: 'integrity' },
-                });
-            }
-        });
+        .superRefine((variant, context) =>
+            addObjectPathIssue(
+                context,
+                format,
+                variant,
+                'Object path must match its SHA-256 digest and format'
+            )
+        );
 }
 
 export const WebpAssetVariantV1Schema = variantSchema('webp');
@@ -82,20 +103,14 @@ export const LowResolutionPlaceholderV1Schema = z
         width: z.number().int().positive(),
         height: z.number().int().positive(),
     })
-    .superRefine((placeholder, context) => {
-        if (
-            isSha256(placeholder.sha256) &&
-            placeholder.path !==
-                `vn/objects/${placeholder.sha256}.${placeholder.format}`
-        ) {
-            context.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Placeholder path must match its SHA-256 digest',
-                path: ['path'],
-                params: { assetErrorCode: 'integrity' },
-            });
-        }
-    });
+    .superRefine((placeholder, context) =>
+        addObjectPathIssue(
+            context,
+            'webp',
+            placeholder,
+            'Placeholder path must match its SHA-256 digest'
+        )
+    );
 
 export const RuntimeAssetEntryV1Schema = z
     .object({

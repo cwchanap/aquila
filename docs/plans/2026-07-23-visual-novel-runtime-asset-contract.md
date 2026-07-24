@@ -237,6 +237,12 @@ segments.
 
 ## Publication, activation, rollback, and caching
 
+> **Specified, not yet implemented in HPA-227.** This section describes the
+> behavior HPA-230 (publisher) and HPA-228 (reader) must implement. The
+> HPA-227 branch ships only the policy constants (`RUNTIME_ASSET_CACHE_POLICY`)
+> and the validators these steps call; no fetch, upload, activation, or cache
+> code exists yet.
+
 Publication order is:
 
 1. Validate the release plan against the authoring manifest and source files.
@@ -276,6 +282,10 @@ because its pointer has a newer activation timestamp.
 
 ## Resolver boundary and typed failures
 
+> **Specified, not yet implemented in HPA-227.** `AssetResolver` ships as an
+> interface only; HPA-228 implements `loadActiveRelease`, `resolve`,
+> `prefetchNextEdge`, and `clear`.
+
 `AssetResolver` is configured with a `storyId`, an HTTP(S) `baseUrl`, and an
 explicit environment:
 
@@ -305,12 +315,17 @@ unsafe-path
 integrity
 story-mismatch
 release-mismatch
+stale-pointer
 coverage
 timeout
 network
 unavailable
 not-found
 ```
+
+`stale-pointer` is part of the exported `AssetResolverErrorCode` union but is
+reserved for the HPA-228 reader (which enforces the `publishedAt` monotonicity
+rule above); nothing in the HPA-227 contract throws it yet.
 
 Resolution never returns an unchecked URL. Missing or intentionally omitted
 identities produce a `fallback` result rather than an exception at render time.

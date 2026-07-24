@@ -41,6 +41,18 @@ export type ResolvedAsset = {
     placeholderUrl?: URL;
 };
 
+/**
+ * A coarse, render-time classification of why an asset could not be resolved.
+ * It is intentionally narrower than {@link AssetResolverError}'s code union: the
+ * optional `error` on {@link AssetFallback} carries the precise
+ * `AssetResolverErrorCode`, while `reason` is what the UI branches on. The
+ * intended mapping is:
+ * - `not-found`           ← `not-found`
+ * - `release-unavailable` ← `timeout` | `network` | `unavailable` | `stale-pointer`
+ * - `invalid-release`     ← `unknown-schema-version` | `validation` | `unsafe-path`
+ *                           | `story-mismatch` | `release-mismatch` | `coverage`
+ * - `integrity-failure`   ← `integrity`
+ */
 export type AssetFallbackReason =
     | 'not-found'
     | 'release-unavailable'

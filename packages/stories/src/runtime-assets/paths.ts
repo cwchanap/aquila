@@ -4,6 +4,7 @@ import type {
     LogicalAssetIdentity,
     PublicationTarget,
     Sha256,
+    Sha256Purpose,
 } from './schemas';
 
 const STORY_ID_RE = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
@@ -30,6 +31,15 @@ function hasControlCharacters(value: string): boolean {
     });
 }
 
+// Cf (format) characters are invisible/zero-width and never reach URLs, but
+// they enable visual spoofing in error messages and logs (e.g. U+202E RTL
+// override, U+200B zero-width space). Logical keys are human-authored labels,
+// not rich text, so the whole Cf category is rejected.
+const FORMAT_CHARACTER_RE = /\p{Cf}/u;
+function hasFormatCharacters(value: string): boolean {
+    return FORMAT_CHARACTER_RE.test(value);
+}
+
 export function isStoryId(value: string): boolean {
     return STORY_ID_RE.test(value);
 }
@@ -53,7 +63,8 @@ export function isSafeLogicalKey(value: string): boolean {
         value === value.normalize('NFC') &&
         !hasUnsafeSegments(value) &&
         !value.includes('\\') &&
-        !hasControlCharacters(value)
+        !hasControlCharacters(value) &&
+        !hasFormatCharacters(value)
     );
 }
 
@@ -94,14 +105,22 @@ export function encodeLogicalAssetIdentity(
     return `${identity.type}/${encodedKey}`;
 }
 
-export function assertSha256(value: string): Sha256 {
+// Brands a validated hex digest with the caller's chosen purpose. The purpose
+// is a compile-time tag only — the bytes alone cannot tell you what they are a
+// digest of, so the caller (who knows what it just hashed) supplies the brand.
+// Once branded, the value cannot be passed where a different purpose is
+// expected, which is what prevents transposing a manifest-bytes digest into a
+// release-content verifier (or vice versa).
+export function assertSha256<T extends Sha256Purpose>(
+    value: string
+): Sha256<T> {
     if (!isSha256(value)) {
         throw new AssetResolverError(
             'integrity',
             `Expected a lowercase SHA-256 digest: ${value}`
         );
     }
-    return value as Sha256;
+    return value as Sha256<T>;
 }
 
 export function getObjectPath(sha256: string, format: AssetFormat): string {

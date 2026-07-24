@@ -32,14 +32,45 @@ const ReleaseIdSchema = z.string().refine(isReleaseId, {
 // with `assertSha256`. (storyId/releaseId/previewId are deliberately left
 // unbranded — they are compared field-to-field within already-typed contract
 // objects rather than passed as bare, transposable positional arguments.)
-const Sha256Schema = z
-    .string()
-    .refine(isSha256, {
-        message: 'SHA-256 must contain 64 lowercase hex characters',
-        params: { assetErrorCode: 'integrity' },
-    })
-    .brand<'Sha256'>();
-export type Sha256 = z.infer<typeof Sha256Schema>;
+//
+// The brand is parameterized by *what the digest is of* so two
+// semantically-distinct digests cannot be silently swapped at a call site:
+//   - `manifest-bytes`    : digest of the exact uploaded manifest bytes, carried
+//                            on the pointer as `manifestSha256` and consumed by
+//                            `validatePointerManifestPair`.
+//   - `release-content`   : digest of `canonicalReleaseContent(manifest)`,
+//                            wrapped as `releaseId` and consumed by
+//                            `assertReleaseIdMatchesContentSha256`.
+//   - `object-content`    : digest of an asset's encoded bytes, selecting
+//                            `vn/objects/<digest>.<format>`.
+// Swapping a manifest-bytes digest for a release-content digest (or vice versa)
+// is the exact transposition the brand exists to prevent — both are 64 lowercase
+// hex chars, but each is meaningless when fed to the other's verifier.
+export type Sha256Purpose =
+    | 'manifest-bytes'
+    | 'release-content'
+    | 'object-content';
+export type Sha256<T extends Sha256Purpose> = string & z.BRAND<T>;
+
+function sha256Schema<T extends Sha256Purpose>() {
+    return z
+        .string()
+        .refine(isSha256, {
+            message: 'SHA-256 must contain 64 lowercase hex characters',
+            params: { assetErrorCode: 'integrity' },
+        })
+        .brand<T>();
+}
+
+// Object-content and manifest-bytes digests are parsed out of wire documents,
+// so they need concrete schemas. The release-content digest is never parsed
+// from a document field — a caller hashes canonical content and brands it via
+// `assertSha256<'release-content'>` — so it only needs the type alias below.
+const ObjectContentSha256Schema = sha256Schema<'object-content'>();
+export type ObjectContentSha256 = z.infer<typeof ObjectContentSha256Schema>;
+const ManifestByteSha256Schema = sha256Schema<'manifest-bytes'>();
+export type ManifestByteSha256 = z.infer<typeof ManifestByteSha256Schema>;
+export type ReleaseContentSha256 = Sha256<'release-content'>;
 const RelativePathSchema = z.string().refine(isSafeRelativePath, {
     message: 'Expected a safe relative path',
     params: { assetErrorCode: 'unsafe-path' },
@@ -79,7 +110,7 @@ function variantSchema<T extends AssetFormat>(format: T) {
         .object({
             format: z.literal(format),
             path: RelativePathSchema,
-            sha256: Sha256Schema,
+            sha256: ObjectContentSha256Schema,
             byteLength: z.number().int().positive().optional(),
         })
         .superRefine((variant, context) =>
@@ -99,7 +130,7 @@ export const LowResolutionPlaceholderV1Schema = z
     .object({
         format: z.literal('webp'),
         path: RelativePathSchema,
-        sha256: Sha256Schema,
+        sha256: ObjectContentSha256Schema,
         width: z.number().int().positive(),
         height: z.number().int().positive(),
     })
@@ -182,7 +213,7 @@ export const ActiveReleasePointerV1Schema = z.object({
     storyId: StoryIdSchema,
     releaseId: ReleaseIdSchema,
     manifestPath: RelativePathSchema,
-    manifestSha256: Sha256Schema,
+    manifestSha256: ManifestByteSha256Schema,
     publishedAt: z.string().datetime({ offset: true }),
 });
 export type ActiveReleasePointerV1 = z.infer<

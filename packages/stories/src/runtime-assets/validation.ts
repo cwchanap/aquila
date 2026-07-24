@@ -8,9 +8,9 @@ import {
     type ActiveReleasePointerV1,
     type AssetType,
     type LogicalAssetIdentity,
+    type ManifestByteSha256,
     type PublicationTarget,
     type RuntimeAssetManifestV1,
-    type Sha256,
     type StoryAssetReleasePlanV1,
 } from './schemas';
 
@@ -59,6 +59,52 @@ function assertKnownVersion(
     }
 }
 
+// Normalizes a key for forbidden-part matching: lowercases it, drops `_-`
+// delimiters, and records which positions in the normalized string begin a new
+// word (start-of-string, a delimiter, or a lowercase→uppercase camelCase
+// transition). A forbidden part matches only when it spans a whole token — i.e.
+// starts and ends at word boundaries — so `secret` catches `secret`,
+// `secretPath`, and `secret_path`, but NOT `secretary`; `sourcepath` catches
+// `sourcePath` and `source_path` but NOT `sourcepathology`.
+function normalizeKeyWithBoundaries(key: string): {
+    normalized: string;
+    wordStarts: boolean[];
+} {
+    const chars: string[] = [];
+    const wordStarts: boolean[] = [];
+    for (let i = 0; i < key.length; i++) {
+        const ch = key[i];
+        if (ch === '_' || ch === '-') continue;
+        const prev = i > 0 ? key[i - 1] : '';
+        const isWordStart =
+            chars.length === 0 ||
+            prev === '_' ||
+            prev === '-' ||
+            (ch >= 'A' && ch <= 'Z' && prev >= 'a' && prev <= 'z');
+        chars.push(ch.toLowerCase());
+        wordStarts.push(isWordStart);
+    }
+    return { normalized: chars.join(''), wordStarts };
+}
+
+function keyContainsForbiddenPart(
+    normalized: string,
+    wordStarts: boolean[],
+    part: string
+): boolean {
+    let from = 0;
+    let idx: number;
+    while ((idx = normalized.indexOf(part, from)) !== -1) {
+        const end = idx + part.length;
+        const startsAtBoundary = idx === 0 || wordStarts[idx];
+        const endsAtBoundary =
+            end === normalized.length || wordStarts[end] === true;
+        if (startsAtBoundary && endsAtBoundary) return true;
+        from = idx + 1;
+    }
+    return false;
+}
+
 function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
     if (Array.isArray(input)) {
         return input.flatMap((item, index) =>
@@ -69,10 +115,10 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 
     const findings: string[] = [];
     for (const [key, value] of Object.entries(input)) {
-        const normalizedKey = key.toLowerCase().replace(/[_-]/g, '');
+        const { normalized, wordStarts } = normalizeKeyWithBoundaries(key);
         if (
             FORBIDDEN_RUNTIME_KEY_PARTS.some(part =>
-                normalizedKey.includes(part)
+                keyContainsForbiddenPart(normalized, wordStarts, part)
             )
         ) {
             findings.push(`${path}.${key}`);
@@ -197,7 +243,7 @@ export function parseStoryAssetReleasePlan(
 export function validatePointerManifestPair(
     pointer: ActiveReleasePointerV1,
     manifest: RuntimeAssetManifestV1,
-    actualManifestSha256: Sha256
+    actualManifestSha256: ManifestByteSha256
 ): void {
     if (pointer.storyId !== manifest.storyId) {
         throw new AssetResolverError(

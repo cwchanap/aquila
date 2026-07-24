@@ -272,6 +272,12 @@ function emitPresentation(dir: ParsedCharacterDirectory): string {
                 `            ${q(character.id)}: ${q(character.portraitSlot!)},`
         )
         .join('\n');
+    // Emit `{}` inline when there are no slots so the block does not contain a
+    // stray blank line between the braces.
+    const slotsBlock =
+        slotEntries.length > 0
+            ? `        slotsByCharacterId: {\n${slotEntries}\n        },\n`
+            : `        slotsByCharacterId: {},\n`;
 
     return (
         HEADER +
@@ -280,7 +286,7 @@ function emitPresentation(dir: ParsedCharacterDirectory): string {
         `    portrait: {\n` +
         `        activeLimit: 1,\n` +
         `        defaultSlot: "center",\n` +
-        `        slotsByCharacterId: {\n${slotEntries}\n        },\n` +
+        slotsBlock +
         `    },\n` +
         `} as const satisfies StoryPresentationMetadata;\n`
     );

@@ -175,6 +175,47 @@ describe('runtime asset wire contracts', () => {
         );
     });
 
+    it('distinguishes pointer/manifest story and release mismatches', () => {
+        const pointer = parseActiveReleasePointer(currentFixture);
+        const manifest = parseRuntimeAssetManifest(manifestFixture);
+        expectCode(
+            () =>
+                validatePointerManifestPair(
+                    { ...pointer, storyId: 'other_story' },
+                    manifest,
+                    pointer.manifestSha256
+                ),
+            'story-mismatch'
+        );
+        expectCode(
+            () =>
+                validatePointerManifestPair(
+                    {
+                        ...pointer,
+                        releaseId: `sha256-${'c'.repeat(64)}`,
+                    },
+                    manifest,
+                    pointer.manifestSha256
+                ),
+            'release-mismatch'
+        );
+    });
+
+    it('classifies a malformed digest as an integrity failure and locates it', () => {
+        const badDigest = structuredClone(manifestFixture);
+        badDigest.assets[0].variants.webp.sha256 = 'not-a-valid-digest';
+        try {
+            parseRuntimeAssetManifest(badDigest);
+            throw new Error('Expected parse to throw');
+        } catch (error) {
+            expect(error).toBeInstanceOf(AssetResolverError);
+            expect((error as AssetResolverError).code).toBe('integrity');
+            const details =
+                (error as AssetResolverError).details?.join(' ') ?? '';
+            expect(details).toContain('assets.0.variants.webp.sha256');
+        }
+    });
+
     it('defines deterministic release content without a circular release id', () => {
         const manifest = parseRuntimeAssetManifest(manifestFixture);
         const canonical = canonicalReleaseContent(manifest);

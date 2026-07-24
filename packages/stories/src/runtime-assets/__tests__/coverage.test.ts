@@ -40,6 +40,19 @@ const availableSources = new Set([
     'fixture_story/characters/mirror_room/base.png',
 ]);
 
+function expectCode(
+    callback: () => unknown,
+    code: AssetResolverError['code']
+): void {
+    try {
+        callback();
+        throw new Error('Expected callback to throw');
+    } catch (error) {
+        expect(error).toBeInstanceOf(AssetResolverError);
+        expect((error as AssetResolverError).code).toBe(code);
+    }
+}
+
 describe('story asset release coverage', () => {
     it('reports included and explicitly omitted assets by type and section', () => {
         const plan = parseStoryAssetReleasePlan(planFixture);
@@ -102,13 +115,61 @@ describe('story asset release coverage', () => {
 
     it('rejects a release plan for a different story', () => {
         const plan = parseStoryAssetReleasePlan(planFixture);
-        expect(() =>
-            validateReleaseCoverage(
-                { ...authoringCatalog, storyId: 'another_story' },
-                plan,
-                availableSources
-            )
-        ).toThrow(/story ids differ/);
+        expectCode(
+            () =>
+                validateReleaseCoverage(
+                    { ...authoringCatalog, storyId: 'another_story' },
+                    plan,
+                    availableSources
+                ),
+            'story-mismatch'
+        );
+    });
+
+    it('rejects an included entry whose source path drifts from authoring', () => {
+        const plan = parseStoryAssetReleasePlan({
+            ...planFixture,
+            entries: [
+                {
+                    ...planFixture.entries[0],
+                    sourcePath: 'fixture_story/backgrounds/chapter_1/moved.png',
+                },
+                ...planFixture.entries.slice(1),
+            ],
+        });
+        expectCode(
+            () =>
+                validateReleaseCoverage(
+                    authoringCatalog,
+                    plan,
+                    availableSources
+                ),
+            'coverage'
+        );
+    });
+
+    it('rejects a plan entry absent from the authoring manifest', () => {
+        const plan = parseStoryAssetReleasePlan({
+            ...planFixture,
+            entries: [
+                ...planFixture.entries,
+                {
+                    identity: { type: 'background', key: '未知/資產' },
+                    disposition: 'omitted',
+                    reason: 'identity not present in the authoring manifest',
+                    section: 'chapter_9',
+                },
+            ],
+        });
+        expectCode(
+            () =>
+                validateReleaseCoverage(
+                    authoringCatalog,
+                    plan,
+                    availableSources
+                ),
+            'coverage'
+        );
     });
 
     it('keeps omitted keys out of runtime data', () => {

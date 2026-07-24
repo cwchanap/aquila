@@ -1,8 +1,11 @@
+import type { PortraitSlot } from '../types';
+
 export interface ParsedCharacter {
     id: string;
     name: string;
     aliases: string[];
     portraits: Record<string, string>;
+    portraitSlot?: PortraitSlot;
 }
 
 export interface ParsedCharacterDirectory {
@@ -18,6 +21,7 @@ interface HeadingMatch {
 const HEADING_RE = /^##\s+\d+(?:\.\d+)?\.\s+(.+?)（.*?）\s*$/;
 const ID_RE = /^-\s+\*\*ID\*\*:\s*`([^`]+)`\s*$/;
 const ALIASES_RE = /^-\s+\*\*Aliases\*\*:\s*(.+)$/;
+const PORTRAIT_SLOT_RE = /^-\s+\*\*Portrait Slot\*\*:\s*(\S+)\s*$/;
 const PROMPT_SECTION_RE = /^###\s+Portrait Prompts\s*$/;
 const PROMPT_ITEM_RE = /^-\s+\*\*(.+?)\*\*:\s*(.+)$/;
 
@@ -41,6 +45,16 @@ function parseAliases(line: string): string[] | null {
         .filter(s => s.length > 0);
 }
 
+function parsePortraitSlot(line: string): PortraitSlot | null | undefined {
+    const match = line.match(PORTRAIT_SLOT_RE);
+    if (!match) return undefined;
+    const value = match[1].toLowerCase();
+    if (value === 'left' || value === 'center' || value === 'right') {
+        return value;
+    }
+    return null;
+}
+
 export function parseCharacters(markdown: string): ParsedCharacterDirectory {
     const lines = markdown.replace(/\r\n/g, '\n').split('\n');
 
@@ -52,6 +66,7 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
     let currentId: string | null = null;
     let currentAliases: string[] = [];
     let currentPortraits: Record<string, string> = {};
+    let currentPortraitSlot: PortraitSlot | undefined;
     let inPortraitSection = false;
 
     function flushCharacter(): void {
@@ -76,6 +91,7 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
                 name: currentName,
                 aliases: currentAliases,
                 portraits: currentPortraits,
+                portraitSlot: currentPortraitSlot,
             };
             characters.push(char);
             byId.set(char.id, char);
@@ -96,6 +112,7 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
         currentId = null;
         currentAliases = [];
         currentPortraits = {};
+        currentPortraitSlot = undefined;
         inPortraitSection = false;
     }
 
@@ -126,6 +143,17 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
         const aliasesMatch = parseAliases(line);
         if (aliasesMatch) {
             currentAliases = aliasesMatch;
+            continue;
+        }
+
+        const portraitSlotMatch = parsePortraitSlot(line);
+        if (portraitSlotMatch === null) {
+            throw new Error(
+                `[story-compiler] character "${currentName}" has invalid Portrait Slot; expected left, center, or right`
+            );
+        }
+        if (portraitSlotMatch !== undefined) {
+            currentPortraitSlot = portraitSlotMatch;
             continue;
         }
 

@@ -9,7 +9,13 @@ import type { StoryIR } from '../ir';
 const mockCharDir: ParsedCharacterDirectory = {
     characters: [
         { id: 'narrator', name: '旁白', aliases: [], portraits: {} },
-        { id: 'li_jie', name: '李杰', aliases: [], portraits: {} },
+        {
+            id: 'li_jie',
+            name: '李杰',
+            aliases: [],
+            portraits: {},
+            portraitSlot: 'left',
+        },
     ],
     getById: (id: string) => mockCharDir.characters.find(c => c.id === id),
     getIdByName: (name: string) =>
@@ -86,6 +92,7 @@ describe('emitStory', () => {
         expect(existsSync(join(dir, 'dialogue.zh.ts'))).toBe(true);
         expect(existsSync(join(dir, 'flow.ts'))).toBe(true);
         expect(existsSync(join(dir, 'choices.todo.zh.ts'))).toBe(true);
+        expect(existsSync(join(dir, 'presentation.ts'))).toBe(true);
 
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
         expect(scene).toContain('../characters');
@@ -233,6 +240,14 @@ describe('emitStory', () => {
         expect(charFile).toContain('LiJie = "li_jie"');
         expect(charFile).toContain('export const characterTable');
         expect(charFile).toContain('export class CharacterDirectory');
+    });
+
+    it('generates story presentation metadata with a center fallback', () => {
+        emitStory(story, dir, mockCharDir);
+        const presentation = readFileSync(join(dir, 'presentation.ts'), 'utf8');
+        expect(presentation).toContain('defaultSlot: "center"');
+        expect(presentation).toContain('"li_jie": "left"');
+        expect(presentation).toContain('activeLimit: 1');
     });
 
     it('throws when two character IDs collapse to the same enum key', () => {

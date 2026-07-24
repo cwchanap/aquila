@@ -1,4 +1,8 @@
-import type { ChoiceMap, DialogueMap } from '../types';
+import type {
+    ChoiceMap,
+    DialogueMap,
+    StoryPresentationMetadata,
+} from '../types';
 import type { RegisteredStoryId } from '../story-metadata';
 import {
     getTrainAdventureStory,
@@ -19,6 +23,7 @@ import {
 export type StoryLoaderResult = {
     dialogue: DialogueMap;
     choices: ChoiceMap;
+    presentation: StoryPresentationMetadata;
 };
 
 export type StoryFlowConfig =

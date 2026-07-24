@@ -22,6 +22,7 @@ export function canonicalJson(value: JsonValue): string {
     const object = value as { readonly [key: string]: JsonValue };
     return `{${Object.keys(object)
         .sort()
+        .filter(key => object[key] !== undefined)
         .map(key => `${JSON.stringify(key)}:${canonicalJson(object[key])}`)
         .join(',')}}`;
 }

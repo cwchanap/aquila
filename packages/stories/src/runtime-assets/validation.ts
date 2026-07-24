@@ -67,12 +67,12 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 }
 
 function errorCodeForZod(error: z.ZodError): AssetResolverErrorCode {
-    const messages = error.issues.map(issue => issue.message);
-    if (messages.some(message => message.startsWith('[unsafe-path]'))) {
-        return 'unsafe-path';
-    }
-    if (messages.some(message => message.startsWith('[integrity]'))) {
-        return 'integrity';
+    for (const issue of error.issues) {
+        const code = (issue.params as { assetErrorCode?: unknown } | undefined)
+            ?.assetErrorCode;
+        if (code === 'unsafe-path' || code === 'integrity') {
+            return code;
+        }
     }
     return 'validation';
 }

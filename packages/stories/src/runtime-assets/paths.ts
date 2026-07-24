@@ -106,21 +106,16 @@ export function getObjectPath(sha256: string, format: AssetFormat): string {
     return `vn/objects/${sha256}.${format}`;
 }
 
-export function getReleaseManifestPath(
-    storyId: string,
-    releaseId: string,
-    target: PublicationTarget
-): string {
-    assertPublicationIdentifiers(storyId, releaseId, target);
-    const prefix =
-        target.kind === 'production' ? 'vn' : `vn/previews/${target.previewId}`;
-    return `${prefix}/stories/${storyId}/releases/${releaseId}/runtime-manifest.json`;
+function publicationPrefix(target: PublicationTarget): string {
+    return target.kind === 'production'
+        ? 'vn'
+        : `vn/previews/${target.previewId}`;
 }
 
-export function getCurrentPointerPath(
+function assertPublicationTarget(
     storyId: string,
     target: PublicationTarget
-): string {
+): void {
     if (!isStoryId(storyId)) {
         throw new AssetResolverError(
             'unsafe-path',
@@ -133,28 +128,29 @@ export function getCurrentPointerPath(
             `Invalid preview id: ${target.previewId}`
         );
     }
-    const prefix =
-        target.kind === 'production' ? 'vn' : `vn/previews/${target.previewId}`;
-    return `${prefix}/stories/${storyId}/current.json`;
 }
 
-function assertPublicationIdentifiers(
+export function getReleaseManifestPath(
     storyId: string,
     releaseId: string,
     target: PublicationTarget
-): void {
-    if (!isStoryId(storyId) || !isReleaseId(releaseId)) {
+): string {
+    assertPublicationTarget(storyId, target);
+    if (!isReleaseId(releaseId)) {
         throw new AssetResolverError(
             'unsafe-path',
-            'Invalid story or release identifier'
+            `Invalid release id: ${releaseId}`
         );
     }
-    if (target.kind === 'preview' && !isPreviewId(target.previewId)) {
-        throw new AssetResolverError(
-            'unsafe-path',
-            `Invalid preview id: ${target.previewId}`
-        );
-    }
+    return `${publicationPrefix(target)}/stories/${storyId}/releases/${releaseId}/runtime-manifest.json`;
+}
+
+export function getCurrentPointerPath(
+    storyId: string,
+    target: PublicationTarget
+): string {
+    assertPublicationTarget(storyId, target);
+    return `${publicationPrefix(target)}/stories/${storyId}/current.json`;
 }
 
 export function resolveAssetUrl(baseUrl: string, relativePath: string): URL {

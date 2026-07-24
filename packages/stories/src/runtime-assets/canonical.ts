@@ -4,7 +4,7 @@ import {
     isSha256,
     qualifyAssetIdentity,
 } from './paths';
-import type { RuntimeAssetManifestV1 } from './schemas';
+import type { RuntimeAssetManifestV1, Sha256 } from './schemas';
 
 type JsonPrimitive = string | number | boolean | null;
 export type JsonValue =
@@ -81,9 +81,16 @@ export function releaseIdFromContentSha256(sha256: string): string {
     return `sha256-${sha256}`;
 }
 
+/**
+ * Verifies a manifest's declared `releaseId` against its canonical content
+ * digest. `contentSha256` MUST be `sha256(canonicalReleaseContent(manifest))`
+ * computed by the caller — this module is deliberately crypto-free. Passing any
+ * other digest (e.g. the manifest *bytes* digest carried on the pointer as
+ * `manifestSha256`) produces a meaningless verdict.
+ */
 export function assertReleaseIdMatchesContentSha256(
     manifest: RuntimeAssetManifestV1,
-    contentSha256: string
+    contentSha256: Sha256
 ): void {
     const expectedReleaseId = releaseIdFromContentSha256(contentSha256);
     if (manifest.releaseId !== expectedReleaseId) {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     AssetResolverError,
+    assertSha256,
     encodeLogicalAssetIdentity,
     getCurrentPointerPath,
     getObjectPath,
@@ -118,6 +119,13 @@ describe('runtime asset paths', () => {
                 previewId: 'bad/id',
             })
         ).toThrow(AssetResolverError);
+    });
+
+    it('mints a branded digest and rejects malformed ones', () => {
+        expect(assertSha256('a'.repeat(64))).toBe('a'.repeat(64));
+        expect(() => assertSha256('nope')).toThrow(AssetResolverError);
+        // uppercase hex is not a valid lowercase SHA-256
+        expect(() => assertSha256('A'.repeat(64))).toThrow(AssetResolverError);
     });
 
     it('rejects control characters, non-NFC forms, and out-of-bounds logical keys', () => {

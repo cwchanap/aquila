@@ -7,7 +7,6 @@ export {
     AssetTypeSchema,
     LogicalAssetIdentitySchema,
     LowResolutionPlaceholderV1Schema,
-    PortraitSlotSchema,
     RuntimeAssetEntryV1Schema,
     RuntimeAssetManifestV1Schema,
     StoryAssetReleasePlanEntryV1Schema,
@@ -21,12 +20,14 @@ export type {
     PublicationTarget,
     RuntimeAssetEntryV1,
     RuntimeAssetManifestV1,
+    Sha256,
     StoryAssetReleasePlanEntryV1,
     StoryAssetReleasePlanV1,
 } from './schemas';
 export { AssetResolverError } from './errors';
 export type { AssetResolverErrorCode } from './errors';
 export {
+    assertSha256,
     encodeLogicalAssetIdentity,
     compareQualifiedAssetIds,
     getCurrentPointerPath,

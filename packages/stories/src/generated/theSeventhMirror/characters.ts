@@ -54,6 +54,10 @@ export enum CharacterId {
     DesignatedExpert = "designated_expert",
     NeuropsychProfessional = "neuropsych_professional",
     ChildWelfareOfficer = "child_welfare_officer",
+    DefenseCounsel = "defense_counsel",
+    ClinicalCustodian = "clinical_custodian",
+    SystemSecurity = "system_security",
+    JudicialPreservation = "judicial_preservation",
 }
 
 export interface CharacterInfo {
@@ -116,6 +120,10 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.DesignatedExpert]: { id: "designated_expert", name: "指定專家", aliases: ["技術專家", "獨立專家"] },
     [CharacterId.NeuropsychProfessional]: { id: "neuropsych_professional", name: "獨立神經心理專業人員", aliases: ["神經心理人員", "神經心理專業人員", "神經心理學家", "測試主持人"] },
     [CharacterId.ChildWelfareOfficer]: { id: "child_welfare_officer", name: "兒少專業人員", aliases: ["兒童相談所人員", "兒少人員", "兒少專業"] },
+    [CharacterId.DefenseCounsel]: { id: "defense_counsel", name: "辯護人", aliases: ["琴音辯護人", "辯護律師"] },
+    [CharacterId.ClinicalCustodian]: { id: "clinical_custodian", name: "院內臨床保管方", aliases: ["臨床保管方", "生體工學保管方", "院內臨床", "臨床與生體工學"] },
+    [CharacterId.SystemSecurity]: { id: "system_security", name: "獨立系統安全人員", aliases: ["系統安全人員", "獨立安全人員"] },
+    [CharacterId.JudicialPreservation]: { id: "judicial_preservation", name: "司法保全", aliases: ["司法保全人員"] },
 };
 
 const nameToId = new Map<string, string>();

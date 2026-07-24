@@ -1100,6 +1100,51 @@
       "key": "chapter_22/ch22_act8_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act8_s0.png",
       "prompt": "Tsukuba research facility M-zone, small conference room converted into technical evidence workspace, night, large monitor showing G07 remote clinical dependency panel with receiver status columns, laptops and sealed evidence bags on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act1_s0.png",
+      "prompt": "Tsukuba research facility M-zone, temporary command room, early morning, cold fluorescent lighting, folding tables with laptops and sealed evidence folders, dim grey light through reinforced observation window, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act2_s0.png",
+      "prompt": "Long-term neurorehabilitation medical center in northwest Chiba, patient ward corridor, morning, soft natural light from large windows, medical equipment hum, white walls with pale blue handrails, bed-side controller unit visible through observation window, muted clinical palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act3_s0.png",
+      "prompt": "Hospital safety conference room, morning, long table with laptops and printed evidence folders, large monitor showing work order chain diagrams, cold fluorescent lighting, muted institutional palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act3_s1.png",
+      "prompt": "Hospital corridor outside formal questioning room, late morning, cold fluorescent lighting, closed door with red indicator light above, empty chairs along wall, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act4_s0.png",
+      "prompt": "Hospital corridor outside formal questioning room, early afternoon, cold fluorescent lighting, closed door with red indicator light above, empty chairs along wall, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act5_s0.png",
+      "prompt": "long-term neurorehabilitation medical center, controlled family meeting room, afternoon, reinforced glass partition, small table with four chairs, fluorescent lighting, muted clinical palette, observation camera in corner, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act6_s0.png",
+      "prompt": "long-term neurorehabilitation medical center, Misora's patient room and adjacent equipment closet, late afternoon, medical bed with sleeping 13-year-old girl, monitoring equipment, hidden service panel behind bedside controller unit, fluorescent lighting, muted clinical palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act7_s0.png",
+      "prompt": "long-term neurorehabilitation medical center, clinical safety terminal room, evening, large monitor showing cartridge domain status panel, laptops and sealed evidence logs on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_23/ch23_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act8_s0.png",
+      "prompt": "long-term neurorehabilitation medical center, corridor outside Misora's room and controlled meeting room, late night, fluorescent lighting, sealed equipment panel visible through observation window, muted cool palette, visual-novel background art, wide shot"
     }
   ],
   "portraits": [
@@ -1292,6 +1337,16 @@
       "key": "asakura_sae/base",
       "path": "the_seventh_mirror/characters/asakura_sae/base.png",
       "prompt": "anime visual-novel portrait, 46-year-old Japanese woman, long dark brown hair loose and thin, pale delicate features, hospital gown, eyes half-open in semi-conscious state, soft diffused light, muted desaturated palette, upper-body shot, clean clinical background"
+    },
+    {
+      "key": "fujikawa_mari/base",
+      "path": "the_seventh_mirror/characters/fujikawa_mari/base.png",
+      "prompt": "anime visual-novel portrait, 38-year-old Japanese woman, shoulder-length dark hair with loose strands, thin pale face with premature lines, casual clothes (faded sweater over blouse), exhausted but gentle expression, deep shadows under eyes, soft dim lighting, muted warm-grey palette, upper-body shot, clean background"
+    },
+    {
+      "key": "fujikawa_mari/guarded",
+      "path": "the_seventh_mirror/characters/fujikawa_mari/guarded.png",
+      "prompt": "anime visual-novel portrait, 38-year-old woman, eyes watchful despite exhaustion, jaw tight, leaning back slightly, faded sweater, cool directional light, upper-body shot"
     }
   ]
 }

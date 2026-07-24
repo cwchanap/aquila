@@ -126,6 +126,23 @@ const config: StoryCompilerConfig = {
             pattern: /^(兒童相談所人員|兒少人員|兒少專業|兒少專業人員)$/,
             id: 'child_welfare_officer',
         },
+        {
+            pattern: /^(辯護人|琴音辯護人|辯護律師)$/,
+            id: 'defense_counsel',
+        },
+        {
+            pattern:
+                /^(院內臨床保管方|臨床保管方|生體工學保管方|院內臨床|臨床與生體工學)$/,
+            id: 'clinical_custodian',
+        },
+        {
+            pattern: /^(獨立系統安全人員|系統安全人員|獨立安全人員)$/,
+            id: 'system_security',
+        },
+        {
+            pattern: /^(司法保全|司法保全人員)$/,
+            id: 'judicial_preservation',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

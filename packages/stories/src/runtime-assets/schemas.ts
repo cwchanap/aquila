@@ -30,15 +30,14 @@ const ReleaseIdSchema = z
 const Sha256Schema = z
     .string()
     .refine(isSha256, 'SHA-256 must contain 64 lowercase hex characters');
-const RelativePathSchema = z
-    .string()
-    .refine(isSafeRelativePath, '[unsafe-path] Expected a safe relative path');
-const LogicalKeySchema = z
-    .string()
-    .refine(
-        isSafeLogicalKey,
-        '[unsafe-path] Logical keys must be NFC, relative, and traversal-free'
-    );
+const RelativePathSchema = z.string().refine(isSafeRelativePath, {
+    message: 'Expected a safe relative path',
+    params: { assetErrorCode: 'unsafe-path' },
+});
+const LogicalKeySchema = z.string().refine(isSafeLogicalKey, {
+    message: 'Logical keys must be NFC, relative, and traversal-free',
+    params: { assetErrorCode: 'unsafe-path' },
+});
 
 export const LogicalAssetIdentitySchema = z.object({
     type: AssetTypeSchema,
@@ -62,8 +61,9 @@ function variantSchema<T extends AssetFormat>(format: T) {
                 context.addIssue({
                     code: z.ZodIssueCode.custom,
                     message:
-                        '[integrity] Object path must match its SHA-256 digest and format',
+                        'Object path must match its SHA-256 digest and format',
                     path: ['path'],
+                    params: { assetErrorCode: 'integrity' },
                 });
             }
         });
@@ -88,9 +88,9 @@ export const LowResolutionPlaceholderV1Schema = z
         ) {
             context.addIssue({
                 code: z.ZodIssueCode.custom,
-                message:
-                    '[integrity] Placeholder path must match its SHA-256 digest',
+                message: 'Placeholder path must match its SHA-256 digest',
                 path: ['path'],
+                params: { assetErrorCode: 'integrity' },
             });
         }
     });

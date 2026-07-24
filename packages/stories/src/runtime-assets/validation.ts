@@ -68,6 +68,8 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 
 function errorCodeForZod(error: z.ZodError): AssetResolverErrorCode {
     for (const issue of error.issues) {
+        // `params` only exists on `ZodCustomIssue`; the union does not expose it.
+        if (issue.code !== 'custom') continue;
         const code = (issue.params as { assetErrorCode?: unknown } | undefined)
             ?.assetErrorCode;
         if (code === 'unsafe-path' || code === 'integrity') {

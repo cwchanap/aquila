@@ -52,6 +52,13 @@ function storyPayload(): AsyncStoryLoaderResult {
         },
         dialogue: { act1: [{ dialogue: 'line' }] },
         choices: {},
+        presentation: {
+            portrait: {
+                activeLimit: 1,
+                defaultSlot: 'center',
+                slotsByCharacterId: {},
+            },
+        },
         locale: 'en',
     };
 }

@@ -1060,6 +1060,46 @@
       "key": "chapter_21/ch21_act8_s2",
       "path": "the_seventh_mirror/backgrounds/chapter_21/ch21_act8_s2.png",
       "prompt": "Tsukuba research facility M-zone, M-00 medical area corridor outside observation window, late night, dimmed fluorescent lighting, monitors reflecting off reinforced glass, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act1_s0.png",
+      "prompt": "Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, morning, cold fluorescent lighting, folding tables with sealed document envelopes and laptops, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act2_s0.png",
+      "prompt": "Tsukuba research facility M-zone, system security group workstation, mid-morning, multiple laptop screens showing KAGAMI-01 topology diagrams and dependency graphs, cold blue-white monitor glow, folding table covered with printed schematics, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_22/ch22_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act3_s0.png",
+      "prompt": "Tsukuba research facility M-zone, corridor between system security group and external medical group workstations, late morning, laptops showing receiver dependency status panels with colored indicators, printed assessment forms on folding tables, cold fluorescent lighting, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act4_s0.png",
+      "prompt": "Tsukuba research facility M-zone, corridor between sealed candidate storage and future-data group workstation, early afternoon, laptops showing sealed candidate folders with timestamp locks, printed metadata sheets in transparent evidence sleeves, cold fluorescent lighting, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act5_s0.png",
+      "prompt": "Tsukuba research facility M-zone, system security group workstation area, mid-afternoon, large monitor showing R4 failure envelope diagram with timeline and condition gates, laptops with candidate family summaries, printed risk assessment forms, cold fluorescent lighting, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act6_s0.png",
+      "prompt": "Tsukuba research facility M-zone, corridor converted into temporary joint safety meeting space, late afternoon, folding tables arranged in U-shape, laptops and printed forms, large monitor showing decision interface with receiver dependency panel, cold fluorescent lighting, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act7_s0.png",
+      "prompt": "Tsukuba research facility M-zone, small conference room converted into technical evidence workspace, night, single large monitor showing KAGAMI hardware registry and attestation logs, laptops and sealed evidence bags on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_22/ch22_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_22/ch22_act8_s0.png",
+      "prompt": "Tsukuba research facility M-zone, small conference room converted into technical evidence workspace, night, large monitor showing G07 remote clinical dependency panel with receiver status columns, laptops and sealed evidence bags on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
     }
   ],
   "portraits": [

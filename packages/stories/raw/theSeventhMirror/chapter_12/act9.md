@@ -118,6 +118,8 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 
 **旁白**：他把其他家庭的資料收回文件套。水瀨的。藤川的。佐伯自己的。一份一份放進去。拉鏈拉好。
 
+**朝倉澪** [determined]：（內心）⋯⋯藤川的資料收走了。美空的入口頁、裝置摘要、藥盒影本。還有那個家族成員欄。那個被遮掉的名字。琴○。今天只是掃過去而已。
+
 **佐伯達也** [determined]：妳只能帶四樣東西走。
 
 **旁白**：他列。像在核對一張清單。

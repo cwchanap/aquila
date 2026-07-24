@@ -63,6 +63,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我不能讓你只剩一個編號。我不能讓那套系統把你壓縮成 G07 斜線十二。我要把你的名字寫在旁邊。寫一次不夠。寫兩次。寫到那個編號旁邊永遠有一個屬於你的名字。", background: Background.Chapter_12_Ch12_Act9_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯開始收文件。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他把其他家庭的資料收回文件套。水瀨的。藤川的。佐伯自己的。一份一份放進去。拉鏈拉好。", background: Background.Chapter_12_Ch12_Act9_S0 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯藤川的資料收走了。美空的入口頁、裝置摘要、藥盒影本。還有那個家族成員欄。那個被遮掉的名字。琴○。今天只是掃過去而已。", background: Background.Chapter_12_Ch12_Act9_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "妳只能帶四樣東西走。", background: Background.Chapter_12_Ch12_Act9_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他列。像在核對一張清單。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "第一。妳自己填的悠真欄位表。", background: Background.Chapter_12_Ch12_Act9_S0, portrait: Portrait.SaekiTatsuya_Determined },

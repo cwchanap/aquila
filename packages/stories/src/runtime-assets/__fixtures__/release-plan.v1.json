@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "storyId": "fixture_story",
+  "channel": "production",
+  "entries": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "第一章/鏡 房/夜"
+      },
+      "disposition": "included",
+      "sourcePath": "fixture_story/backgrounds/chapter_1/mirror_room.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "第一章/鏡 房/夜"
+      },
+      "disposition": "included",
+      "sourcePath": "fixture_story/characters/mirror_room/base.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "朝倉澪/缺少 表情"
+      },
+      "disposition": "omitted",
+      "reason": "The first production release intentionally uses the reader fallback.",
+      "section": "chapter_2"
+    }
+  ]
+}

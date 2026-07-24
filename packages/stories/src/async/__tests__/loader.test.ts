@@ -1,10 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { StoryFlowConfig, StoryLoaderResult } from '../../stories';
 import { StoryLoadError } from '../errors';
-import {
-    createStoryContentLoader,
-    type StoryPayload,
-} from '../loader';
+import { createStoryContentLoader, type StoryPayload } from '../loader';
 import {
     REGISTERED_STORY_IDS,
     isRegisteredStoryId,
@@ -15,6 +12,13 @@ const flow = { start: 'act1', nodes: [] } as StoryFlowConfig;
 const payload: StoryLoaderResult = {
     dialogue: { act1: [{ dialogue: 'line' }] },
     choices: {},
+    presentation: {
+        portrait: {
+            activeLimit: 1,
+            defaultSlot: 'center',
+            slotsByCharacterId: {},
+        },
+    },
 };
 const importer = vi.fn(async () => ({ ...payload, flow }));
 
@@ -175,9 +179,7 @@ describe('createStoryContentLoader', () => {
 
         loader.reset();
         const freshLoad = loader.load('train_adventure', 'en');
-        await vi.waitFor(() =>
-            expect(racingImporter).toHaveBeenCalledTimes(2)
-        );
+        await vi.waitFor(() => expect(racingImporter).toHaveBeenCalledTimes(2));
 
         pending[0]!.resolve(stalePayload);
         await staleLoad;

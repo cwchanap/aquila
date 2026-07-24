@@ -264,6 +264,28 @@ function emitCharacters(dir: ParsedCharacterDirectory): string {
     );
 }
 
+function emitPresentation(dir: ParsedCharacterDirectory): string {
+    const slotEntries = dir.characters
+        .filter(character => character.portraitSlot !== undefined)
+        .map(
+            character =>
+                `            ${q(character.id)}: ${q(character.portraitSlot!)},`
+        )
+        .join('\n');
+
+    return (
+        HEADER +
+        `import type { StoryPresentationMetadata } from "../../types";\n\n` +
+        `export const storyPresentation = {\n` +
+        `    portrait: {\n` +
+        `        activeLimit: 1,\n` +
+        `        defaultSlot: "center",\n` +
+        `        slotsByCharacterId: {\n${slotEntries}\n        },\n` +
+        `    },\n` +
+        `} as const satisfies StoryPresentationMetadata;\n`
+    );
+}
+
 export function emitStory(
     story: StoryIR,
     outDir: string,
@@ -274,6 +296,10 @@ export function emitStory(
 
     // Generate characters.ts
     writeFileSync(join(outDir, 'characters.ts'), emitCharacters(characterDir));
+    writeFileSync(
+        join(outDir, 'presentation.ts'),
+        emitPresentation(characterDir)
+    );
 
     const portraitEnum = buildPortraitEnum(story);
     const portraitsCode = emitPortraits(portraitEnum);

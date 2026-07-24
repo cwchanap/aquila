@@ -12,6 +12,7 @@ describe('stories', () => {
             expect(content).toBeDefined();
             expect(content.dialogue).toBeDefined();
             expect(content.choices).toBeDefined();
+            expect(content.presentation.portrait.activeLimit).toBe(1);
         });
 
         it('returns Chinese story content', () => {
@@ -106,6 +107,7 @@ describe('getStoryContent', () => {
         expect(result).toBeDefined();
         expect(result.dialogue).toBeDefined();
         expect(result.choices).toBeDefined();
+        expect(result.presentation.portrait.defaultSlot).toBe('center');
     });
 
     it('falls back to train_adventure for unknown storyId', () => {

@@ -4,6 +4,8 @@ export type {
     ChoiceDefinition,
     ChoiceOptionDefinition,
     ChoiceMap,
+    PortraitSlot,
+    StoryPresentationMetadata,
 } from './types';
 export type {
     FlowConfig,

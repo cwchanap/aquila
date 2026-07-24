@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "storyId": "fixture_story",
+  "releaseId": "sha256-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "assets": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "第一章/鏡 房/夜"
+      },
+      "variants": {
+        "webp": {
+          "format": "webp",
+          "path": "vn/objects/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.webp",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "byteLength": 24576
+        },
+        "avif": {
+          "format": "avif",
+          "path": "vn/objects/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.avif",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "byteLength": 16384
+        }
+      },
+      "width": 1920,
+      "height": 1080,
+      "placeholder": {
+        "format": "webp",
+        "path": "vn/objects/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.webp",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "width": 32,
+        "height": 18
+      },
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "第一章/鏡 房/夜"
+      },
+      "variants": {
+        "webp": {
+          "format": "webp",
+          "path": "vn/objects/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.webp",
+          "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "byteLength": 12288
+        }
+      },
+      "width": 1200,
+      "height": 1600,
+      "section": "chapter_1"
+    }
+  ]
+}

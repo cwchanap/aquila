@@ -121,6 +121,9 @@
     "packages/stories": {
       "name": "@aquila/stories",
       "version": "0.1.0",
+      "dependencies": {
+        "zod": "^3.24.2",
+      },
       "devDependencies": {
         "@types/node": "^20.0.0",
         "@vitest/coverage-v8": "^4.0.18",

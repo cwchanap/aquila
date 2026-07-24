@@ -83,6 +83,42 @@ Some bio prose.
         );
     });
 
+    it('rejects empty or multi-token portrait slots instead of ignoring them', () => {
+        const empty = `## 1. 顧言（Gu Yan）
+
+- **ID**: \`gu_yan\`
+- **Portrait Slot**:
+`;
+        expect(() => parseCharacters(empty)).toThrow(
+            /Portrait Slot.*left, center, or right/
+        );
+
+        const multi = `## 1. 顧言（Gu Yan）
+
+- **ID**: \`gu_yan\`
+- **Portrait Slot**: left center
+`;
+        expect(() => parseCharacters(multi)).toThrow(
+            /Portrait Slot.*left, center, or right/
+        );
+    });
+
+    it('accepts case-insensitive center and right slots', () => {
+        const md = `## 1. 甲（A）
+
+- **ID**: \`a\`
+- **Portrait Slot**: CENTER
+
+## 2. 乙（B）
+
+- **ID**: \`b\`
+- **Portrait Slot**: Right
+`;
+        const dir = parseCharacters(md);
+        expect(dir.getById('a')?.portraitSlot).toBe('center');
+        expect(dir.getById('b')?.portraitSlot).toBe('right');
+    });
+
     it('throws on missing ID', () => {
         const noId = `## 1. 無名（No Name）\n\nNo ID bullet.\n`;
         expect(() => parseCharacters(noId)).toThrow(/missing.*ID/i);

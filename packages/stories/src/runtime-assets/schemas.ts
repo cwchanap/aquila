@@ -24,12 +24,14 @@ export const PortraitSlotSchema = z.enum(['left', 'center', 'right']);
 const StoryIdSchema = z
     .string()
     .refine(isStoryId, 'Story id must be a lowercase underscore slug');
-const ReleaseIdSchema = z
-    .string()
-    .refine(isReleaseId, 'Release id must be sha256-<64 lowercase hex>');
-const Sha256Schema = z
-    .string()
-    .refine(isSha256, 'SHA-256 must contain 64 lowercase hex characters');
+const ReleaseIdSchema = z.string().refine(isReleaseId, {
+    message: 'Release id must be sha256-<64 lowercase hex>',
+    params: { assetErrorCode: 'integrity' },
+});
+const Sha256Schema = z.string().refine(isSha256, {
+    message: 'SHA-256 must contain 64 lowercase hex characters',
+    params: { assetErrorCode: 'integrity' },
+});
 const RelativePathSchema = z.string().refine(isSafeRelativePath, {
     message: 'Expected a safe relative path',
     params: { assetErrorCode: 'unsafe-path' },

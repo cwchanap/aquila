@@ -67,16 +67,25 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 }
 
 function errorCodeForZod(error: z.ZodError): AssetResolverErrorCode {
+    // Classify by a fixed precedence (unsafe-path > integrity > validation) so a
+    // document with several issues always reports the same code regardless of
+    // Zod's traversal order. An unsafe path is the most actionable/security-
+    // relevant signal, so it wins even when it co-occurs with an integrity issue.
+    let integritySeen = false;
     for (const issue of error.issues) {
         // `params` only exists on `ZodCustomIssue`; the union does not expose it.
         if (issue.code !== 'custom') continue;
         const code = (issue.params as { assetErrorCode?: unknown } | undefined)
             ?.assetErrorCode;
-        if (code === 'unsafe-path' || code === 'integrity') {
-            return code;
-        }
+        if (code === 'unsafe-path') return 'unsafe-path';
+        if (code === 'integrity') integritySeen = true;
     }
-    return 'validation';
+    return integritySeen ? 'integrity' : 'validation';
+}
+
+function formatZodIssue(issue: z.ZodIssue): string {
+    const path = issue.path.join('.');
+    return path ? `${path}: ${issue.message}` : issue.message;
 }
 
 function parseSchema<T>(
@@ -91,7 +100,10 @@ function parseSchema<T>(
         throw new AssetResolverError(
             errorCodeForZod(result.error),
             `Invalid ${contractName}`,
-            { details: result.error.issues.map(issue => issue.message) }
+            {
+                cause: result.error,
+                details: result.error.issues.map(formatZodIssue),
+            }
         );
     }
     return result.data;

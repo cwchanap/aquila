@@ -21,7 +21,7 @@ interface HeadingMatch {
 const HEADING_RE = /^##\s+\d+(?:\.\d+)?\.\s+(.+?)（.*?）\s*$/;
 const ID_RE = /^-\s+\*\*ID\*\*:\s*`([^`]+)`\s*$/;
 const ALIASES_RE = /^-\s+\*\*Aliases\*\*:\s*(.+)$/;
-const PORTRAIT_SLOT_RE = /^-\s+\*\*Portrait Slot\*\*:\s*(\S+)\s*$/;
+const PORTRAIT_SLOT_RE = /^-\s+\*\*Portrait Slot\*\*:\s*(.*)$/;
 const PROMPT_SECTION_RE = /^###\s+Portrait Prompts\s*$/;
 const PROMPT_ITEM_RE = /^-\s+\*\*(.+?)\*\*:\s*(.+)$/;
 
@@ -48,7 +48,10 @@ function parseAliases(line: string): string[] | null {
 function parsePortraitSlot(line: string): PortraitSlot | null | undefined {
     const match = line.match(PORTRAIT_SLOT_RE);
     if (!match) return undefined;
-    const value = match[1].toLowerCase();
+    // Any content after the label counts as an attempted slot assignment, so an
+    // empty or multi-token value is a hard error rather than a silently ignored
+    // line that would fall back to the default slot.
+    const value = match[1].trim().toLowerCase();
     if (value === 'left' || value === 'center' || value === 'right') {
         return value;
     }

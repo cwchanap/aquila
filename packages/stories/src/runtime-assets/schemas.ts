@@ -111,7 +111,11 @@ function variantSchema<T extends AssetFormat>(format: T) {
             format: z.literal(format),
             path: RelativePathSchema,
             sha256: ObjectContentSha256Schema,
-            byteLength: z.number().int().positive().optional(),
+            // `byteLength` is always present in the spec manifest example and is
+            // part of canonical release content, so it is required — letting it
+            // be optional would let two manifests for identical content hash to
+            // different releaseIds depending on whether the field was supplied.
+            byteLength: z.number().int().positive(),
         })
         .superRefine((variant, context) =>
             addObjectPathIssue(
@@ -220,19 +224,28 @@ export type ActiveReleasePointerV1 = z.infer<
     typeof ActiveReleasePointerV1Schema
 >;
 
-const ReleasePlanIncludedEntryV1Schema = z.object({
-    identity: LogicalAssetIdentitySchema,
-    disposition: z.literal('included'),
-    sourcePath: RelativePathSchema,
-    section: z.string().trim().min(1).max(200).optional(),
-});
+// Release-plan entries are publisher input, not runtime data, so unknown keys
+// are rejected rather than silently stripped. Spec line 187: an `omitted` entry
+// "has no source path" — a plan that supplies one is malformed and must surface
+// as an error instead of being quietly accepted. `.strict()` also keeps an
+// `included` entry from carrying a stray `reason`.
+const ReleasePlanIncludedEntryV1Schema = z
+    .object({
+        identity: LogicalAssetIdentitySchema,
+        disposition: z.literal('included'),
+        sourcePath: RelativePathSchema,
+        section: z.string().trim().min(1).max(200).optional(),
+    })
+    .strict();
 
-const ReleasePlanOmittedEntryV1Schema = z.object({
-    identity: LogicalAssetIdentitySchema,
-    disposition: z.literal('omitted'),
-    reason: z.string().trim().min(1).max(500),
-    section: z.string().trim().min(1).max(200).optional(),
-});
+const ReleasePlanOmittedEntryV1Schema = z
+    .object({
+        identity: LogicalAssetIdentitySchema,
+        disposition: z.literal('omitted'),
+        reason: z.string().trim().min(1).max(500),
+        section: z.string().trim().min(1).max(200).optional(),
+    })
+    .strict();
 
 export const StoryAssetReleasePlanEntryV1Schema = z.discriminatedUnion(
     'disposition',

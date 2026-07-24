@@ -6,8 +6,6 @@ export const storyPresentation = {
     portrait: {
         activeLimit: 1,
         defaultSlot: "center",
-        slotsByCharacterId: {
-
-        },
+        slotsByCharacterId: {},
     },
 } as const satisfies StoryPresentationMetadata;

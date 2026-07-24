@@ -122,10 +122,16 @@ describe('runtime asset paths', () => {
     });
 
     it('mints a branded digest and rejects malformed ones', () => {
-        expect(assertSha256('a'.repeat(64))).toBe('a'.repeat(64));
-        expect(() => assertSha256('nope')).toThrow(AssetResolverError);
+        expect(assertSha256<'object-content'>('a'.repeat(64))).toBe(
+            'a'.repeat(64)
+        );
+        expect(() => assertSha256<'object-content'>('nope')).toThrow(
+            AssetResolverError
+        );
         // uppercase hex is not a valid lowercase SHA-256
-        expect(() => assertSha256('A'.repeat(64))).toThrow(AssetResolverError);
+        expect(() => assertSha256<'object-content'>('A'.repeat(64))).toThrow(
+            AssetResolverError
+        );
     });
 
     it('rejects control characters, non-NFC forms, and out-of-bounds logical keys', () => {
@@ -141,5 +147,15 @@ describe('runtime asset paths', () => {
         expect(isSafeLogicalKey('')).toBe(false);
         expect(isSafeLogicalKey('a'.repeat(512))).toBe(true);
         expect(isSafeLogicalKey('a'.repeat(513))).toBe(false);
+    });
+
+    it('rejects Cf-category format characters that enable visual spoofing', () => {
+        // U+202E RIGHT-TO-LEFT OVERRIDE and U+200B ZERO WIDTH SPACE are invisible
+        // and can reorder or hide portions of a key in logs/UI. CJK keys that the
+        // runtime actually uses remain valid.
+        expect(isSafeLogicalKey('chapter\u202Esecret')).toBe(false);
+        expect(isSafeLogicalKey('chapter\u200Bsecret')).toBe(false);
+        expect(isSafeLogicalKey('\uFEFFchapter')).toBe(false);
+        expect(isSafeLogicalKey('第一章/鏡 房/夜')).toBe(true);
     });
 });

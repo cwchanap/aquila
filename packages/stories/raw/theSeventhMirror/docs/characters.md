@@ -9,6 +9,7 @@
 
 - **ID**: `asakura_mio`
 - **Aliases**: 澪, 女主角
+- **Portrait Slot**: left
 
 ### 基本資料
 
@@ -76,6 +77,7 @@
 
 - **ID**: `asakura_yuma`
 - **Aliases**: 悠真, 弟弟
+- **Portrait Slot**: right
 
 ### 基本資料
 

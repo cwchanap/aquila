@@ -8,6 +8,7 @@ describe('parseCharacters', () => {
 
 - **ID**: \`gu_yan\`
 - **Aliases**: 小顧, 顧言同學
+- **Portrait Slot**: left
 
 Some bio prose.
 
@@ -63,6 +64,23 @@ Some bio prose.
             'clenched jaw, narrowed eyes'
         );
         expect(dir.getById('narrator')?.portraits).toEqual({});
+    });
+
+    it('parses optional portrait slots', () => {
+        const dir = parseCharacters(sample);
+        expect(dir.getById('gu_yan')?.portraitSlot).toBe('left');
+        expect(dir.getById('narrator')?.portraitSlot).toBeUndefined();
+    });
+
+    it('rejects invalid portrait slots', () => {
+        const invalid = `## 1. 顧言（Gu Yan）
+
+- **ID**: \`gu_yan\`
+- **Portrait Slot**: foreground
+`;
+        expect(() => parseCharacters(invalid)).toThrow(
+            /Portrait Slot.*left, center, or right/
+        );
     });
 
     it('throws on missing ID', () => {

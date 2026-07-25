@@ -11,6 +11,7 @@ export enum Portrait {
     AsakuraMio_Scared = "asakura_mio/scared",
     AsakuraMio_Shocked = "asakura_mio/shocked",
     AsakuraSae_Base = "asakura_sae/base",
+    AsakuraSae_Determined = "asakura_sae/determined",
     AsakuraYuma_Base = "asakura_yuma/base",
     ChidaKosuke_Base = "chida_kosuke/base",
     ChidaKosuke_Determined = "chida_kosuke/determined",

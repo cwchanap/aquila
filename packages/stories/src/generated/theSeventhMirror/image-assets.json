@@ -1145,6 +1145,56 @@
       "key": "chapter_23/ch23_act8_s0",
       "path": "the_seventh_mirror/backgrounds/chapter_23/ch23_act8_s0.png",
       "prompt": "long-term neurorehabilitation medical center, corridor outside Misora's room and controlled meeting room, late night, fluorescent lighting, sealed equipment panel visible through observation window, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act1_s0.png",
+      "prompt": "temporary joint security conference room, long table with laptops and sealed evidence binders, wall monitor showing version system prompt with blank AUTHOR field, cold fluorescent lighting, grey morning light through reinforced window, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act2_s0.png",
+      "prompt": "M-00 external medical area, partitioned observation room with safe video link, monitor showing Sae's bedside and low-burden communication board, clinical equipment humming softly, cool fluorescent lighting, muted desaturated palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act3_s0.png",
+      "prompt": "Misora's node offline safety room, adjacent to long-term neurorehabilitation center, sealed equipment panels and independent sensing setup, wall monitor showing local shadow status, laptops with validation logs, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act4_s0.png",
+      "prompt": "secured judicial preservation room with multiple monitors, Patient-Root Location Index terminal, evidence binders on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act4_s1.png",
+      "prompt": "family notification room, small table with two chairs, soft lighting, tissue box on table, muted warm-grey palette, observation camera in corner, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act5_s0.png",
+      "prompt": "controlled meeting room adjacent to Misora's patient room, observation window showing medical bed with sleeping 13-year-old girl, bedside controller unit with sealed panel, test bench with same-model retired cartridge and manufacturer service simulator, cold fluorescent lighting, muted clinical palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act6_s0.png",
+      "prompt": "offline replay room, multiple monitors showing M-00 node and Misora node data side by side, physiological phase waveforms, EEG traces, sleep transition markers, dim cool lighting, equipment hum, muted clinical palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act7_s0.png",
+      "prompt": "temporary joint security conference room, large table with multiple laptops and sealed evidence binders, wall monitor showing R5 signature panel, court and family-representative video feeds on side screens, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act8_s0.png",
+      "prompt": "sealed audit room, secure video terminals showing regulatory authority feeds, wall monitor displaying continuity authority trace diagram, laptops and sealed evidence logs, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_24/ch24_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act8_s1.png",
+      "prompt": "sealed audit room, wall monitor now displaying R5 provisional status registration panel, single laptop active, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
     }
   ],
   "portraits": [
@@ -1347,6 +1397,11 @@
       "key": "fujikawa_mari/guarded",
       "path": "the_seventh_mirror/characters/fujikawa_mari/guarded.png",
       "prompt": "anime visual-novel portrait, 38-year-old woman, eyes watchful despite exhaustion, jaw tight, leaning back slightly, faded sweater, cool directional light, upper-body shot"
+    },
+    {
+      "key": "asakura_sae/determined",
+      "path": "the_seventh_mirror/characters/asakura_sae/determined.png",
+      "prompt": "anime visual-novel portrait, 46-year-old woman, eyes open with fierce but fading willpower, jaw set despite weakness, hospital gown, soft directional light, upper-body shot"
     }
   ]
 }

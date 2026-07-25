@@ -143,6 +143,10 @@ const config: StoryCompilerConfig = {
             pattern: /^(司法保全|司法保全人員)$/,
             id: 'judicial_preservation',
         },
+        {
+            pattern: /^(獨立患者權利代表|患者權利代表|獨立權利代表|權利代表)$/,
+            id: 'patient_rights_rep',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

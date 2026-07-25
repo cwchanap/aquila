@@ -37,6 +37,20 @@ describe('canonicalJson', () => {
             canonicalJson(Number.POSITIVE_INFINITY as unknown as JsonValue)
         ).toThrow(AssetResolverError);
     });
+
+    it('refuses to silently normalize sparse arrays', () => {
+        // `Array.prototype.map` skips holes in a sparse array, which would
+        // produce invalid JSON like `[,]` and violate the function's stated
+        // guarantee that `undefined` values are rejected rather than silently
+        // dropped. The serializer must visit holes as `undefined` so the
+        // existing integrity error fires.
+        const sparse = new Array<JsonValue>(2);
+        expect(() => canonicalJson(sparse)).toThrow(AssetResolverError);
+        // A sparse array nested inside an object is also rejected.
+        expect(() =>
+            canonicalJson({ holes: new Array<JsonValue>(1) } as JsonValue)
+        ).toThrow(AssetResolverError);
+    });
 });
 
 describe('canonicalReleaseContent', () => {

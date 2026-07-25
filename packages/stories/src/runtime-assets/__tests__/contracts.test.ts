@@ -421,6 +421,78 @@ describe('runtime asset wire contracts', () => {
         ).not.toThrow();
     });
 
+    it('rejects concrete URL values in the known section field', () => {
+        // `section` is a known scalar whose Zod schema only checks it is a
+        // non-empty string of at most 200 characters — it does NOT reject
+        // absolute URLs. Because the shape-aware URL walker skips known
+        // scalars, an environment-specific absolute URL placed in `section`
+        // would otherwise pass validation and enter the parsed manifest,
+        // contradicting the V1 requirement that public manifests never carry
+        // environment-specific absolute URLs. The scan must reject concrete
+        // URL forms (scheme://..., file://..., //host/...) in `section` while
+        // still permitting label-style values like `chapter:night`.
+        const httpsManifest = structuredClone(manifestFixture);
+        httpsManifest.assets[0].section =
+            'https://internal-assets.example.com/private/source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(httpsManifest),
+            'unsafe-path'
+        );
+
+        const fileManifest = structuredClone(manifestFixture);
+        fileManifest.assets[0].section = 'file:///etc/passwd';
+        expectCode(
+            () => parseRuntimeAssetManifest(fileManifest),
+            'unsafe-path'
+        );
+
+        const protocolRelativeManifest = structuredClone(manifestFixture);
+        protocolRelativeManifest.assets[0].section =
+            '//internal-assets.example.com/source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(protocolRelativeManifest),
+            'unsafe-path'
+        );
+
+        // Label-style values with a colon but no `://` remain acceptable.
+        const labelManifest = structuredClone(manifestFixture);
+        labelManifest.assets[0].section = 'chapter:night';
+        expect(() => parseRuntimeAssetManifest(labelManifest)).not.toThrow();
+    });
+
+    it('rejects whitespace-prefixed absolute URL values in unknown fields', () => {
+        // URL detection runs against the raw wire value before Zod's `.trim()`
+        // transformation strips leading whitespace. Without trimming on the
+        // detection side, a value like ` https://...` bypasses the anchored
+        // regex, then Zod trims it and silently accepts the absolute URL. The
+        // scan must trim leading whitespace before testing URL patterns.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    sourceUrl:
+                        ' https://internal-assets.example.com/source.png',
+                }),
+            'unsafe-path'
+        );
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    sourceUrl: ' //internal-assets.example.com/source.png',
+                }),
+            'unsafe-path'
+        );
+        // A whitespace-prefixed concrete URL in `section` is also rejected.
+        const sectionManifest = structuredClone(manifestFixture);
+        sectionManifest.assets[0].section =
+            ' https://internal-assets.example.com/source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(sectionManifest),
+            'unsafe-path'
+        );
+    });
+
     it('rejects protocol-relative URLs in unknown fields', () => {
         // A protocol-relative URL (`//host/path`) carries no scheme, so the
         // scheme-only regex missed it; the non-strict schema would then

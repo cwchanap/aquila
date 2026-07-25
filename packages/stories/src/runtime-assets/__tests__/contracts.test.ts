@@ -302,6 +302,80 @@ describe('runtime asset wire contracts', () => {
         );
     });
 
+    it('treats additive fields with prototype-inherited names as unknown (not shape keys)', () => {
+        // `constructor`, `toString`, and `__proto__` exist on Object.prototype.
+        // The schema-aware URL walker must NOT treat them as known object/array
+        // fields via the `in` operator — doing so recurses with the inherited
+        // value (e.g. the `Object` function) as the "shape", and `shape.scalars`
+        // is undefined on that value, throwing a raw TypeError. With
+        // `Object.hasOwn`, these names fall through to the unknown-field scan:
+        // a benign additive value is ignored, and an absolute URL inside it is
+        // rejected as `unsafe-path`.
+        expect(() =>
+            parseRuntimeAssetManifest({
+                ...manifestFixture,
+                constructor: {
+                    note: 'future metadata',
+                },
+            })
+        ).not.toThrow();
+
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    constructor: {
+                        endpoint: 'https://internal.example/assets',
+                    },
+                }),
+            'unsafe-path'
+        );
+
+        // `toString` is a normal own key in an object literal (only `__proto__:`
+        // triggers the prototype-setter syntax), so the walker visits it.
+        expect(() =>
+            parseRuntimeAssetManifest({
+                ...manifestFixture,
+                toString: { harmless: true },
+            })
+        ).not.toThrow();
+
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    toString: 'https://internal.example/leak',
+                }),
+            'unsafe-path'
+        );
+
+        // `__proto__` as an OWN data property — the shape it arrives in from
+        // `JSON.parse`, which (unlike object-literal syntax) creates a real own
+        // `__proto__` key rather than invoking the prototype-setter. An object
+        // literal cannot express this case, so define the own property
+        // explicitly to mimic the JSON wire path.
+        const withOwnProto = { ...manifestFixture };
+        Object.defineProperty(withOwnProto, '__proto__', {
+            value: { note: 'future metadata' },
+            enumerable: true,
+            configurable: true,
+            writable: true,
+        });
+        expect(() => parseRuntimeAssetManifest(withOwnProto)).not.toThrow();
+
+        const withOwnProtoUrl = { ...manifestFixture };
+        Object.defineProperty(withOwnProtoUrl, '__proto__', {
+            value: { endpoint: 'https://internal.example/assets' },
+            enumerable: true,
+            configurable: true,
+            writable: true,
+        });
+        expectCode(
+            () => parseRuntimeAssetManifest(withOwnProtoUrl),
+            'unsafe-path'
+        );
+    });
+
     it('rejects absolute URL values in unknown pointer fields', () => {
         expectCode(
             () =>

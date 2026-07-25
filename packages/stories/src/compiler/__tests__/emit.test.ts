@@ -250,15 +250,17 @@ describe('emitStory', () => {
         expect(presentation).toContain('activeLimit: 1');
     });
 
-    it('emits computed-property slot keys so __proto__ cannot poison the lookup', async () => {
-        // A character ID of `__proto__` must not exercise the object-literal
-        // prototype-setter semantics. With a bare `"__proto__": "left"` key the
-        // property is not created as an own property and a runtime lookup
-        // returns Object.prototype (a non-string), breaking the
-        // `PortraitSlot` contract. Computed keys (`["__proto__"]: "left"`)
-        // create a normal own property. This is a runtime test, not a
-        // text-content assertion: it evaluates the generated module's object
-        // literal and verifies the slot is retrievable as an own property.
+    it('rejects reserved Object.prototype names as character IDs at emit time', () => {
+        // Character IDs become raw-string keys in the generated
+        // `characterTable` and `slotsByCharacterId` (ordinary objects). A
+        // lookup for a reserved name (`__proto__`, `constructor`, `toString`,
+        // ...) returns the inherited Object.prototype value instead of
+        // `undefined` when no own property is emitted, breaking the
+        // `T | undefined` contract. Computed keys only fix the explicit-
+        // assignment case; absent-key lookups still hit the prototype. The
+        // emitter now rejects reserved IDs at emit time (defense in depth
+        // alongside parse-characters) so neither the explicit-slot nor the
+        // absent-slot path can produce a poisoned lookup.
         const protoDir: ParsedCharacterDirectory = {
             characters: [
                 {
@@ -273,40 +275,32 @@ describe('emitStory', () => {
             getIdByName: (name: string) =>
                 protoDir.characters.find(c => c.name === name)?.id,
         };
-        const protoOut = mkdtempSync(join(tmpdir(), 'emit-proto-'));
-        try {
-            emitStory(story, protoOut, protoDir);
-            const presentationPath = join(protoOut, 'presentation.ts');
-            const presentationSrc = readFileSync(presentationPath, 'utf8');
-            // Sanity: the emitter used a computed key, not a bare literal.
-            expect(presentationSrc).toContain('["__proto__"]: "left"');
-            expect(presentationSrc).not.toContain('"__proto__": "left"');
+        expect(() => emitStory(story, dir, protoDir)).toThrow(
+            /reserved.*__proto__/s
+        );
 
-            // Runtime check: strip TS-only syntax and evaluate the object
-            // literal the generated module exports, then confirm the slot is
-            // retrievable as a normal own property. This exercises the actual
-            // emitted JavaScript semantics rather than just text content.
-            const objectLiteralSrc = presentationSrc
-                .replace(/^import type.*$/gm, '')
-                .replace(
-                    /export const storyPresentation =/,
-                    'const storyPresentation ='
-                )
-                .replace(/\s+as const satisfies [^;]+;?\s*$/, ';');
-            // eslint-disable-next-line no-new-func
-            const evaluate = new Function(
-                `${objectLiteralSrc}\n return storyPresentation;`
-            ) as () => {
-                portrait: { slotsByCharacterId: Record<string, unknown> };
-            };
-            const slots = evaluate().portrait.slotsByCharacterId;
-            expect(
-                Object.prototype.hasOwnProperty.call(slots, '__proto__')
-            ).toBe(true);
-            expect(slots['__proto__']).toBe('left');
-        } finally {
-            rmSync(protoOut, { recursive: true, force: true });
-        }
+        // A reserved ID WITHOUT a portraitSlot (the absent-key fallback case
+        // the reviewer flagged) is also rejected — previously this would have
+        // emitted a `slotsByCharacterId` with no own `__proto__` entry, so a
+        // runtime `slotsByCharacterId['__proto__'] ?? defaultSlot` returned
+        // Object.prototype (truthy) and skipped the fallback.
+        const constructorDir: ParsedCharacterDirectory = {
+            characters: [
+                {
+                    id: 'constructor',
+                    name: '构造',
+                    aliases: [],
+                    portraits: {},
+                },
+            ],
+            getById: (id: string) =>
+                constructorDir.characters.find(c => c.id === id),
+            getIdByName: (name: string) =>
+                constructorDir.characters.find(c => c.name === name)?.id,
+        };
+        expect(() => emitStory(story, dir, constructorDir)).toThrow(
+            /reserved.*constructor/s
+        );
     });
 
     it('throws when two character IDs collapse to the same enum key', () => {

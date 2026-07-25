@@ -47,6 +47,30 @@ function assertNoCharEnumKeyCollisions(ids: string[]): void {
     }
 }
 
+// Character IDs become raw-string keys in the generated `characterTable` and
+// `slotsByCharacterId` (both ordinary objects). A lookup for a reserved
+// Object.prototype name (`__proto__`, `constructor`, `toString`, ...) returns
+// the inherited value instead of `undefined` when no own property is emitted,
+// breaking the `T | undefined` contract. Computed keys only fix the explicit-
+// assignment case; absent-key lookups still hit the prototype. Rejecting
+// reserved IDs at emit time catches the whole class regardless of how the
+// `ParsedCharacterDirectory` was built (parse-characters also checks, but
+// direct callers like tests can bypass it). Mirrors the
+// `assertNoCharEnumKeyCollisions` defense-in-depth pattern.
+const RESERVED_OBJECT_PROPERTY_NAMES = new Set<string>(
+    Object.getOwnPropertyNames(Object.prototype)
+);
+function assertNoReservedCharacterIds(ids: string[]): void {
+    const reserved = ids.filter(id => RESERVED_OBJECT_PROPERTY_NAMES.has(id));
+    if (reserved.length > 0) {
+        throw new Error(
+            `[story-compiler] character IDs are reserved (inherited from Object.prototype) and cannot be used as object keys: ${reserved
+                .map(i => `"${i}"`)
+                .join(', ')}`
+        );
+    }
+}
+
 function emitSceneFile(
     story: StoryIR,
     sceneId: string,
@@ -222,6 +246,7 @@ function emitBackgrounds(bgEnum: Map<string, string>): string | null {
 
 function emitCharacters(dir: ParsedCharacterDirectory): string {
     assertNoCharEnumKeyCollisions(dir.characters.map(c => c.id));
+    assertNoReservedCharacterIds(dir.characters.map(c => c.id));
 
     const enumEntries = dir.characters
         .map(c => `    ${charEnumKey(c.id)} = ${q(c.id)},`)
@@ -265,12 +290,14 @@ function emitCharacters(dir: ParsedCharacterDirectory): string {
 }
 
 function emitPresentation(dir: ParsedCharacterDirectory): string {
-    // Computed-property keys (`["__proto__"]: "left"`) prevent a character ID
-    // such as `__proto__` from hitting the object-literal prototype-setter
-    // semantics — a bare `"__proto__": "left"` does not create an own property
-    // and would later resolve to Object.prototype via `slotsByCharacterId[id]`.
-    // The character table emitter already uses computed keys for the same
-    // reason; this matches that pattern.
+    // Computed-property keys (`["id"]: "left"`) create own data properties
+    // unconditionally, even for names like `__proto__` that have special
+    // object-literal prototype-setter semantics as bare keys. Reserved
+    // Object.prototype names are rejected upstream in `emitCharacters` and
+    // `parseCharacters`, so this path is defense-in-depth — computed keys
+    // ensure any ID that slips through still becomes an own property rather
+    // than silently setting the prototype. The character table emitter uses
+    // computed keys for the same reason.
     const slotEntries = dir.characters
         .filter(character => character.portraitSlot !== undefined)
         .map(

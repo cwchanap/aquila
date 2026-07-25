@@ -28,7 +28,7 @@ Hospital safety conference room, morning, long table with laptops and printed ev
 
 **朝倉澪** [shocked]：（內心）SEALED。操作者身分被封緘。前台日誌不顯示真人。只有案件別名。
 
-**指定專家**：特權代理將琴音的緊急臨床根恢復請求——轉製為關聯承包商緊急臨床資產回收工單。
+**指定專家**：特權代理將琴音的緊急臨床根恢復請求——轉換為關聯承包商緊急臨床資產回收工單。
 
 **旁白**：螢幕上出現工單鏈。請求。轉製。工單。三層。
 
@@ -62,7 +62,7 @@ Hospital safety conference room, morning, long table with laptops and printed ev
 
 **指定專家**：HOLDER TRANSFERRED。DEFAULT RECEIVING——WANGAN CENTRAL。CLINICAL ROOT WITH PERSONAL EFFECTS。
 
-**朝倉澪** [shocked]：（內心）灣岸中央。那些東西。她在 Chapter 7 說過灣岸中央。我在 Chapter 8 聽她說過那些東西。她不應該知道這些。可是——模板在這裡。
+**朝倉澪** [shocked]：（內心）灣岸中央。那些東西。她之前說過灣岸中央。我也聽她說過那些東西。她不應該知道這些。可是——模板在這裡。
 
 **日下部悟**：這是支援套件的轉送通知模板。持有人受傷時——預設接收路徑是灣岸中央。臨床根隨私人物轉移。
 
@@ -118,7 +118,7 @@ Hospital corridor outside formal questioning room, late morning, cold fluorescen
 
 **朝倉澪** [exhausted]：（內心）可是她穿了那件衣服。她去了。她準備好了。
 
-**日下部悟**：她沒有使用輪次語言。沒有說「這一輪」。沒有說「上一輪」。沒有說「又一次」。只說——那晚持有人沒有來。
+**日下部悟**：她沒有提到輪次。沒有說「這一輪」。沒有說「上一輪」。沒有說「又一次」。只說——那晚持有人沒有來。
 
 **朝倉澪** [determined]：⋯⋯她知道自己是第幾輪嗎。
 

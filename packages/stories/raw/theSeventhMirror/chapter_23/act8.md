@@ -16,7 +16,7 @@ long-term neurorehabilitation medical center, corridor outside Misora's room and
 
 **白石琴音** [sad]：我只看見這些。我不知道背後是誰。前台日誌不顯示真人操作者。
 
-**朝倉澪** [exhausted]：（內心）案件別名。特權代理。操作者身分被封緘。她不知道背後是誰。她只是一個前台。一個被引導的家屬。真正的人——在更高層的不可改寫稽核裡。受主管機關或國安封緘。Chapter 24。
+**朝倉澪** [exhausted]：（內心）案件別名。特權代理。操作者身分被封緘。她不知道背後是誰。她只是一個前台。一個被引導的家屬。真正的人——在更高層的不可改寫稽核裡。受主管機關或國安封緘。還不知道是誰。
 
 **旁白**：21:45。琴音繼續。
 
@@ -98,7 +98,7 @@ long-term neurorehabilitation medical center, corridor outside Misora's room and
 
 **旁白**：23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。
 
-**訊息**：星期一以前。Domain-P 撤銷。其他患者影子。高層 override。Chapter 24。
+**訊息**：星期一以前。Domain-P 撤銷。其他患者影子。高層 override。後續再談。
 
 **旁白**：她把手機放回口袋。她看了一眼走廊盡頭。螢光燈。白色的。很亮。
 

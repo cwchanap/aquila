@@ -616,6 +616,7 @@
 - **sad**: anime visual-novel portrait, 43-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose from tie, cardigan, dim soft lighting, upper-body shot
 - **guarded**: anime visual-novel portrait, 43-year-old woman, eyes sharp and watchful despite exhaustion, jaw tight, leaning back slightly, cardigan, cool directional light, upper-body shot
 - **shocked**: anime visual-novel portrait, 43-year-old woman, eyes wide, breath caught, face pale, cardigan, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 43-year-old woman, jaw set, eyes steady with quiet resolve despite exhaustion, shoulders squared, cardigan, soft warm directional light, upper-body shot
 
 ---
 
@@ -1265,3 +1266,14 @@
 ### 說明
 
 泛指由司法或獨立醫療倫理機構安排到場的獨立患者權利代表。無人格，純功能性角色，負責確認患者（尤其是未成年人、高依存者或無法自行表達者）對資料用途、撤回與安全暫停的理解是否真實、是否在疲勞或壓力下失真、是否知道可以拒絕。不隸屬研究設施、不隸屬控制方、不隸屬家屬，也不替外部醫療或系統安全背書。任何模糊均被解讀為不授權。說話風格溫和但精確、以患者權利為唯一軸心，不替任何一方代言。
+
+---
+
+## 59. C2 值班醫療主管（C2 On-call Medical Director）
+
+- **ID**: `c2_oncall_director`
+- **Aliases**: 值班主管, 值班醫療主管, C2 值班主管
+
+### 說明
+
+C2 設施當輪值班醫療主管。非終局惡人——真心相信外部接管增加患者失穩風險，因此在知道 no-move 存在下，仍以「患者穩定／外部控制衝突」為理由對 continuity broker 自動產生的 relocation proposal 作內部 medical affirmation。但 no-move 的醫療緊急例外要求一名與原管理鏈無利益關係的獨立醫師確認，值班主管未取得該確認，因此只能讓承包商搬送車被預派，不能合法使患者離床。須面對程序與醫療判斷審查。說話風格沉穩、以患者安全為理由、帶著被外部程序挑戰的防衛性，不是掩蓋而是制度內的善意判斷。

@@ -1195,6 +1195,81 @@
       "key": "chapter_24/ch24_act8_s1",
       "path": "the_seventh_mirror/backgrounds/chapter_24/ch24_act8_s1.png",
       "prompt": "sealed audit room, wall monitor now displaying R5 provisional status registration panel, single laptop active, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act1_s0.png",
+      "prompt": "C2 medical facility perimeter at dawn, temporary command post van with monitors glowing, grey pre-dawn sky, cold fluorescent spill from facility windows, white transport vehicle parked at access road, security vehicles, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act2_s0.png",
+      "prompt": "C2 clinical isolation ward interior, long corridor with sealed doors, medical monitoring equipment visible through observation window, cold fluorescent lighting, sterile white walls, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act3_s0.png",
+      "prompt": "C2 ward exterior corridor, external clinical sidecar equipment setup, portable HSM hardware on mobile cart, sealed cables, laptop with attestation screen, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act3_s1.png",
+      "prompt": "C2 facility continuity enclave, disaster recovery cabinet room, sealed HSM rack with status LEDs, maintenance mode panel, cold blue lighting, dark room with equipment glow, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act4_s0.png",
+      "prompt": "C2 security conference room, long table with laptops and sealed binders, wall monitor showing EAST-METRO parallel connection feed, cold fluorescent lighting, grey midday light through reinforced window, muted sterile palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act5_s0.png",
+      "prompt": "C2 hospital isolation ward, single bed with medical monitoring equipment, 14-year-old girl unconscious with closed eyes, IV lines and biometric sensors, soft clinical lighting, muted cool palette with faint warm afternoon light through blinds, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_25/ch25_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act6_s0.png",
+      "prompt": "public operations security room, multiple video terminals showing court, medical alliance and media safe-room feeds, wall monitor displaying Public Deny Manifest draft, laptops and sealed evidence binders, cold fluorescent lighting, late afternoon grey light through reinforced window, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act7_s0.png",
+      "prompt": "continuity monitoring room, multiple screens showing regional HSM status feeds and sealed evidence vault custody map, laptops with redacted evidence logs, cold fluorescent lighting, deep evening shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act7_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act7_s1.png",
+      "prompt": "continuity monitoring room, center screen now showing old BCP document scan with red annotations, side screens showing KAGAMI-01 alert deployment and regional node preposition map, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act7_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act7_s2.png",
+      "prompt": "continuity monitoring room, right screen showing Nagihara Yui on secure video feed re-signing emergency-priority revocation, left screen showing KAGAMI-01 bundle/token alert deployment status, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act7_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act7_s3.png",
+      "prompt": "continuity monitoring room, all three screens active, left showing operations heartbeat PRESENT/DENIED, center showing S7 status OFFLINE/CUTOVER-BOUND with no receipt, right showing official phone +7000ms path monitoring only, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act8_s0.png",
+      "prompt": "continuity monitoring room, all three screens active, left showing operations heartbeat PRESENT/DENIED, center showing S7 cutover countdown, right showing court emergency video frozen on hold request, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_25/ch25_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act8_s1.png",
+      "prompt": "continuity monitoring room, center screen now showing S7 science escrow HSM cutover sequence beginning, cold blue glow on screen, all other screens dimmed, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen"
+    },
+    {
+      "key": "chapter_25/ch25_act8_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act8_s2.png",
+      "prompt": "continuity monitoring room, center screen now displaying CUTOVER AUTH LEASE assembly, both token serials visible, bundle hash TOKYO-7, issued timestamp SUN 23:50, valid until MON 06:20, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen"
+    },
+    {
+      "key": "chapter_25/ch25_act8_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act8_s3.png",
+      "prompt": "continuity monitoring room, left screen showing package preposition status split into continuity-controlled STARTED and normal operations HELD, center screen showing CUTOVER AUTH LEASE still active, right screen showing Evidence Vault multi-source attestation trigger, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
     }
   ],
   "portraits": [
@@ -1402,6 +1477,11 @@
       "key": "asakura_sae/determined",
       "path": "the_seventh_mirror/characters/asakura_sae/determined.png",
       "prompt": "anime visual-novel portrait, 46-year-old woman, eyes open with fierce but fading willpower, jaw set despite weakness, hospital gown, soft directional light, upper-body shot"
+    },
+    {
+      "key": "minase_yoshino/determined",
+      "path": "the_seventh_mirror/characters/minase_yoshino/determined.png",
+      "prompt": "anime visual-novel portrait, 43-year-old woman, jaw set, eyes steady with quiet resolve despite exhaustion, shoulders squared, cardigan, soft warm directional light, upper-body shot"
     }
   ]
 }

@@ -499,11 +499,8 @@ describe('runtime asset wire contracts', () => {
             assertReleaseIdMatchesContentSha256(manifest, manifestBytesDigest);
             // Call kept single-line so the directive covers the erroring arg.
             // @ts-expect-error - ReleaseContentSha256 is not a ManifestByteSha256.
-            validatePointerManifestPair(
-                pointer,
-                manifest,
-                releaseContentDigest
-            );
+            // prettier-ignore
+            validatePointerManifestPair(pointer, manifest, releaseContentDigest);
         }
         // Reference the function so it is not dropped before tsc checks it.
         expect(typeof compileTimeOnly).toBe('function');

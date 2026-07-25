@@ -143,25 +143,167 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 // value is an absolute URL would slip past it and then be silently stripped by
 // Zod (the manifest/pointer schemas are intentionally non-strict to allow
 // additive forward-compatible fields). The raw document has already exposed
-// the value by that point. This recursive check inspects string VALUES and
-// rejects any that carry a URL scheme — catching `http:`, `https:`, and any
-// other scheme (file:, ftp:, ...) regardless of the field name. It does not
-// flag URLs merely mentioned inside prose (e.g. a release-plan `reason`), only
-// values that are themselves scheme-bearing absolute URLs.
+// the value by that point.
+//
+// This check inspects string VALUES — but only under UNKNOWN (additive) keys.
+// Known schema fields are skipped because:
+//   1. Their values are already validated by Zod for safety (paths are
+//      relative, story IDs are slugs, digests are hex, etc.).
+//   2. Some known fields intentionally permit colons — `identity.key` (a
+//      logical key) and `section` (free-form prose) can legitimately be
+//      `chapter:night` or `prologue:intro`, which a naive scheme-prefix regex
+//      would falsely reject as an absolute URL.
+//
+// It detects both scheme-bearing absolute URLs (`http:`, `https:`, `file:`,
+// ...) and protocol-relative URLs (`//host/path`), which the scheme-only regex
+// missed and which would otherwise be silently stripped by the non-strict
+// schema as unknown-field values.
 const ABSOLUTE_URL_SCHEME_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
-function findAbsoluteUrlValues(input: unknown, path = '$'): string[] {
+const PROTOCOL_RELATIVE_URL_RE = /^\/\//;
+function isAbsoluteUrlValue(value: string): boolean {
+    return (
+        ABSOLUTE_URL_SCHEME_RE.test(value) ||
+        PROTOCOL_RELATIVE_URL_RE.test(value)
+    );
+}
+
+// Describes the known (schema-validated) shape of a wire document so the URL
+// scan can skip known fields and only inspect unknown additive metadata. Scalar
+// keys hold primitives validated by Zod; object/array keys describe the nested
+// shape to recurse into. Anything not in the shape is unknown and gets fully
+// scanned.
+type KnownShape = {
+    readonly scalars: ReadonlySet<string>;
+    readonly objects: Readonly<Record<string, KnownShape>>;
+    readonly arrays: Readonly<Record<string, KnownShape>>;
+};
+
+const VARIANT_SHAPE: KnownShape = {
+    scalars: new Set(['format', 'path', 'sha256', 'byteLength']),
+    objects: {},
+    arrays: {},
+};
+
+const MANIFEST_SHAPE: KnownShape = {
+    scalars: new Set(['schemaVersion', 'storyId', 'releaseId']),
+    objects: {},
+    arrays: {
+        assets: {
+            scalars: new Set(['width', 'height', 'section']),
+            objects: {
+                identity: {
+                    scalars: new Set(['type', 'key']),
+                    objects: {},
+                    arrays: {},
+                },
+                variants: {
+                    scalars: new Set(),
+                    objects: {
+                        webp: VARIANT_SHAPE,
+                        avif: VARIANT_SHAPE,
+                    },
+                    arrays: {},
+                },
+                placeholder: {
+                    scalars: new Set([
+                        'format',
+                        'path',
+                        'sha256',
+                        'width',
+                        'height',
+                    ]),
+                    objects: {},
+                    arrays: {},
+                },
+            },
+            arrays: {},
+        },
+    },
+};
+
+const POINTER_SHAPE: KnownShape = {
+    scalars: new Set([
+        'schemaVersion',
+        'storyId',
+        'releaseId',
+        'manifestPath',
+        'manifestSha256',
+        'publishedAt',
+    ]),
+    objects: {},
+    arrays: {},
+};
+
+// Scan every string value under `input` for absolute URLs, regardless of key
+// names — used once we've descended into an unknown (additive) field where
+// everything below is also unknown.
+function scanAllStringsForUrls(input: unknown, path: string): string[] {
     if (typeof input === 'string') {
-        return ABSOLUTE_URL_SCHEME_RE.test(input) ? [path] : [];
+        return isAbsoluteUrlValue(input) ? [path] : [];
     }
     if (Array.isArray(input)) {
         return input.flatMap((item, index) =>
-            findAbsoluteUrlValues(item, `${path}[${index}]`)
+            scanAllStringsForUrls(item, `${path}[${index}]`)
         );
     }
     if (typeof input !== 'object' || input === null) return [];
     const findings: string[] = [];
     for (const [key, value] of Object.entries(input)) {
-        findings.push(...findAbsoluteUrlValues(value, `${path}.${key}`));
+        findings.push(...scanAllStringsForUrls(value, `${path}.${key}`));
+    }
+    return findings;
+}
+
+// Walk `input` alongside the known schema shape. Known scalar keys are skipped
+// (Zod validates them). Known object/array keys are recursed into with their
+// nested shape. Unknown keys are fully scanned for absolute URL values.
+function findAbsoluteUrlValues(
+    input: unknown,
+    shape: KnownShape,
+    path = '$'
+): string[] {
+    if (typeof input === 'string') {
+        // Only reached at the top level if the entire document is a string;
+        // treat it as unknown and scan.
+        return isAbsoluteUrlValue(input) ? [path] : [];
+    }
+    if (Array.isArray(input)) {
+        // An array at a position where the shape expects an array element
+        // shape — recurse with the same element shape. If the shape doesn't
+        // expect an array here, scan everything.
+        return input.flatMap((item, index) =>
+            findAbsoluteUrlValues(item, shape, `${path}[${index}]`)
+        );
+    }
+    if (typeof input !== 'object' || input === null) return [];
+    const findings: string[] = [];
+    for (const [key, value] of Object.entries(input)) {
+        const childPath = `${path}.${key}`;
+        if (shape.scalars.has(key)) {
+            // Known scalar — Zod validates its value; skip.
+            continue;
+        }
+        if (key in shape.objects) {
+            findings.push(
+                ...findAbsoluteUrlValues(value, shape.objects[key], childPath)
+            );
+        } else if (key in shape.arrays) {
+            const elementShape = shape.arrays[key];
+            if (Array.isArray(value)) {
+                for (let i = 0; i < value.length; i++) {
+                    findings.push(
+                        ...findAbsoluteUrlValues(
+                            value[i],
+                            elementShape,
+                            `${childPath}[${i}]`
+                        )
+                    );
+                }
+            }
+        } else {
+            // Unknown additive key — scan all string values beneath it.
+            findings.push(...scanAllStringsForUrls(value, childPath));
+        }
     }
     return findings;
 }
@@ -221,7 +363,7 @@ export function parseRuntimeAssetManifest(
             { details: forbiddenFields }
         );
     }
-    const urlFields = findAbsoluteUrlValues(input);
+    const urlFields = findAbsoluteUrlValues(input, MANIFEST_SHAPE);
     if (urlFields.length > 0) {
         throw new AssetResolverError(
             'unsafe-path',
@@ -239,7 +381,7 @@ export function parseRuntimeAssetManifest(
 export function parseActiveReleasePointer(
     input: unknown,
     target: PublicationTarget = { kind: 'production' },
-    expectedStoryId?: string
+    expectedStoryId: string
 ): ActiveReleasePointerV1 {
     assertKnownVersion(input, 1, 'active-release pointer');
     const forbiddenFields = findForbiddenRuntimeFields(input);
@@ -250,7 +392,7 @@ export function parseActiveReleasePointer(
             { details: forbiddenFields }
         );
     }
-    const urlFields = findAbsoluteUrlValues(input);
+    const urlFields = findAbsoluteUrlValues(input, POINTER_SHAPE);
     if (urlFields.length > 0) {
         throw new AssetResolverError(
             'unsafe-path',
@@ -263,7 +405,14 @@ export function parseActiveReleasePointer(
         input,
         'active-release pointer'
     );
-    if (expectedStoryId !== undefined && pointer.storyId !== expectedStoryId) {
+    // The pointer is fetched from a story-scoped path (`<storyId>/current.json`)
+    // and must agree with the story the resolver requested. Without this check a
+    // pointer returned for story A could claim story B's manifest path and pass
+    // `validatePointerManifestPair`, which only proves the pointer and manifest
+    // agree with each other — not that either agrees with the resolver source.
+    // `AssetResolverSource` always carries a `storyId`, so callers always have
+    // the required value.
+    if (pointer.storyId !== expectedStoryId) {
         throw new AssetResolverError(
             'story-mismatch',
             `Pointer story id ${pointer.storyId} does not match requested story ${expectedStoryId}`

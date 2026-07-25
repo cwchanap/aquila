@@ -246,8 +246,67 @@ describe('emitStory', () => {
         emitStory(story, dir, mockCharDir);
         const presentation = readFileSync(join(dir, 'presentation.ts'), 'utf8');
         expect(presentation).toContain('defaultSlot: "center"');
-        expect(presentation).toContain('"li_jie": "left"');
+        expect(presentation).toContain('["li_jie"]: "left"');
         expect(presentation).toContain('activeLimit: 1');
+    });
+
+    it('emits computed-property slot keys so __proto__ cannot poison the lookup', async () => {
+        // A character ID of `__proto__` must not exercise the object-literal
+        // prototype-setter semantics. With a bare `"__proto__": "left"` key the
+        // property is not created as an own property and a runtime lookup
+        // returns Object.prototype (a non-string), breaking the
+        // `PortraitSlot` contract. Computed keys (`["__proto__"]: "left"`)
+        // create a normal own property. This is a runtime test, not a
+        // text-content assertion: it evaluates the generated module's object
+        // literal and verifies the slot is retrievable as an own property.
+        const protoDir: ParsedCharacterDirectory = {
+            characters: [
+                {
+                    id: '__proto__',
+                    name: '原型',
+                    aliases: [],
+                    portraits: {},
+                    portraitSlot: 'left',
+                },
+            ],
+            getById: (id: string) => protoDir.characters.find(c => c.id === id),
+            getIdByName: (name: string) =>
+                protoDir.characters.find(c => c.name === name)?.id,
+        };
+        const protoOut = mkdtempSync(join(tmpdir(), 'emit-proto-'));
+        try {
+            emitStory(story, protoOut, protoDir);
+            const presentationPath = join(protoOut, 'presentation.ts');
+            const presentationSrc = readFileSync(presentationPath, 'utf8');
+            // Sanity: the emitter used a computed key, not a bare literal.
+            expect(presentationSrc).toContain('["__proto__"]: "left"');
+            expect(presentationSrc).not.toContain('"__proto__": "left"');
+
+            // Runtime check: strip TS-only syntax and evaluate the object
+            // literal the generated module exports, then confirm the slot is
+            // retrievable as a normal own property. This exercises the actual
+            // emitted JavaScript semantics rather than just text content.
+            const objectLiteralSrc = presentationSrc
+                .replace(/^import type.*$/gm, '')
+                .replace(
+                    /export const storyPresentation =/,
+                    'const storyPresentation ='
+                )
+                .replace(/\s+as const satisfies [^;]+;?\s*$/, ';');
+            // eslint-disable-next-line no-new-func
+            const evaluate = new Function(
+                `${objectLiteralSrc}\n return storyPresentation;`
+            ) as () => {
+                portrait: { slotsByCharacterId: Record<string, unknown> };
+            };
+            const slots = evaluate().portrait.slotsByCharacterId;
+            expect(
+                Object.prototype.hasOwnProperty.call(slots, '__proto__')
+            ).toBe(true);
+            expect(slots['__proto__']).toBe('left');
+        } finally {
+            rmSync(protoOut, { recursive: true, force: true });
+        }
     });
 
     it('throws when two character IDs collapse to the same enum key', () => {

@@ -265,11 +265,17 @@ function emitCharacters(dir: ParsedCharacterDirectory): string {
 }
 
 function emitPresentation(dir: ParsedCharacterDirectory): string {
+    // Computed-property keys (`["__proto__"]: "left"`) prevent a character ID
+    // such as `__proto__` from hitting the object-literal prototype-setter
+    // semantics — a bare `"__proto__": "left"` does not create an own property
+    // and would later resolve to Object.prototype via `slotsByCharacterId[id]`.
+    // The character table emitter already uses computed keys for the same
+    // reason; this matches that pattern.
     const slotEntries = dir.characters
         .filter(character => character.portraitSlot !== undefined)
         .map(
             character =>
-                `            ${q(character.id)}: ${q(character.portraitSlot!)},`
+                `            [${q(character.id)}]: ${q(character.portraitSlot!)},`
         )
         .join('\n');
     // Emit `{}` inline when there are no slots so the block does not contain a

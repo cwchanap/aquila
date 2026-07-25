@@ -27,6 +27,11 @@ const manifestFixturePath = join(
     'runtime-manifest.v1.json'
 );
 
+// The pointer fixture's storyId. `parseActiveReleasePointer` now requires the
+// caller to bind the pointer to the requested story, so every call site passes
+// this explicitly.
+const FIXTURE_STORY_ID = 'fixture_story';
+
 // Independently derived digests from the fixture bytes — NOT the values
 // declared inside the fixtures. The fixtures' declared `releaseId` and
 // `manifestSha256` must reproduce these; if they drift, the tests below fail.
@@ -56,7 +61,11 @@ describe('runtime asset wire contracts', () => {
             ...manifestFixture,
             futureReaderHint: true,
         });
-        const pointer = parseActiveReleasePointer(currentFixture);
+        const pointer = parseActiveReleasePointer(
+            currentFixture,
+            { kind: 'production' },
+            FIXTURE_STORY_ID
+        );
 
         expect(manifest.assets).toHaveLength(2);
         expect('futureReaderHint' in manifest).toBe(false);
@@ -86,10 +95,14 @@ describe('runtime asset wire contracts', () => {
         );
         expectCode(
             () =>
-                parseActiveReleasePointer({
-                    ...currentFixture,
-                    schemaVersion: 2,
-                }),
+                parseActiveReleasePointer(
+                    {
+                        ...currentFixture,
+                        schemaVersion: 2,
+                    },
+                    { kind: 'production' },
+                    FIXTURE_STORY_ID
+                ),
             'unknown-schema-version'
         );
         expectCode(
@@ -292,18 +305,71 @@ describe('runtime asset wire contracts', () => {
     it('rejects absolute URL values in unknown pointer fields', () => {
         expectCode(
             () =>
-                parseActiveReleasePointer({
-                    ...currentFixture,
-                    sourceUrl: 'https://internal-assets.example.com/source.png',
+                parseActiveReleasePointer(
+                    {
+                        ...currentFixture,
+                        sourceUrl:
+                            'https://internal-assets.example.com/source.png',
+                    },
+                    { kind: 'production' },
+                    FIXTURE_STORY_ID
+                ),
+            'unsafe-path'
+        );
+        expectCode(
+            () =>
+                parseActiveReleasePointer(
+                    {
+                        ...currentFixture,
+                        metadata: {
+                            origin: 'http://127.0.0.1/private-assets/',
+                        },
+                    },
+                    { kind: 'production' },
+                    FIXTURE_STORY_ID
+                ),
+            'unsafe-path'
+        );
+    });
+
+    it('accepts colon-bearing values in known schema fields (logical keys and sections)', () => {
+        // The URL scan only inspects UNKNOWN additive fields. Known fields like
+        // `identity.key` and `section` intentionally permit colons (logical
+        // keys are not URL schemes; sections are free-form labels). A naive
+        // scheme-prefix regex would falsely reject `chapter:night` as an
+        // absolute URL; the shape-aware scan skips known fields and lets Zod
+        // validate them.
+        const manifestWithColons = structuredClone(manifestFixture);
+        manifestWithColons.assets[0].identity.key = 'chapter:night';
+        manifestWithColons.assets[0].section = 'prologue:intro';
+        expect(() =>
+            parseRuntimeAssetManifest(manifestWithColons)
+        ).not.toThrow();
+    });
+
+    it('rejects protocol-relative URLs in unknown fields', () => {
+        // A protocol-relative URL (`//host/path`) carries no scheme, so the
+        // scheme-only regex missed it; the non-strict schema would then
+        // silently strip the unknown field. The scan must catch `//`-prefixed
+        // values in unknown fields just like scheme-bearing ones.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    sourceUrl: '//internal-assets.example.com/source.png',
                 }),
             'unsafe-path'
         );
         expectCode(
             () =>
-                parseActiveReleasePointer({
-                    ...currentFixture,
-                    metadata: { origin: 'http://127.0.0.1/private-assets/' },
-                }),
+                parseActiveReleasePointer(
+                    {
+                        ...currentFixture,
+                        sourceUrl: '//internal.example/a.png',
+                    },
+                    { kind: 'production' },
+                    FIXTURE_STORY_ID
+                ),
             'unsafe-path'
         );
     });
@@ -421,7 +487,11 @@ describe('runtime asset wire contracts', () => {
     });
 
     it('validates pointer path and pointer-manifest integrity', () => {
-        const pointer = parseActiveReleasePointer(currentFixture);
+        const pointer = parseActiveReleasePointer(
+            currentFixture,
+            { kind: 'production' },
+            FIXTURE_STORY_ID
+        );
         const manifest = parseRuntimeAssetManifest(manifestFixture);
         // Use the independently computed manifest file bytes digest, not the
         // value declared on the pointer, so the test actually verifies the
@@ -448,10 +518,14 @@ describe('runtime asset wire contracts', () => {
 
         expectCode(
             () =>
-                parseActiveReleasePointer({
-                    ...currentFixture,
-                    manifestPath: 'vn/stories/fixture_story/current.json',
-                }),
+                parseActiveReleasePointer(
+                    {
+                        ...currentFixture,
+                        manifestPath: 'vn/stories/fixture_story/current.json',
+                    },
+                    { kind: 'production' },
+                    FIXTURE_STORY_ID
+                ),
             'unsafe-path'
         );
 
@@ -467,7 +541,11 @@ describe('runtime asset wire contracts', () => {
     });
 
     it('distinguishes pointer/manifest story and release mismatches', () => {
-        const pointer = parseActiveReleasePointer(currentFixture);
+        const pointer = parseActiveReleasePointer(
+            currentFixture,
+            { kind: 'production' },
+            FIXTURE_STORY_ID
+        );
         const manifest = parseRuntimeAssetManifest(manifestFixture);
         expectCode(
             () =>
@@ -570,7 +648,11 @@ describe('runtime asset wire contracts', () => {
         // regresses they become unused and the typecheck fails. The offending calls
         // live in a never-invoked function body so they are checked by the
         // compiler but never executed at runtime.
-        const pointer = parseActiveReleasePointer(currentFixture);
+        const pointer = parseActiveReleasePointer(
+            currentFixture,
+            { kind: 'production' },
+            FIXTURE_STORY_ID
+        );
         const manifest = parseRuntimeAssetManifest(manifestFixture);
         // Independently computed digests — the runtime sanity checks below
         // exercise the real bytes, not values fed back from the fixtures.

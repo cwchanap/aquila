@@ -153,17 +153,44 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 //      logical key) and `section` (free-form prose) can legitimately be
 //      `chapter:night` or `prologue:intro`, which a naive scheme-prefix regex
 //      would falsely reject as an absolute URL.
+// `section` is the exception: its Zod schema only checks length, so a concrete
+// URL form (`https://...`, `file:///...`, `//host/...`) would pass Zod and
+// enter the parsed manifest. It is therefore registered in
+// `urlStrictScalars` and checked with `isConcreteUrlValue`, which requires
+// `://` (or a leading `//`) and so still accepts label-style values.
 //
 // It detects both scheme-bearing absolute URLs (`http:`, `https:`, `file:`,
 // ...) and protocol-relative URLs (`//host/path`), which the scheme-only regex
 // missed and which would otherwise be silently stripped by the non-strict
 // schema as unknown-field values.
+//
+// Detection runs against `value.trimStart()` because the scan executes BEFORE
+// Zod parsing, and several known string fields use `.trim()` — without
+// trimming on the detection side, a value like ` https://...` would bypass
+// the anchored regex and then be silently normalized by Zod into an absolute
+// URL inside the parsed document.
 const ABSOLUTE_URL_SCHEME_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
 const PROTOCOL_RELATIVE_URL_RE = /^\/\//;
 function isAbsoluteUrlValue(value: string): boolean {
+    const trimmed = value.trimStart();
     return (
-        ABSOLUTE_URL_SCHEME_RE.test(value) ||
-        PROTOCOL_RELATIVE_URL_RE.test(value)
+        ABSOLUTE_URL_SCHEME_RE.test(trimmed) ||
+        PROTOCOL_RELATIVE_URL_RE.test(trimmed)
+    );
+}
+
+// A stricter detector used for known scalar fields that legitimately permit
+// colon-bearing labels (e.g. `section` can be `chapter:night`). The broad
+// `ABSOLUTE_URL_SCHEME_RE` would falsely reject those labels because they
+// match `scheme:`. This detector requires `://` after the scheme, which
+// distinguishes concrete URL forms (`https://...`, `file:///...`) from
+// label-style values (`chapter:night`, `prologue:intro`). Protocol-relative
+// URLs (`//host/...`) carry no scheme and are rejected separately.
+const CONCRETE_URL_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
+function isConcreteUrlValue(value: string): boolean {
+    const trimmed = value.trimStart();
+    return (
+        CONCRETE_URL_RE.test(trimmed) || PROTOCOL_RELATIVE_URL_RE.test(trimmed)
     );
 }
 
@@ -172,8 +199,15 @@ function isAbsoluteUrlValue(value: string): boolean {
 // keys hold primitives validated by Zod; object/array keys describe the nested
 // shape to recurse into. Anything not in the shape is unknown and gets fully
 // scanned.
+//
+// `urlStrictScalars` are known string fields whose Zod schema permits colon-
+// bearing labels (e.g. `section` accepts `chapter:night`) and therefore cannot
+// be checked with the broad scheme-prefix regex. They are checked with the
+// stricter `isConcreteUrlValue` detector instead, which rejects `scheme://`
+// and protocol-relative forms while allowing label-style values.
 type KnownShape = {
     readonly scalars: ReadonlySet<string>;
+    readonly urlStrictScalars?: ReadonlySet<string>;
     readonly objects: Readonly<Record<string, KnownShape>>;
     readonly arrays: Readonly<Record<string, KnownShape>>;
 };
@@ -189,7 +223,8 @@ const MANIFEST_SHAPE: KnownShape = {
     objects: {},
     arrays: {
         assets: {
-            scalars: new Set(['width', 'height', 'section']),
+            scalars: new Set(['width', 'height']),
+            urlStrictScalars: new Set(['section']),
             objects: {
                 identity: {
                     scalars: new Set(['type', 'key']),
@@ -281,6 +316,17 @@ function findAbsoluteUrlValues(
         const childPath = `${path}.${key}`;
         if (shape.scalars.has(key)) {
             // Known scalar — Zod validates its value; skip.
+            continue;
+        }
+        if (shape.urlStrictScalars?.has(key)) {
+            // Known scalar whose Zod schema permits colon-bearing labels
+            // (e.g. `section`). Zod only checks length, so a concrete URL
+            // form would pass Zod and enter the parsed manifest. Reject it
+            // here with the stricter `://`-aware detector while still
+            // allowing label-style values like `chapter:night`.
+            if (typeof value === 'string' && isConcreteUrlValue(value)) {
+                findings.push(childPath);
+            }
             continue;
         }
         // `Object.hasOwn` (not `in`) — `shape.objects`/`shape.arrays` are

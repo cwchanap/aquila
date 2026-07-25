@@ -41,7 +41,12 @@ export function canonicalJson(value: JsonValue): string {
         return JSON.stringify(value);
     }
     if (Array.isArray(value)) {
-        return `[${value.map(item => canonicalJson(item)).join(',')}]`;
+        // `Array.prototype.map` skips holes in a sparse array, which would
+        // produce invalid JSON like `[,]` and silently drop `undefined`
+        // values — violating the function's stated guarantee that undefined
+        // values are rejected rather than normalized. `Array.from` visits
+        // holes as `undefined`, so the existing integrity error fires.
+        return `[${Array.from(value, item => canonicalJson(item)).join(',')}]`;
     }
     const object = value as { readonly [key: string]: JsonValue };
     return `{${Object.keys(object)

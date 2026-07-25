@@ -207,12 +207,14 @@ describe('story asset release coverage', () => {
         // Drop the first included asset (background) so the manifest no longer
         // carries every identity the plan marked `included`.
         shortManifest.assets.splice(0, 1);
-        expect(() =>
-            validateRuntimeManifestCoverage(
-                parseRuntimeAssetManifest(shortManifest),
-                plan
-            )
-        ).toThrow(/does not match its release plan/);
+        expectCode(
+            () =>
+                validateRuntimeManifestCoverage(
+                    parseRuntimeAssetManifest(shortManifest),
+                    plan
+                ),
+            'coverage'
+        );
     });
 
     it('isolates a __proto__ section without polluting Object.prototype', () => {

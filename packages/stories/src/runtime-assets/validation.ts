@@ -21,6 +21,15 @@ const FORBIDDEN_RUNTIME_KEY_PARTS = [
     'sourcepaths',
     'localpath',
     'localpaths',
+    // Equivalent alternative spellings for authoring source/local filesystem
+    // paths. The contract forbids source paths in public runtime data
+    // regardless of field name; these cover `sourceFile`, `localFile`, and
+    // their plurals, which would otherwise bypass the `sourcepath`/`localpath`
+    // stems and slip past the forbidden-key heuristic.
+    'sourcefile',
+    'sourcefiles',
+    'localfile',
+    'localfiles',
     'provider',
     'providers',
     'credential',
@@ -186,12 +195,60 @@ function isAbsoluteUrlValue(value: string): boolean {
 // distinguishes concrete URL forms (`https://...`, `file:///...`) from
 // label-style values (`chapter:night`, `prologue:intro`). Protocol-relative
 // URLs (`//host/...`) carry no scheme and are rejected separately.
+//
+// Scheme-name detection: valid absolute URLs do not always use `://`
+// immediately after the scheme. `https:host/path` (opaque path), `file:/path`
+// (single-slash file URL per RFC 8089), and `blob:https://origin/id` (blob
+// URL) are all absolute, environment-bearing URLs that the `://`-requiring
+// regex missed — they would pass the section check and enter the parsed
+// manifest, contradicting the contract. To close that gap without rejecting
+// label-style values like `chapter:night`, known environment-bearing scheme
+// names are rejected regardless of slash count. `chapter` is not in that set,
+// so label-style sections remain acceptable.
+const ENVIRONMENT_BEARING_SCHEMES = new Set([
+    'http',
+    'https',
+    'file',
+    'ftp',
+    'blob',
+]);
+const SCHEME_PREFIX_RE = /^([a-zA-Z][a-zA-Z0-9+.-]*):/;
 const CONCRETE_URL_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
 function isConcreteUrlValue(value: string): boolean {
     const trimmed = value.trimStart();
+    if (CONCRETE_URL_RE.test(trimmed)) return true;
+    if (PROTOCOL_RELATIVE_URL_RE.test(trimmed)) return true;
+    const schemeMatch = SCHEME_PREFIX_RE.exec(trimmed);
+    if (
+        schemeMatch !== null &&
+        ENVIRONMENT_BEARING_SCHEMES.has(schemeMatch[1].toLowerCase())
+    ) {
+        return true;
+    }
+    return false;
+}
+
+// Detects absolute filesystem paths in unknown additive metadata. The URL
+// scan above catches scheme-bearing and protocol-relative URLs, but a bare
+// filesystem path (`/Users/alice/...`, `C:\Users\...`, `C:/Users/...`) is not
+// URL-prefixed, so an unknown field carrying one would bypass the URL scan
+// and be silently stripped by the non-strict schema — leaving the wire
+// document exposed. The contract forbids environment-specific absolute paths
+// in public runtime data regardless of field name, so the unknown-field scan
+// also rejects obvious absolute filesystem paths. Relative paths do not
+// start with `/` or a drive letter and remain acceptable.
+const ABSOLUTE_UNIX_PATH_RE = /^\//;
+const WINDOWS_DRIVE_PATH_RE = /^[a-zA-Z]:[\\/]/;
+function isAbsoluteFilePathValue(value: string): boolean {
+    const trimmed = value.trimStart();
     return (
-        CONCRETE_URL_RE.test(trimmed) || PROTOCOL_RELATIVE_URL_RE.test(trimmed)
+        ABSOLUTE_UNIX_PATH_RE.test(trimmed) ||
+        WINDOWS_DRIVE_PATH_RE.test(trimmed)
     );
+}
+
+function isEnvironmentSpecificValue(value: string): boolean {
+    return isAbsoluteUrlValue(value) || isAbsoluteFilePathValue(value);
 }
 
 // Describes the known (schema-validated) shape of a wire document so the URL
@@ -269,12 +326,14 @@ const POINTER_SHAPE: KnownShape = {
     arrays: {},
 };
 
-// Scan every string value under `input` for absolute URLs, regardless of key
-// names — used once we've descended into an unknown (additive) field where
+// Scan every string value under `input` for environment-specific absolute
+// references — URLs (scheme-bearing or protocol-relative) and absolute
+// filesystem paths (Unix `/...` or Windows `C:\...`/`C:/...`) — regardless of
+// key names. Used once we've descended into an unknown (additive) field where
 // everything below is also unknown.
 function scanAllStringsForUrls(input: unknown, path: string): string[] {
     if (typeof input === 'string') {
-        return isAbsoluteUrlValue(input) ? [path] : [];
+        return isEnvironmentSpecificValue(input) ? [path] : [];
     }
     if (Array.isArray(input)) {
         return input.flatMap((item, index) =>
@@ -300,7 +359,7 @@ function findAbsoluteUrlValues(
     if (typeof input === 'string') {
         // Only reached at the top level if the entire document is a string;
         // treat it as unknown and scan.
-        return isAbsoluteUrlValue(input) ? [path] : [];
+        return isEnvironmentSpecificValue(input) ? [path] : [];
     }
     if (Array.isArray(input)) {
         // An array at a position where the shape expects an array element

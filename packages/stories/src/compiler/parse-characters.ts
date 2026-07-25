@@ -21,7 +21,11 @@ export interface ParsedCharacter {
 // still hit the prototype. Rejecting these IDs at parse time catches the
 // whole class at the source. Built dynamically so any inherited name on
 // Object.prototype is covered regardless of engine.
-const RESERVED_OBJECT_PROPERTY_NAMES = new Set<string>(
+//
+// Exported because emit.ts re-checks at emit time as defense-in-depth (direct
+// callers like tests can bypass parse-characters); both sites must agree on
+// the same set, so it is defined once here and imported there.
+export const RESERVED_OBJECT_PROPERTY_NAMES = new Set<string>(
     Object.getOwnPropertyNames(Object.prototype)
 );
 

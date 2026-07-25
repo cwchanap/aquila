@@ -502,6 +502,56 @@ describe('runtime asset wire contracts', () => {
         expect(() => parseRuntimeAssetManifest(labelManifest)).not.toThrow();
     });
 
+    it('rejects absolute filesystem paths in the known section field', () => {
+        // `section` is a known scalar whose Zod schema only checks length, so
+        // an environment-specific absolute filesystem path placed in it would
+        // pass Zod and enter the parsed manifest, contradicting the V1
+        // requirement that public manifests never carry environment-specific
+        // absolute paths. The scan must reject Unix absolute paths, Windows
+        // drive-letter paths (both slash directions), UNC paths, and Windows
+        // root-relative paths in `section` while still permitting label-style
+        // values like `chapter:night`.
+        const unixAbsolute = structuredClone(manifestFixture);
+        unixAbsolute.assets[0].section = '/Users/alice/private/source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(unixAbsolute),
+            'unsafe-path'
+        );
+
+        const windowsBackslash = structuredClone(manifestFixture);
+        windowsBackslash.assets[0].section =
+            'C:\\Users\\alice\\private\\source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(windowsBackslash),
+            'unsafe-path'
+        );
+
+        const windowsForwardSlash = structuredClone(manifestFixture);
+        windowsForwardSlash.assets[0].section =
+            'C:/Users/alice/private/source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(windowsForwardSlash),
+            'unsafe-path'
+        );
+
+        const uncPath = structuredClone(manifestFixture);
+        uncPath.assets[0].section = '\\\\internal-server\\assets\\private.png';
+        expectCode(() => parseRuntimeAssetManifest(uncPath), 'unsafe-path');
+
+        const windowsRootRelative = structuredClone(manifestFixture);
+        windowsRootRelative.assets[0].section =
+            '\\Users\\alice\\private\\source.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(windowsRootRelative),
+            'unsafe-path'
+        );
+
+        // Label-style values remain acceptable.
+        const labelManifest = structuredClone(manifestFixture);
+        labelManifest.assets[0].section = 'chapter:night';
+        expect(() => parseRuntimeAssetManifest(labelManifest)).not.toThrow();
+    });
+
     it('rejects alternative source-path field names as forbidden metadata', () => {
         // The forbidden-key list historically covered `sourcePath`/`localPath`
         // but not equivalent alternative spellings (`sourceFile`, `localFile`,
@@ -589,6 +639,27 @@ describe('runtime asset wire contracts', () => {
                     metadata: {
                         origin: '/home/alice/private-assets/background.png',
                     },
+                }),
+            'unsafe-path'
+        );
+        // Windows UNC paths (`\\server\share\...`) are rejected too — they are
+        // environment-specific absolute paths that neither the URL scan nor the
+        // drive-letter regex caught.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    originPath: '\\\\internal-server\\assets\\private.png',
+                }),
+            'unsafe-path'
+        );
+        // Windows root-relative paths (single leading backslash, no drive
+        // letter) are also rejected.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    originPath: '\\Users\\alice\\private\\background.png',
                 }),
             'unsafe-path'
         );

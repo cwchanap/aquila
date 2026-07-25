@@ -163,10 +163,13 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
 //      `chapter:night` or `prologue:intro`, which a naive scheme-prefix regex
 //      would falsely reject as an absolute URL.
 // `section` is the exception: its Zod schema only checks length, so a concrete
-// URL form (`https://...`, `file:///...`, `//host/...`) would pass Zod and
-// enter the parsed manifest. It is therefore registered in
-// `urlStrictScalars` and checked with `isConcreteUrlValue`, which requires
-// `://` (or a leading `//`) and so still accepts label-style values.
+// URL form (`https://...`, `file:///...`, `//host/...`) or an absolute
+// filesystem path (`/Users/...`, `C:\Users\...`, `\\server\share\...`,
+// `\Users\...`) would pass Zod and enter the parsed manifest. It is therefore
+// registered in `environmentStrictScalars` and checked with both
+// `isConcreteUrlValue` (which requires `://` or a leading `//` and so still
+// accepts label-style values) and `isAbsoluteFilePathValue` (which rejects
+// Unix, Windows drive-letter, UNC, and Windows root-relative paths).
 //
 // It detects both scheme-bearing absolute URLs (`http:`, `https:`, `file:`,
 // ...) and protocol-relative URLs (`//host/path`), which the scheme-only regex
@@ -236,13 +239,21 @@ function isConcreteUrlValue(value: string): boolean {
 // document exposed. The contract forbids environment-specific absolute paths
 // in public runtime data regardless of field name, so the unknown-field scan
 // also rejects obvious absolute filesystem paths. Relative paths do not
-// start with `/` or a drive letter and remain acceptable.
+// start with `/`, `\`, or a drive letter and remain acceptable.
+//
+// A leading backslash is treated as an absolute path: it covers Windows UNC
+// paths (`\\server\share\...`) and Windows root-relative paths (`\Users\...`)
+// that the drive-letter regex missed. The codebase convention is
+// forward-slash-only relative paths (`isSafeRelativePath` rejects any value
+// containing `\`), so a backslash-leading value in runtime data is never a
+// legitimate relative path.
 const ABSOLUTE_UNIX_PATH_RE = /^\//;
 const WINDOWS_DRIVE_PATH_RE = /^[a-zA-Z]:[\\/]/;
 function isAbsoluteFilePathValue(value: string): boolean {
     const trimmed = value.trimStart();
     return (
         ABSOLUTE_UNIX_PATH_RE.test(trimmed) ||
+        trimmed.startsWith('\\') ||
         WINDOWS_DRIVE_PATH_RE.test(trimmed)
     );
 }
@@ -257,14 +268,19 @@ function isEnvironmentSpecificValue(value: string): boolean {
 // shape to recurse into. Anything not in the shape is unknown and gets fully
 // scanned.
 //
-// `urlStrictScalars` are known string fields whose Zod schema permits colon-
-// bearing labels (e.g. `section` accepts `chapter:night`) and therefore cannot
-// be checked with the broad scheme-prefix regex. They are checked with the
-// stricter `isConcreteUrlValue` detector instead, which rejects `scheme://`
-// and protocol-relative forms while allowing label-style values.
+// `environmentStrictScalars` are known string fields whose Zod schema permits
+// colon-bearing labels (e.g. `section` accepts `chapter:night`) and therefore
+// cannot be checked with the broad scheme-prefix regex. They are checked with
+// the stricter `isConcreteUrlValue` detector (which rejects `scheme://` and
+// protocol-relative forms while allowing label-style values) AND with
+// `isAbsoluteFilePathValue` (which rejects Unix, Windows drive-letter, UNC,
+// and Windows root-relative paths). The broad `isEnvironmentSpecificValue`
+// detector is NOT used here because its URL component (`isAbsoluteUrlValue`)
+// matches any `scheme:` prefix and would falsely reject label-style values
+// like `chapter:night`.
 type KnownShape = {
     readonly scalars: ReadonlySet<string>;
-    readonly urlStrictScalars?: ReadonlySet<string>;
+    readonly environmentStrictScalars?: ReadonlySet<string>;
     readonly objects: Readonly<Record<string, KnownShape>>;
     readonly arrays: Readonly<Record<string, KnownShape>>;
 };
@@ -281,7 +297,7 @@ const MANIFEST_SHAPE: KnownShape = {
     arrays: {
         assets: {
             scalars: new Set(['width', 'height']),
-            urlStrictScalars: new Set(['section']),
+            environmentStrictScalars: new Set(['section']),
             objects: {
                 identity: {
                     scalars: new Set(['type', 'key']),
@@ -377,13 +393,22 @@ function findAbsoluteUrlValues(
             // Known scalar — Zod validates its value; skip.
             continue;
         }
-        if (shape.urlStrictScalars?.has(key)) {
+        if (shape.environmentStrictScalars?.has(key)) {
             // Known scalar whose Zod schema permits colon-bearing labels
             // (e.g. `section`). Zod only checks length, so a concrete URL
-            // form would pass Zod and enter the parsed manifest. Reject it
-            // here with the stricter `://`-aware detector while still
-            // allowing label-style values like `chapter:night`.
-            if (typeof value === 'string' && isConcreteUrlValue(value)) {
+            // form or an absolute filesystem path would pass Zod and enter
+            // the parsed manifest. Reject both here: URLs with the stricter
+            // `://`-aware detector (which still allows label-style values
+            // like `chapter:night`), and filesystem paths with
+            // `isAbsoluteFilePathValue` (Unix, Windows drive-letter, UNC,
+            // and Windows root-relative). The broad
+            // `isEnvironmentSpecificValue` is NOT used because its URL
+            // component matches any `scheme:` prefix and would falsely
+            // reject `chapter:night`.
+            if (
+                typeof value === 'string' &&
+                (isConcreteUrlValue(value) || isAbsoluteFilePathValue(value))
+            ) {
                 findings.push(childPath);
             }
             continue;

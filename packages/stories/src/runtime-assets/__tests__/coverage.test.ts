@@ -201,6 +201,20 @@ describe('story asset release coverage', () => {
         ).toThrow(/does not match its release plan/);
     });
 
+    it('flags an included asset that is missing from the runtime manifest', () => {
+        const plan = parseStoryAssetReleasePlan(planFixture);
+        const shortManifest = structuredClone(manifestFixture);
+        // Drop the first included asset (background) so the manifest no longer
+        // carries every identity the plan marked `included`.
+        shortManifest.assets.splice(0, 1);
+        expect(() =>
+            validateRuntimeManifestCoverage(
+                parseRuntimeAssetManifest(shortManifest),
+                plan
+            )
+        ).toThrow(/does not match its release plan/);
+    });
+
     it('isolates a __proto__ section without polluting Object.prototype', () => {
         // A release-plan entry whose `section` is `__proto__` must not hit
         // Object.prototype via the `bySection` lookup. With a plain `{}` the

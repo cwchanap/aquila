@@ -136,6 +136,40 @@ Some bio prose.
         expect(() => parseCharacters(dupId)).toThrow(/duplicate.*ID.*gu_yan/i);
     });
 
+    it('rejects reserved Object.prototype names as character IDs', () => {
+        // Character IDs become raw-string keys in the generated
+        // `characterTable` and `slotsByCharacterId` (ordinary objects). A
+        // lookup for a reserved name returns the inherited Object.prototype
+        // value instead of `undefined` when no own property is emitted,
+        // breaking the `T | undefined` contract. Reject at parse time so the
+        // whole class is caught at the source. Covers both the explicit-slot
+        // and absent-slot cases.
+        const protoId = `## 1. 原型（Proto）
+
+- **ID**: \`__proto__\`
+- **Portrait Slot**: Left
+`;
+        expect(() => parseCharacters(protoId)).toThrow(
+            /__proto__[\s\S]*reserved/s
+        );
+
+        const constructorId = `## 1. 構造（Constructor）
+
+- **ID**: \`constructor\`
+`;
+        expect(() => parseCharacters(constructorId)).toThrow(
+            /constructor[\s\S]*reserved/s
+        );
+
+        const toStringId = `## 1. 字串（String）
+
+- **ID**: \`toString\`
+`;
+        expect(() => parseCharacters(toStringId)).toThrow(
+            /toString[\s\S]*reserved/s
+        );
+    });
+
     it('handles characters without aliases bullet', () => {
         const noAliases = `## 1. 張昊（Zhang Hao）\n\n- **ID**: \`zhang_hao\`\n`;
         const dir = parseCharacters(noAliases);

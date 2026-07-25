@@ -8,6 +8,23 @@ export interface ParsedCharacter {
     portraitSlot?: PortraitSlot;
 }
 
+// Character IDs become object-literal keys in the generated `characterTable`
+// and `slotsByCharacterId` (both `Record<string, ...>` keyed by raw ID). A
+// lookup like `characterTable[id]` or `slotsByCharacterId[id]` on a normal
+// object returns the inherited Object.prototype value for names like
+// `constructor`, `toString`, or `__proto__` when no own property is emitted
+// (e.g. a character with no `portraitSlot`). That breaks the `T | undefined`
+// contract — the lookup returns a truthy non-T value (the `Object` function,
+// `Object.prototype`, etc.) instead of `undefined`, so `?? defaultSlot` and
+// `if (entry)` guards misbehave. The emitter uses computed keys for explicit
+// assignments, but that only fixes the present-key case; absent-key lookups
+// still hit the prototype. Rejecting these IDs at parse time catches the
+// whole class at the source. Built dynamically so any inherited name on
+// Object.prototype is covered regardless of engine.
+const RESERVED_OBJECT_PROPERTY_NAMES = new Set<string>(
+    Object.getOwnPropertyNames(Object.prototype)
+);
+
 export interface ParsedCharacterDirectory {
     characters: ParsedCharacter[];
     getIdByName(name: string): string | undefined;
@@ -82,6 +99,11 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
             if (byId.has(currentId)) {
                 throw new Error(
                     `[story-compiler] duplicate character ID "${currentId}"`
+                );
+            }
+            if (RESERVED_OBJECT_PROPERTY_NAMES.has(currentId)) {
+                throw new Error(
+                    `[story-compiler] character ID "${currentId}" is reserved (inherited from Object.prototype); using it as an object key breaks lookup contracts in the generated characterTable and slotsByCharacterId`
                 );
             }
             if (nameToId.has(currentName)) {

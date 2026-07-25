@@ -283,11 +283,19 @@ function findAbsoluteUrlValues(
             // Known scalar — Zod validates its value; skip.
             continue;
         }
-        if (key in shape.objects) {
+        // `Object.hasOwn` (not `in`) — `shape.objects`/`shape.arrays` are
+        // ordinary objects inheriting from Object.prototype, so `in` would
+        // match `constructor`, `toString`, `__proto__`, etc. An additive field
+        // named `constructor` would then recurse with `Object.prototype.constructor`
+        // (the `Object` function) as the "shape", and `Object.scalars.has(...)`
+        // throws a raw TypeError. `Object.hasOwn` restricts the check to own
+        // properties so unknown inherited-name keys fall through to the
+        // unknown-field scan below.
+        if (Object.hasOwn(shape.objects, key)) {
             findings.push(
                 ...findAbsoluteUrlValues(value, shape.objects[key], childPath)
             );
-        } else if (key in shape.arrays) {
+        } else if (Object.hasOwn(shape.arrays, key)) {
             const elementShape = shape.arrays[key];
             if (Array.isArray(value)) {
                 for (let i = 0; i < value.length; i++) {

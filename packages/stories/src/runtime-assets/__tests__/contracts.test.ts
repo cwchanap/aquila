@@ -1,3 +1,7 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import currentFixture from '../__fixtures__/current.v1.json';
 import manifestFixture from '../__fixtures__/runtime-manifest.v1.json';
@@ -13,6 +17,24 @@ import {
     qualifyAssetIdentity,
     validatePointerManifestPair,
 } from '..';
+
+const fixtureDir = dirname(fileURLToPath(import.meta.url));
+const manifestFixturePath = join(
+    fixtureDir,
+    '..',
+    '__fixtures__',
+    'runtime-manifest.v1.json'
+);
+
+// Independently derived digests from the fixture bytes — NOT the values
+// declared inside the fixtures. The fixtures' declared `releaseId` and
+// `manifestSha256` must reproduce these; if they drift, the tests below fail.
+function sha256OfFile(path: string): string {
+    return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+function sha256OfContent(content: string): string {
+    return createHash('sha256').update(content).digest('hex');
+}
 
 function expectCode(
     callback: () => unknown,
@@ -179,6 +201,49 @@ describe('runtime asset wire contracts', () => {
         );
     });
 
+    it('rejects plural forbidden metadata keys', () => {
+        // Plural forms (`credentials`, `secrets`, `tokens`, `prompts`,
+        // `providers`, `apiKeys`) must be rejected just like their singular
+        // stems. The boundary-aware matcher accepts the plural as a whole
+        // token but still does not over-match substrings like `secretary`.
+        for (const key of [
+            'credentials',
+            'secrets',
+            'tokens',
+            'prompts',
+            'providers',
+            'apiKeys',
+            'sourcePaths',
+            'localPaths',
+        ]) {
+            expectCode(
+                () =>
+                    parseRuntimeAssetManifest({
+                        ...manifestFixture,
+                        [key]: 'leak',
+                    }),
+                'validation'
+            );
+        }
+        // Plural-with-suffix must still be caught via the plural stem at a
+        // word boundary (e.g. `secretsPath` → `secrets` + `Path`).
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    secretsPath: '/etc/secrets',
+                }),
+            'validation'
+        );
+        // Over-matching guard: `secretsauce` is NOT `secrets` at a boundary.
+        expect(() =>
+            parseRuntimeAssetManifest({
+                ...manifestFixture,
+                secretsauce: 'condiment',
+            })
+        ).not.toThrow();
+    });
+
     it('rejects absolute, traversal, and digest-mismatched object paths', () => {
         const unsafeManifest = structuredClone(manifestFixture);
         unsafeManifest.assets[0].variants.webp.path =
@@ -271,11 +336,16 @@ describe('runtime asset wire contracts', () => {
     it('validates pointer path and pointer-manifest integrity', () => {
         const pointer = parseActiveReleasePointer(currentFixture);
         const manifest = parseRuntimeAssetManifest(manifestFixture);
+        // Use the independently computed manifest file bytes digest, not the
+        // value declared on the pointer, so the test actually verifies the
+        // pointer's `manifestSha256` against the real bytes.
+        const actualManifestSha256 = sha256OfFile(manifestFixturePath);
+        expect(pointer.manifestSha256).toBe(actualManifestSha256);
         expect(() =>
             validatePointerManifestPair(
                 pointer,
                 manifest,
-                pointer.manifestSha256
+                assertSha256<'manifest-bytes'>(actualManifestSha256)
             )
         ).not.toThrow();
 
@@ -357,10 +427,14 @@ describe('runtime asset wire contracts', () => {
         expect(canonical.indexOf('"background"')).toBeLessThan(
             canonical.indexOf('"portrait"')
         );
+        // The fixture's declared `releaseId` must equal sha256(canonical
+        // release content); verify against an independently computed digest.
+        const realContentSha = sha256OfContent(canonical);
+        expect(manifest.releaseId).toBe(`sha256-${realContentSha}`);
         expect(() =>
             assertReleaseIdMatchesContentSha256(
                 manifest,
-                assertSha256<'release-content'>('e'.repeat(64))
+                assertSha256<'release-content'>(realContentSha)
             )
         ).not.toThrow();
         expectCode(
@@ -411,19 +485,20 @@ describe('runtime asset wire contracts', () => {
         // compiler but never executed at runtime.
         const pointer = parseActiveReleasePointer(currentFixture);
         const manifest = parseRuntimeAssetManifest(manifestFixture);
-        const manifestBytesDigest: typeof pointer.manifestSha256 =
-            pointer.manifestSha256;
+        // Independently computed digests — the runtime sanity checks below
+        // exercise the real bytes, not values fed back from the fixtures.
+        const manifestBytesDigest = assertSha256<'manifest-bytes'>(
+            sha256OfFile(manifestFixturePath)
+        );
         const releaseContentDigest = assertSha256<'release-content'>(
-            'e'.repeat(64)
+            sha256OfContent(canonicalReleaseContent(manifest))
         );
 
         function compileTimeOnly() {
             // @ts-expect-error - ManifestByteSha256 is not a ReleaseContentSha256
             assertReleaseIdMatchesContentSha256(manifest, manifestBytesDigest);
+            // Call kept single-line so the directive covers the erroring arg.
             // @ts-expect-error - ReleaseContentSha256 is not a ManifestByteSha256.
-            // Kept on one line so the directive covers the erroring argument
-            // (a multi-line call reports the type error on the argument line,
-            // which the directive on the call-start line does not cover).
             validatePointerManifestPair(
                 pointer,
                 manifest,

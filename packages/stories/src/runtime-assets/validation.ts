@@ -16,13 +16,21 @@ import {
 
 const FORBIDDEN_RUNTIME_KEY_PARTS = [
     'prompt',
+    'prompts',
     'sourcepath',
+    'sourcepaths',
     'localpath',
+    'localpaths',
     'provider',
+    'providers',
     'credential',
+    'credentials',
     'secret',
+    'secrets',
     'token',
+    'tokens',
     'apikey',
+    'apikeys',
 ] as const;
 
 // Recognize numbers and numeric strings so a stringified version like "2" is
@@ -364,7 +372,12 @@ export function validateReleaseCoverage(
             background: emptyCounts(),
             portrait: emptyCounts(),
         },
-        bySection: {},
+        // A null-prototype object prevents a `__proto__` section from hitting
+        // Object.prototype via the `??=` lookup below — with a plain `{}`,
+        // `bySection['__proto__']` resolves to the inherited prototype (non-
+        // nullish), so `??=` skips assignment and `increment` would mutate
+        // Object.prototype fields instead of creating a report bucket.
+        bySection: Object.create(null) as Record<string, MutableCoverageCounts>,
         totals: emptyCounts(),
     };
     const problems: string[] = [];

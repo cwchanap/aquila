@@ -200,4 +200,59 @@ describe('story asset release coverage', () => {
             )
         ).toThrow(/does not match its release plan/);
     });
+
+    it('isolates a __proto__ section without polluting Object.prototype', () => {
+        // A release-plan entry whose `section` is `__proto__` must not hit
+        // Object.prototype via the `bySection` lookup. With a plain `{}` the
+        // `??=` operator would see the inherited prototype (non-nullish) and
+        // skip assignment, causing `increment` to mutate Object.prototype.
+        // The null-prototype `bySection` map must treat `__proto__` as a
+        // regular own-property key.
+        const protoPlan = parseStoryAssetReleasePlan({
+            ...planFixture,
+            entries: [
+                {
+                    ...planFixture.entries[0],
+                    section: '__proto__',
+                },
+                ...planFixture.entries.slice(1),
+            ],
+        });
+        const protoAuthoring: AuthoringAssetReference[] = [
+            {
+                identity: authoringAssets[0].identity,
+                sourcePath: authoringAssets[0].sourcePath,
+                section: '__proto__',
+            },
+            ...authoringAssets.slice(1),
+        ];
+        const protoCatalog: AuthoringAssetCatalog = {
+            storyId: 'fixture_story',
+            assets: protoAuthoring,
+        };
+
+        const report = validateReleaseCoverage(
+            protoCatalog,
+            protoPlan,
+            availableSources
+        );
+
+        // The __proto__ section is counted as a real bucket, not silently
+        // dropped or merged into Object.prototype.
+        expect(
+            Object.prototype.hasOwnProperty.call(report.bySection, '__proto__')
+        ).toBe(true);
+        expect(
+            (report.bySection as Record<string, unknown>)['__proto__']
+        ).toEqual({
+            total: 1,
+            included: 1,
+            omitted: 0,
+            unclassified: 0,
+        });
+        // Object.prototype must not have been polluted with counter fields.
+        expect(
+            (Object.prototype as Record<string, unknown>).total
+        ).toBeUndefined();
+    });
 });

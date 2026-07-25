@@ -2,6 +2,7 @@ import { AssetResolverError } from './errors';
 import type {
     AssetFormat,
     LogicalAssetIdentity,
+    ObjectContentSha256,
     PublicationTarget,
     Sha256,
     Sha256Purpose,
@@ -130,7 +131,10 @@ export function assertSha256<T extends Sha256Purpose>(
     return value as Sha256<T>;
 }
 
-export function getObjectPath(sha256: string, format: AssetFormat): string {
+export function getObjectPath(
+    sha256: ObjectContentSha256,
+    format: AssetFormat
+): string {
     if (!isSha256(sha256)) {
         throw new AssetResolverError('integrity', 'Invalid SHA-256 digest');
     }

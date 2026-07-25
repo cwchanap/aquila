@@ -71,7 +71,9 @@ export function canonicalReleaseContent(
     } as JsonValue);
 }
 
-export function releaseIdFromContentSha256(sha256: string): string {
+export function releaseIdFromContentSha256(
+    sha256: ReleaseContentSha256
+): string {
     if (!isSha256(sha256)) {
         throw new AssetResolverError(
             'integrity',

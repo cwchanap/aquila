@@ -136,6 +136,36 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
     return findings;
 }
 
+// The contract forbids environment-specific absolute URLs in public runtime
+// manifests and pointers (no schemes, credentials, queries, or fragments
+// anywhere). The forbidden-key heuristic above only inspects property names, so
+// an unknown field such as `sourceUrl` or a nested `metadata.origin` whose
+// value is an absolute URL would slip past it and then be silently stripped by
+// Zod (the manifest/pointer schemas are intentionally non-strict to allow
+// additive forward-compatible fields). The raw document has already exposed
+// the value by that point. This recursive check inspects string VALUES and
+// rejects any that carry a URL scheme — catching `http:`, `https:`, and any
+// other scheme (file:, ftp:, ...) regardless of the field name. It does not
+// flag URLs merely mentioned inside prose (e.g. a release-plan `reason`), only
+// values that are themselves scheme-bearing absolute URLs.
+const ABSOLUTE_URL_SCHEME_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+function findAbsoluteUrlValues(input: unknown, path = '$'): string[] {
+    if (typeof input === 'string') {
+        return ABSOLUTE_URL_SCHEME_RE.test(input) ? [path] : [];
+    }
+    if (Array.isArray(input)) {
+        return input.flatMap((item, index) =>
+            findAbsoluteUrlValues(item, `${path}[${index}]`)
+        );
+    }
+    if (typeof input !== 'object' || input === null) return [];
+    const findings: string[] = [];
+    for (const [key, value] of Object.entries(input)) {
+        findings.push(...findAbsoluteUrlValues(value, `${path}.${key}`));
+    }
+    return findings;
+}
+
 function errorCodeForZod(error: z.ZodError): AssetResolverErrorCode {
     // Classify by a fixed precedence (unsafe-path > integrity > validation) so a
     // document with several issues always reports the same code regardless of
@@ -191,6 +221,14 @@ export function parseRuntimeAssetManifest(
             { details: forbiddenFields }
         );
     }
+    const urlFields = findAbsoluteUrlValues(input);
+    if (urlFields.length > 0) {
+        throw new AssetResolverError(
+            'unsafe-path',
+            'Runtime manifests must not contain absolute URL values',
+            { details: urlFields }
+        );
+    }
     return parseSchema(
         RuntimeAssetManifestV1Schema,
         input,
@@ -210,6 +248,14 @@ export function parseActiveReleasePointer(
             'validation',
             'Active-release pointers must not expose authoring or provider metadata',
             { details: forbiddenFields }
+        );
+    }
+    const urlFields = findAbsoluteUrlValues(input);
+    if (urlFields.length > 0) {
+        throw new AssetResolverError(
+            'unsafe-path',
+            'Active-release pointers must not contain absolute URL values',
+            { details: urlFields }
         );
     }
     const pointer = parseSchema(

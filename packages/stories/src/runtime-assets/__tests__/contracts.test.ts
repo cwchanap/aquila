@@ -15,6 +15,7 @@ import {
     parseRuntimeAssetManifest,
     parseStoryAssetReleasePlan,
     qualifyAssetIdentity,
+    releaseIdFromContentSha256,
     validatePointerManifestPair,
 } from '..';
 
@@ -240,6 +241,92 @@ describe('runtime asset wire contracts', () => {
             parseRuntimeAssetManifest({
                 ...manifestFixture,
                 secretsauce: 'condiment',
+            })
+        ).not.toThrow();
+    });
+
+    it('rejects absolute URL values in unknown manifest fields', () => {
+        // The forbidden-key heuristic only inspects property names; an unknown
+        // field whose VALUE is an absolute URL would otherwise pass the key
+        // check and be silently stripped by the non-strict manifest schema,
+        // even though the raw document already exposed the environment-specific
+        // URL. The value-based check must catch it regardless of field name.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    sourceUrl: 'https://internal-assets.example.com/source.png',
+                }),
+            'unsafe-path'
+        );
+        // A nested unknown field carrying an absolute URL is also rejected.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    metadata: {
+                        origin: 'http://127.0.0.1/private-assets/',
+                    },
+                }),
+            'unsafe-path'
+        );
+        // Credential-bearing URLs and other schemes are rejected too.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    cdnEndpoint: 'https://user:pass@cdn.example.com/',
+                }),
+            'unsafe-path'
+        );
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    fileRef: 'file:///etc/passwd',
+                }),
+            'unsafe-path'
+        );
+    });
+
+    it('rejects absolute URL values in unknown pointer fields', () => {
+        expectCode(
+            () =>
+                parseActiveReleasePointer({
+                    ...currentFixture,
+                    sourceUrl: 'https://internal-assets.example.com/source.png',
+                }),
+            'unsafe-path'
+        );
+        expectCode(
+            () =>
+                parseActiveReleasePointer({
+                    ...currentFixture,
+                    metadata: { origin: 'http://127.0.0.1/private-assets/' },
+                }),
+            'unsafe-path'
+        );
+    });
+
+    it('does not flag prose that merely mentions a URL', () => {
+        // A release-plan `reason` is free-form prose; a URL mentioned inside a
+        // sentence is not itself an absolute URL value (no leading scheme on the
+        // string), so it must remain acceptable. The release-plan parser does
+        // not run the absolute-URL value check, but this guards against an
+        // over-broad future extension of that check onto release-plan prose.
+        const omitted = planFixture.entries.find(
+            entry => entry.disposition === 'omitted'
+        )!;
+        expect(() =>
+            parseStoryAssetReleasePlan({
+                ...planFixture,
+                entries: [
+                    ...planFixture.entries.filter(entry => entry !== omitted),
+                    {
+                        ...omitted,
+                        reason: 'see https://internal.example.com for details',
+                    },
+                ],
             })
         ).not.toThrow();
     });
@@ -501,6 +588,9 @@ describe('runtime asset wire contracts', () => {
             // @ts-expect-error - ReleaseContentSha256 is not a ManifestByteSha256.
             // prettier-ignore
             validatePointerManifestPair(pointer, manifest, releaseContentDigest);
+            // @ts-expect-error - ManifestByteSha256 is not a ReleaseContentSha256.
+            // prettier-ignore
+            releaseIdFromContentSha256(manifestBytesDigest);
         }
         // Reference the function so it is not dropped before tsc checks it.
         expect(typeof compileTimeOnly).toBe('function');
@@ -512,5 +602,8 @@ describe('runtime asset wire contracts', () => {
         expect(() =>
             assertReleaseIdMatchesContentSha256(manifest, releaseContentDigest)
         ).not.toThrow();
+        expect(releaseIdFromContentSha256(releaseContentDigest)).toBe(
+            `sha256-${releaseContentDigest}`
+        );
     });
 });

@@ -46,14 +46,37 @@ describe('runtime asset paths', () => {
                 previewId: 'hpa-227',
             })
         ).toBe('vn/previews/hpa-227/stories/fixture_story/current.json');
-        expect(
-            getObjectPath(
-                'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                'webp'
-            )
-        ).toBe(
+        const objectDigest = assertSha256<'object-content'>(
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        );
+        expect(getObjectPath(objectDigest, 'webp')).toBe(
             'vn/objects/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.webp'
         );
+    });
+
+    it('rejects transposing a non-object-content digest into getObjectPath', () => {
+        // Compile-time guarantee: getObjectPath selects an object path from the
+        // digest of an asset's encoded bytes, so it must accept only an
+        // ObjectContentSha256. A ManifestByteSha256 or ReleaseContentSha256
+        // must not be assignable. The @ts-expect-error directives below are
+        // verified by `tsc --noEmit`; if the brand boundary regresses they
+        // become unused and the typecheck fails.
+        const manifestBytesDigest = assertSha256<'manifest-bytes'>(
+            'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        );
+        const releaseContentDigest = assertSha256<'release-content'>(
+            'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+        );
+        function compileTimeOnly() {
+            // @ts-expect-error - ManifestByteSha256 is not an ObjectContentSha256.
+            // prettier-ignore
+            getObjectPath(manifestBytesDigest, 'webp');
+            // @ts-expect-error - ReleaseContentSha256 is not an ObjectContentSha256.
+            // prettier-ignore
+            getObjectPath(releaseContentDigest, 'webp');
+        }
+        // Reference the function so it is not dropped before tsc checks it.
+        expect(typeof compileTimeOnly).toBe('function');
     });
 
     it('combines safe relative paths with local and production base URLs', () => {

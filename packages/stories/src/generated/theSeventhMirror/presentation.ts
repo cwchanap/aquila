@@ -7,8 +7,8 @@ export const storyPresentation = {
         activeLimit: 1,
         defaultSlot: "center",
         slotsByCharacterId: {
-            "asakura_mio": "left",
-            "asakura_yuma": "right",
+            ["asakura_mio"]: "left",
+            ["asakura_yuma"]: "right",
         },
     },
 } as const satisfies StoryPresentationMetadata;

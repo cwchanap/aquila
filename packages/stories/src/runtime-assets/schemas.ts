@@ -262,6 +262,7 @@ export const StoryAssetReleasePlanV1Schema = z
         channel: z.enum(['production', 'preview']),
         entries: z.array(StoryAssetReleasePlanEntryV1Schema),
     })
+    .strict()
     .superRefine((plan, context) => {
         const ids = plan.entries.map(entry =>
             qualifyAssetIdentity(entry.identity)

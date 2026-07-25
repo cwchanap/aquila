@@ -460,6 +460,157 @@ describe('runtime asset wire contracts', () => {
         expect(() => parseRuntimeAssetManifest(labelManifest)).not.toThrow();
     });
 
+    it('rejects environment-bearing scheme URLs in section regardless of slash count', () => {
+        // `isConcreteUrlValue` historically required `://` immediately after
+        // the scheme, so valid absolute URLs that use a single slash or no
+        // slashes (`https:host/path`, `file:/path`, `blob:https://...`) passed
+        // the section check and entered the parsed manifest. These carry
+        // environment-specific data and must be rejected, while label-style
+        // values like `chapter:night` remain acceptable because `chapter` is
+        // not a known environment-bearing scheme.
+        const httpsOpaque = structuredClone(manifestFixture);
+        httpsOpaque.assets[0].section =
+            'https:internal-assets.example.com/private.png';
+        expectCode(() => parseRuntimeAssetManifest(httpsOpaque), 'unsafe-path');
+
+        const fileSingleSlash = structuredClone(manifestFixture);
+        fileSingleSlash.assets[0].section = 'file:/Users/alice/private.png';
+        expectCode(
+            () => parseRuntimeAssetManifest(fileSingleSlash),
+            'unsafe-path'
+        );
+
+        const blobUrl = structuredClone(manifestFixture);
+        blobUrl.assets[0].section =
+            'blob:https://internal-assets.example.com/private-id';
+        expectCode(() => parseRuntimeAssetManifest(blobUrl), 'unsafe-path');
+
+        const ftpOpaque = structuredClone(manifestFixture);
+        ftpOpaque.assets[0].section = 'ftp:internal.example.com/private.png';
+        expectCode(() => parseRuntimeAssetManifest(ftpOpaque), 'unsafe-path');
+
+        // Scheme names are matched case-insensitively.
+        const upperCase = structuredClone(manifestFixture);
+        upperCase.assets[0].section =
+            'HTTPS:internal-assets.example.com/private.png';
+        expectCode(() => parseRuntimeAssetManifest(upperCase), 'unsafe-path');
+
+        // Label-style values whose first token is NOT an environment-bearing
+        // scheme remain acceptable even when they contain a colon.
+        const labelManifest = structuredClone(manifestFixture);
+        labelManifest.assets[0].section = 'chapter:night';
+        expect(() => parseRuntimeAssetManifest(labelManifest)).not.toThrow();
+    });
+
+    it('rejects alternative source-path field names as forbidden metadata', () => {
+        // The forbidden-key list historically covered `sourcePath`/`localPath`
+        // but not equivalent alternative spellings (`sourceFile`, `localFile`,
+        // and their plurals). An unknown field carrying an authoring filesystem
+        // path under one of these names would bypass the forbidden-key check,
+        // and a bare filesystem path is not URL-prefixed so the URL scan would
+        // miss it too — the non-strict schema would then silently strip the
+        // field, leaving the parsed manifest clean while the wire document
+        // exposed the local authoring path. The contract forbids source paths
+        // in public runtime data regardless of field name.
+        for (const key of [
+            'sourceFile',
+            'sourceFiles',
+            'localFile',
+            'localFiles',
+        ]) {
+            expectCode(
+                () =>
+                    parseRuntimeAssetManifest({
+                        ...manifestFixture,
+                        [key]: '/Users/alice/aquila/private/background.png',
+                    }),
+                'validation'
+            );
+        }
+        // Boundary-aware matching: `sourceFiler` must NOT be caught (over-match
+        // guard), while `sourceFilePath` must be caught via the `sourcefile`
+        // stem at a word boundary.
+        expect(() =>
+            parseRuntimeAssetManifest({
+                ...manifestFixture,
+                sourceFiler: 'narrator',
+            })
+        ).not.toThrow();
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    sourceFilePath: '/Users/alice/private.png',
+                }),
+            'validation'
+        );
+    });
+
+    it('rejects absolute filesystem paths in unknown manifest fields', () => {
+        // The URL scan catches scheme-bearing and protocol-relative URLs in
+        // unknown additive fields, but a bare absolute filesystem path
+        // (`/Users/alice/...`, `C:\Users\...`) is not URL-prefixed, so an
+        // unknown field carrying one would bypass the URL scan and be silently
+        // stripped by the non-strict schema — leaving the wire document
+        // exposed. The contract forbids environment-specific absolute paths in
+        // public runtime data, so the unknown-field scan must also reject
+        // obvious absolute filesystem paths regardless of field name.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    originPath: '/Users/alice/aquila/private/background.png',
+                }),
+            'unsafe-path'
+        );
+        // Windows drive-letter paths (both slash directions) are rejected too.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    originPath: 'C:\\Users\\alice\\private\\background.png',
+                }),
+            'unsafe-path'
+        );
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    originPath: 'C:/Users/alice/private/background.png',
+                }),
+            'unsafe-path'
+        );
+        // A nested unknown field carrying an absolute filesystem path is also
+        // rejected.
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    metadata: {
+                        origin: '/home/alice/private-assets/background.png',
+                    },
+                }),
+            'unsafe-path'
+        );
+        // Whitespace-prefixed absolute paths are rejected (trim before test).
+        expectCode(
+            () =>
+                parseRuntimeAssetManifest({
+                    ...manifestFixture,
+                    originPath: ' /Users/alice/private.png',
+                }),
+            'unsafe-path'
+        );
+        // Relative paths in unknown fields remain acceptable — they are not
+        // environment-specific.
+        expect(() =>
+            parseRuntimeAssetManifest({
+                ...manifestFixture,
+                futureHint: 'relative/path/hint.json',
+            })
+        ).not.toThrow();
+    });
+
     it('rejects whitespace-prefixed absolute URL values in unknown fields', () => {
         // URL detection runs against the raw wire value before Zod's `.trim()`
         // transformation strips leading whitespace. Without trimming on the

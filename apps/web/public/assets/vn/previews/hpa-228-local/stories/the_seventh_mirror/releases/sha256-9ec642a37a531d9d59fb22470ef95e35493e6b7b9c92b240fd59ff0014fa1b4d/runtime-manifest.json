@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "storyId": "the_seventh_mirror",
+  "releaseId": "sha256-9ec642a37a531d9d59fb22470ef95e35493e6b7b9c92b240fd59ff0014fa1b4d",
+  "assets": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act2_s0"
+      },
+      "variants": {
+        "webp": {
+          "format": "webp",
+          "path": "vn/objects/e7b5e3372ebcb23f63bef4cf2e762679c35e61babc13829ed665eaaa49fdd9f6.webp",
+          "sha256": "e7b5e3372ebcb23f63bef4cf2e762679c35e61babc13829ed665eaaa49fdd9f6",
+          "byteLength": 34088
+        }
+      },
+      "width": 959,
+      "height": 540,
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act2_s1"
+      },
+      "variants": {
+        "webp": {
+          "format": "webp",
+          "path": "vn/objects/8bfdc7f3c41049680918be340114f37ed433763672369c86c84ef620b1d8aaba.webp",
+          "sha256": "8bfdc7f3c41049680918be340114f37ed433763672369c86c84ef620b1d8aaba",
+          "byteLength": 36628
+        }
+      },
+      "width": 959,
+      "height": 540,
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/base"
+      },
+      "variants": {
+        "webp": {
+          "format": "webp",
+          "path": "vn/objects/a930d03b393e3c2c2005018eef18328b2cc1cab5934628f0e6b8237040a2cccb.webp",
+          "sha256": "a930d03b393e3c2c2005018eef18328b2cc1cab5934628f0e6b8237040a2cccb",
+          "byteLength": 17138
+        }
+      },
+      "width": 450,
+      "height": 600,
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_yuma/base"
+      },
+      "variants": {
+        "webp": {
+          "format": "webp",
+          "path": "vn/objects/aa3669c33656995b535653b315f40cb4c7bb52f248eb79f6ce3189ab49e883e7.webp",
+          "sha256": "aa3669c33656995b535653b315f40cb4c7bb52f248eb79f6ce3189ab49e883e7",
+          "byteLength": 15654
+        }
+      },
+      "width": 450,
+      "height": 600,
+      "section": "chapter_1"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Linear: [HPA-228](https://linear.app/cwchanap/issue/HPA-228/build-aquila-visualnovelreader-mvp-with-local-assets)  
 Date: 2026-07-26  
-Status: Review-ready after second-pass amendments
+Status: Review-ready after third-pass amendments
 
 ## Goal
 
@@ -36,7 +36,7 @@ history state. HPA-228 consumes those boundaries; it does not redefine them.
 | --- | --- |
 | Default mode | Text |
 | Preference scope | Persisted locally per device, not per story or locale |
-| Visual demo | The Seventh Mirror, Chapter 1 |
+| Visual demo | The Seventh Mirror, Chapter 1 `ch1_act2` representative path |
 | Mode control | Always-visible compact Text / Visual Novel control in the top-right safe area |
 | Visual failure | Continue quietly with the previous or neutral background and no failed portrait |
 | Failure notice | Small, non-blocking accessible status indicator |
@@ -96,9 +96,11 @@ replacement payload is blocked.
 
 `readerState` gains generated `StoryPresentationMetadata | null` as runtime
 payload. `ReaderManager` assigns it atomically with the successfully loaded
-story payload. `readerState.reset()` explicitly assigns `presentation = null`,
-parallel to `activeFlow = null`, so a story change cannot retain stale slot
-metadata. Presentation metadata is never serialized or persisted.
+story payload. Both `readerState.reset()` and `ReaderManager`'s field-by-field
+constructor initialization explicitly assign `presentation = null`, parallel
+to `activeFlow = null`, so a new manager or story change cannot retain stale
+slot metadata from the global store. Presentation metadata is never serialized
+or persisted.
 
 Presentation assignment occurs inside the same generation-gated
 `applySession()` operation as `activeStory` and `activeFlow`. An initial load
@@ -113,16 +115,21 @@ callback to `ReaderShell`:
 
 ```ts
 getSceneDialogue = (
+    storyId: string,
     sceneId: string
 ): readonly DialogueEntry[] | null;
 ```
 
-It returns `null` for an unknown scene or when no active story bundle exists,
+It returns `null` when `storyId !== readerState.storyId`, for an unknown scene,
+or when no active story bundle exists. The lookup uses
+`Object.hasOwn(story.dialogue, sceneId)` before indexing the generated plain
+object, so inherited names such as `constructor` cannot become dialogue. It
 never throws, never mutates dialogue, and keeps stable function identity across
 renders. Only `VisualStateController` calls it; the Svelte leaf merely passes
 controlled inputs into the controller. HPA-232 loads one complete story bundle
-per dynamic import rather than loading individual scenes, so this lookup remains
-synchronous without duplicating the full dialogue map into reactive state.
+per dynamic import rather than loading individual scenes, so this lookup
+remains synchronous without duplicating the full dialogue map into reactive
+state.
 
 `VisualNovelReader` remains controlled:
 
@@ -141,8 +148,11 @@ The three readers share narrowly scoped pure helpers from
   overlays, and explicitly marked interactive descendants.
 
 They continue sharing the existing `typeText` runner. The Svelte-specific
-two-signal effect bookkeeping remains component-local; HPA-228 does not create
-a new headless reader engine or refactor unrelated reader presentation.
+two-signal effect bookkeeping remains component-local. Mobile
+`interactionDisabled`, open-overlay, and visible-chrome gates remain above the
+shared decision helper; in particular, a tap that dismisses mobile chrome
+returns before dialogue advancement. HPA-228 does not create a new headless
+reader engine or refactor unrelated reader presentation.
 
 ### Visual runtime modules
 
@@ -214,6 +224,13 @@ image `src` and waits for the DOM update. Revocation occurs on cache eviction,
 story change, reader destruction, or explicit `clear()`. A Text / Visual Novel
 toggle does not revoke cached objects because the approved runtime remains alive
 across mode switches.
+
+HPA-227's optional low-resolution `placeholder` and
+`ResolvedAsset.placeholderUrl` fields remain valid resolver output, but this
+MVP does not fetch or render them. Replacement continuity comes from retaining
+the previous decoded background, and the first background uses the neutral CSS
+backdrop until its full object is verified. Placeholder rendering is an
+explicit V1 non-goal rather than an unhandled state.
 
 #### `VisualStateController`
 
@@ -386,9 +403,13 @@ pre-mark a later foreground request as failed.
 `loadActiveRelease()` follows this order:
 
 1. Build `current.json` with HPA-227's safe path helper.
-2. Fetch it with the 5-second pointer timeout.
+2. Fetch it with the 5-second pointer timeout and
+   `fetch(url, { cache: 'no-cache' })`.
 3. Parse and validate `ActiveReleasePointerV1`.
 4. Reject a story mismatch, unsafe manifest path, or older activation pointer.
+   HPA-228 owns a small `publishedAt` comparison against the newest active or
+   persisted pointer for the same source; `assertActivationAllowed()` is not
+   reused because it checks publication channel, not pointer age.
 5. Fetch the manifest's exact bytes with the 10-second manifest timeout.
 6. Verify `manifestSha256` before parsing.
 7. Parse and validate `RuntimeAssetManifestV1`.
@@ -415,12 +436,19 @@ revalidation from activating after a story change.
 
 At most two fully validated releases are stored in `localStorage` under the
 versioned key `aquila:visual-assets:validated-releases:v1`. Each record contains
-its complete `AssetResolverSource` identity, pointer, exact manifest text, and
+its complete `AssetResolverSource` identity, pointer, exact manifest text,
 `validatedAt`, and `lastUsedAt`. The array is bounded to two records across all
 stories and sources. Reading stored data requires an exact source match and
 repeats schema, byte-checksum, story, release, and canonical-content
 verification; `localStorage` is never trusted merely because this client wrote
 it.
+
+The validated release is installed in the in-memory store before persistence.
+Every `localStorage` read, write, and cleanup is wrapped defensively. A
+`QuotaExceededError`, disabled storage, Safari private-mode exception, or
+failed removal never escapes resolver APIs, changes a ready release to failed,
+or blocks visual mode. The current page continues with the memory-only release;
+only cross-reload stale fallback is lost.
 
 Expired or invalid records are removed first. When a third valid release must
 be stored, the record with the oldest `lastUsedAt` is evicted.
@@ -429,18 +457,19 @@ failed revalidation does not remove an otherwise valid, unexpired cached
 release.
 
 When the current candidate is unavailable, stale, malformed, or invalid, the
-resolver may continue the newest revalidated release for the same story if it
+resolver may continue the newest revalidated release for the same source if it
 is no more than 24 hours old. The active state becomes `stale-but-usable` and
-the UI exposes a small non-blocking status indicator. An older pointer cannot
-downgrade a cached release. A deliberate rollback remains valid because it has
-a newer `publishedAt`.
+the UI exposes a small non-blocking status indicator. The HPA-228 comparison
+rejects a candidate whose parsed `publishedAt` precedes the newest accepted
+pointer, preventing an older pointer from downgrading a cached release. A
+deliberate rollback remains valid because it has a newer `publishedAt`.
 
 Without an eligible release, the resolver returns typed fallback state.
 Dialogue, choices, and navigation remain usable.
 
 ## Local fixture strategy
 
-### User-visible The Seventh Mirror preview
+### User-visible The Seventh Mirror `ch1_act2` preview
 
 The demo uses an isolated local preview target so partial Chapter 1 coverage is
 contract-valid and cannot update a production pointer:
@@ -451,20 +480,44 @@ apps/web/public/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/rele
 apps/web/public/assets/vn/objects/<sha256>.webp
 ```
 
-Small fixtures are derived from existing repository artwork:
+The flagship path is deliberately scoped to the 25-line `ch1_act2` scene. Its
+four keyed source objects are:
 
-- At least two Chapter 1 backgrounds demonstrating a transition
-- At least one Asakura Mio portrait in the left slot
-- At least one Asakura Yuma portrait in the right slot
+- `chapter_1/ch1_act2_s0`
+- `chapter_1/ch1_act2_s1`
+- `asakura_mio/base`
+- `asakura_yuma/base`
+
+Those objects give every keyed line in the scene a resolvable visual, including
+one real background transition and both configured portrait slots. Narrator
+lines without portrait keys remain intentionally `omitted`, so the normal demo
+does not show a missing-visual warning. Other Chapter 1 scenes are outside the
+flagship fixture coverage and continue exercising typed fallback if visited.
+
+The canonical E2E route is
+`/en/reader?story=the_seventh_mirror&scene=ch1_act2&dialogue=6`, whose one-based
+line 6 is Yuma in the right slot. Advancing once reaches Mio in the left slot
+at line 7. The background-transition flow starts at line 10 and advances to
+line 11.
 
 Images are downscaled and converted to WebP with aspect ratio preserved. The
 fixture manifest records their actual byte length, checksum, width, and height.
 AVIF is optional and not required for this local release.
 
+`sharp` is added as a direct web-package development dependency, pinned through
+the workspace lockfile. The fixture-only
+`apps/web/scripts/build-visual-fixtures.ts` script reads the four explicit PNG
+source paths above, applies fixed resize/WebP options, and writes the
+content-addressed WebP objects and matching pointer/manifest fixtures. The web
+package exposes it as `bun run build:visual-fixtures`. This is a reproducible
+test-fixture derivation command, not a generic publisher or production asset
+optimization pipeline.
+
 The preview `StoryAssetReleasePlanV1` is checked in at
 `apps/web/src/lib/visual-assets/__fixtures__/release-plans/the-seventh-mirror.preview.v1.json`
-rather than under `public/`. Preview classification may be incomplete under
-HPA-227; only the small included subset is published into the runtime manifest.
+rather than under `public/`. It marks exactly the four flagship objects above as
+included. Preview classification may be incomplete under HPA-227; only that
+small included subset is published into the runtime manifest.
 
 ### Synthetic resolver fixtures
 
@@ -485,11 +538,22 @@ Source release plans may contain source paths and therefore are never served as
 runtime data. Public runtime fixtures contain no prompts, local source paths,
 provider metadata, or credentials.
 
-`apps/web/scripts/verify-visual-fixtures.ts` independently recomputes release
-IDs, exact manifest checksums, object checksums, byte lengths, and decoded
-dimensions for every checked-in visual fixture. The web package exposes it as
-`bun run verify:visual-fixtures`; verification never relies only on constants
-fed back into the validators under test.
+`apps/web/scripts/verify-visual-fixtures.ts` imports the direct `sharp`
+dependency to decode every checked-in WebP and independently recomputes release
+IDs, exact manifest checksums, object checksums, byte lengths, and intrinsic
+dimensions. It also:
+
+- Derives an `AuthoringAssetCatalog` by flattening backgrounds and portraits
+  from generated `theSeventhMirror/image-assets.json`, mapping each entry's
+  type, key, and source path.
+- Builds `availableSourcePaths` from the matching files under
+  `packages/assets/media/`.
+- Calls `validateReleaseCoverage(authoringCatalog, plan, availableSourcePaths)`.
+- Calls `validateRuntimeManifestCoverage(manifest, plan)` so the included plan
+  entries and runtime-manifest identities correspond exactly.
+
+The web package exposes it as `bun run verify:visual-fixtures`; verification
+never relies only on constants fed back into the validators under test.
 
 ## Visual reader layout
 
@@ -587,9 +651,13 @@ the active payload inert.
 - Exact manifest-byte checksum mismatch
 - Story, release, and canonical-content mismatch
 - First-load and opportunistic 60-second revalidation triggers
+- Pointer requests use `cache: 'no-cache'`, and HPA-228's `publishedAt`
+  comparison rejects an older pointer without calling `assertActivationAllowed`
 - In-flight revalidation deduplication and story-change cancellation
 - Cached release revalidation, expiry, tamper rejection, stale pointer,
   `lastUsedAt` updates, and two-release LRU eviction
+- Memory-only continuation when validated-release `localStorage` writes or
+  cleanup throw
 - Image byte-length, content-hash, decoded-dimension, and decode failures
 - One-time AVIF probe and capability/failure fallback to required WebP
 - Concurrent request deduplication
@@ -623,31 +691,40 @@ the active payload inert.
 - Controlled `onIndexChange`, `onChoice`, bookmark, and scene navigation
 - Backlog contents and focus restoration
 - Shared pure advance-decision and interactive-target helpers
+- Mobile chrome dismissal before the shared advance decision
 - Typewriter skip-before-advance behavior
 - Interactive-element keyboard, pointer, and touch safety
 - Reduced-motion background and portrait behavior
 - Decorative image semantics and accessible status
-- Safe-area CSS and mobile landscape layout state
+- Literal safe-area `env()` usage in component/CSS tests and mobile landscape
+  layout state
 
 ### ReaderManager integration tests
 
 - Presentation assignment alongside `activeStory` and `activeFlow`
-- Null presentation after initial failure and reset
+- Null presentation after construction, initial failure, and reset
 - Preserved presentation alongside the preserved payload after replacement
   failure
 - Generation races cannot apply stale presentation metadata
+- `getSceneDialogue(storyId, sceneId)` rejects stale story identities,
+  inherited property names, and unknown scenes
 
 ### Playwright flows
 
-- Desktop Visual Novel mode with The Seventh Mirror Chapter 1 assets
+- Desktop Visual Novel mode on the canonical The Seventh Mirror `ch1_act2`
+  route
 - Mobile Visual Novel mode on the existing mobile Chromium and WebKit projects
-- A mobile landscape pass that verifies safe-area dialogue placement, a
-  tappable unobscured mode control, one dialogue advance, backlog open/close,
-  and no portrait overlap with essential controls
+- A mobile landscape pass that calls
+  `page.setViewportSize({ width: 844, height: 390 })` and verifies a tappable,
+  unobscured mode control, one dialogue advance, backlog open/close, and no
+  portrait overlap with essential controls. It does not claim to emulate
+  nonzero notch insets.
 - Text to Visual Novel to Text switching at a nonzero dialogue index
 - Exact direct-URL and browser-history restoration
-- A real background transition with DOM layer-state assertions
-- Asakura Mio left-slot and Asakura Yuma right-slot rendering
+- A real background transition from `ch1_act2` one-based line 10 to line 11
+  with DOM layer-state assertions
+- Asakura Yuma right-slot rendering at one-based line 6 followed by Asakura Mio
+  left-slot rendering at line 7
 - A Train Adventure choice loaded by direct scene URL, proving choices and
   progression continue when visuals are absent
 - Non-blocking missing and decode-failure behavior
@@ -665,12 +742,14 @@ Before completion:
 4. Run the production web build.
 5. Run targeted desktop, mobile portrait, and mobile landscape Playwright
    flows.
-6. Run `bun --filter web verify:visual-fixtures`.
-7. Run `compile:check` and confirm generated story output has no drift.
-8. Confirm the fixture verification script independently recomputes release
+6. Run `bun --filter web build:visual-fixtures` using the locked direct `sharp`
+   dependency and review the resulting checked-in fixture diff.
+7. Run `bun --filter web verify:visual-fixtures`.
+8. Run `compile:check` and confirm generated story output has no drift.
+9. Confirm the fixture verification script independently recomputes release
    IDs, exact manifest checksums, asset checksums, byte lengths, and dimensions
    rather than accepting validator-input constants as proof.
-9. Review the finished implementation against the live HPA-228 issue and its
+10. Review the finished implementation against the live HPA-228 issue and its
    current comments before declaring acceptance.
 
 ## Non-goals
@@ -686,3 +765,8 @@ Before completion:
 - Cross-scene or persisted backlog history
 - Cross-device synchronization
 - Pixel-perfect screenshot baselines
+- Low-resolution placeholder rendering
+- Production/static-host response-header configuration; pointer requests still
+  use browser `cache: "no-cache"`, while HPA-227's
+  `no-cache, max-age=0, must-revalidate` response header belongs to the hosting
+  path

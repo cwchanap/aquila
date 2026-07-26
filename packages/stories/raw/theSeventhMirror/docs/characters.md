@@ -1277,3 +1277,14 @@
 ### 說明
 
 C2 設施當輪值班醫療主管。非終局惡人——真心相信外部接管增加患者失穩風險，因此在知道 no-move 存在下，仍以「患者穩定／外部控制衝突」為理由對 continuity broker 自動產生的 relocation proposal 作內部 medical affirmation。但 no-move 的醫療緊急例外要求一名與原管理鏈無利益關係的獨立醫師確認，值班主管未取得該確認，因此只能讓承包商搬送車被預派，不能合法使患者離床。須面對程序與醫療判斷審查。說話風格沉穩、以患者安全為理由、帶著被外部程序挑戰的防衛性，不是掩蓋而是制度內的善意判斷。
+
+---
+
+## 60. 鏡島本地技師（Mirror Island Local Technician）
+
+- **ID**: `local_technician`
+- **Aliases**: 本地技師, 鏡島技師, 技師
+
+### 說明
+
+泛指鏡島本地值班硬體／服務技師。無人格，純功能性角色，負責在五方共同控制與司法保全見證下，以 R2、audit 記錄、服務手冊與實體線路將 forensic clone 找到的 service alias（如 `SUBJECT-SVC／G07`）映射至實體 Subject Continuity Bay 並執行受控掛載。不隸屬 continuity governance、不擁有患者決策權、不簽署任何授權——只執行實體映射與本地服務操作，所有動作進 immutable audit。說話風格制式、精確、以硬體座標與服務手冊編號為軸心。

@@ -1270,6 +1270,101 @@
       "key": "chapter_25/ch25_act8_s3",
       "path": "the_seventh_mirror/backgrounds/chapter_25/ch25_act8_s3.png",
       "prompt": "continuity monitoring room, left screen showing package preposition status split into continuity-controlled STARTED and normal operations HELD, center screen showing CUTOVER AUTH LEASE still active, right screen showing Evidence Vault multi-source attestation trigger, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act1_s0.png",
+      "prompt": "mirror island external security command post, prefab container room with rack monitors glowing cold blue, KAGAMI local verification booth visible through reinforced window, deep night black outside, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act2_s0.png",
+      "prompt": "KAGAMI BCP service monitor room, wall-mounted status screens showing SUBJECT LEDGER and BCP SERVICE MOUNT fields, court secure connection terminal on right side with encrypted channel indicator, cold blue-white screen glow, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act2_s1.png",
+      "prompt": "KAGAMI BCP service monitor room, center screen now showing continuity overlay low-intensity field expansion, CENTRALLY MANAGED arrow transitioning to MANAGED-EQUIVALENT/BCP, cold blue-white glow on field names, court secure connection terminal dimmed on right, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen"
+    },
+    {
+      "key": "chapter_26/ch26_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act3_s0.png",
+      "prompt": "judicial medical technical assistance room, partitioned space with service manual shelves on far wall, forensic clone workstation with isolated offline terminal, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act3_s1.png",
+      "prompt": "forensic clone workstation, isolated offline terminal screen showing SUBJECT-SVC/G07 service alias and CLINICAL DELEGATION fields, no network connection, read-only indicator lit, cold blue-white screen glow, deep night shadows, muted cool palette, visual-novel background art, close shot on terminal screen"
+    },
+    {
+      "key": "chapter_26/ch26_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act4_s0.png",
+      "prompt": "KAGAMI-01 clinical service side corridor, reinforced door with SUBJECT CONTINUITY BAY placard, local technician at service panel, system security and judicial preservation officers flanking, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act4_s1.png",
+      "prompt": "SUBJECT CONTINUITY BAY interior service view, wall-mounted screens showing subject ledger and signed-update queue, physical endpoint heartbeat map on center display, no beds no patients visible only server racks and service terminals, cold blue-white screen glow, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act4_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act4_s2.png",
+      "prompt": "SUBJECT CONTINUITY BAY interior service view, background team workstations on far wall showing historical handshake analysis and witness buffer verification, center screen showing SUBJECT LEDGER S43 result, cold blue-white screen glow, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act5_s0.png",
+      "prompt": "subject continuity bay interior, rack-mounted ledger displays glowing cold blue-white, sealed S42 snapshot frozen on left screen, monotonic merge queue scrolling on center screen, physical endpoint heartbeat map on right screen, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act5_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act5_s1.png",
+      "prompt": "subject continuity bay interior, center screen now showing authorized human dependency restoration list, four red-zone names appearing one by one, other four entries remaining aggregated as OTHER-A through OTHER-D, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen"
+    },
+    {
+      "key": "chapter_26/ch26_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act6_s0.png",
+      "prompt": "KAGAMI commit-gate verification room, reinforced booth with local trust chain display, cold blue-white screen glow on operator console, remote patient node feeds visible as small tiled panels along the upper wall, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act6_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act6_s1.png",
+      "prompt": "KAGAMI commit-gate verification room, center panel now showing CONTINUITY ROUTE A formal rebind request, S43 dependency hash displayed alongside old S42 hash, A18 science escrow status panel glowing red on lower right, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, close shot on center panel"
+    },
+    {
+      "key": "chapter_26/ch26_act6_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act6_s2.png",
+      "prompt": "KAGAMI commit-gate verification room, upper wall of remote patient node panels now showing parallel background activity, left panel displaying seven-stage timing package offline simulation progress, right panel showing Witness Echo Sideband carrier integrity verification, one node panel flashing quarantine status, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act7_s0.png",
+      "prompt": "subject continuity bay controlled identity room, partitioned area with judicial preservation camera fixed on ceiling, small table with sealed laptop, defense counsel seated beside young woman with long black hair, external doctor and patient rights representative standing along far wall, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act7_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act7_s1.png",
+      "prompt": "subject continuity bay controlled identity room, screen now displaying CLINICAL DELEGATION record with STATUS field changing to REVOKED BY HOLDER, judicial preservation camera red light steady, exhausted mother seated across the table with hands clasped, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, close shot on screen and table"
+    },
+    {
+      "key": "chapter_26/ch26_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act8_s0.png",
+      "prompt": "KAGAMI command room, wall of tiled patient node panels each showing different stage status, center console displaying distributed switch clock package verification, pre-dawn grey light beginning to bleed through reinforced window edges, cold fluorescent lighting mixing with faint grey, deep night shadows receding slightly, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act8_s1.png",
+      "prompt": "KAGAMI command room, center console now showing patient stage ceilings summary for all eight active dependencies, each node panel displaying its maximum allowed stage, pre-dawn grey light slightly stronger at window edges, cold fluorescent lighting, muted cool palette, visual-novel background art, close shot on center console"
+    },
+    {
+      "key": "chapter_26/ch26_act8_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act8_s2.png",
+      "prompt": "KAGAMI command room, right console showing official app cancel command status and manual override panel, pre-dawn grey light growing stronger at window edges mixing with cold fluorescent, deep night shadows fading, muted cool palette with faint warm grey, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_26/ch26_act8_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act8_s3.png",
+      "prompt": "KAGAMI command room, center console now displaying AUTO-PREP 05:50 branch-specific preparation screen, six status lines visible, pre-dawn grey light noticeably stronger at window edges, cold fluorescent mixing with grey dawn light, muted cool palette warming slightly, visual-novel background art, close shot on center console"
     }
   ],
   "portraits": [

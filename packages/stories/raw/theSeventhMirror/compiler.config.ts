@@ -147,6 +147,10 @@ const config: StoryCompilerConfig = {
             pattern: /^(獨立患者權利代表|患者權利代表|獨立權利代表|權利代表)$/,
             id: 'patient_rights_rep',
         },
+        {
+            pattern: /^(鏡島本地技師|本地技師|鏡島技師|技師)$/,
+            id: 'local_technician',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

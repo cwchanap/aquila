@@ -728,6 +728,65 @@ describe('VisualStateController', () => {
         expect(cache.prefetch).not.toHaveBeenCalled();
     });
 
+    it('warms a re-entered edge once while its older generation is still in flight', async () => {
+        const oldEdgePrefetch = deferred<{
+            requested: number;
+            cached: number;
+            failed: [];
+        }>();
+        const terminalFlow = {
+            start: 'terminal',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'terminal',
+                    sceneId: 'terminal',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const { cache, controller, resolver } = createHarness({
+            sceneDialogue: {
+                next: [{ dialogue: 'Next', background: 'next-room' }],
+            },
+        });
+        vi.mocked(resolver.prefetchNextEdge)
+            .mockImplementationOnce(() => oldEdgePrefetch.promise)
+            .mockResolvedValue({
+                requested: 1,
+                cached: 1,
+                failed: [],
+            });
+        const edgeInput = input([
+            { dialogue: 'Final', background: 'current-room' },
+        ]);
+        controller.update(edgeInput);
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(1);
+
+        controller.update(
+            input([{ dialogue: 'Navigated away' }], {
+                sceneId: 'terminal',
+                flow: terminalFlow,
+            })
+        );
+        controller.update(edgeInput);
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(2);
+
+        oldEdgePrefetch.resolve({ requested: 1, cached: 1, failed: [] });
+        await flushAsyncWork();
+
+        expect(cache.prefetch).toHaveBeenCalledTimes(1);
+        expect(cache.prefetch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                asset: expect.objectContaining({
+                    identity: { type: 'background', key: 'next-room' },
+                }),
+            })
+        );
+    });
+
     it('prefetches every immediate choice edge once but never a second edge', async () => {
         const flow = {
             start: 'choice_scene',

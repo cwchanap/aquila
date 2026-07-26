@@ -54,6 +54,11 @@ type LoadResult =
     | { status: 'fallback'; fallback: AssetFallback }
     | { status: 'failed' };
 
+type EdgePrefetchReservation = {
+    generation: number;
+    state: 'in-flight' | 'complete';
+};
+
 function imageLayer(
     state: VisualLayerState,
     identity: string | null = null
@@ -158,7 +163,10 @@ export class VisualStateController {
     private readonly queue = new PrefetchQueue(2);
     private readonly listeners = new Set<(snapshot: VisualSnapshot) => void>();
     private readonly abortController = new AbortController();
-    private readonly prefetchedEdges = new Set<string>();
+    private readonly prefetchedEdges = new Map<
+        string,
+        EdgePrefetchReservation
+    >();
 
     private snapshot: VisualSnapshot = initialSnapshot();
     private currentInput: VisualControllerInput | null = null;
@@ -627,14 +635,23 @@ export class VisualStateController {
         for (const toSceneId of targets) {
             if (!this.isInputCurrent(input, generation)) return;
             const edgeKey = `${input.storyId}\u0000${input.sceneId}\u0000${toSceneId}`;
-            if (this.prefetchedEdges.has(edgeKey)) continue;
+            const reservation = this.prefetchedEdges.get(edgeKey);
+            if (
+                reservation?.state === 'complete' ||
+                reservation?.generation === generation
+            ) {
+                continue;
+            }
             const dialogue = this.getSceneDialogue(input.storyId, toSceneId);
             const firstVisualLine = dialogue?.find(
                 entry => identitiesForLine(entry).length > 0
             );
             const assets = identitiesForLine(firstVisualLine);
             if (assets.length === 0) continue;
-            this.prefetchedEdges.add(edgeKey);
+            this.prefetchedEdges.set(edgeKey, {
+                generation,
+                state: 'in-flight',
+            });
             void this.queue
                 .run(async () => {
                     if (
@@ -645,7 +662,7 @@ export class VisualStateController {
                             assets
                         )
                     ) {
-                        this.prefetchedEdges.delete(edgeKey);
+                        this.releaseEdgeReservation(edgeKey, generation);
                         return;
                     }
                     const result = await this.resolver.prefetchNextEdge({
@@ -662,10 +679,13 @@ export class VisualStateController {
                             assets
                         )
                     ) {
-                        this.prefetchedEdges.delete(edgeKey);
+                        this.releaseEdgeReservation(edgeKey, generation);
                         return;
                     }
-                    if (result.failed.length > 0) return;
+                    if (result.failed.length > 0) {
+                        this.completeEdgeReservation(edgeKey, generation);
+                        return;
+                    }
                     await Promise.all(
                         assets.map(identity => {
                             if (
@@ -684,8 +704,29 @@ export class VisualStateController {
                                 : Promise.resolve();
                         })
                     );
+                    this.completeEdgeReservation(edgeKey, generation);
                 })
-                .catch(() => {});
+                .catch(() => this.releaseEdgeReservation(edgeKey, generation));
+        }
+    }
+
+    private releaseEdgeReservation(edgeKey: string, generation: number): void {
+        const reservation = this.prefetchedEdges.get(edgeKey);
+        if (
+            reservation?.generation === generation &&
+            reservation.state === 'in-flight'
+        ) {
+            this.prefetchedEdges.delete(edgeKey);
+        }
+    }
+
+    private completeEdgeReservation(edgeKey: string, generation: number): void {
+        const reservation = this.prefetchedEdges.get(edgeKey);
+        if (reservation?.generation === generation) {
+            this.prefetchedEdges.set(edgeKey, {
+                generation,
+                state: 'complete',
+            });
         }
     }
 

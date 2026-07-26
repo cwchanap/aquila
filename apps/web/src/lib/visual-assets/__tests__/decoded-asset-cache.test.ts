@@ -274,6 +274,140 @@ describe('DecodedAssetCache', () => {
         expect(cache.inFlight).toBe(0);
     });
 
+    it('tracks a stalled AVIF probe and falls back to WebP after 15 seconds', async () => {
+        vi.useFakeTimers();
+        const webpBytes = bytes('probe-timeout-webp');
+        const asset = createResolvedAsset({
+            label: 'probe-timeout',
+            webpBytes,
+            avifBytes: bytes('probe-timeout-avif'),
+        });
+        let releaseProbe!: () => void;
+        const fetchMock = vi.fn(
+            (input: RequestInfo | URL, init?: RequestInit) => {
+                if (String(input).includes('avif-probe.avif')) {
+                    return new Promise<Response>((resolve, reject) => {
+                        releaseProbe = () =>
+                            resolve(
+                                new Response('late probe', { status: 503 })
+                            );
+                        init?.signal?.addEventListener(
+                            'abort',
+                            () =>
+                                reject(
+                                    new DOMException(
+                                        'The operation was aborted',
+                                        'AbortError'
+                                    )
+                                ),
+                            { once: true }
+                        );
+                    });
+                }
+                if (String(input) === asset.webpUrl.href) {
+                    return Promise.resolve(response(webpBytes));
+                }
+                return Promise.resolve(
+                    new Response('unexpected', { status: 500 })
+                );
+            }
+        );
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchMock as typeof fetch,
+            decodeImage: successfulDecoder(),
+        });
+        const load = cache.load(asset);
+        const outcome = load.then(
+            value => ({ status: 'resolved' as const, value }),
+            error => ({ status: 'rejected' as const, error })
+        );
+
+        try {
+            await Promise.resolve();
+            expect(cache.inFlight).toBe(1);
+            await vi.advanceTimersByTimeAsync(
+                RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset
+            );
+
+            await expect(outcome).resolves.toMatchObject({
+                status: 'resolved',
+                value: {
+                    cacheKey: `webp:${digest(webpBytes)}`,
+                },
+            });
+            expect(
+                fetchMock.mock.calls.some(([input]) =>
+                    String(input).includes(asset.avifUrl?.href ?? '')
+                )
+            ).toBe(false);
+        } finally {
+            releaseProbe();
+            await outcome;
+            await cache.clear();
+        }
+    });
+
+    it('clear aborts and waits for a load that is probing AVIF support', async () => {
+        const asset = createResolvedAsset({
+            label: 'clear-during-probe',
+            avifBytes: bytes('clear-during-probe-avif'),
+        });
+        let releaseProbe!: () => void;
+        let probeAborted = false;
+        const fetchMock = vi.fn(
+            (input: RequestInfo | URL, init?: RequestInit) => {
+                if (String(input).includes('avif-probe.avif')) {
+                    return new Promise<Response>((resolve, reject) => {
+                        releaseProbe = () =>
+                            resolve(
+                                new Response('late probe', { status: 503 })
+                            );
+                        init?.signal?.addEventListener(
+                            'abort',
+                            () => {
+                                probeAborted = true;
+                                reject(
+                                    new DOMException(
+                                        'The operation was aborted',
+                                        'AbortError'
+                                    )
+                                );
+                            },
+                            { once: true }
+                        );
+                    });
+                }
+                return Promise.resolve(
+                    new Response('unexpected', { status: 500 })
+                );
+            }
+        );
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchMock as typeof fetch,
+            decodeImage: successfulDecoder(),
+        });
+        const load = cache.load(asset);
+        const outcome = load.then(
+            value => ({ status: 'resolved' as const, value }),
+            error => ({ status: 'rejected' as const, error })
+        );
+
+        try {
+            await Promise.resolve();
+            await cache.clear();
+
+            expect(probeAborted).toBe(true);
+            await expect(outcome).resolves.toMatchObject({
+                status: 'rejected',
+                error: { name: 'AbortError' },
+            });
+            expect(cache.inFlight).toBe(0);
+        } finally {
+            releaseProbe();
+            await outcome;
+        }
+    });
+
     it('does not retain a failed decode or prefetch promise', async () => {
         const assetBytes = bytes('retry-after-decode');
         const asset = createResolvedAsset({
@@ -490,6 +624,80 @@ describe('DecodedAssetCache', () => {
         expect(revokeObjectUrlSpy).not.toHaveBeenCalledWith(active.objectUrl);
         expect(revokeObjectUrlSpy).not.toHaveBeenCalledWith(staging.objectUrl);
         expect(revokeObjectUrlSpy).not.toHaveBeenCalledWith(previous.objectUrl);
+    });
+
+    it('rejects a new object when protected entries consume the decoded budget', async () => {
+        const assets = Array.from({ length: 4 }, (_, index) => {
+            const body = bytes(`protected-budget-${index}`);
+            return {
+                asset: createResolvedAsset({
+                    label: `protected-budget-${index}`,
+                    width: 4096,
+                    height: 2048,
+                    webpBytes: body,
+                }),
+                body,
+            };
+        });
+        const cache = new DecodedAssetCache({
+            fetchImpl: createFetch(
+                new Map(
+                    assets.map(({ asset, body }) => [
+                        asset.webpUrl.href,
+                        { bytes: body },
+                    ])
+                )
+            ),
+            decodeImage: successfulDecoder(4096, 2048),
+        });
+        const protectedAssets = [];
+        for (const { asset } of assets.slice(0, 3)) {
+            protectedAssets.push(await cache.load(asset));
+        }
+        cache.setProtectedKeys(
+            new Set(protectedAssets.map(asset => asset.cacheKey))
+        );
+
+        await expect(cache.load(assets[3].asset)).rejects.toMatchObject({
+            code: 'unavailable',
+        });
+
+        expect(cache.size).toBe(3);
+        expect(cache.decodedBytes).toBe(96 * MiB);
+        expect(revokeObjectUrlSpy).toHaveBeenCalledWith(
+            'blob:https://reader.test/4'
+        );
+        for (const asset of protectedAssets) {
+            expect(revokeObjectUrlSpy).not.toHaveBeenCalledWith(
+                asset.objectUrl
+            );
+        }
+    });
+
+    it('rejects an oversized decoded object after safely revoking its URL', async () => {
+        const assetBytes = bytes('oversized-object');
+        const asset = createResolvedAsset({
+            label: 'oversized-object',
+            width: 8192,
+            height: 4096,
+            webpBytes: assetBytes,
+        });
+        const cache = new DecodedAssetCache({
+            fetchImpl: createFetch(
+                new Map([[asset.webpUrl.href, { bytes: assetBytes }]])
+            ),
+            decodeImage: successfulDecoder(8192, 4096),
+        });
+
+        await expect(cache.load(asset)).rejects.toMatchObject({
+            code: 'unavailable',
+        });
+
+        expect(cache.size).toBe(0);
+        expect(cache.decodedBytes).toBe(0);
+        expect(revokeObjectUrlSpy).toHaveBeenCalledWith(
+            'blob:https://reader.test/1'
+        );
     });
 
     it('awaits URL detachment before eviction revokes an object URL', async () => {

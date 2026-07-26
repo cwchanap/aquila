@@ -34,6 +34,13 @@ type PendingLoad = {
     promise: Promise<DecodedAsset>;
 };
 
+type AvifSupportProbe = {
+    controller: AbortController;
+    promise: Promise<boolean>;
+    subscribers: number;
+    settled: boolean;
+};
+
 type AssetBytes = Uint8Array<ArrayBuffer>;
 
 const defaultDecodeImage: DecodeImage = async blob => {
@@ -45,40 +52,104 @@ const defaultDecodeImage: DecodeImage = async blob => {
     };
 };
 
-const avifSupportPromises = new WeakMap<
+const avifSupportProbes = new WeakMap<
     DecodeImage,
-    WeakMap<typeof fetch, Promise<boolean>>
+    WeakMap<typeof fetch, AvifSupportProbe>
 >();
 
-function supportsAvif(
+function createAvifSupportProbe(
     decodeImage: DecodeImage,
     fetchImpl: typeof fetch
+): AvifSupportProbe {
+    const controller = new AbortController();
+    const probe = {
+        controller,
+        promise: Promise.resolve(false),
+        subscribers: 0,
+        settled: false,
+    };
+    const aborted = new Promise<boolean>(resolve => {
+        controller.signal.addEventListener('abort', () => resolve(false), {
+            once: true,
+        });
+    });
+    const attempted = fetchImpl(new URL('./avif-probe.avif', import.meta.url), {
+        signal: controller.signal,
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('AVIF capability probe was unavailable');
+            }
+            return response.blob();
+        })
+        .then(decodeImage)
+        .then(image => {
+            image.close();
+            return true;
+        })
+        .catch(() => false);
+    const timeout = globalThis.setTimeout(
+        () => controller.abort(),
+        RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset
+    );
+    probe.promise = Promise.race([attempted, aborted]).finally(() => {
+        globalThis.clearTimeout(timeout);
+        probe.settled = true;
+    });
+    return probe;
+}
+
+function waitForSignal<T>(
+    promise: Promise<T>,
+    signal: AbortSignal
+): Promise<T> {
+    if (signal.aborted) return Promise.reject(abortError(signal));
+    return new Promise<T>((resolve, reject) => {
+        const abort = () => {
+            signal.removeEventListener('abort', abort);
+            reject(abortError(signal));
+        };
+        signal.addEventListener('abort', abort, { once: true });
+        promise.then(
+            value => {
+                signal.removeEventListener('abort', abort);
+                resolve(value);
+            },
+            error => {
+                signal.removeEventListener('abort', abort);
+                reject(error);
+            }
+        );
+    });
+}
+
+async function supportsAvif(
+    decodeImage: DecodeImage,
+    fetchImpl: typeof fetch,
+    signal: AbortSignal
 ): Promise<boolean> {
-    let promisesForFetcher = avifSupportPromises.get(decodeImage);
-    if (!promisesForFetcher) {
-        promisesForFetcher = new WeakMap();
-        avifSupportPromises.set(decodeImage, promisesForFetcher);
+    let probesForFetcher = avifSupportProbes.get(decodeImage);
+    if (!probesForFetcher) {
+        probesForFetcher = new WeakMap();
+        avifSupportProbes.set(decodeImage, probesForFetcher);
     }
-    let supportPromise = promisesForFetcher.get(fetchImpl);
-    if (!supportPromise) {
-        supportPromise = fetchImpl(
-            new URL('./avif-probe.avif', import.meta.url)
-        )
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('AVIF capability probe was unavailable');
-                }
-                return response.blob();
-            })
-            .then(decodeImage)
-            .then(image => {
-                image.close();
-                return true;
-            })
-            .catch(() => false);
-        promisesForFetcher.set(fetchImpl, supportPromise);
+    let probe = probesForFetcher.get(fetchImpl);
+    if (!probe) {
+        probe = createAvifSupportProbe(decodeImage, fetchImpl);
+        probesForFetcher.set(fetchImpl, probe);
     }
-    return supportPromise;
+    probe.subscribers += 1;
+    try {
+        return await waitForSignal(probe.promise, signal);
+    } finally {
+        probe.subscribers -= 1;
+        if (!probe.settled && probe.subscribers === 0) {
+            if (probesForFetcher.get(fetchImpl) === probe) {
+                probesForFetcher.delete(fetchImpl);
+            }
+            probe.controller.abort();
+        }
+    }
 }
 
 function cacheKeyFor(variant: SupportedAssetVariant): string {
@@ -142,43 +213,23 @@ export class DecodedAssetCache {
                       url: asset.avifUrl,
                   }
                 : null;
-        const useAvif =
-            avif !== null &&
-            (await supportsAvif(this.decodeImage, this.fetchImpl));
-        if (
-            generation !== this.lifecycleGeneration ||
-            options?.signal?.aborted
-        ) {
-            throw options?.signal?.aborted
-                ? abortError(options.signal)
-                : new DOMException('The operation was aborted', 'AbortError');
-        }
-
         const webp: SelectedVariant = {
             variant: asset.asset.variants.webp,
             url: asset.webpUrl,
         };
-        const primary = useAvif && avif ? avif : webp;
-        const primaryKey = cacheKeyFor(primary.variant);
-        const knownFallbackKey = this.fallbackKeys.get(primaryKey);
-        const completed =
-            this.touch(primaryKey) ??
-            (knownFallbackKey ? this.touch(knownFallbackKey) : undefined);
-        if (completed) return completed;
-
         const requestKey =
-            primary.variant.format === 'avif'
-                ? `${primaryKey}|${cacheKeyFor(webp.variant)}`
-                : primaryKey;
+            avif === null
+                ? cacheKeyFor(webp.variant)
+                : `${cacheKeyFor(avif.variant)}|${cacheKeyFor(webp.variant)}`;
         const pending = this.pendingLoads.get(requestKey);
         if (pending) return pending.promise;
 
         const controller = new AbortController();
         const abort = () => controller.abort(options?.signal?.reason);
         options?.signal?.addEventListener('abort', abort, { once: true });
-        const promise = this.loadAndCache(
+        const promise = this.selectAndLoad(
             asset,
-            primary,
+            avif,
             webp,
             controller.signal,
             generation
@@ -228,6 +279,31 @@ export class DecodedAssetCache {
         }
     }
 
+    private async selectAndLoad(
+        asset: ResolvedAsset,
+        avif: SelectedVariant | null,
+        webp: SelectedVariant,
+        signal: AbortSignal,
+        generation: number
+    ): Promise<DecodedAsset> {
+        const useAvif =
+            avif !== null &&
+            (await supportsAvif(this.decodeImage, this.fetchImpl, signal));
+        if (signal.aborted || generation !== this.lifecycleGeneration) {
+            throw signal.aborted
+                ? abortError(signal)
+                : new DOMException('The operation was aborted', 'AbortError');
+        }
+        const primary = useAvif && avif ? avif : webp;
+        const primaryKey = cacheKeyFor(primary.variant);
+        const knownFallbackKey = this.fallbackKeys.get(primaryKey);
+        const completed =
+            this.touch(primaryKey) ??
+            (knownFallbackKey ? this.touch(knownFallbackKey) : undefined);
+        if (completed) return completed;
+        return this.loadAndCache(asset, primary, webp, signal, generation);
+    }
+
     private async loadAndCache(
         asset: ResolvedAsset,
         primary: SelectedVariant,
@@ -272,6 +348,25 @@ export class DecodedAssetCache {
             throw signal.aborted
                 ? abortError(signal)
                 : new DOMException('The operation was aborted', 'AbortError');
+        }
+        const admitted =
+            this.entries.get(loaded.cacheKey) === loaded &&
+            !this.exceedsBounds();
+        if (!admitted) {
+            if (this.entries.get(loaded.cacheKey) === loaded) {
+                this.entries.delete(loaded.cacheKey);
+                this.totalDecodedBytes -= loaded.decodedBytes;
+                for (const [primaryKey, fallbackKey] of this.fallbackKeys) {
+                    if (fallbackKey === loaded.cacheKey) {
+                        this.fallbackKeys.delete(primaryKey);
+                    }
+                }
+                await this.detachAndRevoke(loaded.objectUrl);
+            }
+            throw new AssetResolverError(
+                'unavailable',
+                'Decoded asset exceeds cache bounds'
+            );
         }
         return loaded;
     }
@@ -393,12 +488,7 @@ export class DecodedAssetCache {
     }
 
     private async evictToBounds(): Promise<void> {
-        const { maxDecodedAssets, maxDecodedBytes } =
-            RUNTIME_ASSET_CACHE_POLICY.clientBounds;
-        while (
-            this.entries.size > maxDecodedAssets ||
-            this.totalDecodedBytes > maxDecodedBytes
-        ) {
+        while (this.exceedsBounds()) {
             const candidate = [...this.entries.entries()].find(
                 ([key]) => !this.protectedKeys.has(key)
             );
@@ -411,6 +501,15 @@ export class DecodedAssetCache {
             }
             await this.detachAndRevoke(decoded.objectUrl);
         }
+    }
+
+    private exceedsBounds(): boolean {
+        const { maxDecodedAssets, maxDecodedBytes } =
+            RUNTIME_ASSET_CACHE_POLICY.clientBounds;
+        return (
+            this.entries.size > maxDecodedAssets ||
+            this.totalDecodedBytes > maxDecodedBytes
+        );
     }
 
     private async detachAndRevoke(objectUrl: string): Promise<void> {

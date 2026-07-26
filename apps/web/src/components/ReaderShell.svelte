@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
+  import type { DialogueEntry } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import { readerState } from '@/lib/reader-state.svelte';
   import NovelReader from '@/components/NovelReader.svelte';
@@ -11,6 +12,8 @@
     onNext = () => {},
     onNavigate = () => {},
     onIndexChange = () => {},
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getSceneDialogue = () => null,
     onRetry = () => {},
     showBookmarkButton = true,
     backUrl = '/',
@@ -20,6 +23,10 @@
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
     onIndexChange?: (index: number) => void;
+    getSceneDialogue?: (
+      storyId: string,
+      sceneId: string
+    ) => readonly DialogueEntry[] | null;
     onRetry?: () => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
@@ -34,6 +41,8 @@
   let locale = $derived(readerState.locale);
   let dialogueIndex = $derived(readerState.dialogueIndex);
   let activeFlow = $derived(readerState.activeFlow);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let presentation = $derived(readerState.presentation);
   let loadStatus = $derived(readerState.loadStatus);
   let loadError = $derived(readerState.loadError);
   let hasActivePayload = $derived(readerState.hasActivePayload);

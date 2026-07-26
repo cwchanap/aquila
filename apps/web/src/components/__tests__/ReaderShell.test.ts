@@ -107,6 +107,15 @@ describe('ReaderShell', () => {
     });
     afterEach(() => vi.clearAllMocks());
 
+    it('keeps the dialogue bridge deferred for the visual reader runtime', () => {
+        stubMatchMedia(false);
+        const getSceneDialogue = vi.fn(() => null);
+
+        render(ReaderShell, { props: { getSceneDialogue } });
+
+        expect(getSceneDialogue).not.toHaveBeenCalled();
+    });
+
     it('renders only a standalone status while the initial payload is loading', () => {
         stubMatchMedia(false);
         readerState.activeFlow = null;

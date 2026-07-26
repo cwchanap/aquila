@@ -116,10 +116,18 @@ export async function verifyVisualFixtures(): Promise<void> {
         );
         try {
             validatePointerManifestPair(pointer, manifest, manifestSha256);
+        } catch (error) {
+            problems.push(`pointer/manifest integrity: ${String(error)}`);
+        }
+        try {
             assertReleaseIdMatchesContentSha256(manifest, releaseContentSha256);
+        } catch (error) {
+            problems.push(`release content integrity: ${String(error)}`);
+        }
+        try {
             validateRuntimeManifestCoverage(manifest, plan);
         } catch (error) {
-            problems.push(`runtime contracts: ${String(error)}`);
+            problems.push(`runtime coverage: ${String(error)}`);
         }
 
         for (const asset of manifest.assets) {

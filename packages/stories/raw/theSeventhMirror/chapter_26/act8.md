@@ -10,9 +10,9 @@ KAGAMI command room, wall of tiled patient node panels each showing different st
 
 **旁白**：05:18。背景 A 組的報告進來了。獨立系統安全人員站在面板前。他的聲音很平。
 
-**獨立系統安全人員**：distributed switch clock package。code hash——VERIFIED。timing only——YES。patient control data——NONE。seven stages——VERIFIED。safe pause——DEFINED。deployment——PRE-STAGED。activation——PENDING MEDICAL GO。
+**獨立系統安全人員**：分散式切換時脈套件。code hash VERIFIED。僅時序。沒有患者控制數據。七階段全部 VERIFIED。安全暫停已定義。部署已預置。啟動還在等 medical go。
 
-**朝倉澪** [exhausted]：（內心）timing package。不是神經內容。不是悠真的波形。不是中央參照。不是統一答案。是——純 timing signal。七個窗口。ANNOUNCE。SAMPLE。HOLD。COMPARE。ACKNOWLEDGE。HANDOFF。SETTLE。歷史 G07 多節點校準 protocol。code hash 驗過了。裡面沒有患者控制數據。只有——時間。只有——告訴每個人的機器，什麼時候輪到它回答。safe pause 已經定義了。未準備的人——可以停。不會被強迫。deployment 已經 pre-staged。可是——activation 還在等。等——medical go。
+**朝倉澪** [exhausted]：（內心）timing package。不是神經內容。不是悠真的波形。不是統一答案。是——時間。只是時間。七個窗口。告訴每個人的機器——什麼時候輪到它回答。safe pause 已經定義。未準備的人——可以停。不會被強迫。部署已經預置。可是——啟動還在等。等——medical go。
 
 ```bg
 KAGAMI command room, center console now showing patient stage ceilings summary for all eight active dependencies, each node panel displaying its maximum allowed stage, pre-dawn grey light slightly stronger at window edges, cold fluorescent lighting, muted cool palette, visual-novel background art, close shot on center console
@@ -38,7 +38,7 @@ KAGAMI command room, center console now showing patient stage ceilings summary f
 
 **旁白**：05:28。第三份報告。witness egress。背景 B 組。
 
-**獨立系統安全人員**：witness echo sideband。consensus input——NO。raw neural——NO。serializer hash——VERIFIED。regional receivers——READY／PARTIAL。public index——PRE-STAGED。activation——PENDING。
+**獨立系統安全人員**：見證回音側帶。沒有 consensus input。沒有 raw neural。serializer hash VERIFIED。區域接收器——READY／PARTIAL。公開索引已預置。啟動還在等。
 
 **朝倉澪** [exhausted]：（內心）witness path。不是 consensus。不是——壓成同一個版本。是——多聲部。第一人稱。彼此不完全一致的人類經驗 fragments。不進 consensus bundler。不要求同步內容。每個區域 receiver 收到不同的 signed subset。serializer hash 驗過了。regional receivers——部分 ready。public index——pre-staged。可是——activation 還在等。等——患者和醫療的 go。文件真相由 Manifest 提供。人類經驗真相——由 witness fragments 提供。兩條路。分開的。
 
@@ -48,13 +48,13 @@ KAGAMI command room, right console showing official app cancel command status an
 
 **旁白**：05:35。第四份報告。official app command。
 
-**旁白**：CANCEL UNSENT TOKYO PAYLOAD。WINDOW——+7000ms。STATUS——SIGNED。NOT ARMED。
+**旁白**：螢幕上。取消未送出的 TOKYO payload。窗口——+7000ms。狀態——SIGNED。NOT ARMED。
 
 **朝倉澪** [exhausted]：（內心）手機末端命令。+7000ms。七秒。只負責——最後尚未送出的官方手機修剪 payload。取消。保全原 payload 及 audit。不負責停止 protective filter。不負責關閉全系統。不負責撤回已播廣播。不負責啟用 witness path。只是——取消那份還沒送出的。已經簽了。可是——沒有 arm。等——05:50。
 
 **旁白**：05:38。第五份報告。manual override。
 
-**旁白**：SOFTWARE OVERRIDE——UNAVAILABLE。PHYSICAL BREAK-GLASS——REQUIRES MEDICAL + RIGHTS + OPERATIONS。VALID SHARES——NOT AVAILABLE。
+**旁白**：螢幕上。軟體覆蓋——UNAVAILABLE。實體緊急操作——需要醫療、患者權利、營運三方。有效份額——NOT AVAILABLE。
 
 **朝倉澪** [exhausted]：（內心）manual override。軟體——不適用。人類未解決時——fail closed。實體 break-glass——需要三把份額。醫療。患者權利。營運。三把。可是——醫療拒絕了。患者權利拒絕了。valid shares——不適用。所以——沒有 override。continuity custodian 不能遠端按下「忽略患者」。一名高官不能以 science 或 operations token 替代患者權利。如果 Chapter 27 有人要 bypass——只能是可見的、可記錄的破壞性物理行動。不是隱藏的按鈕。不是普通的遠端後門。
 

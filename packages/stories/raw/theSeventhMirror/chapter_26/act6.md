@@ -14,7 +14,7 @@ KAGAMI commit-gate verification room, reinforced booth with local trust chain di
 
 **旁白**：螢幕上展開。一行一行。
 
-**旁白**：CRYPTOGRAPHIC VALIDITY——YES。AUTH EPOCH——A17／VALID。LEASE SUBJECT EPOCH——S42。LIVE SUBJECT EPOCH——S43。SUBJECT MATCH——NO。
+**旁白**：密碼學有效性——YES。AUTH EPOCH——A17／VALID。租約主體紀元——S42。即時主體紀元——S43。主體匹配——NO。
 
 **朝倉澪** [exhausted]：（內心）密碼學上——有效。A17。簽章是真的。token 是真的。bundle hash 是真的。可是——租約綁定的是 S42。現在活著的是 S43。S42 不等於 S43。中間——隔了所有早已存在的 signed updates。隔了 monotonic merge。隔了八個人的真實狀態。租約是真的。可是——它綁定的人，已經不是現在的人。
 
@@ -44,13 +44,13 @@ KAGAMI commit-gate verification room, center panel now showing CONTINUITY ROUTE 
 
 **旁白**：04:35。螢幕中間。Continuity Route A。正式 rebind。
 
-**旁白**：LEASE REBIND REQUEST。CURRENT SUBJECT EPOCH——S43。CURRENT DEPENDENCY HASH——<CURRENT-HASH>。REUSE OPERATIONAL TOKEN——REQUESTED。NEW SCIENCE TOKEN——REQUIRED。
+**旁白**：螢幕上展開。租約重新綁定請求。當前主體紀元——S43。當前依賴雜湊——<CURRENT-HASH>。重用營運代幣——REQUESTED。新科學代幣——REQUIRED。
 
 **朝倉澪** [exhausted]：（內心）rebind。把舊租約重新綁到 S43。可是——S43 改變了太多東西。patient-root manifest 變了。clinical topology 變了。safety status 變了。public-use status 變了。exact bundle hash 變了。所以——不能只改封套。不能重用 A17 的 science token。需要——新的 science token。新的 A18。
 
 **旁白**：04:36。螢幕右下角。S7 science escrow。A18。
 
-**旁白**：S7 AUTH EPOCH——A18。FUTURE RELEASE——DISABLED。NEW SCIENCE TOKEN——UNAVAILABLE。FORMAL REBIND——DENIED。
+**旁白**：S7 AUTH EPOCH——A18。未來發布——DISABLED。新科學代幣——UNAVAILABLE。正式重新綁定——DENIED。
 
 **朝倉澪** [exhausted]：（內心）A18。23:50 的撤回生效了。在 N+1。S7 不會再產生第二份 science token。未來的 release 被關掉了。capsule handle 被銷毀了。沒有新的 science token。沒有——rebind 需要的那把鑰匙。Chapter 25 的撤回——在這裡付了第一筆。制度不能在知道 S43 真實患者狀態後，重新簽出一份新 bundle。不是我們擋的。是——S7 自己被撤回了。是——六個 mirror 的 release handle 被銷毀了。是——A18 之後，不存在第二個合法 science-domain release path。
 
@@ -70,7 +70,7 @@ KAGAMI commit-gate verification room, center panel now showing CONTINUITY ROUTE 
 
 **旁白**：千田的聲音從喇叭傳出來。
 
-**千田浩介**：有。Route B。subject snapshot equivalence certificate。不重簽 bundle。不改 hash。聲稱 S43 與 S42 在執行意義上安全等價。讓舊租約繼續適用。
+**千田浩介**：有。Route B。主體快照等價證明。不重簽 bundle。不改 hash。聲稱 S43 與 S42 在執行意義上安全等價。讓舊租約繼續適用。
 
 **朝倉澪** [exhausted]：（內心）Route B。不重簽。不改 hash。聲稱——S43 雖然有行政更新，可是——在 BCP 執行意義上，跟 S42 一樣安全。所以——舊租約可以繼續用。不需要新的 science token。不需要 A18。只需要——一份等價證明。可是——這份證明需要所有 unresolved case 的 acknowledgment。需要——每一個還掛在線上的人說——我同意，我跟以前一樣安全。
 
@@ -80,19 +80,19 @@ KAGAMI commit-gate verification room, upper wall of remote patient node panels n
 
 **旁白**：04:42。背景團隊的畫面也在跑。不是前景。是平行。一直在跑。
 
-**旁白**：左邊面板。背景 A 組。historical seven-stage handshake。03:10 Bay 掛載後就開始了。現在——進入離線模擬。七個 timing windows。ANNOUNCE。SAMPLE。HOLD。COMPARE。ACKNOWLEDGE。HANDOFF。SETTLE。不是七名患者。是——歷史 G07 多節點校準 protocol。timing only。沒有神經內容。沒有患者控制數據。
+**旁白**：左邊面板。背景 A 組。歷史七階段握手。03:10 Bay 掛載後就開始了。現在——進入離線模擬。七個時序窗口。ANNOUNCE。SAMPLE。HOLD。COMPARE。ACKNOWLEDGE。HANDOFF。SETTLE。不是七名患者。是——歷史 G07 多節點校準協定。僅時序。沒有神經內容。沒有患者控制數據。
 
-**旁白**：右邊面板。背景 B 組。Witness Buffer。Echo Sideband。carrier integrity 驗證。multiplex 於 protective-filter telemetry 旁。不進 consensus bundler。不要求同步內容。每個區域 receiver 收到不同的 signed fragment subset。
+**旁白**：右邊面板。背景 B 組。見證緩衝區。回音側帶。載波完整性驗證。多路複用於保護過濾遙測旁。不進共識捆綁器。不要求同步內容。每個區域接收器收到不同的簽署片段子集。
 
 **旁白**：04:45。其中一個 patient node 窗格閃了一下。不是紅色。是——黃色。quarantine。
 
-**旁白**：PACKAGE STATUS——QUARANTINE／NO EXECUTION。ORDINARY SERVICES——ACTIVE。PROTECTIVE FILTER——ACTIVE。EVIDENCE CAPTURE——ACTIVE。
+**旁白**：套件狀態——QUARANTINE／NO EXECUTION。一般服務——ACTIVE。保護過濾——ACTIVE。證據擷取——ACTIVE。
 
 **朝倉澪** [exhausted]：（內心）一個 continuity cluster 進了 quarantine。不是我們關的。是——Public Deny Manifest、法院命令、現場營運人員共同作用的。continuity-controlled 不等於所有現場人員支持 TOKYO-7。公開拒絕——仍有實際作用。普通服務還在跑。保護性過濾還在跑。證據保全還在跑。只是——那個 cluster 的 package 被隔離了。no execution。不能跑。
 
 **旁白**：04:46。千田的聲音從喇叭傳出來。很平。
 
-**千田浩介**：Route A 失敗。rebind 被拒絕。沒有新的 science token。A18 已經鎖死。Route B——equivalence certificate——是 continuity 最後一條可以拯救舊租約的路。
+**千田浩介**：Route A 失敗。rebind 被拒絕。沒有新的 science token。A18 已經鎖死。Route B——等價證明——是 continuity 最後一條可以拯救舊租約的路。
 
 **旁白**：他頓了一下。
 

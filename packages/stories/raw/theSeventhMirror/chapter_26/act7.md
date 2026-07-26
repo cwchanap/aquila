@@ -6,7 +6,7 @@ subject continuity bay controlled identity room, partitioned area with judicial 
 
 **旁白**：04:48。Subject Continuity Bay。受控身份程序。不是剛才的 commit-gate。是 Bay 裡一間更小的房間。一面牆有司法保全的固定攝影機。桌上只有一台封好的筆電。琴音坐在桌前。辯護人在她右邊。藤川真理在她對面。外部醫師靠牆站著。獨立患者權利代表站在另一邊。司法保全人員在攝影機旁邊。獨立系統安全人員在面板前。
 
-**朝倉澪** [exhausted]：（內心）04:48。Route B。equivalence certificate。continuity 的最後一條路。它需要——所有 unresolved case 的 acknowledgment。G07／03。藤川美空。server-side delegation record 指向琴音。琴音——是 holder。SUSPENDED。NOT REVOKED。continuity 可以再問她一次。她可以——回答。她可以——拒絕。
+**朝倉澪** [exhausted]：（內心）04:48。Route B。最後一條路。它需要——每一個人說好。G07／03。美空。琴音還是 holder。SUSPENDED。NOT REVOKED。他們可以再問她。她可以——回答。她可以——不。
 
 **旁白**：04:50。螢幕上展開。Continuity Route B。
 
@@ -80,7 +80,7 @@ subject continuity bay controlled identity room, screen now displaying CLINICAL 
 
 **旁白**：05:10。房間裡沒有人說話。攝影機的紅燈還亮著。空調的聲音填進來。
 
-**旁白**：琴音沒有站起來。她的手放在桌上。她的眼睛看著螢幕上的 DENIED。然後——她低下頭。
+**旁白**：琴音沒有站起來。她的手放在桌上。很平。她的眼睛看著螢幕上的 DENIED。螢光燈在她臉上泛著冷光。然後——她低下頭。
 
 **旁白**：05:11。她開口。很輕。不是對螢幕。不是對辯護人。是——對自己。或者——對美空。
 

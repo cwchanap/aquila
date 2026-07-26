@@ -7,7 +7,7 @@ import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:48。Subject Continuity Bay。受控身份程序。不是剛才的 commit-gate。是 Bay 裡一間更小的房間。一面牆有司法保全的固定攝影機。桌上只有一台封好的筆電。琴音坐在桌前。辯護人在她右邊。藤川真理在她對面。外部醫師靠牆站著。獨立患者權利代表站在另一邊。司法保全人員在攝影機旁邊。獨立系統安全人員在面板前。", background: Background.Chapter_26_Ch26_Act7_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）04:48。Route B。equivalence certificate。continuity 的最後一條路。它需要——所有 unresolved case 的 acknowledgment。G07／03。藤川美空。server-side delegation record 指向琴音。琴音——是 holder。SUSPENDED。NOT REVOKED。continuity 可以再問她一次。她可以——回答。她可以——拒絕。", background: Background.Chapter_26_Ch26_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）04:48。Route B。最後一條路。它需要——每一個人說好。G07／03。美空。琴音還是 holder。SUSPENDED。NOT REVOKED。他們可以再問她。她可以——回答。她可以——不。", background: Background.Chapter_26_Ch26_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:50。螢幕上展開。Continuity Route B。", background: Background.Chapter_26_Ch26_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "SUBJECT SNAPSHOT EQUIVALENCE CERTIFICATE。LEASE SNAPSHOT——S42。CURRENT SNAPSHOT——S43。POLICY——MANAGED-EQUIVALENT／BCP。", background: Background.Chapter_26_Ch26_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）等價證明。不改 bundle hash。不需要新 science token。聲稱——S43 雖然有行政更新，可是——在執行意義上，跟 S42 一樣安全。如果成立——舊租約可以繼續適用。A17 的 lease 可以被 KAGAMI 視為仍然有效。local execution 的 HOLD 可以解除。所以——這不是一張沒有用的附加文件。是——continuity 在 rebind 失敗後，仍可拯救舊租約的第二條路。", background: Background.Chapter_26_Ch26_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -42,7 +42,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "SUBJECT EQUIVALENCE CERT——DENIED。OLD LEASE APPLICABILITY——NOT RESTORED。", background: Background.Chapter_26_Ch26_Act7_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）Route B 也失敗了。equivalence certificate 被拒絕。舊租約的適用性——沒有恢復。不是因為我們擋的。是因為——每一個 unresolved case 都說了不。琴音說了不。真理說了不。外部醫師說了不。患者權利代表說了不。M-00 說了不。G07／08 說了不。LEGACY／02 說了不。其他四個——也說了不。沒有一個人說——我跟以前一樣安全。沒有一個人同意——S43 等於 S42。所以——certificate 失敗。舊租約——不能沿用。Chapter 25 撤回工作的第二項實質支付——在這裡。即使 continuity 不重簽 bundle，也無法再把 S43 宣稱成 S42 的安全等價版本。", background: Background.Chapter_26_Ch26_Act7_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:10。房間裡沒有人說話。攝影機的紅燈還亮著。空調的聲音填進來。", background: Background.Chapter_26_Ch26_Act7_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有站起來。她的手放在桌上。她的眼睛看著螢幕上的 DENIED。然後——她低下頭。", background: Background.Chapter_26_Ch26_Act7_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有站起來。她的手放在桌上。很平。她的眼睛看著螢幕上的 DENIED。螢光燈在她臉上泛著冷光。然後——她低下頭。", background: Background.Chapter_26_Ch26_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:11。她開口。很輕。不是對螢幕。不是對辯護人。是——對自己。或者——對美空。", background: Background.Chapter_26_Ch26_Act7_S1 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "以前他們告訴我，門關著，美空才安全。", background: Background.Chapter_26_Ch26_Act7_S1, portrait: Portrait.ShiraishiKotone_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停了一下。很長的停頓。空調的聲音填進來。", background: Background.Chapter_26_Ch26_Act7_S1 },

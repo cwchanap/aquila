@@ -6,7 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。星期一。鏡島外部安全指揮。十五分鐘前——23:50。租約形成了。螢幕上的 CUTOVER AUTH LEASE 還亮著。有效到清晨六點二十。澪坐在指揮車改裝的驗證室角落。她的手很冷。咖啡早就涼了。她沒有碰。", background: Background.Chapter_26_Ch26_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。星期一。鏡島外部安全指揮。", background: Background.Chapter_26_Ch26_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十五分鐘前——23:50。租約形成了。螢幕上的 CUTOVER AUTH LEASE 還亮著。有效到清晨六點二十。", background: Background.Chapter_26_Ch26_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在指揮車改裝的驗證室角落。她的手很冷。咖啡早就涼了。她沒有碰。", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）00:05。租約。兩個 token。一份封套。有效到清晨。它不需要我們的同意。它已經在螢幕上了。六小時十五分。然後——05:50。auto-prep。然後——06:13。我們還有時間。可是——時間在往那邊走。", background: Background.Chapter_26_Ch26_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:08。獨立系統安全人員站在面板前。他的聲音很快。不是慌——是工程師在讀清單。", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "租約已經載入鏡島本地路徑。現在可以做的快速方案——五項。", background: Background.Chapter_26_Ch26_Act1_S0 },

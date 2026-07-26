@@ -6,7 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:15。司法／醫療技術協助室。鏡島服務手冊室在隔壁。琴音坐在桌前。辯護人坐在她右側。澪站在房間另一邊。她沒有坐到琴音旁邊。她不能。不是不想——是程序。琴音是嫌疑人。澪是調查方。辯護人在場。", background: Background.Chapter_26_Ch26_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:15。司法／醫療技術協助室。鏡島服務手冊室在隔壁。", background: Background.Chapter_26_Ch26_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音坐在桌前。辯護人坐在她右側。", background: Background.Chapter_26_Ch26_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在房間另一邊。她沒有坐到琴音旁邊。琴音是嫌疑人。澪是調查方。辯護人在場。", background: Background.Chapter_26_Ch26_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）01:15。琴音。她坐在那裡。她的手放在桌上。她沒有看澪。不是迴避。是——她知道自己的位置。她知道這不是朋友之間的對話。這是——程序。", background: Background.Chapter_26_Ch26_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:18。辯護人的聲音很平。法律性的。他在向琴音確認條件。", background: Background.Chapter_26_Ch26_Act3_S0 },
     { characterId: CharacterId.DefenseCounsel, character: "辯護人", dialogue: "協助不等於免責。妳知道。", background: Background.Chapter_26_Ch26_Act3_S0 },
@@ -36,7 +38,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:33。辯護人看著琴音。他的聲音很平。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.DefenseCounsel, character: "辯護人", dialogue: "妳只確認妳認得的。不推測。不補充。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音點頭。", background: Background.Chapter_26_Ch26_Act3_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:35。本地技師從隔壁的服務手冊室走進來。他手裡拿著一本厚的手冊。紙本的。和一台平板。他的聲音很平。制式的。以硬體座標和服務手冊編號為軸心。", background: Background.Chapter_26_Ch26_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:35。本地技師從隔壁的服務手冊室走進來。", background: Background.Chapter_26_Ch26_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他手裡拿著一本厚的手冊。紙本的。和一台平板。", background: Background.Chapter_26_Ch26_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音很平。制式的。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.LocalTechnician, character: "本地技師", dialogue: "alias 已確認。SUBJECT-SVC／G07。現在需要實體映射。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他把平板放在桌上。螢幕上展開。R2 規則。audit 記錄。服務手冊。實體線路圖。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.LocalTechnician, character: "本地技師", dialogue: "R2——原始服務路由規則。audit——鏡島本地不可改寫記錄。服務手冊——KAGAMI-01 臨床服務側硬體座標。實體線路——從 service alias 到實體 Subject Continuity Bay 的線路映射。", background: Background.Chapter_26_Ch26_Act3_S1 },
@@ -53,7 +57,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:45。辯護人看向澪。他的聲音很平。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.DefenseCounsel, character: "辯護人", dialogue: "琴音的功能是指認 alias 和解釋過去流程。她不是鑰匙。她不是患者代表。她不是系統管理員。她不操作 latch。她不進 Bay。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她不是鑰匙。她只是——曾被制度用來關門，所以認得關門流程的名稱。制度讓她安裝卡匣。讓她確認委派。讓她走過 reseal。讓她成為 holder。然後——在她做完之後——把她放在一邊。不告訴她門在哪裡。不告訴她裡面有誰。不告訴她——她關的那扇門背後，是活人。她不是鑰匙。她是——被制度用過的手。手不需要知道門在哪裡。手只需要——簽名字。", background: Background.Chapter_26_Ch26_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:50。澪看著琴音。琴音沒有抬頭。她的手放在桌上。她的眼睛看著自己的手。澪沒有說話。她不能。不是不想——是程序。辯護人在場。琴音是嫌疑人。澪是調查方。她不能在這個房間裡對琴音說任何像朋友的話。", background: Background.Chapter_26_Ch26_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:50。澪看著琴音。琴音沒有抬頭。她的手放在桌上。她的眼睛看著自己的手。", background: Background.Chapter_26_Ch26_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有說話。辯護人在場。琴音是嫌疑人。澪是調查方。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她認得路的名字。她不認得門。她被用過。然後——被放在一邊。現在——她把我們帶到門的名字前面。然後——技師用地圖找到了門。下一步——開門。不是她開。是——多方共同控制。系統安全。外部醫療。患者權利代表。司法保全。本地技師。全部在場。她——只在場到指認 alias 為止。然後——她退回去。回到嫌疑人的位置。", background: Background.Chapter_26_Ch26_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:55。本地技師收起平板。他看著澪和日下部。", background: Background.Chapter_26_Ch26_Act3_S1 },
     { characterId: CharacterId.LocalTechnician, character: "本地技師", dialogue: "實體映射完成。Subject Continuity Bay。KAGAMI-01 臨床服務側。可以進行受控掛載。需要多方共同控制領域在場。", background: Background.Chapter_26_Ch26_Act3_S1 },

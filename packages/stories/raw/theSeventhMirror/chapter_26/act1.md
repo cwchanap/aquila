@@ -4,7 +4,11 @@
 mirror island external security command post, prefab container room with rack monitors glowing cold blue, KAGAMI local verification booth visible through reinforced window, deep night black outside, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
-**旁白**：00:05。星期一。鏡島外部安全指揮。十五分鐘前——23:50。租約形成了。螢幕上的 CUTOVER AUTH LEASE 還亮著。有效到清晨六點二十。澪坐在指揮車改裝的驗證室角落。她的手很冷。咖啡早就涼了。她沒有碰。
+**旁白**：00:05。星期一。鏡島外部安全指揮。
+
+**旁白**：十五分鐘前——23:50。租約形成了。螢幕上的 CUTOVER AUTH LEASE 還亮著。有效到清晨六點二十。
+
+**旁白**：澪坐在指揮車改裝的驗證室角落。她的手很冷。咖啡早就涼了。她沒有碰。
 
 **朝倉澪** [exhausted]：（內心）00:05。租約。兩個 token。一份封套。有效到清晨。它不需要我們的同意。它已經在螢幕上了。六小時十五分。然後——05:50。auto-prep。然後——06:13。我們還有時間。可是——時間在往那邊走。
 

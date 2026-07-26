@@ -308,7 +308,7 @@ export class VisualStateController {
             this.snapshot.portrait.state === 'ready' &&
             this.snapshot.portrait.identity === portraitKey;
 
-        if (!sameActiveBackground) this.stagingBackgroundCacheKey = null;
+        this.stagingBackgroundCacheKey = null;
         if (!samePortrait) this.portraitCacheKey = null;
         this.publish({
             stagingBackground:
@@ -582,10 +582,22 @@ export class VisualStateController {
         if (!next) return;
         for (const identity of identitiesForLine(next)) {
             if (!this.isInputCurrent(input, generation)) return;
-            const resolution = this.resolver.resolve(identity);
-            if (resolution.status !== 'resolved') continue;
             void this.queue
-                .run(() => this.cache.prefetch(resolution))
+                .run(async () => {
+                    if (
+                        !this.isWarmPrefetchCurrent(input, generation, identity)
+                    ) {
+                        return;
+                    }
+                    const resolution = this.resolver.resolve(identity);
+                    if (
+                        resolution.status !== 'resolved' ||
+                        !this.isWarmPrefetchCurrent(input, generation, identity)
+                    ) {
+                        return;
+                    }
+                    await this.cache.prefetch(resolution);
+                })
                 .catch(() => {});
         }
     }
@@ -625,15 +637,47 @@ export class VisualStateController {
             this.prefetchedEdges.add(edgeKey);
             void this.queue
                 .run(async () => {
+                    if (
+                        !this.isEdgePrefetchCurrent(
+                            input,
+                            generation,
+                            toSceneId,
+                            assets
+                        )
+                    ) {
+                        this.prefetchedEdges.delete(edgeKey);
+                        return;
+                    }
                     const result = await this.resolver.prefetchNextEdge({
                         fromSceneId: input.sceneId,
                         toSceneId,
                         assets,
                         signal: this.abortController.signal,
                     });
+                    if (
+                        !this.isEdgePrefetchCurrent(
+                            input,
+                            generation,
+                            toSceneId,
+                            assets
+                        )
+                    ) {
+                        this.prefetchedEdges.delete(edgeKey);
+                        return;
+                    }
                     if (result.failed.length > 0) return;
                     await Promise.all(
                         assets.map(identity => {
+                            if (
+                                !this.isEdgePrefetchCurrent(
+                                    input,
+                                    generation,
+                                    toSceneId,
+                                    assets
+                                )
+                            ) {
+                                return Promise.resolve();
+                            }
                             const resolution = this.resolver.resolve(identity);
                             return resolution.status === 'resolved'
                                 ? this.cache.prefetch(resolution)
@@ -643,6 +687,47 @@ export class VisualStateController {
                 })
                 .catch(() => {});
         }
+    }
+
+    private isWarmPrefetchCurrent(
+        input: VisualControllerInput,
+        generation: number,
+        identity: LogicalAssetIdentity
+    ): boolean {
+        if (!this.isInputCurrent(input, generation)) return false;
+        const currentSignature = visualSignature(
+            input.dialogue[input.dialogueIndex]
+        );
+        const next = input.dialogue
+            .slice(input.dialogueIndex + 1)
+            .find(entry => visualSignature(entry) !== currentSignature);
+        return identitiesForLine(next).some(
+            candidate =>
+                candidate.type === identity.type &&
+                candidate.key === identity.key
+        );
+    }
+
+    private isEdgePrefetchCurrent(
+        input: VisualControllerInput,
+        generation: number,
+        toSceneId: string,
+        assets: readonly LogicalAssetIdentity[]
+    ): boolean {
+        if (!this.isInputCurrent(input, generation)) return false;
+        const dialogue = this.getSceneDialogue(input.storyId, toSceneId);
+        const firstVisualLine = dialogue?.find(
+            entry => identitiesForLine(entry).length > 0
+        );
+        const currentAssets = identitiesForLine(firstVisualLine);
+        return (
+            currentAssets.length === assets.length &&
+            currentAssets.every(
+                (identity, index) =>
+                    identity.type === assets[index]?.type &&
+                    identity.key === assets[index]?.key
+            )
+        );
     }
 
     private portraitSlot(

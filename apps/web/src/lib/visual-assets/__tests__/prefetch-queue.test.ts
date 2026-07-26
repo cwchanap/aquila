@@ -49,4 +49,50 @@ describe('PrefetchQueue', () => {
         await second;
         expect(secondStarted).toBe(true);
     });
+
+    it('hands a released permit to its waiter before a newly arriving request', async () => {
+        const queue = new PrefetchQueue(2);
+        const gates = Array.from({ length: 4 }, () => {
+            let resolve!: () => void;
+            const promise = new Promise<void>(resolvePromise => {
+                resolve = resolvePromise;
+            });
+            return { promise, resolve };
+        });
+        let active = 0;
+        let peak = 0;
+        const work = (index: number) => () => {
+            active += 1;
+            peak = Math.max(peak, active);
+            return gates[index].promise;
+        };
+        const release = (index: number) => {
+            active -= 1;
+            gates[index].resolve();
+        };
+
+        const first = queue.run(work(0));
+        const second = queue.run(work(1));
+        const waiting = queue.run(work(2));
+        await Promise.resolve();
+        expect(active).toBe(2);
+
+        release(0);
+        let arriving!: Promise<void>;
+        queueMicrotask(() => {
+            arriving = queue.run(work(3));
+        });
+        for (let index = 0; index < 5; index += 1) {
+            await Promise.resolve();
+        }
+
+        expect(peak).toBe(2);
+        [1, 2].forEach(release);
+        for (let index = 0; index < 5; index += 1) {
+            await Promise.resolve();
+        }
+        release(3);
+        await Promise.all([first, second, waiting, arriving]);
+        expect(active).toBe(0);
+    });
 });

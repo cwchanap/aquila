@@ -456,6 +456,21 @@ describe('NovelReader — keyboard navigation', () => {
         expect(onIndexChange).toHaveBeenCalledWith(1);
     });
 
+    it('does not advance from a descendant of an interactive control', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        const button = document.createElement('button');
+        const child = document.createElement('span');
+        button.append(child);
+        document.body.append(button);
+        try {
+            await vi.runAllTimersAsync();
+            await fireEvent.keyDown(child, { key: 'Enter' });
+            expect(onIndexChange).not.toHaveBeenCalled();
+        } finally {
+            button.remove();
+        }
+    });
+
     it('ignores unrelated keys', async () => {
         const { onIndexChange } = renderReader({ dialogueIndex: 0 });
         await vi.runAllTimersAsync();

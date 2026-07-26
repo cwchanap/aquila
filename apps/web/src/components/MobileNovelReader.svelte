@@ -10,6 +10,10 @@
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
+  import {
+    getReaderAdvanceDecision,
+    isReaderInteractiveTarget,
+  } from '@/lib/reader-interaction';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
   import { House, Layers, ChevronLeft, History, Bookmark } from 'lucide-svelte';
@@ -204,23 +208,28 @@
       else drawerOpen = false;
       return;
     }
-    // First tap during typing only skips the animation; it must NOT advance
-    // the index (the parent owns the index).
-    if (isTyping) {
-      skipTyping = true;
-      return;
-    }
     // A tap while chrome is showing dismisses it (does not advance).
     if (chromeVisible) {
       chromeVisible = false;
       return;
     }
-    if (dialogueIndex < dialogue.length - 1) {
+    const decision = getReaderAdvanceDecision({
+      isTyping,
+      index: dialogueIndex,
+      length: dialogue.length,
+      canGoNext,
+      hasChoice: !!choice,
+    });
+    if (decision === 'skip') {
+      skipTyping = true;
+      return;
+    }
+    if (decision === 'advance-line') {
       selfAdvanceTarget = dialogueIndex + 1;
       onIndexChange(dialogueIndex + 1);
-    } else if (canGoNext && !choice) {
-      onNext();
+      return;
     }
+    if (decision === 'advance-scene') onNext();
   }
 
   function goBack(): void {
@@ -255,19 +264,7 @@
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
 
-    const activeElement = globalThis.document
-      .activeElement as HTMLElement | null;
-    const rawTarget = (event.target ?? activeElement) as unknown;
-    const target = rawTarget instanceof HTMLElement ? rawTarget : activeElement;
-
-    if (target) {
-      const tagName = target.tagName.toLowerCase();
-      const interactiveTags = ['input', 'textarea', 'select', 'option', 'button', 'a'];
-      const hasEditableAttr =
-        target.isContentEditable ||
-        target.getAttribute('contenteditable') === 'true';
-      if (interactiveTags.includes(tagName) || hasEditableAttr) return;
-    }
+    if (isReaderInteractiveTarget(event.target ?? document.activeElement)) return;
     event.preventDefault();
     advance();
   }

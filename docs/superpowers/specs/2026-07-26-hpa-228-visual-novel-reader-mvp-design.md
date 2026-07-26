@@ -2,7 +2,7 @@
 
 Linear: [HPA-228](https://linear.app/cwchanap/issue/HPA-228/build-aquila-visualnovelreader-mvp-with-local-assets)  
 Date: 2026-07-26  
-Status: Approved
+Status: Review-ready after second-pass amendments
 
 ## Goal
 
@@ -57,7 +57,12 @@ type ReaderMode = 'text' | 'visual';
 The preference is stored under a dedicated key such as
 `aquila:reader-mode:v1`. Missing, malformed, or unknown values resolve to
 `text`. Reader mode is never added to `ReaderSessionState`, URL parameters,
-bookmarks, or story saves.
+bookmarks, or story saves. `ReaderShell` is mounted only in the browser, so it
+reads this preference synchronously during component initialization before
+rendering its first leaf; no server-rendered Text reader flashes before a
+persisted Visual Novel preference is applied. The key is written only when the
+user toggles the control, never merely because the first visit defaulted to
+Text.
 
 `ReaderShell` remains the only leaf-reader selection point:
 
@@ -74,6 +79,19 @@ bookmarks, or story saves.
 Switching modes unmounts one presentation and mounts another without changing
 `readerState.dialogueIndex`. No initial-index callback is introduced.
 
+The ReaderShell stacking contract is:
+
+```text
+z-80  mode control and visual status (always present, outside inert content)
+z-60  blocking loading/error overlay
+z-50  leaf-owned backlog, drawer, and visual-reader overlays
+z-0   active leaf reader or no-payload loading/error surface
+```
+
+The mode control renders for both payload and no-payload states. It is a sibling
+of `reader-ready`, not its descendant, and remains interactive while a
+replacement payload is blocked.
+
 ### Runtime story data
 
 `readerState` gains generated `StoryPresentationMetadata | null` as runtime
@@ -82,13 +100,29 @@ story payload. `readerState.reset()` explicitly assigns `presentation = null`,
 parallel to `activeFlow = null`, so a story change cannot retain stale slot
 metadata. Presentation metadata is never serialized or persisted.
 
+Presentation assignment occurs inside the same generation-gated
+`applySession()` operation as `activeStory` and `activeFlow`. An initial load
+failure leaves it `null`. A failed replacement load intentionally preserves the
+previous presentation together with the previous dialogue, flow, and active
+story under the blocking error overlay. Clearing only presentation on a
+replacement failure would desynchronize the preserved payload.
+
 The visual prefetch planner needs read-only access to dialogue in immediately
 reachable scenes. `ReaderManager` supplies a stable
-`getSceneDialogue(sceneId)` callback to `ReaderShell`; the callback reads the
-currently loaded story bundle and cannot mutate progression. This avoids
-duplicating the full dialogue map into reactive state. HPA-232 loads one
-complete story bundle per dynamic import rather than loading individual scenes,
-so this callback remains synchronous.
+callback to `ReaderShell`:
+
+```ts
+getSceneDialogue = (
+    sceneId: string
+): readonly DialogueEntry[] | null;
+```
+
+It returns `null` for an unknown scene or when no active story bundle exists,
+never throws, never mutates dialogue, and keeps stable function identity across
+renders. Only `VisualStateController` calls it; the Svelte leaf merely passes
+controlled inputs into the controller. HPA-232 loads one complete story bundle
+per dynamic import rather than loading individual scenes, so this lookup remains
+synchronous without duplicating the full dialogue map into reactive state.
 
 `VisualNovelReader` remains controlled:
 
@@ -97,6 +131,18 @@ so this callback remains synchronous.
 - It does not persist story position or reader mode.
 - It reports line changes only through `onIndexChange`.
 - It reports choices and scene navigation through existing callbacks.
+
+The three readers share narrowly scoped pure helpers from
+`apps/web/src/lib/reader-interaction.ts`:
+
+- `getReaderAdvanceDecision()` selects skip, line advance, scene advance, or no
+  action from controlled reader state.
+- `isReaderInteractiveTarget()` identifies links, controls, editable content,
+  overlays, and explicitly marked interactive descendants.
+
+They continue sharing the existing `typeText` runner. The Svelte-specific
+two-signal effect bookkeeping remains component-local; HPA-228 does not create
+a new headless reader engine or refactor unrelated reader presentation.
 
 ### Visual runtime modules
 
@@ -118,6 +164,21 @@ The resolver is configured with an `AssetResolverSource`. A resolver factory
 maps a registered story to its local preview source and returns
 `AssetResolver | null`. UI components call the factory but never concatenate
 asset paths or construct asset-domain URLs.
+
+The Seventh Mirror local factory source is:
+
+```ts
+{
+    environment: 'local',
+    storyId: 'the_seventh_mirror',
+    baseUrl: new URL('/assets/', window.location.origin).href,
+    target: { kind: 'preview', previewId: 'hpa-228-local' },
+}
+```
+
+`baseUrl` is always an absolute, credential-free HTTP(S) URL because HPA-227's
+safe URL helper rejects a relative `'/assets/'` value. Tests use an explicit
+absolute localhost origin.
 
 When a story has no configured source, the factory returns `null`. The
 controller performs no pointer, manifest, or image requests and renders the
@@ -145,6 +206,14 @@ Owns browser image fetching and decoding:
 The cache protects the active, staging, previous, and immediate-prefetch
 objects while they are in use. Other entries are evicted by least-recent use.
 An object is never left cached after failed integrity or decode validation.
+AVIF support is detected once per browser session by decoding a tiny known AVIF
+probe; user-agent sniffing is not used.
+
+Before revoking a Blob URL, the renderer clears or replaces every associated
+image `src` and waits for the DOM update. Revocation occurs on cache eviction,
+story change, reader destruction, or explicit `clear()`. A Text / Visual Novel
+toggle does not revoke cached objects because the approved runtime remains alive
+across mode switches.
 
 #### `VisualStateController`
 
@@ -154,8 +223,7 @@ Converts controlled reader data into renderable visual state:
   identities.
 - Distinguishes `omitted` (the line has no logical key) from `missing` (a key
   exists but the active manifest cannot resolve it).
-- Tracks `loading`, `ready`, `omitted`, `missing`, `failed`, and
-  `stale-but-usable` states.
+- Tracks release status independently from background and portrait status.
 - Coordinates the two background layers.
 - Applies deterministic portrait slots.
 - Plans and executes bounded lookahead.
@@ -182,6 +250,44 @@ For every controlled `dialogueIndex`:
 Dialogue and choices render immediately and never wait for pointer, manifest,
 network, integrity, or image decoding work.
 
+## Release and layer state mapping
+
+Release lifecycle and per-image presentation are separate state axes:
+
+```ts
+type VisualReleaseState =
+    | 'idle'
+    | 'loading'
+    | 'ready'
+    | 'stale-but-usable'
+    | 'unavailable'
+    | 'invalid';
+
+type VisualLayerState =
+    | 'omitted'
+    | 'loading'
+    | 'ready'
+    | 'missing'
+    | 'failed';
+```
+
+| Input/result | Release state | Affected layer state |
+| --- | --- | --- |
+| Dialogue line has no logical key | unchanged | `omitted` |
+| Logical key exists but resolver factory returned `null` | `unavailable` | `failed` |
+| Resolver returns `not-found` | `ready` or `stale-but-usable` | `missing` |
+| Resolver returns `release-unavailable` | `unavailable` | `failed` |
+| Resolver returns `invalid-release` or `integrity-failure` without an eligible cached release | `invalid` | `failed` |
+| Verified bytes are loading | unchanged | `loading` |
+| Integrity, timeout, network, dimension, or decode failure in the decoded cache | unchanged | `failed` |
+| Verified image is decoded | `ready` or `stale-but-usable` | `ready` |
+
+`stale-but-usable` is release-global: a background or portrait served from that
+release may still be `ready`. The small status indicator appears when the
+release is stale, unavailable, or invalid, or when a keyed current visual is
+`missing` or `failed`. An intentionally `omitted` visual does not display a
+warning.
+
 ## Background state machine
 
 Two persistent render layers prevent blank replacement frames.
@@ -201,6 +307,16 @@ Two persistent render layers prevent blank replacement frames.
 The DOM exposes deterministic layer identifiers and states for tests. No
 pixel-perfect screenshot assertion is required.
 
+Stable test hooks are:
+
+- `data-testid="visual-novel-reader"`
+- `data-bg-layer="active|staging"`
+- `data-bg-state="omitted|loading|ready|missing|failed"`
+- `data-portrait-state="omitted|loading|ready|missing|failed"`
+- `data-portrait-slot="left|center|right"` when a portrait is ready
+- `data-visual-release-state="<VisualReleaseState>"`
+- `data-reader-mode="text|visual"` on the mode control
+
 ## Portrait state machine
 
 V1 renders at most one active portrait.
@@ -208,8 +324,10 @@ V1 renders at most one active portrait.
 - The portrait identity comes from the active dialogue line.
 - The slot comes from
   `presentation.portrait.slotsByCharacterId[characterId]`.
-- A missing `characterId`, missing presentation metadata, or missing character
-  assignment uses the HPA-227 fallback slot, `center`.
+- Slot resolution is
+  `(characterId ? slotsByCharacterId[characterId] : undefined) ?? presentation?.portrait.defaultSlot ?? "center"`.
+  Therefore a missing `characterId` or assignment still honors a story-defined
+  default before falling back to HPA-227's center baseline.
 - When portrait identity changes, the previous speaker is removed so a slow or
   failed load never shows the wrong speaker.
 - The replacement portrait appears only after successful verification and
@@ -221,14 +339,19 @@ Slot placement is an anchor, not multi-character staging.
 
 ## Prefetch policy
 
-Prefetch remains bounded by one story-flow edge and two concurrent requests.
+`maxNavigationEdges: 1` is a depth limit, not a breadth limit: prefetch may fan
+out to every immediately reachable choice target, but it never follows another
+edge from any of those targets. A shared queue limits all edge and image
+prefetch work to two concurrent requests.
 
-- Within the current scene, the controller may warm the next distinct visual
-  state.
-- At a linear scene boundary, it requests only the first visual state of the
-  immediately reachable scene.
-- At a choice, it requests only the first visual state of each immediate
-  branch.
+- Within the current scene, the controller warms the next distinct visual state
+  directly through `resolve()` and `DecodedAssetCache.prefetch()`. It does not
+  manufacture a same-scene `PrefetchNextEdgeRequest`.
+- At a linear scene boundary, it issues one `prefetchNextEdge()` call for the
+  first visual state of the immediately reachable scene.
+- At a choice with N immediate targets, it issues N singular
+  `prefetchNextEdge()` calls, one per `{ fromSceneId, toSceneId }` edge. Calls
+  beyond the global concurrency limit wait in the shared queue.
 - It never recursively follows a branch's next edge.
 - It never preloads a whole scene, chapter, or story.
 - Concurrent requests reuse the same cache promise as foreground loads.
@@ -240,11 +363,13 @@ The planner uses the active `StoryFlowConfig` plus the read-only
 
 Prefetch crosses the resolver/cache boundary in two explicit stages:
 
-1. The controller builds one `PrefetchNextEdgeRequest` and calls
-   `WebAssetResolver.prefetchNextEdge()`. The resolver pre-resolves and memoizes
-   each identity's checked URL result. `requested`, `cached`, and `failed` in
-   `PrefetchNextEdgeResult` describe this resolver-stage identity/URL cache;
-   `failed` therefore contains only `AssetFallback` resolution results.
+1. For each immediately reachable story-flow edge, the controller builds one
+   `PrefetchNextEdgeRequest` and calls
+   `WebAssetResolver.prefetchNextEdge()`. The resolver pre-resolves and
+   memoizes each identity's checked URL result. `requested`, `cached`, and
+   `failed` in `PrefetchNextEdgeResult` describe this resolver-stage
+   identity/URL cache; `failed` therefore contains only `AssetFallback`
+   resolution results.
 2. For each successful identity, the controller reads the memoized result
    through synchronous `resolve()` and passes the `ResolvedAsset` to
    `DecodedAssetCache.prefetch()`. Byte, integrity, timeout, and decode outcomes
@@ -270,13 +395,38 @@ pre-mark a later foreground request as failed.
 8. Verify story, release, and canonical release-content identity.
 9. Activate the candidate atomically only after every check succeeds.
 
+Pointer loading and revalidation follow this lifecycle:
+
+| Event | Action |
+| --- | --- |
+| First Visual Novel mount for a sourced story | Create the runtime and call `loadActiveRelease()` |
+| Story change | Abort and dispose the old runtime, create the new story source, then load its active release |
+| Visual Novel → Text | Retain the runtime and cache; do not force a reload or revoke objects |
+| Text → Visual Novel | Reuse the runtime and soft-revalidate if the pointer is at least 60 seconds old |
+| Active visual line change with pointer age ≥ 60 seconds | Start one background soft revalidation |
+| Document becomes visible with visual runtime active and pointer age ≥ 60 seconds | Start one background soft revalidation |
+| Candidate validation or network failure | Continue an eligible last-validated release as `stale-but-usable`; otherwise enter fallback |
+| Reader destruction or explicit clear | Abort in-flight work and dispose runtime references |
+
+There is no periodic timer. Revalidation is opportunistic at the events above.
+Only one pointer/manifest load may be in flight per runtime; concurrent triggers
+reuse it. Story-generation tokens and abort signals prevent a late
+revalidation from activating after a story change.
+
 At most two fully validated releases are stored in `localStorage` under the
 versioned key `aquila:visual-assets:validated-releases:v1`. Each record contains
 its complete `AssetResolverSource` identity, pointer, exact manifest text, and
-validation timestamp. The array is bounded to two records across all stories
-and sources. Reading stored data requires an exact source match and repeats
-schema, byte-checksum, story, release, and canonical-content verification;
-`localStorage` is never trusted merely because this client wrote it.
+`validatedAt`, and `lastUsedAt`. The array is bounded to two records across all
+stories and sources. Reading stored data requires an exact source match and
+repeats schema, byte-checksum, story, release, and canonical-content
+verification; `localStorage` is never trusted merely because this client wrote
+it.
+
+Expired or invalid records are removed first. When a third valid release must
+be stored, the record with the oldest `lastUsedAt` is evicted.
+`validatedAt`—not `lastUsedAt`—continues to govern the 24-hour stale limit. A
+failed revalidation does not remove an otherwise valid, unexpired cached
+release.
 
 When the current candidate is unavailable, stale, malformed, or invalid, the
 resolver may continue the newest revalidated release for the same story if it
@@ -335,13 +485,19 @@ Source release plans may contain source paths and therefore are never served as
 runtime data. Public runtime fixtures contain no prompts, local source paths,
 provider metadata, or credentials.
 
+`apps/web/scripts/verify-visual-fixtures.ts` independently recomputes release
+IDs, exact manifest checksums, object checksums, byte lengths, and decoded
+dimensions for every checked-in visual fixture. The web package exposes it as
+`bun run verify:visual-fixtures`; verification never relies only on constants
+fed back into the validators under test.
+
 ## Visual reader layout
 
 `VisualNovelReader` is a full-viewport cinematic composition:
 
 - Backgrounds cover the viewport with aspect ratio preserved through cropping.
 - The single 3:4 portrait is anchored left, center, or right above the dialogue
-  area and sized using manifest dimensions.
+  area and constrained by responsive maximum heights.
 - A translucent bottom dialogue box contains speaker name, active text,
   navigation controls, backlog control, bookmark control, and choices.
 - Choices replace advancement controls at the active scene's final line and use
@@ -355,6 +511,12 @@ Responsive CSS changes scale, spacing, portrait maximum height, and dialogue
 box width. Essential controls use `env(safe-area-inset-top)`,
 `env(safe-area-inset-right)`, `env(safe-area-inset-bottom)`, and
 `env(safe-area-inset-left)`.
+
+Manifest width and height validate the decoded object and supply its intrinsic
+aspect ratio; they are not rendered as raw CSS pixel dimensions. Backgrounds
+use that ratio with cover/crop behavior. Portraits use the manifest ratio plus
+breakpoint-specific `max-height` and `max-width`, preserving aspect ratio
+without obstructing the dialogue or controls.
 
 ## Backlog
 
@@ -405,10 +567,13 @@ the active payload inert.
   every visual fails.
 - Fallback and stale-release status is non-blocking and exposed politely to
   assistive technology.
-- Reduced-motion users receive no crossfade and no unnecessary portrait motion.
+- Reduced-motion users receive no background crossfade; portrait changes render
+  immediately at full opacity with no enter or fade animation.
 - Touch targets remain usable in mobile portrait and landscape layouts.
-- All new user-facing strings are added to both English and Chinese translation
-  files.
+- New flat keys are added under `reader` in both English and Chinese:
+  `readerMode`, `textMode`, `visualNovelMode`, `visualStaleRelease`,
+  `visualAssetFallback`, and `visualUnavailable`. The existing `historyTitle`,
+  `openHistory`, and `closeHistory` keys are reused for the backlog.
 
 ## Testing strategy
 
@@ -421,13 +586,15 @@ the active payload inert.
 - Network, HTTP, and unavailable responses
 - Exact manifest-byte checksum mismatch
 - Story, release, and canonical-content mismatch
-- Cached release revalidation, expiry, tamper rejection, stale pointer, and
-  two-release eviction
+- First-load and opportunistic 60-second revalidation triggers
+- In-flight revalidation deduplication and story-change cancellation
+- Cached release revalidation, expiry, tamper rejection, stale pointer,
+  `lastUsedAt` updates, and two-release LRU eviction
 - Image byte-length, content-hash, decoded-dimension, and decode failures
-- AVIF capability/failure fallback to required WebP
+- One-time AVIF probe and capability/failure fallback to required WebP
 - Concurrent request deduplication
 - Count and decoded-byte eviction
-- Blob URL revocation and `clear()`
+- Image-source clearing before Blob URL revocation, plus `clear()`
 
 ### Controller unit tests
 
@@ -438,28 +605,45 @@ the active payload inert.
 - Late async results ignored after line, story, mode, or generation changes
 - Portrait left/right/default-center placement
 - Old portrait removed before a different speaker finishes loading
-- Explicit omitted, missing, failed, ready, loading, and stale states
-- Linear, within-scene, and immediate-choice prefetch
+- Explicit release-to-layer state mapping and status-indicator scope
+- Default slot resolution through character assignment, story default, and
+  center fallback
+- Linear edge prefetch, direct within-scene warming, and one call per immediate
+  choice edge
 - No recursive edge traversal and no more than two concurrent requests
 
 ### Svelte component tests
 
 - Text default and valid persisted Visual Novel preference
-- Malformed preference fallback
+- Synchronous preference hydration without a Text→Visual flash
+- Malformed preference fallback and toggle-only persistence writes
+- Mode control availability and stacking in payload, no-payload, and blocked
+  states
 - Exact index preservation across mode and breakpoint swaps
 - Controlled `onIndexChange`, `onChoice`, bookmark, and scene navigation
 - Backlog contents and focus restoration
+- Shared pure advance-decision and interactive-target helpers
 - Typewriter skip-before-advance behavior
 - Interactive-element keyboard, pointer, and touch safety
-- Reduced-motion behavior
+- Reduced-motion background and portrait behavior
 - Decorative image semantics and accessible status
 - Safe-area CSS and mobile landscape layout state
+
+### ReaderManager integration tests
+
+- Presentation assignment alongside `activeStory` and `activeFlow`
+- Null presentation after initial failure and reset
+- Preserved presentation alongside the preserved payload after replacement
+  failure
+- Generation races cannot apply stale presentation metadata
 
 ### Playwright flows
 
 - Desktop Visual Novel mode with The Seventh Mirror Chapter 1 assets
 - Mobile Visual Novel mode on the existing mobile Chromium and WebKit projects
-- A mobile landscape interaction pass
+- A mobile landscape pass that verifies safe-area dialogue placement, a
+  tappable unobscured mode control, one dialogue advance, backlog open/close,
+  and no portrait overlap with essential controls
 - Text to Visual Novel to Text switching at a nonzero dialogue index
 - Exact direct-URL and browser-history restoration
 - A real background transition with DOM layer-state assertions
@@ -481,11 +665,12 @@ Before completion:
 4. Run the production web build.
 5. Run targeted desktop, mobile portrait, and mobile landscape Playwright
    flows.
-6. Run `compile:check` and confirm generated story output has no drift.
-7. Recompute fixture release IDs, exact manifest checksums, asset checksums,
-   byte lengths, and dimensions independently of constants supplied to the
-   validators.
-8. Review the finished implementation against the live HPA-228 issue and its
+6. Run `bun --filter web verify:visual-fixtures`.
+7. Run `compile:check` and confirm generated story output has no drift.
+8. Confirm the fixture verification script independently recomputes release
+   IDs, exact manifest checksums, asset checksums, byte lengths, and dimensions
+   rather than accepting validator-input constants as proof.
+9. Review the finished implementation against the live HPA-228 issue and its
    current comments before declaring acceptance.
 
 ## Non-goals

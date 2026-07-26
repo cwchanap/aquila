@@ -1445,6 +1445,116 @@
       "key": "chapter_27/ch27_act8_s1",
       "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act8_s1.png",
       "prompt": "KAGAMI command room, right console showing regional receiver unlock logs and Public Witness Index opt-in notice, white light from windows now mixing with screen glow, some video panels showing people pausing or covering eyes, muted cool palette dissolving into white and grey, visual-novel background art, close shot on right console"
+    },
+    {
+      "key": "chapter_28/ch28_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act1_s0.png",
+      "prompt": "KAGAMI command room, white light from windows beginning to thin and dissolve back into pre-dawn grey, wall of eight patient node panels still active, center console showing protective filter winding down, cold fluorescent lighting slowly reasserting over residual white glow, muted cool palette returning, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act1_s1.png",
+      "prompt": "KAGAMI command room, white light now fully dissolved into pre-dawn grey, patient node panels transitioning from active monitoring to acute status overview, center console displaying eight-patient summary grid, cold fluorescent lighting stable, muted cool palette, visual-novel background art, medium shot on center console"
+    },
+    {
+      "key": "chapter_28/ch28_act1_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act1_s2.png",
+      "prompt": "KAGAMI command room, right-side medical evaluation area partitioned by portable screen, external doctor on video panel conducting preliminary neurological check, Mio sitting on stool near console with penlight and basic reflex test, cold fluorescent lighting, muted cool palette, visual-novel background art, close shot on medical evaluation area"
+    },
+    {
+      "key": "chapter_28/ch28_act1_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act1_s3.png",
+      "prompt": "KAGAMI command room, center console now displaying CUTOVER AUTH LEASE countdown approaching expiry, wall clock showing 06:19, patient panels in background maintaining stable status, cold fluorescent lighting, muted cool palette with faint residual grey dawn light from windows, visual-novel background art, close shot on center console lease display"
+    },
+    {
+      "key": "chapter_28/ch28_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act2_s0.png",
+      "prompt": "KAGAMI command room, multiple video panels now showing external medical team, judicial preservation officer, and patient rights representative in split-screen layout, center console displaying EMERGENCY EXISTING-PATIENT PRESERVATION framework draft, cold fluorescent lighting with grey dawn light from windows, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act2_s1.png",
+      "prompt": "KAGAMI command room, small secure video panel showing M-00 patient room with Sae in hospital bed connected to clinical equipment, low-load communication board visible at bedside, patient rights representative on adjacent panel monitoring, soft clinical lighting, muted desaturated palette, visual-novel background art, close shot on M-00 video panel"
+    },
+    {
+      "key": "chapter_28/ch28_act2_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act2_s2.png",
+      "prompt": "M-00 patient room, Sae in hospital bed with low-load communication board at bedside, patient rights representative visible on small wall monitor, clinical equipment showing vital signs, soft morning light filtering through curtain, muted desaturated palette with faint warm tones, visual-novel background art, close shot on communication board"
+    },
+    {
+      "key": "chapter_28/ch28_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act3_s0.png",
+      "prompt": "Mirror Island judicial preservation zone, secure interview room with reinforced walls, two chairs facing each other across a metal table, one-way observation window, cold overhead lighting, judicial preservation officer at door, defense counsel seated beside one chair, muted cool palette with sterile institutional feel, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act3_s1.png",
+      "prompt": "Mirror Island judicial preservation zone, evidence handoff room adjacent to interview room, multiple sealed evidence containers on table, judicial preservation officer and another authorized police officer signing receipt documents, Kusakube standing across table handing over sealed packages, cold overhead lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act4_s0.png",
+      "prompt": "external neuro medical ward, quiet corridor with multiple patient room doors, soft daylight through frosted windows, update screen mounted on wall showing downstream dependency count, muted clinical palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act4_s1.png",
+      "prompt": "different patient node room, quieter, lower light, bedside monitor showing patient-bound root initialization, external doctor reviewing tablet, muted cool palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_28/ch28_act4_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act4_s2.png",
+      "prompt": "legacy patient ward, sealed-name room, bedside adapter console showing timing mismatch abort, clinical staff reviewing rollback log, dim protective lighting, muted cool palette, visual-novel background art, close shot on console"
+    },
+    {
+      "key": "chapter_28/ch28_act4_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act4_s3.png",
+      "prompt": "M-00 external medical area, quiet room, post-bridge verification screen showing downstream zero and retirement review status, soft morning light, clinical staff and patient rights representative present, muted warm-grey palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act5_s0.png",
+      "prompt": "public hearing room, wide rows of seats, media cameras at back, witness stand with microphone, large display screens showing evidence documents, fluorescent institutional lighting, muted neutral palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act5_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act5_s1.png",
+      "prompt": "public hearing room, witness stand, large screen displaying silver shell material analysis and train footage frame interpolation diagram, Chida Kosuke at microphone wearing casual jacket, media cameras recording, fluorescent lighting, muted cool palette, visual-novel background art, medium shot on witness stand"
+    },
+    {
+      "key": "chapter_28/ch28_act5_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act5_s2.png",
+      "prompt": "public hearing room, different session, large screen displaying continuity governance document tree with specific decision nodes highlighted, Nagihara Yui at witness stand in lab coat, cabinet legal advisor seated behind her, media cameras recording, cool clinical lighting, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_28/ch28_act5_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act5_s3.png",
+      "prompt": "courthouse corridor, bench near window, Kusakube Satoru sitting without police badge or suit jacket, plain clothes, afternoon light, Asakura Mio standing nearby, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_28/ch28_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act6_s0.png",
+      "prompt": "small law office, afternoon light through venetian blinds, desk covered with document folders and a laptop showing Public Witness Index, muted warm-grey palette, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_28/ch28_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act7_s0.png",
+      "prompt": "Asakura apartment kitchen, late morning light through small window, ordinary domestic scene, cereal bowls and a carton of milk on the table, a phone charging cable hanging off the counter, muted warm palette with faint cool shadows, visual-novel background art, medium shot"
+    },
+    {
+      "key": "chapter_28/ch28_act7_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act7_s1.png",
+      "prompt": "Asakura apartment living room, afternoon light shifting to early evening, the small hand mirror sitting on a shelf next to a drawer, soft warm light fading to grey-blue, visual-novel background art, close shot on shelf"
+    },
+    {
+      "key": "chapter_28/ch28_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act8_s0.png",
+      "prompt": "Asakura apartment living room at night, dim warm lamp light, a wideband analog comparison receiver built into an old shortwave radio chassis sitting on a shelf, white frequency marking line visible on the dial, external antenna cable leading to window, a laptop on the low table showing Prior-Source Open Monitoring Network dashboard, quiet domestic interior, muted cool palette with warm lamp accent, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_28/ch28_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_28/ch28_act8_s1.png",
+      "prompt": "Asakura apartment living room, weeks later, laptop screen now showing expanded public monitoring results page with multiple analysis panels, evening light, same warm lamp, visual-novel background art, close shot on laptop screen"
     }
   ],
   "portraits": [
@@ -1662,6 +1772,16 @@
       "key": "minase_yoshino/base",
       "path": "the_seventh_mirror/characters/minase_yoshino/base.png",
       "prompt": "anime visual-novel portrait, 43-year-old Japanese woman, shoulder-length dark brown hair tied back loosely, tired face with faint lines, casual clothes (wrinkled blouse over cardigan), guarded but weary expression, deep shadows under eyes from poor sleep, soft overcast afternoon light, muted warm-grey palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kusakube_satoru/sad",
+      "path": "the_seventh_mirror/characters/kusakube_satoru/sad.png",
+      "prompt": "anime visual-novel portrait, 45-year-old man, eyes downcast, heavy sigh visible in posture, shoulders dropped, dark suit, dim lighting, upper-body shot"
+    },
+    {
+      "key": "asakura_yuma/determined",
+      "path": "the_seventh_mirror/characters/asakura_yuma/determined.png",
+      "prompt": "anime visual-novel portrait, 15-year-old boy, jaw set, eyes sharp with unexpected resolve for his age, school uniform, strong light, upper-body shot"
     }
   ]
 }

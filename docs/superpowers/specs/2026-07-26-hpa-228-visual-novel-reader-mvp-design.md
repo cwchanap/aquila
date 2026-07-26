@@ -2,7 +2,7 @@
 
 Linear: [HPA-228](https://linear.app/cwchanap/issue/HPA-228/build-aquila-visualnovelreader-mvp-with-local-assets)  
 Date: 2026-07-26  
-Status: Review-ready after third-pass amendments
+Status: Approved
 
 ## Goal
 

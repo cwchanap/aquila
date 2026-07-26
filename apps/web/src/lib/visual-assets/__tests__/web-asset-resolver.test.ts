@@ -39,6 +39,14 @@ type Documents = {
     manifestText: string;
 };
 
+function deferred<T>() {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    const promise = new Promise<T>(next => {
+        resolve = next;
+    });
+    return { promise, resolve };
+}
+
 function digest(text: string): string {
     return createHash('sha256').update(text, 'utf8').digest('hex');
 }
@@ -255,6 +263,55 @@ describe('WebAssetResolver', () => {
         });
     });
 
+    it('does not let a slower older release overwrite a newer concurrent load', async () => {
+        const older = createDocuments({
+            key: 'release/older',
+            publishedAt: '2026-07-26T09:00:00.000Z',
+        });
+        const newer = createDocuments({
+            key: 'release/newer',
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        });
+        const olderManifestRequested = deferred<void>();
+        const olderManifestResponse = deferred<Response>();
+        let pointerRequest = 0;
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.endsWith('/current.json')) {
+                const documents = pointerRequest++ === 0 ? older : newer;
+                return new Response(documents.pointerText);
+            }
+            if (url.includes(older.pointer.releaseId)) {
+                olderManifestRequested.resolve();
+                return olderManifestResponse.promise;
+            }
+            if (url.includes(newer.pointer.releaseId)) {
+                return new Response(newer.manifestText);
+            }
+            return new Response('missing', { status: 404 });
+        });
+        const resolver = createResolver(older, {
+            fetchImpl: fetchMock as typeof fetch,
+        });
+
+        const olderLoad = resolver.loadActiveRelease();
+        await olderManifestRequested.promise;
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            manifest: { releaseId: newer.pointer.releaseId },
+        });
+        olderManifestResponse.resolve(new Response(older.manifestText));
+
+        await expect(olderLoad).rejects.toMatchObject({
+            code: 'stale-pointer',
+        });
+        expect(
+            resolver.resolve({ type: 'background', key: 'release/newer' })
+        ).toMatchObject({ status: 'resolved' });
+        expect(
+            resolver.resolve({ type: 'background', key: 'release/older' })
+        ).toMatchObject({ status: 'fallback', reason: 'not-found' });
+    });
+
     it('rejects an unsafe source path before fetch', async () => {
         const fetchSpy = vi.fn() as unknown as typeof fetch;
         const resolver = new WebAssetResolver(
@@ -455,6 +512,40 @@ describe('WebAssetResolver', () => {
         await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
             source: 'last-validated-release',
             manifest: { releaseId: documents.pointer.releaseId },
+        });
+    });
+
+    it('selects the newest validated stored release instead of the most recently used one', async () => {
+        const older = createDocuments({
+            key: 'stored/older',
+            publishedAt: '2026-07-26T09:00:00.000Z',
+        });
+        const newer = createDocuments({
+            key: 'stored/newer',
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([
+                storedRecord(older, {
+                    validatedAt: NOW - 2_000,
+                    lastUsedAt: NOW - 1,
+                }),
+                storedRecord(newer, {
+                    validatedAt: NOW - 1_000,
+                    lastUsedAt: NOW - 10_000,
+                }),
+            ])
+        );
+        const resolver = createResolver(newer, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: newer.pointer.releaseId },
         });
     });
 
@@ -673,6 +764,44 @@ describe('WebAssetResolver', () => {
         const pending = resolver.loadActiveRelease();
 
         resolver.clear();
+
+        await expect(pending).rejects.toMatchObject({ code: 'network' });
+        expect(
+            resolver.resolve({
+                type: 'background',
+                key: '第一章/鏡 房/夜',
+            })
+        ).toMatchObject({
+            status: 'fallback',
+            reason: 'release-unavailable',
+        });
+    });
+
+    it('does not activate a release when clear happens after fetch but during hashing', async () => {
+        const documents = createDocuments();
+        const digestStarted = deferred<void>();
+        const continueDigest = deferred<void>();
+        const digestMock = vi.fn(
+            async (
+                algorithm: AlgorithmIdentifier,
+                data: BufferSource
+            ): Promise<ArrayBuffer> => {
+                if (digestMock.mock.calls.length === 1) {
+                    digestStarted.resolve();
+                    await continueDigest.promise;
+                }
+                return webcrypto.subtle.digest(algorithm, data);
+            }
+        );
+        vi.stubGlobal('crypto', {
+            subtle: { digest: digestMock },
+        } as unknown as Crypto);
+        const resolver = createResolver(documents);
+        const pending = resolver.loadActiveRelease();
+        await digestStarted.promise;
+
+        resolver.clear();
+        continueDigest.resolve();
 
         await expect(pending).rejects.toMatchObject({ code: 'network' });
         expect(

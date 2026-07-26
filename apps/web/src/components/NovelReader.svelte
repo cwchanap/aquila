@@ -9,6 +9,10 @@
   import ActPanel from '@/components/ActPanel.svelte';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { resolveCharacterName } from '@/lib/character-name';
+  import {
+    getReaderAdvanceDecision,
+    isReaderInteractiveTarget,
+  } from '@/lib/reader-interaction';
   import { onDestroy } from 'svelte';
 
   // Pure controlled reader. All session state arrives via props; the only
@@ -201,19 +205,23 @@
 
   function handleNext() {
     if (interactionDisabled) return;
-    if (isTyping) {
-      // First interaction during typing only skips the animation; it must NOT
-      // advance the index (the parent owns the index).
+    const decision = getReaderAdvanceDecision({
+      isTyping,
+      index: dialogueIndex,
+      length: dialogue.length,
+      canGoNext,
+      hasChoice: !!choice,
+    });
+    if (decision === 'skip') {
       skipTyping = true;
       return;
     }
-    if (dialogueIndex < dialogue.length - 1) {
+    if (decision === 'advance-line') {
       selfAdvanceTarget = dialogueIndex + 1;
       onIndexChange(dialogueIndex + 1);
-      skipTyping = false;
-    } else if (canGoNext && !choice) {
-      onNext();
+      return;
     }
+    if (decision === 'advance-scene') onNext();
   }
 
   function handleChoice(nextScene: string) {
@@ -234,22 +242,7 @@
       return;
     }
 
-    const activeElement = globalThis.document
-      .activeElement as HTMLElement | null;
-    const rawTarget = (event.target ?? activeElement) as unknown;
-    const target = rawTarget instanceof HTMLElement ? rawTarget : activeElement;
-
-    if (target) {
-      const tagName = target.tagName.toLowerCase();
-      const interactiveTags = ['input', 'textarea', 'select', 'option', 'button', 'a'];
-      const hasEditableAttr =
-        target.isContentEditable ||
-        target.getAttribute('contenteditable') === 'true';
-
-      if (interactiveTags.includes(tagName) || hasEditableAttr) {
-        return;
-      }
-    }
+    if (isReaderInteractiveTarget(event.target ?? document.activeElement)) return;
     event.preventDefault();
     handleNext();
   }

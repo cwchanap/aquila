@@ -223,6 +223,35 @@ describe('ReaderManager', () => {
         readerState.reset();
     });
 
+    it('assigns presentation with the active payload and guards dialogue lookup', async () => {
+        const payload = storyPayload();
+        mockLoadStoryContent.mockResolvedValue(payload);
+        manager = new ReaderManager('en');
+        await manager.initialize();
+
+        expect(readerState.presentation).toEqual(payload.presentation);
+        expect(
+            manager.getSceneDialogue('the_seventh_mirror', 'constructor')
+        ).toBeNull();
+        expect(manager.getSceneDialogue('wrong_story', 'act1')).toBeNull();
+    });
+
+    it('clears stale presentation in a new manager constructor', () => {
+        readerState.presentation = storyPayload().presentation;
+
+        manager = new ReaderManager('en');
+
+        expect(readerState.presentation).toBeNull();
+    });
+
+    it('clears presentation when the reader state resets', () => {
+        readerState.presentation = storyPayload().presentation;
+
+        readerState.reset();
+
+        expect(readerState.presentation).toBeNull();
+    });
+
     describe('getSceneData', () => {
         it('returns dialogue and choice when scene node next is a choice ref', async () => {
             // Set up a flow where act3's next points to a choice node
@@ -1209,6 +1238,7 @@ describe('ReaderManager', () => {
             });
             await manager.initialize();
             const activeDialogue = readerState.dialogue;
+            const activePresentation = readerState.presentation;
             replaceState.mockClear();
             mockStorage.setItem.mockClear();
 
@@ -1227,6 +1257,7 @@ describe('ReaderManager', () => {
                 loadError,
             });
             expect(readerState.dialogue).toBe(activeDialogue);
+            expect(readerState.presentation).toBe(activePresentation);
             expect((manager as any).pendingIntent).toMatchObject({
                 storyId: 'dont_save_me_before_midnight',
                 requestedSceneId: 'midnight_act',

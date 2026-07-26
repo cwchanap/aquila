@@ -105,6 +105,7 @@ export class ReaderManager {
         readerState.loadError = null;
         readerState.hasActivePayload = false;
         readerState.activeFlow = null;
+        readerState.presentation = null;
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
@@ -179,6 +180,7 @@ export class ReaderManager {
     ): void {
         this.activeStory = payload;
         readerState.activeFlow = payload.flow;
+        readerState.presentation = payload.presentation;
         readerState.storyId = state.storyId;
         readerState.currentSceneId = state.sceneId;
         readerState.locale = state.locale;
@@ -387,6 +389,21 @@ export class ReaderManager {
         }, 500);
     }
 
+    getSceneDialogue = (
+        storyId: string,
+        sceneId: string
+    ): readonly DialogueEntry[] | null => {
+        const story = this.activeStory;
+        if (
+            !story ||
+            storyId !== readerState.storyId ||
+            !Object.hasOwn(story.dialogue, sceneId)
+        ) {
+            return null;
+        }
+        return story.dialogue[sceneId] ?? null;
+    };
+
     private getSceneData(
         storyId: string,
         sceneId: string
@@ -398,7 +415,7 @@ export class ReaderManager {
         if (!story || storyId !== readerState.storyId) {
             return { dialogue: [], choice: null };
         }
-        const dialogue = story.dialogue[sceneId] || [];
+        const dialogue = [...(this.getSceneDialogue(storyId, sceneId) ?? [])];
 
         // Derive the choice from the flow graph: if the scene node's next
         // is a choice ref (e.g. "choice:choice_act3"), look up that choiceId.
@@ -556,6 +573,7 @@ export class ReaderManager {
                         backUrl: `/${readerState.locale}/`,
                         onNavigate: this.goToScene,
                         onIndexChange: this.onIndexChange,
+                        getSceneDialogue: this.getSceneDialogue,
                         onRetry: () => window.location.reload(),
                     },
                 });

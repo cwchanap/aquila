@@ -11,6 +11,7 @@ import type {
     ChoiceDefinition,
     Locale,
     StoryFlowConfig,
+    StoryPresentationMetadata,
 } from '@aquila/stories';
 import type { StoryLoadError } from '@aquila/stories/async';
 
@@ -28,6 +29,7 @@ class ReaderState {
     loadError: StoryLoadError | null = $state(null);
     hasActivePayload: boolean = $state(false);
     activeFlow: StoryFlowConfig | null = $state(null);
+    presentation: StoryPresentationMetadata | null = $state(null);
 
     reset() {
         this.dialogue = [];
@@ -45,6 +47,7 @@ class ReaderState {
         this.loadError = null;
         this.hasActivePayload = false;
         this.activeFlow = null;
+        this.presentation = null;
     }
 }
 

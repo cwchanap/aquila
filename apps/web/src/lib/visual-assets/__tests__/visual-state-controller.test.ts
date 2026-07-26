@@ -343,6 +343,28 @@ describe('VisualStateController', () => {
         expect(latest().stagingBackground.state).toBe('omitted');
     });
 
+    it('stops protecting abandoned staging when returning to the active background', async () => {
+        const { cache, controller, latest } = createHarness();
+        controller.update(input([{ dialogue: 'First', background: 'first' }]));
+        await flushAsyncWork();
+        controller.update(
+            input([{ dialogue: 'Second', background: 'second' }])
+        );
+        await flushAsyncWork();
+        expect(latest().stagingBackground.identity).toBe('background:second');
+        expect(cache.setProtectedKeys).toHaveBeenLastCalledWith(
+            new Set(['webp:sha-first', 'webp:sha-second'])
+        );
+
+        controller.update(input([{ dialogue: 'Back', background: 'first' }]));
+        await flushAsyncWork();
+
+        expect(latest().stagingBackground.state).toBe('omitted');
+        expect(cache.setProtectedKeys).toHaveBeenLastCalledWith(
+            new Set(['webp:sha-first'])
+        );
+    });
+
     it('ignores late decode completion from an older line generation', async () => {
         const slow = deferred<DecodedAsset>();
         const { controller, latest } = createHarness({
@@ -573,6 +595,63 @@ describe('VisualStateController', () => {
         );
     });
 
+    it('drops within-scene warming that becomes stale while queued', async () => {
+        const firstPrefetch = deferred<void>();
+        const secondPrefetch = deferred<void>();
+        const terminalFlow = {
+            start: 'terminal',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'terminal',
+                    sceneId: 'terminal',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const { cache, controller } = createHarness();
+        cache.prefetch
+            .mockImplementationOnce(() => firstPrefetch.promise)
+            .mockImplementationOnce(() => secondPrefetch.promise);
+        controller.update(
+            input([
+                { dialogue: 'Current', background: 'current-a' },
+                {
+                    dialogue: 'Occupies both permits',
+                    background: 'warm-a',
+                    portrait: 'warm-b',
+                },
+            ])
+        );
+        await flushAsyncWork();
+        expect(cache.prefetch).toHaveBeenCalledTimes(2);
+
+        controller.update(
+            input([
+                { dialogue: 'New current', background: 'current-b' },
+                { dialogue: 'Queued stale warm', background: 'stale-warm' },
+            ])
+        );
+        await flushAsyncWork();
+        controller.update(
+            input([{ dialogue: 'Navigated away' }], {
+                sceneId: 'terminal',
+                flow: terminalFlow,
+            })
+        );
+        firstPrefetch.resolve();
+        secondPrefetch.resolve();
+        await flushAsyncWork();
+
+        expect(cache.prefetch).not.toHaveBeenCalledWith(
+            expect.objectContaining({
+                asset: expect.objectContaining({
+                    identity: { type: 'background', key: 'stale-warm' },
+                }),
+            })
+        );
+    });
+
     it('prefetches the first visual state across one linear edge', async () => {
         const { controller, getSceneDialogue, resolver } = createHarness({
             sceneDialogue: {
@@ -603,6 +682,50 @@ describe('VisualStateController', () => {
             storyId,
             'after_next'
         );
+    });
+
+    it('does not decode edge assets when navigation changes during edge prefetch', async () => {
+        const edgePrefetch = deferred<{
+            requested: number;
+            cached: number;
+            failed: [];
+        }>();
+        const terminalFlow = {
+            start: 'terminal',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'terminal',
+                    sceneId: 'terminal',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const { cache, controller, resolver } = createHarness({
+            sceneDialogue: {
+                next: [{ dialogue: 'Next', background: 'next-room' }],
+            },
+        });
+        vi.mocked(resolver.prefetchNextEdge).mockImplementation(
+            () => edgePrefetch.promise
+        );
+        controller.update(
+            input([{ dialogue: 'Final', background: 'current-room' }])
+        );
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(1);
+        cache.prefetch.mockClear();
+
+        controller.update(
+            input([{ dialogue: 'Navigated away' }], {
+                sceneId: 'terminal',
+                flow: terminalFlow,
+            })
+        );
+        edgePrefetch.resolve({ requested: 1, cached: 1, failed: [] });
+        await flushAsyncWork();
+
+        expect(cache.prefetch).not.toHaveBeenCalled();
     });
 
     it('prefetches every immediate choice edge once but never a second edge', async () => {

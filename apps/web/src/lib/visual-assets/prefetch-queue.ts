@@ -7,13 +7,15 @@ export class PrefetchQueue {
     async run<T>(work: () => Promise<T>): Promise<T> {
         if (this.active >= this.limit) {
             await new Promise<void>(resolve => this.pending.push(resolve));
+        } else {
+            this.active += 1;
         }
-        this.active += 1;
         try {
             return await work();
         } finally {
-            this.active -= 1;
-            this.pending.shift()?.();
+            const next = this.pending.shift();
+            if (next) next();
+            else this.active -= 1;
         }
     }
 }

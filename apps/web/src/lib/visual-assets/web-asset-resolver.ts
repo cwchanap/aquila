@@ -237,6 +237,7 @@ export class WebAssetResolver implements AssetResolver {
     private activeRecord: ValidatedReleaseRecord | null = null;
     private newestPublishedAt = Number.NEGATIVE_INFINITY;
     private lastLoadError: AssetResolverError | null = null;
+    private lifecycleGeneration = 0;
 
     constructor(
         source: AssetResolverSource,
@@ -253,19 +254,27 @@ export class WebAssetResolver implements AssetResolver {
         signal?: AbortSignal;
     }): Promise<ValidatedAssetRelease> {
         const loadController = new AbortController();
+        const generation = this.lifecycleGeneration;
         const abort = () => loadController.abort();
         options?.signal?.addEventListener('abort', abort, { once: true });
         this.inFlightLoads.add(loadController);
         try {
-            return await this.loadFromNetwork(loadController.signal);
+            return await this.loadFromNetwork(
+                loadController.signal,
+                generation
+            );
         } catch (error) {
             const resolverError = asResolverError(error);
+            if (!this.isLoadCurrent(generation, loadController.signal)) {
+                throw resolverError;
+            }
             this.lastLoadError = resolverError;
-            if (
-                !loadController.signal.aborted &&
-                resolverError.code !== 'stale-pointer'
-            ) {
-                const fallback = await this.loadStoredFallback(this.now());
+            if (resolverError.code !== 'stale-pointer') {
+                const fallback = await this.loadStoredFallback(
+                    this.now(),
+                    generation,
+                    loadController.signal
+                );
                 if (fallback) return fallback;
             }
             throw resolverError;
@@ -357,6 +366,7 @@ export class WebAssetResolver implements AssetResolver {
     }
 
     clear(): void {
+        this.lifecycleGeneration += 1;
         for (const controller of this.inFlightLoads) controller.abort();
         this.inFlightLoads.clear();
         this.activeRecord = null;
@@ -370,7 +380,8 @@ export class WebAssetResolver implements AssetResolver {
     }
 
     private async loadFromNetwork(
-        signal: AbortSignal
+        signal: AbortSignal,
+        generation: number
     ): Promise<ValidatedAssetRelease> {
         const pointerUrl = resolveAssetUrl(
             this.source.baseUrl,
@@ -428,6 +439,7 @@ export class WebAssetResolver implements AssetResolver {
             validatedAt: now,
             lastUsedAt: now,
         };
+        this.assertLoadCanActivate(pointer, generation, signal);
         this.acceptRelease(record, pointer, manifest);
         await this.persistAcceptedRecord(record, now);
         return {
@@ -446,6 +458,24 @@ export class WebAssetResolver implements AssetResolver {
                 'Active-release pointer is older than the accepted release'
             );
         }
+    }
+
+    private isLoadCurrent(generation: number, signal: AbortSignal): boolean {
+        return generation === this.lifecycleGeneration && !signal.aborted;
+    }
+
+    private assertLoadCanActivate(
+        pointer: ActiveReleasePointerV1,
+        generation: number,
+        signal: AbortSignal
+    ): void {
+        if (!this.isLoadCurrent(generation, signal)) {
+            throw new AssetResolverError(
+                'network',
+                'Runtime asset load was cancelled'
+            );
+        }
+        this.assertNotOlder(pointer);
     }
 
     private acceptRelease(
@@ -483,7 +513,9 @@ export class WebAssetResolver implements AssetResolver {
     }
 
     private async loadStoredFallback(
-        now: number
+        now: number,
+        generation: number,
+        signal: AbortSignal
     ): Promise<ValidatedAssetRelease | null> {
         const valid = await this.loadValidStoredReleases(now);
         const candidate = valid
@@ -494,7 +526,9 @@ export class WebAssetResolver implements AssetResolver {
             )
             .sort(
                 (left, right) =>
-                    right.record.lastUsedAt - left.record.lastUsedAt
+                    Date.parse(right.pointer.publishedAt) -
+                        Date.parse(left.pointer.publishedAt) ||
+                    right.record.validatedAt - left.record.validatedAt
             )[0];
         if (!candidate) {
             this.persistRecords(
@@ -510,6 +544,7 @@ export class WebAssetResolver implements AssetResolver {
             return null;
         }
         const acceptedRecord = { ...candidate.record, lastUsedAt: now };
+        this.assertLoadCanActivate(candidate.pointer, generation, signal);
         this.acceptRelease(
             acceptedRecord,
             candidate.pointer,

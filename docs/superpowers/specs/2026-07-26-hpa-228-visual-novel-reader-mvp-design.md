@@ -64,11 +64,12 @@ bookmarks, or story saves.
 - Text mode keeps the existing breakpoint choice between `NovelReader` and
   `MobileNovelReader`.
 - Visual mode mounts one responsive `VisualNovelReader` at every breakpoint.
-- The mode control is rendered by `ReaderShell`, outside the leaf reader, so it
-  remains in the same place across mode and breakpoint swaps.
-- All readers receive the same controlled dialogue index, scene payload,
-  choices, navigation callbacks, bookmark callback, retry/loading state, and
-  interaction-disabled state.
+- The mode control is rendered by `ReaderShell` outside both the leaf reader and
+  the `reader-ready` inert subtree. It stays above loading/error overlays so it
+  remains visible and interactive while the payload is blocked.
+- All readers receive the same flow, controlled dialogue index, scene payload,
+  choices, navigation callbacks, bookmark callback, retry/loading state,
+  `isInitialMount`, and interaction-disabled state.
 
 Switching modes unmounts one presentation and mounts another without changing
 `readerState.dialogueIndex`. No initial-index callback is introduced.
@@ -77,14 +78,17 @@ Switching modes unmounts one presentation and mounts another without changing
 
 `readerState` gains generated `StoryPresentationMetadata | null` as runtime
 payload. `ReaderManager` assigns it atomically with the successfully loaded
-story payload and clears it on reset. Presentation metadata is never serialized
-or persisted.
+story payload. `readerState.reset()` explicitly assigns `presentation = null`,
+parallel to `activeFlow = null`, so a story change cannot retain stale slot
+metadata. Presentation metadata is never serialized or persisted.
 
 The visual prefetch planner needs read-only access to dialogue in immediately
 reachable scenes. `ReaderManager` supplies a stable
 `getSceneDialogue(sceneId)` callback to `ReaderShell`; the callback reads the
 currently loaded story bundle and cannot mutate progression. This avoids
-duplicating the full dialogue map into reactive state.
+duplicating the full dialogue map into reactive state. HPA-232 loads one
+complete story bundle per dynamic import rather than loading individual scenes,
+so this callback remains synchronous.
 
 `VisualNovelReader` remains controlled:
 
@@ -111,8 +115,16 @@ Implements HPA-227's `AssetResolver` interface:
 - Returns HPA-227 typed fallback results rather than unchecked URLs.
 
 The resolver is configured with an `AssetResolverSource`. A resolver factory
-maps a registered story to its local preview source. UI components call the
-factory but never concatenate asset paths or construct asset-domain URLs.
+maps a registered story to its local preview source and returns
+`AssetResolver | null`. UI components call the factory but never concatenate
+asset paths or construct asset-domain URLs.
+
+When a story has no configured source, the factory returns `null`. The
+controller performs no pointer, manifest, or image requests and renders the
+story with a neutral background and no portrait. Lines without visual keys are
+`omitted`; a compiled visual key encountered without a source becomes a typed
+`release-unavailable` fallback. This is the expected Train Adventure choice
+flow in the local MVP.
 
 #### `DecodedAssetCache`
 
@@ -196,8 +208,8 @@ V1 renders at most one active portrait.
 - The portrait identity comes from the active dialogue line.
 - The slot comes from
   `presentation.portrait.slotsByCharacterId[characterId]`.
-- Missing character metadata uses `presentation.portrait.defaultSlot`, which
-  is `center` under HPA-227.
+- A missing `characterId`, missing presentation metadata, or missing character
+  assignment uses the HPA-227 fallback slot, `center`.
 - When portrait identity changes, the previous speaker is removed so a slow or
   failed load never shows the wrong speaker.
 - The replacement portrait appears only after successful verification and
@@ -226,6 +238,24 @@ Prefetch remains bounded by one story-flow edge and two concurrent requests.
 The planner uses the active `StoryFlowConfig` plus the read-only
 `getSceneDialogue` callback. It does not advance or persist story state.
 
+Prefetch crosses the resolver/cache boundary in two explicit stages:
+
+1. The controller builds one `PrefetchNextEdgeRequest` and calls
+   `WebAssetResolver.prefetchNextEdge()`. The resolver pre-resolves and memoizes
+   each identity's checked URL result. `requested`, `cached`, and `failed` in
+   `PrefetchNextEdgeResult` describe this resolver-stage identity/URL cache;
+   `failed` therefore contains only `AssetFallback` resolution results.
+2. For each successful identity, the controller reads the memoized result
+   through synchronous `resolve()` and passes the `ResolvedAsset` to
+   `DecodedAssetCache.prefetch()`. Byte, integrity, timeout, and decode outcomes
+   belong to the decoded cache/controller layer and do not change
+   `PrefetchNextEdgeResult`.
+
+This keeps HPA-227's `prefetchNextEdge()` surface active while ensuring all
+byte prefetching still goes through the same deduplicated decoded cache as
+foreground loads. A decode-prefetch failure is non-blocking and does not
+pre-mark a later foreground request as failed.
+
 ## Resolver validation and stale-release behavior
 
 `loadActiveRelease()` follows this order:
@@ -240,10 +270,13 @@ The planner uses the active `StoryFlowConfig` plus the read-only
 8. Verify story, release, and canonical release-content identity.
 9. Activate the candidate atomically only after every check succeeds.
 
-At most two fully validated releases are stored locally with their exact
-manifest bytes, pointer, and validation timestamp. Reading stored data repeats
+At most two fully validated releases are stored in `localStorage` under the
+versioned key `aquila:visual-assets:validated-releases:v1`. Each record contains
+its complete `AssetResolverSource` identity, pointer, exact manifest text, and
+validation timestamp. The array is bounded to two records across all stories
+and sources. Reading stored data requires an exact source match and repeats
 schema, byte-checksum, story, release, and canonical-content verification;
-local storage is never trusted merely because this client wrote it.
+`localStorage` is never trusted merely because this client wrote it.
 
 When the current candidate is unavailable, stale, malformed, or invalid, the
 resolver may continue the newest revalidated release for the same story if it
@@ -278,16 +311,16 @@ Images are downscaled and converted to WebP with aspect ratio preserved. The
 fixture manifest records their actual byte length, checksum, width, and height.
 AVIF is optional and not required for this local release.
 
-The preview `StoryAssetReleasePlanV1` is checked in with source-side test
-fixtures rather than under `public/`. Preview classification may be incomplete
-under HPA-227; only the small included subset is published into the runtime
-manifest.
+The preview `StoryAssetReleasePlanV1` is checked in at
+`apps/web/src/lib/visual-assets/__fixtures__/release-plans/the-seventh-mirror.preview.v1.json`
+rather than under `public/`. Preview classification may be incomplete under
+HPA-227; only the small included subset is published into the runtime manifest.
 
 ### Synthetic resolver fixtures
 
 A separate synthetic fixture set covers:
 
-- A valid CJK, spaces, and nested logical key
+- A valid CJK, spaces, and nested logical key such as `第一章/鏡 房/夜`
 - An explicitly omitted release-plan key
 - A small story-flow and dialogue-map fixture whose choice has two immediate
   branches with different first visual states

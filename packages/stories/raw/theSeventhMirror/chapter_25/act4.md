@@ -76,4 +76,4 @@ C2 security conference room, long table with laptops and sealed binders, wall mo
 
 **旁白**：他沒有多說。他走向門口。走廊的螢光燈和早上一樣亮。
 
-**旁白**：距下一次星期一 06:13——約十七小時四十八分鐘。
+**旁白**：距下一次星期一 06:13——約十六小時四十八分鐘。

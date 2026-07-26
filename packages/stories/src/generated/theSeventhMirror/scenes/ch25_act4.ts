@@ -42,5 +42,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:25。日下部站起來。他看了一眼螢幕。", background: Background.Chapter_25_Ch25_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "下午。佳乃到床邊。", background: Background.Chapter_25_Ch25_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有多說。他走向門口。走廊的螢光燈和早上一樣亮。", background: Background.Chapter_25_Ch25_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約十七小時四十八分鐘。", background: Background.Chapter_25_Ch25_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約十六小時四十八分鐘。", background: Background.Chapter_25_Ch25_Act4_S0 },
 ];

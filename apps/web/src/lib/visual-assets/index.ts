@@ -1,3 +1,4 @@
+export * from './decoded-asset-cache';
 export * from './hash';
 export * from './source-factory';
 export * from './types';

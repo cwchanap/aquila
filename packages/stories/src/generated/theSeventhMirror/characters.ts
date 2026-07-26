@@ -61,6 +61,8 @@ export enum CharacterId {
     PatientRightsRep = "patient_rights_rep",
     C2OncallDirector = "c2_oncall_director",
     LocalTechnician = "local_technician",
+    LocalOperationsLead = "local_operations_lead",
+    ContinuityFieldOfficer = "continuity_field_officer",
 }
 
 export interface CharacterInfo {
@@ -130,6 +132,8 @@ export const characterTable: Record<string, CharacterInfo> = {
     [CharacterId.PatientRightsRep]: { id: "patient_rights_rep", name: "獨立患者權利代表", aliases: ["患者權利代表", "獨立權利代表", "權利代表"] },
     [CharacterId.C2OncallDirector]: { id: "c2_oncall_director", name: "C2 值班醫療主管", aliases: ["值班主管", "值班醫療主管", "C2 值班主管"] },
     [CharacterId.LocalTechnician]: { id: "local_technician", name: "鏡島本地技師", aliases: ["本地技師", "鏡島技師", "技師"] },
+    [CharacterId.LocalOperationsLead]: { id: "local_operations_lead", name: "鏡島本地營運責任者", aliases: ["本地營運責任者", "本地營運", "營運責任者", "鏡島營運"] },
+    [CharacterId.ContinuityFieldOfficer]: { id: "continuity_field_officer", name: "continuity 現場服務人員", aliases: ["continuity 服務人員", "現場服務人員"] },
 };
 
 const nameToId = new Map<string, string>();

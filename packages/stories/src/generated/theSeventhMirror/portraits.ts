@@ -24,6 +24,7 @@ export enum Portrait {
     FujikawaMari_Shocked = "fujikawa_mari/shocked",
     KusakubeSatoru_Base = "kusakube_satoru/base",
     KusakubeSatoru_Determined = "kusakube_satoru/determined",
+    MinaseYoshino_Base = "minase_yoshino/base",
     MinaseYoshino_Determined = "minase_yoshino/determined",
     MinaseYoshino_Guarded = "minase_yoshino/guarded",
     MinaseYoshino_Sad = "minase_yoshino/sad",

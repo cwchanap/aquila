@@ -1365,6 +1365,86 @@
       "key": "chapter_26/ch26_act8_s3",
       "path": "the_seventh_mirror/backgrounds/chapter_26/ch26_act8_s3.png",
       "prompt": "KAGAMI command room, center console now displaying AUTO-PREP 05:50 branch-specific preparation screen, six status lines visible, pre-dawn grey light noticeably stronger at window edges, cold fluorescent mixing with grey dawn light, muted cool palette warming slightly, visual-novel background art, close shot on center console"
+    },
+    {
+      "key": "chapter_27/ch27_act1_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act1_s0.png",
+      "prompt": "KAGAMI command room, wall of eight patient node panels transitioning from HOLD to ANNOUNCE status, center console displaying distributed switch clock epoch announcement, pre-dawn grey light bleeding through reinforced window edges, cold fluorescent lighting mixing with faint grey, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act1_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act1_s1.png",
+      "prompt": "KAGAMI command room, small secure video panel on upper right corner showing a hospital room with a teenage boy sitting up in bed, pre-dawn grey light from window behind him, cold clinical lighting, muted palette, visual-novel background art, close shot on video panel"
+    },
+    {
+      "key": "chapter_27/ch27_act2_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act2_s0.png",
+      "prompt": "KAGAMI command room, eight patient node panels now showing SAMPLE stage with varying data streams, some panels displaying EEG waveforms and autonomic telemetry, others showing guardian console status, pre-dawn grey light growing at window edges, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act2_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act2_s1.png",
+      "prompt": "KAGAMI command room, three patient node panels highlighted showing HOLD status — G07/08, LEGACY/02, ACTIVE/D — while other panels continue SAMPLE data streams, pre-dawn grey light noticeably stronger, cold fluorescent mixing with grey, muted cool palette, visual-novel background art, close shot on three HOLD panels"
+    },
+    {
+      "key": "chapter_27/ch27_act3_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act3_s0.png",
+      "prompt": "KAGAMI command room, center console flashing a new alert panel — PHYSICAL BREAK-GLASS REQUEST — while patient node panels continue SAMPLE stage in background, pre-dawn grey light at window edges, cold fluorescent lighting, muted cool palette with red alert indicator, visual-novel background art, close shot on center console"
+    },
+    {
+      "key": "chapter_27/ch27_act3_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act3_s1.png",
+      "prompt": "KAGAMI command room, center console showing break-glass panel with all three shares DENIED, a secondary panel showing continuity field officer's attempted outer seal action, patient node panels continuing SAMPLE in background, pre-dawn grey light, cold fluorescent, muted cool palette, visual-novel background art, close shot on break-glass panel"
+    },
+    {
+      "key": "chapter_27/ch27_act4_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act4_s0.png",
+      "prompt": "KAGAMI command room, five patient node panels showing COMPARE stage with envelope comparison data, three panels showing HOLD/SAFE PAUSE status, center console displaying Patient Safety Envelope and Network Transition Envelope comparison matrix, pre-dawn grey light growing stronger, cold fluorescent mixing with grey dawn, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act4_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act4_s1.png",
+      "prompt": "KAGAMI command room, all eight patient node panels showing ACKNOWLEDGE stage results, each panel displaying its own legal answer — CONTINUE, SAFE PAUSE, HOLD — no shared YES visible, center console showing aggregate summary, pre-dawn grey light now clearly dawn, cold fluorescent mixing with warmer grey, muted cool palette warming slightly, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act5_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act5_s0.png",
+      "prompt": "KAGAMI command room, two patient node panels highlighted — G07/05 and LEGACY/04 — showing Control Quiet Window opening sequence, center console displaying risk comparison graphs, other six panels dimmed to HOLD/SAFE PAUSE/COMPARE status, pre-dawn grey light now clearly visible at window edges, cold fluorescent mixing with grey dawn, muted cool palette, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act5_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act5_s1.png",
+      "prompt": "KAGAMI command room, G07/05 patient node panel enlarged showing consent verification display, prior assent and proxy consent fields visible, external medical telemetry stream alongside, pre-dawn grey light at window edges, cold fluorescent, muted cool palette, visual-novel background art, close shot on G07/05 panel"
+    },
+    {
+      "key": "chapter_27/ch27_act5_s2",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act5_s2.png",
+      "prompt": "KAGAMI command room, LEGACY/04 patient node panel enlarged showing limited self-consent verification and handoff slope adjustment, external medical telemetry showing brief reversible fluctuation marker, pre-dawn grey light stronger at window edges, cold fluorescent mixing with grey, muted cool palette, visual-novel background art, close shot on LEGACY/04 panel"
+    },
+    {
+      "key": "chapter_27/ch27_act5_s3",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act5_s3.png",
+      "prompt": "KAGAMI command room, center console displaying SETTLE stage summary for all eight active dependencies, two panels showing LOCAL CONTROL PRIMARY, six panels showing HOLD/SAFE PAUSE/COMPARE status, pre-dawn grey light now clearly dawn light at window edges, cold fluorescent mixing with grey dawn, muted cool palette warming slightly, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act6_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act6_s0.png",
+      "prompt": "KAGAMI command room, center console displaying witness fragment release verification screen, final consent root and release cutoff fields pending, unified preface draft visible in side panel awaiting final go, pre-dawn grey light now clearly dawn light, cold fluorescent mixing with grey dawn, muted cool palette warming slightly, visual-novel background art, close shot on center console"
+    },
+    {
+      "key": "chapter_27/ch27_act7_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act7_s0.png",
+      "prompt": "KAGAMI command room, center console displaying central sequencing gateway status, TOKYO-7 mobile follow-up send object sealed with nonce, HSM policy verification panel visible, countdown timer showing seven-second window, dawn light now clearly visible at window edges mixing with cold fluorescent, muted cool palette warming, visual-novel background art, close shot on center console"
+    },
+    {
+      "key": "chapter_27/ch27_act8_s0",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act8_s0.png",
+      "prompt": "KAGAMI command room, all screens simultaneously updating as echo peak hits, wall of patient node panels showing protective filter active status, center console displaying TOKYO-7 consensus output none and mobile follow-up cancelled, blinding white light beginning to bleed through reinforced window edges overwhelming cold fluorescent and dawn light, muted cool palette dissolving into white, visual-novel background art, wide shot"
+    },
+    {
+      "key": "chapter_27/ch27_act8_s1",
+      "path": "the_seventh_mirror/backgrounds/chapter_27/ch27_act8_s1.png",
+      "prompt": "KAGAMI command room, right console showing regional receiver unlock logs and Public Witness Index opt-in notice, white light from windows now mixing with screen glow, some video panels showing people pausing or covering eyes, muted cool palette dissolving into white and grey, visual-novel background art, close shot on right console"
     }
   ],
   "portraits": [
@@ -1577,6 +1657,11 @@
       "key": "minase_yoshino/determined",
       "path": "the_seventh_mirror/characters/minase_yoshino/determined.png",
       "prompt": "anime visual-novel portrait, 43-year-old woman, jaw set, eyes steady with quiet resolve despite exhaustion, shoulders squared, cardigan, soft warm directional light, upper-body shot"
+    },
+    {
+      "key": "minase_yoshino/base",
+      "path": "the_seventh_mirror/characters/minase_yoshino/base.png",
+      "prompt": "anime visual-novel portrait, 43-year-old Japanese woman, shoulder-length dark brown hair tied back loosely, tired face with faint lines, casual clothes (wrinkled blouse over cardigan), guarded but weary expression, deep shadows under eyes from poor sleep, soft overcast afternoon light, muted warm-grey palette, upper-body shot, clean background"
     }
   ]
 }

@@ -151,6 +151,16 @@ const config: StoryCompilerConfig = {
             pattern: /^(鏡島本地技師|本地技師|鏡島技師|技師)$/,
             id: 'local_technician',
         },
+        {
+            pattern:
+                /^(鏡島本地營運責任者|本地營運責任者|本地營運|營運責任者|鏡島營運)$/,
+            id: 'local_operations_lead',
+        },
+        {
+            pattern:
+                /^(continuity現場服務人員|continuity 現場服務人員|continuity服務人員|continuity 服務人員|現場服務人員)$/,
+            id: 'continuity_field_officer',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

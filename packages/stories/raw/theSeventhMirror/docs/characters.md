@@ -1288,3 +1288,25 @@ C2 設施當輪值班醫療主管。非終局惡人——真心相信外部接�
 ### 說明
 
 泛指鏡島本地值班硬體／服務技師。無人格，純功能性角色，負責在五方共同控制與司法保全見證下，以 R2、audit 記錄、服務手冊與實體線路將 forensic clone 找到的 service alias（如 `SUBJECT-SVC／G07`）映射至實體 Subject Continuity Bay 並執行受控掛載。不隸屬 continuity governance、不擁有患者決策權、不簽署任何授權——只執行實體映射與本地服務操作，所有動作進 immutable audit。說話風格制式、精確、以硬體座標與服務手冊編號為軸心。
+
+---
+
+## 61. 鏡島本地營運責任者（Mirror Island Local Operations Lead）
+
+- **ID**: `local_operations_lead`
+- **Aliases**: 本地營運責任者, 本地營運, 營運責任者, 鏡島營運
+
+### 說明
+
+鏡島現場當輪本地營運責任者。非終局角色——是實際在場、對實體設施與本地服務操作負有不可改寫 audit 責任的值班主管。在 physical break-glass 程序中持有 local operations share：當 continuity authority 以國家持續性／公共安全為由要求開啟臨床依存鎖定時，負責確認現場是否仍有未安全切離的 active human dependencies，並以此決定是否提供營運份額。不隸屬 continuity governance、不擁有患者決策權、不替醫療或患者權利代言——只代表本地營運方的責任邊界。當八名 active humans 尚未全部安全切離、clinical branch 仍在使用時，明確拒絕提供 share。所有拒絕進入 immutable audit。說話風格沉穩、簡短、以現場在場與責任為軸心，不戲劇化、不解釋制度，只陳述自己在場與自己的決定。
+
+---
+
+## 62. continuity 現場服務人員（Continuity Field Service Officer）
+
+- **ID**: `continuity_field_officer`
+- **Aliases**: continuity 服務人員, 現場服務人員
+
+### 說明
+
+由 continuity authority 派遣至鏡島現場的外層服務人員。非終局反派——是依角色命令行事、相信 lease 合法且東京面臨危險的執行人員。沒有完整患者資訊、無權取得 medical／patient-rights shares，只被指示要求開啟 physical panel 外層 seal。其 attempted action 允許進入 audit，但司法保全不允許其碰觸內層 bypass。當三領域 share 全部拒絕時，其行動在 outer action 階段終止，不構成對 patient branch 的改動。說話風格制式、以命令與程序為軸心，帶著對自身角色合法性的信念，不是惡意而是制度內的服從。

@@ -16,6 +16,7 @@ export type VisualLayerState =
 export type DecodedAsset = {
     cacheKey: string;
     objectUrl: string;
+    byteLength: number;
     width: number;
     height: number;
     decodedBytes: number;

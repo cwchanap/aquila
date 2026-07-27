@@ -22,16 +22,20 @@ describe('getAssetResolverSource', () => {
         ).toBeNull();
     });
 
-    it('creates a disposable visual runtime only for a sourced story', async () => {
+    it('creates a disposable visual runtime for sourced and source-less stories', async () => {
         const getSceneDialogue = () => null;
 
-        expect(
-            createVisualRuntime(
-                'train_adventure',
-                'http://localhost:5090',
-                getSceneDialogue
-            )
-        ).toBeNull();
+        const unavailableRuntime = createVisualRuntime(
+            'train_adventure',
+            'http://localhost:5090',
+            getSceneDialogue
+        );
+        expect(unavailableRuntime?.controller).toBeDefined();
+        expect(unavailableRuntime?.softRevalidate).toEqual(
+            expect.any(Function)
+        );
+        expect(unavailableRuntime?.dispose).toEqual(expect.any(Function));
+        await expect(unavailableRuntime?.dispose()).resolves.toBeUndefined();
 
         const runtime = createVisualRuntime(
             'the_seventh_mirror',

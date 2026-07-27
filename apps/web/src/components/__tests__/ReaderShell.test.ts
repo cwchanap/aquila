@@ -359,17 +359,71 @@ describe('ReaderShell', () => {
         expect(harness.softRevalidate).toHaveBeenCalledTimes(3);
     });
 
-    it('creates no runtime asset requests for a story without a visual source', async () => {
+    it('marks keyed source-less visuals unavailable and keeps omitted lines neutral without requests', async () => {
         stubMatchMedia(false);
         readerState.storyId = 'train_adventure';
+        readerState.dialogue = [
+            {
+                characterId: 'narrator',
+                dialogue: 'Keyed without a source.',
+                background: 'train/platform',
+            },
+        ];
         localStorage.setItem(READER_MODE_KEY, 'visual');
         const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
         render(ReaderShell);
+        await waitFor(() => {
+            expect(screen.getByTestId('visual-novel-reader')).toHaveAttribute(
+                'data-visual-release-state',
+                'unavailable'
+            );
+        });
+
+        expect(screen.getByTestId('visual-status')).toHaveTextContent(
+            'Visuals are unavailable'
+        );
+        expect(fetchSpy).not.toHaveBeenCalled();
+
+        readerState.dialogue = [{ dialogue: 'Intentionally omitted.' }];
+        await tick();
+        await waitFor(() => {
+            expect(screen.getByTestId('visual-novel-reader')).toHaveAttribute(
+                'data-visual-release-state',
+                'idle'
+            );
+        });
+        expect(screen.queryByTestId('visual-status')).not.toBeInTheDocument();
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('keeps visual status above and outside the inert reader during replacement loading', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = [
+            {
+                characterId: 'narrator',
+                dialogue: 'A keyed visual line.',
+                background: 'room',
+            },
+        ];
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const harness = createRuntimeHarness();
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+
+        const visualStatus = await screen.findByTestId('visual-status');
+        const ready = screen.getByTestId('reader-ready');
+        expect(visualStatus).toHaveTextContent('Visuals are unavailable');
+        expect(visualStatus).toHaveClass('z-[80]');
+        expect(ready).not.toContainElement(visualStatus);
+
+        readerState.loadStatus = 'loading';
         await tick();
 
-        expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
-        expect(fetchSpy).not.toHaveBeenCalled();
+        expect(ready).toHaveAttribute('inert');
+        expect(visualStatus).toBeVisible();
+        expect(ready).not.toContainElement(visualStatus);
     });
 
     it('keeps the dialogue bridge deferred for the visual reader runtime', () => {

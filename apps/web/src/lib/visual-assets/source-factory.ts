@@ -34,9 +34,8 @@ export function createVisualRuntime(
     ) => readonly DialogueEntry[] | null
 ): VisualReaderRuntime | null {
     const source = getAssetResolverSource(storyId, origin);
-    if (!source) return null;
     const store = new ValidatedReleaseStore(getBrowserStorage());
-    const resolver = new WebAssetResolver(source, { store });
+    const resolver = source ? new WebAssetResolver(source, { store }) : null;
     const cache = new DecodedAssetCache();
     const controller = new VisualStateController({
         resolver,
@@ -50,7 +49,7 @@ export function createVisualRuntime(
         dispose: async () => {
             controller.dispose();
             await cache.clear();
-            resolver.clear();
+            resolver?.clear();
         },
     };
 }

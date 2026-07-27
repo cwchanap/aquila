@@ -43,7 +43,7 @@ export type VisualControllerInput = {
 };
 
 export type VisualStateControllerOptions = {
-    resolver: AssetResolver;
+    resolver: AssetResolver | null;
     cache: VisualAssetCache;
     getSceneDialogue: GetSceneDialogue;
     now?: () => number;
@@ -156,7 +156,7 @@ function releaseStateForError(error: unknown): VisualReleaseState {
 }
 
 export class VisualStateController {
-    private readonly resolver: AssetResolver;
+    private readonly resolver: AssetResolver | null;
     private readonly cache: VisualAssetCache;
     private readonly getSceneDialogue: GetSceneDialogue;
     private readonly now: () => number;
@@ -259,7 +259,7 @@ export class VisualStateController {
     }
 
     async softRevalidate(): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed || this.resolver === null) return;
         const now = this.now();
         if (
             this.lastReleaseCheckAt !== null &&
@@ -336,9 +336,16 @@ export class VisualStateController {
         input: VisualControllerInput,
         generation: number
     ): Promise<void> {
+        const entry = input.dialogue[input.dialogueIndex];
+        if (this.resolver === null) {
+            if (!this.isInputCurrent(input, generation)) return;
+            const hasKeyedVisual = identitiesForLine(entry).length > 0;
+            this.publish({ release: hasKeyedVisual ? 'unavailable' : 'idle' });
+            if (hasKeyedVisual) this.failKeyedLayers(input, entry);
+            return;
+        }
         const releaseReady = await this.ensureRelease();
         if (!this.isInputCurrent(input, generation)) return;
-        const entry = input.dialogue[input.dialogueIndex];
         if (!releaseReady) {
             this.failKeyedLayers(input, entry);
             return;
@@ -407,13 +414,15 @@ export class VisualStateController {
     }
 
     private loadRelease(revalidating: boolean): Promise<boolean> {
+        const resolver = this.resolver;
+        if (resolver === null) return Promise.resolve(false);
         if (this.releasePromise) return this.releasePromise;
         const hadUsableRelease =
             this.snapshot.release === 'ready' ||
             this.snapshot.release === 'stale-but-usable';
         if (!hadUsableRelease) this.publish({ release: 'loading' });
         this.lastReleaseCheckAt = this.now();
-        const promise = this.resolver
+        const promise = resolver
             .loadActiveRelease({ signal: this.abortController.signal })
             .then(validated => {
                 if (this.disposed) return false;
@@ -525,7 +534,21 @@ export class VisualStateController {
     private async loadIdentity(
         identity: LogicalAssetIdentity
     ): Promise<LoadResult> {
-        const resolution = this.resolver.resolve(identity);
+        const resolution = this.resolver?.resolve(identity);
+        if (!resolution) {
+            return {
+                status: 'fallback',
+                fallback: {
+                    status: 'fallback',
+                    identity,
+                    reason: 'release-unavailable',
+                    error: new AssetResolverError(
+                        'unavailable',
+                        'No runtime asset source is configured for this story'
+                    ),
+                },
+            };
+        }
         if (resolution.status === 'fallback') {
             return { status: 'fallback', fallback: resolution };
         }
@@ -581,6 +604,8 @@ export class VisualStateController {
         input: VisualControllerInput,
         generation: number
     ): void {
+        const resolver = this.resolver;
+        if (resolver === null) return;
         const currentSignature = visualSignature(
             input.dialogue[input.dialogueIndex]
         );
@@ -597,7 +622,7 @@ export class VisualStateController {
                     ) {
                         return;
                     }
-                    const resolution = this.resolver.resolve(identity);
+                    const resolution = resolver.resolve(identity);
                     if (
                         resolution.status !== 'resolved' ||
                         !this.isWarmPrefetchCurrent(input, generation, identity)
@@ -614,6 +639,8 @@ export class VisualStateController {
         input: VisualControllerInput,
         generation: number
     ): void {
+        const resolver = this.resolver;
+        if (resolver === null) return;
         if (input.dialogueIndex !== input.dialogue.length - 1) return;
         const sceneNode = input.flow.nodes.find(
             node => node.kind === 'scene' && node.sceneId === input.sceneId
@@ -665,7 +692,7 @@ export class VisualStateController {
                         this.releaseEdgeReservation(edgeKey, generation);
                         return;
                     }
-                    const result = await this.resolver.prefetchNextEdge({
+                    const result = await resolver.prefetchNextEdge({
                         fromSceneId: input.sceneId,
                         toSceneId,
                         assets,
@@ -698,7 +725,7 @@ export class VisualStateController {
                             ) {
                                 return Promise.resolve();
                             }
-                            const resolution = this.resolver.resolve(identity);
+                            const resolution = resolver.resolve(identity);
                             return resolution.status === 'resolved'
                                 ? this.cache.prefetch(resolution)
                                 : Promise.resolve();

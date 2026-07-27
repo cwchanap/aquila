@@ -10,6 +10,7 @@
   } from '@/lib/reader-mode';
   import {
     createVisualRuntime as createDefaultVisualRuntime,
+    type VisualSnapshot,
     type VisualReaderRuntime,
   } from '@/lib/visual-assets';
   import NovelReader from '@/components/NovelReader.svelte';
@@ -63,12 +64,24 @@
   let readerReadyElement: HTMLElement | null = $state(null);
   let readerMode = $state(readReaderMode());
   let visualRuntime: VisualReaderRuntime | null = $state(null);
+  let visualStatus = $state<VisualSnapshot['status']>(null);
   let visualRuntimeStoryId: string | null = $state(null);
   let visualRuntimeAttempted = $state(false);
   let visualRuntimeTransitioning = $state(false);
   let runtimeGeneration = 0;
   let destroyed = false;
   let removeVisibilityListener = () => {};
+  let visualStatusText = $derived(
+    readerMode !== 'visual'
+      ? null
+      : visualStatus === 'stale'
+        ? t.reader.visualStaleRelease
+        : visualStatus === 'fallback'
+          ? t.reader.visualAssetFallback
+          : visualStatus === 'unavailable'
+            ? t.reader.visualUnavailable
+            : null
+  );
 
   function setReaderMode(mode: ReaderMode): void {
     if (readerMode === mode) return;
@@ -84,6 +97,12 @@
 
   function runtimeOrigin(): string {
     return globalThis.location?.origin ?? 'http://localhost';
+  }
+
+  function handleVisualStatusChange(
+    status: VisualSnapshot['status']
+  ): void {
+    visualStatus = status;
   }
 
   function ensureVisualRuntime(activeStoryId: string): void {
@@ -306,6 +325,18 @@
   </button>
 </div>
 
+{#if visualStatusText}
+  <p
+    data-testid="visual-status"
+    class="fixed z-[80] m-0 max-w-[min(32rem,calc(100vw-2rem))] rounded-full bg-amber-900/90 px-4 py-2 text-center text-amber-100 shadow-lg backdrop-blur-sm"
+    style="top: calc(4.25rem + env(safe-area-inset-top)); right: calc(0.75rem + env(safe-area-inset-right));"
+    role="status"
+    aria-live="polite"
+  >
+    {visualStatusText}
+  </p>
+{/if}
+
 {#if hasActivePayload && activeFlow}
   <div class="relative min-h-screen">
     <div
@@ -332,6 +363,7 @@
           {onBookmark}
           {onNext}
           {onNavigate}
+          onVisualStatusChange={handleVisualStatusChange}
           {backUrl}
           {showBookmarkButton}
           {isInitialMount}

@@ -395,8 +395,9 @@ describe('VisualNovelReader', () => {
         ).toContain('height: 100dvh; min-height: 0');
     });
 
-    it('keeps dialogue usable and announces unavailable visuals nonblockingly', async () => {
+    it('keeps dialogue usable and reports unavailable visuals to the shell', async () => {
         setReducedMotion(false);
+        const onVisualStatusChange = vi.fn();
         const failed = makeController({
             release: 'unavailable',
             activeBackground: omittedLayer,
@@ -416,11 +417,11 @@ describe('VisualNovelReader', () => {
         renderReader({
             controller: failed.controller,
             isInitialMount: false,
+            onVisualStatusChange,
         });
 
-        expect(screen.getByRole('status')).toHaveTextContent(
-            'Visuals are unavailable'
-        );
+        expect(onVisualStatusChange).toHaveBeenLastCalledWith('unavailable');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expect(screen.getByText('First visual line.')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
     });

@@ -18,7 +18,11 @@ const STORY_ID = 'the_seventh_mirror';
 const PREVIEW_TARGET = { kind: 'preview', previewId: 'hpa-228-local' } as const;
 const webRoot = process.cwd();
 const repositoryRoot = resolve(webRoot, '../..');
-const publicRoot = resolve(webRoot, 'public/assets');
+const defaultPublicRoot = resolve(webRoot, 'public/assets');
+
+export type VerifyVisualFixturesOptions = {
+    publicRoot?: string;
+};
 
 function sha256(value: Uint8Array | string): string {
     return createHash('sha256').update(value).digest('hex');
@@ -28,7 +32,10 @@ async function readJson(path: string): Promise<unknown> {
     return JSON.parse(await readFile(path, 'utf8'));
 }
 
-export async function verifyVisualFixtures(): Promise<void> {
+export async function verifyVisualFixtures(
+    options: VerifyVisualFixturesOptions = {}
+): Promise<void> {
+    const publicRoot = options.publicRoot ?? defaultPublicRoot;
     const problems: string[] = [];
     const imageAssets = (await readJson(
         resolve(

@@ -1,13 +1,10 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { verifyVisualFixtures } from '../../../../scripts/verify-visual-fixtures';
 
 const publicRoot = resolve(process.cwd(), 'public/assets');
-const pointerFile = resolve(
-    publicRoot,
-    'vn/previews/hpa-228-local/stories/the_seventh_mirror/current.json'
-);
 
 describe('checked-in visual fixtures', () => {
     it('match source coverage and every content address', async () => {
@@ -15,17 +12,32 @@ describe('checked-in visual fixtures', () => {
     });
 
     it('aggregates independent pointer, release, and coverage mismatches', async () => {
-        const pointerText = await readFile(pointerFile, 'utf8');
+        const temporaryRoot = await mkdtemp(
+            join(tmpdir(), 'aquila-visual-fixtures-')
+        );
+        const isolatedPublicRoot = resolve(temporaryRoot, 'assets');
+        await cp(publicRoot, isolatedPublicRoot, { recursive: true });
+        const isolatedPointerFile = resolve(
+            isolatedPublicRoot,
+            'vn/previews/hpa-228-local/stories/the_seventh_mirror/current.json'
+        );
+        const pointerText = await readFile(isolatedPointerFile, 'utf8');
         const pointer = JSON.parse(pointerText) as {
             manifestPath: string;
             [key: string]: unknown;
         };
         const manifest = JSON.parse(
-            await readFile(resolve(publicRoot, pointer.manifestPath), 'utf8')
+            await readFile(
+                resolve(isolatedPublicRoot, pointer.manifestPath),
+                'utf8'
+            )
         ) as { releaseId: string; assets: unknown[]; [key: string]: unknown };
         const wrongReleaseId = `sha256-${'f'.repeat(64)}`;
         const wrongManifestPath = `vn/previews/hpa-228-local/stories/the_seventh_mirror/releases/${wrongReleaseId}/runtime-manifest.json`;
-        const wrongManifestFile = resolve(publicRoot, wrongManifestPath);
+        const wrongManifestFile = resolve(
+            isolatedPublicRoot,
+            wrongManifestPath
+        );
         const extraAsset = structuredClone(manifest.assets[2]) as {
             identity: { type: string; key: string };
         };
@@ -40,7 +52,7 @@ describe('checked-in visual fixtures', () => {
                 `${JSON.stringify(manifest, null, 2)}\n`
             );
             await writeFile(
-                pointerFile,
+                isolatedPointerFile,
                 `${JSON.stringify(
                     {
                         ...pointer,
@@ -52,7 +64,9 @@ describe('checked-in visual fixtures', () => {
                     2
                 )}\n`
             );
-            const error = await verifyVisualFixtures().then(
+            const error = await verifyVisualFixtures({
+                publicRoot: isolatedPublicRoot,
+            }).then(
                 () =>
                     new Error(
                         'Expected corrupted fixtures to fail verification'
@@ -69,11 +83,7 @@ describe('checked-in visual fixtures', () => {
                 'Runtime manifest does not match its release plan'
             );
         } finally {
-            await writeFile(pointerFile, pointerText);
-            await rm(dirname(wrongManifestFile), {
-                recursive: true,
-                force: true,
-            });
+            await rm(temporaryRoot, { recursive: true, force: true });
         }
     });
 });

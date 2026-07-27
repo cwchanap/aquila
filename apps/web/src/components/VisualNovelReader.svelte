@@ -37,6 +37,7 @@
     onNext: () => void;
     onNavigate: (sceneId: string) => void;
     onIndexChange: (index: number) => void;
+    onVisualStatusChange?: (status: VisualSnapshot['status']) => void;
     showBookmarkButton: boolean;
     backUrl: string;
     isInitialMount: boolean;
@@ -75,6 +76,7 @@
     onNext,
     onNavigate,
     onIndexChange,
+    onVisualStatusChange = () => {},
     showBookmarkButton,
     backUrl,
     isInitialMount,
@@ -103,16 +105,6 @@
       .replace('{current}', String(dialogueIndex + 1))
       .replace('{total}', String(dialogue.length))
   );
-  let visualStatusText = $derived(
-    snapshot.status === 'stale'
-      ? t.reader.visualStaleRelease
-      : snapshot.status === 'fallback'
-        ? t.reader.visualAssetFallback
-        : snapshot.status === 'unavailable'
-          ? t.reader.visualUnavailable
-          : null
-  );
-
   let lastDialogueRef: DialogueEntry[] | undefined;
   let lastIndex = dialogueIndex;
   let selfAdvanceTarget: number | null = null;
@@ -125,6 +117,10 @@
     return controller.subscribe((nextSnapshot) => {
       snapshot = nextSnapshot;
     });
+  });
+
+  $effect(() => {
+    onVisualStatusChange(snapshot.status);
   });
 
   onMount(() => {
@@ -146,6 +142,7 @@
 
   onDestroy(() => {
     sceneVersion += 1;
+    onVisualStatusChange(null);
   });
 
   $effect(() => {
@@ -355,12 +352,6 @@
       {/if}
     </nav>
 
-    {#if visualStatusText}
-      <p class="visual-status" role="status" aria-live="polite">
-        {visualStatusText}
-      </p>
-    {/if}
-
     <section class="dialogue-box" aria-live="off">
       {#if currentName}
         <p class="speaker">{currentName}</p>
@@ -540,22 +531,6 @@
   .choices button:focus-visible {
     outline: 3px solid #7dd3fc;
     outline-offset: 2px;
-  }
-
-  .visual-status {
-    position: absolute;
-    top: max(5rem, calc(env(safe-area-inset-top) + 4rem));
-    left: 50%;
-    z-index: 10;
-    max-width: min(32rem, calc(100vw - 2rem));
-    padding: 0.65rem 1rem;
-    margin: 0;
-    color: #fef3c7;
-    text-align: center;
-    background: rgb(120 53 15 / 0.84);
-    border-radius: 999px;
-    transform: translateX(-50%);
-    backdrop-filter: blur(0.75rem);
   }
 
   .dialogue-box {

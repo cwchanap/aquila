@@ -34,8 +34,7 @@ const VALIDATED_RELEASE_TTL_MS =
     RUNTIME_ASSET_CACHE_POLICY.currentPointer.staleIfErrorMs;
 
 export type ValidatedReleaseRecord = {
-    storyId: string;
-    target: PublicationTarget;
+    source: AssetResolverSource;
     releaseId: string;
     pointerText: string;
     manifestText: string;
@@ -96,6 +95,95 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function hasExactKeys(
+    value: Record<string, unknown>,
+    expected: readonly string[]
+): boolean {
+    const keys = Object.keys(value).sort();
+    return (
+        keys.length === expected.length &&
+        keys.every((key, index) => key === expected[index])
+    );
+}
+
+function normalizeBaseUrl(baseUrl: string): string {
+    const marker = resolveAssetUrl(baseUrl, 'source-boundary');
+    return new URL('.', marker).href;
+}
+
+function normalizeSource(source: AssetResolverSource): AssetResolverSource {
+    return {
+        ...source,
+        baseUrl: normalizeBaseUrl(source.baseUrl),
+    };
+}
+
+function parseStoredSource(value: unknown): AssetResolverSource | null {
+    if (
+        !isRecord(value) ||
+        !hasExactKeys(value, ['baseUrl', 'environment', 'storyId', 'target']) ||
+        typeof value.storyId !== 'string' ||
+        typeof value.baseUrl !== 'string'
+    ) {
+        return null;
+    }
+    const target = parseTarget(value.target);
+    if (target === null) return null;
+
+    let source: AssetResolverSource;
+    if (value.environment === 'local') {
+        source = {
+            environment: 'local',
+            storyId: value.storyId,
+            baseUrl: value.baseUrl,
+            target,
+        };
+    } else if (value.environment === 'preview' && target.kind === 'preview') {
+        source = {
+            environment: 'preview',
+            storyId: value.storyId,
+            baseUrl: value.baseUrl,
+            target,
+        };
+    } else if (
+        value.environment === 'production' &&
+        target.kind === 'production'
+    ) {
+        source = {
+            environment: 'production',
+            storyId: value.storyId,
+            baseUrl: value.baseUrl,
+            target,
+        };
+    } else {
+        return null;
+    }
+
+    const normalized = normalizeSource(source);
+    return normalized.baseUrl === source.baseUrl ? normalized : null;
+}
+
+function sourcesEqual(
+    left: AssetResolverSource,
+    right: AssetResolverSource
+): boolean {
+    return (
+        left.environment === right.environment &&
+        left.storyId === right.storyId &&
+        left.baseUrl === right.baseUrl &&
+        targetsEqual(left.target, right.target)
+    );
+}
+
+function sourceKey(source: AssetResolverSource): string {
+    return JSON.stringify([
+        source.environment,
+        source.storyId,
+        source.baseUrl,
+        source.target,
+    ]);
+}
+
 function upsertByReleaseId(
     records: readonly ValidatedReleaseRecord[],
     accepted: ValidatedReleaseRecord
@@ -105,8 +193,7 @@ function upsertByReleaseId(
         ...records.filter(
             record =>
                 record.releaseId !== accepted.releaseId ||
-                record.storyId !== accepted.storyId ||
-                !targetsEqual(record.target, accepted.target)
+                !sourcesEqual(record.source, accepted.source)
         ),
     ];
 }
@@ -243,7 +330,7 @@ export class WebAssetResolver implements AssetResolver {
         source: AssetResolverSource,
         options: WebAssetResolverOptions = {}
     ) {
-        this.source = source;
+        this.source = normalizeSource(source);
         this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
         this.store =
             options.store ?? new ValidatedReleaseStore(getBrowserStorage());
@@ -259,6 +346,11 @@ export class WebAssetResolver implements AssetResolver {
         options?.signal?.addEventListener('abort', abort, { once: true });
         this.inFlightLoads.add(loadController);
         try {
+            await this.seedNewestStoredPublishedAt(
+                this.now(),
+                generation,
+                loadController.signal
+            );
             return await this.loadFromNetwork(
                 loadController.signal,
                 generation
@@ -269,14 +361,12 @@ export class WebAssetResolver implements AssetResolver {
                 throw resolverError;
             }
             this.lastLoadError = resolverError;
-            if (resolverError.code !== 'stale-pointer') {
-                const fallback = await this.loadStoredFallback(
-                    this.now(),
-                    generation,
-                    loadController.signal
-                );
-                if (fallback) return fallback;
-            }
+            const fallback = await this.loadStoredFallback(
+                this.now(),
+                generation,
+                loadController.signal
+            );
+            if (fallback) return fallback;
             throw resolverError;
         } finally {
             options?.signal?.removeEventListener('abort', abort);
@@ -431,8 +521,7 @@ export class WebAssetResolver implements AssetResolver {
 
         const now = this.now();
         const record: ValidatedReleaseRecord = {
-            storyId: this.source.storyId,
-            target: this.source.target,
+            source: this.source,
             releaseId: pointer.releaseId,
             pointerText,
             manifestText,
@@ -519,11 +608,7 @@ export class WebAssetResolver implements AssetResolver {
     ): Promise<ValidatedAssetRelease | null> {
         const valid = await this.loadValidStoredReleases(now);
         const candidate = valid
-            .filter(
-                release =>
-                    release.record.storyId === this.source.storyId &&
-                    targetsEqual(release.record.target, this.source.target)
-            )
+            .filter(release => sourcesEqual(release.record.source, this.source))
             .sort(
                 (left, right) =>
                     Date.parse(right.pointer.publishedAt) -
@@ -601,9 +686,9 @@ export class WebAssetResolver implements AssetResolver {
         const unique = new Map<string, RevalidatedStoredRelease>();
         for (const release of releases) {
             if (!release) continue;
-            const key = `${release.record.storyId}:${JSON.stringify(
-                release.record.target
-            )}:${release.record.releaseId}`;
+            const key = `${sourceKey(release.record.source)}:${
+                release.record.releaseId
+            }`;
             const previous = unique.get(key);
             if (
                 !previous ||
@@ -620,10 +705,21 @@ export class WebAssetResolver implements AssetResolver {
         now: number
     ): Promise<RevalidatedStoredRelease | null> {
         try {
-            if (!isRecord(value)) return null;
-            const target = parseTarget(value.target);
             if (
-                typeof value.storyId !== 'string' ||
+                !isRecord(value) ||
+                !hasExactKeys(value, [
+                    'lastUsedAt',
+                    'manifestText',
+                    'pointerText',
+                    'releaseId',
+                    'source',
+                    'validatedAt',
+                ])
+            ) {
+                return null;
+            }
+            const source = parseStoredSource(value.source);
+            if (
                 typeof value.releaseId !== 'string' ||
                 typeof value.pointerText !== 'string' ||
                 typeof value.manifestText !== 'string' ||
@@ -631,7 +727,7 @@ export class WebAssetResolver implements AssetResolver {
                 !Number.isFinite(value.validatedAt) ||
                 typeof value.lastUsedAt !== 'number' ||
                 !Number.isFinite(value.lastUsedAt) ||
-                target === null
+                source === null
             ) {
                 return null;
             }
@@ -639,12 +735,12 @@ export class WebAssetResolver implements AssetResolver {
             if (age < 0 || age > VALIDATED_RELEASE_TTL_MS) return null;
             const pointer = parseActiveReleasePointer(
                 parseJson(value.pointerText, 'stored active-release pointer'),
-                target,
-                value.storyId
+                source.target,
+                source.storyId
             );
             if (
                 pointer.releaseId !== value.releaseId ||
-                pointer.storyId !== value.storyId
+                pointer.storyId !== source.storyId
             ) {
                 return null;
             }
@@ -661,8 +757,7 @@ export class WebAssetResolver implements AssetResolver {
             assertReleaseIdMatchesContentSha256(manifest, canonicalDigest);
             return {
                 record: {
-                    storyId: value.storyId,
-                    target,
+                    source,
                     releaseId: value.releaseId,
                     pointerText: value.pointerText,
                     manifestText: value.manifestText,
@@ -674,6 +769,27 @@ export class WebAssetResolver implements AssetResolver {
             };
         } catch {
             return null;
+        }
+    }
+
+    private async seedNewestStoredPublishedAt(
+        now: number,
+        generation: number,
+        signal: AbortSignal
+    ): Promise<void> {
+        const valid = await this.loadValidStoredReleases(now);
+        if (!this.isLoadCurrent(generation, signal)) {
+            throw new AssetResolverError(
+                'network',
+                'Runtime asset load was cancelled'
+            );
+        }
+        for (const release of valid) {
+            if (!sourcesEqual(release.record.source, this.source)) continue;
+            this.newestPublishedAt = Math.max(
+                this.newestPublishedAt,
+                Date.parse(release.pointer.publishedAt)
+            );
         }
     }
 }

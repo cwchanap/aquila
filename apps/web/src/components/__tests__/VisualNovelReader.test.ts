@@ -363,6 +363,35 @@ describe('VisualNovelReader', () => {
         expect(onIndexChange).not.toHaveBeenCalled();
     });
 
+    it.each(['altKey', 'ctrlKey', 'metaKey', 'shiftKey'] as const)(
+        'does not advance from a primary pointer with %s',
+        async modifier => {
+            setReducedMotion(false);
+            const { onIndexChange } = renderReader({
+                isInitialMount: false,
+            });
+            const root = screen.getByTestId('visual-novel-reader');
+
+            await fireEvent.pointerUp(root, {
+                button: 0,
+                pointerType: 'mouse',
+                isPrimary: true,
+                [modifier]: true,
+            });
+
+            expect(onIndexChange).not.toHaveBeenCalled();
+        }
+    );
+
+    it('uses the dynamic viewport height without forcing a taller landscape minimum', () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+
+        expect(
+            screen.getByTestId('visual-novel-reader').getAttribute('style')
+        ).toContain('height: 100dvh; min-height: 0');
+    });
+
     it('keeps dialogue usable and announces unavailable visuals nonblockingly', async () => {
         setReducedMotion(false);
         const failed = makeController({

@@ -100,6 +100,40 @@ export class ReaderPage {
     }
 }
 
+export class VisualReaderPage {
+    constructor(private readonly page: Page) {}
+
+    get root() {
+        return this.page.getByTestId('visual-novel-reader');
+    }
+
+    get modeControl() {
+        return this.page.locator('[data-reader-mode][role="group"]');
+    }
+
+    get activeBackground() {
+        return this.root.locator('[data-bg-layer="active"]');
+    }
+
+    get stagingBackground() {
+        return this.root.locator('[data-bg-layer="staging"]');
+    }
+
+    get portrait() {
+        return this.root.getByTestId('visual-portrait');
+    }
+
+    async goto(dialogue = 6) {
+        await this.page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'visual');
+        });
+        await this.page.goto(
+            `/en/reader?story=the_seventh_mirror&scene=ch1_act2&dialogue=${dialogue}`
+        );
+        await expect(this.root).toBeVisible();
+    }
+}
+
 export class MobileReaderPage {
     constructor(
         private page: Page,

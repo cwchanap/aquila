@@ -270,6 +270,7 @@
   function handlePointer(event: globalThis.PointerEvent): void {
     if (event.defaultPrevented || event.button !== 0) return;
     if (event.isPrimary === false) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (isReaderInteractiveTarget(event.target)) return;
     advance();
   }
@@ -288,6 +289,7 @@
   data-reader-mode="visual"
   data-visual-release-state={snapshot.release}
   class="visual-novel-reader"
+  style="height: 100dvh; min-height: 0;"
   onpointerup={handlePointer}
 >
   <img
@@ -432,8 +434,6 @@
   .visual-novel-reader {
     position: relative;
     width: 100%;
-    height: 100dvh;
-    min-height: 32rem;
     overflow: hidden;
     color: #f8fafc;
     background: #020617;

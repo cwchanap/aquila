@@ -5,6 +5,16 @@ import { tick } from 'svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
 import { StoryLoadError } from '@aquila/stories/async';
+import {
+    AssetResolverError,
+    type AssetResolver,
+    type AssetResolverSource,
+} from '@aquila/stories/runtime-assets';
+import {
+    VisualStateController,
+    type VisualReaderRuntime,
+} from '@/lib/visual-assets';
+import { READER_MODE_KEY } from '@/lib/reader-mode';
 
 const { mockGetTranslations } = vi.hoisted(() => ({
     mockGetTranslations: vi.fn((locale: string) => ({
@@ -36,6 +46,12 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             unsupportedLocale: 'Unsupported locale',
             backToStories: 'Back to stories',
             retry: 'Retry',
+            readerMode: 'Reader mode',
+            textMode: 'Text',
+            visualNovelMode: 'Visual Novel',
+            visualStaleRelease: 'Using previously validated visuals',
+            visualAssetFallback: 'Some visuals are unavailable',
+            visualUnavailable: 'Visuals are unavailable',
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
@@ -60,6 +76,61 @@ const flow = {
     start: 'act1',
     nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
 } as unknown as StoryFlowConfig;
+
+function createRuntimeHarness(): {
+    runtime: VisualReaderRuntime;
+    softRevalidate: ReturnType<typeof vi.fn>;
+    dispose: ReturnType<typeof vi.fn>;
+    subscribe: ReturnType<typeof vi.spyOn>;
+} {
+    const source: AssetResolverSource = {
+        environment: 'local',
+        storyId: 'the_seventh_mirror',
+        baseUrl: 'http://localhost:5090/assets/',
+        target: { kind: 'preview', previewId: 'hpa-228-local' },
+    };
+    const resolver: AssetResolver = {
+        source,
+        loadActiveRelease: vi.fn(async () => {
+            throw new AssetResolverError(
+                'unavailable',
+                'No visual release in this component test'
+            );
+        }),
+        resolve: vi.fn(() => {
+            throw new Error('resolve is unreachable without an active release');
+        }),
+        prefetchNextEdge: vi.fn(async request => ({
+            requested: request.assets.length,
+            cached: 0,
+            failed: [],
+        })),
+        clear: vi.fn(),
+    };
+    const cache = {
+        load: vi.fn(async () => {
+            throw new Error('load is unreachable without an active release');
+        }),
+        prefetch: vi.fn(async () => {}),
+        setProtectedKeys: vi.fn(),
+    };
+    const controller = new VisualStateController({
+        resolver,
+        cache,
+        getSceneDialogue: () => null,
+    });
+    const subscribe = vi.spyOn(controller, 'subscribe');
+    const softRevalidate = vi.fn(async () => {});
+    const dispose = vi.fn(async () => {
+        controller.dispose();
+    });
+    return {
+        runtime: { controller, softRevalidate, dispose },
+        softRevalidate,
+        dispose,
+        subscribe,
+    };
+}
 
 function stubMatchMedia(initial: boolean) {
     let listeners: Array<(e: { matches: boolean }) => void> = [];
@@ -99,13 +170,207 @@ describe('ReaderShell', () => {
     // The global beforeEach in test-setup.ts resets readerState; seed the
     // store here so the bridge derives non-empty dialogue/locale.
     beforeEach(() => {
+        localStorage.clear();
         readerState.dialogue = mockDialogue;
+        readerState.storyId = 'the_seventh_mirror';
+        readerState.currentSceneId = 'act1';
         readerState.locale = 'en';
         readerState.activeFlow = flow;
         readerState.hasActivePayload = true;
         readerState.loadStatus = 'ready';
     });
     afterEach(() => vi.clearAllMocks());
+
+    it('defaults to Text and restores Visual synchronously without a Text leaf flash', () => {
+        stubMatchMedia(false);
+        const defaultFactory = vi.fn(() => createRuntimeHarness().runtime);
+        const first = render(ReaderShell, {
+            props: { createVisualRuntime: defaultFactory },
+        });
+
+        expect(
+            screen.getByRole('group', { name: 'Reader mode' })
+        ).toHaveAttribute('data-reader-mode', 'text');
+        expect(
+            screen.queryByTestId('visual-novel-reader')
+        ).not.toBeInTheDocument();
+        expect(defaultFactory).not.toHaveBeenCalled();
+        first.unmount();
+
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const persistedHarness = createRuntimeHarness();
+        const persistedFactory = vi.fn(() => persistedHarness.runtime);
+        render(ReaderShell, {
+            props: { createVisualRuntime: persistedFactory },
+        });
+
+        expect(
+            screen.getByRole('group', { name: 'Reader mode' })
+        ).toHaveAttribute('data-reader-mode', 'visual');
+        expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
+        expect(persistedHarness.subscribe).toHaveBeenCalledOnce();
+    });
+
+    it.each([
+        ['payload', 'ready', true],
+        ['initial loading', 'loading', false],
+        ['replacement error', 'error', true],
+    ] as const)(
+        'keeps the mode control interactive during %s',
+        (_label, status, hasPayload) => {
+            stubMatchMedia(false);
+            readerState.hasActivePayload = hasPayload;
+            readerState.activeFlow = hasPayload ? flow : null;
+            readerState.loadStatus = status;
+            if (status === 'error') {
+                readerState.loadError = new StoryLoadError(
+                    'load-failed',
+                    'failed'
+                );
+            }
+
+            render(ReaderShell);
+
+            const control = screen.getByRole('group', {
+                name: 'Reader mode',
+            });
+            expect(control).toHaveAttribute('data-reader-interactive');
+            expect(screen.getByRole('button', { name: 'Text' })).toBeEnabled();
+            expect(
+                screen.getByRole('button', { name: 'Visual Novel' })
+            ).toBeEnabled();
+        }
+    );
+
+    it('preserves the exact nonzero line across mode toggles and breakpoint changes', async () => {
+        const mm = stubMatchMedia(false);
+        readerState.dialogueIndex = 1;
+        const harness = createRuntimeHarness();
+        const createRuntime = vi.fn(() => harness.runtime);
+        render(ReaderShell, { props: { createVisualRuntime: createRuntime } });
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await tick();
+        expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+
+        mm.setMatches(true);
+        await tick();
+        expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await vi.runAllTimersAsync();
+        expect(screen.getByLabelText('Tap to continue')).toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+
+        mm.setMatches(false);
+        await vi.runAllTimersAsync();
+        expect(
+            screen.queryByLabelText('Tap to continue')
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+    });
+
+    it('creates one retained runtime and disposes it before replacement and on destroy', async () => {
+        stubMatchMedia(false);
+        const events: string[] = [];
+        const harnesses = [createRuntimeHarness(), createRuntimeHarness()];
+        harnesses.forEach((harness, index) => {
+            harness.dispose.mockImplementation(async () => {
+                events.push(`dispose:${index}:start`);
+                await Promise.resolve();
+                events.push(`dispose:${index}:end`);
+                harness.runtime.controller.dispose();
+            });
+        });
+        const createRuntime = vi.fn((storyId: string) => {
+            const index = createRuntime.mock.calls.length - 1;
+            events.push(`create:${storyId}`);
+            return harnesses[index]?.runtime ?? null;
+        });
+        const view = render(ReaderShell, {
+            props: { createVisualRuntime: createRuntime },
+        });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await tick();
+        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await tick();
+        expect(createRuntime).toHaveBeenCalledTimes(1);
+        expect(harnesses[0].dispose).not.toHaveBeenCalled();
+
+        readerState.storyId = 'replacement_story';
+        await tick();
+        await Promise.resolve();
+        await tick();
+        expect(createRuntime).toHaveBeenCalledTimes(2);
+        expect(events).toEqual([
+            'create:the_seventh_mirror',
+            'dispose:0:start',
+            'dispose:0:end',
+            'create:replacement_story',
+        ]);
+        expect(harnesses[1].subscribe).toHaveBeenCalledOnce();
+
+        view.unmount();
+        await Promise.resolve();
+        expect(harnesses[1].dispose).toHaveBeenCalledOnce();
+    });
+
+    it('requests revalidation only on aged visual lifecycle events and never from a timer', async () => {
+        stubMatchMedia(false);
+        const harness = createRuntimeHarness();
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await tick();
+        expect(harness.softRevalidate).not.toHaveBeenCalled();
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await vi.advanceTimersByTimeAsync(60_001);
+        expect(harness.softRevalidate).not.toHaveBeenCalled();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        expect(harness.softRevalidate).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(60_001);
+        expect(harness.softRevalidate).toHaveBeenCalledTimes(1);
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(harness.softRevalidate).toHaveBeenCalledTimes(2);
+
+        await vi.advanceTimersByTimeAsync(60_001);
+        document.dispatchEvent(new Event('visibilitychange'));
+        expect(harness.softRevalidate).toHaveBeenCalledTimes(3);
+    });
+
+    it('creates no runtime asset requests for a story without a visual source', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'train_adventure';
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+        render(ReaderShell);
+        await tick();
+
+        expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
 
     it('keeps the dialogue bridge deferred for the visual reader runtime', () => {
         stubMatchMedia(false);

@@ -43,12 +43,6 @@
     interactionDisabled: boolean;
   };
 
-  type VisualStatusTranslations = {
-    visualStaleRelease: string;
-    visualAssetFallback: string;
-    visualUnavailable: string;
-  };
-
   const emptyLayer = {
     state: 'omitted' as const,
     identity: null,
@@ -98,9 +92,6 @@
   let historyButton: globalThis.HTMLButtonElement | null = $state(null);
 
   let t = $derived(getTranslations(locale));
-  let readerTranslations = $derived(
-    t.reader as typeof t.reader & VisualStatusTranslations
-  );
   let currentDialogue = $derived(dialogue[dialogueIndex]);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
@@ -114,11 +105,11 @@
   );
   let visualStatusText = $derived(
     snapshot.status === 'stale'
-      ? readerTranslations.visualStaleRelease
+      ? t.reader.visualStaleRelease
       : snapshot.status === 'fallback'
-        ? readerTranslations.visualAssetFallback
+        ? t.reader.visualAssetFallback
         : snapshot.status === 'unavailable'
-          ? readerTranslations.visualUnavailable
+          ? t.reader.visualUnavailable
           : null
   );
 
@@ -126,10 +117,17 @@
   let lastIndex = dialogueIndex;
   let selfAdvanceTarget: number | null = null;
 
-  onMount(() => {
-    const unsubscribe = controller?.subscribe((nextSnapshot) => {
+  $effect(() => {
+    if (!controller) {
+      snapshot = emptySnapshot;
+      return;
+    }
+    return controller.subscribe((nextSnapshot) => {
       snapshot = nextSnapshot;
     });
+  });
+
+  onMount(() => {
     const mediaQuery = globalThis.matchMedia?.(
       '(prefers-reduced-motion: reduce)'
     );
@@ -142,7 +140,6 @@
     mediaQuery?.addEventListener('change', handleMotionPreference);
 
     return () => {
-      unsubscribe?.();
       mediaQuery?.removeEventListener('change', handleMotionPreference);
     };
   });

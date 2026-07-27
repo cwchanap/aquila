@@ -184,7 +184,7 @@ export class DecodedAssetCache {
     private lifecycleGeneration = 0;
 
     constructor(options: DecodedAssetCacheOptions = {}) {
-        this.fetchImpl = options.fetchImpl ?? globalThis.fetch;
+        this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
         this.decodeImage = options.decodeImage ?? defaultDecodeImage;
     }
 

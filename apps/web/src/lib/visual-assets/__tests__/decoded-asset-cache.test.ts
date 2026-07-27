@@ -133,6 +133,39 @@ describe('DecodedAssetCache', () => {
         vi.unstubAllGlobals();
     });
 
+    it('loads through the receiver-sensitive default browser fetch', async () => {
+        const assetBytes = bytes('default-browser-fetch');
+        const resolvedAsset = createResolvedAsset({
+            label: 'default-browser-fetch',
+            width: 1,
+            height: 1,
+            webpBytes: assetBytes,
+        });
+        vi.stubGlobal('fetch', function receiverSensitiveFetch(
+            this: typeof globalThis,
+            input: RequestInfo | URL
+        ): Promise<Response> {
+            if (this !== globalThis) {
+                return Promise.reject(
+                    new TypeError('Illegal invocation: wrong receiver')
+                );
+            }
+            return Promise.resolve(
+                String(input) === resolvedAsset.webpUrl.href
+                    ? response(assetBytes)
+                    : new Response('missing', { status: 404 })
+            );
+        } as typeof fetch);
+        const cache = new DecodedAssetCache({
+            decodeImage: successfulDecoder(1, 1),
+        });
+
+        await expect(cache.load(resolvedAsset)).resolves.toMatchObject({
+            width: 1,
+            height: 1,
+        });
+    });
+
     it('deduplicates the same immutable object and verifies it once', async () => {
         const assetBytes = bytes('same-object');
         const resolvedAsset = createResolvedAsset({

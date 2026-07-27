@@ -101,4 +101,33 @@ describe('VisualBacklog', () => {
         expect(onClose).toHaveBeenCalledOnce();
         expect(trigger).toHaveFocus();
     });
+
+    it.each([
+        ['forward', false],
+        ['reverse', true],
+    ] as const)(
+        'wraps %s Tab focus inside the modal',
+        async (_label, shiftKey) => {
+            render(VisualBacklog, {
+                props: {
+                    dialogue: threeLines,
+                    dialogueIndex: 0,
+                    onClose: vi.fn(),
+                },
+            });
+            const close = screen.getByRole('button', { name: 'Close history' });
+            close.focus();
+            const event = new KeyboardEvent('keydown', {
+                key: 'Tab',
+                shiftKey,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            close.dispatchEvent(event);
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(close).toHaveFocus();
+        }
+    );
 });

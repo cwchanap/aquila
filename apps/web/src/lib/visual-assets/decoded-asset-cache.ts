@@ -52,6 +52,9 @@ const defaultDecodeImage: DecodeImage = async blob => {
     };
 };
 
+const defaultFetch: typeof fetch = (input, init) =>
+    globalThis.fetch(input, init);
+
 const avifSupportProbes = new WeakMap<
     DecodeImage,
     WeakMap<typeof fetch, AvifSupportProbe>
@@ -184,7 +187,7 @@ export class DecodedAssetCache {
     private lifecycleGeneration = 0;
 
     constructor(options: DecodedAssetCacheOptions = {}) {
-        this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
+        this.fetchImpl = options.fetchImpl ?? defaultFetch;
         this.decodeImage = options.decodeImage ?? defaultDecodeImage;
     }
 
@@ -222,7 +225,12 @@ export class DecodedAssetCache {
                 ? cacheKeyFor(webp.variant)
                 : `${cacheKeyFor(avif.variant)}|${cacheKeyFor(webp.variant)}`;
         const pending = this.pendingLoads.get(requestKey);
-        if (pending) return pending.promise;
+        if (pending) {
+            return pending.promise.then(decoded => {
+                this.assertCallerMetadata(asset, decoded);
+                return decoded;
+            });
+        }
 
         const controller = new AbortController();
         const abort = () => controller.abort(options?.signal?.reason);
@@ -300,7 +308,10 @@ export class DecodedAssetCache {
         const completed =
             this.touch(primaryKey) ??
             (knownFallbackKey ? this.touch(knownFallbackKey) : undefined);
-        if (completed) return completed;
+        if (completed) {
+            this.assertCallerMetadata(asset, completed);
+            return completed;
+        }
         return this.loadAndCache(asset, primary, webp, signal, generation);
     }
 
@@ -339,6 +350,7 @@ export class DecodedAssetCache {
         const existing = this.touch(loaded.cacheKey);
         if (existing) {
             await this.detachAndRevoke(loaded.objectUrl);
+            this.assertCallerMetadata(asset, existing);
             return existing;
         }
         this.entries.set(loaded.cacheKey, loaded);
@@ -408,6 +420,7 @@ export class DecodedAssetCache {
         return {
             cacheKey: cacheKeyFor(selected.variant),
             objectUrl: URL.createObjectURL(blob),
+            byteLength: bytes.byteLength,
             width: decoded.width,
             height: decoded.height,
             decodedBytes: decoded.width * decoded.height * 4,
@@ -476,6 +489,32 @@ export class DecodedAssetCache {
         } finally {
             globalThis.clearTimeout(timeout);
             parentSignal.removeEventListener('abort', abort);
+        }
+    }
+
+    private assertCallerMetadata(
+        asset: ResolvedAsset,
+        decoded: DecodedAsset
+    ): void {
+        const variants = [
+            asset.asset.variants.webp,
+            asset.asset.variants.avif,
+        ].filter(
+            (variant): variant is SupportedAssetVariant => variant !== undefined
+        );
+        const declaredVariant = variants.find(
+            variant => cacheKeyFor(variant) === decoded.cacheKey
+        );
+        if (
+            declaredVariant === undefined ||
+            decoded.byteLength !== declaredVariant.byteLength ||
+            decoded.width !== asset.asset.width ||
+            decoded.height !== asset.asset.height
+        ) {
+            throw new AssetResolverError(
+                'integrity',
+                'Cached asset metadata does not match the current manifest'
+            );
         }
     }
 

@@ -145,15 +145,23 @@ function storedRecord(
         validatedAt = NOW - 1_000,
         lastUsedAt = NOW - 1_000,
         target = SOURCE.target,
+        source,
     }: {
         validatedAt?: number;
         lastUsedAt?: number;
         target?: PublicationTarget;
+        source?: AssetResolverSource;
     } = {}
 ): ValidatedReleaseRecord {
-    return {
+    const recordSource: AssetResolverSource = source ?? {
+        environment: 'local',
         storyId: documents.pointer.storyId,
+        baseUrl: SOURCE.baseUrl,
         target,
+    };
+
+    return {
+        source: recordSource,
         releaseId: documents.pointer.releaseId,
         pointerText: documents.pointerText,
         manifestText: documents.manifestText,
@@ -239,7 +247,7 @@ describe('WebAssetResolver', () => {
         });
     });
 
-    it('uses no-cache and rejects an older publishedAt pointer', async () => {
+    it('uses no-cache and continues the accepted release when a pointer is older', async () => {
         const current = createDocuments();
         const older = createDocuments({
             publishedAt: '2026-07-26T09:59:59.999Z',
@@ -255,12 +263,102 @@ describe('WebAssetResolver', () => {
         await resolver.loadActiveRelease();
         documents = older;
 
-        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
-            code: 'stale-pointer',
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: current.pointer.releaseId },
         });
         expect(fetchSpy.mock.calls[0]?.[1]).toMatchObject({
             cache: 'no-cache',
         });
+    });
+
+    it('rejects persisted releases from a different normalized source', async () => {
+        const documents = createDocuments();
+
+        const otherSources: AssetResolverSource[] = [
+            {
+                environment: 'local',
+                storyId: SOURCE.storyId,
+                baseUrl: 'https://other-assets.example/assets/',
+                target: SOURCE.target,
+            },
+            {
+                environment: 'preview',
+                storyId: SOURCE.storyId,
+                baseUrl: SOURCE.baseUrl,
+                target: {
+                    kind: 'preview',
+                    previewId: 'hpa-228-local',
+                },
+            },
+        ];
+
+        for (const otherSource of otherSources) {
+            const store = new ValidatedReleaseStore(createMemoryStorage());
+            const first = createResolver(documents, { store });
+            await first.loadActiveRelease();
+            const crossSource = new WebAssetResolver(otherSource, {
+                fetchImpl: vi
+                    .fn()
+                    .mockRejectedValue(
+                        new TypeError('cross-source network unavailable')
+                    ) as typeof fetch,
+                store,
+                now: () => NOW,
+            });
+
+            await expect(crossSource.loadActiveRelease()).rejects.toMatchObject(
+                {
+                    code: 'network',
+                }
+            );
+        }
+    });
+
+    it('normalizes equivalent base URLs before persisted-source comparison', async () => {
+        const documents = createDocuments();
+        const store = new ValidatedReleaseStore(createMemoryStorage());
+        const first = new WebAssetResolver(
+            { ...SOURCE, baseUrl: 'http://localhost:5090/assets' },
+            {
+                fetchImpl: createFetch(documents),
+                store,
+                now: () => NOW,
+            }
+        );
+        await first.loadActiveRelease();
+        const reloaded = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+
+        await expect(reloaded.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: documents.pointer.releaseId },
+        });
+    });
+
+    it('keeps the same release identity distinct across asset sources', async () => {
+        const documents = createDocuments();
+        const store = new ValidatedReleaseStore(createMemoryStorage());
+        const alternateSource = {
+            ...SOURCE,
+            baseUrl: 'https://other-assets.example/assets/',
+        };
+        await createResolver(documents, { store }).loadActiveRelease();
+        await new WebAssetResolver(alternateSource, {
+            fetchImpl: createFetch(documents),
+            store,
+            now: () => NOW,
+        }).loadActiveRelease();
+
+        const records = store.loadRaw() as ValidatedReleaseRecord[];
+        expect(records).toHaveLength(2);
+        expect(new Set(records.map(record => record.source.baseUrl))).toEqual(
+            new Set([SOURCE.baseUrl, alternateSource.baseUrl])
+        );
     });
 
     it('does not let a slower older release overwrite a newer concurrent load', async () => {
@@ -301,8 +399,9 @@ describe('WebAssetResolver', () => {
         });
         olderManifestResponse.resolve(new Response(older.manifestText));
 
-        await expect(olderLoad).rejects.toMatchObject({
-            code: 'stale-pointer',
+        await expect(olderLoad).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: newer.pointer.releaseId },
         });
         expect(
             resolver.resolve({ type: 'background', key: 'release/newer' })
@@ -549,6 +648,56 @@ describe('WebAssetResolver', () => {
         });
     });
 
+    it('rejects an older network pointer on a fresh resolver and continues the newer stored release', async () => {
+        const older = createDocuments({
+            key: 'network/older',
+            publishedAt: '2026-07-26T09:00:00.000Z',
+        });
+        const newer = createDocuments({
+            key: 'stored/newer',
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([storedRecord(newer)])
+        );
+        const fetchImpl = createFetch(older);
+        const resolver = createResolver(older, { fetchImpl, store });
+
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: newer.pointer.releaseId },
+        });
+        expect(fetchImpl).toHaveBeenCalledOnce();
+    });
+
+    it('discards legacy partial records without a complete source identity', async () => {
+        const documents = createDocuments();
+        const current = storedRecord(documents);
+        const legacyRecord = {
+            storyId: current.source.storyId,
+            target: current.source.target,
+            releaseId: current.releaseId,
+            pointerText: current.pointerText,
+            manifestText: current.manifestText,
+            validatedAt: current.validatedAt,
+            lastUsedAt: current.lastUsedAt,
+        };
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([legacyRecord])
+        );
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+        expect(store.loadRaw()).toEqual([]);
+    });
+
     it('continues a revalidated stored release when a candidate fails integrity', async () => {
         const stored = createDocuments({ key: 'stored/release' });
         const candidate = createDocuments({ key: 'candidate/release' });
@@ -621,7 +770,12 @@ describe('WebAssetResolver', () => {
         } as const;
         const other = createDocuments({ target: otherTarget });
         const store = new ValidatedReleaseStore(
-            createMemoryStorage([storedRecord(other, { target: otherTarget })])
+            createMemoryStorage([
+                storedRecord(other, {
+                    target: otherTarget,
+                    source: { ...SOURCE, target: otherTarget },
+                }),
+            ])
         );
         const resolver = createResolver(createDocuments(), {
             fetchImpl: vi

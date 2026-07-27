@@ -59,6 +59,7 @@ function decoded(key: string): DecodedAsset {
     return {
         cacheKey: `webp:sha-${key}`,
         objectUrl: `blob:${key}`,
+        byteLength: 10,
         width: 1600,
         height: 900,
         decodedBytes: 5_760_000,
@@ -265,6 +266,51 @@ describe('VisualStateController', () => {
         expect(latest().release).toBe('unavailable');
         expect(latest().portrait.state).toBe('failed');
         expect(latest().status).toBe('unavailable');
+    });
+
+    it('keeps omitted lines neutral and marks keyed lines unavailable without a source', async () => {
+        const cache = {
+            load: vi.fn(),
+            prefetch: vi.fn(),
+            setProtectedKeys: vi.fn(),
+        };
+        const controller = new VisualStateController({
+            resolver: null,
+            cache: cache as unknown as DecodedAssetCache,
+            getSceneDialogue: vi.fn(() => null),
+        });
+        const snapshots: VisualSnapshot[] = [];
+        controller.subscribe(snapshot => snapshots.push(snapshot));
+        const latest = () => snapshots.at(-1)!;
+
+        controller.update(input([{ dialogue: 'Intentionally omitted' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('idle');
+        expect(latest().stagingBackground.state).toBe('omitted');
+        expect(latest().portrait.state).toBe('omitted');
+        expect(latest().status).toBeNull();
+
+        controller.update(
+            input([
+                {
+                    dialogue: 'Authored visuals without a source',
+                    background: 'room',
+                    portrait: 'speaker/base',
+                },
+            ])
+        );
+        await flushAsyncWork();
+        expect(latest().release).toBe('unavailable');
+        expect(latest().stagingBackground.state).toBe('failed');
+        expect(latest().portrait.state).toBe('failed');
+        expect(latest().status).toBe('unavailable');
+
+        controller.update(input([{ dialogue: 'Omitted again' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('idle');
+        expect(latest().status).toBeNull();
+        expect(cache.load).not.toHaveBeenCalled();
+        expect(cache.prefetch).not.toHaveBeenCalled();
     });
 
     it('maps an invalid release fallback to invalid plus a failed layer', async () => {

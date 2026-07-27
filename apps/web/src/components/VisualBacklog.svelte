@@ -2,7 +2,7 @@
   import type { DialogueEntry, Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import { resolveCharacterName } from '@/lib/character-name';
-  import { onMount } from 'svelte';
+  import { focusTrap } from '@/lib/focus-trap';
 
   let {
     dialogue = [],
@@ -18,13 +18,8 @@
     trigger?: HTMLElement | null;
   } = $props();
 
-  let closeButton: globalThis.HTMLButtonElement | null = $state(null);
   let t = $derived(getTranslations(locale));
   let visibleDialogue = $derived(dialogue.slice(0, dialogueIndex + 1));
-
-  onMount(() => {
-    closeButton?.focus();
-  });
 
   function close(): void {
     trigger?.focus();
@@ -47,11 +42,11 @@
   data-reader-interactive
   class="visual-backlog"
   onkeydown={handleKeydown}
+  use:focusTrap={{ enabled: true, restoreFocus: trigger }}
 >
   <header>
     <h2 id="visual-backlog-title">{t.reader.historyTitle}</h2>
     <button
-      bind:this={closeButton}
       type="button"
       aria-label={t.reader.closeHistory}
       data-reader-interactive

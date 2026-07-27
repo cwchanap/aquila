@@ -197,6 +197,90 @@ describe('DecodedAssetCache', () => {
     it.each([
         {
             name: 'byte length',
+            conflicting: (assetBytes: Uint8Array) =>
+                createResolvedAsset({
+                    label: 'same-hash-wrong-length',
+                    webpBytes: assetBytes,
+                    webpByteLength: assetBytes.byteLength + 1,
+                }),
+        },
+        {
+            name: 'dimensions',
+            conflicting: (assetBytes: Uint8Array) =>
+                createResolvedAsset({
+                    label: 'same-hash-wrong-dimensions',
+                    width: 1599,
+                    height: 900,
+                    webpBytes: assetBytes,
+                }),
+        },
+    ])(
+        'validates a completed immutable-object hit against the joining caller $name',
+        async ({ conflicting }) => {
+            const assetBytes = bytes('shared-completed-object');
+            const accepted = createResolvedAsset({
+                label: 'shared-completed-object',
+                webpBytes: assetBytes,
+            });
+            const fetchSpy = createFetch(
+                new Map([[accepted.webpUrl.href, { bytes: assetBytes }]])
+            );
+            const cache = new DecodedAssetCache({
+                fetchImpl: fetchSpy,
+                decodeImage: successfulDecoder(),
+            });
+            await cache.load(accepted);
+
+            await expect(
+                cache.load(conflicting(assetBytes))
+            ).rejects.toMatchObject({
+                code: 'integrity',
+            });
+            expect(fetchSpy).toHaveBeenCalledOnce();
+            expect(cache.size).toBe(1);
+        }
+    );
+
+    it('validates metadata for every caller that joins an in-flight immutable object', async () => {
+        const assetBytes = bytes('shared-pending-object');
+        const accepted = createResolvedAsset({
+            label: 'shared-pending-object',
+            webpBytes: assetBytes,
+        });
+        const conflicting = createResolvedAsset({
+            label: 'shared-pending-object-conflict',
+            width: 1601,
+            height: 900,
+            webpBytes: assetBytes,
+        });
+        let releaseFetch!: (response: Response) => void;
+        const responseGate = new Promise<Response>(resolve => {
+            releaseFetch = resolve;
+        });
+        const fetchSpy = vi.fn(() => responseGate) as unknown as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchSpy,
+            decodeImage: successfulDecoder(),
+        });
+
+        const acceptedLoad = cache.load(accepted);
+        await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
+        const conflictingLoad = cache.load(conflicting);
+        releaseFetch(response(assetBytes));
+
+        await expect(acceptedLoad).resolves.toMatchObject({
+            width: 1600,
+            height: 900,
+        });
+        await expect(conflictingLoad).rejects.toMatchObject({
+            code: 'integrity',
+        });
+        expect(fetchSpy).toHaveBeenCalledOnce();
+    });
+
+    it.each([
+        {
+            name: 'byte length',
             build: () => {
                 const assetBytes = bytes('wrong-length');
                 return {
@@ -535,6 +619,61 @@ describe('DecodedAssetCache', () => {
             [first.webpUrl, expect.any(Object)],
             [second.webpUrl, expect.any(Object)],
         ]);
+    });
+
+    it('reuses the default AVIF capability probe across cache recreation', async () => {
+        const webpBytes = bytes('session-probe-webp');
+        const avifBytes = bytes('session-probe-avif');
+        const asset = createResolvedAsset({
+            label: 'session-probe',
+            width: 1,
+            height: 1,
+            webpBytes,
+            avifBytes,
+        });
+        vi.stubGlobal(
+            'createImageBitmap',
+            vi.fn(async () => ({
+                width: 1,
+                height: 1,
+                close: vi.fn(),
+            }))
+        );
+        const fetchMock = vi.fn(function defaultBrowserFetch(
+            this: typeof globalThis,
+            input: RequestInfo | URL
+        ): Promise<Response> {
+            if (this !== globalThis) {
+                return Promise.reject(new TypeError('Illegal invocation'));
+            }
+            const url = String(input);
+            if (url.includes('avif-probe.avif')) {
+                return Promise.resolve(
+                    response(bytes('valid-session-probe'), 'image/avif')
+                );
+            }
+            if (url === asset.avifUrl?.href) {
+                return Promise.resolve(response(avifBytes, 'image/avif'));
+            }
+            if (url === asset.webpUrl.href) {
+                return Promise.resolve(response(webpBytes));
+            }
+            return Promise.resolve(new Response('missing', { status: 404 }));
+        });
+        vi.stubGlobal('fetch', fetchMock as typeof fetch);
+
+        const first = new DecodedAssetCache();
+        await first.load(asset);
+        await first.clear();
+        const second = new DecodedAssetCache();
+        await second.load(asset);
+        await second.clear();
+
+        expect(
+            fetchMock.mock.calls.filter(([input]) =>
+                String(input).includes('avif-probe.avif')
+            )
+        ).toHaveLength(1);
     });
 
     it('falls back to required WebP when a supported AVIF object fails to decode', async () => {

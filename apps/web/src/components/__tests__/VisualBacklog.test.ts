@@ -9,6 +9,12 @@ vi.mock('@aquila/stories/translations', () => ({
             historyTitle: 'History',
             closeHistory: 'Close history',
             unknown: 'Unknown',
+            readerMode: 'Reader mode',
+            textMode: 'Text',
+            visualNovelMode: 'Visual Novel',
+            visualStaleRelease: 'Using previously validated visuals',
+            visualAssetFallback: 'Some visuals are unavailable',
+            visualUnavailable: 'Visuals are unavailable',
         },
         characterNames: {
             narrator: 'Narrator',

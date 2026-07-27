@@ -1,10 +1,20 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   import type { DialogueEntry } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import { readerState } from '@/lib/reader-state.svelte';
+  import {
+    readReaderMode,
+    writeReaderMode,
+    type ReaderMode,
+  } from '@/lib/reader-mode';
+  import {
+    createVisualRuntime as createDefaultVisualRuntime,
+    type VisualReaderRuntime,
+  } from '@/lib/visual-assets';
   import NovelReader from '@/components/NovelReader.svelte';
   import MobileNovelReader from '@/components/MobileNovelReader.svelte';
+  import VisualNovelReader from '@/components/VisualNovelReader.svelte';
 
   let {
     onChoice = () => {},
@@ -12,8 +22,8 @@
     onNext = () => {},
     onNavigate = () => {},
     onIndexChange = () => {},
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getSceneDialogue = () => null,
+    createVisualRuntime = createDefaultVisualRuntime,
     onRetry = () => {},
     showBookmarkButton = true,
     backUrl = '/',
@@ -27,6 +37,7 @@
       storyId: string,
       sceneId: string
     ) => readonly DialogueEntry[] | null;
+    createVisualRuntime?: typeof createDefaultVisualRuntime;
     onRetry?: () => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
@@ -41,7 +52,6 @@
   let locale = $derived(readerState.locale);
   let dialogueIndex = $derived(readerState.dialogueIndex);
   let activeFlow = $derived(readerState.activeFlow);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let presentation = $derived(readerState.presentation);
   let loadStatus = $derived(readerState.loadStatus);
   let loadError = $derived(readerState.loadError);
@@ -51,6 +61,98 @@
   );
   let t = $derived(getTranslations(locale));
   let readerReadyElement: HTMLElement | null = $state(null);
+  let readerMode = $state(readReaderMode());
+  let visualRuntime: VisualReaderRuntime | null = $state(null);
+  let visualRuntimeStoryId: string | null = $state(null);
+  let visualRuntimeAttempted = $state(false);
+  let visualRuntimeTransitioning = $state(false);
+  let runtimeGeneration = 0;
+  let destroyed = false;
+  let removeVisibilityListener = () => {};
+
+  function setReaderMode(mode: ReaderMode): void {
+    if (readerMode === mode) return;
+    const retainedRuntime =
+      mode === 'visual' &&
+      visualRuntimeStoryId === storyId
+        ? visualRuntime
+        : null;
+    readerMode = mode;
+    writeReaderMode(mode);
+    if (retainedRuntime) void retainedRuntime.softRevalidate();
+  }
+
+  function runtimeOrigin(): string {
+    return globalThis.location?.origin ?? 'http://localhost';
+  }
+
+  function ensureVisualRuntime(activeStoryId: string): void {
+    if (
+      destroyed ||
+      visualRuntimeTransitioning ||
+      (visualRuntimeAttempted &&
+        visualRuntimeStoryId === activeStoryId)
+    ) {
+      return;
+    }
+    visualRuntimeStoryId = activeStoryId;
+    visualRuntimeAttempted = true;
+    visualRuntime = createVisualRuntime(
+      activeStoryId,
+      runtimeOrigin(),
+      getSceneDialogue
+    );
+  }
+
+  async function disposeRuntimeForStoryChange(
+    nextStoryId: string
+  ): Promise<void> {
+    const generation = ++runtimeGeneration;
+    const runtime = visualRuntime;
+    visualRuntime = null;
+    visualRuntimeStoryId = nextStoryId;
+    visualRuntimeAttempted = false;
+    visualRuntimeTransitioning = true;
+    await runtime?.dispose();
+    if (destroyed || generation !== runtimeGeneration) return;
+    visualRuntimeTransitioning = false;
+  }
+
+  $effect(() => {
+    const activeStoryId = storyId;
+    const wantsVisualRuntime =
+      readerMode === 'visual' &&
+      hasActivePayload &&
+      activeFlow !== null;
+    if (visualRuntimeTransitioning) return;
+    if (
+      visualRuntimeStoryId !== null &&
+      visualRuntimeStoryId !== activeStoryId
+    ) {
+      void disposeRuntimeForStoryChange(activeStoryId);
+      return;
+    }
+    if (wantsVisualRuntime) ensureVisualRuntime(activeStoryId);
+  });
+
+  let lastActiveLineKey: string | null = $state(null);
+  $effect(() => {
+    const activeLineKey =
+      `${storyId}\u0000${currentSceneId}\u0000${dialogueIndex}`;
+    if (lastActiveLineKey === null) {
+      lastActiveLineKey = activeLineKey;
+      return;
+    }
+    if (activeLineKey === lastActiveLineKey) return;
+    lastActiveLineKey = activeLineKey;
+    if (
+      readerMode === 'visual' &&
+      visualRuntime &&
+      visualRuntimeStoryId === storyId
+    ) {
+      void visualRuntime.softRevalidate();
+    }
+  });
 
   // Svelte updates `inert` as a DOM property, which does not reflect to an
   // attribute in every runtime. Keep the actual attribute synchronized so
@@ -107,6 +209,20 @@
   });
 
   onMount(() => {
+    const handleVisibility = (): void => {
+      if (
+        document.visibilityState === 'visible' &&
+        readerMode === 'visual' &&
+        visualRuntime &&
+        visualRuntimeStoryId === storyId
+      ) {
+        void visualRuntime.softRevalidate();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    removeVisibilityListener = () =>
+      document.removeEventListener('visibilitychange', handleVisibility);
+
     if (
       typeof window === 'undefined' ||
       typeof window.matchMedia !== 'function'
@@ -120,6 +236,15 @@
     isMobile = mql.matches;
     mql.addEventListener('change', update);
     return () => mql.removeEventListener('change', update);
+  });
+
+  onDestroy(() => {
+    destroyed = true;
+    runtimeGeneration += 1;
+    removeVisibilityListener();
+    const runtime = visualRuntime;
+    visualRuntime = null;
+    void runtime?.dispose();
   });
 </script>
 
@@ -157,6 +282,30 @@
   {/if}
 {/snippet}
 
+<div
+  role="group"
+  class="fixed z-[80]"
+  style="top: calc(0.75rem + env(safe-area-inset-top)); right: calc(0.75rem + env(safe-area-inset-right));"
+  data-reader-mode={readerMode}
+  aria-label={t.reader.readerMode}
+  data-reader-interactive
+>
+  <button
+    type="button"
+    aria-pressed={readerMode === 'text'}
+    onclick={() => setReaderMode('text')}
+  >
+    {t.reader.textMode}
+  </button>
+  <button
+    type="button"
+    aria-pressed={readerMode === 'visual'}
+    onclick={() => setReaderMode('visual')}
+  >
+    {t.reader.visualNovelMode}
+  </button>
+</div>
+
 {#if hasActivePayload && activeFlow}
   <div class="relative min-h-screen">
     <div
@@ -164,7 +313,31 @@
       data-testid="reader-ready"
       aria-hidden={isBlocking ? 'true' : undefined}
     >
-      {#if isMobile}
+      {#if readerMode === 'visual'}
+        <VisualNovelReader
+          controller={visualRuntimeStoryId === storyId
+            ? visualRuntime?.controller ?? null
+            : null}
+          flow={activeFlow}
+          {dialogueIndex}
+          {onIndexChange}
+          {dialogue}
+          {choice}
+          {storyId}
+          {currentSceneId}
+          {canGoNext}
+          {locale}
+          {presentation}
+          {onChoice}
+          {onBookmark}
+          {onNext}
+          {onNavigate}
+          {backUrl}
+          {showBookmarkButton}
+          {isInitialMount}
+          interactionDisabled={isBlocking}
+        />
+      {:else if isMobile}
         <MobileNovelReader
           flow={activeFlow}
           {dialogueIndex}

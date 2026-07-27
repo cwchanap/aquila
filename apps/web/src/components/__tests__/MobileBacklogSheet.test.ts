@@ -4,7 +4,16 @@ import '@testing-library/jest-dom';
 
 vi.mock('@aquila/stories/translations', () => ({
     getTranslations: vi.fn(() => ({
-        reader: { historyTitle: 'History', closeHistory: 'Close history' },
+        reader: {
+            historyTitle: 'History',
+            closeHistory: 'Close history',
+            readerMode: 'Reader mode',
+            textMode: 'Text',
+            visualNovelMode: 'Visual Novel',
+            visualStaleRelease: 'Using previously validated visuals',
+            visualAssetFallback: 'Some visuals are unavailable',
+            visualUnavailable: 'Visuals are unavailable',
+        },
         locale: 'en',
     })),
 }));

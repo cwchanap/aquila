@@ -67,6 +67,25 @@ describe('translations', () => {
             }
         });
 
+        it('has the exact reader mode and visual status translations', () => {
+            expect(getTranslations('en').reader).toMatchObject({
+                readerMode: 'Reader mode',
+                textMode: 'Text',
+                visualNovelMode: 'Visual Novel',
+                visualStaleRelease: 'Using previously validated visuals',
+                visualAssetFallback: 'Some visuals are unavailable',
+                visualUnavailable: 'Visuals are unavailable',
+            });
+            expect(getTranslations('zh').reader).toMatchObject({
+                readerMode: '閱讀模式',
+                textMode: '文字',
+                visualNovelMode: '視覺小說',
+                visualStaleRelease: '正在使用先前驗證的視覺素材',
+                visualAssetFallback: '部分視覺素材無法使用',
+                visualUnavailable: '視覺素材無法使用',
+            });
+        });
+
         it('has validation translations', () => {
             const en = getTranslations('en');
             expect(en.email).toBeDefined();

@@ -1,4 +1,16 @@
+import type { DialogueEntry } from '@aquila/stories';
 import type { AssetResolverSource } from '@aquila/stories/runtime-assets';
+import { getBrowserStorage } from '@/lib/reader-mode';
+import { DecodedAssetCache } from './decoded-asset-cache';
+import { ValidatedReleaseStore } from './validated-release-store';
+import { VisualStateController } from './visual-state-controller';
+import { WebAssetResolver } from './web-asset-resolver';
+
+export type VisualReaderRuntime = {
+    controller: VisualStateController;
+    softRevalidate: () => Promise<void>;
+    dispose: () => Promise<void>;
+};
 
 export function getAssetResolverSource(
     storyId: string,
@@ -10,5 +22,35 @@ export function getAssetResolverSource(
         storyId,
         baseUrl: new URL('/assets/', origin).href,
         target: { kind: 'preview', previewId: 'hpa-228-local' },
+    };
+}
+
+export function createVisualRuntime(
+    storyId: string,
+    origin: string,
+    getSceneDialogue: (
+        storyId: string,
+        sceneId: string
+    ) => readonly DialogueEntry[] | null
+): VisualReaderRuntime | null {
+    const source = getAssetResolverSource(storyId, origin);
+    if (!source) return null;
+    const store = new ValidatedReleaseStore(getBrowserStorage());
+    const resolver = new WebAssetResolver(source, { store });
+    const cache = new DecodedAssetCache();
+    const controller = new VisualStateController({
+        resolver,
+        cache,
+        getSceneDialogue,
+    });
+    cache.setBeforeRevoke(objectUrl => controller.detachObjectUrl(objectUrl));
+    return {
+        controller,
+        softRevalidate: () => controller.softRevalidate(),
+        dispose: async () => {
+            controller.dispose();
+            await cache.clear();
+            resolver.clear();
+        },
     };
 }

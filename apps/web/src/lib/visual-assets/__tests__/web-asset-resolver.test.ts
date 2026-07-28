@@ -753,6 +753,42 @@ describe('WebAssetResolver', () => {
         expect(store.loadRaw()).toEqual([]);
     });
 
+    it('deactivates the accepted release when revalidation rejects without a usable fallback', async () => {
+        const documents = createDocuments();
+        let now = NOW;
+        const fetchImpl = vi.fn(async (input: RequestInfo | URL) =>
+            createFetch(documents)(input)
+        );
+        const store = new ValidatedReleaseStore(createMemoryStorage());
+        const resolver = createResolver(documents, {
+            fetchImpl: fetchImpl as typeof fetch,
+            store,
+            now: () => now,
+        });
+
+        // Successfully activate the release.
+        await resolver.loadActiveRelease();
+        expect(
+            resolver.resolve({ type: 'background', key: '第一章/鏡 房/夜' })
+        ).toMatchObject({ status: 'resolved' });
+
+        // Advance beyond the 24-hour eligibility window and make network fail.
+        now = NOW + ONE_DAY_MS + 1;
+        fetchImpl.mockRejectedValue(new TypeError('offline'));
+
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+
+        // The resolver must not serve assets from the expired release.
+        expect(
+            resolver.resolve({ type: 'background', key: '第一章/鏡 房/夜' })
+        ).toMatchObject({
+            status: 'fallback',
+            reason: 'release-unavailable',
+        });
+    });
+
     it('evicts tampered stored bytes instead of using them as fallback', async () => {
         const documents = createDocuments();
         const tampered = storedRecord(documents);

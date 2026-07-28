@@ -371,6 +371,11 @@ export class WebAssetResolver implements AssetResolver {
                 loadController.signal
             );
             if (fallback) return fallback;
+            // No stored fallback is eligible either. Deactivate the accepted
+            // release so resolve() stops serving assets from the expired
+            // release. Retain newestPublishedAt (downgrade protection) and
+            // lastLoadError (already set above).
+            this.deactivateRelease();
             throw resolverError;
         } finally {
             options?.signal?.removeEventListener('abort', abort);
@@ -588,6 +593,14 @@ export class WebAssetResolver implements AssetResolver {
         for (const entry of manifest.assets) {
             this.assetIndex.set(qualifyAssetIdentity(entry.identity), entry);
         }
+    }
+
+    private deactivateRelease(): void {
+        this.activeRecord = null;
+        this.assetIndex.clear();
+        this.resolutionCache.clear();
+        // Retain newestPublishedAt for downgrade protection and lastLoadError
+        // so resolve() surfaces the correct fallback reason.
     }
 
     private memoFallback(

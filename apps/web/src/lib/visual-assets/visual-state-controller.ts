@@ -178,7 +178,10 @@ export class VisualStateController {
     private stagingBackgroundCacheKey: string | null = null;
     private portraitCacheKey: string | null = null;
     private activeReleaseId: string | null = null;
-    private releaseRefreshPending = false;
+    private releaseGeneration = 0;
+    private activeBackgroundReleaseId: string | null = null;
+    private stagingBackgroundReleaseId: string | null = null;
+    private portraitReleaseId: string | null = null;
     private readonly loadFailures: string[] = [];
 
     constructor(options: VisualStateControllerOptions) {
@@ -221,7 +224,9 @@ export class VisualStateController {
             return;
         }
         this.activeBackgroundCacheKey = this.stagingBackgroundCacheKey;
+        this.activeBackgroundReleaseId = this.stagingBackgroundReleaseId;
         this.stagingBackgroundCacheKey = null;
+        this.stagingBackgroundReleaseId = null;
         this.publish({
             activeBackground: this.snapshot.stagingBackground,
             stagingBackground: imageLayer('omitted'),
@@ -243,12 +248,15 @@ export class VisualStateController {
         if (layerChanged) {
             if (this.snapshot.activeBackground.objectUrl === objectUrl) {
                 this.activeBackgroundCacheKey = null;
+                this.activeBackgroundReleaseId = null;
             }
             if (this.snapshot.stagingBackground.objectUrl === objectUrl) {
                 this.stagingBackgroundCacheKey = null;
+                this.stagingBackgroundReleaseId = null;
             }
             if (this.snapshot.portrait.objectUrl === objectUrl) {
                 this.portraitCacheKey = null;
+                this.portraitReleaseId = null;
             }
             this.publish({ activeBackground, stagingBackground, portrait });
             // Wait one render barrier so the browser paints the detached
@@ -296,13 +304,16 @@ export class VisualStateController {
         if (this.disposed) return;
         this.disposed = true;
         this.generation += 1;
+        this.releaseGeneration += 1;
         this.abortController.abort();
         this.currentInput = null;
         this.activeBackgroundCacheKey = null;
         this.stagingBackgroundCacheKey = null;
         this.portraitCacheKey = null;
         this.activeReleaseId = null;
-        this.releaseRefreshPending = false;
+        this.activeBackgroundReleaseId = null;
+        this.stagingBackgroundReleaseId = null;
+        this.portraitReleaseId = null;
         this.snapshot = initialSnapshot();
         this.cache.setProtectedKeys(new Set());
         for (const listener of this.listeners) listener(this.snapshot);
@@ -319,26 +330,33 @@ export class VisualStateController {
         const portraitKey = portraitIdentity
             ? qualifyAssetIdentity(portraitIdentity)
             : null;
-        // When a soft revalidation activated a new release, the same logical
-        // identity may point to different immutable bytes. Force reload even
-        // when the layer's identity matches so the new variant is fetched and
-        // the old background is retained only until the new object is verified.
-        const forceRefresh = this.releaseRefreshPending;
+        // A ready layer is only current when its identity matches AND it was
+        // loaded under the active release. A soft revalidation that activated
+        // a new release makes every previously ready layer stale, even when
+        // the logical identity is unchanged — the same key may point to
+        // different immutable bytes in the new release.
         const sameActiveBackground =
-            !forceRefresh &&
             backgroundKey !== null &&
-            this.isLayerShowing(
+            this.isLayerCurrentForRelease(
                 this.snapshot.activeBackground,
-                backgroundIdentity!
+                backgroundIdentity!,
+                this.activeBackgroundReleaseId
             );
         const slot = this.portraitSlot(input, entry?.characterId);
         const samePortrait =
-            !forceRefresh &&
             portraitKey !== null &&
-            this.isLayerShowing(this.snapshot.portrait, portraitIdentity!);
+            this.isLayerCurrentForRelease(
+                this.snapshot.portrait,
+                portraitIdentity!,
+                this.portraitReleaseId
+            );
 
         this.stagingBackgroundCacheKey = null;
-        if (!samePortrait) this.portraitCacheKey = null;
+        this.stagingBackgroundReleaseId = null;
+        if (!samePortrait) {
+            this.portraitCacheKey = null;
+            this.portraitReleaseId = null;
+        }
         this.publish({
             stagingBackground:
                 backgroundKey === null || sameActiveBackground
@@ -371,15 +389,14 @@ export class VisualStateController {
             this.failKeyedLayers(input, entry);
             return;
         }
-        const forceRefresh = this.releaseRefreshPending;
         const work: Promise<void>[] = [];
         if (
             entry?.background &&
-            (forceRefresh ||
-                !this.isLayerShowing(this.snapshot.activeBackground, {
-                    type: 'background',
-                    key: entry.background,
-                }))
+            !this.isLayerCurrentForRelease(
+                this.snapshot.activeBackground,
+                { type: 'background', key: entry.background },
+                this.activeBackgroundReleaseId
+            )
         ) {
             work.push(
                 this.loadBackground(input, generation, {
@@ -390,11 +407,11 @@ export class VisualStateController {
         }
         if (
             entry?.portrait &&
-            (forceRefresh ||
-                !this.isLayerShowing(this.snapshot.portrait, {
-                    type: 'portrait',
-                    key: entry.portrait,
-                }))
+            !this.isLayerCurrentForRelease(
+                this.snapshot.portrait,
+                { type: 'portrait', key: entry.portrait },
+                this.portraitReleaseId
+            )
         ) {
             work.push(
                 this.loadPortrait(
@@ -408,7 +425,6 @@ export class VisualStateController {
                 )
             );
         }
-        this.releaseRefreshPending = false;
         this.warmWithinScene(input, generation);
         this.prefetchImmediateEdges(input, generation);
         await Promise.all(work);
@@ -446,7 +462,7 @@ export class VisualStateController {
                 const releaseId = validated.pointer.releaseId;
                 if (releaseId !== this.activeReleaseId) {
                     this.activeReleaseId = releaseId;
-                    this.releaseRefreshPending = true;
+                    this.releaseGeneration += 1;
                 }
                 this.publish({
                     release:
@@ -467,6 +483,7 @@ export class VisualStateController {
                 // state. Transition to the appropriate fallback state so keyed
                 // layers fail rather than displaying expired assets.
                 this.activeReleaseId = null;
+                this.releaseGeneration += 1;
                 this.publish({ release: releaseStateForError(error) });
                 return false;
             })
@@ -485,14 +502,19 @@ export class VisualStateController {
         identity: LogicalAssetIdentity
     ): Promise<void> {
         const identityKey = qualifyAssetIdentity(identity);
+        const releaseGeneration = this.releaseGeneration;
         const result = await this.loadIdentity(identity);
-        if (!this.isCurrent(input, generation, identity)) return;
+        if (!this.isCurrent(input, generation, releaseGeneration, identity))
+            return;
         if (result.status === 'ready') {
             const ready = readyImageLayer(identityKey, result.decoded);
             this.stagingBackgroundCacheKey = result.decoded.cacheKey;
+            this.stagingBackgroundReleaseId = this.activeReleaseId;
             if (this.snapshot.activeBackground.state !== 'ready') {
                 this.activeBackgroundCacheKey = result.decoded.cacheKey;
+                this.activeBackgroundReleaseId = this.activeReleaseId;
                 this.stagingBackgroundCacheKey = null;
+                this.stagingBackgroundReleaseId = null;
                 this.publish({
                     activeBackground: ready,
                     stagingBackground: imageLayer('omitted'),
@@ -503,6 +525,7 @@ export class VisualStateController {
             return;
         }
         this.stagingBackgroundCacheKey = null;
+        this.stagingBackgroundReleaseId = null;
         if (result.status === 'fallback') {
             this.applyFallbackReleaseState(result.fallback);
             this.publish({
@@ -527,16 +550,20 @@ export class VisualStateController {
         slot: VisualPortraitLayer['slot']
     ): Promise<void> {
         const identityKey = qualifyAssetIdentity(identity);
+        const releaseGeneration = this.releaseGeneration;
         const result = await this.loadIdentity(identity);
-        if (!this.isCurrent(input, generation, identity)) return;
+        if (!this.isCurrent(input, generation, releaseGeneration, identity))
+            return;
         if (result.status === 'ready') {
             this.portraitCacheKey = result.decoded.cacheKey;
+            this.portraitReleaseId = this.activeReleaseId;
             this.publish({
                 portrait: readyPortraitLayer(identityKey, result.decoded, slot),
             });
             return;
         }
         this.portraitCacheKey = null;
+        this.portraitReleaseId = null;
         if (result.status === 'fallback') {
             this.applyFallbackReleaseState(result.fallback);
             this.publish({
@@ -865,9 +892,11 @@ export class VisualStateController {
     private isCurrent(
         input: VisualControllerInput,
         generation: number,
+        releaseGeneration: number,
         identity: LogicalAssetIdentity
     ): boolean {
         if (!this.isInputCurrent(input, generation)) return false;
+        if (releaseGeneration !== this.releaseGeneration) return false;
         const entry = input.dialogue[input.dialogueIndex];
         return (
             (identity.type === 'background'
@@ -876,13 +905,15 @@ export class VisualStateController {
         );
     }
 
-    private isLayerShowing(
+    private isLayerCurrentForRelease(
         layer: { state: string; identity: string | null },
-        identity: LogicalAssetIdentity
+        identity: LogicalAssetIdentity,
+        layerReleaseId: string | null
     ): boolean {
         return (
             layer.state === 'ready' &&
-            layer.identity === qualifyAssetIdentity(identity)
+            layer.identity === qualifyAssetIdentity(identity) &&
+            layerReleaseId === this.activeReleaseId
         );
     }
 

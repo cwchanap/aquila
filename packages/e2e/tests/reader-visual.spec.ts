@@ -359,6 +359,33 @@ test.describe('Visual novel reader', () => {
         await openAndCloseVisualBacklog(page);
         await expectEssentialControlsNotToOverlapPortrait(page);
     });
+
+    test('does not advance the dialogue when the scrollable dialogue box is scrolled', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const visual = new VisualReaderPage(page);
+        await visual.goto(6);
+        await expectCanonicalVisualLine(page, 6);
+
+        const dialogueBox = visual.root.locator('.dialogue-box');
+        await expect(dialogueBox).toBeVisible();
+
+        // Simulate a scroll gesture: pointerdown inside the dialogue box,
+        // move vertically beyond the tap threshold, then pointerup. A scroll
+        // gesture must not advance the dialogue.
+        const box = await dialogueBox.boundingBox();
+        expect(box).not.toBeNull();
+        if (!box) return;
+        const startX = box.x + box.width / 2;
+        const startY = box.y + box.height / 2;
+        await page.mouse.move(startX, startY);
+        await page.mouse.down();
+        await page.mouse.move(startX, startY + 80, { steps: 4 });
+        await page.mouse.up();
+
+        await expect(page).toHaveURL(dialogueUrl(6));
+    });
 });
 
 test.describe('Visual novel reader — prefers-reduced-motion', () => {

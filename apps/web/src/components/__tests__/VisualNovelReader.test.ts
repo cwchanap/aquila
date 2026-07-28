@@ -291,6 +291,11 @@ describe('VisualNovelReader', () => {
         const root = screen.getByTestId('visual-novel-reader');
         await vi.advanceTimersByTimeAsync(60);
 
+        await fireEvent.pointerDown(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+        });
         await fireEvent.pointerUp(root, {
             button: 0,
             pointerType: 'touch',
@@ -300,6 +305,11 @@ describe('VisualNovelReader', () => {
         expect(screen.getByText('First visual line.')).toBeInTheDocument();
         expect(onIndexChange).not.toHaveBeenCalled();
 
+        await fireEvent.pointerDown(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+        });
         await fireEvent.pointerUp(root, {
             button: 0,
             pointerType: 'touch',
@@ -527,6 +537,11 @@ describe('VisualNovelReader', () => {
         await vi.runAllTimersAsync(); // finish typing line 0
 
         // Click advance → sets selfAdvanceTarget = 1, emits onIndexChange(1).
+        await fireEvent.pointerDown(screen.getByTestId('visual-novel-reader'), {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+        });
         await fireEvent.pointerUp(screen.getByTestId('visual-novel-reader'), {
             button: 0,
             pointerType: 'touch',
@@ -631,5 +646,79 @@ describe('VisualNovelReader', () => {
 
         await fireEvent.click(screen.getByRole('button', { name: 'Bookmark' }));
         expect(onBookmark).toHaveBeenCalledWith(2);
+    });
+
+    it('renders choices for a choice-only scene with empty dialogue', async () => {
+        setReducedMotion(false);
+        const onChoice = vi.fn();
+        renderReader({
+            dialogue: [],
+            dialogueIndex: 0,
+            choice,
+            onChoice,
+        });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Take the left path' })
+        );
+        expect(onChoice).toHaveBeenCalledWith('b1a_act2');
+    });
+
+    it('does not advance when a pointer moves beyond the tap threshold between down and up', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        const root = screen.getByTestId('visual-novel-reader');
+
+        await fireEvent.pointerDown(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            clientX: 100,
+            clientY: 200,
+        });
+        await fireEvent.pointerUp(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            clientX: 100,
+            clientY: 250,
+        });
+
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('does not advance after a pointercancel resets the pointer tracking', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        const root = screen.getByTestId('visual-novel-reader');
+
+        await fireEvent.pointerDown(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            clientX: 50,
+            clientY: 50,
+        });
+        await fireEvent.pointerCancel(root, {
+            pointerType: 'touch',
+            isPrimary: true,
+        });
+        await fireEvent.pointerUp(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            clientX: 50,
+            clientY: 50,
+        });
+
+        expect(onIndexChange).not.toHaveBeenCalled();
     });
 });

@@ -1072,6 +1072,43 @@ describe('VisualStateController', () => {
         await expect(controller.softRevalidate()).resolves.toBeUndefined();
     });
 
+    it('does not wait for an animation frame when detaching an unreferenced URL', async () => {
+        const rafSpy = vi.fn((callback: FrameRequestCallback) => {
+            callback(0);
+            return 1;
+        });
+        vi.stubGlobal('requestAnimationFrame', rafSpy);
+        const { controller } = createHarness();
+        // No layers are mounted, so the URL matches nothing.
+        await expect(
+            controller.detachObjectUrl('blob:unreferenced')
+        ).resolves.toBeUndefined();
+        expect(rafSpy).not.toHaveBeenCalled();
+    });
+
+    it('uses at most one animation frame when clearing multiple unreferenced cached objects', async () => {
+        let frameCount = 0;
+        const rafSpy = vi.fn((callback: FrameRequestCallback) => {
+            frameCount += 1;
+            callback(0);
+            return 1;
+        });
+        vi.stubGlobal('requestAnimationFrame', rafSpy);
+        const { controller } = createHarness();
+        // Simulate cache.clear() after dispose: the snapshot is reset to
+        // initialSnapshot(), so every URL is unreferenced. Sequential
+        // detachObjectUrl calls must not each wait for a frame.
+        controller.dispose();
+        const urls = Array.from(
+            { length: 48 },
+            (_, index) => `blob:cached-${index}`
+        );
+        for (const url of urls) {
+            await controller.detachObjectUrl(url);
+        }
+        expect(frameCount).toBeLessThanOrEqual(1);
+    });
+
     it('softRevalidate returns early when resolver is null', async () => {
         const cache = {
             load: vi.fn(),

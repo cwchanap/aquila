@@ -326,6 +326,7 @@ export class WebAssetResolver implements AssetResolver {
     private newestPublishedAt = Number.NEGATIVE_INFINITY;
     private lastLoadError: AssetResolverError | null = null;
     private lifecycleGeneration = 0;
+    private activationEpoch = 0;
 
     constructor(
         source: AssetResolverSource,
@@ -364,6 +365,7 @@ export class WebAssetResolver implements AssetResolver {
             if (!this.isLoadCurrent(generation, loadController.signal)) {
                 throw resolverError;
             }
+            const activationEpochAtFailure = this.activationEpoch;
             this.lastLoadError = resolverError;
             const fallback = await this.loadStoredFallback(
                 this.now(),
@@ -373,9 +375,13 @@ export class WebAssetResolver implements AssetResolver {
             if (fallback) return fallback;
             // No stored fallback is eligible either. Deactivate the accepted
             // release so resolve() stops serving assets from the expired
-            // release. Retain newestPublishedAt (downgrade protection) and
-            // lastLoadError (already set above).
-            this.deactivateRelease();
+            // release — but only if no concurrent load accepted a newer
+            // release while we were validating the fallback. Retain
+            // newestPublishedAt (downgrade protection) and lastLoadError
+            // (already set above).
+            if (this.activationEpoch === activationEpochAtFailure) {
+                this.deactivateRelease();
+            }
             throw resolverError;
         } finally {
             options?.signal?.removeEventListener('abort', abort);
@@ -593,6 +599,7 @@ export class WebAssetResolver implements AssetResolver {
         for (const entry of manifest.assets) {
             this.assetIndex.set(qualifyAssetIdentity(entry.identity), entry);
         }
+        this.activationEpoch += 1;
     }
 
     private deactivateRelease(): void {

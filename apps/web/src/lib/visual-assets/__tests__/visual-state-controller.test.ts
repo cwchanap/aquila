@@ -684,6 +684,150 @@ describe('VisualStateController', () => {
         expect(latest().release).toBe('ready');
     });
 
+    it('rejects an older-release background load that completes after a refresh', async () => {
+        let now = 0;
+        let firstLoad = true;
+        const v1Decode = deferred<DecodedAsset>();
+        let roomBLoadCount = 0;
+        const loadRelease = vi.fn(async () => {
+            const releaseId = firstLoad ? 'sha256-v1' : 'sha256-v2';
+            firstLoad = false;
+            return {
+                pointer: { releaseId },
+                manifest: {},
+                validatedAt: '2026-07-26T00:00:00.000Z',
+                source: 'network',
+            } as ValidatedAssetRelease;
+        });
+        const loadAsset = vi.fn(async (asset: ResolvedAsset) => {
+            const key = asset.asset.identity.key;
+            if (key === 'room-b') {
+                roomBLoadCount += 1;
+                if (roomBLoadCount === 1) {
+                    return v1Decode.promise;
+                }
+                return {
+                    ...decoded(key),
+                    objectUrl: `blob:v2-${key}`,
+                    cacheKey: `webp:sha-v2-${key}`,
+                };
+            }
+            return decoded(key);
+        });
+        const { controller, latest } = createHarness({
+            loadRelease,
+            loadAsset,
+            now: () => now,
+        });
+        const dialogue = [
+            { dialogue: 'Room A', background: 'room-a' },
+            { dialogue: 'Room B', background: 'room-b' },
+        ];
+
+        // Display room-a as the active background.
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        expect(latest().activeBackground.objectUrl).toBe('blob:room-a');
+
+        // Advance to room-b. V1 load starts for room-b (deferred).
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+
+        // Soft-revalidate activates V2 and starts a V2 load for room-b
+        // that completes immediately, populating staging.
+        now = 70_000;
+        await controller.softRevalidate();
+        await flushAsyncWork();
+        expect(latest().stagingBackground.state).toBe('ready');
+        expect(latest().stagingBackground.objectUrl).toBe('blob:v2-room-b');
+
+        // The older V1 load completes last. It must not overwrite V2 staging.
+        v1Decode.resolve({
+            ...decoded('room-b'),
+            objectUrl: 'blob:v1-room-b',
+            cacheKey: 'webp:sha-v1-room-b',
+        });
+        await flushAsyncWork();
+
+        expect(latest().stagingBackground.objectUrl).toBe('blob:v2-room-b');
+
+        // Committing the transition must activate V2, not V1.
+        controller.commitBackgroundTransition();
+        expect(latest().activeBackground.objectUrl).toBe('blob:v2-room-b');
+    });
+
+    it('reloads a background under the new release after an omitted line clears the refresh flag', async () => {
+        let now = 0;
+        let firstLoad = true;
+        let roomLoadCount = 0;
+        const loadRelease = vi.fn(async () => {
+            const releaseId = firstLoad ? 'sha256-v1' : 'sha256-v2';
+            firstLoad = false;
+            return {
+                pointer: { releaseId },
+                manifest: {},
+                validatedAt: '2026-07-26T00:00:00.000Z',
+                source: 'network',
+            } as ValidatedAssetRelease;
+        });
+        const loadAsset = vi.fn(async (asset: ResolvedAsset) => {
+            const key = asset.asset.identity.key;
+            if (key === 'room') {
+                roomLoadCount += 1;
+                if (roomLoadCount === 1) {
+                    return decoded(key);
+                }
+                return {
+                    ...decoded(key),
+                    objectUrl: `blob:v2-${key}`,
+                    cacheKey: `webp:sha-v2-${key}`,
+                };
+            }
+            return decoded(key);
+        });
+        const { cache, controller, latest } = createHarness({
+            loadRelease,
+            loadAsset,
+            now: () => now,
+        });
+        const dialogue = [
+            { dialogue: 'Room', background: 'room' },
+            { dialogue: 'No background' },
+            { dialogue: 'Room again', background: 'room' },
+        ];
+
+        // Display room under V1.
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        expect(latest().activeBackground.objectUrl).toBe('blob:room');
+
+        // Soft-revalidate activates V2. V2 'room' loads to staging
+        // (active is already ready with V1 'room').
+        now = 70_000;
+        await controller.softRevalidate();
+        await flushAsyncWork();
+        expect(latest().stagingBackground.state).toBe('ready');
+        expect(latest().stagingBackground.objectUrl).toBe('blob:v2-room');
+
+        // Advance to the omitted line (no background). Staging is cleared.
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().stagingBackground.state).toBe('omitted');
+        const loadCallsAfterOmit = (cache.load as ReturnType<typeof vi.fn>).mock
+            .calls.length;
+
+        // Return to the same logical background. The controller must reload
+        // under V2 rather than treating the old V1 layer as current.
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+
+        expect(
+            (cache.load as ReturnType<typeof vi.fn>).mock.calls.length
+        ).toBeGreaterThan(loadCallsAfterOmit);
+        expect(latest().stagingBackground.state).toBe('ready');
+        expect(latest().stagingBackground.objectUrl).toBe('blob:v2-room');
+    });
+
     it('warms the next distinct within-scene visual through resolve and cache prefetch', async () => {
         const { cache, controller, resolver } = createHarness();
         controller.update(

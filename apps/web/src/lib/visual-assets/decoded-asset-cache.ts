@@ -131,15 +131,15 @@ async function supportsAvif(
     fetchImpl: typeof fetch,
     signal: AbortSignal
 ): Promise<boolean> {
-    let probesForFetcher = avifSupportProbes.get(decodeImage);
-    if (!probesForFetcher) {
-        probesForFetcher = new WeakMap();
-        avifSupportProbes.set(decodeImage, probesForFetcher);
+    let probesForDecoder = avifSupportProbes.get(decodeImage);
+    if (!probesForDecoder) {
+        probesForDecoder = new WeakMap();
+        avifSupportProbes.set(decodeImage, probesForDecoder);
     }
-    let probe = probesForFetcher.get(fetchImpl);
+    let probe = probesForDecoder.get(fetchImpl);
     if (!probe) {
         probe = createAvifSupportProbe(decodeImage, fetchImpl);
-        probesForFetcher.set(fetchImpl, probe);
+        probesForDecoder.set(fetchImpl, probe);
     }
     probe.subscribers += 1;
     try {
@@ -147,8 +147,8 @@ async function supportsAvif(
     } finally {
         probe.subscribers -= 1;
         if (!probe.settled && probe.subscribers === 0) {
-            if (probesForFetcher.get(fetchImpl) === probe) {
-                probesForFetcher.delete(fetchImpl);
+            if (probesForDecoder.get(fetchImpl) === probe) {
+                probesForDecoder.delete(fetchImpl);
             }
             probe.controller.abort();
         }
@@ -226,7 +226,14 @@ export class DecodedAssetCache {
                 : `${cacheKeyFor(avif.variant)}|${cacheKeyFor(webp.variant)}`;
         const pending = this.pendingLoads.get(requestKey);
         if (pending) {
-            return pending.promise.then(decoded => {
+            const signal = options?.signal;
+            if (!signal) {
+                return pending.promise.then(decoded => {
+                    this.assertCallerMetadata(asset, decoded);
+                    return decoded;
+                });
+            }
+            return waitForSignal(pending.promise, signal).then(decoded => {
                 this.assertCallerMetadata(asset, decoded);
                 return decoded;
             });
@@ -393,7 +400,7 @@ export class DecodedAssetCache {
             selected.variant,
             signal
         );
-        const blob = new Blob([bytes.buffer], {
+        const blob = new Blob([bytes], {
             type: `image/${selected.variant.format}`,
         });
         let decoded: DecodeResult;
@@ -479,7 +486,7 @@ export class DecodedAssetCache {
                     'Asset byte length mismatch'
                 );
             }
-            if ((await sha256Hex(bytes.buffer)) !== variant.sha256) {
+            if ((await sha256Hex(bytes)) !== variant.sha256) {
                 throw new AssetResolverError(
                     'integrity',
                     'Asset checksum mismatch'
@@ -552,7 +559,12 @@ export class DecodedAssetCache {
     }
 
     private async detachAndRevoke(objectUrl: string): Promise<void> {
-        await this.beforeRevoke(objectUrl);
+        try {
+            await this.beforeRevoke(objectUrl);
+        } catch {
+            // Contain hook rejections so a failing hook cannot abort
+            // cleanup midway. The object URL is still revoked below.
+        }
         URL.revokeObjectURL(objectUrl);
     }
 }

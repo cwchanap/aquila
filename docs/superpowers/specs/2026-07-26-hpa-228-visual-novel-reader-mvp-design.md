@@ -172,8 +172,8 @@ Implements HPA-227's `AssetResolver` interface:
 
 The resolver is configured with an `AssetResolverSource`. A resolver factory
 maps a registered story to its local preview source and returns
-`AssetResolver | null`. UI components call the factory but never concatenate
-asset paths or construct asset-domain URLs.
+`AssetResolverSource | null`. UI components call the factory but never
+concatenate asset paths or construct asset-domain URLs.
 
 The Seventh Mirror local factory source is:
 
@@ -190,7 +190,9 @@ The Seventh Mirror local factory source is:
 safe URL helper rejects a relative `'/assets/'` value. Tests use an explicit
 absolute localhost origin.
 
-When a story has no configured source, the factory returns `null`. The
+When a story has no configured source, the factory returns `null` for the
+source lookup, but `createVisualRuntime()` always returns a disposable
+`VisualReaderRuntime` whose resolver is `null` for unsupported stories. The
 controller performs no pointer, manifest, or image requests and renders the
 story with a neutral background and no portrait. Lines without visual keys are
 `omitted`; a compiled visual key encountered without a source becomes a typed

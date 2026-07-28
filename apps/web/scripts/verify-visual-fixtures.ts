@@ -5,6 +5,7 @@ import {
     assertReleaseIdMatchesContentSha256,
     assertSha256,
     canonicalReleaseContent,
+    getCurrentPointerPath,
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
     parseStoryAssetReleasePlan,
@@ -92,7 +93,7 @@ export async function verifyVisualFixtures(
 
     const pointerPath = resolve(
         publicRoot,
-        'vn/previews/hpa-228-local/stories/the_seventh_mirror/current.json'
+        getCurrentPointerPath(STORY_ID, PREVIEW_TARGET)
     );
     let pointer: ReturnType<typeof parseActiveReleasePointer> | undefined;
     let manifest: ReturnType<typeof parseRuntimeAssetManifest> | undefined;
@@ -138,8 +139,13 @@ export async function verifyVisualFixtures(
         }
 
         for (const asset of manifest.assets) {
-            const object = asset.variants.webp;
+            const assetId = `${asset.identity.type}/${asset.identity.key}`;
             try {
+                const object = asset.variants.webp;
+                if (!object) {
+                    problems.push(`object missing webp variant: ${assetId}`);
+                    continue;
+                }
                 const bytes = await readFile(resolve(publicRoot, object.path));
                 if (sha256(bytes) !== object.sha256) {
                     problems.push(`object SHA-256 mismatch: ${object.path}`);
@@ -157,7 +163,7 @@ export async function verifyVisualFixtures(
                     problems.push(`object dimensions mismatch: ${object.path}`);
                 }
             } catch (error) {
-                problems.push(`object ${object.path}: ${String(error)}`);
+                problems.push(`object ${assetId}: ${String(error)}`);
             }
         }
     }

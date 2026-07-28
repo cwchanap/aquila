@@ -25,7 +25,7 @@ export function isReaderInteractiveTarget(target: EventTarget | null): boolean {
     if (!(target instanceof Element)) return false;
     return (
         target.closest(
-            'a,button,input,select,textarea,option,[contenteditable="true"],' +
+            'a,button,input,select,textarea,option,[contenteditable],' +
                 '[role="dialog"],[data-reader-interactive]'
         ) !== null
     );

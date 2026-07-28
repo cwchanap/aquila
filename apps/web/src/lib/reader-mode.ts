@@ -4,7 +4,8 @@ export const READER_MODE_KEY = 'aquila:reader-mode:v1';
 
 export function getBrowserStorage(): Storage | null {
     try {
-        return globalThis.localStorage;
+        const storage = globalThis.localStorage;
+        return typeof storage === 'undefined' ? null : storage;
     } catch {
         return null;
     }

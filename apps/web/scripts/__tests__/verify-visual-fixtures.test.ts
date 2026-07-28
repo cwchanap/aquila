@@ -363,6 +363,8 @@ describe('verify-visual-fixtures', () => {
         wireHappyPath();
         // Override: object file read throws.
         const firstObjectPath = [...release.objectBuffers.keys()][0]!;
+        const firstIdentity = FIXTURE_IDENTITIES[0]!;
+        const firstAssetId = `${firstIdentity.type}/${firstIdentity.key}`;
         mockReadFile.mockImplementation(async (path: string) => {
             const p = String(path);
             if (p.includes('image-assets.json')) return imageAssetsJson();
@@ -383,7 +385,7 @@ describe('verify-visual-fixtures', () => {
 
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(
-            new RegExp(`object ${firstObjectPath.replace(/\//g, '\\/')}:`)
+            new RegExp(`object ${firstAssetId.replace(/\//g, '\\/')}:`)
         );
     });
 

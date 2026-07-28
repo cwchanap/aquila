@@ -1609,7 +1609,7 @@ rtk git commit -m "feat(web): add responsive visual novel reader"
 
 **Interfaces:**
 - Produces: `readReaderMode()`, `writeReaderMode()`
-- Produces: `createVisualRuntime(storyId, origin, getSceneDialogue): VisualReaderRuntime | null`
+- Produces: `createVisualRuntime(storyId, origin, getSceneDialogue): VisualReaderRuntime`
 - Integrates: one always-visible z-80 mode control and one retained runtime per active sourced story.
 
 - [ ] **Step 1: Write failing preference tests**
@@ -1712,11 +1712,10 @@ export function createVisualRuntime(
         storyId: string,
         sceneId: string
     ) => readonly DialogueEntry[] | null
-): VisualReaderRuntime | null {
+): VisualReaderRuntime {
     const source = getAssetResolverSource(storyId, origin);
-    if (!source) return null;
     const store = new ValidatedReleaseStore(getBrowserStorage());
-    const resolver = new WebAssetResolver(source, { store });
+    const resolver = source ? new WebAssetResolver(source, { store }) : null;
     const cache = new DecodedAssetCache();
     const controller = new VisualStateController({
         resolver,
@@ -1731,8 +1730,11 @@ export function createVisualRuntime(
         softRevalidate: () => controller.softRevalidate(),
         dispose: async () => {
             controller.dispose();
-            await cache.clear();
-            resolver.clear();
+            try {
+                await cache.clear();
+            } finally {
+                resolver?.clear();
+            }
         },
     };
 }
@@ -1961,7 +1963,9 @@ rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts --project=mobile-chrom
 rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts --project=mobile-safari
 ```
 
-Expected: PASS on desktop, mobile portrait, and the explicit landscape test.
+Expected: PASS on desktop, mobile portrait, and the explicit landscape test
+(passes on the mobile projects and is intentionally skipped for desktop
+Chromium, matching the skip condition in the landscape test).
 
 - [ ] **Step 7: Run the complete verification matrix**
 

@@ -13,7 +13,14 @@ import {
     type ValidatedReleaseRecord,
 } from '../web-asset-resolver';
 import previewPointerText from '../../../../public/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/current.json?raw';
-import previewManifestText from '../../../../public/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/releases/sha256-9ec642a37a531d9d59fb22470ef95e35493e6b7b9c92b240fd59ff0014fa1b4d/runtime-manifest.json?raw';
+
+// Resolve the manifest at runtime from the pointer's manifestPath instead of
+// importing a release directory containing a hard-coded SHA-256 hash. This
+// keeps the test resilient to release rotation.
+const releaseManifests = import.meta.glob(
+    '../../../../public/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/releases/*/runtime-manifest.json',
+    { query: '?raw', import: 'default', eager: true }
+) as Record<string, string>;
 
 const SOURCE: AssetResolverSource = {
     environment: 'local',
@@ -219,6 +226,12 @@ describe('WebAssetResolver', () => {
 
     it('loads and resolves the checked-in local preview fixture', async () => {
         const pointer = JSON.parse(previewPointerText) as Documents['pointer'];
+        const manifestPath = pointer.manifestPath;
+        const manifestEntry = Object.entries(releaseManifests).find(([path]) =>
+            path.endsWith(manifestPath)
+        );
+        expect(manifestEntry).toBeDefined();
+        const previewManifestText = manifestEntry![1];
         const manifest = JSON.parse(
             previewManifestText
         ) as RuntimeAssetManifestV1;

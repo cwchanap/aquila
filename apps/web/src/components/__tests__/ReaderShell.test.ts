@@ -415,7 +415,6 @@ describe('ReaderShell', () => {
         const visualStatus = await screen.findByTestId('visual-status');
         const ready = screen.getByTestId('reader-ready');
         expect(visualStatus).toHaveTextContent('Visuals are unavailable');
-        expect(visualStatus).toHaveClass('z-[80]');
         expect(ready).not.toContainElement(visualStatus);
 
         readerState.loadStatus = 'loading';

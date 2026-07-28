@@ -177,6 +177,8 @@ export class VisualStateController {
     private activeBackgroundCacheKey: string | null = null;
     private stagingBackgroundCacheKey: string | null = null;
     private portraitCacheKey: string | null = null;
+    private activeReleaseId: string | null = null;
+    private releaseRefreshPending = false;
     private readonly loadFailures: string[] = [];
 
     constructor(options: VisualStateControllerOptions) {
@@ -299,6 +301,8 @@ export class VisualStateController {
         this.activeBackgroundCacheKey = null;
         this.stagingBackgroundCacheKey = null;
         this.portraitCacheKey = null;
+        this.activeReleaseId = null;
+        this.releaseRefreshPending = false;
         this.snapshot = initialSnapshot();
         this.cache.setProtectedKeys(new Set());
         for (const listener of this.listeners) listener(this.snapshot);
@@ -315,7 +319,13 @@ export class VisualStateController {
         const portraitKey = portraitIdentity
             ? qualifyAssetIdentity(portraitIdentity)
             : null;
+        // When a soft revalidation activated a new release, the same logical
+        // identity may point to different immutable bytes. Force reload even
+        // when the layer's identity matches so the new variant is fetched and
+        // the old background is retained only until the new object is verified.
+        const forceRefresh = this.releaseRefreshPending;
         const sameActiveBackground =
+            !forceRefresh &&
             backgroundKey !== null &&
             this.isLayerShowing(
                 this.snapshot.activeBackground,
@@ -323,6 +333,7 @@ export class VisualStateController {
             );
         const slot = this.portraitSlot(input, entry?.characterId);
         const samePortrait =
+            !forceRefresh &&
             portraitKey !== null &&
             this.isLayerShowing(this.snapshot.portrait, portraitIdentity!);
 
@@ -360,13 +371,15 @@ export class VisualStateController {
             this.failKeyedLayers(input, entry);
             return;
         }
+        const forceRefresh = this.releaseRefreshPending;
         const work: Promise<void>[] = [];
         if (
             entry?.background &&
-            !this.isLayerShowing(this.snapshot.activeBackground, {
-                type: 'background',
-                key: entry.background,
-            })
+            (forceRefresh ||
+                !this.isLayerShowing(this.snapshot.activeBackground, {
+                    type: 'background',
+                    key: entry.background,
+                }))
         ) {
             work.push(
                 this.loadBackground(input, generation, {
@@ -377,10 +390,11 @@ export class VisualStateController {
         }
         if (
             entry?.portrait &&
-            !this.isLayerShowing(this.snapshot.portrait, {
-                type: 'portrait',
-                key: entry.portrait,
-            })
+            (forceRefresh ||
+                !this.isLayerShowing(this.snapshot.portrait, {
+                    type: 'portrait',
+                    key: entry.portrait,
+                }))
         ) {
             work.push(
                 this.loadPortrait(
@@ -394,6 +408,7 @@ export class VisualStateController {
                 )
             );
         }
+        this.releaseRefreshPending = false;
         this.warmWithinScene(input, generation);
         this.prefetchImmediateEdges(input, generation);
         await Promise.all(work);
@@ -428,6 +443,11 @@ export class VisualStateController {
             .loadActiveRelease({ signal: this.abortController.signal })
             .then(validated => {
                 if (this.disposed) return false;
+                const releaseId = validated.pointer.releaseId;
+                if (releaseId !== this.activeReleaseId) {
+                    this.activeReleaseId = releaseId;
+                    this.releaseRefreshPending = true;
+                }
                 this.publish({
                     release:
                         validated.source === 'last-validated-release'
@@ -441,10 +461,12 @@ export class VisualStateController {
                 if (this.disposed || this.abortController.signal.aborted) {
                     return false;
                 }
-                if (hadUsableRelease) {
-                    this.publish({ release: 'stale-but-usable' });
-                    return true;
-                }
+                // Trust the resolver's expiry decision. When loadActiveRelease
+                // rejects, even the stored fallback is expired or invalid — the
+                // controller must not paper over that with a stale-but-usable
+                // state. Transition to the appropriate fallback state so keyed
+                // layers fail rather than displaying expired assets.
+                this.activeReleaseId = null;
                 this.publish({ release: releaseStateForError(error) });
                 return false;
             })

@@ -262,6 +262,9 @@
   const TAP_MOVEMENT_THRESHOLD_PX = 10;
   let pointerDownX: number | null = null;
   let pointerDownY: number | null = null;
+  let pointerDownId: number | null = null;
+  let pointerDownEligible = false;
+  let pointerMoved = false;
 
   function isAdvanceEligiblePointer(event: globalThis.PointerEvent): boolean {
     if (event.defaultPrevented || event.button !== 0) return false;
@@ -281,22 +284,54 @@
       event.shiftKey
     )
       return;
+    // Track eligibility at pointer down so a gesture starting on a button,
+    // link, choice, or backlog control cannot advance dialogue by sliding
+    // off the control before release.
+    if (isReaderInteractiveTarget(event.target)) {
+      pointerDownEligible = false;
+      return;
+    }
     pointerDownX = event.clientX;
     pointerDownY = event.clientY;
+    pointerDownId = event.pointerId;
+    pointerDownEligible = true;
+    pointerMoved = false;
+  }
+
+  function handlePointerMove(event: globalThis.PointerEvent): void {
+    if (pointerDownX === null || pointerDownY === null) return;
+    if (event.pointerId !== pointerDownId) return;
+    const dx = event.clientX - pointerDownX;
+    const dy = event.clientY - pointerDownY;
+    if (dx * dx + dy * dy > TAP_MOVEMENT_THRESHOLD_PX ** 2) {
+      pointerMoved = true;
+    }
   }
 
   function handlePointerCancel(): void {
     pointerDownX = null;
     pointerDownY = null;
+    pointerDownId = null;
+    pointerDownEligible = false;
+    pointerMoved = false;
   }
 
   function handlePointer(event: globalThis.PointerEvent): void {
     const downX = pointerDownX;
     const downY = pointerDownY;
+    const eligible = pointerDownEligible;
+    const moved = pointerMoved;
     pointerDownX = null;
     pointerDownY = null;
+    pointerDownId = null;
+    pointerDownEligible = false;
+    pointerMoved = false;
+    if (!eligible || moved) return;
     if (!isAdvanceEligiblePointer(event)) return;
     if (downX === null || downY === null) return;
+    // Keep the final-displacement check as a fallback for environments that
+    // do not dispatch pointermove between down and up (e.g. some test
+    // runtimes or fast taps that jump coordinates).
     const dx = event.clientX - downX;
     const dy = event.clientY - downY;
     if (dx * dx + dy * dy > TAP_MOVEMENT_THRESHOLD_PX ** 2) return;
@@ -319,6 +354,7 @@
   class="visual-novel-reader"
   style="height: 100dvh; min-height: 0;"
   onpointerdown={handlePointerDown}
+  onpointermove={handlePointerMove}
   onpointerup={handlePointer}
   onpointercancel={handlePointerCancel}
 >

@@ -721,4 +721,68 @@ describe('VisualNovelReader', () => {
 
         expect(onIndexChange).not.toHaveBeenCalled();
     });
+
+    it('does not advance when a gesture begins on an interactive control and releases on the reader', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        const root = screen.getByTestId('visual-novel-reader');
+        const history = screen.getByRole('button', { name: 'Open history' });
+
+        await fireEvent.pointerDown(history, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            clientX: 10,
+            clientY: 10,
+        });
+        await fireEvent.pointerUp(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            clientX: 200,
+            clientY: 200,
+        });
+
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('does not advance when movement exceeds the threshold and returns to the origin before release', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        const root = screen.getByTestId('visual-novel-reader');
+
+        await fireEvent.pointerDown(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 100,
+        });
+        await fireEvent.pointerMove(root, {
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 150,
+        });
+        await fireEvent.pointerUp(root, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 100,
+        });
+
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
 });

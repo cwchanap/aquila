@@ -107,7 +107,7 @@ function fallback(
 
 function release(source: 'network' | 'last-validated-release' = 'network') {
     return {
-        pointer: {},
+        pointer: { releaseId: 'sha256-fixed-release' },
         manifest: {},
         validatedAt: '2026-07-26T00:00:00.000Z',
         source,
@@ -634,6 +634,54 @@ describe('VisualStateController', () => {
         expect(latest().release).toBe('ready');
         expect(latest().activeBackground.objectUrl).toBe('blob:room');
         expect(latest().status).toBeNull();
+    });
+
+    it('reloads the current background and portrait when a revalidation activates a new release', async () => {
+        let now = 0;
+        let firstLoad = true;
+        const loadRelease = vi.fn(async () => {
+            const releaseId = firstLoad
+                ? 'sha256-release-v1'
+                : 'sha256-release-v2';
+            firstLoad = false;
+            return {
+                pointer: { releaseId },
+                manifest: {},
+                validatedAt: '2026-07-26T00:00:00.000Z',
+                source: 'network',
+            } as ValidatedAssetRelease;
+        });
+        const { cache, controller, latest } = createHarness({
+            loadRelease,
+            now: () => now,
+        });
+        controller.update(
+            input([
+                {
+                    dialogue: 'Same identity',
+                    background: 'room',
+                    portrait: 'mio/base',
+                    characterId: 'mio',
+                },
+            ])
+        );
+        await flushAsyncWork();
+        expect(latest().activeBackground.state).toBe('ready');
+        expect(latest().portrait.state).toBe('ready');
+        const initialLoadCalls = (cache.load as ReturnType<typeof vi.fn>).mock
+            .calls.length;
+
+        now = 70_000;
+        await controller.softRevalidate();
+        await flushAsyncWork();
+
+        // The logical identity is unchanged but the release ID changed, so the
+        // controller must request the new variant from the cache rather than
+        // treating the old Blob URL as current.
+        expect(
+            (cache.load as ReturnType<typeof vi.fn>).mock.calls.length
+        ).toBeGreaterThan(initialLoadCalls);
+        expect(latest().release).toBe('ready');
     });
 
     it('warms the next distinct within-scene visual through resolve and cache prefetch', async () => {
@@ -1169,13 +1217,13 @@ describe('VisualStateController', () => {
         ).toBe(callsBefore);
     });
 
-    it('keeps a usable release as stale-but-usable when a revalidation load fails', async () => {
+    it('transitions to an error state when a revalidation load fails after the release expires', async () => {
         vi.useFakeTimers();
         const now = vi.fn(() => 1000);
         const loadRelease = vi
             .fn()
             .mockResolvedValueOnce(release('network'))
-            .mockRejectedValue(new Error('offline'));
+            .mockRejectedValue(new AssetResolverError('network', 'offline'));
         const { controller, latest } = createHarness({ loadRelease, now });
         controller.update(input([{ dialogue: 'x', background: 'room' }]));
         await flushAsyncWork();
@@ -1184,7 +1232,12 @@ describe('VisualStateController', () => {
         vi.advanceTimersByTime(70_000);
         await controller.softRevalidate();
         await flushAsyncWork();
-        expect(latest().release).toBe('stale-but-usable');
+        // The resolver rejected, meaning even the stored fallback is expired
+        // or invalid. The controller must not claim stale-but-usable; it
+        // transitions to unavailable so keyed layers fail rather than
+        // displaying expired assets.
+        expect(latest().release).toBe('unavailable');
+        expect(latest().status).toBe('unavailable');
         vi.useRealTimers();
     });
 

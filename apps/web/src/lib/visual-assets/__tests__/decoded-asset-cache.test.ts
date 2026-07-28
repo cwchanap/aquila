@@ -1106,6 +1106,51 @@ describe('DecodedAssetCache', () => {
         });
     });
 
+    it('classifies a body-read abort during the asset timeout as a timeout error', async () => {
+        vi.useFakeTimers();
+        const asset = createResolvedAsset({ label: 'body-stall' });
+        const fetchSpy = vi.fn(
+            async (_input: RequestInfo | URL, init?: RequestInit) => {
+                // Headers resolve immediately, but the body stream stalls
+                // until the fetch signal aborts it.
+                const body = new Response(
+                    new ReadableStream({
+                        start(controller) {
+                            init?.signal?.addEventListener(
+                                'abort',
+                                () => {
+                                    controller.error(
+                                        new DOMException(
+                                            'The operation was aborted',
+                                            'AbortError'
+                                        )
+                                    );
+                                },
+                                { once: true }
+                            );
+                        },
+                    })
+                );
+                return body;
+            }
+        ) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchSpy,
+            decodeImage: successfulDecoder(),
+        });
+
+        const load = cache.load(asset);
+        const rejection = expect(load).rejects.toMatchObject({
+            code: 'timeout',
+        });
+        await vi.advanceTimersByTimeAsync(
+            RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset
+        );
+
+        await rejection;
+        vi.useRealTimers();
+    });
+
     it('rejects with the signal reason when an already-aborted signal is provided', async () => {
         const asset = createResolvedAsset({ label: 'pre-aborted' });
         const cache = new DecodedAssetCache({

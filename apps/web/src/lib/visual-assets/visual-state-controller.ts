@@ -234,11 +234,11 @@ export class VisualStateController {
         const activeBackground = detach(this.snapshot.activeBackground);
         const stagingBackground = detach(this.snapshot.stagingBackground);
         const portrait = detach(this.snapshot.portrait);
-        if (
+        const layerChanged =
             activeBackground !== this.snapshot.activeBackground ||
             stagingBackground !== this.snapshot.stagingBackground ||
-            portrait !== this.snapshot.portrait
-        ) {
+            portrait !== this.snapshot.portrait;
+        if (layerChanged) {
             if (this.snapshot.activeBackground.objectUrl === objectUrl) {
                 this.activeBackgroundCacheKey = null;
             }
@@ -249,14 +249,22 @@ export class VisualStateController {
                 this.portraitCacheKey = null;
             }
             this.publish({ activeBackground, stagingBackground, portrait });
+            // Wait one render barrier so the browser paints the detached
+            // layers before the object URL is revoked. A timeout fallback
+            // prevents indefinite suspension when the tab is hidden and
+            // requestAnimationFrame is throttled or paused.
+            await new Promise<void>(resolve => {
+                if (typeof globalThis.requestAnimationFrame === 'function') {
+                    const timer = globalThis.setTimeout(resolve, 1000);
+                    globalThis.requestAnimationFrame(() => {
+                        globalThis.clearTimeout(timer);
+                        resolve();
+                    });
+                } else {
+                    globalThis.setTimeout(resolve, 0);
+                }
+            });
         }
-        await new Promise<void>(resolve => {
-            if (typeof globalThis.requestAnimationFrame === 'function') {
-                globalThis.requestAnimationFrame(() => resolve());
-            } else {
-                globalThis.setTimeout(resolve, 0);
-            }
-        });
     }
 
     async softRevalidate(): Promise<void> {

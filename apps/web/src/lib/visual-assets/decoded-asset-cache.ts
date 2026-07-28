@@ -475,6 +475,14 @@ export class DecodedAssetCache {
             try {
                 bytes = new Uint8Array(await response.arrayBuffer());
             } catch (cause) {
+                if (timedOut) {
+                    throw new AssetResolverError(
+                        'timeout',
+                        `Runtime asset request timed out after ${RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset}ms`,
+                        { cause }
+                    );
+                }
+                if (parentSignal.aborted) throw abortError(parentSignal);
                 throw asNetworkError(
                     cause,
                     'Runtime asset response could not be read'

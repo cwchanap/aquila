@@ -97,9 +97,7 @@
   let currentDialogue = $derived(dialogue[dialogueIndex]);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
-  let showChoices = $derived(
-    !!currentDialogue && !!choice && !isTyping && isLastDialogue
-  );
+  let showChoices = $derived(!!choice && !isTyping && isLastDialogue);
   let progressText = $derived(
     t.reader.pageDisplay
       .replace('{current}', String(dialogueIndex + 1))
@@ -261,11 +259,47 @@
     advance();
   }
 
+  const TAP_MOVEMENT_THRESHOLD_PX = 10;
+  let pointerDownX: number | null = null;
+  let pointerDownY: number | null = null;
+
+  function isAdvanceEligiblePointer(event: globalThis.PointerEvent): boolean {
+    if (event.defaultPrevented || event.button !== 0) return false;
+    if (event.isPrimary === false) return false;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return false;
+    if (isReaderInteractiveTarget(event.target)) return false;
+    return true;
+  }
+
+  function handlePointerDown(event: globalThis.PointerEvent): void {
+    if (event.button !== 0 || event.isPrimary === false) return;
+    if (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    )
+      return;
+    pointerDownX = event.clientX;
+    pointerDownY = event.clientY;
+  }
+
+  function handlePointerCancel(): void {
+    pointerDownX = null;
+    pointerDownY = null;
+  }
+
   function handlePointer(event: globalThis.PointerEvent): void {
-    if (event.defaultPrevented || event.button !== 0) return;
-    if (event.isPrimary === false) return;
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    if (isReaderInteractiveTarget(event.target)) return;
+    const downX = pointerDownX;
+    const downY = pointerDownY;
+    pointerDownX = null;
+    pointerDownY = null;
+    if (!isAdvanceEligiblePointer(event)) return;
+    if (downX === null || downY === null) return;
+    const dx = event.clientX - downX;
+    const dy = event.clientY - downY;
+    if (dx * dx + dy * dy > TAP_MOVEMENT_THRESHOLD_PX ** 2) return;
     advance();
   }
 
@@ -284,7 +318,9 @@
   data-visual-release-state={snapshot.release}
   class="visual-novel-reader"
   style="height: 100dvh; min-height: 0;"
+  onpointerdown={handlePointerDown}
   onpointerup={handlePointer}
+  onpointercancel={handlePointerCancel}
 >
   <img
     class="background-layer"

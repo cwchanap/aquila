@@ -424,6 +424,110 @@ describe('WebAssetResolver', () => {
         ).toMatchObject({ status: 'fallback', reason: 'not-found' });
     });
 
+    it('does not deactivate a newer release accepted by a concurrent load when a failing load finishes last', async () => {
+        const newer = createDocuments({
+            key: 'release/newer',
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        });
+        // A stored record for a *different* source so that the failing
+        // load's fallback validation is async (sha256) but produces no
+        // candidate for this resolver's source.
+        const other = createDocuments({
+            key: 'other/source',
+            storyId: 'other_story',
+            publishedAt: '2026-07-26T09:00:00.000Z',
+        });
+        const otherRecord = storedRecord(other, {
+            source: {
+                environment: 'local',
+                storyId: 'other_story',
+                baseUrl: SOURCE.baseUrl,
+                target: SOURCE.target,
+            },
+        });
+
+        // Store that starts empty (so both seeds are instant) and reveals
+        // the other-source record only after the failing load's pointer
+        // fetch — making the fallback validation async.
+        let showOther = false;
+        const store = new ValidatedReleaseStore(createMemoryStorage());
+        const originalLoadRaw = store.loadRaw.bind(store);
+        store.loadRaw = () =>
+            showOther ? [...originalLoadRaw(), otherRecord] : originalLoadRaw();
+
+        // Crypto stub: gate the other-source record's manifestText digest
+        // (only hit during the failing load's fallback) so the succeeding
+        // load can accept while the failing load is still validating.
+        const realDigest = webcrypto.subtle.digest.bind(webcrypto.subtle);
+        const otherManifestGate = deferred<void>();
+        vi.stubGlobal('crypto', {
+            ...webcrypto,
+            subtle: {
+                ...webcrypto.subtle,
+                digest: async (alg: string, data: BufferSource) => {
+                    const text = new TextDecoder().decode(
+                        data instanceof ArrayBuffer
+                            ? new Uint8Array(data)
+                            : new Uint8Array(
+                                  data.buffer,
+                                  data.byteOffset,
+                                  data.byteLength
+                              )
+                    );
+                    if (text === other.manifestText) {
+                        await otherManifestGate.promise;
+                    }
+                    return realDigest(alg, data);
+                },
+            },
+        });
+
+        let pointerRequest = 0;
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.endsWith('/current.json')) {
+                if (pointerRequest++ === 0) {
+                    // Failing load's pointer — 404, and reveal the
+                    // other-source record so fallback validation is async.
+                    showOther = true;
+                    return new Response('not found', { status: 404 });
+                }
+                return new Response(newer.pointerText);
+            }
+            if (url.includes(newer.pointer.releaseId)) {
+                return new Response(newer.manifestText);
+            }
+            return new Response('missing', { status: 404 });
+        });
+
+        const resolver = createResolver(newer, {
+            fetchImpl: fetchMock as typeof fetch,
+            store,
+        });
+
+        // Start the failing load (A) and the succeeding load (B)
+        // concurrently. A starts first so its pointer fetch is the first
+        // request (returns 404 and reveals the other-source record).
+        const failingLoad = resolver.loadActiveRelease();
+        const succeedingLoad = resolver.loadActiveRelease();
+
+        // B succeeds while A is gated in fallback validation.
+        await expect(succeedingLoad).resolves.toMatchObject({
+            manifest: { releaseId: newer.pointer.releaseId },
+        });
+
+        // Release A's fallback gate.
+        otherManifestGate.resolve();
+
+        // A fails, but must NOT deactivate B's accepted release.
+        await expect(failingLoad).rejects.toMatchObject({
+            code: 'unavailable',
+        });
+        expect(
+            resolver.resolve({ type: 'background', key: 'release/newer' })
+        ).toMatchObject({ status: 'resolved' });
+    });
+
     it('rejects an unsafe source path before fetch', async () => {
         const fetchSpy = vi.fn() as unknown as typeof fetch;
         const resolver = new WebAssetResolver(

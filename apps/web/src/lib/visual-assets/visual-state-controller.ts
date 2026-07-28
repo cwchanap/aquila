@@ -177,6 +177,7 @@ export class VisualStateController {
     private activeBackgroundCacheKey: string | null = null;
     private stagingBackgroundCacheKey: string | null = null;
     private portraitCacheKey: string | null = null;
+    private readonly loadFailures: string[] = [];
 
     constructor(options: VisualStateControllerOptions) {
         this.resolver = options.resolver;
@@ -308,13 +309,14 @@ export class VisualStateController {
             : null;
         const sameActiveBackground =
             backgroundKey !== null &&
-            this.snapshot.activeBackground.state === 'ready' &&
-            this.snapshot.activeBackground.identity === backgroundKey;
+            this.isLayerShowing(
+                this.snapshot.activeBackground,
+                backgroundIdentity!
+            );
         const slot = this.portraitSlot(input, entry?.characterId);
         const samePortrait =
             portraitKey !== null &&
-            this.snapshot.portrait.state === 'ready' &&
-            this.snapshot.portrait.identity === portraitKey;
+            this.isLayerShowing(this.snapshot.portrait, portraitIdentity!);
 
         this.stagingBackgroundCacheKey = null;
         if (!samePortrait) this.portraitCacheKey = null;
@@ -353,14 +355,10 @@ export class VisualStateController {
         const work: Promise<void>[] = [];
         if (
             entry?.background &&
-            !(
-                this.snapshot.activeBackground.state === 'ready' &&
-                this.snapshot.activeBackground.identity ===
-                    qualifyAssetIdentity({
-                        type: 'background',
-                        key: entry.background,
-                    })
-            )
+            !this.isLayerShowing(this.snapshot.activeBackground, {
+                type: 'background',
+                key: entry.background,
+            })
         ) {
             work.push(
                 this.loadBackground(input, generation, {
@@ -371,14 +369,10 @@ export class VisualStateController {
         }
         if (
             entry?.portrait &&
-            !(
-                this.snapshot.portrait.state === 'ready' &&
-                this.snapshot.portrait.identity ===
-                    qualifyAssetIdentity({
-                        type: 'portrait',
-                        key: entry.portrait,
-                    })
-            )
+            !this.isLayerShowing(this.snapshot.portrait, {
+                type: 'portrait',
+                key: entry.portrait,
+            })
         ) {
             work.push(
                 this.loadPortrait(
@@ -557,7 +551,20 @@ export class VisualStateController {
                 signal: this.abortController.signal,
             });
             return { status: 'ready', decoded };
-        } catch {
+        } catch (error) {
+            if (
+                this.abortController.signal.aborted ||
+                (error instanceof DOMException &&
+                    error.name === 'AbortError') ||
+                (error instanceof Error && error.name === 'AbortError')
+            ) {
+                return { status: 'failed' };
+            }
+            this.loadFailures.push(
+                `load failed for ${qualifyAssetIdentity(identity)}: ${
+                    error instanceof Error ? error.message : String(error)
+                }`
+            );
             return { status: 'failed' };
         }
     }
@@ -710,7 +717,7 @@ export class VisualStateController {
                         return;
                     }
                     if (result.failed.length > 0) {
-                        this.completeEdgeReservation(edgeKey, generation);
+                        this.releaseEdgeReservation(edgeKey, generation);
                         return;
                     }
                     await Promise.all(
@@ -836,6 +843,16 @@ export class VisualStateController {
             (identity.type === 'background'
                 ? entry?.background
                 : entry?.portrait) === identity.key
+        );
+    }
+
+    private isLayerShowing(
+        layer: { state: string; identity: string | null },
+        identity: LogicalAssetIdentity
+    ): boolean {
+        return (
+            layer.state === 'ready' &&
+            layer.identity === qualifyAssetIdentity(identity)
         );
     }
 

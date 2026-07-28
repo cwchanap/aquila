@@ -132,7 +132,12 @@
     visualRuntimeStoryId = nextStoryId;
     visualRuntimeAttempted = false;
     visualRuntimeTransitioning = true;
-    await runtime?.dispose();
+    try {
+      await runtime?.dispose();
+    } catch {
+      // Swallow disposal errors — fire-and-forget must not produce
+      // unhandled rejections. The runtime is being replaced regardless.
+    }
     if (destroyed || generation !== runtimeGeneration) return;
     visualRuntimeTransitioning = false;
   }
@@ -263,7 +268,9 @@
     removeVisibilityListener();
     const runtime = visualRuntime;
     visualRuntime = null;
-    void runtime?.dispose();
+    void runtime?.dispose().catch(() => {
+      // Swallow disposal errors on destroy — component is gone regardless.
+    });
   });
 </script>
 

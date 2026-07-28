@@ -48,8 +48,11 @@ export function createVisualRuntime(
         softRevalidate: () => controller.softRevalidate(),
         dispose: async () => {
             controller.dispose();
-            await cache.clear();
-            resolver?.clear();
+            try {
+                await cache.clear();
+            } finally {
+                resolver?.clear();
+            }
         },
     };
 }

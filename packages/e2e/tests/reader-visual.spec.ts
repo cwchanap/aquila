@@ -242,6 +242,7 @@ test.describe('Visual novel reader', () => {
             'ready'
         );
         const previousUrl = await visual.activeBackground.getAttribute('src');
+        expect(previousUrl).not.toBeNull();
 
         await visual.root.click();
 
@@ -251,7 +252,7 @@ test.describe('Visual novel reader', () => {
         await expect(status).toHaveAttribute('aria-live', 'polite');
         await expect(visual.activeBackground).toHaveAttribute(
             'src',
-            previousUrl ?? ''
+            previousUrl!
         );
         await expect(
             page.getByText('現在那面鏡子放在澪自己的桌上。', {
@@ -283,6 +284,7 @@ test.describe('Visual novel reader', () => {
             'ready'
         );
         const previousUrl = await visual.activeBackground.getAttribute('src');
+        expect(previousUrl).not.toBeNull();
 
         await visual.root.click();
 
@@ -293,7 +295,7 @@ test.describe('Visual novel reader', () => {
         );
         await expect(visual.activeBackground).toHaveAttribute(
             'src',
-            previousUrl ?? ''
+            previousUrl!
         );
         const status = page.getByRole('status');
         await expect(status).toHaveText('Some visuals are unavailable');

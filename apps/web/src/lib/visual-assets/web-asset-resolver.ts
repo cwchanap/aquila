@@ -27,6 +27,7 @@ import {
     type RuntimeAssetManifestV1,
     type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
+import { getBrowserStorage } from '@/lib/reader-mode';
 import { sha256Hex, utf8Bytes } from './hash';
 import { ValidatedReleaseStore } from './validated-release-store';
 
@@ -48,21 +49,15 @@ type RevalidatedStoredRelease = {
     manifest: RuntimeAssetManifestV1;
 };
 
+type LoadContext = {
+    validStoredReleases?: Promise<RevalidatedStoredRelease[]>;
+};
+
 export type WebAssetResolverOptions = {
     fetchImpl?: typeof fetch;
     store?: ValidatedReleaseStore;
     now?: () => number;
 };
-
-function getBrowserStorage(): Storage | null {
-    try {
-        return typeof globalThis.localStorage === 'undefined'
-            ? null
-            : globalThis.localStorage;
-    } catch {
-        return null;
-    }
-}
 
 function targetsEqual(
     left: PublicationTarget,
@@ -224,13 +219,14 @@ function asResolverError(error: unknown): AssetResolverError {
           });
 }
 
-async function fetchWithTimeout(
+async function fetchWithTimeout<T>(
     fetchImpl: typeof fetch,
     url: URL,
     timeoutMs: number,
     init: RequestInit,
-    parentSignal?: AbortSignal
-): Promise<Response> {
+    parentSignal: AbortSignal | undefined,
+    callback: (response: Response) => Promise<T>
+): Promise<T> {
     const controller = new AbortController();
     let timedOut = false;
     const timeout = globalThis.setTimeout(() => {
@@ -240,7 +236,11 @@ async function fetchWithTimeout(
     const abort = () => controller.abort();
     parentSignal?.addEventListener('abort', abort, { once: true });
     try {
-        return await fetchImpl(url, { ...init, signal: controller.signal });
+        const response = await fetchImpl(url, {
+            ...init,
+            signal: controller.signal,
+        });
+        return await callback(response);
     } catch (cause) {
         if (timedOut) {
             throw new AssetResolverError(
@@ -263,32 +263,33 @@ async function readResponseText(
     cache: RequestCache,
     signal?: AbortSignal
 ): Promise<string> {
-    let response: Response;
     try {
-        response = await fetchWithTimeout(
+        return await fetchWithTimeout(
             fetchImpl,
             url,
             timeoutMs,
             { cache },
-            signal
+            signal,
+            async response => {
+                if (!response.ok) {
+                    throw new AssetResolverError(
+                        'unavailable',
+                        `Runtime asset request returned HTTP ${response.status}`
+                    );
+                }
+                try {
+                    return await response.text();
+                } catch (cause) {
+                    throw new AssetResolverError(
+                        'network',
+                        'Runtime asset response could not be read',
+                        { cause }
+                    );
+                }
+            }
         );
     } catch (error) {
         throw asResolverError(error);
-    }
-    if (!response.ok) {
-        throw new AssetResolverError(
-            'unavailable',
-            `Runtime asset request returned HTTP ${response.status}`
-        );
-    }
-    try {
-        return await response.text();
-    } catch (cause) {
-        throw new AssetResolverError(
-            'network',
-            'Runtime asset response could not be read',
-            { cause }
-        );
     }
 }
 
@@ -346,14 +347,17 @@ export class WebAssetResolver implements AssetResolver {
         options?.signal?.addEventListener('abort', abort, { once: true });
         this.inFlightLoads.add(loadController);
         try {
+            const loadContext: LoadContext = {};
             await this.seedNewestStoredPublishedAt(
                 this.now(),
                 generation,
-                loadController.signal
+                loadController.signal,
+                loadContext
             );
             return await this.loadFromNetwork(
                 loadController.signal,
-                generation
+                generation,
+                loadContext
             );
         } catch (error) {
             const resolverError = asResolverError(error);
@@ -471,7 +475,8 @@ export class WebAssetResolver implements AssetResolver {
 
     private async loadFromNetwork(
         signal: AbortSignal,
-        generation: number
+        generation: number,
+        loadContext: LoadContext
     ): Promise<ValidatedAssetRelease> {
         const pointerUrl = resolveAssetUrl(
             this.source.baseUrl,
@@ -530,7 +535,7 @@ export class WebAssetResolver implements AssetResolver {
         };
         this.assertLoadCanActivate(pointer, generation, signal);
         this.acceptRelease(record, pointer, manifest);
-        await this.persistAcceptedRecord(record, now);
+        await this.persistAcceptedRecord(record, now, loadContext);
         return {
             pointer,
             manifest,
@@ -655,11 +660,12 @@ export class WebAssetResolver implements AssetResolver {
 
     private async persistAcceptedRecord(
         acceptedRecord: ValidatedReleaseRecord,
-        now: number
+        now: number,
+        loadContext: LoadContext
     ): Promise<void> {
-        const validRecords = (await this.loadValidStoredReleases(now)).map(
-            release => release.record
-        );
+        const validRecords = (
+            await this.loadValidStoredReleases(now, loadContext)
+        ).map(release => release.record);
         const nextRecords = upsertByReleaseId(validRecords, acceptedRecord)
             .sort((left, right) => right.lastUsedAt - left.lastUsedAt)
             .slice(
@@ -674,6 +680,20 @@ export class WebAssetResolver implements AssetResolver {
     }
 
     private async loadValidStoredReleases(
+        now: number,
+        loadContext?: LoadContext
+    ): Promise<RevalidatedStoredRelease[]> {
+        if (loadContext?.validStoredReleases) {
+            return loadContext.validStoredReleases;
+        }
+        const promise = this.computeValidStoredReleases(now);
+        if (loadContext) {
+            loadContext.validStoredReleases = promise;
+        }
+        return promise;
+    }
+
+    private async computeValidStoredReleases(
         now: number
     ): Promise<RevalidatedStoredRelease[]> {
         const rawRecords = [
@@ -775,9 +795,10 @@ export class WebAssetResolver implements AssetResolver {
     private async seedNewestStoredPublishedAt(
         now: number,
         generation: number,
-        signal: AbortSignal
+        signal: AbortSignal,
+        loadContext: LoadContext
     ): Promise<void> {
-        const valid = await this.loadValidStoredReleases(now);
+        const valid = await this.loadValidStoredReleases(now, loadContext);
         if (!this.isLoadCurrent(generation, signal)) {
             throw new AssetResolverError(
                 'network',

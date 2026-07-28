@@ -1,8 +1,11 @@
 export class PrefetchQueue {
     private active = 0;
     private readonly pending: Array<() => void> = [];
+    private readonly limit: number;
 
-    constructor(private readonly limit = 2) {}
+    constructor(limit = 2) {
+        this.limit = Math.max(1, limit);
+    }
 
     async run<T>(work: () => Promise<T>): Promise<T> {
         if (this.active >= this.limit) {

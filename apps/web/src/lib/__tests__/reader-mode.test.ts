@@ -21,6 +21,8 @@ describe('reader mode persistence', () => {
     it('writes only explicit valid mode toggles', () => {
         writeReaderMode('visual');
         expect(localStorage.getItem(READER_MODE_KEY)).toBe('visual');
+        writeReaderMode('text');
+        expect(localStorage.getItem(READER_MODE_KEY)).toBe('text');
     });
 
     it('returns null when localStorage access throws', () => {

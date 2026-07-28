@@ -401,7 +401,8 @@ export class ReaderManager {
         ) {
             return null;
         }
-        return story.dialogue[sceneId] ?? null;
+        const entries = story.dialogue[sceneId];
+        return entries ? ([...entries] as readonly DialogueEntry[]) : null;
     };
 
     private getSceneData(

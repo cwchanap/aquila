@@ -13,7 +13,6 @@ import type {
     StoryPresentationMetadata,
 } from '@aquila/stories';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DecodedAssetCache } from '../decoded-asset-cache';
 import type { DecodedAsset, VisualSnapshot } from '../types';
 import {
     VisualStateController,
@@ -157,7 +156,7 @@ function createHarness(options?: {
     );
     const controller = new VisualStateController({
         resolver,
-        cache: cache as unknown as DecodedAssetCache,
+        cache,
         getSceneDialogue,
         now: options?.now,
     });
@@ -276,7 +275,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
-            cache: cache as unknown as DecodedAssetCache,
+            cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
         const snapshots: VisualSnapshot[] = [];
@@ -534,6 +533,34 @@ describe('VisualStateController', () => {
         frameCallback?.(0);
         await pending;
         expect(detached).toBe(true);
+    });
+
+    it('detaches a URL through the setTimeout fallback when requestAnimationFrame is undefined', async () => {
+        vi.useFakeTimers();
+        vi.stubGlobal('requestAnimationFrame', undefined);
+        try {
+            const { controller, latest } = createHarness();
+            controller.update(input([{ dialogue: 'x', background: 'room' }]));
+            await flushAsyncWork();
+            const url = latest().activeBackground.objectUrl;
+            expect(url).not.toBeNull();
+
+            let detached = false;
+            const pending = controller
+                .detachObjectUrl(url!)
+                .then(() => (detached = true));
+
+            expect(latest().activeBackground.objectUrl).toBeNull();
+            await Promise.resolve();
+            expect(detached).toBe(false);
+
+            await vi.advanceTimersByTimeAsync(0);
+            await pending;
+            expect(detached).toBe(true);
+        } finally {
+            vi.unstubAllGlobals();
+            vi.useRealTimers();
+        }
     });
 
     it('soft revalidates only after the last pointer check is 60 seconds old', async () => {
@@ -833,6 +860,37 @@ describe('VisualStateController', () => {
         );
     });
 
+    it('keeps an edge reservation retryable when prefetchNextEdge reports failures', async () => {
+        const { controller, resolver } = createHarness({
+            sceneDialogue: {
+                next: [{ dialogue: 'Next', background: 'next-room' }],
+            },
+        });
+        vi.mocked(resolver.prefetchNextEdge).mockResolvedValue({
+            requested: 1,
+            cached: 0,
+            failed: [
+                {
+                    status: 'fallback',
+                    identity: { type: 'background', key: 'next-room' },
+                    reason: 'not-found',
+                    error: new AssetResolverError('not-found', 'not-found'),
+                },
+            ],
+        });
+
+        const edgeInput = input([
+            { dialogue: 'Final', background: 'current-room' },
+        ]);
+        controller.update(edgeInput);
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(1);
+
+        controller.update(edgeInput);
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(2);
+    });
+
     it('prefetches every immediate choice edge once but never a second edge', async () => {
         const flow = {
             start: 'choice_scene',
@@ -1022,7 +1080,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
-            cache: cache as unknown as DecodedAssetCache,
+            cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
         await expect(controller.softRevalidate()).resolves.toBeUndefined();
@@ -1101,7 +1159,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
-            cache: cache as unknown as DecodedAssetCache,
+            cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
         const snapshots: VisualSnapshot[] = [];
@@ -1225,7 +1283,7 @@ describe('VisualStateController', () => {
         expect(targets).toEqual(['left_scene', 'right_scene']);
     });
 
-    it('completes the edge reservation even when prefetch returns failed assets', async () => {
+    it('keeps the edge reservation retryable when prefetch returns failed assets', async () => {
         const choiceFlow = {
             start: 'scene',
             nodes: [
@@ -1244,6 +1302,17 @@ describe('VisualStateController', () => {
                     kind: 'scene',
                     id: 'left_scene',
                     sceneId: 'left_scene',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const terminalFlow = {
+            start: 'terminal',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'terminal',
+                    sceneId: 'terminal',
                     next: null,
                 },
             ],
@@ -1272,29 +1341,28 @@ describe('VisualStateController', () => {
                 },
             ],
         });
+        const edgeInput = input([{ dialogue: 'last', background: 'room' }], {
+            flow: choiceFlow,
+            dialogueIndex: 0,
+        });
+        controller.update(edgeInput);
+        await flushAsyncWork();
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(1);
+
+        // Navigate away, then re-enter the same edge. Because the failed
+        // prefetch released (not completed) the reservation, re-entering
+        // must trigger a second prefetch attempt.
         controller.update(
-            input([{ dialogue: 'last', background: 'room' }], {
-                flow: choiceFlow,
-                dialogueIndex: 0,
+            input([{ dialogue: 'navigated away' }], {
+                sceneId: 'terminal',
+                flow: terminalFlow,
             })
         );
+        controller.update(edgeInput);
         await flushAsyncWork();
         await flushAsyncWork();
-        const callsBefore = (
-            resolver.prefetchNextEdge as ReturnType<typeof vi.fn>
-        ).mock.calls.length;
-        controller.update(
-            input([{ dialogue: 'last', background: 'room' }], {
-                flow: choiceFlow,
-                dialogueIndex: 0,
-            })
-        );
-        await flushAsyncWork();
-        await flushAsyncWork();
-        expect(
-            (resolver.prefetchNextEdge as ReturnType<typeof vi.fn>).mock.calls
-                .length
-        ).toBe(callsBefore);
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledTimes(2);
     });
 
     it('clears prefetched edges when the story id changes between updates', async () => {

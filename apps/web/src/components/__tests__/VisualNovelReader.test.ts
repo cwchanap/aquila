@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type {
     ChoiceDefinition,
@@ -497,5 +497,139 @@ describe('VisualNovelReader', () => {
         expect(
             screen.queryByTestId('visual-typewriter-cursor')
         ).not.toBeInTheDocument();
+    });
+
+    it('does not show a typewriter cursor when startTyping is called with an out-of-bounds index', async () => {
+        setReducedMotion(false);
+        // Render with an empty dialogue so Signal 1 does not call startTyping.
+        const { rerender } = renderReader({
+            dialogue: [],
+            dialogueIndex: 0,
+        });
+        expect(
+            screen.queryByTestId('visual-typewriter-cursor')
+        ).not.toBeInTheDocument();
+
+        // Rerender with a non-empty dialogue at an out-of-bounds index so
+        // Signal 1 calls startTyping with an undefined entry (lines 170-174).
+        rerender({ dialogue: [dialogue[0]], dialogueIndex: 5 });
+        await Promise.resolve();
+        expect(
+            screen.queryByTestId('visual-typewriter-cursor')
+        ).not.toBeInTheDocument();
+    });
+
+    it('starts typing the next line when the parent lifts a self-initiated advance', async () => {
+        setReducedMotion(false);
+        const { onIndexChange, rerender } = renderReader({
+            dialogueIndex: 0,
+        });
+        await vi.runAllTimersAsync(); // finish typing line 0
+
+        // Click advance → sets selfAdvanceTarget = 1, emits onIndexChange(1).
+        await fireEvent.pointerUp(screen.getByTestId('visual-novel-reader'), {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+        });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+
+        // Parent lifts the index → Signal 2 fires with selfAdvanced = true
+        // → startTyping(1) (line 225).
+        rerender({ dialogueIndex: 1 });
+        expect(
+            screen.getByTestId('visual-typewriter-cursor')
+        ).toBeInTheDocument();
+    });
+
+    it('calls onNext when advancing past the last line with canGoNext and no choice', async () => {
+        setReducedMotion(false);
+        const onNext = vi.fn();
+        renderReader({
+            dialogue: [dialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: true,
+            choice: null,
+            onNext,
+        });
+        await vi.runAllTimersAsync(); // finish typing
+
+        await fireEvent.click(screen.getByText('Next Scene'));
+        expect(onNext).toHaveBeenCalled();
+    });
+
+    it('does not advance when a non-Enter/Space key is pressed', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+
+        await fireEvent.keyDown(window, { key: 'Escape' });
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('advances the dialogue when Enter is pressed on a non-interactive target', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync(); // finish typing line 0
+
+        // Fire Enter on the main reader element (not a data-reader-interactive target)
+        // to exercise handleKeydown's preventDefault + advance() path (lines 260-262).
+        const root = screen.getByTestId('visual-novel-reader');
+        await fireEvent.keyDown(root, { key: 'Enter' });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+    });
+
+    it('toggles the act panel open and closed via the toggle button', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+
+        const toggle = screen.getByRole('button', {
+            name: 'Open acts panel',
+        });
+        await fireEvent.click(toggle);
+        expect(
+            screen.getByRole('button', { name: 'Close acts panel' })
+        ).toBeInTheDocument();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close acts panel' })
+        );
+        expect(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        ).toBeInTheDocument();
+    });
+
+    it('calls onNavigate when the act panel selects a different scene', async () => {
+        setReducedMotion(false);
+        const onNavigate = vi.fn();
+        renderReader({ isInitialMount: false, onNavigate });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        );
+        await waitFor(() =>
+            expect(screen.getByText('Act 2')).toBeInTheDocument()
+        );
+        await fireEvent.click(screen.getByText('Act 2'));
+        expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
+    });
+
+    it('calls onBookmark with dialogueIndex + 1 when the bookmark button is clicked', async () => {
+        setReducedMotion(false);
+        const onBookmark = vi.fn();
+        renderReader({
+            dialogueIndex: 1,
+            onBookmark,
+            isInitialMount: false,
+        });
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Bookmark' }));
+        expect(onBookmark).toHaveBeenCalledWith(2);
     });
 });

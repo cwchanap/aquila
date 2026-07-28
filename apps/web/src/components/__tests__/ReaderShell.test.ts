@@ -740,4 +740,46 @@ describe('ReaderShell', () => {
             document.querySelectorAll('[class*="animate-pulse"]').length
         ).toBeGreaterThan(0);
     });
+
+    it('defaults to desktop and skips the media-query listener when matchMedia is unavailable', () => {
+        // Remove matchMedia to cover the SSR/no-matchMedia guard branches
+        // (readMatch returns false, onMount returns early).
+        const original = window.matchMedia;
+        Object.defineProperty(window, 'matchMedia', {
+            value: undefined,
+            writable: true,
+            configurable: true,
+        });
+        try {
+            const view = render(ReaderShell);
+            // readMatch returns false → desktop reader renders.
+            expect(screen.getByText('Back to Home')).toBeInTheDocument();
+            expect(
+                screen.queryByLabelText('Tap to continue')
+            ).not.toBeInTheDocument();
+            // Unmount to trigger onDestroy → removeVisibilityListener().
+            view.unmount();
+        } finally {
+            Object.defineProperty(window, 'matchMedia', {
+                value: original,
+                writable: true,
+                configurable: true,
+            });
+        }
+    });
+
+    it('returns early when setReaderMode is called with the current mode', async () => {
+        stubMatchMedia(false);
+        const defaultFactory = vi.fn(() => createRuntimeHarness().runtime);
+        render(ReaderShell, { props: { createVisualRuntime: defaultFactory } });
+
+        // Default mode is 'text'. Clicking Text again should be a no-op:
+        // setReaderMode returns early (readerMode === mode).
+        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        expect(
+            screen.getByRole('group', { name: 'Reader mode' })
+        ).toHaveAttribute('data-reader-mode', 'text');
+        // The visual runtime factory must not have been called.
+        expect(defaultFactory).not.toHaveBeenCalled();
+    });
 });

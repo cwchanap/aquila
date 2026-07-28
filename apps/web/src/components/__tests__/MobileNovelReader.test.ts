@@ -321,6 +321,29 @@ describe('MobileNovelReader', () => {
             await fireEvent.click(screen.getByLabelText('Bookmark'));
             expect(onBookmark).toHaveBeenCalledWith(3);
         });
+
+        it('does not animate when startTyping is called with an out-of-bounds index', async () => {
+            // Render with an empty dialogue so Signal 1 does not call
+            // startTyping (dialogue.length === 0 guard).
+            const { rerenderRaw } = renderReader({
+                dialogue: [],
+                dialogueIndex: 0,
+            });
+            expect(
+                document.querySelectorAll('[class*="animate-pulse"]').length
+            ).toBe(0);
+
+            // Rerender with a non-empty dialogue at an out-of-bounds index so
+            // Signal 1 calls startTyping with an undefined entry (lines
+            // 117-120): isTyping = false, typingText = '', return.
+            await rerenderRaw({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 5,
+            });
+            expect(
+                document.querySelectorAll('[class*="animate-pulse"]').length
+            ).toBe(0);
+        });
     });
 
     describe('mobile chrome & overlays', () => {
@@ -750,6 +773,86 @@ describe('MobileNovelReader', () => {
                     screen.getByLabelText('Open menu')
                 );
             });
+        });
+
+        it('closes the backlog sheet when advance is called while it is open', async () => {
+            renderReader({ dialogueIndex: 0 });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open history'));
+            await waitFor(() =>
+                expect(screen.getByText('History')).toBeInTheDocument()
+            );
+            // Advance via global keydown → advance() sees hasOverlay,
+            // backlogOpen → closes backlog (line 207).
+            await fireEvent.keyDown(window, { key: 'Enter' });
+            await waitFor(() =>
+                expect(screen.queryByText('History')).not.toBeInTheDocument()
+            );
+        });
+
+        it('closes the acts drawer when advance is called while it is open', async () => {
+            renderReader({
+                dialogueIndex: 0,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            await waitFor(() =>
+                expect(screen.getByRole('dialog')).toBeInTheDocument()
+            );
+            // Advance via global keydown → advance() sees hasOverlay,
+            // backlogOpen false → closes drawer (line 208).
+            await fireEvent.keyDown(window, { key: 'Enter' });
+            await waitFor(() =>
+                expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+            );
+        });
+
+        it('dismisses chrome when advance is called while chrome is visible', async () => {
+            const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+            // Advance via global keydown → advance() sees chromeVisible →
+            // hides chrome (lines 213-215), does not advance.
+            await fireEvent.keyDown(window, { key: 'Enter' });
+            expect(
+                screen.queryByLabelText('Back to Home')
+            ).not.toBeInTheDocument();
+            expect(onIndexChange).not.toHaveBeenCalled();
+        });
+
+        it('advances when Enter is pressed on the dialogue text element', async () => {
+            const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+            await vi.runAllTimersAsync();
+            const line = screen.getByText('First line.');
+            await fireEvent.keyDown(line, { key: 'Enter' });
+            expect(onIndexChange).toHaveBeenCalledWith(1);
+        });
+
+        it('calls onNavigate when the acts drawer selects a different scene', async () => {
+            const onNavigate = vi.fn();
+            renderReader({
+                dialogueIndex: 0,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            const dialog = screen.getByRole('dialog');
+            const actButtons = within(dialog)
+                .getAllByRole('button')
+                .filter(b => !b.getAttribute('aria-label'));
+            const act2 = actButtons.find(
+                b => b.textContent?.trim() === 'Act 2'
+            )!;
+            await fireEvent.click(act2);
+            expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
         });
     });
 });

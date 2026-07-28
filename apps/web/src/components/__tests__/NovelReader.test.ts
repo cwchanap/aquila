@@ -484,6 +484,27 @@ describe('NovelReader — keyboard navigation', () => {
         expect(onIndexChange).not.toHaveBeenCalled();
         expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
     });
+
+    it('does not advance when the keydown event is already defaultPrevented', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        const event = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+        });
+        Object.defineProperty(event, 'defaultPrevented', {
+            get: () => true,
+        });
+        window.dispatchEvent(event);
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('does not advance when a modifier key is held', async () => {
+        const { onIndexChange } = renderReader({ dialogueIndex: 0 });
+        await vi.runAllTimersAsync();
+        await fireEvent.keyDown(window, { key: 'Enter', altKey: true });
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
 });
 
 describe('NovelReader — scene changes', () => {
@@ -721,6 +742,20 @@ describe('NovelReader — act panel navigation guard', () => {
 describe('NovelReader — edge cases', () => {
     it('handles an empty dialogue array without crashing', () => {
         renderReader({ dialogue: [], dialogueIndex: 0 });
+        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+    });
+
+    it('does not crash when startTyping is called with an out-of-bounds index', async () => {
+        const { rerenderRaw } = renderReader({
+            dialogue: [],
+            dialogueIndex: 0,
+        });
+        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        // Rerender with a non-empty dialogue at an out-of-bounds index so
+        // Signal 1 calls startTyping with an undefined entry (line 117):
+        // startTyping returns immediately without animating.
+        await rerenderRaw({ dialogue: [mockDialogue[0]], dialogueIndex: 5 });
+        await vi.runAllTimersAsync();
         expect(screen.getByText('Back to Home')).toBeInTheDocument();
     });
 

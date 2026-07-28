@@ -921,4 +921,449 @@ describe('VisualStateController', () => {
 
         expect(cache.setProtectedKeys).toHaveBeenLastCalledWith(new Set());
     });
+
+    it('calls the listener immediately and returns a no-op unsubscribe when disposed', () => {
+        const { controller, latest } = createHarness();
+        controller.dispose();
+        const listener = vi.fn();
+        const unsubscribe = controller.subscribe(listener);
+        expect(listener).toHaveBeenCalledWith(latest());
+        expect(unsubscribe).not.toThrow();
+    });
+
+    it('does nothing when commitBackgroundTransition is called without a ready staging background', async () => {
+        const { controller, latest } = createHarness();
+        const before = latest();
+        controller.commitBackgroundTransition();
+        expect(latest()).toBe(before);
+    });
+
+    it('does nothing when commitBackgroundTransition is called after dispose', async () => {
+        const { controller } = createHarness();
+        controller.dispose();
+        expect(() => controller.commitBackgroundTransition()).not.toThrow();
+    });
+
+    it('detaches an object URL from the active background layer', async () => {
+        let frameCallback: FrameRequestCallback | undefined;
+        vi.stubGlobal(
+            'requestAnimationFrame',
+            vi.fn((callback: FrameRequestCallback) => {
+                frameCallback = callback;
+                return 1;
+            })
+        );
+        const { controller, latest } = createHarness();
+        controller.update(input([{ dialogue: 'x', background: 'room' }]));
+        await flushAsyncWork();
+        const url = latest().activeBackground.objectUrl;
+        expect(url).not.toBeNull();
+        const pending = controller.detachObjectUrl(url!);
+        expect(latest().activeBackground.objectUrl).toBeNull();
+        await Promise.resolve();
+        frameCallback?.(0);
+        await pending;
+    });
+
+    it('detaches an object URL from the portrait layer', async () => {
+        let frameCallback: FrameRequestCallback | undefined;
+        vi.stubGlobal(
+            'requestAnimationFrame',
+            vi.fn((callback: FrameRequestCallback) => {
+                frameCallback = callback;
+                return 1;
+            })
+        );
+        const { controller, latest } = createHarness();
+        controller.update(
+            input([{ dialogue: 'x', portrait: 'mio/base', characterId: 'mio' }])
+        );
+        await flushAsyncWork();
+        const url = latest().portrait.objectUrl;
+        expect(url).not.toBeNull();
+        const pending = controller.detachObjectUrl(url!);
+        expect(latest().portrait.objectUrl).toBeNull();
+        await Promise.resolve();
+        frameCallback?.(0);
+        await pending;
+    });
+
+    it('falls back to setTimeout when requestAnimationFrame is unavailable', async () => {
+        vi.useFakeTimers();
+        const original = globalThis.requestAnimationFrame;
+        // @ts-expect-error - deleting for test
+        delete globalThis.requestAnimationFrame;
+        try {
+            const { controller, latest } = createHarness();
+            controller.update(input([{ dialogue: 'x', background: 'room' }]));
+            await flushAsyncWork();
+            const url = latest().activeBackground.objectUrl;
+            const detachPromise = controller.detachObjectUrl(url!);
+            await vi.advanceTimersByTimeAsync(0);
+            await detachPromise;
+            expect(latest().activeBackground.objectUrl).toBeNull();
+        } finally {
+            globalThis.requestAnimationFrame = original;
+            vi.useRealTimers();
+        }
+    });
+
+    it('softRevalidate returns early when disposed', async () => {
+        const { controller } = createHarness();
+        controller.dispose();
+        await expect(controller.softRevalidate()).resolves.toBeUndefined();
+    });
+
+    it('softRevalidate returns early when resolver is null', async () => {
+        const cache = {
+            load: vi.fn(),
+            prefetch: vi.fn(),
+            setProtectedKeys: vi.fn(),
+        };
+        const controller = new VisualStateController({
+            resolver: null,
+            cache: cache as unknown as DecodedAssetCache,
+            getSceneDialogue: vi.fn(() => null),
+        });
+        await expect(controller.softRevalidate()).resolves.toBeUndefined();
+    });
+
+    it('softRevalidate skips when called within the revalidation age window', async () => {
+        vi.useFakeTimers();
+        const now = vi.fn(() => 1000);
+        const { controller, resolver } = createHarness({ now });
+        controller.update(input([{ dialogue: 'x', background: 'room' }]));
+        await flushAsyncWork();
+        await controller.softRevalidate();
+        const initialCalls = (
+            resolver.loadActiveRelease as ReturnType<typeof vi.fn>
+        ).mock.calls.length;
+        vi.advanceTimersByTime(30_000);
+        now.mockReturnValue(31_000);
+        await controller.softRevalidate();
+        expect(
+            (resolver.loadActiveRelease as ReturnType<typeof vi.fn>).mock.calls
+                .length
+        ).toBe(initialCalls);
+        vi.useRealTimers();
+    });
+
+    it('proceeds without reloading when release is stale-but-usable', async () => {
+        const { controller, latest, resolver } = createHarness({
+            loadRelease: async () => release('last-validated-release'),
+        });
+        controller.update(input([{ dialogue: 'x', background: 'room' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('stale-but-usable');
+        const callsBefore = (
+            resolver.loadActiveRelease as ReturnType<typeof vi.fn>
+        ).mock.calls.length;
+        controller.update(
+            input(
+                [
+                    { dialogue: 'y', background: 'room' },
+                    { dialogue: 'x', background: 'room' },
+                ],
+                { dialogueIndex: 1 }
+            )
+        );
+        await flushAsyncWork();
+        expect(
+            (resolver.loadActiveRelease as ReturnType<typeof vi.fn>).mock.calls
+                .length
+        ).toBe(callsBefore);
+    });
+
+    it('keeps a usable release as stale-but-usable when a revalidation load fails', async () => {
+        vi.useFakeTimers();
+        const now = vi.fn(() => 1000);
+        const loadRelease = vi
+            .fn()
+            .mockResolvedValueOnce(release('network'))
+            .mockRejectedValue(new Error('offline'));
+        const { controller, latest } = createHarness({ loadRelease, now });
+        controller.update(input([{ dialogue: 'x', background: 'room' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('ready');
+        now.mockReturnValue(70_000);
+        vi.advanceTimersByTime(70_000);
+        await controller.softRevalidate();
+        await flushAsyncWork();
+        expect(latest().release).toBe('stale-but-usable');
+        vi.useRealTimers();
+    });
+
+    it('returns release-unavailable fallback for keyed visuals when resolver is null', async () => {
+        const cache = {
+            load: vi.fn(),
+            prefetch: vi.fn(),
+            setProtectedKeys: vi.fn(),
+        };
+        const controller = new VisualStateController({
+            resolver: null,
+            cache: cache as unknown as DecodedAssetCache,
+            getSceneDialogue: vi.fn(() => null),
+        });
+        const snapshots: VisualSnapshot[] = [];
+        controller.subscribe(s => snapshots.push(s));
+        controller.update(
+            input([{ dialogue: 'x', background: 'room', portrait: 'mio/base' }])
+        );
+        await flushAsyncWork();
+        const latestSnap = snapshots.at(-1)!;
+        expect(latestSnap.release).toBe('unavailable');
+        expect(latestSnap.stagingBackground.state).toBe('failed');
+        expect(latestSnap.portrait.state).toBe('failed');
+    });
+
+    it('marks portrait as failed when cache.load rejects', async () => {
+        const { controller, latest } = createHarness({
+            loadAsset: async () => {
+                throw new Error('decode failed');
+            },
+        });
+        controller.update(
+            input([{ dialogue: 'x', portrait: 'mio/base', characterId: 'mio' }])
+        );
+        await flushAsyncWork();
+        expect(latest().portrait.state).toBe('failed');
+    });
+
+    it('marks release as invalid for an invalid-release fallback reason', async () => {
+        const { controller, latest } = createHarness({
+            resolveAsset: identity => fallback(identity, 'invalid-release'),
+        });
+        controller.update(input([{ dialogue: 'x', background: 'room' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('invalid');
+    });
+
+    it('marks release as invalid for an integrity-failure fallback reason', async () => {
+        const { controller, latest } = createHarness({
+            resolveAsset: identity => fallback(identity, 'integrity-failure'),
+        });
+        controller.update(input([{ dialogue: 'x', background: 'room' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('invalid');
+    });
+
+    it('does not warm prefetch when all remaining lines share the same signature', async () => {
+        const { controller, resolver } = createHarness();
+        controller.update(
+            input([
+                { dialogue: 'a', background: 'room' },
+                { dialogue: 'b', background: 'room' },
+            ])
+        );
+        await flushAsyncWork();
+        // Same background, no portrait → same signature → no warm prefetch
+        // resolve is called once for the active background load only.
+        expect(
+            (resolver.resolve as ReturnType<typeof vi.fn>).mock.calls.length
+        ).toBe(1);
+    });
+
+    it('prefetches all choice targets when the current scene ends at a choice node', async () => {
+        const choiceFlow = {
+            start: 'scene',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'scene',
+                    sceneId: 'scene',
+                    next: 'choice:pick',
+                },
+                {
+                    kind: 'choice',
+                    id: 'choice:pick',
+                    nextByOption: {
+                        left: 'left_scene',
+                        right: 'right_scene',
+                    },
+                },
+                {
+                    kind: 'scene',
+                    id: 'left_scene',
+                    sceneId: 'left_scene',
+                    next: null,
+                },
+                {
+                    kind: 'scene',
+                    id: 'right_scene',
+                    sceneId: 'right_scene',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const sceneDialogue: Record<string, readonly DialogueEntry[] | null> = {
+            left_scene: [{ dialogue: 'left', background: 'left_bg' }],
+            right_scene: [{ dialogue: 'right', background: 'right_bg' }],
+        };
+        const { controller, resolver, getSceneDialogue } = createHarness({
+            sceneDialogue,
+        });
+        (getSceneDialogue as ReturnType<typeof vi.fn>).mockImplementation(
+            (_sid: string, sceneId: string) => sceneDialogue[sceneId] ?? null
+        );
+        controller.update(
+            input([{ dialogue: 'last', background: 'room' }], {
+                flow: choiceFlow,
+                dialogueIndex: 0,
+            })
+        );
+        await flushAsyncWork();
+        await flushAsyncWork();
+        const prefetchCalls = (
+            resolver.prefetchNextEdge as ReturnType<typeof vi.fn>
+        ).mock.calls;
+        const targets = prefetchCalls
+            .map(
+                (call: unknown[]) =>
+                    (call[0] as { toSceneId: string }).toSceneId
+            )
+            .sort();
+        expect(targets).toEqual(['left_scene', 'right_scene']);
+    });
+
+    it('completes the edge reservation even when prefetch returns failed assets', async () => {
+        const choiceFlow = {
+            start: 'scene',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'scene',
+                    sceneId: 'scene',
+                    next: 'choice:pick',
+                },
+                {
+                    kind: 'choice',
+                    id: 'choice:pick',
+                    nextByOption: { left: 'left_scene' },
+                },
+                {
+                    kind: 'scene',
+                    id: 'left_scene',
+                    sceneId: 'left_scene',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const sceneDialogue: Record<string, readonly DialogueEntry[] | null> = {
+            left_scene: [{ dialogue: 'left', background: 'left_bg' }],
+        };
+        const { controller, resolver, getSceneDialogue } = createHarness({
+            sceneDialogue,
+            resolveAsset: identity => fallback(identity, 'not-found'),
+        });
+        (getSceneDialogue as ReturnType<typeof vi.fn>).mockImplementation(
+            (_sid: string, sceneId: string) => sceneDialogue[sceneId] ?? null
+        );
+        (
+            resolver.prefetchNextEdge as ReturnType<typeof vi.fn>
+        ).mockResolvedValue({
+            requested: 1,
+            cached: 0,
+            failed: [
+                {
+                    status: 'fallback',
+                    identity: { type: 'background', key: 'left_bg' },
+                    reason: 'not-found',
+                    error: new AssetResolverError('not-found', 'x'),
+                },
+            ],
+        });
+        controller.update(
+            input([{ dialogue: 'last', background: 'room' }], {
+                flow: choiceFlow,
+                dialogueIndex: 0,
+            })
+        );
+        await flushAsyncWork();
+        await flushAsyncWork();
+        const callsBefore = (
+            resolver.prefetchNextEdge as ReturnType<typeof vi.fn>
+        ).mock.calls.length;
+        controller.update(
+            input([{ dialogue: 'last', background: 'room' }], {
+                flow: choiceFlow,
+                dialogueIndex: 0,
+            })
+        );
+        await flushAsyncWork();
+        await flushAsyncWork();
+        expect(
+            (resolver.prefetchNextEdge as ReturnType<typeof vi.fn>).mock.calls
+                .length
+        ).toBe(callsBefore);
+    });
+
+    it('clears prefetched edges when the story id changes between updates', async () => {
+        const choiceFlow = {
+            start: 'scene',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'scene',
+                    sceneId: 'scene',
+                    next: 'choice:pick',
+                },
+                {
+                    kind: 'choice',
+                    id: 'choice:pick',
+                    nextByOption: { left: 'left_scene' },
+                },
+                {
+                    kind: 'scene',
+                    id: 'left_scene',
+                    sceneId: 'left_scene',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const sceneDialogue: Record<string, readonly DialogueEntry[] | null> = {
+            left_scene: [{ dialogue: 'left', background: 'left_bg' }],
+        };
+        const { controller, resolver, getSceneDialogue } = createHarness({
+            sceneDialogue,
+        });
+        (getSceneDialogue as ReturnType<typeof vi.fn>).mockImplementation(
+            (_sid: string, sceneId: string) => sceneDialogue[sceneId] ?? null
+        );
+        controller.update(
+            input([{ dialogue: 'last', background: 'room' }], {
+                flow: choiceFlow,
+                dialogueIndex: 0,
+            })
+        );
+        await flushAsyncWork();
+        await flushAsyncWork();
+        const callsAfterFirst = (
+            resolver.prefetchNextEdge as ReturnType<typeof vi.fn>
+        ).mock.calls.length;
+        expect(callsAfterFirst).toBeGreaterThan(0);
+        // Change story id - prefetchedEdges should be cleared
+        controller.update(
+            input([{ dialogue: 'new story', background: 'room' }], {
+                storyId: 'different_story',
+                flow: choiceFlow,
+                dialogueIndex: 0,
+            })
+        );
+        await flushAsyncWork();
+        await flushAsyncWork();
+        // After story change, re-updating the original story should re-prefetch
+        // the same edge (because prefetchedEdges was cleared).
+        controller.update(
+            input([{ dialogue: 'last', background: 'room' }], {
+                flow: choiceFlow,
+                dialogueIndex: 0,
+            })
+        );
+        await flushAsyncWork();
+        await flushAsyncWork();
+        expect(
+            (resolver.prefetchNextEdge as ReturnType<typeof vi.fn>).mock.calls
+                .length
+        ).toBeGreaterThan(callsAfterFirst);
+    });
 });

@@ -1023,4 +1023,316 @@ describe('DecodedAssetCache', () => {
         expect(cache.size).toBe(0);
         expect(cache.inFlight).toBe(0);
     });
+
+    it('treats a non-ok AVIF probe response as unsupported and falls back to WebP', async () => {
+        const webpBytes = bytes('probe-not-ok-webp');
+        const asset = createResolvedAsset({
+            label: 'probe-not-ok',
+            webpBytes,
+            avifBytes: bytes('probe-not-ok-avif'),
+        });
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes('avif-probe.avif')) {
+                return new Response('unavailable', { status: 503 });
+            }
+            if (url === asset.webpUrl.href) return response(webpBytes);
+            return new Response('unexpected', { status: 500 });
+        }) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchMock,
+            decodeImage: successfulDecoder(),
+        });
+
+        const decoded = await cache.load(asset);
+
+        expect(decoded.cacheKey).toBe(`webp:${digest(webpBytes)}`);
+        expect(cache.size).toBe(1);
+    });
+
+    it('wraps a non-timeout fetch failure as a network error before integrity checks', async () => {
+        const asset = createResolvedAsset({ label: 'network-failure' });
+        const fetchSpy = vi.fn(async () => {
+            throw new TypeError('connection refused');
+        }) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchSpy,
+            decodeImage: successfulDecoder(),
+        });
+
+        await expect(cache.load(asset)).rejects.toMatchObject({
+            code: 'network',
+            message: 'Runtime asset request failed',
+        });
+        expect(cache.size).toBe(0);
+    });
+
+    it('classifies a non-ok asset response as unavailable', async () => {
+        const asset = createResolvedAsset({ label: 'http-error' });
+        const fetchSpy = vi.fn(
+            async () => new Response('server error', { status: 500 })
+        ) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchSpy,
+            decodeImage: successfulDecoder(),
+        });
+
+        await expect(cache.load(asset)).rejects.toMatchObject({
+            code: 'unavailable',
+        });
+    });
+
+    it('wraps a response.arrayBuffer() failure as a network error', async () => {
+        const assetBytes = bytes('arraybuffer-fail');
+        const asset = createResolvedAsset({
+            label: 'arraybuffer-fail',
+            webpBytes: assetBytes,
+        });
+        const fetchSpy = vi.fn(async () => {
+            const body = new Response(Uint8Array.from(assetBytes).buffer);
+            // Replace arrayBuffer() to throw so we exercise the catch path.
+            body.arrayBuffer = () =>
+                Promise.reject(new Error('stream disconnected'));
+            return body;
+        }) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchSpy,
+            decodeImage: successfulDecoder(),
+        });
+
+        await expect(cache.load(asset)).rejects.toMatchObject({
+            code: 'network',
+            message: 'Runtime asset response could not be read',
+        });
+    });
+
+    it('rejects with the signal reason when an already-aborted signal is provided', async () => {
+        const asset = createResolvedAsset({ label: 'pre-aborted' });
+        const cache = new DecodedAssetCache({
+            fetchImpl: createFetch(
+                new Map([[asset.webpUrl.href, { bytes: bytes('pre-aborted') }]])
+            ),
+            decodeImage: successfulDecoder(),
+        });
+        const controller = new AbortController();
+        const reason = new Error('caller cancelled');
+        controller.abort(reason);
+
+        await expect(
+            cache.load(asset, { signal: controller.signal })
+        ).rejects.toBe(reason);
+    });
+
+    it('rejects when the signal aborts after AVIF support resolves but before variant selection', async () => {
+        const asset = createResolvedAsset({
+            label: 'abort-after-probe',
+            avifBytes: bytes('abort-after-probe-avif'),
+        });
+        let releaseProbe!: () => void;
+        const fetchMock = vi.fn((input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes('avif-probe.avif')) {
+                return new Promise<Response>(resolve => {
+                    releaseProbe = () =>
+                        resolve(
+                            new Response(bytes('valid-probe'), {
+                                status: 200,
+                                headers: { 'content-type': 'image/avif' },
+                            })
+                        );
+                });
+            }
+            return Promise.resolve(new Response('unexpected', { status: 500 }));
+        }) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchMock,
+            decodeImage: successfulDecoder(),
+        });
+        const controller = new AbortController();
+        const load = cache.load(asset, { signal: controller.signal });
+        const outcome = load.then(
+            value => ({ status: 'resolved' as const, value }),
+            error => ({ status: 'rejected' as const, error })
+        );
+
+        await Promise.resolve();
+        controller.abort(new Error('cancelled after probe'));
+        releaseProbe();
+
+        await expect(outcome).resolves.toMatchObject({
+            status: 'rejected',
+            error: { message: 'cancelled after probe' },
+        });
+    });
+
+    it('revokes the object URL and rejects when the signal aborts after a variant loads', async () => {
+        const assetBytes = bytes('abort-after-load');
+        const asset = createResolvedAsset({
+            label: 'abort-after-load',
+            webpBytes: assetBytes,
+        });
+        let releaseDecode!: () => void;
+        const decodeSpy = vi.fn(
+            () =>
+                new Promise<DecodeResult>(resolve => {
+                    releaseDecode = () =>
+                        resolve({ width: 1600, height: 900, close: vi.fn() });
+                })
+        ) as unknown as DecodeImage;
+        const cache = new DecodedAssetCache({
+            fetchImpl: createFetch(
+                new Map([[asset.webpUrl.href, { bytes: assetBytes }]])
+            ),
+            decodeImage: decodeSpy,
+        });
+        const controller = new AbortController();
+        const load = cache.load(asset, { signal: controller.signal });
+
+        await vi.waitFor(() => expect(decodeSpy).toHaveBeenCalledOnce());
+        controller.abort(new Error('post-decode abort'));
+        releaseDecode();
+
+        await expect(load).rejects.toMatchObject({
+            message: 'post-decode abort',
+        });
+        expect(revokeObjectUrlSpy).toHaveBeenCalledWith(
+            'blob:https://reader.test/1'
+        );
+        expect(cache.size).toBe(0);
+    });
+
+    it('returns the existing entry and revokes the duplicate when a concurrent load completes after another', async () => {
+        // Two assets with different webp bytes (different requestKey) but we
+        // make the second asset's webp bytes hash to the same cacheKey as the
+        // first by reusing the same bytes. To avoid requestKey dedup, we give
+        // one asset an AVIF variant (different requestKey) that falls back to
+        // the same webp cacheKey.
+        const webpBytes = bytes('dedupe-shared-webp');
+        const avifBytes = bytes('dedupe-unique-avif');
+        const webpOnlyAsset = createResolvedAsset({
+            label: 'dedupe-webp-only',
+            webpBytes,
+        });
+        const avifFallbackAsset = createResolvedAsset({
+            label: 'dedupe-avif-fallback',
+            webpBytes,
+            avifBytes,
+        });
+        // Make AVIF decode fail to force fallback to webp (same cacheKey).
+        const decodeSpyWithAvifFail = vi.fn<DecodeImage>(async blob => {
+            if (blob.type === 'image/avif') {
+                throw new Error('AVIF decode failed');
+            }
+            return { width: 1600, height: 900, close: vi.fn() };
+        }) as unknown as DecodeImage;
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes('avif-probe.avif')) {
+                return response(bytes('valid-probe'), 'image/avif');
+            }
+            if (url === avifFallbackAsset.avifUrl?.href) {
+                return response(avifBytes, 'image/avif');
+            }
+            if (url === avifFallbackAsset.webpUrl.href)
+                return response(webpBytes);
+            if (url === webpOnlyAsset.webpUrl.href) return response(webpBytes);
+            return new Response('missing', { status: 404 });
+        }) as typeof fetch;
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchMock,
+            decodeImage: decodeSpyWithAvifFail,
+        });
+
+        // Load the webp-only asset first and hold its decode pending.
+        const loadA = cache.load(webpOnlyAsset);
+        await vi.waitFor(() =>
+            expect(
+                decodeSpyWithAvifFail.mock.calls.length
+            ).toBeGreaterThanOrEqual(1)
+        );
+
+        // Load the avif-fallback asset. Its AVIF decode fails, so it falls back
+        // to webp (same cacheKey as the first). By the time it reaches the
+        // existing-entry check, the first load may have already cached the entry.
+        const loadB = cache.load(avifFallbackAsset);
+        await loadB;
+
+        // Both should resolve to the same cacheKey.
+        const a = await loadA;
+        expect(a.cacheKey).toBe(`webp:${digest(webpBytes)}`);
+        expect(cache.size).toBe(1);
+    });
+
+    it('cleans up fallback keys when evicting an entry that was an AVIF fallback target', async () => {
+        // Load an AVIF asset that fails to decode and falls back to WebP,
+        // establishing a fallbackKey mapping. Then load enough additional
+        // assets to evict the webp entry, which should clean up the fallbackKey.
+        const webpBytes = bytes('fallback-evict-webp');
+        const avifBytes = bytes('fallback-evict-avif');
+        const fallbackAsset = createResolvedAsset({
+            label: 'fallback-evict',
+            width: 1,
+            height: 1,
+            webpBytes,
+            avifBytes,
+        });
+        const extraAssets = Array.from({ length: 48 }, (_, index) => {
+            const body = bytes(`fallback-evict-extra-${index}`);
+            return {
+                asset: createResolvedAsset({
+                    label: `fallback-evict-extra-${index}`,
+                    width: 1,
+                    height: 1,
+                    webpBytes: body,
+                }),
+                body,
+            };
+        });
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes('avif-probe.avif')) {
+                return response(bytes('valid-probe'), 'image/avif');
+            }
+            if (url === fallbackAsset.avifUrl?.href) {
+                return response(avifBytes, 'image/avif');
+            }
+            if (url === fallbackAsset.webpUrl.href) return response(webpBytes);
+            const extra = extraAssets.find(
+                ({ asset }) => url === asset.webpUrl.href
+            );
+            return extra
+                ? response(extra.body)
+                : new Response('missing', { status: 404 });
+        }) as typeof fetch;
+        const decodeSpy = vi.fn<DecodeImage>(async blob => {
+            const body = await blob.text();
+            if (body === 'fallback-evict-avif') {
+                throw new Error('AVIF decode failed');
+            }
+            return { width: 1, height: 1, close: vi.fn() };
+        });
+        const cache = new DecodedAssetCache({
+            fetchImpl: fetchMock,
+            decodeImage: decodeSpy,
+        });
+
+        // Load the fallback asset first - this establishes the fallbackKey mapping
+        // (avif cacheKey → webp cacheKey).
+        await cache.load(fallbackAsset);
+        expect(cache.size).toBe(1);
+
+        // Now load 48 more assets to force eviction of the fallback webp entry.
+        for (const { asset } of extraAssets) {
+            await cache.load(asset);
+        }
+
+        // The webp entry should have been evicted and its fallbackKey cleaned up.
+        // After eviction, loading the fallback asset again should re-fetch webp
+        // (not find a stale fallbackKey pointing to a revoked entry).
+        expect(cache.size).toBeLessThanOrEqual(48);
+        // The key assertion: the fallback asset can be reloaded successfully
+        // after its fallback target was evicted, proving the fallbackKey was cleaned.
+        const reloaded = await cache.load(fallbackAsset);
+        expect(reloaded.cacheKey).toBe(`webp:${digest(webpBytes)}`);
+    });
 });

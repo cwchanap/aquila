@@ -968,4 +968,528 @@ describe('WebAssetResolver', () => {
             reason: 'release-unavailable',
         });
     });
+
+    // --- getBrowserStorage edge cases (lines 59-64) ---
+    it('does not crash when globalThis.localStorage is undefined', () => {
+        vi.stubGlobal('localStorage', undefined);
+        const resolver = new WebAssetResolver(SOURCE, {
+            fetchImpl: vi.fn() as unknown as typeof fetch,
+            now: () => NOW,
+        });
+        expect(resolver).toBeInstanceOf(WebAssetResolver);
+    });
+
+    it('does not crash when localStorage access throws', () => {
+        const original = Object.getOwnPropertyDescriptor(
+            globalThis,
+            'localStorage'
+        );
+        Object.defineProperty(globalThis, 'localStorage', {
+            get() {
+                throw new Error('access denied');
+            },
+            configurable: true,
+        });
+        try {
+            const resolver = new WebAssetResolver(SOURCE, {
+                fetchImpl: vi.fn() as unknown as typeof fetch,
+                now: () => NOW,
+            });
+            expect(resolver).toBeInstanceOf(WebAssetResolver);
+        } finally {
+            if (original) {
+                Object.defineProperty(globalThis, 'localStorage', original);
+            }
+        }
+    });
+
+    // --- parseTarget / parseStoredSource branches ---
+    it('rejects a stored record whose production target has extra keys', async () => {
+        const documents = createDocuments();
+        const badRecord = {
+            ...storedRecord(documents),
+            source: {
+                environment: 'production',
+                storyId: SOURCE.storyId,
+                baseUrl: SOURCE.baseUrl,
+                target: { kind: 'production', extra: 'x' },
+            },
+        };
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([badRecord])
+        );
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    it('rejects a stored record with an invalid target kind', async () => {
+        const documents = createDocuments();
+        const badRecord = {
+            ...storedRecord(documents),
+            source: {
+                environment: 'local',
+                storyId: SOURCE.storyId,
+                baseUrl: SOURCE.baseUrl,
+                target: { kind: 'unknown' },
+            },
+        };
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([badRecord])
+        );
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    it('rejects a stored record with non-string source fields', async () => {
+        const documents = createDocuments();
+        const badRecord = {
+            ...storedRecord(documents),
+            source: {
+                environment: 'local',
+                storyId: 123,
+                baseUrl: SOURCE.baseUrl,
+                target: SOURCE.target,
+            },
+        };
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([badRecord])
+        );
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    it('continues a stored release from a preview environment', async () => {
+        const previewTarget = {
+            kind: 'preview',
+            previewId: 'hpa-228-local',
+        };
+        const previewSource: AssetResolverSource = {
+            environment: 'preview',
+            storyId: SOURCE.storyId,
+            baseUrl: SOURCE.baseUrl,
+            target: previewTarget,
+        };
+        const documents = createDocuments({ target: previewTarget });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([
+                storedRecord(documents, { source: previewSource }),
+            ])
+        );
+        const resolver = new WebAssetResolver(previewSource, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+            now: () => NOW,
+        });
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: documents.pointer.releaseId },
+        });
+    });
+
+    it('continues a stored release from a production environment', async () => {
+        const productionTarget = { kind: 'production' };
+        const productionSource: AssetResolverSource = {
+            environment: 'production',
+            storyId: SOURCE.storyId,
+            baseUrl: SOURCE.baseUrl,
+            target: productionTarget,
+        };
+        const documents = createDocuments({ target: productionTarget });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([
+                storedRecord(documents, { source: productionSource }),
+            ])
+        );
+        const resolver = new WebAssetResolver(productionSource, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+            now: () => NOW,
+        });
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: documents.pointer.releaseId },
+        });
+    });
+
+    it('rejects a stored record whose environment does not match its target kind', async () => {
+        const documents = createDocuments();
+        const mismatchRecord = {
+            ...storedRecord(documents),
+            source: {
+                environment: 'preview',
+                storyId: SOURCE.storyId,
+                baseUrl: SOURCE.baseUrl,
+                target: { kind: 'production' },
+            },
+        };
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([mismatchRecord])
+        );
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    // --- readResponseText / parseJson error paths ---
+    it('classifies a non-ok pointer response as unavailable', async () => {
+        const documents = createDocuments();
+        const fetchImpl = vi.fn(
+            async () => new Response('not found', { status: 404 })
+        ) as typeof fetch;
+        const resolver = createResolver(documents, { fetchImpl });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'unavailable',
+        });
+    });
+
+    it('classifies a response.text() failure as network', async () => {
+        const documents = createDocuments();
+        const fetchImpl = vi.fn(async () => ({
+            ok: true,
+            status: 200,
+            text: () => Promise.reject(new TypeError('stream locked')),
+        })) as unknown as typeof fetch;
+        const resolver = createResolver(documents, { fetchImpl });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    it('classifies invalid pointer JSON as validation', async () => {
+        const documents = createDocuments();
+        const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.endsWith('/current.json')) {
+                return new Response('not valid json {{{');
+            }
+            return new Response(documents.manifestText);
+        }) as typeof fetch;
+        const resolver = createResolver(documents, { fetchImpl });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'validation',
+        });
+    });
+
+    // --- resolve() branches ---
+    it('returns an invalid-release fallback for an unsafe identity key', () => {
+        const resolver = createResolver(createDocuments());
+        expect(
+            resolver.resolve({ type: 'background', key: '../escape' })
+        ).toMatchObject({
+            status: 'fallback',
+            reason: 'invalid-release',
+            error: { code: 'unsafe-path' },
+        });
+    });
+
+    it('returns a release-unavailable fallback before any release is loaded', () => {
+        const resolver = createResolver(createDocuments());
+        expect(
+            resolver.resolve({
+                type: 'background',
+                key: '第一章/鏡 房/夜',
+            })
+        ).toMatchObject({
+            status: 'fallback',
+            reason: 'release-unavailable',
+            error: { code: 'unavailable' },
+        });
+    });
+
+    it('resolves an avif URL when the manifest includes an avif variant', async () => {
+        const AVIF_SHA = 'b'.repeat(64);
+        const manifestBase = {
+            schemaVersion: 1 as const,
+            storyId: SOURCE.storyId,
+            releaseId: `sha256-${'0'.repeat(64)}`,
+            assets: [
+                {
+                    identity: {
+                        type: 'background' as const,
+                        key: '第一章/鏡 房/夜',
+                    },
+                    variants: {
+                        webp: {
+                            format: 'webp' as const,
+                            path: `vn/objects/${WEBP_SHA}.webp`,
+                            sha256: WEBP_SHA,
+                            byteLength: 123,
+                        },
+                        avif: {
+                            format: 'avif' as const,
+                            path: `vn/objects/${AVIF_SHA}.avif`,
+                            sha256: AVIF_SHA,
+                            byteLength: 100,
+                        },
+                    },
+                    width: 1600,
+                    height: 900,
+                },
+            ],
+        } as RuntimeAssetManifestV1;
+        const releaseId = `sha256-${digest(
+            canonicalReleaseContent(manifestBase)
+        )}`;
+        const manifest = {
+            ...manifestBase,
+            releaseId,
+        } as RuntimeAssetManifestV1;
+        const manifestText = `${JSON.stringify(manifest, null, 2)}\n`;
+        const pointer = {
+            schemaVersion: 1 as const,
+            storyId: SOURCE.storyId,
+            releaseId,
+            manifestPath: getReleaseManifestPath(
+                SOURCE.storyId,
+                releaseId,
+                SOURCE.target
+            ),
+            manifestSha256: digest(manifestText),
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        };
+        const documents = {
+            pointer,
+            pointerText: `${JSON.stringify(pointer, null, 2)}\n`,
+            manifest,
+            manifestText,
+        };
+        const resolver = createResolver(documents);
+        await resolver.loadActiveRelease();
+        expect(
+            resolver.resolve({
+                type: 'background',
+                key: '第一章/鏡 房/夜',
+            })
+        ).toMatchObject({
+            status: 'resolved',
+            avifUrl: new URL(
+                `http://localhost:5090/assets/vn/objects/${AVIF_SHA}.avif`
+            ),
+        });
+    });
+
+    it('resolves a placeholder URL when the manifest includes a placeholder', async () => {
+        const PLACEHOLDER_SHA = 'c'.repeat(64);
+        const manifestBase = {
+            schemaVersion: 1 as const,
+            storyId: SOURCE.storyId,
+            releaseId: `sha256-${'0'.repeat(64)}`,
+            assets: [
+                {
+                    identity: {
+                        type: 'background' as const,
+                        key: '第一章/鏡 房/夜',
+                    },
+                    variants: {
+                        webp: {
+                            format: 'webp' as const,
+                            path: `vn/objects/${WEBP_SHA}.webp`,
+                            sha256: WEBP_SHA,
+                            byteLength: 123,
+                        },
+                    },
+                    width: 1600,
+                    height: 900,
+                    placeholder: {
+                        format: 'webp' as const,
+                        path: `vn/objects/${PLACEHOLDER_SHA}.webp`,
+                        sha256: PLACEHOLDER_SHA,
+                        width: 80,
+                        height: 45,
+                    },
+                },
+            ],
+        } as RuntimeAssetManifestV1;
+        const releaseId = `sha256-${digest(
+            canonicalReleaseContent(manifestBase)
+        )}`;
+        const manifest = {
+            ...manifestBase,
+            releaseId,
+        } as RuntimeAssetManifestV1;
+        const manifestText = `${JSON.stringify(manifest, null, 2)}\n`;
+        const pointer = {
+            schemaVersion: 1 as const,
+            storyId: SOURCE.storyId,
+            releaseId,
+            manifestPath: getReleaseManifestPath(
+                SOURCE.storyId,
+                releaseId,
+                SOURCE.target
+            ),
+            manifestSha256: digest(manifestText),
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        };
+        const documents = {
+            pointer,
+            pointerText: `${JSON.stringify(pointer, null, 2)}\n`,
+            manifest,
+            manifestText,
+        };
+        const resolver = createResolver(documents);
+        await resolver.loadActiveRelease();
+        expect(
+            resolver.resolve({
+                type: 'background',
+                key: '第一章/鏡 房/夜',
+            })
+        ).toMatchObject({
+            status: 'resolved',
+            placeholderUrl: new URL(
+                `http://localhost:5090/assets/vn/objects/${PLACEHOLDER_SHA}.webp`
+            ),
+        });
+    });
+
+    it('returns a fallback when resolveAssetUrl throws during resolve', async () => {
+        const documents = createDocuments();
+        const resolver = createResolver(documents);
+        await resolver.loadActiveRelease();
+        // Corrupt the source baseUrl so resolveAssetUrl throws
+        (resolver as unknown as { source: AssetResolverSource }).source = {
+            ...resolver.source,
+            baseUrl: 'not-a-url',
+        };
+        expect(
+            resolver.resolve({
+                type: 'background',
+                key: '第一章/鏡 房/夜',
+            })
+        ).toMatchObject({
+            status: 'fallback',
+            reason: 'invalid-release',
+        });
+    });
+
+    // --- loadStoredFallback sort tiebreaker (line 616) ---
+    it('breaks a publishedAt tie by choosing the higher validatedAt', async () => {
+        const docA = createDocuments({
+            key: 'tie/a',
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        });
+        const docB = createDocuments({
+            key: 'tie/b',
+            publishedAt: '2026-07-26T10:00:00.000Z',
+        });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([
+                storedRecord(docA, {
+                    validatedAt: NOW - 2_000,
+                    lastUsedAt: NOW - 2_000,
+                }),
+                storedRecord(docB, {
+                    validatedAt: NOW - 1_000,
+                    lastUsedAt: NOW - 1_000,
+                }),
+            ])
+        );
+        const resolver = createResolver(docB, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'last-validated-release',
+            manifest: { releaseId: docB.pointer.releaseId },
+        });
+    });
+
+    // --- revalidateStoredRecord edge cases ---
+    it('rejects a stored record whose pointer releaseId does not match', async () => {
+        const documents = createDocuments();
+        const record = storedRecord(documents);
+        record.releaseId = `sha256-${'f'.repeat(64)}`;
+        const store = new ValidatedReleaseStore(createMemoryStorage([record]));
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    it('rejects a stored record with a non-number validatedAt', async () => {
+        const documents = createDocuments();
+        const record = storedRecord(documents) as unknown as Record<
+            string,
+            unknown
+        >;
+        record.validatedAt = 'not-a-number';
+        const store = new ValidatedReleaseStore(createMemoryStorage([record]));
+        const resolver = createResolver(documents, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    // --- abort callbacks (lines 240, 345) ---
+    it('aborts an in-flight fetch when the caller signal aborts', async () => {
+        const fetchStarted = deferred<void>();
+        const fetchImpl = vi.fn(
+            async (_input: RequestInfo | URL, init?: RequestInit) => {
+                fetchStarted.resolve();
+                return await new Promise<Response>((_resolve, reject) => {
+                    init?.signal?.addEventListener(
+                        'abort',
+                        () =>
+                            reject(
+                                new DOMException(
+                                    'The operation was aborted',
+                                    'AbortError'
+                                )
+                            ),
+                        { once: true }
+                    );
+                });
+            }
+        ) as typeof fetch;
+        const resolver = createResolver(createDocuments(), { fetchImpl });
+        const controller = new AbortController();
+        const pending = resolver.loadActiveRelease({
+            signal: controller.signal,
+        });
+        await fetchStarted.promise;
+        controller.abort();
+        await expect(pending).rejects.toMatchObject({ code: 'network' });
+    });
 });

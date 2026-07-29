@@ -99,8 +99,16 @@ rule and any future WAF policy.
 
 CORS config: `AllowedOrigins: ["*"]`, `AllowedMethods: ["GET", "HEAD"]`,
 `AllowedHeaders: ["range", "if-match", "if-none-match"]`,
-`ExposeHeaders: ["etag", "content-length", "content-type", "cf-cache-status"]`,
+`ExposeHeaders: ["etag", "content-length", "cf-cache-status"]`,
 `MaxAgeSeconds: 86400`.
+
+`content-type` is omitted from `ExposeHeaders` because it is already a
+CORS-safelisted response header. The three `AllowedHeaders` are **forward-looking
+and unused today**: the resolver issues plain GETs whose only option is `cache`
+(`web-asset-resolver.ts:263`), with no conditional or range request headers, so
+these requests are CORS-simple and never trigger a preflight. They are listed so
+that a future range-request or conditional-fetch optimization does not require a
+CORS change.
 
 Rationale: the delivery bucket is world-readable by design — every object is
 retrievable with an unauthenticated GET — so an origin allowlist provides no
@@ -145,6 +153,12 @@ compressed responses, which would turn browser revalidation of a small JSON
 document into full-body responses instead of 304s. On rules 1 and 2 it is
 consistency rather than benefit, since immutable objects never revalidate.
 
+Rule 1 is *partly* redundant: `.webp` and `.avif` are already on Cloudflare's
+default cached-extension list, so objects would edge-cache without it. It is kept
+because it is what applies `respect_strong_etags` and a deterministic TTL to
+hand-uploaded objects that carry no `Cache-Control`. Do not "simplify" it away —
+the redundancy is only in the happy path.
+
 The three predicates are mutually exclusive — a content-addressed object is
 `<sha256>.webp` or `<sha256>.avif` and can never end in `runtime-manifest.json`
 or `current.json` — so rule **order is not load-bearing** and reordering them is
@@ -159,6 +173,20 @@ entirely, and the browser still revalidates because browser TTL respects origin.
 **Consequence, documented in the runbook:** activation is visible within 60s, but
 an *instant* rollback requires purging the single `current.json` URL. The runbook
 gives that command as a required rollback step.
+
+**Which layer does what — read before changing any of them.** Three independent
+mechanisms stack on the pointer, and it is easy to adjust the wrong one:
+
+| Layer | Setting | Effect |
+|---|---|---|
+| Client fetch | `cache: 'no-cache'` (`web-asset-resolver.ts:497`) | The browser revalidates the pointer on every activation check, regardless of edge or origin headers |
+| Edge (rule 3) | `override_origin`, 60s | Collapses many colo-level revalidations into one origin hit per minute |
+| Origin object | `no-cache, max-age=0, must-revalidate` | What a non-Cloudflare client or a direct S3 read sees |
+
+The 60s edge TTL therefore governs **origin load**, not client freshness — the
+client is already revalidating every time. HPA-230 should not "fix" pointer
+staleness by lowering the edge TTL; if activation appears slow, the layer to
+inspect is the client fetch mode or the purge step.
 
 **Hand-uploaded objects.** Layer 2 exists partly to cover objects uploaded
 outside the publisher, but it only fixes edge behavior. An object uploaded
@@ -182,12 +210,39 @@ following prose.
 The script never deletes. Removing a resource is a deliberate manual act, so a
 config typo cannot destroy a bucket.
 
+**Token creation is not part of reconcile.** `provision.ts` reconciles buckets,
+CORS, the custom domain, and cache rules only. Creating the publisher credential
+is a separate one-shot `bun r2:create-publisher-token` that prints the secret
+once and exits.
+
+This split is forced by R2's credential model: the Secret Access Key is shown
+exactly once and can never be re-fetched. A reconciler that "ensures a token
+exists" has only bad options — mint a new one on every run, producing secret
+sprawl and silent rotation, or no-op when any token exists, in which case it can
+never rotate. Neither is what an operator expects from a command they are told is
+safe to re-run. The config file may carry token *metadata* (name, bucket scope)
+for documentation, but it is never desired state that gets upserted.
+
 ### D6 — Credentials
 
 | Secret | Home | Scope |
 |---|---|---|
 | `R2_PUBLISHER_ACCESS_KEY_ID` / `R2_PUBLISHER_SECRET_ACCESS_KEY` | GitHub Actions secrets; blank placeholders in `.env.example` for local publishing | R2 Object Read & Write, restricted to `aquila-vn-source` and `aquila-vn-delivery` only |
-| `CLOUDFLARE_API_TOKEN` | Operator's shell, for `provision.ts` | Not stored in the repo or in CI |
+| `CLOUDFLARE_API_TOKEN` | Operator's shell only, for `provision.ts` | See scopes below. Never in the repo and never in CI. |
+
+The operator token needs a union of scopes that is easy to under-provision, and
+a missing scope surfaces as a mid-run 403 that reads like a script bug. It
+requires, on account `91ee89a03a31b5354a25c49228e4ab85` and zone `cwchanap.dev`:
+
+| Scope | Why |
+|---|---|
+| Account · Workers R2 Storage · Edit | Create buckets, set CORS, attach the custom domain |
+| Zone · Cache Rules · Edit | Create the `http_request_cache_settings` entrypoint and its three rules |
+| Zone · DNS · Edit | The custom-domain attachment creates the proxied `assets` record |
+
+`provision.ts` verifies its own token against
+`/user/tokens/verify` and fails with a readable message naming the missing scope
+rather than surfacing a raw 403.
 
 The Vercel project receives only the public `PUBLIC_ASSET_*` variables. The web
 app reads assets over public HTTP and must never hold R2 write credentials.
@@ -207,11 +262,35 @@ seven pre-existing buckets in this account, which belong to other projects.
 | `PUBLIC_ASSET_ENVIRONMENT` | Vercel, local | `local` \| `preview` \| `production` |
 | `PUBLIC_ASSET_PREVIEW_ID` | preview only | branch slug |
 
-**Env is read at exactly one boundary and injected.** `getAssetResolverSource()`
-takes an explicit config argument; a separate `readAssetSourceConfigFromEnv()`
-is the only code that touches `import.meta.env`, and the Astro/`ReaderShell`
-layer supplies it. `ReaderShell.svelte:119` already injects `createVisualRuntime`
-as a prop, so this follows the existing seam.
+**Env is read at exactly one boundary and injected.** The exact call graph:
+
+```ts
+// Pure. No env access. Origin is used only for the all-unset local default.
+getAssetResolverSource(
+    storyId: string,
+    origin: string,
+    config: AssetSourceConfig
+): AssetResolverSource | null;
+
+// The only code in the app that touches import.meta.env.
+readAssetSourceConfigFromEnv(env: ImportMetaEnv): AssetSourceConfig;
+
+// Signature unchanged. config is a new optional 4th parameter so production
+// omits it and tests inject one.
+createVisualRuntime(
+    storyId: string,
+    origin: string,
+    getSceneDialogue: GetSceneDialogue,
+    config: AssetSourceConfig = readAssetSourceConfigFromEnv(import.meta.env)
+): VisualReaderRuntime | null;
+```
+
+`ReaderShell.svelte:119` keeps calling
+`createVisualRuntime(activeStoryId, runtimeOrigin(), getSceneDialogue)` with no
+change, so its existing prop-injection seam and the tests that depend on it stay
+signature-compatible. `origin` is retained solely to build the all-unset local
+default `new URL('/assets/', origin)`; in every configured mode the base URL
+comes from config and `origin` is unused.
 
 This is deliberate rather than incidental. `apps/web/vitest.config.ts` uses the
 default `envPrefix` (`VITE_`), so `import.meta.env.PUBLIC_ASSET_BASE_URL` would
@@ -220,10 +299,38 @@ would pass against semantics production never exercises. Injection removes the
 divergence and makes leaked `PUBLIC_ASSET_*` values in a CI shell structurally
 incapable of affecting unit tests.
 
-Parsing rules:
+**Truth table.** Writing `B` = `PUBLIC_ASSET_BASE_URL`, `E` =
+`PUBLIC_ASSET_ENVIRONMENT`, `P` = `PUBLIC_ASSET_PREVIEW_ID`. These four rows are
+the *only* accepted configurations; every other combination throws at
+construction.
 
-- All unset → today's local fixture behavior, unchanged. Local development and
-  the existing test suite keep working with no configuration.
+| B | E | P | Result |
+|---|---|---|---|
+| unset | unset | unset | Local default — `baseUrl = new URL('/assets/', origin)`, `target = { kind: 'preview', previewId: 'hpa-228-local' }`. Today's behavior. |
+| set | `local` | unset | Local fixtures at an explicit `B`. `http:` or `https:` both allowed, so fixtures can be served from another port. |
+| set | `preview` | set, valid | Preview source. `B` must be `https:`; `P` must satisfy `isPreviewId()`. |
+| set | `production` | unset | Production source. `B` must be `https:`. |
+
+Throw reasons, each a distinct message:
+
+| Condition | Reason |
+|---|---|
+| `B` set, `E` unset | Incomplete configuration |
+| `E` set, `B` unset | Incomplete configuration |
+| `E` not in `local` \| `preview` \| `production` | Unknown environment |
+| `E` = `preview`, `P` unset | Preview requires a preview id |
+| `E` = `preview`, `P` fails `isPreviewId()` | Invalid preview id |
+| `E` = `local` or `production`, `P` set | Preview id is meaningless here |
+| `E` = `preview` or `production`, `B` not `https:` | Remote asset base must be HTTPS |
+
+A partially-set environment is treated as an error rather than as a fallback
+precisely because half-configuration is the failure this rule exists to prevent:
+falling back to local fixtures on a production deploy would render a
+working-looking reader with no artwork, and the reader's graceful-fallback path
+would mask it.
+
+Notes on individual rules:
+
 - `preview` requires `PUBLIC_ASSET_PREVIEW_ID` to satisfy `isPreviewId()` from
   `@aquila/stories/runtime-assets` — `/^[a-z0-9](?:[a-z0-9_-]{0,62}[a-z0-9])?$/`.
   A non-empty check is insufficient: a branch slug with uppercase characters, a
@@ -231,13 +338,26 @@ Parsing rules:
   then throws `unsafe-path` deep inside `WebAssetResolver.loadActiveRelease()`
   at read time. Validating with the same predicate the path builder uses moves
   that failure to construction, which is the entire point of this rule.
-- `production` and `preview` require an `https:` base URL.
 - The trailing slash on `PUBLIC_ASSET_BASE_URL` is **optional and normalized** —
   `normalizeBaseUrl()` (`web-asset-resolver.ts:104`) appends one via
   `resolveAssetUrl`, which already forces a trailing `/` on the pathname
   (`paths.ts:225`). Documentation and `.env.example` write it with the slash for
   consistency; neither form is an error.
-- Any invalid combination throws at construction.
+
+**Vercel environment ownership — production only in this issue.** HPA-229 sets
+`PUBLIC_ASSET_BASE_URL` and `PUBLIC_ASSET_ENVIRONMENT=production` on the Vercel
+**Production** environment and documents them. Wiring preview deployments is
+explicitly **not in this issue**.
+
+The reason is that a valid `PUBLIC_ASSET_PREVIEW_ID` cannot be taken directly
+from a Vercel system variable: `isPreviewId()` demands lowercase, ≤63
+characters, no leading or trailing `-`/`_`, while real branch names routinely
+violate all three (`HPA-229`, `feature/Foo`). Making preview work therefore
+requires a slugify step at build time plus a decision about where it runs — a
+small design of its own, which belongs with the publisher work that first needs
+preview publication (HPA-230). Until then, preview deployments leave the
+variables unset and fall through to the local-default row, which is the correct
+and safe behavior for a deployment with nothing published for it.
 
 **The story allowlist is preserved.** `getAssetResolverSource()` continues to
 return `null` for stories other than `the_seventh_mirror`. Environment variables
@@ -256,14 +376,19 @@ existing graceful-fallback path would mask it.
 ```text
 infra/cloudflare/r2-delivery.config.json          desired state
 infra/cloudflare/provision.ts                     idempotent apply, --dry-run
+infra/cloudflare/create-publisher-token.ts        one-shot, prints secret once
 infra/cloudflare/seed.ts                          upload smoke fixtures
 infra/cloudflare/verify.ts                        smoke tests
 infra/cloudflare/fixtures/                        tiny WebP/AVIF + manifest + pointer
 docs/infrastructure/r2-visual-asset-delivery.md   runbook
 ```
 
-Package scripts: `bun r2:provision`, `bun r2:provision:dry`, `bun r2:seed`,
-`bun r2:verify`.
+Package scripts: `bun r2:provision`, `bun r2:provision:dry`,
+`bun r2:create-publisher-token`, `bun r2:seed`, `bun r2:verify`.
+
+**Implementation order** (smallest blast radius last, so the existing test suite
+pins the local default until the end): config schema → `provision.ts` dry-run
+against the real account → apply → seed → verify → D7 app change.
 
 ## Verification
 
@@ -271,17 +396,35 @@ Because the publisher does not exist yet, this issue seeds its own smoke
 fixtures: a tiny WebP, a tiny AVIF, a runtime manifest, and a `current.json`,
 all conforming to the HPA-227 schemas and uploaded under `vn/previews/smoke/`
 (objects in the shared `vn/objects/` pool) by `bun r2:seed`. They are checked
-into `infra/cloudflare/fixtures/`, carry the same `Cache-Control` values the
-publisher will set, and are what `verify.ts` probes. HPA-231 does not depend on
+into `infra/cloudflare/fixtures/`, and `seed.ts` sets **both `Content-Type` and
+`Cache-Control`** on every uploaded object to the exact values the publisher will
+use:
+
+| Object class | `Content-Type` | `Cache-Control` |
+|---|---|---|
+| `vn/objects/*.webp` | `image/webp` | `public, max-age=31536000, immutable` |
+| `vn/objects/*.avif` | `image/avif` | `public, max-age=31536000, immutable` |
+| `runtime-manifest.json` | `application/json` | `public, max-age=31536000, immutable` |
+| `current.json` | `application/json` | `no-cache, max-age=0, must-revalidate` |
+
+Setting `Content-Type` explicitly is required, not incidental: R2 does not infer
+it from the key extension and defaults to `application/octet-stream`, which would
+fail verification checks 1–3 and would break AVIF/WebP decoding in the reader. HPA-231 does not depend on
 them, and they can be deleted once a real release exists.
 
 `verify.ts` exits non-zero on any failure and asserts the issue's acceptance
 criteria mechanically:
 
-1. `current.json` returns 200, `content-type: application/json`, and
-   revalidation headers.
-2. A runtime manifest returns 200 and `cache-control: … immutable`.
-3. AVIF and WebP objects return `image/avif` and `image/webp` with `immutable`.
+1. `current.json` returns 200, `content-type` starting `application/json`, and a
+   `cache-control` containing all three of `no-cache`, `max-age=0`, and
+   `must-revalidate`. Header-name-and-substring assertions, matching checks 2–3,
+   so the check is unambiguous to implement and does not depend on directive
+   ordering or on `cf-cache-status`.
+2. A runtime manifest returns 200, `content-type` starting `application/json`,
+   and a `cache-control` containing `max-age=31536000` and `immutable`.
+3. AVIF and WebP objects return `content-type` exactly `image/avif` and
+   `image/webp`, with `cache-control` containing `max-age=31536000` and
+   `immutable`.
 4. A cross-origin `GET` with `Origin: https://aquila.cwchanap.dev` returns
    `access-control-allow-origin`.
 5. A repeat request for an object reaches `cf-cache-status: HIT`, retried a few
@@ -293,7 +436,11 @@ criteria mechanically:
    buy a flaky verifier for no additional guarantee.
 6. A known source-bucket key returns 404 over the public domain, and the source
    bucket exposes no custom domain and no public development URL.
-7. No response body under `vn/` contains a `prompt` or `sourcePath` field.
+7. No JSON response under `vn/` contains a forbidden key. The check parses the
+   body and walks key paths rather than substring-matching the raw text: a
+   logical asset key or a future path segment could legitimately contain the
+   string `prompt` and produce a false positive, and the contract already defines
+   forbidden runtime metadata names as *keys*. Binary objects are skipped.
 
 Check 6 is the security acceptance criterion; check 7 guards the prompt-exposure
 requirement that motivates the private/public bucket split.
@@ -330,6 +477,7 @@ under `packages/assets/media`.
 | Risk | Mitigation |
 |---|---|
 | Preview publish writes a production pointer | Publisher-enforced; HPA-230 must test `assertActivationAllowed()` |
+| Preview trees are world-readable; knowing a `previewId` exposes unreleased artwork | Accepted — the delivery bucket is public by design. Preview IDs are capability-like and should be unguessable for spoiler-sensitive work in progress. The `smoke` fixture ID is deliberately guessable because it contains nothing sensitive. Documented in the runbook. |
 | Custom domain stuck in "Initializing" | Runbook documents retry; zone is Free with no zone hold |
 | 60s pointer cache delays rollback | Runbook makes the targeted purge a required rollback step |
 | Free-plan rule limit (10) | 3 used; documented so future rules stay within budget |

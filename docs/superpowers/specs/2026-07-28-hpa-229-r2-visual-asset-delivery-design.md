@@ -358,20 +358,63 @@ Notes on individual rules:
   (`paths.ts:225`). Documentation and `.env.example` write it with the slash for
   consistency; neither form is an error.
 
-**Vercel environment ownership — production only in this issue.** HPA-229 sets
-`PUBLIC_ASSET_BASE_URL` and `PUBLIC_ASSET_ENVIRONMENT=production` on the Vercel
-**Production** environment and documents them. Wiring preview deployments is
-explicitly **not in this issue**.
+**Vercel environment ownership.** Project environment variables:
 
-The reason is that a valid `PUBLIC_ASSET_PREVIEW_ID` cannot be taken directly
-from a Vercel system variable: `isPreviewId()` demands lowercase, ≤63
-characters, no leading or trailing `-`/`_`, while real branch names routinely
-violate all three (`HPA-229`, `feature/Foo`). Making preview work therefore
-requires a slugify step at build time plus a decision about where it runs — a
-small design of its own, which belongs with the publisher work that first needs
-preview publication (HPA-230). Until then, preview deployments leave the
-variables unset and fall through to the local-default row, which is the correct
-and safe behavior for a deployment with nothing published for it.
+| Vercel environment | `PUBLIC_ASSET_BASE_URL` | `PUBLIC_ASSET_ENVIRONMENT` | `PUBLIC_ASSET_PREVIEW_ID` |
+|---|---|---|---|
+| Production | `https://assets.aquila.cwchanap.dev/` | `production` | not set |
+| Preview | `https://assets.aquila.cwchanap.dev/` | `preview` | derived at build time |
+| Development / local | not set | not set | not set |
+
+`PUBLIC_ASSET_PREVIEW_ID` cannot be a stored project variable — it differs per
+branch — and it cannot come straight from `VERCEL_GIT_COMMIT_REF`, because
+`isPreviewId()` requires lowercase, ≤63 characters, and no leading or trailing
+`-`/`_`, while real branch names violate all three (`HPA-229`,
+`feature/Foo_Bar`).
+
+It is therefore derived by `apps/web/scripts/asset-preview-id.ts` and injected
+into the environment of the build command itself:
+
+```jsonc
+// apps/web/package.json
+"build": "bun --cwd . scripts/generate-zh-proxy-pages.ts && PUBLIC_ASSET_PREVIEW_ID=\"$(bun scripts/asset-preview-id.ts)\" astro build && bun scripts/assert-story-chunks.ts"
+```
+
+The command substitution is required rather than stylistic: Astro inlines
+`PUBLIC_*` into client code at build time from the environment of the `astro
+build` process, so a `&&`-chained script — which runs in its own process — could
+not affect it. This mirrors the existing `generate-zh-proxy-pages.ts` prebuild
+step's placement while getting the value into the right process.
+
+`asset-preview-id.ts` prints either a valid preview id or nothing:
+
+1. If `VERCEL_ENV !== 'preview'`, print an empty string and exit. Production
+   must not receive a preview id — per the truth table that combination throws.
+2. Take `VERCEL_GIT_COMMIT_REF`, normalize NFC, lowercase.
+3. Replace every character outside `[a-z0-9_-]` (including `/`) with `-`.
+4. Collapse runs of `-`, then strip leading and trailing `-` and `_`.
+5. Clamp to 63 characters, then strip trailing `-`/`_` again in case the clamp
+   created one.
+6. If the result is empty — a branch name of entirely non-ASCII characters, say
+   — emit `preview-<first 8 hex of sha256(ref)>` instead.
+
+Step 6 exists so the script cannot emit an invalid or empty id on a preview
+build. An empty value there would set `PUBLIC_ASSET_ENVIRONMENT=preview` with no
+preview id, which the truth table treats as a construction error — turning an
+odd branch name into a broken preview reader. The output is deterministic, so
+the same branch always resolves to the same preview namespace.
+
+**Empty strings count as unset.** `readAssetSourceConfigFromEnv()` trims each
+variable and treats the empty result as absent. Without this, a local or
+production build would receive `PUBLIC_ASSET_PREVIEW_ID=""` from the command
+substitution above and throw.
+
+Until HPA-230's publisher exists there is nothing published under
+`vn/previews/<slug>/`, so a preview deployment resolves a pointer that 404s and
+falls back to the text presentation — the correct graceful-degradation path. The
+wiring is in place so that the first preview publish works with no code change,
+which is what acceptance criterion "preview and production configuration can be
+selected without code changes" asks for.
 
 **The story allowlist is preserved.** `getAssetResolverSource()` continues to
 return `null` for stories other than `the_seventh_mirror`. Environment variables
@@ -394,6 +437,7 @@ infra/cloudflare/create-publisher-token.ts        one-shot, prints secret once
 infra/cloudflare/seed.ts                          upload smoke fixtures
 infra/cloudflare/verify.ts                        smoke tests
 infra/cloudflare/fixtures/                        tiny WebP/AVIF + manifest + pointer
+apps/web/scripts/asset-preview-id.ts              derive preview id from branch
 docs/infrastructure/r2-visual-asset-delivery.md   runbook
 ```
 
@@ -402,7 +446,9 @@ Package scripts: `bun r2:provision`, `bun r2:provision:dry`,
 
 **Implementation order** (smallest blast radius last, so the existing test suite
 pins the local default until the end): config schema → `provision.ts` dry-run
-against the real account → apply → seed → verify → D7 app change.
+against the real account → apply → seed → verify (including the browser and
+pointer-activation checks) → D7 app change → `asset-preview-id.ts` and the build
+command → Vercel environment variables.
 
 ## Verification
 
@@ -530,7 +576,7 @@ under `packages/assets/media`.
 | Risk | Mitigation |
 |---|---|
 | Preview publish writes a production pointer | Publisher-enforced; HPA-230 must test `assertActivationAllowed()` |
-| Preview trees are world-readable; knowing a `previewId` exposes unreleased artwork | Accepted — the delivery bucket is public by design. Preview IDs are capability-like and should be unguessable for spoiler-sensitive work in progress. The `smoke` fixture ID is deliberately guessable because it contains nothing sensitive. Documented in the runbook. |
+| Preview trees are world-readable, and branch-derived preview IDs are **guessable** | Accepted, with eyes open. Deriving the id from the branch name means anyone who can guess a branch (`hpa-231`, `main`) can read unreleased artwork published under it. This is a real consequence of wiring preview to branch slugs rather than random ids, chosen because reproducibility per branch is what makes preview useful. For spoiler-sensitive work, publish under a manually-set unguessable `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one. Documented in the runbook. |
 | Custom domain stuck in "Initializing" | Runbook documents retry; zone is Free with no zone hold |
 | 60s pointer cache delays rollback | Runbook makes the targeted purge a required rollback step |
 | Free-plan rule limit (10) | 3 used; documented so future rules stay within budget |

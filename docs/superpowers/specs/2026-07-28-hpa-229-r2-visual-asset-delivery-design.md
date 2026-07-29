@@ -74,6 +74,17 @@ mitigation lives in HPA-230's tests, not in infrastructure. Separate buckets wer
 considered and rejected because they would duplicate object storage and break
 the contract's shared-object reuse.
 
+Hardening this at the credentials layer was considered and **cannot be done with
+long-lived tokens**: an R2 Access Policy scopes by bucket only
+(`com.cloudflare.edge.r2.bucket.<account>_<jurisdiction>_<bucket>`), with no
+prefix dimension, so a token that may write `vn/previews/*` but not
+`vn/stories/*/current.json` is not expressible. R2 *temporary credentials* do
+support `prefixes`/`objects` scoping with a TTL derived from a parent token, so
+the publisher could mint a preview-scoped credential per run and make the
+violation impossible at the IAM layer. That requires credential vending inside
+the publisher and therefore belongs to HPA-230; it is recorded here so the option
+is not rediscovered from scratch.
+
 ### D2 — Custom domain `assets.aquila.cwchanap.dev`
 
 Nested under the app hostname so other `cwchanap.dev` projects can take their own
@@ -124,9 +135,20 @@ Three rules in the `http_request_cache_settings` phase, evaluated in order
 
 | # | Expression | Behavior |
 |---|---|---|
-| 1 | `http.host eq "assets.aquila.cwchanap.dev" and starts_with(http.request.uri.path, "/vn/objects/")` | `cache: true`, edge TTL `override_origin` 31536000, browser TTL respect origin, respect strong ETags |
-| 2 | `http.host eq "…" and ends_with(http.request.uri.path, "/runtime-manifest.json")` | `cache: true`, edge TTL `override_origin` 31536000, browser TTL respect origin |
-| 3 | `http.host eq "…" and ends_with(http.request.uri.path, "/current.json")` | `cache: true`, edge TTL `override_origin` **60**, browser TTL `respect_origin` |
+| 1 | `http.host eq "assets.aquila.cwchanap.dev" and starts_with(http.request.uri.path, "/vn/objects/")` | `cache: true`, edge TTL `override_origin` 31536000, browser TTL respect origin, `respect_strong_etags: true` |
+| 2 | `http.host eq "…" and ends_with(http.request.uri.path, "/runtime-manifest.json")` | `cache: true`, edge TTL `override_origin` 31536000, browser TTL respect origin, `respect_strong_etags: true` |
+| 3 | `http.host eq "…" and ends_with(http.request.uri.path, "/current.json")` | `cache: true`, edge TTL `override_origin` **60**, browser TTL `respect_origin`, `respect_strong_etags: true` |
+
+All three set `respect_strong_etags: true`. It matters most on rule 3: the pointer
+is the one path that actually revalidates, and Cloudflare weakens strong ETags on
+compressed responses, which would turn browser revalidation of a small JSON
+document into full-body responses instead of 304s. On rules 1 and 2 it is
+consistency rather than benefit, since immutable objects never revalidate.
+
+The three predicates are mutually exclusive — a content-addressed object is
+`<sha256>.webp` or `<sha256>.avif` and can never end in `runtime-manifest.json`
+or `current.json` — so rule **order is not load-bearing** and reordering them is
+safe. A future editor should not read the sequence as a precedence contract.
 
 Rule 3 caches the pointer for 60 seconds rather than bypassing cache. This
 absorbs pointer polling while keeping worst-case activation latency inside the
@@ -137,6 +159,15 @@ entirely, and the browser still revalidates because browser TTL respects origin.
 **Consequence, documented in the runbook:** activation is visible within 60s, but
 an *instant* rollback requires purging the single `current.json` URL. The runbook
 gives that command as a required rollback step.
+
+**Hand-uploaded objects.** Layer 2 exists partly to cover objects uploaded
+outside the publisher, but it only fixes edge behavior. An object uploaded
+without a `Cache-Control` header still edge-caches for a year via
+`override_origin`, while browser TTL `respect_origin` finds no header to respect
+and the browser falls back to heuristic caching. That is acceptable for immutable
+content-addressed objects, but it means a hand-uploaded object is not fully
+equivalent to a published one. The runbook says to set `Cache-Control` on manual
+uploads.
 
 ### D5 — Declarative config plus idempotent script
 
@@ -176,13 +207,45 @@ seven pre-existing buckets in this account, which belong to other projects.
 | `PUBLIC_ASSET_ENVIRONMENT` | Vercel, local | `local` \| `preview` \| `production` |
 | `PUBLIC_ASSET_PREVIEW_ID` | preview only | branch slug |
 
+**Env is read at exactly one boundary and injected.** `getAssetResolverSource()`
+takes an explicit config argument; a separate `readAssetSourceConfigFromEnv()`
+is the only code that touches `import.meta.env`, and the Astro/`ReaderShell`
+layer supplies it. `ReaderShell.svelte:119` already injects `createVisualRuntime`
+as a prop, so this follows the existing seam.
+
+This is deliberate rather than incidental. `apps/web/vitest.config.ts` uses the
+default `envPrefix` (`VITE_`), so `import.meta.env.PUBLIC_ASSET_BASE_URL` would
+be `undefined` under Vitest but defined under Astro — a test reading env directly
+would pass against semantics production never exercises. Injection removes the
+divergence and makes leaked `PUBLIC_ASSET_*` values in a CI shell structurally
+incapable of affecting unit tests.
+
 Parsing rules:
 
 - All unset → today's local fixture behavior, unchanged. Local development and
   the existing test suite keep working with no configuration.
-- `preview` requires a non-empty `PUBLIC_ASSET_PREVIEW_ID`.
+- `preview` requires `PUBLIC_ASSET_PREVIEW_ID` to satisfy `isPreviewId()` from
+  `@aquila/stories/runtime-assets` — `/^[a-z0-9](?:[a-z0-9_-]{0,62}[a-z0-9])?$/`.
+  A non-empty check is insufficient: a branch slug with uppercase characters, a
+  leading or trailing `-`/`_`, or more than 63 characters passes "non-empty" and
+  then throws `unsafe-path` deep inside `WebAssetResolver.loadActiveRelease()`
+  at read time. Validating with the same predicate the path builder uses moves
+  that failure to construction, which is the entire point of this rule.
 - `production` and `preview` require an `https:` base URL.
+- The trailing slash on `PUBLIC_ASSET_BASE_URL` is **optional and normalized** —
+  `normalizeBaseUrl()` (`web-asset-resolver.ts:104`) appends one via
+  `resolveAssetUrl`, which already forces a trailing `/` on the pathname
+  (`paths.ts:225`). Documentation and `.env.example` write it with the slash for
+  consistency; neither form is an error.
 - Any invalid combination throws at construction.
+
+**The story allowlist is preserved.** `getAssetResolverSource()` continues to
+return `null` for stories other than `the_seventh_mirror`. Environment variables
+change *how* an allowed story resolves, never *which* stories resolve. Only The
+Seventh Mirror has visual assets, and HPA-231 migrates exactly that story;
+dropping the allowlist would make every other story request a manifest that does
+not exist. The existing "returns null for stories without a visual source" test
+stays valid unchanged.
 
 Failing loudly matters here: a production deployment that silently fell back to
 local fixtures would serve a working-looking reader with no artwork, and the
@@ -221,7 +284,13 @@ criteria mechanically:
 3. AVIF and WebP objects return `image/avif` and `image/webp` with `immutable`.
 4. A cross-origin `GET` with `Origin: https://aquila.cwchanap.dev` returns
    `access-control-allow-origin`.
-5. A second request for an object returns `cf-cache-status: HIT`.
+5. A repeat request for an object reaches `cf-cache-status: HIT`, retried a few
+   times with backoff and reported as a **warning rather than a failure** if it
+   does not. Sequential requests can land on different Cloudflare colos, and a
+   first response populates cache asynchronously, so a cross-colo `MISS` is a
+   known false negative. The binding acceptance criterion is the cache *headers*
+   asserted in checks 2 and 3; `HIT` is corroboration, and making it fatal would
+   buy a flaky verifier for no additional guarantee.
 6. A known source-bucket key returns 404 over the public domain, and the source
    bucket exposes no custom domain and no public development URL.
 7. No response body under `vn/` contains a `prompt` or `sourcePath` field.
@@ -242,6 +311,13 @@ The runbook documents:
   URL.
 - Recovery: re-running `bun r2:provision` restores CORS, cache rules, and the
   custom domain from config. Bucket contents are not recoverable this way.
+- Manual uploads must carry an explicit `Cache-Control` matching
+  `RUNTIME_ASSET_CACHE_POLICY`; see the hand-uploaded-objects note in D4.
+- **Renaming a bucket in config is not a safe re-run.** `provision.ts` never
+  deletes, so a renamed delivery bucket produces a second empty bucket while the
+  custom domain stays attached to the original — one domain binds to exactly one
+  bucket. A rename requires manually detaching the domain and deleting the old
+  bucket first, in that order.
 
 ## Out of scope
 

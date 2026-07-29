@@ -1066,6 +1066,26 @@ LEGACY／02   ADAPTER-PENDING
 
 > 兩名患者的旁觀式模型出現有限相符；另外兩名仍受現場及硬體阻礙。
 
+## 10.7 匿名準備矩陣：紅區以外的四名活動患者
+
+紅區四名以外，仍有四名活動患者。身分依法遮蔽，本章只以系統記錄顯示匿名準備狀態，不解盲、不追查、不公開：
+
+```text
+G07／05       STAGE-1／ROOT READY
+LEGACY／04    STAGE-1／ROOT READY
+ACTIVE／C     STAGE-0／COMPARE ONLY
+ACTIVE／D     LOCAL ROOT PENDING／HOLD
+```
+
+此矩陣與 Chapter 22 的總數一致：
+
+- 活動患者八名 = 紅區四名 + 此處四名；
+- 兩名 STAGE-1、患者綁定本地根已就緒；
+- 一名 STAGE-0、只允許比對；
+- 一名本地根未完成、HOLD。
+
+本章只是前置。`G07／05` 的 prior assent、法定代理與 rights consent，以及 `LEGACY／04` 的 limited self-consent，留待 Chapter 26 才支付。本章不得讓這四名突然方便成功。
+
 ---
 
 # 11. 水瀨葵：找到位置，不等於帶她回來

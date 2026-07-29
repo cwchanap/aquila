@@ -30,5 +30,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "所以研究中心的資料她調不到，警方的完整報告她看不到，醫院的同意書她簽不了。她照顧了悠真七年，在紙面上卻只是一個「同住的姐姐」。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪把鏡子收進包包側袋，拉上拉鏈。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）今天再去一次。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來，經過走廊那面舊層架——上面堆的東西很久沒人動過，都是母親留下的。", background: Background.Chapter_1_Ch1_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一架改裝過的短波接收器靠在角落，外殼發黃，天線用膠帶纏過一截。母親生前愛聽，現在插上電也收不到幾個台，大多只剩一陣陣的靜電沙沙聲。悠真每回經過都要停一下，側著頭聽，問他在聽什麼也說不上來——就一個習慣。", background: Background.Chapter_1_Ch1_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "旁邊壓著一本翻舊的《腦波與睡眠研究入門》，書背脫了膠；還有一張褪色的合照——一群穿實驗袍的人在北海道某個研究會上拍的，母親站在第二排邊邊，笑得很淡。澪小時候問過一次，母親只說「很早以前的工作」，沒再往下講。", background: Background.Chapter_1_Ch1_Act2_S1 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯都是沒人要的舊東西。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她最後看了一眼悠真房間的方向，沒有走過去，拿起包包出了門。", background: Background.Chapter_1_Ch1_Act2_S1 },
 ];

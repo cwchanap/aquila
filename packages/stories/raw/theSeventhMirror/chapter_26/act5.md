@@ -8,7 +8,7 @@ subject continuity bay interior, rack-mounted ledger displays glowing cold blue-
 
 **旁白**：本地技師站在面板前。他的聲音很平。像在讀一份他已經讀過很多次的服務手冊。
 
-**本地技師**：物理端點核對。八個活動端點。八筆 ledger 紀錄。未映射心跳——零。
+**本地技師**：實體端點核對。八個活動端點。八筆 ledger 紀錄。未對應心跳——零。
 
 **旁白**：螢幕上展開。一行一行。
 
@@ -31,7 +31,7 @@ subject continuity bay interior, rack-mounted ledger displays glowing cold blue-
 **朝倉澪** [exhausted]：（內心）五個資料來源者。零個有效公共使用同意。HOLD。不是法院按的。不是醫療按的。是——五個人的同意從來不存在。租約用了他們的資料。可是——沒有一個人說過可以用。
 
 ```bg
-subject continuity bay interior, center screen now showing authorized human dependency restoration list, four red-zone names appearing one by one, other four entries remaining aggregated as OTHER-A through OTHER-D, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen
+subject continuity bay interior, center screen now showing authorized human dependency restoration list, four red-zone names appearing one by one, other four entries showing system codes G07／05, LEGACY／04, ACTIVE／C, ACTIVE／D with consent and stage metadata but no names, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen
 ```
 
 **旁白**：03:55。螢幕中間。授權人類畫面還原。不是全部。是四名紅區。一個一個。很慢。
@@ -46,7 +46,17 @@ subject continuity bay interior, center screen now showing authorized human depe
 
 **旁白**：第四個——LEGACY／02／HUMAN。舊式 adapter。pending。
 
-**朝倉澪** [exhausted]：（內心）四個名字。紗英。美空。葵。LEGACY／02。其他四個——還是聚合的。OTHER-A。OTHER-B。OTHER-C。OTHER-D。沒有名字。可是——同樣進了 latch。同樣被 HOLD 擋著。他們不是不重要。只是——還不到把名字拿出來的時候。
+**旁白**：其他四個——不是名字。是制度代碼。可是這次——不是聚合。一個一個。
+
+**旁白**：第五個——G07／05。16 歲。prior assent——事前同意。proxy／rights——代理人／權利在場。Stage-1。root ready。
+
+**旁白**：第六個——LEGACY／04。成人。limited self-consent——有限自我同意。Stage-1。root ready。
+
+**旁白**：第七個——ACTIVE／C。Stage-0。compare only。
+
+**旁白**：第八個——ACTIVE／D。local root pending。hold。
+
+**朝倉澪** [exhausted]：（內心）四個名字。紗英。美空。葵。LEGACY／02。其他四個——還是沒有名字。可是——這次不是聚合。是代碼。G07／05。16 歲。有代理人在場。有過事前同意。LEGACY／04。成人。自己的有限同意。ACTIVE／C——只能比對。ACTIVE／D——本地根還沒接好。他們不是不重要。他們——同樣進了 latch。同樣被 HOLD 擋著。只是——還不到把名字拿出來的時候。
 
 **旁白**：03:58。日下部站在螢幕旁邊。他的肩膀很低。他的聲音很平。
 
@@ -90,7 +100,7 @@ subject continuity bay interior, center screen now showing authorized human depe
 
 **旁白**：04:22。螢幕上的租約還亮著。CUTOVER AUTH LEASE。VALID UNTIL——MON 06:20。旁邊——兩個 HOLD。紅色的字。不動。
 
-**旁白**：04:25。Subject Continuity Bay。螢光燈還亮著。空調的聲音填進縫隙。四個名字在螢幕上。其他四個——還是聚合的。可是——同樣被擋著。同樣被看見。
+**旁白**：04:25。Subject Continuity Bay。螢光燈還亮著。空調的聲音填進縫隙。四個名字在螢幕上。其他四個——是代碼，不是名字。可是——同樣被擋著。同樣被看見。
 
 **旁白**：租約裡沒有名字。
 

@@ -219,9 +219,14 @@ OTHER ACTIVE HUMAN DEPENDENCIES     4
 
 ### 四名姓名依法遮蔽的其他活動患者
 
-- 兩名已有患者綁定本地根，Stage-1 被動相符；
-- 一名 Stage-0 baseline；
-- 一名患者本地根仍 pending。
+以制度代碼（非姓名）可見，對應 Chapter 24 匿名準備矩陣：
+
+- `G07／05`：16 歲、prior assent（事前同意）、proxy／rights（代理人／權利）；Stage-1／root ready；
+- `LEGACY／04`：成人、limited self-consent（有限自我同意）；Stage-1／root ready；
+- `ACTIVE／C`：Stage-0／compare only；
+- `ACTIVE／D`：local root pending／hold。
+
+姓名、病房及私人醫療資料仍依法遮蔽。
 
 他們即使不在四名不可逆風險下限中，也仍屬活動人類依存者，不能被排除。
 
@@ -443,15 +448,23 @@ LEGACY／02
 MAX STAGE       HOLD
 HANDOFF         PROHIBITED／ADAPTER PENDING
 
-OTHER ACTIVE／2 NODES
-MAX STAGE       CONDITIONAL HANDOFF
-REQUIRE         MEDICAL GO／ENVELOPE PASS
+G07／05
+HUMAN／MINOR（16 歲）
+CONSENT          PRIOR ASSENT（事前同意）＋ PROXY／RIGHTS（代理人／權利）
+MAX STAGE        CONDITIONAL HANDOFF
+REQUIRE          MEDICAL GO／ENVELOPE PASS
 
-OTHER ACTIVE／1 NODE
-MAX STAGE       COMPARE
+LEGACY／04
+HUMAN／ADULT
+CONSENT          LIMITED SELF-CONSENT（有限自我同意）
+MAX STAGE        CONDITIONAL HANDOFF
+REQUIRE          MEDICAL GO／ENVELOPE PASS
 
-OTHER ACTIVE／1 NODE
-MAX STAGE       HOLD
+ACTIVE／C
+MAX STAGE        COMPARE（STAGE-0／COMPARE ONLY）
+
+ACTIVE／D
+MAX STAGE        HOLD（LOCAL ROOT PENDING）
 ```
 
 Chapter 27 的成功不等於八人全部 handoff。
@@ -1455,13 +1468,14 @@ ACTIVE LATCH    EXCLUDED
 - `G07／08／水瀨葵`
 - `LEGACY／02／HUMAN／ADULT`
 
-### Other active／4
+### Other active／4（制度代碼可見，姓名依法遮蔽）
 
-依法不向澪顯示完整姓名：
+以制度代碼而非姓名可見，對應 Chapter 24 匿名準備矩陣：
 
-- 兩名 patient-bound local root present／Stage-1；
-- 一名 Stage-0 baseline；
-- 一名 local root pending。
+- `G07／05`：16 歲、prior assent（事前同意）、proxy／rights（代理人／權利）；patient-bound local root present／Stage-1；
+- `LEGACY／04`：成人、limited self-consent（有限自我同意）；patient-bound local root present／Stage-1；
+- `ACTIVE／C`：Stage-0 baseline／compare only；
+- `ACTIVE／D`：local root pending／hold。
 
 四名紅區是不可逆風險的穩定下限。
 

@@ -18,6 +18,15 @@
 | 2026-07-27 | Phase 1 A2/D8 | ch26 澪 thought (悠真 rescued, not missing); ch10 琴音 removed from 區民中心 | ch26, ch10 | Y | N |
 | 2026-07-27 | Phase 1 Task 4 | ch17 verified compliant (banned terms in prohibition framing) — no edit | ch17 | N | N |
 | 2026-07-27 | Phase 1 Gate 1 | Keyword scan: 0 in prose (remaining = prohibition notes); 0 Kotone loop-language | (all) | N | N |
+| 2026-07-27 | Phase 2 T8 | ch1 foreshadow: 7 low-intensity seeds (短波接收器/收音機靜電/北海道/腦波書/夢要先寫日期/琴音探視/悠真靜電反應) | ch1 | Y | N |
+| 2026-07-27 | Phase 2 T9 | ch5 uncontaminated shell sketch (未接觸同類硬體照片; no 卡匣/HSM) → ch15 payoff | ch5 | Y | N |
+| 2026-07-27 | Phase 2 T10 | ch9/10 radio tone sequence seed (「不像語音，像座標在唱。」); ordinary framing | ch9, ch10 | Y | N |
+| 2026-07-27 | Phase 2 T11 | ch21 seven-second peak schema (ECHO PEAK/FANOUT GATEWAY); 06:12:53 deferred to ch27 | ch21 | Y | N |
+| 2026-07-27 | Phase 2 T12 | ch15 + ch21 23:50/BCP/MAR-CONT background; ch15 離線復舉 typo fixed | ch15, ch21 | Y | N |
+| 2026-07-27 | Phase 2 T13 | ch20 four tech lineages (M-00 module/analog monitor/KAGAMI/witness sideband); KAGAMI seed for ch21 | ch20 | Y | Y (Gate-2 mechanisms unblocked) |
+| 2026-07-27 | Phase 2 T14 | ch21 COMMIT-GATE 8-field block; KAGAMI↔ch20 connection; S42/S43/Subject Bay absent | ch21 | Y | N |
+| 2026-07-27 | Phase 2 T15 | patient matrix: ch22 totals (9/1/8/4/4) + ch24 prep matrix + ch26 canonical IDs (replace aggregates) | ch22, ch24, ch26 | Y | Y (ch27 patient-count constraint) |
+| 2026-07-27 | Phase 2 T16 | ch25 trust-domain term + 5 regional domains enumerated | ch25 | N | N |
 
 <!--
 Entry template:

@@ -114,6 +114,35 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 
 **指定專家**：COMMIT-GATE 是獨立於公共 fanout 的提交控制節點。它的狀態決定系統是否已經完成最終提交。不是倒數。不是時間鎖。是狀態判讀。
 
+**旁白**：他沒有翻過這一頁。他指著圖表下方。同一頁。一個等寬字體欄位清單。標題——`COMMIT-GATE 提交前驗證欄位`。八行。
+
+**指定專家**：這是 COMMIT-GATE 在允許最終提交前必須判讀的欄位。當輪材料不足以逐一展開終局用途——只確認欄位存在。
+
+**旁白**：他讀。
+
+```text
+SUBJECT DEPENDENCY ATTESTATION
+CLINICAL HOLD
+BRANCH ISOLATION STATUS
+EXECUTION ANCHOR／KAGAMI-01
+REGIONAL PACKAGE／PREPOSITION ONLY
+SUBJECT SNAPSHOT EPOCH
+DEPENDENCY SNAPSHOT HASH
+CLINICAL TOPOLOGY HASH
+```
+
+**朝倉澪** [determined]：（內心）⋯⋯執行錨點。⋯⋯EXECUTION ANCHOR。KAGAMI-01。⋯⋯Chapter 20。設定家族索引。端點 K-01。代號 KAGAMI。功能欄——執行錨點。附帶——local clinical check。本地臨床檢查。⋯⋯同一個。千田在 R2 把它寫進了 COMMIT-GATE 的驗證鏈。
+
+**朝倉澪**：EXECUTION ANCHOR。執行錨點。⋯⋯Chapter 20 的設定家族索引裡有這條。K-01。執行錨點。附帶本地臨床檢查。
+
+**指定專家**：是。R2 將該端點納入 COMMIT-GATE 驗證鏈。同一節點。⋯⋯關鍵是第五行。REGIONAL PACKAGE 斜線 PREPOSITION ONLY。區域套件——只標記為預置。
+
+**旁白**：他用筆點住那一行。
+
+**指定專家**：區域套件預置完成，不等於可以執行。COMMIT-GATE 在最終提交前仍須確認臨床側——CLINICAL HOLD 是否解除、臨床拓撲雜湊是否匹配。鏡島側的區域預置不構成執行許可。
+
+**朝倉澪** [determined]：（內心）⋯⋯預置不等於執行。⋯⋯套件已經放在那裡。可是 COMMIT-GATE 還要確認臨床側。執行錨點把臨床確認綁進了提交條件。⋯⋯那天專家說——手冊不解釋錨點在終局鎖住什麼。現在至少知道——它在這條驗證鏈上。
+
 **朝倉澪** [determined]：七秒呢。
 
 **旁白**：日下部看了她一眼。然後翻到 R2 的下一節。標題是——`+7000ms 補正用途`。
@@ -139,6 +168,23 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 **旁白**：指定專家在筆電上記錄了七秒的三項可用用途和三項不可用邊界。他沒有評論。只確認。
 
 **指定專家**：R2 七秒邊界與 Chapter 14 已鎖定的 `+7000ms` 伺服器補正一致。用途限定與技術附錄相符。
+
+**旁白**：他沒有合上 R2。他翻到附錄下一頁。標題——`peak-marker 部署規格`。等寬字體。一個四行方塊。
+
+**指定專家**：這不是當輪已啟動的設定。是架構文件——七秒補正在公共排程裡的部署骨架。
+
+**旁白**：他讀。
+
+```text
+ECHO PEAK                  06:13:00
+ORDINARY BROADCAST MARKER  PEAK - 7000ms
+APP FOLLOW-UP SEND         MARKER + 7000ms
+CENTRAL FANOUT GATEWAY     REQUIRED
+```
+
+**指定專家**：ECHO PEAK 是回聲窗頂點。06:13:00。公共 marker 設在 PEAK 減 7000 毫秒。app 推送設在 marker 加 7000 毫秒。中間那七秒——就是 Chapter 14 鎖定的伺服器補正間距。它被寫進了排程骨架。公共輸出必須經過中央分發閘道——沒有閘道，骨架不成立。
+
+**朝倉澪** [determined]：（內心）⋯⋯七秒。⋯⋯不是隨機的。公共 marker 和 app 推送，一前一後，固定差七秒。⋯⋯可是這裡只寫了相對值——PEAK 減 7000、MARKER 加 7000。沒有算出絕對時刻。它是一個還沒有被填上具體日期的骨架。⋯⋯先記住形狀。終局會不會被啟動——不知道。
 
 **日下部悟**：R2 還有離線設定載體。
 

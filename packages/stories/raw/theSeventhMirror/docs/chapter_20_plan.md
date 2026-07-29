@@ -582,6 +582,68 @@ Multi-channel Prompt / Response Evaluation
 | 系統觀察 | 故障紀錄、血統圖與模型支持 |
 | 政策主張 | 凪原及國家安全評估，尚需驗證 |
 
+## 5.5 Task 13：四條技術血統的早期欄位（低強度種子）
+
+`final_polish.md` §6 Task 13 規定本章「真正加入」四條獨立技術血統，作為 ch21–28 終局機制的 Phase-2 公平伏筆。§5.3 的交叉比對過程中，指定專家在 TKS-SYNC 舊版部署摘要、退役離線載體手冊設定家族索引與 M 區當輪工作站配置裡，陸續翻到這四組早期欄位。它們都是既有工程紀錄，不是為本章結論而產生，也不是凪原口述。本章只讓它們「在場」並被正式紀錄為「待查」，不完整解釋終局用途。
+
+### A. M-00 Digital Backup 模組
+
+工作站其中一頁是 M-00 數位備援模組的功能清單：
+
+```text
+PHYSIOLOGICAL PHASE CONTROL
+ECHO SUPPRESSION
+SEMANTIC INTERPRETATION
+FUTURE CLASSIFICATION
+PUBLIC CONSENSUS INTERFACE
+```
+
+普通解釋：這是數位備援模型被設計來承接的五項 M-00 功能——生理階段控制、回聲抑制、語意詮釋、未來分類、公共共識介面。回聲窗附近會漂移的正是這幾項。
+
+不能成立：這五項已經等於 TOKYO-7 下一個星期一的啟動內容。欄位存在，用途在本章未展開。
+
+### B. Independent Analog Monitor（獨立類比監測）
+
+部署摘要另記一組獨立類比監測設備：
+
+- 改裝 wideband receiver（改裝寬頻接收器）；
+- 用作 out-of-band comparison（帶外比對）；
+- 後來返還家屬；
+- 不含患者資料、密鑰或控制權。
+
+普通解釋：一組與主系統分開、只作獨立帶外比對的舊接收器；後來交還家屬，與朝倉家早年母親留下的那台改裝短波接收器屬同一脈（接收器家族），但不一定是同一台。
+
+不能成立：它此刻仍在線上，或仍持有任何控制權。摘要將它列為已退出。
+
+### C. K-01／KAGAMI 血統（執行錨點）
+
+退役離線載體手冊的設定家族索引裡，有一行早期欄位：
+
+> endpoint `K-01`／代號 `KAGAMI`  
+> 功能欄：execution anchor（執行錨點）  
+> 附帶：local clinical check（本地臨床檢查）
+
+普通解釋：K-01 是設定家族裡的一個端點代號；「執行錨點」指某些操作需要一個本地確認點才能成立。
+
+不能成立：本章無法說明執行錨點在終局具體鎖住什麼、由誰確認。這是 ch21 才展開的種子——ch21 Task 14 的 `EXECUTION ANCHOR／KAGAMI-01` 必須能在這裡找到來源。
+
+### D. Witness／After-action 血統（低頻 sideband）
+
+部署摘要另有一條事後審計通道：
+
+- clinical after-action markers（臨床事後標記）；
+- regional audit receiver（區域審計接收器）；
+- 低頻 sideband（低頻旁帶）傳送；
+- 不傳 raw neural（不傳原始神經資料）。
+
+普通解釋：事件後用來留下臨床事後標記、供區域審計接收器收取的旁帶通道；只送標記，不送病人腦波原料。
+
+不能成立：它即時傳送任何人主觀體驗，或等於公開 Witness fragments。
+
+### 種子原則
+
+這四條只在本章「出現」並被正式紀錄為「待查」。讀者第一次看見時的普通解釋，全部是工程／行政用途；沒有任何一條在本章被用來解釋第七日終局如何運作。Gate-2 的公平測試因此對 M-00 備援模組、KAGAMI 執行錨點、Witness sideband、獨立類比監測器四項終局機制同時成立。
+
 # 6. 函館夜潮第一層真相
 
 ## 6.1 公開掩護版本
@@ -1294,6 +1356,17 @@ TOKYO-Series Scenario Calibration
 - 系統觀察；
 - 政策主張。
 
+### 四條技術血統的早期欄位（Task 13 種子）
+
+三欄紀錄完成後，指定專家沒有合上材料。他繼續翻 TKS-SYNC 舊版部署摘要、退役離線載體手冊設定家族索引與 M 區當輪工作站配置的附頁，陸續翻到四組早期欄位（詳見 §5.5）：
+
+1. **M-00 Digital Backup 模組**——螢幕列出五項功能（`PHYSIOLOGICAL PHASE CONTROL`／`ECHO SUPPRESSION`／`SEMANTIC INTERPRETATION`／`FUTURE CLASSIFICATION`／`PUBLIC CONSENSUS INTERFACE`）。專家指認這是備援模型被設計來承接的 M-00 五項功能，用途未展開。
+2. **Independent Analog Monitor**——改裝 wideband receiver，用作 out-of-band comparison，後來返還家屬，不含患者資料、密鑰或控制權。澪察覺這條與家裡母親留下的接收器屬同一脈。
+3. **K-01／KAGAMI**——設定家族索引裡的端點，功能欄為 execution anchor（執行錨點），附帶 local clinical check（本地臨床檢查）。手冊不解釋錨點在終局鎖住什麼。
+4. **Witness／after-action**——clinical after-action markers、regional audit receiver、低頻 sideband 傳送，不傳 raw neural。
+
+日下部將這四組欄位全部紀錄為「待查」，來源為獨立材料而非凪原口述，本章只確認欄位存在、不解釋終局用途。
+
 ## Scene 3：七十二小時
 
 **時間：21:35–22:35**  
@@ -1780,6 +1853,10 @@ TOKYO-Series Scenario Calibration
 | 紗英問「第三次」 | 巧合、半清醒語言、未發現資訊來源或系統顯示污染 |
 | 凪原限制中止 | 真實醫療與公共安全顧慮 |
 | 官方死亡 | 極端身分保護措施，而非單純惡意——仍不合法／不正當 |
+| M-00 數位備援模組五欄位 | 備援模型被設計來承接的工程功能清單，不等於下次公共啟動內容 |
+| 改裝 wideband receiver | 早期獨立帶外比對設備，已返還家屬、不在線上，與家中短波接收器同脈不同機 |
+| K-01／KAGAMI 執行錨點 | 設定家族索引裡的一個端點代號，指操作需本地確認點；終局用途本章未展開 |
+| Witness 低頻 sideband | 事後臨床審計通道，只送標記、不傳原始神經，不等於即時公開主觀體驗 |
 
 # 16. 角色狀態變化
 
@@ -1988,3 +2065,6 @@ TOKYO-Series Scenario Calibration
 - [ ] 凪原對輪次數字明顯失去冷靜；
 - [ ] Chapter 21 將以無暗示、具對照測試驗證紗英多輪記憶；
 - [ ] 本章不揭露外星文明目的、全球共同記憶方案或父親完整真相。
+- [ ] Task 13 四條技術血統作為低強度種子在場：M-00 Digital Backup 模組五欄位、獨立類比監測（改裝 wideband receiver，已返還家屬）、K-01／KAGAMI 執行錨點、Witness 低頻 sideband；
+- [ ] 四條血統只標記為「待查」，來源為獨立材料、非凪原口述，本章不解釋終局用途；
+- [ ] `執行錨點`／`KAGAMI`／`K-01` 作為早期欄位出現，為 ch21 Task 14 `EXECUTION ANCHOR／KAGAMI-01` 預留來源。

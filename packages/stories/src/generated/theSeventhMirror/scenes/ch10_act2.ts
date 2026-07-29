@@ -35,6 +35,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我見過外殼怎麼變成證物袋。見過病人物袋怎麼被貼上標籤。見過血衣怎麼被裝進透明袋。", background: Background.Chapter_10_Ch10_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小鏡子進去之後就會變成「朝倉悠真遺留物（鏡狀）」。然後我可能短期內再也摸不到它。", background: Background.Chapter_10_Ch10_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把小鏡子放進抽屜深處。用悠真的考試講義蓋回去。一疊。兩疊。三疊。把鏡子壓在最底下。她推上抽屜。抽屜軌道發出一聲悶響。合上了。", background: Background.Chapter_10_Ch10_Act2_S0 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯抽屜裡都是悠真的普通東西。講義。交通卡。他還有個小怪癖——以前常錄家裡舊接收器的靜電，他說聽那個比較好睡。", background: Background.Chapter_10_Ch10_Act2_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這不是藏證據。這是⋯⋯我不知道這是什麼。我只是不想讓它也變成透明袋裡的東西。", background: Background.Chapter_10_Ch10_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起背包。把藍色筆記塞進去。黑色筆記留在桌上。她看了一眼。然後把黑色筆記也塞進抽屜縫裡。壓在講義下面。和小鏡子在一起。", background: Background.Chapter_10_Ch10_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把悠真的舊掌機從背包側袋拿出來。看了一眼。小型平板。螢幕暗著。no_moon 的訊息在裡面。bluefish_7 在裡面。悠真的遊戲帳號在裡面。", background: Background.Chapter_10_Ch10_Act2_S0 },

@@ -140,6 +140,21 @@ LEGACY／02   ADAPTER-PENDING
 
 **司法保全**：被動驗證完成。M-00 — PASSIVE-CONCORDANT／LIMITED。G07／03 — PASSIVE-CONCORDANT／DRIFT UNRESOLVED。G07／08 — ACCESS-PENDING。LEGACY／02 — ADAPTER-PENDING。FAILOVER READINESS — NOT ESTABLISHED。主動切換——禁止。全程記錄。證據鏈完整。
 
+**旁白**：17:05。司法保全的終端機另外顯示一欄。不是紅區那四名。是——其餘四名活動患者的準備狀態。身分依法遮蔽。系統只回報匿名編號與階段。
+
+```text
+G07／05       STAGE-1／ROOT READY
+LEGACY／04    STAGE-1／ROOT READY
+ACTIVE／C     STAGE-0／COMPARE ONLY
+ACTIVE／D     LOCAL ROOT PENDING／HOLD
+```
+
+**獨立系統安全人員**：紅區以外，另有四名活動患者。身分封緘。準備狀態——兩名 STAGE-1、患者綁定本地根已就緒。一名 STAGE-0、只允許比對。一名本地根未完成、HOLD。
+
+**旁白**：八名活動患者。紅區四名——本章面對的那四名。其餘四名——依法遮蔽。由各自的法定代理與臨床保管方處理。本章不解盲。不追查。不公開。
+
+**朝倉澪** [exhausted]：（內心）八個。紅區四個——今天開始知道缺什麼。另外四個——系統各自回報階段。兩個根已就緒。一個還在比對。一個停著。八條各自的路。不是一個母體。
+
 **旁白**：17:10。房間裡的人開始收拾。獨立系統安全人員關掉 M-00 螢幕。外部醫師收起監測數據。司法保全封存記錄。
 
 **旁白**：澪坐在原位。她看著中間的螢幕。矩陣還在那裡。四行字。四個狀態。沒有一個是 READY。

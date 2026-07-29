@@ -859,6 +859,24 @@ Chapter 14 已鎖定：
 - 系統是否仍只處於 staged／prepared；
 - 真正安全切離由 `COMMIT-GATE` 及放大節點狀態決定。
 
+## 8.1b peak-marker 部署骨架（Task 11 分層揭露）
+
+R2 附錄另載一份架構文件——七秒補正在公共排程裡的部署骨架。不是當輪已啟動的設定：
+
+```text
+ECHO PEAK                  06:13:00
+ORDINARY BROADCAST MARKER  PEAK - 7000ms
+APP FOLLOW-UP SEND         MARKER + 7000ms
+CENTRAL FANOUT GATEWAY     REQUIRED
+```
+
+- [ ] Chapter 14 已鎖定公共 marker 與 app 推送相差約七秒；
+- [ ] 本章加入部署骨架：ECHO PEAK 為回聲窗頂點，marker 設在 PEAK 減 7000ms，app 推送設在 marker 加 7000ms；
+- [ ] 角色只看到相對值（PEAK ± 7000ms），不計算絕對時刻；
+- [ ] 公共輸出必須經過中央分發閘道（CENTRAL FANOUT GATEWAY REQUIRED）；
+- [ ] Chapter 27 才支付精確取消；
+- [ ] 不讓本章角色提前知道 06:12:53。
+
 ## 8.2 真正安全切離節點
 
 R2 顯示 `KAGAMI-01` 具有獨立狀態：
@@ -876,6 +894,37 @@ R2 顯示 `KAGAMI-01` 具有獨立狀態：
 - 另行阻斷公共 fanout。
 
 不能以七秒作唯一倒數。
+
+## 8.3 COMMIT-GATE 提交前驗證欄位（Task 14）
+
+R2 的 COMMIT-GATE 頁面另載一份提交前驗證欄位清單。八行。當輪材料不足以逐一展開終局用途——只確認欄位存在：
+
+```text
+SUBJECT DEPENDENCY ATTESTATION
+CLINICAL HOLD
+BRANCH ISOLATION STATUS
+EXECUTION ANCHOR／KAGAMI-01
+REGIONAL PACKAGE／PREPOSITION ONLY
+SUBJECT SNAPSHOT EPOCH
+DEPENDENCY SNAPSHOT HASH
+CLINICAL TOPOLOGY HASH
+```
+
+本章只需讓讀者理解：
+
+> 區域套件預置不等於可以執行；鏡島仍需確認臨床側。
+
+- [ ] `EXECUTION ANCHOR／KAGAMI-01` 對應 Chapter 20 設定家族索引的端點 K-01（執行錨點、本地臨床檢查）——同一節點，為 ch20 種子的回扣；
+- [ ] `REGIONAL PACKAGE／PREPOSITION ONLY` 表示區域套件只標記為預置，不構成執行許可；
+- [ ] COMMIT-GATE 在最終提交前仍須確認臨床側（CLINICAL HOLD、CLINICAL TOPOLOGY HASH）；
+- [ ] 其餘欄位（SUBJECT DEPENDENCY ATTESTATION、BRANCH ISOLATION STATUS、SUBJECT SNAPSHOT EPOCH、DEPENDENCY SNAPSHOT HASH）只確認存在，不展開終局用途。
+
+不得提前揭露：
+
+- S42／S43；
+- Subject Bay；
+- managed-equivalent 偷換；
+- 具體 latch 解法。
 
 ---
 
@@ -997,6 +1046,28 @@ COMMIT                   PENDING
 LOCAL_AUTO_PREP          ENABLED
 OFFLINE_LOCAL_AUTH       ENABLED
 ```
+
+## 11.2b 營運持續窗口（Task 12）
+
+鏡島維護表附錄另載一份獨立營運持續排程。不是提交排程。低強度背景：
+
+```text
+BCP CUTOVER          23:50
+PREPOSITION WINDOW   23:50–05:50
+MAR-CONT             PROTECTIVE TRANSFER CLASS
+```
+
+普通解釋：
+
+- 災害復舊（Business Continuity Plan）；
+- 灣岸 continuity transport；
+- 關鍵人員／設備海上轉移。
+
+不得提前提示：
+
+- 父親在此路徑；
+- C2 relocation；
+- S7 lease。
 
 ## 11.3 硬證據、證詞與推論分層
 
@@ -1670,6 +1741,12 @@ Chapter 22 的核心問題：
 - [ ] R2 是正式技術修訂附錄，有 R1 雜湊、日期及律師保全；
 - [ ] 七秒只作配置指紋、手機末端封鎖及 commit 診斷；
 - [ ] 真正安全切離依 `COMMIT-GATE`，不是七秒倒數；
+- [ ] peak-marker 部署骨架（ECHO PEAK／MARKER／APP SEND／FANOUT GATEWAY）只列欄位，不計算絕對時刻；
+- [ ] 不讓本章角色提前知道 06:12:53；
+- [ ] COMMIT-GATE 提交前驗證欄位八項只確認存在，不逐一展開終局用途；
+- [ ] EXECUTION ANCHOR／KAGAMI-01 回扣 Chapter 20 設定家族索引 K-01 種子；
+- [ ] 區域套件預置不等於可以執行；鏡島仍需確認臨床側；
+- [ ] 不揭露 S42／S43、Subject Bay、managed-equivalent 偷換或具體 latch 解法；
 - [ ] R3 正文不完整；
 - [ ] R3 只由索引、R1 引用、檢查表及紗英確認重建部分原則；
 - [ ] 悠真訪談不超時、不誘導、不讓他作技術解說；
@@ -1687,6 +1764,7 @@ Chapter 22 的核心問題：
 - [ ] 清點確認一枚具 OFFLINE_LOCAL_AUTH 權限的原始簽署載體失蹤；
 - [ ] 解釋本地預簽署套件及 auto-prep 為何不能只靠遠端取消；
 - [ ] 解釋粗暴關機可能同時失去保護性過濾；
+- [ ] 營運持續窗口（BCP／MAR-CONT）只作普通災害復舊解釋，不提示父親／C2／S7；
 - [ ] 當輪實體版本鏈只有 R1–R3；
 - [ ] R4 沒有當輪文件、雜湊及建立紀錄；
 - [ ] 紗英自主自由拼寫 `R4／AUTHOR／MIO`；

@@ -28,13 +28,13 @@ KAGAMI command room, center console now showing patient stage ceilings summary f
 
 **旁白**：LEGACY／02——MAX HOLD。HANDOFF——PROHIBITED。ADAPTER PENDING。
 
-**旁白**：OTHER-A／OTHER-B——CONDITIONAL HANDOFF。REQUIRE MEDICAL GO／ENVELOPE PASS。
+**旁白**：G07／05／LEGACY／04——CONDITIONAL HANDOFF。REQUIRE MEDICAL GO／ENVELOPE PASS。
 
-**旁白**：OTHER-C——MAX COMPARE。
+**旁白**：ACTIVE／C——MAX COMPARE。
 
-**旁白**：OTHER-D——MAX HOLD。
+**旁白**：ACTIVE／D——MAX HOLD。
 
-**朝倉澪** [exhausted]：（內心）不是所有人到同一個地方。不是——全部 handoff。是——每個人停在自己能停的最高階段。紗英——COMPARE。保留 clinical transition support。可是——public 和 consensus 功能停了。她不再是母體。美空——COMPARE。drift 超限就 SAFE PAUSE。不能 handoff。葵——HOLD。Stage-0。LEGACY／02——HOLD。adapter 還沒接。Other-A 和 Other-B——可能 handoff。如果條件成立。Other-C——COMPARE。Other-D——HOLD。八個人。不同的階段。不同的結果。可是——同一個時間框架。
+**朝倉澪** [exhausted]：（內心）不是所有人到同一個地方。不是——全部 handoff。是——每個人停在自己能停的最高階段。紗英——COMPARE。保留 clinical transition support。可是——public 和 consensus 功能停了。她不再是母體。美空——COMPARE。drift 超限就 SAFE PAUSE。不能 handoff。葵——HOLD。Stage-0。LEGACY／02——HOLD。adapter 還沒接。G07／05 和 LEGACY／04——可能 handoff。如果條件成立。G07／05——16 歲，代理人和事前同意都在。LEGACY／04——成人，自己的有限同意。ACTIVE／C——COMPARE。ACTIVE／D——HOLD。八個人。不同的階段。不同的結果。可是——同一個時間框架。
 
 **旁白**：05:28。第三份報告。witness egress。背景 B 組。
 

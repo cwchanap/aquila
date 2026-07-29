@@ -34,6 +34,12 @@ C2 security conference room, long table with laptops and sealed binders, wall mo
 
 **朝倉澪**：（內心）不是投票。不是多數決。六個銷毀了——可是第七個不需要其他六個。它自己就是完整的。它自己就能簽出整份科學授權。六之七——不是六比一。是——一。
 
+**旁白**：11:45。千田的聲音再次從喇叭傳出來。這次他讀的是一份架構說明。不是 receipt。
+
+**千田浩介**：為什麼是七個。不是投票配置。是七個 trust domain——信任域。五個地區域。北部災害備援域。東部都會營運域。中部區域域。西部區域域。南部區域域。第六——全國臨床 continuity 域。第七——國家級離線 continuity vault。每個信任域一個 mirror。C2 facility continuity enclave 屬於第六類。它不是因為葵在這裡才出現。它本來就是全國臨床災害復舊網的一部分。
+
+**朝倉澪**：（內心）七個信任域。五個地區。一個臨床。一個國家。不是任意數字。是地理與功能分域的災害復舊設計。七個 mirror 是這七個信任域的冗餘——不是七日象徵。
+
 **旁白**：11:50。獨立系統安全人員切換到封緘技術附件的摘要頁。不公開的。只有核心人員能看見。
 
 **獨立系統安全人員**：S7 science escrow——與 continuity operational authority 位於同一 continuity governance boundary。同一治理邊界。同一 cutover 事件驅動。

@@ -234,15 +234,29 @@ The operator token needs a union of scopes that is easy to under-provision, and
 a missing scope surfaces as a mid-run 403 that reads like a script bug. It
 requires, on account `91ee89a03a31b5354a25c49228e4ab85` and zone `cwchanap.dev`:
 
-| Scope | Why |
-|---|---|
-| Account · Workers R2 Storage · Edit | Create buckets, set CORS, attach the custom domain |
-| Zone · Cache Rules · Edit | Create the `http_request_cache_settings` entrypoint and its three rules |
-| Zone · DNS · Edit | The custom-domain attachment creates the proxied `assets` record |
+| Scope | Needed by | Why |
+|---|---|---|
+| Account · Workers R2 Storage · Edit | `provision.ts` | Create buckets, set CORS, attach the custom domain |
+| Zone · Cache Rules · Edit | `provision.ts` | Create the `http_request_cache_settings` entrypoint and its three rules |
+| Zone · DNS · Edit | `provision.ts` | The custom-domain attachment creates the proxied `assets` record |
+| User · API Tokens · Write | `create-publisher-token.ts` only | Minting the publisher token is itself a token-creation call |
 
-`provision.ts` verifies its own token against
-`/user/tokens/verify` and fails with a readable message naming the missing scope
-rather than surfacing a raw 403.
+The two scripts need **different** tokens, and this is deliberate.
+`create-publisher-token.ts` requires API-token-write authority, which is
+strictly more dangerous than anything `provision.ts` does — a token that can
+mint tokens can escalate. Keeping it out of the reconcile path means the
+credential an operator exports routinely is not one that can create new
+credentials. The publisher token is created as an **Account**-owned token so it
+survives any individual user's removal from the account; that requires the
+Super Administrator role.
+
+**Preflight probes capabilities, it does not read scopes.**
+`/user/tokens/verify` returns only `id`, `status`, and `expires_on` — it does not
+report the token's policies, so it cannot tell an operator which scope is
+missing. Instead, `provision.ts` preflights with one cheap read per capability it
+will exercise (list R2 buckets, GET the zone's rulesets, GET zone DNS records)
+and maps a 403 on each to the specific scope to add. That converts a mid-run
+failure into an upfront, actionable message.
 
 The Vercel project receives only the public `PUBLIC_ASSET_*` variables. The web
 app reads assets over public HTTP and must never hold R2 write credentials.
@@ -436,14 +450,40 @@ criteria mechanically:
    buy a flaky verifier for no additional guarantee.
 6. A known source-bucket key returns 404 over the public domain, and the source
    bucket exposes no custom domain and no public development URL.
-7. No JSON response under `vn/` contains a forbidden key. The check parses the
+7. **Real-browser fetch.** A Playwright check loads a page on an Aquila origin
+   and, from page context, `fetch`es the seeded `current.json`, runtime manifest,
+   AVIF, and WebP — then decodes both images via `createImageBitmap` to prove
+   they are real, decodable assets and not merely 200s with the right headers.
+   Acceptance criterion 1 says "a browser ... can fetch", and header probes from
+   a shell only approximate that: they never exercise the browser's CORS
+   enforcement or its image decoders. `packages/e2e` already provides the
+   harness.
+8. **Live pointer activation.** Publish a second seeded pointer, then poll
+   `current.json`, recording `cf-cache-status` and the wall-clock latency until
+   the new `releaseId` is visible. This measures the D4 layering rather than
+   assuming it: the design's claim is that `override_origin` 60s bounds
+   *origin* load while the client's `cache: 'no-cache'` keeps *client* freshness
+   immediate. If observed behavior contradicts that, the cache rule is what
+   changes — the finding is recorded in the runbook either way, since this is
+   the one part of D4 that documentation alone cannot settle.
+9. No JSON response under `vn/` contains a forbidden key. The check parses the
    body and walks key paths rather than substring-matching the raw text: a
    logical asset key or a future path segment could legitimately contain the
    string `prompt` and produce a false positive, and the contract already defines
    forbidden runtime metadata names as *keys*. Binary objects are skipped.
 
-Check 6 is the security acceptance criterion; check 7 guards the prompt-exposure
+Check 6 is the security acceptance criterion; check 9 guards the prompt-exposure
 requirement that motivates the private/public bucket split.
+
+**On the client request header.** Cloudflare documents that
+`Cache-Control: no-cache` **does not** bypass its cache; the documented BYPASS
+triggers are origin *response* directives (`no-cache`, `no-store`, `private`,
+`max-age=0`), a `Set-Cookie` response header, and a request `Authorization`
+header. The resolver's `cache: 'no-cache'` is a *request*-side directive and is
+not among them, and the origin-response case is precisely what rule 3's
+`override_origin` neutralizes. The design is therefore consistent with the
+documentation — check 8 exists to confirm it empirically, not because a conflict
+is expected.
 
 ## Observability and troubleshooting
 
@@ -454,8 +494,21 @@ The runbook documents:
 - `cf-cache-status` values and what each implies for these three path classes.
 - The R2 CORS troubleshooting sequence: a `cf-mitigated` header means WAF, and a
   missing `cf-cache-status` means Hotlink Protection — neither is a CORS fault.
-- Rollback: republish the prior pointer, then purge the single `current.json`
-  URL.
+- Rollback: **do not re-upload the old `current.json` bytes verbatim.** The
+  HPA-227 client rejects a pointer whose `publishedAt` is older than the one it
+  already validated, treating it as `stale-pointer`, so a verbatim restore is
+  silently ignored by every client that already saw the newer release. The
+  correct sequence is:
+  1. Take the prior release's `releaseId`, `manifestPath`, and `manifestSha256`.
+  2. Emit a **new** pointer with those fields and a fresh, later `publishedAt`,
+     serialized as canonical JSON plus one LF.
+  3. Upload it with `Content-Type: application/json` and the pointer
+     `Cache-Control`.
+  4. Purge the single `current.json` URL so the 60s edge TTL does not delay it.
+
+  This is the one operation where the contract's anti-downgrade rule and the
+  cache policy interact, and getting either half wrong produces a rollback that
+  appears to succeed while changing nothing.
 - Recovery: re-running `bun r2:provision` restores CORS, cache rules, and the
   custom domain from config. Bucket contents are not recoverable this way.
 - Manual uploads must carry an explicit `Cache-Control` matching

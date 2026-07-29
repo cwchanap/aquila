@@ -1,0 +1,27 @@
+{
+  "name": "@aquila/infra-cloudflare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "provision": "bun src/provision.ts",
+    "provision:dry": "bun src/provision.ts --dry-run",
+    "create-publisher-token": "bun src/create-publisher-token.ts",
+    "seed": "bun src/seed.ts",
+    "verify": "bun src/verify.ts"
+  },
+  "dependencies": {
+    "@aquila/stories": "workspace:*",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "sharp": "0.34.5",
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.18"
+  }
+}

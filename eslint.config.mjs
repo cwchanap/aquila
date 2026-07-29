@@ -30,6 +30,7 @@ export default [
       '**/generated/**',
       'packages/stories/raw/**',
       'packages/stories/vitest.config.ts',
+      'packages/infra-cloudflare/vitest.config.ts',
     ],
   },
   js.configs.recommended,

@@ -57,7 +57,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有想下去。她太累了。她把手機扣在桌上，躺下來，閉上眼。", background: Background.Chapter_4_Ch4_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她又夢見了那片海。", background: Background.Chapter_4_Ch4_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑色的。平的。沒有浪。沒有聲音。比上一次更近。她站在岸邊——不，她站在水面上。水沒有浸過她的腳。她低頭看，水面像一面黑色的鏡子，映不出她的臉。", background: Background.Chapter_4_Ch4_Act7_S1 },
-    { characterId: CharacterId.DreamVoice, character: "夢話", dialogue: "不要⋯⋯打開⋯⋯", background: Background.Chapter_4_Ch4_Act7_S1 },
+    { characterId: CharacterId.DreamVoice, character: "夢話", dialogue: "不要⋯⋯回頭", background: Background.Chapter_4_Ch4_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遠處有白光。無聲。不像爆炸。不像閃電。像有人把整片海面的亮度一次推到最高，又一次收回去。快得像沒發生過。但她的眼睛後方留下了白色的殘影——不是看見的，是被塞進去的。", background: Background.Chapter_4_Ch4_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她醒了。", background: Background.Chapter_4_Ch4_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "頭痛。太陽穴兩側，像有人用拇指按著，持續地按，不鬆手。", background: Background.Chapter_4_Ch4_Act7_S2 },

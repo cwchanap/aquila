@@ -94,7 +94,7 @@ SUBJECT CONTINUITY BAY interior service view, background team workstations on fa
 
 **本地技師**：monotonic merge 完成。S43 形成。live dependency hash 重算完成。physical endpoint reconciliation——八對八。unmapped active heartbeats——零。orphan ledger records——零。safe-detached records——一。G07／12／朝倉悠真。
 
-**朝倉澪** [exhausted]：（內心）悠真。safe-detached。他不在八名活動依存者裡。他是——第九名。已經安全分離的那一個。可是——他還沒有被找到。他失蹤了。safe-detached——是系統說的。不是——我說的。我還沒有找到他。系統說他安全分離了。可是——安全分離不等於安全。不等於——他在家裡。他在哪裡。我還不知道。可是——他不在這條線上了。他不會被這份租約碰到。這是——唯一的好消息。很小。可是——是真的。
+**朝倉澪** [exhausted]：（內心）悠真。safe-detached。他不在八名活動依存者裡。他是——第九名。已經安全分離的那一個。他已經被救出來了。在外部醫療手上。在休養。可是——我還沒能去看他。外部醫療——是獨立的。不是——我這條線。系統說他安全分離了。可是——安全分離不等於沒事。不等於——他醒著。不等於——他好了。我還不知道他現在——到底怎樣。只能在——別人的報告裡知道他還在。可是——他不在這條線上了。他不會被這份租約碰到。這是——唯一的好消息。很小。可是——是真的。
 
 **旁白**：03:30。系統安全人員看著螢幕。他的聲音很平。
 

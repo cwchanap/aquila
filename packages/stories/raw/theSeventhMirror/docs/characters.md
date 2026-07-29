@@ -127,14 +127,14 @@
 ### 基本資料
 
 - **身份**：澪的好友，大學生，神鏡計畫半受迫協力者
-- **年齡**：20 歲
+- **年齡**：19 歲
 - **家庭**：妹妹藤川美空為神鏡計畫受試者，長期昏迷中。父母離異後琴音隨母親改嫁，從繼父姓白石；美空隨父親姓藤川。兩人為同母異父姊妹
 
 ### 背景與處境
 
 琴音表面上是溫柔可靠的好友，願意陪澪調查。真正身份是神鏡計畫的半受迫協力者，也是千田浩介死亡事件的直接加害者——她利用前一輪記憶，在施工通道刺傷了千田。
 
-她的妹妹藤川美空是受試者之一，已經長期昏迷。父母離異後姊妹分別隨不同監護人生活，琴音從繼父姓白石，美空從生父姓藤川，但兩人感情未斷。神鏡計畫告訴琴音，只要東京方案成功，所有受試者都有機會醒來。這是她協助計畫的唯一理由。
+她的妹妹藤川美空是受試者之一，已經長期昏迷。父母離異後姊妹分別隨不同監護人生活，琴音從繼父姓白石，美空從父親姓藤川，但兩人感情未斷。神鏡計畫告訴琴音，只要東京方案成功，所有受試者都有機會醒來。這是她協助計畫的唯一理由。
 
 核心矛盾：她真的愛澪，也真的犯下不可原諒的事。她是澪的鏡像角色——兩個人都想救家人，但琴音先被「必要犧牲」的邏輯吞掉。
 
@@ -163,11 +163,11 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 20-year-old Japanese woman, long straight black hair, gentle warm smile that doesn't quite reach the eyes, casual cozy clothes (knit cardigan over blouse), soft warm lighting, slightly muted warm palette, upper-body shot, clean background
-- **angry**: anime visual-novel portrait, 20-year-old woman, smile gone, eyes cold and flat, jaw tight, hair falling forward, knit cardigan, harsh shadow, upper-body shot
-- **sad**: anime visual-novel portrait, 20-year-old woman, eyes downcast, smile faded to thin line, shoulders dropped, hair falling forward to hide face, knit cardigan, dim warm lighting, upper-body shot
-- **shocked**: anime visual-novel portrait, 20-year-old woman, eyes wide, hand covering mouth, face pale, knit cardigan, stark lighting, upper-body shot
-- **guilty**: anime visual-novel portrait, 20-year-old woman, eyes avoiding contact, lips pressed thin, expression flat and hollow, hair falling forward, knit cardigan, cold desaturated lighting, upper-body shot
+- **base**: anime visual-novel portrait, 19-year-old Japanese woman, long straight black hair, gentle warm smile that doesn't quite reach the eyes, casual cozy clothes (knit cardigan over blouse), soft warm lighting, slightly muted warm palette, upper-body shot, clean background
+- **angry**: anime visual-novel portrait, 19-year-old woman, smile gone, eyes cold and flat, jaw tight, hair falling forward, knit cardigan, harsh shadow, upper-body shot
+- **sad**: anime visual-novel portrait, 19-year-old woman, eyes downcast, smile faded to thin line, shoulders dropped, hair falling forward to hide face, knit cardigan, dim warm lighting, upper-body shot
+- **shocked**: anime visual-novel portrait, 19-year-old woman, eyes wide, hand covering mouth, face pale, knit cardigan, stark lighting, upper-body shot
+- **guilty**: anime visual-novel portrait, 19-year-old woman, eyes avoiding contact, lips pressed thin, expression flat and hollow, hair falling forward, knit cardigan, cold desaturated lighting, upper-body shot
 
 ---
 
@@ -774,7 +774,7 @@
 - **身份**：13 歲中學生，曾失蹤兩日後被尋獲，至今未恢復清醒
 - **年齡**：13 歲
 - **現狀**：身體被尋獲，意識未恢復
-- **家庭**：母親藤川真理。姊姊白石琴音（父母離異後隨母親改嫁從繼父姓白石，美空隨生父姓藤川）
+- **家庭**：母親藤川真理。姊姊白石琴音（父母離異後隨母親改嫁從繼父姓白石，美空隨父親姓藤川）
 
 ### 背景與處境
 

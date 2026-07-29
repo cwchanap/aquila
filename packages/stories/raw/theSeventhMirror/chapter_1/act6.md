@@ -1,4 +1,4 @@
-# 第六幕：帶上鏡子
+# 第六幕：出發以前
 
 ```bg
 Tokyo street at evening dusk, convenience store exterior with warm fluorescent glow spilling onto sidewalk, vending machine light, sparse pedestrians, sky deep indigo fading to black, cold blue ambient light, moody cinematic visual-novel background art, wide establishing shot

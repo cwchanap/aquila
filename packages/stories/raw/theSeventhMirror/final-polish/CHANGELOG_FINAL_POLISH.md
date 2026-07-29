@@ -27,6 +27,9 @@
 | 2026-07-27 | Phase 2 T14 | ch21 COMMIT-GATE 8-field block; KAGAMI↔ch20 connection; S42/S43/Subject Bay absent | ch21 | Y | N |
 | 2026-07-27 | Phase 2 T15 | patient matrix: ch22 totals (9/1/8/4/4) + ch24 prep matrix + ch26 canonical IDs (replace aggregates) | ch22, ch24, ch26 | Y | Y (ch27 patient-count constraint) |
 | 2026-07-27 | Phase 2 T16 | ch25 trust-domain term + 5 regional domains enumerated | ch25 | N | N |
+| 2026-07-27 | Gate 2 | Fairness audit: 9/10 PASS; M8 Subject Bay back-seeded in ch25 (was ch26 first-appear) → now PASS | ch25 | Y | N |
+| 2026-07-27 | Phase 3 | Rewrote high-level-plan → 00_high_level_plan_final.md (§7.1–7.8 corrections); old HLP archived | (all — entry doc) | Y | N |
+| 2026-07-27 | Phase 3 follow-up | characters.md:135/144 de-looped (handler-supplied intel framing; removed 測試新一輪 + absent tell) | chars | Y | N |
 
 <!--
 Entry template:

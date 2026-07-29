@@ -8,6 +8,16 @@ type CloudflareEnvelope<T> = {
     errors?: Array<{ code: number; message: string }>;
 };
 
+export class CloudflareApiError extends Error {
+    constructor(
+        message: string,
+        readonly status: number
+    ) {
+        super(message);
+        this.name = 'CloudflareApiError';
+    }
+}
+
 export class CloudflareApi {
     constructor(
         private readonly token: string,
@@ -26,13 +36,23 @@ export class CloudflareApi {
             ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         });
 
-        const envelope = (await response.json()) as CloudflareEnvelope<T>;
+        let envelope: CloudflareEnvelope<T>;
+        try {
+            envelope = (await response.json()) as CloudflareEnvelope<T>;
+        } catch {
+            throw new CloudflareApiError(
+                `Cloudflare ${method} ${path} failed: HTTP ${response.status} (non-JSON response body)`,
+                response.status
+            );
+        }
+
         if (!response.ok || !envelope.success) {
             const detail = (envelope.errors ?? [])
                 .map(error => `${error.code} ${error.message}`)
                 .join('; ');
-            throw new Error(
-                `Cloudflare ${method} ${path} failed: HTTP ${response.status} ${detail}`
+            throw new CloudflareApiError(
+                `Cloudflare ${method} ${path} failed: HTTP ${response.status} ${detail}`,
+                response.status
             );
         }
         return envelope.result;
@@ -45,6 +65,12 @@ export type PreflightResult = { ok: boolean; missing: string[] };
  * `/user/tokens/verify` returns only id/status/expires_on — it cannot report
  * which scopes a token carries. So probe one cheap read per capability the
  * provisioner will exercise and map each failure to the scope to add.
+ *
+ * Only a 401/403 from a probe is treated as "scope missing" — that's the
+ * signature of the token lacking authorization for that call. Any other
+ * failure (a different HTTP status, a non-JSON body, a network rejection)
+ * is a genuine API/connectivity problem, not a scope gap, and is rethrown
+ * so the operator sees the real failure instead of a fabricated diagnosis.
  */
 export async function preflight(
     api: CloudflareApi,
@@ -69,8 +95,15 @@ export async function preflight(
     for (const probe of probes) {
         try {
             await api.request('GET', probe.path);
-        } catch {
-            missing.push(probe.scope);
+        } catch (error) {
+            if (
+                error instanceof CloudflareApiError &&
+                (error.status === 401 || error.status === 403)
+            ) {
+                missing.push(probe.scope);
+            } else {
+                throw error;
+            }
         }
     }
     return { ok: missing.length === 0, missing };

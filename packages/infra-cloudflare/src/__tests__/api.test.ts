@@ -64,4 +64,29 @@ describe('preflight', () => {
         expect(result.ok).toBe(false);
         expect(result.missing).toEqual(['Zone · Cache Rules · Edit']);
     });
+
+    it('rejects instead of reporting a scope when a probe rejects with a network error', async () => {
+        const api = new CloudflareApi('tok', async input =>
+            String(input).includes('/rulesets')
+                ? Promise.reject(new Error('network unreachable'))
+                : jsonResponse({ success: true, result: [] })
+        );
+
+        await expect(preflight(api, parsed)).rejects.toThrow(
+            /network unreachable/
+        );
+    });
+
+    it('rejects with the HTTP status instead of a raw SyntaxError or a false missing scope on a non-JSON body', async () => {
+        const api = new CloudflareApi('tok', async input =>
+            String(input).includes('/rulesets')
+                ? new Response('<html>502</html>', {
+                      status: 502,
+                      headers: { 'content-type': 'text/html' },
+                  })
+                : jsonResponse({ success: true, result: [] })
+        );
+
+        await expect(preflight(api, parsed)).rejects.toThrow(/502/);
+    });
 });

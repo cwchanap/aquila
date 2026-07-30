@@ -1,0 +1,199 @@
+import { describe, expect, it } from 'vitest';
+import { RUNTIME_ASSET_CACHE_POLICY } from '@aquila/stories/runtime-assets';
+import {
+    assertContentType,
+    assertImmutable,
+    assertPointerRevalidation,
+    findForbiddenKeys,
+} from '../assertions';
+
+describe('assertImmutable', () => {
+    it('accepts a year-long immutable directive', () => {
+        expect(assertImmutable('public, max-age=31536000, immutable').ok).toBe(
+            true
+        );
+    });
+
+    it('accepts the exact header the publisher writes', () => {
+        expect(
+            assertImmutable(
+                RUNTIME_ASSET_CACHE_POLICY.immutableRelease.responseCacheControl
+            ).ok
+        ).toBe(true);
+    });
+
+    it('accepts the directives reordered, recased, and loosely spaced', () => {
+        expect(
+            assertImmutable(' IMMUTABLE ,Max-Age=31536000,  Public ').ok
+        ).toBe(true);
+    });
+
+    it('rejects a directive missing immutable', () => {
+        expect(assertImmutable('public, max-age=31536000').ok).toBe(false);
+    });
+
+    it('rejects a shorter max-age', () => {
+        expect(assertImmutable('public, max-age=86400, immutable').ok).toBe(
+            false
+        );
+    });
+
+    it('rejects an object that shared caches may not store', () => {
+        expect(assertImmutable('max-age=31536000, immutable').ok).toBe(false);
+    });
+
+    it('rejects a missing header', () => {
+        expect(assertImmutable(null).ok).toBe(false);
+    });
+
+    it('names the directives that are absent', () => {
+        expect(assertImmutable('public, max-age=60').detail).toBe(
+            'cache-control: public, max-age=60 (missing: max-age=31536000, immutable)'
+        );
+        expect(assertImmutable(null).detail).toBe(
+            'cache-control: <missing> (missing: public, max-age=31536000, immutable)'
+        );
+    });
+
+    it('reports the observed header when it passes', () => {
+        expect(
+            assertImmutable('public, max-age=31536000, immutable').detail
+        ).toBe('cache-control: public, max-age=31536000, immutable');
+    });
+});
+
+describe('assertPointerRevalidation', () => {
+    it('requires all three revalidation directives regardless of order', () => {
+        expect(
+            assertPointerRevalidation('must-revalidate, max-age=0, no-cache').ok
+        ).toBe(true);
+    });
+
+    it('accepts the exact header the publisher writes', () => {
+        expect(
+            assertPointerRevalidation(
+                RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
+            ).ok
+        ).toBe(true);
+    });
+
+    it('tolerates an extra directive the edge may add', () => {
+        expect(
+            assertPointerRevalidation(
+                'no-cache, max-age=0, must-revalidate, no-store'
+            ).ok
+        ).toBe(true);
+    });
+
+    it('rejects a pointer cached like an immutable object', () => {
+        expect(
+            assertPointerRevalidation('public, max-age=31536000, immutable').ok
+        ).toBe(false);
+    });
+
+    it('rejects a pointer that never revalidates once stale', () => {
+        expect(assertPointerRevalidation('no-cache, max-age=0').ok).toBe(false);
+    });
+
+    it('rejects a missing header', () => {
+        expect(assertPointerRevalidation(null).ok).toBe(false);
+    });
+
+    it('names the directives that are absent', () => {
+        expect(assertPointerRevalidation('no-cache').detail).toBe(
+            'cache-control: no-cache (missing: max-age=0, must-revalidate)'
+        );
+    });
+});
+
+describe('assertContentType', () => {
+    it('ignores charset parameters', () => {
+        expect(
+            assertContentType(
+                'application/json; charset=utf-8',
+                'application/json'
+            ).ok
+        ).toBe(true);
+    });
+
+    it('ignores case and surrounding whitespace', () => {
+        expect(assertContentType(' IMAGE/WebP ', 'image/webp').ok).toBe(true);
+    });
+
+    it('rejects the octet-stream default r2 uses when type is unset', () => {
+        expect(
+            assertContentType('application/octet-stream', 'image/avif').ok
+        ).toBe(false);
+    });
+
+    it('rejects a missing header', () => {
+        expect(assertContentType(null, 'application/json').ok).toBe(false);
+    });
+
+    it('reports what was expected when it fails', () => {
+        expect(
+            assertContentType('application/octet-stream', 'image/avif').detail
+        ).toBe('content-type: application/octet-stream (expected image/avif)');
+        expect(assertContentType(null, 'image/avif').detail).toBe(
+            'content-type: <missing> (expected image/avif)'
+        );
+    });
+});
+
+describe('findForbiddenKeys', () => {
+    it('finds a forbidden key nested in an array', () => {
+        expect(findForbiddenKeys({ assets: [{ prompt: 'a wizard' }] })).toEqual(
+            ['assets.0.prompt']
+        );
+    });
+
+    it('does not flag a forbidden word appearing only in a value', () => {
+        expect(
+            findForbiddenKeys({ assets: [{ key: 'chapter_1/prompt_room' }] })
+        ).toEqual([]);
+    });
+
+    it('returns nothing for a clean manifest', () => {
+        expect(findForbiddenKeys({ schemaVersion: 1, assets: [] })).toEqual([]);
+    });
+
+    it('matches key names case-insensitively but reports them as written', () => {
+        expect(findForbiddenKeys({ SourcePath: 'raw/a.png' })).toEqual([
+            'SourcePath',
+        ]);
+    });
+
+    it('reports every forbidden key, including nested ones', () => {
+        expect(
+            findForbiddenKeys({
+                provider: 'some-vendor',
+                assets: [
+                    {
+                        identity: { key: 'chapter_1/ch1_act2_s0' },
+                        meta: {
+                            sourcePath: 'raw/a.png',
+                            credentials: { token: 'abc' },
+                        },
+                    },
+                ],
+            })
+        ).toEqual([
+            'provider',
+            'assets.0.meta.sourcePath',
+            'assets.0.meta.credentials',
+            'assets.0.meta.credentials.token',
+        ]);
+    });
+
+    it('indexes a top-level array without a leading separator', () => {
+        expect(findForbiddenKeys([{ prompt: 'a wizard' }])).toEqual([
+            '0.prompt',
+        ]);
+    });
+
+    it('ignores scalars and null', () => {
+        expect(findForbiddenKeys(null)).toEqual([]);
+        expect(findForbiddenKeys('prompt')).toEqual([]);
+        expect(findForbiddenKeys(7)).toEqual([]);
+    });
+});

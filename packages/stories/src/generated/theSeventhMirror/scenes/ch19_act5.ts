@@ -57,5 +57,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "先找人。先確認安全。房間安全、身分初步確認後——妳才進去。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不讓我進去。先找人。先確認安全。我知道為什麼。如果裡面有狀況——如果悠真的狀態不好——他們不想讓我第一個看見。不想讓我在搜索現場崩潰。也不想讓家屬情緒影響程序。⋯⋯但我不想等。我不想再等。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但澪沒有說出來。她知道日下部是對的。", background: Background.Chapter_19_Ch19_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日十七小時三十三分鐘。", background: Background.Chapter_19_Ch19_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日十五小時二十三分鐘。", background: Background.Chapter_19_Ch19_Act5_S0 },
 ];

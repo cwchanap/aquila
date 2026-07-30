@@ -76,4 +76,4 @@ Tsukuba research facility B2 underground floor, controlled waiting area, plain b
 
 **旁白**：朝倉悠真。
 
-**旁白**：距下一次星期一 06:13——約五日十六小時二十八分鐘。
+**旁白**：距下一次星期一 06:13——約五日十三小時二十八分鐘。

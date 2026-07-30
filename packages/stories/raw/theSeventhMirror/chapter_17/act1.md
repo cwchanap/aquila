@@ -110,7 +110,7 @@ small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and 
 
 **日下部悟**：⋯⋯現在？
 
-**朝倉澪**：現在。我在家附近的便利店。十五分鐘後能到。
+**朝倉澪**：現在。在家附近的便利店見。我十五分鐘到。
 
 **旁白**：又是兩秒。
 

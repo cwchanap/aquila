@@ -54,7 +54,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:30。視訊掛斷。螢幕暗下來。長野那一端的客廳消失在黑屏裡。", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "相原站起來。拿起資料夾。看了澪一眼。", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.AharaMaho, character: "相原真帆", dialogue: "08:50。公開研究棟。他們會拿出文件。我會問問題。妳——負責記住他是誰。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.AharaMaho_Base },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯記住他是誰。不是 G07／12。不是反應評估協力者。不是青少年人員類。是朝倉悠真。十五歲。討厭游泳。會在冰棒棍上寫日期。用遊戲邏輯理解世界。我的弟弟。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯記住他是誰。不是 G07／12。不是反應評估協力者。不是青少年人員類。是朝倉悠真。十五歲。會把交通卡借給朋友。用遊戲邏輯理解世界。我的弟弟。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:35。視訊室。螢光燈嗡嗡地響。窗外天已經全亮了。", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日二十一小時三十八分鐘。", background: Background.Chapter_19_Ch19_Act2_S0 },
 ];

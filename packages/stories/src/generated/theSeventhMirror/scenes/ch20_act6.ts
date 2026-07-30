@@ -31,7 +31,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯釘在天空上。地面在轉。它不轉。⋯⋯不是從地面來的。不是從海裡來的。不是從衛星來的。⋯⋯從哪裡來。⋯⋯從星空裡某個方向來的。⋯⋯某個固定的方向。⋯⋯先不說外星人。先不說。先聽完。", background: Background.Chapter_20_Ch20_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "指定專家切到第三頁。這一頁的數據更密。圖表更多。澪看不懂。她只聽指定專家的摘要。", background: Background.Chapter_20_Ch20_Act6_S0 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "第三項——結構反應。", background: Background.Chapter_20_Ch20_Act6_S0 },
-    { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "暴露者產生特定神經反應後，後續訊號結構會出現變化。訊號不是單向廣播——它對暴露者的神經反應有回應。", background: Background.Chapter_20_Ch20_Act6_S0 },
+    { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "暴露者產生特定神經反應後，後續訊號結構會出現變化。像是對人類反應作出調整——但這也可能是未知自然現象或設備回授。", background: Background.Chapter_20_Ch20_Act6_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "回應。", background: Background.Chapter_20_Ch20_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "回應。暴露者神經反應達到一定強度後，訊號的結構參數會出現可測量的變化。這不是隨機變化，而是結構性的。", background: Background.Chapter_20_Ch20_Act6_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "能證明什麼。", background: Background.Chapter_20_Ch20_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },

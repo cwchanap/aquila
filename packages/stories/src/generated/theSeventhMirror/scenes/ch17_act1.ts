@@ -59,7 +59,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "日下部先生。朝倉父親的舊案，我有個五分鐘就能驗證的線索。還有悠真研究相關的一個地址。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "電話那頭沉默了兩秒。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯現在？", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "現在。我在家附近的便利店。十五分鐘後能到。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "現在。在家附近的便利店見。我十五分鐘到。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "又是兩秒。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯我在江東區，早班。正在處理悠真失蹤案的例行聯絡。離你不遠。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "十五分鐘。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Base },

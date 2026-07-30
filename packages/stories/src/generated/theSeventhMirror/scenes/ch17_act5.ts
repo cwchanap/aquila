@@ -56,7 +56,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "上面兩行——", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／12", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "B2", background: Background.Chapter_17_Ch17_Act5_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯G07／12。和預約頁上的一模一樣。一字不差。B2——在下面。另一個碼。上次記憶裡的 B2。今天——在擋風玻璃上。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯G07／12。和預約頁上的一模一樣。一字不差。B2——在下面。另一個碼。上次推測過的 B2。今天——在擋風玻璃上。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "路線牌的右下角有一欄——姓名與詳細分類。被折角遮住了。從這個角度只能看見 G07／12 和 B2。看不見名字。看不見分類。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯折角了。姓名欄被折住了。看不見名字。這不是病人名牌。是園區門禁用的路線牌。讓保安快速核對批次。只標示路線碼——G07／12。B2。不標示姓名。不標示人。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:05。日下部放下相機。看了一眼手錶。在觀察表上寫——", background: Background.Chapter_17_Ch17_Act5_S0 },

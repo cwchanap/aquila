@@ -69,7 +69,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "到了。比我預計的早了一點。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "他看到車了嗎？", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "沒有。他到的時候門已經關了。他沒看到入門。但他可以參與後續——車離開的時候，他站在公共道路上，親眼看見它駛出來。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯茨城便衣到了。沒看到入門。但可以等出門。車在地下。不知道什麼時候出來。上次——大約二十分鐘。09:30 左右。等。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯茨城便衣到了。沒看到入門。但可以等出門。車在地下。不知道什麼時候出來。進去了——也許二十分鐘。也許更久。不知道。等。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:20。車仍在地下。從公共位置——什麼也看不見。門禁關著。坡道入口沉默。", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部繼續在觀察表上整理。車牌。公司。公開營運項目。福利改裝資訊。多用途解釋。五項。每一項都標註來源——公開車籍系統、公開企業資訊網頁、公開車輛改裝登記、公開招標案例。", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯五項。全部來自公開資料。不需要循環。不需要記憶。任何一項都能在瀏覽器裡重新查到。這是今天的證據。不是之前的記憶。日下部在做的——是把觀察變成能寫進報告的東西。車牌。公司。營運項目。改裝。多用途。五個公開來源。撐起一個結論——這輛車具備載人能力，但公開業務只登記搬送。不一致。但不違法。多用途解釋——夠用。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Determined },

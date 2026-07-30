@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AharaMaho, character: "相原真帆", dialogue: "緊急身分資料直接關係本人安否——直接相關。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.AharaMaho_Base },
     { characterId: CharacterId.AharaMaho, character: "相原真帆", dialogue: "搬送規程本身允許在上述條件下開封。不是警方隨意開啟。是規程自己寫的。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.AharaMaho_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "高城沉默了幾秒。他看了一眼設施合規主管。", background: Background.Chapter_19_Ch19_Act4_S0 },
-    { characterId: CharacterId.FacilityCompliance, character: "設施合規主管", dialogue: "依搬送規程第——條。條件成立。同意依規程辦理開封。", background: Background.Chapter_19_Ch19_Act4_S0 },
+    { characterId: CharacterId.FacilityCompliance, character: "設施合規主管", dialogue: "依搬送規程相關條文。條件成立。同意依規程辦理開封。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "全程記錄。封條號抄錄。開封時間記錄。在場者簽名。三浦、日下部、相原、設施合規主管、未成年後見人視訊見證。鑑識人員拍照。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "封緘外殼打開。裡面是一份折疊文件。三浦展開。逐欄念出。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "管理碼——G07／12。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.MiuraNaoko_Base },

@@ -8,7 +8,7 @@ import { Background } from '../backgrounds';
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:20。臨時指揮室。摺疊桌。螢幕。文件。咖啡杯的殘漬。三個人的影子被螢光燈壓得很扁。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "從十九點四十五分到現在，已經超過六小時。函館夜潮的資料還攤在桌上。系統血統圖。三組日期材料。軍事近失的節錄。非地球已知系統來源的結論。全部被日下部、指定專家和外部醫師交叉確認過。", background: Background.Chapter_20_Ch20_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原唯坐在桌的一端。白袍。銀框眼鏡。姿勢沒有變過。像從走進這間房間到現在，她的脊椎就沒有彎過一次。", background: Background.Chapter_20_Ch20_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原唯坐在桌的一端。深色風衣。銀框眼鏡。姿勢沒有變過。像從走進這間房間到現在，她的脊椎就沒有彎過一次。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在牆邊。雙臂交叉。他沒有坐。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在對面。椅子是塑膠的。背很直。但膝蓋在發抖。不是冷。是某種還沒有找到出口的東西。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "在替代維持和外部醫療評估完成前，M-00 不能在今晚中止。", background: Background.Chapter_20_Ch20_Act7_S0, portrait: Portrait.NagiharaYui_Base },

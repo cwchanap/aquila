@@ -42,5 +42,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯房間安全。身分初步一致。生命狀態穩定。——悠真。他在裡面。活著。他在裡面。", background: Background.Chapter_19_Ch19_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:45。澪站起來。腿在抖。但她站起來了。門開著。門另一邊——是跨棟防火走廊。走廊盡頭——是 M 區。M 區裡——有一間房間。房間裡——", background: Background.Chapter_19_Ch19_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "朝倉悠真。", background: Background.Chapter_19_Ch19_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日十六小時二十八分鐘。", background: Background.Chapter_19_Ch19_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日十三小時二十八分鐘。", background: Background.Chapter_19_Ch19_Act6_S0 },
 ];

@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "凪原唯。", background: Background.Chapter_20_Ch20_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "日下部刑警。", background: Background.Chapter_20_Ch20_Act1_S0, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的聲音平。像在讀標題。不帶情緒。不帶敵意。也不帶客氣。", background: Background.Chapter_20_Ch20_Act1_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯凪原唯。前研究中心科學負責人。現——什麼。內閣。危機科學。⋯⋯她就是那個名字。Chapter 14 審查委員名單裡的名字。Chapter 15 修訂監修欄裡的 Y. NAGIHARA。Chapter 16 跨部門協調責任人。⋯⋯她一直在那裡。一直在文件邊緣。現在走到中間了。", background: Background.Chapter_20_Ch20_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯凪原唯。前研究中心科學負責人。現——什麼。內閣。危機科學。⋯⋯她就是那個名字。舊版設定審查委員名單裡的名字。TOKYO-7 舊研修改訂監修欄裡的 Y. NAGIHARA。資訊公開不開示決定的跨部門協調責任人。⋯⋯她一直在那裡。一直在文件邊緣。現在走到中間了。", background: Background.Chapter_20_Ch20_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原沒有坐下。她站在摺疊桌前。身後的法律顧問打開公事包。開始排列文件夾。每一份都貼著編號標籤。醫療協調人走到觀察窗旁邊。他看了監測器。看了呼吸曲線。沒有碰任何設備。", background: Background.Chapter_20_Ch20_Act1_S0 },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "在替代維持和外部醫療評估完成前，不能突然中止 M-00。", background: Background.Chapter_20_Ch20_Act1_S0, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一句話。不是問候。不是解釋。是要求。", background: Background.Chapter_20_Ch20_Act1_S0 },

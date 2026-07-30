@@ -106,4 +106,4 @@ Tsukuba central police station, plain office room, laptop and documents on table
 
 **旁白**：但澪沒有說出來。她知道日下部是對的。
 
-**旁白**：距下一次星期一 06:13——約五日十七小時三十三分鐘。
+**旁白**：距下一次星期一 06:13——約五日十五小時二十三分鐘。

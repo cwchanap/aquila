@@ -6,7 +6,8 @@ describe('getAssetResolverSource', () => {
         expect(
             getAssetResolverSource(
                 'the_seventh_mirror',
-                'http://localhost:5090/reader'
+                'http://localhost:5090/reader',
+                {}
             )
         ).toEqual({
             environment: 'local',
@@ -18,8 +19,30 @@ describe('getAssetResolverSource', () => {
 
     it('returns null for stories without a visual source', () => {
         expect(
-            getAssetResolverSource('train_adventure', 'http://localhost:5090')
+            getAssetResolverSource(
+                'train_adventure',
+                'http://localhost:5090',
+                {}
+            )
         ).toBeNull();
+    });
+
+    it('selects a production source when configured', () => {
+        expect(
+            getAssetResolverSource(
+                'the_seventh_mirror',
+                'http://localhost:5090',
+                {
+                    baseUrl: 'https://assets.aquila.cwchanap.dev/',
+                    environment: 'production',
+                }
+            )
+        ).toEqual({
+            environment: 'production',
+            storyId: 'the_seventh_mirror',
+            baseUrl: 'https://assets.aquila.cwchanap.dev/',
+            target: { kind: 'production' },
+        });
     });
 });
 

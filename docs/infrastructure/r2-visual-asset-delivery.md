@@ -54,10 +54,12 @@ Never hand-build one.
 | Content-addressed object | `vn/objects/<sha256>.webp` / `vn/objects/<sha256>.avif` |
 | Release manifest (production) | `vn/stories/<storyId>/releases/<releaseId>/runtime-manifest.json` |
 | Active release pointer (production) | `vn/stories/<storyId>/current.json` |
-| Preview tree | the same three under `vn/previews/<previewId>/…` |
+| Preview manifest / pointer | the same two under `vn/previews/<previewId>/stories/…` |
 
-Objects are shared across production and previews — the `vn/objects/` prefix is
-not duplicated per preview.
+Objects are **not** namespaced per preview: `getObjectPath()` always returns
+`vn/objects/…`, and the `vn/previews/<previewId>/` prefix applies only to the
+manifest and the pointer. Objects are content-addressed, so production and every
+preview share one copy of identical bytes.
 
 ---
 
@@ -158,7 +160,9 @@ Zone `cwchanap.dev` → Caching → Tiered Cache → Smart Tiered Cache Topology
 **On**.
 
 This is a zone toggle, not a rule — it does **not** consume any of the 10-rule
-Cache Rules budget.
+Cache Rules budget. It is also zone-wide, so it affects every hostname on
+`cwchanap.dev`, not just this one. **Its current state has never been
+observed** — check what it is set to before toggling it.
 
 ### 2.6 Create the three cache rules
 
@@ -232,9 +236,23 @@ Deleting or editing one of these rules later is a manual, deliberate act.
 R2 → API → Manage API tokens → Create API token:
 
 - Permission: **Object Read & Write**
-- Specify bucket: **`aquila-vn-delivery` only**. Never account-wide, never
+- Specify bucket: **`aquila-vn-delivery` only**. Not account-wide, and not
   including `aquila-vn-source`.
 - Name: `aquila-vn-publisher`
+
+**Deliberate divergence from the design.** D6 of
+`docs/superpowers/specs/2026-07-28-hpa-229-r2-visual-asset-delivery-design.md`
+scopes this token to *both* buckets, and the cancelled minter built its resource
+map from `[config.buckets.source, config.buckets.delivery]`. Delivery-only was
+chosen instead, as least privilege: a leaked publisher key must not be able to
+touch the private authoring originals. An R2 API token carries a **single
+permission level across all the buckets it selects**, so "read-write on delivery,
+read-only on source" is not expressible in one token — which is why the design's
+version would have granted write access to `aquila-vn-source`.
+
+If HPA-230's publisher turns out to need to read authoring originals from
+`aquila-vn-source`, the correct response is to **mint a second, read-only token
+scoped to `aquila-vn-source`** — not to widen this one.
 
 Copy the Access Key ID and Secret Access Key **once** — Cloudflare will not show
 the secret again — and store them in GitHub Actions secrets as
@@ -248,8 +266,15 @@ but belong to the publisher (HPA-230), not here.
 
 ### 2.8 Set the Vercel environment variables
 
-See [§3](#3-environment-variables). Set them only after the custom domain reads
+Vercel → the `aquila` project → Settings → Environment Variables. Add each
+variable and tick the environments it applies to, per the table in
+[§3](#3-environment-variables). Set them only after the custom domain reads
 Active, and set all three per environment **together** — never partially.
+
+Vercel environment variables are read at **build** time (`PUBLIC_*` values are
+inlined into the client bundle by Vite), so existing deployments do not pick them
+up. **Redeploy** — Deployments → the latest deployment → Redeploy — for each
+environment whose variables you changed.
 
 ### 2.9 Seed a release, then verify
 
@@ -260,6 +285,14 @@ command for this yet), then run the two verifiers:
 bun --filter @aquila/infra-cloudflare verify
 R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts
 ```
+
+The second command needs more than Cloudflare: Playwright starts `apps/web`'s
+dev server on **port 5090** and injects a `DATABASE_URL`, defaulting to
+`postgresql://postgres:postgres@localhost:5432/aquila_e2e`
+(`packages/e2e/playwright.config.ts`). Without a reachable database the run fails
+at web-server startup, which reads like a delivery-infrastructure problem when it
+is a local-environment one. Export your own `DATABASE_URL` to override the
+default.
 
 **The `seed` script is declared but not implemented.** It is Task 7 of the
 HPA-229 plan and was never written; `packages/infra-cloudflare/src/seed.ts` does
@@ -274,6 +307,12 @@ $ bun --filter @aquila/infra-cloudflare seed
 Until it exists, a release must be published by another route (the HPA-230
 publisher, or by hand — see [§7](#7-traps) for the metadata a manual upload must
 carry).
+
+**The live e2e spec's own failure message points at that same missing command.**
+`packages/e2e/tests/r2-delivery.spec.ts` ends every failure and its skip reason
+with "…published (`bun --filter @aquila/infra-cloudflare seed`)". Until Task 7
+lands, that instruction cannot be followed — do not read it as evidence that your
+environment is misconfigured. Task 7 owns both the script and that message.
 
 **The seeder must emit AVIF, not only WebP.** `verify.ts` hard-fails when a
 release has no AVIF variant, even though the HPA-227 schema treats
@@ -362,8 +401,13 @@ build instead of silently shipping a bundle with no visuals.
 
 ### Long branch names
 
-`derivePreviewId()` slugifies the ref, and when the slug exceeds 63 characters it
-clamps to 54 and appends `-<6 hex of sha256(NFC(ref))>`. This repo's
+`derivePreviewId()` slugifies the NFC-normalized ref (lowercase, disallowed runs
+to `-`, separator runs collapsed, leading/trailing separators stripped). If the
+slug is empty the id is `preview-<8 hex of sha256(NFC(ref))>`. A slug of 63
+characters or fewer is returned unchanged. Only when it is longer does the
+function clamp to 54 characters, strip any trailing `-` or `_` left by that cut
+— so the head can be shorter than 54 — and append
+`-<6 hex of sha256(NFC(ref))>`. This repo's
 `author/ticket-description` branch convention already overflows 63 characters,
 and a plain clamp collapsed a branch, its `-followup`, and its `-fix` onto one
 preview namespace — publishing from one would overwrite the others' assets. Refs
@@ -599,6 +643,12 @@ infra-cloudflare 53; desktop has no test files),
 404 on the pointer — the expected pre-provisioning signal),
 `bun --filter @aquila/infra-cloudflare seed` (fails: `Module not found
 "src/seed.ts"`).
+
+**Use `bun run test`, not `bun test`.** `test` is a Bun builtin, so a bare
+`bun test` at the repo root shadows the npm script and runs Bun's own test runner
+over the whole repo — producing `794 pass / 632 fail / 40 errors`, mostly
+`vi.hoisted is not a function`, because these are Vitest suites. That is an
+invocation error, not a broken repo.
 
 **Commands never run successfully:** `seed` (unimplemented) and
 `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` (fails at

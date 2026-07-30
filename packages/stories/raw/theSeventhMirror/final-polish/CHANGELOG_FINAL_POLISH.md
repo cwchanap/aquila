@@ -30,6 +30,9 @@
 | 2026-07-27 | Gate 2 | Fairness audit: 9/10 PASS; M8 Subject Bay back-seeded in ch25 (was ch26 first-appear) → now PASS | ch25 | Y | N |
 | 2026-07-27 | Phase 3 | Rewrote high-level-plan → 00_high_level_plan_final.md (§7.1–7.8 corrections); old HLP archived | (all — entry doc) | Y | N |
 | 2026-07-27 | Phase 3 follow-up | characters.md:135/144 de-looped (handler-supplied intel framing; removed 測試新一輪 + absent tell) | chars | Y | N |
+| 2026-07-27 | Phase 4 | Built 7 Canonical Bibles (timeline 409L, knowledge-matrix 241L, evidence-ledger 231L, system-rules 356L, clue-map 844L, terminology 246L, open-mysteries 636L) | canon/01–07 | N (extraction only) | N |
+| 2026-07-27 | Phase 4 | Purged unplanted Kotone "這次至少不是左手" tell from characters.md:159, HLP §12, and Bibles 3/5/7 (contradicts §7.2; unplanted in prose) | chars, docs, canon 3/5/7 | Y | N |
+| 2026-07-27 | Gate 4 | Bible cross-check: initial FAIL (Kotone tell in 3 bibles) → fixed → PASS. 6 DEFER items logged for Phase 5 prose verification | canon/ | N | N |
 
 <!--
 Entry template:

@@ -26,6 +26,16 @@ describe('readAssetSourceConfigFromEnv', () => {
             })
         ).toEqual({ baseUrl: REMOTE, environment: 'production' });
     });
+
+    it('ignores values that are not strings', () => {
+        expect(
+            readAssetSourceConfigFromEnv({
+                PUBLIC_ASSET_BASE_URL: 42,
+                PUBLIC_ASSET_ENVIRONMENT: { toString: () => 'production' },
+                PUBLIC_ASSET_PREVIEW_ID: undefined,
+            })
+        ).toEqual({});
+    });
 });
 
 const STORY = 'the_seventh_mirror';
@@ -96,6 +106,10 @@ describe('resolveAssetSource', () => {
             /preview id is meaningless/i,
         ],
         [
+            { baseUrl: REMOTE, environment: 'local', previewId: 'hpa-229' },
+            /preview id is meaningless/i,
+        ],
+        [
             { baseUrl: 'http://insecure.example/', environment: 'production' },
             /must be https/i,
         ],
@@ -103,5 +117,11 @@ describe('resolveAssetSource', () => {
         expect(() => resolveAssetSource(STORY, ORIGIN, config)).toThrow(
             message
         );
+    });
+
+    it('names the stray preview id when nothing else is configured', () => {
+        expect(() =>
+            resolveAssetSource(STORY, ORIGIN, { previewId: 'hpa-229' })
+        ).toThrow(/PUBLIC_ASSET_PREVIEW_ID is set \(hpa-229\)/);
     });
 });

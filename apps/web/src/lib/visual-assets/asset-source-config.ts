@@ -63,8 +63,14 @@ export function resolveAssetSource(
     }
 
     if (!baseUrl || !environment) {
+        // Name the stray preview id when it is what tripped the check —
+        // otherwise the message points only at the two variables the deployer
+        // did not set, and never at the one they did.
+        const stray = previewId
+            ? ` PUBLIC_ASSET_PREVIEW_ID is set (${previewId}) but does nothing on its own.`
+            : '';
         throw new Error(
-            'Incomplete asset configuration: PUBLIC_ASSET_BASE_URL and PUBLIC_ASSET_ENVIRONMENT must be set together.'
+            `Incomplete asset configuration: PUBLIC_ASSET_BASE_URL and PUBLIC_ASSET_ENVIRONMENT must be set together.${stray}`
         );
     }
 

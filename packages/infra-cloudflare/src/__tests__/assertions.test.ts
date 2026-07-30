@@ -7,19 +7,25 @@ import {
     findForbiddenKeys,
 } from '../assertions';
 
+// The assertions derive their required directives from this policy, so feeding
+// the policy back into them would prove nothing. Pin the policy to the literal
+// contract strings here instead, and assert against literals everywhere else.
+describe('cache policy contract', () => {
+    it('still declares the two headers the assertions are built from', () => {
+        expect(
+            RUNTIME_ASSET_CACHE_POLICY.immutableRelease.responseCacheControl
+        ).toBe('public, max-age=31536000, immutable');
+        expect(
+            RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
+        ).toBe('no-cache, max-age=0, must-revalidate');
+    });
+});
+
 describe('assertImmutable', () => {
     it('accepts a year-long immutable directive', () => {
         expect(assertImmutable('public, max-age=31536000, immutable').ok).toBe(
             true
         );
-    });
-
-    it('accepts the exact header the publisher writes', () => {
-        expect(
-            assertImmutable(
-                RUNTIME_ASSET_CACHE_POLICY.immutableRelease.responseCacheControl
-            ).ok
-        ).toBe(true);
     });
 
     it('accepts the directives reordered, recased, and loosely spaced', () => {
@@ -69,14 +75,6 @@ describe('assertPointerRevalidation', () => {
         ).toBe(true);
     });
 
-    it('accepts the exact header the publisher writes', () => {
-        expect(
-            assertPointerRevalidation(
-                RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
-            ).ok
-        ).toBe(true);
-    });
-
     it('tolerates an extra directive the edge may add', () => {
         expect(
             assertPointerRevalidation(
@@ -118,6 +116,12 @@ describe('assertContentType', () => {
 
     it('ignores case and surrounding whitespace', () => {
         expect(assertContentType(' IMAGE/WebP ', 'image/webp').ok).toBe(true);
+    });
+
+    it('normalizes the expected type too, so a recased caller is not a false negative', () => {
+        const assertion = assertContentType('image/webp', 'Image/WebP');
+        expect(assertion.ok).toBe(true);
+        expect(assertion.detail).toBe('content-type: image/webp');
     });
 
     it('rejects the octet-stream default r2 uses when type is unset', () => {

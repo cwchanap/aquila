@@ -13,6 +13,7 @@ import {
     type CheckResult,
 } from './assertions';
 import { loadR2DeliveryConfig } from './config';
+import { findVariant, readString, summarize } from './documents';
 
 const STORY_ID = 'the_seventh_mirror';
 const PREVIEW_ID = 'smoke';
@@ -53,26 +54,8 @@ function describeError(error: unknown): string {
     return `${error.message}${cause}`;
 }
 
-function summarize(body: string): string {
-    const collapsed = body.replace(/\s+/g, ' ').trim();
-    return collapsed.length > 120
-        ? `${collapsed.slice(0, 120)}...`
-        : collapsed || '<empty body>';
-}
-
 function delay(milliseconds: number): Promise<void> {
     return new Promise(done => setTimeout(done, milliseconds));
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-    return typeof value === 'object' && value !== null && !Array.isArray(value)
-        ? (value as Record<string, unknown>)
-        : null;
-}
-
-function readString(value: unknown, key: string): string | null {
-    const field = asRecord(value)?.[key];
-    return typeof field === 'string' ? field : null;
 }
 
 type RequestOutcome =
@@ -139,23 +122,6 @@ function named(
     return { name, ...assertion };
 }
 
-type ManifestVariant = { path: string; sha256: string };
-
-function findVariant(
-    manifestBody: unknown,
-    format: AssetFormat
-): ManifestVariant | null {
-    const assets = asRecord(manifestBody)?.assets;
-    if (!Array.isArray(assets)) return null;
-    for (const asset of assets) {
-        const variant = asRecord(asRecord(asset)?.variants)?.[format];
-        const path = readString(variant, 'path');
-        const sha256 = readString(variant, 'sha256');
-        if (path !== null && sha256 !== null) return { path, sha256 };
-    }
-    return null;
-}
-
 async function checkObject(
     base: string,
     objectPath: string,
@@ -205,10 +171,8 @@ async function checkCacheHit(
     base: string,
     objectPath: string
 ): Promise<CheckResult> {
-    let status = '<no request made>';
-    let attempts = 0;
+    const observed: string[] = [];
     for (let attempt = 0; attempt < CACHE_HIT_ATTEMPTS; attempt += 1) {
-        attempts += 1;
         const outcome = await request(`${base}/${objectPath}`);
         if (!outcome.ok) {
             return {
@@ -218,14 +182,16 @@ async function checkCacheHit(
                 warning: true,
             };
         }
-        status = outcome.response.headers.get('cf-cache-status') ?? '<missing>';
-        if (status === 'HIT') break;
+        observed.push(
+            outcome.response.headers.get('cf-cache-status') ?? '<missing>'
+        );
+        if (observed.at(-1) === 'HIT') break;
         if (attempt < CACHE_HIT_ATTEMPTS - 1) await delay(CACHE_HIT_DELAY_MS);
     }
     return {
         name: 'object cache hit',
-        ok: status === 'HIT',
-        detail: `cf-cache-status: ${status} after ${attempts} request(s)`,
+        ok: observed.at(-1) === 'HIT',
+        detail: `cf-cache-status: ${observed.join(' -> ')} over ${observed.length} request(s)`,
         warning: true,
     };
 }
@@ -338,15 +304,19 @@ async function runChecks(base: string, results: CheckResult[]): Promise<void> {
 
     let cacheProbePath: string | null = null;
     for (const format of ['webp', 'avif'] as const) {
-        const variant = findVariant(manifest.body, format);
-        if (variant === null) {
+        const lookup = findVariant(manifest.body, format);
+        if (lookup.kind !== 'found') {
+            // `absent` and `malformed` are reported distinctly: pointing an
+            // operator at a missing object when the object is present but its
+            // manifest entry is bad wastes the whole investigation.
             results.push({
                 name: `${format} object`,
                 ok: false,
-                detail: `no ${format} variant in ${manifestPath}`,
+                detail: `${lookup.detail} in ${manifestPath}`,
             });
             continue;
         }
+        const { variant } = lookup;
         let objectPath: string;
         try {
             objectPath = getObjectPath(
@@ -382,6 +352,11 @@ async function runChecks(base: string, results: CheckResult[]): Promise<void> {
     );
 }
 
+/**
+ * Sets `exitCode` rather than calling `process.exit`, which can truncate
+ * buffered stdout when it is a pipe — exactly the CI log capture where an
+ * operator needs the check lines most.
+ */
 function report(results: CheckResult[]): void {
     let failed = 0;
     for (const result of results) {
@@ -391,7 +366,8 @@ function report(results: CheckResult[]): void {
     }
     if (failed > 0) {
         console.error(`\n${failed} check(s) failed.`);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
     }
     console.log('\nAll required checks passed.');
 }
@@ -420,5 +396,5 @@ try {
     await main();
 } catch (error) {
     console.error(`Verification could not run: ${describeError(error)}`);
-    process.exit(1);
+    process.exitCode = 1;
 }

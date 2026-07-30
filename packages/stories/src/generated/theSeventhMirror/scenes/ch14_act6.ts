@@ -46,7 +46,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第五條——七秒專門對澪設定。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第六條——七秒是影像十一秒錯位的完整原因。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第七條——TKS 法務正在掩蓋人體實驗。", background: Background.Chapter_14_Ch14_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第八條——別名表一定包含 TOKYO-7。", background: Background.Chapter_14_Ch14_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第八條——別名表一定寫著某個特定舊名。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第九條——千田直接維護 G07 受試者。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯九條。都不能成立。不是因為一定錯。是因為——沒證據證明它們對。文件沒寫。法務沒說。私人記憶不能當證據。每條都可能是真的。但「可能是真的」和「證明了」中間有條線。不能跨過去。", background: Background.Chapter_14_Ch14_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她放下筆。看著這三頁。6.1。6.2。6.3。可確認。合理推測。仍不能成立。", background: Background.Chapter_14_Ch14_Act6_S0 },

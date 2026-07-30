@@ -84,7 +84,7 @@ small investigation media office at night, cramped room with two desks and a pub
 
 **旁白**：第七條——TKS 法務正在掩蓋人體實驗。
 
-**旁白**：第八條——別名表一定包含 TOKYO-7。
+**旁白**：第八條——別名表一定寫著某個特定舊名。
 
 **旁白**：第九條——千田直接維護 G07 受試者。
 

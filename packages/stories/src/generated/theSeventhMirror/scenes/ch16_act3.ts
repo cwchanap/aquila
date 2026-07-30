@@ -46,7 +46,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "電車上。血。銀色外殼塞進她手裡。邊緣鋒利。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不要救東京。", background: Background.Chapter_16_Ch16_Act3_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不要救東京。千田死前說的。我一直以為那句話裡的東京是一座城市。我一直以為千田叫她不要救一座城市。一直。從第一輪到現在。我一直這樣以為。", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不要救東京。千田死前說的。我一直以為那句話裡的東京是一座城市。我一直以為千田叫我不要救一座城市。一直。從第一輪到現在。我一直這樣以為。", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但這份文件說——「東京」不指涉地理名稱。它是情境識別名。如果千田說的「東京」指的就是這個設定檔——那他叫我不要救的，從來不是一座城市。是一個情境。一個被叫作東京的情境。", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停下來。閉上眼睛。三秒。睜開。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不能跨過去。這份文件證明的是——「東京」這個名稱在正式文件中不指涉地名。它沒有證明千田遺言指的就是這個設定檔。千田說「不要救東京」。這份文件說「東京」是情境識別名。兩者高度吻合。但高度吻合不等於證明。不能畫等號。不能跨過那條線。", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Determined },

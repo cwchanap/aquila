@@ -42,7 +42,7 @@ police station technical briefing room, fluorescent lighting, long table with a 
 
 **旁白**：小野寺停了一下。像在確認自己要說什麼。
 
-**小野寺直樹** [guarded]：G07 應該是第七同步群。斜線後的 12 是群內端點。
+**小野寺直樹** [guarded]：G07 會是第七同步群。斜線後的 12 是群內端點。
 
 **旁白**：他說完。立刻補了一句。
 

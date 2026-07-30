@@ -14,6 +14,11 @@
       "dependsOn": [
         "^build"
       ],
+      "env": [
+        "PUBLIC_ASSET_*",
+        "VERCEL_ENV",
+        "VERCEL_GIT_COMMIT_REF"
+      ],
       "outputs": [
         "dist/**",
         ".astro/**",

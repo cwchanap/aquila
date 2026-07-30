@@ -6,6 +6,7 @@ import {
     getReleaseManifestPath,
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
+    resolveAssetUrl,
     type AssetFormat,
     type PublicationTarget,
     type RuntimeAssetManifestV1,
@@ -40,6 +41,18 @@ const PREREQUISITES =
     `and the "${PREVIEW_ID}" preview release of ${STORY_ID} published ` +
     '(bun --filter @aquila/infra-cloudflare seed).';
 const SKIP_REASON = `needs R2_LIVE_CHECK=1 and live infrastructure. ${PREREQUISITES}`;
+
+// Playwright's list reporter prints a bare dash for a skipped test and never
+// its skip annotation — only the HTML and JSON reporters serialize those. So
+// the reason is also written to the console while this file is loaded, which
+// every reporter forwards to the terminal. Without this a default-suite run
+// would hide why these two tests did nothing.
+//
+// Only during collection: every worker loads this file too, and TEST_WORKER_INDEX
+// is set only in workers, so the guard keeps this to one line per run.
+if (!LIVE_CHECK_ENABLED && process.env.TEST_WORKER_INDEX === undefined) {
+    console.warn(`[r2-delivery] skipped: ${SKIP_REASON}`);
+}
 
 // Per-request deadlines come from the HPA-227 cache policy so a hung object is
 // named in the failure instead of expiring the whole test.
@@ -97,8 +110,13 @@ type PageProbe = {
     size: DecodedSize | null;
 };
 
+/**
+ * Joins with the sanctioned joiner rather than string concatenation, so the
+ * relative path is checked for traversal and the base for scheme and
+ * credential-freeness before anything is fetched.
+ */
 function assetUrl(objectPath: string): string {
-    return `${ASSET_BASE}/${objectPath}`;
+    return resolveAssetUrl(ASSET_BASE, objectPath).toString();
 }
 
 /**
@@ -275,12 +293,22 @@ test.describe('R2 visual asset delivery', () => {
         );
         const manifest = parseRuntimeAssetManifest(manifestDocument.body);
         expect(manifest.storyId).toBe(STORY_ID);
+        // The manifest was fetched from the path the pointer's releaseId names,
+        // so a manifest declaring a different release means the two documents
+        // disagree about what is live. (The full pairing check needs the
+        // manifest byte digest; this is the cheap part of it.)
+        expect(
+            manifest.releaseId,
+            `${manifestUrl} declares a different release than the pointer`
+        ).toBe(pointer.releaseId);
 
+        // `variants.webp` is required per asset, so this is reachable only when
+        // the release published no assets at all.
         const webp = await decodeFirstVariant(page, manifest, 'webp');
         if (webp === null) {
             throw new Error(
-                `${manifestUrl} offers no webp variant, and webp is the ` +
-                    'required compatibility path of the delivery contract.'
+                `${manifestUrl} published no assets, so there is nothing for ` +
+                    'a browser to decode.'
             );
         }
         expect(webp.width, 'decoded webp width').toBeGreaterThan(0);
@@ -291,10 +319,11 @@ test.describe('R2 visual asset delivery', () => {
         // in the browser this spec runs in, which supports AVIF.
         const avif = await decodeFirstVariant(page, manifest, 'avif');
         if (avif === null) {
-            test.info().annotations.push({
-                type: 'note',
-                description: `${manifestUrl} offers no avif variant`,
-            });
+            const note = `${manifestUrl} offers no avif variant`;
+            // Annotated for the HTML report, and logged because no terminal
+            // reporter shows annotations.
+            test.info().annotations.push({ type: 'note', description: note });
+            console.warn(`[r2-delivery] ${note}`);
             return;
         }
         expect(avif.width, 'decoded avif width').toBeGreaterThan(0);
@@ -317,9 +346,13 @@ test.describe('R2 visual asset delivery', () => {
         // revalidation directives survive into page script. The shell verifier
         // sees the same header on the wire; only a browser shows it reaching
         // the code that has to honour it.
+        //
+        // Compared as sets: the contract is exactly these directives in any
+        // order, so an extra `immutable` or `s-maxage` on the pointer — which
+        // would defeat revalidation — has to fail here.
         expect(
-            directives(cacheControl),
+            new Set(directives(cacheControl)),
             `cache-control on ${pointerUrl} was "${cacheControl ?? '<missing>'}"`
-        ).toEqual(expect.arrayContaining(REQUIRED_POINTER_DIRECTIVES));
+        ).toEqual(new Set(REQUIRED_POINTER_DIRECTIVES));
     });
 });

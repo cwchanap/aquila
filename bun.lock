@@ -98,6 +98,7 @@
       "name": "e2e",
       "version": "0.0.1",
       "devDependencies": {
+        "@aquila/stories": "workspace:*",
         "@playwright/test": "^1.55.0",
       },
     },

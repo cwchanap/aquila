@@ -12,6 +12,7 @@
     "measure:reader": "bun scripts/measure-reader-runtime.ts"
   },
   "devDependencies": {
+    "@aquila/stories": "workspace:*",
     "@playwright/test": "^1.55.0"
   }
 }

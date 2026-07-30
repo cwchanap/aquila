@@ -1,6 +1,11 @@
 import type { DialogueEntry } from '@aquila/stories';
 import type { AssetResolverSource } from '@aquila/stories/runtime-assets';
 import { getBrowserStorage } from '@/lib/reader-mode';
+import {
+    readAssetSourceConfigFromEnv,
+    resolveAssetSource,
+    type AssetSourceConfig,
+} from './asset-source-config';
 import { DecodedAssetCache } from './decoded-asset-cache';
 import { ValidatedReleaseStore } from './validated-release-store';
 import { VisualStateController } from './visual-state-controller';
@@ -12,17 +17,17 @@ export type VisualReaderRuntime = {
     dispose: () => Promise<void>;
 };
 
+/**
+ * Environment variables change *how* an allowed story resolves, never *which*
+ * stories resolve — the allowlist below stays authoritative.
+ */
 export function getAssetResolverSource(
     storyId: string,
-    origin: string
+    origin: string,
+    config: AssetSourceConfig
 ): AssetResolverSource | null {
     if (storyId !== 'the_seventh_mirror') return null;
-    return {
-        environment: 'local',
-        storyId,
-        baseUrl: new URL('/assets/', origin).href,
-        target: { kind: 'preview', previewId: 'hpa-228-local' },
-    };
+    return resolveAssetSource(storyId, origin, config);
 }
 
 export function createVisualRuntime(
@@ -31,9 +36,12 @@ export function createVisualRuntime(
     getSceneDialogue: (
         storyId: string,
         sceneId: string
-    ) => readonly DialogueEntry[] | null
+    ) => readonly DialogueEntry[] | null,
+    config: AssetSourceConfig = readAssetSourceConfigFromEnv(
+        import.meta.env as unknown as Record<string, unknown>
+    )
 ): VisualReaderRuntime | null {
-    const source = getAssetResolverSource(storyId, origin);
+    const source = getAssetResolverSource(storyId, origin, config);
     const store = new ValidatedReleaseStore(getBrowserStorage());
     const resolver = source ? new WebAssetResolver(source, { store }) : null;
     const cache = new DecodedAssetCache();

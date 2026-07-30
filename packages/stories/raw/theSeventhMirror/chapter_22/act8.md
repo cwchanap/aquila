@@ -10,7 +10,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：21:20。指定專家把 G07／03 的欄位拉到螢幕中央。
 
-**指定專家**：G07／03。Chapter 12 provisional mapping——藤川美空。家屬資料、研究日期、醫療追蹤、G07 管理群。四條交叉比對。provisional。
+**指定專家**：G07／03。家屬資料建立的 provisional mapping——藤川美空。家屬資料、研究日期、醫療追蹤、G07 管理群。四條交叉比對。provisional。
 
 **旁白**：他頓了一下。
 
@@ -22,9 +22,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：REMOTE CAL ACTIVE。遠端校準活躍。不是 SAFE。不是 DETACHED。是 ACTIVE。
 
-**朝倉澪** [exhausted]：（內心）確認了。Chapter 12 的時候——家屬資料、研究日期、醫療追蹤——四條線交叉比對。provisional。
-
-**旁白**：螢幕上的欄位更新了。不是 provisional。是 CONFIRMED。
+**朝倉澪** [exhausted]：（內心）確認了。家屬資料、研究日期、醫療追蹤——四條線交叉比對。provisional。
 
 **朝倉澪** [exhausted]：（內心）現在——當輪系統自己承認了。不是家屬推測。不是外部資料拼出來的。是系統——把名字還回來了。
 
@@ -110,7 +108,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：她沒有說話。她看著那兩個字。看著「琴音」。看著「姊」。
 
-**朝倉澪** [shocked]：（內心）Chapter 12。Chapter 12 的家屬資料。藤川美空。有一名姊姊。姓名只顯示「琴○」。
+**朝倉澪** [shocked]：（內心）家屬資料。藤川美空的家屬資料。有一名姊姊。姓名只顯示「琴○」。
 
 **旁白**：她看著螢幕。看著「琴音」兩個字。看著「姊」。
 
@@ -168,7 +166,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：他頓了一下。然後他寫下最後一行。
 
-**日下部悟**：本章不正式證明——琴音持有載體。琴音插入載體。琴音為 21:04 維修服人物。琴音攻擊千田。琴音知道完整公共方案。保留普通解釋。列入 Chapter 23 刑事追查。
+**日下部悟**：現階段不正式證明——琴音持有載體。琴音插入載體。琴音為 21:04 維修服人物。琴音攻擊千田。琴音知道完整公共方案。保留普通解釋。列入後續刑事追查。
 
 **旁白**：他簽名。時間戳。封存。
 
@@ -192,7 +190,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：22:30。會議室裡只剩下澪和日下部。螢幕暗了。螢光燈還亮著。
 
-**朝倉澪** [exhausted]：（內心）可是——誰帶來的。誰插入的。誰在 21:04 拿著共享臨時卡。不知道。還不知道。Chapter 23。
+**朝倉澪** [exhausted]：（內心）可是——誰帶來的。誰插入的。誰在 21:04 拿著共享臨時卡。不知道。還不知道。後續。
 
 **旁白**：澪的手機震動了一下。
 
@@ -270,7 +268,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **朝倉澪**：⋯⋯嗯。
 
-**日下部悟**：明天——Chapter 23。琴音。載體。美空保護動機。
+**日下部悟**：明天——琴音。載體。美空保護動機。
 
 **朝倉澪**：⋯⋯我知道。
 

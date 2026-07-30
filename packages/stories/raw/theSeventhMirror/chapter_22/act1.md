@@ -44,7 +44,7 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 
 **旁白**：黃色貼紙。右邊的筆電。
 
-**日下部悟**：未來資料組。只整理 Chapter 21 已有的內容。R4 作者。完整套件不得託管送回。Mio 看見代價後仍接受過一次。不新增。不推論。不擴充。
+**日下部悟**：未來資料組。只整理昨日已成立的內容。R4 作者。完整套件不得託管送回。Mio 看見代價後仍接受過一次。不新增。不推論。不擴充。
 
 **旁白**：他放下最後一張貼紙。看著澪。
 
@@ -160,4 +160,4 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 
 **旁白**：08:59。她喝了一口水。水是溫的。
 
-**旁白**：距下一次星期一 06:13——約三日二十二小時十四分鐘。
+**旁白**：距下一次星期一 06:13——約三日二十一小時十四分鐘。

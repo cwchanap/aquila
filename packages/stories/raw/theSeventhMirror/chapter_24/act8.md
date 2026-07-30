@@ -151,7 +151,16 @@ BUNDLE HASH     TOKYO-7／<BUNDLE-HASH>
 
 **千田浩介**：舊 continuity HSM 使用簡單狀態機。它只識別三個問題。
 
-**旁白**：螢幕上出現狀態機。星期日 23:50 以前。
+**旁白**：螢幕上先跑過一列夜間 BCP 排程的分類欄位。公共工程驗收文件常見的格式。沒有人特別停下來說明。
+
+```text
+MAR-CONT／PROTECTIVE TRANSFER CLASS
+BCP CUTOVER          23:50
+PREPOSITION WINDOW   23:50–05:50
+EXECUTION WINDOW     05:50–06:20
+```
+
+**旁白**：然後狀態機出現。星期日 23:50 以前。
 
 ```text
 VALID SHARE-O?     NO

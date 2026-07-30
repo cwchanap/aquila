@@ -53,7 +53,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "這是她曾短暫用自己的模型撐住過的證明。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間裡很安靜。螢幕上的兩條曲線還亮著。", background: Background.Chapter_23_Ch23_Act7_S0 },
-    { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "還有一點。這份模型——不是美空的記憶。不是她的意識。不是她的人格。只是神經與自律穩定節奏。這一章不進行新測試。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.ExternalDoctor_Base },
+    { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "還有一點。這份模型——不是美空的記憶。不是她的意識。不是她的人格。只是神經與自律穩定節奏。今天不進行新測試。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不是意識備份。不是記憶。不是人格。只是——屬於她的節奏。她自己的神經與自律節奏。不是 M-00 的。不是中央的。是她自己的。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:00。琴音一直沒有說話。她看著螢幕。看著事件 B 的曲線。看著——比事件 A 穩定的那幾秒。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的嘴唇動了一下。", background: Background.Chapter_23_Ch23_Act7_S0 },

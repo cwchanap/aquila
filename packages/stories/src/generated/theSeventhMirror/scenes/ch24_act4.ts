@@ -56,7 +56,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "身分依法遮蔽。有法院指定代理。是函館早期暴露者之一。不是設備。舊控制器沒有 Domain-C。", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）函館。十年前。夜潮事件。早期暴露者。活人。高依存。舊硬體。沒有 Domain-C。需要轉接器。不是今天能解決的。可是——他不是設備。他是人。他仍在那裡。仍在活動。仍需要被找到。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。日下部把 LEGACY／02 的資料封進另一個文件夾。他看了一眼澪。", background: Background.Chapter_24_Ch24_Act4_S0 },
-    { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "函館線——平行進度。不另開主線。外部醫療已派往現場。轉接器規格——設計階段。本章不完成。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
+    { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "函館線——平行進度。不另開作業線。外部醫療已派往現場。轉接器規格——設計階段。今天不完成。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯嗯。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:35。保全室裡安靜了一陣。所有指令已經發出。所有回執已經收到。C2 外圍的周界建立了。接下來——通知。", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部看著右邊的螢幕。家屬通知室的待機畫面。空的。椅子。桌子。沒有人。", background: Background.Chapter_24_Ch24_Act4_S0 },
@@ -133,5 +133,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她閉了一下眼睛。", background: Background.Chapter_24_Ch24_Act4_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）找到位置不等於帶她回來。確認生命不等於救出。no-move 不等於自由。今天——只做到了最低必要。可是——最低必要第一次是真的。不是系統宣稱。不是中等證據。是——外部醫療獨立確認。司法保全記錄。兒少保護在場。家屬通知完成。四十二天以來——第一次有人用程序而不是猜測告訴佳乃：你的女兒仍在系統裡。仍有生命體徵。已被鎖住位置。不會被移走。", background: Background.Chapter_24_Ch24_Act4_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她睜開眼睛。螢幕上的通知室空了。佳乃已經走了。杯子留在桌上。水沒有喝。", background: Background.Chapter_24_Ch24_Act4_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十七小時三十八分鐘。", background: Background.Chapter_24_Ch24_Act4_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十六小時四十八分鐘。", background: Background.Chapter_24_Ch24_Act4_S1 },
 ];

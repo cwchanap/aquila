@@ -80,5 +80,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在原位。她看著螢幕上最後的畫面。DISTRIBUTED PATIENT-SAFETY HOLD。ENFORCEMENT PARTIAL。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）父親停過一次。透過程序。不是密鑰。然後案件換了名字。hold 沒有跟著。他失蹤了。沒有人接手。所有人的安全一起失效了。七年。這次——不能這樣。這次不能因為一個人不見了，或案件被換了名字，所有人的安全就一起失效。可是——continuity HSM 不認得我們的拒絕。它會把法院凍結當成失聯。它會把醫療拒絕當成失聯。它會把所有人的「不」——重新命名成「沒有」。", background: Background.Chapter_24_Ch24_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:10。會議室空了。螢光燈還亮著。空調的聲音填進縫隙。", background: Background.Chapter_24_Ch24_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十二小時八分鐘。", background: Background.Chapter_24_Ch24_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十小時三分鐘。", background: Background.Chapter_24_Ch24_Act7_S0 },
 ];

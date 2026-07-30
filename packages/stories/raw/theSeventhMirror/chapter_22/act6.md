@@ -84,7 +84,7 @@ Tsukuba research facility M-zone, corridor converted into temporary joint safety
 
 **千田浩介**：R4 約束式重建。三個方案家族。A——完整安全切離。B——保留過濾延後提交。C——閉環硬切。
 
-**千田浩介**：C 家族與 Chapter 21 元資料高度吻合。MIO／SAW COST／ACCEPTED／ONCE。看見代價仍接受。C 家族的代價——M-00 與遠端高依存單元失去雙向穩定閉環——是所有家族中最明確的個體風險。
+**千田浩介**：C 家族與昨日元資料高度吻合。MIO／SAW COST／ACCEPTED／ONCE。看見代價仍接受。C 家族的代價——M-00 與遠端高依存單元失去雙向穩定閉環——是所有家族中最明確的個體風險。
 
 **旁白**：他頓了一下。
 
@@ -102,7 +102,7 @@ Tsukuba research facility M-zone, corridor converted into temporary joint safety
 
 **旁白**：17:45。獨立神經心理專業人員報告未來資料組。
 
-**獨立神經心理專業人員**：Chapter 21 既有元資料。R4／AUTHOR／MIO。FULL PACKAGE／NO ESCROW。MIO／SAW COST／ACCEPTED／ONCE。來源——紗英臨床觀察記錄。不是客觀事實陳述。來源未定。
+**獨立神經心理專業人員**：昨日既有元資料。R4／AUTHOR／MIO。FULL PACKAGE／NO ESCROW。MIO／SAW COST／ACCEPTED／ONCE。來源——紗英臨床觀察記錄。不是客觀事實陳述。來源未定。
 
 **獨立神經心理專業人員**：澪主觀前向回聲——另封。標記非證據。只用於一致性比對。不參與候選生成。
 

@@ -64,7 +64,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **朝倉澪** [determined]：使用時間。
 
-**指定專家**：使用時間——在 Chapter 18 封緘失蹤之後。
+**指定專家**：使用時間——在封緘失蹤之後。
 
 **朝倉澪** [determined]：⋯⋯失蹤以後才出現。沒有借出。沒有工作單。nonce 超出範圍。用了以後沒有還。
 
@@ -74,9 +74,9 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **指定專家**：技術上成立。合法用途的程序條件包括——借出紀錄、工作單、nonce 在標準區間、使用後歸還。本次使用——四項均不符合。
 
-**旁白**：20:25。指定專家切換畫面。Chapter 18 封緘證據。
+**旁白**：20:25。指定專家切換畫面。封緘證據。
 
-**指定專家**：Chapter 18 維護交接紀錄。20:40。一枚 KAGAMI 原始簽署載體進入交接區。千田因受到保護未前往領取。21:04。維修服人物以表面有效權限處理一件封緘物。
+**指定專家**：維護交接紀錄。20:40。一枚 KAGAMI 原始簽署載體進入交接區。千田因受到保護未前往領取。21:04。維修服人物以表面有效權限處理一件封緘物。
 
 **旁白**：他調出便衣拍攝的影像。不是高清照片。是監視器截圖。光線不好。角度偏。但形制看得見。
 
@@ -86,7 +86,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：然後指定專家切換到當輪庫存資料。
 
-**指定專家**：當輪 KAGAMI 庫存影像。同型載體。薄銀色防靜電外殼、雙卡扣、細長指示窗。接口位置——左側偏下。邊角形制——圓角。與 Chapter 18 便衣記錄的形制高度吻合。
+**指定專家**：當輪 KAGAMI 庫存影像。同型載體。薄銀色防靜電外殼、雙卡扣、細長指示窗。接口位置——左側偏下。邊角形制——圓角。與封緘當晚便衣記錄的形制高度吻合。
 
 **旁白**：兩組影像並排。一組是便衣在昏暗交接區拍的。一組是庫存資料裡的標準照。光線不同。角度不同。但外殼的形狀、卡扣的位置、指示窗的比例——像同一個模子。
 
@@ -112,7 +112,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：20:35。指定專家把跨輪證據也調出來了。但放在螢幕下方。不是主畫面。
 
-**指定專家**：跨輪草圖證據。Chapter 5——第一輪記憶的草圖。Chapter 17——第三輪早晨封緘重畫。兩者均為記憶重製。不是直接證據。
+**指定專家**：跨輪草圖證據。第一輪——記憶的草圖。第三輪早晨——封緘重畫。兩者均為記憶重製。不是直接證據。
 
 **旁白**：兩張草圖。一張是第一輪澪憑記憶畫的。一張是第三輪早晨在看到當輪庫存影像以前封緘重畫的。銀色。薄。雙卡扣。細長窗。
 
@@ -142,7 +142,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：20:45。日下部把證物清單更新了一頁。
 
-**日下部悟**：缺失載體。唯一硬體序號——已記錄。attestation——已記錄。Chapter 18 封緘證據——已記錄。第一輪銀色外殼形制——與當輪同型高概率吻合。跨輪草圖——證據等級低於當輪硬體資料。
+**日下部悟**：缺失載體。唯一硬體序號——已記錄。attestation——已記錄。封緘證據——已記錄。第一輪銀色外殼形制——與當輪同型高概率吻合。跨輪草圖——證據等級低於當輪硬體資料。
 
 **旁白**：他簽名。時間戳。
 
@@ -230,7 +230,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：他看著澪。
 
-**日下部悟**：下一步——當輪系統確認。G07／03。Chapter 12 的 provisional mapping。
+**日下部悟**：下一步——當輪系統確認。G07／03。家屬資料建立的 provisional mapping。
 
 **朝倉澪**：⋯⋯美空。
 
@@ -260,7 +260,7 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：她的手放在桌面。指尖很涼。
 
-**朝倉澪** [exhausted]：（內心）不。現在不能想那個。現在——證據只到這裡。同型。高概率。無借出。無工作單。未歸還。其餘的——Chapter 23。
+**朝倉澪** [exhausted]：（內心）不。現在不能想那個。現在——證據只到這裡。同型。高概率。無借出。無工作單。未歸還。其餘的——明天。
 
 **旁白**：21:15。小會議室。螢幕暗了。證物袋封好了。日下部站起來。千田站起來。指定專家收起筆電。
 

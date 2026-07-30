@@ -133,5 +133,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在原位。她看著觀察窗。美空還在睡。呼吸器的節奏沒有變。監測螢幕上的三條線——很平。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）公共鑰匙離開了病人。病人沒有死。Domain-P 被關掉了。Domain-C 仍在跑。這是——行動高潮。不是終局。不是所有公共權限消失。不是 CONTINUITY-0 停止。是——一枚卡匣。一個序號。一個 epoch。被本地、不可遠端逆轉地隔離了。制度仍能另造一把鑰匙。可是——這一把。這一枚。這一張卡匣。不能再被利用了。美空的臨床根——不再同時是公共鑰匙的一部分了。", background: Background.Chapter_24_Ch24_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:25。她站起來。膝蓋很僵。她走向門口。走廊的螢光燈和病房裡一樣亮。", background: Background.Chapter_24_Ch24_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十五小時十三分鐘。", background: Background.Chapter_24_Ch24_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十四小時四十八分鐘。", background: Background.Chapter_24_Ch24_Act5_S0 },
 ];

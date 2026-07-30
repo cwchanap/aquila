@@ -26,7 +26,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "白色貼紙。中間的筆電。", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "外部醫療組。不看 R4 候選。不看未來資料。只看自然故障時的生理資料、腦電、呼吸、自律神經、藥物、本地影子參照狀態。只判斷中斷風險。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黃色貼紙。右邊的筆電。", background: Background.Chapter_22_Ch22_Act1_S0 },
-    { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "未來資料組。只整理 Chapter 21 已有的內容。R4 作者。完整套件不得託管送回。Mio 看見代價後仍接受過一次。不新增。不推論。不擴充。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
+    { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "未來資料組。只整理昨日已成立的內容。R4 作者。完整套件不得託管送回。Mio 看見代價後仍接受過一次。不新增。不推論。不擴充。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他放下最後一張貼紙。看著澪。", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "澪。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯我知道。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -84,5 +84,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看了一眼封緘信封。三個簽名。三層封口。", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）然後看它畫出來的路——有沒有一條——和我看過的那條一樣。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:59。她喝了一口水。水是溫的。", background: Background.Chapter_22_Ch22_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約三日二十二小時十四分鐘。", background: Background.Chapter_22_Ch22_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約三日二十一小時十四分鐘。", background: Background.Chapter_22_Ch22_Act1_S0 },
 ];

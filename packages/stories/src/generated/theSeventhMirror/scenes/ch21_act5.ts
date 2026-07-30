@@ -84,7 +84,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "最後可見時間。", background: Background.Chapter_21_Ch21_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "清點記錄顯示，最後可見時間落在——", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他翻了一頁。", background: Background.Chapter_21_Ch21_Act5_S0 },
-    { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "Chapter 18。20:40 到 21:04。維護窗口。", background: Background.Chapter_21_Ch21_Act5_S0 },
+    { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "維護窗口當晚。20:40 到 21:04。", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯那天晚上。維修窗口。千田本來要領取的東西。⋯⋯21:04。維修服人物。防靜電封袋。薄金屬輪廓。工具箱。⋯⋯便衣拍到的。⋯⋯那枚載體——", background: Background.Chapter_21_Ch21_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "維修服人物。", background: Background.Chapter_21_Ch21_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "清點記錄與便衣拍攝記錄交叉比對——維修服人物在交接區處理過一件相符的封緘物。防靜電封袋。薄金屬輪廓。與離線簽署載體的外觀一致。", background: Background.Chapter_21_Ch21_Act5_S0 },

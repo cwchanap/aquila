@@ -56,16 +56,22 @@ export function assertPointerRevalidation(header: string | null): Assertion {
     return assertDirectives(header, POINTER_DIRECTIVES);
 }
 
+function mediaType(value: string): string {
+    return value.split(';')[0]?.trim().toLowerCase() ?? '';
+}
+
 export function assertContentType(
     header: string | null,
     expected: string
 ): Assertion {
-    const actual = (header ?? '').split(';')[0]?.trim().toLowerCase() ?? '';
-    const ok = actual === expected;
+    // Both sides are normalized: media types are case-insensitive, so a caller
+    // passing `Image/WebP` must not be a silent false negative.
+    const wanted = mediaType(expected);
+    const ok = mediaType(header ?? '') === wanted;
     const observed = `content-type: ${header ?? '<missing>'}`;
     return {
         ok,
-        detail: ok ? observed : `${observed} (expected ${expected})`,
+        detail: ok ? observed : `${observed} (expected ${wanted})`,
     };
 }
 

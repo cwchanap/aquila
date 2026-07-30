@@ -70,7 +70,7 @@ KAGAMI command room, small secure video panel showing M-00 patient room with Sae
 
 **旁白**：07:20。外部醫療團隊完成評估。五名 downstream patients——各自的最窄支援需求——被逐一列出。不是——統一數字。是——每人不同。
 
-**旁白**：司法保全確認框架條件。患者權利代表完成第二段確認。紗英——有足夠的清醒窗口作決定。
+**旁白**：司法保全確認框架條件。患者權利代表完成決定能力評估——紗英在溝通板上能理解同意範圍、拒絕選項與撤回條件。判定此一清醒窗口具備決定能力。第二段反向確認完成。
 
 ```bg
 M-00 patient room, Sae in hospital bed with low-load communication board at bedside, patient rights representative visible on small wall monitor, clinical equipment showing vital signs, soft morning light filtering through curtain, muted desaturated palette with faint warm tones, visual-novel background art, close shot on communication board

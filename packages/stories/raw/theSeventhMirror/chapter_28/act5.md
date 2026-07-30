@@ -109,7 +109,7 @@ CONTINUITY GOVERNANCE — SPECIFIC HUMAN DECISIONS
 
 **凪原唯**：沒有證明沒有人管理未來會更安全。
 
-**朝倉澪** [exhausted]：（內心）她——還是這樣。函館夜潮。十七個人昏迷。軍事雷達誤判。她——親眼看過。她——真的怕。不是——裝的。不是——藉口。可是——恐懼合理。不能——把患者的拒絕刪掉。不能——因為你怕。就把別人的未來鎖起來。她說的——不是純粹瘋狂。可是——也不能被接受。故事——不會接受它。我——不會接受它。可是——我也不會假裝她只是瘋了。她——只是錯了。錯得——很冷靜。錯得——很有系統。錯得——不可原諒。
+**朝倉澪** [exhausted]：（內心）她——還是這樣。函館夜潮。十七個人昏迷。軍事雷達誤判。她親眼看過。她真的怕。可是恐懼合理，不能把患者的拒絕刪掉。她說的不是純粹瘋狂。可是——也不能被接受。她只是錯了。錯得——很冷靜。錯得——很有系統。錯得——不可原諒。
 
 **旁白**：法官沒有當庭判決。螢幕底部。
 
@@ -117,7 +117,7 @@ CONTINUITY GOVERNANCE — SPECIFIC HUMAN DECISIONS
 STATUS    公開審理中／判決未定
 ```
 
-**朝倉澪** [exhausted]：（內心）判決——未定。三個月——不夠。複雜國家級案件——不會在三個月內完成。她——進入了程序。程序——還沒走完。她可能——一生都認為自己的風險判斷大致正確。只是——程序與執行出了問題。這——正是她仍不可原諒之處。可是——我不需要再跟她辯論。故事——已經回答了。即使恐懼合理。也不能——把患者的拒絕刪掉。
+**朝倉澪** [exhausted]：（內心）判決——未定。三個月不夠。她進入了程序。程序還沒走完。她可能一生都認為自己的風險判斷大致正確。這正是她仍不可原諒之處。可是——我不需要再跟她辯論了。
 
 ```bg
 courthouse corridor, bench near window, Kusakube Satoru sitting without police badge or suit jacket, plain clothes, afternoon light, Asakura Mio standing nearby, muted warm-grey palette, visual-novel background art, medium shot

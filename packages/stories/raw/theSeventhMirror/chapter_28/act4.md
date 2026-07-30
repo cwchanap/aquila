@@ -14,6 +14,8 @@ external neuro medical ward, quiet corridor with multiple patient room doors, so
 
 **外部醫師**：ACTIVE／C 的 settle history 已經補足。patient-specific bridge 可以啟用。M-00 outgoing support 移除。non-human fallback 保留。
 
+**旁白**：ACTIVE／C 的床邊。一張手寫紙條。家屬帶來的。上面列著——起床後想聽的三首歌。不是復健清單。只是一個人的偏好。
+
 **旁白**：螢幕上的進度顯示。
 
 ```text
@@ -34,7 +36,7 @@ PATIENT MEDICAL FUNDING    ACTIVE／NOT PENDING VERDICT
 CARE NOT CONDITIONED ON    CONFIDENTIALITY／WITHDRAWAL／SETTLEMENT
 ```
 
-**朝倉澪** [exhausted]：（內心）Trust。法院監督。不等待——政府互相推責。不等待——承包商否認。不等待——外國機構爭議。不等待——最終判決。醫療——先走。這是——第八天上午就建立的。現在——還在。
+**朝倉澪** [exhausted]：（內心）Trust。法院監督。不等待政府互相推責、承包商否認、外國機構爭議、最終判決。醫療——先走。第八天上午就建立的。現在——還在。
 
 ```bg
 different patient node room, quieter, lower light, bedside monitor showing patient-bound root initialization, external doctor reviewing tablet, muted cool palette, visual-novel background art, medium shot
@@ -43,6 +45,8 @@ different patient node room, quieter, lower light, bedside monitor showing patie
 **旁白**：第二週初。ACTIVE／D。
 
 **外部醫師**：patient-bound local root 完成。先作 Stage-0——passive。再進 non-human clinical bridge。不進 aggressive handoff。
+
+**旁白**：ACTIVE／D 的耳機裡——家屬放的循環歌單。不是醫療設備。床頭櫃上的照片——一隻貓。患者自己的貓。等著。
 
 **旁白**：螢幕更新。
 
@@ -60,7 +64,7 @@ NEXT SAFETY MILESTONE      美空 — DOMAIN-C BRIDGE
 
 **外部醫師**：藤川美空原訂 transition 出現一次自律波動。血壓與心律不穩定。不是急性災難性失穩。可是——今天不是正確的日子。
 
-**朝倉澪** [exhausted]：（內心）延期。美空——延期。不是——失敗。是——今天不安全。所以——今天不做。三十日是 outer limit。不是——預定使用期。任何醫療延期——優先於排程整齊。
+**朝倉澪** [exhausted]：（內心）延期。美空——延期。不是失敗。是今天不安全。所以——今天不做。三十日是 outer limit，不是預定使用期。任何醫療延期優先於排程整齊。
 
 **旁白**：約四十八小時後。自律波動回落。外部醫師確認可以繼續。
 
@@ -108,7 +112,7 @@ legacy patient ward, sealed-name room, bedside adapter console showing timing mi
 
 **外部醫師**：timing mismatch。bedside adapter 與患者節點的時序未對齊。transition 中止。系統返回原有支援。
 
-**朝倉澪** [exhausted]：（內心）中止。第一次——中止。不是——失敗。是——timing 不對。所以——停下。沒有——為了期限繼續。沒有——為了讓 downstream 早一天變零而硬走。停下。返回。修正。再來。
+**朝倉澪** [exhausted]：（內心）中止。第一次中止。不是失敗。是 timing 不對。所以——停下。沒有為了期限繼續。沒有為了讓 downstream 早一天變零而硬走。停下。返回。修正。再來。
 
 **旁白**：修正後。第二次。
 

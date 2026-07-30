@@ -32,7 +32,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紗英的眼睛——半開。溝通板。她的手指——很慢。移動了。", background: Background.Chapter_28_Ch28_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她在聽。她在——理解。不是——被問「要不要讓五個人活」。是——被問「在醫療團隊已承擔安全保存與替代方案的前提下，妳是否允許這一項最窄使用暫時繼續」。", background: Background.Chapter_28_Ch28_Act2_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:20。外部醫療團隊完成評估。五名 downstream patients——各自的最窄支援需求——被逐一列出。不是——統一數字。是——每人不同。", background: Background.Chapter_28_Ch28_Act2_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "司法保全確認框架條件。患者權利代表完成第二段確認。紗英——有足夠的清醒窗口作決定。", background: Background.Chapter_28_Ch28_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "司法保全確認框架條件。患者權利代表完成決定能力評估——紗英在溝通板上能理解同意範圍、拒絕選項與撤回條件。判定此一清醒窗口具備決定能力。第二段反向確認完成。", background: Background.Chapter_28_Ch28_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:00。紗英。溝通板。兩段普通語言確認。獨立患者權利代表在場。反向確認——完成。", background: Background.Chapter_28_Ch28_Act2_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指。很慢。在溝通板上。一個一個。", background: Background.Chapter_28_Ch28_Act2_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "結果。", background: Background.Chapter_28_Ch28_Act2_S2 },

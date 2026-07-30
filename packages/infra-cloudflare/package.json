@@ -7,9 +7,6 @@
     "lint": "eslint src",
     "test": "vitest run",
     "test:watch": "vitest",
-    "provision": "bun src/provision.ts",
-    "provision:dry": "bun src/provision.ts --dry-run",
-    "create-publisher-token": "bun src/create-publisher-token.ts",
     "seed": "bun src/seed.ts",
     "verify": "bun src/verify.ts"
   },

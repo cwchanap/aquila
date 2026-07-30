@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing
 
-- `bun test` - Run all tests (Turbo runs unit + E2E across workspaces)
+- `bun run test` - Run all tests (Turbo runs unit + E2E across workspaces). Use `bun run test`, not bare `bun test`: `test` is a Bun builtin, so `bun test` launches Bun's own runner instead of the Turbo script and mass-fails on Vitest-only APIs like `vi.hoisted`. Only the bare word is shadowed — `bun test:e2e` and the other `test:*` scripts resolve normally.
 - `bun test:e2e` - Run Playwright E2E tests (via `packages/e2e` workspace)
 - `bun test:headed` - Run E2E tests in headed mode (visible browser)
 - `bun test:debug` - Run E2E tests in debug mode

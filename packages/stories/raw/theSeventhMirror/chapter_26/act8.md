@@ -56,7 +56,7 @@ KAGAMI command room, right console showing official app cancel command status an
 
 **旁白**：螢幕上。軟體覆蓋——UNAVAILABLE。實體緊急操作——需要醫療、患者權利、營運三方。有效份額——NOT AVAILABLE。
 
-**朝倉澪** [exhausted]：（內心）manual override。軟體——不適用。人類未解決時——fail closed。實體 break-glass——需要三把份額。醫療。患者權利。營運。三把。可是——醫療拒絕了。患者權利拒絕了。valid shares——不適用。所以——沒有 override。continuity custodian 不能遠端按下「忽略患者」。一名高官不能以 science 或 operations token 替代患者權利。如果 Chapter 27 有人要 bypass——只能是可見的、可記錄的破壞性物理行動。不是隱藏的按鈕。不是普通的遠端後門。
+**朝倉澪** [exhausted]：（內心）manual override。軟體——不適用。人類未解決時——fail closed。實體 break-glass——需要三把份額。醫療。患者權利。營運。三把。可是——醫療拒絕了。患者權利拒絕了。valid shares——不適用。所以——沒有 override。continuity custodian 不能遠端按下「忽略患者」。一名高官不能以 science 或 operations token 替代患者權利。如果接下來有人要 bypass——只能是可見的、可記錄的破壞性物理行動。不是隱藏的按鈕。不是普通的遠端後門。
 
 **旁白**：05:42。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。像在讀一份他已經讀過很多次的文件。
 

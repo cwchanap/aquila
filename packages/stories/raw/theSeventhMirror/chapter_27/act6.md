@@ -10,7 +10,7 @@ KAGAMI command room, center console displaying witness fragment release verifica
 
 **朝倉澪** [exhausted]：（內心）fragment release。05:49 之前就完成了。來源驗證。同意審查。遮蔽。完整性 hash。serializer hash。加密區域預置。全部——做好了。只差——final go。最後一步。系統在等。等——澪。
 
-**旁白**：螢幕右側。一個側欄。預先寫好的統一前言。Chapter 26 就準備好的。一份說明文字。告訴公眾——這些 fragments 是什麼。為什麼現在出現。應該怎麼理解。
+**旁白**：螢幕右側。一個側欄。預先寫好的統一前言。今夜稍早已準備好的。一份說明文字。告訴公眾——這些 fragments 是什麼。為什麼現在出現。應該怎麼理解。
 
 **旁白**：螢幕底部。一行字。
 

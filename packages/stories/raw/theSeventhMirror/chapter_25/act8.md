@@ -90,7 +90,7 @@ continuity monitoring room, left screen showing package preposition status split
 
 **旁白**：PACKAGE PREPOSITION。CONTINUITY-CONTROLLED CLUSTERS——STARTED。NORMAL OPERATIONS CLUSTERS——HELD。DENIED。LEGACY／UNKNOWN CLUSTERS——PENDING。
 
-**旁白**：KAGAMI WARMUP——QUEUED。AUTO-PREP——MON 05:50。EXECUTION COMMIT——NOT YET。PUBLIC FANOUT——NOT SENT。SUBJECT CONTINUITY BAY——CLINICAL LATCH HOLD（受試者實體留置區，臨床鎖仍扣住，未解除）。
+**旁白**：KAGAMI WARMUP——QUEUED。AUTO-PREP——MON 05:50。EXECUTION COMMIT——NOT YET。PUBLIC FANOUT——NOT SENT。SUBJECT CONTINUITY BAY——CLINICAL LATCH HOLD（受試者連續性艙仍封緘，臨床鎖扣住，未解除）。
 
 **朝倉澪** [exhausted]：（內心）不是全部。continuity 直接控制的少數路徑——開始了。正常營運節點——還在拒絕。HOLD 和 Manifest 在擋。舊式節點——不知道。KAGAMI 預熱——還在排隊。05:50 auto-prep——還沒到。execution commit——還沒有。public fanout——沒有送。不是啟動。是——局部預置。一條足以威脅鏡島的 continuity 路徑——開始工作了。可是——不是全國。不是所有節點。六個撤回有作用。SHARE-O 凍結有作用。Manifest 有作用。可是——不夠。
 

@@ -9,7 +9,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。continuity 監看室。不是昨晚的封緘稽核室。是一間更窄的房間。三面牆掛著螢幕。左邊是區域 HSM 狀態。中間是鏡島安全連線。右邊是法院緊急視訊。桌上只有筆電和封好的文件。", background: Background.Chapter_25_Ch25_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在角落。她的第四杯咖啡涼了。她沒有喝。日下部在她對面。獨立系統安全人員站在螢幕前。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。", background: Background.Chapter_25_Ch25_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）18:10。距 23:50。五小時四十分。距星期一 06:13。約十二小時三分。還在倒數。身體很重。眼皮很重。可是——不能停。", background: Background.Chapter_25_Ch25_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:15。獨立系統安全人員切換螢幕。預先遮蔽的證據包——從 Chapter 21 起逐步分類、身分遮蔽、法律審查、技術密鑰刪除——現在進入多點託管。", background: Background.Chapter_25_Ch25_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:15。獨立系統安全人員切換螢幕。預先遮蔽的證據包——從星期三起逐步分類、身分遮蔽、法律審查、技術密鑰刪除——現在進入多點託管。", background: Background.Chapter_25_Ch25_Act7_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "證據庫分別由法院律師、外部醫療聯盟、公共營運合規、第七曙光家屬代理、多家媒體安全編輯室及獨立時間戳服務保存。沒有單一人可單獨修改、單獨刪除或單獨發布未遮蔽內容。", background: Background.Chapter_25_Ch25_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）多點託管。不是放在一個地方。不是一個人拿著。六個方向。每一份都是遮蔽過的。每一份都綁著 hash。改任何一個——其他五份會發現。", background: Background.Chapter_25_Ch25_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:30。螢幕切換到 S7。國家級離線 continuity vault。最後一個仍有效的 science escrow mirror。", background: Background.Chapter_25_Ch25_Act7_S0 },

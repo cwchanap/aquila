@@ -52,7 +52,7 @@ KAGAMI commit-gate verification room, center panel now showing CONTINUITY ROUTE 
 
 **旁白**：S7 AUTH EPOCH——A18。未來發布——DISABLED。新科學代幣——UNAVAILABLE。正式重新綁定——DENIED。
 
-**朝倉澪** [exhausted]：（內心）A18。23:50 的撤回生效了。在 N+1。S7 不會再產生第二份 science token。未來的 release 被關掉了。capsule handle 被銷毀了。沒有新的 science token。沒有——rebind 需要的那把鑰匙。Chapter 25 的撤回——在這裡付了第一筆。制度不能在知道 S43 真實患者狀態後，重新簽出一份新 bundle。不是我們擋的。是——S7 自己被撤回了。是——六個 mirror 的 release handle 被銷毀了。是——A18 之後，不存在第二個合法 science-domain release path。
+**朝倉澪** [exhausted]：（內心）A18。23:50 的撤回生效了。S7 不會再產生第二份 science token。未來的 release 被關掉了。capsule handle 被銷毀了。沒有新的 science token。沒有——rebind 需要的那把鑰匙。先前那場撤回——在這裡付了第一筆。制度不能在知道 S43 真實患者狀態後，重新簽出一份新 bundle。不是我們擋的。是——S7 自己被撤回了。是——六個 mirror 的 release handle 被銷毀了。是——A18 之後，不存在第二個合法 science-domain release path。
 
 **旁白**：04:38。千田的聲音從喇叭傳出來。很輕。像在讀一份他已經讀過很多次的文件。
 

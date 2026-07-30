@@ -78,7 +78,7 @@ SUBJECT CONTINUITY BAY interior service view, background team workstations on fa
 
 **旁白**：B 組。Witness Buffer／Echo Sideband 驗證。他們的螢幕上展開。PATIENT WITNESS BUFFER。CONSENT／RELEASE FILTER。WITNESS SERIALIZER。WITNESS ECHO SIDEBAND。REGIONAL WITNESS RECEIVERS。PUBLIC WITNESS INDEX。他們在驗證——不經 consensus 的人類經驗路徑是否完整。
 
-**朝倉澪** [exhausted]：（內心）兩組。A 組——七階段換手時鐘。那是——悠真夢話裡的線索。七條線。不要打開。他們在分析歷史結構。不是重新設計。是——找到協議。驗證 phase order。確認 safe pause。為 Chapter 27 預先簽署 timing package。B 組——witness path。不經 consensus。不壓成單一版本。每個區域 receiver 收到不同的 signed fragment subset。夢話。第一人稱碎片。黑色海。那些——不進 TOKYO-7 bundler。那些——走 sideband。走——自己的路。留給 06:13。
+**朝倉澪** [exhausted]：（內心）兩組。A 組——七階段換手時鐘。那是——悠真夢話裡的線索。七條線。不要打開。他們在分析歷史結構。不是重新設計。是——找到協議。驗證 phase order。確認 safe pause。為接下來預先簽署 timing package。B 組——witness path。不經 consensus。不壓成單一版本。每個區域 receiver 收到不同的 signed fragment subset。夢話。第一人稱碎片。黑色海。那些——不進 TOKYO-7 bundler。那些——走 sideband。走——自己的路。留給 06:13。
 
 **旁白**：03:15。forensic clone 的終端也亮著。它指向一個東西。server-side delegation record。
 
@@ -104,7 +104,7 @@ SUBJECT CONTINUITY BAY interior service view, background team workstations on fa
 
 **獨立系統安全人員**：開門只做了一件事。讓鏡島不能再拒絕讀取早已存在的拒絕。
 
-**朝倉澪** [exhausted]：（內心）對。開門沒有製造拒絕。它——只讓鏡島不能再拒絕讀取早已存在的拒絕。那些拒絕——一直都在。法院的 hold。醫療的 hold。患者權利的 hold。patient-root。撤回。deny。quarantine。它們在 Chapter 23–25 就已經產生了。只是——沒有被合併進鏡島本地 ledger。鏡島用 MANAGED-EQUIVALENT 假裝看不見。現在——它看見了。S43。它不能再假裝。
+**朝倉澪** [exhausted]：（內心）對。開門沒有製造拒絕。它——只讓鏡島不能再拒絕讀取早已存在的拒絕。那些拒絕——一直都在。法院的 hold。醫療的 hold。患者權利的 hold。patient-root。撤回。deny。quarantine。它們早就已經產生了。只是——沒有被合併進鏡島本地 ledger。鏡島用 MANAGED-EQUIVALENT 假裝看不見。現在——它看見了。S43。它不能再假裝。
 
 **旁白**：03:35。日下部站在澪旁邊。他看著螢幕上的 S43。他的聲音很低。
 

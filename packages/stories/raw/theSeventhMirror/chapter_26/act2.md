@@ -26,7 +26,7 @@ KAGAMI BCP service monitor room, wall-mounted status screens showing SUBJECT LED
 
 **旁白**：螢幕右側。法院安全連線。加密通道指示燈亮著。綠色。
 
-**日下部悟**：法院在 Chapter 24–25 核准的是條件式患者安全開示。只有指定 bundle 已進入本地預置、distributed hold 未被 continuity 接受時——才可打開包含患者私密狀態的本地 Bay。23:50 以後——技術 mount 條件成立。緊急司法必要性成立。現在——才能合法讀取。
+**日下部悟**：法院先前核准的是條件式患者安全開示。只有指定 bundle 已進入本地預置、distributed hold 未被 continuity 接受時——才可打開包含患者私密狀態的本地 Bay。23:50 以後——技術 mount 條件成立。緊急司法必要性成立。現在——才能合法讀取。
 
 **朝倉澪** [exhausted]：（內心）條件式。不是隨時可以開。是——只有當 continuity 自己把 bundle 推進來、把 lease 載入、把 preposition 啟動之後——我們才有技術條件和法律條件去讀取它本來應該讀取的東西。它自己把門推開了。然後——我們才能走進去。不是我們破門。是——它開了門，我們進去看見裡面有誰。
 

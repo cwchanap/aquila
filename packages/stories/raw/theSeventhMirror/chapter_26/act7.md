@@ -76,7 +76,7 @@ subject continuity bay controlled identity room, screen now displaying CLINICAL 
 
 **旁白**：SUBJECT EQUIVALENCE CERT——DENIED。OLD LEASE APPLICABILITY——NOT RESTORED。
 
-**朝倉澪** [exhausted]：（內心）Route B 也失敗了。equivalence certificate 被拒絕。舊租約的適用性——沒有恢復。不是因為我們擋的。是因為——每一個 unresolved case 都說了不。琴音說了不。真理說了不。外部醫師說了不。患者權利代表說了不。M-00 說了不。G07／08 說了不。LEGACY／02 說了不。其他四個——也說了不。沒有一個人說——我跟以前一樣安全。沒有一個人同意——S43 等於 S42。所以——certificate 失敗。舊租約——不能沿用。Chapter 25 撤回工作的第二項實質支付——在這裡。即使 continuity 不重簽 bundle，也無法再把 S43 宣稱成 S42 的安全等價版本。
+**朝倉澪** [exhausted]：（內心）Route B 也失敗了。equivalence certificate 被拒絕。舊租約的適用性——沒有恢復。不是因為我們擋的。是因為——每一個 unresolved case 都說了不。琴音說了不。真理說了不。外部醫師說了不。患者權利代表說了不。M-00 說了不。G07／08 說了不。LEGACY／02 說了不。其他四個——也說了不。沒有一個人說——我跟以前一樣安全。沒有一個人同意——S43 等於 S42。所以——certificate 失敗。舊租約——不能沿用。先前撤回工作的第二項實質支付——在這裡。即使 continuity 不重簽 bundle，也無法再把 S43 宣稱成 S42 的安全等價版本。
 
 **旁白**：05:10。房間裡沒有人說話。攝影機的紅燈還亮著。空調的聲音填進來。
 

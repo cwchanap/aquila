@@ -9,7 +9,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:11:30。急性窗口 settle 完成。螢幕中間的畫面變了。不是 patient node。是——witness fragment release 的最後核對。", background: Background.Chapter_27_Ch27_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "SOURCE STILL VALID?——YES。CONSENT STILL VALID?——YES。PATIENT／PROXY WITHDRAWAL?——NONE。MEDICAL RISK CHANGED?——NO。PUBLIC TIER UNCHANGED?——YES。", background: Background.Chapter_27_Ch27_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）fragment release。05:49 之前就完成了。來源驗證。同意審查。遮蔽。完整性 hash。serializer hash。加密區域預置。全部——做好了。只差——final go。最後一步。系統在等。等——澪。", background: Background.Chapter_27_Ch27_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕右側。一個側欄。預先寫好的統一前言。Chapter 26 就準備好的。一份說明文字。告訴公眾——這些 fragments 是什麼。為什麼現在出現。應該怎麼理解。", background: Background.Chapter_27_Ch27_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕右側。一個側欄。預先寫好的統一前言。今夜稍早已準備好的。一份說明文字。告訴公眾——這些 fragments 是什麼。為什麼現在出現。應該怎麼理解。", background: Background.Chapter_27_Ch27_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕底部。一行字。", background: Background.Chapter_27_Ch27_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "UNIFIED PREFACE——AWAITING FINAL GO。", background: Background.Chapter_27_Ch27_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）統一前言。預先寫好的。一份。一份——給所有人的。告訴他們——這些 fragments 是什麼。應該怎麼理解。應該——怎麼排列。怎麼排序。怎麼——排成一個答案。", background: Background.Chapter_27_Ch27_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },

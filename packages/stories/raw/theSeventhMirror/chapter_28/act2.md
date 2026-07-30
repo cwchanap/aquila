@@ -52,7 +52,7 @@ KAGAMI command room, small secure video panel showing M-00 patient room with Sae
 
 **旁白**：06:40。螢幕上。M-00 的病房。視訊。紗英——在床上。臨床設備——仍在運作。床邊——一塊低負荷溝通板。
 
-**朝倉澪** [exhausted]：（內心）媽媽。public role 停了。consensus role 停了。可是——clinical transition support 還在。五名 downstream patients——還接在她身上。她——還是 source endpoint。
+**朝倉澪** [exhausted]：（內心）——還在。clinical transition support。五名 downstream。她——還被需要著。
 
 **旁白**：外部醫師透過視訊。向紗英說明。語言——普通。不帶技術詞彙。
 

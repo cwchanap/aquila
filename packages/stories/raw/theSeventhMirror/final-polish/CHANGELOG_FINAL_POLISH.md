@@ -33,6 +33,10 @@
 | 2026-07-27 | Phase 4 | Built 7 Canonical Bibles (timeline 409L, knowledge-matrix 241L, evidence-ledger 231L, system-rules 356L, clue-map 844L, terminology 246L, open-mysteries 636L) | canon/01–07 | N (extraction only) | N |
 | 2026-07-27 | Phase 4 | Purged unplanted Kotone "這次至少不是左手" tell from characters.md:159, HLP §12, and Bibles 3/5/7 (contradicts §7.2; unplanted in prose) | chars, docs, canon 3/5/7 | Y | N |
 | 2026-07-27 | Gate 4 | Bible cross-check: initial FAIL (Kotone tell in 3 bibles) → fixed → PASS. 6 DEFER items logged for Phase 5 prose verification | canon/ | N | N |
+| 2026-07-29 | Phase 5 A–G | 28-chapter prose polish, ~50 surgical edits. Key: ch12 shell-possession P1, ch14 TOKYO-7 leak P1, ch19 trait-misassign P1, ch20 alien-intent P2, ch28 千田 loop-memory P1. Systemic meta-ref cleanup (~80 instances). All gates A–G PASS | ch1–28 | N | N |
+| 2026-07-29 | Phase 6 | 6 cross-cutting audits: Audit 1 (timeline) PASS, Audit 2 (fairness) PASS (1 false positive — Subject Bay IS in ch25:93), Audit 3 (knowledge) PASS, Audit 4 (legal) PASS, Audit 5 (medical) PASS, Audit 6 (technical) PASS | (all) | N | N |
+| 2026-07-29 | Phase 10 | Keyword scan: 0 banned terms in prose. 這一輪/上一輪 only from 澪/narrator (0 from Kotone). Patient count regression verified | (all) | N | N |
+| 2026-07-29 | Phase 11 | **FINAL LOCK DECLARED.** review/03_final_lock_manifest.md created. PROSE-DRAFT READY | (all) | N | N |
 
 <!--
 Entry template:

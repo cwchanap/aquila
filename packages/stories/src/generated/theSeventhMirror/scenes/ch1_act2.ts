@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪當時罵他亂講話，把鏡子扔回他桌上。悠真沒生氣，反而笑得很得意，像真的送了什麼不得了的禮物——那種早就算準了的笑。", background: Background.Chapter_1_Ch1_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他賭對了。澪後來還是把鏡子拿走了。", background: Background.Chapter_1_Ch1_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "現在那面鏡子放在澪自己的桌上。", background: Background.Chapter_1_Ch1_Act2_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "鏡面有一點刮痕，背面也有幾道——不像磨的，像用什麼尖物一筆一筆劃上去的，歪歪斜斜的，她沒仔細看過到底是什麼。五十圓的東西，放口袋放包包，弄成這樣很正常。", background: Background.Chapter_1_Ch1_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "鏡面有一點刮痕，背面也有幾道細痕，像被鑰匙或零錢磨到的樣子——五十圓的東西，放口袋放包包，弄成這樣很正常。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）便宜東西就是這樣。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起鏡子，翻到背面，又翻回正面。鏡面映出她自己的臉——眼下青黑，嘴唇乾，頭髮沒梳。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯看看自己。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },

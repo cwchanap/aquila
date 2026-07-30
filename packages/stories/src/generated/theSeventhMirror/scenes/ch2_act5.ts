@@ -36,7 +36,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的右手還撐著他。她的左手還握著那塊銀色外殼——她沒有放開，不是因為她想握著，是因為他剛才那一攥把她的手指都攥僵了，她在恐慌裡根本沒想到要鬆手。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)急救。先急救。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她做了一件查核員在混亂裡會做的事——她開始照順序動。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她先把千田的外套拉開一點，想找到出血的位置。外套內側被血浸得又濕又熱，她撥開布料的時候，指尖碰到一角白色的東西——一小片膠布，邊緣已經翹起來，黏性失效了，下面壓著一塊摺起來的布。臨時止血用的。撐了二十分鐘，現在已經撐不住了。", background: Background.Chapter_2_Ch2_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她先把千田的外套拉開一點，想找到出血的位置。外套內側被血浸得又濕又熱，她撥開布料的時候，指尖碰到一角白色的東西——一小片膠布，邊緣已經翹起來，黏性失效了，下面壓著一塊摺起來的布，布已經被浸透了。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他上車前就受傷了。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這個結論閃過腦海，但她沒有時間停下來想。血還在往外湧。她用手掌壓上去，壓在那塊布的位置，壓住他肋下側邊。她的右手按在傷口上，掌心很快被溫熱的液體浸透。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她抬頭，找緊急通話鈕。它在車門旁邊的牆板上，一個紅色的按鈕，塑膠蓋罩著。她夠不到——她不能鬆開壓傷口的手。她用右手繼續壓，身體往按鈕的方向夠，左手——", background: Background.Chapter_2_Ch2_Act5_S0 },

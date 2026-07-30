@@ -66,7 +66,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他看見了。", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不知道他看見了什麼。她甚至不確定自己剛才那個動作有沒有暴露什麼。但她的手指還在往掌心蜷，背帶還被她的肘壓著。她花了兩秒才讓自己鬆開。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部翻了一頁資料。", background: Background.Chapter_3_Ch3_Act4_S0 },
-    { characterId: CharacterId.KusakubeSatoru, character: "日下部", dialogue: "車上發生了什麼。從你進車廂開始。", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
+    { characterId: CharacterId.KusakubeSatoru, character: "日下部", dialogue: "車上發生了什麼。從妳進車廂開始。", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有問那件東西是什麼。那個問題月台上的警員已經問過一次，被程序擱置了——先處理車內的金屬外殼、血衣、監視器畫面。一件還沒被列為證物的私人物，在這間房間裡還輪不到被單獨抽出來。日下部直接往下走了。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他沒有收。", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不確定這是程序——一件塑膠小鏡子，沒沾血，沒出現在中央流畫面裡，沒被任何人指認和案件有關，還沒有理由被收走——還是別的什麼。她剛才護住背包的那一秒，他看見了。他什麼都沒問。她不知道他是照程序跳過了，還是看見了之後選擇不碰。", background: Background.Chapter_3_Ch3_Act4_S0 },

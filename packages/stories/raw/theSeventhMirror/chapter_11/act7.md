@@ -56,11 +56,11 @@ small community center meeting room, lights partially dimmed, old projector and 
 
 **旁白**：音箱裡傳出一個少年的聲音。不是清晰的語句。是夢裡的聲音。含混。被床單摩擦和電器底噪蓋住一半。
 
-**夢話**：線⋯⋯不是路⋯⋯
+**夢話聲音**：線⋯⋯不是路⋯⋯
 
-**夢話**：海沒有上面⋯⋯
+**夢話聲音**：海沒有上面⋯⋯
 
-**夢話**：六點⋯⋯還沒到⋯⋯
+**夢話聲音**：六點⋯⋯還沒到⋯⋯
 
 **旁白**：很短。不到一分鐘。然後是沉默。音箱的底噪填著房間。
 
@@ -96,9 +96,9 @@ small community center meeting room, lights partially dimmed, old projector and 
 
 **旁白**：一個女孩的聲音。比剛才那個少年更輕。更遠。像隔著一層什麼在說話。
 
-**夢話**：不要讓海翻過來⋯⋯
+**夢話聲音**：不要讓海翻過來⋯⋯
 
-**夢話**：那邊有人醒著⋯⋯
+**夢話聲音**：那邊有人醒著⋯⋯
 
 **旁白**：藤川真理的呼吸變了。
 
@@ -110,9 +110,9 @@ small community center meeting room, lights partially dimmed, old projector and 
 
 **旁白**：第二遍。每個人又拿起筆。
 
-**夢話**：不要讓海翻過來⋯⋯
+**夢話聲音**：不要讓海翻過來⋯⋯
 
-**夢話**：那邊有人醒著⋯⋯
+**夢話聲音**：那邊有人醒著⋯⋯
 
 **旁白**：藤川真理在紙上寫得很快。寫完抬頭。她想說話。
 
@@ -148,9 +148,9 @@ small community center meeting room, lights partially dimmed, old projector and 
 
 **旁白**：然後聲音來了。
 
-**夢話**：なのかめ⋯⋯
+**夢話聲音**：なのかめ⋯⋯
 
-**夢話**：うみのむこう⋯⋯ひかる⋯⋯
+**夢話聲音**：うみのむこう⋯⋯ひかる⋯⋯
 
 **旁白**：很輕。像從水底浮上來的氣泡。每一個音節都不完整。
 
@@ -160,7 +160,7 @@ small community center meeting room, lights partially dimmed, old projector and 
 
 **旁白**：然後——
 
-**夢話**：とう⋯⋯きょう⋯⋯ひらく⋯⋯
+**夢話聲音**：とう⋯⋯きょう⋯⋯ひらく⋯⋯
 
 **旁白**：澪的筆停了。
 
@@ -200,11 +200,11 @@ small community center meeting room, lights partially dimmed, old projector and 
 
 **旁白**：佐伯按了第二遍。
 
-**夢話**：なのかめ⋯⋯
+**夢話聲音**：なのかめ⋯⋯
 
-**夢話**：うみのむこう⋯⋯ひかる⋯⋯
+**夢話聲音**：うみのむこう⋯⋯ひかる⋯⋯
 
-**夢話**：とう⋯⋯きょう⋯⋯ひらく⋯⋯
+**夢話聲音**：とう⋯⋯きょう⋯⋯ひらく⋯⋯
 
 **旁白**：每個人又拿起筆。澪也拿起來。她的手指有點不穩。
 

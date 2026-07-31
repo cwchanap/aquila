@@ -3,14 +3,20 @@
 Runbook for `assets.aquila.cwchanap.dev` — the Cloudflare R2 delivery host that
 serves visual-novel runtime assets to the web reader.
 
-> **Status: provisioned, but NOT proven end to end.** As of 2026-07-31 both
-> buckets exist, the custom domain is connected and answering, CORS is applied,
-> and both cache rules match. **No release has ever been published**, so every
-> assertion that depends on a real `200` response — cache-control headers,
-> content types, image decode, pointer activation — is still unverified. Read
-> [§8 What has not been verified](#8-what-has-not-been-verified) before you trust
-> any claim in here. The verifier's current, expected output is an HTTP 404 on
-> the pointer.
+> **Status: provisioned and proven end to end, with one known defect.** As of
+> 2026-07-31 both buckets exist, the custom domain is connected, CORS is applied,
+> both cache rules match, and the `smoke` release of `the_seventh_mirror` is
+> published. `verify` passes 15/15 and the live e2e passes 2/2 — cache-control
+> headers, content types, and real-browser image decode are all confirmed against
+> live `200` responses.
+>
+> **The known defect:** the pointer's 60-second Edge TTL is not in effect —
+> measured `age: 239` and still `HIT`, never expiring. Nothing breaks today, but
+> the **second** release published to any target may not propagate. See
+> [§5 Pointer-activation timing](#pointer-activation-timing--measured-and-it-contradicts-the-design).
+> Resolve it before HPA-230's publisher goes live.
+>
+> [§8](#8-what-has-not-been-verified) lists what remains unproven.
 
 **Global rule — never delete.** Nothing in this runbook deletes a bucket,
 object, cache rule, DNS record, or custom domain. Every removal is a manual,
@@ -562,6 +568,10 @@ otherwise look like a cache problem.
 | `MISS` | first request per colo, or after eviction | same | expected every ~60 s |
 | `EXPIRED` | should not occur (1-year TTL) | should not occur | normal — the 60 s TTL lapsed and the edge revalidated |
 | `REVALIDATED` | rare | rare | normal, and the cheap outcome: strong ETag matched, 304 from origin |
+
+> The pointer column above describes the **intended** behaviour. As measured on
+> 2026-07-31 it does not hold — the pointer stays `HIT` with `age` past 239 s and
+> never expires. See [Pointer-activation timing](#pointer-activation-timing--measured-and-it-contradicts-the-design).
 | `DYNAMIC` | **rule not matching** | **rule not matching** | **rule not matching** |
 | `BYPASS` | something forced a bypass — check for a `Set-Cookie` or an `Authorization` request header | same | same |
 | *(header absent)* | Hotlink Protection, not CORS — see [§6](#6-troubleshooting) | same | same |
@@ -577,28 +587,62 @@ land on different colos and cache fill is asynchronous. This is why `verify.ts`
 retries the HIT probe 4 times with a 1 s delay and reports it as a **warning**,
 never a failure — the binding criteria are the cache *headers*.
 
-### Pointer-activation timing — UNMEASURED
+### Pointer-activation timing — MEASURED, AND IT CONTRADICTS THE DESIGN
 
 The design's one empirical open question: after publishing a new pointer, how
-long until the new `releaseId` is visible at the edge, and what
-`cf-cache-status` sequence appears while it propagates. This is the part of the
-two-layer cache design that documentation alone cannot settle.
+long until the new `releaseId` is visible at the edge. The pointer cache rule
+sets a **60-second** Edge TTL precisely to bound this.
 
-**It has never been measured**, because no release has ever been published. When
-a release exists, take the measurement and record it here:
+**Measured 2026-07-31 — the 60-second bound is not in effect.** 40 samples at
+5-second intervals against the live pointer, sent with
+`Origin: https://aquila.cwchanap.dev`:
+
+```
+07:03:31  age: 4    cf-cache-status: HIT
+07:04:29  age: 62   cf-cache-status: HIT     <- should have expired here
+07:05:30  age: 123  cf-cache-status: HIT
+07:06:30  age: 184  cf-cache-status: HIT
+07:07:26  age: 239  cf-cache-status: HIT
+```
+
+`age` climbs monotonically to 239 s and never resets. `etag` never changes.
+`EXPIRED` and `REVALIDATED` never appear. For comparison, an immutable object
+sampled at the same moment read `age: 252` — the pointer is being cached
+*indistinguishably from a one-year immutable object*.
+
+Reproduce it with:
 
 ```bash
-for i in $(seq 1 12); do
-  curl -sI https://assets.aquila.cwchanap.dev/vn/previews/smoke/stories/the_seventh_mirror/current.json \
-    | grep -iE 'cf-cache-status|etag' | tr '\n' ' '
-  echo " @ $(date +%s)"
+P=https://assets.aquila.cwchanap.dev/vn/previews/smoke/stories/the_seventh_mirror/current.json
+for i in $(seq 1 20); do
+  curl -sI -H 'Origin: https://aquila.cwchanap.dev' "$P" \
+    | tr -d '\r' | grep -iE 'cf-cache-status|age|etag' | tr '\n' ' '
+  echo " @ $(date -u +%H:%M:%S)"
   sleep 10
 done
 ```
 
-Expected, per the design: a new `etag` within roughly 60 s, with `EXPIRED` or
-`MISS` at the transition. If the observed behaviour contradicts that, the cache
-rule is what changes — not this paragraph.
+**Why this matters more than it looks.** Nothing observable is wrong *today* —
+`verify` passes all 15 checks and the live e2e passes, because a first release
+has nothing to supersede. The defect only appears on the **second** publish: a
+newly activated `releaseId` would not reach clients for however long the real
+TTL is. If the pointer inherited the immutable rule's TTL, that is a year, and
+release activation is effectively broken without a manual purge. HPA-230's
+publisher depends entirely on this working.
+
+**Suspected cause, unconfirmed:** the pointer rule's Edge TTL is not the
+configured 60 s — either the value entered in the dashboard differs, or the
+merge of the two immutable rules ([§2.6](#26-create-the-two-cache-rules)) also
+swept `current.json` into the one-year rule. Serve-stale is ruled out: that
+reports `cf-cache-status: STALE`, not `HIT`. Revalidation is ruled out: that
+reports `REVALIDATED` and resets `age`.
+
+**This could not be diagnosed from here.** Reading the deployed ruleset
+(`GET /zones/{id}/rulesets/phases/http_request_cache_settings/entrypoint`)
+needs zone scope; the operator token has R2 scope only and returns
+`10000 Authentication error`. Confirming the cause means opening
+**Caching → Cache Rules** and reading the pointer rule's Edge TTL value
+directly.
 
 ---
 
@@ -738,26 +782,37 @@ Recorded for traceability only — see §2.9 on why it is machine-dependent.
 
 ### Still unproven
 
-`verify` and the live e2e spec have **not** passed end to end, because the
-pointer URL is serving the stale cached 404 described in §2.9 and needs a
-dashboard purge. Everything below is reachable only past that first request:
+Both verifiers now pass end to end, after a zone-wide **Purge Everything**
+cleared the poisoned `Vary: Origin` variant (§2.9).
+
+- `bun --filter @aquila/infra-cloudflare verify` — **15/15 PASS**, including
+  pointer content-type, revalidation directives, CORS, `manifestPath` agreement
+  with the publication layout, manifest and object content-types and immutability,
+  `MISS -> HIT` cache corroboration, source-objects-not-public (404), and
+  `findForbiddenKeys` clean against the real published JSON.
+- `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` —
+  **2 passed (5.6 s)**: a real browser fetching and decoding the seeded release
+  cross-origin via `createImageBitmap`, and page script reading the pointer
+  revalidation directives.
+
+Still unproven:
 
 | Unproven | Where |
 | --- | --- |
-| Pointer JSON parse, `releaseId` extraction, `manifestPath` agreement | `verify.ts` |
-| `cf-cache-status: HIT` corroboration | `verify.ts` |
-| Source-bucket-not-public probe | `verify.ts` |
-| `findForbiddenKeys` against real published JSON | `verify.ts` |
-| Browser image decode via `createImageBitmap` | `r2-delivery.spec.ts` |
-| The CORS-`blocked` failure branch, and CORS enforcement by a real browser | `r2-delivery.spec.ts` |
-| Pointer-activation timing and propagation delay | §5, unmeasured |
+| The CORS-`blocked` failure branch (no origin is actually refused — the policy is `*`) | `r2-delivery.spec.ts` |
+| Smart Tiered Cache state | §2.5, never confirmed |
+
+**One measured result contradicts the design**: the pointer's 60-second Edge TTL
+is not in effect — see [§5](#pointer-activation-timing--measured-and-it-contradicts-the-design).
+This does not affect any check above, because a first release has nothing to
+supersede. It affects the *second* publish.
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
 `bun run test` (5 tasks green — web 1582, game 412, stories 198,
 infra-cloudflare 53; desktop has no test files),
 `bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
-sha256-b632cb09…`), `bun --filter @aquila/infra-cloudflare verify` (1 FAIL, HTTP
-404 on the pointer — a stale cached error, not a missing object).
+sha256-b632cb09…`), `bun --filter @aquila/infra-cloudflare verify` (15 PASS),
+`R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` (2 passed).
 
 **Use `bun run test`, not `bun test`.** `test` is a Bun builtin, so a bare
 `bun test` at the repo root shadows the npm script and runs Bun's own test runner
@@ -765,9 +820,4 @@ over the whole repo — producing `794 pass / 632 fail / 40 errors`, mostly
 `vi.hoisted is not a function`, because these are Vitest suites. That is an
 invocation error, not a broken repo.
 
-**Commands never run successfully:** `R2_LIVE_CHECK=1 bun --filter e2e test:e2e
-tests/r2-delivery.spec.ts` (fails at the pointer fetch with HTTP 404 in ~700 ms;
-the spec's own message names the URL and the prerequisites).
-
-After purging the pointer URL, re-run both verifiers and replace this section
-with what was actually observed.
+**Commands never run successfully:** none remaining.

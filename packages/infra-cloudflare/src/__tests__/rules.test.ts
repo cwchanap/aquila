@@ -15,12 +15,12 @@ describe('buildCacheRules', () => {
         expect(immutable.expression).toBe(
             '(http.host eq "assets.aquila.cwchanap.dev" and (starts_with(http.request.uri.path, "/vn/objects/") or ends_with(http.request.uri.path, "/runtime-manifest.json")))'
         );
-        expect(immutable.action_parameters.cache).toBe(true);
-        expect(immutable.action_parameters.edge_ttl).toEqual({
-            mode: 'override_origin',
-            default: 31536000,
+        expect(immutable.action_parameters).toEqual({
+            cache: true,
+            edge_ttl: { mode: 'override_origin', default: 31536000 },
+            browser_ttl: { mode: 'respect_origin' },
+            respect_strong_etags: true,
         });
-        expect(immutable.action_parameters.respect_strong_etags).toBe(true);
     });
 
     it('parenthesises the or-group so it binds tighter than the host check', () => {
@@ -33,18 +33,23 @@ describe('buildCacheRules', () => {
         );
     });
 
-    it('gives the pointer a short edge ttl but leaves browser ttl to the origin', () => {
+    it('bypasses the edge cache for the pointer rather than giving it a TTL', () => {
+        // Cloudflare's Free plan floors Edge TTL at 2 hours, so the 60 seconds
+        // this design asked for cannot be expressed. Bypass is what actually
+        // delivers the property the short TTL was for: a published release
+        // reaches clients immediately.
         const pointer = buildCacheRules(parsed)[1];
         expect(pointer.expression).toBe(
             '(http.host eq "assets.aquila.cwchanap.dev" and ends_with(http.request.uri.path, "/current.json"))'
         );
-        expect(pointer.action_parameters.edge_ttl).toEqual({
-            mode: 'override_origin',
-            default: 60,
-        });
-        expect(pointer.action_parameters.browser_ttl).toEqual({
-            mode: 'respect_origin',
-        });
+        expect(pointer.action_parameters).toEqual({ cache: false });
+    });
+
+    it('never gives the pointer an edge ttl, whatever the config says', () => {
+        // Guards the regression this replaced: a pointer that is cacheable at
+        // all is a pointer that can serve a superseded release.
+        const pointer = buildCacheRules(parsed)[1];
+        expect(pointer.action_parameters).not.toHaveProperty('edge_ttl');
     });
 
     it('scopes every rule to the delivery hostname', () => {

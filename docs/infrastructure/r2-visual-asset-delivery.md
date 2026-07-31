@@ -10,11 +10,11 @@ serves visual-novel runtime assets to the web reader.
 > headers, content types, and real-browser image decode are all confirmed against
 > live `200` responses.
 >
-> **The known defect:** the pointer's 60-second Edge TTL is not in effect —
-> measured `age: 239` and still `HIT`, never expiring. Nothing breaks today, but
-> the **second** release published to any target may not propagate. See
-> [§5 Pointer-activation timing](#pointer-activation-timing--measured-and-it-contradicts-the-design).
-> Resolve it before HPA-230's publisher goes live.
+> **One design value changed after measurement.** The pointer's 60-second edge
+> TTL proved unrepresentable — Cloudflare's Free plan floors Edge TTL at 2 hours
+> — so the pointer rule now **bypasses** the edge cache instead. Releases
+> activate immediately; the cost is one R2 read per page load of a ~300-byte
+> JSON. See [§5](#pointer-activation-timing--measured-then-redesigned).
 >
 > [§8](#8-what-has-not-been-verified) lists what remains unproven.
 
@@ -39,7 +39,7 @@ placeholders only. R2 publisher keys live in GitHub Actions secrets.
 | Delivery bucket (public via custom domain only) | `aquila-vn-delivery` |
 | Immutable `Cache-Control` | `public, max-age=31536000, immutable` |
 | Pointer `Cache-Control` | `no-cache, max-age=0, must-revalidate` |
-| Pointer edge TTL | 60 s, `override_origin` |
+| Pointer edge caching | **Bypassed** — Free plan floors Edge TTL at 2 h |
 | `respect_strong_etags` | `true` on both rules |
 | Cache Rules budget | Free plan allows 10 per zone; this work uses 2 |
 | Publisher token name | `aquila-vn-publisher` |
@@ -156,11 +156,16 @@ R2 → `aquila-vn-delivery` → Settings → CORS Policy → Edit, and paste exa
 Values from `cors` in `r2-delivery.config.json`. Why a wildcard: every object in
 this bucket is world-readable by design, so an origin allowlist buys no
 confidentiality — and R2 cannot express `https://*.vercel.app`, so an exact
-allowlist would break visual mode on every Vercel preview. A wildcard also
-avoids `Vary: Origin` cache fragmentation. `content-type` is absent from
+allowlist would break visual mode on every Vercel preview. `content-type` is absent from
 `ExposeHeaders` because it is already CORS-safelisted. The three
 `AllowedHeaders` are forward-looking: today's reader issues plain GETs, which are
 CORS-simple and never preflight.
+
+**A wildcard does not avoid `Vary: Origin`.** This was assumed during design and
+is false: R2 returns `Vary: Origin` on cross-origin responses regardless of the
+policy being `*`, so the edge still keeps one cache entry per `Origin` request
+header. The consequence is not performance but purging — see the trap in
+[§2.9](#29-seed-a-release-then-verify). Measured 2026-07-31.
 
 ### 2.5 Enable Smart Tiered Cache
 
@@ -185,8 +190,7 @@ this table and that file ever disagree, the file wins.
 
 **Two rules, not three.** Objects and release manifests are both immutable and
 share one edge TTL, so they merge into a single predicate. The pointer cannot
-join them: a cache rule carries exactly one Edge TTL value, and the pointer's is
-60 seconds rather than a year.
+join them: it is not cached at the edge at all.
 
 In the dashboard, choose **Custom filter expression** and use the expression
 editor's **Edit expression** (text) mode so the strings below can be pasted
@@ -218,10 +222,11 @@ text mode.
 | --- | --- |
 | Rule name | `aquila-vn: active release pointer` |
 | Expression | `(http.host eq "assets.aquila.cwchanap.dev" and ends_with(http.request.uri.path, "/current.json"))` |
-| Cache eligibility | Eligible for cache |
-| Edge TTL | Ignore cache-control header and use this TTL — `60` seconds |
-| Browser TTL | Respect origin |
-| Respect strong ETags | On |
+| Cache eligibility | **Bypass cache** |
+
+That is the whole rule — choosing *Bypass cache* removes the Edge TTL, Browser
+TTL, and ETag fields, because none of them apply to a response that is never
+cached.
 
 Notes:
 
@@ -231,18 +236,27 @@ Notes:
   zone.
 - **"Ignore cache-control header" applies to the edge only.** It does not strip or
   rewrite the header: the origin's `Cache-Control` still reaches the browser
-  untouched, which is why Browser TTL stays on *Respect origin*. That split is the
-  whole design — the edge holds the pointer for 60 s while every browser still
-  revalidates.
+  untouched, which is why Browser TTL stays on *Respect origin*.
 - **Rule order does not matter.** The predicates are mutually exclusive: a
   content-addressed object is `<sha256>.webp` or `<sha256>.avif` and can never
   end in `runtime-manifest.json` or `current.json`.
-- **Why `Override origin` on the pointer.** It bounds *origin* load to one fetch
-  per 60 s. Client freshness stays immediate because the reader fetches the
-  pointer with `cache: 'no-cache'` and the pointer's own response
-  `Cache-Control` carries `no-cache, max-age=0, must-revalidate`. Overriding also
-  neutralizes the documented BYPASS that an origin `max-age=0` response would
-  otherwise trigger.
+- **Why the pointer bypasses the cache instead of taking a short TTL.** The
+  design asked for a 60-second edge TTL. **Cloudflare's Free plan will not accept
+  one** — the minimum selectable Edge TTL is 2 hours, and a pointer that can be
+  two hours stale defeats the indirection it exists for: a published release
+  would not reach clients until the TTL lapsed, independently per PoP.
+
+  Purging on publish is not the escape hatch it looks like. R2 sends
+  `Vary: Origin` on cross-origin responses, so the edge keeps a separate entry
+  per `Origin` request header, and purge-by-URL clears only the no-`Origin`
+  variant — the one no browser ever reads. Clearing the rest needs Purge
+  Everything, which no publisher should call per release.
+
+  The cost of bypassing is one R2 read per page load of a ~300-byte JSON,
+  against a 10M-request/month free tier. `cf-cache-status` on the pointer is
+  therefore `BYPASS`, always. The immutable rule is untouched, so images and
+  manifests still cache for a year — the pointer is the only uncached path, and
+  it is the smallest object served.
 - **Why `Respect origin` on browser TTL.** The browser must see the object's own
   `Cache-Control` — the immutable/pointer distinction is carried by the object
   metadata the publisher sets, and the client contract depends on it.
@@ -506,14 +520,13 @@ that already fit are returned unchanged and stay readable.
 >    `publishedAt`, as canonical JSON plus one LF.
 > 3. Upload with `Content-Type: application/json` and
 >    `Cache-Control: no-cache, max-age=0, must-revalidate`.
-> 4. Purge the single `current.json` URL so the 60s edge TTL does not delay
->    it.
+>
+> No purge step. The pointer bypasses the edge cache entirely
+> ([§2.6](#26-create-the-two-cache-rules)), so a rollback pointer is live the
+> moment it is uploaded.
 
-Purge exactly that one URL (Caching → Configuration → Purge Everything is never
-required, and purging the whole zone throws away a year of immutable objects for
-no reason). Immutable objects and manifests are content-addressed, so a rollback
-never needs to touch them — the old release's objects are still there under their
-digests.
+Immutable objects and manifests are content-addressed, so a rollback never needs
+to touch them — the old release's objects are still there under their digests.
 
 Rolling back does **not** delete the newer release's manifest or objects, and it
 should not. Leaving them costs storage only; deleting them is a separate manual
@@ -554,26 +567,27 @@ warm:
   immutable and content-addressed, so a low hit ratio there means the rules are
   not matching (check the hostname in the expression and that the domain is
   proxied).
-- `current.json` will show a poor hit ratio by design: a 60 s edge TTL on a
-  document clients re-check on every navigation.
+- `current.json` will show a **zero** hit ratio by design: the pointer rule
+  bypasses the cache, so every request reaches R2.
 
-Read the hit ratio per path class, not zone-wide — the pointer's misses would
+Read the hit ratio per path class, not zone-wide — the pointer's bypasses would
 otherwise look like a cache problem.
 
 ### `cf-cache-status` by path class
 
 | Value | `/vn/objects/*` | `*/runtime-manifest.json` | `*/current.json` |
 | --- | --- | --- | --- |
-| `HIT` | expected steady state | expected steady state | expected within a 60 s window |
-| `MISS` | first request per colo, or after eviction | same | expected every ~60 s |
-| `EXPIRED` | should not occur (1-year TTL) | should not occur | normal — the 60 s TTL lapsed and the edge revalidated |
-| `REVALIDATED` | rare | rare | normal, and the cheap outcome: strong ETag matched, 304 from origin |
+| `BYPASS` | something forced a bypass — check for a `Set-Cookie` or an `Authorization` request header | same | **the only correct value** — the pointer rule bypasses the cache |
+| `HIT` | expected steady state | expected steady state | **wrong** — the pointer is being cached, so a published release can go unseen |
+| `MISS` | first request per colo, or after eviction | same | **wrong** — implies the pointer is cache-eligible |
+| `EXPIRED` | should not occur (1-year TTL) | should not occur | **wrong**, same reason |
+| `REVALIDATED` | rare | rare | **wrong**, same reason |
 
-> The pointer column above describes the **intended** behaviour. As measured on
-> 2026-07-31 it does not hold — the pointer stays `HIT` with `age` past 239 s and
-> never expires. See [Pointer-activation timing](#pointer-activation-timing--measured-and-it-contradicts-the-design).
+> **The pointer column is a live assertion, not trivia.** Anything other than
+> `BYPASS` on `current.json` means the rule was changed back to a cacheable
+> action, and releases have silently stopped propagating. Check it after any
+> edit to the cache rules.
 | `DYNAMIC` | **rule not matching** | **rule not matching** | **rule not matching** |
-| `BYPASS` | something forced a bypass — check for a `Set-Cookie` or an `Authorization` request header | same | same |
 | *(header absent)* | Hotlink Protection, not CORS — see [§6](#6-troubleshooting) | same | same |
 
 `DYNAMIC` on any of the three paths means no Cache Rule matched: Cloudflare
@@ -587,15 +601,15 @@ land on different colos and cache fill is asynchronous. This is why `verify.ts`
 retries the HIT probe 4 times with a 1 s delay and reports it as a **warning**,
 never a failure — the binding criteria are the cache *headers*.
 
-### Pointer-activation timing — MEASURED, AND IT CONTRADICTS THE DESIGN
+### Pointer-activation timing — MEASURED, THEN REDESIGNED
 
 The design's one empirical open question: after publishing a new pointer, how
-long until the new `releaseId` is visible at the edge. The pointer cache rule
-sets a **60-second** Edge TTL precisely to bound this.
+long until the new `releaseId` is visible at the edge. The design bounded this
+with a **60-second** Edge TTL. Measuring it showed that bound was never in
+force, and could not be.
 
-**Measured 2026-07-31 — the 60-second bound is not in effect.** 40 samples at
-5-second intervals against the live pointer, sent with
-`Origin: https://aquila.cwchanap.dev`:
+**Measured 2026-07-31.** 40 samples at 5-second intervals against the live
+pointer, sent with `Origin: https://aquila.cwchanap.dev`:
 
 ```
 07:03:31  age: 4    cf-cache-status: HIT
@@ -622,27 +636,30 @@ for i in $(seq 1 20); do
 done
 ```
 
-**Why this matters more than it looks.** Nothing observable is wrong *today* —
-`verify` passes all 15 checks and the live e2e passes, because a first release
-has nothing to supersede. The defect only appears on the **second** publish: a
-newly activated `releaseId` would not reach clients for however long the real
-TTL is. If the pointer inherited the immutable rule's TTL, that is a year, and
-release activation is effectively broken without a manual purge. HPA-230's
-publisher depends entirely on this working.
+**Cause: a plan floor, not a misconfiguration.** The rule's Edge TTL was set to
+the lowest value the dashboard offers — **120 minutes**. Cloudflare's Free plan
+will not accept anything shorter. The 60 seconds this design specified was never
+representable on this zone, and no amount of correcting the rule would have made
+it so.
 
-**Suspected cause, unconfirmed:** the pointer rule's Edge TTL is not the
-configured 60 s — either the value entered in the dashboard differs, or the
-merge of the two immutable rules ([§2.6](#26-create-the-two-cache-rules)) also
-swept `current.json` into the one-year rule. Serve-stale is ruled out: that
-reports `cf-cache-status: STALE`, not `HIT`. Revalidation is ruled out: that
-reports `REVALIDATED` and resets `age`.
+Serve-stale and revalidation were both ruled out along the way, and the
+reasoning is worth keeping: serve-stale reports `cf-cache-status: STALE`, and
+revalidation reports `REVALIDATED` and resets `age`. Seeing plain `HIT` with
+monotonically climbing `age` means the entry was simply still fresh.
 
-**This could not be diagnosed from here.** Reading the deployed ruleset
-(`GET /zones/{id}/rulesets/phases/http_request_cache_settings/entrypoint`)
-needs zone scope; the operator token has R2 scope only and returns
-`10000 Authentication error`. Confirming the cause means opening
-**Caching → Cache Rules** and reading the pointer rule's Edge TTL value
-directly.
+**Resolution: the pointer bypasses the edge cache.** A two-hour-stale pointer
+defeats the indirection it exists for, and purging per publish does not work
+here (`Vary: Origin`, see [§2.9](#29-seed-a-release-then-verify)). So the rule's
+action changed from *Eligible for cache* to *Bypass cache*, and
+`pointerEdgeTtlSeconds` was removed from `r2-delivery.config.json` — a knob that
+cannot be honoured is worse than no knob. Activation latency is now bounded by
+R2 write visibility rather than by any edge TTL.
+
+**Why this was invisible until measured.** `verify` passes 15/15 and the live
+e2e passes with the pointer cached for two hours, because a first release has
+nothing to supersede. The failure would have first appeared on the **second**
+publish — i.e. the first time HPA-230's publisher ran for real, against a story
+someone was already reading.
 
 ---
 
@@ -802,10 +819,22 @@ Still unproven:
 | The CORS-`blocked` failure branch (no origin is actually refused — the policy is `*`) | `r2-delivery.spec.ts` |
 | Smart Tiered Cache state | §2.5, never confirmed |
 
-**One measured result contradicts the design**: the pointer's 60-second Edge TTL
-is not in effect — see [§5](#pointer-activation-timing--measured-and-it-contradicts-the-design).
-This does not affect any check above, because a first release has nothing to
-supersede. It affects the *second* publish.
+**One design value changed as a result of measurement**: the pointer's 60-second
+Edge TTL was unrepresentable on the Free plan, so the pointer now bypasses the
+edge cache — see [§5](#pointer-activation-timing--measured-then-redesigned).
+None of the checks above detect this either way, because a first release has
+nothing to supersede; it would have surfaced on the *second* publish.
+
+**The bypass change itself is unverified.** `buildCacheRules()` and its tests
+express it, but the deployed rule must be edited by hand in the dashboard, and
+`cf-cache-status: BYPASS` on `current.json` has not yet been observed. Confirm
+with:
+
+```bash
+curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
+  https://assets.aquila.cwchanap.dev/vn/previews/smoke/stories/the_seventh_mirror/current.json \
+  | grep -i cf-cache-status
+```
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
 `bun run test` (5 tasks green — web 1582, game 412, stories 198,

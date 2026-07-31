@@ -19,9 +19,13 @@ const R2DeliveryConfigSchema = z
             exposeHeaders: z.array(z.string().min(1)),
             maxAgeSeconds: z.number().int().positive(),
         }),
+        // The pointer has no edge TTL to configure: it bypasses the edge cache
+        // outright. Cloudflare's Free plan floors Edge TTL at 2 hours, so the
+        // 60 seconds this design originally specified is unrepresentable, and
+        // a two-hour-stale release pointer defeats the indirection it exists
+        // for. See docs/infrastructure/r2-visual-asset-delivery.md §5.
         cache: z.object({
             immutableEdgeTtlSeconds: z.number().int().positive(),
-            pointerEdgeTtlSeconds: z.number().int().positive(),
         }),
         publisherToken: z.object({ name: z.string().min(1) }),
     })
@@ -39,16 +43,6 @@ const R2DeliveryConfigSchema = z
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'source and delivery bucket names must differ',
-            });
-        }
-        if (
-            config.cache.pointerEdgeTtlSeconds >=
-            config.cache.immutableEdgeTtlSeconds
-        ) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message:
-                    'pointerEdgeTtlSeconds must be shorter than immutableEdgeTtlSeconds',
             });
         }
     });

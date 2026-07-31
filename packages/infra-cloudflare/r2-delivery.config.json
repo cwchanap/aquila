@@ -15,8 +15,7 @@
     "maxAgeSeconds": 86400
   },
   "cache": {
-    "immutableEdgeTtlSeconds": 31536000,
-    "pointerEdgeTtlSeconds": 60
+    "immutableEdgeTtlSeconds": 31536000
   },
   "publisherToken": { "name": "aquila-vn-publisher" }
 }

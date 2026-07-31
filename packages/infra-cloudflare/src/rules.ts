@@ -13,7 +13,12 @@ export type CacheRule = {
 };
 
 /**
- * The three predicates are mutually exclusive: a content-addressed object is
+ * Two rules, not three: objects and release manifests are both immutable and
+ * share one edge TTL, so they merge into a single predicate. The pointer cannot
+ * join them — a cache rule carries exactly one edge TTL, and the pointer's is 60
+ * seconds rather than a year.
+ *
+ * The predicates are mutually exclusive: a content-addressed object is
  * `<sha256>.webp` or `<sha256>.avif` and can never end in `runtime-manifest.json`
  * or `current.json`. Rule order is therefore not load-bearing.
  */
@@ -37,13 +42,8 @@ export function buildCacheRules(config: R2DeliveryConfig): CacheRule[] {
 
     return [
         rule(
-            'aquila-vn: immutable objects',
-            'starts_with(http.request.uri.path, "/vn/objects/")',
-            config.cache.immutableEdgeTtlSeconds
-        ),
-        rule(
-            'aquila-vn: immutable release manifests',
-            'ends_with(http.request.uri.path, "/runtime-manifest.json")',
+            'aquila-vn: immutable objects and manifests',
+            '(starts_with(http.request.uri.path, "/vn/objects/") or ends_with(http.request.uri.path, "/runtime-manifest.json"))',
             config.cache.immutableEdgeTtlSeconds
         ),
         rule(

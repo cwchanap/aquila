@@ -3,9 +3,11 @@
 Runbook for `assets.aquila.cwchanap.dev` — the Cloudflare R2 delivery host that
 serves visual-novel runtime assets to the web reader.
 
-> **Status: this pipeline is NOT provisioned end to end.** Both buckets exist;
-> nothing else does. The custom domain is not connected, CORS is unset, the three
-> cache rules do not exist, and no release has been published. Read
+> **Status: provisioned, but NOT proven end to end.** As of 2026-07-31 both
+> buckets exist, the custom domain is connected and answering, CORS is applied,
+> and both cache rules match. **No release has ever been published**, so every
+> assertion that depends on a real `200` response — cache-control headers,
+> content types, image decode, pointer activation — is still unverified. Read
 > [§8 What has not been verified](#8-what-has-not-been-verified) before you trust
 > any claim in here. The verifier's current, expected output is an HTTP 404 on
 > the pointer.
@@ -32,8 +34,8 @@ placeholders only. R2 publisher keys live in GitHub Actions secrets.
 | Immutable `Cache-Control` | `public, max-age=31536000, immutable` |
 | Pointer `Cache-Control` | `no-cache, max-age=0, must-revalidate` |
 | Pointer edge TTL | 60 s, `override_origin` |
-| `respect_strong_etags` | `true` on all three rules |
-| Cache Rules budget | Free plan allows 10 per zone; this work uses 3 |
+| `respect_strong_etags` | `true` on both rules |
+| Cache Rules budget | Free plan allows 10 per zone; this work uses 2 |
 | Publisher token name | `aquila-vn-publisher` |
 
 Source of truth for every value above:
@@ -164,9 +166,9 @@ Cache Rules budget. It is also zone-wide, so it affects every hostname on
 `cwchanap.dev`, not just this one. **Its current state has never been
 observed** — check what it is set to before toggling it.
 
-### 2.6 Create the three cache rules
+### 2.6 Create the two cache rules
 
-Zone `cwchanap.dev` → Caching → Cache Rules → Create rule, three times. Enter
+Zone `cwchanap.dev` → Caching → Cache Rules → Create rule, twice. Enter
 each row exactly as given; the **rule name is a load-bearing identity** —
 `packages/infra-cloudflare/src/rules.ts` emits these exact descriptions, and they
 are how a later reader tells an Aquila rule from anything else in the zone.
@@ -175,46 +177,58 @@ Every field below is derived from `buildCacheRules()` in
 `packages/infra-cloudflare/src/rules.ts` applied to `r2-delivery.config.json`. If
 this table and that file ever disagree, the file wins.
 
+**Two rules, not three.** Objects and release manifests are both immutable and
+share one edge TTL, so they merge into a single predicate. The pointer cannot
+join them: a cache rule carries exactly one Edge TTL value, and the pointer's is
+60 seconds rather than a year.
+
 In the dashboard, choose **Custom filter expression** and use the expression
 editor's **Edit expression** (text) mode so the strings below can be pasted
-verbatim.
+verbatim. **Switch to text mode before typing anything.** If you paste an
+expression into the visual builder's *value* box instead, the dashboard quotes it
+as data — the saved rule comes back as
+`(http.request.full_uri wildcard r#"…"#)`, which compares the URL against your
+expression *as a literal pattern* and therefore matches nothing. The symptom is
+`cf-cache-status: DYNAMIC` on paths that should be cacheable. A correct rule's
+preview starts with `(http.host eq …` and contains no `full_uri`, `wildcard`, or
+`r#`. Some dashboard versions will not convert a builder rule to a raw expression
+after the fact; if editing keeps re-wrapping it, delete the rule and start over in
+text mode.
 
-**Rule 1 of 3**
-
-| Field | Value |
-| --- | --- |
-| Rule name | `aquila-vn: immutable objects` |
-| Expression | `(http.host eq "assets.aquila.cwchanap.dev" and starts_with(http.request.uri.path, "/vn/objects/"))` |
-| Cache eligibility | Eligible for cache |
-| Edge TTL | Override origin — `31536000` seconds |
-| Browser TTL | Respect origin |
-| Respect strong ETags | On |
-
-**Rule 2 of 3**
+**Rule 1 of 2**
 
 | Field | Value |
 | --- | --- |
-| Rule name | `aquila-vn: immutable release manifests` |
-| Expression | `(http.host eq "assets.aquila.cwchanap.dev" and ends_with(http.request.uri.path, "/runtime-manifest.json"))` |
+| Rule name | `aquila-vn: immutable objects and manifests` |
+| Expression | `(http.host eq "assets.aquila.cwchanap.dev" and (starts_with(http.request.uri.path, "/vn/objects/") or ends_with(http.request.uri.path, "/runtime-manifest.json")))` |
 | Cache eligibility | Eligible for cache |
-| Edge TTL | Override origin — `31536000` seconds |
+| Edge TTL | Ignore cache-control header and use this TTL — `31536000` seconds |
 | Browser TTL | Respect origin |
 | Respect strong ETags | On |
 
-**Rule 3 of 3**
+**Rule 2 of 2**
 
 | Field | Value |
 | --- | --- |
 | Rule name | `aquila-vn: active release pointer` |
 | Expression | `(http.host eq "assets.aquila.cwchanap.dev" and ends_with(http.request.uri.path, "/current.json"))` |
 | Cache eligibility | Eligible for cache |
-| Edge TTL | Override origin — `60` seconds |
+| Edge TTL | Ignore cache-control header and use this TTL — `60` seconds |
 | Browser TTL | Respect origin |
 | Respect strong ETags | On |
 
 Notes:
 
-- **Rule order does not matter.** The three predicates are mutually exclusive: a
+- **The inner parentheses in rule 1 are load-bearing.** `and` binds tighter than
+  `or` in Cloudflare's expression language, so without them the manifest branch
+  would match on *every* host, including any other bucket later attached to this
+  zone.
+- **"Ignore cache-control header" applies to the edge only.** It does not strip or
+  rewrite the header: the origin's `Cache-Control` still reaches the browser
+  untouched, which is why Browser TTL stays on *Respect origin*. That split is the
+  whole design — the edge holds the pointer for 60 s while every browser still
+  revalidates.
+- **Rule order does not matter.** The predicates are mutually exclusive: a
   content-addressed object is `<sha256>.webp` or `<sha256>.avif` and can never
   end in `runtime-manifest.json` or `current.json`.
 - **Why `Override origin` on the pointer.** It bounds *origin* load to one fetch
@@ -255,9 +269,18 @@ If HPA-230's publisher turns out to need to read authoring originals from
 scoped to `aquila-vn-source`** — not to widen this one.
 
 Copy the Access Key ID and Secret Access Key **once** — Cloudflare will not show
-the secret again — and store them in GitHub Actions secrets as
+the secret again — and store them in GitHub Actions **secrets** as
 `R2_PUBLISHER_ACCESS_KEY_ID` and `R2_PUBLISHER_SECRET_ACCESS_KEY`. Never in the
 repo, never in `.env`, never in a Vercel `PUBLIC_*` variable.
+
+The account id is stored as a GitHub Actions **variable**, not a secret:
+`R2_PUBLISHER_ACCOUNT_ID`. It is not sensitive — the same value is already
+committed in `packages/infra-cloudflare/r2-delivery.config.json` as `accountId`,
+so classifying it as a secret would only obscure it in logs while changing
+nothing about who can read it. The practical consequence is that a workflow must
+reference it as `${{ vars.R2_PUBLISHER_ACCOUNT_ID }}`; `${{ secrets.… }}` silently
+resolves to an empty string, which surfaces later as an opaque S3 endpoint error
+rather than a missing-variable error.
 
 R2 API token scoping is per-bucket only — it cannot express a key-prefix
 restriction, so this token can write anywhere inside `aquila-vn-delivery`,
@@ -609,16 +632,39 @@ skip), but do not expect `=0` to mean off.
 Everything below is **unproven**. Nothing in this runbook should be read as
 evidence that the pipeline works.
 
-**Confirmed live state, 2026-07-30:**
+**Confirmed live state, 2026-07-31:**
 
 - Buckets `aquila-vn-source` and `aquila-vn-delivery` exist (created
   2026-07-29).
-- `assets.aquila.cwchanap.dev` resolves to Cloudflare IPs but returns
-  **HTTP 404** with `cf-cache-status: DYNAMIC` — the custom domain is **not**
-  connected.
-- CORS is **unset**. The three cache rules **do not exist**. Smart Tiered Cache
-  state unconfirmed. No publisher token minted. No Vercel variables set. **No
-  release has ever been published.**
+- **The custom domain is connected and bound to R2.** Evidence: a CORS preflight
+  (`OPTIONS` with an `Origin` header) returns `204` with
+  `access-control-allow-origin: *`, `access-control-allow-methods: GET, HEAD`,
+  and `access-control-max-age: 86400`. A Cloudflare error page would not answer a
+  preflight, so this also confirms the CORS policy is applied with the configured
+  values.
+- **Both cache rules match.** Probed with `cf-cache-status`:
+
+  | Path | Status | Meaning |
+  | --- | --- | --- |
+  | `/vn/objects/<x>.webp`, `.avif` | `EXPIRED` | rule 1 matched |
+  | `…/releases/…/runtime-manifest.json` | `MISS` | rule 1 matched |
+  | `/vn/stories/…/current.json` | `MISS` | rule 2 matched |
+  | `/vn/previews/…/current.json` | `MISS` | rule 2 matched |
+  | `/vn/stories/x/other.json` | `DYNAMIC` | correctly not matched |
+  | `/not-matched.txt` | `DYNAMIC` | control |
+
+  The fifth row matters: an unrelated `.json` under `/vn/stories/` stays uncached,
+  so the `ends_with` predicates are precise rather than over-broad.
+- Smart Tiered Cache state still unconfirmed — it is in no config file, so nothing
+  detects drift.
+- **No release has ever been published**, so every check below remains unproven.
+
+A caveat on the two rows above that report a cached status: those responses were
+all **404s**, and Cloudflare applies its own short TTL to error responses
+regardless of a rule's Edge TTL. So these probes prove the rules *match and make
+the path cacheable*; they do **not** prove the `31536000` and `60` second TTLs are
+in effect. Only real `200` responses can show that, via `age` and
+`cache-control` — which is what `verify.ts` checks.
 
 **Never executed against a real response** — every one of these is reachable only
 past the first HTTP request, and that request has only ever returned 404:
@@ -655,5 +701,5 @@ invocation error, not a broken repo.
 the pointer fetch with HTTP 404 in ~700 ms; the spec's own message names the URL
 and the prerequisites).
 
-When the infrastructure is provisioned and a release published, re-run all three
+When the infrastructure is provisioned and a release published, re-run both
 verifiers and replace this section with what was actually observed.

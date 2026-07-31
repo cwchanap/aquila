@@ -36,6 +36,20 @@ describe('readAssetSourceConfigFromEnv', () => {
             })
         ).toEqual({});
     });
+
+    it('reads a populated preview id', () => {
+        expect(
+            readAssetSourceConfigFromEnv({
+                PUBLIC_ASSET_BASE_URL: REMOTE,
+                PUBLIC_ASSET_ENVIRONMENT: 'preview',
+                PUBLIC_ASSET_PREVIEW_ID: 'hpa-229',
+            })
+        ).toEqual({
+            baseUrl: REMOTE,
+            environment: 'preview',
+            previewId: 'hpa-229',
+        });
+    });
 });
 
 const STORY = 'the_seventh_mirror';

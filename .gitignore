@@ -41,3 +41,6 @@ coverage/
 # git worktrees
 .worktrees/
 .vercel
+
+# Wrangler local simulation state
+.wrangler/

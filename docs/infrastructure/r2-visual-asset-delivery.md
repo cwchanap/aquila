@@ -577,24 +577,35 @@ otherwise look like a cache problem.
 
 | Value | `/vn/objects/*` | `*/runtime-manifest.json` | `*/current.json` |
 | --- | --- | --- | --- |
-| `BYPASS` | something forced a bypass — check for a `Set-Cookie` or an `Authorization` request header | same | **the only correct value** — the pointer rule bypasses the cache |
+| `DYNAMIC` / `BYPASS` | **rule not matching** | **rule not matching** | **correct** — the pointer is not edge-cached. Observed: `DYNAMIC` |
 | `HIT` | expected steady state | expected steady state | **wrong** — the pointer is being cached, so a published release can go unseen |
 | `MISS` | first request per colo, or after eviction | same | **wrong** — implies the pointer is cache-eligible |
 | `EXPIRED` | should not occur (1-year TTL) | should not occur | **wrong**, same reason |
 | `REVALIDATED` | rare | rare | **wrong**, same reason |
 
-> **The pointer column is a live assertion, not trivia.** Anything other than
-> `BYPASS` on `current.json` means the rule was changed back to a cacheable
-> action, and releases have silently stopped propagating. Check it after any
-> edit to the cache rules.
-| `DYNAMIC` | **rule not matching** | **rule not matching** | **rule not matching** |
+> **The pointer column is a live assertion, not trivia.** `HIT`, `MISS`,
+> `EXPIRED`, or `REVALIDATED` on `current.json` means the rule was changed back
+> to a cacheable action and releases have silently stopped propagating. Check it
+> after any edit to the cache rules.
+>
+> The binding signal is the **absence of caching**, not the exact label. A
+> Bypass-cache rule and no-rule-at-all both report `DYNAMIC` on this zone — they
+> are indistinguishable from outside, so `cf-cache-status` alone cannot tell you
+> the rule still exists. Confirm the rule is present in the dashboard, not by
+> probing.
+
+Measured after the change (2026-07-31): 8 consecutive requests to the pointer,
+sent with `Origin: https://aquila.cwchanap.dev`, all returned
+`cf-cache-status: DYNAMIC` with **no `age` header at all** — the definitive
+evidence, since a cached response always carries `age`. The manifest and objects
+sampled at the same moment read `HIT` with `age: 1921`, confirming the immutable
+rule was not disturbed.
 | *(header absent)* | Hotlink Protection, not CORS — see [§6](#6-troubleshooting) | same | same |
 
-`DYNAMIC` on any of the three paths means no Cache Rule matched: Cloudflare
-treats the response as uncacheable-by-default. That is exactly what an
-unconnected or unproxied hostname produces — an unprovisioned
-`https://assets.aquila.cwchanap.dev/` currently answers HTTP 404 with
-`cf-cache-status: DYNAMIC`.
+`DYNAMIC` on the two **immutable** path classes means no Cache Rule matched:
+Cloudflare treats the response as uncacheable-by-default. That is also what an
+unconnected or unproxied hostname produces. On the pointer, `DYNAMIC` is the
+expected value and not a fault.
 
 `MISS` on a repeat request is not automatically a fault: sequential requests can
 land on different colos and cache fill is asynchronous. This is why `verify.ts`
@@ -825,15 +836,15 @@ edge cache — see [§5](#pointer-activation-timing--measured-then-redesigned).
 None of the checks above detect this either way, because a first release has
 nothing to supersede; it would have surfaced on the *second* publish.
 
-**The bypass change itself is unverified.** `buildCacheRules()` and its tests
-express it, but the deployed rule must be edited by hand in the dashboard, and
-`cf-cache-status: BYPASS` on `current.json` has not yet been observed. Confirm
-with:
+**The bypass change is deployed and confirmed** (2026-07-31): the pointer
+returns `cf-cache-status: DYNAMIC` with no `age` header across 8 consecutive
+requests, while the manifest and objects still return `HIT`. Re-confirm after
+any cache-rule edit with:
 
 ```bash
 curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
   https://assets.aquila.cwchanap.dev/vn/previews/smoke/stories/the_seventh_mirror/current.json \
-  | grep -i cf-cache-status
+  | grep -iE 'cf-cache-status|age'
 ```
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),

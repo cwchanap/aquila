@@ -19,7 +19,6 @@ const valid = {
     },
     cache: {
         immutableEdgeTtlSeconds: 31536000,
-        pointerEdgeTtlSeconds: 60,
     },
     publisherToken: { name: 'aquila-vn-publisher' },
 };
@@ -46,15 +45,15 @@ describe('parseR2DeliveryConfig', () => {
         ).toThrow(/must differ/);
     });
 
-    it('rejects a pointer edge TTL that is not shorter than the immutable TTL', () => {
-        expect(() =>
-            parseR2DeliveryConfig({
-                ...valid,
-                cache: {
-                    immutableEdgeTtlSeconds: 60,
-                    pointerEdgeTtlSeconds: 60,
-                },
-            })
-        ).toThrow(/shorter than/);
+    // The pointer bypasses the edge cache, so there is no pointer TTL to
+    // validate against. A stray one is a stale config that must not pass
+    // silently — Zod strips unknown keys by default, so this asserts the
+    // parsed result rather than a throw.
+    it('does not carry a pointer edge TTL', () => {
+        const parsed = parseR2DeliveryConfig({
+            ...valid,
+            cache: { ...valid.cache, pointerEdgeTtlSeconds: 60 },
+        });
+        expect(parsed.cache).toEqual({ immutableEdgeTtlSeconds: 31536000 });
     });
 });

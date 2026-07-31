@@ -348,7 +348,7 @@ Notes on individual rules:
 - `preview` requires `PUBLIC_ASSET_PREVIEW_ID` to satisfy `isPreviewId()` from
   `@aquila/stories/runtime-assets` — `/^[a-z0-9](?:[a-z0-9_-]{0,62}[a-z0-9])?$/`.
   A non-empty check is insufficient: a branch slug with uppercase characters, a
-  leading or trailing `-`/`_`, or more than 63 characters passes "non-empty" and
+  leading or trailing `-`/`_`, or more than 64 characters passes "non-empty" and
   then throws `unsafe-path` deep inside `WebAssetResolver.loadActiveRelease()`
   at read time. Validating with the same predicate the path builder uses moves
   that failure to construction, which is the entire point of this rule.
@@ -368,7 +368,7 @@ Notes on individual rules:
 
 `PUBLIC_ASSET_PREVIEW_ID` cannot be a stored project variable — it differs per
 branch — and it cannot come straight from `VERCEL_GIT_COMMIT_REF`, because
-`isPreviewId()` requires lowercase, ≤63 characters, and no leading or trailing
+`isPreviewId()` requires lowercase, ≤64 characters, and no leading or trailing
 `-`/`_`, while real branch names violate all three (`HPA-229`,
 `feature/Foo_Bar`).
 
@@ -393,7 +393,7 @@ step's placement while getting the value into the right process.
 2. Take `VERCEL_GIT_COMMIT_REF`, normalize NFC, lowercase.
 3. Replace every character outside `[a-z0-9_-]` (including `/`) with `-`.
 4. Collapse runs of `-`, then strip leading and trailing `-` and `_`.
-5. Clamp to 63 characters, then strip trailing `-`/`_` again in case the clamp
+5. Clamp to 64 characters, then strip trailing `-`/`_` again in case the clamp
    created one.
 6. If the result is empty — a branch name of entirely non-ASCII characters, say
    — emit `preview-<first 8 hex of sha256(ref)>` instead.

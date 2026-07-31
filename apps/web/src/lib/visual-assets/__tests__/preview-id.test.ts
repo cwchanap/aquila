@@ -10,7 +10,7 @@ import {
 } from '../../../../scripts/asset-preview-id';
 
 // The branch this feature was built on: `author/ticket-long-description` is the
-// convention in use here, and it already overflows the 63-character clamp.
+// convention in use here, and it already overflows the 64-character clamp.
 const LONG_BRANCH =
     'jack65786656/hpa-229-provision-isolated-aquila-r2-visual-asset-delivery';
 
@@ -36,19 +36,23 @@ describe('derivePreviewId', () => {
         expect(derivePreviewId('a-_-b')).toBe('a-b');
     });
 
-    it('clamps to 63 characters without a trailing separator', () => {
+    it('clamps to 64 characters without a trailing separator', () => {
         const result = derivePreviewId(`${'a'.repeat(62)}-${'b'.repeat(20)}`);
-        expect(result.length).toBeLessThanOrEqual(63);
+        expect(result.length).toBeLessThanOrEqual(64);
         expect(isPreviewId(result)).toBe(true);
     });
 
     it('leaves an id that already fits untouched', () => {
         expect(derivePreviewId('a'.repeat(63))).toBe('a'.repeat(63));
+        expect(derivePreviewId('a'.repeat(64))).toBe('a'.repeat(64));
         expect(derivePreviewId('feature/Foo_Bar')).toBe('feature-foo_bar');
     });
 
     it('appends a hash suffix only when it truncates', () => {
-        expect(derivePreviewId('a'.repeat(64))).toMatch(/^a{54}-[0-9a-f]{6}$/);
+        // 64 characters is the longest id isPreviewId() accepts, so the
+        // truncation path only triggers at 65 and above.
+        expect(derivePreviewId('a'.repeat(64))).toBe('a'.repeat(64));
+        expect(derivePreviewId('a'.repeat(65))).toMatch(/^a{54}-[0-9a-f]{6}$/);
     });
 
     it('keeps sibling branches that differ only past the clamp distinct', () => {
@@ -61,7 +65,7 @@ describe('derivePreviewId', () => {
 
         expect(new Set(ids).size).toBe(siblings.length);
         for (const id of ids) {
-            expect(id.length).toBeLessThanOrEqual(63);
+            expect(id.length).toBeLessThanOrEqual(64);
             expect(isPreviewId(id)).toBe(true);
         }
     });

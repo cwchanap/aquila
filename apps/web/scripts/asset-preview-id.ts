@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { isPreviewId } from '@aquila/stories/runtime-assets';
 
-/** isPreviewId() accepts at most 63 characters. */
-const MAX_ID_LENGTH = 63;
+/** isPreviewId() accepts at most 64 characters. */
+const MAX_ID_LENGTH = 64;
 /** Slug budget when truncating, leaving room for `-` plus SUFFIX_HEX_LENGTH. */
 const TRUNCATED_SLUG_LENGTH = 54;
 const SUFFIX_HEX_LENGTH = 6;
@@ -40,7 +40,7 @@ export function derivePreviewId(ref: string): string {
     if (slug.length <= MAX_ID_LENGTH) return slug;
 
     // `author/ticket-long-description` is the branch convention in this repo
-    // and it already overflows 63 slug characters, so a bare clamp maps a
+    // and it already overflows 64 slug characters, so a bare clamp maps a
     // branch, its `-followup`, and its `-fix` onto one preview namespace:
     // publishing from one would overwrite the others' assets and an open
     // preview would start serving a sibling's release. Truncation therefore

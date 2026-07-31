@@ -14,10 +14,10 @@
 
 - **Account:** `91ee89a03a31b5354a25c49228e4ab85`. **Zone:** `cwchanap.dev` = `a72a26e71e9b9e4b91d1523aafab7d06` (Free plan).
 - **Hostname:** `assets.aquila.cwchanap.dev`. **Buckets:** `aquila-vn-source` (private), `aquila-vn-delivery` (public via custom domain only).
-- **Cache Rules budget:** Free plan allows 10 per zone; this work uses 3.
+- **Cache Rules budget:** Free plan allows 10 per zone; this work uses 2.
 - **Immutable `Cache-Control`:** exactly `public, max-age=31536000, immutable`.
 - **Pointer `Cache-Control`:** exactly `no-cache, max-age=0, must-revalidate`.
-- **Pointer edge TTL:** 60 seconds, `override_origin`. All three rules set `respect_strong_etags: true`.
+- **Two cache rules, not three.** The immutable rule covers both objects (`/vn/objects/`) and release manifests (`runtime-manifest.json`) with `edge_ttl: { mode: 'override_origin' }` and `respect_strong_etags: true`. The `/current.json` active-release pointer bypasses the edge cache entirely (`cache: false`) — Cloudflare's Free plan floors Edge TTL at 2 hours, so the 60-second pointer TTL this design originally specified is unrepresentable, and a two-hour-stale pointer defeats the indirection it exists for. The bypass rule carries no Edge TTL, Browser TTL, or ETag fields. See `docs/infrastructure/r2-visual-asset-delivery.md` §2.6 and §5.
 - **CORS:** `AllowedOrigins: ["*"]`, `AllowedMethods: ["GET","HEAD"]`, `AllowedHeaders: ["range","if-match","if-none-match"]`, `ExposeHeaders: ["etag","content-length","cf-cache-status"]`, `MaxAgeSeconds: 86400`.
 - **Never delete:** no script may delete a bucket, object, rule, or domain. Removal is a manual act.
 - **Publication layout** is fixed by HPA-227; always compute paths with `getObjectPath()`, `getReleaseManifestPath()`, `getCurrentPointerPath()` from `@aquila/stories/runtime-assets`. Never hand-build a path string.
@@ -1347,8 +1347,8 @@ await main();
 
 - [ ] **Step 2: Seed**
 
-Run: `CLOUDFLARE_API_TOKEN=<operator token> bun --filter @aquila/infra-cloudflare seed`
-Expected: upload lines then `Seeded release sha256-…`.
+Run: `R2_PUBLISHER_ACCESS_KEY_ID=<id> R2_PUBLISHER_SECRET_ACCESS_KEY=<secret> bun --filter @aquila/infra-cloudflare seed`
+Expected: `Seeded release sha256-…`.
 
 - [ ] **Step 3: Spot-check one object by hand**
 
@@ -2208,9 +2208,9 @@ describe('derivePreviewId', () => {
         expect(derivePreviewId('a///b')).toBe('a-b');
     });
 
-    it('clamps to 63 characters without a trailing separator', () => {
+    it('clamps to 64 characters without a trailing separator', () => {
         const result = derivePreviewId(`${'a'.repeat(62)}-${'b'.repeat(20)}`);
-        expect(result.length).toBeLessThanOrEqual(63);
+        expect(result.length).toBeLessThanOrEqual(64);
         expect(isPreviewId(result)).toBe(true);
     });
 

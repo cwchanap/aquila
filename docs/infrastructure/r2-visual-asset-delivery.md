@@ -301,13 +301,25 @@ environment whose variables you changed.
 
 ### 2.9 Seed a release, then verify
 
-Publish a release (see the caveat immediately below — there is no working
-command for this yet), then run the two verifiers:
+Publish the smoke release, then run the two verifiers:
 
 ```bash
+CLOUDFLARE_API_TOKEN=<publisher token> \
+CLOUDFLARE_ACCOUNT_ID=91ee89a03a31b5354a25c49228e4ab85 \
+  bun --filter @aquila/infra-cloudflare seed
 bun --filter @aquila/infra-cloudflare verify
 R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts
 ```
+
+`seed` shells out to `wrangler`, which must be on `PATH` (`wrangler --version`;
+4.67.0 is known good). It uploads four content-addressed objects — one background
+and one portrait, each as WebP **and** AVIF — then the release manifest, then the
+pointer, in that order, so nothing is ever advertised before it is readable.
+
+The release id is content-addressed over the manifest, which means it is derived
+from the encoded bytes. `sharp`'s WebP/AVIF encoders are not byte-identical
+across libvips builds, so **the release id differs from machine to machine**. Do
+not pin it anywhere; read it from the seeder's final line.
 
 The second command needs more than Cloudflare: Playwright starts `apps/web`'s
 dev server on **port 5090** and injects a `DATABASE_URL`, defaulting to
@@ -317,25 +329,32 @@ at web-server startup, which reads like a delivery-infrastructure problem when i
 is a local-environment one. Export your own `DATABASE_URL` to override the
 default.
 
-**The `seed` script is declared but not implemented.** It is Task 7 of the
-HPA-229 plan and was never written; `packages/infra-cloudflare/src/seed.ts` does
-not exist, so the command fails immediately:
-
-```
-$ bun --filter @aquila/infra-cloudflare seed
-@aquila/infra-cloudflare seed: error: Module not found "src/seed.ts"
-@aquila/infra-cloudflare seed: Exited with code 1
-```
-
-Until it exists, a release must be published by another route (the HPA-230
-publisher, or by hand — see [§7](#7-traps) for the metadata a manual upload must
-carry).
-
-**The live e2e spec's own failure message points at that same missing command.**
-`packages/e2e/tests/r2-delivery.spec.ts` ends every failure and its skip reason
-with "…published (`bun --filter @aquila/infra-cloudflare seed`)". Until Task 7
-lands, that instruction cannot be followed — do not read it as evidence that your
-environment is misconfigured. Task 7 owns both the script and that message.
+> **Trap: a 404 probed before publication outlives the pointer's 60-second TTL.**
+> If you `curl` the pointer URL before seeding — which is exactly what §2.9 tells
+> you to do, and what `verify` does — Cloudflare caches the resulting 404 error
+> page at the PoP that served it. That cached 404 is **not** governed by the
+> pointer cache rule's 60-second Edge TTL. Observed on this zone: 404 still
+> served with `cf-cache-status: HIT` and `age: 5874` (98 minutes) long after the
+> object existed in R2, while the same URL with a `?cb=<random>` query returned
+> `HTTP 200`, `content-type: application/json`,
+> `cache-control: no-cache, max-age=0, must-revalidate`.
+>
+> Diagnose it by comparing the bare URL against a cache-busted one:
+>
+> ```bash
+> P=https://assets.aquila.cwchanap.dev/vn/previews/smoke/stories/the_seventh_mirror/current.json
+> curl -sI "$P"           | grep -Ei '^(HTTP|age|cf-cache-status)'
+> curl -sI "$P?cb=$RANDOM" | grep -Ei '^(HTTP|age|cf-cache-status)'
+> ```
+>
+> A 404 on the first and a 200 on the second means the object is published and
+> the edge is holding a stale error. Fix it in the dashboard: **Caching → Configuration
+> → Purge Cache → Custom Purge**, by URL, for the pointer URL. Then re-run
+> `verify`. Purging by URL only clears the PoPs, not R2 — it cannot lose data.
+>
+> This matters beyond first-time setup: it is a live hazard for anyone debugging
+> a pointer that has not yet been published. The immutable paths are immune —
+> a content-addressed object never 404s and then starts existing at the same URL.
 
 **The seeder must emit AVIF, not only WebP.** `verify.ts` hard-fails when a
 release has no AVIF variant, even though the HPA-227 schema treats
@@ -349,7 +368,7 @@ and no Cloudflare token, because its job is to prove what any browser sees. It
 probes the `smoke` preview of `the_seventh_mirror`
 (`vn/previews/smoke/stories/the_seventh_mirror/current.json`).
 
-The expected output **before** provisioning, and today's actual output:
+Output **before** anything is published:
 
 ```
 $ bun --filter @aquila/infra-cloudflare verify
@@ -361,8 +380,14 @@ FAIL  pointer fetch — GET https://assets.aquila.cwchanap.dev/vn/previews/smoke
 ```
 
 A single FAIL on `pointer fetch` with dependent checks skipped is the correct
-pre-provisioning signal. Anything else means something unexpected is answering on
+pre-publication signal. Anything else means something unexpected is answering on
 that hostname.
+
+**This is also exactly what a stale cached 404 looks like after a successful
+seed** — the verifier cannot tell the two apart, because from the outside they
+are the same response. If `seed` reported `Seeded release sha256-…` and `verify`
+then reports this, run the cache-busted comparison in the trap above before
+suspecting the upload.
 
 ---
 
@@ -666,15 +691,35 @@ the path cacheable*; they do **not** prove the `31536000` and `60` second TTLs a
 in effect. Only real `200` responses can show that, via `age` and
 `cache-control` — which is what `verify.ts` checks.
 
-**Never executed against a real response** — every one of these is reachable only
-past the first HTTP request, and that request has only ever returned 404:
+### Published by `seed`, confirmed by hand
+
+The smoke release **is** published. `seed` uploaded four objects, a manifest and
+a pointer, and each was fetched over the custom domain with `curl -sI`:
+
+| Path class | Status | `content-type` | `cache-control` |
+| --- | --- | --- | --- |
+| `vn/objects/…webp` | 200 | `image/webp` | `public, max-age=31536000, immutable` |
+| `vn/objects/…avif` | 200 | `image/avif` | `public, max-age=31536000, immutable` |
+| `…/releases/sha256-…/runtime-manifest.json` | 200 | `application/json` | `public, max-age=31536000, immutable` |
+| `…/current.json` (cache-busted) | 200 | `application/json` | `no-cache, max-age=0, must-revalidate` |
+
+This closes most of the "unproven" list below: real `200` responses now carry the
+`cache-control` values the design specifies, on both image formats, so the
+`31536000` and `60` second policies are no longer inferred from 404s alone.
+
+Release id on the seeding machine:
+`sha256-b632cb09dc33a093b9739391b74755089663fb475f373b8904812d1d5669f587`.
+Recorded for traceability only — see §2.9 on why it is machine-dependent.
+
+### Still unproven
+
+`verify` and the live e2e spec have **not** passed end to end, because the
+pointer URL is serving the stale cached 404 described in §2.9 and needs a
+dashboard purge. Everything below is reachable only past that first request:
 
 | Unproven | Where |
 | --- | --- |
 | Pointer JSON parse, `releaseId` extraction, `manifestPath` agreement | `verify.ts` |
-| Manifest fetch, parse, and content-type | `verify.ts`, `r2-delivery.spec.ts` |
-| All `cache-control` assertions (immutable and pointer) | `assertions.ts` via both verifiers |
-| `image/webp` and `image/avif` content-types on real objects | `verify.ts` |
 | `cf-cache-status: HIT` corroboration | `verify.ts` |
 | Source-bucket-not-public probe | `verify.ts` |
 | `findForbiddenKeys` against real published JSON | `verify.ts` |
@@ -685,10 +730,9 @@ past the first HTTP request, and that request has only ever returned 404:
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
 `bun run test` (5 tasks green — web 1582, game 412, stories 198,
 infra-cloudflare 53; desktop has no test files),
-`bun --filter @aquila/infra-cloudflare verify` (1 FAIL, HTTP
-404 on the pointer — the expected pre-provisioning signal),
-`bun --filter @aquila/infra-cloudflare seed` (fails: `Module not found
-"src/seed.ts"`).
+`bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
+sha256-b632cb09…`), `bun --filter @aquila/infra-cloudflare verify` (1 FAIL, HTTP
+404 on the pointer — a stale cached error, not a missing object).
 
 **Use `bun run test`, not `bun test`.** `test` is a Bun builtin, so a bare
 `bun test` at the repo root shadows the npm script and runs Bun's own test runner
@@ -696,10 +740,9 @@ over the whole repo — producing `794 pass / 632 fail / 40 errors`, mostly
 `vi.hoisted is not a function`, because these are Vitest suites. That is an
 invocation error, not a broken repo.
 
-**Commands never run successfully:** `seed` (unimplemented) and
-`R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` (fails at
-the pointer fetch with HTTP 404 in ~700 ms; the spec's own message names the URL
-and the prerequisites).
+**Commands never run successfully:** `R2_LIVE_CHECK=1 bun --filter e2e test:e2e
+tests/r2-delivery.spec.ts` (fails at the pointer fetch with HTTP 404 in ~700 ms;
+the spec's own message names the URL and the prerequisites).
 
-When the infrastructure is provisioned and a release published, re-run both
-verifiers and replace this section with what was actually observed.
+After purging the pointer URL, re-run both verifiers and replace this section
+with what was actually observed.

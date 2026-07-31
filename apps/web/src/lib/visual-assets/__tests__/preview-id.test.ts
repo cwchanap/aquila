@@ -1,8 +1,12 @@
+import { spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isPreviewId } from '@aquila/stories/runtime-assets';
 import {
     derivePreviewId,
+    main,
     previewIdForEnv,
+    writePreviewId,
 } from '../../../../scripts/asset-preview-id';
 
 // The branch this feature was built on: `author/ticket-long-description` is the
@@ -151,5 +155,129 @@ describe('previewIdForEnv', () => {
         });
         expect(id).toMatch(/^preview-[0-9a-f]{8}$/);
         expect(isPreviewId(id)).toBe(true);
+    });
+});
+
+describe('writePreviewId', () => {
+    const capture = (): { stdout: string[]; stderr: string[] } => ({
+        stdout: [],
+        stderr: [],
+    });
+    const streams = (cap: ReturnType<typeof capture>) => ({
+        stdout: { write: (s: string) => void cap.stdout.push(s) },
+        stderr: { write: (s: string) => void cap.stderr.push(s) },
+    });
+
+    it('writes a valid id to stdout and exits 0', () => {
+        const cap = capture();
+        const code = writePreviewId(
+            'hpa-229',
+            streams(cap).stdout,
+            streams(cap).stderr
+        );
+        expect(code).toBe(0);
+        expect(cap.stdout).toEqual(['hpa-229']);
+        expect(cap.stderr).toEqual([]);
+    });
+
+    it('writes nothing and exits 0 for an empty id', () => {
+        const cap = capture();
+        const code = writePreviewId(
+            '',
+            streams(cap).stdout,
+            streams(cap).stderr
+        );
+        expect(code).toBe(0);
+        expect(cap.stdout).toEqual(['']);
+        expect(cap.stderr).toEqual([]);
+    });
+
+    it('rejects an invalid id via stderr and exits 1', () => {
+        const cap = capture();
+        const code = writePreviewId(
+            'UPPERCASE-with-/"bad"',
+            streams(cap).stdout,
+            streams(cap).stderr
+        );
+        expect(code).toBe(1);
+        expect(cap.stdout).toEqual([]);
+        expect(cap.stderr[0]).toMatch(
+            /invalid preview id: UPPERCASE-with-\/"bad"/
+        );
+    });
+});
+
+describe('main', () => {
+    const capture = (): { stdout: string[]; stderr: string[] } => ({
+        stdout: [],
+        stderr: [],
+    });
+    const streams = (cap: ReturnType<typeof capture>) => ({
+        stdout: { write: (s: string) => void cap.stdout.push(s) },
+        stderr: { write: (s: string) => void cap.stderr.push(s) },
+    });
+
+    it('composes previewIdForEnv and writePreviewId for a configured build', () => {
+        const cap = capture();
+        const code = main(
+            {
+                VERCEL_ENV: 'preview',
+                VERCEL_GIT_COMMIT_REF: 'feature/Foo_Bar',
+                PUBLIC_ASSET_BASE_URL: 'https://assets.example.com/',
+                PUBLIC_ASSET_ENVIRONMENT: 'preview',
+            },
+            streams(cap).stdout,
+            streams(cap).stderr
+        );
+        expect(code).toBe(0);
+        expect(cap.stdout).toEqual(['feature-foo_bar']);
+    });
+
+    it('emits nothing and exits 0 outside a preview build', () => {
+        const cap = capture();
+        const code = main(
+            { VERCEL_ENV: 'production' },
+            streams(cap).stdout,
+            streams(cap).stderr
+        );
+        expect(code).toBe(0);
+        expect(cap.stdout).toEqual(['']);
+        expect(cap.stderr).toEqual([]);
+    });
+});
+
+describe('asset-preview-id CLI', () => {
+    // Exercises the `import.meta.main` entrypoint the same way the build does
+    // (`bun scripts/asset-preview-id.ts`), so the thin caller stays covered.
+    // The script relies on `import.meta.main`, a Bun-specific API, so it must
+    // be run under bun rather than whatever `process.execPath` resolves to
+    // (vitest may run under node).
+    const scriptPath = resolve(
+        __dirname,
+        '../../../../scripts/asset-preview-id.ts'
+    );
+    const run = (env: Record<string, string>) =>
+        spawnSync('bun', [scriptPath], {
+            env: { ...process.env, ...env },
+            encoding: 'utf8',
+        });
+
+    it('emits a derived id on stdout for a configured preview build', () => {
+        const result = run({
+            VERCEL_ENV: 'preview',
+            VERCEL_GIT_COMMIT_REF: 'feature/Foo_Bar',
+            PUBLIC_ASSET_BASE_URL: 'https://assets.example.com/',
+            PUBLIC_ASSET_ENVIRONMENT: 'preview',
+        });
+        expect(result.status).toBe(0);
+        expect(result.stdout).toBe('feature-foo_bar');
+        expect(result.stderr).toBe('');
+    });
+
+    it('emits an empty string and exits 0 outside a preview build', () => {
+        const result = run({ VERCEL_ENV: 'production' });
+        expect(result.status).toBe(0);
+        expect(result.stdout).toBe('');
+        expect(result.stderr).toBe('');
     });
 });

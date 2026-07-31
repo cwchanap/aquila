@@ -74,16 +74,46 @@ export function previewIdForEnv(
     return derivePreviewId(env.VERCEL_GIT_COMMIT_REF ?? '');
 }
 
-if (import.meta.main) {
-    const previewId = previewIdForEnv(process.env);
-    // Validate our own output. An id that fails isPreviewId would otherwise
-    // surface only in the browser, as a reader that silently renders with no
-    // visuals — so fail the build here instead.
+/**
+ * Validate and emit a derived preview id. Separated from the `import.meta.main`
+ * block so the validation contract is testable without spawning a subprocess:
+ * an id that fails isPreviewId would otherwise surface only in the browser, as
+ * a reader that silently renders with no visuals — so fail the build here
+ * instead. Returns the process exit code.
+ */
+export function writePreviewId(
+    previewId: string,
+    stdout: { write(chunk: string): void },
+    stderr: { write(chunk: string): void }
+): number {
     if (previewId.length > 0 && !isPreviewId(previewId)) {
-        process.stderr.write(
+        stderr.write(
             `asset-preview-id: derived an invalid preview id: ${previewId}\n`
         );
-        process.exit(1);
+        return 1;
     }
-    process.stdout.write(previewId);
+    stdout.write(previewId);
+    return 0;
 }
+
+/**
+ * The CLI body: derive a preview id from env, then validate and emit it.
+ * Extracted from the `import.meta.main` guard so the composition is testable
+ * in-process — the guard itself is structurally uncoverable from tests
+ * (import.meta.main is false whenever the module is imported) and is exercised
+ * instead by the subprocess CLI test. Returns the process exit code.
+ */
+export function main(
+    env: Record<string, string | undefined>,
+    stdout: { write(chunk: string): void },
+    stderr: { write(chunk: string): void }
+): number {
+    return writePreviewId(previewIdForEnv(env), stdout, stderr);
+}
+
+// Entry-point guard, intentionally false whenever this module is imported
+// (including by tests); the true branch is exercised by the subprocess CLI
+// test instead.
+/* v8 ignore next */
+if (import.meta.main)
+    process.exit(main(process.env, process.stdout, process.stderr));

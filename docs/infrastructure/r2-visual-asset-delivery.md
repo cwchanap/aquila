@@ -348,9 +348,34 @@ default.
 > ```
 >
 > A 404 on the first and a 200 on the second means the object is published and
-> the edge is holding a stale error. Fix it in the dashboard: **Caching → Configuration
-> → Purge Cache → Custom Purge**, by URL, for the pointer URL. Then re-run
-> `verify`. Purging by URL only clears the PoPs, not R2 — it cannot lose data.
+> the edge is holding a stale error. Purging by URL only clears the PoPs, not
+> R2 — it cannot lose data.
+>
+> **Purge by URL is not enough.** R2 answers cross-origin requests with
+> `Vary: Origin`, so the edge keeps a **separate cache entry per `Origin`
+> request header**, and a URL purge clears only the no-`Origin` variant. This is
+> not a corner case: `verify.ts` sends `Origin: https://aquila.cwchanap.dev` on
+> every request (it is also checking CORS), so the one variant a URL purge leaves
+> behind is precisely the one the verifier reads. Observed after a successful URL
+> purge — same URL, same second:
+>
+> ```
+> (no Origin header)                HTTP/2 200  cf-cache-status: HIT   age: 30
+> Origin: https://aquila.cwchanap.dev  HTTP/2 404  cf-cache-status: HIT   age: 6302
+> Origin: https://example.invalid      HTTP/2 200  cf-cache-status: MISS
+> ```
+>
+> Only the origin that was probed pre-publication is poisoned. Check for it with:
+>
+> ```bash
+> curl -sI -H 'Origin: https://aquila.cwchanap.dev' "$P" | grep -Ei '^(HTTP|age|cf-cache-status)'
+> ```
+>
+> Clearing it needs **Purge Everything** (Caching → Configuration → Purge Cache),
+> which drops every variant. Purging a single URL *with* a header is an
+> Enterprise-only capability and is not available on this zone's plan. Purge
+> Everything costs the whole `cwchanap.dev` zone a brief cache-miss period;
+> nothing is lost, and the immutable asset paths refill on first request.
 >
 > This matters beyond first-time setup: it is a live hazard for anyone debugging
 > a pointer that has not yet been published. The immutable paths are immune —

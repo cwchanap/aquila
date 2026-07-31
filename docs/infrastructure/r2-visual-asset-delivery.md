@@ -379,7 +379,7 @@ default.
 > behind is precisely the one the verifier reads. Observed after a successful URL
 > purge — same URL, same second:
 >
-> ```
+> ```text
 > (no Origin header)                HTTP/2 200  cf-cache-status: HIT   age: 30
 > Origin: https://aquila.cwchanap.dev  HTTP/2 404  cf-cache-status: HIT   age: 6302
 > Origin: https://example.invalid      HTTP/2 200  cf-cache-status: MISS
@@ -415,7 +415,7 @@ probes the `smoke` preview of `the_seventh_mirror`
 
 Output **before** anything is published:
 
-```
+```text
 $ bun --filter @aquila/infra-cloudflare verify
 Verifying https://assets.aquila.cwchanap.dev — story the_seventh_mirror, preview smoke
 
@@ -496,12 +496,12 @@ build instead of silently shipping a bundle with no visuals.
 
 `derivePreviewId()` slugifies the NFC-normalized ref (lowercase, disallowed runs
 to `-`, separator runs collapsed, leading/trailing separators stripped). If the
-slug is empty the id is `preview-<8 hex of sha256(NFC(ref))>`. A slug of 63
+slug is empty the id is `preview-<8 hex of sha256(NFC(ref))>`. A slug of 64
 characters or fewer is returned unchanged. Only when it is longer does the
 function clamp to 54 characters, strip any trailing `-` or `_` left by that cut
 — so the head can be shorter than 54 — and append
 `-<6 hex of sha256(NFC(ref))>`. This repo's
-`author/ticket-description` branch convention already overflows 63 characters,
+`author/ticket-description` branch convention already overflows 64 characters,
 and a plain clamp collapsed a branch, its `-followup`, and its `-fix` onto one
 preview namespace — publishing from one would overwrite the others' assets. Refs
 that already fit are returned unchanged and stay readable.
@@ -622,7 +622,7 @@ force, and could not be.
 **Measured 2026-07-31.** 40 samples at 5-second intervals against the live
 pointer, sent with `Origin: https://aquila.cwchanap.dev`:
 
-```
+```text
 07:03:31  age: 4    cf-cache-status: HIT
 07:04:29  age: 62   cf-cache-status: HIT     <- should have expired here
 07:05:30  age: 123  cf-cache-status: HIT

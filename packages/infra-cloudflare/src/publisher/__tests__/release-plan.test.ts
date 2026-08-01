@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { PublisherError } from '../errors';
 import { loadReleasePlan, resolveReleasePlanPath } from '../release-plan';
 
 describe('publisher release-plan input', () => {
@@ -55,5 +56,29 @@ describe('publisher release-plan input', () => {
             storyId: 'example_story',
             channel: 'preview',
         });
+    });
+
+    it('rejects unsafe story ids before resolving fallback paths', async () => {
+        await expect(
+            resolveReleasePlanPath({
+                repositoryRoot: '/repository',
+                storyId: '../private',
+                target: { kind: 'production' },
+            })
+        ).rejects.toThrow(/story id is unsafe/i);
+    });
+
+    it('does not expose an absolute release-plan path in errors', async () => {
+        const privatePath = join(tmpdir(), 'private-release-plan.json');
+
+        await expect(loadReleasePlan(privatePath)).rejects.toSatisfy(
+            (error: unknown) => {
+                expect(error).toBeInstanceOf(PublisherError);
+                expect(
+                    JSON.stringify((error as PublisherError).context)
+                ).not.toContain(privatePath);
+                return true;
+            }
+        );
     });
 });

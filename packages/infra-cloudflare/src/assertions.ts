@@ -16,6 +16,30 @@ function directives(header: string | null): string[] {
         .filter(Boolean);
 }
 
+type ParsedDirective = { name: string; value?: string };
+
+/**
+ * Splits a `Cache-Control` directive token into its name and argument.
+ * Directive arguments may be quoted (RFC 7230 quoted-string), and HTTP
+ * recipients are expected to honour the quoted form — so `max-age="0"` is
+ * `max-age` with value `0`, not a benign unrecognised extra. Without parsing
+ * the quotes, a conflicting quoted freshness directive slips past the
+ * conflict check while a real cache honours its value.
+ */
+function parseDirective(token: string): ParsedDirective {
+    const eq = token.indexOf('=');
+    if (eq === -1) return { name: token };
+    let value = token.slice(eq + 1);
+    if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
+        value = value.slice(1, -1);
+    }
+    return { name: token.slice(0, eq), value };
+}
+
+function parseDirectives(header: string | null): ParsedDirective[] {
+    return directives(header).map(parseDirective);
+}
+
 // The two canonical response headers belong to the HPA-227 cache policy, so the
 // required directives are read from it rather than restated here — a change to
 // the contract cannot leave this verifier asserting the old one.
@@ -51,42 +75,52 @@ function assertDirectives(
 /**
  * Directives that contradict the immutable policy even when every required
  * directive is also present. `no-store` forbids caching entirely; `no-cache`
- * forces revalidation before any use; `private` forbids shared/edge caching.
- * A second `max-age` or `s-maxage` whose value is not the contract's one-year
- * freshness overrides the intended TTL — a header like
+ * forces revalidation before any use; an unqualified `private` forbids
+ * shared/edge caching. A freshness directive whose value is not the
+ * contract's one-year TTL overrides the intended freshness, so
  * `public, max-age=31536000, immutable, max-age=0` carries the required
- * `max-age=31536000` but the conflicting `max-age=0` is what a parser honours,
- * so it must fail the verifier rather than pass as a benign extra.
+ * `max-age=31536000` but the conflicting `max-age=0` is what a parser
+ * honours. Directive arguments may be quoted, so the tokens are parsed into
+ * name/value pairs before comparison — `s-maxage="0"` is detected as the
+ * zero-TTL override it is rather than passing as an unrecognised extra. A
+ * second freshness directive is ambiguous even when its text is identical to
+ * the first (caches may honour either occurrence or treat the response as
+ * stale), so duplicate `max-age`/`s-maxage` are rejected regardless of value.
  */
-const IMMUTABLE_CONFLICTING = new Set(['no-store', 'no-cache', 'private']);
-const MAX_AGE_PATTERN = /^max-age=(\d+)$/;
-const S_MAX_AGE_PATTERN = /^s-maxage=(\d+)$/;
+const IMMUTABLE_CONFLICTING_BY_NAME = new Set(['no-store', 'no-cache']);
 const IMMUTABLE_FRESHNESS_SECONDS = '31536000';
 
-function conflictingImmutableExtras(present: string[]): string[] {
+function conflictingImmutableExtras(parsed: ParsedDirective[]): string[] {
     const conflicts: string[] = [];
-    for (const directive of present) {
-        if (IMMUTABLE_CONFLICTING.has(directive)) {
-            conflicts.push(directive);
-            continue;
-        }
-        const maxAge = MAX_AGE_PATTERN.exec(directive);
-        if (maxAge && maxAge[1] !== IMMUTABLE_FRESHNESS_SECONDS) {
-            conflicts.push(directive);
-            continue;
-        }
-        const sMaxAge = S_MAX_AGE_PATTERN.exec(directive);
-        if (sMaxAge && sMaxAge[1] !== IMMUTABLE_FRESHNESS_SECONDS) {
-            conflicts.push(directive);
+    let maxAgeCount = 0;
+    let sMaxAgeCount = 0;
+    for (const { name, value } of parsed) {
+        if (IMMUTABLE_CONFLICTING_BY_NAME.has(name)) {
+            conflicts.push(name);
+        } else if (name === 'private' && value === undefined) {
+            conflicts.push('private');
+        } else if (name === 'max-age') {
+            maxAgeCount += 1;
+            if (value !== IMMUTABLE_FRESHNESS_SECONDS) {
+                conflicts.push(`max-age=${value ?? ''}`);
+            }
+        } else if (name === 's-maxage') {
+            sMaxAgeCount += 1;
+            if (value !== IMMUTABLE_FRESHNESS_SECONDS) {
+                conflicts.push(`s-maxage=${value ?? ''}`);
+            }
         }
     }
+    if (maxAgeCount > 1) conflicts.push(`duplicate max-age (${maxAgeCount})`);
+    if (sMaxAgeCount > 1)
+        conflicts.push(`duplicate s-maxage (${sMaxAgeCount})`);
     return conflicts;
 }
 
 export function assertImmutable(header: string | null): Assertion {
     const required = assertDirectives(header, IMMUTABLE_DIRECTIVES);
     if (!required.ok) return required;
-    const conflicts = conflictingImmutableExtras(directives(header));
+    const conflicts = conflictingImmutableExtras(parseDirectives(header));
     if (conflicts.length === 0) return required;
     return {
         ok: false,

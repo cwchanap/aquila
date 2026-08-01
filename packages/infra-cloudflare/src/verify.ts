@@ -47,6 +47,33 @@ const MIME_TYPES: Record<AssetFormat, string> = {
 };
 const CACHE_HIT_ATTEMPTS = 4;
 const CACHE_HIT_DELAY_MS = 1000;
+// Per-request deadline covering both header arrival and body consumption. A
+// connection that accepts the request but never returns headers — or returns
+// headers and stalls the body — would otherwise block the sequential run
+// forever instead of producing a failed check. The signal is passed to `fetch`
+// so the abort covers the body read too (the response stream is tied to the
+// fetch signal); the timer is unref'd so a response already consumed does not
+// keep the process alive waiting for a deadline that has nothing left to abort.
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+let requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
+
+/** @internal Overrides the per-request deadline for tests. */
+export function _setRequestTimeout(ms: number): void {
+    requestTimeoutMs = ms;
+}
+
+function deadlineSignal(): AbortSignal {
+    const controller = new AbortController();
+    const timer = setTimeout(
+        () =>
+            controller.abort(
+                new Error(`request timed out after ${requestTimeoutMs}ms`)
+            ),
+        requestTimeoutMs
+    );
+    timer.unref?.();
+    return controller.signal;
+}
 
 /**
  * Raised when a fetch the remaining checks depend on cannot be evaluated, so
@@ -140,7 +167,13 @@ async function request(
     headers: Record<string, string> = {}
 ): Promise<RequestOutcome> {
     try {
-        return { ok: true, response: await fetchImpl(url, { headers }) };
+        return {
+            ok: true,
+            response: await fetchImpl(url, {
+                headers,
+                signal: deadlineSignal(),
+            }),
+        };
     } catch (error) {
         return { ok: false, detail: describeError(error) };
     }

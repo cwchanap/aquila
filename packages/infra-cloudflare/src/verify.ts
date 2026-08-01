@@ -29,8 +29,9 @@ const STORY_ID = 'the_seventh_mirror';
 const PREVIEW_ID = 'smoke';
 const TARGET = { kind: 'preview', previewId: PREVIEW_ID } as const;
 // Stands in for the web app origin a browser would send, so the delivery host's
-// CORS policy is exercised rather than bypassed.
-const ORIGIN = 'https://aquila.cwchanap.dev';
+// CORS policy is exercised rather than bypassed. Exported so the CORS tests use
+// the same value the verifier probes with.
+export const ORIGIN = 'https://aquila.cwchanap.dev';
 // An authoring key from the private source bucket. There is deliberately no
 // path helper for source keys — they are not part of the public publication
 // layout. Probing the delivery host for this key proves it was not copied into
@@ -309,10 +310,13 @@ async function checkSourceKeyAbsentFromDelivery(
         };
     }
     const { status } = outcome.response;
+    // Only 404 is a definitive absence response on a world-readable delivery
+    // host. A 403 is ambiguous — an object present but blocked from being
+    // served would also answer 403 — so it must not be blessed as "absent".
     return {
         name: 'source key absent from delivery bucket',
-        ok: status === 404 || status === 403,
-        detail: `HTTP ${status} for ${SOURCE_PROBE_KEY} on the delivery host (expected 403 or 404)`,
+        ok: status === 404,
+        detail: `HTTP ${status} for ${SOURCE_PROBE_KEY} on the delivery host (expected 404)`,
     };
 }
 
@@ -551,8 +555,10 @@ export async function runChecks(
     // are content-addressed, so two assets referencing the same digest share
     // one object: deduplicate by (format, sha256) so each unique object is
     // fetched and checked once, and a release with N assets is checked against
-    // up to N objects per format. The check names carry the first 8 hex of the
-    // object's sha256 so an operator can map a failed line back to the asset.
+    // up to N objects per format. The check names carry the first 16 hex of the
+    // object's sha256 so an operator can map a failed line back to the asset,
+    // and two distinct objects of the same format cannot produce duplicate
+    // names (results are looked up by name).
     //
     // The dedupe key is (format, sha256), but two manifest entries may legally
     // reference the same digest while declaring different metadata. The
@@ -580,7 +586,7 @@ export async function runChecks(
             else offeredAvif = true;
 
             const dedupeKey = `${format}:${variant.sha256}`;
-            const label = variant.sha256.slice(0, 8);
+            const label = variant.sha256.slice(0, 16);
             const prior = verifiedObjects.get(dedupeKey);
             if (prior !== undefined) {
                 // Same digest, same format — the object is fetched once, but
@@ -661,7 +667,9 @@ export async function runChecks(
     // webp is required per asset in the contract, so an absent webp means the
     // release published no assets at all. avif is optional per asset, but the
     // verifier still reports a release that offers no avif so an operator is
-    // not left wondering whether avif delivery is working.
+    // not left wondering whether avif delivery is working — as a warning,
+    // never a failure, so an optional format cannot fail an otherwise healthy
+    // release.
     if (!offeredWebp) {
         results.push({
             name: 'webp object',
@@ -673,6 +681,7 @@ export async function runChecks(
         results.push({
             name: 'avif object',
             ok: false,
+            warning: true,
             detail: `no avif variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath}`,
         });
     }

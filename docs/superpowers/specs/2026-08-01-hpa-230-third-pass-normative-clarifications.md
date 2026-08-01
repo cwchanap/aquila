@@ -1,13 +1,15 @@
 # HPA-230 Third-Pass Normative Clarifications
 
 **Date:** 2026-08-01  
-**Status:** Normative addendum to the draft HPA-230 design  
+**Status:** Accepted normative addendum; consumed by the HPA-230 implementation plan  
 **Applies to:** PR #43 and `2026-08-01-hpa-230-immutable-visual-asset-publisher-design.md`
 
 This addendum resolves the third design-review pass. Where it conflicts with the
 main design document, this addendum wins until the text is consolidated before
-implementation planning. It does not add a second runtime wire format or alter
-HPA-227 contracts.
+implementation completion. The implementation plan at
+`docs/superpowers/plans/2026-08-01-hpa-230-immutable-visual-asset-publisher.md`
+contains explicit tasks and named tests for every clarification below. It does
+not add a second runtime wire format or alter HPA-227 contracts.
 
 ## A1 — Production candidates are created in production first, then mirrored to preview
 
@@ -401,8 +403,8 @@ are exact byte copies and reference the same content-addressed objects.
 
 ## Completion impact
 
-HPA-230 is not design-approved until the implementation plan consumes these
-clarifications. In particular, completion requires:
+HPA-230 implementation must satisfy the plan that consumes these clarifications.
+In particular, completion requires:
 
 - production-first candidate publication and preview mirroring;
 - monotonic pointer timestamps and fresh short-lived CAS snapshots;

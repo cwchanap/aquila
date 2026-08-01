@@ -209,9 +209,14 @@ function makeFetch(
     return (async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url === pointerUrl) {
+            // The live pointer reports `BYPASS` with no `age` — the expected
+            // state for the bypass rule (runbook §5). Tests that need a
+            // different edge state override these via
+            // makeFetchWithPointerCacheState.
             return jsonResponse(release.pointerText, {
                 'cache-control': POINTER_CACHE,
                 'access-control-allow-origin': '*',
+                'cf-cache-status': 'BYPASS',
             });
         }
         if (url === manifestUrl) {
@@ -307,9 +312,11 @@ function resignRelease(
 
 /**
  * A fetch that serves the release's documents and objects but returns a
- * pointer `access-control-allow-origin` that does not match the request origin
- * and is not `*` — the scenario where a misconfigured CORS policy lets the
- * verifier pass while every real browser blocks the read.
+ * pointer `access-control-allow-origin` other than the wildcard — the
+ * scenario where a misconfigured CORS policy lets the verifier pass while
+ * every real browser blocks the read. Only `*` is a valid policy for this
+ * delivery host: an exact allowlist cannot cover ephemeral `*.vercel.app`
+ * preview origins.
  */
 function makeFetchWithBadCors(
     release: ReturnType<typeof buildValidRelease>,
@@ -324,6 +331,36 @@ function makeFetchWithBadCors(
             return jsonResponse(release.pointerText, {
                 'cache-control': POINTER_CACHE,
                 'access-control-allow-origin': allowOrigin,
+            });
+        }
+        return base(input);
+    }) as typeof fetch;
+}
+
+/**
+ * A fetch that serves the release's documents and objects but reports a
+ * pointer `cf-cache-status` (and optional `age`) other than the bypass
+ * baseline — the scenario where the pointer rule is missing or no longer
+ * matching and `current.json` is edge-cached. The runbook's §5 table declares
+ * `HIT`/`MISS`/`EXPIRED`/`REVALIDATED` on the pointer wrong, and a cached
+ * response always carries `age`.
+ */
+function makeFetchWithPointerCacheState(
+    release: ReturnType<typeof buildValidRelease>,
+    cacheStatus: string,
+    age?: string
+): typeof fetch {
+    const base = makeFetch(release);
+    const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
+    const pointerUrl = `${BASE}/${pointerPath}`;
+    return (async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        if (url === pointerUrl) {
+            return jsonResponse(release.pointerText, {
+                'cache-control': POINTER_CACHE,
+                'access-control-allow-origin': '*',
+                'cf-cache-status': cacheStatus,
+                ...(age === undefined ? {} : { age }),
             });
         }
         return base(input);
@@ -684,7 +721,7 @@ describe('runChecks integrity', () => {
         // unrelated origin. The old check only verified the header existed, so
         // `https://wrong.example` passed the verifier while a browser running
         // from `https://aquila.cwchanap.dev` could not read the response. The
-        // check must require either `*` or the request's exact origin.
+        // check must require the wildcard.
         const release = buildValidRelease();
         _setFetchImpl(makeFetchWithBadCors(release, 'https://wrong.example'));
         const results: CheckResult[] = [];
@@ -696,10 +733,13 @@ describe('runChecks integrity', () => {
         );
     });
 
-    it('accepts a pointer whose access-control-allow-origin echoes the request origin', async () => {
-        // The non-wildcard branch: an exact-origin policy (no `*`) is also a
-        // valid CORS response for the requesting browser, so the verifier must
-        // accept it, not require `*` exclusively.
+    it('rejects a pointer whose access-control-allow-origin is an exact origin', async () => {
+        // The non-wildcard branch: an exact-origin response (no `*`) is
+        // readable by a browser running from that origin, but it is not a
+        // valid deployment configuration — R2 cannot express
+        // `https://*.vercel.app`, so an allowlist breaks visual mode on every
+        // preview deployment. The verifier must require the wildcard, not
+        // bless a policy that passes while previews fail.
         const release = buildValidRelease();
         _setFetchImpl(
             makeFetchWithBadCors(release, 'https://aquila.cwchanap.dev')
@@ -707,6 +747,65 @@ describe('runChecks integrity', () => {
         const results: CheckResult[] = [];
         await runChecks(BASE, results);
         const byName = names(results);
-        expect(byName['pointer CORS']).toBe(true);
+        expect(byName['pointer CORS']).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects a pointer served from the edge cache on a MISS', async () => {
+        // A MISS on current.json means the pointer is cache-eligible: the
+        // bypass rule is missing or no longer matching, and a published
+        // release can go unseen until the entry expires. The verifier's other
+        // pointer checks (revalidation directives, CORS) all pass in this
+        // state — they did when this deployment served current.json as a
+        // cache HIT for two hours (runbook §5).
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithPointerCacheState(release, 'MISS'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['pointer edge bypass']).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects a pointer served from the edge cache on a HIT with an age', async () => {
+        // HIT with a climbing age is the exact state measured before the
+        // redesign: the pointer cached for two hours while carrying correct
+        // revalidation headers. A cached response always carries `age`.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithPointerCacheState(release, 'HIT', '5874'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['pointer edge bypass']).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('accepts an uncached pointer (BYPASS with no age)', async () => {
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithPointerCacheState(release, 'BYPASS'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['pointer edge bypass']).toBe(true);
+        expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
+    });
+
+    it('accepts an uncached pointer (DYNAMIC with no age)', async () => {
+        // DYNAMIC is what this zone actually reports for the pointer (runbook
+        // §5): the edge never stored the response, which is the behavior the
+        // bypass rule exists to guarantee.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithPointerCacheState(release, 'DYNAMIC'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['pointer edge bypass']).toBe(true);
+        expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
     });
 });

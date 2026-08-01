@@ -114,9 +114,16 @@ Rationale: the delivery bucket is world-readable by design — every object is
 retrievable with an unauthenticated GET — so an origin allowlist provides no
 confidentiality. What it would cost is real: R2 cannot express
 `https://*.vercel.app`, so an exact allowlist breaks visual mode on every Vercel
-preview deployment and makes preview smoke-testing impossible. A wildcard is also
-cache-safe: one cached response per object, with no `Vary: Origin` fragmentation
-and no risk of serving one origin's ACAO header to another.
+preview deployment and makes preview smoke-testing impossible.
+
+> **Superseded claim (measured 2026-07-31).** The next sentence — "A wildcard is
+> also cache-safe: one cached response per object, with no `Vary: Origin`
+> fragmentation" — is false. R2 returns `Vary: Origin` on cross-origin responses
+> regardless of the CORS policy, so the edge keeps one cache entry per `Origin`
+> request header and a URL purge clears only the no-`Origin` variant. The
+> wildcard decision itself stands (it is the only policy that covers ephemeral
+> `*.vercel.app` preview origins); only the caching rationale is wrong. See
+> `docs/infrastructure/r2-visual-asset-delivery.md` §2.9.
 
 Hotlink abuse, should it ever matter, belongs to WAF or Hotlink Protection, not
 CORS.
@@ -125,6 +132,19 @@ The reader needs CORS at all because `DecodedAssetCache` fetches bytes and
 decodes to object URLs; plain `<img>` loading would not.
 
 ### D4 — Cache policy in two layers
+
+> **Superseded as specified (measured 2026-07-31); the design was redesigned in
+> implementation, and the paragraphs below record the original plan, not the
+> deployed behavior.** The 60-second pointer TTL is unrepresentable on this
+> zone's Free plan (Edge TTL floors at 2 hours), and a two-hour-stale pointer
+> defeats the indirection it exists for. The deployed design is **two cache
+> rules, not three** — the immutable rule covers both objects and release
+> manifests, and the pointer rule **bypasses** the edge cache (`cache: false`,
+> no Edge TTL, Browser TTL, or ETag fields) — so activation latency is bounded
+> by R2 write visibility instead of an edge TTL, and `respect_strong_etags`
+> applies to the immutable rule only. The runbook is the source of truth:
+> `docs/infrastructure/r2-visual-asset-delivery.md` §2.6 (the two rules) and
+> §5 (the measurement and the `cf-cache-status` assertion per path class).
 
 **Layer 1 — object metadata (HPA-230, contract-fixed).** The publisher sets
 `Cache-Control` at upload: `public, max-age=31536000, immutable` for
@@ -203,7 +223,7 @@ uploads.
 applies it and is safe to re-run; `--dry-run` prints a diff without writing.
 Chosen over Terraform because the monorepo is Bun/TypeScript-only, Terraform is
 not installed, and remote state management is disproportionate for two buckets,
-a custom domain, a CORS policy, three cache rules, and a token. Chosen over a
+a custom domain, a CORS policy, two cache rules, and a token. Chosen over a
 docs-only runbook because drift and recovery would then depend on a human
 following prose.
 

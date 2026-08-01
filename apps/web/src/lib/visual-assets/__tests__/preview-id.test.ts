@@ -52,7 +52,7 @@ describe('derivePreviewId', () => {
         // 64 characters is the longest id isPreviewId() accepts, so the
         // truncation path only triggers at 65 and above.
         expect(derivePreviewId('a'.repeat(64))).toBe('a'.repeat(64));
-        expect(derivePreviewId('a'.repeat(65))).toMatch(/^a{54}-[0-9a-f]{6}$/);
+        expect(derivePreviewId('a'.repeat(65))).toMatch(/^a{51}-[0-9a-f]{12}$/);
     });
 
     it('keeps sibling branches that differ only past the clamp distinct', () => {

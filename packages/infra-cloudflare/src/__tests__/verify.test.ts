@@ -221,8 +221,13 @@ function makeFetch(
             });
         }
         if (url === manifestUrl) {
+            // The live manifest reads `cf-cache-status: HIT` once warm
+            // (runbook §5); the manifest cache-eligibility check requires a
+            // cacheable state. Tests that need a non-cacheable manifest
+            // override this via makeFetchWithManifestCacheState.
             return jsonResponse(release.manifestText, {
                 'cache-control': IMMUTABLE_CACHE,
+                'cf-cache-status': 'HIT',
             });
         }
         for (const [path, body] of Object.entries(bodies)) {
@@ -364,6 +369,36 @@ function makeFetchWithPointerCacheState(
                 'access-control-allow-origin': '*',
                 'cf-cache-status': cacheStatus,
                 ...(age === undefined ? {} : { age }),
+            });
+        }
+        return base(input);
+    }) as typeof fetch;
+}
+
+/**
+ * A fetch that serves the release with a manifest `cf-cache-status` other than
+ * the cacheable baseline — the scenario where the immutable rule's manifest
+ * branch is missing or broken while the object branch still matches. JSON is
+ * not edge-cached by default, so a non-cacheable manifest (DYNAMIC/BYPASS) is
+ * the signal that the manifest-specific rule branch is gone, even though every
+ * object check — including the object cache-HIT probe — still passes.
+ */
+function makeFetchWithManifestCacheState(
+    release: ReturnType<typeof buildValidRelease>,
+    cacheStatus: string
+): typeof fetch {
+    const base = makeFetch(release);
+    const manifestUrl = `${BASE}/${getReleaseManifestPath(
+        STORY_ID,
+        JSON.parse(release.pointerText).releaseId,
+        TARGET
+    )}`;
+    return (async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        if (url === manifestUrl) {
+            return jsonResponse(release.manifestText, {
+                'cache-control': IMMUTABLE_CACHE,
+                'cf-cache-status': cacheStatus,
             });
         }
         return base(input);
@@ -826,6 +861,62 @@ describe('runChecks integrity', () => {
         await runChecks(BASE, results);
         const byName = names(results);
         expect(byName['pointer edge bypass']).toBe(true);
+        expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
+    });
+
+    it('rejects a non-cacheable manifest while objects still hit', async () => {
+        // The immutable cache rule has two branches: `/vn/objects/*` and
+        // `*/runtime-manifest.json`. JSON is not edge-cached by default, so
+        // the manifest's cacheability is the rule's doing. Remove or break
+        // only the manifest branch and every object check still passes —
+        // including the object cache-HIT probe — while release manifests go
+        // uncached. The manifest's `cf-cache-status` on the initial response
+        // is therefore a hard check: DYNAMIC here means the manifest branch
+        // is gone, and the verifier must fail even though every object reads
+        // HIT.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithManifestCacheState(release, 'DYNAMIC'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['manifest edge cache eligible']).toBe(false);
+        // Objects are untouched and still pass, including the cache-HIT probe
+        // — proving the failure is scoped to the manifest branch, not a
+        // cascade that would mask the real signal.
+        const [bg] = release.assets;
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(true);
+        expect(byName['object cache hit']).toBe(true);
+        // The run reports at least one hard failure.
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects a manifest with no cf-cache-status header at all', async () => {
+        // A missing `cf-cache-status` is the Hotlink-Protection symptom
+        // (runbook §6) and is never a cacheable state. The manifest
+        // eligibility check must fail it, not treat absence as pass.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithManifestCacheState(release, ''));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['manifest edge cache eligible']).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('accepts a manifest served on a MISS', async () => {
+        // A MISS is a cacheable state — the rule matched and the edge will
+        // store the response; the first request per colo is expected to MISS.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithManifestCacheState(release, 'MISS'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['manifest edge cache eligible']).toBe(true);
         expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
     });
 

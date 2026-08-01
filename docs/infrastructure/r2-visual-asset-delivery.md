@@ -9,8 +9,13 @@ serves visual-novel runtime assets to the web reader.
 > of `the_seventh_mirror` is published. The verifier's integrity chain —
 > contract parsing, manifest-byte and canonical-content digests, per-object
 > byte-length and SHA-256, cross-reference consistency for objects sharing a
-> digest, and a strict pointer CORS check (origin must be `*` or the request
-> origin) — is implemented and covered by the unit suite in
+> digest, a strict pointer CORS check (origin must be `*` — wildcard-only, since
+> an exact allowlist cannot cover ephemeral `*.vercel.app` preview origins),
+> rejection of conflicting directives on immutable headers (`no-store`,
+> `private`, `no-cache`, and a second `max-age`/`s-maxage` overriding the
+> one-year freshness), and a hard manifest edge-cache-eligibility check (the
+> manifest's `cf-cache-status` must be `MISS`/`HIT`/`EXPIRED`/`REVALIDATED`, not
+> `DYNAMIC`/`BYPASS`/absent) — is implemented and covered by the unit suite in
 > `packages/infra-cloudflare/src/__tests__/verify.test.ts`. A fresh live run of
 > `bun --filter @aquila/infra-cloudflare verify` and
 > `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` against
@@ -262,9 +267,15 @@ Notes:
 
   The cost of bypassing is one R2 read per page load of a ~300-byte JSON,
   against a 10M-request/month free tier. `cf-cache-status` on the pointer is
-  therefore `BYPASS`, always. The immutable rule is untouched, so images and
-  manifests still cache for a year — the pointer is the only uncached path, and
-  it is the smallest object served.
+  therefore never a cached state: on this zone it reports `DYNAMIC` (measured
+  2026-07-31, see [§5](#cf-cache-status-by-path-class)), and a Bypass-cache
+  rule and no-rule-at-all are indistinguishable from outside — both report
+  `DYNAMIC`. The verifier's `pointer edge bypass` check accordingly accepts
+  either `DYNAMIC` or `BYPASS` provided no `age` header is present (a cached
+  response always carries `age`); `HIT`/`MISS`/`EXPIRED`/`REVALIDATED` fails
+  the run. The immutable rule is untouched, so images and manifests still cache
+  for a year — the pointer is the only uncached path, and it is the smallest
+  object served.
 - **Why `Respect origin` on browser TTL.** The browser must see the object's own
   `Cache-Control` — the immutable/pointer distinction is carried by the object
   metadata the publisher sets, and the client contract depends on it.
@@ -905,15 +916,20 @@ Recorded for traceability only — see §2.9 on why it is machine-dependent.
 
 The verifier's integrity chain — contract parsing, manifest-byte and
 canonical-content digests, per-object byte-length and SHA-256, cross-reference
-  consistency for objects sharing a digest, and a strict pointer CORS check — is
-  **implemented and covered by the unit suite** in
-  `packages/infra-cloudflare/src/__tests__/verify.test.ts` (17 tests, including
-  the conflicting-byteLength, conflicting-dimensions, consistent-reference, and
-  foreign-origin CORS cases; the package's full suite totals 73 across five
+  consistency for objects sharing a digest, a strict pointer CORS check
+  (wildcard-only), rejection of conflicting directives on immutable headers
+  (`no-store`/`private`/`no-cache`/overriding `max-age`/`s-maxage`), and a hard
+  manifest edge-cache-eligibility check — is **implemented and covered by the
+  unit suite** in
+  `packages/infra-cloudflare/src/__tests__/verify.test.ts` (21 tests, including
+  the conflicting-byteLength, conflicting-dimensions, consistent-reference,
+  foreign-origin CORS, non-cacheable-manifest, and conflicting-immutable-directive
+  cases; the package's full suite totals 84 across five
   files — `verify.test.ts` is not the whole package). A fresh live run of both
   verifiers against the seeded release has **not yet been recorded** with the
   updated checks. The `15 PASS` and `2 passed` counts below predate the
-  per-object, cross-reference, and strict-CORS checks; treat them as stale until
+  per-object, cross-reference, strict-CORS, immutable-conflict, and
+  manifest-cache-eligibility checks; treat them as stale until
   replaced with the output of the commands at the end of this section.
 
 The previous live run (before the updated checks were added) passed end to end,
@@ -967,13 +983,15 @@ curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
 `bun run test` (5 tasks green — web 1597, game 412, stories 198,
-infra-cloudflare 73; desktop has no test files — re-measured 2026-07-31, was
-web 1582 / infra-cloudflare 53),
+infra-cloudflare 84; desktop has no test files — re-measured 2026-07-31, was
+web 1582 / infra-cloudflare 53, then 73 before the immutable-conflict and
+manifest-cache-eligibility checks),
 `bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
 sha256-b632cb09…`). The `bun --filter @aquila/infra-cloudflare verify` (15 PASS)
 and `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts`
 (2 passed) counts above are **stale** — they predate the per-object,
-cross-reference, and strict-CORS checks. Replace them with the output of a
+cross-reference, strict-CORS, immutable-conflict, and
+manifest-cache-eligibility checks. Replace them with the output of a
 fresh run before treating the live pipeline as proven.
 
 **Use `bun run test`, not `bun test`.** `test` is a Bun builtin, so a bare

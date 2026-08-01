@@ -48,8 +48,50 @@ function assertDirectives(
     };
 }
 
+/**
+ * Directives that contradict the immutable policy even when every required
+ * directive is also present. `no-store` forbids caching entirely; `no-cache`
+ * forces revalidation before any use; `private` forbids shared/edge caching.
+ * A second `max-age` or `s-maxage` whose value is not the contract's one-year
+ * freshness overrides the intended TTL — a header like
+ * `public, max-age=31536000, immutable, max-age=0` carries the required
+ * `max-age=31536000` but the conflicting `max-age=0` is what a parser honours,
+ * so it must fail the verifier rather than pass as a benign extra.
+ */
+const IMMUTABLE_CONFLICTING = new Set(['no-store', 'no-cache', 'private']);
+const MAX_AGE_PATTERN = /^max-age=(\d+)$/;
+const S_MAX_AGE_PATTERN = /^s-maxage=(\d+)$/;
+const IMMUTABLE_FRESHNESS_SECONDS = '31536000';
+
+function conflictingImmutableExtras(present: string[]): string[] {
+    const conflicts: string[] = [];
+    for (const directive of present) {
+        if (IMMUTABLE_CONFLICTING.has(directive)) {
+            conflicts.push(directive);
+            continue;
+        }
+        const maxAge = MAX_AGE_PATTERN.exec(directive);
+        if (maxAge && maxAge[1] !== IMMUTABLE_FRESHNESS_SECONDS) {
+            conflicts.push(directive);
+            continue;
+        }
+        const sMaxAge = S_MAX_AGE_PATTERN.exec(directive);
+        if (sMaxAge && sMaxAge[1] !== IMMUTABLE_FRESHNESS_SECONDS) {
+            conflicts.push(directive);
+        }
+    }
+    return conflicts;
+}
+
 export function assertImmutable(header: string | null): Assertion {
-    return assertDirectives(header, IMMUTABLE_DIRECTIVES);
+    const required = assertDirectives(header, IMMUTABLE_DIRECTIVES);
+    if (!required.ok) return required;
+    const conflicts = conflictingImmutableExtras(directives(header));
+    if (conflicts.length === 0) return required;
+    return {
+        ok: false,
+        detail: `cache-control: ${header ?? '<missing>'} (conflicting: ${conflicts.join(', ')})`,
+    };
 }
 
 export function assertPointerRevalidation(header: string | null): Assertion {

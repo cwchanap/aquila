@@ -66,6 +66,70 @@ describe('assertImmutable', () => {
             assertImmutable('public, max-age=31536000, immutable').detail
         ).toBe('cache-control: public, max-age=31536000, immutable');
     });
+
+    // The required-directives check is a subset check, so a header carrying
+    // every required directive PLUS one that contradicts the immutable policy
+    // would pass while the cache's effective behaviour contradicts the
+    // contract. These negative tests pin the conflicting extras that must fail
+    // even when `public, max-age=31536000, immutable` is fully present.
+    it('rejects no-store appended to an otherwise immutable header', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, no-store'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('no-store');
+    });
+
+    it('rejects private appended to an otherwise immutable header', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, private'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('private');
+    });
+
+    it('rejects no-cache appended to an otherwise immutable header', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, no-cache'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('no-cache');
+    });
+
+    it('rejects a second max-age that overrides the one-year freshness', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, max-age=0'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('max-age=0');
+    });
+
+    it('rejects s-maxage=0 that overrides shared-cache freshness', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, s-maxage=0'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('s-maxage=0');
+    });
+
+    it('names every conflicting directive when several are present', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, no-store, private, no-cache'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toBe(
+            'cache-control: public, max-age=31536000, immutable, no-store, private, no-cache (conflicting: no-store, private, no-cache)'
+        );
+    });
+
+    it('still accepts a benign extra that does not contradict immutability', () => {
+        // `no-transform` only forbids media-type mangling; it does not change
+        // freshness or cacheability, so it must not be flagged as conflicting.
+        expect(
+            assertImmutable('public, max-age=31536000, immutable, no-transform')
+                .ok
+        ).toBe(true);
+    });
 });
 
 describe('assertPointerRevalidation', () => {

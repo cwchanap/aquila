@@ -463,6 +463,30 @@ export async function runChecks(
             assertImmutable(manifestHeaders.get('cache-control'))
         )
     );
+    // The immutable cache rule has two branches — `/vn/objects/*` and
+    // `*/runtime-manifest.json`. JSON is not edge-cached by default on
+    // Cloudflare, so the manifest's cacheability is entirely the rule's doing:
+    // remove or break only the manifest branch and every object check still
+    // passes, including the object cache-HIT probe, while release manifests go
+    // uncached. The manifest's `cf-cache-status` on this initial response is
+    // therefore a hard check, not corroboration: a cacheable state (MISS, HIT,
+    // EXPIRED, REVALIDATED) means the rule matched, while DYNAMIC, BYPASS, or a
+    // missing header means it did not. This mirrors the pointer's edge-bypass
+    // check in the opposite direction — there a cached state fails, here an
+    // uncached state fails.
+    const manifestCacheStatus = manifestHeaders
+        .get('cf-cache-status')
+        ?.toUpperCase();
+    const manifestCacheEligible =
+        manifestCacheStatus === 'MISS' ||
+        manifestCacheStatus === 'HIT' ||
+        manifestCacheStatus === 'EXPIRED' ||
+        manifestCacheStatus === 'REVALIDATED';
+    results.push({
+        name: 'manifest edge cache eligible',
+        ok: manifestCacheEligible,
+        detail: `cf-cache-status: ${manifestCacheStatus ?? '<missing>'}`,
+    });
 
     // The manifest byte digest must match the pointer's `manifestSha256` — the
     // same check the reader makes before it trusts the manifest. Without it a

@@ -352,19 +352,20 @@ test.describe('R2 visual asset delivery', () => {
             ).toBe(asset.height);
         }
 
-        // AVIF is optional in the contract, so a release without it is
-        // recorded rather than failed. Published AVIF bytes must still decode
-        // in the browser this spec runs in, which supports AVIF, and their
-        // decoded dimensions must match the manifest just as WebP's do.
+        // AVIF is optional per asset in the HPA-227 schema, but `image/avif`
+        // content-type is an enumerated HPA-229 acceptance criterion (design
+        // check 3) and the shell verifier hard-fails a release that offers no
+        // avif. This live check must agree: a smoke release with no avif
+        // variant fails here too, so the seeder or publisher stopping avif
+        // emission cannot pass both verification paths. Published AVIF bytes
+        // must still decode in the browser this spec runs in, which supports
+        // AVIF, and their decoded dimensions must match the manifest just as
+        // WebP's do.
         const avifVariants = await decodeAllVariants(page, manifest, 'avif');
-        if (avifVariants.length === 0) {
-            const note = `${manifestUrl} offers no avif variant`;
-            // Annotated for the HTML report, and logged because no terminal
-            // reporter shows annotations.
-            test.info().annotations.push({ type: 'note', description: note });
-            console.warn(`[r2-delivery] ${note}`);
-            return;
-        }
+        expect(
+            avifVariants.length,
+            `${manifestUrl} offers no avif variant — image/avif is an HPA-229 acceptance criterion`
+        ).toBeGreaterThan(0);
         for (const { asset, size } of avifVariants) {
             const label = `${asset.identity.type}/${asset.identity.key}`;
             expect(

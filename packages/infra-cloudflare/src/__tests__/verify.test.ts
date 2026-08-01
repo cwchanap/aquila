@@ -828,4 +828,58 @@ describe('runChecks integrity', () => {
         expect(byName['pointer edge bypass']).toBe(true);
         expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
     });
+
+    it('hard-fails a release that offers no avif variant', async () => {
+        // `image/avif` content-type is an enumerated HPA-229 acceptance
+        // criterion (design check 3) and the only check that can prove a
+        // release serves a real AVIF object. avif is optional per asset in
+        // the HPA-227 schema, so a manifest with every avif variant removed
+        // still parses — but the release as a whole offers no avif, and the
+        // verifier must hard-fail it. Downgrading this to a warning would let
+        // the seeder or publisher stop emitting avif and pass verification
+        // while the only evidence for that acceptance criterion disappeared
+        // (runbook §"The seeder must emit AVIF").
+        const release = buildValidRelease();
+        const manifestObj = JSON.parse(release.manifestText) as {
+            assets: Array<{
+                variants: {
+                    webp: {
+                        format: string;
+                        path: string;
+                        sha256: string;
+                        byteLength: number;
+                    };
+                    avif?: unknown;
+                };
+            }>;
+        };
+        for (const asset of manifestObj.assets) {
+            delete asset.variants.avif;
+        }
+        resignRelease(
+            release,
+            manifestObj as unknown as Record<string, unknown>
+        );
+        _setFetchImpl(makeFetch(release));
+
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        // The webp objects are intact and still pass — the failure is scoped
+        // to the missing avif, not a cascade.
+        const [bg, pt] = release.assets;
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(true);
+        expect(byName[`webp ${pt.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${pt.webpLabel} object checksum`]).toBe(true);
+        // The avif-absence check is a hard failure, not a warning.
+        const avifResult = results.find(r => r.name === 'avif object');
+        expect(avifResult).toBeDefined();
+        expect(avifResult?.ok).toBe(false);
+        expect(avifResult?.warning).toBeFalsy();
+        // The run reports at least one hard failure.
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
 });

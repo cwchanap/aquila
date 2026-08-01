@@ -128,8 +128,57 @@ export function assertImmutable(header: string | null): Assertion {
     };
 }
 
+/**
+ * Directives that contradict the pointer's revalidation policy even when every
+ * required directive (`no-cache`, `max-age=0`, `must-revalidate`) is also
+ * present. `immutable` marks a response as never changing and lets a cache
+ * serve it without revalidation — the opposite of what the pointer exists to
+ * guarantee, so a published release could go unseen. `s-maxage` overrides
+ * shared-cache freshness independently of `max-age`; the contract carries none,
+ * so any value re-points the edge TTL the bypass rule is meant to keep at zero.
+ * A second freshness directive is ambiguous even when its text is identical to
+ * the first (caches may honour either occurrence or treat the response as
+ * stale), so duplicate `max-age`/`s-maxage` are rejected regardless of value.
+ * `no-store` is a safe strengthening — it forbids caching entirely, which only
+ * reinforces the revalidation the pointer asks for — so it remains allowed, as
+ * does any directive (e.g. `no-transform`) that touches neither freshness nor
+ * cacheability. Directive arguments may be quoted, so the tokens are parsed
+ * into name/value pairs before comparison, mirroring the immutable check.
+ */
+const POINTER_FRESHNESS_SECONDS = '0';
+
+function conflictingPointerExtras(parsed: ParsedDirective[]): string[] {
+    const conflicts: string[] = [];
+    let maxAgeCount = 0;
+    let sMaxAgeCount = 0;
+    for (const { name, value } of parsed) {
+        if (name === 'immutable') {
+            conflicts.push('immutable');
+        } else if (name === 'max-age') {
+            maxAgeCount += 1;
+            if (value !== POINTER_FRESHNESS_SECONDS) {
+                conflicts.push(`max-age=${value ?? ''}`);
+            }
+        } else if (name === 's-maxage') {
+            sMaxAgeCount += 1;
+            conflicts.push(`s-maxage=${value ?? ''}`);
+        }
+    }
+    if (maxAgeCount > 1) conflicts.push(`duplicate max-age (${maxAgeCount})`);
+    if (sMaxAgeCount > 1)
+        conflicts.push(`duplicate s-maxage (${sMaxAgeCount})`);
+    return conflicts;
+}
+
 export function assertPointerRevalidation(header: string | null): Assertion {
-    return assertDirectives(header, POINTER_DIRECTIVES);
+    const required = assertDirectives(header, POINTER_DIRECTIVES);
+    if (!required.ok) return required;
+    const conflicts = conflictingPointerExtras(parseDirectives(header));
+    if (conflicts.length === 0) return required;
+    return {
+        ok: false,
+        detail: `cache-control: ${header ?? '<missing>'} (conflicting: ${conflicts.join(', ')})`,
+    };
 }
 
 function mediaType(value: string): string {

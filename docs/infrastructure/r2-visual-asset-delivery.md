@@ -48,7 +48,7 @@ placeholders only. R2 publisher keys live in GitHub Actions secrets.
 | Immutable `Cache-Control` | `public, max-age=31536000, immutable` |
 | Pointer `Cache-Control` | `no-cache, max-age=0, must-revalidate` |
 | Pointer edge caching | **Bypassed** — Free plan floors Edge TTL at 2 h |
-| `respect_strong_etags` | `true` on both rules |
+| `respect_strong_etags` | `true` on the immutable rule only — the pointer bypass rule carries no ETag fields (nothing to respect on a response never cached) |
 | Cache Rules budget | Free plan allows 10 per zone; this work uses 2 |
 | Publisher token name | `aquila-vn-publisher` |
 
@@ -268,8 +268,11 @@ Notes:
 - **Why `Respect origin` on browser TTL.** The browser must see the object's own
   `Cache-Control` — the immutable/pointer distinction is carried by the object
   metadata the publisher sets, and the client contract depends on it.
-- **Why `Respect strong ETags`.** R2 returns strong ETags; preserving them keeps
-  conditional revalidation of `current.json` cheap (a 304 instead of a body).
+- **Why `Respect strong ETags`.** On the immutable rule, R2 returns strong ETags
+  and the setting preserves them. The pointer no longer depends on this setting:
+  it bypasses the edge, so the browser's conditional revalidation of
+  `current.json` (a 304 instead of a body) runs directly against R2, and the
+  pass-through response keeps the strong ETag it needs.
 
 Deleting or editing one of these rules later is a manual, deliberate act.
 

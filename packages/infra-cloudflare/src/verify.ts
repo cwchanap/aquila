@@ -354,18 +354,38 @@ export async function runChecks(
             assertPointerRevalidation(pointerHeaders.get('cache-control'))
         )
     );
+    // The pointer rule bypasses the edge cache (`cache: false`), so an
+    // edge-cached pointer means the rule is missing or no longer matching and
+    // a published release can go unseen — this deployment served `current.json`
+    // as a cache HIT for two hours while carrying the correct revalidation
+    // headers, and every other check passed. A cached response always carries
+    // `age`; `DYNAMIC`/`BYPASS` with no `age` means the edge never stored it.
+    // `HIT`/`MISS`/`EXPIRED`/`REVALIDATED` on the pointer therefore fails the
+    // run, not merely warns (runbook §5).
+    const cacheStatus = pointerHeaders.get('cf-cache-status')?.toUpperCase();
+    const age = pointerHeaders.get('age');
+    const edgeBypassed =
+        (cacheStatus === 'DYNAMIC' || cacheStatus === 'BYPASS') && age === null;
+    results.push({
+        name: 'pointer edge bypass',
+        ok: edgeBypassed,
+        detail: `cf-cache-status: ${cacheStatus ?? '<missing>'} (age: ${age ?? '<none>'})`,
+    });
     // A browser running from `ORIGIN` can only read the pointer when the
-    // response carries either `*` or the request's exact origin. Checking only
-    // for the header's presence would let an unrelated allow-origin (e.g.
-    // `https://wrong.example`) pass the verifier while every real browser
-    // blocked the read — the shell verifier must not rely on the manually
-    // gated `R2_LIVE_CHECK` e2e suite to catch an invalid CORS policy.
+    // response carries `*`. Checking only for the header's presence would let
+    // an unrelated allow-origin (e.g. `https://wrong.example`) pass the
+    // verifier while every real browser blocked the read — the shell verifier
+    // must not rely on the manually gated `R2_LIVE_CHECK` e2e suite to catch
+    // an invalid CORS policy. The wildcard is the only valid policy for this
+    // delivery host: an exact allowlist cannot cover ephemeral `*.vercel.app`
+    // preview origins, so the production origin is not an acceptable
+    // substitute — the committed config and the runbook both require `*`.
     const allowOrigin = pointerHeaders.get('access-control-allow-origin');
-    const corsOk = allowOrigin === '*' || allowOrigin === ORIGIN;
+    const corsOk = allowOrigin === '*';
     results.push({
         name: 'pointer CORS',
         ok: corsOk,
-        detail: `access-control-allow-origin: ${allowOrigin ?? '<missing>'} (request origin ${ORIGIN})`,
+        detail: `access-control-allow-origin: ${allowOrigin ?? '<missing>'} (contract requires *)`,
     });
 
     // Parse the pointer with the same contract parser the reader uses

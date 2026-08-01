@@ -45,55 +45,105 @@ function jsonResponse(text: string, headers: Record<string, string>): Response {
  * exact byte digests a publisher would set. `manifestText` is the serialized
  * manifest; `manifestSha256` is sha256 of those bytes; `releaseId` is the
  * canonical release-content digest.
+ *
+ * The release carries two assets — a background and a portrait, each as WebP
+ * and AVIF — mirroring the smoke release the seeder publishes. The verifier
+ * must check every object, not just the first asset's, so the fixture exercises
+ * the multi-asset path the previous single-asset fixture hid.
  */
+type AssetFixture = {
+    identity: { type: string; key: string };
+    webpBody: string;
+    avifBody: string;
+    webpSha: string;
+    avifSha: string;
+    webpPath: string;
+    avifPath: string;
+    webpLabel: string;
+    avifLabel: string;
+    width: number;
+    height: number;
+};
+
+function buildAsset(
+    type: string,
+    key: string,
+    webpBody: string,
+    avifBody: string,
+    width: number,
+    height: number
+): AssetFixture {
+    const webpSha = sha256Hex(webpBody);
+    const avifSha = sha256Hex(avifBody);
+    return {
+        identity: { type, key },
+        webpBody,
+        avifBody,
+        webpSha,
+        avifSha,
+        webpPath: getObjectPath(
+            webpSha as unknown as Parameters<typeof getObjectPath>[0],
+            'webp'
+        ),
+        avifPath: getObjectPath(
+            avifSha as unknown as Parameters<typeof getObjectPath>[0],
+            'avif'
+        ),
+        webpLabel: webpSha.slice(0, 8),
+        avifLabel: avifSha.slice(0, 8),
+        width,
+        height,
+    };
+}
+
 function buildValidRelease(): {
     pointerText: string;
     manifestText: string;
     manifestObj: RuntimeAssetManifestV1;
-    webpPath: string;
-    avifPath: string;
-    webpBody: string;
-    avifBody: string;
+    assets: AssetFixture[];
 } {
-    const webpBody = 'webp-bytes';
-    const avifBody = 'avif-bytes';
-    const webpSha = sha256Hex(webpBody);
-    const avifSha = sha256Hex(avifBody);
-    const webpPath = getObjectPath(
-        // brand the digest the way the schema expects
-        webpSha as unknown as Parameters<typeof getObjectPath>[0],
-        'webp'
-    );
-    const avifPath = getObjectPath(
-        avifSha as unknown as Parameters<typeof getObjectPath>[0],
-        'avif'
-    );
+    const assets = [
+        buildAsset(
+            'background',
+            'chapter_1/ch1_act2_s0',
+            'webp-bytes',
+            'avif-bytes',
+            640,
+            360
+        ),
+        buildAsset(
+            'portrait',
+            'portraits/mira_neutral',
+            'webp-portrait-bytes',
+            'avif-portrait-bytes',
+            512,
+            512
+        ),
+    ];
     const manifestObj = {
         schemaVersion: 1 as const,
         storyId: STORY_ID,
         // placeholder; recomputed from canonical content below
         releaseId: `sha256-${'0'.repeat(64)}`,
-        assets: [
-            {
-                identity: { type: 'background', key: 'chapter_1/ch1_act2_s0' },
-                variants: {
-                    webp: {
-                        format: 'webp',
-                        path: webpPath,
-                        sha256: webpSha,
-                        byteLength: webpBody.length,
-                    },
-                    avif: {
-                        format: 'avif',
-                        path: avifPath,
-                        sha256: avifSha,
-                        byteLength: avifBody.length,
-                    },
+        assets: assets.map(a => ({
+            identity: a.identity,
+            variants: {
+                webp: {
+                    format: 'webp',
+                    path: a.webpPath,
+                    sha256: a.webpSha,
+                    byteLength: a.webpBody.length,
                 },
-                width: 640,
-                height: 360,
+                avif: {
+                    format: 'avif',
+                    path: a.avifPath,
+                    sha256: a.avifSha,
+                    byteLength: a.avifBody.length,
+                },
             },
-        ],
+            width: a.width,
+            height: a.height,
+        })),
     };
 
     // Parse to get the typed manifest, then derive the real releaseId from
@@ -118,24 +168,23 @@ function buildValidRelease(): {
         pointerText,
         manifestText,
         manifestObj: finalManifest as unknown as RuntimeAssetManifestV1,
-        webpPath,
-        avifPath,
-        webpBody,
-        avifBody,
+        assets,
     };
 }
 
 /**
  * A fetch that serves the release's documents and objects. Object URLs return
  * immutable image bytes whose length and SHA-256 match the manifest variant;
- * the source-probe key returns 404 (the verifier requires source objects to be
- * unreachable). `corrupt` swaps a format's body for different bytes while
- * keeping its headers valid — the scenario where a content-addressed object is
- * overwritten or corrupted but still served with the right content-type.
+ * the source-probe key returns 404 (the verifier requires the source key to be
+ * absent from the delivery bucket). `corrupt` swaps one asset's format body for
+ * different bytes while keeping its headers valid — the scenario where a
+ * content-addressed object is overwritten or corrupted but still served with
+ * the right content-type. `assetIndex` selects which of the release's assets is
+ * corrupted, so the second-asset case the reviewer flagged is exercisable.
  */
 function makeFetch(
     release: ReturnType<typeof buildValidRelease>,
-    corrupt?: { format: 'webp' | 'avif'; body: string }
+    corrupt?: { assetIndex: number; format: 'webp' | 'avif'; body: string }
 ): typeof fetch {
     const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
     const pointerUrl = `${BASE}/${pointerPath}`;
@@ -144,10 +193,19 @@ function makeFetch(
         JSON.parse(release.pointerText).releaseId,
         TARGET
     )}`;
-    const webpBody =
-        corrupt?.format === 'webp' ? corrupt.body : release.webpBody;
-    const avifBody =
-        corrupt?.format === 'avif' ? corrupt.body : release.avifBody;
+    // Map each object path to the body it should serve, applying any
+    // corruption to the selected asset's format only.
+    const bodies: Record<string, string> = {};
+    for (const [index, asset] of release.assets.entries()) {
+        bodies[asset.webpPath] =
+            corrupt?.assetIndex === index && corrupt.format === 'webp'
+                ? corrupt.body
+                : asset.webpBody;
+        bodies[asset.avifPath] =
+            corrupt?.assetIndex === index && corrupt.format === 'avif'
+                ? corrupt.body
+                : asset.avifBody;
+    }
     return (async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url === pointerUrl) {
@@ -161,25 +219,19 @@ function makeFetch(
                 'cache-control': IMMUTABLE_CACHE,
             });
         }
-        if (url.endsWith(release.webpPath)) {
-            return new Response(webpBody, {
-                status: 200,
-                headers: {
-                    'content-type': 'image/webp',
-                    'cache-control': IMMUTABLE_CACHE,
-                    'cf-cache-status': 'HIT',
-                },
-            });
-        }
-        if (url.endsWith(release.avifPath)) {
-            return new Response(avifBody, {
-                status: 200,
-                headers: {
-                    'content-type': 'image/avif',
-                    'cache-control': IMMUTABLE_CACHE,
-                    'cf-cache-status': 'HIT',
-                },
-            });
+        for (const [path, body] of Object.entries(bodies)) {
+            if (url.endsWith(path)) {
+                const format = path.endsWith('.webp') ? 'webp' : 'avif';
+                return new Response(body, {
+                    status: 200,
+                    headers: {
+                        'content-type':
+                            format === 'webp' ? 'image/webp' : 'image/avif',
+                        'cache-control': IMMUTABLE_CACHE,
+                        'cf-cache-status': 'HIT',
+                    },
+                });
+            }
         }
         // Source probe key and anything else: unreachable.
         return new Response('not found', { status: 404 });
@@ -225,11 +277,18 @@ describe('runChecks integrity', () => {
         expect(byName['releaseId matches canonical content']).toBe(true);
         // Object body integrity: the fetched bytes must match the manifest
         // variant's declared byte length and SHA-256, the same two checks the
-        // reader performs before decoding.
-        expect(byName['webp object byte length']).toBe(true);
-        expect(byName['webp object checksum']).toBe(true);
-        expect(byName['avif object byte length']).toBe(true);
-        expect(byName['avif object checksum']).toBe(true);
+        // reader performs before decoding. Every asset's variants are checked,
+        // not just the first asset's — the check name carries the first 8 hex
+        // of the object's sha256 so a failure points at the asset.
+        const [bg, pt] = release.assets;
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(true);
+        expect(byName[`avif ${bg.avifLabel} object byte length`]).toBe(true);
+        expect(byName[`avif ${bg.avifLabel} object checksum`]).toBe(true);
+        expect(byName[`webp ${pt.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${pt.webpLabel} object checksum`]).toBe(true);
+        expect(byName[`avif ${pt.avifLabel} object byte length`]).toBe(true);
+        expect(byName[`avif ${pt.avifLabel} object checksum`]).toBe(true);
         // No integrity check failed.
         expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
     });
@@ -242,23 +301,32 @@ describe('runChecks integrity', () => {
         // verifier must too — previously checkObject read only headers, so a
         // release the reader rejected could pass the verifier.
         const release = buildValidRelease();
+        const [bg, pt] = release.assets;
         _setFetchImpl(
-            makeFetch(release, { format: 'webp', body: 'corrupted-webp-bytes' })
+            makeFetch(release, {
+                assetIndex: 0,
+                format: 'webp',
+                body: 'corrupted-webp-bytes',
+            })
         );
         const results: CheckResult[] = [];
         await runChecks(BASE, results);
         const byName = names(results);
         // Headers still pass.
-        expect(byName['webp content-type']).toBe(true);
-        expect(byName['webp immutable']).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} content-type`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} immutable`]).toBe(true);
         // Body integrity fails: the byte length no longer matches the manifest.
-        expect(byName['webp object byte length']).toBe(false);
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(false);
         // The checksum check is skipped once the byte length mismatches, so the
         // run reports one clear failure rather than two redundant ones.
-        expect(byName['webp object checksum']).toBeUndefined();
-        // The avif object is untouched and still passes.
-        expect(byName['avif object byte length']).toBe(true);
-        expect(byName['avif object checksum']).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBeUndefined();
+        // The first asset's avif and the entire second asset are untouched and
+        // still pass — proving the verifier checks every object, not just the
+        // corrupted one.
+        expect(byName[`avif ${bg.avifLabel} object byte length`]).toBe(true);
+        expect(byName[`avif ${bg.avifLabel} object checksum`]).toBe(true);
+        expect(byName[`webp ${pt.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${pt.webpLabel} object checksum`]).toBe(true);
         // The run reports at least one hard failure.
         expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
             0
@@ -269,15 +337,56 @@ describe('runChecks integrity', () => {
         // Same byte length, different bytes: the byte-length check passes but
         // the SHA-256 check catches the corruption, exactly as the reader does.
         const release = buildValidRelease();
+        const [bg] = release.assets;
         const sameLengthCorrupt = 'xxbp-bytes'; // 10 bytes, same length as 'webp-bytes'
         _setFetchImpl(
-            makeFetch(release, { format: 'webp', body: sameLengthCorrupt })
+            makeFetch(release, {
+                assetIndex: 0,
+                format: 'webp',
+                body: sameLengthCorrupt,
+            })
         );
         const results: CheckResult[] = [];
         await runChecks(BASE, results);
         const byName = names(results);
-        expect(byName['webp object byte length']).toBe(true);
-        expect(byName['webp object checksum']).toBe(false);
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects a corrupted second asset while the first asset passes', async () => {
+        // The reviewer's scenario: a release with multiple assets where only a
+        // later object is corrupted. The previous verifier called findVariant,
+        // which returns the first usable variant per format, so it checked only
+        // the first asset's WebP and AVIF and reported success while the reader
+        // rejected the second asset. The verifier must now catch a corrupted
+        // portrait (asset 1) even when the background (asset 0) is healthy.
+        const release = buildValidRelease();
+        const [bg, pt] = release.assets;
+        _setFetchImpl(
+            makeFetch(release, {
+                assetIndex: 1,
+                format: 'webp',
+                body: 'corrupted-portrait-webp',
+            })
+        );
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        // The first asset is untouched and passes every check.
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(true);
+        expect(byName[`avif ${bg.avifLabel} object byte length`]).toBe(true);
+        expect(byName[`avif ${bg.avifLabel} object checksum`]).toBe(true);
+        // The second asset's WebP is corrupted: byte length mismatches and the
+        // checksum check is skipped. Its AVIF is untouched and still passes.
+        expect(byName[`webp ${pt.webpLabel} object byte length`]).toBe(false);
+        expect(byName[`webp ${pt.webpLabel} object checksum`]).toBeUndefined();
+        expect(byName[`avif ${pt.avifLabel} object byte length`]).toBe(true);
+        expect(byName[`avif ${pt.avifLabel} object checksum`]).toBe(true);
+        // The run reports at least one hard failure.
         expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
             0
         );

@@ -223,16 +223,33 @@ async function fetchJsonFromPage(
 }
 
 /**
- * Decodes the first object of `format` the manifest offers, or returns null
- * when it offers none. The object path is recomputed from the variant digest
- * with the layout helper rather than taken from the manifest verbatim, so a
- * manifest pointing somewhere else could not redirect this fetch.
+ * Decodes every asset's variant of `format` the manifest offers, returning each
+ * decoded bitmap alongside its manifest asset so the caller can compare the
+ * decoded dimensions against `asset.width` / `asset.height` — the same contract
+ * the reader enforces in `decoded-asset-cache.ts` ("Asset dimensions mismatch"
+ * when the decoded size differs from the manifest). The object path is
+ * recomputed from the variant digest with the layout helper rather than taken
+ * from the manifest verbatim, so a manifest pointing somewhere else could not
+ * redirect this fetch.
+ *
+ * A manifest with an incorrect width or height can pass pointer integrity,
+ * object checksum validation, and browser decoding while the actual reader
+ * rejects it — so decoding only the first variant and asserting `> 0` (as this
+ * spec once did) is not enough. Every seeded asset is decoded and its
+ * dimensions checked against the manifest.
  */
-async function decodeFirstVariant(
+type DecodedVariant = {
+    asset: RuntimeAssetManifestV1['assets'][number];
+    format: AssetFormat;
+    size: DecodedSize;
+};
+
+async function decodeAllVariants(
     page: Page,
     manifest: RuntimeAssetManifestV1,
     format: AssetFormat
-): Promise<DecodedSize | null> {
+): Promise<DecodedVariant[]> {
+    const decoded: DecodedVariant[] = [];
     for (const asset of manifest.assets) {
         const variant = asset.variants[format];
         if (!variant) continue;
@@ -246,9 +263,9 @@ async function decodeFirstVariant(
         if (size === null) {
             throw unusable(url, 'decode', 'the browser produced no bitmap');
         }
-        return size;
+        decoded.push({ asset, format, size });
     }
-    return null;
+    return decoded;
 }
 
 test.describe('R2 visual asset delivery', () => {
@@ -257,15 +274,12 @@ test.describe('R2 visual asset delivery', () => {
     test('a browser fetches and decodes the seeded release cross-origin', async ({
         page,
     }) => {
-        // Four requests, each with its own deadline from the cache policy; the
-        // default 30s test budget would expire before the last one could name
-        // the object that never answered.
-        test.setTimeout(
-            DEADLINES.pointer +
-                DEADLINES.manifest +
-                2 * DEADLINES.asset +
-                30_000
-        );
+        // Each request has its own deadline from the cache policy; the default
+        // 30s test budget would expire before the last one could name the
+        // object that never answered. The asset count is not known until the
+        // manifest is fetched, so the budget is widened after that fetch to
+        // cover every variant decode (webp + avif per asset, worst case).
+        test.setTimeout(DEADLINES.pointer + DEADLINES.manifest + 30_000);
 
         // Requests are issued from the web app's own origin, so the delivery
         // host is cross-origin and its CORS policy is exercised, not bypassed.
@@ -302,23 +316,48 @@ test.describe('R2 visual asset delivery', () => {
             `${manifestUrl} declares a different release than the pointer`
         ).toBe(pointer.releaseId);
 
+        // Now that the asset count is known, widen the budget to cover every
+        // variant decode (up to two formats per asset).
+        test.setTimeout(
+            DEADLINES.pointer +
+                DEADLINES.manifest +
+                manifest.assets.length * 2 * DEADLINES.asset +
+                30_000
+        );
+
         // `variants.webp` is required per asset, so this is reachable only when
         // the release published no assets at all.
-        const webp = await decodeFirstVariant(page, manifest, 'webp');
-        if (webp === null) {
+        const webpVariants = await decodeAllVariants(page, manifest, 'webp');
+        if (webpVariants.length === 0) {
             throw new Error(
                 `${manifestUrl} published no assets, so there is nothing for ` +
                     'a browser to decode.'
             );
         }
-        expect(webp.width, 'decoded webp width').toBeGreaterThan(0);
-        expect(webp.height, 'decoded webp height').toBeGreaterThan(0);
+        // The reader rejects an image whose decoded dimensions differ from
+        // asset.width / asset.height ("Asset dimensions mismatch" in
+        // decoded-asset-cache.ts). A manifest with an incorrect width or height
+        // can pass checksum validation and still decode, so the decoded bitmap
+        // is compared against the manifest dimensions for every asset — not
+        // just the first, and not merely asserted to be greater than zero.
+        for (const { asset, size } of webpVariants) {
+            const label = `${asset.identity.type}/${asset.identity.key}`;
+            expect(
+                size.width,
+                `decoded webp width for ${label} must match manifest`
+            ).toBe(asset.width);
+            expect(
+                size.height,
+                `decoded webp height for ${label} must match manifest`
+            ).toBe(asset.height);
+        }
 
         // AVIF is optional in the contract, so a release without it is
         // recorded rather than failed. Published AVIF bytes must still decode
-        // in the browser this spec runs in, which supports AVIF.
-        const avif = await decodeFirstVariant(page, manifest, 'avif');
-        if (avif === null) {
+        // in the browser this spec runs in, which supports AVIF, and their
+        // decoded dimensions must match the manifest just as WebP's do.
+        const avifVariants = await decodeAllVariants(page, manifest, 'avif');
+        if (avifVariants.length === 0) {
             const note = `${manifestUrl} offers no avif variant`;
             // Annotated for the HTML report, and logged because no terminal
             // reporter shows annotations.
@@ -326,8 +365,17 @@ test.describe('R2 visual asset delivery', () => {
             console.warn(`[r2-delivery] ${note}`);
             return;
         }
-        expect(avif.width, 'decoded avif width').toBeGreaterThan(0);
-        expect(avif.height, 'decoded avif height').toBeGreaterThan(0);
+        for (const { asset, size } of avifVariants) {
+            const label = `${asset.identity.type}/${asset.identity.key}`;
+            expect(
+                size.width,
+                `decoded avif width for ${label} must match manifest`
+            ).toBe(asset.width);
+            expect(
+                size.height,
+                `decoded avif height for ${label} must match manifest`
+            ).toBe(asset.height);
+        }
     });
 
     test('page script reads the pointer revalidation directives', async ({

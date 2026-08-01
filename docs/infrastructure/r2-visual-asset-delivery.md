@@ -479,7 +479,7 @@ suspecting the upload.
 | Environment | `PUBLIC_ASSET_BASE_URL` | `PUBLIC_ASSET_ENVIRONMENT` | `PUBLIC_ASSET_PREVIEW_ID` |
 | --- | --- | --- | --- |
 | Production | `https://assets.aquila.cwchanap.dev/` | `production` | **must not be set** |
-| Preview | `https://assets.aquila.cwchanap.dev/` | `preview` | optional — derived from the branch if unset |
+| Preview | `https://assets.aquila.cwchanap.dev/` | `preview` | optional — derived from the branch if unset; **if set, must be branch-scoped** |
 | Development | unset | unset | unset |
 
 - **Production**: a preview id is fatal there —
@@ -492,8 +492,26 @@ suspecting the upload.
   `astro build`'s own environment (Vite inlines `PUBLIC_*` from the build
   process, so a separate `&&`-chained step cannot work). If it **is** set, the
   build honours the explicit value instead of deriving one — set an unguessable
-  id here for spoiler-sensitive previews (see the trap in [§7](#7-traps)). An
+  id for spoiler-sensitive previews (see the trap in [§7](#7-traps)). An
   explicit value that fails `isPreviewId()` fails the build.
+- **An explicit `PUBLIC_ASSET_PREVIEW_ID` must be branch-scoped, never shared
+  across all Preview branches.** A normal Vercel Preview environment variable
+  applies to every non-production branch unless it is scoped to one Git branch.
+  Setting one project-wide explicit value therefore sends every preview
+  deployment into the same `vn/previews/<previewId>/` R2 namespace — the exact
+  cross-branch overwrite problem the hashed branch derivation exists to prevent
+  (see "Branch-derived preview ids" below). Publishing from one branch would
+  silently overwrite another branch's manifest and pointer. Scope an explicit id
+  to a single branch, for example:
+
+  ```bash
+  vercel env add PUBLIC_ASSET_PREVIEW_ID preview <branch-name>
+  ```
+
+  Vercel also supports branch-specific overrides on the same variable. **Never
+  set a shared explicit `PUBLIC_ASSET_PREVIEW_ID` for all Preview branches.**
+  The derived (unset) path is always safe because it includes a digest of the
+  branch ref; an explicit value bypasses that guard, so the scoping is on you.
 - **Development**: leaving all three unset is what makes `bun dev` serve bundled
   fixtures from `/assets/` with no network dependency.
 
@@ -772,7 +790,12 @@ skip), but do not expect `=0` to mean off.
 - **Preview trees are world-readable and branch-derived ids are guessable.**
   `vn/previews/<previewId>/…` is public, and `previewId` is a slug of the branch
   name. For spoiler-sensitive work, publish under a manually-set, unguessable
-  `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one.
+  `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one — but **scope it to the
+  one Git branch it is meant for** (see [§3](#3-environment-variables)). A
+  project-wide explicit Preview variable applies to every non-production branch
+  and collapses them onto one shared R2 namespace, so publishing from one
+  branch silently overwrites another's assets — the same collision the hashed
+  derivation prevents.
 - **Never enable the r2.dev public development URL.** It bypasses every cache
   rule and any future WAF policy, and creates a second access path nobody is
   watching.
@@ -786,8 +809,13 @@ skip), but do not expect `=0` to mean off.
 - **Never point the custom domain at `aquila-vn-source`.** That bucket exists
   precisely so authoring originals and their prompt/provider metadata are
   unreachable over HTTP. `verify.ts` probes one known source key
-  (`the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png`) and requires a 403
-  or 404.
+  (`the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png`) **on the delivery
+  host** and requires a 403 or 404 — this proves the key was not copied into the
+  delivery bucket, **not** that the source bucket itself is private. Source-bucket
+  privacy (no r2.dev public-development URL, no custom domain) is a separate
+  manual acceptance check: confirm in the dashboard that
+  `aquila-vn-source` → Settings → Public Development URL reads **Disabled** and
+  that no custom domain is connected.
 
 ---
 
@@ -862,9 +890,10 @@ cleared the poisoned `Vary: Origin` variant (§2.9).
   digest vs `pointer.manifestSha256`, the pointer/manifest pair validation, the
   canonical release-content digest vs `releaseId`, manifest and object
   content-types and immutability, **object byte-length and SHA-256 vs the
-  manifest variant** (the same two checks the reader performs before decoding),
-  `MISS -> HIT` cache corroboration, source-objects-not-public (404), and
-  `findForbiddenKeys` clean against the real published JSON.
+  manifest variant for every asset's variants** (the same two checks the reader
+  performs before decoding, run against each unique content-addressed object),
+  `MISS -> HIT` cache corroboration, source-key-absent-from-delivery-bucket
+  (404), and `findForbiddenKeys` clean against the real published JSON.
 - `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` —
   **2 passed (5.6 s)**: a real browser fetching and decoding the seeded release
   cross-origin via `createImageBitmap`, and page script reading the pointer
@@ -876,6 +905,7 @@ Still unproven:
 | --- | --- |
 | The CORS-`blocked` failure branch (no origin is actually refused — the policy is `*`) | `r2-delivery.spec.ts` |
 | Smart Tiered Cache state | §2.5, never confirmed |
+| Source-bucket privacy (`aquila-vn-source` has no r2.dev URL and no custom domain) | manual dashboard check — `verify.ts` only proves the source key is absent from the *delivery* bucket, not that the source bucket is private (see §7 trap) |
 
 **One design value changed as a result of measurement**: the pointer's 60-second
 Edge TTL was unrepresentable on the Free plan, so the pointer now bypasses the

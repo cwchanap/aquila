@@ -259,6 +259,22 @@ async function runChecksOrAbort(results: CheckResult[]): Promise<void> {
     }
 }
 
+/**
+ * Tamper with the first asset's WebP variant byteLength in a serialized
+ * manifest, returning the re-serialized text. Used by the post-publication
+ * edit scenarios to invalidate the manifest content without touching the
+ * pointer's advertised checksum.
+ */
+function tamperWebpByteLength(manifestText: string): string {
+    const tampered = JSON.parse(manifestText) as {
+        assets: Array<{
+            variants: { webp: { byteLength: number } };
+        }>;
+    };
+    tampered.assets[0].variants.webp.byteLength = 9999;
+    return JSON.stringify(tampered);
+}
+
 describe('runChecks integrity', () => {
     afterEach(() => {
         _setFetchImpl(fetch);
@@ -397,13 +413,7 @@ describe('runChecks integrity', () => {
         // advertises the original manifestSha256. The reader rejects this with
         // "Manifest checksum mismatch"; the verifier must too.
         const release = buildValidRelease();
-        const tampered = JSON.parse(release.manifestText) as {
-            assets: Array<{
-                variants: { webp: { byteLength: number } };
-            }>;
-        };
-        tampered.assets[0].variants.webp.byteLength = 9999;
-        release.manifestText = JSON.stringify(tampered);
+        release.manifestText = tamperWebpByteLength(release.manifestText);
         _setFetchImpl(makeFetch(release));
 
         const results: CheckResult[] = [];
@@ -425,13 +435,7 @@ describe('runChecks integrity', () => {
         // the checksum passes) while leaving releaseId at the original digest
         // still fails the canonical-content check the reader performs.
         const release = buildValidRelease();
-        const tampered = JSON.parse(release.manifestText) as {
-            assets: Array<{
-                variants: { webp: { byteLength: number } };
-            }>;
-        };
-        tampered.assets[0].variants.webp.byteLength = 9999;
-        const tamperedManifestText = JSON.stringify(tampered);
+        const tamperedManifestText = tamperWebpByteLength(release.manifestText);
         release.manifestText = tamperedManifestText;
         // Re-sign the pointer so the manifest-byte checksum passes, but leave
         // releaseId pointing at the original content digest.

@@ -1,12 +1,18 @@
 /**
  * Tests for asset-preview-id.ts.
  *
- * Covers two contracts that previously had no tests:
+ * Covers the asset preview-id contracts:
  *  - `derivePreviewId` must not merge distinct refs into one preview namespace
  *    (slugification is lossy, so a digest discriminator is appended to every
  *    non-empty slug).
  *  - `previewIdForEnv` must honour an explicit `PUBLIC_ASSET_PREVIEW_ID` for
  *    spoiler-sensitive previews instead of always deriving from the branch.
+ *  - `writePreviewId` is the thin CLI writer these contracts feed into.
+ *
+ * The `main` composition and the `import.meta.main` Bun CLI entrypoint are
+ * exercised by the co-located suite in
+ * `src/lib/visual-assets/__tests__/preview-id.test.ts`, which drives the
+ * script the same way the build does.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -22,6 +28,11 @@ const PREVIEW_ENV = {
     PUBLIC_ASSET_ENVIRONMENT: 'preview',
     VERCEL_GIT_COMMIT_REF: 'feature/foo',
 } as const;
+
+// A realistic branch that already overflows the 64-character clamp; used to
+// exercise the slug-prefix clamp and sibling-distinctness behaviour.
+const LONG_BRANCH =
+    'jack65786656/hpa-229-provision-isolated-aquila-r2-visual-asset-delivery';
 
 describe('derivePreviewId', () => {
     it('produces ids that satisfy isPreviewId()', () => {
@@ -85,6 +96,62 @@ describe('derivePreviewId', () => {
         expect(id).toMatch(/^preview-[a-f0-9]{8}$/);
         expect(isPreviewId(id)).toBe(true);
         expect(derivePreviewId('日本語')).toBe(id);
+    });
+
+    it('lowercases, replaces slashes, and appends a ref digest', () => {
+        // The digest is over the NFC ref before lowercasing, so the slug stays
+        // readable while refs that slugify identically remain distinct.
+        expect(derivePreviewId('feature/Foo_Bar')).toMatch(
+            /^feature-foo_bar-[0-9a-f]{12}$/
+        );
+    });
+
+    it('strips leading and trailing separators before digesting', () => {
+        expect(derivePreviewId('-HPA-229-')).toMatch(/^hpa-229-[0-9a-f]{12}$/);
+    });
+
+    it('collapses runs of separators before digesting', () => {
+        expect(derivePreviewId('a///b')).toMatch(/^a-b-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a__b')).toMatch(/^a-b-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a-_-b')).toMatch(/^a-b-[0-9a-f]{12}$/);
+    });
+
+    it('clamps the slug prefix so the whole id stays within 64 characters', () => {
+        const result = derivePreviewId(`${'a'.repeat(62)}-${'b'.repeat(20)}`);
+        expect(result.length).toBeLessThanOrEqual(64);
+        expect(isPreviewId(result)).toBe(true);
+    });
+
+    it('appends a digest to every non-empty slug, even when it fits', () => {
+        // The discriminator is not conditional on truncation: a bare slug
+        // would merge refs that slugify identically (`feature/foo` and
+        // `feature-foo`), so every non-empty slug gets one. The prefix is
+        // clamped to 51 chars, leaving room for `-` plus the 12-hex digest,
+        // so the whole id stays within the 64-char isPreviewId limit.
+        expect(derivePreviewId('a'.repeat(63))).toMatch(/^a{51}-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a'.repeat(64))).toMatch(/^a{51}-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a'.repeat(65))).toMatch(/^a{51}-[0-9a-f]{12}$/);
+    });
+
+    it('keeps sibling branches that differ only past the clamp distinct', () => {
+        const siblings = [
+            LONG_BRANCH,
+            `${LONG_BRANCH}-followup`,
+            'jack65786656/hpa-229-provision-isolated-aquila-r2-visual-asset-fix',
+        ];
+        const ids = siblings.map(derivePreviewId);
+
+        expect(new Set(ids).size).toBe(siblings.length);
+        for (const id of ids) {
+            expect(id.length).toBeLessThanOrEqual(64);
+            expect(isPreviewId(id)).toBe(true);
+        }
+    });
+
+    it('gives canonically equivalent refs the same id', () => {
+        // 'e' + combining acute normalizes to precomposed 'é'. Both take the
+        // hash-fallback path, so the hash input must be normalized as well.
+        expect(derivePreviewId('e\u0301')).toBe(derivePreviewId('\u00e9'));
     });
 });
 

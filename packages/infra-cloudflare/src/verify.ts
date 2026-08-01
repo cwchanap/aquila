@@ -665,11 +665,15 @@ export async function runChecks(
     }
 
     // webp is required per asset in the contract, so an absent webp means the
-    // release published no assets at all. avif is optional per asset, but the
-    // verifier still reports a release that offers no avif so an operator is
-    // not left wondering whether avif delivery is working — as a warning,
-    // never a failure, so an optional format cannot fail an otherwise healthy
-    // release.
+    // release published no assets at all. avif is optional per asset in the
+    // HPA-227 schema, but `image/avif` content-type is an enumerated
+    // acceptance criterion for HPA-229 (design check 3) and the only check
+    // that can prove a release serves a real AVIF object. A release that
+    // offers no avif therefore hard-fails — downgrading it to a warning would
+    // let the only evidence for that criterion disappear without anyone
+    // noticing (runbook §"The seeder must emit AVIF"). The runbook is
+    // authoritative here: the per-asset optionality in the schema does not
+    // override the release-level acceptance requirement.
     if (!offeredWebp) {
         results.push({
             name: 'webp object',
@@ -681,8 +685,7 @@ export async function runChecks(
         results.push({
             name: 'avif object',
             ok: false,
-            warning: true,
-            detail: `no avif variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath}`,
+            detail: `no avif variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath} — image/avif is an HPA-229 acceptance criterion`,
         });
     }
 

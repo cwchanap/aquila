@@ -6,6 +6,31 @@
 **Parent:** HPA-216 · **Depends on:** HPA-227 (Done)
 **Blocks:** HPA-230 (publisher), HPA-231 (Seventh Mirror migration), HPA-233 (release gate)
 
+> **Document status — read before relying on any section.** This design records
+> the **original approved proposal**. Implementation diverged from it in several
+> material ways, and the runbook is **authoritative for all implementation
+> details** — not only D3 and D4, which carry their own inline supersession
+> notes. In particular:
+>
+> - **D5** (declarative config + idempotent `provision.ts`, `--dry-run`, and a
+>   `create-publisher-token` command) was **cancelled**. Provisioning is a
+>   manual dashboard procedure; `packages/infra-cloudflare/src/api.ts`,
+>   `provision`, `provision:dry`, and `create-publisher-token` do not exist.
+> - **D6** scopes the publisher token to **both** buckets; the deployed token
+>   is **delivery-only** (`aquila-vn-delivery`), as least privilege.
+> - **D7** describes the original preview-ID algorithm (no digest on non-empty
+>   slugs) and says an explicit `PUBLIC_ASSET_PREVIEW_ID` cannot be a stored
+>   project variable. The deployed algorithm appends a digest discriminator to
+>   **every** non-empty slug, and an explicit id **may** be stored if it is
+>   scoped to a single Git branch.
+> - The **Repository artifacts**, **Verification**, and **Observability /
+>   rollback** sections below still name the cancelled scripts and commands;
+>   treat their command lists as aspirational, not present.
+>
+> Where this document and
+> `docs/infrastructure/r2-visual-asset-delivery.md` disagree, the runbook wins.
+> The inline `> **Superseded…**` notes on D3–D7 call out the specific divergences.
+
 ## Purpose
 
 Provision the Cloudflare R2 infrastructure that delivers Aquila visual-novel
@@ -219,6 +244,18 @@ uploads.
 
 ### D5 — Declarative config plus idempotent script
 
+> **Superseded as specified (cancelled in implementation).** None of
+> `provision.ts`, `--dry-run`, or the `create-publisher-token` one-shot command
+> was built. Provisioning happens once, so the idempotent reconciler was
+> cancelled; `packages/infra-cloudflare/src/api.ts` and the `provision`,
+> `provision:dry`, and `create-publisher-token` npm scripts do not exist, and
+> the package exposes only `seed` and `verify`. First-time setup is a **manual
+> dashboard procedure** (or a purpose-scoped API token used against the API
+> directly), documented step-by-step in the runbook. The `r2-delivery.config.json`
+> file is retained as a checked-in record of the desired state (account id,
+> bucket names, hostname), not as input to a reconciler. The runbook is the
+> source of truth: `docs/infrastructure/r2-visual-asset-delivery.md` §2.
+
 `infra/cloudflare/r2-delivery.config.json` holds desired state; `provision.ts`
 applies it and is safe to re-run; `--dry-run` prints a diff without writing.
 Chosen over Terraform because the monorepo is Bun/TypeScript-only, Terraform is
@@ -244,6 +281,22 @@ safe to re-run. The config file may carry token *metadata* (name, bucket scope)
 for documentation, but it is never desired state that gets upserted.
 
 ### D6 — Credentials
+
+> **Superseded as specified (diverged in implementation).** The deployed
+> publisher token is scoped to **`aquila-vn-delivery` only**, not both buckets.
+> An R2 API token carries a single permission level across every bucket it
+> selects, so the design's "read-write on both" would have granted write access
+> to the private authoring originals in `aquila-vn-source`; delivery-only was
+> chosen as least privilege so a leaked publisher key cannot touch the source
+> bucket. If HPA-230's publisher needs to read authoring originals, the correct
+> response is a **second, read-only token scoped to `aquila-vn-source`** — not
+> widening this one. The `create-publisher-token.ts` minter named below was
+> cancelled along with the rest of D5; the token is created manually in the R2
+> dashboard. The operator token described here (for `provision.ts`) is moot:
+> with no `provision.ts`, no operator token is needed for reconciliation, and
+> first-time setup uses either the dashboard or a purpose-scoped API token with
+> the three scopes listed below. The runbook is the source of truth:
+> `docs/infrastructure/r2-visual-asset-delivery.md` §2.7.
 
 | Secret | Home | Scope |
 |---|---|---|
@@ -286,6 +339,22 @@ credentials cannot read or modify unrelated Cloudflare resources — including t
 seven pre-existing buckets in this account, which belong to other projects.
 
 ### D7 — Environment-selected asset source
+
+> **Superseded as specified (diverged in implementation).** Two claims below no
+> longer hold. (1) The preview-ID algorithm described in the steps that follow
+> appends a digest **only to empty slugs** (step 6). The deployed
+> `derivePreviewId()` appends a `-<12 hex of sha256(NFC(ref))>` digest
+> discriminator to **every** non-empty slug as well, because slugification is
+> lossy — `feature/foo`, `feature-foo`, and `Feature/Foo` all collapse to
+> `feature-foo`, and a bare slug would merge unrelated branches into one preview
+> namespace. (2) The text says an explicit `PUBLIC_ASSET_PREVIEW_ID` "cannot be
+> a stored project variable — it differs per branch." An explicit id **may** be
+> stored, but it **must be scoped to a single Git branch** (`vercel env add …
+> preview <branch-name>`); a project-wide explicit value sends every preview
+> deployment into the same R2 namespace and reintroduces the cross-branch
+> overwrite the digest discriminator exists to prevent. The runbook is the
+> source of truth: `docs/infrastructure/r2-visual-asset-delivery.md` §3 and
+> "Branch-derived preview ids".
 
 `apps/web/src/lib/visual-assets/source-factory.ts` currently hardcodes
 `environment: 'local'` and `previewId: 'hpa-228-local'`. It becomes env-driven:
@@ -450,35 +519,45 @@ existing graceful-fallback path would mask it.
 
 ## Repository artifacts
 
+> **Aspirational list — not all of these exist.** See the document-status notice
+> at the top and the D5/D6 supersession notes. The code block lists what ships;
+> the cancelled entries are called out separately below it. The runbook is
+> authoritative for what actually ships.
+
 ```text
-infra/cloudflare/r2-delivery.config.json          desired state
-infra/cloudflare/provision.ts                     idempotent apply, --dry-run
-infra/cloudflare/create-publisher-token.ts        one-shot, prints secret once
-infra/cloudflare/seed.ts                          upload smoke fixtures
-infra/cloudflare/verify.ts                        smoke tests
-infra/cloudflare/fixtures/                        tiny WebP/AVIF + manifest + pointer
-apps/web/scripts/asset-preview-id.ts              derive preview id from branch
-docs/infrastructure/r2-visual-asset-delivery.md   runbook
+packages/infra-cloudflare/r2-delivery.config.json  desired state (checked-in record, not reconciler input)
+packages/infra-cloudflare/src/seed.ts              upload smoke fixtures
+packages/infra-cloudflare/src/verify.ts            smoke verifier
+packages/infra-cloudflare/src/__tests__/           verifier + assertion unit tests
+apps/web/scripts/asset-preview-id.ts               derive preview id from branch
+docs/infrastructure/r2-visual-asset-delivery.md    runbook (authoritative)
 ```
 
-Package scripts: `bun r2:provision`, `bun r2:provision:dry`,
-`bun r2:create-publisher-token`, `bun r2:seed`, `bun r2:verify`.
+Cancelled (do not look for these): `packages/infra-cloudflare/src/api.ts`,
+`provision.ts`, `create-publisher-token.ts`, `infra/cloudflare/fixtures/`.
+
+Package scripts that exist: `bun --filter @aquila/infra-cloudflare seed`,
+`bun --filter @aquila/infra-cloudflare verify`. The `bun r2:provision`,
+`bun r2:provision:dry`, and `bun r2:create-publisher-token` scripts were
+cancelled with D5 and are not defined.
 
 **Implementation order** (smallest blast radius last, so the existing test suite
-pins the local default until the end): config schema → `provision.ts` dry-run
-against the real account → apply → seed → verify (including the browser and
-pointer-activation checks) → D7 app change → `asset-preview-id.ts` and the build
-command → Vercel environment variables.
+pins the local default until the end): config schema → manual provisioning per
+runbook §2 → seed → verify (including the browser and pointer-activation checks)
+→ D7 app change → `asset-preview-id.ts` and the build command → Vercel
+environment variables.
 
 ## Verification
 
 Because the publisher does not exist yet, this issue seeds its own smoke
 fixtures: a tiny WebP, a tiny AVIF, a runtime manifest, and a `current.json`,
 all conforming to the HPA-227 schemas and uploaded under `vn/previews/smoke/`
-(objects in the shared `vn/objects/` pool) by `bun r2:seed`. They are checked
-into `infra/cloudflare/fixtures/`, and `seed.ts` sets **both `Content-Type` and
-`Cache-Control`** on every uploaded object to the exact values the publisher will
-use:
+(objects in the shared `vn/objects/` pool) by
+`bun --filter @aquila/infra-cloudflare seed`. The smoke fixtures are generated
+at seed time from `packages/assets/media` sources (not checked in as binaries —
+the `infra/cloudflare/fixtures/` tree the original proposal named was never
+created), and `seed.ts` sets **both `Content-Type` and `Cache-Control`** on
+every uploaded object to the exact values the publisher will use:
 
 | Object class | `Content-Type` | `Cache-Control` |
 |---|---|---|
@@ -570,20 +649,24 @@ The runbook documents:
      serialized as canonical JSON plus one LF.
   3. Upload it with `Content-Type: application/json` and the pointer
      `Cache-Control`.
-  4. Purge the single `current.json` URL so the 60s edge TTL does not delay it.
 
-  This is the one operation where the contract's anti-downgrade rule and the
-  cache policy interact, and getting either half wrong produces a rollback that
-  appears to succeed while changing nothing.
-- Recovery: re-running `bun r2:provision` restores CORS, cache rules, and the
-  custom domain from config. Bucket contents are not recoverable this way.
+  No purge step: the deployed pointer rule **bypasses** the edge cache (see the
+  D4 supersession note), so a new pointer is visible on the next client
+  revalidation. (The original proposal's step 4 — purging `current.json` to beat
+  a 60s edge TTL — applied to the three-rule design that was redesigned.) This is
+  the one operation where the contract's anti-downgrade rule and the cache policy
+  interact, and getting either half wrong produces a rollback that appears to
+  succeed while changing nothing.
+- Recovery: there is no `bun r2:provision` to re-run (cancelled with D5). CORS,
+  cache rules, and the custom domain are restored by repeating the manual
+  dashboard steps in runbook §2. Bucket contents are not recoverable this way.
 - Manual uploads must carry an explicit `Cache-Control` matching
   `RUNTIME_ASSET_CACHE_POLICY`; see the hand-uploaded-objects note in D4.
-- **Renaming a bucket in config is not a safe re-run.** `provision.ts` never
-  deletes, so a renamed delivery bucket produces a second empty bucket while the
-  custom domain stays attached to the original — one domain binds to exactly one
-  bucket. A rename requires manually detaching the domain and deleting the old
-  bucket first, in that order.
+- **Renaming a bucket is not a safe re-run.** With no reconciler, a renamed
+  delivery bucket is simply a second empty bucket while the custom domain stays
+  attached to the original — one domain binds to exactly one bucket. A rename
+  requires manually detaching the domain and deleting the old bucket first, in
+  that order.
 
 ## Out of scope
 
@@ -596,7 +679,7 @@ under `packages/assets/media`.
 | Risk | Mitigation |
 |---|---|
 | Preview publish writes a production pointer | Publisher-enforced; HPA-230 must test `assertActivationAllowed()` |
-| Preview trees are world-readable, and branch-derived preview IDs are **guessable** | Accepted, with eyes open. Deriving the id from the branch name means anyone who can guess a branch (`hpa-231`, `main`) can read unreleased artwork published under it. This is a real consequence of wiring preview to branch slugs rather than random ids, chosen because reproducibility per branch is what makes preview useful. For spoiler-sensitive work, publish under a manually-set unguessable `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one. Documented in the runbook. |
+| Preview trees are world-readable, and branch-derived preview IDs are **guessable** | Accepted, with eyes open. Deriving the id from the branch name means anyone who can guess a branch (`hpa-231`, `main`) can read unreleased artwork published under it. This is a real consequence of wiring preview to branch slugs rather than random ids, chosen because reproducibility per branch is what makes preview useful. For spoiler-sensitive work, publish under a manually-set, branch-scoped unguessable `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one. Documented in the runbook. |
 | Custom domain stuck in "Initializing" | Runbook documents retry; zone is Free with no zone hold |
-| 60s pointer cache delays rollback | Runbook makes the targeted purge a required rollback step |
-| Free-plan rule limit (10) | 3 used; documented so future rules stay within budget |
+| ~~60s pointer cache delays rollback~~ | **No longer applies** — the deployed pointer rule bypasses the edge cache (D4 supersession), so rollback needs no purge. The original three-rule design carried this risk. |
+| Free-plan rule limit (10) | 2 used (deployed); the original proposal used 3. Documented so future rules stay within budget |

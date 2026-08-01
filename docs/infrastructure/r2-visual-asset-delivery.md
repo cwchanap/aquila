@@ -872,25 +872,39 @@ evidence that the pipeline works.
   | --- | --- | --- |
   | `/vn/objects/<x>.webp`, `.avif` | `EXPIRED` | rule 1 matched |
   | `…/releases/…/runtime-manifest.json` | `MISS` | rule 1 matched |
-  | `/vn/stories/…/current.json` | `MISS` | rule 2 matched |
-  | `/vn/previews/…/current.json` | `MISS` | rule 2 matched |
+  | `/vn/stories/…/current.json` | `MISS` | rule 2 matched (pre-bypass; see note) |
+  | `/vn/previews/…/current.json` | `MISS` | rule 2 matched (pre-bypass; see note) |
   | `/vn/stories/x/other.json` | `DYNAMIC` | correctly not matched |
   | `/not-matched.txt` | `DYNAMIC` | control |
 
   The fifth row matters: an unrelated `.json` under `/vn/stories/` stays uncached,
   so the `ends_with` predicates are precise rather than over-broad.
+
+  > **Historical — the two `current.json` rows predate the pointer bypass
+  > redesign (§5).** They were recorded when rule 2 was cache-eligible, so a
+  > matching pointer reported `MISS`. Under the deployed bypass, rule 2 makes
+  > the pointer uncached and `cf-cache-status: DYNAMIC` is the only state a
+  > matching bypass rule and no rule at all both produce — so a `MISS` on
+  > `current.json` is now a *failure* the verifier rejects, not evidence of a
+  > match. The current measured state is `DYNAMIC` with no `age` across 8
+  > consecutive requests (confirmed 2026-07-31, see §5 and the bypass note at
+  > the end of this section); rule 2 matching is now confirmed by the
+  > verifier's `pointer edge bypass` check, not by a `MISS` probe.
 - Smart Tiered Cache state still unconfirmed — it is in no config file, so nothing
   detects drift.
 - **The smoke release is published, but only confirmed by hand** — no automated
   verifier or end-to-end output against it has been recorded, so every check
   below remains unproven.
 
-A caveat on the two rows above that report a cached status: those responses were
+A caveat on the rows above that report a cached status: those responses were
 all **404s**, and Cloudflare applies its own short TTL to error responses
-regardless of a rule's Edge TTL. So these probes prove the rules *match and make
-the path cacheable*; they do **not** prove the `31536000` and `60` second TTLs are
-in effect. Only real `200` responses can show that, via `age` and
-`cache-control` — which is what `verify.ts` checks.
+regardless of a rule's Edge TTL. So the object/manifest probes prove rule 1
+*matches and makes the path cacheable*; they do **not** prove the `31536000`
+immutable TTL is in effect. Only real `200` responses can show that, via `age`
+and `cache-control` — which is what `verify.ts` checks. The `current.json` rows
+are a separate case: they predate the bypass redesign (see the note above), and
+the pointer no longer has an edge TTL to prove — the `60` second policy was
+removed when the pointer rule switched to bypass (§5).
 
 ### Published by `seed`, confirmed by hand
 
@@ -918,13 +932,17 @@ The verifier's integrity chain — contract parsing, manifest-byte and
 canonical-content digests, per-object byte-length and SHA-256, cross-reference
   consistency for objects sharing a digest, a strict pointer CORS check
   (wildcard-only), rejection of conflicting directives on immutable headers
-  (`no-store`/`private`/`no-cache`/overriding `max-age`/`s-maxage`), and a hard
-  manifest edge-cache-eligibility check — is **implemented and covered by the
+  (`no-store`/`private`/`no-cache`/overriding `max-age`/`s-maxage`, including
+  quoted freshness directives and duplicate occurrences), a hard
+  manifest edge-cache-eligibility check, and a per-request deadline so a
+  stalled response fails the run instead of hanging it — is **implemented and
+  covered by the
   unit suite** in
-  `packages/infra-cloudflare/src/__tests__/verify.test.ts` (21 tests, including
+  `packages/infra-cloudflare/src/__tests__/verify.test.ts` (24 tests, including
   the conflicting-byteLength, conflicting-dimensions, consistent-reference,
-  foreign-origin CORS, non-cacheable-manifest, and conflicting-immutable-directive
-  cases; the package's full suite totals 84 across five
+  foreign-origin CORS, non-cacheable-manifest, conflicting-immutable-directive,
+  quoted/duplicate-freshness, and stalled-response cases; the package's full
+  suite totals 91 across five
   files — `verify.test.ts` is not the whole package). A fresh live run of both
   verifiers against the seeded release has **not yet been recorded** with the
   updated checks. The `15 PASS` and `2 passed` counts below predate the
@@ -983,9 +1001,10 @@ curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
 `bun run test` (5 tasks green — web 1597, game 412, stories 198,
-infra-cloudflare 84; desktop has no test files — re-measured 2026-07-31, was
-web 1582 / infra-cloudflare 53, then 73 before the immutable-conflict and
-manifest-cache-eligibility checks),
+infra-cloudflare 91; desktop has no test files — infra-cloudflare re-measured
+2026-08-01 after the quoted/duplicate-freshness and per-request-deadline
+checks, was 84 on 2026-07-31, 73 before the immutable-conflict and
+manifest-cache-eligibility checks, 53 before that; web was 1582 on 2026-07-31),
 `bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
 sha256-b632cb09…`). The `bun --filter @aquila/infra-cloudflare verify` (15 PASS)
 and `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts`

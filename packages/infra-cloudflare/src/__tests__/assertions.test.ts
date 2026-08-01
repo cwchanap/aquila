@@ -112,6 +112,47 @@ describe('assertImmutable', () => {
         expect(result.detail).toContain('s-maxage=0');
     });
 
+    // The conflict check parses each directive into name/value, including
+    // quoted arguments (RFC 7230 quoted-string). A quoted freshness directive
+    // is still honoured by real caches — `s-maxage` takes precedence over
+    // `max-age` in shared caches — so a quoted zero must not slip past as an
+    // unrecognised extra. The previous regex only matched unquoted numerics,
+    // so these headers passed while a cache served them as stale.
+    it('rejects a quoted max-age that overrides the one-year freshness', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, max-age="0"'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('max-age=0');
+    });
+
+    it('rejects a quoted s-maxage that overrides shared-cache freshness', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, s-maxage="0"'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('s-maxage=0');
+    });
+
+    // Duplicate freshness directives are ambiguous even when their text is
+    // identical: caches may honour either occurrence or treat the response as
+    // stale, so a second `max-age=31536000` is not a benign extra.
+    it('rejects a duplicate identical max-age', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, max-age=31536000'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('duplicate max-age');
+    });
+
+    it('rejects a duplicate identical s-maxage', () => {
+        const result = assertImmutable(
+            'public, max-age=31536000, immutable, s-maxage=31536000, s-maxage=31536000'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('duplicate s-maxage');
+    });
+
     it('names every conflicting directive when several are present', () => {
         const result = assertImmutable(
             'public, max-age=31536000, immutable, no-store, private, no-cache'

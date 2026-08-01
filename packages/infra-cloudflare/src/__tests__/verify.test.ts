@@ -20,7 +20,12 @@ import {
     parseRuntimeAssetManifest,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
-import { runChecks, _setFetchImpl, ORIGIN } from '../verify';
+import {
+    runChecks,
+    _setFetchImpl,
+    _setRequestTimeout,
+    ORIGIN,
+} from '../verify';
 import type { CheckResult } from '../assertions';
 
 const STORY_ID = 'the_seventh_mirror';
@@ -408,7 +413,64 @@ function makeFetchWithManifestCacheState(
 describe('runChecks integrity', () => {
     afterEach(() => {
         _setFetchImpl(fetch);
+        _setRequestTimeout(30_000);
     });
+
+    // A connection that accepts the request but never returns headers, or
+    // returns headers and stalls the body, must surface as a failed check
+    // rather than hanging the sequential run forever. `request()` passes an
+    // abort signal to `fetch` so the deadline covers both header arrival and
+    // body consumption; these fakes honour that signal the way real `fetch`
+    // does (a never-resolving fetch rejects on abort; a stalled body stream
+    // errors on abort so `text()`/`arrayBuffer()` reject).
+    function stalledBodyStream(
+        signal: AbortSignal | null | undefined
+    ): ReadableStream<Uint8Array> {
+        return new ReadableStream<Uint8Array>({
+            start(controller) {
+                if (!signal) return;
+                if (signal.aborted) {
+                    controller.error(signal.reason);
+                    return;
+                }
+                signal.addEventListener(
+                    'abort',
+                    () => controller.error(signal.reason),
+                    { once: true }
+                );
+            },
+        });
+    }
+
+    function makeHangingFetch(): typeof fetch {
+        return ((input: RequestInfo | URL, init?: RequestInit) =>
+            new Promise<Response>((_resolve, reject) => {
+                const signal = init?.signal;
+                if (!signal) return; // never resolves
+                if (signal.aborted) return reject(signal.reason);
+                signal.addEventListener('abort', () => reject(signal.reason), {
+                    once: true,
+                });
+            })) as typeof fetch;
+    }
+
+    function makeFetchWithStalledBody(
+        release: ReturnType<typeof buildValidRelease>,
+        stall: (url: string) => boolean,
+        headers: (url: string) => Record<string, string>
+    ): typeof fetch {
+        const base = makeFetch(release);
+        return (async (input: RequestInfo | URL, init?: RequestInit) => {
+            const url = typeof input === 'string' ? input : input.toString();
+            if (stall(url)) {
+                return new Response(stalledBodyStream(init?.signal), {
+                    status: 200,
+                    headers: headers(url),
+                });
+            }
+            return base(input);
+        }) as typeof fetch;
+    }
 
     it('passes every integrity check for a contract-valid release', async () => {
         const release = buildValidRelease();
@@ -972,5 +1034,77 @@ describe('runChecks integrity', () => {
         expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
             0
         );
+    });
+
+    it('fails instead of hanging when a fetch never resolves', async () => {
+        // The pointer fetch is the first request. A connection that accepts
+        // it but never returns headers must abort at the deadline and surface
+        // as a failed run, not block forever.
+        _setFetchImpl(makeHangingFetch());
+        _setRequestTimeout(50);
+        const results: CheckResult[] = [];
+        const start = Date.now();
+        await expect(runChecks(BASE, results)).rejects.toThrow(
+            /pointer fetch/i
+        );
+        expect(Date.now() - start).toBeLessThan(2000);
+    });
+
+    it('fails instead of hanging when a JSON body never completes', async () => {
+        // Headers arrive (status 200, correct content-type/CORS/cache) but
+        // the body stream never closes. `response.text()` would block
+        // unbounded; the deadline aborts it and the run reports the failure.
+        const release = buildValidRelease();
+        const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
+        _setFetchImpl(
+            makeFetchWithStalledBody(
+                release,
+                url => url === `${BASE}/${pointerPath}`,
+                () => ({
+                    'content-type': 'application/json',
+                    'cache-control': POINTER_CACHE,
+                    'access-control-allow-origin': '*',
+                    'cf-cache-status': 'BYPASS',
+                })
+            )
+        );
+        _setRequestTimeout(50);
+        const results: CheckResult[] = [];
+        const start = Date.now();
+        await expect(runChecks(BASE, results)).rejects.toThrow(
+            /pointer fetch/i
+        );
+        expect(Date.now() - start).toBeLessThan(2000);
+    });
+
+    it('fails instead of hanging when an object body never completes', async () => {
+        // Pointer and manifest succeed; object responses return headers but
+        // stall the body. `checkObject` reads `arrayBuffer()` for the
+        // byte-length/checksum checks, so a stalled body must abort and
+        // report a failed object-bytes check rather than hang. The per-format
+        // content-type is set so the header checks pass and the failure is
+        // isolated to the body read.
+        const release = buildValidRelease();
+        _setFetchImpl(
+            makeFetchWithStalledBody(
+                release,
+                url => url.includes('/vn/objects/'),
+                url => ({
+                    'content-type': url.endsWith('.avif')
+                        ? 'image/avif'
+                        : 'image/webp',
+                    'cache-control': IMMUTABLE_CACHE,
+                    'cf-cache-status': 'HIT',
+                })
+            )
+        );
+        _setRequestTimeout(50);
+        const results: CheckResult[] = [];
+        const start = Date.now();
+        await runChecks(BASE, results);
+        expect(Date.now() - start).toBeLessThan(2000);
+        const bytesChecks = results.filter(r => /object bytes$/.test(r.name));
+        expect(bytesChecks.length).toBeGreaterThan(0);
+        expect(bytesChecks.every(r => !r.ok)).toBe(true);
     });
 });

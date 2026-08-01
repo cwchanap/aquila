@@ -13,10 +13,11 @@ serves visual-novel runtime assets to the web reader.
 > an exact allowlist cannot cover ephemeral `*.vercel.app` preview origins),
 > rejection of conflicting directives on immutable headers (`no-store`,
 > `private`, `no-cache`, and a second `max-age`/`s-maxage` overriding the
-> one-year freshness), parsed rejection of contradictory directives on the
-> pointer header (`immutable`, any `s-maxage`, and a second `max-age` that
-> defeats revalidation — `no-store` stays allowed as a safe strengthening, so
-> the shell and browser E2E verifiers agree on the directive set), and a hard
+> one-year freshness), exact rejection of any extra or duplicate directive on
+> the pointer header (it must be exactly `no-cache, max-age=0, must-revalidate`
+> in any order — no extras such as `immutable`/`s-maxage`/`no-store`, no
+> duplicate `max-age` — so the shell and browser E2E verifiers agree on the
+> directive set via the same multiset comparison), and a hard
 > manifest edge-cache-eligibility check (the
 > manifest's `cf-cache-status` must be `MISS`/`HIT`/`EXPIRED`/`REVALIDATED`, not
 > `DYNAMIC`/`BYPASS`/absent) — is implemented and covered by the unit suite in
@@ -950,10 +951,11 @@ canonical-content digests, per-object byte-length and SHA-256, cross-reference
   consistency for objects sharing a digest, a strict pointer CORS check
   (wildcard-only), rejection of conflicting directives on immutable headers
   (`no-store`/`private`/`no-cache`/overriding `max-age`/`s-maxage`, including
-  quoted freshness directives and duplicate occurrences), parsed rejection of
-  contradictory directives on the pointer header (`immutable`/any
-  `s-maxage`/a second `max-age`, with `no-store` allowed as a safe
-  strengthening so the shell and browser E2E agree on the directive set), a hard
+  quoted freshness directives and duplicate occurrences), exact rejection of
+  any extra or duplicate directive on the pointer header (it must be exactly
+  `no-cache, max-age=0, must-revalidate` in any order — no extras such as
+  `immutable`/`s-maxage`/`no-store`, no duplicate `max-age` — so the shell and
+  browser E2E agree on the directive set via the same multiset comparison), a hard
   manifest edge-cache-eligibility check, and a per-request deadline so a
   stalled response fails the run instead of hanging it — is **implemented and
   covered by the

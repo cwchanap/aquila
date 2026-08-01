@@ -275,6 +275,61 @@ function tamperWebpByteLength(manifestText: string): string {
     return JSON.stringify(tampered);
 }
 
+/**
+ * Re-signs a manifest and its pointer so both integrity digests match the
+ * edited manifest content. `buildValidRelease` signs the original release once;
+ * tests that edit the manifest object after the fact (e.g. making two assets
+ * share a digest) must re-derive releaseId from canonical content and
+ * manifestSha256 from the new bytes, or the contract checks abort before the
+ * check under test runs.
+ */
+function resignRelease(
+    release: ReturnType<typeof buildValidRelease>,
+    manifestObj: Record<string, unknown>
+): void {
+    const parsed = parseRuntimeAssetManifest(manifestObj);
+    const releaseId = `sha256-${sha256Hex(canonicalReleaseContent(parsed))}`;
+    const finalManifest = { ...manifestObj, releaseId };
+    const manifestText = JSON.stringify(finalManifest);
+    const manifestSha256 = sha256Hex(manifestText);
+    const pointer = JSON.parse(release.pointerText) as {
+        releaseId: string;
+        manifestPath: string;
+        manifestSha256: string;
+    };
+    pointer.releaseId = releaseId;
+    pointer.manifestPath = getReleaseManifestPath(STORY_ID, releaseId, TARGET);
+    pointer.manifestSha256 = manifestSha256;
+    release.manifestText = manifestText;
+    release.pointerText = JSON.stringify(pointer);
+    release.manifestObj = parsed;
+}
+
+/**
+ * A fetch that serves the release's documents and objects but returns a
+ * pointer `access-control-allow-origin` that does not match the request origin
+ * and is not `*` — the scenario where a misconfigured CORS policy lets the
+ * verifier pass while every real browser blocks the read.
+ */
+function makeFetchWithBadCors(
+    release: ReturnType<typeof buildValidRelease>,
+    allowOrigin: string
+): typeof fetch {
+    const base = makeFetch(release);
+    const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
+    const pointerUrl = `${BASE}/${pointerPath}`;
+    return (async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        if (url === pointerUrl) {
+            return jsonResponse(release.pointerText, {
+                'cache-control': POINTER_CACHE,
+                'access-control-allow-origin': allowOrigin,
+            });
+        }
+        return base(input);
+    }) as typeof fetch;
+}
+
 describe('runChecks integrity', () => {
     afterEach(() => {
         _setFetchImpl(fetch);
@@ -474,5 +529,184 @@ describe('runChecks integrity', () => {
         expect(byName['pointer contract']).toBe(false);
         // Dependent checks are skipped.
         expect(byName['manifest checksum matches pointer']).toBeUndefined();
+    });
+
+    it('rejects two assets sharing a digest but declaring conflicting byteLength', async () => {
+        // The reviewer's scenario: two manifest entries legally reference the
+        // same digest while declaring different metadata. The manifest schema
+        // validates that each path matches the digest and byteLength is
+        // positive, but not that references sharing a digest agree. The reader
+        // checks bytes.byteLength against each asset's variant.byteLength
+        // before decoding, so the second asset is rejected at runtime; the
+        // verifier's old Set-based dedupe skipped the second reference entirely
+        // and let the release pass. The Map-based dedupe must compare the
+        // second reference's metadata against the first and fail.
+        const release = buildValidRelease();
+        const [bg] = release.assets;
+        const manifestObj = JSON.parse(release.manifestText) as {
+            assets: Array<{
+                variants: {
+                    webp: {
+                        format: string;
+                        path: string;
+                        sha256: string;
+                        byteLength: number;
+                    };
+                };
+            }>;
+        };
+        // Make the second asset's webp variant point at the first asset's
+        // webp object (same sha256, same path) but declare a different
+        // byteLength — a manifest the schema accepts but the reader rejects.
+        manifestObj.assets[1].variants.webp = {
+            format: 'webp',
+            path: bg.webpPath,
+            sha256: bg.webpSha,
+            byteLength: bg.webpBody.length + 1,
+        };
+        resignRelease(
+            release,
+            manifestObj as unknown as Record<string, unknown>
+        );
+        _setFetchImpl(makeFetch(release));
+
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        // The shared object is fetched once and passes its own integrity
+        // checks (the bytes match the first reference).
+        expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
+        expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(true);
+        // The second reference's metadata disagrees with the first — the
+        // consistency check fails where the old Set-based dedupe skipped it.
+        expect(byName[`webp ${bg.webpLabel} object reference consistent`]).toBe(
+            false
+        );
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects two assets sharing a digest but declaring conflicting dimensions', async () => {
+        // Companion to the byteLength case: width/height live on the asset, not
+        // the variant, but identical bytes decode to identical dimensions, so
+        // two assets sharing a digest must also agree on width/height. The
+        // reader's assertCallerMetadata rejects a mismatch at decode time; the
+        // verifier catches it as a manifest consistency check.
+        const release = buildValidRelease();
+        const [bg] = release.assets;
+        const manifestObj = JSON.parse(release.manifestText) as {
+            assets: Array<{
+                width: number;
+                height: number;
+                variants: {
+                    webp: {
+                        format: string;
+                        path: string;
+                        sha256: string;
+                        byteLength: number;
+                    };
+                };
+            }>;
+        };
+        manifestObj.assets[1].variants.webp = {
+            format: 'webp',
+            path: bg.webpPath,
+            sha256: bg.webpSha,
+            byteLength: bg.webpBody.length,
+        };
+        manifestObj.assets[1].width = bg.width + 1;
+        resignRelease(
+            release,
+            manifestObj as unknown as Record<string, unknown>
+        );
+        _setFetchImpl(makeFetch(release));
+
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName[`webp ${bg.webpLabel} object reference consistent`]).toBe(
+            false
+        );
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('passes two assets sharing a digest with consistent metadata', async () => {
+        // The positive counterpart: two assets referencing the same digest and
+        // declaring identical metadata is a valid release (e.g. the same image
+        // reused for two scenes). The consistency check passes and the object
+        // is fetched once.
+        const release = buildValidRelease();
+        const [bg] = release.assets;
+        const manifestObj = JSON.parse(release.manifestText) as {
+            assets: Array<{
+                width: number;
+                height: number;
+                variants: {
+                    webp: {
+                        format: string;
+                        path: string;
+                        sha256: string;
+                        byteLength: number;
+                    };
+                };
+            }>;
+        };
+        manifestObj.assets[1].variants.webp = {
+            format: 'webp',
+            path: bg.webpPath,
+            sha256: bg.webpSha,
+            byteLength: bg.webpBody.length,
+        };
+        // The second asset must also agree on dimensions, since identical
+        // bytes decode to identical dimensions.
+        manifestObj.assets[1].width = bg.width;
+        manifestObj.assets[1].height = bg.height;
+        resignRelease(
+            release,
+            manifestObj as unknown as Record<string, unknown>
+        );
+        _setFetchImpl(makeFetch(release));
+
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName[`webp ${bg.webpLabel} object reference consistent`]).toBe(
+            true
+        );
+        expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
+    });
+
+    it('rejects a pointer whose access-control-allow-origin is a foreign origin', async () => {
+        // The reviewer's scenario: the CORS header is present but carries an
+        // unrelated origin. The old check only verified the header existed, so
+        // `https://wrong.example` passed the verifier while a browser running
+        // from `https://aquila.cwchanap.dev` could not read the response. The
+        // check must require either `*` or the request's exact origin.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetchWithBadCors(release, 'https://wrong.example'));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['pointer CORS']).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('accepts a pointer whose access-control-allow-origin echoes the request origin', async () => {
+        // The non-wildcard branch: an exact-origin policy (no `*`) is also a
+        // valid CORS response for the requesting browser, so the verifier must
+        // accept it, not require `*` exclusively.
+        const release = buildValidRelease();
+        _setFetchImpl(
+            makeFetchWithBadCors(release, 'https://aquila.cwchanap.dev')
+        );
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['pointer CORS']).toBe(true);
     });
 });

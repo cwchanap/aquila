@@ -3,14 +3,20 @@
 Runbook for `assets.aquila.cwchanap.dev` — the Cloudflare R2 delivery host that
 serves visual-novel runtime assets to the web reader.
 
-> **Status: provisioned and proven end to end, with one known defect.** As of
-> 2026-07-31 both buckets exist, the custom domain is connected, CORS is applied,
-> both cache rules match, and the `smoke` release of `the_seventh_mirror` is
-> published. `verify` passes all its checks and the live e2e passes 2/2 —
-> cache-control headers, content types, real-browser image decode, and the full
-> pointer/manifest/object integrity chain (contract parsing, manifest-byte and
-> canonical-content digests, object byte-length and SHA-256) are all confirmed
-> against live `200` responses.
+> **Status: provisioned; verifier implemented and unit-tested; fresh live
+> verification pending.** As of 2026-07-31 both buckets exist, the custom domain
+> is connected, CORS is applied, both cache rules match, and the `smoke` release
+> of `the_seventh_mirror` is published. The verifier's integrity chain —
+> contract parsing, manifest-byte and canonical-content digests, per-object
+> byte-length and SHA-256, cross-reference consistency for objects sharing a
+> digest, and a strict pointer CORS check (origin must be `*` or the request
+> origin) — is implemented and covered by the unit suite in
+> `packages/infra-cloudflare/src/__tests__/verify.test.ts`. A fresh live run of
+> `bun --filter @aquila/infra-cloudflare verify` and
+> `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` against
+> the seeded release has not yet been recorded with the updated checks; the
+> counts in [§8](#8-what-has-not-been-verified) predate them. Run both and
+> replace the stale output there before treating the live pipeline as proven.
 >
 > **One design value changed after measurement.** The pointer's 60-second edge
 > TTL proved unrepresentable — Cloudflare's Free plan floors Edge TTL at 2 hours
@@ -880,24 +886,41 @@ Recorded for traceability only — see §2.9 on why it is machine-dependent.
 
 ### Still unproven
 
-Both verifiers now pass end to end, after a zone-wide **Purge Everything**
-cleared the poisoned `Vary: Origin` variant (§2.9).
+The verifier's integrity chain — contract parsing, manifest-byte and
+canonical-content digests, per-object byte-length and SHA-256, cross-reference
+consistency for objects sharing a digest, and a strict pointer CORS check — is
+**implemented and covered by the unit suite** in
+`packages/infra-cloudflare/src/__tests__/verify.test.ts` (68 tests, including
+the conflicting-byteLength, conflicting-dimensions, consistent-reference, and
+foreign-origin CORS cases). A fresh live run of both verifiers against the
+seeded release has **not yet been recorded** with the updated checks. The
+`15 PASS` and `2 passed` counts below predate the per-object, cross-reference,
+and strict-CORS checks; treat them as stale until replaced with the output of
+the commands at the end of this section.
 
-- `bun --filter @aquila/infra-cloudflare verify` — **all checks PASS**,
-  including pointer content-type, revalidation directives, CORS, `manifestPath`
-  agreement with the publication layout, the reader's contract parsers
-  (`parseActiveReleasePointer`, `parseRuntimeAssetManifest`), the manifest-byte
-  digest vs `pointer.manifestSha256`, the pointer/manifest pair validation, the
-  canonical release-content digest vs `releaseId`, manifest and object
-  content-types and immutability, **object byte-length and SHA-256 vs the
-  manifest variant for every asset's variants** (the same two checks the reader
-  performs before decoding, run against each unique content-addressed object),
-  `MISS -> HIT` cache corroboration, source-key-absent-from-delivery-bucket
-  (404), and `findForbiddenKeys` clean against the real published JSON.
+The previous live run (before the updated checks were added) passed end to end,
+after a zone-wide **Purge Everything** cleared the poisoned `Vary: Origin`
+variant (§2.9). What that run confirmed, and what still needs a fresh run:
+
+- `bun --filter @aquila/infra-cloudflare verify` — previously **15 PASS** (stale;
+  predates the per-object byte-length/checksum, cross-reference consistency,
+  and strict CORS checks). The current verifier runs more checks than 15, so
+  the count will differ. Re-run and record the new output here.
 - `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` —
-  **2 passed (5.6 s)**: a real browser fetching and decoding the seeded release
-  cross-origin via `createImageBitmap`, and page script reading the pointer
-  revalidation directives.
+  previously **2 passed (5.6 s)**: a real browser fetching and decoding the
+  seeded release cross-origin via `createImageBitmap`, and page script reading
+  the pointer revalidation directives. The standard CI E2E workflow
+  (`.github/workflows/e2e-tests.yml`) does **not** set `R2_LIVE_CHECK`, so these
+  two tests are skipped in CI and must be run manually with the variable
+  exported.
+
+To record a fresh live verification, run both commands and paste the exact
+output and date below, replacing the stale counts:
+
+```bash
+bun --filter @aquila/infra-cloudflare verify
+R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts
+```
 
 Still unproven:
 
@@ -928,8 +951,11 @@ curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
 `bun run test` (5 tasks green — web 1582, game 412, stories 198,
 infra-cloudflare 53; desktop has no test files),
 `bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
-sha256-b632cb09…`), `bun --filter @aquila/infra-cloudflare verify` (15 PASS),
-`R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` (2 passed).
+sha256-b632cb09…`). The `bun --filter @aquila/infra-cloudflare verify` (15 PASS)
+and `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts`
+(2 passed) counts above are **stale** — they predate the per-object,
+cross-reference, and strict-CORS checks. Replace them with the output of a
+fresh run before treating the live pipeline as proven.
 
 **Use `bun run test`, not `bun test`.** `test` is a Bun builtin, so a bare
 `bun test` at the repo root shadows the npm script and runs Bun's own test runner

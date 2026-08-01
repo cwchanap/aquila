@@ -28,3 +28,11 @@ export function actSortKey(actBasename: string): number {
     }
     return parseInt(m[1], 10);
 }
+
+/** Sort key for chapter directory names: numeric chapter_N ascending.
+ *  Falls back to localeCompare for any non-`chapter_N` name so branch dirs still sort alphabetically. */
+export function chapterSortKey(rel: string): number {
+    const m = /^chapter_(\d+)$/.exec(rel);
+    if (!m) return NaN; // non-chapter dirs handled by caller via localeCompare fallback
+    return parseInt(m[1], 10);
+}

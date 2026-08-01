@@ -13,6 +13,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是情報作業。只是一個不敢把所有路交給任何一個人的人，能做的最大努力。", background: Background.Chapter_10_Ch10_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "休息區很普通。普通到讓她有點意外。", background: Background.Chapter_10_Ch10_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "左邊一排自動販賣機。機器在嗡。有人投幣。罐裝咖啡掉下來的聲音。右邊是兒童閱讀角。矮書架。地上鋪著軟墊。一個小孩趴在上面翻繪本，媽媽坐在旁邊滑手機。角落兩個老人在下棋。棋子落在棋盤上的聲音很輕。很慢。", background: Background.Chapter_10_Ch10_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "靠門那側有一張小桌。坐著一個人。穿著深色外套。戴著耳機。低頭看手機。旁邊放著一杯紙杯咖啡。澪掃過去的時候沒有停。她在找藍色傘。", background: Background.Chapter_10_Ch10_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "公告欄上貼著一張海報。防災講座。日期是上個月的。邊角有點翹。", background: Background.Chapter_10_Ch10_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯防災講座。兒童閱讀角。老人下棋。這裡不是秘密基地。這裡就是一個區民中心。任何人都可以走進來。任何人都可以坐在這裡。", background: Background.Chapter_10_Ch10_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的視線掃過去。一桌一桌。然後停住。", background: Background.Chapter_10_Ch10_Act7_S0 },

@@ -66,7 +66,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他說完這句話，把菸夾在指間，沒有再說。他看著深夜的街道。澪也看著深夜的街道。兩個人都沒有在看對方。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯那個畫面不是全部。", background: Background.Chapter_3_Ch3_Act6_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部", dialogue: "我知道。", background: Background.Chapter_3_Ch3_Act6_S1, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他說「我知道」的時候，語氣很平。太平了。平到她不確定他是在說「我相信你」，還是在說「我知道畫面不是全部，但那不重要，因為所有人都會先相信畫面」。", background: Background.Chapter_3_Ch3_Act6_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他說「我知道」的時候，語氣很平。太平了。平到她不確定他是在說「我相信妳」，還是在說「我知道畫面不是全部，但那不重要，因為所有人都會先相信畫面」。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她轉頭看他。他的側臉在路燈下很硬。下顎的線條、顴骨的陰影、太陽穴旁邊那幾根灰白的頭髮。他看起來很累。眼睛下面的暗圈比她上次見到他的時候更深。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "你知道些什麼。", background: Background.Chapter_3_Ch3_Act6_S1, portrait: Portrait.AsakuraMio_Angry },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有回答。他把菸放到嘴邊，吸了一口，吐出來。煙在他和她之間飄了一秒，然後被風帶走。", background: Background.Chapter_3_Ch3_Act6_S1 },

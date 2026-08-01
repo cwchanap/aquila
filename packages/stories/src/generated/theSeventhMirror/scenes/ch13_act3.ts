@@ -25,7 +25,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "刑警追問。", background: Background.Chapter_13_Ch13_Act3_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "如果照你們的系統讀呢？", background: Background.Chapter_13_Ch13_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小野寺停了一下。像在確認自己要說什麼。", background: Background.Chapter_13_Ch13_Act3_S0 },
-    { characterId: CharacterId.OnoderaNaoki, character: "小野寺直樹", dialogue: "G07 應該是第七同步群。斜線後的 12 是群內端點。", background: Background.Chapter_13_Ch13_Act3_S0, portrait: Portrait.OnoderaNaoki_Guarded },
+    { characterId: CharacterId.OnoderaNaoki, character: "小野寺直樹", dialogue: "G07 會是第七同步群。斜線後的 12 是群內端點。", background: Background.Chapter_13_Ch13_Act3_S0, portrait: Portrait.OnoderaNaoki_Guarded },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他說完。立刻補了一句。", background: Background.Chapter_13_Ch13_Act3_S0 },
     { characterId: CharacterId.OnoderaNaoki, character: "小野寺直樹", dialogue: "我只能說表記相似。這不能證明它就是 TKS-SYNC 地址，也不能證明研究裡的 12 和設備端點是同一種東西。", background: Background.Chapter_13_Ch13_Act3_S0, portrait: Portrait.OnoderaNaoki_Guarded },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯條件式。他每說一句就補一個限制。像在讀免責聲明。他不是在幫我。也不是在害我。他只是在做他的工作。然後在做的時候，發現自己可能碰到了不該碰的東西。", background: Background.Chapter_13_Ch13_Act3_S0, portrait: Portrait.AsakuraMio_Determined },

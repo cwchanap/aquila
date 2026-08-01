@@ -92,6 +92,12 @@ small Tokyo apartment living room, morning light through curtains, a table with 
 
 **朝倉澪** [exhausted]：……好。
 
+**旁白**：琴音的手機在口袋裡震了一下。她拿出來看了一眼，沒有接，把螢幕按滅。
+
+**白石琴音** [base]：我等下還要繞去一趟醫院。探視時間快到了。
+
+**朝倉澪** [exhausted]：嗯。你去。
+
 **旁白**：琴音走的時候，把深色外套留在桌上。她把空掉的塑膠袋折好帶走。她在門口回頭看了一眼澪。
 
 **白石琴音** [sad]：澪。有什麼事打給我。任何時間。

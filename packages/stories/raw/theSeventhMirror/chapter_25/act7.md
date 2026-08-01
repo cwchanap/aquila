@@ -1,0 +1,137 @@
+# 第七幕：最後一個 mirror
+
+```bg
+continuity monitoring room, multiple screens showing regional HSM status feeds and sealed evidence vault custody map, laptops with redacted evidence logs, cold fluorescent lighting, deep evening shadows, muted cool palette, visual-novel background art, wide shot
+```
+
+**旁白**：18:10。continuity 監看室。不是昨晚的封緘稽核室。是一間更窄的房間。三面牆掛著螢幕。左邊是區域 HSM 狀態。中間是鏡島安全連線。右邊是法院緊急視訊。桌上只有筆電和封好的文件。
+
+**旁白**：澪坐在角落。她的第四杯咖啡涼了。她沒有喝。日下部在她對面。獨立系統安全人員站在螢幕前。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。
+
+**朝倉澪** [exhausted]：（內心）18:10。距 23:50。五小時四十分。距星期一 06:13。約十二小時三分。還在倒數。身體很重。眼皮很重。可是——不能停。
+
+**旁白**：18:15。獨立系統安全人員切換螢幕。預先遮蔽的證據包——從星期三起逐步分類、身分遮蔽、法律審查、技術密鑰刪除——現在進入多點託管。
+
+**獨立系統安全人員**：證據庫分別由法院律師、外部醫療聯盟、公共營運合規、第七曙光家屬代理、多家媒體安全編輯室及獨立時間戳服務保存。沒有單一人可單獨修改、單獨刪除或單獨發布未遮蔽內容。
+
+**朝倉澪** [exhausted]：（內心）多點託管。不是放在一個地方。不是一個人拿著。六個方向。每一份都是遮蔽過的。每一份都綁著 hash。改任何一個——其他五份會發現。
+
+**旁白**：18:30。螢幕切換到 S7。國家級離線 continuity vault。最後一個仍有效的 science escrow mirror。
+
+**獨立系統安全人員**：S7 撤回 envelope 已排入 cutover 更新路徑。格式符合現行規格。綁定確切 bundle hash。不含患者原始資料。已附 6／7 區域 receipt、SHARE-O deny、法院／醫療／患者 hold。優先級——標準。
+
+**旁白**：他頓了一下。
+
+**獨立系統安全人員**：尚無 receipt。S7 韌體離線。更新路徑只在 cutover 窗口處理 inbound queue。
+
+**朝倉澪** [exhausted]：（內心）排進去了。可是——排進去不等於處理。S7 是離線的。它只在 cutover 的時候才打開更新路徑。23:50 以前——它不收。23:50 以後——它收。可是——它先收什麼？先處理 snapshot？還是先處理我們的撤回？
+
+```bg
+continuity monitoring room, center screen now showing old BCP document scan with red annotations, side screens showing KAGAMI-01 alert deployment and regional node preposition map, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
+```
+
+**旁白**：19:05。千田的聲音從喇叭傳出來。很平。像在讀一份他不想讀的文件。
+
+**千田浩介**：白天找到的舊 BCP 文件。上面寫著——CUTOVER EPOCH SNAPSHOT。MAINTENANCE QUEUE APPLY。POST-SNAPSHOT。
+
+**旁白**：他停了一下。
+
+**千田浩介**：意思是——舊韌體在 cutover 時先做 epoch snapshot。snapshot 完成後才處理 inbound maintenance queue。我們的撤回 envelope 排在 queue 裡。如果 S7 沿用這個順序——它會先 snapshot 當前 epoch。然後才處理撤回。snapshot 產生的當輪授權——不會被之後的撤回回溯取消。
+
+**朝倉澪** [exhausted]：（內心）先 snapshot。再處理 queue。我們的撤回排在 queue 裡。snapshot 先跑。snapshot 的時候——capsule 還有效。epoch 還是 N。它會在 epoch N 產生 token。然後——才處理撤回。撤回更新到 N+1。可是 N 的 token 已經出去了。回不來。
+
+**旁白**：19:15。房間裡安靜了幾秒。空調的聲音填進來。
+
+**日下部悟**：實際韌體版本——能確認嗎。
+
+**獨立系統安全人員**：不能。S7 韌體仍封緘。custodian 身分封緘。我們只有舊 BCP 文件。不能確認 S7 是否沿用舊順序。也不能確認它已經換了。
+
+**朝倉澪** [exhausted]：（內心）不知道。不知道它先 snapshot 還是先處理撤回。不知道 custodian 能不能暫停。不知道——最壞的分支會不會被證實。可是——不能因為不知道就不做。
+
+**旁白**：19:25。日下部站起來。他走到法院緊急視訊的螢幕前。
+
+**日下部悟**：法院。請求——要求 custodian 在 snapshot 前人工暫停。
+
+**旁白**：視訊那端沉默了幾秒。然後——法院確認收到請求。但 custodian 身分封緘。法院只能透過 continuity governance 的正式管道送達。不能保證 custodian 會在 23:50 前看見。
+
+**朝倉澪** [exhausted]：（內心）送了。可是——不保證。custodian 是封緘的。法院能送。不能強制。不能保證有人在那一端讀。
+
+```bg
+continuity monitoring room, right screen showing Nagihara Yui on secure video feed re-signing emergency-priority revocation, left screen showing KAGAMI-01 bundle/token alert deployment status, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
+```
+
+**旁白**：19:40。凪原唯出現在法院緊急視訊的分割畫面上。她的表情沒有波動。她的眼鏡反射著螢幕的光。
+
+**日下部悟**：凪原。重簽撤回。emergency priority。
+
+**凪原唯**：確認。SHARE-S 撤回。emergency priority。綁定 TOKYO-7 bundle hash。同一角色。同一簽署者。
+
+**旁白**：她簽了。遠端。時間戳。她的手沒有猶豫。可是簽完之後——她的手指在桌面上停了兩秒。然後收回。
+
+**朝倉澪** [exhausted]：（內心）她重簽了。emergency priority。不是標準。是緊急。她知道——標準優先級可能排在 snapshot 後面。她把優先級拉到最高。可是——S7 是離線的。它收不收得到——不取決於她簽了什麼。取決於它的更新路徑怎麼排。
+
+**旁白**：20:00。獨立系統安全人員在螢幕上展開 envelope 驗證。
+
+**獨立系統安全人員**：envelope 格式驗證通過。exact bundle hash 核對一致。撤回簽章驗證通過。6／7 區域 receipt 附齊。SHARE-O deny 附齊。法院、醫療、患者 hold 附齊。emergency priority 標記已嵌入。
+
+**旁白**：他頓了一下。
+
+**獨立系統安全人員**：可是——envelope 只能排入 queue。不能跳過 queue。emergency priority 標記讓它在 queue 裡排前面。不能讓它在 snapshot 前處理。除非 custodian 手動介入。
+
+**朝倉澪** [exhausted]：（內心）排前面。不是跳過。snapshot 還是先跑。除非——custodian 暫停。可是 custodian 封緘。法院送了請求。不保證有人看見。
+
+**旁白**：20:20。千田的聲音從喇叭傳出來。
+
+**千田浩介**：KAGAMI-01 部署 bundle／token 告警。如果 23:50 產生 science token——KAGAMI-01 會偵測到綁定相同 bundle hash 的 token 接受、warmup 或預置佇列。獨立監看。不經 continuity governance。
+
+**旁白**：獨立系統安全人員在另一個螢幕上確認。KAGAMI-01 告警——已部署。獨立時間戳。獨立簽章。綁定 exact bundle hash。
+
+**旁白**：20:35。區域節點 preposition 監看部署完成。每個節點回報狀態。continuity-controlled clusters——pending。normal operations clusters——held。legacy clusters——unknown。
+
+**朝倉澪** [exhausted]：（內心）監看部署了。如果 23:50 以後有節點開始預置——我們會看見。會記錄。會知道哪些接受了。哪些拒絕了。哪些不知道。
+
+```bg
+continuity monitoring room, all three screens active, left showing operations heartbeat PRESENT/DENIED, center showing S7 status OFFLINE/CUTOVER-BOUND with no receipt, right showing official phone +7000ms path monitoring only, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
+```
+
+**旁白**：21:00。公共營運方持續發送 heartbeat。螢幕左側。每隔三十秒。一行。
+
+**旁白**：OPERATIONS STATUS——PRESENT。AUTHORIZATION——DENIED。ORDINARY SERVICES——ACTIVE。PROTECTIVE FILTERING——ACTIVE。
+
+**朝倉澪** [exhausted]：（內心）還在。營運方還在。還在說不。每三十秒一次。PRESENT。DENIED。不斷。不停。它不會被忽略——因為它還在發。可是——舊 continuity HSM 不認得 DENIED。它只認得——有或者沒有。
+
+**旁白**：21:15。獨立系統安全人員切換到官方手機路徑。
+
+**獨立系統安全人員**：官方手機應用路徑。+7000ms 補正。尚未送出 payload。app channel 狀態——監看中。只記錄。不封鎖。不撤回已播廣播。
+
+**朝倉澪** [exhausted]：（內心）+7000ms。七秒。末端手機路徑。還沒送出。只監看。不能提前封鎖。不能撤回已經播出去的。只能——看著它。記錄它。等。
+
+**旁白**：22:00。螢幕中間。S7 狀態。沒有變化。
+
+**旁白**：S7 SCIENCE ESCROW。STATE——OFFLINE／CUTOVER-BOUND。CAPSULE——VALID。REVOCATION——PENDING。UPDATE WINDOW——SUN 23:50。CUSTODIAN——SEALED。RECEIPT——NONE。
+
+**朝倉澪** [exhausted]：（內心）沒有 receipt。五個小時了。沒有。離線的。封緘的。不回答。我們送了 envelope。送了 emergency priority。法院送了暫停請求。凪原重簽了。系統安全驗證了。KAGAMI-01 告警部署了。區域節點監看部署了。營運方還在發 heartbeat。可是——S7 不回答。它不說收到。不說拒絕。不說任何事。它只是——等。等 23:50。
+
+**旁白**：22:30。澪站起來。她的膝蓋很僵。她走到螢幕前。看著 S7 的狀態。OFFLINE。CUTOVER-BOUND。RECEIPT——NONE。
+
+**朝倉澪** [exhausted]：（內心）我們做了所有能做的事。證據包多點託管了。撤回 envelope 排進去了。emergency priority 簽了。bundle hash 驗證了。KAGAMI-01 告警部署了。區域節點監看部署了。營運方還在說不。法院送了暫停請求。可是——S7 不回答。它不需要回答。它只需要——等到 23:50。然後——按它的順序跑。
+
+**旁白**：23:00。房間裡的人換了班。有人送了飯糰。澪咬了一口。嚥不下去。她把飯糰放回桌上。
+
+**旁白**：23:15。千田的音訊連線還在。他的聲音從喇叭傳出來。很輕。
+
+**千田浩介**：舊 BCP 文件是公平提示。不是最後一刻新增規則。如果 S7 沿用舊順序——snapshot 先於 queue——這是被預告過的最壞分支。不是意外。
+
+**朝倉澪** [exhausted]：（內心）被預告過的。白天就看見了。CUTOVER EPOCH SNAPSHOT。MAINTENANCE QUEUE APPLY。POST-SNAPSHOT。我們知道。我們做了所有能做的事。可是——知道最壞的分支會來——不等於能阻止它。
+
+**旁白**：23:30。日下部看著螢幕。S7。RECEIPT——NONE。他的下巴收緊了一下。他的手插在口袋裡。
+
+**旁白**：23:35。他轉過頭。看著澪。他的聲音很平。像在陳述一個已經確定的事實。
+
+**日下部悟**：之後它再寫失聯，就不是因為我們沒有回答。
+
+**朝倉澪** [exhausted]：（內心）他說的對。我們回答了。營運方回答了。法院回答了。醫療回答了。患者權利回答了。凪原回答了。系統安全回答了。千田回答了。所有人都回答了。PRESENT。DENIED。HOLD ACTIVE。EMERGENCY PRIORITY。每一個方向都送了。S7 不回答——不是因為我們沒有說。是因為——它不聽。
+
+**旁白**：23:35。螢幕上的時鐘還在走。距 23:50——十五分鐘。
+
+**旁白**：距星期一 06:13——約六小時三十八分。

@@ -129,21 +129,21 @@
 ### 基本資料
 
 - **身份**：澪的好友，大學生，神鏡計畫半受迫協力者
-- **年齡**：20 歲
-- **家庭**：妹妹白石凜為神鏡計畫受試者，長期昏迷中
+- **年齡**：19 歲
+- **家庭**：妹妹藤川美空為神鏡計畫受試者，長期昏迷中。父母離異後琴音隨母親改嫁，從繼父姓白石；美空隨父親姓藤川。兩人為同母異父姊妹
 
 ### 背景與處境
 
-琴音表面上是溫柔可靠的好友，願意陪澪調查。真正身份是神鏡計畫的半受迫協力者，也是千田浩介死亡事件的直接加害者——她利用前一輪記憶，在施工通道刺傷了千田。
+琴音表面上是溫柔可靠的好友，願意陪澪調查。真正身份是神鏡計畫的半受迫協力者，也是千田浩介死亡事件的直接加害者——攻擊方每輪提供她當輪的交通與門禁資料，她在施工通道刺傷了千田（此為作者真相與澪的跨輪記憶；琴音本人只有低強度循環熟悉感，沒有完整輪次記憶；第三輪刑事責任只建立在當輪可證明的行為上）。
 
-她的妹妹是受試者之一，已經長期昏迷。神鏡計畫告訴琴音，只要東京方案成功，所有受試者都有機會醒來。這是她協助計畫的唯一理由。
+她的妹妹藤川美空是受試者之一，已經長期昏迷。父母離異後姊妹分別隨不同監護人生活，琴音從繼父姓白石，美空從父親姓藤川，但兩人感情未斷。神鏡計畫告訴琴音，只要東京方案成功，所有受試者都有機會醒來。這是她協助計畫的唯一理由。
 
 核心矛盾：她真的愛澪，也真的犯下不可原諒的事。她是澪的鏡像角色——兩個人都想救家人，但琴音先被「必要犧牲」的邏輯吞掉。
 
 ### 性格
 
 - **溫柔外表下的計算**：表面關懷備至，實際上每個行動都經過風險評估
-- **從一開始就有矛盾小動作**：不喝同一款飲料（測試是否回到新一輪）、說出不該知道的事（「這次至少不是左手」）
+- **從一開始就有矛盾小動作**：低強度的無意識熟悉感儀式（她本人不知道行為來源，並非清醒測試輪次）、偶爾說出不該知道的事（攻擊方提供的當輪資訊，並非她自己的輪次記憶）
 - **對妹妹的愛是真實的**：這不是偽裝，是她行動的唯一驅動力
 - **對澪的友情也是真實的**：這讓她的背叛更加痛苦
 - **最終自首，不要求原諒**：她知道自己不可原諒，但選擇在終局打開受試者區域作為贖罪
@@ -158,18 +158,17 @@
 ### 代表性台詞
 
 - `澪，今天我陪你去。你一個人太危險了。`——溫柔的照顧，也是監視
-- `這次至少不是左手。`——口誤，她記得另一輪澪受傷的位置
-- `我沒喝這個。味道不對，可能過期了。`——在測試自己是否回到新一輪
-- `我殺了千田。神鏡計畫說東京方案成功，凜就會醒來。`——承認罪行，語氣變平
+- `我沒喝這個。味道不對，可能過期了。`——低強度熟悉感的無意識儀式；她本人不知行為來源
+- `我殺了千田。神鏡計畫說東京方案成功，美空就會醒來。`——承認罪行，語氣變平
 - `我不要求你原諒。我也不原諒自己。`——自首時對澪說
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 20-year-old Japanese woman, long straight black hair, gentle warm smile that doesn't quite reach the eyes, casual cozy clothes (knit cardigan over blouse), soft warm lighting, slightly muted warm palette, upper-body shot, clean background
-- **angry**: anime visual-novel portrait, 20-year-old woman, smile gone, eyes cold and flat, jaw tight, hair falling forward, knit cardigan, harsh shadow, upper-body shot
-- **sad**: anime visual-novel portrait, 20-year-old woman, eyes downcast, smile faded to thin line, shoulders dropped, hair falling forward to hide face, knit cardigan, dim warm lighting, upper-body shot
-- **shocked**: anime visual-novel portrait, 20-year-old woman, eyes wide, hand covering mouth, face pale, knit cardigan, stark lighting, upper-body shot
-- **guilty**: anime visual-novel portrait, 20-year-old woman, eyes avoiding contact, lips pressed thin, expression flat and hollow, hair falling forward, knit cardigan, cold desaturated lighting, upper-body shot
+- **base**: anime visual-novel portrait, 19-year-old Japanese woman, long straight black hair, gentle warm smile that doesn't quite reach the eyes, casual cozy clothes (knit cardigan over blouse), soft warm lighting, slightly muted warm palette, upper-body shot, clean background
+- **angry**: anime visual-novel portrait, 19-year-old woman, smile gone, eyes cold and flat, jaw tight, hair falling forward, knit cardigan, harsh shadow, upper-body shot
+- **sad**: anime visual-novel portrait, 19-year-old woman, eyes downcast, smile faded to thin line, shoulders dropped, hair falling forward to hide face, knit cardigan, dim warm lighting, upper-body shot
+- **shocked**: anime visual-novel portrait, 19-year-old woman, eyes wide, hand covering mouth, face pale, knit cardigan, stark lighting, upper-body shot
+- **guilty**: anime visual-novel portrait, 19-year-old woman, eyes avoiding contact, lips pressed thin, expression flat and hollow, hair falling forward, knit cardigan, cold desaturated lighting, upper-body shot
 
 ---
 
@@ -224,13 +223,13 @@
 ## 5. 凪原唯（Nagihara Yui）
 
 - **ID**: `nagihara_yui`
-- **Aliases**: 凪原, 研究中心負責人
+- **Aliases**: 凪原, 研究中心負責人, 統括調整官, 危機科學負責人
 
 ### 基本資料
 
-- **身份**：睡眠研究中心負責人，神鏡計畫核心科學家
+- **身份**：前接收者／睡眠研究中心科學負責人；現內閣官房危機科學對策室統括調整官
 - **年齡**：38 歲
-- **學術背景**：神經科學與睡眠研究博士，十年前「函館夜潮事件」親歷者
+- **學術背景**：神經科學與睡眠研究博士，十年前「函館夜潮事件」應變團隊年輕危機科學研究官
 
 ### 背景與處境
 
@@ -618,6 +617,7 @@
 - **sad**: anime visual-novel portrait, 43-year-old woman, eyes downcast with deep weariness, lips pressed thin, shoulders dropped, hair falling loose from tie, cardigan, dim soft lighting, upper-body shot
 - **guarded**: anime visual-novel portrait, 43-year-old woman, eyes sharp and watchful despite exhaustion, jaw tight, leaning back slightly, cardigan, cool directional light, upper-body shot
 - **shocked**: anime visual-novel portrait, 43-year-old woman, eyes wide, breath caught, face pale, cardigan, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 43-year-old woman, jaw set, eyes steady with quiet resolve despite exhaustion, shoulders squared, cardigan, soft warm directional light, upper-body shot
 
 ---
 
@@ -775,6 +775,7 @@
 - **身份**：13 歲中學生，曾失蹤兩日後被尋獲，至今未恢復清醒
 - **年齡**：13 歲
 - **現狀**：身體被尋獲，意識未恢復
+- **家庭**：母親藤川真理。姊姊白石琴音（父母離異後隨母親改嫁從繼父姓白石，美空隨父親姓藤川）
 
 ### 背景與處境
 
@@ -856,3 +857,457 @@
 ### 說明
 
 泛指 TKS（東都危機システム株式会社）法務與公關部門的正式回覆。無人格，純功能性角色，代表公司體制的統一對外口徑——以最安全的時態回答現行問題，以系統安全為由拒答歷史配置。回覆語言精確、制式、不帶情緒，像在讀既有模板。
+
+---
+
+## 37. 三浦奈緒子（Miura Naoko）
+
+- **ID**: `miura_naoko`
+- **Aliases**: 三浦, 三浦警部補, 警部補
+
+### 基本資料
+
+- **身份**：茨城縣警筑波方面聯絡人，警部補
+- **年齡**：約 40 歲
+
+### 背景與處境
+
+三浦是茨城縣警派駐筑波方面的聯絡人。Chapter 17 起參與外圍查驗，負責建築、消防與搬送公司的正式照會協調。她不是主角的盟友或敵人，而是地方程序線的實務合作人——按正式警察程序推進，不替澪冒險，也不替設施掩蓋。
+
+她不知道循環、神鏡、母親與外星真相。她只看見一樁失蹤未成年人安否查證案件，並按制度能容許的速度推進。
+
+### 性格
+
+- **程序意識強**：所有動作走正式書面照會，不靠私人交情
+- **不冒進也不推諉**：能保全的先保全，不能立刻取得的就等正式程序
+- **對跨縣合作保持距離**：東京端是別人的案子，她只負責筑波這一側
+- **對未成年人案件格外謹慎**：知道這類案件的程序門檻與輿論風險
+
+### 說話風格
+
+- **簡短陳述程序狀態**：像在讀勤務日誌
+- **不替別人下結論**：只說「至少建築資料說⋯⋯」這類有限度陳述
+- **被追問時回到程序**：「這要等正式照會」「這要法務遮蔽後才能回覆」
+- **對澪保持禮貌距離**：不把她當刑警，也不把她當家屬情緒發洩對象
+
+### 代表性台詞
+
+- `至少建築資料說，它真的是地下二層。裡面放人還是放機器，等維護資料。`
+- `這個班次，是設備類嗎？`
+- `夜間不安排外部轉送。允許警方監看出口。`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-year-old Japanese woman, neat short black hair, police-issue dark jacket over collared shirt, composed no-nonsense expression, sharp watchful eyes, neutral indoor office lighting, muted cool-grey palette, upper-body shot, clean background
+- **determined**: anime visual-novel portrait, 40-year-old woman, jaw set, eyes sharp with professional focus, leaning forward, dark jacket, strong directional light, upper-body shot
+- **guarded**: anime visual-novel portrait, 40-year-old woman, eyes sharp and watchful, jaw tight, leaning back slightly, dark jacket, cool directional light, upper-body shot
+
+---
+
+## 38. 長野的母方阿姨（Nagano Aunt）
+
+- **ID**: `nagano_aunt`
+- **Aliases**: 阿姨, 監護人, 母方阿姨
+
+### 基本資料
+
+- **身份**：悠真的正式監護人，住在長野
+- **年齡**：約 48 歲
+
+### 背景與處境
+
+悠真失蹤後，實際照顧者是澪，但法律上的正式監護人是住在長野的母方阿姨。她曾在悠真參加學校合作的普通睡眠／健康研究時簽過同意書，不知道筑波 B2、介助搬送、過夜或地下待機。
+
+她不是壞監護人，只是一個被廣泛條款誤導、距離遙遠、無法及時看見實際流程的親屬。Chapter 18 夜間正式聯絡她時，她才第一次理解自己簽的同意書可能被解讀成涵蓋了這次搬送。
+
+### 性格
+
+- **盡責但距離遠**：簽同意書時相信學校與研究單位，沒有理由懷疑
+- **被揭露時的震驚與內疚**：不是冷漠，是從未被告訴需要追問
+- **對澪有複雜情緒**：知道澪才是實際照顧者，自己只是法律上的名字
+- **不擅長程序語言**：用自己的話描述同意內容，與設施的條款措辭對不上
+
+### 說話風格
+
+- **口語而遲疑**：不是法律語言，是一個被嚇到的普通人
+- **重複確認**：「我沒有同意過那個吧？」「他們沒有跟我說⋯⋯」
+- **提到悠真時聲音變軟**：內疚與想念混在一起
+- **被問到條款細節時坦承不懂**：不假裝理解過
+
+### 代表性台詞
+
+- `我簽的是睡眠檢查。學校轉介的。`
+- `我不知道筑波。我不知道什麼 B2。`
+- `悠真在筑波嗎？`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 48-year-old Japanese woman, shoulder-length greying dark hair tied back, tired kind face with faint lines, casual home clothes (knit sweater over blouse), worried but composed expression, soft warm indoor lighting, muted warm-grey palette, upper-body shot, clean background
+- **sad**: anime visual-novel portrait, 48-year-old woman, eyes downcast with deep worry, lips pressed thin, hand near mouth, sweater, dim soft lighting, upper-body shot
+- **shocked**: anime visual-novel portrait, 48-year-old woman, eyes wide, breath caught, face pale, sweater, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 48-year-old woman, jaw set with quiet protective anger, eyes bright with fragile resolve, leaning forward, sweater, soft directional light, upper-body shot
+
+---
+
+## 39. 搬送公司合規主管（Transport Compliance）
+
+- **ID**: `transport_compliance`
+- **Aliases**: 合規主管, 合規部, 搬送公司合規
+
+### 說明
+
+泛指東關東災害支援搬送協同組合的合規部門主管。無人格，純功能性角色，代表搬送公司的正式對外程序回覆——以責任鏈與遮蔽欄位程序回答警方照會，不日常查看研究協力者姓名，相信委託方已完成合法監護與研究同意。回覆語言精確、制式、不帶情緒。
+
+---
+
+## 40. 設施夜間責任人（Facility Night Staff）
+
+- **ID**: `facility_night_staff`
+- **Aliases**: 夜間責任人, 關聯法人, 夜間負責人
+
+### 說明
+
+泛指筑波關聯法人／設施的夜間責任人。無人格，純功能性角色，代表設施夜間的表面安否保障回覆——生命徵象穩定、有夜間安全／醫療相關人員、無即時危險、真名與同意文件由翌晨倫理主管保管。回覆語言制式、不帶情緒，像在讀值班手冊。
+
+---
+
+## 41. 律師（Lawyer）
+
+- **ID**: `lawyer`
+- **Aliases**: 千田律師, 公益通報律師, 支援律師
+
+### 說明
+
+泛指公益通報者支援機構指派的律師。無人格，純功能性角色，負責在面談現場封存千田的常用手機與排程建立憑證副本、見證 18:42 訊息到達、維護程序合規。極少開口，開口時只確認程序動作（「副本已封存」「時間我記下了」）。
+
+---
+
+## 42. 公益通報支援人員（Whistleblower Support）
+
+- **ID**: `whistleblower_support`
+- **Aliases**: 支援人員, 通報支援
+
+### 說明
+
+泛指公益通報者支援機構的在場支援人員。無人格，純功能性角色，負責維持面談程序中立性、確認場地監視器與多出口條件、不參與實質證詞內容。極少開口，開口時只說明場地與程序規則。
+
+---
+
+## 43. 相原真帆（Ahara Maho）
+
+- **ID**: `ahara_maho`
+- **Aliases**: 相原, 兒童相談所, 安否確認職員, 兒少安否
+
+### 基本資料
+
+- **身份**：茨城兒童相談所，兒少安否確認職員
+- **年齡**：約 35 歲
+
+### 背景與處境
+
+相原真帆是茨城兒童相談所指派的安否確認職員，Chapter 19 首次正式登場。她的權限不是搜索或扣押，而是要求直接確認未成年人本人安否、記錄監護人撤回同意、評估是否需要一時保護。她不參與科幻或技術解釋，只以最樸素的程序要求突破制度語言——「我不是來確認狀態燈。我是來見孩子。」
+
+她不是澪的盟友或敵人，而是一個獨立的外部程序角色。她的存在讓研究單位失去單獨決定悠真去留的權力。
+
+### 性格
+
+- **以本人安否為唯一軸心**：不被代碼、狀態欄或法人名稱帶走
+- **程序精確但不冷**：每一句話都有法律依據，但目的永遠是見到孩子
+- **不替警方發言也不替設施辯護**：清楚自己的權限邊界
+- **面對制度語言時回到最簡單的要求**：把所有技術詞彙翻譯成「那孩子在哪裡」
+
+### 說話風格
+
+- **短句、平靜、不可動搖**：不提高音量，但每一句都像在釘釘子
+- **重複核心要求**：「請讓我見本人」「我不是來看狀態頁」
+- **把制度語言翻譯回人話**：「這不是你們格式裡的撤回書。但這是孩子在說，他不想留在這裡。」
+- **不推測、不定罪**：只陳述事實與要求，把判斷留給程序
+
+### 代表性台詞
+
+- `我不是來確認狀態燈。我是來見孩子。`
+- `這不是你們格式裡的撤回書。但這是孩子在說，他不想留在這裡。`
+- `警察負責找人和資料。我負責確認這個孩子是否安全。`
+- `請讓我見本人。`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 35-year-old Japanese woman, neat chin-length black hair, plain dark blazer over white blouse, calm steady gaze, composed unshakable expression, neutral indoor office lighting, muted warm-neutral palette, upper-body shot, clean background
+- **determined**: anime visual-novel portrait, 35-year-old woman, jaw set with quiet authority, eyes direct and unwavering, leaning forward slightly, blazer, strong directional light, upper-body shot
+- **sad**: anime visual-novel portrait, 35-year-old woman, eyes downcast with controlled empathy, lips pressed thin, blazer, soft dim lighting, upper-body shot
+- **guarded**: anime visual-novel portrait, 35-year-old woman, eyes watchful and measuring, slight frown, blazer, cool directional light, upper-body shot
+
+---
+
+## 44. 高城修一（Takagi Shuichi）
+
+- **ID**: `takagi_shuichi`
+- **Aliases**: 高城, 倫理主管, 運用管理責任人, 研究倫理
+
+### 基本資料
+
+- **身份**：筑波公開研究棟，研究倫理／運用管理責任人
+- **年齡**：約 52 歲
+
+### 背景與處境
+
+高城修一是筑波公開研究棟的研究倫理與運用管理責任人。他不是最終反派，而是真心相信（或被告知）程序已合法的中層管理者。他能看見同意狀態、醫療安全命令、生命狀態與法人管理欄，但看不到 M-00 完整真相、神鏡核心或外星來源。
+
+他之所以同意開放已清空的 B2，是因為他相信封緘受個資保護、即使開啟也只會證明某名協力者曾停留、人目前已由另一法人管理。他的恐怖不在於邪惡，而在於他永遠有文件證明「上一個單位已確認」。
+
+### 性格
+
+- **真心相信程序合法**：不是在掩蓋，而是被同一套制度語言說服
+- **文件導向**：每一個質疑都能用一張表回應
+- **不邪惡但危險**：他的配合是表面的，他的制度語言是真正的障礙
+- **在監護人否認與本人求助後開始動搖**：但動搖不等於背叛體制
+
+### 說話風格
+
+- **制式而禮貌**：像在讀內部規程，不帶個人情緒
+- **以文件回應一切**：「這一欄顯示同意確認済」「依搬送規程⋯⋯」
+- **被追問時回到法人邊界**：「本人現不由本法人管理」
+- **動搖時沉默比語言多**：不辯護，但也不主動交出更多
+
+### 代表性台詞
+
+- `本人現在不由本法人管理。`
+- `這一欄顯示——同意確認済。`
+- `封緘屬個人資料保護範圍。警方不能隨意開啟。`
+- `⋯⋯我需要確認。`
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 52-year-old Japanese man, thinning greying hair combed neatly, wire-rimmed glasses, dark grey suit with pressed shirt, composed bureaucratic expression, calm but guarded eyes, neutral office lighting, muted cool-grey palette, upper-body shot, clean background
+- **guarded**: anime visual-novel portrait, 52-year-old man, eyes watchful behind glasses, slight frown, chin lifted, suit, cool directional light, upper-body shot
+- **shocked**: anime visual-novel portrait, 52-year-old man, eyes wide behind glasses, face pale, mouth slightly open, suit, stark lighting, upper-body shot
+- **determined**: anime visual-novel portrait, 52-year-old man, jaw set, eyes sharp with institutional resolve, glasses catching light, suit, strong directional light, upper-body shot
+
+---
+
+## 45. 佐久間理人（Sakuma Rito）
+
+- **ID**: `sakuma_rito`
+- **Aliases**: 佐久間, 佐久間醫師
+
+### 基本資料
+
+- **身份**：關聯神經／睡眠醫師
+- **年齡**：約 43 歲
+
+### 背景與處境
+
+佐久間理人是下達悠真初始醫療安全指示的具名醫師。悠真失蹤當晚，他以初次視訊評估與監測資料為基礎，下達了為期六小時的短期醫療安全命令，理由是急性神經反應、長時間難以喚醒與抽搐風險。初始處置可能具有醫療合理性，但問題在於：後續命令由值班醫師依數據反覆續期，佐久間本人再未親自見過悠真，家屬未被具體告知地下轉送與延長鎮靜。
+
+本章中佐久間本人不一定到場，但他的名字與命令出現在研究方提出的文件鏈中，是相原與日下部追問的核心：「佐久間醫師最後一次親眼看見悠真，是什麼時候？」
+
+### 性格
+
+- **技術自信**：相信自己的初始判斷有醫學依據
+- **距離型醫師**：後續只看數據，不再親自評估
+- **不認為自己有錯**：續期是依數據，不是他的決定
+- **被追問時回到初始合理性**：迴避後續延長的責任
+
+### 說話風格
+
+- **醫學術語精確**：但被追問「最後一次親眼見本人」時開始迴避
+- **以數據替代觀察**：「監測數據顯示⋯⋯」
+- **沉默多於辯護**：被相原追問時不直接回答
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 43-year-old Japanese man, short neat black hair, thin metal-frame glasses, white coat over collared shirt, calm clinical expression, detached analytical gaze, neutral hospital lighting, muted cool-white palette, upper-body shot, clean background
+- **guarded**: anime visual-novel portrait, 43-year-old man, eyes avoiding direct contact, slight jaw clench, glasses, white coat, cool directional light, upper-body shot
+
+---
+
+## 46. 外部醫師（External Doctor）
+
+- **ID**: `external_doctor`
+- **Aliases**: 外部醫療, 獨立醫師, 外部醫療團隊
+
+### 說明
+
+泛指不隸屬研究設施的獨立兒科／急重症或神經相關醫師，由警方與兒童相談所安排到場。負責悠真的身分與生命安否確認、鎮靜與停藥風險評估、停止研究性刺激、判斷可否安全轉院，以及確認 M-00 參照源性質是否直接關係悠真安全。有明確的醫療判斷權與安全優先意識，不替設施辯護，也不替警方發言。說話風格簡潔、臨床、以安全為唯一軸心。
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 40-year-old Japanese doctor, short neat hair, stethoscope around neck, plain dark blue medical jacket over scrubs, calm clinical focused expression, sharp assessing eyes, neutral medical room lighting, muted cool palette, upper-body shot, clean background
+- **determined**: anime visual-novel portrait, 40-year-old doctor, jaw set with urgent focus, eyes sharp, leaning forward, stethoscope, medical jacket, strong directional light, upper-body shot
+- **guarded**: anime visual-novel portrait, 40-year-old doctor, eyes narrowed in careful assessment, slight frown, stethoscope, medical jacket, cool directional light, upper-body shot
+
+---
+
+## 47. 設施合規主管（Facility Compliance）
+
+- **ID**: `facility_compliance`
+- **Aliases**: 設施合規
+
+### 說明
+
+泛指筑波公開研究棟的設施合規主管。無人格，純功能性角色，負責在搬送規程與個資保護之間判斷是否同意開啟緊急身分封緘。在未成年後見人在場、兒童相談所進行直接安否確認、警方處理失蹤未成年人等條件下，依規程同意開封。回覆語言制式、不帶情緒。
+
+---
+
+## 48. 內閣法律顧問（Cabinet Legal Advisor）
+
+- **ID**: `cabinet_legal_advisor`
+- **Aliases**: 法律顧問
+
+### 說明
+
+泛指隨凪原唯抵達的內閣官房法律顧問。無人格，純功能性角色，負責確認每份資料披露具有書面目錄與責任人、披露不構成免責、已取得證據不撤回、地方警方保留擴大搜索權。不替凪原辯護，也不阻止記錄，只維護程序框架。說話風格制式、精確、不帶情緒。
+
+---
+
+## 49. 國家級醫療協調人（National Medical Coordinator）
+
+- **ID**: `national_medical_coordinator`
+- **Aliases**: 醫療協調人
+
+### 說明
+
+泛指隨凪原唯抵達的國家級醫療協調人。無人格，純功能性角色，負責協調外部醫療團隊與設施之間的醫療接管程序、藥物與設備核驗、替代維持方案評估。不替凪原的系統風險主張背書，只處理醫療安全層面。說話風格簡潔、行政、以病人安全為軸心。
+
+---
+
+## 50. 呼吸治療師（Respiratory Therapist）
+
+- **ID**: `respiratory_therapist`
+- **Aliases**: 呼吸治療人員
+
+### 說明
+
+泛指負責紗英低負荷發聲閥程序的呼吸治療人員。無人格，純功能性角色，負責依既有醫療參數調整發聲閥、監測發聲時的呼吸與血氧、判斷中止條件。不參與訊號或輪次討論，只執行醫療程序。說話極少，開口時只確認參數與狀態。
+
+---
+
+## 51. 指定專家（Designated Expert）
+
+- **ID**: `designated_expert`
+- **Aliases**: 技術專家, 獨立專家
+
+### 說明
+
+泛指由警方或檢察安排到場的獨立技術專家，負責核對系統血統圖、離線模擬結果、TKS 部署摘要及函館原始技術資料。不依賴凪原口述，以獨立材料交叉驗證。說話風格技術性、精確、以資料為唯一依據，不替任何一方背書。
+
+---
+
+## 52. 獨立神經心理專業人員（Neuropsych Professional）
+
+- **ID**: `neuropsych_professional`
+- **Aliases**: 神經心理人員, 神經心理專業人員, 神經心理學家, 測試主持人
+
+### 說明
+
+泛指由外部醫療與司法安排到場的獨立神經心理專業人員，負責建立低負荷雙盲測試程序、生成誘餌題目、主持測試並判讀結果。不隸屬研究設施，不使用神經刺激，不改變 M-00 維持參數。測試主持人只看到題目編號及選項，不知道答案。說話風格臨床、精確、以程序安全為軸心，不替任何一方背書。
+
+---
+
+## 53. 兒少專業人員（Child Welfare Officer）
+
+- **ID**: `child_welfare_officer`
+- **Aliases**: 兒童相談所人員, 兒少人員, 兒少專業
+
+### 說明
+
+泛指由兒童相談所派出的兒少專業人員，負責陪同未成年受訪者、決定訪談時長與條件、確保不使用引導詞、疲勞即停止。不參與訊號或系統討論，只維護未成年人安全與程序正當性。說話風格溫和但堅定、以兒童權益為唯一軸心。
+
+---
+
+## 54. 辯護人（Defense Counsel）
+
+- **ID**: `defense_counsel`
+- **Aliases**: 琴音辯護人, 辯護律師
+
+### 說明
+
+泛指白石琴音的辯護人。無人格，純功能性角色，負責在正式詢問中維護琴音的程序權利——確認安全披露範圍、提示保持沉默權、阻擋超出當輪可證範圍的指控。不替琴音辯護事實，只維護程序框架。說話風格簡潔、法律性、以程序合規為軸心。極少主動發言，開口時只確認程序條件或限制披露範圍。
+
+---
+
+## 55. 院內臨床保管方（Clinical Custodian）
+
+- **ID**: `clinical_custodian`
+- **Aliases**: 臨床保管方, 生體工學保管方, 院內臨床, 臨床與生體工學
+
+### 說明
+
+泛指美空所在長期神經復健醫療中心的院內臨床／生體工學部門保管人員。無人格，純功能性角色，負責床側控制系統的實體保管、服務模式安全、醫療設備變更記錄、在位操作見證。不參與訊號或循環討論，只維護醫療設備的實體安全與操作合規。說話風格制式、臨床、以設備安全為軸心。
+
+---
+
+## 56. 獨立系統安全人員（System Security）
+
+- **ID**: `system_security`
+- **Aliases**: 系統安全人員, 獨立安全人員
+
+### 說明
+
+泛指不隸屬研究設施或控制方的獨立系統安全人員，由多方安全會議安排到場。負責核驗硬體隔離域、確認 Domain-P 與 Domain-C 的可分離性、判斷 EXPORT LOCKED 的功能性質。不替任何一方背書，以獨立技術驗證為唯一依據。說話風格技術性、精確、以硬體安全為軸心。
+
+---
+
+## 57. 司法保全（Judicial Preservation）
+
+- **ID**: `judicial_preservation`
+- **Aliases**: 司法保全人員
+
+### 說明
+
+泛指負責司法保全程序的警方／檢察人員。無人格，純功能性角色，負責在五方共同控制中代表司法保全方——封存證物、記錄存取、維護證據鏈完整性。不參與訊號或循環討論，只執行司法保全程序。說話風格制式、簡潔、以證據保全為軸心。
+
+---
+
+## 58. 獨立患者權利代表（Patient Rights Representative）
+
+- **ID**: `patient_rights_rep`
+- **Aliases**: 患者權利代表, 獨立權利代表, 權利代表
+
+### 說明
+
+泛指由司法或獨立醫療倫理機構安排到場的獨立患者權利代表。無人格，純功能性角色，負責確認患者（尤其是未成年人、高依存者或無法自行表達者）對資料用途、撤回與安全暫停的理解是否真實、是否在疲勞或壓力下失真、是否知道可以拒絕。不隸屬研究設施、不隸屬控制方、不隸屬家屬，也不替外部醫療或系統安全背書。任何模糊均被解讀為不授權。說話風格溫和但精確、以患者權利為唯一軸心，不替任何一方代言。
+
+---
+
+## 59. C2 值班醫療主管（C2 On-call Medical Director）
+
+- **ID**: `c2_oncall_director`
+- **Aliases**: 值班主管, 值班醫療主管, C2 值班主管
+
+### 說明
+
+C2 設施當輪值班醫療主管。非終局惡人——真心相信外部接管增加患者失穩風險，因此在知道 no-move 存在下，仍以「患者穩定／外部控制衝突」為理由對 continuity broker 自動產生的 relocation proposal 作內部 medical affirmation。但 no-move 的醫療緊急例外要求一名與原管理鏈無利益關係的獨立醫師確認，值班主管未取得該確認，因此只能讓承包商搬送車被預派，不能合法使患者離床。須面對程序與醫療判斷審查。說話風格沉穩、以患者安全為理由、帶著被外部程序挑戰的防衛性，不是掩蓋而是制度內的善意判斷。
+
+---
+
+## 60. 鏡島本地技師（Mirror Island Local Technician）
+
+- **ID**: `local_technician`
+- **Aliases**: 本地技師, 鏡島技師, 技師
+
+### 說明
+
+泛指鏡島本地值班硬體／服務技師。無人格，純功能性角色，負責在五方共同控制與司法保全見證下，以 R2、audit 記錄、服務手冊與實體線路將 forensic clone 找到的 service alias（如 `SUBJECT-SVC／G07`）映射至實體 Subject Continuity Bay 並執行受控掛載。不隸屬 continuity governance、不擁有患者決策權、不簽署任何授權——只執行實體映射與本地服務操作，所有動作進 immutable audit。說話風格制式、精確、以硬體座標與服務手冊編號為軸心。
+
+---
+
+## 61. 鏡島本地營運責任者（Mirror Island Local Operations Lead）
+
+- **ID**: `local_operations_lead`
+- **Aliases**: 本地營運責任者, 本地營運, 營運責任者, 鏡島營運
+
+### 說明
+
+鏡島現場當輪本地營運責任者。非終局角色——是實際在場、對實體設施與本地服務操作負有不可改寫 audit 責任的值班主管。在 physical break-glass 程序中持有 local operations share：當 continuity authority 以國家持續性／公共安全為由要求開啟臨床依存鎖定時，負責確認現場是否仍有未安全切離的 active human dependencies，並以此決定是否提供營運份額。不隸屬 continuity governance、不擁有患者決策權、不替醫療或患者權利代言——只代表本地營運方的責任邊界。當八名 active humans 尚未全部安全切離、clinical branch 仍在使用時，明確拒絕提供 share。所有拒絕進入 immutable audit。說話風格沉穩、簡短、以現場在場與責任為軸心，不戲劇化、不解釋制度，只陳述自己在場與自己的決定。
+
+---
+
+## 62. continuity 現場服務人員（Continuity Field Service Officer）
+
+- **ID**: `continuity_field_officer`
+- **Aliases**: continuity 服務人員, 現場服務人員
+
+### 說明
+
+由 continuity authority 派遣至鏡島現場的外層服務人員。非終局反派——是依角色命令行事、相信 lease 合法且東京面臨危險的執行人員。沒有完整患者資訊、無權取得 medical／patient-rights shares，只被指示要求開啟 physical panel 外層 seal。其 attempted action 允許進入 audit，但司法保全不允許其碰觸內層 bypass。當三領域 share 全部拒絕時，其行動在 outer action 階段終止，不構成對 patient branch 的改動。說話風格制式、以命令與程序為軸心，帶著對自身角色合法性的信念，不是惡意而是制度內的服從。

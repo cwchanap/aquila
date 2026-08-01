@@ -19,6 +19,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯又是那個夢。", background: Background.Chapter_1_Ch1_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她躺著沒動，盯著天花板上一塊水漬的形狀，等呼吸慢下來。那塊水漬她看了七天，形狀沒變過，像一隻張開嘴的魚。", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）第七天了。", background: Background.Chapter_1_Ch1_Act1_S0, portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "枕邊攤著一本小筆記本，翻到空白頁。她摸過去，先在頂端寫下今天的日期——這是母親從小定的規矩：夢要先寫日期，不然醒來分不清是哪一晚做的。", background: Background.Chapter_1_Ch1_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日期寫好了，夢卻只擠出幾個字。黑色的海，倒過來的月亮。後面又是空的，像昨天、像前天。", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她側過身，拿起枕邊的手機。螢幕上的數字很亮。", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "6:13。", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）六點十三分。", background: Background.Chapter_1_Ch1_Act1_S0, portrait: Portrait.AsakuraMio_Base },

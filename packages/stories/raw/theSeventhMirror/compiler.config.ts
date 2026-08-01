@@ -87,6 +87,80 @@ const config: StoryCompilerConfig = {
                 /^(TKS\u6CD5\u52D9|TKS\u516C\u95DC|\u6CD5\u52D9|\u516C\u95DC)$/,
             id: 'tks_legal',
         },
+        {
+            pattern:
+                /^(\u64BC\u9001\u516C\u53F8\u5408\u898F\u4E3B\u7BA1|\u5408\u898F\u4E3B\u7BA1|\u5408\u898F\u90E8|\u64BC\u9001\u516C\u53F8\u5408\u898F)$/,
+            id: 'transport_compliance',
+        },
+        {
+            pattern:
+                /^(\u8A2D\u65BD\u591C\u9593\u8CAC\u4EFB\u4EBA|\u591C\u9593\u8CAC\u4EFB\u4EBA|\u95DC\u806F\u6CD5\u4EBA|\u591C\u9593\u8CA0\u8CAC\u4EBA)$/,
+            id: 'facility_night_staff',
+        },
+        {
+            pattern:
+                /^(\u5F8B\u5E2B|\u5343\u7530\u5F8B\u5E2B|\u516C\u76CA\u901A\u5831\u5F8B\u5E2B|\u652F\u63F4\u5F8B\u5E2B)$/,
+            id: 'lawyer',
+        },
+        {
+            pattern:
+                /^(\u516C\u76CA\u901A\u5831\u652F\u63F4\u4EBA\u54E1|\u652F\u63F4\u4EBA\u54E1|\u901A\u5831\u652F\u63F4)$/,
+            id: 'whistleblower_support',
+        },
+        {
+            pattern:
+                /^(\u5916\u90E8\u91AB\u5E2B|\u5916\u90E8\u91AB\u7642|\u7368\u7ACB\u91AB\u5E2B|\u5916\u90E8\u91AB\u7642\u5718\u968A)$/,
+            id: 'external_doctor',
+        },
+        {
+            pattern:
+                /^(\u8A2D\u65BD\u5408\u898F\u4E3B\u7BA1|\u8A2D\u65BD\u5408\u898F)$/,
+            id: 'facility_compliance',
+        },
+        {
+            pattern:
+                /^(獨立神經心理專業人員|神經心理人員|神經心理專業人員|神經心理學家|測試主持人)$/,
+            id: 'neuropsych_professional',
+        },
+        {
+            pattern: /^(兒童相談所人員|兒少人員|兒少專業|兒少專業人員)$/,
+            id: 'child_welfare_officer',
+        },
+        {
+            pattern: /^(辯護人|琴音辯護人|辯護律師)$/,
+            id: 'defense_counsel',
+        },
+        {
+            pattern:
+                /^(院內臨床保管方|臨床保管方|生體工學保管方|院內臨床|臨床與生體工學)$/,
+            id: 'clinical_custodian',
+        },
+        {
+            pattern: /^(獨立系統安全人員|系統安全人員|獨立安全人員)$/,
+            id: 'system_security',
+        },
+        {
+            pattern: /^(司法保全|司法保全人員)$/,
+            id: 'judicial_preservation',
+        },
+        {
+            pattern: /^(獨立患者權利代表|患者權利代表|獨立權利代表|權利代表)$/,
+            id: 'patient_rights_rep',
+        },
+        {
+            pattern: /^(鏡島本地技師|本地技師|鏡島技師|技師)$/,
+            id: 'local_technician',
+        },
+        {
+            pattern:
+                /^(鏡島本地營運責任者|本地營運責任者|本地營運|營運責任者|鏡島營運)$/,
+            id: 'local_operations_lead',
+        },
+        {
+            pattern:
+                /^(continuity現場服務人員|continuity 現場服務人員|continuity服務人員|continuity 服務人員|現場服務人員)$/,
+            id: 'continuity_field_officer',
+        },
         { pattern: /^[?\uFF1F]{2,}$/, id: 'unknown' },
     ],
 };

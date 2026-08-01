@@ -28,7 +28,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "右手沒有離開千田的傷口——她做不到同時放手。她用左手把外殼從掌心剝開，一點一點，像在拆一個她不敢弄壞的東西。手指鬆開的時候，金屬表面和她的皮膚之間拉出一絲黏膩的阻力。血已經把兩者黏在一起了。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把外殼放在地板上。千田座椅前方的地板，空曠、可見、監視器照得到的位置。不是塞到座椅底下，不是推到角落。放在那裡，讓它被看見。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "放手的那一刻，她看見了。", background: Background.Chapter_3_Ch3_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外殼翻了一面，正面朝上。破裂的三角邊在地板的冷光下像一個被掰開的殼——金屬邊緣不整齊，是從某個東西上面被強行撬下來的。內側有一排金色接點，整整滙齊，像記憶卡或電子模組的針腳。被撬開的缺口在殼體側面，邊緣有工具留下的壓痕。", background: Background.Chapter_3_Ch3_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外殼翻了一面，正面朝上。破裂的三角邊在地板的冷光下像一個被掰開的殼——金屬邊緣不整齊，是從某個東西上面被強行撬下來的。內側有一排金色接點，整整齊齊，像記憶卡或電子模組的針腳。被撬開的缺口在殼體側面，邊緣有工具留下的壓痕。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她看見血跡下面的東西。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外殼表面沾著血，血從她掌心轉印上去的，半乾未乾。在血層薄的地方——靠近撬開缺口的那一側——金屬面上露出一個刻痕。像「T」。旁邊還有一道斜的痕跡，像「7」。不是印刷字體，是刻上去的，很淺，如果不是血剛好沒蓋住，她不會注意到。", background: Background.Chapter_3_Ch3_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)T……7。", background: Background.Chapter_3_Ch3_Act1_S0, portrait: Portrait.AsakuraMio_Shocked },

@@ -1,0 +1,85 @@
+# 第七幕：七秒
+
+```bg
+KAGAMI command room, center console displaying central sequencing gateway status, TOKYO-7 mobile follow-up send object sealed with nonce, HSM policy verification panel visible, countdown timer showing seven-second window, dawn light now clearly visible at window edges mixing with cold fluorescent, muted cool palette warming, visual-novel background art, close shot on center console
+```
+
+**旁白**：06:12:53。螢幕中間的畫面變了。不是 patient node。不是 witness fragment。是——中央 sequencing gateway。
+
+**旁白**：唯一一條。正式官方 app 的推送供應商只接受中央 gateway 的 app-signing credential。區域 cluster 只能建立 send object。不能——直接向 provider fanout。沒有 gateway release——任何區域副本都進不了正式官方 app channel。
+
+**朝倉澪** [exhausted]：（內心）唯一一條路。所有區域副本都要經過這裡。這裡——是 choke point。如果——在這裡攔住。就——全部攔住了。不是——對全國手機送反向命令。是——在送出去之前。在 fanout 之前。攔住那一則。
+
+**旁白**：螢幕角落。T0 metadata。
+
+**旁白**：ECHO PEAK——06:13:00。ORDINARY BROADCAST MARKER——PEAK - 7000ms。APP FOLLOW-UP SEND——MARKER + 7000ms。SEQUENCING GATEWAY——CENTRAL／PRE-FANOUT。
+
+**朝倉澪** [exhausted]：（內心）06:12:53。ordinary safety marker 已經送出了。ordinary services 不受影響。gateway 封存了 exact send object。產生了 nonce。七秒窗口——開啟了。06:12:53 到 06:13:00。七秒。
+
+**旁白**：螢幕上。gateway 封存了 exact send object。TOKYO-7 MOBILE FOLLOW-UP。那一則——預先寫好的官方手機修剪內容。
+
+**旁白**：SEND OBJECT——SEALED。NONCE——GENERATED。
+
+**朝倉澪** [exhausted]：（內心）send object 封存了。nonce 產生了。nonce 只由中央 gateway 在 T0 產生。沒有 gateway——沒有 nonce。沒有 nonce——send object 不能 fanout。
+
+**旁白**：06:12:54。預載 HSM policy 自動驗證。螢幕上。一行一行。很快。
+
+**旁白**：OBJECT PROFILE MATCH?——YES。BUNDLE HASH MATCH?——YES。SERVICE PATH MATCH?——YES。NONCE VALID?——YES。ORDINARY SERVICE EXCLUDED?——YES。POLICY WINDOW OPEN?——YES。
+
+**朝倉澪** [exhausted]：（內心）HSM policy。05:49 之前就預載了。public operations policy。judicial evidence policy。independent system-safety policy。exact TOKYO-7 profile。ordinary-service exclusion。evidence-seal rule。全部——預載好了。七秒內——不重新要求三組人類簽署。gateway 自動核對。object profile——match。bundle hash——match。service path——match。nonce——valid。ordinary service——excluded。policy window——open。全部——yes。
+
+**旁白**：06:12:55。螢幕底部。一行字。
+
+**旁白**：LOCAL OPERATIONS ARM——PRE-AUTHORIZED。CANCEL READY。
+
+**朝倉澪** [exhausted]：（內心）本地營運預先授權了 cancellation。不需要——再簽。不需要——再問。七秒內。gateway 自動核對完了。等——澪。等她確認。這是——她要做的最後一件事。
+
+**旁白**：06:12:56。澪看著螢幕。send object 的預覽。那一則——TOKYO-7 MOBILE FOLLOW-UP。
+
+**旁白**：灣岸光學與訊號異常已進入穩定處置。部分人可能出現短暫混亂、陌生熟悉感或記憶錯置。網路上正在流傳與失蹤事件、醫療設施及未經核實個人記憶相關的內容，現階段尚無足夠資料確認因果關聯。請依官方公共服務與醫療指引行動，勿前往相關設施。
+
+**朝倉澪** [exhausted]：（內心）看起來——像正常的危機溝通。像——合理的官方提醒。可是——它會在 06:13 echo peak 成為最早的大規模統一解釋。它會——把 fragments 框成急性壓力、未經核實的內容。它會——壓過 Manifest。壓過 Public Witness Index。它不是——中立的。它是——一份統一答案。在所有人還沒來得及查核之前。先——替他們排好了。
+
+**旁白**：06:12:57。她開口。很輕。很短。像在確認一件她已經想了很多次的事。
+
+**朝倉澪** [exhausted]：就是這一則通知。
+
+**旁白**：她頓了一下。
+
+**朝倉澪** [exhausted]：只取消這一則通知。
+
+**旁白**：她又頓了一下。
+
+**朝倉澪** [exhausted]：其他警報不要動。
+
+**朝倉澪** [exhausted]：（內心）就是這一則。只——這一則。TOKYO-7 MOBILE FOLLOW-UP。不是——所有官方服務。不是——所有警報。不是——廣播。不是——protective filter。不是——clinical branch。只是——這一則。還沒送出的。在 fanout 之前的。其他警報——不要動。ordinary safety notice——繼續。普通公共服務——繼續。只是——這一則——不要送。
+
+**旁白**：06:12:58。螢幕上。gateway 的回應。
+
+**旁白**：TARGET PROFILE——MATCH。SEND NONCE——MATCH。CANCEL POLICY——MATCH。CANCEL——ACCEPTED。
+
+**朝倉澪** [exhausted]：（內心）accepted。在 provider fanout 之前。accepted。不是——送了反向命令。是——在送出去之前。攔住了。send object——不會到達 provider。不會——到達任何手機。不會——在 06:13 變成最早的大規模統一解釋。
+
+**旁白**：06:12:58.5。螢幕上。cancel 流程的最後一步。
+
+**旁白**：CANCEL POLICY——MATCH。SEND OBJECT——MOVED TO EVIDENCE SEAL。
+
+**朝倉澪** [exhausted]：（內心）send object 移入了 evidence seal。保全了。audit 有了。原始 payload——完整保留。不是——刪除。是——封存。以後——可以查。可以——審計。可以——證明這一則存在過。可是——沒有送出。沒有——到達任何人的手機。
+
+**旁白**：06:12:59。螢幕上。最後兩行。
+
+**旁白**：CENTRAL FANOUT——SUPPRESSED。ORIGINAL PAYLOAD——EVIDENCE-SEALED。
+
+**旁白**：底部。一行。
+
+**旁白**：ORDINARY APP——ACTIVE。
+
+**朝倉澪** [exhausted]：（內心）fanout——suppressed。original payload——evidence-sealed。保全了。audit 有了。可是——沒有送出。ordinary app——active。普通官方 app——繼續運作。普通安全通知——繼續。普通公共服務——繼續。只有——TOKYO-7 那一則——被攔住了。七秒。06:12:53 到 06:13:00。七秒。
+
+**旁白**：06:13:00。螢幕角落。七秒窗口——CLOSED。
+
+**旁白**：dawn 的光從窗邊照進來。螢幕上的灰色背景——被窗光沖淡了。最後一則通知——沒有送出。
+
+**旁白**：ordinary services——繼續。protective filter——繼續。clinical branch——繼續。Public Deny Manifest——繼續。Public Witness Index——繼續。只有——那一則——停在 gateway。停在 fanout 之前。停在——所有人的手機之前。
+
+**旁白**：七秒。

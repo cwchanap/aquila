@@ -10,45 +10,6 @@ export type TheSeventhMirrorSceneId =
     | "ch1_act5"
     | "ch1_act6"
     | "ch1_act7"
-    | "ch10_act1"
-    | "ch10_act2"
-    | "ch10_act3"
-    | "ch10_act4"
-    | "ch10_act5"
-    | "ch10_act6"
-    | "ch10_act7"
-    | "ch10_act8"
-    | "ch11_act1"
-    | "ch11_act2"
-    | "ch11_act3"
-    | "ch11_act4"
-    | "ch11_act5"
-    | "ch11_act6"
-    | "ch11_act7"
-    | "ch11_act8"
-    | "ch12_act1"
-    | "ch12_act2"
-    | "ch12_act3"
-    | "ch12_act4"
-    | "ch12_act5"
-    | "ch12_act6"
-    | "ch12_act7"
-    | "ch12_act8"
-    | "ch12_act9"
-    | "ch13_act1"
-    | "ch13_act2"
-    | "ch13_act3"
-    | "ch13_act4"
-    | "ch13_act5"
-    | "ch13_act6"
-    | "ch13_act7"
-    | "ch13_act8"
-    | "ch14_act1"
-    | "ch14_act2"
-    | "ch14_act3"
-    | "ch14_act4"
-    | "ch14_act5"
-    | "ch14_act6"
     | "ch2_act1"
     | "ch2_act2"
     | "ch2_act3"
@@ -107,7 +68,156 @@ export type TheSeventhMirrorSceneId =
     | "ch9_act7"
     | "ch9_act8"
     | "ch9_act9"
-    | "ch9_act10";
+    | "ch9_act10"
+    | "ch10_act1"
+    | "ch10_act2"
+    | "ch10_act3"
+    | "ch10_act4"
+    | "ch10_act5"
+    | "ch10_act6"
+    | "ch10_act7"
+    | "ch10_act8"
+    | "ch11_act1"
+    | "ch11_act2"
+    | "ch11_act3"
+    | "ch11_act4"
+    | "ch11_act5"
+    | "ch11_act6"
+    | "ch11_act7"
+    | "ch11_act8"
+    | "ch12_act1"
+    | "ch12_act2"
+    | "ch12_act3"
+    | "ch12_act4"
+    | "ch12_act5"
+    | "ch12_act6"
+    | "ch12_act7"
+    | "ch12_act8"
+    | "ch12_act9"
+    | "ch13_act1"
+    | "ch13_act2"
+    | "ch13_act3"
+    | "ch13_act4"
+    | "ch13_act5"
+    | "ch13_act6"
+    | "ch13_act7"
+    | "ch13_act8"
+    | "ch14_act1"
+    | "ch14_act2"
+    | "ch14_act3"
+    | "ch14_act4"
+    | "ch14_act5"
+    | "ch14_act6"
+    | "ch15_act1"
+    | "ch15_act2"
+    | "ch15_act3"
+    | "ch15_act4"
+    | "ch15_act5"
+    | "ch15_act6"
+    | "ch16_act1"
+    | "ch16_act2"
+    | "ch16_act3"
+    | "ch16_act4"
+    | "ch16_act5"
+    | "ch16_act6"
+    | "ch17_act1"
+    | "ch17_act2"
+    | "ch17_act3"
+    | "ch17_act4"
+    | "ch17_act5"
+    | "ch17_act6"
+    | "ch17_act7"
+    | "ch17_act8"
+    | "ch18_act1"
+    | "ch18_act2"
+    | "ch18_act3"
+    | "ch18_act4"
+    | "ch18_act5"
+    | "ch18_act6"
+    | "ch18_act7"
+    | "ch18_act8"
+    | "ch19_act1"
+    | "ch19_act2"
+    | "ch19_act3"
+    | "ch19_act4"
+    | "ch19_act5"
+    | "ch19_act6"
+    | "ch19_act7"
+    | "ch19_act8"
+    | "ch19_act9"
+    | "ch19_act10"
+    | "ch20_act1"
+    | "ch20_act2"
+    | "ch20_act3"
+    | "ch20_act4"
+    | "ch20_act5"
+    | "ch20_act6"
+    | "ch20_act7"
+    | "ch20_act8"
+    | "ch21_act1"
+    | "ch21_act2"
+    | "ch21_act3"
+    | "ch21_act4"
+    | "ch21_act5"
+    | "ch21_act6"
+    | "ch21_act7"
+    | "ch21_act8"
+    | "ch22_act1"
+    | "ch22_act2"
+    | "ch22_act3"
+    | "ch22_act4"
+    | "ch22_act5"
+    | "ch22_act6"
+    | "ch22_act7"
+    | "ch22_act8"
+    | "ch23_act1"
+    | "ch23_act2"
+    | "ch23_act3"
+    | "ch23_act4"
+    | "ch23_act5"
+    | "ch23_act6"
+    | "ch23_act7"
+    | "ch23_act8"
+    | "ch24_act1"
+    | "ch24_act2"
+    | "ch24_act3"
+    | "ch24_act4"
+    | "ch24_act5"
+    | "ch24_act6"
+    | "ch24_act7"
+    | "ch24_act8"
+    | "ch25_act1"
+    | "ch25_act2"
+    | "ch25_act3"
+    | "ch25_act4"
+    | "ch25_act5"
+    | "ch25_act6"
+    | "ch25_act7"
+    | "ch25_act8"
+    | "ch26_act1"
+    | "ch26_act2"
+    | "ch26_act3"
+    | "ch26_act4"
+    | "ch26_act5"
+    | "ch26_act6"
+    | "ch26_act7"
+    | "ch26_act8"
+    | "ch27_act1"
+    | "ch27_act2"
+    | "ch27_act3"
+    | "ch27_act4"
+    | "ch27_act5"
+    | "ch27_act6"
+    | "ch27_act7"
+    | "ch27_act8"
+    | "ch28_act1"
+    | "ch28_act2"
+    | "ch28_act3"
+    | "ch28_act4"
+    | "ch28_act5"
+    | "ch28_act6"
+    | "ch28_act7"
+    | "ch28_act8";
 
 export const theSeventhMirrorFlow: FlowConfig<TheSeventhMirrorSceneId> = {
   start: "ch1_act1",
@@ -118,46 +228,7 @@ export const theSeventhMirrorFlow: FlowConfig<TheSeventhMirrorSceneId> = {
     { kind: 'scene', id: "ch1_act4", sceneId: "ch1_act4", next: "ch1_act5" },
     { kind: 'scene', id: "ch1_act5", sceneId: "ch1_act5", next: "ch1_act6" },
     { kind: 'scene', id: "ch1_act6", sceneId: "ch1_act6", next: "ch1_act7" },
-    { kind: 'scene', id: "ch1_act7", sceneId: "ch1_act7", next: "ch10_act1" },
-    { kind: 'scene', id: "ch10_act1", sceneId: "ch10_act1", next: "ch10_act2" },
-    { kind: 'scene', id: "ch10_act2", sceneId: "ch10_act2", next: "ch10_act3" },
-    { kind: 'scene', id: "ch10_act3", sceneId: "ch10_act3", next: "ch10_act4" },
-    { kind: 'scene', id: "ch10_act4", sceneId: "ch10_act4", next: "ch10_act5" },
-    { kind: 'scene', id: "ch10_act5", sceneId: "ch10_act5", next: "ch10_act6" },
-    { kind: 'scene', id: "ch10_act6", sceneId: "ch10_act6", next: "ch10_act7" },
-    { kind: 'scene', id: "ch10_act7", sceneId: "ch10_act7", next: "ch10_act8" },
-    { kind: 'scene', id: "ch10_act8", sceneId: "ch10_act8", next: "ch11_act1" },
-    { kind: 'scene', id: "ch11_act1", sceneId: "ch11_act1", next: "ch11_act2" },
-    { kind: 'scene', id: "ch11_act2", sceneId: "ch11_act2", next: "ch11_act3" },
-    { kind: 'scene', id: "ch11_act3", sceneId: "ch11_act3", next: "ch11_act4" },
-    { kind: 'scene', id: "ch11_act4", sceneId: "ch11_act4", next: "ch11_act5" },
-    { kind: 'scene', id: "ch11_act5", sceneId: "ch11_act5", next: "ch11_act6" },
-    { kind: 'scene', id: "ch11_act6", sceneId: "ch11_act6", next: "ch11_act7" },
-    { kind: 'scene', id: "ch11_act7", sceneId: "ch11_act7", next: "ch11_act8" },
-    { kind: 'scene', id: "ch11_act8", sceneId: "ch11_act8", next: "ch12_act1" },
-    { kind: 'scene', id: "ch12_act1", sceneId: "ch12_act1", next: "ch12_act2" },
-    { kind: 'scene', id: "ch12_act2", sceneId: "ch12_act2", next: "ch12_act3" },
-    { kind: 'scene', id: "ch12_act3", sceneId: "ch12_act3", next: "ch12_act4" },
-    { kind: 'scene', id: "ch12_act4", sceneId: "ch12_act4", next: "ch12_act5" },
-    { kind: 'scene', id: "ch12_act5", sceneId: "ch12_act5", next: "ch12_act6" },
-    { kind: 'scene', id: "ch12_act6", sceneId: "ch12_act6", next: "ch12_act7" },
-    { kind: 'scene', id: "ch12_act7", sceneId: "ch12_act7", next: "ch12_act8" },
-    { kind: 'scene', id: "ch12_act8", sceneId: "ch12_act8", next: "ch12_act9" },
-    { kind: 'scene', id: "ch12_act9", sceneId: "ch12_act9", next: "ch13_act1" },
-    { kind: 'scene', id: "ch13_act1", sceneId: "ch13_act1", next: "ch13_act2" },
-    { kind: 'scene', id: "ch13_act2", sceneId: "ch13_act2", next: "ch13_act3" },
-    { kind: 'scene', id: "ch13_act3", sceneId: "ch13_act3", next: "ch13_act4" },
-    { kind: 'scene', id: "ch13_act4", sceneId: "ch13_act4", next: "ch13_act5" },
-    { kind: 'scene', id: "ch13_act5", sceneId: "ch13_act5", next: "ch13_act6" },
-    { kind: 'scene', id: "ch13_act6", sceneId: "ch13_act6", next: "ch13_act7" },
-    { kind: 'scene', id: "ch13_act7", sceneId: "ch13_act7", next: "ch13_act8" },
-    { kind: 'scene', id: "ch13_act8", sceneId: "ch13_act8", next: "ch14_act1" },
-    { kind: 'scene', id: "ch14_act1", sceneId: "ch14_act1", next: "ch14_act2" },
-    { kind: 'scene', id: "ch14_act2", sceneId: "ch14_act2", next: "ch14_act3" },
-    { kind: 'scene', id: "ch14_act3", sceneId: "ch14_act3", next: "ch14_act4" },
-    { kind: 'scene', id: "ch14_act4", sceneId: "ch14_act4", next: "ch14_act5" },
-    { kind: 'scene', id: "ch14_act5", sceneId: "ch14_act5", next: "ch14_act6" },
-    { kind: 'scene', id: "ch14_act6", sceneId: "ch14_act6", next: "ch2_act1" },
+    { kind: 'scene', id: "ch1_act7", sceneId: "ch1_act7", next: "ch2_act1" },
     { kind: 'scene', id: "ch2_act1", sceneId: "ch2_act1", next: "ch2_act2" },
     { kind: 'scene', id: "ch2_act2", sceneId: "ch2_act2", next: "ch2_act3" },
     { kind: 'scene', id: "ch2_act3", sceneId: "ch2_act3", next: "ch2_act4" },
@@ -216,6 +287,155 @@ export const theSeventhMirrorFlow: FlowConfig<TheSeventhMirrorSceneId> = {
     { kind: 'scene', id: "ch9_act7", sceneId: "ch9_act7", next: "ch9_act8" },
     { kind: 'scene', id: "ch9_act8", sceneId: "ch9_act8", next: "ch9_act9" },
     { kind: 'scene', id: "ch9_act9", sceneId: "ch9_act9", next: "ch9_act10" },
-    { kind: 'scene', id: "ch9_act10", sceneId: "ch9_act10", next: null },
+    { kind: 'scene', id: "ch9_act10", sceneId: "ch9_act10", next: "ch10_act1" },
+    { kind: 'scene', id: "ch10_act1", sceneId: "ch10_act1", next: "ch10_act2" },
+    { kind: 'scene', id: "ch10_act2", sceneId: "ch10_act2", next: "ch10_act3" },
+    { kind: 'scene', id: "ch10_act3", sceneId: "ch10_act3", next: "ch10_act4" },
+    { kind: 'scene', id: "ch10_act4", sceneId: "ch10_act4", next: "ch10_act5" },
+    { kind: 'scene', id: "ch10_act5", sceneId: "ch10_act5", next: "ch10_act6" },
+    { kind: 'scene', id: "ch10_act6", sceneId: "ch10_act6", next: "ch10_act7" },
+    { kind: 'scene', id: "ch10_act7", sceneId: "ch10_act7", next: "ch10_act8" },
+    { kind: 'scene', id: "ch10_act8", sceneId: "ch10_act8", next: "ch11_act1" },
+    { kind: 'scene', id: "ch11_act1", sceneId: "ch11_act1", next: "ch11_act2" },
+    { kind: 'scene', id: "ch11_act2", sceneId: "ch11_act2", next: "ch11_act3" },
+    { kind: 'scene', id: "ch11_act3", sceneId: "ch11_act3", next: "ch11_act4" },
+    { kind: 'scene', id: "ch11_act4", sceneId: "ch11_act4", next: "ch11_act5" },
+    { kind: 'scene', id: "ch11_act5", sceneId: "ch11_act5", next: "ch11_act6" },
+    { kind: 'scene', id: "ch11_act6", sceneId: "ch11_act6", next: "ch11_act7" },
+    { kind: 'scene', id: "ch11_act7", sceneId: "ch11_act7", next: "ch11_act8" },
+    { kind: 'scene', id: "ch11_act8", sceneId: "ch11_act8", next: "ch12_act1" },
+    { kind: 'scene', id: "ch12_act1", sceneId: "ch12_act1", next: "ch12_act2" },
+    { kind: 'scene', id: "ch12_act2", sceneId: "ch12_act2", next: "ch12_act3" },
+    { kind: 'scene', id: "ch12_act3", sceneId: "ch12_act3", next: "ch12_act4" },
+    { kind: 'scene', id: "ch12_act4", sceneId: "ch12_act4", next: "ch12_act5" },
+    { kind: 'scene', id: "ch12_act5", sceneId: "ch12_act5", next: "ch12_act6" },
+    { kind: 'scene', id: "ch12_act6", sceneId: "ch12_act6", next: "ch12_act7" },
+    { kind: 'scene', id: "ch12_act7", sceneId: "ch12_act7", next: "ch12_act8" },
+    { kind: 'scene', id: "ch12_act8", sceneId: "ch12_act8", next: "ch12_act9" },
+    { kind: 'scene', id: "ch12_act9", sceneId: "ch12_act9", next: "ch13_act1" },
+    { kind: 'scene', id: "ch13_act1", sceneId: "ch13_act1", next: "ch13_act2" },
+    { kind: 'scene', id: "ch13_act2", sceneId: "ch13_act2", next: "ch13_act3" },
+    { kind: 'scene', id: "ch13_act3", sceneId: "ch13_act3", next: "ch13_act4" },
+    { kind: 'scene', id: "ch13_act4", sceneId: "ch13_act4", next: "ch13_act5" },
+    { kind: 'scene', id: "ch13_act5", sceneId: "ch13_act5", next: "ch13_act6" },
+    { kind: 'scene', id: "ch13_act6", sceneId: "ch13_act6", next: "ch13_act7" },
+    { kind: 'scene', id: "ch13_act7", sceneId: "ch13_act7", next: "ch13_act8" },
+    { kind: 'scene', id: "ch13_act8", sceneId: "ch13_act8", next: "ch14_act1" },
+    { kind: 'scene', id: "ch14_act1", sceneId: "ch14_act1", next: "ch14_act2" },
+    { kind: 'scene', id: "ch14_act2", sceneId: "ch14_act2", next: "ch14_act3" },
+    { kind: 'scene', id: "ch14_act3", sceneId: "ch14_act3", next: "ch14_act4" },
+    { kind: 'scene', id: "ch14_act4", sceneId: "ch14_act4", next: "ch14_act5" },
+    { kind: 'scene', id: "ch14_act5", sceneId: "ch14_act5", next: "ch14_act6" },
+    { kind: 'scene', id: "ch14_act6", sceneId: "ch14_act6", next: "ch15_act1" },
+    { kind: 'scene', id: "ch15_act1", sceneId: "ch15_act1", next: "ch15_act2" },
+    { kind: 'scene', id: "ch15_act2", sceneId: "ch15_act2", next: "ch15_act3" },
+    { kind: 'scene', id: "ch15_act3", sceneId: "ch15_act3", next: "ch15_act4" },
+    { kind: 'scene', id: "ch15_act4", sceneId: "ch15_act4", next: "ch15_act5" },
+    { kind: 'scene', id: "ch15_act5", sceneId: "ch15_act5", next: "ch15_act6" },
+    { kind: 'scene', id: "ch15_act6", sceneId: "ch15_act6", next: "ch16_act1" },
+    { kind: 'scene', id: "ch16_act1", sceneId: "ch16_act1", next: "ch16_act2" },
+    { kind: 'scene', id: "ch16_act2", sceneId: "ch16_act2", next: "ch16_act3" },
+    { kind: 'scene', id: "ch16_act3", sceneId: "ch16_act3", next: "ch16_act4" },
+    { kind: 'scene', id: "ch16_act4", sceneId: "ch16_act4", next: "ch16_act5" },
+    { kind: 'scene', id: "ch16_act5", sceneId: "ch16_act5", next: "ch16_act6" },
+    { kind: 'scene', id: "ch16_act6", sceneId: "ch16_act6", next: "ch17_act1" },
+    { kind: 'scene', id: "ch17_act1", sceneId: "ch17_act1", next: "ch17_act2" },
+    { kind: 'scene', id: "ch17_act2", sceneId: "ch17_act2", next: "ch17_act3" },
+    { kind: 'scene', id: "ch17_act3", sceneId: "ch17_act3", next: "ch17_act4" },
+    { kind: 'scene', id: "ch17_act4", sceneId: "ch17_act4", next: "ch17_act5" },
+    { kind: 'scene', id: "ch17_act5", sceneId: "ch17_act5", next: "ch17_act6" },
+    { kind: 'scene', id: "ch17_act6", sceneId: "ch17_act6", next: "ch17_act7" },
+    { kind: 'scene', id: "ch17_act7", sceneId: "ch17_act7", next: "ch17_act8" },
+    { kind: 'scene', id: "ch17_act8", sceneId: "ch17_act8", next: "ch18_act1" },
+    { kind: 'scene', id: "ch18_act1", sceneId: "ch18_act1", next: "ch18_act2" },
+    { kind: 'scene', id: "ch18_act2", sceneId: "ch18_act2", next: "ch18_act3" },
+    { kind: 'scene', id: "ch18_act3", sceneId: "ch18_act3", next: "ch18_act4" },
+    { kind: 'scene', id: "ch18_act4", sceneId: "ch18_act4", next: "ch18_act5" },
+    { kind: 'scene', id: "ch18_act5", sceneId: "ch18_act5", next: "ch18_act6" },
+    { kind: 'scene', id: "ch18_act6", sceneId: "ch18_act6", next: "ch18_act7" },
+    { kind: 'scene', id: "ch18_act7", sceneId: "ch18_act7", next: "ch18_act8" },
+    { kind: 'scene', id: "ch18_act8", sceneId: "ch18_act8", next: "ch19_act1" },
+    { kind: 'scene', id: "ch19_act1", sceneId: "ch19_act1", next: "ch19_act2" },
+    { kind: 'scene', id: "ch19_act2", sceneId: "ch19_act2", next: "ch19_act3" },
+    { kind: 'scene', id: "ch19_act3", sceneId: "ch19_act3", next: "ch19_act4" },
+    { kind: 'scene', id: "ch19_act4", sceneId: "ch19_act4", next: "ch19_act5" },
+    { kind: 'scene', id: "ch19_act5", sceneId: "ch19_act5", next: "ch19_act6" },
+    { kind: 'scene', id: "ch19_act6", sceneId: "ch19_act6", next: "ch19_act7" },
+    { kind: 'scene', id: "ch19_act7", sceneId: "ch19_act7", next: "ch19_act8" },
+    { kind: 'scene', id: "ch19_act8", sceneId: "ch19_act8", next: "ch19_act9" },
+    { kind: 'scene', id: "ch19_act9", sceneId: "ch19_act9", next: "ch19_act10" },
+    { kind: 'scene', id: "ch19_act10", sceneId: "ch19_act10", next: "ch20_act1" },
+    { kind: 'scene', id: "ch20_act1", sceneId: "ch20_act1", next: "ch20_act2" },
+    { kind: 'scene', id: "ch20_act2", sceneId: "ch20_act2", next: "ch20_act3" },
+    { kind: 'scene', id: "ch20_act3", sceneId: "ch20_act3", next: "ch20_act4" },
+    { kind: 'scene', id: "ch20_act4", sceneId: "ch20_act4", next: "ch20_act5" },
+    { kind: 'scene', id: "ch20_act5", sceneId: "ch20_act5", next: "ch20_act6" },
+    { kind: 'scene', id: "ch20_act6", sceneId: "ch20_act6", next: "ch20_act7" },
+    { kind: 'scene', id: "ch20_act7", sceneId: "ch20_act7", next: "ch20_act8" },
+    { kind: 'scene', id: "ch20_act8", sceneId: "ch20_act8", next: "ch21_act1" },
+    { kind: 'scene', id: "ch21_act1", sceneId: "ch21_act1", next: "ch21_act2" },
+    { kind: 'scene', id: "ch21_act2", sceneId: "ch21_act2", next: "ch21_act3" },
+    { kind: 'scene', id: "ch21_act3", sceneId: "ch21_act3", next: "ch21_act4" },
+    { kind: 'scene', id: "ch21_act4", sceneId: "ch21_act4", next: "ch21_act5" },
+    { kind: 'scene', id: "ch21_act5", sceneId: "ch21_act5", next: "ch21_act6" },
+    { kind: 'scene', id: "ch21_act6", sceneId: "ch21_act6", next: "ch21_act7" },
+    { kind: 'scene', id: "ch21_act7", sceneId: "ch21_act7", next: "ch21_act8" },
+    { kind: 'scene', id: "ch21_act8", sceneId: "ch21_act8", next: "ch22_act1" },
+    { kind: 'scene', id: "ch22_act1", sceneId: "ch22_act1", next: "ch22_act2" },
+    { kind: 'scene', id: "ch22_act2", sceneId: "ch22_act2", next: "ch22_act3" },
+    { kind: 'scene', id: "ch22_act3", sceneId: "ch22_act3", next: "ch22_act4" },
+    { kind: 'scene', id: "ch22_act4", sceneId: "ch22_act4", next: "ch22_act5" },
+    { kind: 'scene', id: "ch22_act5", sceneId: "ch22_act5", next: "ch22_act6" },
+    { kind: 'scene', id: "ch22_act6", sceneId: "ch22_act6", next: "ch22_act7" },
+    { kind: 'scene', id: "ch22_act7", sceneId: "ch22_act7", next: "ch22_act8" },
+    { kind: 'scene', id: "ch22_act8", sceneId: "ch22_act8", next: "ch23_act1" },
+    { kind: 'scene', id: "ch23_act1", sceneId: "ch23_act1", next: "ch23_act2" },
+    { kind: 'scene', id: "ch23_act2", sceneId: "ch23_act2", next: "ch23_act3" },
+    { kind: 'scene', id: "ch23_act3", sceneId: "ch23_act3", next: "ch23_act4" },
+    { kind: 'scene', id: "ch23_act4", sceneId: "ch23_act4", next: "ch23_act5" },
+    { kind: 'scene', id: "ch23_act5", sceneId: "ch23_act5", next: "ch23_act6" },
+    { kind: 'scene', id: "ch23_act6", sceneId: "ch23_act6", next: "ch23_act7" },
+    { kind: 'scene', id: "ch23_act7", sceneId: "ch23_act7", next: "ch23_act8" },
+    { kind: 'scene', id: "ch23_act8", sceneId: "ch23_act8", next: "ch24_act1" },
+    { kind: 'scene', id: "ch24_act1", sceneId: "ch24_act1", next: "ch24_act2" },
+    { kind: 'scene', id: "ch24_act2", sceneId: "ch24_act2", next: "ch24_act3" },
+    { kind: 'scene', id: "ch24_act3", sceneId: "ch24_act3", next: "ch24_act4" },
+    { kind: 'scene', id: "ch24_act4", sceneId: "ch24_act4", next: "ch24_act5" },
+    { kind: 'scene', id: "ch24_act5", sceneId: "ch24_act5", next: "ch24_act6" },
+    { kind: 'scene', id: "ch24_act6", sceneId: "ch24_act6", next: "ch24_act7" },
+    { kind: 'scene', id: "ch24_act7", sceneId: "ch24_act7", next: "ch24_act8" },
+    { kind: 'scene', id: "ch24_act8", sceneId: "ch24_act8", next: "ch25_act1" },
+    { kind: 'scene', id: "ch25_act1", sceneId: "ch25_act1", next: "ch25_act2" },
+    { kind: 'scene', id: "ch25_act2", sceneId: "ch25_act2", next: "ch25_act3" },
+    { kind: 'scene', id: "ch25_act3", sceneId: "ch25_act3", next: "ch25_act4" },
+    { kind: 'scene', id: "ch25_act4", sceneId: "ch25_act4", next: "ch25_act5" },
+    { kind: 'scene', id: "ch25_act5", sceneId: "ch25_act5", next: "ch25_act6" },
+    { kind: 'scene', id: "ch25_act6", sceneId: "ch25_act6", next: "ch25_act7" },
+    { kind: 'scene', id: "ch25_act7", sceneId: "ch25_act7", next: "ch25_act8" },
+    { kind: 'scene', id: "ch25_act8", sceneId: "ch25_act8", next: "ch26_act1" },
+    { kind: 'scene', id: "ch26_act1", sceneId: "ch26_act1", next: "ch26_act2" },
+    { kind: 'scene', id: "ch26_act2", sceneId: "ch26_act2", next: "ch26_act3" },
+    { kind: 'scene', id: "ch26_act3", sceneId: "ch26_act3", next: "ch26_act4" },
+    { kind: 'scene', id: "ch26_act4", sceneId: "ch26_act4", next: "ch26_act5" },
+    { kind: 'scene', id: "ch26_act5", sceneId: "ch26_act5", next: "ch26_act6" },
+    { kind: 'scene', id: "ch26_act6", sceneId: "ch26_act6", next: "ch26_act7" },
+    { kind: 'scene', id: "ch26_act7", sceneId: "ch26_act7", next: "ch26_act8" },
+    { kind: 'scene', id: "ch26_act8", sceneId: "ch26_act8", next: "ch27_act1" },
+    { kind: 'scene', id: "ch27_act1", sceneId: "ch27_act1", next: "ch27_act2" },
+    { kind: 'scene', id: "ch27_act2", sceneId: "ch27_act2", next: "ch27_act3" },
+    { kind: 'scene', id: "ch27_act3", sceneId: "ch27_act3", next: "ch27_act4" },
+    { kind: 'scene', id: "ch27_act4", sceneId: "ch27_act4", next: "ch27_act5" },
+    { kind: 'scene', id: "ch27_act5", sceneId: "ch27_act5", next: "ch27_act6" },
+    { kind: 'scene', id: "ch27_act6", sceneId: "ch27_act6", next: "ch27_act7" },
+    { kind: 'scene', id: "ch27_act7", sceneId: "ch27_act7", next: "ch27_act8" },
+    { kind: 'scene', id: "ch27_act8", sceneId: "ch27_act8", next: "ch28_act1" },
+    { kind: 'scene', id: "ch28_act1", sceneId: "ch28_act1", next: "ch28_act2" },
+    { kind: 'scene', id: "ch28_act2", sceneId: "ch28_act2", next: "ch28_act3" },
+    { kind: 'scene', id: "ch28_act3", sceneId: "ch28_act3", next: "ch28_act4" },
+    { kind: 'scene', id: "ch28_act4", sceneId: "ch28_act4", next: "ch28_act5" },
+    { kind: 'scene', id: "ch28_act5", sceneId: "ch28_act5", next: "ch28_act6" },
+    { kind: 'scene', id: "ch28_act6", sceneId: "ch28_act6", next: "ch28_act7" },
+    { kind: 'scene', id: "ch28_act7", sceneId: "ch28_act7", next: "ch28_act8" },
+    { kind: 'scene', id: "ch28_act8", sceneId: "ch28_act8", next: null },
   ],
 };

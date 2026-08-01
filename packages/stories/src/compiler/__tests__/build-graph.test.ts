@@ -215,5 +215,56 @@ describe('buildStoryGraph', () => {
             expect(byId.ch1_act1.next).toBe('ch2_act1');
             expect(byId.ch2_act1.next).toBeNull();
         });
+
+        it('sorts chapters numerically (chapter_10 after chapter_9, not after chapter_1)', () => {
+            // Regression: lexicographic sort put chapter_10 between chapter_1 and chapter_2,
+            // breaking sequential chapter linking for stories with >= 10 chapters.
+            const sorted: DirNode = {
+                rel: '',
+                acts: [],
+                children: [],
+                chapters: [
+                    {
+                        rel: 'chapter_10',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_11',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_1',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_2',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                    {
+                        rel: 'chapter_9',
+                        acts: ['act1'],
+                        children: [],
+                        chapters: [],
+                    },
+                ],
+            };
+            const g = buildStoryGraph(sorted);
+            expect(g.start).toBe('ch1_act1');
+            const byId = Object.fromEntries(g.scenes.map(s => [s.id, s]));
+            // Sequential numeric order: 1 -> 2 -> 9 -> 10 -> 11
+            expect(byId.ch1_act1.next).toBe('ch2_act1');
+            expect(byId.ch2_act1.next).toBe('ch9_act1');
+            expect(byId.ch9_act1.next).toBe('ch10_act1');
+            expect(byId.ch10_act1.next).toBe('ch11_act1');
+            expect(byId.ch11_act1.next).toBeNull();
+        });
     });
 });

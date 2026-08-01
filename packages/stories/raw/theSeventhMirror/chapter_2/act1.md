@@ -66,7 +66,7 @@ interior of driverless transit car 7 at night, stark white cold fluorescent ligh
 
 **旁白**：男人開口了。聲音比他的臉色穩，但穩得勉強，像一條繃到極限的線還在假裝沒斷。
 
-**千田浩介**：妳帶來了嗎？鏡子。
+**千田浩介**：妳帶來了嗎？那件東西。
 
 **旁白**：兩句話。沒有招呼，沒有解釋。像他跟澪已經講到一半，只是她還不知道前半段是什麼。
 
@@ -80,7 +80,7 @@ interior of driverless transit car 7 at night, stark white cold fluorescent ligh
 
 **旁白**：男人沒有立刻回答。他吸了一口氣，像在把什麼從喉嚨底壓回去，才慢慢開口。
 
-**千田浩介**：先別管我是誰。妳口袋裡那面鏡子——背面有刮痕。對不對。
+**千田浩介**：先別管我是誰。妳口袋裡那件東西——背面有刮痕。對不對。
 
 **朝倉澪**：(內心)⋯⋯他連刮痕都知道。
 

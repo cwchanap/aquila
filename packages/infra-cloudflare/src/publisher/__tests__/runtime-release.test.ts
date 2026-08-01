@@ -1,6 +1,8 @@
+import { createHash } from 'node:crypto';
 import { TextDecoder, TextEncoder } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import {
+    canonicalJson,
     canonicalReleaseContent,
     getObjectPath,
     qualifyAssetIdentity,
@@ -139,6 +141,28 @@ describe('buildPreparedRelease', () => {
         expect(canonicalReleaseContent(result.manifest)).not.toContain(
             result.releaseId
         );
+    });
+
+    it('derives release and manifest checksums from their exact canonical bytes', () => {
+        const result = buildPreparedRelease(fixtureInput());
+        const expectedReleaseContentSha256 = createHash('sha256')
+            .update(canonicalReleaseContent(result.manifest))
+            .digest('hex');
+        const expectedManifestText = `${canonicalJson(result.manifest)}\n`;
+        const expectedManifestBytes = new TextEncoder().encode(
+            expectedManifestText
+        );
+        const expectedManifestSha256 = createHash('sha256')
+            .update(expectedManifestBytes)
+            .digest('hex');
+
+        expect(result.releaseContentSha256).toBe(expectedReleaseContentSha256);
+        expect(result.releaseId).toBe(`sha256-${expectedReleaseContentSha256}`);
+        expect(new TextDecoder().decode(result.manifestBytes)).toBe(
+            expectedManifestText
+        );
+        expect(result.manifestBytes).toEqual(expectedManifestBytes);
+        expect(result.manifestSha256).toBe(expectedManifestSha256);
     });
 
     it('validates the placeholder draft before canonicalization', () => {

@@ -510,7 +510,11 @@ suspecting the upload.
   deployment into the same `vn/previews/<previewId>/` R2 namespace — the exact
   cross-branch overwrite problem the hashed branch derivation exists to prevent
   (see "Branch-derived preview ids" below). Publishing from one branch would
-  silently overwrite another branch's manifest and pointer. Scope an explicit id
+  overwrite another branch's `current.json` pointer, so branches sharing the id
+  race on the pointer and a preview can serve another branch's release. The
+  content-addressed `runtime-manifest.json` objects themselves are immutable —
+  each release lives under its own digest path — so they are *not* overwritten;
+  it is the mutable pointer that gets clobbered. Scope an explicit id
   to a single branch, for example:
 
   ```bash
@@ -799,11 +803,16 @@ skip), but do not expect `=0` to mean off.
 - **Preview trees are world-readable and branch-derived ids are guessable.**
   `vn/previews/<previewId>/…` is public, and `previewId` is a slug of the branch
   name. For spoiler-sensitive work, publish under a manually-set, unguessable
-  `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one — but **scope it to the
-  one Git branch it is meant for** (see [§3](#3-environment-variables)). A
+  `PUBLIC_ASSET_PREVIEW_ID` instead of the derived one — but an unguessable id
+  is **not access control**: the delivery tree remains public, and anyone who
+  possesses the URL can fetch the asset. An opaque id only reduces accidental
+  discovery; treat the preview as publicly reachable no matter what id is
+  used. Scope the id to **the one Git branch it is meant for** (see
+  [§3](#3-environment-variables)). A
   project-wide explicit Preview variable applies to every non-production branch
   and collapses them onto one shared R2 namespace, so publishing from one
-  branch silently overwrites another's assets — the same collision the hashed
+  branch overwrites another's `current.json` pointer and branches race on it —
+  the same collision the hashed
   derivation prevents.
 - **Never enable the r2.dev public development URL.** It bypasses every cache
   rule and any future WAF policy, and creates a second access path nobody is
@@ -819,7 +828,10 @@ skip), but do not expect `=0` to mean off.
   precisely so authoring originals and their prompt/provider metadata are
   unreachable over HTTP. `verify.ts` probes one known source key
   (`the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png`) **on the delivery
-  host** and requires a 403 or 404 — this proves the key was not copied into the
+  host** and requires a 404 — the only definitive absence response on a
+  world-readable delivery host. A 403 is ambiguous (an object present but
+  blocked from being served would also answer 403), so it fails the run instead
+  of being blessed as absent. This proves the key was not copied into the
   delivery bucket, **not** that the source bucket itself is private. Source-bucket
   privacy (no r2.dev public-development URL, no custom domain) is a separate
   manual acceptance check: confirm in the dashboard that
@@ -858,7 +870,9 @@ evidence that the pipeline works.
   so the `ends_with` predicates are precise rather than over-broad.
 - Smart Tiered Cache state still unconfirmed — it is in no config file, so nothing
   detects drift.
-- **No release has ever been published**, so every check below remains unproven.
+- **The smoke release is published, but only confirmed by hand** — no automated
+  verifier or end-to-end output against it has been recorded, so every check
+  below remains unproven.
 
 A caveat on the two rows above that report a cached status: those responses were
 all **404s**, and Cloudflare applies its own short TTL to error responses
@@ -891,15 +905,16 @@ Recorded for traceability only — see §2.9 on why it is machine-dependent.
 
 The verifier's integrity chain — contract parsing, manifest-byte and
 canonical-content digests, per-object byte-length and SHA-256, cross-reference
-consistency for objects sharing a digest, and a strict pointer CORS check — is
-**implemented and covered by the unit suite** in
-`packages/infra-cloudflare/src/__tests__/verify.test.ts` (68 tests, including
-the conflicting-byteLength, conflicting-dimensions, consistent-reference, and
-foreign-origin CORS cases). A fresh live run of both verifiers against the
-seeded release has **not yet been recorded** with the updated checks. The
-`15 PASS` and `2 passed` counts below predate the per-object, cross-reference,
-and strict-CORS checks; treat them as stale until replaced with the output of
-the commands at the end of this section.
+  consistency for objects sharing a digest, and a strict pointer CORS check — is
+  **implemented and covered by the unit suite** in
+  `packages/infra-cloudflare/src/__tests__/verify.test.ts` (17 tests, including
+  the conflicting-byteLength, conflicting-dimensions, consistent-reference, and
+  foreign-origin CORS cases; the package's full suite totals 73 across five
+  files — `verify.test.ts` is not the whole package). A fresh live run of both
+  verifiers against the seeded release has **not yet been recorded** with the
+  updated checks. The `15 PASS` and `2 passed` counts below predate the
+  per-object, cross-reference, and strict-CORS checks; treat them as stale until
+  replaced with the output of the commands at the end of this section.
 
 The previous live run (before the updated checks were added) passed end to end,
 after a zone-wide **Purge Everything** cleared the poisoned `Vary: Origin`
@@ -951,8 +966,9 @@ curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
 ```
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
-`bun run test` (5 tasks green — web 1582, game 412, stories 198,
-infra-cloudflare 53; desktop has no test files),
+`bun run test` (5 tasks green — web 1597, game 412, stories 198,
+infra-cloudflare 73; desktop has no test files — re-measured 2026-07-31, was
+web 1582 / infra-cloudflare 53),
 `bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
 sha256-b632cb09…`). The `bun --filter @aquila/infra-cloudflare verify` (15 PASS)
 and `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts`

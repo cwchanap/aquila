@@ -20,7 +20,7 @@ import {
     parseRuntimeAssetManifest,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
-import { runChecks, _setFetchImpl } from '../verify';
+import { runChecks, _setFetchImpl, ORIGIN } from '../verify';
 import type { CheckResult } from '../assertions';
 
 const STORY_ID = 'the_seventh_mirror';
@@ -89,8 +89,8 @@ function buildAsset(
             avifSha as unknown as Parameters<typeof getObjectPath>[0],
             'avif'
         ),
-        webpLabel: webpSha.slice(0, 8),
-        avifLabel: avifSha.slice(0, 8),
+        webpLabel: webpSha.slice(0, 16),
+        avifLabel: avifSha.slice(0, 16),
         width,
         height,
     };
@@ -184,7 +184,8 @@ function buildValidRelease(): {
  */
 function makeFetch(
     release: ReturnType<typeof buildValidRelease>,
-    corrupt?: { assetIndex: number; format: 'webp' | 'avif'; body: string }
+    corrupt?: { assetIndex: number; format: 'webp' | 'avif'; body: string },
+    sourceProbeStatus = 404
 ): typeof fetch {
     const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
     const pointerUrl = `${BASE}/${pointerPath}`;
@@ -238,8 +239,10 @@ function makeFetch(
                 });
             }
         }
-        // Source probe key and anything else: unreachable.
-        return new Response('not found', { status: 404 });
+        // Source probe key and anything else: unreachable. The verifier treats
+        // only 404 as definitive absence of the source key, so the status is
+        // overridable to exercise the rejected branches.
+        return new Response('not found', { status: sourceProbeStatus });
     }) as typeof fetch;
 }
 
@@ -307,7 +310,7 @@ function resignRelease(
     pointer.manifestSha256 = manifestSha256;
     release.manifestText = manifestText;
     release.pointerText = JSON.stringify(pointer);
-    release.manifestObj = parsed;
+    release.manifestObj = parseRuntimeAssetManifest(finalManifest);
 }
 
 /**
@@ -383,10 +386,13 @@ describe('runChecks integrity', () => {
         expect(byName['manifest checksum matches pointer']).toBe(true);
         expect(byName['pointer/manifest pair']).toBe(true);
         expect(byName['releaseId matches canonical content']).toBe(true);
+        // The source probe key answers 404 — the only definitive absence
+        // response on a world-readable delivery host.
+        expect(byName['source key absent from delivery bucket']).toBe(true);
         // Object body integrity: the fetched bytes must match the manifest
         // variant's declared byte length and SHA-256, the same two checks the
         // reader performs before decoding. Every asset's variants are checked,
-        // not just the first asset's — the check name carries the first 8 hex
+        // not just the first asset's — the check name carries the first 16 hex
         // of the object's sha256 so a failure points at the asset.
         const [bg, pt] = release.assets;
         expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
@@ -459,6 +465,22 @@ describe('runChecks integrity', () => {
         const byName = names(results);
         expect(byName[`webp ${bg.webpLabel} object byte length`]).toBe(true);
         expect(byName[`webp ${bg.webpLabel} object checksum`]).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects a delivery host that answers the source probe with 403', async () => {
+        // Only 404 is a definitive absence response on a world-readable
+        // delivery host. A 403 is ambiguous — an object present but blocked
+        // from being served would also answer 403 — so the verifier must not
+        // bless it as proof the source key is absent from the delivery bucket.
+        const release = buildValidRelease();
+        _setFetchImpl(makeFetch(release, undefined, 403));
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['source key absent from delivery bucket']).toBe(false);
         expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
             0
         );
@@ -741,9 +763,7 @@ describe('runChecks integrity', () => {
         // preview deployment. The verifier must require the wildcard, not
         // bless a policy that passes while previews fail.
         const release = buildValidRelease();
-        _setFetchImpl(
-            makeFetchWithBadCors(release, 'https://aquila.cwchanap.dev')
-        );
+        _setFetchImpl(makeFetchWithBadCors(release, ORIGIN));
         const results: CheckResult[] = [];
         await runChecks(BASE, results);
         const byName = names(results);

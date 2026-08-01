@@ -354,10 +354,17 @@ export async function runChecks(
             assertPointerRevalidation(pointerHeaders.get('cache-control'))
         )
     );
+    // A browser running from `ORIGIN` can only read the pointer when the
+    // response carries either `*` or the request's exact origin. Checking only
+    // for the header's presence would let an unrelated allow-origin (e.g.
+    // `https://wrong.example`) pass the verifier while every real browser
+    // blocked the read — the shell verifier must not rely on the manually
+    // gated `R2_LIVE_CHECK` e2e suite to catch an invalid CORS policy.
     const allowOrigin = pointerHeaders.get('access-control-allow-origin');
+    const corsOk = allowOrigin === '*' || allowOrigin === ORIGIN;
     results.push({
         name: 'pointer CORS',
-        ok: allowOrigin !== null,
+        ok: corsOk,
         detail: `access-control-allow-origin: ${allowOrigin ?? '<missing>'} (request origin ${ORIGIN})`,
     });
 
@@ -526,7 +533,22 @@ export async function runChecks(
     // fetched and checked once, and a release with N assets is checked against
     // up to N objects per format. The check names carry the first 8 hex of the
     // object's sha256 so an operator can map a failed line back to the asset.
-    const verifiedObjects = new Set<string>();
+    //
+    // The dedupe key is (format, sha256), but two manifest entries may legally
+    // reference the same digest while declaring different metadata. The
+    // manifest schema validates that each path matches the digest and that
+    // byteLength is positive, but it does not enforce consistent byte lengths
+    // or dimensions across references sharing a digest. The reader checks
+    // bytes.byteLength against each asset's variant.byteLength before decoding
+    // (decoded-asset-cache.ts), so a second asset declaring a different
+    // byteLength for an already-fetched object is rejected at runtime. A Set
+    // would skip the second reference entirely and let that pass the verifier;
+    // a Map records the first reference's metadata and compares every later
+    // reference against it, failing on disagreement.
+    const verifiedObjects = new Map<
+        string,
+        { byteLength: number; path: string; width: number; height: number }
+    >();
     let cacheProbePath: string | null = null;
     let offeredWebp = false;
     let offeredAvif = false;
@@ -538,10 +560,49 @@ export async function runChecks(
             else offeredAvif = true;
 
             const dedupeKey = `${format}:${variant.sha256}`;
-            if (verifiedObjects.has(dedupeKey)) continue;
-            verifiedObjects.add(dedupeKey);
-
             const label = variant.sha256.slice(0, 8);
+            const prior = verifiedObjects.get(dedupeKey);
+            if (prior !== undefined) {
+                // Same digest, same format — the object is fetched once, but
+                // every manifest reference must agree on the metadata the
+                // reader will check against the fetched bytes. byteLength and
+                // path are variant-level; width and height are asset-level
+                // but must also match, since identical bytes decode to
+                // identical dimensions.
+                const conflicts: string[] = [];
+                if (prior.byteLength !== variant.byteLength) {
+                    conflicts.push(
+                        `byteLength ${variant.byteLength} (was ${prior.byteLength})`
+                    );
+                }
+                if (prior.path !== variant.path) {
+                    conflicts.push(`path ${variant.path} (was ${prior.path})`);
+                }
+                if (prior.width !== asset.width) {
+                    conflicts.push(`width ${asset.width} (was ${prior.width})`);
+                }
+                if (prior.height !== asset.height) {
+                    conflicts.push(
+                        `height ${asset.height} (was ${prior.height})`
+                    );
+                }
+                results.push({
+                    name: `${format} ${label} object reference consistent`,
+                    ok: conflicts.length === 0,
+                    detail:
+                        conflicts.length === 0
+                            ? `assets.${index} agrees with the first reference to ${variant.sha256}`
+                            : `assets.${index} disagrees with the first reference to ${variant.sha256}: ${conflicts.join(', ')}`,
+                });
+                continue;
+            }
+            verifiedObjects.set(dedupeKey, {
+                byteLength: variant.byteLength,
+                path: variant.path,
+                width: asset.width,
+                height: asset.height,
+            });
+
             let objectPath: string;
             try {
                 objectPath = getObjectPath(

@@ -22,36 +22,38 @@ const CONFIGURED_ENV = {
 };
 
 describe('derivePreviewId', () => {
-    it('lowercases and replaces slashes', () => {
-        expect(derivePreviewId('feature/Foo_Bar')).toBe('feature-foo_bar');
+    it('lowercases, replaces slashes, and appends a ref digest', () => {
+        // The digest is over the NFC ref before lowercasing, so the slug stays
+        // readable while refs that slugify identically remain distinct.
+        expect(derivePreviewId('feature/Foo_Bar')).toMatch(
+            /^feature-foo_bar-[0-9a-f]{12}$/
+        );
     });
 
-    it('strips leading and trailing separators', () => {
-        expect(derivePreviewId('-HPA-229-')).toBe('hpa-229');
+    it('strips leading and trailing separators before digesting', () => {
+        expect(derivePreviewId('-HPA-229-')).toMatch(/^hpa-229-[0-9a-f]{12}$/);
     });
 
-    it('collapses runs of separators', () => {
-        expect(derivePreviewId('a///b')).toBe('a-b');
-        expect(derivePreviewId('a__b')).toBe('a-b');
-        expect(derivePreviewId('a-_-b')).toBe('a-b');
+    it('collapses runs of separators before digesting', () => {
+        expect(derivePreviewId('a///b')).toMatch(/^a-b-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a__b')).toMatch(/^a-b-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a-_-b')).toMatch(/^a-b-[0-9a-f]{12}$/);
     });
 
-    it('clamps to 64 characters without a trailing separator', () => {
+    it('clamps the slug prefix so the whole id stays within 64 characters', () => {
         const result = derivePreviewId(`${'a'.repeat(62)}-${'b'.repeat(20)}`);
         expect(result.length).toBeLessThanOrEqual(64);
         expect(isPreviewId(result)).toBe(true);
     });
 
-    it('leaves an id that already fits untouched', () => {
-        expect(derivePreviewId('a'.repeat(63))).toBe('a'.repeat(63));
-        expect(derivePreviewId('a'.repeat(64))).toBe('a'.repeat(64));
-        expect(derivePreviewId('feature/Foo_Bar')).toBe('feature-foo_bar');
-    });
-
-    it('appends a hash suffix only when it truncates', () => {
-        // 64 characters is the longest id isPreviewId() accepts, so the
-        // truncation path only triggers at 65 and above.
-        expect(derivePreviewId('a'.repeat(64))).toBe('a'.repeat(64));
+    it('appends a digest to every non-empty slug, even when it fits', () => {
+        // The discriminator is not conditional on truncation: a bare slug
+        // would merge refs that slugify identically (`feature/foo` and
+        // `feature-foo`), so every non-empty slug gets one. The prefix is
+        // clamped to 51 chars, leaving room for `-` plus the 12-hex digest,
+        // so the whole id stays within the 64-char isPreviewId limit.
+        expect(derivePreviewId('a'.repeat(63))).toMatch(/^a{51}-[0-9a-f]{12}$/);
+        expect(derivePreviewId('a'.repeat(64))).toMatch(/^a{51}-[0-9a-f]{12}$/);
         expect(derivePreviewId('a'.repeat(65))).toMatch(/^a{51}-[0-9a-f]{12}$/);
     });
 
@@ -70,8 +72,11 @@ describe('derivePreviewId', () => {
         }
     });
 
-    it('derives truncated ids deterministically', () => {
+    it('derives ids deterministically', () => {
         expect(derivePreviewId(LONG_BRANCH)).toBe(derivePreviewId(LONG_BRANCH));
+        expect(derivePreviewId('feature/Foo_Bar')).toBe(
+            derivePreviewId('feature/Foo_Bar')
+        );
     });
 
     it('falls back to a deterministic hash when nothing survives', () => {
@@ -103,7 +108,10 @@ describe('derivePreviewId', () => {
 
 describe('previewIdForEnv', () => {
     it('derives an id for a fully configured preview build', () => {
-        expect(previewIdForEnv(CONFIGURED_ENV)).toBe('feature-foo_bar');
+        const id = previewIdForEnv(CONFIGURED_ENV);
+        expect(id).toBe(derivePreviewId('feature/Foo_Bar'));
+        expect(id).toMatch(/^feature-foo_bar-[0-9a-f]{12}$/);
+        expect(isPreviewId(id)).toBe(true);
     });
 
     it('emits nothing outside a preview build', () => {
@@ -152,13 +160,37 @@ describe('previewIdForEnv', () => {
         ).toBe('');
     });
 
-    it('still yields a valid id when the branch ref is missing', () => {
-        const id = previewIdForEnv({
-            ...CONFIGURED_ENV,
-            VERCEL_GIT_COMMIT_REF: undefined,
-        });
-        expect(id).toMatch(/^preview-[0-9a-f]{8}$/);
-        expect(isPreviewId(id)).toBe(true);
+    it('fails the build when the branch ref is missing', () => {
+        // Hashing the empty string is deterministic, so every ref-less build
+        // would collapse onto one shared preview namespace. Fail instead of
+        // silently sharing one — the operator must set the ref or an explicit
+        // PUBLIC_ASSET_PREVIEW_ID.
+        expect(() =>
+            previewIdForEnv({
+                ...CONFIGURED_ENV,
+                VERCEL_GIT_COMMIT_REF: undefined,
+            })
+        ).toThrow(/VERCEL_GIT_COMMIT_REF is absent/);
+        expect(() =>
+            previewIdForEnv({
+                ...CONFIGURED_ENV,
+                VERCEL_GIT_COMMIT_REF: '   ',
+            })
+        ).toThrow(/VERCEL_GIT_COMMIT_REF is absent/);
+    });
+
+    it('honours an explicit id when the branch ref is missing', () => {
+        // The absent-ref failure is the derive path only; an explicit id
+        // bypasses it, so spoiler-sensitive previews can still publish without
+        // a branch ref.
+        const explicit = 'unguessable-preview-9f3a';
+        expect(
+            previewIdForEnv({
+                ...CONFIGURED_ENV,
+                VERCEL_GIT_COMMIT_REF: undefined,
+                PUBLIC_ASSET_PREVIEW_ID: explicit,
+            })
+        ).toBe(explicit);
     });
 });
 
@@ -234,7 +266,9 @@ describe('main', () => {
             streams(cap).stderr
         );
         expect(code).toBe(0);
-        expect(cap.stdout).toEqual(['feature-foo_bar']);
+        expect(cap.stdout).toHaveLength(1);
+        expect(cap.stdout[0]).toMatch(/^feature-foo_bar-[0-9a-f]{12}$/);
+        expect(isPreviewId(cap.stdout[0])).toBe(true);
     });
 
     it('emits nothing and exits 0 outside a preview build', () => {
@@ -274,8 +308,21 @@ describe('asset-preview-id CLI', () => {
             PUBLIC_ASSET_ENVIRONMENT: 'preview',
         });
         expect(result.status).toBe(0);
-        expect(result.stdout).toBe('feature-foo_bar');
+        expect(result.stdout).toMatch(/^feature-foo_bar-[0-9a-f]{12}$/);
+        expect(isPreviewId(result.stdout)).toBe(true);
         expect(result.stderr).toBe('');
+    });
+
+    it('fails with a non-zero exit when the branch ref is missing', () => {
+        // The build gate throws when VERCEL_GIT_COMMIT_REF is absent, so the
+        // CLI exits non-zero instead of emitting a colliding shared id.
+        const result = run({
+            VERCEL_ENV: 'preview',
+            PUBLIC_ASSET_BASE_URL: 'https://assets.example.com/',
+            PUBLIC_ASSET_ENVIRONMENT: 'preview',
+        });
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toMatch(/VERCEL_GIT_COMMIT_REF is absent/);
     });
 
     it('emits an empty string and exits 0 outside a preview build', () => {

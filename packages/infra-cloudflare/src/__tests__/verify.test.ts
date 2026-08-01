@@ -52,9 +52,13 @@ function buildValidRelease(): {
     manifestObj: RuntimeAssetManifestV1;
     webpPath: string;
     avifPath: string;
+    webpBody: string;
+    avifBody: string;
 } {
-    const webpSha = sha256Hex('webp-bytes');
-    const avifSha = sha256Hex('avif-bytes');
+    const webpBody = 'webp-bytes';
+    const avifBody = 'avif-bytes';
+    const webpSha = sha256Hex(webpBody);
+    const avifSha = sha256Hex(avifBody);
     const webpPath = getObjectPath(
         // brand the digest the way the schema expects
         webpSha as unknown as Parameters<typeof getObjectPath>[0],
@@ -77,13 +81,13 @@ function buildValidRelease(): {
                         format: 'webp',
                         path: webpPath,
                         sha256: webpSha,
-                        byteLength: 1234,
+                        byteLength: webpBody.length,
                     },
                     avif: {
                         format: 'avif',
                         path: avifPath,
                         sha256: avifSha,
-                        byteLength: 5678,
+                        byteLength: avifBody.length,
                     },
                 },
                 width: 640,
@@ -116,16 +120,22 @@ function buildValidRelease(): {
         manifestObj: finalManifest as unknown as RuntimeAssetManifestV1,
         webpPath,
         avifPath,
+        webpBody,
+        avifBody,
     };
 }
 
 /**
  * A fetch that serves the release's documents and objects. Object URLs return
- * immutable image bytes; the source-probe key returns 404 (the verifier
- * requires source objects to be unreachable).
+ * immutable image bytes whose length and SHA-256 match the manifest variant;
+ * the source-probe key returns 404 (the verifier requires source objects to be
+ * unreachable). `corrupt` swaps a format's body for different bytes while
+ * keeping its headers valid — the scenario where a content-addressed object is
+ * overwritten or corrupted but still served with the right content-type.
  */
 function makeFetch(
-    release: ReturnType<typeof buildValidRelease>
+    release: ReturnType<typeof buildValidRelease>,
+    corrupt?: { format: 'webp' | 'avif'; body: string }
 ): typeof fetch {
     const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
     const pointerUrl = `${BASE}/${pointerPath}`;
@@ -134,6 +144,10 @@ function makeFetch(
         JSON.parse(release.pointerText).releaseId,
         TARGET
     )}`;
+    const webpBody =
+        corrupt?.format === 'webp' ? corrupt.body : release.webpBody;
+    const avifBody =
+        corrupt?.format === 'avif' ? corrupt.body : release.avifBody;
     return (async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url === pointerUrl) {
@@ -148,7 +162,7 @@ function makeFetch(
             });
         }
         if (url.endsWith(release.webpPath)) {
-            return new Response('webp-bytes', {
+            return new Response(webpBody, {
                 status: 200,
                 headers: {
                     'content-type': 'image/webp',
@@ -158,7 +172,7 @@ function makeFetch(
             });
         }
         if (url.endsWith(release.avifPath)) {
-            return new Response('avif-bytes', {
+            return new Response(avifBody, {
                 status: 200,
                 headers: {
                     'content-type': 'image/avif',
@@ -209,8 +223,64 @@ describe('runChecks integrity', () => {
         expect(byName['manifest checksum matches pointer']).toBe(true);
         expect(byName['pointer/manifest pair']).toBe(true);
         expect(byName['releaseId matches canonical content']).toBe(true);
+        // Object body integrity: the fetched bytes must match the manifest
+        // variant's declared byte length and SHA-256, the same two checks the
+        // reader performs before decoding.
+        expect(byName['webp object byte length']).toBe(true);
+        expect(byName['webp object checksum']).toBe(true);
+        expect(byName['avif object byte length']).toBe(true);
+        expect(byName['avif object checksum']).toBe(true);
         // No integrity check failed.
         expect(results.filter(r => !r.ok && !r.warning)).toEqual([]);
+    });
+
+    it('rejects an object whose body is corrupted while its headers stay valid', async () => {
+        // The reviewer's scenario: a content-addressed object is overwritten or
+        // corrupted, but the response still carries the right content-type and
+        // cache-control (and may even remain decodable). The reader rejects it
+        // with "Asset byte length mismatch" / "Asset checksum mismatch"; the
+        // verifier must too — previously checkObject read only headers, so a
+        // release the reader rejected could pass the verifier.
+        const release = buildValidRelease();
+        _setFetchImpl(
+            makeFetch(release, { format: 'webp', body: 'corrupted-webp-bytes' })
+        );
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        // Headers still pass.
+        expect(byName['webp content-type']).toBe(true);
+        expect(byName['webp immutable']).toBe(true);
+        // Body integrity fails: the byte length no longer matches the manifest.
+        expect(byName['webp object byte length']).toBe(false);
+        // The checksum check is skipped once the byte length mismatches, so the
+        // run reports one clear failure rather than two redundant ones.
+        expect(byName['webp object checksum']).toBeUndefined();
+        // The avif object is untouched and still passes.
+        expect(byName['avif object byte length']).toBe(true);
+        expect(byName['avif object checksum']).toBe(true);
+        // The run reports at least one hard failure.
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
+    });
+
+    it('rejects an object whose body matches in length but not in checksum', async () => {
+        // Same byte length, different bytes: the byte-length check passes but
+        // the SHA-256 check catches the corruption, exactly as the reader does.
+        const release = buildValidRelease();
+        const sameLengthCorrupt = 'xxbp-bytes'; // 10 bytes, same length as 'webp-bytes'
+        _setFetchImpl(
+            makeFetch(release, { format: 'webp', body: sameLengthCorrupt })
+        );
+        const results: CheckResult[] = [];
+        await runChecks(BASE, results);
+        const byName = names(results);
+        expect(byName['webp object byte length']).toBe(true);
+        expect(byName['webp object checksum']).toBe(false);
+        expect(results.filter(r => !r.ok && !r.warning).length).toBeGreaterThan(
+            0
+        );
     });
 
     it('rejects a manifest edited after publication (checksum mismatch)', async () => {

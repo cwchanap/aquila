@@ -77,20 +77,53 @@ describe('derivePreviewId', () => {
         );
     });
 
-    it('returns a preview- prefixed digest for an empty ref', () => {
-        const id = derivePreviewId('');
+    it('returns a preview- prefixed digest for a ref that slugifies to empty', () => {
+        // `derivePreviewId` is a pure function; a ref whose slug is empty still
+        // yields a valid id. This path is reachable for refs like `'日本語'`,
+        // but previewIdForEnv never reaches it with an absent ref (see below).
+        const id = derivePreviewId('日本語');
         expect(id).toMatch(/^preview-[a-f0-9]{8}$/);
         expect(isPreviewId(id)).toBe(true);
+        expect(derivePreviewId('日本語')).toBe(id);
+    });
+});
+
+describe('previewIdForEnv missing-ref handling', () => {
+    const PREVIEW_ENV_NO_REF = {
+        VERCEL_ENV: 'preview',
+        PUBLIC_ASSET_BASE_URL: 'https://assets.example.dev/',
+        PUBLIC_ASSET_ENVIRONMENT: 'preview',
+    } as const;
+
+    it('fails the build when VERCEL_GIT_COMMIT_REF is absent', () => {
+        // Hashing the empty string is deterministic, so every ref-less build
+        // would otherwise collapse onto one shared preview namespace. Fail
+        // instead of silently sharing one.
+        expect(() => previewIdForEnv(PREVIEW_ENV_NO_REF)).toThrow(
+            /VERCEL_GIT_COMMIT_REF is absent/
+        );
+        expect(() =>
+            previewIdForEnv({
+                ...PREVIEW_ENV_NO_REF,
+                VERCEL_GIT_COMMIT_REF: '',
+            })
+        ).toThrow(/VERCEL_GIT_COMMIT_REF is absent/);
+        expect(() =>
+            previewIdForEnv({
+                ...PREVIEW_ENV_NO_REF,
+                VERCEL_GIT_COMMIT_REF: '   ',
+            })
+        ).toThrow(/VERCEL_GIT_COMMIT_REF is absent/);
     });
 
-    it('does not collapse every missing-ref build onto one id', () => {
-        // A missing VERCEL_GIT_COMMIT_REF normalizes to the empty string, but
-        // the empty-slug branch still digests that string — so this is a single
-        // id, not a many-way collision. The point is that it is a deliberate
-        // fallback, not the same namespace as any real branch.
-        const missing = derivePreviewId('');
-        expect(missing).toBe(derivePreviewId(''));
-        expect(missing).not.toBe(derivePreviewId('main'));
+    it('honours an explicit id instead of failing on an absent ref', () => {
+        const explicit = 'unguessable-preview-9f3a';
+        expect(
+            previewIdForEnv({
+                ...PREVIEW_ENV_NO_REF,
+                PUBLIC_ASSET_PREVIEW_ID: explicit,
+            })
+        ).toBe(explicit);
     });
 });
 

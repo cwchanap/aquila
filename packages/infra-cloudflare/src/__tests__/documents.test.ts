@@ -67,7 +67,11 @@ describe('findVariant', () => {
             )
         ).toEqual({
             kind: 'found',
-            variant: { path: 'vn/objects/aa.webp', sha256: 'aa' },
+            variant: {
+                path: 'vn/objects/aa.webp',
+                sha256: 'aa',
+                byteLength: 10,
+            },
         });
     });
 
@@ -84,6 +88,7 @@ describe('findVariant', () => {
                                     format: 'avif',
                                     path: 'vn/objects/cc.avif',
                                     sha256: 'cc',
+                                    byteLength: 10,
                                 },
                             },
                         },
@@ -93,7 +98,11 @@ describe('findVariant', () => {
             )
         ).toEqual({
             kind: 'found',
-            variant: { path: 'vn/objects/cc.avif', sha256: 'cc' },
+            variant: {
+                path: 'vn/objects/cc.avif',
+                sha256: 'cc',
+                byteLength: 10,
+            },
         });
     });
 
@@ -136,7 +145,7 @@ describe('findVariant', () => {
             )
         ).toEqual({
             kind: 'malformed',
-            detail: 'assets.0.variants.webp is malformed (sha256 is 12345)',
+            detail: 'assets.0.variants.webp is malformed (sha256 is 12345, byteLength is absent)',
         });
     });
 
@@ -145,7 +154,7 @@ describe('findVariant', () => {
             findVariant({ assets: [{ variants: { webp: {} } }] }, 'webp')
         ).toEqual({
             kind: 'malformed',
-            detail: 'assets.0.variants.webp is malformed (path is absent, sha256 is absent)',
+            detail: 'assets.0.variants.webp is malformed (path is absent, sha256 is absent, byteLength is absent)',
         });
     });
 
@@ -162,7 +171,11 @@ describe('findVariant', () => {
             )
         ).toEqual({
             kind: 'found',
-            variant: { path: 'vn/objects/bb.webp', sha256: 'bb' },
+            variant: {
+                path: 'vn/objects/bb.webp',
+                sha256: 'bb',
+                byteLength: 10,
+            },
         });
     });
 
@@ -179,7 +192,7 @@ describe('findVariant', () => {
             )
         ).toEqual({
             kind: 'malformed',
-            detail: 'assets.0.variants.webp is malformed (path is 7); assets.1.variants.webp is not an object ("vn/objects/bb.webp")',
+            detail: 'assets.0.variants.webp is malformed (path is 7, byteLength is absent); assets.1.variants.webp is not an object ("vn/objects/bb.webp")',
         });
     });
 

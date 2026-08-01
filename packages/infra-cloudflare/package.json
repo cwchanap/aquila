@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "assets": "bun src/publisher/cli.ts",
     "lint": "eslint src",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -13,12 +14,12 @@
   "dependencies": {
     "@aquila/stories": "workspace:*",
     "@aws-sdk/client-s3": "^3.1100.0",
+    "sharp": "0.34.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@vitest/coverage-v8": "^4.0.18",
-    "sharp": "0.34.5",
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
   }

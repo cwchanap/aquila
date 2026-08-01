@@ -25,13 +25,23 @@ export function summarize(body: string): string {
     return collapsed.length > 120 ? `${collapsed.slice(0, 120)}...` : collapsed;
 }
 
-export type ManifestVariant = { path: string; sha256: string };
+export type ManifestVariant = {
+    path: string;
+    sha256: string;
+    byteLength: number;
+};
 
 /**
  * `absent` and `malformed` are deliberately distinct outcomes. Reporting a
  * variant with a non-string `sha256` as "no webp variant" would send an
  * operator looking for a missing object instead of the bad field that is
  * actually there — a misdirecting message is worse than none.
+ *
+ * `byteLength` is extracted alongside `path`/`sha256` because the verifier
+ * compares it against the fetched object's byte length — the same integrity
+ * check the reader performs before decoding. A variant without a numeric
+ * `byteLength` is therefore malformed, not found: the verifier cannot complete
+ * that check without it.
  */
 export type VariantLookup =
     | { kind: 'found'; variant: ManifestVariant }
@@ -80,9 +90,13 @@ export function findVariant(
             );
             continue;
         }
-        const { path, sha256 } = variant;
-        if (typeof path === 'string' && typeof sha256 === 'string') {
-            return { kind: 'found', variant: { path, sha256 } };
+        const { path, sha256, byteLength } = variant;
+        if (
+            typeof path === 'string' &&
+            typeof sha256 === 'string' &&
+            typeof byteLength === 'number'
+        ) {
+            return { kind: 'found', variant: { path, sha256, byteLength } };
         }
         const fields = [
             typeof path === 'string'
@@ -91,6 +105,9 @@ export function findVariant(
             typeof sha256 === 'string'
                 ? null
                 : `sha256 is ${describeUnexpected(sha256)}`,
+            typeof byteLength === 'number'
+                ? null
+                : `byteLength is ${describeUnexpected(byteLength)}`,
         ].filter((field): field is string => field !== null);
         problems.push(`${location} is malformed (${fields.join(', ')})`);
     }

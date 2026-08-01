@@ -32,9 +32,11 @@ function isPresent(value: string | undefined): boolean {
  * full normalized ref is therefore appended to *every* non-empty slug, not
  * only to long ones. The digest is taken before lowercasing, so refs that
  * differ only in case (e.g. `Feature/Foo` vs `feature/foo`) get distinct ids
- * even when their slugs match. A missing ref normalizes to the empty string,
- * which every such build would share, so it falls through to the empty-slug
- * branch and gets its own digest.
+ * even when their slugs match. The empty-slug branch (`preview-<digest>`) is
+ * reachable for refs that slugify to nothing (e.g. `'日本語'`); it is never
+ * reached for a missing ref, because `previewIdForEnv` rejects an absent
+ * `VERCEL_GIT_COMMIT_REF` rather than hashing the empty string every such
+ * build would share.
  */
 export function derivePreviewId(ref: string): string {
     const normalized = ref.normalize('NFC');
@@ -80,6 +82,12 @@ export function derivePreviewId(ref: string): string {
  * is already set. An explicit id that fails `isPreviewId()` is rejected here
  * rather than shipped — a bad manual value would otherwise surface only in the
  * browser as a reader with no visuals.
+ *
+ * A missing `VERCEL_GIT_COMMIT_REF` is rejected rather than hashed: hashing
+ * the empty string is deterministic, so every such build would collapse onto
+ * one shared preview namespace and publishing one would overwrite another's
+ * assets. Failing the build forces the operator to set the ref (or an explicit
+ * id) instead of silently sharing a namespace with every other ref-less build.
  */
 export function previewIdForEnv(
     env: Record<string, string | undefined>
@@ -96,7 +104,14 @@ export function previewIdForEnv(
         }
         return explicit;
     }
-    return derivePreviewId(env.VERCEL_GIT_COMMIT_REF ?? '');
+    const ref = env.VERCEL_GIT_COMMIT_REF;
+    if (ref === undefined || ref.trim().length === 0) {
+        throw new Error(
+            'asset-preview-id: VERCEL_GIT_COMMIT_REF is absent in a preview build. ' +
+                'Set PUBLIC_ASSET_PREVIEW_ID explicitly, or ensure Vercel provides the branch ref.'
+        );
+    }
+    return derivePreviewId(ref);
 }
 
 /**

@@ -6,9 +6,11 @@ serves visual-novel runtime assets to the web reader.
 > **Status: provisioned and proven end to end, with one known defect.** As of
 > 2026-07-31 both buckets exist, the custom domain is connected, CORS is applied,
 > both cache rules match, and the `smoke` release of `the_seventh_mirror` is
-> published. `verify` passes 15/15 and the live e2e passes 2/2 — cache-control
-> headers, content types, and real-browser image decode are all confirmed against
-> live `200` responses.
+> published. `verify` passes all its checks and the live e2e passes 2/2 —
+> cache-control headers, content types, real-browser image decode, and the full
+> pointer/manifest/object integrity chain (contract parsing, manifest-byte and
+> canonical-content digests, object byte-length and SHA-256) are all confirmed
+> against live `200` responses.
 >
 > **One design value changed after measurement.** The pointer's 60-second edge
 > TTL proved unrepresentable — Cloudflare's Free plan floors Edge TTL at 2 hours
@@ -352,6 +354,19 @@ at web-server startup, which reads like a delivery-infrastructure problem when i
 is a local-environment one. Export your own `DATABASE_URL` to override the
 default.
 
+> **Historical — recorded before the pointer bypass rule (§5).** The trap below
+> was observed when the pointer (`current.json`) was edge-cached with a 60-second
+> TTL. The pointer rule now **bypasses** the edge cache (confirmed 2026-07-31:
+> `cf-cache-status: DYNAMIC` with no `age` header across 8 consecutive requests,
+> see §5), so a pre-publication 404 of `current.json` is no longer held at the
+> edge — it reaches R2 on every request, and the 404 disappears as soon as the
+> object exists. The `Vary: Origin` / Purge-Everything behaviour it describes
+> still applies to *cacheable* paths (the manifest and objects), but those are
+> content-addressed and "never 404 then start existing at the same URL", so the
+> trap does not arise for them either. Re-test the pointer case under the
+> deployed bypass before relying on any of this; it is kept here as the record of
+> why the bypass rule exists.
+>
 > **Trap: a 404 probed before publication outlives the pointer's 60-second TTL.**
 > If you `curl` the pointer URL before seeding — which is exactly what §2.9 tells
 > you to do, and what `verify` does — Cloudflare caches the resulting 404 error
@@ -515,9 +530,14 @@ all collapse to `feature-foo`, and `a__b` and `a--b` both collapse to `a-b`. A
 bare slug would merge unrelated branches into one preview namespace, and
 publishing from one would silently overwrite the others' assets. The digest is
 taken over the NFC-normalized ref *before* lowercasing, so refs that differ
-only in case get distinct ids even when their slugs match. A missing
-`VERCEL_GIT_COMMIT_REF` normalizes to the empty string and falls through to the
-`preview-<8 hex>` branch, so every such build does **not** share one namespace.
+only in case get distinct ids even when their slugs match. An absent
+`VERCEL_GIT_COMMIT_REF` is **rejected** by `previewIdForEnv()` — hashing the
+empty string is deterministic, so every ref-less build would otherwise collapse
+onto one shared `preview-<8 hex>` namespace and publishing from one would
+silently overwrite the others' assets. The build fails instead, forcing the
+operator to set the ref (or an explicit `PUBLIC_ASSET_PREVIEW_ID`). The
+`preview-<8 hex>` branch is still reachable for refs that slugify to nothing
+(e.g. `'日本語'`), but never for a missing ref.
 
 ---
 
@@ -679,10 +699,11 @@ action changed from *Eligible for cache* to *Bypass cache*, and
 cannot be honoured is worse than no knob. Activation latency is now bounded by
 R2 write visibility rather than by any edge TTL.
 
-**Why this was invisible until measured.** `verify` passes 15/15 and the live
-e2e passes with the pointer cached for two hours, because a first release has
-nothing to supersede. The failure would have first appeared on the **second**
-publish — i.e. the first time HPA-230's publisher ran for real, against a story
+**Why this was invisible until measured.** `verify` passes all its checks and
+the live e2e passes with the pointer cached for two hours, because a first
+release has nothing to supersede. The failure would have first appeared on the
+**second** publish — i.e. the first time HPA-230's publisher ran for real,
+against a story
 someone was already reading.
 
 ---
@@ -834,9 +855,14 @@ Recorded for traceability only — see §2.9 on why it is machine-dependent.
 Both verifiers now pass end to end, after a zone-wide **Purge Everything**
 cleared the poisoned `Vary: Origin` variant (§2.9).
 
-- `bun --filter @aquila/infra-cloudflare verify` — **15/15 PASS**, including
-  pointer content-type, revalidation directives, CORS, `manifestPath` agreement
-  with the publication layout, manifest and object content-types and immutability,
+- `bun --filter @aquila/infra-cloudflare verify` — **all checks PASS**,
+  including pointer content-type, revalidation directives, CORS, `manifestPath`
+  agreement with the publication layout, the reader's contract parsers
+  (`parseActiveReleasePointer`, `parseRuntimeAssetManifest`), the manifest-byte
+  digest vs `pointer.manifestSha256`, the pointer/manifest pair validation, the
+  canonical release-content digest vs `releaseId`, manifest and object
+  content-types and immutability, **object byte-length and SHA-256 vs the
+  manifest variant** (the same two checks the reader performs before decoding),
   `MISS -> HIT` cache corroboration, source-objects-not-public (404), and
   `findForbiddenKeys` clean against the real published JSON.
 - `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts` —

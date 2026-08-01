@@ -23,7 +23,7 @@ import {
     type CheckResult,
 } from './assertions';
 import { loadR2DeliveryConfig } from './config';
-import { findVariant, summarize } from './documents';
+import { findVariant, summarize, type ManifestVariant } from './documents';
 
 const STORY_ID = 'the_seventh_mirror';
 const PREVIEW_ID = 'smoke';
@@ -71,6 +71,17 @@ function describeError(error: unknown): string {
  */
 function sha256Hex(text: string): string {
     return createHash('sha256').update(text).digest('hex');
+}
+
+/**
+ * SHA-256 of an object's raw bytes, returned as lowercase hex. Mirrors the
+ * reader's `sha256Hex(bytes)` so the verifier computes the same digest the
+ * reader compares against `variant.sha256` before decoding an image.
+ */
+function sha256HexBytes(bytes: ArrayBuffer | Uint8Array): string {
+    return createHash('sha256')
+        .update(bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : bytes)
+        .digest('hex');
 }
 
 /**
@@ -177,6 +188,7 @@ async function checkObject(
     base: string,
     objectPath: string,
     format: AssetFormat,
+    variant: ManifestVariant,
     results: CheckResult[]
 ): Promise<void> {
     const outcome = await request(`${base}/${objectPath}`, { origin: ORIGIN });
@@ -209,6 +221,39 @@ async function checkObject(
             assertImmutable(headers.get('cache-control'))
         )
     );
+
+    // The reader verifies the object's byte length and SHA-256 against the
+    // manifest variant before it decodes the image (decoded-asset-cache.ts).
+    // A content-addressed object can be overwritten or corrupted while keeping
+    // valid image headers — and potentially remaining decodable — so checking
+    // only status and headers would let a release the reader rejects pass the
+    // verifier. Read the body and run the same two integrity checks the reader
+    // does, so a release the reader rejects cannot pass verification.
+    let bytes: ArrayBuffer;
+    try {
+        bytes = await outcome.response.arrayBuffer();
+    } catch (error) {
+        results.push({
+            name: `${format} object bytes`,
+            ok: false,
+            detail: `reading ${objectPath} body failed: ${describeError(error)}`,
+        });
+        return;
+    }
+    const byteLengthOk = bytes.byteLength === variant.byteLength;
+    results.push({
+        name: `${format} object byte length`,
+        ok: byteLengthOk,
+        detail: `body is ${bytes.byteLength} bytes (manifest declares ${variant.byteLength})`,
+    });
+    if (!byteLengthOk) return;
+    const digest = sha256HexBytes(bytes);
+    const checksumOk = digest === variant.sha256;
+    results.push({
+        name: `${format} object checksum`,
+        ok: checksumOk,
+        detail: `sha256(body): ${digest} (manifest declares ${variant.sha256})`,
+    });
 }
 
 /**
@@ -499,7 +544,7 @@ export async function runChecks(
             detail: `path: ${variant.path} (expected ${objectPath})`,
         });
         cacheProbePath ??= objectPath;
-        await checkObject(base, objectPath, format, results);
+        await checkObject(base, objectPath, format, variant, results);
     }
 
     if (cacheProbePath !== null) {

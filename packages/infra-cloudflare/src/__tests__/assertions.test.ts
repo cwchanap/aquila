@@ -207,6 +207,91 @@ describe('assertPointerRevalidation', () => {
             'cache-control: no-cache (missing: max-age=0, must-revalidate)'
         );
     });
+
+    // The required-directives check is a subset check, so a header carrying
+    // every required directive PLUS one that contradicts the revalidation
+    // policy would pass while the cache's effective behaviour contradicts the
+    // contract. The browser E2E (r2-delivery.spec.ts) compares the directive
+    // set exactly, so the shell and browser verifiers must agree: an extra
+    // `immutable` or `s-maxage`, or a second `max-age`, has to fail here too.
+    // These negative tests pin the conflicting extras that must fail even when
+    // `no-cache, max-age=0, must-revalidate` is fully present.
+    it('rejects immutable appended to an otherwise valid pointer header', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, immutable'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('immutable');
+    });
+
+    it('rejects s-maxage appended to an otherwise valid pointer header', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, s-maxage=31536000'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('s-maxage=31536000');
+    });
+
+    it('rejects a duplicate max-age appended to an otherwise valid pointer header', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, max-age=31536000'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('max-age=31536000');
+        expect(result.detail).toContain('duplicate max-age');
+    });
+
+    // The exact contradictory header from the review: every required directive
+    // is present, but a second `max-age` and `immutable` together make the
+    // effective behaviour ambiguous-to-immutable. The subset check alone let
+    // this through; the parsed check must not.
+    it('rejects duplicate contradictory freshness instructions on the pointer', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, max-age=31536000, immutable'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('max-age=31536000');
+        expect(result.detail).toContain('duplicate max-age');
+        expect(result.detail).toContain('immutable');
+    });
+
+    it('rejects a duplicate identical max-age on the pointer', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, max-age=0'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('duplicate max-age');
+    });
+
+    it('rejects a quoted s-maxage appended to an otherwise valid pointer header', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, s-maxage="0"'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toContain('s-maxage=0');
+    });
+
+    it('names every conflicting directive when several are present', () => {
+        const result = assertPointerRevalidation(
+            'no-cache, max-age=0, must-revalidate, immutable, s-maxage=0, max-age=60'
+        );
+        expect(result.ok).toBe(false);
+        expect(result.detail).toBe(
+            'cache-control: no-cache, max-age=0, must-revalidate, immutable, s-maxage=0, max-age=60 (conflicting: immutable, s-maxage=0, max-age=60, duplicate max-age (2))'
+        );
+    });
+
+    it('still accepts a safe strengthening such as no-store', () => {
+        // `no-store` forbids caching entirely, which only reinforces the
+        // revalidation the pointer asks for — it is a safe strengthening, so
+        // it must not be flagged as conflicting. `no-transform` touches
+        // neither freshness nor cacheability, so it stays benign too.
+        expect(
+            assertPointerRevalidation(
+                'no-cache, max-age=0, must-revalidate, no-store, no-transform'
+            ).ok
+        ).toBe(true);
+    });
 });
 
 describe('assertContentType', () => {

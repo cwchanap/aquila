@@ -13,7 +13,11 @@ serves visual-novel runtime assets to the web reader.
 > an exact allowlist cannot cover ephemeral `*.vercel.app` preview origins),
 > rejection of conflicting directives on immutable headers (`no-store`,
 > `private`, `no-cache`, and a second `max-age`/`s-maxage` overriding the
-> one-year freshness), and a hard manifest edge-cache-eligibility check (the
+> one-year freshness), parsed rejection of contradictory directives on the
+> pointer header (`immutable`, any `s-maxage`, and a second `max-age` that
+> defeats revalidation — `no-store` stays allowed as a safe strengthening, so
+> the shell and browser E2E verifiers agree on the directive set), and a hard
+> manifest edge-cache-eligibility check (the
 > manifest's `cf-cache-status` must be `MISS`/`HIT`/`EXPIRED`/`REVALIDATED`, not
 > `DYNAMIC`/`BYPASS`/absent) — is implemented and covered by the unit suite in
 > `packages/infra-cloudflare/src/__tests__/verify.test.ts`. A fresh live run of
@@ -888,8 +892,14 @@ evidence that the pipeline works.
   > `current.json` is now a *failure* the verifier rejects, not evidence of a
   > match. The current measured state is `DYNAMIC` with no `age` across 8
   > consecutive requests (confirmed 2026-07-31, see §5 and the bypass note at
-  > the end of this section); rule 2 matching is now confirmed by the
-  > verifier's `pointer edge bypass` check, not by a `MISS` probe.
+  > the end of this section). That observation proves only that the pointer is
+  > **currently uncached at the edge** — it does **not** prove the bypass rule
+  > exists or matches, because a missing rule produces the same `DYNAMIC`
+  > response from outside. Rule 2's presence and match still require
+  > dashboard or authenticated-API inspection (Caching → Cache Rules); the
+  > public verifier cannot observe them. A `MISS` probe no longer counts as
+  > evidence of a match either — under the bypass it is a failure, not a
+  > confirmation.
 - Smart Tiered Cache state still unconfirmed — it is in no config file, so nothing
   detects drift.
 - **The smoke release is published, but only confirmed by hand** — no automated
@@ -920,7 +930,14 @@ a pointer, and each was fetched over the custom domain with `curl -sI`:
 
 This closes most of the "unproven" list below: real `200` responses now carry the
 `cache-control` values the design specifies, on both image formats, so the
-`31536000` and `60` second policies are no longer inferred from 404s alone.
+`31536000` immutable policy is no longer inferred from 404s alone. The pointer
+row carries `no-cache, max-age=0, must-revalidate` — the browser TTL the
+contract still asks for — but there is **no `60`-second edge policy** to infer
+anymore: that TTL was removed entirely when the pointer rule switched to bypass
+(§5), so the pointer has no edge TTL to confirm. The pointer's `200` confirms
+its response headers reach a client; its edge-uncached state is what the
+`pointer edge bypass` check observes (and that observation does not prove the
+bypass rule exists — see the historical note above).
 
 Release id on the seeding machine:
 `sha256-b632cb09dc33a093b9739391b74755089663fb475f373b8904812d1d5669f587`.
@@ -933,7 +950,10 @@ canonical-content digests, per-object byte-length and SHA-256, cross-reference
   consistency for objects sharing a digest, a strict pointer CORS check
   (wildcard-only), rejection of conflicting directives on immutable headers
   (`no-store`/`private`/`no-cache`/overriding `max-age`/`s-maxage`, including
-  quoted freshness directives and duplicate occurrences), a hard
+  quoted freshness directives and duplicate occurrences), parsed rejection of
+  contradictory directives on the pointer header (`immutable`/any
+  `s-maxage`/a second `max-age`, with `no-store` allowed as a safe
+  strengthening so the shell and browser E2E agree on the directive set), a hard
   manifest edge-cache-eligibility check, and a per-request deadline so a
   stalled response fails the run instead of hanging it — is **implemented and
   covered by the
@@ -942,7 +962,7 @@ canonical-content digests, per-object byte-length and SHA-256, cross-reference
   the conflicting-byteLength, conflicting-dimensions, consistent-reference,
   foreign-origin CORS, non-cacheable-manifest, conflicting-immutable-directive,
   quoted/duplicate-freshness, and stalled-response cases; the package's full
-  suite totals 91 across five
+  suite totals 99 across five
   files — `verify.test.ts` is not the whole package). A fresh live run of both
   verifiers against the seeded release has **not yet been recorded** with the
   updated checks. The `15 PASS` and `2 passed` counts below predate the
@@ -1001,10 +1021,11 @@ curl -sI -H 'Origin: https://aquila.cwchanap.dev' \
 
 **Commands whose real output is recorded here:** `bun lint` (4 tasks green),
 `bun run test` (5 tasks green — web 1597, game 412, stories 198,
-infra-cloudflare 91; desktop has no test files — infra-cloudflare re-measured
-2026-08-01 after the quoted/duplicate-freshness and per-request-deadline
-checks, was 84 on 2026-07-31, 73 before the immutable-conflict and
-manifest-cache-eligibility checks, 53 before that; web was 1582 on 2026-07-31),
+infra-cloudflare 99; desktop has no test files — infra-cloudflare re-measured
+2026-08-01 after the pointer-conflict checks, was 91 after the
+quoted/duplicate-freshness and per-request-deadline checks, 84 on 2026-07-31,
+73 before the immutable-conflict and manifest-cache-eligibility checks, 53
+before that; web was 1582 on 2026-07-31),
 `bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
 sha256-b632cb09…`). The `bun --filter @aquila/infra-cloudflare verify` (15 PASS)
 and `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts`

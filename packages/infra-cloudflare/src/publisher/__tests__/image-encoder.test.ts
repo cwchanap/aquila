@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { createSourceFixture } from '../test-fixtures';
+import { PublisherError } from '../errors';
 import { encodeAsset, getEncoderFingerprint } from '../image-encoder';
 
 describe('encodeAsset', () => {
@@ -97,5 +98,26 @@ describe('encodeAsset', () => {
             sharpVersion: sharp.versions.sharp,
             libvipsVersion: sharp.versions.vips,
         });
+    });
+
+    it('rejects an unsafe source path before encoding', async () => {
+        const bytes = await sharp({
+            create: {
+                width: 1,
+                height: 1,
+                channels: 3,
+                background: 'black',
+            },
+        })
+            .png()
+            .toBuffer();
+
+        await expect(
+            encodeAsset({
+                identity: { type: 'background', key: 'chapter_1/bg' },
+                sourcePath: 'https://example.test/private.png',
+                bytes,
+            })
+        ).rejects.toBeInstanceOf(PublisherError);
     });
 });

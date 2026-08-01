@@ -1,4 +1,8 @@
-import { RUNTIME_ASSET_DIMENSION_POLICY } from '@aquila/stories/runtime-assets';
+import {
+    isSafeRelativePath,
+    RUNTIME_ASSET_DIMENSION_POLICY,
+} from '@aquila/stories/runtime-assets';
+import { PublisherError } from './errors';
 import type { PublisherDiagnosticV1 } from './types';
 
 export const ENCODER_POLICY_V1 = {
@@ -64,6 +68,11 @@ export interface SourceDiagnosticInput {
 export function evaluateSourceDiagnostics(
     input: SourceDiagnosticInput
 ): PublisherDiagnosticV1[] {
+    if (!isSafeRelativePath(input.sourcePath)) {
+        throw new PublisherError('source', 'Source path is unsafe', {
+            context: { input: 'sourcePath' },
+        });
+    }
     const diagnostic = sourceAspectDiagnostic(
         input.identity.type,
         input.metadata.width,
@@ -85,13 +94,7 @@ export function aggregateDiagnostics(
 ): PublisherDiagnosticV1[] {
     const groups = new Map<string, PublisherDiagnosticV1[]>();
     for (const diagnostic of diagnostics) {
-        const key = JSON.stringify({
-            code: diagnostic.code,
-            stage: diagnostic.stage,
-            message: diagnostic.message,
-            assetType: diagnostic.assetType,
-            safePath: diagnostic.safePath,
-        });
+        const key = `${diagnostic.code}\u0000${diagnostic.assetType ?? ''}`;
         const group = groups.get(key);
         if (group) group.push(diagnostic);
         else groups.set(key, [diagnostic]);
@@ -105,14 +108,27 @@ export function aggregateDiagnostics(
                 return leftKey.localeCompare(rightKey);
             });
             const [first] = ordered;
-            const sampleIdentities = ordered
-                .map(diagnostic => diagnostic.identity)
-                .filter(
-                    (identity): identity is string => identity !== undefined
-                );
+            const sampleIdentities = [
+                ...new Set(
+                    ordered
+                        .map(diagnostic => diagnostic.identity)
+                        .filter(
+                            (identity): identity is string =>
+                                identity !== undefined
+                        )
+                ),
+            ];
+            const sampleSafePaths = [
+                ...new Set(
+                    ordered
+                        .map(diagnostic => diagnostic.safePath)
+                        .filter((path): path is string => path !== undefined)
+                ),
+            ].sort();
             return {
                 ...first,
                 ...(sampleIdentities.length === 0 ? {} : { sampleIdentities }),
+                ...(sampleSafePaths.length === 0 ? {} : { sampleSafePaths }),
                 count: group.length,
             };
         });

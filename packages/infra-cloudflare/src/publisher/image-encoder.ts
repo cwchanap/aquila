@@ -1,6 +1,10 @@
-import { getObjectPath } from '@aquila/stories/runtime-assets';
+import {
+    getObjectPath,
+    isSafeRelativePath,
+} from '@aquila/stories/runtime-assets';
 import sharp from 'sharp';
 import { ENCODER_POLICY_V1 } from './encoder-policy';
+import { PublisherError } from './errors';
 import { sha256Bytes } from './hash';
 import type {
     EncodedAsset,
@@ -53,6 +57,11 @@ export function getEncoderFingerprint(): EncoderFingerprintV1 {
 export async function encodeAsset(
     input: EncodeAssetInput
 ): Promise<EncodedAsset> {
+    if (!isSafeRelativePath(input.sourcePath)) {
+        throw new PublisherError('source', 'Source path is unsafe', {
+            context: { input: 'sourcePath' },
+        });
+    }
     const sourceMetadata = await sharp(input.bytes, {
         failOn: 'warning',
         animated: false,

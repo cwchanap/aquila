@@ -39,6 +39,7 @@ export interface PublisherDiagnosticV1 {
     safePath?: string;
     count?: number;
     sampleIdentities?: string[];
+    sampleSafePaths?: string[];
 }
 
 export interface PublisherActionV1 {

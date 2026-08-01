@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import { isPreviewId } from '@aquila/stories/runtime-assets';
 
 /** isPreviewId() accepts at most 64 characters. */
-const MAX_ID_LENGTH = 64;
 /** Slug budget when truncating, leaving room for `-` plus SUFFIX_HEX_LENGTH. */
 const TRUNCATED_SLUG_LENGTH = 51;
 const SUFFIX_HEX_LENGTH = 12;
@@ -25,6 +24,17 @@ function isPresent(value: string | undefined): boolean {
  * The hash paths below digest the NFC-normalized ref rather than the raw one,
  * so canonically equivalent refs share a namespace instead of splitting into
  * two.
+ *
+ * Slugification is lossy — `feature/foo`, `feature-foo`, and `Feature/Foo` all
+ * collapse to `feature-foo`, and `a__b` and `a--b` both collapse to `a-b` — so
+ * a bare slug would merge unrelated branches into one preview namespace and
+ * publishing one would silently overwrite another's assets. A digest of the
+ * full normalized ref is therefore appended to *every* non-empty slug, not
+ * only to long ones. The digest is taken before lowercasing, so refs that
+ * differ only in case (e.g. `Feature/Foo` vs `feature/foo`) get distinct ids
+ * even when their slugs match. A missing ref normalizes to the empty string,
+ * which every such build would share, so it falls through to the empty-slug
+ * branch and gets its own digest.
  */
 export function derivePreviewId(ref: string): string {
     const normalized = ref.normalize('NFC');
@@ -37,15 +47,12 @@ export function derivePreviewId(ref: string): string {
     if (slug.length === 0) {
         return `preview-${hexDigest(normalized, FALLBACK_HEX_LENGTH)}`;
     }
-    if (slug.length <= MAX_ID_LENGTH) return slug;
 
-    // `author/ticket-long-description` is the branch convention in this repo
-    // and it already overflows 64 slug characters, so a bare clamp maps a
-    // branch, its `-followup`, and its `-fix` onto one preview namespace:
-    // publishing from one would overwrite the others' assets and an open
-    // preview would start serving a sibling's release. Truncation therefore
-    // carries a discriminator derived from the whole ref. Refs that fit are
-    // untouched and stay readable.
+    // Truncate the readable prefix so `head` + `-` + SUFFIX_HEX_LENGTH never
+    // exceeds the 64-character isPreviewId limit, then strip any separator the
+    // cut left dangling.
+    // The discriminator is derived from the whole normalized ref, so two refs
+    // that slugify identically still get distinct preview namespaces.
     const head = slug.slice(0, TRUNCATED_SLUG_LENGTH).replace(/[-_]+$/g, '');
     return `${head}-${hexDigest(normalized, SUFFIX_HEX_LENGTH)}`;
 }
@@ -64,6 +71,15 @@ export function derivePreviewId(ref: string): string {
  *    trips the incomplete-configuration check, leaving the reader with no
  *    visuals at all. Values are trimmed to match
  *    readAssetSourceConfigFromEnv, which treats whitespace-only as unset.
+ *
+ * An explicit `PUBLIC_ASSET_PREVIEW_ID` is honoured before deriving one from
+ * the branch ref, so spoiler-sensitive previews can publish under an
+ * unguessable id the operator chose instead of a guessable branch slug. The
+ * build script re-assigns `PUBLIC_ASSET_PREVIEW_ID` from this function's
+ * output, so honouring the variable here makes that assignment a no-op when it
+ * is already set. An explicit id that fails `isPreviewId()` is rejected here
+ * rather than shipped — a bad manual value would otherwise surface only in the
+ * browser as a reader with no visuals.
  */
 export function previewIdForEnv(
     env: Record<string, string | undefined>
@@ -71,6 +87,15 @@ export function previewIdForEnv(
     if (env.VERCEL_ENV !== 'preview') return '';
     if (!isPresent(env.PUBLIC_ASSET_BASE_URL)) return '';
     if (env.PUBLIC_ASSET_ENVIRONMENT?.trim() !== 'preview') return '';
+    const explicit = env.PUBLIC_ASSET_PREVIEW_ID?.trim();
+    if (explicit !== undefined && explicit !== '') {
+        if (!isPreviewId(explicit)) {
+            throw new Error(
+                `asset-preview-id: PUBLIC_ASSET_PREVIEW_ID is set to an invalid id: ${explicit}`
+            );
+        }
+        return explicit;
+    }
     return derivePreviewId(env.VERCEL_GIT_COMMIT_REF ?? '');
 }
 

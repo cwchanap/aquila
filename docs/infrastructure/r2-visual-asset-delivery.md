@@ -324,15 +324,18 @@ environment whose variables you changed.
 Publish the smoke release, then run the two verifiers:
 
 ```bash
-CLOUDFLARE_API_TOKEN=<publisher token> \
-CLOUDFLARE_ACCOUNT_ID=91ee89a03a31b5354a25c49228e4ab85 \
+R2_PUBLISHER_ACCESS_KEY_ID=<access key id> \
+R2_PUBLISHER_SECRET_ACCESS_KEY=<secret access key> \
   bun --filter @aquila/infra-cloudflare seed
 bun --filter @aquila/infra-cloudflare verify
 R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts
 ```
 
-`seed` shells out to `wrangler`, which must be on `PATH` (`wrangler --version`;
-4.67.0 is known good). It uploads four content-addressed objects — one background
+`seed` publishes through the R2 S3-compatible API
+(`https://<accountId>.r2.cloudflarestorage.com`) using the scoped publisher
+credentials minted in [§2.7](#27-mint-the-publisher-token-and-store-it-as-secrets)
+— never the account-wide `CLOUDFLARE_API_TOKEN`, which the seeder deliberately
+does not accept. It uploads four content-addressed objects — one background
 and one portrait, each as WebP **and** AVIF — then the release manifest, then the
 pointer, in that order, so nothing is ever advertised before it is readable.
 
@@ -445,7 +448,8 @@ suspecting the upload.
 # Unset locally: the reader serves bundled fixtures from /assets/.
 # Production (Vercel): PUBLIC_ASSET_BASE_URL + PUBLIC_ASSET_ENVIRONMENT=production
 # Preview (Vercel):    PUBLIC_ASSET_BASE_URL + PUBLIC_ASSET_ENVIRONMENT=preview
-#                      PUBLIC_ASSET_PREVIEW_ID is derived at build time.
+#                      PUBLIC_ASSET_PREVIEW_ID is derived at build time, or
+#                      set explicitly for an unguessable spoiler-sensitive id.
 # PUBLIC_ASSET_BASE_URL=https://assets.aquila.cwchanap.dev/
 # PUBLIC_ASSET_ENVIRONMENT=production
 
@@ -460,17 +464,21 @@ suspecting the upload.
 | Environment | `PUBLIC_ASSET_BASE_URL` | `PUBLIC_ASSET_ENVIRONMENT` | `PUBLIC_ASSET_PREVIEW_ID` |
 | --- | --- | --- | --- |
 | Production | `https://assets.aquila.cwchanap.dev/` | `production` | **must not be set** |
-| Preview | `https://assets.aquila.cwchanap.dev/` | `preview` | **do not set** — derived by the build |
+| Preview | `https://assets.aquila.cwchanap.dev/` | `preview` | optional — derived from the branch if unset |
 | Development | unset | unset | unset |
 
 - **Production**: a preview id is fatal there —
   `resolveAssetSource()` throws "Preview id is meaningless when
   `PUBLIC_ASSET_ENVIRONMENT` is production"
   (`apps/web/src/lib/visual-assets/asset-source-config.ts`).
-- **Preview**: the id is derived from the branch ref at build time by
-  `apps/web/scripts/asset-preview-id.ts`, which `apps/web/package.json`'s `build`
-  script invokes and passes into `astro build`'s own environment (Vite inlines
-  `PUBLIC_*` from the build process, so a separate `&&`-chained step cannot work).
+- **Preview**: if `PUBLIC_ASSET_PREVIEW_ID` is unset, the build derives one from
+  the branch ref via `apps/web/scripts/asset-preview-id.ts`, which
+  `apps/web/package.json`'s `build` script invokes and passes into
+  `astro build`'s own environment (Vite inlines `PUBLIC_*` from the build
+  process, so a separate `&&`-chained step cannot work). If it **is** set, the
+  build honours the explicit value instead of deriving one — set an unguessable
+  id here for spoiler-sensitive previews (see the trap in [§7](#7-traps)). An
+  explicit value that fails `isPreviewId()` fails the build.
 - **Development**: leaving all three unset is what makes `bun dev` serve bundled
   fixtures from `/assets/` with no network dependency.
 
@@ -492,19 +500,24 @@ The script also validates its own output against `isPreviewId()` and exits 1 on
 failure, and the build runs it under `set -e`, so a bad derivation fails the
 build instead of silently shipping a bundle with no visuals.
 
-### Long branch names
+### Branch-derived preview ids
 
 `derivePreviewId()` slugifies the NFC-normalized ref (lowercase, disallowed runs
 to `-`, separator runs collapsed, leading/trailing separators stripped). If the
-slug is empty the id is `preview-<8 hex of sha256(NFC(ref))>`. A slug of 64
-characters or fewer is returned unchanged. Only when it is longer does the
-function clamp to 51 characters, strip any trailing `-` or `_` left by that cut
-— so the head can be shorter than 51 — and append
-`-<12 hex of sha256(NFC(ref))>`. This repo's
-`author/ticket-description` branch convention already overflows 64 characters,
-and a plain clamp collapsed a branch, its `-followup`, and its `-fix` onto one
-preview namespace — publishing from one would overwrite the others' assets. Refs
-that already fit are returned unchanged and stay readable.
+slug is empty the id is `preview-<8 hex of sha256(NFC(ref))>`. Otherwise the
+slug is clamped to 51 characters, any trailing `-` or `_` left by that cut is
+stripped — so the head can be shorter than 51 — and
+`-<12 hex of sha256(NFC(ref))>` is appended, for a maximum of 64 characters.
+
+The digest is appended to **every** non-empty slug, not only to long ones,
+because slugification is lossy: `feature/foo`, `feature-foo`, and `Feature/Foo`
+all collapse to `feature-foo`, and `a__b` and `a--b` both collapse to `a-b`. A
+bare slug would merge unrelated branches into one preview namespace, and
+publishing from one would silently overwrite the others' assets. The digest is
+taken over the NFC-normalized ref *before* lowercasing, so refs that differ
+only in case get distinct ids even when their slugs match. A missing
+`VERCEL_GIT_COMMIT_REF` normalizes to the empty string and falls through to the
+`preview-<8 hex>` branch, so every such build does **not** share one namespace.
 
 ---
 
@@ -689,9 +702,17 @@ Three failures that look like CORS and are not:
   cache.** The documented BYPASS triggers are origin *response* directives
   (`no-cache`, `no-store`, `private`, `max-age=0`), a `Set-Cookie` response
   header, and an `Authorization` request header. The reader's
-  `fetch(..., { cache: 'no-cache' })` is request-side and is not among them — so
-  seeing `HIT` on `current.json` is not a bug, and the reader still gets a fresh
-  document because the pointer's own response directives force revalidation.
+  `fetch(..., { cache: 'no-cache' })` is request-side and is not among them.
+  This is why the pointer relies on a Cache Rule that **bypasses the edge
+  cache** ([§2.6](#26-create-the-two-cache-rules)) rather than on response
+  directives alone: on this zone's Free plan a cacheable pointer was measured
+  staying fresh for two hours with `age` climbing monotonically and never
+  revalidating ([§5](#pointer-activation-timing--measured-then-redesigned)), so
+  a `HIT`/`MISS`/`EXPIRED`/`REVALIDATED` on `current.json` is **not** harmless —
+  it means the bypass rule is missing or no longer matching, and a published
+  release can go unseen until the entry expires. The expected state is
+  uncached (`DYNAMIC`/`BYPASS`) with **no `age` header at all**; see the
+  `cf-cache-status` table in [§5](#cf-cache-status-by-path-class).
 
 Other symptoms:
 

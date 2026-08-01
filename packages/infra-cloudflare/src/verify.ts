@@ -1,9 +1,19 @@
+import { createHash } from 'node:crypto';
 import {
+    assertReleaseIdMatchesContentSha256,
     assertSha256,
+    canonicalReleaseContent,
     getCurrentPointerPath,
     getObjectPath,
     getReleaseManifestPath,
+    parseActiveReleasePointer,
+    parseRuntimeAssetManifest,
+    validatePointerManifestPair,
+    type ActiveReleasePointerV1,
     type AssetFormat,
+    type ManifestByteSha256,
+    type ReleaseContentSha256,
+    type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
 import {
     assertContentType,
@@ -13,7 +23,7 @@ import {
     type CheckResult,
 } from './assertions';
 import { loadR2DeliveryConfig } from './config';
-import { findVariant, readString, summarize } from './documents';
+import { findVariant, summarize } from './documents';
 
 const STORY_ID = 'the_seventh_mirror';
 const PREVIEW_ID = 'smoke';
@@ -54,6 +64,35 @@ function describeError(error: unknown): string {
     return `${error.message}${cause}`;
 }
 
+/**
+ * SHA-256 of a UTF-8 string, returned as lowercase hex. Mirrors the reader's
+ * `sha256Utf8Text` so the verifier computes the same digest the reader compares
+ * against `pointer.manifestSha256` and the canonical release-content digest.
+ */
+function sha256Hex(text: string): string {
+    return createHash('sha256').update(text).digest('hex');
+}
+
+/**
+ * Runs `assertion` and converts a thrown error into a failed CheckResult so a
+ * contract failure is reported as a check line rather than crashing the run.
+ * Returns `true` when the assertion passed.
+ */
+function runIntegrityCheck(
+    name: string,
+    assertion: () => void,
+    results: CheckResult[]
+): boolean {
+    try {
+        assertion();
+        results.push({ name, ok: true, detail: 'accepted' });
+        return true;
+    } catch (error) {
+        results.push({ name, ok: false, detail: describeError(error) });
+        return false;
+    }
+}
+
 function delay(milliseconds: number): Promise<void> {
     return new Promise(done => setTimeout(done, milliseconds));
 }
@@ -61,6 +100,18 @@ function delay(milliseconds: number): Promise<void> {
 type RequestOutcome =
     | { ok: true; response: Response }
     | { ok: false; detail: string };
+
+/**
+ * Indirection so tests can substitute a fake `fetch` and exercise `runChecks`
+ * against fixture documents without touching the network. The CLI path uses
+ * the global `fetch`.
+ */
+let fetchImpl: typeof fetch = fetch;
+
+/** @internal Replaces the fetch implementation used by `runChecks`. */
+export function _setFetchImpl(impl: typeof fetch): void {
+    fetchImpl = impl;
+}
 
 /**
  * Only unauthenticated public requests are made: the verifier proves what any
@@ -73,13 +124,13 @@ async function request(
     headers: Record<string, string> = {}
 ): Promise<RequestOutcome> {
     try {
-        return { ok: true, response: await fetch(url, { headers }) };
+        return { ok: true, response: await fetchImpl(url, { headers }) };
     } catch (error) {
         return { ok: false, detail: describeError(error) };
     }
 }
 
-type JsonDocument = { response: Response; body: unknown };
+type JsonDocument = { response: Response; body: unknown; text: string };
 
 async function requireJsonDocument(
     url: string,
@@ -106,7 +157,7 @@ async function requireJsonDocument(
         );
     }
     try {
-        return { response, body: JSON.parse(text) as unknown };
+        return { response, body: JSON.parse(text) as unknown, text };
     } catch {
         throw new CheckAborted(
             check,
@@ -226,7 +277,10 @@ function checkForbiddenKeys(
     };
 }
 
-async function runChecks(base: string, results: CheckResult[]): Promise<void> {
+export async function runChecks(
+    base: string,
+    results: CheckResult[]
+): Promise<void> {
     const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
     const pointer = await requireJsonDocument(
         `${base}/${pointerPath}`,
@@ -255,30 +309,55 @@ async function runChecks(base: string, results: CheckResult[]): Promise<void> {
         detail: `access-control-allow-origin: ${allowOrigin ?? '<missing>'} (request origin ${ORIGIN})`,
     });
 
+    // Parse the pointer with the same contract parser the reader uses
+    // (web-asset-resolver.ts). A pointer that fails this is one the reader
+    // rejects, so the verifier must reject it too — previously the verifier
+    // only spot-checked `releaseId` and `manifestPath` with `readString`, which
+    // a tampered pointer carrying a valid first field could pass.
+    let pointerParsed: ActiveReleasePointerV1;
+    try {
+        pointerParsed = parseActiveReleasePointer(
+            pointer.body,
+            TARGET,
+            STORY_ID
+        );
+        results.push({
+            name: 'pointer contract',
+            ok: true,
+            detail: 'accepted',
+        });
+    } catch (error) {
+        results.push({
+            name: 'pointer contract',
+            ok: false,
+            detail: describeError(error),
+        });
+        throw new CheckAborted(
+            'pointer contract',
+            'pointer failed contract parsing (dependent checks skipped)'
+        );
+    }
+
     // The manifest URL is computed from the layout helper, never taken from the
     // pointer verbatim, and the pointer is then held to that same path — the
     // agreement a runtime client depends on.
-    const releaseId = readString(pointer.body, 'releaseId');
-    if (releaseId === null) {
-        throw new CheckAborted(
-            'pointer releaseId',
-            `${pointerPath} carries no releaseId string`
-        );
-    }
     let manifestPath: string;
     try {
-        manifestPath = getReleaseManifestPath(STORY_ID, releaseId, TARGET);
+        manifestPath = getReleaseManifestPath(
+            STORY_ID,
+            pointerParsed.releaseId,
+            TARGET
+        );
     } catch (error) {
         throw new CheckAborted(
             'pointer releaseId',
-            `${pointerPath} carries an unusable releaseId ${releaseId}: ${describeError(error)}`
+            `${pointerPath} carries an unusable releaseId ${pointerParsed.releaseId}: ${describeError(error)}`
         );
     }
-    const declaredManifestPath = readString(pointer.body, 'manifestPath');
     results.push({
         name: 'pointer manifestPath matches publication layout',
-        ok: declaredManifestPath === manifestPath,
-        detail: `manifestPath: ${declaredManifestPath ?? '<missing>'} (expected ${manifestPath})`,
+        ok: pointerParsed.manifestPath === manifestPath,
+        detail: `manifestPath: ${pointerParsed.manifestPath} (expected ${manifestPath})`,
     });
 
     const manifest = await requireJsonDocument(
@@ -301,6 +380,89 @@ async function runChecks(base: string, results: CheckResult[]): Promise<void> {
             assertImmutable(manifestHeaders.get('cache-control'))
         )
     );
+
+    // The manifest byte digest must match the pointer's `manifestSha256` — the
+    // same check the reader makes before it trusts the manifest. Without it a
+    // manifest edited after publication (but with a valid first webp/avif
+    // entry) could pass every other check while the reader rejects it with
+    // "Manifest checksum mismatch".
+    const manifestByteDigest = assertSha256<'manifest-bytes'>(
+        sha256Hex(manifest.text)
+    ) as ManifestByteSha256;
+    const checksumMatches = manifestByteDigest === pointerParsed.manifestSha256;
+    results.push({
+        name: 'manifest checksum matches pointer',
+        ok: checksumMatches,
+        detail: `sha256(manifest bytes): ${manifestByteDigest} (pointer.manifestSha256: ${pointerParsed.manifestSha256})`,
+    });
+    if (!checksumMatches) {
+        throw new CheckAborted(
+            'manifest checksum',
+            'manifest bytes do not match pointer.manifestSha256 (dependent checks skipped)'
+        );
+    }
+
+    // Parse the manifest with the reader's contract parser, then validate the
+    // pointer/manifest pair and re-derive the releaseId from canonical manifest
+    // content. These are the integrity checks that make the verifier's verdict
+    // match the reader's: a release the reader rejects cannot pass the verifier.
+    let manifestParsed: RuntimeAssetManifestV1;
+    try {
+        manifestParsed = parseRuntimeAssetManifest(manifest.body);
+        results.push({
+            name: 'manifest contract',
+            ok: true,
+            detail: 'accepted',
+        });
+    } catch (error) {
+        results.push({
+            name: 'manifest contract',
+            ok: false,
+            detail: describeError(error),
+        });
+        throw new CheckAborted(
+            'manifest contract',
+            'manifest failed contract parsing (dependent checks skipped)'
+        );
+    }
+    if (
+        !runIntegrityCheck(
+            'pointer/manifest pair',
+            () => {
+                validatePointerManifestPair(
+                    pointerParsed,
+                    manifestParsed,
+                    manifestByteDigest
+                );
+            },
+            results
+        )
+    ) {
+        throw new CheckAborted(
+            'pointer/manifest pair',
+            'pair validation failed (dependent checks skipped)'
+        );
+    }
+    if (
+        !runIntegrityCheck(
+            'releaseId matches canonical content',
+            () => {
+                const canonicalDigest = assertSha256<'release-content'>(
+                    sha256Hex(canonicalReleaseContent(manifestParsed))
+                ) as ReleaseContentSha256;
+                assertReleaseIdMatchesContentSha256(
+                    manifestParsed,
+                    canonicalDigest
+                );
+            },
+            results
+        )
+    ) {
+        throw new CheckAborted(
+            'releaseId',
+            'releaseId does not match canonical content digest (dependent checks skipped)'
+        );
+    }
 
     let cacheProbePath: string | null = null;
     for (const format of ['webp', 'avif'] as const) {
@@ -392,9 +554,16 @@ async function main(): Promise<void> {
     report(results);
 }
 
-try {
-    await main();
-} catch (error) {
-    console.error(`Verification could not run: ${describeError(error)}`);
-    process.exitCode = 1;
+// Entry-point guard, intentionally false whenever this module is imported
+// (including by tests); the true branch is exercised by `bun src/verify.ts`.
+// `import.meta.main` is a Bun extension, so it is read through a narrow cast
+// rather than depending on Bun's type definitions here.
+/* v8 ignore next */
+if ((import.meta as ImportMeta & { main?: boolean }).main === true) {
+    try {
+        await main();
+    } catch (error) {
+        console.error(`Verification could not run: ${describeError(error)}`);
+        process.exitCode = 1;
+    }
 }

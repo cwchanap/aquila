@@ -48,9 +48,8 @@ export async function resolveSourceRoot(
         join(options.repositoryRoot, 'packages/assets/media');
     try {
         return await realpath(selected);
-    } catch (error) {
+    } catch {
         throw new PublisherError('source', 'Unable to resolve source root', {
-            cause: error,
             context: { source: 'asset-source-root' },
         });
     }
@@ -64,13 +63,8 @@ function safeSourceContext(
         : { input: 'sourcePath' };
 }
 
-function sourceError(
-    message: string,
-    sourcePath: string,
-    cause?: unknown
-): PublisherError {
+function sourceError(message: string, sourcePath: string): PublisherError {
     return new PublisherError('source', message, {
-        ...(cause === undefined ? {} : { cause }),
         context: safeSourceContext(sourcePath),
     });
 }
@@ -94,11 +88,10 @@ async function resolveIncludedSource(
     let finalPath: string;
     try {
         finalPath = await realpath(resolve(root, entry.sourcePath));
-    } catch (error) {
+    } catch {
         throw sourceError(
             'Unable to resolve included source file',
-            entry.sourcePath,
-            error
+            entry.sourcePath
         );
     }
     if (!isInsideSourceRoot(root, finalPath)) {
@@ -121,8 +114,7 @@ async function resolveIncludedSource(
         if (error instanceof PublisherError) throw error;
         throw sourceError(
             'Included source must be a readable regular file',
-            entry.sourcePath,
-            error
+            entry.sourcePath
         );
     }
 
@@ -131,11 +123,10 @@ async function resolveIncludedSource(
     try {
         bytes = await readFile(finalPath);
         metadata = await sharp(bytes, { animated: true }).metadata();
-    } catch (error) {
+    } catch {
         throw sourceError(
             'Unable to inspect included source image',
-            entry.sourcePath,
-            error
+            entry.sourcePath
         );
     }
     if (
@@ -172,9 +163,8 @@ export async function resolveIncludedSources(
     let root: string;
     try {
         root = await realpath(options.sourceRoot);
-    } catch (error) {
+    } catch {
         throw new PublisherError('source', 'Unable to resolve source root', {
-            cause: error,
             context: { source: 'asset-source-root' },
         });
     }

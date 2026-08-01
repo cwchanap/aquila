@@ -2,7 +2,53 @@ import { symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createSourceFixture } from '../test-fixtures';
-import { resolveIncludedSources } from '../source-files';
+import { PublisherError } from '../errors';
+import { resolveIncludedSources, resolveSourceRoot } from '../source-files';
+
+function expectPrivatePathIsNotRetained(error: unknown, root: string): boolean {
+    expect(error).toBeInstanceOf(PublisherError);
+    const publisherError = error as PublisherError;
+    expect(JSON.stringify(publisherError.context)).not.toContain(root);
+    expect(String(publisherError.cause ?? '')).not.toContain(root);
+    return true;
+}
+
+describe('source-file failure diagnostics', () => {
+    it('does not retain an absolute path when resolving a missing source root', async () => {
+        const fixture = await createSourceFixture();
+
+        await expect(
+            resolveSourceRoot({
+                repositoryRoot: fixture.root,
+                explicitPath: join(fixture.root, 'missing-media'),
+                environment: {},
+            })
+        ).rejects.toSatisfy(error =>
+            expectPrivatePathIsNotRetained(error, fixture.root)
+        );
+    });
+
+    it('does not retain an absolute path when resolving a missing source file', async () => {
+        const fixture = await createSourceFixture();
+
+        await expect(
+            resolveIncludedSources({
+                sourceRoot: fixture.sourceRoot,
+                includedEntries: [
+                    {
+                        identity: {
+                            type: 'background',
+                            key: 'chapter_1/missing',
+                        },
+                        sourcePath: 'missing.png',
+                    },
+                ],
+            })
+        ).rejects.toSatisfy(error =>
+            expectPrivatePathIsNotRetained(error, fixture.root)
+        );
+    });
+});
 
 describe('resolveIncludedSources', () => {
     it('keys availableSourcePaths by exact plan-relative strings', async () => {

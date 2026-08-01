@@ -2,6 +2,7 @@ import { access, readFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { join } from 'node:path';
 import {
+    isStoryId,
     parseStoryAssetReleasePlan,
     type PublicationTarget,
     type StoryAssetReleasePlanV1,
@@ -19,6 +20,11 @@ export async function resolveReleasePlanPath(
     options: ResolveReleasePlanOptions
 ): Promise<string> {
     if (options.explicitPath !== undefined) return options.explicitPath;
+    if (!isStoryId(options.storyId)) {
+        throw new PublisherError('input', 'Release-plan story id is unsafe', {
+            context: { input: 'storyId' },
+        });
+    }
 
     const plansRoot = join(
         options.repositoryRoot,
@@ -45,7 +51,7 @@ export async function loadReleasePlan(
     } catch (error) {
         throw new PublisherError('input', 'Unable to read release plan', {
             cause: error,
-            context: { path },
+            context: { source: 'release-plan' },
         });
     }
     try {
@@ -53,7 +59,7 @@ export async function loadReleasePlan(
     } catch (error) {
         throw new PublisherError('input', 'Invalid release plan', {
             cause: error,
-            context: { path },
+            context: { source: 'release-plan' },
         });
     }
 }

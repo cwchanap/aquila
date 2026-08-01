@@ -3,6 +3,7 @@ import type { Dirent } from 'node:fs';
 import { join } from 'node:path';
 import {
     isSafeLogicalKey,
+    isSafeRelativePath,
     qualifyAssetIdentity,
     type AuthoringAssetCatalog,
 } from '@aquila/stories/runtime-assets';
@@ -52,6 +53,15 @@ export function reduceAuthoringManifest(input: unknown): AuthoringAssetCatalog {
                     }
                 );
             }
+            if (!isSafeRelativePath(raw.path)) {
+                throw new PublisherError(
+                    'input',
+                    'Generated source path is unsafe',
+                    {
+                        context: { type, key: normalizedKey },
+                    }
+                );
+            }
             const identity = { type, key: normalizedKey };
             const qualified = qualifyAssetIdentity(identity);
             if (seen.has(qualified)) {
@@ -90,7 +100,7 @@ export async function discoverAuthoringCatalog(
             'Unable to read generated image manifests',
             {
                 cause: error,
-                context: { storyId },
+                context: { source: 'generated-manifests' },
             }
         );
     }
@@ -116,7 +126,7 @@ export async function discoverAuthoringCatalog(
                     'Unable to read generated image manifest',
                     {
                         cause: error,
-                        context: { path },
+                        context: { candidate: 'image-assets.json' },
                     }
                 );
             }
@@ -129,7 +139,7 @@ export async function discoverAuthoringCatalog(
                     'Invalid generated image manifest',
                     {
                         cause: error,
-                        context: { path },
+                        context: { candidate: 'image-assets.json' },
                     }
                 );
             }

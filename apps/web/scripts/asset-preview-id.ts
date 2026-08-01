@@ -4,8 +4,8 @@ import { isPreviewId } from '@aquila/stories/runtime-assets';
 /** isPreviewId() accepts at most 64 characters. */
 const MAX_ID_LENGTH = 64;
 /** Slug budget when truncating, leaving room for `-` plus SUFFIX_HEX_LENGTH. */
-const TRUNCATED_SLUG_LENGTH = 54;
-const SUFFIX_HEX_LENGTH = 6;
+const TRUNCATED_SLUG_LENGTH = 51;
+const SUFFIX_HEX_LENGTH = 12;
 const FALLBACK_HEX_LENGTH = 8;
 
 function hexDigest(value: string, length: number): string {

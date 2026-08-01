@@ -498,9 +498,9 @@ build instead of silently shipping a bundle with no visuals.
 to `-`, separator runs collapsed, leading/trailing separators stripped). If the
 slug is empty the id is `preview-<8 hex of sha256(NFC(ref))>`. A slug of 64
 characters or fewer is returned unchanged. Only when it is longer does the
-function clamp to 54 characters, strip any trailing `-` or `_` left by that cut
-— so the head can be shorter than 54 — and append
-`-<6 hex of sha256(NFC(ref))>`. This repo's
+function clamp to 51 characters, strip any trailing `-` or `_` left by that cut
+— so the head can be shorter than 51 — and append
+`-<12 hex of sha256(NFC(ref))>`. This repo's
 `author/ticket-description` branch convention already overflows 64 characters,
 and a plain clamp collapsed a branch, its `-followup`, and its `-fix` onto one
 preview namespace — publishing from one would overwrite the others' assets. Refs

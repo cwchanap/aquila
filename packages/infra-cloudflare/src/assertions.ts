@@ -129,56 +129,62 @@ export function assertImmutable(header: string | null): Assertion {
 }
 
 /**
- * Directives that contradict the pointer's revalidation policy even when every
- * required directive (`no-cache`, `max-age=0`, `must-revalidate`) is also
- * present. `immutable` marks a response as never changing and lets a cache
- * serve it without revalidation — the opposite of what the pointer exists to
- * guarantee, so a published release could go unseen. `s-maxage` overrides
- * shared-cache freshness independently of `max-age`; the contract carries none,
- * so any value re-points the edge TTL the bypass rule is meant to keep at zero.
- * A second freshness directive is ambiguous even when its text is identical to
- * the first (caches may honour either occurrence or treat the response as
- * stale), so duplicate `max-age`/`s-maxage` are rejected regardless of value.
- * `no-store` is a safe strengthening — it forbids caching entirely, which only
- * reinforces the revalidation the pointer asks for — so it remains allowed, as
- * does any directive (e.g. `no-transform`) that touches neither freshness nor
- * cacheability. Directive arguments may be quoted, so the tokens are parsed
- * into name/value pairs before comparison, mirroring the immutable check.
+ * The pointer contract is exact: the header must carry only the three required
+ * directives (`no-cache`, `max-age=0`, `must-revalidate`) in any order — no
+ * extras and no duplicates. The browser E2E (`r2-delivery.spec.ts`) compares
+ * the same multiset, so an extra `immutable` or `s-maxage` that would defeat
+ * revalidation, a second `max-age` of any value, or even a semantically safe
+ * strengthening like `no-store`, all fail here exactly as they fail there.
+ *
+ * Comparing a multiset (not a `Set`) keeps duplicates visible: a second
+ * `max-age=0` is a surplus token, not silently deduped, so a header that
+ * repeats a required directive is rejected as a duplicate rather than passing
+ * because the deduped set still equals the required one.
  */
-const POINTER_FRESHNESS_SECONDS = '0';
+function assertExactDirectives(
+    header: string | null,
+    required: string[]
+): Assertion {
+    const present = directives(header);
+    const observed = `cache-control: ${header ?? '<missing>'}`;
 
-function conflictingPointerExtras(parsed: ParsedDirective[]): string[] {
-    const conflicts: string[] = [];
-    let maxAgeCount = 0;
-    let sMaxAgeCount = 0;
-    for (const { name, value } of parsed) {
-        if (name === 'immutable') {
-            conflicts.push('immutable');
-        } else if (name === 'max-age') {
-            maxAgeCount += 1;
-            if (value !== POINTER_FRESHNESS_SECONDS) {
-                conflicts.push(`max-age=${value ?? ''}`);
+    const requiredCounts = new Map<string, number>();
+    for (const d of required)
+        requiredCounts.set(d, (requiredCounts.get(d) ?? 0) + 1);
+    const presentCounts = new Map<string, number>();
+    for (const d of present)
+        presentCounts.set(d, (presentCounts.get(d) ?? 0) + 1);
+
+    const missing: string[] = [];
+    const extra: string[] = [];
+    const allNames = new Set<string>([
+        ...requiredCounts.keys(),
+        ...presentCounts.keys(),
+    ]);
+    for (const name of allNames) {
+        const need = requiredCounts.get(name) ?? 0;
+        const have = presentCounts.get(name) ?? 0;
+        if (have < need) {
+            for (let i = 0; i < need - have; i++) missing.push(name);
+        } else if (have > need) {
+            const surplus = have - need;
+            for (let i = 0; i < surplus; i++) {
+                extra.push(need === 0 ? name : `duplicate ${name}`);
             }
-        } else if (name === 's-maxage') {
-            sMaxAgeCount += 1;
-            conflicts.push(`s-maxage=${value ?? ''}`);
         }
     }
-    if (maxAgeCount > 1) conflicts.push(`duplicate max-age (${maxAgeCount})`);
-    if (sMaxAgeCount > 1)
-        conflicts.push(`duplicate s-maxage (${sMaxAgeCount})`);
-    return conflicts;
+
+    if (missing.length === 0 && extra.length === 0) {
+        return { ok: true, detail: observed };
+    }
+    const parts: string[] = [];
+    if (missing.length) parts.push(`missing: ${missing.join(', ')}`);
+    if (extra.length) parts.push(`extra: ${extra.join(', ')}`);
+    return { ok: false, detail: `${observed} (${parts.join('; ')})` };
 }
 
 export function assertPointerRevalidation(header: string | null): Assertion {
-    const required = assertDirectives(header, POINTER_DIRECTIVES);
-    if (!required.ok) return required;
-    const conflicts = conflictingPointerExtras(parseDirectives(header));
-    if (conflicts.length === 0) return required;
-    return {
-        ok: false,
-        detail: `cache-control: ${header ?? '<missing>'} (conflicting: ${conflicts.join(', ')})`,
-    };
+    return assertExactDirectives(header, POINTER_DIRECTIVES);
 }
 
 function mediaType(value: string): string {

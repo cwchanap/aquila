@@ -396,12 +396,15 @@ test.describe('R2 visual asset delivery', () => {
         // sees the same header on the wire; only a browser shows it reaching
         // the code that has to honour it.
         //
-        // Compared as sets: the contract is exactly these directives in any
-        // order, so an extra `immutable` or `s-maxage` on the pointer — which
-        // would defeat revalidation — has to fail here.
+        // Compared as a sorted multiset (not a Set): the contract is exactly
+        // these directives in any order, so an extra `immutable` or `s-maxage`
+        // on the pointer — which would defeat revalidation — has to fail here,
+        // and a duplicate `max-age=0` has to fail too. A `Set` would silently
+        // dedupe the duplicate and let it pass; a sorted array keeps every
+        // token, matching the shell verifier's `assertPointerRevalidation`.
         expect(
-            new Set(directives(cacheControl)),
+            [...directives(cacheControl)].sort(),
             `cache-control on ${pointerUrl} was "${cacheControl ?? '<missing>'}"`
-        ).toEqual(new Set(REQUIRED_POINTER_DIRECTIVES));
+        ).toEqual([...REQUIRED_POINTER_DIRECTIVES].sort());
     });
 });

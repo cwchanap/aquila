@@ -1,0 +1,119 @@
+import { RUNTIME_ASSET_DIMENSION_POLICY } from '@aquila/stories/runtime-assets';
+import type { PublisherDiagnosticV1 } from './types';
+
+export const ENCODER_POLICY_V1 = {
+    id: 'aquila-vn-encoder-v1',
+    aspectWarningRelativeError: 0.005,
+    background: {
+        width: 1600,
+        height: 900,
+        formats: ['webp', 'avif'] as const,
+    },
+    portrait: {
+        width: 900,
+        height: 1200,
+        formats: ['webp'] as const,
+    },
+    webp: {
+        quality: 82,
+        alphaQuality: 100,
+        effort: 6,
+        lossless: false,
+        smartSubsample: true,
+        preset: 'picture' as const,
+    },
+    avif: {
+        quality: 50,
+        effort: 6,
+        lossless: false,
+        chromaSubsampling: '4:4:4' as const,
+    },
+} as const;
+
+function preferredAspect(assetType: 'background' | 'portrait'): number {
+    const preferred = RUNTIME_ASSET_DIMENSION_POLICY[assetType].preferredSource;
+    return preferred.width / preferred.height;
+}
+
+export function sourceAspectDiagnostic(
+    assetType: 'background' | 'portrait',
+    width: number,
+    height: number
+): PublisherDiagnosticV1 | undefined {
+    const actualAspect = width / height;
+    const relativeError = Math.abs(
+        actualAspect / preferredAspect(assetType) - 1
+    );
+    if (relativeError <= ENCODER_POLICY_V1.aspectWarningRelativeError) {
+        return undefined;
+    }
+    return {
+        code: 'source/aspect-ratio',
+        stage: 'source',
+        message: `Source aspect ratio differs from the ${assetType} policy`,
+        assetType,
+    };
+}
+
+export interface SourceDiagnosticInput {
+    identity: { type: 'background' | 'portrait'; key: string };
+    sourcePath: string;
+    metadata: { width: number; height: number };
+}
+
+export function evaluateSourceDiagnostics(
+    input: SourceDiagnosticInput
+): PublisherDiagnosticV1[] {
+    const diagnostic = sourceAspectDiagnostic(
+        input.identity.type,
+        input.metadata.width,
+        input.metadata.height
+    );
+    return diagnostic === undefined
+        ? []
+        : [
+              {
+                  ...diagnostic,
+                  identity: `${input.identity.type}:${input.identity.key}`,
+                  safePath: input.sourcePath,
+              },
+          ];
+}
+
+export function aggregateDiagnostics(
+    diagnostics: readonly PublisherDiagnosticV1[]
+): PublisherDiagnosticV1[] {
+    const groups = new Map<string, PublisherDiagnosticV1[]>();
+    for (const diagnostic of diagnostics) {
+        const key = JSON.stringify({
+            code: diagnostic.code,
+            stage: diagnostic.stage,
+            message: diagnostic.message,
+            assetType: diagnostic.assetType,
+            safePath: diagnostic.safePath,
+        });
+        const group = groups.get(key);
+        if (group) group.push(diagnostic);
+        else groups.set(key, [diagnostic]);
+    }
+    return [...groups.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([, group]) => {
+            const ordered = [...group].sort((left, right) => {
+                const leftKey = `${left.identity ?? ''}\u0000${left.safePath ?? ''}`;
+                const rightKey = `${right.identity ?? ''}\u0000${right.safePath ?? ''}`;
+                return leftKey.localeCompare(rightKey);
+            });
+            const [first] = ordered;
+            const sampleIdentities = ordered
+                .map(diagnostic => diagnostic.identity)
+                .filter(
+                    (identity): identity is string => identity !== undefined
+                );
+            return {
+                ...first,
+                ...(sampleIdentities.length === 0 ? {} : { sampleIdentities }),
+                count: group.length,
+            };
+        });
+}

@@ -23,7 +23,7 @@ import {
     type CheckResult,
 } from './assertions';
 import { loadR2DeliveryConfig } from './config';
-import { findVariant, summarize, type ManifestVariant } from './documents';
+import { summarize, type ManifestVariant } from './documents';
 
 const STORY_ID = 'the_seventh_mirror';
 const PREVIEW_ID = 'smoke';
@@ -33,7 +33,11 @@ const TARGET = { kind: 'preview', previewId: PREVIEW_ID } as const;
 const ORIGIN = 'https://aquila.cwchanap.dev';
 // An authoring key from the private source bucket. There is deliberately no
 // path helper for source keys — they are not part of the public publication
-// layout, which is exactly what this probe proves.
+// layout. Probing the delivery host for this key proves it was not copied into
+// the delivery bucket; it does NOT prove the source bucket itself is private.
+// Source-bucket privacy (no r2.dev URL, no custom domain) is a separate
+// infrastructure configuration check that requires authenticated access to the
+// R2 API, and is documented as a manual acceptance step in the runbook.
 const SOURCE_PROBE_KEY =
     'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png';
 const MIME_TYPES: Record<AssetFormat, string> = {
@@ -189,12 +193,13 @@ async function checkObject(
     objectPath: string,
     format: AssetFormat,
     variant: ManifestVariant,
+    label: string,
     results: CheckResult[]
 ): Promise<void> {
     const outcome = await request(`${base}/${objectPath}`, { origin: ORIGIN });
     if (!outcome.ok) {
         results.push({
-            name: `${format} object`,
+            name: `${format} ${label} object`,
             ok: false,
             detail: `GET ${objectPath} failed: ${outcome.detail}`,
         });
@@ -202,7 +207,7 @@ async function checkObject(
     }
     if (outcome.response.status !== 200) {
         results.push({
-            name: `${format} object`,
+            name: `${format} ${label} object`,
             ok: false,
             detail: `GET ${objectPath} returned HTTP ${outcome.response.status}`,
         });
@@ -211,13 +216,13 @@ async function checkObject(
     const { headers } = outcome.response;
     results.push(
         named(
-            `${format} content-type`,
+            `${format} ${label} content-type`,
             assertContentType(headers.get('content-type'), MIME_TYPES[format])
         )
     );
     results.push(
         named(
-            `${format} immutable`,
+            `${format} ${label} immutable`,
             assertImmutable(headers.get('cache-control'))
         )
     );
@@ -234,7 +239,7 @@ async function checkObject(
         bytes = await outcome.response.arrayBuffer();
     } catch (error) {
         results.push({
-            name: `${format} object bytes`,
+            name: `${format} ${label} object bytes`,
             ok: false,
             detail: `reading ${objectPath} body failed: ${describeError(error)}`,
         });
@@ -242,7 +247,7 @@ async function checkObject(
     }
     const byteLengthOk = bytes.byteLength === variant.byteLength;
     results.push({
-        name: `${format} object byte length`,
+        name: `${format} ${label} object byte length`,
         ok: byteLengthOk,
         detail: `body is ${bytes.byteLength} bytes (manifest declares ${variant.byteLength})`,
     });
@@ -250,7 +255,7 @@ async function checkObject(
     const digest = sha256HexBytes(bytes);
     const checksumOk = digest === variant.sha256;
     results.push({
-        name: `${format} object checksum`,
+        name: `${format} ${label} object checksum`,
         ok: checksumOk,
         detail: `sha256(body): ${digest} (manifest declares ${variant.sha256})`,
     });
@@ -292,20 +297,22 @@ async function checkCacheHit(
     };
 }
 
-async function checkSourceNotPublic(base: string): Promise<CheckResult> {
+async function checkSourceKeyAbsentFromDelivery(
+    base: string
+): Promise<CheckResult> {
     const outcome = await request(`${base}/${SOURCE_PROBE_KEY}`);
     if (!outcome.ok) {
         return {
-            name: 'source objects not public',
+            name: 'source key absent from delivery bucket',
             ok: false,
             detail: `GET ${SOURCE_PROBE_KEY} failed: ${outcome.detail}`,
         };
     }
     const { status } = outcome.response;
     return {
-        name: 'source objects not public',
+        name: 'source key absent from delivery bucket',
         ok: status === 404 || status === 403,
-        detail: `HTTP ${status} for ${SOURCE_PROBE_KEY} (expected 403 or 404)`,
+        detail: `HTTP ${status} for ${SOURCE_PROBE_KEY} on the delivery host (expected 403 or 404)`,
     };
 }
 
@@ -509,48 +516,90 @@ export async function runChecks(
         );
     }
 
+    // Verify every present variant of every asset, not just the first usable
+    // one per format. `findVariant` returned the first usable variant, so a
+    // release with N assets checked only one WebP and one AVIF object — a
+    // later portrait or background that was missing, corrupted, or carried a
+    // bad checksum passed verification while the reader rejected it. Objects
+    // are content-addressed, so two assets referencing the same digest share
+    // one object: deduplicate by (format, sha256) so each unique object is
+    // fetched and checked once, and a release with N assets is checked against
+    // up to N objects per format. The check names carry the first 8 hex of the
+    // object's sha256 so an operator can map a failed line back to the asset.
+    const verifiedObjects = new Set<string>();
     let cacheProbePath: string | null = null;
-    for (const format of ['webp', 'avif'] as const) {
-        const lookup = findVariant(manifest.body, format);
-        if (lookup.kind !== 'found') {
-            // `absent` and `malformed` are reported distinctly: pointing an
-            // operator at a missing object when the object is present but its
-            // manifest entry is bad wastes the whole investigation.
+    let offeredWebp = false;
+    let offeredAvif = false;
+    for (const [index, asset] of manifestParsed.assets.entries()) {
+        for (const format of ['webp', 'avif'] as const) {
+            const variant = asset.variants[format];
+            if (!variant) continue;
+            if (format === 'webp') offeredWebp = true;
+            else offeredAvif = true;
+
+            const dedupeKey = `${format}:${variant.sha256}`;
+            if (verifiedObjects.has(dedupeKey)) continue;
+            verifiedObjects.add(dedupeKey);
+
+            const label = variant.sha256.slice(0, 8);
+            let objectPath: string;
+            try {
+                objectPath = getObjectPath(
+                    assertSha256<'object-content'>(variant.sha256),
+                    format
+                );
+            } catch (error) {
+                results.push({
+                    name: `${format} ${label} object`,
+                    ok: false,
+                    detail: `assets.${index} ${format} sha256 ${variant.sha256} is unusable: ${describeError(error)}`,
+                });
+                continue;
+            }
             results.push({
-                name: `${format} object`,
-                ok: false,
-                detail: `${lookup.detail} in ${manifestPath}`,
+                name: `${format} ${label} object path is content-addressed`,
+                ok: variant.path === objectPath,
+                detail: `path: ${variant.path} (expected ${objectPath})`,
             });
-            continue;
-        }
-        const { variant } = lookup;
-        let objectPath: string;
-        try {
-            objectPath = getObjectPath(
-                assertSha256<'object-content'>(variant.sha256),
-                format
+            cacheProbePath ??= objectPath;
+            await checkObject(
+                base,
+                objectPath,
+                format,
+                {
+                    path: variant.path,
+                    sha256: variant.sha256,
+                    byteLength: variant.byteLength,
+                },
+                label,
+                results
             );
-        } catch (error) {
-            results.push({
-                name: `${format} object`,
-                ok: false,
-                detail: `manifest ${format} sha256 ${variant.sha256} is unusable: ${describeError(error)}`,
-            });
-            continue;
         }
+    }
+
+    // webp is required per asset in the contract, so an absent webp means the
+    // release published no assets at all. avif is optional per asset, but the
+    // verifier still reports a release that offers no avif so an operator is
+    // not left wondering whether avif delivery is working.
+    if (!offeredWebp) {
         results.push({
-            name: `${format} object path is content-addressed`,
-            ok: variant.path === objectPath,
-            detail: `path: ${variant.path} (expected ${objectPath})`,
+            name: 'webp object',
+            ok: false,
+            detail: `no webp variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath}`,
         });
-        cacheProbePath ??= objectPath;
-        await checkObject(base, objectPath, format, variant, results);
+    }
+    if (!offeredAvif) {
+        results.push({
+            name: 'avif object',
+            ok: false,
+            detail: `no avif variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath}`,
+        });
     }
 
     if (cacheProbePath !== null) {
         results.push(await checkCacheHit(base, cacheProbePath));
     }
-    results.push(await checkSourceNotPublic(base));
+    results.push(await checkSourceKeyAbsentFromDelivery(base));
     results.push(
         checkForbiddenKeys([
             { label: 'pointer', body: pointer.body },

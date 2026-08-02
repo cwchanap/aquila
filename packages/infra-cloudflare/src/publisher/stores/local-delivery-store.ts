@@ -274,42 +274,52 @@ export class LocalDeliveryStore implements DeliveryStore {
     ): Promise<{ status: 'created' | 'already-exists' }> {
         const bodyPath = this.bodyPath(request.key);
         await this.ensureDirectories(bodyPath, request.key);
-
-        let bodyHandle;
-        try {
-            bodyHandle = await open(bodyPath, 'wx');
-        } catch (error) {
-            if (isNodeError(error, 'EEXIST')) {
-                return { status: 'already-exists' };
-            }
-            throw this.storageError(
-                'Unable to create immutable local object',
-                request.key,
-                error
-            );
-        }
-
-        try {
-            await bodyHandle.writeFile(request.bytes);
-            await bodyHandle.sync();
-        } catch (error) {
-            throw this.storageError(
-                'Unable to write immutable local object',
-                request.key,
-                error
-            );
-        } finally {
-            await bodyHandle.close();
-        }
-
-        const metadata = this.buildMetadata(request);
-        await this.atomicWrite(
-            this.metadataPath(request.key),
-            metadataJson(metadata),
+        const lock = await this.acquireLock(
+            `${bodyPath}.create-lock`,
             request.key
         );
-        await this.flushDirectory(dirname(bodyPath), request.key);
-        return { status: 'created' };
+        try {
+            const existing = await this.readMetadataIfPresent(request.key);
+            if (existing !== null) return { status: 'already-exists' };
+
+            let bodyHandle;
+            try {
+                bodyHandle = await open(bodyPath, 'wx');
+            } catch (error) {
+                if (isNodeError(error, 'EEXIST')) {
+                    return { status: 'already-exists' };
+                }
+                throw this.storageError(
+                    'Unable to create immutable local object',
+                    request.key,
+                    error
+                );
+            }
+
+            try {
+                await bodyHandle.writeFile(request.bytes);
+                await bodyHandle.sync();
+            } catch (error) {
+                throw this.storageError(
+                    'Unable to write immutable local object',
+                    request.key,
+                    error
+                );
+            } finally {
+                await bodyHandle.close();
+            }
+
+            const metadata = this.buildMetadata(request);
+            await this.atomicWrite(
+                this.metadataPath(request.key),
+                metadataJson(metadata),
+                request.key
+            );
+            await this.flushDirectory(dirname(bodyPath), request.key);
+            return { status: 'created' };
+        } finally {
+            await this.releaseLock(lock, request.key);
+        }
     }
 
     async readPointer(key: string): Promise<PointerSnapshot> {

@@ -212,6 +212,7 @@ export class R2DeliveryStore implements DeliveryStore {
     }
 
     async inspectPointer(key: string): Promise<PointerSnapshot> {
+        this.assertPointerKey(key);
         const object = await this.readIfPresent(key);
         if (object === null) return { exists: false };
         return {

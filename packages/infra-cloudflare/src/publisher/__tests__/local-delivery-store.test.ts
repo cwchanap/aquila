@@ -223,14 +223,17 @@ describe('LocalDeliveryStore', () => {
 
     it('recovers a lock owned by a terminated process', async () => {
         const root = await mkdtemp(join(tmpdir(), 'local-stale-lock-'));
-        const lockPath = join(root, `${POINTER_KEY}.lock`);
+        const token = '00000000-0000-4000-8000-000000000000';
+        const lockPath = join(root, `${POINTER_KEY}.lock.claim.${token}.json`);
         await mkdir(join(root, 'vn/stories/example'), { recursive: true });
         await writeFile(
             lockPath,
             `${JSON.stringify({
-                version: 1,
+                version: 2,
                 pid: 2_147_483_647,
-                token: '00000000-0000-4000-8000-000000000000',
+                token,
+                state: 'waiting',
+                ticket: 1,
             })}\n`
         );
         const store = new LocalDeliveryStore(root);
@@ -246,16 +249,91 @@ describe('LocalDeliveryStore', () => {
         });
     }, 7_000);
 
+    it('does not let competing stale-lock reclaimers displace a new lock generation', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'local-lock-generation-'));
+        const staleToken = '00000000-0000-4000-8000-000000000002';
+        const liveToken = '00000000-0000-4000-8000-000000000003';
+        const staleLockPath = join(
+            root,
+            `${POINTER_KEY}.lock.claim.${staleToken}.json`
+        );
+        const liveLockPath = join(
+            root,
+            `${POINTER_KEY}.lock.claim.${liveToken}.json`
+        );
+        const liveRecord = {
+            version: 2,
+            pid: process.pid,
+            token: liveToken,
+            state: 'waiting',
+            ticket: 2,
+        };
+        await mkdir(join(root, 'vn/stories/example'), { recursive: true });
+        await writeFile(
+            staleLockPath,
+            `${JSON.stringify({
+                version: 2,
+                pid: 2_147_483_647,
+                token: staleToken,
+                state: 'waiting',
+                ticket: 1,
+            })}\n`
+        );
+        await writeFile(liveLockPath, `${JSON.stringify(liveRecord)}\n`, {
+            flag: 'wx',
+        });
+        const first = new LocalDeliveryStore(root);
+        const second = new LocalDeliveryStore(root);
+        let completed = 0;
+        const writes = [
+            first
+                .compareAndSwapPointer({
+                    ...pointerRequest(POINTER_KEY, 'A'),
+                    expected: { exists: false },
+                })
+                .finally(() => {
+                    completed += 1;
+                }),
+            second
+                .compareAndSwapPointer({
+                    ...pointerRequest(POINTER_KEY, 'B'),
+                    expected: { exists: false },
+                })
+                .finally(() => {
+                    completed += 1;
+                }),
+        ];
+
+        await new Promise(resolve => setTimeout(resolve, 50));
+        expect(completed).toBe(0);
+        await expect(readFile(liveLockPath, 'utf8')).resolves.toBe(
+            `${JSON.stringify(liveRecord)}\n`
+        );
+        await expect(access(staleLockPath)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+        await unlink(liveLockPath);
+        const outcomes = await Promise.all(writes);
+
+        expect(outcomes.map(outcome => outcome.status).sort()).toEqual([
+            'precondition-failed',
+            'written',
+        ]);
+    });
+
     it('waits for a live lock instead of stealing it', async () => {
         const root = await mkdtemp(join(tmpdir(), 'local-live-lock-'));
-        const lockPath = join(root, `${POINTER_KEY}.lock`);
+        const token = '00000000-0000-4000-8000-000000000001';
+        const lockPath = join(root, `${POINTER_KEY}.lock.claim.${token}.json`);
         await mkdir(join(root, 'vn/stories/example'), { recursive: true });
         await writeFile(
             lockPath,
             `${JSON.stringify({
-                version: 1,
+                version: 2,
                 pid: process.pid,
-                token: '00000000-0000-4000-8000-000000000001',
+                token,
+                state: 'waiting',
+                ticket: 1,
             })}\n`
         );
         const store = new LocalDeliveryStore(root);

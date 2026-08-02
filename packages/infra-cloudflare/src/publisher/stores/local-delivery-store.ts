@@ -279,43 +279,62 @@ export class LocalDeliveryStore implements DeliveryStore {
             request.key
         );
         try {
+            // Recover any transaction left pending by a previous crash
+            // before deciding whether the object already exists. Without
+            // this, a body written to a temporary file (but not yet renamed
+            // into place) would be invisible to readMetadataIfPresent and
+            // the create would proceed, leaking the orphaned transaction.
+            await this.recoverPendingPointerTransaction(request.key);
             const existing = await this.readMetadataIfPresent(request.key);
             if (existing !== null) return { status: 'already-exists' };
 
-            let bodyHandle;
+            const metadata = this.buildMetadata(request);
+            const bodyTemporaryPath = this.temporaryPath(bodyPath);
+            const metadataPath = this.metadataPath(request.key);
+            const metadataTemporaryPath = this.temporaryPath(metadataPath);
+            const transactionPath = this.transactionPath(request.key);
+            const marker: PointerTransactionMarker = {
+                version: 1,
+                key: request.key,
+                bodyTemporaryName: basename(bodyTemporaryPath),
+                metadataTemporaryName: basename(metadataTemporaryPath),
+            };
             try {
-                bodyHandle = await open(bodyPath, 'wx');
+                await this.writeTemporaryFile(
+                    bodyTemporaryPath,
+                    request.bytes,
+                    request.key
+                );
+                await this.writeTemporaryFile(
+                    metadataTemporaryPath,
+                    metadataJson(metadata),
+                    request.key
+                );
+                await this.flushDirectory(
+                    dirname(bodyTemporaryPath),
+                    request.key
+                );
+                await this.flushDirectory(
+                    dirname(metadataTemporaryPath),
+                    request.key
+                );
+                await this.atomicWrite(
+                    transactionPath,
+                    new TextEncoder().encode(`${JSON.stringify(marker)}\n`),
+                    request.key
+                );
             } catch (error) {
-                if (isNodeError(error, 'EEXIST')) {
-                    return { status: 'already-exists' };
+                if (!(await this.fileExists(transactionPath))) {
+                    await this.unlinkIfPresent(bodyTemporaryPath);
+                    await this.unlinkIfPresent(metadataTemporaryPath);
                 }
                 throw this.storageError(
-                    'Unable to create immutable local object',
+                    'Unable to prepare local immutable transaction',
                     request.key,
                     error
                 );
             }
-
-            try {
-                await bodyHandle.writeFile(request.bytes);
-                await bodyHandle.sync();
-            } catch (error) {
-                throw this.storageError(
-                    'Unable to write immutable local object',
-                    request.key,
-                    error
-                );
-            } finally {
-                await bodyHandle.close();
-            }
-
-            const metadata = this.buildMetadata(request);
-            await this.atomicWrite(
-                this.metadataPath(request.key),
-                metadataJson(metadata),
-                request.key
-            );
-            await this.flushDirectory(dirname(bodyPath), request.key);
+            await this.completePointerTransaction(marker);
             return { status: 'created' };
         } finally {
             await this.releaseLock(lock, request.key);

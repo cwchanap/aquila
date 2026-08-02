@@ -1,5 +1,4 @@
-import { access, readFile } from 'node:fs/promises';
-import { constants } from 'node:fs';
+import { lstat, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
     isStoryId,
@@ -33,14 +32,21 @@ export async function resolveReleasePlanPath(
     if (options.target.kind === 'preview') {
         const previewPath = join(plansRoot, `${options.storyId}.preview.json`);
         try {
-            await access(previewPath, constants.F_OK);
+            // lstat (not access) so a dangling symlink is NOT treated as
+            // absent. access() follows symlinks, so a broken preview
+            // companion would return ENOENT and silently fall back to the
+            // production plan, publishing under a different classification
+            // than the operator intended. lstat succeeds for any directory
+            // entry (including a dangling symlink); loadReleasePlan() then
+            // reports the unreadable target.
+            await lstat(previewPath);
             return previewPath;
         } catch (error) {
-            // Only an absent preview companion (ENOENT) is optional. Other
-            // filesystem errors (EACCES, EIO, ELOOP, ...) must surface as a
-            // sanitized input error; silently falling back to the production
-            // plan would publish under a different classification than the
-            // operator intended.
+            // Only a genuinely absent preview companion (ENOENT from lstat)
+            // is optional. Other filesystem errors (EACCES, EIO, ...) must
+            // surface as a sanitized input error; silently falling back to
+            // the production plan would publish under a different
+            // classification than the operator intended.
             const code =
                 typeof error === 'object' && error !== null && 'code' in error
                     ? (error as { code?: unknown }).code

@@ -43,6 +43,7 @@ export interface ActivateStoredReleaseOptions {
     readonly overrideConcurrentPointer?: boolean;
     readonly confirmProduction?: string;
     readonly now?: () => number;
+    readonly intent?: 'activation' | 'rollback';
 }
 
 export interface ActivationResult {
@@ -116,11 +117,19 @@ export function nextPublishedAt(
     return isoTimestamp(result);
 }
 
-function activationTargetError(key: string): PublisherError {
+function activationTargetError(
+    key: string,
+    intent: ActivateStoredReleaseOptions['intent']
+): PublisherError {
     return new PublisherError(
         'activation-target',
         'Current active-release pointer is invalid',
-        { context: { stage: 'activation', key } }
+        {
+            context: {
+                stage: intent === 'rollback' ? 'rollback' : 'activation',
+                key,
+            },
+        }
     );
 }
 
@@ -128,7 +137,8 @@ async function readPointer(
     store: DeliveryStore,
     key: string,
     target: PublicationTarget,
-    storyId: string
+    storyId: string,
+    intent: ActivateStoredReleaseOptions['intent']
 ): Promise<ActivationPointerSnapshot> {
     let snapshot: PointerSnapshot;
     try {
@@ -145,21 +155,21 @@ async function readPointer(
         snapshot.cacheControl !==
             RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
     ) {
-        throw activationTargetError(key);
+        throw activationTargetError(key, intent);
     }
 
     let value: unknown;
     try {
         value = JSON.parse(textDecoder.decode(snapshot.bytes));
     } catch {
-        throw activationTargetError(key);
+        throw activationTargetError(key, intent);
     }
 
     let pointer: ActiveReleasePointerV1;
     try {
         pointer = parseActiveReleasePointer(value, target, storyId);
     } catch {
-        throw activationTargetError(key);
+        throw activationTargetError(key, intent);
     }
     return { exists: true, etag: snapshot.etag, pointer };
 }
@@ -180,10 +190,15 @@ function assertProductionConfirmation(
     ) {
         throw new PublisherError(
             'activation-target',
-            'Production activation requires exact story confirmation',
+            options.intent === 'rollback'
+                ? 'Production rollback requires exact story confirmation'
+                : 'Production activation requires exact story confirmation',
             {
                 context: {
-                    stage: 'activation',
+                    stage:
+                        options.intent === 'rollback'
+                            ? 'rollback'
+                            : 'activation',
                     storyId: options.storyId,
                 },
             }
@@ -194,13 +209,14 @@ function assertProductionConfirmation(
 function isAlreadyActive(
     verified: VerifiedStoredRelease,
     snapshot: ActivationPointerSnapshot,
-    key: string
+    key: string,
+    intent: ActivateStoredReleaseOptions['intent']
 ): boolean {
     if (snapshot.pointer?.releaseId !== verified.releaseId) return false;
     try {
         verified.validatePointer(snapshot.pointer);
     } catch {
-        throw activationTargetError(key);
+        throw activationTargetError(key, intent);
     }
     return true;
 }
@@ -293,11 +309,12 @@ export async function activateStoredRelease(
         options.store,
         key,
         options.target,
-        options.storyId
+        options.storyId,
+        options.intent
     );
 
     if (
-        isAlreadyActive(verified, snapshot, key) &&
+        isAlreadyActive(verified, snapshot, key, options.intent) &&
         options.reactivate !== true
     ) {
         return result(options, verified, 'no-op', snapshot, false);
@@ -330,10 +347,11 @@ export async function activateStoredRelease(
         options.store,
         key,
         options.target,
-        options.storyId
+        options.storyId,
+        options.intent
     );
     if (
-        isAlreadyActive(verified, snapshot, key) &&
+        isAlreadyActive(verified, snapshot, key, options.intent) &&
         options.reactivate !== true
     ) {
         return result(options, verified, 'no-op', snapshot, true);

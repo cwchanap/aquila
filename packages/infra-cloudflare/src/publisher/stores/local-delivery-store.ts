@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import {
+    access,
+    link,
     mkdir,
     open,
     readFile,
@@ -8,7 +10,15 @@ import {
     stat as fsStat,
     unlink,
 } from 'node:fs/promises';
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import {
+    basename,
+    dirname,
+    isAbsolute,
+    relative,
+    resolve,
+    sep,
+} from 'node:path';
+import { isPreviewId, isStoryId } from '@aquila/stories/runtime-assets';
 import { PublisherError } from '../errors';
 import { sha256Bytes } from '../hash';
 import type {
@@ -24,9 +34,31 @@ interface LocalMetadata extends StoredObjectMetadata {
     version: 1;
 }
 
+interface PointerTransactionMarker {
+    version: 1;
+    key: string;
+    bodyTemporaryName: string;
+    metadataTemporaryName: string;
+}
+
+interface PointerLockRecord {
+    version: 1;
+    pid: number;
+    token: string;
+}
+
+interface PointerLock {
+    lockPath: string;
+    ownerPath: string;
+    record: PointerLockRecord;
+}
+
 const METADATA_DIRECTORY = '.publisher-metadata';
+const TRANSACTION_DIRECTORY = '.publisher-transactions';
 const LOCK_RETRY_MS = 10;
 const LOCK_TIMEOUT_MS = 5_000;
+const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 function isNodeError(error: unknown, code: string): boolean {
     return (
@@ -53,7 +85,10 @@ function isStringRecord(value: unknown): value is Record<string, string> {
     );
 }
 
-function parseMetadata(value: unknown, metadataPath: string): LocalMetadata {
+function parseMetadata(
+    value: unknown,
+    context: Readonly<Record<string, string>>
+): LocalMetadata {
     if (
         typeof value !== 'object' ||
         value === null ||
@@ -68,10 +103,55 @@ function parseMetadata(value: unknown, metadataPath: string): LocalMetadata {
         !isStringRecord((value as Partial<LocalMetadata>).customMetadata)
     ) {
         throw new PublisherError('integrity', 'Invalid local store metadata', {
-            context: { metadataPath },
+            context,
         });
     }
     return value as LocalMetadata;
+}
+
+function parsePointerTransactionMarker(
+    value: unknown,
+    key: string
+): PointerTransactionMarker {
+    if (
+        typeof value !== 'object' ||
+        value === null ||
+        (value as Partial<PointerTransactionMarker>).version !== 1 ||
+        (value as Partial<PointerTransactionMarker>).key !== key ||
+        typeof (value as Partial<PointerTransactionMarker>)
+            .bodyTemporaryName !== 'string' ||
+        typeof (value as Partial<PointerTransactionMarker>)
+            .metadataTemporaryName !== 'string'
+    ) {
+        throw new PublisherError(
+            'integrity',
+            'Invalid local pointer transaction marker',
+            { context: { key } }
+        );
+    }
+    return value as PointerTransactionMarker;
+}
+
+function parsePointerLockRecord(
+    value: unknown,
+    key: string
+): PointerLockRecord {
+    if (
+        typeof value !== 'object' ||
+        value === null ||
+        (value as Partial<PointerLockRecord>).version !== 1 ||
+        !Number.isSafeInteger((value as Partial<PointerLockRecord>).pid) ||
+        (value as Partial<PointerLockRecord>).pid! <= 0 ||
+        typeof (value as Partial<PointerLockRecord>).token !== 'string' ||
+        !UUID_RE.test((value as Partial<PointerLockRecord>).token!)
+    ) {
+        throw new PublisherError(
+            'concurrency',
+            'Invalid local pointer lock record',
+            { context: { key } }
+        );
+    }
+    return value as PointerLockRecord;
 }
 
 function sameExpectation(
@@ -87,10 +167,12 @@ function sameExpectation(
 export class LocalDeliveryStore implements DeliveryStore {
     private readonly root: string;
     private readonly metadataRoot: string;
+    private readonly transactionRoot: string;
 
     constructor(root: string) {
         this.root = resolve(root);
         this.metadataRoot = resolve(this.root, METADATA_DIRECTORY);
+        this.transactionRoot = resolve(this.root, TRANSACTION_DIRECTORY);
     }
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
@@ -214,6 +296,19 @@ export class LocalDeliveryStore implements DeliveryStore {
     }
 
     async readPointer(key: string): Promise<PointerSnapshot> {
+        this.assertPointerKey(key);
+        const bodyPath = this.bodyPath(key);
+        await this.ensureDirectories(bodyPath, key);
+        const lock = await this.acquireLock(`${bodyPath}.lock`, key);
+        try {
+            await this.recoverPendingPointerTransaction(key);
+            return await this.readPointerUnlocked(key);
+        } finally {
+            await this.releaseLock(lock, key);
+        }
+    }
+
+    private async readPointerUnlocked(key: string): Promise<PointerSnapshot> {
         const metadata = await this.stat(key);
         if (metadata === null) return { exists: false };
         const object = await this.read(key);
@@ -229,13 +324,14 @@ export class LocalDeliveryStore implements DeliveryStore {
     async compareAndSwapPointer(
         request: PointerWriteRequest
     ): Promise<{ status: 'written' | 'precondition-failed'; etag?: string }> {
+        this.assertPointerKey(request.key);
         const bodyPath = this.bodyPath(request.key);
         await this.ensureDirectories(bodyPath, request.key);
-        const lockPath = `${bodyPath}.lock`;
-        const lockHandle = await this.acquireLock(lockPath, request.key);
+        const lock = await this.acquireLock(`${bodyPath}.lock`, request.key);
 
         try {
-            const current = await this.readPointer(request.key);
+            await this.recoverPendingPointerTransaction(request.key);
+            const current = await this.readPointerUnlocked(request.key);
             if (!sameExpectation(current, request.expected)) {
                 return { status: 'precondition-failed' };
             }
@@ -244,37 +340,52 @@ export class LocalDeliveryStore implements DeliveryStore {
             const bodyTemporaryPath = this.temporaryPath(bodyPath);
             const metadataPath = this.metadataPath(request.key);
             const metadataTemporaryPath = this.temporaryPath(metadataPath);
-            await this.writeTemporaryFile(
-                bodyTemporaryPath,
-                request.bytes,
-                request.key
-            );
+            const transactionPath = this.transactionPath(request.key);
+            const marker: PointerTransactionMarker = {
+                version: 1,
+                key: request.key,
+                bodyTemporaryName: basename(bodyTemporaryPath),
+                metadataTemporaryName: basename(metadataTemporaryPath),
+            };
             try {
+                await this.writeTemporaryFile(
+                    bodyTemporaryPath,
+                    request.bytes,
+                    request.key
+                );
                 await this.writeTemporaryFile(
                     metadataTemporaryPath,
                     metadataJson(metadata),
                     request.key
                 );
-                await rename(bodyTemporaryPath, bodyPath);
-                await rename(metadataTemporaryPath, metadataPath);
+                await this.flushDirectory(
+                    dirname(bodyTemporaryPath),
+                    request.key
+                );
+                await this.flushDirectory(
+                    dirname(metadataTemporaryPath),
+                    request.key
+                );
+                await this.atomicWrite(
+                    transactionPath,
+                    new TextEncoder().encode(`${JSON.stringify(marker)}\n`),
+                    request.key
+                );
             } catch (error) {
-                await this.unlinkIfPresent(bodyTemporaryPath);
-                await this.unlinkIfPresent(metadataTemporaryPath);
+                if (!(await this.fileExists(transactionPath))) {
+                    await this.unlinkIfPresent(bodyTemporaryPath);
+                    await this.unlinkIfPresent(metadataTemporaryPath);
+                }
                 throw this.storageError(
-                    'Unable to atomically replace local pointer',
+                    'Unable to prepare local pointer transaction',
                     request.key,
                     error
                 );
             }
-            await this.flushDirectory(dirname(bodyPath), request.key);
-            await this.flushDirectory(dirname(metadataPath), request.key);
+            await this.completePointerTransaction(marker);
             return { status: 'written', etag: metadata.etag };
         } finally {
-            try {
-                await lockHandle.close();
-            } finally {
-                await this.unlinkIfPresent(lockPath);
-            }
+            await this.releaseLock(lock, request.key);
         }
     }
 
@@ -294,7 +405,8 @@ export class LocalDeliveryStore implements DeliveryStore {
         for (const entry of entries) {
             if (!entry.endsWith('.json')) continue;
             const metadata = await this.readMetadataFile(
-                resolve(this.metadataRoot, entry)
+                resolve(this.metadataRoot, entry),
+                { metadataKey: `${METADATA_DIRECTORY}/${entry}` }
             );
             if (!metadata.key.startsWith(prefix)) continue;
             const current = await this.stat(metadata.key);
@@ -328,9 +440,36 @@ export class LocalDeliveryStore implements DeliveryStore {
             segments.some(
                 segment => segment === '' || segment === '.' || segment === '..'
             ) ||
-            segments[0] === METADATA_DIRECTORY
+            segments[0] === METADATA_DIRECTORY ||
+            segments[0] === TRANSACTION_DIRECTORY
         ) {
             throw this.unsafeKeyError(key);
+        }
+    }
+
+    private assertPointerKey(key: string): void {
+        this.assertSafeKey(key);
+        const segments = key.split('/');
+        const productionPointer =
+            segments.length === 4 &&
+            segments[0] === 'vn' &&
+            segments[1] === 'stories' &&
+            isStoryId(segments[2]) &&
+            segments[3] === 'current.json';
+        const previewPointer =
+            segments.length === 6 &&
+            segments[0] === 'vn' &&
+            segments[1] === 'previews' &&
+            isPreviewId(segments[2]) &&
+            segments[3] === 'stories' &&
+            isStoryId(segments[4]) &&
+            segments[5] === 'current.json';
+        if (!productionPointer && !previewPointer) {
+            throw new PublisherError(
+                'input',
+                'Pointer key must identify a runtime current.json',
+                { context: { key } }
+            );
         }
     }
 
@@ -343,7 +482,8 @@ export class LocalDeliveryStore implements DeliveryStore {
             prefix
                 .split('/')
                 .some(segment => segment === '.' || segment === '..') ||
-            prefix.split('/')[0] === METADATA_DIRECTORY
+            prefix.split('/')[0] === METADATA_DIRECTORY ||
+            prefix.split('/')[0] === TRANSACTION_DIRECTORY
         ) {
             throw this.unsafeKeyError(prefix);
         }
@@ -358,6 +498,11 @@ export class LocalDeliveryStore implements DeliveryStore {
     private metadataPath(key: string): string {
         const digest = sha256Bytes(new TextEncoder().encode(key));
         return resolve(this.metadataRoot, `${digest}.json`);
+    }
+
+    private transactionPath(key: string): string {
+        const digest = sha256Bytes(new TextEncoder().encode(key));
+        return resolve(this.transactionRoot, `${digest}.json`);
     }
 
     private temporaryPath(path: string): string {
@@ -385,6 +530,7 @@ export class LocalDeliveryStore implements DeliveryStore {
         try {
             await mkdir(dirname(bodyPath), { recursive: true });
             await mkdir(this.metadataRoot, { recursive: true });
+            await mkdir(this.transactionRoot, { recursive: true });
         } catch (error) {
             throw this.storageError(
                 'Unable to create local store directories',
@@ -399,7 +545,7 @@ export class LocalDeliveryStore implements DeliveryStore {
     ): Promise<LocalMetadata | null> {
         const metadataPath = this.metadataPath(key);
         try {
-            const metadata = await this.readMetadataFile(metadataPath);
+            const metadata = await this.readMetadataFile(metadataPath, { key });
             if (metadata.key !== key) {
                 throw this.integrityError(
                     'Local object metadata key does not match requested key',
@@ -418,10 +564,13 @@ export class LocalDeliveryStore implements DeliveryStore {
         }
     }
 
-    private async readMetadataFile(path: string): Promise<LocalMetadata> {
+    private async readMetadataFile(
+        path: string,
+        context: Readonly<Record<string, string>>
+    ): Promise<LocalMetadata> {
         const text = await readFile(path, 'utf8');
         try {
-            return parseMetadata(JSON.parse(text), path);
+            return parseMetadata(JSON.parse(text), context);
         } catch (error) {
             if (error instanceof PublisherError) throw error;
             throw new PublisherError(
@@ -429,8 +578,162 @@ export class LocalDeliveryStore implements DeliveryStore {
                 'Invalid local store metadata',
                 {
                     cause: error,
-                    context: { metadataPath: path },
+                    context,
                 }
+            );
+        }
+    }
+
+    private async recoverPendingPointerTransaction(key: string): Promise<void> {
+        const path = this.transactionPath(key);
+        let text: string;
+        try {
+            text = await readFile(path, 'utf8');
+        } catch (error) {
+            if (isNodeError(error, 'ENOENT')) return;
+            throw this.storageError(
+                'Unable to read local pointer transaction',
+                key,
+                error
+            );
+        }
+
+        let marker: PointerTransactionMarker;
+        try {
+            marker = parsePointerTransactionMarker(JSON.parse(text), key);
+        } catch (error) {
+            if (error instanceof PublisherError) throw error;
+            throw new PublisherError(
+                'integrity',
+                'Invalid local pointer transaction marker',
+                { cause: error, context: { key } }
+            );
+        }
+        await this.completePointerTransaction(marker);
+    }
+
+    private async completePointerTransaction(
+        marker: PointerTransactionMarker
+    ): Promise<void> {
+        const key = marker.key;
+        const bodyPath = this.bodyPath(key);
+        const metadataPath = this.metadataPath(key);
+        const bodyTemporaryPath = this.resolveTransactionTemporaryPath(
+            dirname(bodyPath),
+            basename(bodyPath),
+            marker.bodyTemporaryName,
+            key
+        );
+        const metadataTemporaryPath = this.resolveTransactionTemporaryPath(
+            dirname(metadataPath),
+            basename(metadataPath),
+            marker.metadataTemporaryName,
+            key
+        );
+
+        let metadata: LocalMetadata;
+        let metadataIsTemporary = true;
+        try {
+            metadata = await this.readMetadataFile(metadataTemporaryPath, {
+                key,
+            });
+        } catch (error) {
+            if (!isNodeError(error, 'ENOENT')) throw error;
+            metadataIsTemporary = false;
+            metadata = await this.readMetadataFile(metadataPath, { key });
+        }
+        if (metadata.key !== key) {
+            throw this.integrityError(
+                'Pointer transaction metadata key does not match marker',
+                key
+            );
+        }
+
+        let bodyIsTemporary = true;
+        let bytes: Uint8Array;
+        try {
+            bytes = await readFile(bodyTemporaryPath);
+        } catch (error) {
+            if (!isNodeError(error, 'ENOENT')) {
+                throw this.storageError(
+                    'Unable to read local pointer transaction body',
+                    key,
+                    error
+                );
+            }
+            bodyIsTemporary = false;
+            try {
+                bytes = await readFile(bodyPath);
+            } catch (bodyError) {
+                throw this.storageError(
+                    'Unable to recover local pointer transaction body',
+                    key,
+                    bodyError
+                );
+            }
+        }
+        this.assertBodyMatchesMetadata(bytes, metadata, key);
+
+        try {
+            if (bodyIsTemporary) {
+                await rename(bodyTemporaryPath, bodyPath);
+            }
+            if (metadataIsTemporary) {
+                await rename(metadataTemporaryPath, metadataPath);
+            }
+            await this.flushDirectory(dirname(bodyPath), key);
+            await this.flushDirectory(dirname(metadataPath), key);
+        } catch (error) {
+            throw this.storageError(
+                'Unable to complete local pointer transaction',
+                key,
+                error
+            );
+        }
+
+        const completed = await this.read(key);
+        if (completed.etag !== metadata.etag) {
+            throw this.integrityError(
+                'Recovered pointer does not match transaction metadata',
+                key
+            );
+        }
+        await this.unlinkIfPresent(this.transactionPath(key));
+        await this.flushDirectory(this.transactionRoot, key);
+    }
+
+    private resolveTransactionTemporaryPath(
+        directory: string,
+        targetName: string,
+        temporaryName: string,
+        key: string
+    ): string {
+        if (
+            basename(temporaryName) !== temporaryName ||
+            !temporaryName.startsWith(`${targetName}.`) ||
+            !temporaryName.endsWith('.tmp')
+        ) {
+            throw new PublisherError(
+                'integrity',
+                'Unsafe local pointer transaction temporary name',
+                { context: { key } }
+            );
+        }
+        return resolve(directory, temporaryName);
+    }
+
+    private assertBodyMatchesMetadata(
+        bytes: Uint8Array,
+        metadata: LocalMetadata,
+        key: string
+    ): void {
+        if (
+            bytes.byteLength !== metadata.byteLength ||
+            localEtag(bytes) !== metadata.etag
+        ) {
+            throw this.integrityError(
+                'Local pointer transaction body does not match metadata',
+                key
             );
         }
     }
@@ -495,30 +798,138 @@ export class LocalDeliveryStore implements DeliveryStore {
         }
     }
 
-    private async acquireLock(path: string, key: string) {
+    private async acquireLock(path: string, key: string): Promise<PointerLock> {
         const startedAt = Date.now();
         while (true) {
+            const record: PointerLockRecord = {
+                version: 1,
+                pid: process.pid,
+                token: randomUUID(),
+            };
+            const ownerPath = `${path}.owner.${record.token}`;
+            await this.writeTemporaryFile(
+                ownerPath,
+                new TextEncoder().encode(`${JSON.stringify(record)}\n`),
+                key
+            );
             try {
-                return await open(path, 'wx');
+                await link(ownerPath, path);
             } catch (error) {
-                if (!isNodeError(error, 'EEXIST')) {
-                    throw this.storageError(
-                        'Unable to acquire pointer lock',
-                        key,
-                        error
+                await this.unlinkIfPresent(ownerPath);
+                if (isNodeError(error, 'EEXIST')) {
+                    const recovered = await this.recoverStaleLock(path, key);
+                    if (recovered) continue;
+                    if (Date.now() - startedAt >= LOCK_TIMEOUT_MS) {
+                        throw new PublisherError(
+                            'concurrency',
+                            'Timed out acquiring local pointer lock',
+                            { context: { key } }
+                        );
+                    }
+                    await new Promise(resolve =>
+                        setTimeout(resolve, LOCK_RETRY_MS)
                     );
+                    continue;
                 }
-                if (Date.now() - startedAt >= LOCK_TIMEOUT_MS) {
-                    throw new PublisherError(
-                        'concurrency',
-                        'Timed out acquiring local pointer lock',
-                        { context: { key } }
-                    );
-                }
-                await new Promise(resolve =>
-                    setTimeout(resolve, LOCK_RETRY_MS)
+                throw this.storageError(
+                    'Unable to acquire pointer lock',
+                    key,
+                    error
                 );
             }
+            try {
+                await this.flushDirectory(dirname(path), key);
+            } catch (error) {
+                await this.unlinkIfPresent(path);
+                await this.unlinkIfPresent(ownerPath);
+                throw error;
+            }
+            return { lockPath: path, ownerPath, record };
+        }
+    }
+
+    private async recoverStaleLock(
+        path: string,
+        key: string
+    ): Promise<boolean> {
+        let text: string;
+        try {
+            text = await readFile(path, 'utf8');
+        } catch (error) {
+            if (isNodeError(error, 'ENOENT')) return true;
+            throw this.storageError(
+                'Unable to inspect pointer lock',
+                key,
+                error
+            );
+        }
+
+        let record: PointerLockRecord;
+        try {
+            record = parsePointerLockRecord(JSON.parse(text), key);
+        } catch (error) {
+            if (error instanceof PublisherError) throw error;
+            throw new PublisherError(
+                'concurrency',
+                'Invalid local pointer lock record',
+                { cause: error, context: { key } }
+            );
+        }
+        if (this.isProcessAlive(record.pid)) return false;
+
+        const quarantinePath = `${path}.stale.${randomUUID()}`;
+        try {
+            await rename(path, quarantinePath);
+        } catch (error) {
+            if (isNodeError(error, 'ENOENT')) return true;
+            throw this.storageError(
+                'Unable to reclaim stale pointer lock',
+                key,
+                error
+            );
+        }
+        await this.unlinkIfPresent(quarantinePath);
+        await this.unlinkIfPresent(`${path}.owner.${record.token}`);
+        await this.flushDirectory(dirname(path), key);
+        return true;
+    }
+
+    private isProcessAlive(pid: number): boolean {
+        try {
+            process.kill(pid, 0);
+            return true;
+        } catch (error) {
+            return !isNodeError(error, 'ESRCH');
+        }
+    }
+
+    private async releaseLock(lock: PointerLock, key: string): Promise<void> {
+        let record: PointerLockRecord;
+        try {
+            record = parsePointerLockRecord(
+                JSON.parse(await readFile(lock.lockPath, 'utf8')),
+                key
+            );
+        } catch (error) {
+            if (error instanceof PublisherError) throw error;
+            throw new PublisherError(
+                'concurrency',
+                'Unable to validate local pointer lock ownership',
+                { cause: error, context: { key } }
+            );
+        }
+        if (record.token !== lock.record.token || record.pid !== process.pid) {
+            throw new PublisherError(
+                'concurrency',
+                'Local pointer lock ownership changed unexpectedly',
+                { context: { key } }
+            );
+        }
+        try {
+            await unlink(lock.lockPath);
+        } finally {
+            await this.unlinkIfPresent(lock.ownerPath);
+            await this.flushDirectory(dirname(lock.lockPath), key);
         }
     }
 
@@ -527,6 +938,16 @@ export class LocalDeliveryStore implements DeliveryStore {
             await unlink(path);
         } catch (error) {
             if (!isNodeError(error, 'ENOENT')) throw error;
+        }
+    }
+
+    private async fileExists(path: string): Promise<boolean> {
+        try {
+            await access(path);
+            return true;
+        } catch (error) {
+            if (isNodeError(error, 'ENOENT')) return false;
+            throw error;
         }
     }
 

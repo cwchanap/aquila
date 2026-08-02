@@ -20,6 +20,7 @@ import {
     verifyPreparedRelease,
     verifyStoredRelease,
 } from '../candidate-verifier';
+import { PublisherError } from '../errors';
 import {
     sha256Bytes,
     sha256ManifestBytes,
@@ -436,6 +437,169 @@ describe('candidate verifier', () => {
         );
     });
 
+    it('rejects a source-alpha portrait whose encoded output lost alpha', async () => {
+        const prepared = await preparedRelease();
+        const portrait = prepared.encodedAssets.find(
+            asset => asset.identity.type === 'portrait'
+        );
+        if (portrait === undefined) throw new Error('Missing fixture portrait');
+        portrait.outputHasAlpha = false;
+        const store = await materialize(prepared);
+
+        await expect(
+            verifyPreparedRelease({
+                store,
+                preparedRelease: prepared,
+                depth: 'deep',
+            })
+        ).rejects.toThrow(/alpha/i);
+    });
+
+    it.each([
+        {
+            name: 'internally invalid',
+            coverage: (): StoryAssetCoverageReport => ({
+                ...coverage(),
+                totals: {
+                    total: 3,
+                    included: 2,
+                    omitted: 0,
+                    unclassified: 0,
+                },
+            }),
+        },
+        {
+            name: 'stale but internally consistent',
+            coverage: (): StoryAssetCoverageReport => ({
+                storyId: STORY_ID,
+                byType: {
+                    background: {
+                        total: 1,
+                        included: 1,
+                        omitted: 0,
+                        unclassified: 0,
+                    },
+                    portrait: {
+                        total: 1,
+                        included: 0,
+                        omitted: 1,
+                        unclassified: 0,
+                    },
+                },
+                bySection: {
+                    chapter_1: {
+                        total: 2,
+                        included: 1,
+                        omitted: 1,
+                        unclassified: 0,
+                    },
+                },
+                totals: {
+                    total: 2,
+                    included: 1,
+                    omitted: 1,
+                    unclassified: 0,
+                },
+            }),
+        },
+    ])(
+        'rejects $name prepared coverage evidence',
+        async ({ coverage: stale }) => {
+            const prepared = await preparedRelease();
+            prepared.coverage = stale();
+            const store = await materialize(prepared);
+
+            await expect(
+                verifyPreparedRelease({
+                    store,
+                    preparedRelease: prepared,
+                    depth: 'deep',
+                })
+            ).rejects.toThrow(/coverage/i);
+        }
+    );
+
+    it.each(['manifest', 'object'] as const)(
+        'sanitizes adversarial DeliveryStore failures from %s reads',
+        async failingRead => {
+            const prepared = await preparedRelease();
+            const base = await materialize(prepared);
+            const manifestPath = getReleaseManifestPath(
+                prepared.storyId,
+                prepared.releaseId,
+                prepared.target
+            );
+            const objectPath = prepared.manifest.assets[0]?.variants.webp.path;
+            if (objectPath === undefined)
+                throw new Error('Missing fixture object path');
+            const targetKey =
+                failingRead === 'manifest' ? manifestPath : objectPath;
+            const sensitiveValues = [
+                '/Users/operator/private/source.png',
+                'Bearer private-auth-token',
+                'AKIA_PRIVATE_ACCESS_KEY',
+                'private-secret-access-key',
+                'private-account.r2.cloudflarestorage.com',
+            ];
+            const providerError = Object.assign(
+                new Error(sensitiveValues.join(' ')),
+                {
+                    request: {
+                        headers: { authorization: sensitiveValues[1] },
+                        path: sensitiveValues[0],
+                    },
+                    credentials: {
+                        accessKeyId: sensitiveValues[2],
+                        secretAccessKey: sensitiveValues[3],
+                    },
+                    endpoint: sensitiveValues[4],
+                }
+            );
+            const store: DeliveryStore = {
+                stat: key => base.stat(key),
+                read: key =>
+                    key === targetKey
+                        ? Promise.reject(providerError)
+                        : base.read(key),
+                createImmutable: request => base.createImmutable(request),
+                readPointer: key => base.readPointer(key),
+                compareAndSwapPointer: request =>
+                    base.compareAndSwapPointer(request),
+                list: prefix => base.list(prefix),
+                close: async () => {},
+            };
+
+            let thrown: unknown;
+            try {
+                await verifyPreparedRelease({
+                    store,
+                    preparedRelease: prepared,
+                    depth: 'deep',
+                });
+            } catch (error) {
+                thrown = error;
+            }
+
+            expect(thrown).toBeInstanceOf(PublisherError);
+            const publisherError = thrown as PublisherError;
+            expect(publisherError).toMatchObject({
+                code: 'storage',
+                context: { stage: 'verification', key: targetKey },
+                cause: { classification: 'delivery-store-read-failure' },
+            });
+            const publicError = JSON.stringify({
+                name: publisherError.name,
+                message: publisherError.message,
+                code: publisherError.code,
+                context: publisherError.context,
+                cause: publisherError.cause,
+            });
+            for (const sensitive of sensitiveValues) {
+                expect(publicError).not.toContain(sensitive);
+            }
+        }
+    );
+
     it('reads a shared content-addressed body once', async () => {
         const original = await preparedRelease();
         const portrait = original.manifest.assets.find(
@@ -459,9 +623,11 @@ describe('candidate verifier', () => {
             return object;
         });
 
-        await verifyPreparedRelease({
+        await verifyStoredRelease({
             store,
-            preparedRelease: prepared,
+            storyId: prepared.storyId,
+            target: prepared.target,
+            releaseId: prepared.releaseId,
             depth: 'deep',
         });
 
@@ -502,9 +668,11 @@ describe('candidate verifier', () => {
             const store = await materialize(prepared);
 
             await expect(
-                verifyPreparedRelease({
+                verifyStoredRelease({
                     store,
-                    preparedRelease: prepared,
+                    storyId: prepared.storyId,
+                    target: prepared.target,
+                    releaseId: prepared.releaseId,
                     depth: 'deep',
                 })
             ).rejects.toThrow();

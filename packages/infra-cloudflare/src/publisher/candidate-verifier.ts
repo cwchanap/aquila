@@ -13,6 +13,7 @@ import {
     validatePointerManifestPair,
     type ActiveReleasePointerV1,
     type AssetFormat,
+    type CoverageCounts,
     type ManifestByteSha256,
     type ObjectContentSha256,
     type PublicationTarget,
@@ -70,6 +71,15 @@ interface ManifestObjectReference {
 
 const JSON_CONTENT_TYPE = 'application/json';
 const POINTER_TEMPLATE_TIMESTAMP = '1970-01-01T00:00:00.000Z';
+const SANITIZED_DELIVERY_STORE_CAUSE = Object.freeze({
+    classification: 'delivery-store-read-failure' as const,
+});
+const COVERAGE_COUNT_KEYS = [
+    'total',
+    'included',
+    'omitted',
+    'unclassified',
+] as const;
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
 const textEncoder = new TextEncoder();
 
@@ -84,6 +94,24 @@ function integrityError(
 function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
     if (left.byteLength !== right.byteLength) return false;
     return left.every((byte, index) => byte === right[index]);
+}
+
+async function readStoredObject(
+    store: DeliveryStore,
+    key: string
+): Promise<StoredObject> {
+    try {
+        return await store.read(key);
+    } catch {
+        throw new PublisherError(
+            'storage',
+            'Unable to read stored candidate object',
+            {
+                context: { stage: 'verification', key },
+                cause: SANITIZED_DELIVERY_STORE_CAUSE,
+            }
+        );
+    }
 }
 
 function assertStoredMetadata(
@@ -289,7 +317,7 @@ async function verifyObjectGroup(
         }
     }
 
-    const object = await store.read(expectedPath);
+    const object = await readStoredObject(store, expectedPath);
     assertStoredMetadata(
         object,
         {
@@ -352,7 +380,7 @@ export async function verifyStoredRelease(
         options.releaseId,
         options.target
     );
-    const storedManifest = await options.store.read(manifestPath);
+    const storedManifest = await readStoredObject(options.store, manifestPath);
     assertStoredMetadata(
         storedManifest,
         {
@@ -455,6 +483,193 @@ export async function verifyStoredRelease(
     };
 }
 
+function preparedEvidenceError(
+    code: 'coverage' | 'integrity',
+    message: string
+): PublisherError {
+    return new PublisherError(code, message, {
+        context: { stage: 'verification' },
+    });
+}
+
+function assertCoverageCounts(counts: CoverageCounts): void {
+    if (
+        COVERAGE_COUNT_KEYS.some(
+            key => !Number.isSafeInteger(counts[key]) || counts[key] < 0
+        ) ||
+        counts.total !== counts.included + counts.omitted + counts.unclassified
+    ) {
+        throw preparedEvidenceError(
+            'coverage',
+            'Prepared coverage evidence contains invalid counts'
+        );
+    }
+}
+
+function summedCounts(counts: readonly CoverageCounts[]): CoverageCounts {
+    return counts.reduce<CoverageCounts>(
+        (sum, current) => ({
+            total: sum.total + current.total,
+            included: sum.included + current.included,
+            omitted: sum.omitted + current.omitted,
+            unclassified: sum.unclassified + current.unclassified,
+        }),
+        { total: 0, included: 0, omitted: 0, unclassified: 0 }
+    );
+}
+
+function countsEqual(left: CoverageCounts, right: CoverageCounts): boolean {
+    return COVERAGE_COUNT_KEYS.every(key => left[key] === right[key]);
+}
+
+function validatePreparedCoverage(
+    prepared: PreparedRelease,
+    manifest: RuntimeAssetManifestV1
+): void {
+    const report = prepared.coverage;
+    const typeCounts = [report.byType.background, report.byType.portrait];
+    const sectionCounts = Object.values(report.bySection);
+    for (const counts of [report.totals, ...typeCounts, ...sectionCounts]) {
+        assertCoverageCounts(counts);
+    }
+    if (
+        report.storyId !== prepared.storyId ||
+        !countsEqual(summedCounts(typeCounts), report.totals) ||
+        !countsEqual(summedCounts(sectionCounts), report.totals)
+    ) {
+        throw preparedEvidenceError(
+            'coverage',
+            'Prepared coverage evidence is internally inconsistent'
+        );
+    }
+
+    const includedByType = { background: 0, portrait: 0 };
+    const includedBySection = new Map<string, number>();
+    for (const asset of manifest.assets) {
+        includedByType[asset.identity.type] += 1;
+        const section = asset.section ?? '_unassigned';
+        includedBySection.set(
+            section,
+            (includedBySection.get(section) ?? 0) + 1
+        );
+    }
+    const sectionNames = new Set([
+        ...Object.keys(report.bySection),
+        ...includedBySection.keys(),
+    ]);
+    const includedMatchesManifest =
+        report.totals.included === manifest.assets.length &&
+        report.byType.background.included === includedByType.background &&
+        report.byType.portrait.included === includedByType.portrait &&
+        [...sectionNames].every(
+            section =>
+                (report.bySection[section]?.included ?? 0) ===
+                (includedBySection.get(section) ?? 0)
+        );
+    if (!includedMatchesManifest) {
+        throw preparedEvidenceError(
+            'coverage',
+            'Prepared coverage evidence does not match the release manifest'
+        );
+    }
+    if (
+        prepared.target.kind === 'production' &&
+        report.totals.unclassified !== 0
+    ) {
+        throw preparedEvidenceError(
+            'coverage',
+            'Production coverage evidence contains unclassified assets'
+        );
+    }
+}
+
+function validatePreparedEncodedAssets(
+    prepared: PreparedRelease,
+    manifest: RuntimeAssetManifestV1
+): void {
+    const manifestByIdentity = new Map(
+        manifest.assets.map(asset => [
+            qualifyAssetIdentity(asset.identity),
+            asset,
+        ])
+    );
+    const encodedByIdentity = new Map(
+        prepared.encodedAssets.map(asset => [
+            qualifyAssetIdentity(asset.identity),
+            asset,
+        ])
+    );
+    if (
+        encodedByIdentity.size !== prepared.encodedAssets.length ||
+        encodedByIdentity.size !== manifestByIdentity.size
+    ) {
+        throw preparedEvidenceError(
+            'integrity',
+            'Prepared encoded-asset evidence does not match the release manifest'
+        );
+    }
+
+    for (const [identity, encoded] of encodedByIdentity) {
+        const manifestAsset = manifestByIdentity.get(identity);
+        if (
+            manifestAsset === undefined ||
+            manifestAsset.width !== encoded.width ||
+            manifestAsset.height !== encoded.height
+        ) {
+            throw preparedEvidenceError(
+                'integrity',
+                'Prepared encoded-asset evidence does not match the release manifest'
+            );
+        }
+        const manifestVariants = [
+            manifestAsset.variants.webp,
+            manifestAsset.variants.avif,
+        ].filter(variant => variant !== undefined);
+        const encodedVariants = new Map(
+            encoded.variants.map(variant => [variant.format, variant])
+        );
+        if (
+            encodedVariants.size !== encoded.variants.length ||
+            encodedVariants.size !== manifestVariants.length
+        ) {
+            throw preparedEvidenceError(
+                'integrity',
+                'Prepared encoded-asset evidence does not match the release manifest'
+            );
+        }
+        for (const variant of manifestVariants) {
+            const encodedVariant = encodedVariants.get(variant.format);
+            const expectedContentType = expectedImageContentType(
+                variant.format
+            );
+            if (
+                encodedVariant === undefined ||
+                encodedVariant.path !== variant.path ||
+                encodedVariant.sha256 !== variant.sha256 ||
+                encodedVariant.byteLength !== variant.byteLength ||
+                encodedVariant.byteLength !== encodedVariant.bytes.byteLength ||
+                encodedVariant.contentType !== expectedContentType ||
+                sha256Bytes(encodedVariant.bytes) !== variant.sha256
+            ) {
+                throw preparedEvidenceError(
+                    'integrity',
+                    'Prepared encoded-asset evidence does not match the release manifest'
+                );
+            }
+        }
+        if (
+            encoded.identity.type === 'portrait' &&
+            encoded.sourceHasAlpha &&
+            !encoded.outputHasAlpha
+        ) {
+            throw preparedEvidenceError(
+                'integrity',
+                'Source-alpha portrait output failed alpha preservation'
+            );
+        }
+    }
+}
+
 export async function verifyPreparedRelease(
     options: VerifyPreparedReleaseOptions
 ): Promise<VerifiedStoredRelease> {
@@ -479,5 +694,7 @@ export async function verifyPreparedRelease(
             { stage: 'verification', key: verified.manifestPath }
         );
     }
+    validatePreparedEncodedAssets(prepared, verified.manifest);
+    validatePreparedCoverage(prepared, verified.manifest);
     return verified;
 }

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "storyId": "the_seventh_mirror",
+  "channel": "preview",
+  "entries": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act2_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/base.png",
+      "section": "chapter_1"
+    }
+  ]
+}

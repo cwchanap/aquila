@@ -311,9 +311,10 @@ permission level across all the buckets it selects**, so "read-write on delivery
 read-only on source" is not expressible in one token — which is why the design's
 version would have granted write access to `aquila-vn-source`.
 
-If HPA-230's publisher turns out to need to read authoring originals from
-`aquila-vn-source`, the correct response is to **mint a second, read-only token
-scoped to `aquila-vn-source`** — not to widen this one.
+HPA-230 reads authoring originals from a local synchronized source root; it does
+not read `aquila-vn-source`. If a later, separately reviewed archival workflow
+needs that bucket, mint a second read-only token rather than widening this
+delivery credential.
 
 Copy the Access Key ID and Secret Access Key **once** — Cloudflare will not show
 the secret again — and store them in GitHub Actions **secrets** as
@@ -358,18 +359,31 @@ bun --filter @aquila/infra-cloudflare verify
 R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts
 ```
 
-`seed` publishes through the R2 S3-compatible API
-(`https://<accountId>.r2.cloudflarestorage.com`) using the scoped publisher
-credentials minted in [§2.7](#27-mint-the-publisher-token-and-store-it-as-secrets)
-— never the account-wide `CLOUDFLARE_API_TOKEN`, which the seeder deliberately
-does not accept. It uploads four content-addressed objects — one background
-and one portrait, each as WebP **and** AVIF — then the release manifest, then the
-pointer, in that order, so nothing is ever advertised before it is readable.
+`seed` is now a thin HPA-229 smoke-fixture wrapper around the HPA-230 publisher.
+It supplies story `the_seventh_mirror`, preview ID `smoke`, the checked-in fixture
+plan, local source root, and R2 destination to the same `assets publish` service
+operators use. It contains no independent Sharp, hashing, upload, manifest, or
+pointer implementation.
 
-The release id is content-addressed over the manifest, which means it is derived
+The publisher connects to the R2 S3-compatible API
+(`https://<accountId>.r2.cloudflarestorage.com`) using the scoped credentials
+minted in [§2.7](#27-mint-the-publisher-token-and-store-it-as-secrets) — never
+the account-wide `CLOUDFLARE_API_TOKEN`. Under the V1 policy the smoke fixture
+creates a background WebP and AVIF plus an alpha-preserving portrait WebP, then
+an immutable manifest, verifies the complete candidate through R2, and changes
+the preview pointer last through conditional CAS. Existing exact immutable bytes
+are verified and reused rather than overwritten.
+
+The release ID is content-addressed over the manifest, which means it is derived
 from the encoded bytes. `sharp`'s WebP/AVIF encoders are not byte-identical
 across libvips builds, so **the release id differs from machine to machine**. Do
 not pin it anywhere; read it from the seeder's final line.
+
+The general candidate, mirror, activation, list, and rollback procedures live in
+[`visual-asset-publisher.md`](./visual-asset-publisher.md). This HPA-229 runbook
+continues to own the delivery host, wildcard CORS, cache rules, public response
+verification, and source-key isolation. The publisher owns deterministic
+encoding, immutable R2 writes, stored-candidate verification, and pointer CAS.
 
 The second command needs more than Cloudflare: Playwright starts `apps/web`'s
 dev server on **port 5090** and injects a `DATABASE_URL`, defaulting to
@@ -590,20 +604,17 @@ operator to set the ref (or an explicit `PUBLIC_ASSET_PREVIEW_ID`). The
 
 ## 4. Rollback
 
-> Do **not** re-upload the previous `current.json` bytes. The HPA-227 client
-> rejects a pointer whose `publishedAt` is older than one it already
-> validated, treating it as `stale-pointer`, so a verbatim restore is
-> silently ignored by every client that already saw the newer release.
->
-> 1. Take the prior release's `releaseId`, `manifestPath`, `manifestSha256`.
-> 2. Emit a **new** pointer with those fields and a fresh, later
->    `publishedAt`, as canonical JSON plus one LF.
-> 3. Upload with `Content-Type: application/json` and
->    `Cache-Control: no-cache, max-age=0, must-revalidate`.
->
-> No purge step. The pointer bypasses the edge cache entirely
-> ([§2.6](#26-create-the-two-cache-rules)), so a rollback pointer is live the
-> moment it is uploaded.
+Use the publisher's source-independent `rollback` command documented in
+[`visual-asset-publisher.md`](./visual-asset-publisher.md#list-rollback-reactivation-and-concurrency).
+Do **not** re-upload previous `current.json` bytes. The command deep-verifies the
+retained release, creates a new pointer with a strictly later `publishedAt`, and
+uses fresh conditional CAS with the required JSON/revalidation metadata. The
+HPA-227 client rejects a verbatim historical pointer as `stale-pointer` after it
+has observed the newer release.
+
+No purge step is needed. The pointer bypasses the edge cache entirely
+([§2.6](#26-create-the-two-cache-rules)), so a successful rollback pointer is
+live when R2 accepts the conditional write.
 
 Immutable objects and manifests are content-addressed, so a rollback never needs
 to touch them — the old release's objects are still there under their digests.

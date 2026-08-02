@@ -10,7 +10,9 @@
 
 **Design specs:**
 - `docs/superpowers/specs/2026-08-01-hpa-230-immutable-visual-asset-publisher-design.md`
-- `docs/superpowers/specs/2026-08-01-hpa-230-third-pass-normative-clarifications.md`
+
+The accepted third-pass clarifications were consolidated into the primary
+design by Task 16; the standalone addendum was then deleted.
 
 ## Global Constraints
 

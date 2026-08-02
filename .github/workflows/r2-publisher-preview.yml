@@ -1,0 +1,334 @@
+name: R2 Publisher Preview Gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: '1.3.1'
+  NODE_VERSION: '22'
+  TURBO_TELEMETRY_DISABLED: '1'
+  STORY_ID: hpa_230_gate
+  R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+  R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+
+jobs:
+  publisher-preview-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Require scoped publisher credentials
+        shell: bash
+        run: |
+          if [[ -z "$R2_PUBLISHER_ACCESS_KEY_ID" || -z "$R2_PUBLISHER_SECRET_ACCESS_KEY" ]]; then
+            echo 'Scoped R2 publisher secrets are not configured.' >&2
+            exit 1
+          fi
+
+      - name: Prepare isolated fixture and evidence helpers
+        shell: bash
+        run: |
+          PREVIEW_ID="hpa-230-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "PREVIEW_ID=$PREVIEW_ID" >> "$GITHUB_ENV"
+          mkdir -p .tmp/reports .tmp/evidence .tmp/source-a/gate .tmp/source-b/gate
+          mkdir -p packages/stories/src/generated/hpa230Gate
+          cp packages/assets/media/the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png .tmp/source-a/gate/background.png
+          cp packages/assets/media/the_seventh_mirror/characters/asakura_mio/base.png .tmp/source-a/gate/portrait.png
+          cp .tmp/source-a/gate/background.png .tmp/source-b/gate/background.png
+          cp .tmp/source-a/gate/portrait.png .tmp/source-b/gate/portrait.png
+          bun -e '
+            await Bun.write("packages/stories/src/generated/hpa230Gate/image-assets.json", JSON.stringify({
+              storyId: process.env.STORY_ID,
+              backgrounds: [{ key: "chapter_1/gate", path: "gate/background.png" }],
+              portraits: [{ key: "gate/base", path: "gate/portrait.png" }]
+            }));
+            await Bun.write(".tmp/production-fixture-plan.json", JSON.stringify({
+              schemaVersion: 1,
+              storyId: process.env.STORY_ID,
+              channel: "production",
+              entries: [
+                { identity: { type: "background", key: "chapter_1/gate" }, disposition: "included", sourcePath: "gate/background.png", section: "chapter_1" },
+                { identity: { type: "portrait", key: "gate/base" }, disposition: "included", sourcePath: "gate/portrait.png", section: "chapter_1" }
+              ]
+            }));
+          '
+          bun -e '
+            import sharp from "sharp";
+            await sharp({ create: { width: 1672, height: 941, channels: 3, background: { r: 12, g: 140, b: 210 } } })
+              .png()
+              .toFile(".tmp/source-b/gate/background.png");
+          '
+          cat > .tmp/capture-state.ts <<'EOF'
+          import { createHash } from 'node:crypto';
+          import { getCurrentPointerPath, parseActiveReleasePointer } from '@aquila/stories/runtime-assets';
+          import { R2DeliveryStore } from '../packages/infra-cloudflare/src/publisher/stores/r2-delivery-store';
+
+          const [label, previewId] = process.argv.slice(2);
+          if (!label || !previewId || !process.env.STORY_ID) throw new Error('capture arguments missing');
+          const storyId = process.env.STORY_ID;
+          const store = await R2DeliveryStore.createFromEnvironment();
+          const snapshot = async (target: { kind: 'production' } | { kind: 'preview'; previewId: string }) => {
+            const key = getCurrentPointerPath(storyId, target);
+            const value = await store.readPointer(key);
+            if (!value.exists) return { key, exists: false as const };
+            const pointer = parseActiveReleasePointer(JSON.parse(new TextDecoder().decode(value.bytes)), target, storyId);
+            return {
+              key,
+              exists: true as const,
+              etag: value.etag,
+              sha256: createHash('sha256').update(value.bytes).digest('hex'),
+              releaseId: pointer.releaseId,
+              publishedAt: pointer.publishedAt,
+            };
+          };
+          const prefix = `vn/previews/${previewId}/stories/${storyId}/`;
+          const previewKeys: Array<{ key: string; etag: string }> = [];
+          for await (const item of store.list(prefix)) previewKeys.push({ key: item.key, etag: item.etag });
+          previewKeys.sort((left, right) => left.key.localeCompare(right.key));
+          const evidence = {
+            schemaVersion: 1,
+            label,
+            storyId,
+            previewId,
+            productionPointer: await snapshot({ kind: 'production' }),
+            previewPointer: await snapshot({ kind: 'preview', previewId }),
+            previewKeys,
+          };
+          await Bun.write(`.tmp/evidence/${label}.json`, `${JSON.stringify(evidence, null, 2)}\n`);
+          await store.close();
+          EOF
+          cat > .tmp/assert-pointer-only.ts <<'EOF'
+          const [beforePath, afterPath, outputPath, previewId] = process.argv.slice(2);
+          if (!beforePath || !afterPath || !outputPath || !previewId || !process.env.STORY_ID) throw new Error('assert arguments missing');
+          const before = await Bun.file(beforePath).json();
+          const after = await Bun.file(afterPath).json();
+          if (JSON.stringify(before.productionPointer) !== JSON.stringify(after.productionPointer)) {
+            throw new Error('production current.json changed');
+          }
+          const beforeKeys = new Map(before.previewKeys.map((item: { key: string; etag: string }) => [item.key, item.etag]));
+          const afterKeys = new Map(after.previewKeys.map((item: { key: string; etag: string }) => [item.key, item.etag]));
+          const keys = new Set([...beforeKeys.keys(), ...afterKeys.keys()]);
+          const changedKeys = [...keys].filter(key => beforeKeys.get(key) !== afterKeys.get(key)).sort();
+          const expected = `vn/previews/${previewId}/stories/${process.env.STORY_ID}/current.json`;
+          if (changedKeys.length !== 1 || changedKeys[0] !== expected) {
+            throw new Error(`expected only ${expected} to change, got ${changedKeys.join(', ')}`);
+          }
+          if (!after.previewPointer.exists) throw new Error('preview pointer missing after mutation');
+          await Bun.write(outputPath, `${JSON.stringify({ schemaVersion: 1, productionPointerUnchanged: true, changedKeys, beforeReleaseId: before.previewPointer.releaseId, afterReleaseId: after.previewPointer.releaseId }, null, 2)}\n`);
+          EOF
+
+      - name: Capture initial pointer evidence
+        run: bun .tmp/capture-state.ts initial "$PREVIEW_ID"
+
+      - name: Publish production fixture candidate without activation
+        shell: bash
+        run: |
+          # shellcheck disable=SC2016
+          bun --filter @aquila/infra-cloudflare assets -- publish \
+            --story "$STORY_ID" \
+            --environment production \
+            --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
+            --source-root "$GITHUB_WORKSPACE/.tmp/source-a" \
+            --destination r2 \
+            --no-activate \
+            --json > .tmp/reports/candidate-a.json
+          # shellcheck disable=SC2016
+          bun -e '
+            import { appendFile } from "node:fs/promises";
+            const report = await Bun.file(".tmp/reports/candidate-a.json").json();
+            if (!["success", "no-op"].includes(report.status) || typeof report.releaseId !== "string" || typeof report.manifestSha256 !== "string" || report.pointer?.changed === true || report.counts.pointersWritten !== 0) throw new Error("invalid production candidate report");
+            await appendFile(process.env.GITHUB_ENV!, `RELEASE_A=${report.releaseId}\nMANIFEST_A=${report.manifestSha256}\n`);
+          '
+
+      - name: Prove unchanged candidate is a no-op
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets -- publish \
+            --story "$STORY_ID" \
+            --environment production \
+            --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
+            --source-root "$GITHUB_WORKSPACE/.tmp/source-a" \
+            --destination r2 \
+            --no-activate \
+            --json > .tmp/reports/candidate-a-unchanged.json
+          bun -e 'const report = await Bun.file(".tmp/reports/candidate-a-unchanged.json").json(); if (report.status !== "no-op" || report.counts.objectsCreated !== 0 || report.counts.manifestsCreated !== 0 || report.counts.pointersWritten !== 0) throw new Error("unchanged rerun was not a no-op")'
+
+      - name: Mirror exact candidate A to run preview
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets -- mirror-preview \
+            --story "$STORY_ID" \
+            --release "$RELEASE_A" \
+            --preview-id "$PREVIEW_ID" \
+            --expect-manifest-sha256 "$MANIFEST_A" \
+            --destination r2 \
+            --json > .tmp/reports/mirror-a.json
+          bun .tmp/capture-state.ts before-activate-a "$PREVIEW_ID"
+
+      - name: Activate retained candidate A in preview
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets -- activate \
+            --story "$STORY_ID" \
+            --environment preview \
+            --preview-id "$PREVIEW_ID" \
+            --release "$RELEASE_A" \
+            --expect-manifest-sha256 "$MANIFEST_A" \
+            --destination r2 \
+            --json > .tmp/reports/activate-a.json
+          bun .tmp/capture-state.ts after-activate-a "$PREVIEW_ID"
+          bun .tmp/assert-pointer-only.ts \
+            .tmp/evidence/before-activate-a.json \
+            .tmp/evidence/after-activate-a.json \
+            .tmp/evidence/activate-a-pointer-only.json \
+            "$PREVIEW_ID"
+
+      - name: Deep verify candidate A through R2
+        run: |
+          bun --filter @aquila/infra-cloudflare assets -- verify \
+            --story "$STORY_ID" \
+            --environment preview \
+            --preview-id "$PREVIEW_ID" \
+            --release "$RELEASE_A" \
+            --expect-manifest-sha256 "$MANIFEST_A" \
+            --destination r2 \
+            --deep \
+            --json > .tmp/reports/verify-a.json
+
+      - name: Publish controlled production revision without activation
+        shell: bash
+        run: |
+          # shellcheck disable=SC2016
+          bun --filter @aquila/infra-cloudflare assets -- publish \
+            --story "$STORY_ID" \
+            --environment production \
+            --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
+            --source-root "$GITHUB_WORKSPACE/.tmp/source-b" \
+            --destination r2 \
+            --no-activate \
+            --json > .tmp/reports/candidate-b.json
+          # shellcheck disable=SC2016
+          bun -e '
+            import { appendFile } from "node:fs/promises";
+            const first = await Bun.file(".tmp/reports/candidate-a.json").json();
+            const report = await Bun.file(".tmp/reports/candidate-b.json").json();
+            if (!["success", "no-op"].includes(report.status) || report.releaseId === first.releaseId || typeof report.manifestSha256 !== "string" || report.pointer?.changed === true || report.counts.pointersWritten !== 0) throw new Error("controlled revision did not create a distinct candidate");
+            await appendFile(process.env.GITHUB_ENV!, `RELEASE_B=${report.releaseId}\nMANIFEST_B=${report.manifestSha256}\n`);
+          '
+
+      - name: Mirror controlled revision and capture stale snapshot
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets -- mirror-preview \
+            --story "$STORY_ID" \
+            --release "$RELEASE_B" \
+            --preview-id "$PREVIEW_ID" \
+            --expect-manifest-sha256 "$MANIFEST_B" \
+            --destination r2 \
+            --json > .tmp/reports/mirror-b.json
+          bun .tmp/capture-state.ts before-activate-b "$PREVIEW_ID"
+          bun -e 'const state = await Bun.file(".tmp/evidence/before-activate-b.json").json(); if (!state.previewPointer.exists) throw new Error("missing stale snapshot"); await Bun.write(".tmp/stale-etag.txt", state.previewPointer.etag)'
+
+      - name: Source-independent activation of controlled revision
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets -- activate \
+            --story "$STORY_ID" \
+            --environment preview \
+            --preview-id "$PREVIEW_ID" \
+            --release "$RELEASE_B" \
+            --expect-manifest-sha256 "$MANIFEST_B" \
+            --destination r2 \
+            --json > .tmp/reports/activate-b.json
+          bun .tmp/capture-state.ts after-activate-b "$PREVIEW_ID"
+          bun .tmp/assert-pointer-only.ts \
+            .tmp/evidence/before-activate-b.json \
+            .tmp/evidence/after-activate-b.json \
+            .tmp/evidence/activate-b-pointer-only.json \
+            "$PREVIEW_ID"
+
+      - name: Prove stale opaque ETag conflict
+        run: |
+          # shellcheck disable=SC2016
+          bun -e '
+            import { getCurrentPointerPath } from "@aquila/stories/runtime-assets";
+            import { R2DeliveryStore } from "./packages/infra-cloudflare/src/publisher/stores/r2-delivery-store";
+            const store = await R2DeliveryStore.createFromEnvironment();
+            const key = getCurrentPointerPath(process.env.STORY_ID!, { kind: "preview", previewId: process.env.PREVIEW_ID! });
+            const current = await store.readPointer(key);
+            if (!current.exists) throw new Error("current pointer missing");
+            const staleEtag = (await Bun.file(".tmp/stale-etag.txt").text()).trim();
+            const result = await store.compareAndSwapPointer({ key, expected: { exists: true, etag: staleEtag }, bytes: current.bytes, contentType: "application/json", cacheControl: "no-cache, max-age=0, must-revalidate" });
+            await store.close();
+            if (result.status !== "precondition-failed") throw new Error(`expected stale conflict, got ${result.status}`);
+            await Bun.write(".tmp/evidence/stale-conflict.json", `${JSON.stringify({ schemaVersion: 1, key, status: result.status }, null, 2)}\n`);
+          '
+
+      - name: Roll back preview to retained candidate A
+        shell: bash
+        run: |
+          bun .tmp/capture-state.ts before-rollback "$PREVIEW_ID"
+          bun --filter @aquila/infra-cloudflare assets -- rollback \
+            --story "$STORY_ID" \
+            --environment preview \
+            --preview-id "$PREVIEW_ID" \
+            --release "$RELEASE_A" \
+            --expect-manifest-sha256 "$MANIFEST_A" \
+            --destination r2 \
+            --json > .tmp/reports/rollback.json
+          bun .tmp/capture-state.ts after-rollback "$PREVIEW_ID"
+          bun .tmp/assert-pointer-only.ts \
+            .tmp/evidence/before-rollback.json \
+            .tmp/evidence/after-rollback.json \
+            .tmp/evidence/rollback-pointer-only.json \
+            "$PREVIEW_ID"
+
+      - name: Run HPA-229 public smoke verification
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare seed > .tmp/evidence/hpa-229-seed.txt 2>&1
+          bun --filter @aquila/infra-cloudflare verify > .tmp/evidence/hpa-229-public-verify.txt 2>&1
+
+      - name: Prove production pointer never changed
+        shell: bash
+        run: |
+          bun .tmp/capture-state.ts final "$PREVIEW_ID"
+          # shellcheck disable=SC2016
+          bun -e '
+            const initial = await Bun.file(".tmp/evidence/initial.json").json();
+            const final = await Bun.file(".tmp/evidence/final.json").json();
+            if (JSON.stringify(initial.productionPointer) !== JSON.stringify(final.productionPointer)) throw new Error("production current.json changed during preview gate");
+            await Bun.write(".tmp/evidence/production-pointer-unchanged.json", `${JSON.stringify({ schemaVersion: 1, unchanged: true, before: initial.productionPointer, after: final.productionPointer }, null, 2)}\n`);
+          '
+
+      - name: Upload publisher gate evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: r2-publisher-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .tmp/reports/*.json
+            .tmp/evidence/*.json
+            .tmp/evidence/*.txt
+          if-no-files-found: error
+          retention-days: 30

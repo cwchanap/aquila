@@ -66,57 +66,7 @@ jobs:
               ]
             }));
           '
-          bun -e '
-            import sharp from "sharp";
-            await sharp({ create: { width: 1672, height: 941, channels: 3, background: { r: 12, g: 140, b: 210 } } })
-              .png()
-              .toFile(".tmp/source-b/gate/background.png");
-            await sharp({ create: { width: 1672, height: 941, channels: 3, background: { r: 188, g: 74, b: 42 } } })
-              .png()
-              .toFile(".tmp/source-c/gate/background.png");
-            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 64, g: 198, b: 104, alpha: 1 } } })
-              .png()
-              .toFile(".tmp/source-c/gate/portrait.png");
-          '
-          cat > .tmp/capture-state.ts <<'EOF'
-          import { createHash } from 'node:crypto';
-          import { getCurrentPointerPath, parseActiveReleasePointer } from '@aquila/stories/runtime-assets';
-          import { R2DeliveryStore } from '../packages/infra-cloudflare/src/publisher/stores/r2-delivery-store';
-
-          const [label, previewId] = process.argv.slice(2);
-          if (!label || !previewId || !process.env.STORY_ID) throw new Error('capture arguments missing');
-          const storyId = process.env.STORY_ID;
-          const store = await R2DeliveryStore.createFromEnvironment();
-          const snapshot = async (target: { kind: 'production' } | { kind: 'preview'; previewId: string }) => {
-            const key = getCurrentPointerPath(storyId, target);
-            const value = await store.readPointer(key);
-            if (!value.exists) return { key, exists: false as const };
-            const pointer = parseActiveReleasePointer(JSON.parse(new TextDecoder().decode(value.bytes)), target, storyId);
-            return {
-              key,
-              exists: true as const,
-              etag: value.etag,
-              sha256: createHash('sha256').update(value.bytes).digest('hex'),
-              releaseId: pointer.releaseId,
-              publishedAt: pointer.publishedAt,
-            };
-          };
-          const prefix = `vn/previews/${previewId}/stories/${storyId}/`;
-          const previewKeys: Array<{ key: string; etag: string }> = [];
-          for await (const item of store.list(prefix)) previewKeys.push({ key: item.key, etag: item.etag });
-          previewKeys.sort((left, right) => left.key.localeCompare(right.key));
-          const evidence = {
-            schemaVersion: 1,
-            label,
-            storyId,
-            previewId,
-            productionPointer: await snapshot({ kind: 'production' }),
-            previewPointer: await snapshot({ kind: 'preview', previewId }),
-            previewKeys,
-          };
-          await Bun.write(`.tmp/evidence/${label}.json`, `${JSON.stringify(evidence, null, 2)}\n`);
-          await store.close();
-          EOF
+          bun packages/infra-cloudflare/src/publisher/r2-gate-fixtures.ts .tmp
           cat > .tmp/assert-pointer-only.ts <<'EOF'
           const [beforePath, afterPath, outputPath, previewId] = process.argv.slice(2);
           if (!beforePath || !afterPath || !outputPath || !previewId || !process.env.STORY_ID) throw new Error('assert arguments missing');
@@ -146,7 +96,7 @@ jobs:
           fi
 
       - name: Capture initial pointer evidence
-        run: bun .tmp/capture-state.ts initial "$PREVIEW_ID"
+        run: bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts initial "$PREVIEW_ID"
 
       - name: Publish production fixture candidate without activation
         shell: bash
@@ -191,7 +141,7 @@ jobs:
             --expect-manifest-sha256 "$MANIFEST_A" \
             --destination r2 \
             --json > .tmp/reports/mirror-a.json
-          bun .tmp/capture-state.ts before-activate-a "$PREVIEW_ID"
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-activate-a "$PREVIEW_ID"
 
       - name: Activate retained candidate A in preview
         shell: bash
@@ -204,7 +154,7 @@ jobs:
             --expect-manifest-sha256 "$MANIFEST_A" \
             --destination r2 \
             --json > .tmp/reports/activate-a.json
-          bun .tmp/capture-state.ts after-activate-a "$PREVIEW_ID"
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts after-activate-a "$PREVIEW_ID"
           bun .tmp/assert-pointer-only.ts \
             .tmp/evidence/before-activate-a.json \
             .tmp/evidence/after-activate-a.json \
@@ -254,7 +204,7 @@ jobs:
             --expect-manifest-sha256 "$MANIFEST_B" \
             --destination r2 \
             --json > .tmp/reports/mirror-b.json
-          bun .tmp/capture-state.ts before-activate-b "$PREVIEW_ID"
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-activate-b "$PREVIEW_ID"
 
       - name: Source-independent activation of controlled revision
         shell: bash
@@ -267,7 +217,7 @@ jobs:
             --expect-manifest-sha256 "$MANIFEST_B" \
             --destination r2 \
             --json > .tmp/reports/activate-b.json
-          bun .tmp/capture-state.ts after-activate-b "$PREVIEW_ID"
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts after-activate-b "$PREVIEW_ID"
           bun .tmp/assert-pointer-only.ts \
             .tmp/evidence/before-activate-b.json \
             .tmp/evidence/after-activate-b.json \
@@ -297,7 +247,7 @@ jobs:
       - name: Roll back preview to retained candidate A
         shell: bash
         run: |
-          bun .tmp/capture-state.ts before-rollback "$PREVIEW_ID"
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-rollback "$PREVIEW_ID"
           bun --filter @aquila/infra-cloudflare assets -- rollback \
             --story "$STORY_ID" \
             --environment preview \
@@ -306,7 +256,7 @@ jobs:
             --expect-manifest-sha256 "$MANIFEST_A" \
             --destination r2 \
             --json > .tmp/reports/rollback.json
-          bun .tmp/capture-state.ts after-rollback "$PREVIEW_ID"
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts after-rollback "$PREVIEW_ID"
           bun .tmp/assert-pointer-only.ts \
             .tmp/evidence/before-rollback.json \
             .tmp/evidence/after-rollback.json \
@@ -324,12 +274,12 @@ jobs:
         run: |
           mkdir -p .tmp/evidence
           printf '%s\n' '{"schemaVersion":1,"status":"error","code":"production-pointer-proof-unavailable"}' > .tmp/evidence/production-pointer-proof.json
-          if ! command -v bun >/dev/null 2>&1 || [[ ! -f .tmp/capture-state.ts ]]; then
+          if ! command -v bun >/dev/null 2>&1 || [[ ! -f packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts ]]; then
             exit 1
           fi
           preview_id="${PREVIEW_ID:-hpa-230-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}}"
           set +e
-          bun .tmp/capture-state.ts final "$preview_id" >/dev/null 2>&1
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts final "$preview_id" >/dev/null 2>&1
           capture_exit=$?
           set -e
           if [[ "$capture_exit" -ne 0 ]]; then

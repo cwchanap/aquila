@@ -242,7 +242,7 @@ export class R2DeliveryStore implements DeliveryStore {
         }
     }
 
-    async *list(prefix: string): AsyncIterable<StoredObjectMetadata> {
+    async *listKeys(prefix: string): AsyncIterable<string> {
         let continuationToken: string | undefined;
         const seenContinuationTokens = new Set<string>();
         do {
@@ -267,8 +267,7 @@ export class R2DeliveryStore implements DeliveryStore {
                         { context: { prefix } }
                     );
                 }
-                const metadata = await this.stat(listed.Key);
-                if (metadata !== null) yield metadata;
+                yield listed.Key;
             }
 
             if (output.IsTruncated !== true) return;
@@ -288,6 +287,13 @@ export class R2DeliveryStore implements DeliveryStore {
             seenContinuationTokens.add(nextContinuationToken);
             continuationToken = nextContinuationToken;
         } while (true);
+    }
+
+    async *list(prefix: string): AsyncIterable<StoredObjectMetadata> {
+        for await (const key of this.listKeys(prefix)) {
+            const metadata = await this.stat(key);
+            if (metadata !== null) yield metadata;
+        }
     }
 
     async close(): Promise<void> {

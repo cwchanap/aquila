@@ -254,6 +254,10 @@ class RecordingStore implements DeliveryStore {
         return this.base.list(prefix);
     }
 
+    listKeys(prefix: string): AsyncIterable<string> {
+        return this.base.listKeys(prefix);
+    }
+
     async close(): Promise<void> {}
 }
 

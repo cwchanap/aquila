@@ -1,4 +1,9 @@
 import sharp from 'sharp';
+import {
+    GetObjectCommand,
+    HeadObjectCommand,
+    ListObjectsV2Command,
+} from '@aws-sdk/client-s3';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
@@ -24,6 +29,7 @@ import type {
     StoredObjectMetadata,
 } from '../stores/delivery-store';
 import type { EncodedAsset, EncodedVariant, PreparedRelease } from '../types';
+import { R2DeliveryStore } from '../stores/r2-delivery-store';
 
 const STORY_ID = 'example_story';
 const PREVIEW_TARGET = {
@@ -162,6 +168,8 @@ class HistoryStore implements DeliveryStore {
     readonly pointerWrites: PointerWriteRequest[] = [];
     listedKeys: string[];
     listFailure?: unknown;
+    listKeysFailure?: unknown;
+    statFailure?: unknown;
     beforeCompareAndSwap?: (
         store: HistoryStore,
         request: PointerWriteRequest,
@@ -202,6 +210,7 @@ class HistoryStore implements DeliveryStore {
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
         this.events.push(`stat:${key}`);
+        if (this.statFailure !== undefined) throw this.statFailure;
         const object = this.objects.get(key);
         return object === undefined ? null : metadata(object);
     }
@@ -267,6 +276,12 @@ class HistoryStore implements DeliveryStore {
                   }
                 : metadata(object);
         }
+    }
+
+    async *listKeys(prefix: string): AsyncIterable<string> {
+        this.events.push(`list-keys:${prefix}`);
+        if (this.listKeysFailure !== undefined) throw this.listKeysFailure;
+        yield* this.listedKeys;
     }
 
     async close(): Promise<void> {}
@@ -411,6 +426,10 @@ describe('listReleases', () => {
             `${prefix}not-a-release/runtime-manifest.json`,
             `vn/previews/release-history/stories/example_story/releases-lookalike/${releaseId}/runtime-manifest.json`,
         ];
+        store.listFailure = new PublisherError(
+            'integrity',
+            'metadata-deficient lookalike was hydrated'
+        );
 
         const summaries = await listReleases({
             store,
@@ -430,9 +449,98 @@ describe('listReleases', () => {
                 active: false,
             }),
         ]);
-        expect(store.events[0]).toBe(`list:${prefix}`);
+        expect(store.events[0]).toBe(`list-keys:${prefix}`);
         expect(store.events.join('\n')).not.toContain('releases-lookalike');
         expect(store.events.join('\n')).not.toContain('//runtime-manifest');
+    });
+
+    it('filters an R2 lookalike before any HEAD or body read', async () => {
+        const manifestPath = getReleaseManifestPath(
+            STORY_ID,
+            previewReleaseA.releaseId,
+            PREVIEW_TARGET
+        );
+        const lookalikePath = `${manifestPath}.metadata`;
+        const pointerPath = getCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
+        const commands: Array<
+            GetObjectCommand | HeadObjectCommand | ListObjectsV2Command
+        > = [];
+        const store = new R2DeliveryStore({
+            bucket: 'delivery',
+            client: {
+                async send(command) {
+                    if (
+                        command instanceof GetObjectCommand ||
+                        command instanceof HeadObjectCommand ||
+                        command instanceof ListObjectsV2Command
+                    ) {
+                        commands.push(command);
+                    }
+                    if (command instanceof ListObjectsV2Command) {
+                        return {
+                            IsTruncated: false,
+                            Contents: [
+                                { Key: manifestPath },
+                                { Key: lookalikePath },
+                            ],
+                        };
+                    }
+                    if (command instanceof HeadObjectCommand) {
+                        throw new Error('release listing must not issue HEAD');
+                    }
+                    if (command instanceof GetObjectCommand) {
+                        if (command.input.Key === pointerPath) {
+                            throw { $metadata: { httpStatusCode: 404 } };
+                        }
+                        if (command.input.Key !== manifestPath) {
+                            throw new Error(
+                                'rejected lookalike must not be read'
+                            );
+                        }
+                        return {
+                            ETag: '"manifest"',
+                            ContentLength:
+                                previewReleaseA.manifestBytes.byteLength,
+                            ContentType: 'application/json',
+                            CacheControl: IMMUTABLE_CACHE,
+                            Metadata: {},
+                            Body: {
+                                transformToByteArray: async () =>
+                                    Uint8Array.from(
+                                        previewReleaseA.manifestBytes
+                                    ),
+                            },
+                        };
+                    }
+                    throw new Error('unexpected R2 command');
+                },
+                destroy() {},
+            },
+        });
+
+        await expect(
+            listReleases({
+                store,
+                storyId: STORY_ID,
+                target: PREVIEW_TARGET,
+                deep: false,
+            })
+        ).resolves.toEqual([
+            expect.objectContaining({
+                releaseId: previewReleaseA.releaseId,
+                shallowVerified: true,
+            }),
+        ]);
+        expect(
+            commands.filter(command => command instanceof HeadObjectCommand)
+        ).toEqual([]);
+        expect(
+            commands.some(
+                command =>
+                    command instanceof GetObjectCommand &&
+                    command.input.Key === lookalikePath
+            )
+        ).toBe(false);
     });
 
     it('shallow-verifies manifest structure and metadata without reading referenced objects', async () => {
@@ -550,14 +658,14 @@ describe('listReleases', () => {
             { completed: 2, total: 2 },
         ]);
         expect(
-            store.events.filter(event => event.startsWith('list:'))
+            store.events.filter(event => event.startsWith('list-keys:'))
         ).toHaveLength(1);
     });
 
     it('sanitizes list and pointer transport failures', async () => {
         const store = new HistoryStore(previewReleaseA);
         const secret = 'Bearer private-token /Users/operator/private';
-        store.listFailure = Object.assign(new Error(secret), {
+        store.listKeysFailure = Object.assign(new Error(secret), {
             request: { authorization: secret },
         });
 
@@ -751,6 +859,75 @@ describe('rollbackRelease', () => {
             ).toBe(false);
         }
     );
+
+    it('rejects a malformed release ID as exit class 5 before store access', async () => {
+        const store = new HistoryStore(previewReleaseA);
+
+        let thrown: unknown;
+        try {
+            await rollbackRelease({
+                store,
+                storyId: STORY_ID,
+                target: PREVIEW_TARGET,
+                releaseId: 'not-a-release-id',
+            });
+        } catch (error) {
+            thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(PublisherError);
+        expect(thrown).toMatchObject({ code: 'activation-target' });
+        expect(publisherExitCode(thrown)).toBe(5);
+        expect(store.events).toEqual([]);
+        expect(store.pointerWrites).toEqual([]);
+    });
+
+    it('maps stat-time manifest integrity failure to exit class 5 without pointer access', async () => {
+        const store = new HistoryStore(previewReleaseA);
+        store.statFailure = new PublisherError(
+            'integrity',
+            'Invalid R2 object metadata'
+        );
+
+        let thrown: unknown;
+        try {
+            await rollback(store, previewReleaseA);
+        } catch (error) {
+            thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(PublisherError);
+        expect(thrown).toMatchObject({ code: 'activation-target' });
+        expect(publisherExitCode(thrown)).toBe(5);
+        expect(
+            store.events.some(event => event.startsWith('read-pointer:'))
+        ).toBe(false);
+        expect(store.pointerWrites).toEqual([]);
+    });
+
+    it('keeps stat-time transport failure sanitized as storage exit class 3', async () => {
+        const store = new HistoryStore(previewReleaseA);
+        const secret = 'Bearer private-token /Users/operator/private';
+        store.statFailure = Object.assign(new Error(secret), {
+            request: { authorization: secret },
+        });
+
+        let thrown: unknown;
+        try {
+            await rollback(store, previewReleaseA);
+        } catch (error) {
+            thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(PublisherError);
+        expect(thrown).toMatchObject({ code: 'storage' });
+        expect(publisherExitCode(thrown)).toBe(3);
+        expect(JSON.stringify(thrown)).not.toContain(secret);
+        expect(
+            store.events.some(event => event.startsWith('read-pointer:'))
+        ).toBe(false);
+        expect(store.pointerWrites).toEqual([]);
+    });
 
     it('reports no-op and conflict distinctly from successful rollback', async () => {
         const active = new HistoryStore(previewReleaseA);

@@ -436,6 +436,53 @@ export class LocalDeliveryStore implements DeliveryStore {
         }
     }
 
+    async *listKeys(prefix: string): AsyncIterable<string> {
+        this.assertSafePrefix(prefix);
+        const finalSeparator = prefix.lastIndexOf('/');
+        const parentKey =
+            finalSeparator < 0 ? '' : prefix.slice(0, finalSeparator);
+        const startPath =
+            parentKey === ''
+                ? this.root
+                : resolve(this.root, ...parentKey.split('/'));
+        const pending = [startPath];
+
+        while (pending.length > 0) {
+            const directory = pending.pop()!;
+            let entries;
+            try {
+                entries = await readdir(directory, { withFileTypes: true });
+            } catch (error) {
+                if (isNodeError(error, 'ENOENT')) continue;
+                throw this.storageError(
+                    'Unable to list local object keys',
+                    prefix,
+                    error
+                );
+            }
+            entries.sort((left, right) =>
+                left.name < right.name ? 1 : left.name > right.name ? -1 : 0
+            );
+            for (const entry of entries) {
+                if (
+                    directory === this.root &&
+                    (entry.name === METADATA_DIRECTORY ||
+                        entry.name === TRANSACTION_DIRECTORY)
+                ) {
+                    continue;
+                }
+                const path = resolve(directory, entry.name);
+                if (entry.isDirectory()) {
+                    pending.push(path);
+                    continue;
+                }
+                if (!entry.isFile()) continue;
+                const key = relative(this.root, path).split(sep).join('/');
+                if (key.startsWith(prefix)) yield key;
+            }
+        }
+    }
+
     async close(): Promise<void> {}
 
     private bodyPath(key: string): string {

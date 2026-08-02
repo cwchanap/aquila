@@ -28,6 +28,34 @@ afterEach(() => {
 });
 
 describe('R2DeliveryStore', () => {
+    it('lists raw keys without hydrating metadata for rejected lookalikes', async () => {
+        const validKey =
+            'vn/stories/example/releases/sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/runtime-manifest.json';
+        const lookalikeKey = `${validKey}.metadata`;
+        const sent: R2Command[] = [];
+        const store = fakeStore(async command => {
+            sent.push(command);
+            if (command instanceof ListObjectsV2Command) {
+                return {
+                    IsTruncated: false,
+                    Contents: [{ Key: validKey }, { Key: lookalikeKey }],
+                };
+            }
+            throw new Error('raw key enumeration must not hydrate metadata');
+        });
+
+        const keys = [];
+        for await (const key of store.listKeys(
+            'vn/stories/example/releases/'
+        )) {
+            keys.push(key);
+        }
+
+        expect(keys).toEqual([validKey, lookalikeKey]);
+        expect(sent).toHaveLength(1);
+        expect(sent[0]).toBeInstanceOf(ListObjectsV2Command);
+    });
+
     it('uses typed IfNoneMatch for immutable creation', async () => {
         const sent: R2Command[] = [];
         const store = fakeStore(async command => {

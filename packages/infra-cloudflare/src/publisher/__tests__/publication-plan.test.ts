@@ -201,6 +201,7 @@ class NoWriteStore implements DeliveryStore {
         throw new Error('planner attempted pointer write');
     }
 
+    async *listKeys(): AsyncIterable<string> {}
     async *list(): AsyncIterable<StoredObjectMetadata> {}
     async close(): Promise<void> {}
 }

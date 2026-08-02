@@ -51,6 +51,8 @@ export interface DeliveryStore {
     compareAndSwapPointer(
         request: PointerWriteRequest
     ): Promise<{ status: 'written' | 'precondition-failed'; etag?: string }>;
+    /** Enumerates raw keys without reading or trusting object metadata. */
+    listKeys(prefix: string): AsyncIterable<string>;
     list(prefix: string): AsyncIterable<StoredObjectMetadata>;
     close(): Promise<void>;
 }

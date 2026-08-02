@@ -233,6 +233,10 @@ class ActivationStore implements DeliveryStore {
         return { status: 'written', etag };
     }
 
+    listKeys(): AsyncIterable<string> {
+        throw new Error('activation must not list storage');
+    }
+
     list(): AsyncIterable<StoredObjectMetadata> {
         throw new Error('activation must not list storage');
     }

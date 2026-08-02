@@ -223,6 +223,7 @@ function decorateStore(
         inspectPointer: key => base.inspectPointer(key),
         readPointer: key => base.readPointer(key),
         compareAndSwapPointer: request => base.compareAndSwapPointer(request),
+        listKeys: prefix => base.listKeys(prefix),
         list: prefix => base.list(prefix),
         close: async () => {},
     };
@@ -567,6 +568,7 @@ describe('candidate verifier', () => {
                 readPointer: key => base.readPointer(key),
                 compareAndSwapPointer: request =>
                     base.compareAndSwapPointer(request),
+                listKeys: prefix => base.listKeys(prefix),
                 list: prefix => base.list(prefix),
                 close: async () => {},
             };

@@ -78,11 +78,11 @@ function barrierStore(
         read: key => store.read(key),
         createImmutable: async (request: ImmutableCreateRequest) => {
             immutableCreateCount += 1;
-            if (immutableCreateCount === 2) {
+            if (immutableCreateCount === 1) {
                 // Publication planning, including its advisory pointer read,
-                // precedes every immutable create. Pausing the second create
-                // therefore leaves one completed upload and a deterministic
-                // window for the real activation CLI to drift the pointer.
+                // precedes every immutable create. Pausing the first actual
+                // create therefore works even when every object is reused and
+                // only the run-specific preview manifest needs creating.
                 reached();
                 await released;
             }

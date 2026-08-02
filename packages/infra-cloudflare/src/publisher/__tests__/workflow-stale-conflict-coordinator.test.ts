@@ -133,7 +133,7 @@ const immutable = (key: string): ImmutableCreateRequest => ({
 });
 
 describe('workflow stale-conflict coordinator', () => {
-    it('drifts through the activation CLI while publish is blocked at its second immutable create', async () => {
+    it('drifts through the activation CLI while publish is blocked at its first immutable create', async () => {
         const events: string[] = [];
         let drifted = false;
         const setup = options(async command => {
@@ -158,13 +158,52 @@ describe('workflow stale-conflict coordinator', () => {
             counts: { pointersWritten: 0 },
         });
         expect(events).toEqual([
-            'publish:create:vn/objects/one',
             'activation:run',
             'activation:close',
+            'publish:create:vn/objects/one',
             'publish:create:vn/objects/two',
             'publish:resumed',
             'publish:close',
         ]);
+        expect(setup.publish.closeCount()).toBe(1);
+        expect(setup.activation.closeCount()).toBe(1);
+    });
+
+    it('coordinates drift when reused objects leave only the preview manifest to create', async () => {
+        const events: string[] = [];
+        let drifted = false;
+        const setup = options(async command => {
+            if (command.command === 'activate') {
+                events.push('activation:run');
+                drifted = true;
+                return report('activate', 'success');
+            }
+            await command.store.createImmutable(
+                immutable(
+                    `vn/previews/gate-123/stories/example_story/releases/sha256-${'c'.repeat(64)}/runtime-manifest.json`
+                )
+            );
+            events.push('publish:resumed');
+            return report('publish', drifted ? 'conflict' : 'success');
+        }, events);
+
+        const result = await coordinateStaleConflict(setup.value);
+
+        expect(result.publishExit).toBe(4);
+        expect(result.activationExit).toBe(0);
+        expect(result.issue).toBeUndefined();
+        expect(JSON.parse(result.publishStdout)).toMatchObject({
+            status: 'conflict',
+            counts: { pointersWritten: 0 },
+        });
+        expect(events).toEqual([
+            'activation:run',
+            'activation:close',
+            `publish:create:vn/previews/gate-123/stories/example_story/releases/sha256-${'c'.repeat(64)}/runtime-manifest.json`,
+            'publish:resumed',
+            'publish:close',
+        ]);
+        expect(events.some(event => event.includes('/objects/'))).toBe(false);
         expect(setup.publish.closeCount()).toBe(1);
         expect(setup.activation.closeCount()).toBe(1);
     });

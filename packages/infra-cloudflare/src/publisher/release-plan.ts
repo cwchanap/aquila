@@ -35,8 +35,23 @@ export async function resolveReleasePlanPath(
         try {
             await access(previewPath, constants.F_OK);
             return previewPath;
-        } catch {
-            // A preview companion is optional; production is the fallback.
+        } catch (error) {
+            // Only an absent preview companion (ENOENT) is optional. Other
+            // filesystem errors (EACCES, EIO, ELOOP, ...) must surface as a
+            // sanitized input error; silently falling back to the production
+            // plan would publish under a different classification than the
+            // operator intended.
+            const code =
+                typeof error === 'object' && error !== null && 'code' in error
+                    ? (error as { code?: unknown }).code
+                    : undefined;
+            if (code !== 'ENOENT') {
+                throw new PublisherError(
+                    'input',
+                    'Unable to verify preview release plan',
+                    { cause: error, context: { source: 'release-plan' } }
+                );
+            }
         }
     }
     return join(plansRoot, `${options.storyId}.json`);

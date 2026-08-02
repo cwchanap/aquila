@@ -82,7 +82,7 @@ export async function resolveSourceRoot(
         return await realpath(selected);
     } catch {
         throw new PublisherError('source', 'Unable to resolve source root', {
-            context: { source: 'asset-source-root' },
+            context: { source: 'asset-source-root', stage: 'source' },
         });
     }
 }
@@ -97,7 +97,7 @@ function safeSourceContext(
 
 function sourceError(message: string, sourcePath: string): PublisherError {
     return new PublisherError('source', message, {
-        context: safeSourceContext(sourcePath),
+        context: { ...safeSourceContext(sourcePath), stage: 'source' },
     });
 }
 
@@ -227,7 +227,7 @@ export async function resolveIncludedSources(
         root = await realpath(options.sourceRoot);
     } catch {
         throw new PublisherError('source', 'Unable to resolve source root', {
-            context: { source: 'asset-source-root' },
+            context: { source: 'asset-source-root', stage: 'source' },
         });
     }
     const sources = await resolveIncludedSourcesBounded(

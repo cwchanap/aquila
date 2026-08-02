@@ -94,7 +94,7 @@ export function evaluateSourceDiagnostics(
 ): PublisherDiagnosticV1[] {
     if (!isSafeRelativePath(input.sourcePath)) {
         throw new PublisherError('source', 'Source path is unsafe', {
-            context: { input: 'sourcePath' },
+            context: { input: 'sourcePath', stage: 'source' },
         });
     }
     // Dimensions are orientation-normalized by the source loader, so a portrait

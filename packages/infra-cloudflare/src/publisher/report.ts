@@ -104,9 +104,11 @@ const DIAGNOSTIC_CODES = new Set([
     'clock-skew',
     'non-monotonic-pointer-time',
     'source/aspect-ratio',
+    'source/minimum-dimension',
     'coverage/source-path-mismatch',
     'coverage/missing-source',
     'coverage/activation-not-allowed',
+    'coverage/story-mismatch',
     'coverage/validation-failed',
     'pointer-invalid',
 ]);
@@ -160,7 +162,7 @@ function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function safeStage(value: string): string {
+export function safeStage(value: string): string {
     return PUBLISHER_STAGES.has(value) ? value : 'publisher';
 }
 
@@ -196,6 +198,9 @@ function safeDiagnosticMessage(
 ): string {
     if (code === 'source/aspect-ratio' && assetType !== undefined) {
         return `Source aspect ratio differs from the ${assetType} policy`;
+    }
+    if (code === 'source/minimum-dimension' && assetType !== undefined) {
+        return `Source dimensions are below the ${assetType} minimum`;
     }
     if (code === 'pointer-invalid') {
         return 'Current active-release pointer is invalid; every release is reported as inactive';

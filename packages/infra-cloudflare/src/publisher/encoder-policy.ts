@@ -39,6 +39,13 @@ function preferredAspect(assetType: 'background' | 'portrait'): number {
     return preferred.width / preferred.height;
 }
 
+function minimumSource(assetType: 'background' | 'portrait'): {
+    width: number;
+    height: number;
+} {
+    return RUNTIME_ASSET_DIMENSION_POLICY[assetType].minimumSource;
+}
+
 export function sourceAspectDiagnostic(
     assetType: 'background' | 'portrait',
     width: number,
@@ -59,6 +66,23 @@ export function sourceAspectDiagnostic(
     };
 }
 
+export function sourceMinimumDiagnostic(
+    assetType: 'background' | 'portrait',
+    width: number,
+    height: number
+): PublisherDiagnosticV1 | undefined {
+    const minimum = minimumSource(assetType);
+    if (width >= minimum.width && height >= minimum.height) {
+        return undefined;
+    }
+    return {
+        code: 'source/minimum-dimension',
+        stage: 'source',
+        message: `Source dimensions are below the ${assetType} minimum`,
+        assetType,
+    };
+}
+
 export interface SourceDiagnosticInput {
     identity: { type: 'background' | 'portrait'; key: string };
     sourcePath: string;
@@ -73,20 +97,32 @@ export function evaluateSourceDiagnostics(
             context: { input: 'sourcePath' },
         });
     }
-    const diagnostic = sourceAspectDiagnostic(
-        input.identity.type,
-        input.metadata.width,
-        input.metadata.height
-    );
-    return diagnostic === undefined
-        ? []
-        : [
-              {
-                  ...diagnostic,
-                  identity: `${input.identity.type}:${input.identity.key}`,
-                  safePath: input.sourcePath,
-              },
-          ];
+    // Dimensions are orientation-normalized by the source loader, so a portrait
+    // stored with EXIF orientation 6 is evaluated as a portrait. Both
+    // diagnostics are independent: an undersized source can also have a
+    // correct aspect ratio, and a correctly sized source can have a wrong one.
+    const candidates = [
+        sourceAspectDiagnostic(
+            input.identity.type,
+            input.metadata.width,
+            input.metadata.height
+        ),
+        sourceMinimumDiagnostic(
+            input.identity.type,
+            input.metadata.width,
+            input.metadata.height
+        ),
+    ];
+    return candidates
+        .filter(
+            (diagnostic): diagnostic is PublisherDiagnosticV1 =>
+                diagnostic !== undefined
+        )
+        .map(diagnostic => ({
+            ...diagnostic,
+            identity: `${input.identity.type}:${input.identity.key}`,
+            safePath: input.sourcePath,
+        }));
 }
 
 function compareText(left: string, right: string): number {

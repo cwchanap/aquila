@@ -128,4 +128,26 @@ describe('encodeAsset', () => {
             })
         ).rejects.toBeInstanceOf(PublisherError);
     });
+
+    it('classifies a Sharp pipeline failure as an encoding error', async () => {
+        // Corrupt bytes that sharp cannot decode trigger a libvips failure
+        // inside the encoding pipeline. Without sanitization this escapes as
+        // a raw error and the CLI classifies it as a storage failure (exit
+        // 3); it must surface as a deterministic encoding failure (exit 2).
+        const corruptBytes = Buffer.from(
+            'not an image, just text bytes that libvips cannot decode'
+        );
+
+        const result = encodeAsset({
+            identity: { type: 'background', key: 'chapter_1/bg' },
+            sourcePath: 'example/backgrounds/chapter_1/bg.png',
+            bytes: corruptBytes,
+        });
+
+        await expect(result).rejects.toBeInstanceOf(PublisherError);
+        await expect(result).rejects.toMatchObject({
+            code: 'encoding',
+            context: { stage: 'encode' },
+        });
+    });
 });

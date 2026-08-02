@@ -27,9 +27,35 @@ export interface ResolveIncludedSourcesOptions {
 
 export interface ResolvedSourceMetadata {
     format: 'png' | 'jpeg' | 'webp';
+    // Visual dimensions after EXIF orientation is applied (the dimensions the
+    // encoder's `.rotate()` produces). Sharp's `metadata()` reports the
+    // stored dimensions, which for EXIF orientations 5–8 are transposed
+    // relative to the displayed image; evaluating those raw values would
+    // classify a portrait as landscape and emit a wrong aspect warning.
     width: number;
     height: number;
     hasAlpha: boolean;
+}
+
+/**
+ * Returns the displayed dimensions for an EXIF orientation tag. Orientations
+ * 5–8 (mirror+rotate / rotate) transpose the stored width and height; 1–4
+ * leave them in place. Mirrors (2, 4, 5, 7) do not change dimensions.
+ */
+function orientationNormalizedDimensions(
+    width: number,
+    height: number,
+    orientation: number | undefined
+): { width: number; height: number } {
+    if (
+        orientation === 5 ||
+        orientation === 6 ||
+        orientation === 7 ||
+        orientation === 8
+    ) {
+        return { width: height, height: width };
+    }
+    return { width, height };
 }
 
 export interface ResolvedSource {
@@ -158,8 +184,11 @@ async function resolveIncludedSource(
         bytes,
         metadata: {
             format: metadata.format,
-            width: metadata.width,
-            height: metadata.height,
+            ...orientationNormalizedDimensions(
+                metadata.width,
+                metadata.height,
+                metadata.orientation
+            ),
             hasAlpha: metadata.hasAlpha ?? false,
         },
     };

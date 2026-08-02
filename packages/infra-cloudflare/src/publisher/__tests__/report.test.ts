@@ -72,6 +72,22 @@ describe('publisher reports', () => {
         };
         unsafe.prompt = 'a secret authoring prompt';
         unsafe.repositoryRoot = '/Users/alice/private/aquila';
+        unsafe.encoderFingerprint = {
+            schemaVersion: 1,
+            policyId: 'aquila-vn-encoder-v1',
+            sharpVersion: 'private-bucket',
+            libvipsVersion: 'Authorization-secret',
+            platform: 'private-provider' as NodeJS.Platform,
+            arch: 'request-secret',
+        };
+        unsafe.actions = [
+            {
+                stage: 'private-provider',
+                kind: 'include',
+                identity: 'request:provider-private-object',
+                key: 'private-bucket/request.json',
+            },
+        ];
         unsafe.coverage = {
             storyId: 'example_story',
             byType: {
@@ -106,14 +122,15 @@ describe('publisher reports', () => {
         } as PublisherReportV1['coverage'];
         unsafe.warnings = [
             {
-                code: 'source/problem',
-                stage: 'source',
+                code: 'Authorization: Bearer private-token',
+                stage: 'aws-s3-private-provider',
                 message:
-                    'Unable to read /Users/alice/private/image.png; paths=[/opt/aquila/secret.png]; uri=file:///Volumes/team/private.png',
-                safePath: '/Users/alice/private/image.png',
+                    'private authoring prompt Authorization: Bearer private-token bucket=private-bucket request={secret} path="/Volumes/My Team/private image.png" uri=file:///Volumes/team/private.png',
+                identity: 'request:provider-private-object',
+                safePath: '/Volumes/My Team/private image.png',
                 sampleIdentities: [
-                    '/Volumes/team/private.png',
-                    '\\\\server\\share\\private.png',
+                    'Authorization: Bearer sample-token',
+                    'prompt:private-story-text',
                 ],
             },
         ];
@@ -127,8 +144,17 @@ describe('publisher reports', () => {
         expect(json).not.toContain('/Users/');
         expect(json).not.toContain('/opt/');
         expect(json).not.toContain('/Volumes/');
-        expect(json).not.toContain('\\\\server');
         expect(json).not.toContain('file://');
+        expect(json).not.toContain('Authorization');
+        expect(json).not.toContain('private-token');
+        expect(json).not.toContain('sample-token');
+        expect(json).not.toContain('private-bucket');
+        expect(json).not.toContain('request={secret}');
+        expect(json).not.toContain('private authoring prompt');
+        expect(json).not.toContain('private-story-text');
+        expect(json).not.toContain('provider-private-object');
+        expect(json).not.toContain('private-provider');
+        expect(json).not.toContain('request-secret');
         expect(json.endsWith('\n')).toBe(true);
     });
 
@@ -147,12 +173,10 @@ describe('publisher reports', () => {
             completed: 2,
             total: 3,
             message:
-                'encoded background:chapter_1/room from /opt/aquila/room.png',
+                'Authorization: Bearer progress-token provider=aws bucket=private-bucket prompt=private-text request={raw} path="/Volumes/My Team/private image.png"',
         });
 
-        expect(stderr).toBe(
-            'encode 2/3 encoded background:chapter_1/room from [redacted-path]\n'
-        );
+        expect(stderr).toBe('encode 2/3\n');
         expect(stdout).toBe('');
         expect(renderHumanReport(report())).toContain('status: success');
         stdout = '';
@@ -181,5 +205,98 @@ describe('publisher reports', () => {
                 sampleSafePaths: ['o.png', 'p.png', 'q.png', 'r.png', 's.png'],
             }),
         ]);
+    });
+
+    it('groups equivalent diagnostics only by code and asset type', () => {
+        const input = [
+            {
+                code: 'source/aspect-ratio',
+                stage: 'source',
+                message: 'second message with private request text',
+                assetType: 'background' as const,
+                identity: 'background:b',
+            },
+            {
+                code: 'source/aspect-ratio',
+                stage: 'encode',
+                message: 'first message with Authorization token',
+                assetType: 'background' as const,
+                identity: 'background:a',
+            },
+        ];
+
+        const forward = normalizeReportDiagnostics(input);
+        const reverse = normalizeReportDiagnostics([...input].reverse());
+
+        expect(forward).toEqual(reverse);
+        expect(forward).toEqual([
+            expect.objectContaining({
+                code: 'source/aspect-ratio',
+                stage: 'encode',
+                message:
+                    'Source aspect ratio differs from the background policy',
+                assetType: 'background',
+                count: 2,
+                sampleIdentities: ['background:a', 'background:b'],
+            }),
+        ]);
+    });
+
+    it('preserves canonical CJK and spaced logical identities and sections', () => {
+        const canonicalIdentity = 'background:第一章/鏡 房/夜';
+        const input = report();
+        input.actions = [
+            {
+                stage: 'input',
+                kind: 'include',
+                identity: canonicalIdentity,
+            },
+        ];
+        input.warnings = [
+            {
+                code: 'source/aspect-ratio',
+                stage: 'source',
+                message: 'untrusted message is replaced',
+                assetType: 'background',
+                identity: canonicalIdentity,
+            },
+        ];
+        input.coverage = {
+            storyId: 'example_story',
+            byType: {
+                background: {
+                    total: 1,
+                    included: 1,
+                    omitted: 0,
+                    unclassified: 0,
+                },
+                portrait: {
+                    total: 0,
+                    included: 0,
+                    omitted: 0,
+                    unclassified: 0,
+                },
+            },
+            bySection: {
+                '第一章/鏡 房/夜': {
+                    total: 1,
+                    included: 1,
+                    omitted: 0,
+                    unclassified: 0,
+                },
+            },
+            totals: {
+                total: 1,
+                included: 1,
+                omitted: 0,
+                unclassified: 0,
+            },
+        };
+
+        const json = renderJsonReport(input);
+
+        expect(json).toContain(canonicalIdentity);
+        expect(json).toContain('第一章/鏡 房/夜');
+        expect(json).not.toContain('untrusted message is replaced');
     });
 });

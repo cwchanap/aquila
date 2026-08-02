@@ -1,5 +1,13 @@
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import {
+    mkdtemp,
+    mkdir,
+    readFile,
+    readdir,
+    rm,
+    writeFile,
+} from 'node:fs/promises';
+import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
@@ -31,6 +39,37 @@ const target: PublicationTarget = { kind: 'preview', previewId: 'hpa-230' };
 const storyId = 'example_story';
 const immutableCache =
     RUNTIME_ASSET_CACHE_POLICY.immutableRelease.responseCacheControl;
+
+function sha256(value: string | Uint8Array): string {
+    return createHash('sha256').update(value).digest('hex');
+}
+
+function sidecarPath(root: string, key: string): string {
+    return join(root, '.publisher-metadata', `${sha256(key)}.json`);
+}
+
+async function snapshotFiles(
+    root: string,
+    relative = ''
+): Promise<Record<string, string>> {
+    const result: Record<string, string> = {};
+    const entries = await readdir(join(root, relative), {
+        withFileTypes: true,
+    });
+    for (const entry of entries.sort((left, right) =>
+        left.name < right.name ? -1 : left.name > right.name ? 1 : 0
+    )) {
+        const path = join(relative, entry.name);
+        if (entry.isDirectory()) {
+            Object.assign(result, await snapshotFiles(root, path));
+        } else {
+            result[path] = Buffer.from(
+                await readFile(join(root, path))
+            ).toString('base64');
+        }
+    }
+    return result;
+}
 
 afterEach(async () => {
     await Promise.all(
@@ -146,6 +185,11 @@ class NoWriteStore implements DeliveryStore {
     }
 
     async readPointer(key: string): Promise<PointerSnapshot> {
+        this.writeAttempts.push(key);
+        throw new Error('planner attempted recovery-capable pointer read');
+    }
+
+    async inspectPointer(key: string): Promise<PointerSnapshot> {
         this.pointerReads.push(key);
         return { exists: false };
     }
@@ -290,6 +334,93 @@ describe('buildPublicationPlan', () => {
             objectsReused: 2,
             manifestsCreated: 1,
         });
+    });
+
+    it('leaves a pending local pointer transaction and lock state byte-for-byte unchanged', async () => {
+        const paths = await fixture();
+        const destinationRoot = await mkdtemp(
+            join(tmpdir(), 'aquila-plan-pending-pointer-')
+        );
+        roots.push(destinationRoot);
+        let directoryFlushes = 0;
+        const store = new LocalDeliveryStore(destinationRoot, {
+            afterDirectoryFlush: async () => {
+                directoryFlushes += 1;
+            },
+        });
+        const initial = await planWith(store, paths);
+        await materialize(store, initial, true);
+
+        const bodyPath = join(
+            destinationRoot,
+            getCurrentPointerPath(storyId, target)
+        );
+        const metadataPath = sidecarPath(
+            destinationRoot,
+            getCurrentPointerPath(storyId, target)
+        );
+        const bodyTemporaryPath = `${bodyPath}.interrupted.tmp`;
+        const metadataTemporaryPath = `${metadataPath}.interrupted.tmp`;
+        const transactionDirectory = join(
+            destinationRoot,
+            '.publisher-transactions'
+        );
+        const transactionPath = join(
+            transactionDirectory,
+            `${sha256(getCurrentPointerPath(storyId, target))}.json`
+        );
+        const pointerAfter: ActiveReleasePointerV1 = {
+            schemaVersion: 1,
+            storyId,
+            releaseId: initial.preparedRelease.releaseId,
+            manifestPath: initial.manifest.key,
+            manifestSha256: initial.preparedRelease.manifestSha256,
+            publishedAt: '2026-08-01T20:00:00.001Z',
+        };
+        const pointerAfterBytes = new TextEncoder().encode(
+            `${canonicalJson(pointerAfter)}\n`
+        );
+        await writeFile(bodyTemporaryPath, pointerAfterBytes);
+        await writeFile(
+            metadataTemporaryPath,
+            `${JSON.stringify({
+                version: 1,
+                key: getCurrentPointerPath(storyId, target),
+                etag: `local-sha256-${sha256(pointerAfterBytes)}`,
+                byteLength: pointerAfterBytes.byteLength,
+                contentType: 'application/json',
+                cacheControl:
+                    RUNTIME_ASSET_CACHE_POLICY.currentPointer
+                        .responseCacheControl,
+                customMetadata: {},
+            })}\n`
+        );
+        await writeFile(
+            transactionPath,
+            `${JSON.stringify({
+                version: 1,
+                key: getCurrentPointerPath(storyId, target),
+                bodyTemporaryName: basename(bodyTemporaryPath),
+                metadataTemporaryName: basename(metadataTemporaryPath),
+            })}\n`
+        );
+        const before = await snapshotFiles(destinationRoot);
+        const flushesBefore = directoryFlushes;
+
+        const planned = await planWith(store, paths);
+
+        expect(planned.report.status).toBe('no-op');
+        expect(await snapshotFiles(destinationRoot)).toEqual(before);
+        expect(directoryFlushes).toBe(flushesBefore);
+        expect(Object.keys(before)).toContain(
+            join(
+                '.publisher-transactions',
+                `${sha256(getCurrentPointerPath(storyId, target))}.json`
+            )
+        );
+        expect(Object.keys(before).some(path => path.includes('.lock.'))).toBe(
+            false
+        );
     });
 
     it('rejects an existing immutable object whose exact bytes conflict', async () => {

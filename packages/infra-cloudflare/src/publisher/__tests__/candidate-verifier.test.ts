@@ -220,6 +220,7 @@ function decorateStore(
         stat: key => base.stat(key),
         read: async key => read(key, await base.read(key)),
         createImmutable: request => base.createImmutable(request),
+        inspectPointer: key => base.inspectPointer(key),
         readPointer: key => base.readPointer(key),
         compareAndSwapPointer: request => base.compareAndSwapPointer(request),
         list: prefix => base.list(prefix),
@@ -562,6 +563,7 @@ describe('candidate verifier', () => {
                         ? Promise.reject(providerError)
                         : base.read(key),
                 createImmutable: request => base.createImmutable(request),
+                inspectPointer: key => base.inspectPointer(key),
                 readPointer: key => base.readPointer(key),
                 compareAndSwapPointer: request =>
                     base.compareAndSwapPointer(request),

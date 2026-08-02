@@ -205,6 +205,10 @@ class ActivationStore implements DeliveryStore {
         return { ...this.pointer, bytes: Uint8Array.from(this.pointer.bytes) };
     }
 
+    async inspectPointer(key: string): Promise<PointerSnapshot> {
+        return this.readPointer(key);
+    }
+
     async compareAndSwapPointer(request: PointerWriteRequest): Promise<{
         status: 'written' | 'precondition-failed';
         etag?: string;

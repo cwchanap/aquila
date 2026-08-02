@@ -237,7 +237,7 @@ async function advisoryPointerState(
     const key = getCurrentPointerPath(storyId, target);
     let snapshot: PointerSnapshot;
     try {
-        snapshot = await store.readPointer(key);
+        snapshot = await store.inspectPointer(key);
     } catch {
         throw new PublisherError('storage', 'Unable to read advisory pointer', {
             cause: { classification: 'delivery-store-pointer-read-failure' },

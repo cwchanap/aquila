@@ -44,6 +44,9 @@ export interface DeliveryStore {
     createImmutable(
         request: ImmutableCreateRequest
     ): Promise<{ status: 'created' | 'already-exists' }>;
+    /** Observational pointer read: must not recover, lock, or mutate storage. */
+    inspectPointer(key: string): Promise<PointerSnapshot>;
+    /** Recovery-capable coherent read used by activation and pointer mutation. */
     readPointer(key: string): Promise<PointerSnapshot>;
     compareAndSwapPointer(
         request: PointerWriteRequest

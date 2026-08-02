@@ -8,9 +8,11 @@ import type {
     ImmutableCreateRequest,
 } from '../../packages/infra-cloudflare/src/publisher/stores/delivery-store';
 
-type CoordinatorCliOverrides = Pick<
-    AssetsCliDependencies,
-    'repositoryRoot' | 'environment' | 'createLocalStore' | 'runCommand'
+type CoordinatorCliOverrides = Partial<
+    Pick<
+        AssetsCliDependencies,
+        'repositoryRoot' | 'environment' | 'createLocalStore' | 'runCommand'
+    >
 >;
 
 export interface StaleConflictCoordinatorOptions {

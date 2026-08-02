@@ -62,6 +62,10 @@ const LOCK_TIMEOUT_MS = 5_000;
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
+export interface LocalDeliveryStoreOptions {
+    afterDirectoryFlush?: (path: string) => Promise<void>;
+}
+
 function isNodeError(error: unknown, code: string): boolean {
     return (
         error instanceof Error &&
@@ -179,11 +183,13 @@ export class LocalDeliveryStore implements DeliveryStore {
     private readonly root: string;
     private readonly metadataRoot: string;
     private readonly transactionRoot: string;
+    private readonly afterDirectoryFlush?: (path: string) => Promise<void>;
 
-    constructor(root: string) {
+    constructor(root: string, options: LocalDeliveryStoreOptions = {}) {
         this.root = resolve(root);
         this.metadataRoot = resolve(this.root, METADATA_DIRECTORY);
         this.transactionRoot = resolve(this.root, TRANSACTION_DIRECTORY);
+        this.afterDirectoryFlush = options.afterDirectoryFlush;
     }
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
@@ -798,6 +804,7 @@ export class LocalDeliveryStore implements DeliveryStore {
         try {
             handle = await open(path, 'r');
             await handle.sync();
+            await this.afterDirectoryFlush?.(path);
         } catch (error) {
             throw this.storageError(
                 'Unable to flush local store directory',
@@ -931,12 +938,28 @@ export class LocalDeliveryStore implements DeliveryStore {
             new TextEncoder().encode(`${JSON.stringify(record)}\n`),
             key
         );
+        let linked = false;
         try {
             await link(ownerPath, path);
+            linked = true;
             await this.flushDirectory(dirname(path), key);
             return ownerPath;
         } catch (error) {
-            await this.unlinkIfPresent(ownerPath);
+            let cleanupError: unknown;
+            try {
+                if (linked) await this.unlinkIfPresent(path);
+                await this.unlinkIfPresent(ownerPath);
+                await this.flushDirectory(dirname(path), key);
+            } catch (candidate) {
+                cleanupError = candidate;
+            }
+            if (cleanupError !== undefined) {
+                throw this.storageError(
+                    'Unable to clean failed local pointer lock publication',
+                    key,
+                    new AggregateError([error, cleanupError])
+                );
+            }
             throw this.storageError(
                 'Unable to publish local pointer lock record',
                 key,

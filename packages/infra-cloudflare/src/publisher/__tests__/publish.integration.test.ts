@@ -309,6 +309,13 @@ function fakePointer(index: number, target: PublicationTarget) {
     );
 }
 
+function republishedPointer(
+    value: ActiveReleasePointerV1,
+    publishedAt: string
+): ActiveReleasePointerV1 {
+    return { ...value, publishedAt };
+}
+
 describe('publishRelease', () => {
     it('publishes immutable objects and manifest before a final pointer, then unchanged publication is a zero-write no-op', async () => {
         const paths = await fixture();
@@ -512,6 +519,56 @@ describe('publishRelease', () => {
         ).toHaveLength(1);
     });
 
+    it('detects same-release new-ETag drift on the initial fresh read before real CAS', async () => {
+        const paths = await fixture();
+        const store = new RecordingStore(paths.local);
+        const active = fakePointer(1, PREVIEW_TARGET);
+        await writePointer(paths.local, PREVIEW_TARGET, active);
+        store.afterInspectPointer = async () => {
+            store.afterInspectPointer = undefined;
+            await writePointer(
+                paths.local,
+                PREVIEW_TARGET,
+                republishedPointer(active, '2026-08-01T19:59:00.001Z')
+            );
+        };
+
+        const report = await publishRelease(options(paths, store));
+
+        expect(report.status).toBe('conflict');
+        expect(report.counts.pointersWritten).toBe(0);
+        expect(store.pointerRequests).toEqual([]);
+        expect(
+            store.events.filter(event => event.startsWith('read-pointer:'))
+        ).toHaveLength(1);
+    });
+
+    it('overrides same-release new-ETag drift from the initial fresh read with one refreshed CAS', async () => {
+        const paths = await fixture();
+        const store = new RecordingStore(paths.local);
+        const active = fakePointer(1, PREVIEW_TARGET);
+        await writePointer(paths.local, PREVIEW_TARGET, active);
+        store.afterInspectPointer = async () => {
+            store.afterInspectPointer = undefined;
+            await writePointer(
+                paths.local,
+                PREVIEW_TARGET,
+                republishedPointer(active, '2026-08-01T19:59:00.001Z')
+            );
+        };
+
+        const report = await publishRelease(
+            options(paths, store, { overrideConcurrentPointer: true })
+        );
+
+        expect(report.status).toBe('success');
+        expect(report.counts.pointersWritten).toBe(1);
+        expect(store.pointerRequests).toHaveLength(1);
+        expect(
+            store.events.filter(event => event.startsWith('read-pointer:'))
+        ).toHaveLength(2);
+    });
+
     it('reverifies after advisory drift, takes another fresh snapshot, and attempts one refreshed CAS with override', async () => {
         const paths = await fixture();
         const store = new RecordingStore(paths.local);
@@ -603,6 +660,31 @@ describe('publishRelease', () => {
         ).toHaveLength(2);
     });
 
+    it('detects same-release new-ETag drift on the activation service fresh read before real CAS', async () => {
+        const paths = await fixture();
+        const store = new RecordingStore(paths.local);
+        const active = fakePointer(1, PREVIEW_TARGET);
+        await writePointer(paths.local, PREVIEW_TARGET, active);
+        store.afterReadPointer = async (_snapshot, attempt) => {
+            if (attempt === 1) {
+                await writePointer(
+                    paths.local,
+                    PREVIEW_TARGET,
+                    republishedPointer(active, '2026-08-01T19:59:00.001Z')
+                );
+            }
+        };
+
+        const report = await publishRelease(options(paths, store));
+
+        expect(report.status).toBe('conflict');
+        expect(report.counts.pointersWritten).toBe(0);
+        expect(store.pointerRequests).toEqual([]);
+        expect(
+            store.events.filter(event => event.startsWith('read-pointer:'))
+        ).toHaveLength(2);
+    });
+
     it('reverifies and takes one more snapshot before one CAS when late advisory drift is overridden', async () => {
         const paths = await fixture();
         const store = new RecordingStore(paths.local);
@@ -617,6 +699,34 @@ describe('publishRelease', () => {
                     paths.local,
                     PREVIEW_TARGET,
                     fakePointer(2, PREVIEW_TARGET)
+                );
+            }
+        };
+
+        const report = await publishRelease(
+            options(paths, store, { overrideConcurrentPointer: true })
+        );
+
+        expect(report.status).toBe('success');
+        expect(report.counts.pointersWritten).toBe(1);
+        expect(store.pointerRequests).toHaveLength(1);
+        expect(
+            store.events.filter(event => event.startsWith('read-pointer:'))
+        ).toHaveLength(3);
+        expect(store.events.at(-1)).toContain('cas:');
+    });
+
+    it('reverifies and rereads before one CAS when late same-release new-ETag drift is overridden', async () => {
+        const paths = await fixture();
+        const store = new RecordingStore(paths.local);
+        const active = fakePointer(1, PREVIEW_TARGET);
+        await writePointer(paths.local, PREVIEW_TARGET, active);
+        store.afterReadPointer = async (_snapshot, attempt) => {
+            if (attempt === 1) {
+                await writePointer(
+                    paths.local,
+                    PREVIEW_TARGET,
+                    republishedPointer(active, '2026-08-01T19:59:00.001Z')
                 );
             }
         };

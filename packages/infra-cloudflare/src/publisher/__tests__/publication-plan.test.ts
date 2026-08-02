@@ -292,6 +292,10 @@ describe('buildPublicationPlan', () => {
         const store = new LocalDeliveryStore(destinationRoot);
         const initial = await planWith(store, paths);
         await materialize(store, initial, true);
+        const activeSnapshot = await store.inspectPointer(
+            getCurrentPointerPath(storyId, target)
+        );
+        expect(activeSnapshot.exists).toBe(true);
 
         const unchanged = await planWith(store, paths);
         expect(unchanged.report.status).toBe('no-op');
@@ -303,10 +307,10 @@ describe('buildPublicationPlan', () => {
         });
         expect(unchanged.advisoryPointer).toEqual({
             exists: true,
+            etag: activeSnapshot.exists ? activeSnapshot.etag : undefined,
             beforeReleaseId: initial.preparedRelease.releaseId,
             activationNeeded: false,
         });
-        expect(unchanged.advisoryPointer).not.toHaveProperty('etag');
 
         await writeImage(
             paths.backgroundPath,

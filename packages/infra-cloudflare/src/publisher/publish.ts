@@ -202,8 +202,10 @@ function advisoryMatches(
     plan: PublicationPlan,
     fresh: FreshPointerState
 ): boolean {
+    if (plan.advisoryPointer.exists !== fresh.snapshot.exists) return false;
+    if (!plan.advisoryPointer.exists || !fresh.snapshot.exists) return true;
     return (
-        plan.advisoryPointer.exists === fresh.snapshot.exists &&
+        plan.advisoryPointer.etag === fresh.snapshot.etag &&
         plan.advisoryPointer.beforeReleaseId === fresh.releaseId
     );
 }

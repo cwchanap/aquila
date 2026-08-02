@@ -18,7 +18,7 @@ describe('R2 publisher gate fixtures', () => {
             const variants = [
                 ['source-b/gate/background.png', 1672, 941, [12, 140, 210]],
                 ['source-c/gate/background.png', 1672, 941, [188, 74, 42]],
-                ['source-c/gate/portrait.png', 1024, 1024, [64, 198, 104]],
+                ['source-c/gate/portrait.png', 1024, 1024, [64, 198, 104, 128]],
             ] as const;
 
             for (const [
@@ -35,7 +35,9 @@ describe('R2 publisher gate fixtures', () => {
 
                 expect(metadata.width).toBe(width);
                 expect(metadata.height).toBe(height);
-                expect([...data.subarray(0, 3)]).toEqual(expectedPixel);
+                expect([...data.subarray(0, expectedPixel.length)]).toEqual(
+                    expectedPixel
+                );
             }
         } finally {
             await rm(outputRoot, { recursive: true, force: true });

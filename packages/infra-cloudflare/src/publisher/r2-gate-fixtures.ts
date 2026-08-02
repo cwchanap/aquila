@@ -38,7 +38,7 @@ await sharp({
         width: 1024,
         height: 1024,
         channels: 4,
-        background: { r: 64, g: 198, b: 104, alpha: 1 },
+        background: { r: 64, g: 198, b: 104, alpha: 0.5 },
     },
 })
     .png()

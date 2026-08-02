@@ -18,8 +18,11 @@ import {
     type ActiveReleasePointerV1,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
+import { coordinateStaleConflict } from '../../../../../.github/scripts/r2-stale-conflict-coordinator';
 import { PublisherError } from '../errors';
 import { publishRelease, type PublishReleaseOptions } from '../publish';
+import { buildPublicationPlan } from '../publication-plan';
+import type { PublisherReportV1 } from '../report';
 import type {
     DeliveryStore,
     ImmutableCreateRequest,
@@ -191,6 +194,7 @@ class RecordingStore implements DeliveryStore {
     readonly immutableRequests: ImmutableCreateRequest[] = [];
     readonly pointerRequests: PointerWriteRequest[] = [];
     readonly events: string[] = [];
+    closeCount = 0;
     onCreate?: (
         request: ImmutableCreateRequest,
         attempt: number
@@ -258,7 +262,9 @@ class RecordingStore implements DeliveryStore {
         return this.base.listKeys(prefix);
     }
 
-    async close(): Promise<void> {}
+    async close(): Promise<void> {
+        this.closeCount += 1;
+    }
 }
 
 function cloneSnapshot(snapshot: PointerSnapshot): PointerSnapshot {
@@ -521,6 +527,122 @@ describe('publishRelease', () => {
         expect(
             store.events.filter(event => event.startsWith('read-pointer:'))
         ).toHaveLength(1);
+    });
+
+    it('coordinates stale drift when every object is reused and only the preview manifest is created', async () => {
+        const paths = await fixture();
+        const active = await publishRelease(options(paths));
+        if (
+            active.releaseId === undefined ||
+            active.manifestSha256 === undefined
+        ) {
+            throw new Error('initial publication did not produce a release');
+        }
+
+        await sharp({
+            create: {
+                width: 32,
+                height: 18,
+                channels: 3,
+                background: { r: 20, g: 170, b: 90 },
+            },
+        })
+            .png()
+            .toFile(join(paths.sourceRoot, 'backgrounds/room.png'));
+        const candidate = await buildPublicationPlan(options(paths));
+        expect(candidate.preparedRelease.releaseId).not.toBe(active.releaseId);
+        for (const object of candidate.objects) {
+            await paths.local.createImmutable(object);
+        }
+        expect(await paths.local.stat(candidate.manifest.key)).toBeNull();
+
+        const publishStore = new RecordingStore(paths.local);
+        const activationStore = new RecordingStore(paths.local);
+        const result = await coordinateStaleConflict({
+            publishArgs: [
+                'publish',
+                '--story',
+                STORY_ID,
+                '--environment',
+                'preview',
+                '--preview-id',
+                PREVIEW_TARGET.previewId,
+                '--plan',
+                paths.planPath,
+                '--source-root',
+                paths.sourceRoot,
+                '--destination',
+                'r2',
+                '--json',
+            ],
+            activationArgs: [
+                'activate',
+                '--story',
+                STORY_ID,
+                '--environment',
+                'preview',
+                '--preview-id',
+                PREVIEW_TARGET.previewId,
+                '--release',
+                active.releaseId,
+                '--expect-manifest-sha256',
+                active.manifestSha256,
+                '--destination',
+                'r2',
+                '--reactivate',
+                '--json',
+            ],
+            createPublishStore: () => publishStore,
+            createActivationStore: () => activationStore,
+            cliOverrides: {
+                repositoryRoot: paths.repositoryRoot,
+                environment: {
+                    R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
+                    R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
+                },
+                createLocalStore: async () => {
+                    throw new Error('local store must not be selected');
+                },
+            },
+        });
+
+        const report = JSON.parse(result.publishStdout) as PublisherReportV1;
+        const activationReport = JSON.parse(
+            result.activationStdout
+        ) as PublisherReportV1;
+        expect(result).toMatchObject({
+            publishExit: 4,
+            activationExit: 0,
+        });
+        expect(result.issue).toBeUndefined();
+        expect(report).toMatchObject({
+            status: 'conflict',
+            counts: {
+                objectsCreated: 0,
+                objectsReused: 3,
+                manifestsCreated: 1,
+                manifestsReused: 0,
+                pointersWritten: 0,
+            },
+        });
+        expect(activationReport).toMatchObject({
+            command: 'activate',
+            status: 'success',
+            counts: { pointersWritten: 1 },
+        });
+        expect(publishStore.immutableRequests).toHaveLength(1);
+        expect(publishStore.immutableRequests[0]?.key).toBe(
+            candidate.manifest.key
+        );
+        expect(
+            publishStore.immutableRequests.filter(request =>
+                request.key.startsWith('vn/objects/')
+            )
+        ).toHaveLength(0);
+        expect(publishStore.pointerRequests).toHaveLength(0);
+        expect(activationStore.pointerRequests).toHaveLength(1);
+        expect(publishStore.closeCount).toBe(1);
+        expect(activationStore.closeCount).toBe(1);
     });
 
     it('detects same-release new-ETag drift on the initial fresh read before real CAS', async () => {

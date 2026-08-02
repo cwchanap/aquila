@@ -57,25 +57,92 @@ describe('LocalDeliveryStore', () => {
         });
     });
 
-    it('treats an immutable body without metadata as an integrity failure', async () => {
+    it('recovers an orphan immutable body without metadata by overwriting it', async () => {
         const root = await mkdtemp(join(tmpdir(), 'local-partial-'));
         const bodyPath = join(root, 'vn/objects/partial.webp');
         await mkdir(join(root, 'vn/objects'), { recursive: true });
         await writeFile(bodyPath, 'partial');
         const store = new LocalDeliveryStore(root);
 
+        // A direct read still sees an orphan body without metadata as an
+        // integrity failure — read() does not run transaction recovery.
         await expect(
             store.read('vn/objects/partial.webp')
         ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
+
+        // createImmutable acquires the per-key lock, runs transaction
+        // recovery, and overwrites the orphan body via the temp-file +
+        // rename path. The previously unrecoverable object is now replaced
+        // with valid content and metadata.
+        const result = await store.createImmutable({
+            key: 'vn/objects/partial.webp',
+            bytes: new TextEncoder().encode('replacement'),
+            contentType: 'image/webp',
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+        expect(result).toEqual({ status: 'created' });
+        await expect(readFile(bodyPath, 'utf8')).resolves.toBe('replacement');
         await expect(
-            store.createImmutable({
-                key: 'vn/objects/partial.webp',
-                bytes: new TextEncoder().encode('replacement'),
+            store.read('vn/objects/partial.webp')
+        ).resolves.toMatchObject({ contentType: 'image/webp' });
+    });
+
+    it('recovers an immutable transaction interrupted between marker write and completion', async () => {
+        // Simulate a crash: a previous createImmutable wrote the body and
+        // metadata temp files plus the transaction marker, but never ran
+        // completePointerTransaction. A retry must recover the pending
+        // transaction under the per-key lock and expose the object as
+        // already-exists (with valid, readable content).
+        const root = await mkdtemp(join(tmpdir(), 'local-immutable-recovery-'));
+        const store = new LocalDeliveryStore(root);
+        const key = 'vn/objects/recovered.webp';
+        const bodyPath = join(root, key);
+        const metadataPath = sidecarPath(root, key);
+        const bodyTemporaryPath = `${bodyPath}.crashed.tmp`;
+        const metadataTemporaryPath = `${metadataPath}.crashed.tmp`;
+        const transactionDirectory = join(root, '.publisher-transactions');
+        const transactionPath = join(
+            transactionDirectory,
+            `${sha256(key)}.json`
+        );
+        const bytes = new TextEncoder().encode('crashed-body');
+        await mkdir(join(root, 'vn/objects'), { recursive: true });
+        await mkdir(join(root, '.publisher-metadata'), { recursive: true });
+        await mkdir(transactionDirectory, { recursive: true });
+        await writeFile(bodyTemporaryPath, bytes);
+        await writeFile(
+            metadataTemporaryPath,
+            `${JSON.stringify({
+                version: 1,
+                key,
+                etag: `local-sha256-${sha256(bytes)}`,
+                byteLength: bytes.byteLength,
                 contentType: 'image/webp',
                 cacheControl: 'public, max-age=31536000, immutable',
-            })
-        ).resolves.toEqual({ status: 'already-exists' });
-        await expect(readFile(bodyPath, 'utf8')).resolves.toBe('partial');
+                customMetadata: {},
+            })}\n`
+        );
+        await writeFile(
+            transactionPath,
+            `${JSON.stringify({
+                version: 1,
+                key,
+                bodyTemporaryName: basename(bodyTemporaryPath),
+                metadataTemporaryName: basename(metadataTemporaryPath),
+            })}\n`
+        );
+
+        const result = await store.createImmutable({
+            key,
+            bytes: new TextEncoder().encode('different-content'),
+            contentType: 'image/webp',
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+        expect(result).toEqual({ status: 'already-exists' });
+        await expect(store.read(key)).resolves.toMatchObject({
+            contentType: 'image/webp',
+        });
+        await expect(readFile(bodyPath, 'utf8')).resolves.toBe('crashed-body');
     });
 
     it('performs pointer CAS under a lock', async () => {

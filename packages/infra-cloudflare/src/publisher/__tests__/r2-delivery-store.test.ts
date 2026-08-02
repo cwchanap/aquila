@@ -109,6 +109,28 @@ describe('R2DeliveryStore', () => {
         expect(sent[0].input.IfMatch).toBeUndefined();
     });
 
+    it.each([
+        'vn/objects/hash.webp',
+        'vn/stories/example/releases/sha256-release/runtime-manifest.json',
+    ])('rejects non-pointer CAS key %s before sending a put', async key => {
+        const send = vi.fn(async () => ({ ETag: '"overwritten"' }));
+        const store = fakeStore(send);
+
+        await expect(
+            store.compareAndSwapPointer({
+                key,
+                expected: { exists: true, etag: '"existing"' },
+                bytes: new Uint8Array([1]),
+                contentType: 'application/json',
+                cacheControl: 'no-cache, max-age=0, must-revalidate',
+            })
+        ).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'input',
+        });
+        expect(send).not.toHaveBeenCalled();
+    });
+
     it('maps only immutable and pointer precondition failures to result statuses', async () => {
         const httpPreconditionStore = fakeStore(async () => {
             throw Object.assign(new Error('conditional request failed'), {
@@ -155,6 +177,59 @@ describe('R2DeliveryStore', () => {
             name: 'PublisherError',
             code: 'storage',
         });
+    });
+
+    it('replaces raw transport failures with a safe classification', async () => {
+        const rawError = Object.assign(new Error('secret transport message'), {
+            name: 'CredentialBearingNetworkError',
+            request: {
+                headers: { authorization: 'Bearer private-token' },
+            },
+            credentials: {
+                accessKeyId: 'private-access-key',
+                secretAccessKey: 'private-secret-key',
+            },
+            endpoint: 'https://private-account.r2.example.invalid',
+            absolutePath: '/Users/private/source/image.webp',
+            $metadata: { httpStatusCode: 500 },
+        });
+        const store = fakeStore(async () => {
+            throw rawError;
+        });
+
+        let caught: unknown;
+        try {
+            await store.stat('vn/objects/hash.webp');
+        } catch (error) {
+            caught = error;
+        }
+
+        expect(caught).toMatchObject({
+            name: 'PublisherError',
+            code: 'storage',
+            message: 'Unable to inspect R2 object',
+            context: { key: 'vn/objects/hash.webp' },
+            cause: { classification: 'r2-transport-failure' },
+        });
+        expect((caught as Error & { cause?: unknown }).cause).toEqual({
+            classification: 'r2-transport-failure',
+        });
+        const exposed = JSON.stringify({
+            message: (caught as Error).message,
+            context: (caught as { context: unknown }).context,
+            cause: (caught as Error & { cause?: unknown }).cause,
+        });
+        for (const secret of [
+            'secret transport message',
+            'CredentialBearingNetworkError',
+            'private-token',
+            'private-access-key',
+            'private-secret-key',
+            'private-account',
+            '/Users/private/source/image.webp',
+        ]) {
+            expect(exposed).not.toContain(secret);
+        }
     });
 
     it.each([
@@ -304,6 +379,50 @@ describe('R2DeliveryStore', () => {
                 customMetadata: { page: 'b' },
             },
         ]);
+    });
+
+    it('rejects an empty truncated-page continuation token without another send', async () => {
+        const send = vi.fn(async command => {
+            expect(command).toBeInstanceOf(ListObjectsV2Command);
+            if (send.mock.calls.length > 1) {
+                throw new Error('pagination did not stop at the empty token');
+            }
+            return {
+                IsTruncated: true,
+                NextContinuationToken: '',
+                Contents: [],
+            };
+        });
+        const store = fakeStore(send);
+        const iterator = store.list('vn/releases/')[Symbol.asyncIterator]();
+
+        await expect(iterator.next()).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'integrity',
+        });
+        expect(send).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects a repeated continuation token without a third send', async () => {
+        const send = vi.fn(async command => {
+            expect(command).toBeInstanceOf(ListObjectsV2Command);
+            if (send.mock.calls.length > 2) {
+                throw new Error('pagination repeated indefinitely');
+            }
+            return {
+                IsTruncated: true,
+                NextContinuationToken: 'same-page',
+                Contents: [],
+            };
+        });
+        const store = fakeStore(send);
+        const iterator = store.list('vn/releases/')[Symbol.asyncIterator]();
+
+        await expect(iterator.next()).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'integrity',
+        });
+        expect(send).toHaveBeenCalledTimes(2);
     });
 
     it('destroys the R2 client when closed', async () => {

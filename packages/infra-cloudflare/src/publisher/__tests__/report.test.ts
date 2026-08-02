@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { PublicationTarget } from '@aquila/stories/runtime-assets';
+import type {
+    PublicationTarget,
+    StoryAssetCoverageReport,
+} from '@aquila/stories/runtime-assets';
 import {
     createHumanProgressSink,
     normalizeReportDiagnostics,
@@ -298,5 +301,121 @@ describe('publisher reports', () => {
         expect(json).toContain(canonicalIdentity);
         expect(json).toContain('第一章/鏡 房/夜');
         expect(json).not.toContain('untrusted message is replaced');
+    });
+
+    it('emits action keys only when they match the owning action path grammar', () => {
+        const objectKey = `vn/objects/${'a'.repeat(64)}.webp`;
+        const releaseId = `sha256-${'b'.repeat(64)}`;
+        const manifestKey = `vn/previews/hpa-230/stories/example_story/releases/${releaseId}/runtime-manifest.json`;
+        const pointerKey =
+            'vn/previews/hpa-230/stories/example_story/current.json';
+        const input = report();
+        input.actions = [
+            { stage: 'object-upload', kind: 'create-object', key: objectKey },
+            {
+                stage: 'object-upload',
+                kind: 'create-object',
+                key: 'vn/private-bucket/raw-request.webp',
+            },
+            {
+                stage: 'manifest-upload',
+                kind: 'create-manifest',
+                key: manifestKey,
+            },
+            {
+                stage: 'manifest-upload',
+                kind: 'create-manifest',
+                key: 'vn/private-bucket/raw-request.json',
+            },
+            { stage: 'activation', kind: 'write-pointer', key: pointerKey },
+            {
+                stage: 'activation',
+                kind: 'write-pointer',
+                key: 'vn/private-bucket/current.json',
+            },
+            { stage: 'input', kind: 'include', key: objectKey },
+        ];
+
+        const parsed = JSON.parse(renderJsonReport(input)) as {
+            actions: PublisherReportV1['actions'];
+        };
+
+        expect(parsed.actions).toEqual([
+            { stage: 'object-upload', kind: 'create-object', key: objectKey },
+            { stage: 'object-upload', kind: 'create-object' },
+            {
+                stage: 'manifest-upload',
+                kind: 'create-manifest',
+                key: manifestKey,
+            },
+            { stage: 'manifest-upload', kind: 'create-manifest' },
+            { stage: 'activation', kind: 'write-pointer', key: pointerKey },
+            { stage: 'activation', kind: 'write-pointer' },
+            { stage: 'input', kind: 'include' },
+        ]);
+    });
+
+    it('keeps bounded human section labels while redacting path and URL forms', () => {
+        const label = '第一章: 鏡 房';
+        const section129 = label + '界'.repeat(129 - label.length);
+        const section200 = label + '界'.repeat(200 - label.length);
+        const section201 = label + '界'.repeat(201 - label.length);
+        expect(section129).toHaveLength(129);
+        expect(section200).toHaveLength(200);
+        expect(section201).toHaveLength(201);
+
+        const counts = {
+            total: 1,
+            included: 1,
+            omitted: 0,
+            unclassified: 0,
+        };
+        const input = report();
+        input.coverage = {
+            storyId: 'example_story',
+            byType: {
+                background: counts,
+                portrait: {
+                    total: 0,
+                    included: 0,
+                    omitted: 0,
+                    unclassified: 0,
+                },
+            },
+            bySection: {
+                [label]: counts,
+                [section129]: counts,
+                [section200]: counts,
+                [section201]: counts,
+                'C:/Users/Alice/private': counts,
+                'file:/Volumes/team/private': counts,
+                '\\\\server\\share\\private': counts,
+            },
+            totals: {
+                total: 7,
+                included: 7,
+                omitted: 0,
+                unclassified: 0,
+            },
+        };
+
+        const parsed = JSON.parse(renderJsonReport(input)) as {
+            coverage: StoryAssetCoverageReport;
+        };
+        const sections = parsed.coverage.bySection;
+
+        expect(sections).toHaveProperty(label);
+        expect(sections).toHaveProperty(section129);
+        expect(sections).toHaveProperty(section200);
+        expect(sections).not.toHaveProperty(section201);
+        expect(sections).not.toHaveProperty('C:/Users/Alice/private');
+        expect(sections).not.toHaveProperty('file:/Volumes/team/private');
+        expect(sections).not.toHaveProperty('\\\\server\\share\\private');
+        expect(sections['[redacted-section]']).toEqual({
+            total: 4,
+            included: 4,
+            omitted: 0,
+            unclassified: 0,
+        });
     });
 });

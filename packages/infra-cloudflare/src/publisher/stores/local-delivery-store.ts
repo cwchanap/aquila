@@ -42,13 +42,15 @@ interface PointerTransactionMarker {
 }
 
 interface PointerLockRecord {
-    version: 1;
+    version: 2;
     pid: number;
     token: string;
+    state: 'choosing' | 'waiting';
+    ticket: number | null;
 }
 
 interface PointerLock {
-    lockPath: string;
+    claimPath: string;
     ownerPath: string;
     record: PointerLockRecord;
 }
@@ -139,11 +141,20 @@ function parsePointerLockRecord(
     if (
         typeof value !== 'object' ||
         value === null ||
-        (value as Partial<PointerLockRecord>).version !== 1 ||
+        (value as Partial<PointerLockRecord>).version !== 2 ||
         !Number.isSafeInteger((value as Partial<PointerLockRecord>).pid) ||
         (value as Partial<PointerLockRecord>).pid! <= 0 ||
         typeof (value as Partial<PointerLockRecord>).token !== 'string' ||
-        !UUID_RE.test((value as Partial<PointerLockRecord>).token!)
+        !UUID_RE.test((value as Partial<PointerLockRecord>).token!) ||
+        ((value as Partial<PointerLockRecord>).state !== 'choosing' &&
+            (value as Partial<PointerLockRecord>).state !== 'waiting') ||
+        ((value as Partial<PointerLockRecord>).state === 'choosing' &&
+            (value as Partial<PointerLockRecord>).ticket !== null) ||
+        ((value as Partial<PointerLockRecord>).state === 'waiting' &&
+            (!Number.isSafeInteger(
+                (value as Partial<PointerLockRecord>).ticket
+            ) ||
+                (value as Partial<PointerLockRecord>).ticket! <= 0))
     ) {
         throw new PublisherError(
             'concurrency',
@@ -800,98 +811,217 @@ export class LocalDeliveryStore implements DeliveryStore {
 
     private async acquireLock(path: string, key: string): Promise<PointerLock> {
         const startedAt = Date.now();
-        while (true) {
-            const record: PointerLockRecord = {
-                version: 1,
+        const token = randomUUID();
+        const choosing: PointerLockRecord = {
+            version: 2,
+            pid: process.pid,
+            token,
+            state: 'choosing',
+            ticket: null,
+        };
+        const choosingPath = this.lockRecordPath(path, choosing);
+        const choosingOwnerPath = await this.publishLockRecord(
+            choosingPath,
+            choosing,
+            key
+        );
+        let claimPath: string | null = null;
+        let claimOwnerPath: string | null = null;
+        try {
+            const initialRecords = await this.readActiveLockRecords(path, key);
+            const maximumTicket = initialRecords.reduce(
+                (maximum, entry) =>
+                    entry.record.ticket === null
+                        ? maximum
+                        : Math.max(maximum, entry.record.ticket),
+                0
+            );
+            const claim: PointerLockRecord = {
+                version: 2,
                 pid: process.pid,
-                token: randomUUID(),
+                token,
+                state: 'waiting',
+                ticket: maximumTicket + 1,
             };
-            const ownerPath = `${path}.owner.${record.token}`;
-            await this.writeTemporaryFile(
-                ownerPath,
-                new TextEncoder().encode(`${JSON.stringify(record)}\n`),
+            claimPath = this.lockRecordPath(path, claim);
+            claimOwnerPath = await this.publishLockRecord(
+                claimPath,
+                claim,
                 key
             );
-            try {
-                await link(ownerPath, path);
-            } catch (error) {
-                await this.unlinkIfPresent(ownerPath);
-                if (isNodeError(error, 'EEXIST')) {
-                    const recovered = await this.recoverStaleLock(path, key);
-                    if (recovered) continue;
-                    if (Date.now() - startedAt >= LOCK_TIMEOUT_MS) {
-                        throw new PublisherError(
-                            'concurrency',
-                            'Timed out acquiring local pointer lock',
-                            { context: { key } }
-                        );
-                    }
-                    await new Promise(resolve =>
-                        setTimeout(resolve, LOCK_RETRY_MS)
+            await this.unlinkIfPresent(choosingPath);
+            await this.unlinkIfPresent(choosingOwnerPath);
+            await this.flushDirectory(dirname(path), key);
+
+            while (true) {
+                const records = await this.readActiveLockRecords(path, key);
+                const ownClaimExists = records.some(
+                    entry => entry.record.token === token
+                );
+                if (!ownClaimExists) {
+                    throw new PublisherError(
+                        'concurrency',
+                        'Local pointer lock claim disappeared',
+                        { context: { key } }
                     );
-                    continue;
                 }
+                const anotherProcessIsChoosing = records.some(
+                    entry =>
+                        entry.record.state === 'choosing' &&
+                        entry.record.token !== token
+                );
+                const predecessorExists = records.some(entry => {
+                    const candidate = entry.record;
+                    if (
+                        candidate.state !== 'waiting' ||
+                        candidate.token === token ||
+                        candidate.ticket === null
+                    ) {
+                        return false;
+                    }
+                    return (
+                        candidate.ticket < claim.ticket! ||
+                        (candidate.ticket === claim.ticket &&
+                            candidate.token < token)
+                    );
+                });
+                if (!anotherProcessIsChoosing && !predecessorExists) {
+                    return {
+                        claimPath,
+                        ownerPath: claimOwnerPath,
+                        record: claim,
+                    };
+                }
+                if (Date.now() - startedAt >= LOCK_TIMEOUT_MS) {
+                    throw new PublisherError(
+                        'concurrency',
+                        'Timed out acquiring local pointer lock',
+                        { context: { key } }
+                    );
+                }
+                await new Promise(resolve =>
+                    setTimeout(resolve, LOCK_RETRY_MS)
+                );
+            }
+        } catch (error) {
+            await this.unlinkIfPresent(choosingPath);
+            await this.unlinkIfPresent(choosingOwnerPath);
+            if (claimPath !== null) await this.unlinkIfPresent(claimPath);
+            if (claimOwnerPath !== null) {
+                await this.unlinkIfPresent(claimOwnerPath);
+            }
+            await this.flushDirectory(dirname(path), key);
+            throw error;
+        }
+    }
+
+    private lockRecordPath(path: string, record: PointerLockRecord): string {
+        const role = record.state === 'choosing' ? 'choosing' : 'claim';
+        return `${path}.${role}.${record.token}.json`;
+    }
+
+    private async publishLockRecord(
+        path: string,
+        record: PointerLockRecord,
+        key: string
+    ): Promise<string> {
+        const ownerPath = `${path}.owner`;
+        await this.writeTemporaryFile(
+            ownerPath,
+            new TextEncoder().encode(`${JSON.stringify(record)}\n`),
+            key
+        );
+        try {
+            await link(ownerPath, path);
+            await this.flushDirectory(dirname(path), key);
+            return ownerPath;
+        } catch (error) {
+            await this.unlinkIfPresent(ownerPath);
+            throw this.storageError(
+                'Unable to publish local pointer lock record',
+                key,
+                error
+            );
+        }
+    }
+
+    private async readActiveLockRecords(
+        path: string,
+        key: string
+    ): Promise<
+        Array<{
+            path: string;
+            ownerPath: string;
+            record: PointerLockRecord;
+        }>
+    > {
+        const directory = dirname(path);
+        const prefix = `${basename(path)}.`;
+        while (true) {
+            let entries: string[];
+            try {
+                entries = await readdir(directory);
+            } catch (error) {
                 throw this.storageError(
-                    'Unable to acquire pointer lock',
+                    'Unable to inspect local pointer lock records',
                     key,
                     error
                 );
             }
-            try {
-                await this.flushDirectory(dirname(path), key);
-            } catch (error) {
-                await this.unlinkIfPresent(path);
-                await this.unlinkIfPresent(ownerPath);
-                throw error;
+            const active: Array<{
+                path: string;
+                ownerPath: string;
+                record: PointerLockRecord;
+            }> = [];
+            let snapshotChanged = false;
+            let removedStaleRecord = false;
+            for (const entry of entries) {
+                if (!entry.startsWith(prefix) || !entry.endsWith('.json')) {
+                    continue;
+                }
+                const recordPath = resolve(directory, entry);
+                let record: PointerLockRecord;
+                try {
+                    record = parsePointerLockRecord(
+                        JSON.parse(await readFile(recordPath, 'utf8')),
+                        key
+                    );
+                } catch (error) {
+                    if (isNodeError(error, 'ENOENT')) {
+                        snapshotChanged = true;
+                        break;
+                    }
+                    if (error instanceof PublisherError) throw error;
+                    throw new PublisherError(
+                        'concurrency',
+                        'Invalid local pointer lock record',
+                        { cause: error, context: { key } }
+                    );
+                }
+                if (basename(this.lockRecordPath(path, record)) !== entry) {
+                    throw new PublisherError(
+                        'concurrency',
+                        'Local pointer lock filename does not match record',
+                        { context: { key } }
+                    );
+                }
+                const ownerPath = `${recordPath}.owner`;
+                if (!this.isProcessAlive(record.pid)) {
+                    await this.unlinkIfPresent(recordPath);
+                    await this.unlinkIfPresent(ownerPath);
+                    removedStaleRecord = true;
+                    continue;
+                }
+                active.push({ path: recordPath, ownerPath, record });
             }
-            return { lockPath: path, ownerPath, record };
+            if (removedStaleRecord) {
+                await this.flushDirectory(directory, key);
+            }
+            if (snapshotChanged) {
+                continue;
+            }
+            return active;
         }
-    }
-
-    private async recoverStaleLock(
-        path: string,
-        key: string
-    ): Promise<boolean> {
-        let text: string;
-        try {
-            text = await readFile(path, 'utf8');
-        } catch (error) {
-            if (isNodeError(error, 'ENOENT')) return true;
-            throw this.storageError(
-                'Unable to inspect pointer lock',
-                key,
-                error
-            );
-        }
-
-        let record: PointerLockRecord;
-        try {
-            record = parsePointerLockRecord(JSON.parse(text), key);
-        } catch (error) {
-            if (error instanceof PublisherError) throw error;
-            throw new PublisherError(
-                'concurrency',
-                'Invalid local pointer lock record',
-                { cause: error, context: { key } }
-            );
-        }
-        if (this.isProcessAlive(record.pid)) return false;
-
-        const quarantinePath = `${path}.stale.${randomUUID()}`;
-        try {
-            await rename(path, quarantinePath);
-        } catch (error) {
-            if (isNodeError(error, 'ENOENT')) return true;
-            throw this.storageError(
-                'Unable to reclaim stale pointer lock',
-                key,
-                error
-            );
-        }
-        await this.unlinkIfPresent(quarantinePath);
-        await this.unlinkIfPresent(`${path}.owner.${record.token}`);
-        await this.flushDirectory(dirname(path), key);
-        return true;
     }
 
     private isProcessAlive(pid: number): boolean {
@@ -907,7 +1037,7 @@ export class LocalDeliveryStore implements DeliveryStore {
         let record: PointerLockRecord;
         try {
             record = parsePointerLockRecord(
-                JSON.parse(await readFile(lock.lockPath, 'utf8')),
+                JSON.parse(await readFile(lock.claimPath, 'utf8')),
                 key
             );
         } catch (error) {
@@ -926,10 +1056,10 @@ export class LocalDeliveryStore implements DeliveryStore {
             );
         }
         try {
-            await unlink(lock.lockPath);
+            await unlink(lock.claimPath);
         } finally {
             await this.unlinkIfPresent(lock.ownerPath);
-            await this.flushDirectory(dirname(lock.lockPath), key);
+            await this.flushDirectory(dirname(lock.claimPath), key);
         }
     }
 

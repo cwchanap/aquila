@@ -163,9 +163,10 @@ responses, and source-key isolation:
 bun --filter @aquila/infra-cloudflare verify
 ```
 
-That verifier intentionally targets the HPA-229 `smoke` preview. HPA-233 owns
-complete public preview-domain and browser verification for the retained
-run-scoped candidate.
+That verifier intentionally targets the pre-existing HPA-229 `smoke` preview.
+The HPA-230 gate does not seed that fixture and does not treat this public check
+as proof of its run-scoped candidate. HPA-233 owns complete public
+preview-domain and browser verification for the retained run-scoped candidate.
 
 ## Activate production after approval
 

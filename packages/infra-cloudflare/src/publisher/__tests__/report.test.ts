@@ -137,6 +137,15 @@ describe('publisher reports', () => {
                 ],
             },
         ];
+        unsafe.errors = [
+            {
+                code: 'clock-skew',
+                stage: 'activation',
+                message: 'unsafe clock context',
+                previousPublishedAt: '/Users/alice/private/timestamp',
+                localNow: 'Authorization: Bearer clock-token',
+            },
+        ];
 
         const json = renderJsonReport(unsafe);
         const parsed = JSON.parse(json) as Record<string, unknown>;
@@ -157,6 +166,7 @@ describe('publisher reports', () => {
         expect(json).not.toContain('private-story-text');
         expect(json).not.toContain('provider-private-object');
         expect(json).not.toContain('private-provider');
+        expect(json).not.toContain('clock-token');
         expect(json).not.toContain('request-secret');
         expect(json.endsWith('\n')).toBe(true);
     });

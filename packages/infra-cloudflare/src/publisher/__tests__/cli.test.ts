@@ -890,6 +890,43 @@ describe('assets CLI dispatch, lifecycle, output, and exits', () => {
         expect(`${test.stdout()}${test.stderr()}`).not.toContain('/Users/');
     });
 
+    it('reports safe clock-skew timestamps without leaking error context', async () => {
+        const previousPublishedAt = '2026-08-01T12:00:00.000Z';
+        const localNow = '2026-08-01T11:00:00.000Z';
+        const secret = 'clock-skew-secret-never-print';
+        const test = harness(async () => {
+            throw new PublisherError(
+                'clock-skew',
+                `unsafe ${secret} /Users/alice/private/source.png`,
+                {
+                    context: {
+                        previousPublishedAt,
+                        localNow,
+                        path: '/Users/alice/private/source.png',
+                        secret,
+                    },
+                }
+            );
+        });
+
+        const exit = await runAssetsCli(
+            [...localPlan, '--json'],
+            test.dependencies
+        );
+        const output = JSON.parse(test.stdout()) as PublisherReportV1;
+
+        expect(exit).toBe(5);
+        expect(output.errors).toEqual([
+            expect.objectContaining({
+                code: 'clock-skew',
+                previousPublishedAt,
+                localNow,
+            }),
+        ]);
+        expect(`${test.stdout()}${test.stderr()}`).not.toContain(secret);
+        expect(`${test.stdout()}${test.stderr()}`).not.toContain('/Users/');
+    });
+
     it('documents every required safe workflow in help without a store', async () => {
         const test = harness();
 

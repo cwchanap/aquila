@@ -335,6 +335,11 @@ maintenance contract. A compiler rename or move requires the plan to change in
 the same review. The publisher reports a difference as
 `coverage/source-path-mismatch`, distinct from a missing file.
 
+HPA-231 places this consistency check beside the generated image-asset catalog
+and `compile:check`, so a generated source move and its production-plan update
+are reviewed together. HPA-230 deliberately leaves the global `compile:check`
+command unchanged until that production plan exists.
+
 The V1 supported source formats are single-frame PNG, JPEG, and WebP. Animated
 or multipage images, SVG, GIF, TIFF, AVIF source files, and unknown formats fail
 as unsupported inputs. The format decision is based on decoded metadata, not
@@ -747,8 +752,12 @@ Every publisher-generated pointer timestamp is strictly later than the snapshot
 used for its conditional write. The timestamp is generated after the final
 pointer read as `max(clock.now(), previousPublishedAt + 1ms)`. A prior pointer
 more than `300_000` ms ahead of the local clock fails with typed `clock-skew`;
-timestamp failures use exit class 5. Rollback and reactivation also produce new
-monotonic bytes. Historical `current.json` bytes are never restored verbatim.
+timestamp failures use exit class 5. Their sanitized JSON diagnostic identifies
+the prior pointer time as `previousPublishedAt`, the sampled local clock as
+`localNow`, and the safe typed error code; it never contains the raw exception
+message, credentials, or local paths. Rollback and reactivation also produce
+new monotonic bytes. Historical `current.json` bytes are never restored
+verbatim.
 
 For `publish`, a difference between the advisory plan snapshot and this fresh
 snapshot is a concurrency conflict before CAS. With
@@ -1104,6 +1113,15 @@ interface PublisherReportV1 {
     changed: boolean;
   };
 }
+
+interface PublisherDiagnosticV1 {
+  code: string;
+  stage: string;
+  message: string;
+  previousPublishedAt?: string;
+  localNow?: string;
+  // bounded safe identities and relative paths may also be present
+}
 ```
 
 Actions carry a stable stage and safe identity:
@@ -1127,8 +1145,10 @@ type PublisherStage =
 
 A diagnostic includes story, target, stage, type-qualified logical identity when
 applicable, safe relative source/object path when applicable, error code, and
-message. It does not include raw credentials, SDK request objects, absolute
-local paths, prompts, or entire response bodies.
+message. Clock failures additionally preserve only canonical ISO
+`previousPublishedAt` and `localNow` values alongside the safe code. A
+diagnostic does not include raw credentials, SDK request objects, absolute local
+paths, prompts, raw exception messages, or entire response bodies.
 
 Recommended exit codes:
 

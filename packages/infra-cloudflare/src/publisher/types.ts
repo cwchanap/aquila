@@ -40,6 +40,8 @@ export interface PublisherDiagnosticV1 {
     count?: number;
     sampleIdentities?: string[];
     sampleSafePaths?: string[];
+    previousPublishedAt?: string;
+    localNow?: string;
 }
 
 export interface PublisherActionV1 {

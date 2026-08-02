@@ -145,7 +145,10 @@ async function readPointer(
         snapshot = await store.readPointer(key);
     } catch {
         throw new PublisherError('storage', 'Unable to read current pointer', {
-            context: { stage: 'activation', key },
+            context: {
+                stage: intent === 'rollback' ? 'rollback' : 'activation',
+                key,
+            },
             cause: SANITIZED_POINTER_READ_CAUSE,
         });
     }

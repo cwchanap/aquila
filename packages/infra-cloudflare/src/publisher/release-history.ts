@@ -19,7 +19,11 @@ import {
 import { verifyStoredRelease } from './candidate-verifier';
 import { PublisherError } from './errors';
 import { sha256ReleaseContent } from './hash';
-import type { ProgressSink, PublisherReportV1 } from './report';
+import type {
+    ProgressSink,
+    PublisherDiagnosticV1,
+    PublisherReportV1,
+} from './report';
 import type {
     DeliveryStore,
     PointerSnapshot,
@@ -32,6 +36,7 @@ export interface ListReleasesOptions {
     readonly target: PublicationTarget;
     readonly deep?: boolean;
     readonly onProgress?: ProgressSink;
+    readonly onWarning?: (warning: PublisherDiagnosticV1) => void;
 }
 
 export interface ReleaseSummary {
@@ -72,10 +77,20 @@ function compareText(left: string, right: string): number {
 }
 
 function releasePrefix(storyId: string, target: PublicationTarget): string {
-    getCurrentPointerPath(storyId, target);
-    return target.kind === 'production'
-        ? `vn/stories/${storyId}/releases/`
-        : `vn/previews/${target.previewId}/stories/${storyId}/releases/`;
+    const exampleReleaseId = `sha256-${'0'.repeat(64)}`;
+    const manifestPath = getReleaseManifestPath(
+        storyId,
+        exampleReleaseId,
+        target
+    );
+    const releaseIdBoundary = manifestPath.indexOf(`/${exampleReleaseId}/`);
+    if (releaseIdBoundary === -1) {
+        throw new PublisherError(
+            'configuration',
+            'Unable to derive the release key prefix from the manifest path grammar'
+        );
+    }
+    return manifestPath.slice(0, releaseIdBoundary + 1);
 }
 
 function releaseIdForKey(
@@ -230,12 +245,6 @@ async function summarizeRelease(
         releaseId,
         options.target
     );
-    const classification = await classifyManifest(
-        options.store,
-        options.storyId,
-        options.target,
-        releaseId
-    );
     let shallow;
     try {
         shallow = await verifyStoredRelease({
@@ -247,6 +256,12 @@ async function summarizeRelease(
         });
     } catch (error) {
         if (!invalidVerification(error)) throw error;
+        const classification = await classifyManifest(
+            options.store,
+            options.storyId,
+            options.target,
+            releaseId
+        );
         return {
             releaseId,
             manifestPath,
@@ -277,7 +292,8 @@ async function summarizeRelease(
         releaseId,
         manifestPath,
         manifestSha256: shallow.manifestSha256,
-        ...classification,
+        manifestValid: true,
+        releaseIdentityValid: true,
         shallowVerified: true,
         deepVerified,
         active: releaseId === activeReleaseId,
@@ -289,7 +305,24 @@ export async function listReleases(
 ): Promise<ReleaseSummary[]> {
     const prefix = releasePrefix(options.storyId, options.target);
     const releaseIds = await listedReleaseIds(options, prefix);
-    const activeReleaseId = await inspectActiveReleaseId(options);
+    let activeReleaseId: string | undefined;
+    try {
+        activeReleaseId = await inspectActiveReleaseId(options);
+    } catch (error) {
+        if (
+            !(error instanceof PublisherError) ||
+            error.code !== 'activation-target'
+        ) {
+            throw error;
+        }
+        activeReleaseId = undefined;
+        options.onWarning?.({
+            code: 'pointer-invalid',
+            stage: 'verification',
+            message:
+                'Current active-release pointer is invalid; every release is reported as inactive',
+        });
+    }
     const summaries: ReleaseSummary[] = [];
     for (const [index, releaseId] of releaseIds.entries()) {
         summaries.push(

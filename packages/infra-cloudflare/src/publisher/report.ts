@@ -108,6 +108,7 @@ const DIAGNOSTIC_CODES = new Set([
     'coverage/missing-source',
     'coverage/activation-not-allowed',
     'coverage/validation-failed',
+    'pointer-invalid',
 ]);
 const ACTION_KINDS = new Set<PublisherActionV1['kind']>([
     'include',
@@ -195,6 +196,9 @@ function safeDiagnosticMessage(
 ): string {
     if (code === 'source/aspect-ratio' && assetType !== undefined) {
         return `Source aspect ratio differs from the ${assetType} policy`;
+    }
+    if (code === 'pointer-invalid') {
+        return 'Current active-release pointer is invalid; every release is reported as inactive';
     }
     return 'Publisher diagnostic';
 }
@@ -630,9 +634,11 @@ export function renderHumanReport(report: PublisherReportV1): string {
 export function createHumanProgressSink(
     stderr: WritableProgressStream = process.stderr
 ): ProgressSink {
+    const safe = (value: number): number =>
+        Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
     return event => {
-        const completed = Math.max(0, Math.trunc(event.completed));
-        const total = Math.max(0, Math.trunc(event.total));
+        const completed = safe(event.completed);
+        const total = safe(event.total);
         stderr.write(`${safeStage(event.stage)} ${completed}/${total}\n`);
     };
 }

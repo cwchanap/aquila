@@ -27,6 +27,7 @@ import {
     publisherReportExitCode,
     renderHumanReport,
     renderJsonReport,
+    safeStage,
     type ProgressSink,
     type PublisherDiagnosticV1,
     type PublisherReportV1,
@@ -486,18 +487,42 @@ function baseCommand(
     const releaseId = requiresRelease
         ? parseReleaseId(values, command)
         : undefined;
+    // Resolve relative explicit and environment paths against the repository
+    // root once, so destination-overlap safety validation and the source/plan
+    // loaders read the same filesystem location. Without this, safety
+    // validation resolves relative values against repositoryRoot while the
+    // loaders resolve them against process.cwd(); running the CLI outside the
+    // repository root would then validate one location and read another,
+    // bypassing the source/destination overlap guard. Absolute paths pass
+    // through `resolve` unchanged. The default fallbacks
+    // (packages/assets/media and packages/stories/release-plans/<story>.json)
+    // are already resolved against repositoryRoot by the loaders, so they are
+    // left undefined here and handled by each loader.
+    const explicitPlanPath =
+        values.plan === undefined ? undefined : String(values.plan);
+    const explicitSourceRoot =
+        values['source-root'] === undefined
+            ? undefined
+            : String(values['source-root']);
+    const envSourceRoot = dependencies.environment.AQUILA_ASSET_SOURCE_ROOT;
+    const releasePlanPath =
+        explicitPlanPath === undefined
+            ? undefined
+            : resolve(dependencies.repositoryRoot, explicitPlanPath);
+    const sourceRoot =
+        explicitSourceRoot !== undefined
+            ? resolve(dependencies.repositoryRoot, explicitSourceRoot)
+            : envSourceRoot !== undefined
+              ? resolve(dependencies.repositoryRoot, envSourceRoot)
+              : undefined;
     return {
         command,
         storyId,
         target,
         repositoryRoot: dependencies.repositoryRoot,
         environment: dependencies.environment,
-        ...(values.plan === undefined
-            ? {}
-            : { releasePlanPath: String(values.plan) }),
-        ...(values['source-root'] === undefined
-            ? {}
-            : { sourceRoot: String(values['source-root']) }),
+        ...(releasePlanPath === undefined ? {} : { releasePlanPath }),
+        ...(sourceRoot === undefined ? {} : { sourceRoot }),
         ...(releaseId === undefined ? {} : { releaseId }),
         ...(expectedManifestSha256 === undefined
             ? {}
@@ -790,6 +815,19 @@ function errorReport(
     target: PublicationTarget
 ): PublisherReportV1 {
     const code = error instanceof PublisherError ? error.code : 'storage';
+    // Services attach the failed phase to PublisherError.context.stage (e.g.
+    // 'upload', 'verification', 'activation', 'rollback'). Hard-coding 'input'
+    // here would mislabel every storage/verification/activation failure and
+    // hide the failed phase from machine-readable reports. Validate the typed
+    // context value through the same stage allowlist the report sanitizer
+    // uses, falling back to 'input' only when the error carries no usable
+    // stage (e.g. CLI argument parsing, which genuinely fails at 'input').
+    const contextStage =
+        error instanceof PublisherError &&
+        typeof error.context.stage === 'string'
+            ? safeStage(error.context.stage)
+            : 'input';
+    const stage = contextStage === 'publisher' ? 'input' : contextStage;
     const timestampContext =
         error instanceof PublisherError &&
         (code === 'clock-skew' || code === 'non-monotonic-pointer-time')
@@ -817,7 +855,7 @@ function errorReport(
         errors: [
             {
                 code,
-                stage: 'input',
+                stage,
                 message: 'Publisher command failed',
                 ...timestampContext,
             },
@@ -870,10 +908,15 @@ export async function runAssetsCli(
         target = parsed.target;
         const hasPublicationInputs =
             command === 'plan' || command === 'publish';
+        // parsed.sourceRoot already folds in the AQUILA_ASSET_SOURCE_ROOT env
+        // fallback resolved against repositoryRoot (see baseCommand). Only the
+        // default source root remains relative; assertDestinationPathSafety
+        // resolves it against repositoryRoot, matching resolveSourceRoot's
+        // default. parsed.releasePlanPath is canonical when explicit; the
+        // default plan path is resolved against repositoryRoot by both the
+        // safety check and resolveReleasePlanPath.
         const sourceRootForSafety = hasPublicationInputs
-            ? (parsed.sourceRoot ??
-              dependencies.environment.AQUILA_ASSET_SOURCE_ROOT ??
-              'packages/assets/media')
+            ? (parsed.sourceRoot ?? 'packages/assets/media')
             : undefined;
         const planPathForSafety = hasPublicationInputs
             ? (parsed.releasePlanPath ??

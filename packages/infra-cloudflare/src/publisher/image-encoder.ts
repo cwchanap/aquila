@@ -62,75 +62,91 @@ export async function encodeAsset(
             context: { input: 'sourcePath' },
         });
     }
-    const sourceMetadata = await sharp(input.bytes, {
-        failOn: 'warning',
-        animated: false,
-    }).metadata();
-    const maximum = maximumFor(input.identity);
-    const base = sharp(input.bytes, {
-        failOn: 'warning',
-        animated: false,
-    })
-        .rotate()
-        .toColourspace('srgb')
-        .resize({
-            width: maximum.width,
-            height: maximum.height,
-            fit: 'inside',
-            withoutEnlargement: true,
-            kernel: sharp.kernel.lanczos3,
-        });
-    const variants = await Promise.all(
-        maximum.formats.map(format => encodeVariant(base.clone(), format))
-    );
-    const webp = variants.find(variant => variant.format === 'webp');
-    if (webp === undefined) {
-        throw new PublisherError(
-            'configuration',
-            'Encoder policy must include WebP'
+    try {
+        const sourceMetadata = await sharp(input.bytes, {
+            failOn: 'warning',
+            animated: false,
+        }).metadata();
+        const maximum = maximumFor(input.identity);
+        const base = sharp(input.bytes, {
+            failOn: 'warning',
+            animated: false,
+        })
+            .rotate()
+            .toColourspace('srgb')
+            .resize({
+                width: maximum.width,
+                height: maximum.height,
+                fit: 'inside',
+                withoutEnlargement: true,
+                kernel: sharp.kernel.lanczos3,
+            });
+        const variants = await Promise.all(
+            maximum.formats.map(format => encodeVariant(base.clone(), format))
         );
-    }
-    const outputMetadata = await sharp(webp.bytes, {
-        failOn: 'warning',
-        animated: false,
-    }).metadata();
-    if (
-        outputMetadata.width === undefined ||
-        outputMetadata.height === undefined
-    ) {
-        throw new PublisherError(
-            'configuration',
-            'Encoded WebP has no dimensions'
-        );
-    }
-    for (const variant of variants) {
-        const metadata = await sharp(variant.bytes, {
+        const webp = variants.find(variant => variant.format === 'webp');
+        if (webp === undefined) {
+            throw new PublisherError(
+                'configuration',
+                'Encoder policy must include WebP'
+            );
+        }
+        const outputMetadata = await sharp(webp.bytes, {
             failOn: 'warning',
             animated: false,
         }).metadata();
         if (
-            metadata.width !== outputMetadata.width ||
-            metadata.height !== outputMetadata.height
+            outputMetadata.width === undefined ||
+            outputMetadata.height === undefined
         ) {
             throw new PublisherError(
                 'configuration',
-                'Encoded variants have mismatched dimensions'
+                'Encoded WebP has no dimensions'
             );
         }
+        for (const variant of variants) {
+            const metadata = await sharp(variant.bytes, {
+                failOn: 'warning',
+                animated: false,
+            }).metadata();
+            if (
+                metadata.width !== outputMetadata.width ||
+                metadata.height !== outputMetadata.height
+            ) {
+                throw new PublisherError(
+                    'configuration',
+                    'Encoded variants have mismatched dimensions'
+                );
+            }
+        }
+        return {
+            identity: input.identity,
+            sourcePath: input.sourcePath,
+            ...(input.authoringSection === undefined
+                ? {}
+                : { authoringSection: input.authoringSection }),
+            ...(input.planSection === undefined
+                ? {}
+                : { planSection: input.planSection }),
+            variants,
+            width: outputMetadata.width,
+            height: outputMetadata.height,
+            sourceHasAlpha: sourceMetadata.hasAlpha ?? false,
+            outputHasAlpha: outputMetadata.hasAlpha ?? false,
+        };
+    } catch (error) {
+        // Explicit PublisherError instances (configuration diagnostics above,
+        // or a rethrown source/encoding error from encodeVariant) describe a
+        // deterministic publisher condition and must pass through unchanged.
+        // Anything else is a libvips/encoder pipeline failure (metadata parse,
+        // WebP/AVIF toBuffer) that would otherwise escape as a raw error and
+        // be classified as a storage failure (exit 3). Wrap it as an encoding
+        // failure so the CLI reports the deterministic input/encoding exit
+        // code 2 and operators can locate the failed phase.
+        if (error instanceof PublisherError) throw error;
+        throw new PublisherError('encoding', 'Image encoding failed', {
+            cause: error,
+            context: { stage: 'encode' },
+        });
     }
-    return {
-        identity: input.identity,
-        sourcePath: input.sourcePath,
-        ...(input.authoringSection === undefined
-            ? {}
-            : { authoringSection: input.authoringSection }),
-        ...(input.planSection === undefined
-            ? {}
-            : { planSection: input.planSection }),
-        variants,
-        width: outputMetadata.width,
-        height: outputMetadata.height,
-        sourceHasAlpha: sourceMetadata.hasAlpha ?? false,
-        outputHasAlpha: outputMetadata.hasAlpha ?? false,
-    };
 }

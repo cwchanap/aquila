@@ -258,6 +258,67 @@ describe('assets CLI destination selection and safety', () => {
         expect(test.localFactory).not.toHaveBeenCalled();
     });
 
+    it('resolves relative --source-root and --plan against repositoryRoot, not cwd', async () => {
+        // Safety validation resolves relative paths against repositoryRoot, but
+        // the source/plan loaders previously resolved the same values against
+        // process.cwd(). Running the CLI outside the repository root would
+        // then validate one filesystem location and read another, bypassing
+        // the source/destination overlap guard. Both paths must now resolve
+        // against repositoryRoot once and flow through to execution.
+        const root = await mkdtemp(join(tmpdir(), 'aquila-cli-cwd-'));
+        const originalCwd = process.cwd();
+        try {
+            const repositoryRoot = join(root, 'repo');
+            const sourceRoot = join(repositoryRoot, 'sources');
+            const destinationRoot = join(root, 'destination');
+            const planFile = join(repositoryRoot, 'plan.json');
+            await mkdir(repositoryRoot, { recursive: true });
+            await Promise.all([
+                mkdir(sourceRoot, { recursive: true }),
+                mkdir(destinationRoot, { recursive: true }),
+                writeFile(planFile, '{}'),
+            ]);
+            // Run from a cwd that is neither the repository root nor a
+            // directory containing `sources` or `plan.json`, so a cwd-relative
+            // resolution would point at non-existent paths.
+            const elsewhere = join(root, 'elsewhere');
+            await mkdir(elsewhere, { recursive: true });
+            process.chdir(elsewhere);
+
+            const runCommand = vi.fn(async command => report(command.command));
+            const test = harness(runCommand);
+            test.dependencies.repositoryRoot = repositoryRoot;
+
+            const exit = await runAssetsCli(
+                [
+                    'plan',
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'preview',
+                    '--preview-id',
+                    'gate-123',
+                    '--source-root',
+                    'sources',
+                    '--plan',
+                    'plan.json',
+                    '--destination-root',
+                    destinationRoot,
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(0);
+            expect(runCommand).toHaveBeenCalledTimes(1);
+            const passed = runCommand.mock.calls[0][0] as ParsedAssetsCommand;
+            expect(passed.sourceRoot).toBe(sourceRoot);
+            expect(passed.releasePlanPath).toBe(planFile);
+        } finally {
+            process.chdir(originalCwd);
+            await rm(root, { recursive: true, force: true });
+        }
+    });
+
     it.each(['destination-alias', 'source-alias', 'plan-alias'] as const)(
         'rejects canonical overlap through a %s before store construction',
         async aliasKind => {
@@ -863,6 +924,9 @@ describe('assets CLI dispatch, lifecycle, output, and exits', () => {
         ['clock-skew', 5],
         ['configuration', 1],
         ['coverage', 2],
+        ['encoding', 2],
+        ['source', 2],
+        ['integrity', 2],
         ['storage', 3],
     ] as const)('maps thrown %s errors to exit %d', async (code, expected) => {
         const secret = 'publisher-secret-never-print';
@@ -926,6 +990,68 @@ describe('assets CLI dispatch, lifecycle, output, and exits', () => {
         ]);
         expect(`${test.stdout()}${test.stderr()}`).not.toContain(secret);
         expect(`${test.stdout()}${test.stderr()}`).not.toContain('/Users/');
+    });
+
+    it('preserves the failed stage from PublisherError context in the report', async () => {
+        const test = harness(async () => {
+            throw new PublisherError('storage', 'upload failed', {
+                context: { stage: 'upload', key: 'vn/objects/abc.webp' },
+            });
+        });
+
+        const exit = await runAssetsCli(
+            [...localPlan, '--json'],
+            test.dependencies
+        );
+        const output = JSON.parse(test.stdout()) as PublisherReportV1;
+
+        expect(exit).toBe(3);
+        expect(output.errors).toEqual([
+            expect.objectContaining({
+                code: 'storage',
+                stage: 'upload',
+            }),
+        ]);
+    });
+
+    it('falls back to the input stage when the error carries no stage context', async () => {
+        const test = harness(async () => {
+            throw new PublisherError('input', 'invalid story id', {
+                context: { input: 'story' },
+            });
+        });
+
+        const exit = await runAssetsCli(
+            [...localPlan, '--json'],
+            test.dependencies
+        );
+        const output = JSON.parse(test.stdout()) as PublisherReportV1;
+
+        expect(exit).toBe(2);
+        expect(output.errors).toEqual([
+            expect.objectContaining({ code: 'input', stage: 'input' }),
+        ]);
+    });
+
+    it('rejects an untrusted stage value from the error context', async () => {
+        const secret = 'stage-injection-secret';
+        const test = harness(async () => {
+            throw new PublisherError('storage', `unsafe ${secret}`, {
+                context: { stage: `<script>${secret}</script>` },
+            });
+        });
+
+        const exit = await runAssetsCli(
+            [...localPlan, '--json'],
+            test.dependencies
+        );
+        const output = JSON.parse(test.stdout()) as PublisherReportV1;
+
+        expect(exit).toBe(3);
+        expect(output.errors).toEqual([
+            expect.objectContaining({ code: 'storage', stage: 'input' }),
+        ]);
+        expect(`${test.stdout()}${test.stderr()}`).not.toContain(secret);
     });
 
     it('documents every required safe workflow in help without a store', async () => {

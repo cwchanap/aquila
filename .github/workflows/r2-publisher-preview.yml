@@ -298,9 +298,9 @@ jobs:
             "$PREVIEW_ID"
 
       - name: Run HPA-229 public smoke verification
-        env:
-          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
-          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        # The verifier (packages/infra-cloudflare/src/verify.ts) only makes
+        # unauthenticated public requests and must never hold an R2 credential
+        # or Cloudflare token. Do not add publisher secrets to this step.
         shell: bash
         run: |
           bun --filter @aquila/infra-cloudflare verify > .tmp/evidence/hpa-229-public-verify.txt 2>&1

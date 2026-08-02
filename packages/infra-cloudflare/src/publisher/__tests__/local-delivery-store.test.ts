@@ -4,6 +4,7 @@ import {
     mkdir,
     mkdtemp,
     readFile,
+    readdir,
     unlink,
     writeFile,
 } from 'node:fs/promises';
@@ -248,6 +249,38 @@ describe('LocalDeliveryStore', () => {
             code: 'ENOENT',
         });
     }, 7_000);
+
+    it('cleans a choosing record when its post-link directory flush fails', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'local-lock-flush-failure-'));
+        let failNextDirectoryFlush = true;
+        const store = new LocalDeliveryStore(root, {
+            afterDirectoryFlush: async () => {
+                if (!failNextDirectoryFlush) return;
+                failNextDirectoryFlush = false;
+                throw new Error('injected post-link directory flush failure');
+            },
+        });
+
+        await expect(
+            store.compareAndSwapPointer({
+                ...pointerRequest(POINTER_KEY, 'A'),
+                expected: { exists: false },
+            })
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'storage' });
+        await expect(
+            readdir(join(root, 'vn/stories/example'))
+        ).resolves.not.toEqual(
+            expect.arrayContaining([
+                expect.stringContaining('current.json.lock.choosing.'),
+            ])
+        );
+        await expect(
+            store.compareAndSwapPointer({
+                ...pointerRequest(POINTER_KEY, 'B'),
+                expected: { exists: false },
+            })
+        ).resolves.toMatchObject({ status: 'written' });
+    });
 
     it('does not let competing stale-lock reclaimers displace a new lock generation', async () => {
         const root = await mkdtemp(join(tmpdir(), 'local-lock-generation-'));

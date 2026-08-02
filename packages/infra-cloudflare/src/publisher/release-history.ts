@@ -105,9 +105,9 @@ async function listedReleaseIds(
 ): Promise<string[]> {
     const releaseIds = new Set<string>();
     try {
-        for await (const listed of options.store.list(prefix)) {
+        for await (const key of options.store.listKeys(prefix)) {
             const releaseId = releaseIdForKey(
-                listed.key,
+                key,
                 prefix,
                 options.storyId,
                 options.target
@@ -362,7 +362,8 @@ function rollbackReport(
 }
 
 function invalidRollbackTarget(
-    options: RollbackReleaseOptions
+    options: RollbackReleaseOptions,
+    key?: string
 ): PublisherError {
     return new PublisherError(
         'activation-target',
@@ -370,11 +371,7 @@ function invalidRollbackTarget(
         {
             context: {
                 stage: 'rollback',
-                key: getReleaseManifestPath(
-                    options.storyId,
-                    options.releaseId,
-                    options.target
-                ),
+                ...(key === undefined ? {} : { key }),
             },
         }
     );
@@ -391,7 +388,10 @@ async function assertRollbackTargetExists(
     let stored;
     try {
         stored = await options.store.stat(key);
-    } catch {
+    } catch (error) {
+        if (error instanceof PublisherError && error.code === 'integrity') {
+            throw invalidRollbackTarget(options, key);
+        }
         throw new PublisherError(
             'storage',
             'Unable to inspect rollback target',
@@ -401,12 +401,15 @@ async function assertRollbackTargetExists(
             }
         );
     }
-    if (stored === null) throw invalidRollbackTarget(options);
+    if (stored === null) throw invalidRollbackTarget(options, key);
 }
 
 export async function rollbackRelease(
     options: RollbackReleaseOptions
 ): Promise<PublisherReportV1> {
+    if (!isReleaseId(options.releaseId)) {
+        throw invalidRollbackTarget(options);
+    }
     await assertRollbackTargetExists(options);
     let activation: ActivationResult;
     try {
@@ -416,7 +419,14 @@ export async function rollbackRelease(
         });
     } catch (error) {
         if (error instanceof PublisherError && error.code === 'integrity') {
-            throw invalidRollbackTarget(options);
+            throw invalidRollbackTarget(
+                options,
+                getReleaseManifestPath(
+                    options.storyId,
+                    options.releaseId,
+                    options.target
+                )
+            );
         }
         throw error;
     }

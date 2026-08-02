@@ -245,6 +245,7 @@ function activationStoreWithAdvisoryGuard(
                       status: 'precondition-failed' as const,
                   })
                 : options.store.compareAndSwapPointer(request),
+        listKeys: prefix => options.store.listKeys(prefix),
         list: prefix => options.store.list(prefix),
         close: async () => {},
     };

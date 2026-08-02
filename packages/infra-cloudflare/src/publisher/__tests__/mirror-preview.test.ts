@@ -138,6 +138,12 @@ class RecordingMemoryStore implements DeliveryStore {
         }
     }
 
+    async *listKeys(prefix: string): AsyncIterable<string> {
+        for (const key of this.objects.keys()) {
+            if (key.startsWith(prefix)) yield key;
+        }
+    }
+
     async close(): Promise<void> {}
 }
 

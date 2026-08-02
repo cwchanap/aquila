@@ -458,4 +458,25 @@ describe('LocalDeliveryStore', () => {
             'vn/stories/example/releases/sha256-b/runtime-manifest.json',
         ]);
     });
+
+    it('lists raw body keys without parsing a rejected lookalike sidecar', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'local-list-keys-'));
+        const store = new LocalDeliveryStore(root);
+        const prefix = 'vn/stories/example/releases/';
+        const validKey = `${prefix}sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/runtime-manifest.json`;
+        const lookalikeKey = `${validKey}.metadata`;
+        const immutableRequest = {
+            bytes: new TextEncoder().encode('{}'),
+            contentType: 'application/json',
+            cacheControl: 'public, max-age=31536000, immutable',
+        };
+        await store.createImmutable({ ...immutableRequest, key: validKey });
+        await store.createImmutable({ ...immutableRequest, key: lookalikeKey });
+        await writeFile(sidecarPath(root, lookalikeKey), '{}\n');
+
+        const keys = [];
+        for await (const key of store.listKeys(prefix)) keys.push(key);
+
+        expect(keys.sort()).toEqual([lookalikeKey, validKey].sort());
+    });
 });

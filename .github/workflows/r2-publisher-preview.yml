@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           # shellcheck disable=SC2016
-          bun --filter @aquila/infra-cloudflare assets -- publish \
+          bun packages/infra-cloudflare/src/publisher/cli.ts publish \
             --story "$STORY_ID" \
             --environment production \
             --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
@@ -121,7 +121,7 @@ jobs:
       - name: Prove unchanged candidate is a no-op
         shell: bash
         run: |
-          bun --filter @aquila/infra-cloudflare assets -- publish \
+          bun packages/infra-cloudflare/src/publisher/cli.ts publish \
             --story "$STORY_ID" \
             --environment production \
             --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
@@ -134,7 +134,7 @@ jobs:
       - name: Mirror exact candidate A to run preview
         shell: bash
         run: |
-          bun --filter @aquila/infra-cloudflare assets -- mirror-preview \
+          bun packages/infra-cloudflare/src/publisher/cli.ts mirror-preview \
             --story "$STORY_ID" \
             --release "$RELEASE_A" \
             --preview-id "$PREVIEW_ID" \
@@ -146,7 +146,7 @@ jobs:
       - name: Activate retained candidate A in preview
         shell: bash
         run: |
-          bun --filter @aquila/infra-cloudflare assets -- activate \
+          bun packages/infra-cloudflare/src/publisher/cli.ts activate \
             --story "$STORY_ID" \
             --environment preview \
             --preview-id "$PREVIEW_ID" \
@@ -163,7 +163,7 @@ jobs:
 
       - name: Deep verify candidate A through R2
         run: |
-          bun --filter @aquila/infra-cloudflare assets -- verify \
+          bun packages/infra-cloudflare/src/publisher/cli.ts verify \
             --story "$STORY_ID" \
             --environment preview \
             --preview-id "$PREVIEW_ID" \
@@ -177,7 +177,7 @@ jobs:
         shell: bash
         run: |
           # shellcheck disable=SC2016
-          bun --filter @aquila/infra-cloudflare assets -- publish \
+          bun packages/infra-cloudflare/src/publisher/cli.ts publish \
             --story "$STORY_ID" \
             --environment production \
             --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
@@ -197,7 +197,7 @@ jobs:
       - name: Mirror controlled revision
         shell: bash
         run: |
-          bun --filter @aquila/infra-cloudflare assets -- mirror-preview \
+          bun packages/infra-cloudflare/src/publisher/cli.ts mirror-preview \
             --story "$STORY_ID" \
             --release "$RELEASE_B" \
             --preview-id "$PREVIEW_ID" \
@@ -209,7 +209,7 @@ jobs:
       - name: Source-independent activation of controlled revision
         shell: bash
         run: |
-          bun --filter @aquila/infra-cloudflare assets -- activate \
+          bun packages/infra-cloudflare/src/publisher/cli.ts activate \
             --story "$STORY_ID" \
             --environment preview \
             --preview-id "$PREVIEW_ID" \
@@ -248,7 +248,7 @@ jobs:
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-rollback "$PREVIEW_ID"
-          bun --filter @aquila/infra-cloudflare assets -- rollback \
+          bun packages/infra-cloudflare/src/publisher/cli.ts rollback \
             --story "$STORY_ID" \
             --environment preview \
             --preview-id "$PREVIEW_ID" \

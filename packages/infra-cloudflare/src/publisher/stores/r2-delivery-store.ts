@@ -9,6 +9,7 @@ import {
     type ListObjectsV2CommandOutput,
     type PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
+import { isPreviewId, isStoryId } from '@aquila/stories/runtime-assets';
 import { loadR2DeliveryConfig } from '../../config';
 import { PublisherError } from '../errors';
 import type {
@@ -40,6 +41,10 @@ type R2ObjectMetadata = Pick<
     HeadObjectCommandOutput | GetObjectCommandOutput,
     'ETag' | 'ContentLength' | 'ContentType' | 'CacheControl' | 'Metadata'
 >;
+
+const SANITIZED_R2_TRANSPORT_CAUSE = Object.freeze({
+    classification: 'r2-transport-failure' as const,
+});
 
 function isServiceErrorWithStatus(error: unknown, status: number): boolean {
     if (typeof error !== 'object' || error === null) return false;
@@ -149,7 +154,7 @@ export class R2DeliveryStore implements DeliveryStore {
         } catch (error) {
             if (isNotFound(error)) return null;
             if (error instanceof PublisherError) throw error;
-            throw this.storageError('Unable to inspect R2 object', key, error);
+            throw this.storageError('Unable to inspect R2 object', key);
         }
     }
 
@@ -183,8 +188,7 @@ export class R2DeliveryStore implements DeliveryStore {
             }
             throw this.storageError(
                 'Unable to create immutable R2 object',
-                request.key,
-                error
+                request.key
             );
         }
     }
@@ -204,6 +208,7 @@ export class R2DeliveryStore implements DeliveryStore {
     async compareAndSwapPointer(
         request: PointerWriteRequest
     ): Promise<{ status: 'written' | 'precondition-failed'; etag?: string }> {
+        this.assertPointerKey(request.key);
         try {
             const output = (await this.client.send(
                 new PutObjectCommand({
@@ -228,14 +233,14 @@ export class R2DeliveryStore implements DeliveryStore {
             }
             throw this.storageError(
                 'Unable to compare and swap R2 pointer',
-                request.key,
-                error
+                request.key
             );
         }
     }
 
     async *list(prefix: string): AsyncIterable<StoredObjectMetadata> {
         let continuationToken: string | undefined;
+        const seenContinuationTokens = new Set<string>();
         do {
             let output: ListObjectsV2CommandOutput;
             try {
@@ -246,12 +251,8 @@ export class R2DeliveryStore implements DeliveryStore {
                         ContinuationToken: continuationToken,
                     })
                 )) as ListObjectsV2CommandOutput;
-            } catch (error) {
-                throw this.storageError(
-                    'Unable to list R2 objects',
-                    prefix,
-                    error
-                );
+            } catch {
+                throw this.storageError('Unable to list R2 objects', prefix);
             }
 
             for (const listed of output.Contents ?? []) {
@@ -267,19 +268,51 @@ export class R2DeliveryStore implements DeliveryStore {
             }
 
             if (output.IsTruncated !== true) return;
-            if (output.NextContinuationToken === undefined) {
+            const nextContinuationToken = output.NextContinuationToken;
+            if (
+                nextContinuationToken === undefined ||
+                nextContinuationToken.length === 0 ||
+                nextContinuationToken === continuationToken ||
+                seenContinuationTokens.has(nextContinuationToken)
+            ) {
                 throw new PublisherError(
                     'integrity',
-                    'Truncated R2 list response has no continuation token',
+                    'Truncated R2 list response has no advancing continuation token',
                     { context: { prefix } }
                 );
             }
-            continuationToken = output.NextContinuationToken;
+            seenContinuationTokens.add(nextContinuationToken);
+            continuationToken = nextContinuationToken;
         } while (true);
     }
 
     async close(): Promise<void> {
         this.client.destroy();
+    }
+
+    private assertPointerKey(key: string): void {
+        const segments = key.split('/');
+        const productionPointer =
+            segments.length === 4 &&
+            segments[0] === 'vn' &&
+            segments[1] === 'stories' &&
+            isStoryId(segments[2]) &&
+            segments[3] === 'current.json';
+        const previewPointer =
+            segments.length === 6 &&
+            segments[0] === 'vn' &&
+            segments[1] === 'previews' &&
+            isPreviewId(segments[2]) &&
+            segments[3] === 'stories' &&
+            isStoryId(segments[4]) &&
+            segments[5] === 'current.json';
+        if (!productionPointer && !previewPointer) {
+            throw new PublisherError(
+                'input',
+                'Pointer key must identify a runtime current.json',
+                { context: { key } }
+            );
+        }
     }
 
     private async readIfPresent(key: string): Promise<StoredObject | null> {
@@ -305,7 +338,7 @@ export class R2DeliveryStore implements DeliveryStore {
         } catch (error) {
             if (isNotFound(error)) return null;
             if (error instanceof PublisherError) throw error;
-            throw this.storageError('Unable to read R2 object', key, error);
+            throw this.storageError('Unable to read R2 object', key);
         }
     }
 
@@ -337,13 +370,9 @@ export class R2DeliveryStore implements DeliveryStore {
         };
     }
 
-    private storageError(
-        message: string,
-        key: string,
-        cause: unknown
-    ): PublisherError {
+    private storageError(message: string, key: string): PublisherError {
         return new PublisherError('storage', message, {
-            cause,
+            cause: SANITIZED_R2_TRANSPORT_CAUSE,
             context: { key },
         });
     }

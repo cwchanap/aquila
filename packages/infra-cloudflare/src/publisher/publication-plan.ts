@@ -1,6 +1,3 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     getCurrentPointerPath,
@@ -316,233 +313,223 @@ function progress(
 export async function buildPublicationPlan(
     options: BuildPublicationPlanOptions
 ): Promise<PublicationPlan> {
-    const temporaryWorkspace = await mkdtemp(
-        join(tmpdir(), 'aquila-publication-plan-')
+    progress(options.progress, {
+        stage: 'input',
+        completed: 0,
+        total: 2,
+        message: 'loading publication inputs',
+    });
+    const catalog = await discoverAuthoringCatalog(
+        options.repositoryRoot,
+        options.storyId
     );
-    try {
-        progress(options.progress, {
-            stage: 'input',
-            completed: 0,
-            total: 2,
-            message: 'loading publication inputs',
-        });
-        const catalog = await discoverAuthoringCatalog(
-            options.repositoryRoot,
-            options.storyId
+    progress(options.progress, {
+        stage: 'input',
+        completed: 1,
+        total: 2,
+        message: 'loaded authoring catalog',
+    });
+    const planPath = await resolveReleasePlanPath({
+        repositoryRoot: options.repositoryRoot,
+        storyId: options.storyId,
+        target: options.target,
+        ...(options.releasePlanPath === undefined
+            ? {}
+            : { explicitPath: options.releasePlanPath }),
+    });
+    const releasePlan = await loadReleasePlan(planPath);
+    progress(options.progress, {
+        stage: 'input',
+        completed: 2,
+        total: 2,
+        message: 'loaded release plan',
+    });
+
+    const selectedSourceRoot = await resolveSourceRoot({
+        repositoryRoot: options.repositoryRoot,
+        ...(options.sourceRoot === undefined
+            ? {}
+            : { explicitPath: options.sourceRoot }),
+        environment: options.environment ?? process.env,
+    });
+    const included = includedEntries(releasePlan.entries);
+    const resolved = await resolveIncludedSources({
+        sourceRoot: selectedSourceRoot,
+        includedEntries: included,
+    });
+    progress(options.progress, {
+        stage: 'source',
+        completed: resolved.sources.length,
+        total: included.length,
+        message: 'resolved included sources',
+    });
+
+    const coverage = validatePublisherCoverage({
+        catalog,
+        plan: releasePlan,
+        target: options.target,
+        availableSourcePaths: resolved.availableSourcePaths,
+    });
+    const catalogByIdentity = new Map(
+        catalog.assets.map(asset => [
+            qualifyAssetIdentity(asset.identity),
+            asset,
+        ])
+    );
+    const planByIdentity = new Map(
+        included.map(entry => [qualifyAssetIdentity(entry.identity), entry])
+    );
+    const encodedAssets: EncodedAsset[] = [];
+    const sourceWarnings = [];
+    for (const [index, source] of resolved.sources.entries()) {
+        sourceWarnings.push(...evaluateSourceDiagnostics(source));
+        const identity = qualifyAssetIdentity(source.identity);
+        const authoring = catalogByIdentity.get(identity);
+        const planned = planByIdentity.get(identity);
+        encodedAssets.push(
+            await encodeAsset({
+                identity: source.identity,
+                sourcePath: source.sourcePath,
+                bytes: source.bytes,
+                ...(authoring?.section === undefined
+                    ? {}
+                    : { authoringSection: authoring.section }),
+                ...(planned?.section === undefined
+                    ? {}
+                    : { planSection: planned.section }),
+            })
         );
         progress(options.progress, {
-            stage: 'input',
-            completed: 1,
-            total: 2,
-            message: 'loaded authoring catalog',
+            stage: 'encode',
+            completed: index + 1,
+            total: resolved.sources.length,
+            message: `encoded ${identity}`,
         });
-        const planPath = await resolveReleasePlanPath({
-            repositoryRoot: options.repositoryRoot,
-            storyId: options.storyId,
-            target: options.target,
-            ...(options.releasePlanPath === undefined
-                ? {}
-                : { explicitPath: options.releasePlanPath }),
-        });
-        const releasePlan = await loadReleasePlan(planPath);
-        progress(options.progress, {
-            stage: 'input',
-            completed: 2,
-            total: 2,
-            message: 'loaded release plan',
-        });
+    }
 
-        const selectedSourceRoot = await resolveSourceRoot({
-            repositoryRoot: options.repositoryRoot,
-            ...(options.sourceRoot === undefined
-                ? {}
-                : { explicitPath: options.sourceRoot }),
-            environment: options.environment ?? process.env,
-        });
-        const included = includedEntries(releasePlan.entries);
-        const resolved = await resolveIncludedSources({
-            sourceRoot: selectedSourceRoot,
-            includedEntries: included,
-        });
-        progress(options.progress, {
-            stage: 'source',
-            completed: resolved.sources.length,
-            total: included.length,
-            message: 'resolved included sources',
-        });
-
-        const coverage = validatePublisherCoverage({
-            catalog,
-            plan: releasePlan,
-            target: options.target,
-            availableSourcePaths: resolved.availableSourcePaths,
-        });
-        const catalogByIdentity = new Map(
-            catalog.assets.map(asset => [
-                qualifyAssetIdentity(asset.identity),
-                asset,
-            ])
+    const preparedRelease = buildPreparedRelease({
+        storyId: options.storyId,
+        target: options.target,
+        releasePlan,
+        encodedAssets,
+        coverage,
+    });
+    const variants = uniqueVariants(encodedAssets);
+    const objects: PlannedImmutableCandidate[] = [];
+    for (const [index, { variant, identity }] of variants.entries()) {
+        objects.push(
+            await inspectImmutableCandidate(options.store, {
+                kind: 'object',
+                key: variant.path,
+                bytes: variant.bytes,
+                contentType: variant.contentType,
+                cacheControl: IMMUTABLE_CACHE_CONTROL,
+                identity,
+            })
         );
-        const planByIdentity = new Map(
-            included.map(entry => [qualifyAssetIdentity(entry.identity), entry])
-        );
-        const encodedAssets: EncodedAsset[] = [];
-        const sourceWarnings = [];
-        for (const [index, source] of resolved.sources.entries()) {
-            sourceWarnings.push(...evaluateSourceDiagnostics(source));
-            const identity = qualifyAssetIdentity(source.identity);
-            const authoring = catalogByIdentity.get(identity);
-            const planned = planByIdentity.get(identity);
-            encodedAssets.push(
-                await encodeAsset({
-                    identity: source.identity,
-                    sourcePath: source.sourcePath,
-                    bytes: source.bytes,
-                    ...(authoring?.section === undefined
-                        ? {}
-                        : { authoringSection: authoring.section }),
-                    ...(planned?.section === undefined
-                        ? {}
-                        : { planSection: planned.section }),
-                })
-            );
-            progress(options.progress, {
-                stage: 'encode',
-                completed: index + 1,
-                total: resolved.sources.length,
-                message: `encoded ${identity}`,
-            });
-        }
-
-        const preparedRelease = buildPreparedRelease({
-            storyId: options.storyId,
-            target: options.target,
-            releasePlan,
-            encodedAssets,
-            coverage,
-        });
-        const variants = uniqueVariants(encodedAssets);
-        const objects: PlannedImmutableCandidate[] = [];
-        for (const [index, { variant, identity }] of variants.entries()) {
-            objects.push(
-                await inspectImmutableCandidate(options.store, {
-                    kind: 'object',
-                    key: variant.path,
-                    bytes: variant.bytes,
-                    contentType: variant.contentType,
-                    cacheControl: IMMUTABLE_CACHE_CONTROL,
-                    identity,
-                })
-            );
-            progress(options.progress, {
-                stage: 'inspect',
-                completed: index + 1,
-                total: variants.length + 1,
-                message: `inspected ${identity}`,
-            });
-        }
-
-        const manifest = await inspectImmutableCandidate(options.store, {
-            kind: 'manifest',
-            key: getReleaseManifestPath(
-                options.storyId,
-                preparedRelease.releaseId,
-                options.target
-            ),
-            bytes: preparedRelease.manifestBytes,
-            contentType: JSON_CONTENT_TYPE,
-            cacheControl: IMMUTABLE_CACHE_CONTROL,
-        });
         progress(options.progress, {
             stage: 'inspect',
-            completed: variants.length + 1,
+            completed: index + 1,
             total: variants.length + 1,
-            message: 'inspected release manifest',
+            message: `inspected ${identity}`,
         });
-        const advisoryPointer = await advisoryPointerState(
-            options.store,
-            options.storyId,
-            options.target,
-            preparedRelease
-        );
-
-        const actions: PublisherActionV1[] = [
-            ...inputActions(releasePlan.entries),
-            ...objects.map(candidate => ({
-                stage: 'object-inspection',
-                kind:
-                    candidate.status === 'create'
-                        ? ('create-object' as const)
-                        : ('reuse-object' as const),
-                ...(candidate.identity === undefined
-                    ? {}
-                    : { identity: candidate.identity }),
-                key: candidate.key,
-            })),
-            {
-                stage: 'manifest',
-                kind:
-                    manifest.status === 'create'
-                        ? 'create-manifest'
-                        : 'reuse-manifest',
-                key: manifest.key,
-            },
-            advisoryPointer.activationNeeded
-                ? {
-                      stage: 'activation',
-                      kind: 'write-pointer',
-                      key: getCurrentPointerPath(
-                          options.storyId,
-                          options.target
-                      ),
-                  }
-                : { stage: 'activation', kind: 'no-op' },
-        ];
-        const immutableChange =
-            objects.some(candidate => candidate.status === 'create') ||
-            manifest.status === 'create';
-        const warnings = normalizeReportDiagnostics(sourceWarnings);
-        const report: PublisherReportV1 = {
-            schemaVersion: 1,
-            command: 'plan',
-            status:
-                immutableChange || advisoryPointer.activationNeeded
-                    ? 'success'
-                    : 'no-op',
-            storyId: options.storyId,
-            target: options.target,
-            releaseId: preparedRelease.releaseId,
-            manifestSha256: preparedRelease.manifestSha256,
-            encoderFingerprint: getEncoderFingerprint(),
-            coverage,
-            counts: {
-                included: coverage.totals.included,
-                omitted: coverage.totals.omitted,
-                objectsCreated: objects.filter(
-                    candidate => candidate.status === 'create'
-                ).length,
-                objectsReused: objects.filter(
-                    candidate => candidate.status === 'reuse'
-                ).length,
-                manifestsCreated: manifest.status === 'create' ? 1 : 0,
-                manifestsReused: manifest.status === 'reuse' ? 1 : 0,
-                pointersWritten: 0,
-            },
-            actions,
-            warnings,
-            errors: [],
-            pointer: {
-                ...(advisoryPointer.beforeReleaseId === undefined
-                    ? {}
-                    : {
-                          beforeReleaseId: advisoryPointer.beforeReleaseId,
-                      }),
-                afterReleaseId: preparedRelease.releaseId,
-                changed: advisoryPointer.activationNeeded,
-            },
-        };
-        return { preparedRelease, objects, manifest, advisoryPointer, report };
-    } finally {
-        await rm(temporaryWorkspace, { recursive: true, force: true });
     }
+
+    const manifest = await inspectImmutableCandidate(options.store, {
+        kind: 'manifest',
+        key: getReleaseManifestPath(
+            options.storyId,
+            preparedRelease.releaseId,
+            options.target
+        ),
+        bytes: preparedRelease.manifestBytes,
+        contentType: JSON_CONTENT_TYPE,
+        cacheControl: IMMUTABLE_CACHE_CONTROL,
+    });
+    progress(options.progress, {
+        stage: 'inspect',
+        completed: variants.length + 1,
+        total: variants.length + 1,
+        message: 'inspected release manifest',
+    });
+    const advisoryPointer = await advisoryPointerState(
+        options.store,
+        options.storyId,
+        options.target,
+        preparedRelease
+    );
+
+    const actions: PublisherActionV1[] = [
+        ...inputActions(releasePlan.entries),
+        ...objects.map(candidate => ({
+            stage: 'object-inspection',
+            kind:
+                candidate.status === 'create'
+                    ? ('create-object' as const)
+                    : ('reuse-object' as const),
+            ...(candidate.identity === undefined
+                ? {}
+                : { identity: candidate.identity }),
+            key: candidate.key,
+        })),
+        {
+            stage: 'manifest',
+            kind:
+                manifest.status === 'create'
+                    ? 'create-manifest'
+                    : 'reuse-manifest',
+            key: manifest.key,
+        },
+        advisoryPointer.activationNeeded
+            ? {
+                  stage: 'activation',
+                  kind: 'write-pointer',
+                  key: getCurrentPointerPath(options.storyId, options.target),
+              }
+            : { stage: 'activation', kind: 'no-op' },
+    ];
+    const immutableChange =
+        objects.some(candidate => candidate.status === 'create') ||
+        manifest.status === 'create';
+    const warnings = normalizeReportDiagnostics(sourceWarnings);
+    const report: PublisherReportV1 = {
+        schemaVersion: 1,
+        command: 'plan',
+        status:
+            immutableChange || advisoryPointer.activationNeeded
+                ? 'success'
+                : 'no-op',
+        storyId: options.storyId,
+        target: options.target,
+        releaseId: preparedRelease.releaseId,
+        manifestSha256: preparedRelease.manifestSha256,
+        encoderFingerprint: getEncoderFingerprint(),
+        coverage,
+        counts: {
+            included: coverage.totals.included,
+            omitted: coverage.totals.omitted,
+            objectsCreated: objects.filter(
+                candidate => candidate.status === 'create'
+            ).length,
+            objectsReused: objects.filter(
+                candidate => candidate.status === 'reuse'
+            ).length,
+            manifestsCreated: manifest.status === 'create' ? 1 : 0,
+            manifestsReused: manifest.status === 'reuse' ? 1 : 0,
+            pointersWritten: 0,
+        },
+        actions,
+        warnings,
+        errors: [],
+        pointer: {
+            ...(advisoryPointer.beforeReleaseId === undefined
+                ? {}
+                : {
+                      beforeReleaseId: advisoryPointer.beforeReleaseId,
+                  }),
+            afterReleaseId: preparedRelease.releaseId,
+            changed: advisoryPointer.activationNeeded,
+        },
+    };
+    return { preparedRelease, objects, manifest, advisoryPointer, report };
 }

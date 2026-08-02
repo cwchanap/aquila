@@ -125,18 +125,11 @@ async function createCandidate(
 
 async function publishObjects(
     plan: PublicationPlan,
-    store: DeliveryStore,
-    onProgress: PublishReleaseOptions['progress']
+    store: DeliveryStore
 ): Promise<ImmutableResult[]> {
     const results: ImmutableResult[] = [];
-    for (const [index, candidate] of plan.objects.entries()) {
+    for (const candidate of plan.objects) {
         results.push(await createCandidate(store, candidate));
-        onProgress?.({
-            stage: 'upload',
-            completed: index + 1,
-            total: plan.objects.length,
-            message: 'published immutable object',
-        });
     }
     // Upload completion is not trusted. Every object is read back and checked
     // before the manifest phase begins, including create races and planned reuse.
@@ -353,11 +346,7 @@ export async function publishRelease(
     options: PublishReleaseOptions
 ): Promise<PublisherReportV1> {
     const plan = await buildPublicationPlan(options);
-    const objectResults = await publishObjects(
-        plan,
-        options.store,
-        options.progress
-    );
+    const objectResults = await publishObjects(plan, options.store);
     const manifestResult = await publishManifest(plan, options.store);
     await verifyPreparedRelease({
         store: options.store,

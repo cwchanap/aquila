@@ -84,7 +84,12 @@ export async function encodeAsset(
         maximum.formats.map(format => encodeVariant(base.clone(), format))
     );
     const webp = variants.find(variant => variant.format === 'webp');
-    if (webp === undefined) throw new Error('Encoder policy must include WebP');
+    if (webp === undefined) {
+        throw new PublisherError(
+            'configuration',
+            'Encoder policy must include WebP'
+        );
+    }
     const outputMetadata = await sharp(webp.bytes, {
         failOn: 'warning',
         animated: false,
@@ -93,7 +98,10 @@ export async function encodeAsset(
         outputMetadata.width === undefined ||
         outputMetadata.height === undefined
     ) {
-        throw new Error('Encoded WebP has no dimensions');
+        throw new PublisherError(
+            'configuration',
+            'Encoded WebP has no dimensions'
+        );
     }
     for (const variant of variants) {
         const metadata = await sharp(variant.bytes, {
@@ -104,7 +112,10 @@ export async function encodeAsset(
             metadata.width !== outputMetadata.width ||
             metadata.height !== outputMetadata.height
         ) {
-            throw new Error('Encoded variants have mismatched dimensions');
+            throw new PublisherError(
+                'configuration',
+                'Encoded variants have mismatched dimensions'
+            );
         }
     }
     return {

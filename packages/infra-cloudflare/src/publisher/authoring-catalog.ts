@@ -133,6 +133,15 @@ export async function discoverAuthoringCatalog(
             try {
                 return reduceAuthoringManifest(JSON.parse(text));
             } catch (error) {
+                let belongsToRequestedStory = false;
+                try {
+                    belongsToRequestedStory =
+                        (JSON.parse(text) as { storyId?: unknown }).storyId ===
+                        storyId;
+                } catch {
+                    belongsToRequestedStory = false;
+                }
+                if (!belongsToRequestedStory) return null;
                 if (error instanceof PublisherError) throw error;
                 throw new PublisherError(
                     'input',

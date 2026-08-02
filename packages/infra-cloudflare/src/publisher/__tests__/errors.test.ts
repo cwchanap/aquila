@@ -4,6 +4,8 @@ import { PublisherError, publisherExitCode } from '../errors';
 describe('publisherExitCode', () => {
     it.each([
         ['configuration', 1],
+        ['source', 2],
+        ['input', 2],
         ['coverage', 2],
         ['storage', 3],
         ['concurrency', 4],

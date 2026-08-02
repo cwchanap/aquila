@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
@@ -8,6 +8,7 @@ export async function createSourceFixture(): Promise<{
     sourceRoot: string;
     backgroundPath: string;
     portraitPath: string;
+    cleanup: () => Promise<void>;
 }> {
     const root = await mkdtemp(join(tmpdir(), 'aquila-publisher-'));
     const sourceRoot = join(root, 'media');
@@ -40,5 +41,11 @@ export async function createSourceFixture(): Promise<{
         .png()
         .toFile(join(sourceRoot, portraitPath));
 
-    return { root, sourceRoot, backgroundPath, portraitPath };
+    return {
+        root,
+        sourceRoot,
+        backgroundPath,
+        portraitPath,
+        cleanup: () => rm(root, { recursive: true, force: true }),
+    };
 }

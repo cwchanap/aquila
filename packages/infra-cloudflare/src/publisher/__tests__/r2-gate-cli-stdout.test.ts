@@ -16,7 +16,9 @@ describe('R2 publisher gate CLI stdout', () => {
     it('keeps the workflow publisher launcher JSON-only on a controlled error', async () => {
         const workflow = await readFile(workflowPath, 'utf8');
         const launcher = workflow.match(/^\s+(bun .+?) publish \\$/m)?.[1];
-        expect(launcher).toBeDefined();
+        expect(launcher).toBe(
+            'bun packages/infra-cloudflare/src/publisher/cli.ts'
+        );
 
         const [executable, ...launcherArgs] = launcher!.split(/\s+/);
         let failure:
@@ -33,7 +35,12 @@ describe('R2 publisher gate CLI stdout', () => {
         }
 
         expect(failure?.code).toBe(1);
-        expect(() => JSON.parse(failure?.stdout ?? '')).not.toThrow();
+        const report = JSON.parse(failure?.stdout ?? '') as {
+            status: string;
+            errors: Array<{ code?: string }>;
+        };
+        expect(report.status).toBe('failed');
+        expect(report.errors[0]?.code).toBe('configuration');
         expect(failure?.stdout?.trim().split('\n')).toHaveLength(1);
-    });
+    }, 30_000);
 });

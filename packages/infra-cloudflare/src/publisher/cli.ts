@@ -28,6 +28,7 @@ import {
     renderHumanReport,
     renderJsonReport,
     type ProgressSink,
+    type PublisherDiagnosticV1,
     type PublisherReportV1,
 } from './report';
 import type { DeliveryStore } from './stores/delivery-store';
@@ -578,7 +579,8 @@ function activationReport(
 
 export function buildReleaseListReport(
     command: Pick<ParsedAssetsCommand, 'storyId' | 'target'>,
-    releases: readonly ReleaseSummary[]
+    releases: readonly ReleaseSummary[],
+    warnings: readonly PublisherDiagnosticV1[] = []
 ): PublisherReportV1 {
     return {
         schemaVersion: 1,
@@ -588,7 +590,7 @@ export function buildReleaseListReport(
         target: command.target,
         counts: { ...emptyCounts(), included: releases.length },
         actions: [],
-        warnings: [],
+        warnings: [...warnings],
         errors: [],
         releases: releases.map(release => ({
             releaseId: release.releaseId,
@@ -667,34 +669,23 @@ async function runCommandServices(
                     confirmProduction: command.confirmProduction,
                 })
             );
-            return {
-                ...publication,
-                status: reactivation.status,
-                counts: {
-                    ...publication.counts,
-                    pointersWritten: reactivation.counts.pointersWritten,
-                },
-                actions: [
-                    ...publication.actions.filter(
-                        action => action.stage !== 'activation'
-                    ),
-                    ...reactivation.actions,
-                ],
-                pointer: reactivation.pointer,
-            };
+            return mergePublicationWithReactivation(publication, reactivation);
         }
-        case 'mirror-preview':
+        case 'mirror-preview': {
+            if (command.target.kind !== 'preview') {
+                throw configurationError(
+                    'mirror-preview requires a preview target'
+                );
+            }
             return mirrorProductionReleaseToPreview({
                 store: command.store,
                 storyId: command.storyId,
                 sourceTarget: { kind: 'production' },
                 releaseId: command.releaseId!,
-                previewId:
-                    command.target.kind === 'preview'
-                        ? command.target.previewId
-                        : '',
+                previewId: command.target.previewId,
                 expectedManifestSha256: command.expectedManifestSha256,
             });
+        }
         case 'activate':
             return activationReport(
                 command,
@@ -737,14 +728,16 @@ async function runCommandServices(
             };
         }
         case 'releases': {
+            const warnings: PublisherDiagnosticV1[] = [];
             const releases = await listReleases({
                 store: command.store,
                 storyId: command.storyId,
                 target: command.target,
                 deep: command.deep,
                 onProgress: command.progress,
+                onWarning: warning => warnings.push(warning),
             });
-            return buildReleaseListReport(command, releases);
+            return buildReleaseListReport(command, releases, warnings);
         }
         case 'rollback':
             return rollbackRelease({
@@ -757,6 +750,27 @@ async function runCommandServices(
                 confirmProduction: command.confirmProduction,
             });
     }
+}
+
+export function mergePublicationWithReactivation(
+    publication: PublisherReportV1,
+    reactivation: PublisherReportV1
+): PublisherReportV1 {
+    return {
+        ...publication,
+        status: reactivation.status,
+        counts: {
+            ...publication.counts,
+            pointersWritten: reactivation.counts.pointersWritten,
+        },
+        actions: [
+            ...publication.actions.filter(
+                action => action.stage !== 'activation'
+            ),
+            ...reactivation.actions,
+        ],
+        pointer: reactivation.pointer,
+    };
 }
 
 const defaultDependencies: AssetsCliDependencies = {
@@ -847,6 +861,10 @@ export async function runAssetsCli(
     try {
         command = parseCommandName(argv[0]);
         const values = parseValues(command, argv.slice(1));
+        if (values.help === true) {
+            dependencies.stdout.write(HELP);
+            return 0;
+        }
         const parsed = baseCommand(command, values, dependencies);
         storyId = parsed.storyId;
         target = parsed.target;

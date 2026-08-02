@@ -20,6 +20,7 @@ import { PublisherError, publisherExitCode } from '../errors';
 import { sha256Bytes } from '../hash';
 import { listReleases, rollbackRelease } from '../release-history';
 import { publisherReportExitCode } from '../report';
+import type { PublisherDiagnosticV1 } from '../report';
 import { buildPreparedRelease } from '../runtime-release';
 import type {
     DeliveryStore,
@@ -623,7 +624,7 @@ describe('listReleases', () => {
             [
                 [previewReleaseA.releaseId, false] as const,
                 [previewReleaseB.releaseId, true] as const,
-            ].sort(([left], [right]) => left.localeCompare(right))
+            ].sort()
         );
         expect(store.events).toContain(
             `inspect-pointer:${getCurrentPointerPath(STORY_ID, PREVIEW_TARGET)}`
@@ -631,6 +632,50 @@ describe('listReleases', () => {
         expect(
             store.events.some(event => event.startsWith('read-pointer:'))
         ).toBe(false);
+    });
+
+    it('reads each healthy manifest body once during shallow listing', async () => {
+        const store = new HistoryStore(previewReleaseA);
+        const manifestPath = getReleaseManifestPath(
+            STORY_ID,
+            previewReleaseA.releaseId,
+            PREVIEW_TARGET
+        );
+
+        const summaries = await listReleases({
+            store,
+            storyId: STORY_ID,
+            target: PREVIEW_TARGET,
+            deep: false,
+        });
+
+        expect(summaries).toHaveLength(1);
+        expect(
+            store.events.filter(event => event === `read:${manifestPath}`)
+        ).toHaveLength(1);
+    });
+
+    it('lists every release as inactive with a warning when the current pointer is corrupt', async () => {
+        const store = new HistoryStore(previewReleaseA, previewReleaseB);
+        store.forcePointer(textEncoder.encode('{ "broken": '));
+        const warnings: PublisherDiagnosticV1[] = [];
+
+        const summaries = await listReleases({
+            store,
+            storyId: STORY_ID,
+            target: PREVIEW_TARGET,
+            deep: false,
+            onWarning: warning => warnings.push(warning),
+        });
+
+        expect(summaries).toHaveLength(2);
+        expect(summaries.every(summary => summary.active === false)).toBe(true);
+        expect(warnings).toEqual([
+            expect.objectContaining({ code: 'pointer-invalid' }),
+        ]);
+        expect(store.events).toContain(
+            `inspect-pointer:${getCurrentPointerPath(STORY_ID, PREVIEW_TARGET)}`
+        );
     });
 
     it('consumes the store iterable once, sorts opaque pages, and reports bounded progress', async () => {

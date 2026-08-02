@@ -7,6 +7,7 @@ import type { PublisherReportV1 } from '../report';
 import type { DeliveryStore } from '../stores/delivery-store';
 import {
     buildReleaseListReport,
+    mergePublicationWithReactivation,
     runAssetsCli,
     type AssetsCliDependencies,
     type ParsedAssetsCommand,
@@ -952,6 +953,85 @@ describe('assets CLI dispatch, lifecycle, output, and exits', () => {
         }
         expect(test.localFactory).not.toHaveBeenCalled();
         expect(test.r2Factory).not.toHaveBeenCalled();
+    });
+
+    it('prints help for a per-command --help flag before validation or stores', async () => {
+        const test = harness();
+
+        const exit = await runAssetsCli(
+            [
+                'publish',
+                '--story',
+                'example_story',
+                '--environment',
+                'production',
+                '--help',
+            ],
+            test.dependencies
+        );
+
+        expect(exit).toBe(0);
+        expect(test.stdout()).toContain('Usage: assets <command> [options]');
+        expect(test.localFactory).not.toHaveBeenCalled();
+        expect(test.r2Factory).not.toHaveBeenCalled();
+    });
+
+    it('merges a reactivation report over the publication report', () => {
+        const publication = {
+            ...report('publish'),
+            counts: { ...report('publish').counts, objectsCreated: 2 },
+            actions: [
+                {
+                    stage: 'publication',
+                    kind: 'create-object' as const,
+                    key: 'objects/a.png',
+                },
+                {
+                    stage: 'activation',
+                    kind: 'write-pointer' as const,
+                    key: 'current.json',
+                },
+            ],
+        };
+        const reactivation = {
+            ...report('activate'),
+            status: 'no-op' as const,
+            counts: { ...report('activate').counts, pointersWritten: 1 },
+            actions: [
+                {
+                    stage: 'activation',
+                    kind: 'write-pointer' as const,
+                    key: 'current.json',
+                },
+            ],
+            pointer: {
+                beforeReleaseId: `sha256-${'a'.repeat(64)}`,
+                afterReleaseId: `sha256-${'b'.repeat(64)}`,
+                changed: true,
+            },
+        };
+
+        const merged = mergePublicationWithReactivation(
+            publication,
+            reactivation
+        );
+
+        expect(merged.status).toBe('no-op');
+        expect(merged.counts.objectsCreated).toBe(2);
+        expect(merged.counts.pointersWritten).toBe(1);
+        expect(merged.actions).toEqual([
+            {
+                stage: 'publication',
+                kind: 'create-object',
+                key: 'objects/a.png',
+            },
+            {
+                stage: 'activation',
+                kind: 'write-pointer',
+                key: 'current.json',
+            },
+        ]);
+        expect(merged.pointer).toEqual(reactivation.pointer);
     });
 
     it('normalizes relative roots against the injected repository root', async () => {

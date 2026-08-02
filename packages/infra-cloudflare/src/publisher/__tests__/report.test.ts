@@ -58,7 +58,16 @@ describe('publisher reports', () => {
         ];
 
         expect(commands).toHaveLength(7);
-        expect(statuses.map(status => report(status).status)).toEqual(statuses);
+        for (const command of commands) {
+            const input = report();
+            input.command = command;
+            expect(JSON.parse(renderJsonReport(input)).command).toBe(command);
+        }
+        for (const status of statuses) {
+            expect(JSON.parse(renderJsonReport(report(status))).status).toBe(
+                status
+            );
+        }
     });
 
     it('maps both successful mutation and no-op to exit code zero', () => {
@@ -173,7 +182,6 @@ describe('publisher reports', () => {
 
     it('writes bounded human progress only to the supplied stderr stream', () => {
         let stderr = '';
-        let stdout = '';
         const sink = createHumanProgressSink({
             write(chunk) {
                 stderr += String(chunk);
@@ -190,9 +198,7 @@ describe('publisher reports', () => {
         });
 
         expect(stderr).toBe('encode 2/3\n');
-        expect(stdout).toBe('');
         expect(renderHumanReport(report())).toContain('status: success');
-        stdout = '';
     });
 
     it('renders sanitized release summaries for JSON and human target selection', () => {

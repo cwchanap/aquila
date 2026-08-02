@@ -59,7 +59,7 @@ export async function encodeAsset(
 ): Promise<EncodedAsset> {
     if (!isSafeRelativePath(input.sourcePath)) {
         throw new PublisherError('source', 'Source path is unsafe', {
-            context: { input: 'sourcePath' },
+            context: { input: 'sourcePath', stage: 'source' },
         });
     }
     try {

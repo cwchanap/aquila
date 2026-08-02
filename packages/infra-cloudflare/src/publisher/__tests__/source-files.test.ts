@@ -21,6 +21,16 @@ function expectPrivatePathIsNotRetained(error: unknown, root: string): boolean {
     return true;
 }
 
+function expectSourceStage(error: unknown): boolean {
+    expect(error).toBeInstanceOf(PublisherError);
+    expect((error as PublisherError).code).toBe('source');
+    // errorReport() reads context.stage to label the failed phase in
+    // machine-readable reports. Source-layer failures must report 'source',
+    // not the default 'input' fallback.
+    expect((error as PublisherError).context.stage).toBe('source');
+    return true;
+}
+
 describe('source-file failure diagnostics', () => {
     it('does not retain an absolute path when resolving a missing source root', async () => {
         const fixture = await createSourceFixture();
@@ -57,6 +67,95 @@ describe('source-file failure diagnostics', () => {
         ).rejects.toSatisfy(error =>
             expectPrivatePathIsNotRetained(error, fixture.root)
         );
+    });
+});
+
+describe('source-file failure stage reporting', () => {
+    it('reports stage "source" for a missing source root', async () => {
+        const fixture = await createSourceFixture();
+        createdFixtures.push(fixture.cleanup);
+
+        await expect(
+            resolveSourceRoot({
+                repositoryRoot: fixture.root,
+                explicitPath: join(fixture.root, 'missing-media'),
+                environment: {},
+            })
+        ).rejects.toSatisfy(expectSourceStage);
+    });
+
+    it('reports stage "source" for a missing included source file', async () => {
+        const fixture = await createSourceFixture();
+        createdFixtures.push(fixture.cleanup);
+
+        await expect(
+            resolveIncludedSources({
+                sourceRoot: fixture.sourceRoot,
+                includedEntries: [
+                    {
+                        identity: {
+                            type: 'background',
+                            key: 'chapter_1/missing',
+                        },
+                        sourcePath: 'missing.png',
+                    },
+                ],
+            })
+        ).rejects.toSatisfy(expectSourceStage);
+    });
+
+    it('reports stage "source" for a symlink that escapes the source root', async () => {
+        const fixture = await createSourceFixture();
+        createdFixtures.push(fixture.cleanup);
+        const outside = join(fixture.root, 'outside.png');
+        await writeFile(outside, 'not inside');
+        await symlink(outside, join(fixture.sourceRoot, 'escape.png'));
+
+        await expect(
+            resolveIncludedSources({
+                sourceRoot: fixture.sourceRoot,
+                includedEntries: [
+                    {
+                        identity: {
+                            type: 'background',
+                            key: 'chapter_1/escape',
+                        },
+                        sourcePath: 'escape.png',
+                    },
+                ],
+            })
+        ).rejects.toSatisfy(expectSourceStage);
+    });
+
+    it('reports stage "source" for an unsupported image format', async () => {
+        const fixture = await createSourceFixture();
+        createdFixtures.push(fixture.cleanup);
+        const gifBytes = await sharp({
+            create: {
+                width: 2,
+                height: 2,
+                channels: 3,
+                background: '#000000',
+            },
+        })
+            .gif()
+            .toBuffer();
+        await writeFile(join(fixture.sourceRoot, 'wrong-format.gif'), gifBytes);
+
+        await expect(
+            resolveIncludedSources({
+                sourceRoot: fixture.sourceRoot,
+                includedEntries: [
+                    {
+                        identity: {
+                            type: 'background',
+                            key: 'chapter_1/wrong-format',
+                        },
+                        sourcePath: 'wrong-format.gif',
+                    },
+                ],
+            })
+        ).rejects.toSatisfy(expectSourceStage);
     });
 });
 

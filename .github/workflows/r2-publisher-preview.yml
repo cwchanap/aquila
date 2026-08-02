@@ -11,8 +11,6 @@ env:
   NODE_VERSION: '22'
   TURBO_TELEMETRY_DISABLED: '1'
   STORY_ID: hpa_230_gate
-  R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
-  R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
 
 jobs:
   publisher-preview-gate:
@@ -20,17 +18,17 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -88,6 +86,9 @@ jobs:
           EOF
 
       - name: Require scoped publisher credentials
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           if [[ -z "$R2_PUBLISHER_ACCESS_KEY_ID" || -z "$R2_PUBLISHER_SECRET_ACCESS_KEY" ]]; then
@@ -96,9 +97,15 @@ jobs:
           fi
 
       - name: Capture initial pointer evidence
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         run: bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts initial "$PREVIEW_ID"
 
       - name: Publish production fixture candidate without activation
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           # shellcheck disable=SC2016
@@ -119,6 +126,9 @@ jobs:
           '
 
       - name: Prove unchanged candidate is a no-op
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts publish \
@@ -132,6 +142,9 @@ jobs:
           bun -e 'const report = await Bun.file(".tmp/reports/candidate-a-unchanged.json").json(); if (report.status !== "no-op" || report.counts.objectsCreated !== 0 || report.counts.manifestsCreated !== 0 || report.counts.pointersWritten !== 0) throw new Error("unchanged rerun was not a no-op")'
 
       - name: Mirror exact candidate A to run preview
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts mirror-preview \
@@ -144,6 +157,9 @@ jobs:
           bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-activate-a "$PREVIEW_ID"
 
       - name: Activate retained candidate A in preview
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts activate \
@@ -162,6 +178,9 @@ jobs:
             "$PREVIEW_ID"
 
       - name: Deep verify candidate A through R2
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts verify \
             --story "$STORY_ID" \
@@ -174,6 +193,9 @@ jobs:
             --json > .tmp/reports/verify-a.json
 
       - name: Publish controlled production revision without activation
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           # shellcheck disable=SC2016
@@ -195,6 +217,9 @@ jobs:
           '
 
       - name: Mirror controlled revision
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts mirror-preview \
@@ -207,6 +232,9 @@ jobs:
           bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-activate-b "$PREVIEW_ID"
 
       - name: Source-independent activation of controlled revision
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts activate \
@@ -225,10 +253,13 @@ jobs:
             "$PREVIEW_ID"
 
       - name: Prove stale advisory conflict through publisher CLI
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           set +e
-          bun .github/scripts/r2-stale-conflict-coordinator.ts
+          bun packages/infra-cloudflare/scripts/r2-stale-conflict-coordinator.ts
           publish_exit=$?
           set -e
           if [[ "$publish_exit" -ne 4 ]]; then
@@ -245,6 +276,9 @@ jobs:
           '
 
       - name: Roll back preview to retained candidate A
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts before-rollback "$PREVIEW_ID"
@@ -264,12 +298,18 @@ jobs:
             "$PREVIEW_ID"
 
       - name: Run HPA-229 public smoke verification
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           bun --filter @aquila/infra-cloudflare verify > .tmp/evidence/hpa-229-public-verify.txt 2>&1
 
       - name: Prove production pointer never changed
         if: ${{ always() }}
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           mkdir -p .tmp/evidence
@@ -308,8 +348,8 @@ jobs:
           exit "$proof_exit"
 
       - name: Upload publisher gate evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: r2-publisher-preview-${{ github.run_id }}-${{ github.run_attempt }}
           path: |

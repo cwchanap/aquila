@@ -64,6 +64,7 @@ const UUID_RE =
 
 export interface LocalDeliveryStoreOptions {
     afterDirectoryFlush?: (path: string) => Promise<void>;
+    afterTransactionBodyRename?: (key: string) => Promise<void>;
 }
 
 function isNodeError(error: unknown, code: string): boolean {
@@ -184,15 +185,45 @@ export class LocalDeliveryStore implements DeliveryStore {
     private readonly metadataRoot: string;
     private readonly transactionRoot: string;
     private readonly afterDirectoryFlush?: (path: string) => Promise<void>;
+    private readonly afterTransactionBodyRename?: (
+        key: string
+    ) => Promise<void>;
 
     constructor(root: string, options: LocalDeliveryStoreOptions = {}) {
         this.root = resolve(root);
         this.metadataRoot = resolve(this.root, METADATA_DIRECTORY);
         this.transactionRoot = resolve(this.root, TRANSACTION_DIRECTORY);
         this.afterDirectoryFlush = options.afterDirectoryFlush;
+        this.afterTransactionBodyRename = options.afterTransactionBodyRename;
     }
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
+        const bodyPath = this.bodyPath(key);
+        await this.ensureDirectories(bodyPath, key);
+        const lock = await this.acquireLock(`${bodyPath}.create-lock`, key);
+        try {
+            await this.recoverPendingPointerTransaction(key);
+            return await this.statUnlocked(key);
+        } finally {
+            await this.releaseLock(lock, key);
+        }
+    }
+
+    async read(key: string): Promise<StoredObject> {
+        const bodyPath = this.bodyPath(key);
+        await this.ensureDirectories(bodyPath, key);
+        const lock = await this.acquireLock(`${bodyPath}.create-lock`, key);
+        try {
+            await this.recoverPendingPointerTransaction(key);
+            return await this.readUnlocked(key);
+        } finally {
+            await this.releaseLock(lock, key);
+        }
+    }
+
+    private async statUnlocked(
+        key: string
+    ): Promise<StoredObjectMetadata | null> {
         const bodyPath = this.bodyPath(key);
         const metadata = await this.readMetadataIfPresent(key);
         if (metadata === null) {
@@ -237,8 +268,8 @@ export class LocalDeliveryStore implements DeliveryStore {
         return metadata;
     }
 
-    async read(key: string): Promise<StoredObject> {
-        const metadata = await this.stat(key);
+    private async readUnlocked(key: string): Promise<StoredObject> {
+        const metadata = await this.statUnlocked(key);
         if (metadata === null) {
             throw new PublisherError('storage', 'Local object does not exist', {
                 context: { key },
@@ -360,9 +391,9 @@ export class LocalDeliveryStore implements DeliveryStore {
     }
 
     private async readPointerUnlocked(key: string): Promise<PointerSnapshot> {
-        const metadata = await this.stat(key);
+        const metadata = await this.statUnlocked(key);
         if (metadata === null) return { exists: false };
-        const object = await this.read(key);
+        const object = await this.readUnlocked(key);
         return {
             exists: true,
             etag: object.etag,
@@ -460,7 +491,7 @@ export class LocalDeliveryStore implements DeliveryStore {
                 { metadataKey: `${METADATA_DIRECTORY}/${entry}` }
             );
             if (!metadata.key.startsWith(prefix)) continue;
-            const current = await this.stat(metadata.key);
+            const current = await this.statUnlocked(metadata.key);
             if (current !== null) yield current;
         }
     }
@@ -776,6 +807,7 @@ export class LocalDeliveryStore implements DeliveryStore {
             if (bodyIsTemporary) {
                 await rename(bodyTemporaryPath, bodyPath);
             }
+            await this.afterTransactionBodyRename?.(key);
             if (metadataIsTemporary) {
                 await rename(metadataTemporaryPath, metadataPath);
             }
@@ -789,7 +821,7 @@ export class LocalDeliveryStore implements DeliveryStore {
             );
         }
 
-        const completed = await this.read(key);
+        const completed = await this.readUnlocked(key);
         if (completed.etag !== metadata.etag) {
             throw this.integrityError(
                 'Recovered pointer does not match transaction metadata',

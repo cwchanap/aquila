@@ -65,7 +65,8 @@ describe('LocalDeliveryStore', () => {
         const store = new LocalDeliveryStore(root);
 
         // A direct read still sees an orphan body without metadata as an
-        // integrity failure — read() does not run transaction recovery.
+        // integrity failure — read() runs transaction recovery, but an
+        // orphan body with no transaction marker has nothing to recover.
         await expect(
             store.read('vn/objects/partial.webp')
         ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
@@ -143,6 +144,69 @@ describe('LocalDeliveryStore', () => {
             contentType: 'image/webp',
         });
         await expect(readFile(bodyPath, 'utf8')).resolves.toBe('crashed-body');
+    });
+
+    it('does not expose a torn immutable object to concurrent stat() between body and metadata renames', async () => {
+        // Writer A pauses after renaming the body into place but before
+        // renaming the metadata. A second store instance B calling stat()
+        // or read() during that window must block on the per-key
+        // .create-lock and observe the completed object once A finishes —
+        // not throw "body exists without valid metadata".
+        const root = await mkdtemp(join(tmpdir(), 'local-immutable-torn-'));
+        let resumeWriter: () => void = () => {};
+        const writerGate = new Promise<void>(resolve => {
+            resumeWriter = resolve;
+        });
+        let hookReachedResolve!: () => void;
+        const hookReached = new Promise<void>(resolve => {
+            hookReachedResolve = resolve;
+        });
+
+        const writer = new LocalDeliveryStore(root, {
+            afterTransactionBodyRename: async () => {
+                hookReachedResolve();
+                await writerGate;
+            },
+        });
+        const key = 'vn/objects/raced.webp';
+        const bytes = new TextEncoder().encode('raced-body');
+        const createPromise = writer.createImmutable({
+            key,
+            bytes,
+            contentType: 'image/webp',
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+
+        // Wait for the writer to rename the body and reach the hook.
+        await hookReached;
+
+        // A second store inspects the object while the writer is paused
+        // between the body and metadata renames. stat() and read() must
+        // block on the .create-lock and not observe the torn state.
+        const reader = new LocalDeliveryStore(root);
+        const statPromise = reader.stat(key);
+        const readPromise = reader.read(key);
+
+        // Let the writer complete the metadata rename.
+        resumeWriter();
+        const [createResult, statResult, readResult] = await Promise.all([
+            createPromise,
+            statPromise,
+            readPromise,
+        ]);
+
+        expect(createResult).toEqual({ status: 'created' });
+        expect(statResult).toMatchObject({
+            key,
+            contentType: 'image/webp',
+            byteLength: bytes.byteLength,
+        });
+        expect(readResult).toMatchObject({
+            key,
+            contentType: 'image/webp',
+            byteLength: bytes.byteLength,
+        });
+        expect(new TextDecoder().decode(readResult.bytes)).toBe('raced-body');
     });
 
     it('performs pointer CAS under a lock', async () => {

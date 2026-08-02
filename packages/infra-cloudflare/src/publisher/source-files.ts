@@ -1,6 +1,12 @@
 import { access, readFile, realpath, stat } from 'node:fs/promises';
 import { constants } from 'node:fs';
-import { join, relative as pathRelative, resolve, sep } from 'node:path';
+import {
+    isAbsolute,
+    join,
+    relative as pathRelative,
+    resolve,
+    sep,
+} from 'node:path';
 import {
     isSafeRelativePath,
     type AuthoringAssetReference,
@@ -73,7 +79,9 @@ function isInsideSourceRoot(root: string, candidate: string): boolean {
     const relative = pathRelative(root, candidate);
     return (
         relative === '' ||
-        (!relative.startsWith(`..${sep}`) && relative !== '..')
+        (!isAbsolute(relative) &&
+            !relative.startsWith(`..${sep}`) &&
+            relative !== '..')
     );
 }
 
@@ -157,6 +165,31 @@ async function resolveIncludedSource(
     };
 }
 
+const SOURCE_READ_CONCURRENCY = 4;
+
+async function resolveIncludedSourcesBounded(
+    root: string,
+    entries: readonly AuthoringAssetReference[]
+): Promise<ResolvedSource[]> {
+    const results = new Array<ResolvedSource>(entries.length);
+    let nextIndex = 0;
+    const workers = Array.from(
+        { length: Math.min(SOURCE_READ_CONCURRENCY, entries.length) },
+        async () => {
+            while (nextIndex < entries.length) {
+                const index = nextIndex;
+                nextIndex += 1;
+                results[index] = await resolveIncludedSource(
+                    root,
+                    entries[index]
+                );
+            }
+        }
+    );
+    await Promise.all(workers);
+    return results;
+}
+
 export async function resolveIncludedSources(
     options: ResolveIncludedSourcesOptions
 ): Promise<ResolvedSourceSet> {
@@ -168,8 +201,9 @@ export async function resolveIncludedSources(
             context: { source: 'asset-source-root' },
         });
     }
-    const sources = await Promise.all(
-        options.includedEntries.map(entry => resolveIncludedSource(root, entry))
+    const sources = await resolveIncludedSourcesBounded(
+        root,
+        options.includedEntries
     );
     return {
         sources,

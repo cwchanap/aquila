@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
@@ -6,9 +6,16 @@ import { createSourceFixture } from '../test-fixtures';
 import { PublisherError } from '../errors';
 import { encodeAsset, getEncoderFingerprint } from '../image-encoder';
 
+const createdFixtures: Array<() => Promise<void>> = [];
+
+afterEach(async () => {
+    await Promise.all(createdFixtures.splice(0).map(cleanup => cleanup()));
+});
+
 describe('encodeAsset', () => {
     it('encodes backgrounds as WebP and AVIF inside the maximum box', async () => {
         const fixture = await createSourceFixture();
+        createdFixtures.push(fixture.cleanup);
         const bytes = await readFile(
             join(fixture.sourceRoot, fixture.backgroundPath)
         );
@@ -36,6 +43,7 @@ describe('encodeAsset', () => {
 
     it('encodes portraits as alpha-preserving WebP only', async () => {
         const fixture = await createSourceFixture();
+        createdFixtures.push(fixture.cleanup);
         const bytes = await readFile(
             join(fixture.sourceRoot, fixture.portraitPath)
         );

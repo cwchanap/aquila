@@ -89,6 +89,10 @@ export function evaluateSourceDiagnostics(
           ];
 }
 
+function compareText(left: string, right: string): number {
+    return left < right ? -1 : left > right ? 1 : 0;
+}
+
 export function aggregateDiagnostics(
     diagnostics: readonly PublisherDiagnosticV1[]
 ): PublisherDiagnosticV1[] {
@@ -100,12 +104,12 @@ export function aggregateDiagnostics(
         else groups.set(key, [diagnostic]);
     }
     return [...groups.entries()]
-        .sort(([left], [right]) => left.localeCompare(right))
+        .sort(([left], [right]) => compareText(left, right))
         .map(([, group]) => {
             const ordered = [...group].sort((left, right) => {
                 const leftKey = `${left.identity ?? ''}\u0000${left.safePath ?? ''}`;
                 const rightKey = `${right.identity ?? ''}\u0000${right.safePath ?? ''}`;
-                return leftKey.localeCompare(rightKey);
+                return compareText(leftKey, rightKey);
             });
             const [first] = ordered;
             const sampleIdentities = [

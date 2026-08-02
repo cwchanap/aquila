@@ -104,7 +104,14 @@ describe('discoverAuthoringCatalog', () => {
             'packages/stories/src/generated/exampleStory'
         );
         await mkdir(generated, { recursive: true });
-        await writeFile(join(generated, 'image-assets.json'), '{');
+        await writeFile(
+            join(generated, 'image-assets.json'),
+            JSON.stringify({
+                storyId: 'example_story',
+                backgrounds: 'not-an-array',
+                portraits: [],
+            })
+        );
 
         await expect(
             discoverAuthoringCatalog(root, 'example_story')
@@ -115,5 +122,77 @@ describe('discoverAuthoringCatalog', () => {
             ).not.toContain(root);
             return true;
         });
+    });
+
+    it('ignores malformed manifests from unrelated story directories', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'catalog-tolerant-'));
+        const unrelated = join(
+            root,
+            'packages/stories/src/generated/unrelatedStory'
+        );
+        const requested = join(
+            root,
+            'packages/stories/src/generated/theSeventhMirror'
+        );
+        await mkdir(unrelated, { recursive: true });
+        await mkdir(requested, { recursive: true });
+        await writeFile(join(unrelated, 'image-assets.json'), '{');
+        await writeFile(
+            join(requested, 'image-assets.json'),
+            JSON.stringify({
+                storyId: 'the_seventh_mirror',
+                backgrounds: [],
+                portraits: [],
+            })
+        );
+
+        await expect(
+            discoverAuthoringCatalog(root, 'the_seventh_mirror')
+        ).resolves.toMatchObject({ storyId: 'the_seventh_mirror' });
+    });
+
+    it('rejects when no generated manifest matches the requested story', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'catalog-zero-'));
+        const unrelated = join(
+            root,
+            'packages/stories/src/generated/unrelatedStory'
+        );
+        await mkdir(unrelated, { recursive: true });
+        await writeFile(
+            join(unrelated, 'image-assets.json'),
+            JSON.stringify({
+                storyId: 'unrelated_story',
+                backgrounds: [],
+                portraits: [],
+            })
+        );
+
+        await expect(
+            discoverAuthoringCatalog(root, 'the_seventh_mirror')
+        ).rejects.toThrow(/exactly one/i);
+    });
+
+    it('rejects when multiple generated manifests match the requested story', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'catalog-multiple-'));
+        for (const directory of ['firstStory', 'secondStory']) {
+            const generated = join(
+                root,
+                'packages/stories/src/generated',
+                directory
+            );
+            await mkdir(generated, { recursive: true });
+            await writeFile(
+                join(generated, 'image-assets.json'),
+                JSON.stringify({
+                    storyId: 'the_seventh_mirror',
+                    backgrounds: [],
+                    portraits: [],
+                })
+            );
+        }
+
+        await expect(
+            discoverAuthoringCatalog(root, 'the_seventh_mirror')
+        ).rejects.toThrow(/exactly one/i);
     });
 });

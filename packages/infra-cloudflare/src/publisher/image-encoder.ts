@@ -88,7 +88,8 @@ export async function encodeAsset(
         if (webp === undefined) {
             throw new PublisherError(
                 'configuration',
-                'Encoder policy must include WebP'
+                'Encoder policy must include WebP',
+                { context: { stage: 'encode' } }
             );
         }
         const outputMetadata = await sharp(webp.bytes, {
@@ -101,7 +102,8 @@ export async function encodeAsset(
         ) {
             throw new PublisherError(
                 'configuration',
-                'Encoded WebP has no dimensions'
+                'Encoded WebP has no dimensions',
+                { context: { stage: 'encode' } }
             );
         }
         for (const variant of variants) {
@@ -115,7 +117,8 @@ export async function encodeAsset(
             ) {
                 throw new PublisherError(
                     'configuration',
-                    'Encoded variants have mismatched dimensions'
+                    'Encoded variants have mismatched dimensions',
+                    { context: { stage: 'encode' } }
                 );
             }
         }

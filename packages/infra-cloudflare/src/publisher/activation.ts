@@ -325,13 +325,13 @@ export async function activateStoredRelease(
         return result(options, verified, 'conflict', snapshot, false);
     }
 
+    verified = await verifyTarget(options);
     snapshot = await readPointer(
         options.store,
         key,
         options.target,
         options.storyId
     );
-    verified = await verifyTarget(options);
     if (
         isAlreadyActive(verified, snapshot, key) &&
         options.reactivate !== true

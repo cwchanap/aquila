@@ -332,6 +332,7 @@ function activate(
     release: PreparedRelease,
     options: {
         nowMs?: number;
+        now?: () => number;
         reactivate?: boolean;
         overrideConcurrentPointer?: boolean;
         confirmProduction?: string;
@@ -343,7 +344,9 @@ function activate(
         target: release.target,
         releaseId: release.releaseId,
         expectedManifestSha256: release.manifestSha256,
-        now: () => options.nowMs ?? Date.parse('2026-08-01T20:00:00.000Z'),
+        now:
+            options.now ??
+            (() => options.nowMs ?? Date.parse('2026-08-01T20:00:00.000Z')),
         reactivate: options.reactivate,
         overrideConcurrentPointer: options.overrideConcurrentPointer,
         confirmProduction: options.confirmProduction,
@@ -580,7 +583,7 @@ describe('activateStoredRelease', () => {
         );
     });
 
-    it('rereads, completely deep-verifies again, and makes one refreshed CAS on override', async () => {
+    it('deep-reverifies, then fresh-rereads and makes one refreshed CAS on override', async () => {
         const store = new ActivationStore(previewReleaseA, previewReleaseB);
         store.beforeCompareAndSwap = (current, _request, attempt) => {
             if (attempt === 1) {
@@ -594,6 +597,10 @@ describe('activateStoredRelease', () => {
 
         const result = await activate(store, previewReleaseA, {
             overrideConcurrentPointer: true,
+            now: () => {
+                store.events.push('now');
+                return Date.parse('2026-08-01T20:00:00.000Z');
+            },
         });
 
         const pointerKey = getCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
@@ -624,8 +631,15 @@ describe('activateStoredRelease', () => {
             `read:${manifestPath}`
         );
         const secondCas = store.events.lastIndexOf(`cas:${pointerKey}`);
-        expect(secondRead).toBeLessThan(secondManifestRead);
-        expect(secondManifestRead).toBeLessThan(secondCas);
+        const secondNow = store.events.lastIndexOf('now');
+        expect(secondManifestRead).toBeLessThan(secondRead);
+        expect(secondRead).toBeLessThan(secondNow);
+        expect(secondNow).toBeLessThan(secondCas);
+        expect(store.events.slice(secondRead)).toEqual([
+            `read-pointer:${pointerKey}`,
+            'now',
+            `cas:${pointerKey}`,
+        ]);
         expect(decodePointer(store.pointerWrites[1]!.bytes).publishedAt).toBe(
             '2026-08-01T20:00:00.011Z'
         );

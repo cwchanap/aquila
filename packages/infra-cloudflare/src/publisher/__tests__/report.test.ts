@@ -357,6 +357,8 @@ describe('publisher reports', () => {
 
     it('keeps bounded human section labels while redacting path and URL forms', () => {
         const label = '第一章: 鏡 房';
+        const preservedLabel = '  第一章: 鏡 房  ';
+        const compactColonLabel = 'chapter:night';
         const section129 = label + '界'.repeat(129 - label.length);
         const section200 = label + '界'.repeat(200 - label.length);
         const section201 = label + '界'.repeat(201 - label.length);
@@ -384,16 +386,23 @@ describe('publisher reports', () => {
             },
             bySection: {
                 [label]: counts,
+                [preservedLabel]: counts,
+                [compactColonLabel]: counts,
                 [section129]: counts,
                 [section200]: counts,
                 [section201]: counts,
                 'C:/Users/Alice/private': counts,
                 'file:/Volumes/team/private': counts,
                 '\\\\server\\share\\private': counts,
+                '  /Users/Alice/private': counts,
+                '  C:/Users/Alice/private': counts,
+                '  \\\\server\\share\\private': counts,
+                '  file:/Volumes/team/private': counts,
+                '  https://private.example/request': counts,
             },
             totals: {
-                total: 7,
-                included: 7,
+                total: 14,
+                included: 14,
                 omitted: 0,
                 unclassified: 0,
             },
@@ -405,15 +414,24 @@ describe('publisher reports', () => {
         const sections = parsed.coverage.bySection;
 
         expect(sections).toHaveProperty(label);
+        expect(sections).toHaveProperty(preservedLabel);
+        expect(sections).toHaveProperty(compactColonLabel);
         expect(sections).toHaveProperty(section129);
         expect(sections).toHaveProperty(section200);
         expect(sections).not.toHaveProperty(section201);
         expect(sections).not.toHaveProperty('C:/Users/Alice/private');
         expect(sections).not.toHaveProperty('file:/Volumes/team/private');
         expect(sections).not.toHaveProperty('\\\\server\\share\\private');
+        expect(sections).not.toHaveProperty('  /Users/Alice/private');
+        expect(sections).not.toHaveProperty('  C:/Users/Alice/private');
+        expect(sections).not.toHaveProperty('  \\\\server\\share\\private');
+        expect(sections).not.toHaveProperty('  file:/Volumes/team/private');
+        expect(sections).not.toHaveProperty(
+            '  https://private.example/request'
+        );
         expect(sections['[redacted-section]']).toEqual({
-            total: 4,
-            included: 4,
+            total: 9,
+            included: 9,
             omitted: 0,
             unclassified: 0,
         });

@@ -137,7 +137,9 @@ const ARCHITECTURES = new Set([
     'x64',
 ]);
 const MAX_COVERAGE_SECTION_LENGTH = 200;
-const URL_SCHEME_WITH_VALUE_RE = /^[A-Za-z][A-Za-z0-9+.-]*:[^\s]/;
+const URL_WITH_AUTHORITY_RE = /^[A-Za-z][A-Za-z0-9+.-]*:\/\//;
+const FILE_URL_RE = /^file:\//i;
+const ABSOLUTE_PATH_PREFIX_RE = /^(?:\/|\\)/;
 const WINDOWS_DRIVE_PATH_RE = /^[A-Za-z]:[\\/]/;
 
 function compareText(left: string, right: string): number {
@@ -392,12 +394,14 @@ function addCoverageCounts(
 }
 
 function isSafeCoverageSection(section: string): boolean {
+    const threatCandidate = section.trim();
     return (
         section.length <= MAX_COVERAGE_SECTION_LENGTH &&
         isSafeLogicalKey(section) &&
-        !section.startsWith('//') &&
-        !WINDOWS_DRIVE_PATH_RE.test(section) &&
-        !URL_SCHEME_WITH_VALUE_RE.test(section)
+        !ABSOLUTE_PATH_PREFIX_RE.test(threatCandidate) &&
+        !WINDOWS_DRIVE_PATH_RE.test(threatCandidate) &&
+        !URL_WITH_AUTHORITY_RE.test(threatCandidate) &&
+        !FILE_URL_RE.test(threatCandidate)
     );
 }
 

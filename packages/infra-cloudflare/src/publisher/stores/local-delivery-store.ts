@@ -325,6 +325,11 @@ export class LocalDeliveryStore implements DeliveryStore {
         }
     }
 
+    async inspectPointer(key: string): Promise<PointerSnapshot> {
+        this.assertPointerKey(key);
+        return this.readPointerUnlocked(key);
+    }
+
     private async readPointerUnlocked(key: string): Promise<PointerSnapshot> {
         const metadata = await this.stat(key);
         if (metadata === null) return { exists: false };

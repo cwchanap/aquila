@@ -193,7 +193,7 @@ export class R2DeliveryStore implements DeliveryStore {
         }
     }
 
-    async readPointer(key: string): Promise<PointerSnapshot> {
+    async inspectPointer(key: string): Promise<PointerSnapshot> {
         const object = await this.readIfPresent(key);
         if (object === null) return { exists: false };
         return {
@@ -203,6 +203,10 @@ export class R2DeliveryStore implements DeliveryStore {
             contentType: object.contentType,
             cacheControl: object.cacheControl,
         };
+    }
+
+    async readPointer(key: string): Promise<PointerSnapshot> {
+        return this.inspectPointer(key);
     }
 
     async compareAndSwapPointer(

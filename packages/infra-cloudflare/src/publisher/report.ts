@@ -136,6 +136,9 @@ const ARCHITECTURES = new Set([
     's390x',
     'x64',
 ]);
+const MAX_COVERAGE_SECTION_LENGTH = 200;
+const URL_SCHEME_WITH_VALUE_RE = /^[A-Za-z][A-Za-z0-9+.-]*:[^\s]/;
+const WINDOWS_DRIVE_PATH_RE = /^[A-Za-z]:[\\/]/;
 
 function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
@@ -278,16 +281,91 @@ export function normalizeReportDiagnostics(
 
 function sanitizeAction(action: PublisherActionV1): PublisherActionV1 {
     const identity = safeIdentity(action.identity);
+    const kind = ACTION_KINDS.has(action.kind) ? action.kind : 'no-op';
+    const key = safeActionKey(kind, action.key);
     return {
         stage: safeStage(action.stage),
-        kind: ACTION_KINDS.has(action.kind) ? action.kind : 'no-op',
+        kind,
         ...(identity === undefined ? {} : { identity }),
-        ...(action.key === undefined ||
-        !isSafeRelativePath(action.key) ||
-        !action.key.startsWith('vn/')
-            ? {}
-            : { key: action.key }),
+        ...(key === undefined ? {} : { key }),
     };
+}
+
+function safeActionKey(
+    kind: PublisherActionV1['kind'],
+    key: string | undefined
+): string | undefined {
+    if (key === undefined || !isSafeRelativePath(key)) return undefined;
+    const isOwned =
+        kind === 'reuse-object' || kind === 'create-object'
+            ? isObjectPath(key)
+            : kind === 'reuse-manifest' || kind === 'create-manifest'
+              ? isReleaseManifestPath(key)
+              : kind === 'write-pointer'
+                ? isCurrentPointerPath(key)
+                : false;
+    return isOwned ? key : undefined;
+}
+
+function isObjectPath(key: string): boolean {
+    const segments = key.split('/');
+    if (
+        segments.length !== 3 ||
+        segments[0] !== 'vn' ||
+        segments[1] !== 'objects'
+    ) {
+        return false;
+    }
+    const match = /^([a-f0-9]{64})\.(webp|avif)$/.exec(segments[2]!);
+    return match !== null && isSha256(match[1]!);
+}
+
+function isReleaseManifestPath(key: string): boolean {
+    const segments = key.split('/');
+    if (
+        segments.length === 6 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'stories' &&
+        isStoryId(segments[2]!) &&
+        segments[3] === 'releases' &&
+        isReleaseId(segments[4]!) &&
+        segments[5] === 'runtime-manifest.json'
+    ) {
+        return true;
+    }
+    return (
+        segments.length === 8 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'previews' &&
+        isPreviewId(segments[2]!) &&
+        segments[3] === 'stories' &&
+        isStoryId(segments[4]!) &&
+        segments[5] === 'releases' &&
+        isReleaseId(segments[6]!) &&
+        segments[7] === 'runtime-manifest.json'
+    );
+}
+
+function isCurrentPointerPath(key: string): boolean {
+    const segments = key.split('/');
+    if (
+        segments.length === 4 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'stories' &&
+        isStoryId(segments[2]!) &&
+        segments[3] === 'current.json'
+    ) {
+        return true;
+    }
+    return (
+        segments.length === 6 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'previews' &&
+        isPreviewId(segments[2]!) &&
+        segments[3] === 'stories' &&
+        isStoryId(segments[4]!) &&
+        segments[5] === 'current.json'
+    );
 }
 
 type CoverageCounts = StoryAssetCoverageReport['totals'];
@@ -313,6 +391,16 @@ function addCoverageCounts(
     };
 }
 
+function isSafeCoverageSection(section: string): boolean {
+    return (
+        section.length <= MAX_COVERAGE_SECTION_LENGTH &&
+        isSafeLogicalKey(section) &&
+        !section.startsWith('//') &&
+        !WINDOWS_DRIVE_PATH_RE.test(section) &&
+        !URL_SCHEME_WITH_VALUE_RE.test(section)
+    );
+}
+
 function sanitizeCoverage(
     coverage: StoryAssetCoverageReport
 ): StoryAssetCoverageReport {
@@ -322,10 +410,9 @@ function sanitizeCoverage(
     for (const [section, counts] of Object.entries(coverage.bySection).sort(
         ([left], [right]) => compareText(left, right)
     )) {
-        const safeSection =
-            section.length <= 128 && isSafeLogicalKey(section)
-                ? section
-                : '[redacted-section]';
+        const safeSection = isSafeCoverageSection(section)
+            ? section
+            : '[redacted-section]';
         bySection[safeSection] = addCoverageCounts(
             bySection[safeSection],
             counts

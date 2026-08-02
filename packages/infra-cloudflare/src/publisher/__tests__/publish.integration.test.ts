@@ -18,7 +18,7 @@ import {
     type ActiveReleasePointerV1,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
-import { coordinateStaleConflict } from '../../../../../.github/scripts/r2-stale-conflict-coordinator';
+import { coordinateStaleConflict } from '../../../scripts/r2-stale-conflict-coordinator';
 import { PublisherError } from '../errors';
 import { publishRelease, type PublishReleaseOptions } from '../publish';
 import { buildPublicationPlan } from '../publication-plan';

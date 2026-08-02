@@ -227,8 +227,9 @@ Rollback is also source-independent and writes a new monotonic pointer; it never
 copies old `current.json` bytes:
 
 ```bash
-ROLLBACK_RELEASE_ID=sha256-<retained-release-digest>
-ROLLBACK_MANIFEST_SHA256=<retained-manifest-byte-digest>
+# Replace both values with the digests from the retained JSON report.
+ROLLBACK_RELEASE_ID="sha256-RETAINED_RELEASE_DIGEST"
+ROLLBACK_MANIFEST_SHA256="RETAINED_MANIFEST_BYTE_DIGEST"
 bun --filter @aquila/infra-cloudflare assets -- rollback \
   --story the_seventh_mirror \
   --environment preview \

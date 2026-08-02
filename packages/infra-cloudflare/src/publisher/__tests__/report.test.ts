@@ -185,6 +185,64 @@ describe('publisher reports', () => {
         stdout = '';
     });
 
+    it('renders sanitized release summaries for JSON and human target selection', () => {
+        const first = `sha256-${'a'.repeat(64)}`;
+        const second = `sha256-${'b'.repeat(64)}`;
+        const input = report();
+        input.command = 'releases';
+        input.releases = [
+            {
+                releaseId: first,
+                manifestSha256: 'c'.repeat(64),
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: true,
+                active: true,
+            },
+            {
+                releaseId: second,
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: false,
+                active: false,
+                manifestPath: '/Users/alice/private/manifest.json',
+                rawStoreMessage: 'Authorization: secret-token',
+            } as never,
+        ];
+
+        const json = renderJsonReport(input);
+        const human = renderHumanReport(input);
+        const parsed = JSON.parse(json) as PublisherReportV1;
+
+        expect(parsed.releases).toEqual([
+            {
+                releaseId: first,
+                manifestSha256: 'c'.repeat(64),
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: true,
+                active: true,
+            },
+            {
+                releaseId: second,
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: false,
+                active: false,
+            },
+        ]);
+        expect(human).toContain(first);
+        expect(human).toContain(second);
+        expect(human).toContain('active, deep verified');
+        expect(human).toContain('inactive, shallow verified');
+        expect(`${json}${human}`).not.toContain('/Users/');
+        expect(`${json}${human}`).not.toContain('secret-token');
+    });
+
     it('aggregates repeated diagnostics with bounded sorted samples', () => {
         const diagnostics = Array.from({ length: 12 }, (_, index) => ({
             code: 'source/aspect-ratio',

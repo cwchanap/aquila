@@ -45,6 +45,9 @@ type R2ObjectMetadata = Pick<
 const SANITIZED_R2_TRANSPORT_CAUSE = Object.freeze({
     classification: 'r2-transport-failure' as const,
 });
+const SANITIZED_R2_CONFIG_CAUSE = Object.freeze({
+    classification: 'r2-config-load-failure' as const,
+});
 
 function isServiceErrorWithStatus(error: unknown, status: number): boolean {
     if (typeof error !== 'object' || error === null) return false;
@@ -121,10 +124,25 @@ export class R2DeliveryStore implements DeliveryStore {
         this.client = options.client;
     }
 
-    static async createFromEnvironment(): Promise<R2DeliveryStore> {
-        const config = await loadR2DeliveryConfig();
-        const accessKeyId = process.env.R2_PUBLISHER_ACCESS_KEY_ID;
-        const secretAccessKey = process.env.R2_PUBLISHER_SECRET_ACCESS_KEY;
+    static async createFromEnvironment(
+        options: {
+            configPath?: string;
+            environment?: Readonly<Record<string, string | undefined>>;
+        } = {}
+    ): Promise<R2DeliveryStore> {
+        let config: Awaited<ReturnType<typeof loadR2DeliveryConfig>>;
+        try {
+            config = await loadR2DeliveryConfig(options.configPath);
+        } catch {
+            throw new PublisherError(
+                'configuration',
+                'Unable to load R2 delivery configuration',
+                { cause: SANITIZED_R2_CONFIG_CAUSE }
+            );
+        }
+        const environment = options.environment ?? process.env;
+        const accessKeyId = environment.R2_PUBLISHER_ACCESS_KEY_ID;
+        const secretAccessKey = environment.R2_PUBLISHER_SECRET_ACCESS_KEY;
         if (!accessKeyId || !secretAccessKey) {
             throw new PublisherError(
                 'configuration',

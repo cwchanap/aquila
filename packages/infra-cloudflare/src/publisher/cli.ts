@@ -1,4 +1,5 @@
-import { resolve, sep } from 'node:path';
+import { realpath } from 'node:fs/promises';
+import { basename, dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import {
@@ -16,7 +17,11 @@ import { PublisherError, publisherExitCode } from './errors';
 import { mirrorProductionReleaseToPreview } from './mirror-preview';
 import { buildPublicationPlan } from './publication-plan';
 import { publishRelease } from './publish';
-import { listReleases, rollbackRelease } from './release-history';
+import {
+    listReleases,
+    rollbackRelease,
+    type ReleaseSummary,
+} from './release-history';
 import {
     createHumanProgressSink,
     publisherReportExitCode,
@@ -237,12 +242,19 @@ function parseStoryId(values: CliValues): string {
     return storyId;
 }
 
-function parseReleaseId(values: CliValues): string {
+function parseReleaseId(
+    values: CliValues,
+    command: PublisherCommandName
+): string {
     const releaseId = requiredString(values, 'release');
     if (!isReleaseId(releaseId)) {
-        throw new PublisherError('activation-target', 'Invalid release id', {
-            context: { input: 'release' },
-        });
+        throw new PublisherError(
+            command === 'activate' || command === 'rollback'
+                ? 'activation-target'
+                : 'input',
+            'Invalid release id',
+            { context: { input: 'release' } }
+        );
     }
     return releaseId;
 }
@@ -268,22 +280,51 @@ function pathContains(parent: string, child: string): boolean {
     return child === parent || child.startsWith(`${parent}${sep}`);
 }
 
-function assertDestinationPathSafety(
+async function canonicalPath(path: string): Promise<string> {
+    let cursor = path;
+    const missingSegments: string[] = [];
+    while (true) {
+        try {
+            const existing = await realpath(cursor);
+            return resolve(existing, ...missingSegments);
+        } catch (error) {
+            const code =
+                typeof error === 'object' && error !== null && 'code' in error
+                    ? (error as { code?: unknown }).code
+                    : undefined;
+            if (code !== 'ENOENT' && code !== 'ENOTDIR') {
+                throw configurationError(
+                    'Unable to canonicalize publisher path'
+                );
+            }
+            const parent = dirname(cursor);
+            if (parent === cursor) return resolve(path);
+            missingSegments.unshift(basename(cursor));
+            cursor = parent;
+        }
+    }
+}
+
+async function assertDestinationPathSafety(
     repositoryRoot: string,
     destinationRoot: string,
     sourceRoot: string | undefined,
     releasePlanPath: string | undefined
-): void {
-    if (pathContains(destinationRoot, repositoryRoot)) {
+): Promise<void> {
+    const canonicalRepository = await canonicalPath(repositoryRoot);
+    const canonicalDestination = await canonicalPath(destinationRoot);
+    if (pathContains(canonicalDestination, canonicalRepository)) {
         throw configurationError(
             'Local destination must not contain the repository root'
         );
     }
     if (sourceRoot !== undefined) {
-        const resolvedSource = resolve(repositoryRoot, sourceRoot);
+        const resolvedSource = await canonicalPath(
+            resolve(repositoryRoot, sourceRoot)
+        );
         if (
-            pathContains(resolvedSource, destinationRoot) ||
-            pathContains(destinationRoot, resolvedSource)
+            pathContains(resolvedSource, canonicalDestination) ||
+            pathContains(canonicalDestination, resolvedSource)
         ) {
             throw configurationError(
                 'Local destination and source root must not overlap'
@@ -291,8 +332,10 @@ function assertDestinationPathSafety(
         }
     }
     if (releasePlanPath !== undefined) {
-        const resolvedPlan = resolve(repositoryRoot, releasePlanPath);
-        if (pathContains(destinationRoot, resolvedPlan)) {
+        const resolvedPlan = await canonicalPath(
+            resolve(repositoryRoot, releasePlanPath)
+        );
+        if (pathContains(canonicalDestination, resolvedPlan)) {
             throw configurationError(
                 'Local destination must not contain the release plan'
             );
@@ -300,13 +343,13 @@ function assertDestinationPathSafety(
     }
 }
 
-function parseDestination(
+async function parseDestination(
     values: CliValues,
     repositoryRoot: string,
     sourceRoot: string | undefined,
     releasePlanPath: string | undefined,
     environment: Readonly<Record<string, string | undefined>>
-): PublicationDestination {
+): Promise<PublicationDestination> {
     const selected = values.destination ?? 'local';
     const root = values['destination-root'];
     if (selected === 'local') {
@@ -316,7 +359,7 @@ function parseDestination(
             );
         }
         const resolvedRoot = resolve(repositoryRoot, root);
-        assertDestinationPathSafety(
+        await assertDestinationPathSafety(
             repositoryRoot,
             resolvedRoot,
             sourceRoot,
@@ -439,7 +482,9 @@ function baseCommand(
         command === 'activate' ||
         command === 'verify' ||
         command === 'rollback';
-    const releaseId = requiresRelease ? parseReleaseId(values) : undefined;
+    const releaseId = requiresRelease
+        ? parseReleaseId(values, command)
+        : undefined;
     return {
         command,
         storyId,
@@ -528,6 +573,34 @@ function activationReport(
                 : { afterReleaseId: activation.pointerAfter.releaseId }),
             changed,
         },
+    };
+}
+
+export function buildReleaseListReport(
+    command: Pick<ParsedAssetsCommand, 'storyId' | 'target'>,
+    releases: readonly ReleaseSummary[]
+): PublisherReportV1 {
+    return {
+        schemaVersion: 1,
+        command: 'releases',
+        status: releases.length === 0 ? 'no-op' : 'success',
+        storyId: command.storyId,
+        target: command.target,
+        counts: { ...emptyCounts(), included: releases.length },
+        actions: [],
+        warnings: [],
+        errors: [],
+        releases: releases.map(release => ({
+            releaseId: release.releaseId,
+            ...(release.manifestSha256 === undefined
+                ? {}
+                : { manifestSha256: release.manifestSha256 }),
+            manifestValid: release.manifestValid,
+            releaseIdentityValid: release.releaseIdentityValid,
+            shallowVerified: release.shallowVerified,
+            deepVerified: release.deepVerified,
+            active: release.active,
+        })),
     };
 }
 
@@ -671,17 +744,7 @@ async function runCommandServices(
                 deep: command.deep,
                 onProgress: command.progress,
             });
-            return {
-                schemaVersion: 1,
-                command: 'releases',
-                status: releases.length === 0 ? 'no-op' : 'success',
-                storyId: command.storyId,
-                target: command.target,
-                counts: { ...emptyCounts(), included: releases.length },
-                actions: [],
-                warnings: [],
-                errors: [],
-            };
+            return buildReleaseListReport(command, releases);
         }
         case 'rollback':
             return rollbackRelease({
@@ -782,7 +845,7 @@ export async function runAssetsCli(
             ? (parsed.releasePlanPath ??
               `packages/stories/release-plans/${storyId}.json`)
             : undefined;
-        const destination = parseDestination(
+        const destination = await parseDestination(
             values,
             dependencies.repositoryRoot,
             sourceRootForSafety,

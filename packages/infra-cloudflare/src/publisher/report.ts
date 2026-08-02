@@ -38,6 +38,17 @@ export interface PublisherReportV1 {
         afterReleaseId?: string;
         changed: boolean;
     };
+    releases?: PublisherReleaseSummaryV1[];
+}
+
+export interface PublisherReleaseSummaryV1 {
+    releaseId: string;
+    manifestSha256?: string;
+    manifestValid: boolean;
+    releaseIdentityValid: boolean;
+    shallowVerified: boolean;
+    deepVerified: boolean;
+    active: boolean;
 }
 
 export type ProgressSink = (event: PublisherProgressEvent) => void;
@@ -467,6 +478,26 @@ function sanitizeFingerprint(
     };
 }
 
+function sanitizeReleaseSummaries(
+    releases: readonly PublisherReleaseSummaryV1[]
+): PublisherReleaseSummaryV1[] {
+    return releases
+        .filter(release => isReleaseId(release.releaseId))
+        .map(release => ({
+            releaseId: release.releaseId,
+            ...(release.manifestSha256 === undefined ||
+            !isSha256(release.manifestSha256)
+                ? {}
+                : { manifestSha256: release.manifestSha256 }),
+            manifestValid: release.manifestValid === true,
+            releaseIdentityValid: release.releaseIdentityValid === true,
+            shallowVerified: release.shallowVerified === true,
+            deepVerified: release.deepVerified === true,
+            active: release.active === true,
+        }))
+        .sort((left, right) => compareText(left.releaseId, right.releaseId));
+}
+
 function publicReport(report: PublisherReportV1): PublisherReportV1 {
     return {
         schemaVersion: 1,
@@ -522,6 +553,9 @@ function publicReport(report: PublisherReportV1): PublisherReportV1 {
                       changed: report.pointer.changed,
                   },
               }),
+        ...(report.releases === undefined
+            ? {}
+            : { releases: sanitizeReleaseSummaries(report.releases) }),
     };
 }
 
@@ -543,6 +577,22 @@ export function renderHumanReport(report: PublisherReportV1): string {
         `warnings: ${safe.warnings.length}`,
         `errors: ${safe.errors.length}`
     );
+    if (safe.releases !== undefined) {
+        lines.push(`releases: ${safe.releases.length}`);
+        for (const release of safe.releases) {
+            const verification = release.deepVerified
+                ? 'deep verified'
+                : release.shallowVerified
+                  ? 'shallow verified'
+                  : 'unverified';
+            lines.push(
+                `- ${release.releaseId} ${release.active ? 'active' : 'inactive'}, ${verification}` +
+                    (release.manifestSha256 === undefined
+                        ? ''
+                        : `, manifest ${release.manifestSha256}`)
+            );
+        }
+    }
     return `${lines.join('\n')}\n`;
 }
 

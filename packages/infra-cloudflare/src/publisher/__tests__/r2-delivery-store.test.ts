@@ -4,6 +4,9 @@ import {
     ListObjectsV2Command,
     PutObjectCommand,
 } from '@aws-sdk/client-s3';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { R2DeliveryStore } from '../stores/r2-delivery-store';
 
@@ -275,6 +278,48 @@ describe('R2DeliveryStore', () => {
                 name: 'PublisherError',
                 code: 'configuration',
             });
+        }
+    );
+
+    it.each([
+        ['missing', undefined],
+        ['malformed', '{"accountId":'],
+        ['invalid', '{"accountId":"private-secret"}'],
+    ] as const)(
+        'sanitizes %s delivery config failures as configuration errors',
+        async (kind, contents) => {
+            const root = await mkdtemp(join(tmpdir(), 'aquila-r2-config-'));
+            try {
+                const configPath = join(root, `${kind}-private-config.json`);
+                if (contents !== undefined) {
+                    await writeFile(configPath, contents);
+                }
+                vi.stubEnv('R2_PUBLISHER_ACCESS_KEY_ID', 'publisher-access');
+                vi.stubEnv(
+                    'R2_PUBLISHER_SECRET_ACCESS_KEY',
+                    'publisher-secret'
+                );
+
+                let caught: unknown;
+                try {
+                    await R2DeliveryStore.createFromEnvironment({ configPath });
+                } catch (error) {
+                    caught = error;
+                }
+
+                expect(caught).toMatchObject({
+                    name: 'PublisherError',
+                    code: 'configuration',
+                    message: 'Unable to load R2 delivery configuration',
+                    cause: { classification: 'r2-config-load-failure' },
+                });
+                const exposed = JSON.stringify(caught);
+                expect(exposed).not.toContain(configPath);
+                expect(exposed).not.toContain('private-secret');
+                expect(exposed).not.toContain(contents ?? 'ENOENT');
+            } finally {
+                await rm(root, { recursive: true, force: true });
+            }
         }
     );
 

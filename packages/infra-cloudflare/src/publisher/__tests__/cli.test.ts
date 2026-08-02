@@ -1,9 +1,12 @@
-import { resolve } from 'node:path';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { PublisherError } from '../errors';
 import type { PublisherReportV1 } from '../report';
 import type { DeliveryStore } from '../stores/delivery-store';
 import {
+    buildReleaseListReport,
     runAssetsCli,
     type AssetsCliDependencies,
     type ParsedAssetsCommand,
@@ -254,6 +257,69 @@ describe('assets CLI destination selection and safety', () => {
         expect(test.localFactory).not.toHaveBeenCalled();
     });
 
+    it.each(['destination-alias', 'source-alias', 'plan-alias'] as const)(
+        'rejects canonical overlap through a %s before store construction',
+        async aliasKind => {
+            const root = await mkdtemp(join(tmpdir(), 'aquila-cli-safety-'));
+            try {
+                const repositoryRoot = join(root, 'repo');
+                const sourceRoot = join(repositoryRoot, 'source');
+                const destinationRoot = join(repositoryRoot, 'destination');
+                await Promise.all([
+                    mkdir(sourceRoot, { recursive: true }),
+                    mkdir(destinationRoot, { recursive: true }),
+                ]);
+                const test = harness();
+                test.dependencies.repositoryRoot = repositoryRoot;
+                let selectedSource = sourceRoot;
+                let selectedDestination = destinationRoot;
+                let planArgs: string[] = [];
+
+                if (aliasKind === 'destination-alias') {
+                    selectedDestination = join(repositoryRoot, 'delivery-link');
+                    await symlink(sourceRoot, selectedDestination);
+                } else if (aliasKind === 'source-alias') {
+                    selectedSource = join(repositoryRoot, 'source-link');
+                    await symlink(destinationRoot, selectedSource);
+                } else {
+                    const planInsideDestination = join(
+                        destinationRoot,
+                        'release-plan.json'
+                    );
+                    const planAlias = join(repositoryRoot, 'plan-link.json');
+                    await writeFile(planInsideDestination, '{}');
+                    await symlink(planInsideDestination, planAlias);
+                    planArgs = ['--plan', planAlias];
+                }
+
+                const exit = await runAssetsCli(
+                    [
+                        'plan',
+                        '--story',
+                        'example_story',
+                        '--environment',
+                        'preview',
+                        '--preview-id',
+                        'gate-123',
+                        '--source-root',
+                        selectedSource,
+                        '--destination-root',
+                        selectedDestination,
+                        ...planArgs,
+                    ],
+                    test.dependencies
+                );
+
+                expect(exit).toBe(1);
+                expect(test.localFactory).not.toHaveBeenCalled();
+                expect(test.r2Factory).not.toHaveBeenCalled();
+                expect(test.dependencies.runCommand).not.toHaveBeenCalled();
+            } finally {
+                await rm(root, { recursive: true, force: true });
+            }
+        }
+    );
+
     it('rejects a destination that contains the repository root', async () => {
         const test = harness();
 
@@ -442,6 +508,42 @@ describe('assets CLI command schemas and confirmation matrix', () => {
 
             expect(exit).toBe(1);
             expect(test.localFactory).not.toHaveBeenCalled();
+        }
+    );
+
+    it.each([
+        ['activate', 5],
+        ['rollback', 5],
+        ['verify', 2],
+        ['mirror-preview', 2],
+    ] as const)(
+        'maps malformed %s release syntax to exit %d before store construction',
+        async (command, expectedExit) => {
+            const test = harness();
+            const targetArgs =
+                command === 'mirror-preview'
+                    ? ['--preview-id', 'gate-123']
+                    : ['--environment', 'preview', '--preview-id', 'gate-123'];
+
+            const exit = await runAssetsCli(
+                [
+                    command,
+                    '--story',
+                    'example_story',
+                    ...targetArgs,
+                    '--release',
+                    'not-a-release',
+                    '--destination-root',
+                    '/tmp/aquila-delivery',
+                    '--json',
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(expectedExit);
+            expect(() => JSON.parse(test.stdout())).not.toThrow();
+            expect(test.localFactory).not.toHaveBeenCalled();
+            expect(test.dependencies.runCommand).not.toHaveBeenCalled();
         }
     );
 
@@ -673,6 +775,44 @@ describe('assets CLI dispatch, lifecycle, output, and exits', () => {
         expect(`${test.stdout()}${test.stderr()}`).not.toContain('/Users/');
     });
 
+    it.each(['missing', 'malformed'])(
+        'maps %s R2 config creation failures to sanitized exit 1',
+        async failureKind => {
+            const privatePath = `/Users/alice/private/${failureKind}.json`;
+            const rawSecret = `raw-${failureKind}-secret`;
+            const runCommand = vi.fn(async parsed => report(parsed.command));
+            const test = harness(runCommand);
+            test.dependencies.createR2Store = vi.fn(async () => {
+                throw new PublisherError(
+                    'configuration',
+                    `Unable to load ${privatePath}: ${rawSecret}`
+                );
+            });
+
+            const exit = await runAssetsCli(
+                [
+                    'releases',
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'production',
+                    '--destination',
+                    'r2',
+                    '--json',
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(1);
+            expect(test.localFactory).not.toHaveBeenCalled();
+            expect(runCommand).not.toHaveBeenCalled();
+            expect(`${test.stdout()}${test.stderr()}`).not.toContain(
+                privatePath
+            );
+            expect(`${test.stdout()}${test.stderr()}`).not.toContain(rawSecret);
+        }
+    );
+
     it('emits one JSON document to stdout and progress only to stderr', async () => {
         const test = harness(async parsed => {
             parsed.progress?.({
@@ -791,5 +931,43 @@ describe('assets CLI dispatch, lifecycle, output, and exits', () => {
         expect(test.localFactory).toHaveBeenCalledWith(
             resolve('/workspace/aquila', '.tmp/delivery')
         );
+    });
+
+    it('adapts multiple release summaries into usable path-free report data', () => {
+        const command = {
+            command: 'releases',
+            storyId: 'example_story',
+            target: { kind: 'production' },
+        } as ParsedAssetsCommand;
+        const first = `sha256-${'a'.repeat(64)}`;
+        const second = `sha256-${'b'.repeat(64)}`;
+
+        const result = buildReleaseListReport(command, [
+            {
+                releaseId: first,
+                manifestPath: '/private/first.json',
+                manifestSha256: 'c'.repeat(64) as never,
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: true,
+                active: true,
+            },
+            {
+                releaseId: second,
+                manifestPath: '/private/second.json',
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: false,
+                active: false,
+            },
+        ]);
+
+        expect(result.releases).toEqual([
+            expect.objectContaining({ releaseId: first, active: true }),
+            expect.objectContaining({ releaseId: second, active: false }),
+        ]);
+        expect(JSON.stringify(result)).not.toContain('/private/');
     });
 });

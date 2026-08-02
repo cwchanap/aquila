@@ -1,12 +1,9 @@
-import {
-    runAssetsCli,
-    type AssetsCliDependencies,
-} from '../../packages/infra-cloudflare/src/publisher/cli';
-import { R2DeliveryStore } from '../../packages/infra-cloudflare/src/publisher/stores/r2-delivery-store';
+import { runAssetsCli, type AssetsCliDependencies } from '../src/publisher/cli';
+import { R2DeliveryStore } from '../src/publisher/stores/r2-delivery-store';
 import type {
     DeliveryStore,
     ImmutableCreateRequest,
-} from '../../packages/infra-cloudflare/src/publisher/stores/delivery-store';
+} from '../src/publisher/stores/delivery-store';
 
 type CoordinatorCliOverrides = Partial<
     Pick<
@@ -151,9 +148,18 @@ export async function coordinateStaleConflict(
                 issue = 'activation-threw';
             }
         }
+    } catch {
+        issue = 'publish-threw';
     } finally {
         release.resolve();
-        publishExit ??= await publishPromise;
+        if (publishExit === undefined) {
+            try {
+                publishExit = await publishPromise;
+            } catch {
+                publishExit = 1;
+                issue ??= 'publish-threw';
+            }
+        }
     }
 
     return {

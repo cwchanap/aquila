@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     coordinateStaleConflict,
     type StaleConflictCoordinatorOptions,
-} from '../../../../../.github/scripts/r2-stale-conflict-coordinator';
+} from '../../../scripts/r2-stale-conflict-coordinator';
 import { PublisherError } from '../errors';
 import type { PublisherReportV1 } from '../report';
 import type {
@@ -230,5 +230,26 @@ describe('workflow stale-conflict coordinator', () => {
         expect(events.at(-1)).toBe('publish:close');
         expect(setup.publish.closeCount()).toBe(1);
         expect(setup.activation.closeCount()).toBe(1);
+    });
+
+    it('records publish-ended-before-barrier when publish exits before its first immutable create', async () => {
+        const events: string[] = [];
+        const setup = options(async command => {
+            if (command.command === 'activate') {
+                events.push('activation:run');
+                return report('activate', 'success');
+            }
+            events.push('publish:no-create');
+            return report('publish', 'success');
+        }, events);
+
+        const result = await coordinateStaleConflict(setup.value);
+
+        expect(result.publishExit).toBe(0);
+        expect(result.activationExit).toBeUndefined();
+        expect(result.issue).toBe('publish-ended-before-barrier');
+        expect(events).toEqual(['publish:no-create', 'publish:close']);
+        expect(setup.publish.closeCount()).toBe(1);
+        expect(setup.activation.closeCount()).toBe(0);
     });
 });

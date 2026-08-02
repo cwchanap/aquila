@@ -289,7 +289,7 @@ describe('candidate verifier', () => {
 
         await expect(
             verifyStoredRelease({ ...options, store })
-        ).rejects.toThrow();
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
     });
 
     it('rejects a non-exact manifest body', async () => {
@@ -307,7 +307,7 @@ describe('candidate verifier', () => {
                 releaseId: prepared.releaseId,
                 depth: 'shallow',
             })
-        ).rejects.toThrow();
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
     });
 
     it.each([
@@ -349,7 +349,7 @@ describe('candidate verifier', () => {
 
         await expect(
             verifyStoredRelease({ ...options, store })
-        ).rejects.toThrow();
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
     });
 
     it('rejects decoded dimensions that differ from the manifest', async () => {
@@ -679,7 +679,10 @@ describe('candidate verifier', () => {
                     releaseId: prepared.releaseId,
                     depth: 'deep',
                 })
-            ).rejects.toThrow();
+            ).rejects.toMatchObject({
+                name: 'PublisherError',
+                code: 'integrity',
+            });
         }
     );
 });

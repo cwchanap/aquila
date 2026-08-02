@@ -27,6 +27,8 @@ import type { PreparedRelease } from './types';
 
 export type VerificationDepth = 'shallow' | 'deep';
 
+const VERIFICATION_CONCURRENCY = 4;
+
 export interface VerifyStoredReleaseOptions {
     readonly store: DeliveryStore;
     readonly storyId: string;
@@ -367,9 +369,19 @@ async function verifyObjects(
         if (group === undefined) groups.set(key, [reference]);
         else group.push(reference);
     }
-    await Promise.all(
-        [...groups.values()].map(group => verifyObjectGroup(store, group))
+    const groupList = [...groups.values()];
+    let nextIndex = 0;
+    const workers = Array.from(
+        { length: Math.min(VERIFICATION_CONCURRENCY, groupList.length) },
+        async () => {
+            while (nextIndex < groupList.length) {
+                const index = nextIndex;
+                nextIndex += 1;
+                await verifyObjectGroup(store, groupList[index]);
+            }
+        }
     );
+    await Promise.all(workers);
 }
 
 export async function verifyStoredRelease(

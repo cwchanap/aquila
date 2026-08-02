@@ -35,6 +35,7 @@ import { LocalDeliveryStore } from '../stores/local-delivery-store';
 import { PublisherError } from '../errors';
 
 const roots: string[] = [];
+const stores: LocalDeliveryStore[] = [];
 const target: PublicationTarget = { kind: 'preview', previewId: 'hpa-230' };
 const storyId = 'example_story';
 const immutableCache =
@@ -72,8 +73,9 @@ async function snapshotFiles(
 }
 
 afterEach(async () => {
+    await Promise.all(stores.splice(0).map(store => store.close()));
     await Promise.all(
-        roots.splice(0).map(root => rm(root, { recursive: true }))
+        roots.splice(0).map(root => rm(root, { recursive: true, force: true }))
     );
 });
 
@@ -291,6 +293,7 @@ describe('buildPublicationPlan', () => {
         );
         roots.push(destinationRoot);
         const store = new LocalDeliveryStore(destinationRoot);
+        stores.push(store);
         const initial = await planWith(store, paths);
         await materialize(store, initial, true);
         const activeSnapshot = await store.inspectPointer(
@@ -353,6 +356,7 @@ describe('buildPublicationPlan', () => {
                 directoryFlushes += 1;
             },
         });
+        stores.push(store);
         const initial = await planWith(store, paths);
         await materialize(store, initial, true);
 
@@ -435,6 +439,7 @@ describe('buildPublicationPlan', () => {
         );
         roots.push(destinationRoot);
         const store = new LocalDeliveryStore(destinationRoot);
+        stores.push(store);
         const initial = await planWith(store, paths);
         const candidate = initial.objects[0]!;
         await store.createImmutable({
@@ -460,6 +465,7 @@ describe('buildPublicationPlan', () => {
         );
         roots.push(destinationRoot);
         const store = new LocalDeliveryStore(destinationRoot);
+        stores.push(store);
         const initial = await planWith(store, paths);
         await store.createImmutable({
             key: getReleaseManifestPath(

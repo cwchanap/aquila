@@ -278,51 +278,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          bun --filter @aquila/infra-cloudflare assets -- publish \
-            --story "$STORY_ID" \
-            --environment preview \
-            --preview-id "$PREVIEW_ID" \
-            --plan "$GITHUB_WORKSPACE/.tmp/production-fixture-plan.json" \
-            --source-root "$GITHUB_WORKSPACE/.tmp/source-c" \
-            --destination r2 \
-            --json \
-            > .tmp/reports/stale-conflict.json \
-            2> .tmp/evidence/stale-conflict.stderr &
-          publish_pid=$!
-          set -e
-
-          observed_upload=false
-          for _ in $(seq 1 600); do
-            if grep -q 'upload 1/' .tmp/evidence/stale-conflict.stderr; then
-              observed_upload=true
-              break
-            fi
-            if ! kill -0 "$publish_pid" 2>/dev/null; then
-              break
-            fi
-            sleep 0.1
-          done
-          if [[ "$observed_upload" != true ]]; then
-            set +e
-            wait "$publish_pid"
-            publish_exit=$?
-            set -e
-            echo "Publisher exited before the stale-advisory checkpoint (exit $publish_exit)." >&2
-            exit 1
-          fi
-
-          bun --filter @aquila/infra-cloudflare assets -- activate \
-            --story "$STORY_ID" \
-            --environment preview \
-            --preview-id "$PREVIEW_ID" \
-            --release "$RELEASE_B" \
-            --expect-manifest-sha256 "$MANIFEST_B" \
-            --destination r2 \
-            --reactivate \
-            --json > .tmp/reports/stale-drift-reactivate.json
-
-          set +e
-          wait "$publish_pid"
+          bun .github/scripts/r2-stale-conflict-coordinator.ts
           publish_exit=$?
           set -e
           if [[ "$publish_exit" -ne 4 ]]; then
@@ -332,7 +288,9 @@ jobs:
           # shellcheck disable=SC2016
           PUBLISH_EXIT="$publish_exit" bun -e '
             const report = await Bun.file(".tmp/reports/stale-conflict.json").json();
+            const coordinator = await Bun.file(".tmp/evidence/stale-conflict-coordinator.json").json();
             if (report.status !== "conflict" || report.counts?.pointersWritten !== 0 || report.pointer?.changed === true) throw new Error("publisher did not report a zero-pointer-write conflict");
+            if (coordinator.publishExit !== Number(process.env.PUBLISH_EXIT) || coordinator.activationExit !== 0 || coordinator.issue !== undefined) throw new Error("stale-conflict coordinator did not complete cleanly");
             await Bun.write(".tmp/evidence/stale-conflict-proof.json", `${JSON.stringify({ schemaVersion: 1, cliExit: Number(process.env.PUBLISH_EXIT), status: report.status, pointersWritten: report.counts.pointersWritten, pointerChanged: report.pointer?.changed ?? false }, null, 2)}\n`);
           '
 

@@ -265,8 +265,14 @@ describe('assets CLI destination selection and safety', () => {
         // then validate one filesystem location and read another, bypassing
         // the source/destination overlap guard. Both paths must now resolve
         // against repositoryRoot once and flow through to execution.
+        //
+        // repositoryRoot is an absolute temp path, so resolve(repositoryRoot,
+        // relativePath) is cwd-independent. The assertions therefore verify
+        // resolution against repositoryRoot without mutating process.cwd(): a
+        // cwd-based resolve('sources') would yield join(process.cwd(),
+        // 'sources'), which cannot equal the temp join(repositoryRoot,
+        // 'sources') below.
         const root = await mkdtemp(join(tmpdir(), 'aquila-cli-cwd-'));
-        const originalCwd = process.cwd();
         try {
             const repositoryRoot = join(root, 'repo');
             const sourceRoot = join(repositoryRoot, 'sources');
@@ -278,12 +284,6 @@ describe('assets CLI destination selection and safety', () => {
                 mkdir(destinationRoot, { recursive: true }),
                 writeFile(planFile, '{}'),
             ]);
-            // Run from a cwd that is neither the repository root nor a
-            // directory containing `sources` or `plan.json`, so a cwd-relative
-            // resolution would point at non-existent paths.
-            const elsewhere = join(root, 'elsewhere');
-            await mkdir(elsewhere, { recursive: true });
-            process.chdir(elsewhere);
 
             const runCommand = vi.fn(async command => report(command.command));
             const test = harness(runCommand);
@@ -314,7 +314,6 @@ describe('assets CLI destination selection and safety', () => {
             expect(passed.sourceRoot).toBe(sourceRoot);
             expect(passed.releasePlanPath).toBe(planFile);
         } finally {
-            process.chdir(originalCwd);
             await rm(root, { recursive: true, force: true });
         }
     });

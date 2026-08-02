@@ -1,7 +1,7 @@
 # HPA-230: Aquila Immutable Visual Asset Publisher
 
 **Date:** 2026-08-01  
-**Status:** Draft — pending design approval  
+**Status:** Approved for implementation
 **Linear:** [HPA-230](https://linear.app/cwchanap/issue/HPA-230/build-aquila-immutable-visual-asset-publisher)  
 **Parent:** HPA-216  
 **Depends on:** HPA-227, HPA-229 — complete  
@@ -95,6 +95,12 @@ packages/stories/release-plans/<storyId>.preview.json
 
 A command may override the plan path explicitly. The preview companion does not
 change the production-plan convention.
+
+HPA-230 intentionally does not create The Seventh Mirror production plan.
+HPA-231 owns its generated-key/source inventory, reviewed inclusion and omission
+decisions, checked-in production plan, and migration. Until HPA-231 lands, the
+publisher is complete and fixture-testable but a clean checkout cannot publish
+The Seventh Mirror to production. HPA-230 does not auto-classify authoring keys.
 
 ## Scope boundaries
 
@@ -231,7 +237,7 @@ ID. Zero matches and multiple matches are errors.
 
 The plan-path precedence is:
 
-1. `--release-plan <path>`;
+1. `--plan <path>`;
 2. for preview, `<storyId>.preview.json` when it exists;
 3. the production `<storyId>.json`.
 
@@ -271,6 +277,14 @@ Prompt text is not copied into publisher domain objects, publication plans,
 encoded-asset records, runtime manifests, storage metadata, or reports. The raw
 authoring document remains available only inside the input loader long enough
 to parse and reduce it.
+
+Before constructing that reduced catalog, the loader normalizes each generated
+logical key with `key.normalize('NFC')`, validates the normalized key, constructs
+the type-qualified identity, and detects duplicates after normalization. This
+happens before qualification, section derivation, or comparison with the plan.
+Two generated keys that collapse to the same qualified identity fail planning.
+Checked-in release-plan keys must already satisfy the HPA-227 NFC contract and
+are never silently rewritten. Source paths are not normalized.
 
 Section metadata derived from the first logical-key segment is best-effort only.
 For a background key such as `chapter_1/ch1_act1_s0`, it commonly yields a useful
@@ -314,6 +328,13 @@ joined, or canonical real paths. Filesystem resolution details remain internal
 to the source resolver; coverage validation operates on the exact wire strings
 used by the authoring catalog and release plan.
 
+For an included asset, the plan `sourcePath` must equal the generated authoring
+`sourcePath` byte-for-byte. Case-insensitive filesystem equivalence, separator
+conversion, symlink resolution, and Unicode equivalence do not relax this
+maintenance contract. A compiler rename or move requires the plan to change in
+the same review. The publisher reports a difference as
+`coverage/source-path-mismatch`, distinct from a missing file.
+
 The V1 supported source formats are single-frame PNG, JPEG, and WebP. Animated
 or multipage images, SVG, GIF, TIFF, AVIF source files, and unknown formats fail
 as unsupported inputs. The format decision is based on decoded metadata, not
@@ -346,6 +367,10 @@ Maximum runtime dimensions come from
 | Background | 1600×900 | WebP and AVIF |
 | Portrait | 900×1200 | alpha-preserving WebP |
 
+These values are maximum bounding boxes, not required exact output dimensions.
+`fit: inside` preserves aspect ratio, so a background may validly encode to
+`1599×900`; the manifest records the actual positive encoded dimensions.
+
 V1 encoder settings are:
 
 | Encoder | Settings |
@@ -373,6 +398,12 @@ The generic publisher reports deviations from the HPA-227 preferred source
 aspect ratio and minimum source dimensions as warnings. It does not crop,
 invent pixels, or reject an otherwise decodable source solely for those
 presentation deviations. HPA-231 owns source correction and release approval.
+
+Aspect deviation is `Math.abs(actualAspect / preferredAspect - 1)`. V1 warns
+only when that relative error is greater than `0.005` (0.5%). Minimum-dimension
+warnings remain exact after orientation normalization. Repeated warnings are
+aggregated deterministically by diagnostic code and asset type with a total and
+a bounded, sorted sample of logical identities.
 
 Determinism is scoped to the same source bytes and the same encoder toolchain:
 policy version, Sharp version, libvips version, operating system, and
@@ -507,10 +538,9 @@ It does not receive the source-bucket name as an operational capability.
 
 Cloudflare R2 implements conditional `PutObject` operations. The adapter sends
 `If-None-Match: *` for immutable creation and `If-Match: <observed ETag>` or
-`If-None-Match: *` for pointer compare-and-swap. Because the current AWS SDK
-command input does not expose every R2 conditional header uniformly, the
-adapter adds the header through command-scoped AWS SDK middleware, following
-Cloudflare's documented JS v3 pattern.
+`If-None-Match: *` for pointer compare-and-swap through the pinned AWS SDK's
+typed `PutObjectCommandInput.IfNoneMatch` and `IfMatch` fields. The adapter does
+not inject conditional headers through custom middleware.
 
 R2 ETags are opaque concurrency tokens. The adapter preserves the exact
 representation it receives and sends that same opaque value back in `If-Match`;
@@ -524,7 +554,6 @@ conflict, not retried as a transport error.
 References:
 
 - <https://developers.cloudflare.com/r2/api/s3/api/>
-- <https://developers.cloudflare.com/r2/examples/aws/custom-header/>
 - <https://developers.cloudflare.com/r2/api/error-codes/>
 
 ### D9 — Publication metadata is explicit for every public object class
@@ -593,16 +622,20 @@ available.
 
 The release ID is calculated exactly as HPA-227 specifies:
 
-1. construct a draft manifest whose temporary `releaseId` is syntactically
-   valid;
-2. call `canonicalReleaseContent()`;
-3. hash its UTF-8 bytes;
-4. validate and brand the digest with `assertSha256<'release-content'>()`;
-5. call `releaseIdFromContentSha256()`;
-6. replace the temporary ID with the final release ID;
-7. parse the final value with `parseRuntimeAssetManifest()`;
-8. check it against the plan with `validateRuntimeManifestCoverage()`;
-9. call `assertReleaseIdMatchesContentSha256()` with the canonical digest.
+1. construct a draft object whose temporary `releaseId` is `sha256-` plus 64
+   zeroes;
+2. parse that draft with `parseRuntimeAssetManifest()` to obtain a validated
+   `RuntimeAssetManifestV1`;
+3. call `canonicalReleaseContent()` with the validated draft;
+4. hash its UTF-8 bytes;
+5. validate and brand the digest with `assertSha256<'release-content'>()`;
+6. call `releaseIdFromContentSha256()`;
+7. replace the temporary ID with the final release ID;
+8. parse the final value with `parseRuntimeAssetManifest()`;
+9. check it against the plan with `validateRuntimeManifestCoverage()`;
+10. call `assertReleaseIdMatchesContentSha256()` with the canonical digest.
+
+No unchecked cast is used to satisfy `canonicalReleaseContent()`.
 
 The exact immutable manifest bytes are:
 
@@ -677,8 +710,10 @@ preview pointer.
 
 ### D13 — Pointer activation is a conditional final write
 
-At the beginning of planning or immediately before a source-independent
-activation/rollback, the publisher reads `current.json` and retains:
+Planning may read `current.json` for advisory reporting, but that snapshot is
+never retained as the final CAS token across encoding or upload. Immediately
+after candidate verification, and immediately before source-independent
+activation or rollback, the publisher reads `current.json` and retains:
 
 ```ts
 type PointerSnapshot =
@@ -693,9 +728,9 @@ type PointerSnapshot =
 
 An existing pointer is parsed with
 `parseActiveReleasePointer(input, target, expectedStoryId)`. After candidate or
-stored-release verification, the publisher constructs a pointer with a fresh
-`publishedAt` and the JSON/revalidation metadata in D9, then performs exactly one
-compare-and-swap write:
+stored-release verification, the publisher constructs a pointer with a strictly
+monotonic `publishedAt` and the JSON/revalidation metadata in D9, then performs
+exactly one compare-and-swap write:
 
 - initially absent pointer → `If-None-Match: *`;
 - existing pointer → `If-Match: <initial ETag>`.
@@ -707,6 +742,20 @@ manifest-byte digest.
 A failed precondition means another publisher changed the pointer after this run
 began. The candidate objects and immutable manifest may remain safely stored,
 but the active release remains unchanged.
+
+Every publisher-generated pointer timestamp is strictly later than the snapshot
+used for its conditional write. The timestamp is generated after the final
+pointer read as `max(clock.now(), previousPublishedAt + 1ms)`. A prior pointer
+more than `300_000` ms ahead of the local clock fails with typed `clock-skew`;
+timestamp failures use exit class 5. Rollback and reactivation also produce new
+monotonic bytes. Historical `current.json` bytes are never restored verbatim.
+
+For `publish`, a difference between the advisory plan snapshot and this fresh
+snapshot is a concurrency conflict before CAS. With
+`--override-concurrent-pointer`, the command reports the newly observed release,
+reverifies the candidate, takes one more fresh snapshot, and attempts one
+refreshed conditional write. A change after that read still fails the store
+precondition and is never retried unconditionally.
 
 There is no generic `--force`.
 
@@ -720,14 +769,16 @@ Two explicit exceptional controls exist:
   another conditional write against the refreshed opaque ETag. It never
   performs an unconditional write.
 
-Production activation additionally requires:
+Production pointer mutation additionally requires:
 
 ```text
 --confirm-production <storyId>
 ```
 
 The exact confirmation value must match `--story`. This is required for
-production `publish`, `activate`, and `rollback` mutations.
+activating production `publish`, `activate`, `rollback`, and reactivation. It is
+not required for production `publish --no-activate`, `mirror-preview`, `verify`,
+or `releases`.
 
 ### D14 — Idempotency is defined by externally visible writes
 
@@ -798,6 +849,21 @@ re-encoding or depending on current source/plan state.
 No separate staging path is introduced. The immutable release path is already
 the candidate location; activation is exclusively the pointer write.
 
+Production-eligible releases follow one production-first workflow. Run
+`publish --environment production --no-activate` with a production-channel plan
+to validate complete coverage, encode once, and create the immutable production
+candidate without changing the production pointer. Then `mirror-preview`
+deep-verifies that production release, checks an optional expected manifest
+checksum, and create-only copies the exact manifest bytes and metadata to the
+run-scoped preview path. The global objects are not copied. The preview copy is
+deep-verified and activated for HPA-233; after approval, the retained production
+release is activated by release ID and checksum without sources or encoding.
+
+`mirror-preview` is production-to-preview only. It loads no authoring catalog,
+plan, source root, or encoder; reuses only a byte-identical existing preview
+manifest; rejects checksum, body, or metadata conflict; and never writes either
+pointer. An arbitrary preview manifest can never be promoted to production.
+
 ### D16 — Rollback does not depend on current source files or plans
 
 Release discovery lists only the canonical release directory for the selected
@@ -812,7 +878,7 @@ The R2 adapter paginates that exact prefix. Returned keys are accepted only when
 their complete path is exactly:
 
 ```text
-<release-prefix>/<releaseId>/runtime-manifest.json
+<releasePrefix><releaseId>/runtime-manifest.json
 ```
 
 and the extracted release ID/path pair passes the HPA-227 path helpers. The
@@ -860,6 +926,11 @@ source root. Historical sources or classifications may legitimately have
 changed since the release was created. It never re-encodes or uploads binary
 objects or a release manifest.
 
+R2 ETags remain opaque through listing and rollback. A publisher-controlled
+A→B→A sequence cannot reproduce the original A pointer bytes because the new A
+pointer carries a strictly later `publishedAt`; operators must use `rollback`,
+not manually restore an old object.
+
 Immutable manifests, active-pointer history in CI output, and retained JSON
 publisher reports provide the audit and recovery record. HPA-233 may retain
 additional release-gate evidence without changing the HPA-227 runtime schema.
@@ -873,7 +944,7 @@ plan
   --story <storyId>
   --environment preview|production
   [--preview-id <id>]
-  [--release-plan <path>]
+  [--plan <path>]
   [--source-root <path>]
   [--destination local|r2]
   [--destination-root <path>]
@@ -883,7 +954,7 @@ publish
   --story <storyId>
   --environment preview|production
   [--preview-id <id>]
-  [--release-plan <path>]
+  [--plan <path>]
   [--source-root <path>]
   [--destination local|r2]
   [--destination-root <path>]
@@ -893,11 +964,21 @@ publish
   [--confirm-production <storyId>]
   [--json]
 
+mirror-preview
+  --story <storyId>
+  --release <releaseId>
+  --preview-id <previewId>
+  [--expect-manifest-sha256 <sha256>]
+  [--destination local|r2]
+  [--destination-root <path>]
+  [--json]
+
 activate
   --story <storyId>
   --environment preview|production
   --release <releaseId>
   [--preview-id <id>]
+  [--expect-manifest-sha256 <sha256>]
   [--destination local|r2]
   [--destination-root <path>]
   [--reactivate]
@@ -910,8 +991,10 @@ verify
   --environment preview|production
   --release <releaseId>
   [--preview-id <id>]
+  [--expect-manifest-sha256 <sha256>]
   [--destination local|r2]
   [--destination-root <path>]
+  [--deep]
   [--json]
 
 releases
@@ -928,6 +1011,7 @@ rollback
   --environment preview|production
   --release <releaseId>
   [--preview-id <id>]
+  [--expect-manifest-sha256 <sha256>]
   [--destination local|r2]
   [--destination-root <path>]
   [--override-concurrent-pointer]
@@ -946,12 +1030,13 @@ Destination defaults and validation are intentionally safe:
 
 Additional rules:
 
-- Preview requires an explicit `--preview-id` or
-  `PUBLIC_ASSET_PREVIEW_ID`.
-- Production ignores preview IDs and requires exact confirmation for mutations.
+- Preview requires an explicit `--preview-id`.
+- Production rejects preview IDs and requires exact confirmation for mutations.
 - `plan` never mutates either destination.
 - `verify` and `releases` never mutate either destination.
-- `activate` and `rollback` have no source or release-plan flags.
+- `activate` and `rollback` have no source or plan flags.
+- `mirror-preview` has no source, plan, encoder, environment, or production
+  confirmation flags and never writes a pointer.
 - `--no-activate` is mutually exclusive with `--reactivate` and
   `--override-concurrent-pointer`; an operation that cannot write a pointer
   cannot request pointer conflict handling.
@@ -997,6 +1082,7 @@ interface PublisherReportV1 {
   command:
     | 'plan'
     | 'publish'
+    | 'mirror-preview'
     | 'activate'
     | 'verify'
     | 'releases'
@@ -1105,8 +1191,10 @@ post-activation pointer-header checks.
 HPA-233 owns the consolidated pre-production gate, complete candidate release
 verification through the public preview domain, browser decode, representative
 reader flows, and production authorization evidence. It consumes HPA-230's
-source-independent `activate --release` path after approving a retained
-candidate.
+production-first candidate, exact preview mirror, and source-independent
+`activate --release` path after approving the retained release ID and manifest
+checksum. No post-publication gate step rereads source images, reruns Sharp, or
+re-evaluates mutable authoring inputs.
 
 Shared HPA-227 fixtures and validators are reused. HPA-230 does not create a
 second runtime-contract test framework.
@@ -1297,11 +1385,15 @@ compare-and-swap current.json as the only write
 Unit coverage includes:
 
 - generated-manifest discovery by embedded story ID;
+- generated-key NFC normalization and post-normalization collision rejection;
 - background/portrait type qualification;
 - prompt stripping;
 - duplicate authoring identities;
 - production and preview coverage behavior;
+- direct `assertActivationAllowed()` rejection of a preview-channel plan for a
+  production publication target;
 - exact plan-relative `availableSourcePaths` keying;
+- distinct exact source-path mismatch diagnostics;
 - resolved runtime section precedence and omission;
 - section changes affecting release identity;
 - source-root CLI/environment/default precedence;
@@ -1314,16 +1406,22 @@ Unit coverage includes:
 - portrait alpha preservation;
 - portrait-only and empty release rejection;
 - no crop, no enlargement, and maximum dimension behavior;
+- aspect-warning tolerance below and above 0.5%, actual bounding-box dimensions,
+  and deterministic repeated-warning aggregation;
 - encoded-byte hashing and object-path derivation;
 - branded digest helper use and transposition rejection;
 - canonical release ID and exact manifest-byte checksum;
+- placeholder draft parsing before canonical release-ID derivation;
 - manifest sorting and runtime-parser rejection paths;
 - metadata selection for all four public object classes;
 - opaque R2 ETag handling;
+- typed `IfMatch` and `IfNoneMatch` command inputs with no custom middleware;
 - `EncoderFingerprintV1` population;
 - report redaction and deterministic ordering;
 - no-op versus changed JSON semantics;
 - CLI validation, production confirmation, and exit codes.
+- production confirmation required for pointer mutation but not candidate-only
+  publication, mirroring, verification, or listing.
 
 ### Local adapter integration tests
 
@@ -1332,6 +1430,9 @@ A temporary filesystem destination proves:
 - first publication creates objects, manifest, and pointer in order;
 - binary, manifest, and pointer metadata match D9;
 - candidate-only publication never creates a pointer;
+- production candidate publication followed by exact byte-identical preview
+  manifest mirroring, with preview-to-production copying rejected;
+- mirror checksum mismatch and immutable body/metadata conflict rejection;
 - source-independent `activate --release` deep-verifies and writes only the
   pointer;
 - activation of the already active release is a no-op unless reactivated;
@@ -1347,10 +1448,18 @@ A temporary filesystem destination proves:
 - decode, dimension, media-type, cache metadata, or missing-background failure
   leaves the pointer unchanged;
 - pointer compare-and-swap detects a concurrent change;
+- plan-time pointer drift is detected before the fresh publish CAS, and a second
+  change after the fresh read fails the store precondition;
+- publish, activate, reactivation, and rollback timestamps strictly increase;
+- small negative clock skew produces the monotonic successor, while an
+  implausibly future pointer produces typed `clock-skew` failure;
 - publish override revalidates the candidate before refreshed CAS;
 - activate override deep-verifies the stored target again before refreshed CAS;
 - rollback override deep-verifies the target again before refreshed CAS;
 - rollback writes only the pointer;
+- A→B→A rollback produces distinct pointer bytes and monotonic timestamps;
+- retained production activation succeeds without authoring, plan, source, or
+  encoder access;
 - rollback to a missing or invalid release fails without changing the pointer.
 
 Tests record filesystem state before and after commands rather than asserting
@@ -1378,24 +1487,30 @@ These tests do not require a local S3 server.
 
 ### Gated preview integration
 
-A manually triggered or secret-enabled job runs against the real HPA-229 preview
-destination:
+A manually triggered credential-gated job runs against the real HPA-229 delivery
+bucket. Normal pull-request and push CI remain credential-free. It uses a
+run-ID-derived preview namespace and a test-only complete production fixture,
+not the HPA-231-owned story plan:
 
-1. publish a small fixture with `--no-activate`;
-2. verify the immutable candidate and manifest metadata through the R2 adapter;
-3. activate the retained release ID through `activate --release`;
-4. run the HPA-229 public verifier to confirm AVIF, served pointer behavior,
-   manifest metadata, and object metadata;
-5. rerun unchanged and observe a no-op;
-6. publish a controlled revision as another candidate;
-7. detect a synthetic stale pointer snapshot;
-8. activate the controlled revision through the source-independent path;
-9. roll back to the first release;
-10. verify that only the preview pointer changed during activation and rollback.
+1. snapshot the fixture production pointer;
+2. publish a complete production fixture candidate with `--no-activate`;
+3. extract the exact release ID and manifest-byte checksum from JSON;
+4. rerun unchanged and assert a zero-write no-op;
+5. mirror exact production manifest bytes to preview and activate there;
+6. deep-verify the retained preview candidate through the R2 adapter;
+7. run the HPA-229 public smoke verifier for CORS/cache/public-host ownership;
+8. publish and mirror a controlled production revision without activation;
+9. activate the revision source-independently;
+10. prove an earlier opaque ETag loses a controlled stale CAS;
+11. roll back to the first release;
+12. retain reports and before/after evidence proving activation and rollback
+    change only the run-scoped preview `current.json`;
+13. assert the production pointer snapshot is byte-for-byte unchanged.
 
 The fixture includes at least one background so the V1 release-level AVIF
-invariant is exercised. The test uses a dedicated preview ID and never writes
-the production pointer. Normal CI remains credential-free.
+invariant is exercised. Immutable production fixture candidates remain retained;
+the workflow never writes or changes the production pointer and never exposes
+credentials in traces, reports, artifacts, or summaries.
 
 ### Required verification commands
 
@@ -1442,6 +1557,8 @@ The runbook documents:
 - rollback, rollback override, and reactivation;
 - safe interruption and recovery;
 - the boundary with HPA-229 and HPA-233.
+- HPA-231 ownership of the first production story plan and exact source-path
+  maintenance.
 
 `.env.example` is updated to document `AQUILA_ASSET_SOURCE_ROOT`. The HPA-229
 delivery runbook is updated only where its seeding or publisher command changes.
@@ -1488,13 +1605,13 @@ A complete plan must encode every included source to know final content hashes.
 in human mode, clean temporary bytes promptly, and defer persistent transcode
 caching until real measurements justify it.
 
-### R2 conditional-header integration
+### R2 conditional-write integration
 
-AWS SDK JS v3 may require middleware for R2-specific request headers.
+R2 must honor the pinned AWS SDK's typed conditional `PutObject` inputs exactly.
 
-**Mitigation:** isolate the header injection in the R2 adapter, test serialized
-conditional and metadata headers, preserve ETags opaquely, and map 412
-explicitly. The publisher core never depends on SDK details.
+**Mitigation:** inspect typed `IfMatch` and `IfNoneMatch` command inputs in
+adapter tests, forbid custom conditional middleware, preserve ETags opaquely,
+and map 412 explicitly. The publisher core never depends on SDK details.
 
 ### Origin metadata drift
 
@@ -1615,5 +1732,6 @@ The design is implemented when one HPA-230 pull request:
 7. passes fixture, unit, local integration, and R2 adapter tests;
 8. records a successful preview R2 integration run with current HPA-229 checks;
 9. documents candidate publication, activation, release listing, and rollback;
-10. leaves HPA-231 and HPA-233 with no unresolved publisher architecture
-    decision.
+10. leaves HPA-231 with explicit production-plan ownership and HPA-233 with one
+    production-first retained-candidate handoff and no unresolved publisher
+    architecture decision.

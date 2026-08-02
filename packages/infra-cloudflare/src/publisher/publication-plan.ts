@@ -65,19 +65,32 @@ export interface PlannedImmutableCandidate {
     readonly identity?: string;
 }
 
-export interface AdvisoryPointerState {
-    readonly exists: boolean;
-    readonly beforeReleaseId?: string;
-    readonly activationNeeded: boolean;
-}
+export type AdvisoryPointerState =
+    | {
+          readonly exists: false;
+          readonly etag?: never;
+          readonly beforeReleaseId?: never;
+          readonly activationNeeded: true;
+      }
+    | {
+          readonly exists: true;
+          /**
+           * Opaque plan-time identity used only to detect pointer drift. It is
+           * never reused as the final activation CAS expectation.
+           */
+          readonly etag: string;
+          readonly beforeReleaseId: string;
+          readonly activationNeeded: boolean;
+      };
 
 export interface PublicationPlan {
     readonly preparedRelease: PreparedRelease;
     readonly objects: readonly PlannedImmutableCandidate[];
     readonly manifest: PlannedImmutableCandidate;
     /**
-     * A planning observation only. It deliberately excludes the pointer ETag
-     * and raw bytes, so publication must obtain a fresh final CAS snapshot.
+     * A planning observation only. It retains the opaque ETag solely as drift
+     * identity and excludes raw bytes; publication must obtain a separate fresh
+     * snapshot and must never use this ETag as its final CAS expectation.
      */
     readonly advisoryPointer: AdvisoryPointerState;
     readonly report: PublisherReportV1;
@@ -287,6 +300,7 @@ async function advisoryPointerState(
     }
     return {
         exists: true,
+        etag: snapshot.etag,
         beforeReleaseId: pointer.releaseId,
         activationNeeded: pointer.releaseId !== preparedRelease.releaseId,
     };

@@ -32,23 +32,26 @@ const snapshot = async (
         publishedAt: pointer.publishedAt,
     };
 };
-const prefix = `vn/previews/${previewId}/stories/${storyId}/`;
-const previewKeys: Array<{ key: string; etag: string }> = [];
-for await (const item of store.list(prefix)) {
-    previewKeys.push({ key: item.key, etag: item.etag });
+try {
+    const prefix = `vn/previews/${previewId}/stories/${storyId}/`;
+    const previewKeys: Array<{ key: string; etag: string }> = [];
+    for await (const item of store.list(prefix)) {
+        previewKeys.push({ key: item.key, etag: item.etag });
+    }
+    previewKeys.sort((left, right) => left.key.localeCompare(right.key));
+    const evidence = {
+        schemaVersion: 1,
+        label,
+        storyId,
+        previewId,
+        productionPointer: await snapshot({ kind: 'production' }),
+        previewPointer: await snapshot({ kind: 'preview', previewId }),
+        previewKeys,
+    };
+    await Bun.write(
+        `.tmp/evidence/${label}.json`,
+        `${JSON.stringify(evidence, null, 2)}\n`
+    );
+} finally {
+    await store.close();
 }
-previewKeys.sort((left, right) => left.key.localeCompare(right.key));
-const evidence = {
-    schemaVersion: 1,
-    label,
-    storyId,
-    previewId,
-    productionPointer: await snapshot({ kind: 'production' }),
-    previewPointer: await snapshot({ kind: 'preview', previewId }),
-    previewKeys,
-};
-await Bun.write(
-    `.tmp/evidence/${label}.json`,
-    `${JSON.stringify(evidence, null, 2)}\n`
-);
-await store.close();

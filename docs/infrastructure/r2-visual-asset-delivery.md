@@ -377,7 +377,10 @@ are verified and reused rather than overwritten.
 The release ID is content-addressed over the manifest, which means it is derived
 from the encoded bytes. `sharp`'s WebP/AVIF encoders are not byte-identical
 across libvips builds, so **the release id differs from machine to machine**. Do
-not pin it anywhere; read it from the seeder's final line.
+not pin it anywhere. In the wrapper's human publisher summary, read the
+`release: sha256-…` field; automation should invoke the underlying publisher
+with `--json`, save its single stdout report, and extract `releaseId` from that
+report as shown in the publisher runbook.
 
 The general candidate, mirror, activation, list, and rollback procedures live in
 [`visual-asset-publisher.md`](./visual-asset-publisher.md). This HPA-229 runbook
@@ -487,9 +490,9 @@ that hostname.
 
 **This is also exactly what a stale cached 404 looks like after a successful
 seed** — the verifier cannot tell the two apart, because from the outside they
-are the same response. If `seed` reported `Seeded release sha256-…` and `verify`
-then reports this, run the cache-busted comparison in the trap above before
-suspecting the upload.
+are the same response. If `seed` exited successfully and its publisher summary
+reported `release: sha256-…`, but `verify` then reports this, run the
+cache-busted comparison in the trap above before suspecting the upload.
 
 ---
 
@@ -1039,8 +1042,10 @@ infra-cloudflare 99; desktop has no test files — infra-cloudflare re-measured
 quoted/duplicate-freshness and per-request-deadline checks, 84 on 2026-07-31,
 73 before the immutable-conflict and manifest-cache-eligibility checks, 53
 before that; web was 1582 on 2026-07-31),
-`bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads, `Seeded release
-sha256-b632cb09…`). The `bun --filter @aquila/infra-cloudflare verify` (15 PASS)
+`bun --filter @aquila/infra-cloudflare seed` (success: 6 uploads; the historical
+legacy seeder printed `Seeded release sha256-b632cb09…`, while the current thin
+wrapper uses the publisher summary field `release: sha256-…`). The
+`bun --filter @aquila/infra-cloudflare verify` (15 PASS)
 and `R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts`
 (2 passed) counts above are **stale** — they predate the per-object,
 cross-reference, strict-CORS, immutable-conflict, and

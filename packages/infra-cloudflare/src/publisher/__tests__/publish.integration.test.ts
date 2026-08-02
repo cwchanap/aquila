@@ -325,8 +325,20 @@ describe('publishRelease', () => {
         const paths = await fixture();
         const store = new RecordingStore(paths.local);
         const before = await snapshotFiles(paths.destinationRoot);
+        const uploadProgress: Array<{ completed: number; total: number }> = [];
 
-        const first = await publishRelease(options(paths, store));
+        const first = await publishRelease(
+            options(paths, store, {
+                progress: event => {
+                    if (event.stage === 'upload') {
+                        uploadProgress.push({
+                            completed: event.completed,
+                            total: event.total,
+                        });
+                    }
+                },
+            })
+        );
         const afterFirst = await snapshotFiles(paths.destinationRoot);
         const firstEvents = [...store.events];
         const firstWriteCounts = {
@@ -349,6 +361,11 @@ describe('publishRelease', () => {
                 pointersWritten: 1,
             },
         });
+        expect(uploadProgress).toEqual([
+            { completed: 1, total: 3 },
+            { completed: 2, total: 3 },
+            { completed: 3, total: 3 },
+        ]);
         expect(
             store.immutableRequests.map(request => request.contentType).sort()
         ).toEqual([

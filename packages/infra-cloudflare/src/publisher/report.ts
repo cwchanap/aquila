@@ -152,6 +152,8 @@ const URL_WITH_AUTHORITY_RE = /^[A-Za-z][A-Za-z0-9+.-]*:\/\//;
 const FILE_URL_RE = /^file:\//i;
 const ABSOLUTE_PATH_PREFIX_RE = /^(?:\/|\\)/;
 const WINDOWS_DRIVE_PATH_RE = /^[A-Za-z]:[\\/]/;
+const CANONICAL_ISO_TIMESTAMP_RE =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
@@ -175,6 +177,16 @@ function safeIdentity(value: string | undefined): string | undefined {
         isSafeLogicalKey(key)
         ? `${type}:${key}`
         : undefined;
+}
+
+function safeTimestamp(value: string | undefined): string | undefined {
+    if (value === undefined || !CANONICAL_ISO_TIMESTAMP_RE.test(value)) {
+        return undefined;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.valueOf()) || parsed.toISOString() !== value
+        ? undefined
+        : value;
 }
 
 function safeDiagnosticMessage(
@@ -218,6 +230,14 @@ function sanitizeDiagnostic(
         diagnostic.sampleIdentities?.map(safeIdentity) ?? []
     );
     const identity = safeIdentity(diagnostic.identity);
+    const timestampDiagnostic =
+        code === 'clock-skew' || code === 'non-monotonic-pointer-time';
+    const previousPublishedAt = timestampDiagnostic
+        ? safeTimestamp(diagnostic.previousPublishedAt)
+        : undefined;
+    const localNow = timestampDiagnostic
+        ? safeTimestamp(diagnostic.localNow)
+        : undefined;
     return {
         code,
         stage: safeStage(diagnostic.stage),
@@ -232,6 +252,8 @@ function sanitizeDiagnostic(
             : { count: diagnostic.count }),
         ...(sampleIdentities.length === 0 ? {} : { sampleIdentities }),
         ...(sampleSafePaths.length === 0 ? {} : { sampleSafePaths }),
+        ...(previousPublishedAt === undefined ? {} : { previousPublishedAt }),
+        ...(localNow === undefined ? {} : { localNow }),
     };
 }
 
@@ -240,9 +262,12 @@ export function normalizeReportDiagnostics(
 ): PublisherDiagnosticV1[] {
     const groups = new Map<string, PublisherDiagnosticV1[]>();
     for (const diagnostic of diagnostics.map(sanitizeDiagnostic)) {
-        const key = [diagnostic.code, diagnostic.assetType ?? ''].join(
-            '\u0000'
-        );
+        const key = [
+            diagnostic.code,
+            diagnostic.assetType ?? '',
+            diagnostic.previousPublishedAt ?? '',
+            diagnostic.localNow ?? '',
+        ].join('\u0000');
         const group = groups.get(key);
         if (group === undefined) groups.set(key, [diagnostic]);
         else group.push(diagnostic);
@@ -288,6 +313,12 @@ export function normalizeReportDiagnostics(
                 count,
                 ...(sampleIdentities.length === 0 ? {} : { sampleIdentities }),
                 ...(sampleSafePaths.length === 0 ? {} : { sampleSafePaths }),
+                ...(first.previousPublishedAt === undefined
+                    ? {}
+                    : { previousPublishedAt: first.previousPublishedAt }),
+                ...(first.localNow === undefined
+                    ? {}
+                    : { localNow: first.localNow }),
             };
         });
 }

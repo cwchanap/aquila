@@ -776,6 +776,21 @@ function errorReport(
     target: PublicationTarget
 ): PublisherReportV1 {
     const code = error instanceof PublisherError ? error.code : 'storage';
+    const timestampContext =
+        error instanceof PublisherError &&
+        (code === 'clock-skew' || code === 'non-monotonic-pointer-time')
+            ? {
+                  ...(typeof error.context.previousPublishedAt === 'string'
+                      ? {
+                            previousPublishedAt:
+                                error.context.previousPublishedAt,
+                        }
+                      : {}),
+                  ...(typeof error.context.localNow === 'string'
+                      ? { localNow: error.context.localNow }
+                      : {}),
+              }
+            : {};
     return {
         schemaVersion: 1,
         command,
@@ -790,6 +805,7 @@ function errorReport(
                 code,
                 stage: 'input',
                 message: 'Publisher command failed',
+                ...timestampContext,
             },
         ],
     };

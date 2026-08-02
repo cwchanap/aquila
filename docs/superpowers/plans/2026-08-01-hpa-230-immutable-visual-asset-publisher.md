@@ -2452,11 +2452,12 @@ git commit -m "refactor(infra): route smoke seeding through publisher"
 
 Integrate every A1–A14 rule into its corresponding D-section:
 - production-first candidate/mirror workflow;
-- monotonic timestamp;
+- monotonic timestamp with safe prior-pointer/local-clock JSON diagnostics;
 - fresh CAS snapshot;
 - typed SDK fields;
 - NFC;
-- HPA-231 ownership;
+- HPA-231 plan/generated-asset/`compile:check` consistency ownership without a
+  premature global `compile:check` change;
 - exact source paths;
 - aspect tolerance;
 - confirmation semantics;
@@ -2545,10 +2546,12 @@ verification.
 - production fixture candidate with `--no-activate`;
 - exact manifest mirroring;
 - preview activation;
-- existing public `verify` command;
+- existing public `verify` command against the pre-existing HPA-229 smoke
+  fixture, without seeding or run-scoped claims;
 - unchanged rerun/no-op;
 - controlled revision candidate;
-- stale snapshot conflict;
+- stale-advisory conflict through the publisher CLI with exit 4 and zero pointer
+  writes;
 - source-independent activation;
 - rollback;
 - assert only preview pointer changes during activation/rollback;

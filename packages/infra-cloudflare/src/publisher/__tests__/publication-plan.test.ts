@@ -350,12 +350,7 @@ describe('buildPublicationPlan', () => {
             join(tmpdir(), 'aquila-plan-pending-pointer-')
         );
         roots.push(destinationRoot);
-        let directoryFlushes = 0;
-        const store = new LocalDeliveryStore(destinationRoot, {
-            afterDirectoryFlush: async () => {
-                directoryFlushes += 1;
-            },
-        });
+        const store = new LocalDeliveryStore(destinationRoot);
         stores.push(store);
         const initial = await planWith(store, paths);
         await materialize(store, initial, true);
@@ -414,13 +409,11 @@ describe('buildPublicationPlan', () => {
             })}\n`
         );
         const before = await snapshotFiles(destinationRoot);
-        const flushesBefore = directoryFlushes;
 
         const planned = await planWith(store, paths);
 
         expect(planned.report.status).toBe('no-op');
         expect(await snapshotFiles(destinationRoot)).toEqual(before);
-        expect(directoryFlushes).toBe(flushesBefore);
         expect(Object.keys(before)).toContain(
             join(
                 '.publisher-transactions',

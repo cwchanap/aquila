@@ -11,6 +11,7 @@ import {
     type ManifestByteSha256,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
+import { runReleaseGateCli } from '../release-gate/cli';
 import { activateStoredRelease, type ActivationResult } from './activation';
 import { verifyStoredRelease } from './candidate-verifier';
 import { PublisherError, publisherExitCode } from './errors';
@@ -887,6 +888,15 @@ export async function runAssetsCli(
     ) {
         dependencies.stdout.write(HELP);
         return 0;
+    }
+
+    if (argv[0] === 'release-gate') {
+        return runReleaseGateCli(argv.slice(1), {
+            environment: dependencies.environment,
+            stdout: dependencies.stdout,
+            stderr: dependencies.stderr,
+            repositoryRoot: dependencies.repositoryRoot,
+        });
     }
 
     const json = argv.includes('--json');

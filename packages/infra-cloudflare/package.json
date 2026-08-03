@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./release-gate": "./src/release-gate/index.ts"
+  },
   "scripts": {
     "assets": "bun src/publisher/cli.ts",
     "lint": "eslint src",

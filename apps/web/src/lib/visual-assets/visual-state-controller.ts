@@ -481,6 +481,8 @@ export class VisualStateController {
         const source = this.source;
         if (resolver === null || source === null) return Promise.resolve(false);
         if (this.releasePromise) return this.releasePromise;
+        const releaseLoadGeneration = this.releaseGeneration;
+        const releaseLoadStoryId = source.storyId;
         const hadUsableRelease =
             this.snapshot.release === 'ready' ||
             this.snapshot.release === 'stale-but-usable';
@@ -491,7 +493,14 @@ export class VisualStateController {
         const promise = resolver
             .loadActiveRelease({ signal: this.abortController.signal })
             .then(validated => {
-                if (this.disposed) return false;
+                if (
+                    !this.isReleaseLoadCurrent(
+                        releaseLoadGeneration,
+                        releaseLoadStoryId
+                    )
+                ) {
+                    return false;
+                }
                 const releaseId = validated.pointer.releaseId;
                 if (releaseId !== this.activeReleaseId) {
                     this.activeReleaseId = releaseId;
@@ -512,7 +521,13 @@ export class VisualStateController {
                 return true;
             })
             .catch(error => {
-                if (this.disposed || this.abortController.signal.aborted) {
+                if (
+                    this.abortController.signal.aborted ||
+                    !this.isReleaseLoadCurrent(
+                        releaseLoadGeneration,
+                        releaseLoadStoryId
+                    )
+                ) {
                     return false;
                 }
                 // Trust the resolver's expiry decision. When loadActiveRelease
@@ -931,6 +946,17 @@ export class VisualStateController {
             current?.storyId === input.storyId &&
             current.sceneId === input.sceneId &&
             current.dialogueIndex === input.dialogueIndex
+        );
+    }
+
+    private isReleaseLoadCurrent(
+        releaseLoadGeneration: number,
+        releaseLoadStoryId: string
+    ): boolean {
+        return (
+            !this.disposed &&
+            this.releaseGeneration === releaseLoadGeneration &&
+            this.currentInput?.storyId === releaseLoadStoryId
         );
     }
 

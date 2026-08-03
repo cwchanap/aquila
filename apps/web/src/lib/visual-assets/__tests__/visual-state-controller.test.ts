@@ -315,6 +315,56 @@ describe('VisualStateController', () => {
         expect(replacement.latest().releaseIdentity).toBeNull();
     });
 
+    it('ignores a release load superseded by story replacement', async () => {
+        const pendingRelease = deferred<ValidatedAssetRelease>();
+        const { controller, latest } = createHarness({
+            source: previewSource,
+            loadRelease: () => pendingRelease.promise,
+        });
+
+        controller.update(input([{ dialogue: 'Old story' }]));
+        expect(latest().release).toBe('loading');
+
+        controller.update(
+            input([{ dialogue: 'Replacement story' }], {
+                storyId: 'replacement_story',
+            })
+        );
+        await flushAsyncWork();
+        expect(latest().release).toBe('idle');
+        expect(latest().releaseIdentity).toBeNull();
+
+        pendingRelease.resolve(release());
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('idle');
+        expect(latest().releaseIdentity).toBeNull();
+    });
+
+    it('ignores a release failure superseded by story replacement', async () => {
+        const pendingRelease = deferred<ValidatedAssetRelease>();
+        const { controller, latest } = createHarness({
+            source: previewSource,
+            loadRelease: () => pendingRelease.promise,
+        });
+
+        controller.update(input([{ dialogue: 'Old story' }]));
+        controller.update(
+            input([{ dialogue: 'Replacement story' }], {
+                storyId: 'replacement_story',
+            })
+        );
+        await flushAsyncWork();
+
+        pendingRelease.reject(
+            new AssetResolverError('integrity', 'Manifest checksum mismatch')
+        );
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('idle');
+        expect(latest().releaseIdentity).toBeNull();
+    });
+
     it('uses the validated publication target to omit a production preview id', async () => {
         const productionSource: AssetResolverSource = {
             environment: 'production',

@@ -72,6 +72,14 @@ const UUID_RE =
 export interface LocalDeliveryStoreOptions {
     afterDirectoryFlush?: (path: string) => Promise<void>;
     afterTransactionBodyRename?: (key: string) => Promise<void>;
+    /**
+     * Invoked from the side-effect-free stat()/read() path immediately after
+     * the initial transaction-marker check confirms no pending writer, and
+     * before the unlocked multi-file inspection. Deterministic seam for
+     * concurrency tests that need to start a writer inside the marker-check
+     * TOCTOU window. Never invoked by the write paths.
+     */
+    afterReadMarkerCheck?: (key: string) => Promise<void>;
 }
 
 function isNodeError(error: unknown, code: string): boolean {
@@ -195,6 +203,7 @@ export class LocalDeliveryStore implements DeliveryStore {
     private readonly afterTransactionBodyRename?: (
         key: string
     ) => Promise<void>;
+    private readonly afterReadMarkerCheck?: (key: string) => Promise<void>;
 
     constructor(root: string, options: LocalDeliveryStoreOptions = {}) {
         this.root = resolve(root);
@@ -202,22 +211,91 @@ export class LocalDeliveryStore implements DeliveryStore {
         this.transactionRoot = resolve(this.root, TRANSACTION_DIRECTORY);
         this.afterDirectoryFlush = options.afterDirectoryFlush;
         this.afterTransactionBodyRename = options.afterTransactionBodyRename;
+        this.afterReadMarkerCheck = options.afterReadMarkerCheck;
     }
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
         this.bodyPath(key);
         // Read-only: never create directories, acquire the create lock, or
-        // recover a pending transaction. Wait for any in-progress writer to
-        // finish, then read. A stale marker surfaces as a concurrency error
-        // for createImmutable() to recover under the create lock.
-        await this.waitForPendingTransaction(key);
-        return await this.statUnlocked(key);
+        // recover a pending transaction. The unlocked multi-file inspection
+        // is wrapped in a retry loop that rechecks the transaction marker
+        // before and after, so a writer that starts between the marker check
+        // and the inspection cannot surface a torn body/metadata snapshot as
+        // an integrity failure. A stale marker surfaces as a concurrency
+        // error for createImmutable() to recover under the create lock.
+        return await this.readSnapshot(key, () => this.statUnlocked(key));
     }
 
     async read(key: string): Promise<StoredObject> {
         this.bodyPath(key);
-        await this.waitForPendingTransaction(key);
-        return await this.readUnlocked(key);
+        return await this.readSnapshot(key, () => this.readUnlocked(key));
+    }
+
+    /**
+     * Side-effect-free read snapshot. Waits for any in-progress writer to
+     * clear its transaction marker, runs the unlocked inspection, then
+     * rechecks the marker. If a writer started during the inspection (marker
+     * appeared) or the inspection observed a transient body/metadata
+     * mismatch while a marker is present, the snapshot is retried — bounded
+     * by READ_TRANSACTION_WAIT_MS — so the caller observes either the
+     * pre-write state or the completed object, never a torn mid-write state.
+     * A mismatch with no marker is genuine corruption and is surfaced.
+     */
+    private async readSnapshot<T>(
+        key: string,
+        inspect: () => Promise<T>
+    ): Promise<T> {
+        const startedAt = Date.now();
+        while (true) {
+            await this.waitForPendingTransaction(key);
+            await this.afterReadMarkerCheck?.(key);
+            let result: T;
+            try {
+                result = await inspect();
+            } catch (error) {
+                // A transient body/metadata mismatch (e.g. body renamed into
+                // place before metadata) is only retryable when a writer is
+                // mid-transaction. With no marker present the mismatch is
+                // genuine corruption; surface it rather than mask it.
+                if (
+                    !this.isTransientReadMismatch(error) ||
+                    !(await this.pendingTransactionExists(key))
+                ) {
+                    throw error;
+                }
+                await this.boundRetrySleep(startedAt, key);
+                continue;
+            }
+            // Inspection succeeded. A writer that started during the
+            // unlocked multi-file inspection may have made the snapshot
+            // inconsistent with the now-present marker; recheck and retry so
+            // the caller observes a stable pre- or post-write state.
+            if (await this.pendingTransactionExists(key)) {
+                await this.boundRetrySleep(startedAt, key);
+                continue;
+            }
+            return result;
+        }
+    }
+
+    private async boundRetrySleep(
+        startedAt: number,
+        key: string
+    ): Promise<void> {
+        if (Date.now() - startedAt >= READ_TRANSACTION_WAIT_MS) {
+            throw new PublisherError(
+                'concurrency',
+                'Local object transaction is still pending',
+                { context: { key } }
+            );
+        }
+        await new Promise(resolve =>
+            setTimeout(resolve, READ_TRANSACTION_RETRY_MS)
+        );
+    }
+
+    private isTransientReadMismatch(error: unknown): boolean {
+        return error instanceof PublisherError && error.code === 'integrity';
     }
 
     private async statUnlocked(

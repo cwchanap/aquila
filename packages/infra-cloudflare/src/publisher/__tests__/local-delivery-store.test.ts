@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import {
     access,
+    chmod,
     mkdir,
     mkdtemp,
     readFile,
@@ -12,6 +13,49 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { LocalDeliveryStore } from '../stores/local-delivery-store';
+
+async function snapshotTree(
+    root: string,
+    relative = ''
+): Promise<Record<string, string>> {
+    const result: Record<string, string> = {};
+    const entries = await readdir(join(root, relative), {
+        withFileTypes: true,
+    });
+    for (const entry of entries.sort((left, right) =>
+        left.name.localeCompare(right.name)
+    )) {
+        const path = join(relative, entry.name);
+        if (entry.isDirectory()) {
+            Object.assign(result, await snapshotTree(root, path));
+        } else {
+            result[path] = Buffer.from(
+                await readFile(join(root, path))
+            ).toString('base64');
+        }
+    }
+    return result;
+}
+
+async function chmodTree(
+    root: string,
+    dirMode: number,
+    fileMode: number,
+    relative = ''
+): Promise<void> {
+    const entries = await readdir(join(root, relative), {
+        withFileTypes: true,
+    });
+    for (const entry of entries) {
+        const path = join(relative, entry.name);
+        if (entry.isDirectory()) {
+            await chmodTree(root, dirMode, fileMode, path);
+        } else {
+            await chmod(join(root, path), fileMode);
+        }
+    }
+    await chmod(join(root, relative), dirMode);
+}
 
 const POINTER_KEY = 'vn/stories/example/current.json';
 
@@ -149,9 +193,10 @@ describe('LocalDeliveryStore', () => {
     it('does not expose a torn immutable object to concurrent stat() between body and metadata renames', async () => {
         // Writer A pauses after renaming the body into place but before
         // renaming the metadata. A second store instance B calling stat()
-        // or read() during that window must block on the per-key
-        // .create-lock and observe the completed object once A finishes —
-        // not throw "body exists without valid metadata".
+        // or read() during that window must wait for the pending
+        // transaction marker to clear (the writer completes) and observe
+        // the completed object — not throw "body exists without valid
+        // metadata" and not acquire the create lock or write anything.
         const root = await mkdtemp(join(tmpdir(), 'local-immutable-torn-'));
         let resumeWriter: () => void = () => {};
         const writerGate = new Promise<void>(resolve => {
@@ -182,7 +227,8 @@ describe('LocalDeliveryStore', () => {
 
         // A second store inspects the object while the writer is paused
         // between the body and metadata renames. stat() and read() must
-        // block on the .create-lock and not observe the torn state.
+        // wait for the transaction marker to clear and not observe the
+        // torn state, without writing to the destination.
         const reader = new LocalDeliveryStore(root);
         const statPromise = reader.stat(key);
         const readPromise = reader.read(key);
@@ -207,6 +253,71 @@ describe('LocalDeliveryStore', () => {
             byteLength: bytes.byteLength,
         });
         expect(new TextDecoder().decode(readResult.bytes)).toBe('raced-body');
+
+        // The read-only stat()/read() path must not have left any create-lock
+        // artifacts behind in the destination.
+        const objectDir = join(root, 'vn/objects');
+        const dirEntries = await readdir(objectDir);
+        expect(dirEntries).toEqual(['raced.webp']);
+    });
+
+    it('stat() and read() against an absent destination create no directories or lock files', async () => {
+        const parent = await mkdtemp(join(tmpdir(), 'local-absent-'));
+        const root = join(parent, 'destination');
+        const store = new LocalDeliveryStore(root);
+
+        // stat() returns null without creating any destination structure.
+        await expect(store.stat('vn/objects/absent.webp')).resolves.toBeNull();
+        // read() surfaces a not-found storage error without writing.
+        await expect(
+            store.read('vn/objects/absent.webp')
+        ).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'storage',
+        });
+
+        // No destination structure was created: no vn/, no .publisher-*
+        // directories, and no lock files. The destination root itself must
+        // not even exist.
+        await expect(access(root)).rejects.toMatchObject({ code: 'ENOENT' });
+        await expect(readdir(parent)).resolves.toEqual([]);
+    });
+
+    it('stat() and read() against a read-only existing destination do not write', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'local-readonly-'));
+        const store = new LocalDeliveryStore(root);
+        const key = 'vn/objects/locked.webp';
+        await store.createImmutable({
+            key,
+            bytes: new TextEncoder().encode('locked-body'),
+            contentType: 'image/webp',
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+        // Snapshot the destination tree, then make it read-only. Any write
+        // attempt (mkdir, lock file, recovery) would now fail with EACCES.
+        const before = await snapshotTree(root);
+        await chmodTree(root, 0o555, 0o444);
+        try {
+            const readonlyStore = new LocalDeliveryStore(root);
+            await expect(readonlyStore.stat(key)).resolves.toMatchObject({
+                key,
+                contentType: 'image/webp',
+            });
+            await expect(readonlyStore.read(key)).resolves.toMatchObject({
+                key,
+                contentType: 'image/webp',
+            });
+            // A read-only stat() for a missing key still returns null without
+            // writing.
+            await expect(
+                readonlyStore.stat('vn/objects/missing.webp')
+            ).resolves.toBeNull();
+
+            const after = await snapshotTree(root);
+            expect(after).toEqual(before);
+        } finally {
+            await chmodTree(root, 0o755, 0o644);
+        }
     });
 
     it('performs pointer CAS under a lock', async () => {

@@ -59,6 +59,13 @@ const METADATA_DIRECTORY = '.publisher-metadata';
 const TRANSACTION_DIRECTORY = '.publisher-transactions';
 const LOCK_RETRY_MS = 10;
 const LOCK_TIMEOUT_MS = 5_000;
+// Read-only stat()/read() never acquire the create lock or recover pending
+// transactions. They poll the transaction marker and wait for an in-progress
+// writer to finish; a marker that persists past this bound is treated as a
+// stale (crashed) transaction and surfaced as a concurrency error rather
+// than recovered by the reader.
+const READ_TRANSACTION_WAIT_MS = 5_000;
+const READ_TRANSACTION_RETRY_MS = 10;
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -198,27 +205,19 @@ export class LocalDeliveryStore implements DeliveryStore {
     }
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
-        const bodyPath = this.bodyPath(key);
-        await this.ensureDirectories(bodyPath, key);
-        const lock = await this.acquireLock(`${bodyPath}.create-lock`, key);
-        try {
-            await this.recoverPendingPointerTransaction(key);
-            return await this.statUnlocked(key);
-        } finally {
-            await this.releaseLock(lock, key);
-        }
+        this.bodyPath(key);
+        // Read-only: never create directories, acquire the create lock, or
+        // recover a pending transaction. Wait for any in-progress writer to
+        // finish, then read. A stale marker surfaces as a concurrency error
+        // for createImmutable() to recover under the create lock.
+        await this.waitForPendingTransaction(key);
+        return await this.statUnlocked(key);
     }
 
     async read(key: string): Promise<StoredObject> {
-        const bodyPath = this.bodyPath(key);
-        await this.ensureDirectories(bodyPath, key);
-        const lock = await this.acquireLock(`${bodyPath}.create-lock`, key);
-        try {
-            await this.recoverPendingPointerTransaction(key);
-            return await this.readUnlocked(key);
-        } finally {
-            await this.releaseLock(lock, key);
-        }
+        this.bodyPath(key);
+        await this.waitForPendingTransaction(key);
+        return await this.readUnlocked(key);
     }
 
     private async statUnlocked(
@@ -739,6 +738,46 @@ export class LocalDeliveryStore implements DeliveryStore {
             );
         }
         await this.completePointerTransaction(marker);
+    }
+
+    /**
+     * Bounded, side-effect-free wait used by read-only stat()/read(). It only
+     * inspects the transaction marker (no mkdir, no lock, no recovery). An
+     * in-progress writer clears the marker once the body and metadata renames
+     * are durable, so waiting for it to disappear prevents observing the
+     * rename gap without the reader itself writing. A marker that persists
+     * past the bound is a stale (crashed) transaction and is surfaced as a
+     * concurrency error; createImmutable() owns recovery under the create
+     * lock.
+     */
+    private async waitForPendingTransaction(key: string): Promise<void> {
+        const startedAt = Date.now();
+        while (await this.pendingTransactionExists(key)) {
+            if (Date.now() - startedAt >= READ_TRANSACTION_WAIT_MS) {
+                throw new PublisherError(
+                    'concurrency',
+                    'Local object transaction is still pending',
+                    { context: { key } }
+                );
+            }
+            await new Promise(resolve =>
+                setTimeout(resolve, READ_TRANSACTION_RETRY_MS)
+            );
+        }
+    }
+
+    private async pendingTransactionExists(key: string): Promise<boolean> {
+        try {
+            await access(this.transactionPath(key));
+            return true;
+        } catch (error) {
+            if (isNodeError(error, 'ENOENT')) return false;
+            throw this.storageError(
+                'Unable to inspect local pointer transaction',
+                key,
+                error
+            );
+        }
     }
 
     private async completePointerTransaction(

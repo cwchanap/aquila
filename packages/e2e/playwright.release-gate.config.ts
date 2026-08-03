@@ -35,7 +35,7 @@ function parseRemoteUrl(value: string, name: string): URL {
     if (url.search !== '' || url.hash !== '') {
         throw new Error(`${name} must not include query or fragment data`);
     }
-    if (isLocalHostname(url.hostname)) {
+    if (isForbiddenRemoteHostname(url.hostname)) {
         throw new Error(`${name} must not use localhost or a loopback address`);
     }
     return url;
@@ -49,13 +49,29 @@ function parseProductionOrigin(value: string): URL {
     return url;
 }
 
-function isLocalHostname(hostname: string): boolean {
-    const value = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+function canonicalHostname(hostname: string): string {
+    return hostname
+        .toLowerCase()
+        .replace(/^\[|\]$/g, '')
+        .replace(/\.+$/, '');
+}
+
+function canonicalOrigin(url: URL): string {
+    const hostname = canonicalHostname(url.hostname);
+    const host = hostname.includes(':') ? `[${hostname}]` : hostname;
+    const port = url.port === '' ? '' : `:${url.port}`;
+    return `${url.protocol}//${host}${port}`;
+}
+
+function isForbiddenRemoteHostname(hostname: string): boolean {
+    const value = canonicalHostname(hostname);
     return (
         value === 'localhost' ||
         value.endsWith('.localhost') ||
         value === '0.0.0.0' ||
         value === '::1' ||
+        value === '::' ||
+        value.startsWith('::ffff:') ||
         /^127(?:\.\d{1,3}){3}$/.test(value)
     );
 }
@@ -73,12 +89,14 @@ export function createReleaseGatePlaywrightConfig(env: ReleaseGateEnvironment) {
     const productionOrigin = parseProductionOrigin(
         requiredEnvironmentValue(env, 'AQUILA_PRODUCTION_WEB_ORIGIN')
     );
-    if (target === 'preview' && baseUrl.origin === productionOrigin.origin) {
+    const baseOrigin = canonicalOrigin(baseUrl);
+    const configuredProductionOrigin = canonicalOrigin(productionOrigin);
+    if (target === 'preview' && baseOrigin === configuredProductionOrigin) {
         throw new Error(
             'Preview release-gate tests must not use the configured production origin'
         );
     }
-    if (target === 'production' && baseUrl.origin !== productionOrigin.origin) {
+    if (target === 'production' && baseOrigin !== configuredProductionOrigin) {
         throw new Error(
             'Production release-gate tests must equal the configured production origin'
         );

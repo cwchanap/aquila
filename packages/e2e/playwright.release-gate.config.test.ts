@@ -66,6 +66,47 @@ describe('release-gate Playwright configuration', () => {
         ).toThrow(/must equal the configured production origin/i);
     });
 
+    it('rejects dotted local and IPv6 aliases that resolve to local addresses', () => {
+        for (const baseUrl of [
+            'https://localhost.:5090',
+            'https://foo.localhost.:5090',
+            'https://[::ffff:127.0.0.1]',
+            'https://[::]',
+        ]) {
+            expect(() =>
+                createReleaseGatePlaywrightConfig({
+                    ...DEFAULT_CONFIG_ENV,
+                    BASE_URL: baseUrl,
+                })
+            ).toThrow();
+        }
+    });
+
+    it('canonicalizes dotted production aliases without rejecting a remote host', () => {
+        expect(() =>
+            createReleaseGatePlaywrightConfig({
+                ...DEFAULT_CONFIG_ENV,
+                BASE_URL: 'https://aquila.example.com.',
+            })
+        ).toThrow(/production origin/i);
+
+        expect(() =>
+            createReleaseGatePlaywrightConfig({
+                ...DEFAULT_CONFIG_ENV,
+                BASE_URL: 'https://aquila.example.com',
+                RELEASE_GATE_TARGET: 'production',
+                AQUILA_PRODUCTION_WEB_ORIGIN: 'https://aquila.example.com.',
+            })
+        ).not.toThrow();
+
+        expect(() =>
+            createReleaseGatePlaywrightConfig({
+                ...DEFAULT_CONFIG_ENV,
+                BASE_URL: 'https://preview.example.com.',
+            })
+        ).not.toThrow();
+    });
+
     it('limits collection to remote gate specs and wires the future structured reporter', () => {
         const config = createReleaseGatePlaywrightConfig(DEFAULT_CONFIG_ENV);
 

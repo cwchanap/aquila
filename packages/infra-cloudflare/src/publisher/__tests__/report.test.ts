@@ -6,6 +6,7 @@ import type {
 import {
     createHumanProgressSink,
     normalizeReportDiagnostics,
+    parsePublisherReportV1,
     publisherReportExitCode,
     renderHumanReport,
     renderJsonReport,
@@ -39,7 +40,173 @@ function report(
     };
 }
 
+const PARSER_RELEASE_ID = `sha256-${'a'.repeat(64)}`;
+const PARSER_OTHER_RELEASE_ID = `sha256-${'b'.repeat(64)}`;
+const PARSER_MANIFEST_SHA256 = 'c'.repeat(64);
+
+function completePublicReport(): PublisherReportV1 {
+    return {
+        schemaVersion: 1,
+        command: 'publish',
+        status: 'success',
+        storyId: 'example_story',
+        target: { kind: 'production' },
+        releaseId: PARSER_RELEASE_ID,
+        manifestSha256: PARSER_MANIFEST_SHA256,
+        encoderFingerprint: {
+            schemaVersion: 1,
+            policyId: 'aquila-vn-encoder-v1',
+            sharpVersion: '0.34.0',
+            libvipsVersion: '8.16.0',
+            platform: 'linux',
+            arch: 'x64',
+        },
+        coverage: {
+            storyId: 'example_story',
+            byType: {
+                background: {
+                    total: 2,
+                    included: 1,
+                    omitted: 1,
+                    unclassified: 0,
+                },
+                portrait: {
+                    total: 1,
+                    included: 1,
+                    omitted: 0,
+                    unclassified: 0,
+                },
+            },
+            bySection: {
+                opening: {
+                    total: 3,
+                    included: 2,
+                    omitted: 1,
+                    unclassified: 0,
+                },
+            },
+            totals: {
+                total: 3,
+                included: 2,
+                omitted: 1,
+                unclassified: 0,
+            },
+        },
+        counts: {
+            included: 2,
+            omitted: 1,
+            objectsCreated: 2,
+            objectsReused: 1,
+            manifestsCreated: 1,
+            manifestsReused: 0,
+            pointersWritten: 0,
+        },
+        actions: [
+            {
+                stage: 'coverage',
+                kind: 'include',
+                identity: 'background:opening/station',
+            },
+            {
+                stage: 'coverage',
+                kind: 'include',
+                identity: 'portrait:characters/mei',
+            },
+            {
+                stage: 'coverage',
+                kind: 'omit',
+                identity: 'background:opening/fallback',
+            },
+            {
+                stage: 'object-upload',
+                kind: 'create-object',
+                key: `vn/objects/${'d'.repeat(64)}.webp`,
+            },
+            {
+                stage: 'manifest-upload',
+                kind: 'create-manifest',
+                key: `vn/stories/example_story/releases/${PARSER_RELEASE_ID}/runtime-manifest.json`,
+            },
+        ],
+        warnings: [
+            {
+                code: 'source/aspect-ratio',
+                stage: 'source',
+                message:
+                    'Source aspect ratio differs from the background policy',
+                assetType: 'background',
+                count: 1,
+                sampleIdentities: ['background:opening/station'],
+                sampleSafePaths: ['assets/opening/station.png'],
+            },
+        ],
+        errors: [],
+        pointer: { changed: false },
+        releases: [
+            {
+                releaseId: PARSER_RELEASE_ID,
+                manifestSha256: PARSER_MANIFEST_SHA256,
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: true,
+                active: false,
+            },
+            {
+                releaseId: PARSER_OTHER_RELEASE_ID,
+                manifestValid: true,
+                releaseIdentityValid: true,
+                shallowVerified: true,
+                deepVerified: false,
+                active: true,
+            },
+        ],
+    };
+}
+
 describe('publisher reports', () => {
+    it('strictly parses a complete retained public publisher report', () => {
+        const input = completePublicReport();
+
+        expect(parsePublisherReportV1(input)).toEqual(input);
+    });
+
+    it.each([
+        ['unknown fields', { unexpected: true }],
+        [
+            'invalid preview target',
+            { target: { kind: 'preview', previewId: '!' } },
+        ],
+        ['invalid release id', { releaseId: 'sha256-not-a-digest' }],
+        ['invalid manifest checksum', { manifestSha256: 'A'.repeat(64) }],
+        [
+            'malformed counts',
+            {
+                counts: {
+                    ...completePublicReport().counts,
+                    included: -1,
+                    objectsCreated: 1.5,
+                },
+            },
+        ],
+        [
+            'unsafe diagnostic',
+            {
+                warnings: [
+                    {
+                        code: 'input',
+                        stage: 'input',
+                        message: 'Authorization: Bearer private-token',
+                    },
+                ],
+            },
+        ],
+    ])('rejects retained reports with %s', (_label, patch) => {
+        expect(() =>
+            parsePublisherReportV1({ ...completePublicReport(), ...patch })
+        ).toThrow();
+    });
+
     it('supports every public publisher command and distinct final statuses', () => {
         const commands = [
             'plan',

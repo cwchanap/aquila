@@ -1,13 +1,16 @@
 import {
+    LogicalAssetIdentitySchema,
     isPreviewId,
     isReleaseId,
     isSafeRelativePath,
     isSha256,
     isStoryId,
     isSafeLogicalKey,
+    qualifyAssetIdentity,
     type PublicationTarget,
     type StoryAssetCoverageReport,
 } from '@aquila/stories/runtime-assets';
+import { z } from 'zod';
 import type {
     EncoderFingerprintV1,
     PublisherActionV1,
@@ -157,6 +160,372 @@ const ABSOLUTE_PATH_PREFIX_RE = /^(?:\/|\\)/;
 const WINDOWS_DRIVE_PATH_RE = /^[A-Za-z]:[\\/]/;
 const CANONICAL_ISO_TIMESTAMP_RE =
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+const nonNegativeIntegerSchema = z.number().int().nonnegative();
+const positiveIntegerSchema = z.number().int().positive();
+
+function isCanonicalAssetIdentity(value: string): boolean {
+    const separator = value.indexOf(':');
+    if (separator <= 0 || separator === value.length - 1) return false;
+
+    const parsed = LogicalAssetIdentitySchema.safeParse({
+        type: value.slice(0, separator),
+        key: value.slice(separator + 1),
+    });
+    return parsed.success && qualifyAssetIdentity(parsed.data) === value;
+}
+
+const publicationTargetSchema = z
+    .discriminatedUnion('kind', [
+        z.object({ kind: z.literal('production') }).strict(),
+        z
+            .object({
+                kind: z.literal('preview'),
+                previewId: z.string().refine(isPreviewId, {
+                    message: 'Preview id is invalid',
+                }),
+            })
+            .strict(),
+    ])
+    .superRefine((target, context) => {
+        if (target.kind === 'preview' && !isPreviewId(target.previewId)) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Preview target requires a valid preview id',
+                path: ['previewId'],
+            });
+        }
+    });
+
+const coverageCountsSchema = z
+    .object({
+        total: nonNegativeIntegerSchema,
+        included: nonNegativeIntegerSchema,
+        omitted: nonNegativeIntegerSchema,
+        unclassified: nonNegativeIntegerSchema,
+    })
+    .strict()
+    .superRefine((counts, context) => {
+        if (
+            counts.total !==
+            counts.included + counts.omitted + counts.unclassified
+        ) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Coverage totals are inconsistent',
+                path: ['total'],
+            });
+        }
+    });
+
+function sameCoverageCounts(
+    left: z.infer<typeof coverageCountsSchema>,
+    right: z.infer<typeof coverageCountsSchema>
+): boolean {
+    return (
+        left.total === right.total &&
+        left.included === right.included &&
+        left.omitted === right.omitted &&
+        left.unclassified === right.unclassified
+    );
+}
+
+function addParsedCoverageCounts(
+    left: z.infer<typeof coverageCountsSchema>,
+    right: z.infer<typeof coverageCountsSchema>
+): z.infer<typeof coverageCountsSchema> {
+    return {
+        total: left.total + right.total,
+        included: left.included + right.included,
+        omitted: left.omitted + right.omitted,
+        unclassified: left.unclassified + right.unclassified,
+    };
+}
+
+const coverageSchema = z
+    .object({
+        storyId: z.string().refine(isStoryId, {
+            message: 'Story id is invalid',
+        }),
+        byType: z
+            .object({
+                background: coverageCountsSchema,
+                portrait: coverageCountsSchema,
+            })
+            .strict(),
+        bySection: z.record(
+            z.string().refine(isSafeCoverageSection, {
+                message: 'Coverage section is unsafe',
+            }),
+            coverageCountsSchema
+        ),
+        totals: coverageCountsSchema,
+    })
+    .strict()
+    .superRefine((coverage, context) => {
+        const byType = addParsedCoverageCounts(
+            coverage.byType.background,
+            coverage.byType.portrait
+        );
+        if (!sameCoverageCounts(byType, coverage.totals)) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Coverage type totals are inconsistent',
+                path: ['byType'],
+            });
+        }
+
+        const bySection = Object.values(coverage.bySection).reduce(
+            (total, counts) => addParsedCoverageCounts(total, counts),
+            { total: 0, included: 0, omitted: 0, unclassified: 0 }
+        );
+        if (!sameCoverageCounts(bySection, coverage.totals)) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Coverage section totals are inconsistent',
+                path: ['bySection'],
+            });
+        }
+    });
+
+const publisherActionSchema = z
+    .object({
+        stage: z
+            .string()
+            .refine(
+                value => PUBLISHER_STAGES.has(value) || value === 'publisher',
+                { message: 'Publisher action stage is invalid' }
+            ),
+        kind: z.enum([
+            'include',
+            'omit',
+            'reuse-object',
+            'create-object',
+            'reuse-manifest',
+            'create-manifest',
+            'write-pointer',
+            'no-op',
+        ]),
+        identity: z
+            .string()
+            .refine(isCanonicalAssetIdentity, {
+                message: 'Publisher action identity is invalid',
+            })
+            .optional(),
+        key: z
+            .string()
+            .refine(isSafeRelativePath, {
+                message: 'Publisher action key is unsafe',
+            })
+            .optional(),
+    })
+    .strict()
+    .superRefine((action, context) => {
+        if (
+            action.key !== undefined &&
+            safeActionKey(action.kind, action.key) !== action.key
+        ) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Publisher action key does not match its action kind',
+                path: ['key'],
+            });
+        }
+    });
+
+const publisherDiagnosticSchema = z
+    .object({
+        code: z
+            .string()
+            .refine(
+                value =>
+                    DIAGNOSTIC_CODES.has(value) ||
+                    value === 'publisher/diagnostic',
+                { message: 'Publisher diagnostic code is invalid' }
+            ),
+        stage: z
+            .string()
+            .refine(
+                value => PUBLISHER_STAGES.has(value) || value === 'publisher',
+                { message: 'Publisher diagnostic stage is invalid' }
+            ),
+        message: z.string().trim().min(1),
+        assetType: z.enum(['background', 'portrait']).optional(),
+        identity: z
+            .string()
+            .refine(isCanonicalAssetIdentity, {
+                message: 'Publisher diagnostic identity is invalid',
+            })
+            .optional(),
+        safePath: z
+            .string()
+            .refine(isSafeRelativePath, {
+                message: 'Publisher diagnostic path is unsafe',
+            })
+            .optional(),
+        count: positiveIntegerSchema.optional(),
+        sampleIdentities: z
+            .array(
+                z.string().refine(isCanonicalAssetIdentity, {
+                    message: 'Publisher diagnostic sample identity is invalid',
+                })
+            )
+            .max(MAX_REPORT_DIAGNOSTIC_SAMPLES)
+            .optional(),
+        sampleSafePaths: z
+            .array(
+                z.string().refine(isSafeRelativePath, {
+                    message: 'Publisher diagnostic sample path is unsafe',
+                })
+            )
+            .max(MAX_REPORT_DIAGNOSTIC_SAMPLES)
+            .optional(),
+        previousPublishedAt: z
+            .string()
+            .refine(value => safeTimestamp(value) === value, {
+                message: 'Publisher diagnostic timestamp is invalid',
+            })
+            .optional(),
+        localNow: z
+            .string()
+            .refine(value => safeTimestamp(value) === value, {
+                message: 'Publisher diagnostic timestamp is invalid',
+            })
+            .optional(),
+    })
+    .strict()
+    .superRefine((diagnostic, context) => {
+        if (
+            diagnostic.message !==
+            safeDiagnosticMessage(diagnostic.code, diagnostic.assetType)
+        ) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Publisher diagnostic message is unsafe',
+                path: ['message'],
+            });
+        }
+
+        const timestampDiagnostic =
+            diagnostic.code === 'clock-skew' ||
+            diagnostic.code === 'non-monotonic-pointer-time';
+        if (
+            !timestampDiagnostic &&
+            (diagnostic.previousPublishedAt !== undefined ||
+                diagnostic.localNow !== undefined)
+        ) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Publisher diagnostic timestamps are invalid',
+                path: ['previousPublishedAt'],
+            });
+        }
+    });
+
+const publisherReleaseSummarySchema = z
+    .object({
+        releaseId: z.string().refine(isReleaseId, {
+            message: 'Release id is invalid',
+        }),
+        manifestSha256: z
+            .string()
+            .refine(isSha256, { message: 'Manifest checksum is invalid' })
+            .optional(),
+        manifestValid: z.boolean(),
+        releaseIdentityValid: z.boolean(),
+        shallowVerified: z.boolean(),
+        deepVerified: z.boolean(),
+        active: z.boolean(),
+    })
+    .strict();
+
+const publisherReportV1Schema = z
+    .object({
+        schemaVersion: z.literal(1),
+        command: z.enum([
+            'plan',
+            'publish',
+            'mirror-preview',
+            'activate',
+            'verify',
+            'releases',
+            'rollback',
+        ]),
+        status: z.enum(['success', 'no-op', 'failed', 'conflict']),
+        storyId: z.string().refine(isStoryId, {
+            message: 'Story id is invalid',
+        }),
+        target: publicationTargetSchema,
+        releaseId: z
+            .string()
+            .refine(isReleaseId, { message: 'Release id is invalid' })
+            .optional(),
+        manifestSha256: z
+            .string()
+            .refine(isSha256, { message: 'Manifest checksum is invalid' })
+            .optional(),
+        encoderFingerprint: z
+            .object({
+                schemaVersion: z.literal(1),
+                policyId: z.literal('aquila-vn-encoder-v1'),
+                sharpVersion: z.string().regex(SAFE_VERSION),
+                libvipsVersion: z.string().regex(SAFE_VERSION),
+                platform: z
+                    .string()
+                    .refine(value => PLATFORMS.has(value as NodeJS.Platform), {
+                        message: 'Encoder platform is invalid',
+                    }),
+                arch: z.string().refine(value => ARCHITECTURES.has(value), {
+                    message: 'Encoder architecture is invalid',
+                }),
+            })
+            .strict()
+            .optional(),
+        coverage: coverageSchema.optional(),
+        counts: z
+            .object({
+                included: nonNegativeIntegerSchema,
+                omitted: nonNegativeIntegerSchema,
+                objectsCreated: nonNegativeIntegerSchema,
+                objectsReused: nonNegativeIntegerSchema,
+                manifestsCreated: nonNegativeIntegerSchema,
+                manifestsReused: nonNegativeIntegerSchema,
+                pointersWritten: nonNegativeIntegerSchema,
+            })
+            .strict(),
+        actions: z.array(publisherActionSchema),
+        warnings: z.array(publisherDiagnosticSchema),
+        errors: z.array(publisherDiagnosticSchema),
+        pointer: z
+            .object({
+                beforeReleaseId: z
+                    .string()
+                    .refine(isReleaseId, {
+                        message: 'Pointer release id is invalid',
+                    })
+                    .optional(),
+                afterReleaseId: z
+                    .string()
+                    .refine(isReleaseId, {
+                        message: 'Pointer release id is invalid',
+                    })
+                    .optional(),
+                changed: z.boolean(),
+            })
+            .strict()
+            .optional(),
+        releases: z.array(publisherReleaseSummarySchema).optional(),
+    })
+    .strict();
+
+/**
+ * Parses retained publisher JSON at its owning boundary. The parser accepts
+ * only the fully sanitized public V1 wire shape, so downstream evidence
+ * consumers never need to recreate the publisher contract.
+ */
+export function parsePublisherReportV1(input: unknown): PublisherReportV1 {
+    return publisherReportV1Schema.parse(input) as PublisherReportV1;
+}
 
 function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;

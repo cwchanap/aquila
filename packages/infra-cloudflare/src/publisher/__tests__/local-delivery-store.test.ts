@@ -348,6 +348,141 @@ describe('LocalDeliveryStore', () => {
         expect(new TextDecoder().decode(readResult.bytes)).toBe('toctou-body');
     });
 
+    it('retries a transient immutable mismatch after the writer clears its marker', async () => {
+        // The reader observes a body/metadata mismatch (body renamed into
+        // place, metadata not yet renamed) and throws internally. Before the
+        // reader's catch handler rechecks the transaction marker to decide
+        // retry eligibility, the writer completes the metadata rename and
+        // removes its marker. The reader must still retry the observed
+        // mismatch at least once independent of the marker and return the
+        // completed object, rather than treating the no-marker mismatch as
+        // permanent corruption.
+        const root = await mkdtemp(
+            join(tmpdir(), 'local-immutable-fast-writer-')
+        );
+        let resumeReaderAfterMarkerCheck: () => void = () => {};
+        const readerMarkerCheckGate = new Promise<void>(resolve => {
+            resumeReaderAfterMarkerCheck = resolve;
+        });
+        let readerMarkerCheckedBothResolve!: () => void;
+        const readerMarkerCheckedBoth = new Promise<void>(resolve => {
+            readerMarkerCheckedBothResolve = resolve;
+        });
+        let resumeReaderAfterMismatch: () => void = () => {};
+        const readerMismatchGate = new Promise<void>(resolve => {
+            resumeReaderAfterMismatch = resolve;
+        });
+        let readerMismatchedResolve!: () => void;
+        const readerMismatched = new Promise<void>(resolve => {
+            readerMismatchedResolve = resolve;
+        });
+        let resumeWriter: () => void = () => {};
+        const writerGate = new Promise<void>(resolve => {
+            resumeWriter = resolve;
+        });
+        let writerBodyRenamedResolve!: () => void;
+        const writerBodyRenamed = new Promise<void>(resolve => {
+            writerBodyRenamedResolve = resolve;
+        });
+
+        // afterReadMarkerCheck fires once per readSnapshot iteration. Pause
+        // exactly once per reader (stat() and read() each run their own loop)
+        // so both are held inside the marker-check TOCTOU window before the
+        // writer starts; the retry iteration must proceed straight through to
+        // the (now consistent) unlocked inspection.
+        let markerCheckPausesRemaining = 2;
+        let markerCheckPausesObserved = 0;
+        const reader = new LocalDeliveryStore(root, {
+            afterReadMarkerCheck: async () => {
+                if (markerCheckPausesRemaining <= 0) return;
+                markerCheckPausesRemaining -= 1;
+                markerCheckPausesObserved += 1;
+                if (markerCheckPausesObserved === 2) {
+                    readerMarkerCheckedBothResolve();
+                }
+                await readerMarkerCheckGate;
+            },
+            afterReadMismatch: async () => {
+                readerMismatchedResolve();
+                await readerMismatchGate;
+            },
+        });
+        const writer = new LocalDeliveryStore(root, {
+            afterTransactionBodyRename: async () => {
+                writerBodyRenamedResolve();
+                await writerGate;
+            },
+        });
+        const key = 'vn/objects/fast-writer.webp';
+        const bytes = new TextEncoder().encode('fast-writer-body');
+
+        // Reader begins stat()/read(): the marker is absent, so it passes the
+        // initial check and pauses inside the unlocked inspection window.
+        const statPromise = reader.stat(key);
+        const readPromise = reader.read(key);
+        await readerMarkerCheckedBoth;
+
+        // While the reader is paused between its marker check and the
+        // unlocked inspection, the writer starts, creates the marker, and
+        // renames the body into place — then pauses before the metadata
+        // rename. The transaction marker is present at this point.
+        const createPromise = writer.createImmutable({
+            key,
+            bytes,
+            contentType: 'image/webp',
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+        await writerBodyRenamed;
+
+        const transactionPath = join(
+            root,
+            '.publisher-transactions',
+            `${sha256(key)}.json`
+        );
+        await expect(access(transactionPath)).resolves.toBeUndefined();
+
+        // Resume the reader. Its unlocked inspection observes a body without
+        // metadata and throws an integrity error. The catch handler fires
+        // afterReadMismatch and pauses BEFORE rechecking the marker.
+        resumeReaderAfterMarkerCheck();
+        await readerMismatched;
+
+        // Now let the writer finish the metadata rename and clear the marker.
+        // By the time the reader resumes, the marker is gone — the very
+        // interleaving the previous gate-only retry could not recover from.
+        resumeWriter();
+        await createPromise;
+        await expect(access(transactionPath)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+
+        // Resume the reader. Its catch handler rechecks the marker and finds
+        // it absent. Without a marker-independent retry it would surface the
+        // transient mismatch as corruption; with the fix it retries, the
+        // second inspection reads the completed object, and the marker
+        // recheck after success also finds no pending writer.
+        resumeReaderAfterMismatch();
+
+        const [statResult, readResult] = await Promise.all([
+            statPromise,
+            readPromise,
+        ]);
+
+        expect(statResult).toMatchObject({
+            key,
+            contentType: 'image/webp',
+            byteLength: bytes.byteLength,
+        });
+        expect(readResult).toMatchObject({
+            key,
+            contentType: 'image/webp',
+            byteLength: bytes.byteLength,
+        });
+        expect(new TextDecoder().decode(readResult.bytes)).toBe(
+            'fast-writer-body'
+        );
+    });
+
     it('stat() and read() against an absent destination create no directories or lock files', async () => {
         const parent = await mkdtemp(join(tmpdir(), 'local-absent-'));
         const root = join(parent, 'destination');
@@ -567,6 +702,147 @@ describe('LocalDeliveryStore', () => {
             // The reader observed the completed pointer (the writer finished
             // before the reader's bounded wait elapsed). Either the previous
             // or the completed etag is acceptable; a torn snapshot is not.
+            expect(
+                inspectResult.etag === previousEtag ||
+                    inspectResult.etag === casResult.etag
+            ).toBe(true);
+            expect(() =>
+                JSON.parse(new TextDecoder().decode(inspectResult.bytes))
+            ).not.toThrow();
+        }
+
+        // The read-only inspectPointer() path must not have left any pointer
+        // lock artifacts behind in the destination.
+        const pointerDir = join(root, 'vn/stories/example');
+        const dirEntries = await readdir(pointerDir);
+        expect(dirEntries).toEqual(['current.json']);
+
+        // The transaction marker was cleared by the writer completing, not by
+        // the reader recovering it.
+        await expect(access(transactionPath)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+    }, 10_000);
+
+    it('inspectPointer() retries a transient pointer mismatch after the writer clears its marker', async () => {
+        // A writer performs compareAndSwapPointer() and pauses after the body
+        // rename but before the metadata rename. A read-only inspectPointer()
+        // observes the body/metadata mismatch and throws internally. Before
+        // the reader's catch handler rechecks the transaction marker, the
+        // writer completes the metadata rename and removes its marker. The
+        // reader must still retry the observed mismatch at least once
+        // independent of the marker and return the completed pointer, rather
+        // than treating the no-marker mismatch as permanent corruption.
+        const root = await mkdtemp(
+            join(tmpdir(), 'local-pointer-fast-writer-')
+        );
+        let resumeWriter: () => void = () => {};
+        const writerGate = new Promise<void>(resolve => {
+            resumeWriter = resolve;
+        });
+        let writerBodyRenamedResolve!: () => void;
+        const writerBodyRenamed = new Promise<void>(resolve => {
+            writerBodyRenamedResolve = resolve;
+        });
+        let resumeReaderAfterMismatch: () => void = () => {};
+        const readerMismatchGate = new Promise<void>(resolve => {
+            resumeReaderAfterMismatch = resolve;
+        });
+        let readerMismatchedResolve!: () => void;
+        const readerMismatched = new Promise<void>(resolve => {
+            readerMismatchedResolve = resolve;
+        });
+
+        let pauseOnBodyRename = false;
+        const writer = new LocalDeliveryStore(root, {
+            afterTransactionBodyRename: async () => {
+                if (!pauseOnBodyRename) return;
+                writerBodyRenamedResolve();
+                await writerGate;
+            },
+        });
+        const reader = new LocalDeliveryStore(root, {
+            afterReadMismatch: async () => {
+                readerMismatchedResolve();
+                await readerMismatchGate;
+            },
+        });
+
+        // Establish a previous pointer so the reader has a stable pre-write
+        // state and the torn window produces a body/metadata size mismatch
+        // (old metadata byteLength vs. new body size) rather than a
+        // body-without-metadata state.
+        const first = await writer.compareAndSwapPointer({
+            ...pointerRequest(POINTER_KEY, JSON.stringify({ generation: 0 })),
+            expected: { exists: false },
+        });
+        const previousEtag = first.etag!;
+        const previousByteLength = new TextEncoder().encode(
+            JSON.stringify({ generation: 0 })
+        ).byteLength;
+
+        // The new body is deliberately a different size so statUnlocked()
+        // detects the size mismatch against the still-old metadata.
+        const nextBytes = new TextEncoder().encode(
+            JSON.stringify({
+                generation: 1,
+                padding: 'x'.repeat(2048),
+            })
+        );
+        expect(nextBytes.byteLength).not.toBe(previousByteLength);
+
+        pauseOnBodyRename = true;
+        const casPromise = writer.compareAndSwapPointer({
+            key: POINTER_KEY,
+            bytes: nextBytes,
+            contentType: 'application/json',
+            cacheControl: 'no-cache, max-age=0, must-revalidate',
+            expected: { exists: true, etag: previousEtag },
+        });
+
+        // Wait for the writer to rename the body and pause before the
+        // metadata rename. The transaction marker is present at this point.
+        await writerBodyRenamed;
+
+        const transactionPath = join(
+            root,
+            '.publisher-transactions',
+            `${sha256(POINTER_KEY)}.json`
+        );
+        await expect(access(transactionPath)).resolves.toBeUndefined();
+
+        // The reader inspects the pointer while the writer is paused in the
+        // torn window. readPointerUnlocked() reads the old metadata, then
+        // stats the new body, observes the size mismatch, and throws an
+        // integrity error. The catch handler fires afterReadMismatch and
+        // pauses BEFORE rechecking the marker.
+        const inspectPromise = reader.inspectPointer(POINTER_KEY);
+        await readerMismatched;
+
+        // Let the writer finish the metadata rename and clear the marker. By
+        // the time the reader resumes, the marker is gone — the interleaving
+        // the previous marker-gated retry could not recover from.
+        resumeWriter();
+        const casResult = await casPromise;
+        await expect(access(transactionPath)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+
+        // Resume the reader. Its catch handler rechecks the marker and finds
+        // it absent. Without a marker-independent retry it would surface the
+        // transient mismatch as corruption; with the fix it retries, the
+        // second inspection reads the completed pointer, and inspectPointer()
+        // returns it.
+        resumeReaderAfterMismatch();
+        const inspectResult = await inspectPromise;
+
+        expect(casResult.status).toBe('written');
+        expect(inspectResult.exists).toBe(true);
+        if (inspectResult.exists) {
+            // The reader observed the completed pointer (the writer finished
+            // before the reader's retry). Either the previous or the
+            // completed etag is acceptable; a torn snapshot or an integrity
+            // error is not.
             expect(
                 inspectResult.etag === previousEtag ||
                     inspectResult.etag === casResult.etag

@@ -80,6 +80,17 @@ export interface LocalDeliveryStoreOptions {
      * TOCTOU window. Never invoked by the write paths.
      */
     afterReadMarkerCheck?: (key: string) => Promise<void>;
+    /**
+     * Invoked from the side-effect-free stat()/read()/inspectPointer() path
+     * inside the catch handler for an observed integrity mismatch, before the
+     * handler rechecks the transaction marker to decide retry eligibility.
+     * Deterministic seam for concurrency tests that need a fast writer to
+     * complete and clear its marker between the reader's mismatch observation
+     * and the marker recheck. Only invoked for transient integrity mismatches
+     * (PublisherError with code 'integrity'); never invoked by the write
+     * paths.
+     */
+    afterReadMismatch?: (key: string) => Promise<void>;
 }
 
 function isNodeError(error: unknown, code: string): boolean {
@@ -204,6 +215,7 @@ export class LocalDeliveryStore implements DeliveryStore {
         key: string
     ) => Promise<void>;
     private readonly afterReadMarkerCheck?: (key: string) => Promise<void>;
+    private readonly afterReadMismatch?: (key: string) => Promise<void>;
 
     constructor(root: string, options: LocalDeliveryStoreOptions = {}) {
         this.root = resolve(root);
@@ -212,6 +224,7 @@ export class LocalDeliveryStore implements DeliveryStore {
         this.afterDirectoryFlush = options.afterDirectoryFlush;
         this.afterTransactionBodyRename = options.afterTransactionBodyRename;
         this.afterReadMarkerCheck = options.afterReadMarkerCheck;
+        this.afterReadMismatch = options.afterReadMismatch;
     }
 
     async stat(key: string): Promise<StoredObjectMetadata | null> {
@@ -236,16 +249,28 @@ export class LocalDeliveryStore implements DeliveryStore {
      * clear its transaction marker, runs the unlocked inspection, then
      * rechecks the marker. If a writer started during the inspection (marker
      * appeared) or the inspection observed a transient body/metadata
-     * mismatch while a marker is present, the snapshot is retried — bounded
-     * by READ_TRANSACTION_WAIT_MS — so the caller observes either the
-     * pre-write state or the completed object, never a torn mid-write state.
-     * A mismatch with no marker is genuine corruption and is surfaced.
+     * mismatch, the snapshot is retried — bounded by
+     * READ_TRANSACTION_WAIT_MS — so the caller observes either the pre-write
+     * state or the completed object, never a torn mid-write state.
+     *
+     * A transient mismatch is retried at least once independent of the
+     * transaction marker: a fast writer can complete its metadata rename and
+     * remove its marker between the moment the unlocked inspection observes a
+     * body/metadata mismatch and the moment the catch handler rechecks the
+     * marker, so requiring the marker to remain visible would misclassify
+     * that transient mismatch as permanent corruption. Corruption is surfaced
+     * only after a subsequent stable mismatch is observed with no pending
+     * marker.
      */
     private async readSnapshot<T>(
         key: string,
         inspect: () => Promise<T>
     ): Promise<T> {
         const startedAt = Date.now();
+        // True when the immediately preceding attempt retried a transient
+        // mismatch with no pending marker. A successful inspection resets it,
+        // so each mismatch episode earns one marker-independent retry.
+        let retriedMismatchWithoutMarker = false;
         while (true) {
             await this.waitForPendingTransaction(key);
             await this.afterReadMarkerCheck?.(key);
@@ -253,23 +278,28 @@ export class LocalDeliveryStore implements DeliveryStore {
             try {
                 result = await inspect();
             } catch (error) {
-                // A transient body/metadata mismatch (e.g. body renamed into
-                // place before metadata) is only retryable when a writer is
-                // mid-transaction. With no marker present the mismatch is
-                // genuine corruption; surface it rather than mask it.
-                if (
-                    !this.isTransientReadMismatch(error) ||
-                    !(await this.pendingTransactionExists(key))
-                ) {
-                    throw error;
+                if (this.isTransientReadMismatch(error)) {
+                    await this.afterReadMismatch?.(key);
+                    const decision = await this.decideReadMismatchRetry(
+                        error,
+                        startedAt,
+                        key,
+                        retriedMismatchWithoutMarker
+                    );
+                    if (decision === 'throw') throw error;
+                    retriedMismatchWithoutMarker =
+                        decision === 'retry-without-marker';
+                    continue;
                 }
-                await this.boundRetrySleep(startedAt, key);
-                continue;
+                throw error;
             }
             // Inspection succeeded. A writer that started during the
             // unlocked multi-file inspection may have made the snapshot
             // inconsistent with the now-present marker; recheck and retry so
-            // the caller observes a stable pre- or post-write state.
+            // the caller observes a stable pre- or post-write state. A
+            // successful inspection also resets the marker-independent retry
+            // credit for the next mismatch episode.
+            retriedMismatchWithoutMarker = false;
             if (await this.pendingTransactionExists(key)) {
                 await this.boundRetrySleep(startedAt, key);
                 continue;
@@ -299,13 +329,50 @@ export class LocalDeliveryStore implements DeliveryStore {
     }
 
     /**
+     * Decides whether an observed read mismatch should be retried within the
+     * bounded wait window or surfaced. A transient integrity mismatch is
+     * retried while a writer's marker is present (the writer is still
+     * mid-transaction). When no marker is present the mismatch is retried at
+     * least once independent of the marker — a fast writer may have completed
+     * and cleared its marker between the mismatch observation and this check —
+     * and surfaced only after a subsequent stable mismatch with no pending
+     * marker (alreadyRetriedWithoutMarker). Non-integrity errors are always
+     * surfaced.
+     */
+    private async decideReadMismatchRetry(
+        error: unknown,
+        startedAt: number,
+        key: string,
+        alreadyRetriedWithoutMarker: boolean
+    ): Promise<'throw' | 'retry-with-marker' | 'retry-without-marker'> {
+        if (!this.isTransientReadMismatch(error)) {
+            return 'throw';
+        }
+        if (await this.pendingTransactionExists(key)) {
+            await this.boundRetrySleep(startedAt, key);
+            return 'retry-with-marker';
+        }
+        if (alreadyRetriedWithoutMarker) {
+            return 'throw';
+        }
+        await this.boundRetrySleep(startedAt, key);
+        return 'retry-without-marker';
+    }
+
+    /**
      * Observational pointer snapshot used by inspectPointer(). Like
      * readSnapshot() it is side-effect-free (no lock, no recovery, no
-     * directory creation) and retries a transient body/metadata mismatch
-     * while a writer's transaction marker is present, so a read-only planner
-     * interleaving with an in-progress compareAndSwapPointer() between the
-     * body and metadata renames observes either the previous or the
-     * completed pointer — never a false integrity failure.
+     * directory creation) and retries a transient body/metadata mismatch,
+     * so a read-only planner interleaving with an in-progress
+     * compareAndSwapPointer() between the body and metadata renames observes
+     * either the previous or the completed pointer — never a false integrity
+     * failure.
+     *
+     * A transient mismatch is retried at least once independent of the
+     * transaction marker (see readSnapshot()): a fast writer can complete and
+     * clear its marker between the mismatch observation and the marker
+     * recheck, so corruption is surfaced only after a subsequent stable
+     * mismatch with no pending marker.
      *
      * Unlike readSnapshot() it does NOT wait for a pending marker before
      * inspecting and does NOT recheck the marker after a successful
@@ -319,24 +386,26 @@ export class LocalDeliveryStore implements DeliveryStore {
      */
     private async readPointerSnapshot(key: string): Promise<PointerSnapshot> {
         const startedAt = Date.now();
+        let retriedMismatchWithoutMarker = false;
         while (true) {
             let result: PointerSnapshot;
             try {
                 result = await this.readPointerUnlocked(key);
             } catch (error) {
-                // A transient body/metadata mismatch (e.g. the body renamed
-                // into place before the metadata during an in-progress
-                // pointer CAS) is only retryable while a writer is
-                // mid-transaction. With no marker present the mismatch is
-                // genuine corruption; surface it rather than mask it.
-                if (
-                    !this.isTransientReadMismatch(error) ||
-                    !(await this.pendingTransactionExists(key))
-                ) {
-                    throw error;
+                if (this.isTransientReadMismatch(error)) {
+                    await this.afterReadMismatch?.(key);
+                    const decision = await this.decideReadMismatchRetry(
+                        error,
+                        startedAt,
+                        key,
+                        retriedMismatchWithoutMarker
+                    );
+                    if (decision === 'throw') throw error;
+                    retriedMismatchWithoutMarker =
+                        decision === 'retry-without-marker';
+                    continue;
                 }
-                await this.boundRetrySleep(startedAt, key);
-                continue;
+                throw error;
             }
             // The inspection observed a consistent body/metadata pair. A
             // pending marker may indicate an in-progress writer that has not

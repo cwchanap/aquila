@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { realpathSync, statSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { constants, realpathSync, statSync } from 'node:fs';
+import { open, type FileHandle } from 'node:fs/promises';
 import { isAbsolute, resolve, sep } from 'node:path';
 import {
     canonicalJson,
@@ -134,7 +134,16 @@ export function resolveEvidencePath(
             'Evidence path is outside evidence directory'
         );
     }
-    if (!statSync(realPath).isFile()) {
+    let fileStats;
+    try {
+        fileStats = statSync(realPath);
+    } catch {
+        throw gateInputError(
+            'evidence/path-missing',
+            'Evidence file does not exist'
+        );
+    }
+    if (!fileStats.isFile()) {
         throw gateInputError(
             'evidence/path-not-regular-file',
             'Evidence path must resolve to a regular file'
@@ -149,16 +158,56 @@ export function hashCanonicalEvidence(value: unknown): string {
         .digest('hex');
 }
 
+async function readEvidenceFile(path: string): Promise<Buffer> {
+    let handle: FileHandle | undefined;
+    try {
+        const noFollow = constants.O_NOFOLLOW;
+        if (!Number.isInteger(noFollow) || noFollow === 0) {
+            throw gateInputError(
+                'evidence/path-outside-root',
+                'Evidence path cannot be read safely'
+            );
+        }
+        handle = await open(
+            path,
+            constants.O_RDONLY | noFollow | constants.O_NONBLOCK
+        );
+        if (!(await handle.stat()).isFile()) {
+            throw gateInputError(
+                'evidence/path-not-regular-file',
+                'Evidence path must resolve to a regular file'
+            );
+        }
+        return await handle.readFile();
+    } catch (cause) {
+        if (cause instanceof GateEvidenceError) throw cause;
+        const code = (cause as NodeJS.ErrnoException).code;
+        if (code === 'ENOENT') {
+            throw gateInputError(
+                'evidence/path-missing',
+                'Evidence file does not exist'
+            );
+        }
+        throw gateInputError(
+            'evidence/path-outside-root',
+            'Evidence path is outside evidence directory'
+        );
+    } finally {
+        await handle?.close();
+    }
+}
+
 export async function hashEvidenceFile(path: string): Promise<string> {
-    const bytes = await readFile(path);
+    const bytes = await readEvidenceFile(path);
     return createHash('sha256').update(bytes).digest('hex');
 }
 
 async function hashJsonEvidence(path: string): Promise<string> {
     let parsed: unknown;
     try {
-        parsed = JSON.parse(await readFile(path, 'utf8'));
-    } catch {
+        parsed = JSON.parse((await readEvidenceFile(path)).toString('utf8'));
+    } catch (cause) {
+        if (cause instanceof GateEvidenceError) throw cause;
         throw gateInputError(
             'evidence/json-invalid',
             'Evidence JSON is invalid'

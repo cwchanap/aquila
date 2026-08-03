@@ -11,6 +11,7 @@ const SAFE_DIAGNOSTIC_CODE = /^[a-z][a-z0-9]*(?:[/-][a-z0-9]+)*$/;
 const SENSITIVE_DIAGNOSTIC_CODE =
     /(?:authorization|bearer|credential|password|private|prompt|secret|token|bucket)/;
 const SAFE_EVIDENCE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const SAFE_COMMIT_SHA = /^[a-f0-9]{7,64}$/i;
 const SENSITIVE_REPORT_VALUE =
     /(?:authorization|bearer|credential|password|private|prompt|secret|token|bucket)/i;
 
@@ -28,6 +29,16 @@ function safeDiagnosticCode(code: string): string {
 
 function isSafePublicValue(value: string): boolean {
     return value.length <= 1024 && !SENSITIVE_REPORT_VALUE.test(value);
+}
+
+function safeCommitSha(value: string): string {
+    return SAFE_COMMIT_SHA.test(value) && isSafePublicValue(value)
+        ? value
+        : '[redacted]';
+}
+
+function isSafeEvidenceId(value: string): boolean {
+    return SAFE_EVIDENCE_ID.test(value) && isSafePublicValue(value);
 }
 
 function sanitizeDiagnostic(diagnostic: GateDiagnosticV1): GateDiagnosticV1 {
@@ -64,7 +75,7 @@ function isPublicEvidenceReference(
 ): boolean {
     return (
         isSupportedEvidenceMediaType(reference.mediaType) &&
-        SAFE_EVIDENCE_ID.test(reference.id) &&
+        isSafeEvidenceId(reference.id) &&
         isSafePublicValue(reference.path)
     );
 }
@@ -77,7 +88,7 @@ function sanitizeCheck(
         status: check.status,
         evidenceIds: check.evidenceIds.filter(
             evidenceId =>
-                SAFE_EVIDENCE_ID.test(evidenceId) && evidenceIds.has(evidenceId)
+                isSafeEvidenceId(evidenceId) && evidenceIds.has(evidenceId)
         ),
     };
 }
@@ -114,7 +125,17 @@ function publicReport(report: unknown): VisualNovelReleaseGateReportV1 {
     const evidence = parsed.evidence.filter(isPublicEvidenceReference);
     const evidenceIds = new Set(evidence.map(reference => reference.id));
     return {
-        ...parsed,
+        schemaVersion: parsed.schemaVersion,
+        status: parsed.status,
+        storyId: parsed.storyId,
+        target: parsed.target,
+        previewId: parsed.previewId,
+        releaseId: parsed.releaseId,
+        manifestSha256: parsed.manifestSha256,
+        commitSha: safeCommitSha(parsed.commitSha),
+        scenarioSha256: parsed.scenarioSha256,
+        manualReviewSha256: parsed.manualReviewSha256,
+        createdAt: parsed.createdAt,
         checks: sanitizeChecks(parsed.checks, evidenceIds),
         evidence,
         diagnostics: parsed.diagnostics.map(sanitizeDiagnostic),

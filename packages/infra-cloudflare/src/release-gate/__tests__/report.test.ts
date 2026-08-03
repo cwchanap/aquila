@@ -124,4 +124,31 @@ describe('release-gate reports', () => {
         expect(output).not.toContain('signature=secret');
         expect(output).not.toContain('private/source.json');
     });
+
+    it('redacts independently sensitive commit and evidence ID fields', () => {
+        const unsafe = failedVerificationReport();
+        unsafe.commitSha = 'Authorization: Bearer commit-token';
+        unsafe.evidence = [
+            ...unsafe.evidence,
+            {
+                id: 'private-bucket',
+                kind: 'playwright-result',
+                path: 'browser/screenshot.png',
+                sha256: 'f'.repeat(64),
+                mediaType: 'image/png',
+            },
+        ];
+
+        const json = renderGateJsonReport(unsafe);
+        const human = renderGateHumanReport(unsafe);
+        const parsed = parseVisualNovelReleaseGateReportV1(JSON.parse(json));
+
+        expect(parsed.commitSha).toBe('[redacted]');
+        expect(parsed.evidence).not.toContainEqual(
+            expect.objectContaining({ id: 'private-bucket' })
+        );
+        expect(`${json}${human}`).not.toContain('Authorization');
+        expect(`${json}${human}`).not.toContain('commit-token');
+        expect(`${json}${human}`).not.toContain('private-bucket');
+    });
 });

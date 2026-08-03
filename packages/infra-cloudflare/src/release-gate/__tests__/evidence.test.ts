@@ -1,13 +1,38 @@
 import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     createEvidenceReference,
     hashCanonicalEvidence,
     hashEvidenceFile,
     resolveEvidencePath,
 } from '../evidence';
+
+const evidenceReadRace = vi.hoisted(() => ({
+    beforeOpenOrRead: undefined as undefined | (() => Promise<void>),
+}));
+
+vi.mock('node:fs/promises', async importOriginal => {
+    const actual = await importOriginal<typeof import('node:fs/promises')>();
+    const triggerRace = async (): Promise<void> => {
+        const beforeOpenOrRead = evidenceReadRace.beforeOpenOrRead;
+        if (beforeOpenOrRead === undefined) return;
+        evidenceReadRace.beforeOpenOrRead = undefined;
+        await beforeOpenOrRead();
+    };
+    return {
+        ...actual,
+        open: async (...args: Parameters<typeof actual.open>) => {
+            await triggerRace();
+            return actual.open(...args);
+        },
+        readFile: async (...args: Parameters<typeof actual.readFile>) => {
+            await triggerRace();
+            return actual.readFile(...args);
+        },
+    };
+});
 
 const temporaryDirectories: string[] = [];
 
@@ -18,6 +43,7 @@ async function createEvidenceDirectory(): Promise<string> {
 }
 
 afterEach(async () => {
+    evidenceReadRace.beforeOpenOrRead = undefined;
     await Promise.all(
         temporaryDirectories
             .splice(0)
@@ -111,5 +137,29 @@ describe('release-gate evidence', () => {
                 mediaType: 'text/plain',
             })
         ).rejects.toThrow(/unsupported evidence media type/i);
+    });
+
+    it('rejects a symlink swapped between validation and the evidence read', async () => {
+        const evidenceDirectory = await createEvidenceDirectory();
+        const outsideDirectory = await createEvidenceDirectory();
+        await mkdir(join(evidenceDirectory, 'ci'));
+        const evidencePath = join(evidenceDirectory, 'ci', 'result.json');
+        const outsidePath = join(outsideDirectory, 'outside.json');
+        await writeFile(evidencePath, '{"inside":true}\n');
+        await writeFile(outsidePath, '{"outside":true}\n');
+
+        evidenceReadRace.beforeOpenOrRead = async () => {
+            await rm(evidencePath);
+            await symlink(outsidePath, evidencePath);
+        };
+
+        await expect(
+            createEvidenceReference(evidenceDirectory, {
+                id: 'ci',
+                kind: 'ci-result',
+                path: 'ci/result.json',
+                mediaType: 'application/json',
+            })
+        ).rejects.toThrow(/evidence/i);
     });
 });

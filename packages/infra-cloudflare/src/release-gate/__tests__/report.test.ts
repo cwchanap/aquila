@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { VisualNovelReleaseGateReportV1 } from '../schemas';
 import {
     gateReportExitCode,
@@ -7,6 +7,15 @@ import {
 } from '../report';
 import { validGateReport } from '../__fixtures__/valid-evidence';
 import { parseVisualNovelReleaseGateReportV1 } from '../schemas';
+
+vi.mock('bun:ffi', () => ({
+    FFIType: { i32: 5, ptr: 12 },
+    dlopen: () => ({
+        close: () => undefined,
+        symbols: { close: () => 0, openat: () => -1 },
+    }),
+    ptr: (value: Uint8Array): Uint8Array => value,
+}));
 
 function failedVerificationReport(): VisualNovelReleaseGateReportV1 {
     return parseVisualNovelReleaseGateReportV1({

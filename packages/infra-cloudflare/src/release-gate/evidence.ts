@@ -1,7 +1,16 @@
 import { createHash } from 'node:crypto';
-import { constants, realpathSync, statSync, type Stats } from 'node:fs';
+import {
+    constants,
+    fstatSync,
+    readFile as readFileFromDescriptor,
+    realpathSync,
+    statSync,
+    type Stats,
+} from 'node:fs';
 import { open, type FileHandle } from 'node:fs/promises';
 import { isAbsolute, resolve, sep } from 'node:path';
+// @ts-expect-error Bun provides this builtin at runtime; Vitest supplies its mock.
+import { dlopen, FFIType, ptr } from 'bun:ffi';
 import {
     canonicalJson,
     isSafeRelativePath,
@@ -58,6 +67,74 @@ interface EvidenceFileIdentity {
     device: number;
     inode: number;
 }
+
+interface NativeDescriptorSymbols {
+    close(descriptor: number): number;
+    openat(directoryDescriptor: number, path: number, flags: number): number;
+}
+
+interface NativeDescriptorLibrary {
+    symbols: NativeDescriptorSymbols;
+}
+
+interface NativeDescriptorApi {
+    close(descriptor: number): void;
+    currentWorkingDirectoryDescriptor: number;
+    openAt(directoryDescriptor: number, path: string, flags: number): number;
+}
+
+function createNativeDescriptorApi(): NativeDescriptorApi | undefined {
+    const currentWorkingDirectoryDescriptor =
+        process.platform === 'darwin'
+            ? -2
+            : process.platform === 'linux'
+              ? -100
+              : undefined;
+    const libraryPath =
+        process.platform === 'darwin'
+            ? '/usr/lib/libSystem.B.dylib'
+            : process.platform === 'linux'
+              ? 'libc.so.6'
+              : undefined;
+    if (
+        currentWorkingDirectoryDescriptor === undefined ||
+        libraryPath === undefined
+    ) {
+        return undefined;
+    }
+
+    try {
+        const library = dlopen(libraryPath, {
+            close: { args: [FFIType.i32], returns: FFIType.i32 },
+            openat: {
+                args: [FFIType.i32, FFIType.ptr, FFIType.i32],
+                returns: FFIType.i32,
+            },
+        }) as NativeDescriptorLibrary;
+        return {
+            close(descriptor: number): void {
+                library.symbols.close(descriptor);
+            },
+            currentWorkingDirectoryDescriptor,
+            openAt(
+                directoryDescriptor: number,
+                path: string,
+                flags: number
+            ): number {
+                const encodedPath = Buffer.from(`${path}\0`);
+                return library.symbols.openat(
+                    directoryDescriptor,
+                    ptr(encodedPath),
+                    flags
+                );
+            },
+        };
+    } catch {
+        return undefined;
+    }
+}
+
+const nativeDescriptorApi = createNativeDescriptorApi();
 
 function evidenceFileIdentity(
     stats: Pick<Stats, 'dev' | 'ino'>
@@ -126,10 +203,21 @@ function assertSupportedEvidenceMediaType(
     }
 }
 
-function resolveEvidenceFile(
+interface ValidatedEvidencePath {
+    absoluteRoot: string;
+    realPath: string;
+}
+
+interface OpenedEvidenceFile {
+    descriptor: number;
+    identity: EvidenceFileIdentity;
+    path: string;
+}
+
+function validateEvidencePath(
     root: string,
     relativePath: string
-): { path: string; identity: EvidenceFileIdentity } {
+): ValidatedEvidencePath {
     if (isAbsolute(relativePath)) {
         throw gateInputError(
             'evidence/path-absolute',
@@ -167,34 +255,180 @@ function resolveEvidenceFile(
             'Evidence path is outside evidence directory'
         );
     }
-    let fileStats;
+    return { absoluteRoot, realPath };
+}
+
+function evidenceOpenFlags(directory: boolean): number {
+    const noFollow = constants.O_NOFOLLOW;
+    const nonBlocking = constants.O_NONBLOCK;
+    const directoryOnly = constants.O_DIRECTORY;
+    if (
+        !Number.isInteger(noFollow) ||
+        noFollow === 0 ||
+        !Number.isInteger(nonBlocking) ||
+        !Number.isInteger(directoryOnly) ||
+        directoryOnly === 0
+    ) {
+        throw gateInputError(
+            'evidence/path-outside-root',
+            'Evidence path cannot be read safely'
+        );
+    }
+    return (
+        constants.O_RDONLY |
+        noFollow |
+        nonBlocking |
+        (directory ? directoryOnly : 0)
+    );
+}
+
+function closeEvidenceDescriptor(descriptor: number): void {
     try {
-        fileStats = statSync(realPath);
+        nativeDescriptorApi?.close(descriptor);
     } catch {
+        // Closing an already-bound descriptor cannot make a rejected path safe.
+    }
+}
+
+function openEvidenceDescriptor(root: string, relativePath: string): number {
+    const native = nativeDescriptorApi;
+    if (native === undefined) {
         throw gateInputError(
-            'evidence/path-missing',
-            'Evidence file does not exist'
+            'evidence/path-outside-root',
+            'Evidence path cannot be read safely'
         );
     }
-    if (!fileStats.isFile()) {
+
+    const directoryDescriptors: number[] = [];
+    try {
+        const directoryFlags = evidenceOpenFlags(true);
+        const fileFlags = evidenceOpenFlags(false);
+        let currentDirectoryDescriptor = native.openAt(
+            native.currentWorkingDirectoryDescriptor,
+            sep,
+            directoryFlags
+        );
+        if (currentDirectoryDescriptor < 0) {
+            throw gateInputError(
+                'evidence/path-outside-root',
+                'Evidence path cannot be read safely'
+            );
+        }
+        directoryDescriptors.push(currentDirectoryDescriptor);
+
+        for (const segment of root.split(sep).filter(Boolean)) {
+            const directoryDescriptor = native.openAt(
+                currentDirectoryDescriptor,
+                segment,
+                directoryFlags
+            );
+            if (directoryDescriptor < 0) {
+                throw gateInputError(
+                    'evidence/path-outside-root',
+                    'Evidence path cannot be read safely'
+                );
+            }
+            directoryDescriptors.push(directoryDescriptor);
+            currentDirectoryDescriptor = directoryDescriptor;
+        }
+
+        const pathSegments = relativePath.split('/');
+        for (const segment of pathSegments.slice(0, -1)) {
+            const directoryDescriptor = native.openAt(
+                currentDirectoryDescriptor,
+                segment,
+                directoryFlags
+            );
+            if (directoryDescriptor < 0) {
+                throw gateInputError(
+                    'evidence/path-outside-root',
+                    'Evidence path cannot be read safely'
+                );
+            }
+            directoryDescriptors.push(directoryDescriptor);
+            currentDirectoryDescriptor = directoryDescriptor;
+        }
+
+        const finalSegment = pathSegments.at(-1);
+        if (finalSegment === undefined) {
+            throw gateInputError(
+                'evidence/path-invalid',
+                'Evidence path must be a safe relative path'
+            );
+        }
+        const fileDescriptor = native.openAt(
+            currentDirectoryDescriptor,
+            finalSegment,
+            fileFlags
+        );
+        if (fileDescriptor < 0) {
+            throw gateInputError(
+                'evidence/path-outside-root',
+                'Evidence path cannot be read safely'
+            );
+        }
+        return fileDescriptor;
+    } catch (cause) {
+        if (cause instanceof GateEvidenceError) throw cause;
         throw gateInputError(
-            'evidence/path-not-regular-file',
-            'Evidence path must resolve to a regular file'
+            'evidence/path-outside-root',
+            'Evidence path cannot be read safely'
+        );
+    } finally {
+        for (const descriptor of directoryDescriptors) {
+            closeEvidenceDescriptor(descriptor);
+        }
+    }
+}
+
+function openValidatedEvidenceFile(
+    root: string,
+    relativePath: string
+): OpenedEvidenceFile {
+    const { absoluteRoot, realPath } = validateEvidencePath(root, relativePath);
+    let descriptor: number | undefined;
+    try {
+        descriptor = openEvidenceDescriptor(absoluteRoot, relativePath);
+        const stats = fstatSync(descriptor);
+        if (!stats.isFile()) {
+            throw gateInputError(
+                'evidence/path-not-regular-file',
+                'Evidence path must resolve to a regular file'
+            );
+        }
+        return {
+            descriptor,
+            identity: evidenceFileIdentity(stats),
+            path: realPath,
+        };
+    } catch (cause) {
+        if (descriptor !== undefined) closeEvidenceDescriptor(descriptor);
+        if (cause instanceof GateEvidenceError) throw cause;
+        throw gateInputError(
+            'evidence/path-outside-root',
+            'Evidence path cannot be read safely'
         );
     }
-    return { path: realPath, identity: evidenceFileIdentity(fileStats) };
 }
 
 /**
  * Resolves an evidence artifact only after proving that both its lexical path
  * and its canonical filesystem path remain under the configured evidence
- * directory. The returned value is internal-only and must not be rendered.
+ * directory, then opening each component through a no-follow descriptor.
+ * Nested regular paths are supported; symlink components, including in-root
+ * aliases, are intentionally rejected. The returned value is internal-only
+ * and must not be rendered.
  */
 export function resolveEvidencePath(
     root: string,
     relativePath: string
 ): string {
-    return resolveEvidenceFile(root, relativePath).path;
+    const evidenceFile = openValidatedEvidenceFile(root, relativePath);
+    try {
+        return evidenceFile.path;
+    } finally {
+        closeEvidenceDescriptor(evidenceFile.descriptor);
+    }
 }
 
 export function hashCanonicalEvidence(value: unknown): string {
@@ -203,10 +437,7 @@ export function hashCanonicalEvidence(value: unknown): string {
         .digest('hex');
 }
 
-async function readEvidenceFile(
-    path: string,
-    expectedIdentity?: EvidenceFileIdentity
-): Promise<Buffer> {
+async function readEvidenceFile(path: string): Promise<Buffer> {
     let handle: FileHandle | undefined;
     try {
         const noFollow = constants.O_NOFOLLOW;
@@ -226,9 +457,6 @@ async function readEvidenceFile(
                 'evidence/path-not-regular-file',
                 'Evidence path must resolve to a regular file'
             );
-        }
-        if (expectedIdentity !== undefined) {
-            assertEvidenceFileIdentity(expectedIdentity, stats);
         }
         return await handle.readFile();
     } catch (cause) {
@@ -254,22 +482,59 @@ export async function hashEvidenceFile(path: string): Promise<string> {
     return createHash('sha256').update(bytes).digest('hex');
 }
 
+function readDescriptorFile(descriptor: number): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        readFileFromDescriptor(descriptor, (error, data) => {
+            if (error !== null) {
+                reject(error);
+                return;
+            }
+            resolve(data);
+        });
+    });
+}
+
+async function readOpenedEvidenceFile(
+    descriptor: number,
+    expectedIdentity: EvidenceFileIdentity
+): Promise<Buffer> {
+    try {
+        const stats = fstatSync(descriptor);
+        if (!stats.isFile()) {
+            throw gateInputError(
+                'evidence/path-not-regular-file',
+                'Evidence path must resolve to a regular file'
+            );
+        }
+        assertEvidenceFileIdentity(expectedIdentity, stats);
+        return await readDescriptorFile(descriptor);
+    } catch (cause) {
+        if (cause instanceof GateEvidenceError) throw cause;
+        throw gateInputError(
+            'evidence/path-outside-root',
+            'Evidence path cannot be read safely'
+        );
+    }
+}
+
 async function hashValidatedEvidenceFile(
-    expectedIdentity: EvidenceFileIdentity,
-    path: string
+    descriptor: number,
+    expectedIdentity: EvidenceFileIdentity
 ): Promise<string> {
-    const bytes = await readEvidenceFile(path, expectedIdentity);
+    const bytes = await readOpenedEvidenceFile(descriptor, expectedIdentity);
     return createHash('sha256').update(bytes).digest('hex');
 }
 
 async function hashJsonEvidence(
-    path: string,
+    descriptor: number,
     expectedIdentity: EvidenceFileIdentity
 ): Promise<string> {
     let parsed: unknown;
     try {
         parsed = JSON.parse(
-            (await readEvidenceFile(path, expectedIdentity)).toString('utf8')
+            (
+                await readOpenedEvidenceFile(descriptor, expectedIdentity)
+            ).toString('utf8')
         );
     } catch (cause) {
         if (cause instanceof GateEvidenceError) throw cause;
@@ -303,15 +568,24 @@ export async function createEvidenceReference(
         sha256: REFERENCE_DIGEST_PLACEHOLDER,
     });
     assertSupportedEvidenceMediaType(parsedInput.mediaType);
-    const evidenceRoot = resolveEvidenceRoot(evidenceDirectory);
-    const { path, identity } = resolveEvidenceFile(
-        evidenceRoot,
+    const evidenceFile = openValidatedEvidenceFile(
+        evidenceDirectory,
         parsedInput.path
     );
-    const sha256 =
-        parsedInput.mediaType === 'application/json'
-            ? await hashJsonEvidence(path, identity)
-            : await hashValidatedEvidenceFile(identity, path);
+    try {
+        const sha256 =
+            parsedInput.mediaType === 'application/json'
+                ? await hashJsonEvidence(
+                      evidenceFile.descriptor,
+                      evidenceFile.identity
+                  )
+                : await hashValidatedEvidenceFile(
+                      evidenceFile.descriptor,
+                      evidenceFile.identity
+                  );
 
-    return parseGateEvidenceReferenceV1({ ...parsedInput, sha256 });
+        return parseGateEvidenceReferenceV1({ ...parsedInput, sha256 });
+    } finally {
+        closeEvidenceDescriptor(evidenceFile.descriptor);
+    }
 }

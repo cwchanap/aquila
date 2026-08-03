@@ -1,4 +1,5 @@
 import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { renameSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -9,28 +10,77 @@ import {
     resolveEvidencePath,
 } from '../evidence';
 
-const evidenceReadRace = vi.hoisted(() => ({
-    beforeOpenOrRead: undefined as undefined | (() => Promise<void>),
+const descriptorOpenRace = vi.hoisted(() => ({
+    beforeOpenAt: undefined as undefined | ((path: string) => void),
 }));
 
-vi.mock('node:fs/promises', async importOriginal => {
-    const actual = await importOriginal<typeof import('node:fs/promises')>();
-    const triggerRace = async (): Promise<void> => {
-        const beforeOpenOrRead = evidenceReadRace.beforeOpenOrRead;
-        if (beforeOpenOrRead === undefined) return;
-        evidenceReadRace.beforeOpenOrRead = undefined;
-        await beforeOpenOrRead();
-    };
+vi.mock('bun:ffi', async () => {
+    const { closeSync, constants, lstatSync, openSync } = await import(
+        'node:fs'
+    );
+    const { join } = await import('node:path');
+    const descriptors = new Map<number, string>();
     return {
-        ...actual,
-        open: async (...args: Parameters<typeof actual.open>) => {
-            await triggerRace();
-            return actual.open(...args);
-        },
-        readFile: async (...args: Parameters<typeof actual.readFile>) => {
-            await triggerRace();
-            return actual.readFile(...args);
-        },
+        FFIType: { i32: 5, ptr: 12 },
+        dlopen: () => ({
+            close: () => undefined,
+            symbols: {
+                close: (descriptor: number): number => {
+                    descriptors.delete(descriptor);
+                    try {
+                        closeSync(descriptor);
+                        return 0;
+                    } catch {
+                        return -1;
+                    }
+                },
+                openat: (
+                    directoryDescriptor: number,
+                    encodedPath: Uint8Array,
+                    flags: number
+                ): number => {
+                    const path = Buffer.from(encodedPath)
+                        .toString('utf8')
+                        .split('\0', 1)[0];
+                    const beforeOpenAt = descriptorOpenRace.beforeOpenAt;
+                    if (beforeOpenAt !== undefined) {
+                        beforeOpenAt(path);
+                    }
+                    if (
+                        (flags & constants.O_NOFOLLOW) !==
+                        constants.O_NOFOLLOW
+                    ) {
+                        throw new Error(
+                            'descriptor open must not follow links'
+                        );
+                    }
+                    const parentPath = descriptors.get(directoryDescriptor);
+                    if (directoryDescriptor >= 0 && parentPath === undefined) {
+                        return -1;
+                    }
+                    const candidate =
+                        parentPath === undefined
+                            ? path
+                            : join(parentPath, path);
+                    try {
+                        const stats = lstatSync(candidate);
+                        if (
+                            stats.isSymbolicLink() ||
+                            ((flags & constants.O_DIRECTORY) !== 0 &&
+                                !stats.isDirectory())
+                        ) {
+                            return -1;
+                        }
+                        const descriptor = openSync(candidate, flags);
+                        descriptors.set(descriptor, candidate);
+                        return descriptor;
+                    } catch {
+                        return -1;
+                    }
+                },
+            },
+        }),
+        ptr: (value: Uint8Array): Uint8Array => value,
     };
 });
 
@@ -43,7 +93,7 @@ async function createEvidenceDirectory(): Promise<string> {
 }
 
 afterEach(async () => {
-    evidenceReadRace.beforeOpenOrRead = undefined;
+    descriptorOpenRace.beforeOpenAt = undefined;
     await Promise.all(
         temporaryDirectories
             .splice(0)
@@ -73,6 +123,26 @@ describe('release-gate evidence', () => {
         } finally {
             await rm(outsidePath, { force: true });
         }
+    });
+
+    it('rejects in-root symlink components instead of following aliases', async () => {
+        const evidenceDirectory = await createEvidenceDirectory();
+        const actualDirectory = join(evidenceDirectory, 'ci-actual');
+        await mkdir(actualDirectory);
+        await writeFile(
+            join(actualDirectory, 'result.json'),
+            '{"inside":true}'
+        );
+        await symlink('ci-actual', join(evidenceDirectory, 'ci'));
+
+        await expect(
+            createEvidenceReference(evidenceDirectory, {
+                id: 'ci',
+                kind: 'ci-result',
+                path: 'ci/result.json',
+                mediaType: 'application/json',
+            })
+        ).rejects.toMatchObject({ code: 'evidence/path-outside-root' });
     });
 
     it('rejects missing and non-regular evidence files', async () => {
@@ -139,7 +209,7 @@ describe('release-gate evidence', () => {
         ).rejects.toThrow(/unsupported evidence media type/i);
     });
 
-    it('rejects a symlink swapped between validation and the evidence read', async () => {
+    it('rejects a final-component symlink swapped before descriptor open', async () => {
         const evidenceDirectory = await createEvidenceDirectory();
         const outsideDirectory = await createEvidenceDirectory();
         await mkdir(join(evidenceDirectory, 'ci'));
@@ -148,9 +218,11 @@ describe('release-gate evidence', () => {
         await writeFile(evidencePath, '{"inside":true}\n');
         await writeFile(outsidePath, '{"outside":true}\n');
 
-        evidenceReadRace.beforeOpenOrRead = async () => {
-            await rm(evidencePath);
-            await symlink(outsidePath, evidencePath);
+        descriptorOpenRace.beforeOpenAt = path => {
+            if (path !== 'result.json') return;
+            descriptorOpenRace.beforeOpenAt = undefined;
+            rmSync(evidencePath);
+            symlinkSync(outsidePath, evidencePath);
         };
 
         await expect(
@@ -163,19 +235,22 @@ describe('release-gate evidence', () => {
         ).rejects.toThrow(/evidence/i);
     });
 
-    it('rejects an intermediate directory symlink swapped before the evidence read', async () => {
+    it('rejects an intermediate symlink swapped immediately before protected descent', async () => {
         const evidenceDirectory = await createEvidenceDirectory();
         const outsideDirectory = await createEvidenceDirectory();
         const evidenceSubdirectory = join(evidenceDirectory, 'ci');
+        const movedSubdirectory = join(evidenceDirectory, 'ci-before-swap');
         await mkdir(evidenceSubdirectory);
         const evidencePath = join(evidenceSubdirectory, 'result.json');
         const outsidePath = join(outsideDirectory, 'result.json');
         await writeFile(evidencePath, '{"inside":true}\n');
         await writeFile(outsidePath, '{"outside":true}\n');
 
-        evidenceReadRace.beforeOpenOrRead = async () => {
-            await rm(evidenceSubdirectory, { recursive: true });
-            await symlink(outsideDirectory, evidenceSubdirectory);
+        descriptorOpenRace.beforeOpenAt = path => {
+            if (path !== 'ci') return;
+            descriptorOpenRace.beforeOpenAt = undefined;
+            renameSync(evidenceSubdirectory, movedSubdirectory);
+            symlinkSync(outsideDirectory, evidenceSubdirectory);
         };
 
         await expect(

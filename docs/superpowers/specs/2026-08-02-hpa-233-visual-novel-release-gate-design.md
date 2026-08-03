@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved for implementation planning after design-review amendments.
+Draft design — third-pass clarifications incorporated; ready for final review before implementation planning.
 
 - Linear issue: HPA-233
 - Parent: HPA-216
@@ -10,140 +10,64 @@ Approved for implementation planning after design-review amendments.
 - Repository: `cwchanap/aquila`
 - Design date: 2026-08-02
 - Reviewed pull request: #44
-- Delivery rule: one design pull request, followed by one primary HPA-233 implementation pull request unless the Linear issue is split first.
+- Specification rule: this file is the single authoritative HPA-233 design. No addendum overrides its V1 schemas.
+- Delivery rule: one design pull request, followed by one primary HPA-233 implementation pull request unless Linear is split first.
 
-## Summary
+## Purpose
 
-Aquila already has the runtime asset contract, visual reader, reader-session state, story lazy loading, isolated R2 delivery, immutable publisher, and publisher regression workflow required for visual-novel releases. HPA-233 must not replace those systems. It adds a thin release-gate layer that composes their existing verification, fills the remaining public-delivery and deployed-browser gaps, binds all evidence to one immutable candidate release, and produces the authorization artifact HPA-231 must present before production activation.
+Aquila already has the runtime asset contract, visual reader, canonical reader state, story lazy loading, isolated R2 delivery, immutable publisher, and publisher regression workflow required for visual-novel releases. HPA-233 adds a thin authorization layer that composes those systems, fills public-CDN and deployed-browser gaps, binds all evidence to one immutable candidate, and produces the artifact HPA-231 must validate before production activation.
 
-The design separates ordinary credential-free CI from a manually triggered preview-release authorization gate:
+The design separates:
 
-- **Tier 1** runs against checked-in small fixtures and a bounded Chromium matrix.
-- **Tier 2** verifies one retained immutable production candidate through the R2 API, public CDN, browser decoder, deployed reader, and release-bound human review.
-- The gate may update only an isolated preview pointer through the existing publisher.
-- The gate never updates the production pointer.
-- HPA-231 performs production activation later through the existing atomic publisher command.
+- **Tier 1:** deterministic local verification using checked-in fixtures, a local PostgreSQL test database, and a bounded Chromium matrix.
+- **Tier 2:** a manually triggered, two-phase story-release gate that verifies one retained immutable production candidate through R2, the public CDN, browser decoding, the deployed reader, and release-bound human review.
 
-## Design-review decisions
+The gate may update only an isolated preview pointer through the existing publisher. It never updates production. HPA-231 later performs production activation through the existing atomic publisher command.
 
-The following review conclusions are normative:
+## Normative decisions
 
-1. `.github/workflows/r2-publisher-preview.yml` remains the HPA-230 publisher regression workflow. HPA-233 adds a separate story-release authorization workflow because the two workflows answer different questions.
-2. The HPA-230 workflow is renamed in the GitHub Actions UI to **R2 Publisher Regression Gate** during implementation to prevent confusion with the HPA-233 release gate. Renaming the file to `r2-publisher-regression.yml` is optional if preserving workflow history is more valuable.
-3. The HPA-233 workflow reuses `r2-gate-capture-state.ts` and shared pointer-proof helpers. It does not recreate HPA-230's controlled-revision, stale-conflict, idempotency, or rollback regression sequence.
-4. The HPA-216 acceptance criteria are transcribed into this document. The checked-in ownership matrix becomes the canonical in-repository snapshot for implementation and review.
-5. Tier 1 explicitly runs only Desktop Chromium and Mobile Chromium for the targeted visual-reader suite. Mobile Safari remains in the ordinary full E2E workflow.
-6. `PublicReleaseVerificationResultV1.releaseId` and `manifestSha256` remain required. Active mode derives them from the validated pointer and fetched manifest.
-7. `verify-preview` and `smoke-production` share one diagnostic stage and error-code vocabulary.
-8. `--expect-manifest-sha256` is parsed once into one canonical expected checksum value and passed unchanged to every verification boundary. Each verifier independently compares observed bytes with that same value; there is no second expected-checksum source.
+1. `.github/workflows/r2-publisher-preview.yml` remains the HPA-230 publisher lifecycle regression workflow. Its display name becomes **R2 Publisher Regression Gate**.
+2. HPA-233 adds a separate per-story authorization workflow because publisher regression and production authorization answer different questions.
+3. HPA-233 reuses `r2-gate-capture-state.ts`, public browser probes, and pointer-proof helpers. It does not duplicate HPA-230 idempotency, controlled-revision, stale-conflict, or rollback scenarios.
+4. This document contains the canonical in-repository HPA-216 acceptance snapshot.
+5. Tier 1 runs visual-reader coverage on Desktop Chromium and Mobile Chromium; lazy-loading remains Desktop Chromium only; Mobile Safari remains ordinary E2E ownership.
+6. Tier 1 is Cloudflare-credential-free and external-network-free, but not service-free: PostgreSQL and completed migrations are required before local Playwright.
+7. `PublicReleaseVerificationResultV1.releaseId` and `manifestSha256` are required in candidate and active modes.
+8. One parsed expected manifest checksum is passed unchanged to every boundary, which independently compares its observation to that value.
+9. The release-gate preview uses an explicit `PUBLIC_ASSET_PREVIEW_ID`; the exact same literal is supplied as `--preview-id`. Both sides validate it with `isPreviewId()`.
+10. Resolved asset identity is exposed on the stable `ReaderShell` ready host, not the visual-only leaf.
+11. Browser checks wait for visual release state `ready`, then require every target-appropriate identity attribute. Absence is fatal.
+12. Remote qualification and production smoke use a dedicated Playwright config with no local `webServer`.
+13. Manual-review JSON is release-bound evidence, not a signature. Final authorization also requires protected workflow/environment control.
+14. `r2-delivery.spec.ts` remains the HPA-229 seeded infrastructure smoke. HPA-233 reuses its CORS/decode/revalidation helpers rather than copying them.
+15. `release-gate` is implemented under the existing `assets` binary and reuses its established `0`–`5` exit taxonomy.
+16. Finalize reruns live R2/CDN/browser checks. It may reuse prepare-phase hermetic Tier 1 evidence only when all identity and digest fields match.
 
-## Goals
-
-1. Map every HPA-216 acceptance criterion to an existing owned test, an HPA-233 integration check, HPA-231 migration evidence, or an explicitly justified human review.
-2. Expose one deterministic visual-novel CI command that requires no Cloudflare access and no production-sized artwork.
-3. Expose one parameterized preview-release verification flow that validates an immutable candidate before production pointer activation.
-4. Exercise the real public asset domain and deployed reader together on desktop and mobile Chromium layouts.
-5. Bind automated and human evidence to the exact story, release ID, manifest checksum, candidate commit, preview namespace, and browser scenario.
-6. Produce a stable machine-readable release-gate result that HPA-231 validates before calling the existing atomic production activation path.
-7. Provide a smaller non-destructive production smoke command for use after activation.
-8. Reuse existing publisher regression coverage rather than creating a second publisher test framework.
-
-## Non-goals
-
-- Performing The Seventh Mirror production migration.
-- Reimplementing runtime manifest, pointer, resolver, publisher, activation, or rollback logic.
-- Creating a second fixture framework or a second representation of release coverage.
-- Re-running HPA-230's complete publisher regression scenario inside every story-release gate.
-- Pixel-perfect approval of every production illustration.
-- Generating or evaluating AI artwork.
-- Packaging complete offline, PWA, or Tauri asset sets.
-- Giving the release gate permission to mutate the production pointer.
-- Running destructive failure experiments against an active production story.
-- General load or performance testing of unrelated Aquila pages.
-
-## Existing ownership and constraints
-
-The design preserves the boundaries established by HPA-227 through HPA-234.
+## Ownership boundaries
 
 ### `@aquila/stories/runtime-assets`
 
-Owns:
-
-- Runtime manifest, active pointer, and release-plan schemas.
-- Canonical JSON and release identity.
-- Publication-layout path helpers.
-- Safe logical keys, type-qualified identities, and path validation.
-- Pointer/manifest pairing.
-- Cache and dimension policies.
-
-HPA-233 calls these public APIs rather than parsing documents or constructing paths independently.
+Remains authoritative for runtime manifest, active pointer, release-plan schemas, canonical JSON, release identity, path helpers, qualified logical identities, pointer/manifest pairing, and cache/dimension policies. HPA-233 must import those APIs and must not hand-build paths or duplicate schemas.
 
 ### `@aquila/infra-cloudflare`
 
-Owns:
+Owns publisher planning, deterministic encoding, immutable publication, deep R2 candidate verification, preview mirroring, conditional activation, concurrency protection, release history, rollback, public-delivery primitives, R2 configuration, and structured publisher reports.
 
-- Release planning and coverage classification.
-- Deterministic image encoding and content addressing.
-- Immutable candidate publication.
-- Deep R2 candidate verification.
-- Preview mirroring.
-- Conditional activation, conflict detection, release history, and rollback.
-- Public-delivery verification primitives.
-- Scoped R2 configuration and credential handling.
-- Structured publisher reports.
-
-HPA-233 adds orchestration, parameterization, and evidence binding inside this package. It does not fork publisher behavior.
+HPA-233 adds parameterized public verification, evidence schemas, orchestration, activation-readiness assertion, production smoke, and CLI integration inside this package.
 
 ### `apps/web`
 
-Owns:
+Owns asset-source resolution, reader state, visual/text behavior, bookmarks, choices, responsive swaps, fallback, caching, prefetch, and lazy story loading.
 
-- Asset-source environment resolution.
-- Canonical reader-session state.
-- Visual and text reader behavior.
-- Browser restoration, bookmarks, choices, responsive reader state, fallback, caching, and prefetch.
-- Story lazy loading.
-
-HPA-233 asserts these contracts through the deployed reader. It does not move them into infrastructure code.
+HPA-233 owns only the minimal non-secret observability addition required to prove which validated asset release the deployed reader uses.
 
 ### `packages/e2e`
 
-Owns browser flows. HPA-233 adds one environment-driven release suite for combinations that existing local suites do not prove together.
+Owns browser flows. HPA-233 adds a parameterized release-gate suite, a remote-only config, structured evidence, and shared browser-delivery helpers.
 
-### Existing HPA-230 publisher regression workflow
+## Architecture
 
-`.github/workflows/r2-publisher-preview.yml` currently proves the publisher itself with controlled fixtures:
-
-- production candidate publication with `--no-activate`;
-- unchanged-release no-op behavior;
-- production-to-preview mirroring;
-- conditional preview activation;
-- deep verification;
-- controlled revision;
-- deterministic stale-pointer conflict;
-- pointer-only rollback;
-- public HPA-229 smoke verification;
-- production-pointer-unchanged evidence.
-
-It also already uses:
-
-```text
-packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts
-packages/infra-cloudflare/src/publisher/r2-gate-fixtures.ts
-packages/infra-cloudflare/scripts/r2-stale-conflict-coordinator.ts
-```
-
-This workflow remains the regression owner for publisher lifecycle semantics. The HPA-233 story-release workflow reuses its stable helpers but does not duplicate its complete fixture sequence.
-
-## Architecture decision
-
-### Chosen approach: thin release-gate orchestrator
-
-The gate is a focused module and CLI within `packages/infra-cloudflare`, supported by an environment-driven Playwright suite in `packages/e2e` and a dedicated GitHub Actions workflow.
-
-A new workspace is not justified initially. The gate's domain logic is primarily evidence validation and orchestration over existing package APIs. A separate `packages/release-gate` workspace may be introduced later only if this layer gains substantial reusable logic that cannot remain cohesive within `infra-cloudflare`.
-
-Proposed structure:
+Use a focused release-gate module inside `packages/infra-cloudflare`:
 
 ```text
 packages/infra-cloudflare/src/release-gate/
@@ -159,42 +83,35 @@ packages/infra-cloudflare/src/release-gate/
 
 packages/infra-cloudflare/src/release-gate/__tests__/
 packages/infra-cloudflare/src/release-gate/__fixtures__/
-
 packages/e2e/tests/visual-novel-release-gate.spec.ts
+packages/e2e/tests/visual-novel-production-smoke.spec.ts
 packages/e2e/fixtures/visual-release-gates/
+packages/e2e/playwright.release-gate.config.ts
 ```
 
-The current `packages/infra-cloudflare/src/verify.ts` becomes a compatibility wrapper over the parameterized public verifier. The existing HPA-229 smoke command and tests continue to work.
+`packages/infra-cloudflare/src/verify.ts` becomes a compatibility wrapper over the parameterized public verifier so the existing HPA-229 smoke command remains valid.
 
-### Rejected alternatives
+A separate workspace is not justified because the gate primarily composes existing infrastructure services. A workflow-only shell gate is rejected because it would be difficult to test, version, and consume safely.
 
-#### New release-gate workspace immediately
+## Tier 1: deterministic visual-novel CI
 
-This creates package plumbing before there is an independent deployment or domain boundary. Most code would wrap `infra-cloudflare` and Playwright, increasing indirection without improving ownership.
-
-#### Workflow-only shell gate
-
-A shell-only implementation is difficult to unit-test, reuse locally, version as a schema, or consume safely from HPA-231. The workflow calls a tested gate module; it does not define release semantics itself.
-
-#### Fold HPA-233 into the existing publisher regression workflow
-
-The existing workflow answers, "Does the publisher lifecycle still work against controlled fixtures?" HPA-233 answers, "May this exact real story release be activated in production?" Folding the two together would make every story authorization rerun stale-conflict and rollback regressions, while making publisher regression depend on a Vercel preview and human approval.
-
-#### Extend the publisher report into the final gate result
-
-Publisher verification is necessary but not sufficient. It cannot represent deployed-browser behavior or human review. Mutating the publisher report schema to include unrelated evidence would blur ownership.
-
-## Evidence tiers
-
-### Tier 1: deterministic visual-novel CI
-
-Expose a credential-free repository command:
+Expose:
 
 ```bash
 bun run verify:visual-novel-ci
 ```
 
-The command composes:
+### Prerequisite
+
+Before Playwright runs:
+
+- PostgreSQL 16 is healthy;
+- `DATABASE_URL` targets the test database;
+- `bun run drizzle:migrate` completes in `apps/web`.
+
+The local command either provisions the service or clearly documents this prerequisite.
+
+### Commands
 
 ```bash
 bun run compile:check
@@ -203,33 +120,30 @@ bun --filter web test
 bun --filter @aquila/infra-cloudflare test
 bun --filter e2e test:e2e \
   tests/reader-visual.spec.ts \
-  tests/reader-lazy-loading.spec.ts \
   --project=chromium \
   --project=mobile-chrome
+bun --filter e2e test:e2e \
+  tests/reader-lazy-loading.spec.ts \
+  --project=chromium
 ```
-
-The exact implementation may use a Bun script or Turbo tasks, but it must preserve visible package ownership and failure attribution.
 
 Properties:
 
-- Uses only checked-in small fixtures.
-- Does not require R2 credentials or network access.
-- Does not require production artwork.
-- Does not write a preview or production pointer.
-- Runs in normal pull-request CI.
-- Includes Desktop Chromium and Mobile Chromium only for the bounded targeted suite.
-- Does not replace the ordinary E2E workflow.
+- checked-in small asset/story fixtures only;
+- no R2 credentials or external network;
+- no production artwork;
+- no pointer mutation;
+- aggregate command used locally and by the release workflow, not added as a duplicate ordinary PR job;
+- ordinary `.github/workflows/e2e-tests.yml` continues to own full browser CI, PostgreSQL setup/migrations, and Mobile Safari.
 
-The existing `.github/workflows/e2e-tests.yml` continues to run the repository's full configured browser matrix, including Mobile Safari for `reader-visual.spec.ts`. Tier 1 is a focused release-readiness command, not the complete regression suite.
+Prepare emits `Tier1EvidenceV1` containing candidate commit SHA, lockfile SHA-256, Bun/Node/Playwright versions, command-set schema version, browser matrix, status, and artifact digest. Finalize may reuse it only when every identity field matches; otherwise Tier 1 reruns.
 
-The final gate report identifies the exact candidate commit whose deterministic CI passed.
+## Tier 2 CLI
 
-### Tier 2: preview release gate
-
-Expose one parameterized gate command, provisionally:
+Use the existing package script and binary:
 
 ```bash
-bun --filter @aquila/infra-cloudflare release-gate verify-preview \
+bun --filter @aquila/infra-cloudflare assets release-gate verify-preview \
   --story <story-id> \
   --preview-id <preview-id> \
   --release <release-id> \
@@ -238,32 +152,21 @@ bun --filter @aquila/infra-cloudflare release-gate verify-preview \
   --web-base-url <deployed-preview-url> \
   --publisher-report <candidate-report.json> \
   --browser-evidence <playwright-result.json> \
+  --web-identity-evidence <web-identity.json> \
   --manual-review <review-record.json> \
+  --workflow-approval <workflow-approval.json> \
   --commit-sha <candidate-commit> \
   --evidence-dir <directory> \
   --json
 ```
 
-The command is an evidence aggregator and validator. It does not mirror or activate a release. Those operations remain explicit workflow steps through the existing publisher CLI.
+The gate command aggregates and validates evidence. Mirroring and preview activation remain explicit workflow steps through existing publisher commands.
 
-The gate parses `--expect-manifest-sha256` once with the HPA-227 SHA-256 validator. The resulting canonical lowercase value is passed unchanged to:
+For authorization, `PUBLIC_ASSET_PREVIEW_ID` must be set explicitly on the Vercel preview build. Branch-derived IDs remain valid for ordinary previews but are not accepted as release-gate authority. The same literal is passed as `--preview-id`.
 
-- the R2 deep-verification command;
-- production-to-preview mirror verification;
-- preview activation;
-- public candidate verification;
-- public active-release verification;
-- browser evidence validation;
-- manual-review validation;
-- final activation-readiness assertion.
+Preview runs reject a web base URL equal to the configured production web origin. Production smoke requires the configured production origin.
 
-Each boundary independently computes or reads its observed manifest checksum and compares it with this one expected value.
-
-## Public-delivery verifier
-
-The current R2 delivery verifier is specialized to one story and preview ID and always reads `current.json`. Refactor it into a reusable service while preserving a compatibility wrapper for the existing smoke command.
-
-### Input
+## Public release verification
 
 ```ts
 interface PublicReleaseVerificationInputV1 {
@@ -278,57 +181,18 @@ interface PublicReleaseVerificationInputV1 {
 }
 ```
 
-Validation rules:
+Rules:
 
-- Candidate mode requires `releaseId`.
-- Active mode rejects a caller-supplied release override; it resolves the release from `current.json`.
-- `expectedManifestSha256`, when present, is the canonical value parsed by the gate coordinator.
-- `assetBaseUrl` and `browserOrigin` are HTTPS and credential-free.
-- Omitted identities are validated type-qualified logical identities.
+- candidate mode requires `releaseId`;
+- active mode rejects a caller-supplied release override and resolves it from `current.json`;
+- `expectedManifestSha256` is optional only for compatibility use of the generic verifier;
+- it is mandatory for authorization, final aggregation, activation assertion, and production smoke;
+- base/origin URLs are HTTPS and credential-free;
+- omitted identities are validated qualified identities.
 
-### Active-release mode
+Candidate mode fetches the immutable manifest directly without requiring `current.json`. Active mode fetches and validates the pointer, derives the immutable manifest path, verifies pointer checksum, and validates the pointer/manifest pair.
 
-1. Fetch the target's `current.json`.
-2. Validate pointer schema and publication path.
-3. Derive the release ID and expected manifest path from the validated pointer.
-4. Fetch the immutable manifest.
-5. Verify manifest bytes against `pointer.manifestSha256`.
-6. When a gate-level expected checksum is supplied, require it to equal the pointer checksum.
-7. Validate the pointer/manifest pair and canonical release identity.
-8. Verify all included objects and public-delivery behavior.
-
-### Immutable-candidate mode
-
-1. Derive the immutable manifest path with `getReleaseManifestPath()`.
-2. Fetch and validate the manifest without reading or requiring `current.json`.
-3. Verify the supplied expected checksum.
-4. Validate story ID, release ID, canonical release identity, and all included objects.
-
-Candidate mode is required so a production candidate can be checked through the public custom domain before any active pointer update.
-
-### Required checks
-
-- HTTPS asset base without credentials.
-- JSON content types for pointer and manifest.
-- Pointer revalidation directives and edge-cache bypass in active mode.
-- Immutable manifest cache headers and edge-cache eligibility.
-- CORS readable from the deployed web origin.
-- Runtime schema validity.
-- Exact manifest checksum and canonical release identity.
-- No forbidden prompt, source-path, or generation-metadata fields.
-- Every manifest variant path matches its digest and format.
-- Every unique included object exists.
-- Body byte length and SHA-256 match the manifest.
-- Correct `image/webp` or `image/avif` media type.
-- Correct immutable cache behavior.
-- Decoded dimensions match the manifest.
-- Browser decode succeeds for every required variant.
-- Manifest contains no identity classified as omitted in the candidate report.
-- Coverage has no unclassified or missing included keys.
-
-The existing R2 API deep verifier remains authoritative for storage-level verification. The public verifier proves the independently valuable custom-domain, CDN, CORS, and browser-facing properties.
-
-### Public verification result
+Both modes verify schema, canonical release identity, forbidden public fields, content-addressed paths, object existence, byte length, SHA-256, media type, immutable caching, decoded dimensions, browser decode, omission absence, and complete coverage.
 
 ```ts
 interface PublicReleaseVerificationResultV1 {
@@ -344,20 +208,9 @@ interface PublicReleaseVerificationResultV1 {
 }
 ```
 
-`releaseId` and `manifestSha256` are required in both modes:
+Candidate mode returns the validated supplied release and observed manifest digest. Active mode derives both required fields from validated public documents.
 
-- candidate mode returns the validated supplied release and observed manifest digest;
-- active mode derives the release from the validated pointer and derives the manifest digest from the fetched bytes before constructing the result.
-
-A compatibility CLI renders the existing human-readable PASS/FAIL format from this structured result.
-
-## Release-gate schemas
-
-Schemas use Zod and the repository's existing contract validators. V1 evidence schemas reject unknown fields unless a deliberate extension point is documented.
-
-### Browser scenario descriptor
-
-A generic gate cannot infer which dialogue changes a background, which route contains an intentional omission, or which choice reaches a representative branch. Those facts are explicit data:
+## Browser scenario
 
 ```ts
 interface VisualNovelGatePositionV1 {
@@ -377,9 +230,7 @@ interface VisualNovelGateScenarioV1 {
         portraitChanges: boolean;
     };
     bookmark: VisualNovelGatePositionV1;
-    omittedFallback: VisualNovelGatePositionV1 & {
-        identity: string;
-    };
+    omittedFallback: VisualNovelGatePositionV1 & { identity: string };
     choice: VisualNovelGatePositionV1 & {
         choiceIndex: number;
         expectedSceneId: string;
@@ -388,24 +239,9 @@ interface VisualNovelGateScenarioV1 {
 }
 ```
 
-Rules:
+The scenario is strictly validated, canonicalized, and SHA-256 hashed. HPA-233 owns the schema; HPA-231 owns final The Seventh Mirror values.
 
-- `identity` is a valid type-qualified asset identity.
-- Dialogue indexes are non-negative safe integers matching the reader URL contract.
-- The transition target is reachable through normal advancement.
-- `unrelatedStoryIds` contains at least one registered story distinct from `storyId`.
-- The descriptor is canonicalized and SHA-256 hashed.
-- Browser evidence records the scenario digest.
-
-Repository location:
-
-```text
-packages/e2e/fixtures/visual-release-gates/<storyId>.v1.json
-```
-
-HPA-233 owns the schema and fixture tests. HPA-231 owns the final The Seventh Mirror scenario values used during migration.
-
-### Manual visual-review record
+## Manual review and workflow trust
 
 ```ts
 interface VisualReviewRecordV1 {
@@ -425,20 +261,29 @@ interface VisualReviewRecordV1 {
 }
 ```
 
-Validation requirements:
+The record is release-bound review content, not authentication. The free-text reviewer is descriptive.
 
-- Story, preview ID, release ID, checksum, and scenario digest pass existing validators.
-- `reviewedAt` is canonical UTC ISO-8601.
-- Representative routes are non-empty same-origin path-and-query values.
-- Counts are non-negative safe integers and agree with the retained publisher report.
-- Approval requires representative desktop, mobile, transition, omission, portrait, and choice cases.
-- A rejected record always fails the release gate.
+Finalize runs in protected environment `visual-novel-release-approval` with required reviewer approval. The job records only information available to normal Actions context:
 
-The record is intentionally small. It records authorization evidence rather than becoming an artwork-review database.
+```ts
+interface WorkflowApprovalEvidenceV1 {
+    schemaVersion: 1;
+    repository: string;
+    workflowRef: string;
+    runId: number;
+    runAttempt: number;
+    jobId: string;
+    actor: string;
+    environment: 'visual-novel-release-approval';
+    conclusion: 'success';
+}
+```
 
-### Shared diagnostic stage vocabulary
+The human approver identity remains recoverable from GitHub's deployment/run audit trail. V1 does not require a deployments API call. An optional authenticated enrichment may add it later without changing authorization semantics.
 
-Both `verify-preview` and `smoke-production` use the same diagnostic schema and stage enum:
+If protected environments are unavailable, the runbook documents the weaker maintainer-only control and never calls the JSON record signed or authenticated.
+
+## Diagnostics
 
 ```ts
 type GateStageV1 =
@@ -451,6 +296,7 @@ type GateStageV1 =
     | 'coverage'
     | 'public-object'
     | 'browser-decode'
+    | 'web-identity'
     | 'reader-flow'
     | 'manual-review'
     | 'evidence-binding'
@@ -472,9 +318,9 @@ interface GateDiagnosticV1 {
 }
 ```
 
-Each command emits only the stages relevant to its execution, but troubleshooting documentation and automation consume one stable vocabulary.
+`web-identity` is used for deployed-reader identity failures. `evidence-binding` is reserved for mismatches between retained artifacts.
 
-### Final gate report
+## Final report schemas
 
 ```ts
 interface VisualNovelReleaseGateReportV1 {
@@ -495,8 +341,10 @@ interface VisualNovelReleaseGateReportV1 {
         r2Candidate: GateCheckV1;
         publicCandidate: GateCheckV1;
         publicActiveRelease: GateCheckV1;
+        webIdentity: GateCheckV1;
         browserFlows: GateCheckV1;
         manualReview: GateCheckV1;
+        workflowApproval: GateCheckV1;
         productionPointerUnchanged: GateCheckV1;
     };
     evidence: GateEvidenceReferenceV1[];
@@ -515,209 +363,160 @@ interface GateEvidenceReferenceV1 {
         | 'publisher-report'
         | 'r2-verification'
         | 'public-verification'
+        | 'web-identity'
         | 'playwright-result'
         | 'manual-review'
+        | 'workflow-approval'
         | 'pointer-snapshot';
     path: string;
     sha256: string;
     mediaType: string;
 }
+
+interface WebIdentityEvidenceV1 {
+    schemaVersion: 1;
+    target: 'preview' | 'production';
+    webBaseUrl: string;
+    assetEnvironment: 'preview' | 'production';
+    previewId?: string;
+    releaseId: string;
+    manifestSha256: string;
+    pointerRequestUrl: string;
+    manifestRequestUrl: string;
+}
 ```
 
-### Binding rules
+All V1 schemas reject unknown fields. The final result passes only when every required check passes and all evidence agrees on story, preview namespace, release, manifest checksum, commit, scenario digest, review digest, web identity, and workflow authorization.
 
-All evidence agrees on:
+## Output and exit behavior
 
-- Story ID.
-- Preview namespace where applicable.
-- Immutable release ID.
-- Manifest byte checksum.
-- Candidate commit SHA where applicable.
-- Browser scenario digest.
-- Manual-review digest.
+The release-gate subcommands reuse the existing `assets` binary taxonomy:
 
-The final report is `passed` only when every required check is `passed`. Missing or `not-run` evidence is failure.
+- `0`: success or no-op;
+- `1`: configuration error;
+- `2`: input, evidence-schema, coverage, verification, or integrity failure;
+- `3`: storage, environment, or prerequisite unavailable;
+- `4`: delegated publisher concurrency conflict;
+- `5`: guarded activation-target or operation failure.
 
-### Output and exit rules
+This is not a widening from a `0/1` binary: the existing publisher already uses `0`–`5`. Existing meanings remain unchanged. Workflows treat any non-zero as failure unless explicitly testing a documented code such as conflict `4`.
 
-- `--json` writes one valid report document to stdout.
-- Progress and diagnostics go to stderr.
-- Human mode summarizes stages and retained evidence paths.
-- Exit code `0`: complete gate passed.
-- Exit code `1`: gate failed due to verification.
-- Exit code `2`: invalid input or evidence schema.
-- Exit code `3`: environment or prerequisite unavailable.
-- Existing publisher exit codes remain unchanged and are not reinterpreted.
+JSON mode writes exactly one report to stdout. Progress and diagnostics go to stderr.
 
-## Cross-system browser verification
+## Stable deployed-reader identity
 
-Add `packages/e2e/tests/visual-novel-release-gate.spec.ts`.
+Identity attributes live on the stable `ReaderShell` element with `data-testid="reader-ready"`, because `VisualNovelReader` unmounts during text-mode switches and may remount at responsive breakpoints.
 
-### Configuration
+When the visual runtime validates a release, `reader-ready` exposes:
 
-The suite reads validated environment variables:
+```text
+data-asset-environment="local|preview|production"
+data-asset-preview-id="<preview-id>"        # preview only
+data-asset-release-id="<release-id>"
+data-asset-manifest-sha256="<sha256>"
+```
 
+No separate deployment-environment attribute is introduced. The authoritative question is which validated `AssetResolverSource` and pointer/manifest identity the reader uses.
+
+Identity persists across visual/text mode and responsive leaf swaps, and clears when runtime/story identity changes or becomes invalid.
+
+### Settled assertion
+
+1. Enter visual mode.
+2. Wait for `data-visual-release-state="ready"` on the visual reader.
+3. Require all target-appropriate identity attributes on `reader-ready`.
+4. Compare all values with gate inputs.
+5. Treat missing attributes, local fallback, wrong environment, wrong preview ID, wrong release/checksum, or local fixture requests as fatal `web-identity` failures.
+6. Switch text/visual and resize; require stable identity to remain unchanged, then reassert visual readiness.
+
+Network-observed pointer and manifest paths are retained as defense in depth.
+
+## Remote Playwright
+
+`packages/e2e/playwright.release-gate.config.ts`:
+
+- has no `webServer` and never starts `bun run dev`;
+- requires HTTPS `BASE_URL`;
+- rejects localhost/local fixture origin;
+- accepts `RELEASE_GATE_TARGET=preview|production`;
+- rejects the configured production origin for preview runs and requires it for production smoke;
+- defines Desktop Chromium and Mobile Chromium only;
+- explicitly matches release-gate and production-smoke specs;
+- emits structured evidence plus traces/screenshots.
+
+The test process does not set `PUBLIC_ASSET_*`; it verifies values baked into the deployed application.
+
+Required environment:
+
+- `RELEASE_GATE_TARGET`
 - `RELEASE_GATE_STORY_ID`
-- `RELEASE_GATE_PREVIEW_ID`
+- `RELEASE_GATE_PREVIEW_ID` for preview
 - `RELEASE_GATE_RELEASE_ID`
 - `RELEASE_GATE_MANIFEST_SHA256`
 - `RELEASE_GATE_SCENARIO`
-- `PUBLIC_ASSET_BASE_URL`
-- `PUBLIC_ASSET_ENVIRONMENT=preview`
-- `PUBLIC_ASSET_PREVIEW_ID`
+- `AQUILA_PRODUCTION_WEB_ORIGIN`
 - `BASE_URL`
 
-Do not hard-code The Seventh Mirror-specific lines in the generic test implementation.
+Required browser flow:
 
-### Required flow
+1. Open the configured locale's non-zero direct route in visual mode.
+2. Wait for ready and require complete stable web identity.
+3. Assert pointer/manifest requests use expected paths.
+4. Exercise background and portrait transition.
+5. Switch visual/text and preserve exact line and identity.
+6. Resize desktop/mobile and preserve exact line and identity.
+7. Open/close history with focus restoration.
+8. Restore bookmark.
+9. Exercise intentional omission/unavailable fallback.
+10. Select deterministic choice.
+11. Reload, prove unrelated story chunks were not requested, and preserve locale in the canonical URL.
 
-1. Open a direct non-zero story, scene, and dialogue URL in visual mode.
-2. Assert that the reader reports the expected release ID and ready visual state.
-3. Advance across a known background and portrait change.
-4. Switch visual to text and back while preserving the exact active line.
-5. Resize between desktop and mobile dimensions while preserving the exact active line.
-6. Open and close dialogue history with focus restoration.
-7. Restore a bookmark and verify the exact route and line.
-8. Exercise an intentionally omitted or unavailable visual while dialogue remains usable.
-9. Select a deterministic choice and load the expected next scene.
-10. Reload and assert that no unrelated story dialogue chunk was requested.
+HPA-233 does not add a locale-switch interaction; HPA-234 and ordinary E2E retain cross-locale ownership.
 
-### Browser matrix
+### Existing browser smoke prior art
 
-Required release-gate projects:
+`packages/e2e/tests/r2-delivery.spec.ts` remains the fixed HPA-229 seeded smoke for `the_seventh_mirror/smoke`. HPA-233 extracts/reuses its page CORS fetch, browser decode, dimension, and pointer-revalidation helpers. The fixed smoke and real-candidate gate are defense in depth at different boundaries; helper logic must not be copied.
 
-- Desktop Chromium.
-- Mobile Chromium.
+## Preview workflow
 
-The full ordinary E2E workflow retains Mobile Safari and broader regression coverage.
+Add `.github/workflows/visual-novel-release-gate.yml` with phase `prepare|finalize`, candidate commit, story, explicit preview ID, release ID, checksum, publisher-report reference, deployed preview URL, scenario, prepare evidence reference, and finalize review record.
 
-### Evidence
+Both phases have PostgreSQL 16, `DATABASE_URL`, pinned dependencies/browsers, and completed web migrations before local Tier 1 Playwright.
 
-Emit a machine-readable Playwright result summary containing:
+### Prepare
 
-- Project name.
-- Story, preview, release, and manifest identity.
-- Scenario digest.
-- Pass/fail status.
-- Trace and screenshot paths for failures.
+1. Checkout candidate.
+2. Provision/check PostgreSQL, install dependencies/browsers, run migrations.
+3. Run Tier 1 and emit canonical hermetic evidence.
+4. Validate retained publisher evidence.
+5. Capture production pointer.
+6. Deep-verify production candidate through R2.
+7. Publicly verify candidate mode.
+8. Mirror/activate only explicit preview namespace.
+9. Publicly verify active preview mode.
+10. Run remote web-identity preflight.
+11. Run Desktop/Mobile Chromium release flows.
+12. Capture production pointer and prove unchanged.
+13. Upload non-authorizing review evidence.
 
-The gate report references this file by path and digest. It does not parse the HTML report.
+### Finalize
 
-## Workflow relationship and preview authorization workflow
+1. Checkout same candidate and enter protected environment.
+2. Validate prepare evidence.
+3. Reuse Tier 1 only when commit, lockfile, toolchain, command-set, and browser matrix match; otherwise rerun PostgreSQL/migrations/Tier 1.
+4. Rerun all live R2 deep, public candidate, idempotent preview mirror/activation, public active, web identity, and browser checks.
+5. Validate manual review.
+6. Prove production pointer unchanged.
+7. Emit workflow approval evidence and final report.
 
-### HPA-230 workflow: publisher regression
+Prepare cannot authorize production. Finalize cannot reuse live evidence from prepare.
 
-During HPA-233 implementation, update the GitHub Actions display name of `.github/workflows/r2-publisher-preview.yml` to:
+Separate prepare/finalize timeouts are based on measured successful stage durations plus 50%, capped at 60 minutes. Per-stage timing is retained.
 
-```yaml
-name: R2 Publisher Regression Gate
-```
-
-It continues to own:
-
-- controlled fixture candidate A/B/C behavior;
-- unchanged publication no-op;
-- create-or-reuse semantics;
-- preview activation and pointer-only changes;
-- stale advisory conflict;
-- rollback;
-- publisher-level production-pointer proof;
-- lower-level public smoke.
-
-It remains manually triggerable and may also be used as periodic infrastructure regression evidence. HPA-233 does not make every story authorization depend on rerunning this full scenario.
-
-### HPA-233 workflow: story-release authorization
-
-Add `.github/workflows/visual-novel-release-gate.yml` with `workflow_dispatch` inputs:
-
-- Candidate commit SHA.
-- Story ID.
-- Preview ID.
-- Production candidate release ID.
-- Manifest checksum.
-- Publisher candidate-report path or artifact reference.
-- Deployed web preview URL.
-- Browser scenario path.
-- Phase: `prepare` or `finalize`.
-- Manual-review record path, required only for `finalize`.
-- Optional evidence-retention label.
-
-The same workflow is intentionally run in two phases:
-
-- `prepare` creates or reuses the isolated preview, runs automated checks, and uploads non-authorizing evidence for the human reviewer. It does not emit a passing final gate report.
-- `finalize` reruns the bounded automated checks against the same immutable identity, validates the completed manual-review record, and emits the final authorizing report.
-
-Rerunning automated checks in `finalize` avoids trusting cross-run mutable state or requiring the gate to download and bless an earlier workflow artifact as sufficient by itself. Mirroring and preview activation are expected to be idempotent or no-op for the same release.
-
-The workflow reuses:
-
-- `r2-gate-capture-state.ts` for before/after snapshots;
-- the existing R2 store and publisher CLI;
-- extracted shared pointer-only assertion helpers where useful;
-- the parameterized public verifier.
-
-It does not rerun:
-
-- controlled source revisions;
-- unchanged-candidate no-op proof;
-- stale-conflict coordination;
-- rollback regression;
-- publisher fixture construction.
-
-Those remain HPA-230 workflow responsibilities.
-
-### Required permissions and secrets
-
-- `contents: read`.
-- Scoped R2 publisher credentials needed for read, mirror, and preview-pointer operations.
-- No production activation confirmation is available to this workflow.
-- If Cloudflare cannot provide a preview-only credential, command construction and before/after proof still prohibit production mutation.
-
-### Prepare-phase sequence
-
-1. Checkout the exact candidate commit.
-2. Install pinned dependencies and Playwright browsers.
-3. Run bounded Tier 1 deterministic CI.
-4. Load and validate the retained production candidate publisher report.
-5. Capture the production pointer with the existing capture-state helper.
-6. Deep-verify the immutable production candidate through the R2 API.
-7. Publicly verify the immutable production candidate in candidate mode.
-8. Mirror the exact retained candidate to the requested preview namespace.
-9. Activate only the preview pointer using the existing conditional publisher path.
-10. Publicly verify the preview active release in active mode.
-11. Run Desktop Chromium and Mobile Chromium release-gate Playwright flows against the deployed web preview.
-12. Capture the production pointer again and prove it is unchanged.
-13. Upload the automated evidence, preview routes, traces, screenshots, pointer snapshots, checksums, and digest metadata for human review.
-14. Write a preparation summary that clearly states it is not production authorization.
-
-### Finalize-phase sequence
-
-1. Checkout the exact candidate commit and require the same story, preview, release, manifest checksum, and scenario identity used for review.
-2. Rerun bounded Tier 1, R2 deep verification, public candidate verification, idempotent mirror/preview activation, public active verification, and Desktop/Mobile Chromium flows.
-3. Validate the completed manual visual-review record against the exact release, checksum, preview ID, scenario digest, and coverage.
-4. Capture the production pointer before and after finalization and prove it is unchanged.
-5. Assemble and validate the final gate report.
-6. Upload all final evidence and write the release ID, manifest checksum, report digest, artifact digest, and workflow run ID to the job summary.
-
-### Workflow invariants
-
-- The production candidate was published with `--no-activate` before this workflow.
-- The workflow uses the retained publisher report; it does not re-encode source inputs.
-- Preview activation is explicit and separate from gate aggregation.
-- No command includes production confirmation or requests production activation.
-- Production pointer snapshots are mandatory evidence.
-- A failure at any stage prevents a passing report.
-- Prepare phase cannot emit a passing final report.
-- Finalize phase requires an approved manual-review record and reruns the bounded automated checks.
-- Safe partial artifacts are uploaded for diagnosis.
-- The expected manifest checksum is one validated value passed unchanged across all stages.
-
-## Production activation handoff
-
-HPA-231 consumes the retained passing report through a read-only assertion command:
+## Production handoff
 
 ```bash
-bun --filter @aquila/infra-cloudflare release-gate assert-activation-ready \
+bun --filter @aquila/infra-cloudflare assets release-gate assert-activation-ready \
   --report <gate-report.json> \
   --story <story-id> \
   --release <release-id> \
@@ -725,224 +524,97 @@ bun --filter @aquila/infra-cloudflare release-gate assert-activation-ready \
   --commit-sha <candidate-commit>
 ```
 
-The assertion verifies:
+The command verifies report schema/status, exact identity, every required check, evidence digests, manual review, workflow approval, web identity, and production-pointer proof. It never activates.
 
-- Report schema and passing status.
-- Story, release, checksum, scenario, review, and commit match the intended activation.
-- Every required check passed.
-- Every referenced evidence digest matches the retained file.
-- Production-pointer-unchanged proof passed.
+HPA-231 then uses the existing publisher atomic activation command.
 
-The assertion command does not call activation. HPA-231 then invokes the existing publisher command to activate the verified stored release atomically.
-
-A report authorizes only the exact immutable release and candidate commit it names.
-
-## Post-activation smoke
-
-Expose a non-destructive command:
+## Production smoke
 
 ```bash
-bun --filter @aquila/infra-cloudflare release-gate smoke-production \
+bun --filter @aquila/infra-cloudflare assets release-gate smoke-production \
   --story <story-id> \
-  --release <expected-release-id> \
+  --release <release-id> \
   --expect-manifest-sha256 <sha256> \
-  --asset-base-url <production-asset-domain> \
-  --web-base-url <production-web-url> \
+  --asset-base-url <production-assets> \
+  --web-base-url <production-web> \
   --json
 ```
 
-Required checks:
+Checks production pointer and manifest integrity, representative decode, stable production web identity with no preview ID, reader opening/progression, pointer revalidation, and no mutation.
 
-- Production `current.json` exists and names the expected release.
-- Pointer and immutable manifest integrity pass.
-- Representative background and portrait objects decode.
-- The reader opens the expected direct route and advances.
-- Pointer revalidation behavior is correct.
-- No write operation is attempted.
+## Failure ownership
 
-`smoke-production` emits `GateDiagnosticV1` and uses the shared `GateStageV1` vocabulary. It primarily emits `input`, `pointer`, `manifest`, `public-object`, `browser-decode`, `reader-flow`, and `post-activation-smoke`.
+Reuse HPA-230 tests for idempotency, failed-candidate atomicity, conditional activation, conflict protection, and verified rollback.
 
-This command validates the cutover, not the entire candidate qualification process.
+HPA-233 adds tests for active/candidate public verification, invalid public documents, wrong checksum/headers/CORS/dimensions, missing/corrupt objects, forbidden fields, incomplete coverage, omitted identities present, browser/scenario mismatch, missing settled identity, identity changes across mode/layout swaps, wrong/derived preview ID, remote local-server fallback, manual-review mismatch/rejection, missing/tampered evidence, workflow-approval tampering, Tier 1 reuse identity mismatch, production-pointer mismatch, and production-smoke expected-release mismatch.
 
-## Failure simulation ownership
+## HPA-216 acceptance snapshot
 
-HPA-233 references HPA-230 tests for:
-
-- Unchanged-release idempotency.
-- Failed-candidate atomicity.
-- Concurrent-pointer protection.
-- Conditional activation.
-- Verified-release rollback.
-
-HPA-233 adds tests for:
-
-- Active and immutable-candidate public-verification modes.
-- Invalid public pointer and manifest.
-- Pointer checksum mismatch.
-- Wrong public content type, dimensions, CORS, or cache directives.
-- Missing or corrupt public objects.
-- Forbidden prompt or source fields.
-- Coverage evidence with unclassified or missing included identities.
-- Omitted identity incorrectly present in the manifest.
-- Browser-result release or scenario mismatch.
-- Manual-review story, preview, release, checksum, or scenario mismatch.
-- Rejected manual review.
-- Missing required evidence.
-- Tampered evidence digest.
-- Production-pointer before/after mismatch.
-- Post-activation expected-release mismatch.
-- A different expected checksum being introduced by any stage.
-
-Tests use local stores, fixture HTTP servers, or mocked fetch implementations unless the behavior specifically requires the gated preview workflow.
-
-## Canonical HPA-216 acceptance snapshot and ownership matrix
-
-The criteria below were transcribed from Linear HPA-216 on 2026-08-02. This section is the canonical in-repository snapshot used by HPA-233 implementation and review. If Linear HPA-216 changes, the implementation PR updates this table in the same change.
-
-| ID | HPA-216 acceptance criterion | Primary existing owner/evidence | HPA-233 or HPA-231 completion evidence |
+| ID | Acceptance criterion | Primary owner | HPA-233/HPA-231 evidence |
 |---|---|---|---|
-| AC-01 | The Seventh Mirror can be opened and progressed in visual novel mode on desktop and mobile. | HPA-228 visual-reader tests. | HPA-233 deployed preview flow; HPA-231 production smoke. |
-| AC-02 | Text and visual modes share one progression state and preserve the exact active dialogue line when switching. | HPA-234 session tests; HPA-228 reader tests. | HPA-233 preview flow at a non-zero line. |
-| AC-03 | Compiled logical background and portrait keys resolve through a validated, versioned, prompt-free runtime manifest. | HPA-227 contracts; HPA-230 publisher verification. | HPA-233 candidate and active public verification. |
-| AC-04 | The visual MVP displays one active portrait with deterministic left, center, or right placement. | HPA-227 presentation metadata; HPA-228 tests. | HPA-233 representative preview assertion. |
-| AC-05 | Background and portrait transitions do not flash, reset progression, or violate reduced-motion preferences. | HPA-228 local E2E and reduced-motion tests. | HPA-233 representative transition proves deployed release integration; ordinary E2E retains reduced-motion coverage. |
-| AC-06 | Choices, bookmarks, direct scene URLs, locale routing, browser navigation, and responsive reader swaps continue to work. | HPA-234 and HPA-228 tests. | HPA-233 direct URL, bookmark, choice, and responsive-layout flow. |
-| AC-07 | Missing, invalid, or slow assets fall back cleanly without blocking story progression. | HPA-228 fallback tests. | HPA-233 intentional omission or unavailable-asset preview case. |
-| AC-08 | Changed images can be published without a Vercel application deployment when logical keys remain unchanged. | HPA-230 content-addressed publisher and activation tests. | HPA-231 migration/controlled revision evidence; referenced by HPA-233 matrix, not duplicated. |
-| AC-09 | Asset publication is atomic and can be rolled back to a previously verified release. | HPA-230 tests and R2 Publisher Regression Gate. | HPA-231 activation and rollback decision record; no duplicate HPA-233 regression. |
-| AC-10 | Public binary objects and immutable manifests use content-addressed or release-versioned URLs with appropriate cache headers. | HPA-227 paths; HPA-229 verifier; HPA-230 candidate verifier. | HPA-233 public candidate and active-release verification. |
-| AC-11 | The mutable story pointer has a documented revalidation policy. | HPA-227 policy; HPA-229 verifier/runbook. | HPA-233 active verification and production smoke. |
-| AC-12 | The public runtime manifest and public CDN metadata expose no generation prompts. | HPA-227 schema; HPA-229/230 verification. | HPA-233 forbidden-field public check. |
-| AC-13 | Production visual assets are no longer bundled into the Vercel deployment or treated as canonical runtime binaries in Git. | HPA-231 migration and repository-cleanup scope. | HPA-231 retained migration evidence; HPA-233 maps but does not perform cleanup. |
-| AC-14 | Opening one story does not eagerly load every registered story's dialogue bundle. | HPA-232 lazy-loading E2E. | HPA-233 deployed preview network assertion. |
-| AC-15 | Bundle measurements demonstrate the selected story is emitted and loaded independently. | HPA-232 build assertions and performance report. | Existing evidence is referenced; no new HPA-233 measurement. |
-| AC-16 | Unit tests cover manifest validation, URL resolution, CJK/nested keys, cache/fallback behavior, and reader-state preservation. | HPA-227, HPA-228, HPA-234 unit suites. | Tier 1 command and checked-in ownership matrix. |
-| AC-17 | Playwright tests cover desktop and mobile visual mode, a scene transition, reader-mode switching, missing assets, and a choice branch. | HPA-228 local Playwright suite. | HPA-233 deployed preview Desktop/Mobile Chromium flow. |
-| AC-18 | The asset publisher verifies metadata and decoding before changing the active release pointer. | HPA-230 candidate verifier and tests. | R2 Publisher Regression Gate plus retained candidate report; not reimplemented. |
-| AC-19 | The publishing and rollback workflow is documented. | HPA-229 and HPA-230 runbooks. | HPA-233 activation handoff and HPA-231 migration runbook. |
+| AC-01 | Seventh Mirror opens and progresses in visual mode on desktop/mobile. | HPA-228 | Deployed preview flow; production smoke. |
+| AC-02 | Text/visual modes preserve exact active line. | HPA-234/HPA-228 | Non-zero deployed mode swap. |
+| AC-03 | Logical visual keys resolve through validated prompt-free manifest. | HPA-227/HPA-230 | Candidate and active public verification. |
+| AC-04 | One portrait uses deterministic left/center/right placement. | HPA-227/HPA-228 | Representative deployed assertion. |
+| AC-05 | Transitions do not flash/reset and respect reduced motion. | HPA-228 | Deployed transition; ordinary reduced-motion E2E. |
+| AC-06 | Choices, bookmarks, direct URLs, locale routing, navigation, responsive swaps work. | HPA-234/HPA-228 | Deployed direct URL/bookmark/choice/layout and locale preservation; locale switching remains ordinary E2E. |
+| AC-07 | Missing/invalid/slow assets fall back without blocking. | HPA-228 | Intentional omission/unavailable preview case. |
+| AC-08 | Image changes publish without Vercel rebuild when keys unchanged. | HPA-230 | HPA-231 controlled migration evidence. |
+| AC-09 | Publication is atomic and rollback works. | HPA-230 | Regression gate and HPA-231 record. |
+| AC-10 | Objects/manifests use immutable paths/cache headers. | HPA-227/229/230 | Public candidate/active verification. |
+| AC-11 | Mutable pointer has revalidation policy. | HPA-227/HPA-229 | Active verification and production smoke. |
+| AC-12 | Public manifest/CDN metadata expose no prompts. | HPA-227/229/230 | Forbidden-field public check. |
+| AC-13 | Production visuals leave Vercel bundle/Git canonical ownership. | HPA-231 | Migration cleanup evidence. |
+| AC-14 | Opening one story does not eagerly load all stories. | HPA-232 | Deployed network assertion. |
+| AC-15 | Bundle measurements prove independent loading. | HPA-232 | Existing measurement evidence. |
+| AC-16 | Unit tests cover schemas, URLs, CJK paths, cache/fallback, state. | HPA-227/228/234 | Tier 1 and ownership matrix. |
+| AC-17 | Playwright covers desktop/mobile, transition, mode switch, missing asset, choice. | HPA-228 | Deployed Desktop/Mobile Chromium flow. |
+| AC-18 | Publisher verifies metadata/decode before pointer change. | HPA-230 | Regression gate and retained report. |
+| AC-19 | Publishing and rollback are documented. | HPA-229/HPA-230 | HPA-233 handoff and HPA-231 runbook. |
 
-The implementation converts this design table into a checked-in matrix with exact commands and file paths. Rows that rely on manual visual judgement identify the review-record case ID and justification. Duplicate checks are documented as defense in depth only when they verify different boundaries.
+Implementation expands this table with exact commands and file paths. Duplicate checks are documented only as defense in depth across distinct boundaries.
 
 ## Implementation slices
 
-### Slice 1: ownership matrix and schemas
+### Slice 1 — Schemas and ownership matrix
 
-- Add the exact command/file-path HPA-216 ownership matrix from the canonical snapshot.
-- Define scenario, gate report, evidence reference, diagnostic, public-verification, and manual-review schemas.
-- Add strict parser and cross-evidence binding tests.
-- Define the shared stage and error-code vocabulary.
+Define all strict V1 schemas above, exact union literals, shared diagnostics, Tier 1 evidence, and the command/path ownership matrix.
 
-### Slice 2: reusable public verifier
+### Slice 2 — Reusable public verifier
 
-- Extract hard-coded public verification into parameterized services.
-- Add immutable-candidate mode.
-- Preserve the existing smoke CLI as a compatibility wrapper.
-- Keep result release identity required in both modes.
-- Pass the one parsed expected checksum through every verifier.
-- Add structured JSON output and safe diagnostics.
+Extract parameterized public verification, add candidate mode, preserve the existing smoke wrapper, require result identity, reuse browser-delivery helpers, and add safe structured output.
 
-### Slice 3: gate coordinator
+### Slice 3 — Gate coordinator
 
-- Load, hash, validate, and bind all evidence.
-- Produce human and JSON final reports.
-- Add `assert-activation-ready`.
-- Prove the coordinator cannot call pointer mutation APIs.
+Validate/hash/bind evidence, produce reports, implement activation assertion, reuse existing exit taxonomy, and prove no pointer mutation APIs are reachable.
 
-### Slice 4: cross-system Playwright flow
+### Slice 4 — Stable web observability and Playwright
 
-- Add scenario descriptor schema and release-gate spec.
-- Select Desktop Chromium and Mobile Chromium explicitly.
-- Emit structured Playwright evidence.
-- Consolidate the unrelated-story network assertion into the release flow without removing broader lazy-loading regression tests.
-- Leave Mobile Safari in the ordinary full E2E workflow.
+Flow validated identity to stable `ReaderShell`, preserve/clear it correctly, add settled identity assertions, add remote config and explicit project membership, reuse `r2-delivery` helpers, emit web/browser evidence, and preserve locale.
 
-### Slice 5: workflow integration
+### Slice 5 — Workflow integration
 
-- Add `verify:visual-novel-ci`.
-- Rename the existing workflow display name to R2 Publisher Regression Gate.
-- Add the separate HPA-233 visual-novel release-gate workflow.
-- Reuse `r2-gate-capture-state.ts` and shared pointer-proof helpers.
-- Avoid duplicating controlled revision, stale conflict, and rollback regression steps.
-- Retain reports, traces, screenshots, and digest metadata.
+Add documented Tier 1 database prerequisite, rename regression display name, add prepare/finalize workflow, enforce explicit preview ID, protected finalization, exact approval evidence, digest-bound Tier 1 reuse, live-check reruns, measured timeouts, and retained artifacts.
 
-### Slice 6: production handoff and runbook
+### Slice 6 — Handoff and runbook
 
-- Add post-activation smoke using the shared diagnostic schema.
-- Document HPA-231's exact qualification, activation, smoke, and rollback decision sequence.
-- Add troubleshooting guidance keyed by shared stage and error code.
-- Document workflow ownership and when each gate is run.
+Add production smoke, qualification/activation/rollback runbook, troubleshooting by stable stage/code, workflow ownership, database setup, and evidence-retention guidance.
 
-## Security and mutation safety
+## Acceptance
 
-1. Gate aggregation and public verification are read-only.
-2. The preview workflow invokes mutation only through the existing publisher and only for a validated preview target.
-3. Production activation requires the existing exact story confirmation and is absent from the gate workflow.
-4. Production pointer snapshots are required evidence, not best-effort logging.
-5. Reports sanitize diagnostics and never include credentials or private source details.
-6. Evidence paths are restricted to the workflow evidence directory; path traversal and external references are rejected.
-7. Evidence file hashes are computed by the gate, not trusted from supplied metadata.
-8. Public URLs are HTTPS and credential-free.
-9. One canonical expected manifest checksum is used across the workflow.
-10. The HPA-230 regression workflow and HPA-233 release workflow have distinct names and responsibilities.
+Implementation is complete only when:
 
-## Operational flow for HPA-231
-
-1. Complete the production release plan and source inventory.
-2. Publish the production candidate with `--no-activate` and retain its publisher report.
-3. Deploy the candidate commit as a web preview configured for the chosen asset preview namespace.
-4. Run the HPA-233 workflow in `prepare` phase through candidate verification, preview mirroring, preview activation, public verification, and browser flows.
-5. Perform representative visual review against the prepared preview and retain the release-bound review record.
-6. Run the same workflow in `finalize` phase; it reruns bounded automated checks and emits the final report with approved human evidence.
-7. Run `assert-activation-ready` against the exact candidate.
-8. Activate production using the existing publisher atomic activation command.
-9. Run the non-destructive production smoke.
-10. Decide whether to retain the release, roll back to a previously verified release, or investigate. Execution evidence and rollback decisions belong to HPA-231.
-
-The HPA-230 R2 Publisher Regression Gate is run independently when publisher lifecycle behavior or R2 integration needs regression evidence. It is not the per-story production authorization record.
-
-## Documentation deliverables
-
-- Canonical HPA-216 acceptance-to-test ownership matrix with exact commands and paths.
-- Release-gate CLI and schema documentation.
-- Manual visual-review record template.
-- Visual-novel release-gate workflow runbook.
-- R2 Publisher Regression Gate ownership note.
-- HPA-231 activation checklist.
-- Post-activation smoke instructions.
-- Troubleshooting guide keyed by shared stage and code.
-- Fixture ownership notes.
-
-## Acceptance mapping
-
-The implementation is complete when:
-
-- Ordinary Tier 1 CI remains credential-free and fixture-sized.
-- Tier 1 explicitly uses Desktop Chromium and Mobile Chromium, while ordinary E2E retains Mobile Safari.
-- A candidate immutable release is verified before preview or production pointer activation through public candidate mode.
-- Public custom-domain and browser behavior are verified separately from R2 API storage verification.
-- Desktop and mobile reader flows prove exact progression state across mode and layout changes.
-- Omitted or failed visuals do not block dialogue or choices.
-- Unrelated story dialogue is not eagerly requested.
-- Existing publisher idempotency, atomicity, conflict, and rollback tests and workflow are referenced rather than duplicated.
-- The two R2 workflows have explicit non-overlapping ownership and distinguishable names.
-- Human review is required only for visual judgement and cannot be reused across releases.
-- The final result identifies and binds the exact verified release, checksum, commit, scenario, and review.
-- Active-mode public verification returns a required release ID derived from the pointer.
-- Both release qualification and production smoke use the shared diagnostic vocabulary.
-- The preview workflow cannot update production and proves that it did not.
-- HPA-231 has one documented assertion to run before production activation.
-- Production smoke is non-destructive and returns a clear result.
-- Failures identify story, release, target, identity or path where relevant, and a stable stage.
-- The checked-in HPA-216 matrix is self-contained and reviewable without opening Linear.
-
-## Open implementation details
-
-The following choices may be finalized during implementation planning without changing this design:
-
-- Whether `release-gate` is a subcommand of the existing `assets` CLI or a sibling CLI entry point inside the same package.
-- Whether the HPA-230 workflow filename is renamed or only its display name changes.
-- The exact JSON reporter integration used to derive structured Playwright evidence.
-- Whether deterministic CI is implemented as a root shell script, a Bun script, or a Turbo task.
-- Exact artifact retention duration, subject to repository policy.
-
-These are implementation mechanics. The ownership boundaries, workflow separation, evidence binding, mutation safety, required checks, shared diagnostics, and HPA-231 handoff are fixed by this design.
+- the single canonical schema compiles with exact checks and evidence kinds;
+- Tier 1 documents and satisfies PostgreSQL/migration prerequisites without Cloudflare credentials/external network;
+- explicit preview ID is identical and validated on web build and gate sides;
+- browser waits for ready, then fails on missing or mismatched stable identity;
+- identity survives reader-mode and responsive leaf swaps;
+- remote Playwright cannot start/use local fixtures;
+- release-gate runs Desktop/Mobile Chromium and lazy-loading scope matches the command;
+- public candidate and active boundaries both verify the exact checksum;
+- existing seeded `r2-delivery` smoke and real-candidate gate reuse helpers with documented defense-in-depth roles;
+- review is release-bound while authorization comes from protected workflow controls;
+- final report binds CI, publisher, R2, public, web, browser, review, approval, and pointer evidence;
+- finalize may reuse only exact hermetic Tier 1 evidence and reruns every live check;
+- production activation remains separate and smoke remains non-destructive;
+- failures identify a stable stage and safe context.

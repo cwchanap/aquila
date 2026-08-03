@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { constants, realpathSync, statSync } from 'node:fs';
+import { constants, realpathSync, statSync, type Stats } from 'node:fs';
 import { open, type FileHandle } from 'node:fs/promises';
 import { isAbsolute, resolve, sep } from 'node:path';
 import {
@@ -54,6 +54,44 @@ export type CreateEvidenceReferenceInputV1 = Omit<
     'sha256'
 >;
 
+interface EvidenceFileIdentity {
+    device: number;
+    inode: number;
+}
+
+function evidenceFileIdentity(
+    stats: Pick<Stats, 'dev' | 'ino'>
+): EvidenceFileIdentity {
+    if (
+        !Number.isSafeInteger(stats.dev) ||
+        !Number.isSafeInteger(stats.ino) ||
+        stats.dev <= 0 ||
+        stats.ino <= 0
+    ) {
+        throw gateInputError(
+            'evidence/path-outside-root',
+            'Evidence path cannot be read safely'
+        );
+    }
+    return { device: stats.dev, inode: stats.ino };
+}
+
+function assertEvidenceFileIdentity(
+    expected: EvidenceFileIdentity,
+    actual: Pick<Stats, 'dev' | 'ino'>
+): void {
+    const actualIdentity = evidenceFileIdentity(actual);
+    if (
+        actualIdentity.device !== expected.device ||
+        actualIdentity.inode !== expected.inode
+    ) {
+        throw gateInputError(
+            'evidence/path-outside-root',
+            'Evidence path changed after validation'
+        );
+    }
+}
+
 function isPathWithin(root: string, candidate: string): boolean {
     return candidate.startsWith(`${root}${sep}`);
 }
@@ -88,15 +126,10 @@ function assertSupportedEvidenceMediaType(
     }
 }
 
-/**
- * Resolves an evidence artifact only after proving that both its lexical path
- * and its canonical filesystem path remain under the configured evidence
- * directory. The returned value is internal-only and must not be rendered.
- */
-export function resolveEvidencePath(
+function resolveEvidenceFile(
     root: string,
     relativePath: string
-): string {
+): { path: string; identity: EvidenceFileIdentity } {
     if (isAbsolute(relativePath)) {
         throw gateInputError(
             'evidence/path-absolute',
@@ -149,7 +182,19 @@ export function resolveEvidencePath(
             'Evidence path must resolve to a regular file'
         );
     }
-    return realPath;
+    return { path: realPath, identity: evidenceFileIdentity(fileStats) };
+}
+
+/**
+ * Resolves an evidence artifact only after proving that both its lexical path
+ * and its canonical filesystem path remain under the configured evidence
+ * directory. The returned value is internal-only and must not be rendered.
+ */
+export function resolveEvidencePath(
+    root: string,
+    relativePath: string
+): string {
+    return resolveEvidenceFile(root, relativePath).path;
 }
 
 export function hashCanonicalEvidence(value: unknown): string {
@@ -158,7 +203,10 @@ export function hashCanonicalEvidence(value: unknown): string {
         .digest('hex');
 }
 
-async function readEvidenceFile(path: string): Promise<Buffer> {
+async function readEvidenceFile(
+    path: string,
+    expectedIdentity?: EvidenceFileIdentity
+): Promise<Buffer> {
     let handle: FileHandle | undefined;
     try {
         const noFollow = constants.O_NOFOLLOW;
@@ -172,11 +220,15 @@ async function readEvidenceFile(path: string): Promise<Buffer> {
             path,
             constants.O_RDONLY | noFollow | constants.O_NONBLOCK
         );
-        if (!(await handle.stat()).isFile()) {
+        const stats = await handle.stat();
+        if (!stats.isFile()) {
             throw gateInputError(
                 'evidence/path-not-regular-file',
                 'Evidence path must resolve to a regular file'
             );
+        }
+        if (expectedIdentity !== undefined) {
+            assertEvidenceFileIdentity(expectedIdentity, stats);
         }
         return await handle.readFile();
     } catch (cause) {
@@ -202,10 +254,23 @@ export async function hashEvidenceFile(path: string): Promise<string> {
     return createHash('sha256').update(bytes).digest('hex');
 }
 
-async function hashJsonEvidence(path: string): Promise<string> {
+async function hashValidatedEvidenceFile(
+    expectedIdentity: EvidenceFileIdentity,
+    path: string
+): Promise<string> {
+    const bytes = await readEvidenceFile(path, expectedIdentity);
+    return createHash('sha256').update(bytes).digest('hex');
+}
+
+async function hashJsonEvidence(
+    path: string,
+    expectedIdentity: EvidenceFileIdentity
+): Promise<string> {
     let parsed: unknown;
     try {
-        parsed = JSON.parse((await readEvidenceFile(path)).toString('utf8'));
+        parsed = JSON.parse(
+            (await readEvidenceFile(path, expectedIdentity)).toString('utf8')
+        );
     } catch (cause) {
         if (cause instanceof GateEvidenceError) throw cause;
         throw gateInputError(
@@ -238,11 +303,15 @@ export async function createEvidenceReference(
         sha256: REFERENCE_DIGEST_PLACEHOLDER,
     });
     assertSupportedEvidenceMediaType(parsedInput.mediaType);
-    const path = resolveEvidencePath(evidenceDirectory, parsedInput.path);
+    const evidenceRoot = resolveEvidenceRoot(evidenceDirectory);
+    const { path, identity } = resolveEvidenceFile(
+        evidenceRoot,
+        parsedInput.path
+    );
     const sha256 =
         parsedInput.mediaType === 'application/json'
-            ? await hashJsonEvidence(path)
-            : await hashEvidenceFile(path);
+            ? await hashJsonEvidence(path, identity)
+            : await hashValidatedEvidenceFile(identity, path);
 
     return parseGateEvidenceReferenceV1({ ...parsedInput, sha256 });
 }

@@ -10,10 +10,23 @@ import { EVIDENCE_MEDIA_TYPES } from './evidence';
 const SAFE_DIAGNOSTIC_CODE = /^[a-z][a-z0-9]*(?:[/-][a-z0-9]+)*$/;
 const SENSITIVE_DIAGNOSTIC_CODE =
     /(?:authorization|bearer|credential|password|private|prompt|secret|token|bucket)/;
-const SAFE_EVIDENCE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const SAFE_COMMIT_SHA = /^[a-f0-9]{7,64}$/i;
 const SENSITIVE_REPORT_VALUE =
     /(?:authorization|bearer|credential|password|private|prompt|secret|token|bucket)/i;
+const PUBLIC_EVIDENCE_ID_BY_KIND: Record<
+    GateEvidenceReferenceV1['kind'],
+    string
+> = {
+    'ci-result': 'ci',
+    'publisher-report': 'publisher',
+    'r2-verification': 'r2',
+    'public-verification': 'public',
+    'web-identity': 'web',
+    'playwright-result': 'browser',
+    'manual-review': 'manual',
+    'workflow-approval': 'workflow',
+    'pointer-snapshot': 'pointer',
+};
 
 function isDiagnosticCategory(code: string, category: string): boolean {
     return code === category || code.startsWith(`${category}/`);
@@ -35,10 +48,6 @@ function safeCommitSha(value: string): string {
     return SAFE_COMMIT_SHA.test(value) && isSafePublicValue(value)
         ? value
         : '[redacted]';
-}
-
-function isSafeEvidenceId(value: string): boolean {
-    return SAFE_EVIDENCE_ID.test(value) && isSafePublicValue(value);
 }
 
 function sanitizeDiagnostic(diagnostic: GateDiagnosticV1): GateDiagnosticV1 {
@@ -75,55 +84,99 @@ function isPublicEvidenceReference(
 ): boolean {
     return (
         isSupportedEvidenceMediaType(reference.mediaType) &&
-        isSafeEvidenceId(reference.id) &&
         isSafePublicValue(reference.path)
     );
 }
 
+function publicEvidenceId(
+    kind: GateEvidenceReferenceV1['kind'],
+    occurrence: number
+): string {
+    const base = PUBLIC_EVIDENCE_ID_BY_KIND[kind];
+    return occurrence === 0 ? base : `${base}-${occurrence + 1}`;
+}
+
+function publicEvidenceReferences(
+    references: readonly GateEvidenceReferenceV1[]
+): {
+    evidence: GateEvidenceReferenceV1[];
+    aliasesBySourceId: ReadonlyMap<string, readonly string[]>;
+} {
+    const occurrencesByKind = new Map<
+        GateEvidenceReferenceV1['kind'],
+        number
+    >();
+    const aliasesBySourceId = new Map<string, string[]>();
+    const evidence: GateEvidenceReferenceV1[] = [];
+
+    for (const reference of references) {
+        if (!isPublicEvidenceReference(reference)) continue;
+
+        const occurrence = occurrencesByKind.get(reference.kind) ?? 0;
+        occurrencesByKind.set(reference.kind, occurrence + 1);
+        const id = publicEvidenceId(reference.kind, occurrence);
+        const aliases = aliasesBySourceId.get(reference.id) ?? [];
+        aliases.push(id);
+        aliasesBySourceId.set(reference.id, aliases);
+        evidence.push({ ...reference, id });
+    }
+
+    return { evidence, aliasesBySourceId };
+}
+
 function sanitizeCheck(
     check: GateCheckV1,
-    evidenceIds: ReadonlySet<string>
+    aliasesBySourceId: ReadonlyMap<string, readonly string[]>
 ): GateCheckV1 {
     return {
         status: check.status,
-        evidenceIds: check.evidenceIds.filter(
-            evidenceId =>
-                isSafeEvidenceId(evidenceId) && evidenceIds.has(evidenceId)
+        evidenceIds: check.evidenceIds.flatMap(
+            evidenceId => aliasesBySourceId.get(evidenceId) ?? []
         ),
     };
 }
 
 function sanitizeChecks(
     checks: VisualNovelReleaseGateReportV1['checks'],
-    evidenceIds: ReadonlySet<string>
+    aliasesBySourceId: ReadonlyMap<string, readonly string[]>
 ): VisualNovelReleaseGateReportV1['checks'] {
     return {
-        deterministicCi: sanitizeCheck(checks.deterministicCi, evidenceIds),
+        deterministicCi: sanitizeCheck(
+            checks.deterministicCi,
+            aliasesBySourceId
+        ),
         publisherCandidate: sanitizeCheck(
             checks.publisherCandidate,
-            evidenceIds
+            aliasesBySourceId
         ),
-        r2Candidate: sanitizeCheck(checks.r2Candidate, evidenceIds),
-        publicCandidate: sanitizeCheck(checks.publicCandidate, evidenceIds),
+        r2Candidate: sanitizeCheck(checks.r2Candidate, aliasesBySourceId),
+        publicCandidate: sanitizeCheck(
+            checks.publicCandidate,
+            aliasesBySourceId
+        ),
         publicActiveRelease: sanitizeCheck(
             checks.publicActiveRelease,
-            evidenceIds
+            aliasesBySourceId
         ),
-        webIdentity: sanitizeCheck(checks.webIdentity, evidenceIds),
-        browserFlows: sanitizeCheck(checks.browserFlows, evidenceIds),
-        manualReview: sanitizeCheck(checks.manualReview, evidenceIds),
-        workflowApproval: sanitizeCheck(checks.workflowApproval, evidenceIds),
+        webIdentity: sanitizeCheck(checks.webIdentity, aliasesBySourceId),
+        browserFlows: sanitizeCheck(checks.browserFlows, aliasesBySourceId),
+        manualReview: sanitizeCheck(checks.manualReview, aliasesBySourceId),
+        workflowApproval: sanitizeCheck(
+            checks.workflowApproval,
+            aliasesBySourceId
+        ),
         productionPointerUnchanged: sanitizeCheck(
             checks.productionPointerUnchanged,
-            evidenceIds
+            aliasesBySourceId
         ),
     };
 }
 
 function publicReport(report: unknown): VisualNovelReleaseGateReportV1 {
     const parsed = parseVisualNovelReleaseGateReportV1(report);
-    const evidence = parsed.evidence.filter(isPublicEvidenceReference);
-    const evidenceIds = new Set(evidence.map(reference => reference.id));
+    const { evidence, aliasesBySourceId } = publicEvidenceReferences(
+        parsed.evidence
+    );
     return {
         schemaVersion: parsed.schemaVersion,
         status: parsed.status,
@@ -136,7 +189,7 @@ function publicReport(report: unknown): VisualNovelReleaseGateReportV1 {
         scenarioSha256: parsed.scenarioSha256,
         manualReviewSha256: parsed.manualReviewSha256,
         createdAt: parsed.createdAt,
-        checks: sanitizeChecks(parsed.checks, evidenceIds),
+        checks: sanitizeChecks(parsed.checks, aliasesBySourceId),
         evidence,
         diagnostics: parsed.diagnostics.map(sanitizeDiagnostic),
     };

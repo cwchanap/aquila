@@ -151,4 +151,47 @@ describe('release-gate reports', () => {
         expect(`${json}${human}`).not.toContain('commit-token');
         expect(`${json}${human}`).not.toContain('private-bucket');
     });
+
+    it('replaces token-shaped evidence IDs with public aliases', () => {
+        const githubToken = 'ghp_0123456789abcdefghijklmnopqrstuvwxyzABCDEF';
+        const accessKey = 'AKIAIOSFODNN7EXAMPLE';
+        const unsafe = failedVerificationReport();
+        unsafe.evidence = [
+            ...unsafe.evidence,
+            {
+                id: githubToken,
+                kind: 'ci-result',
+                path: 'ci/evidence.json',
+                sha256: 'f'.repeat(64),
+                mediaType: 'application/json',
+            },
+            {
+                id: accessKey,
+                kind: 'r2-verification',
+                path: 'r2/evidence.json',
+                sha256: 'e'.repeat(64),
+                mediaType: 'application/json',
+            },
+        ];
+        unsafe.checks = {
+            ...unsafe.checks,
+            deterministicCi: { status: 'passed', evidenceIds: [githubToken] },
+            r2Candidate: { status: 'passed', evidenceIds: [accessKey] },
+        };
+
+        const json = renderGateJsonReport(unsafe);
+        const human = renderGateHumanReport(unsafe);
+        const parsed = parseVisualNovelReleaseGateReportV1(JSON.parse(json));
+
+        expect(parsed.evidence).toContainEqual(
+            expect.objectContaining({ id: 'ci-2' })
+        );
+        expect(parsed.evidence).toContainEqual(
+            expect.objectContaining({ id: 'r2-2' })
+        );
+        expect(parsed.checks.deterministicCi.evidenceIds).toEqual(['ci-2']);
+        expect(parsed.checks.r2Candidate.evidenceIds).toEqual(['r2-2']);
+        expect(`${json}${human}`).not.toContain(githubToken);
+        expect(`${json}${human}`).not.toContain(accessKey);
+    });
 });

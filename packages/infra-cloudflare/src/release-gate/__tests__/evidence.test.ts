@@ -162,4 +162,29 @@ describe('release-gate evidence', () => {
             })
         ).rejects.toThrow(/evidence/i);
     });
+
+    it('rejects an intermediate directory symlink swapped before the evidence read', async () => {
+        const evidenceDirectory = await createEvidenceDirectory();
+        const outsideDirectory = await createEvidenceDirectory();
+        const evidenceSubdirectory = join(evidenceDirectory, 'ci');
+        await mkdir(evidenceSubdirectory);
+        const evidencePath = join(evidenceSubdirectory, 'result.json');
+        const outsidePath = join(outsideDirectory, 'result.json');
+        await writeFile(evidencePath, '{"inside":true}\n');
+        await writeFile(outsidePath, '{"outside":true}\n');
+
+        evidenceReadRace.beforeOpenOrRead = async () => {
+            await rm(evidenceSubdirectory, { recursive: true });
+            await symlink(outsideDirectory, evidenceSubdirectory);
+        };
+
+        await expect(
+            createEvidenceReference(evidenceDirectory, {
+                id: 'ci',
+                kind: 'ci-result',
+                path: 'ci/result.json',
+                mediaType: 'application/json',
+            })
+        ).rejects.toMatchObject({ code: 'evidence/path-outside-root' });
+    });
 });

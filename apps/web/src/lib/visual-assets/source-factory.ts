@@ -55,8 +55,9 @@ export function createVisualRuntime(
     // constructor both reject bad config loudly, which is correct — this is
     // the boundary that turns that into a resolver-less runtime instead.
     let resolver: WebAssetResolver | null = null;
+    let source: AssetResolverSource | null = null;
     try {
-        const source = getAssetResolverSource(storyId, origin, config);
+        source = getAssetResolverSource(storyId, origin, config);
         if (source) {
             const store = new ValidatedReleaseStore(getBrowserStorage());
             resolver = new WebAssetResolver(source, { store });
@@ -70,6 +71,7 @@ export function createVisualRuntime(
     const cache = new DecodedAssetCache();
     const controller = new VisualStateController({
         resolver,
+        source,
         cache,
         getSceneDialogue,
     });

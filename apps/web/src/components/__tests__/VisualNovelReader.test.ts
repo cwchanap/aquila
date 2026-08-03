@@ -106,6 +106,7 @@ const omittedLayer = {
 
 const readySnapshot: VisualSnapshot = {
     release: 'ready',
+    releaseIdentity: null,
     activeBackground: {
         state: 'ready',
         identity: 'background:room',
@@ -242,6 +243,7 @@ describe('VisualNovelReader', () => {
         setReducedMotion(false);
         const runtime = makeController({
             release: 'ready',
+            releaseIdentity: null,
             activeBackground: omittedLayer,
             stagingBackground: omittedLayer,
             portrait: { ...omittedLayer, slot: 'center' },
@@ -410,6 +412,7 @@ describe('VisualNovelReader', () => {
         const onVisualStatusChange = vi.fn();
         const failed = makeController({
             release: 'unavailable',
+            releaseIdentity: null,
             activeBackground: omittedLayer,
             stagingBackground: {
                 ...omittedLayer,

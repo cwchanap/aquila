@@ -10,6 +10,7 @@
   } from '@/lib/reader-mode';
   import {
     createVisualRuntime as createDefaultVisualRuntime,
+    type VisualReleaseIdentity,
     type VisualSnapshot,
     type VisualReaderRuntime,
   } from '@/lib/visual-assets';
@@ -65,12 +66,14 @@
   let readerMode = $state(readReaderMode());
   let visualRuntime: VisualReaderRuntime | null = $state(null);
   let visualStatus = $state<VisualSnapshot['status']>(null);
+  let visualIdentity = $state<VisualReleaseIdentity | null>(null);
   let visualRuntimeStoryId: string | null = $state(null);
   let visualRuntimeAttempted = $state(false);
   let visualRuntimeTransitioning = $state(false);
   let runtimeGeneration = 0;
   let destroyed = false;
   let removeVisibilityListener = () => {};
+  let removeVisualIdentityListener = () => {};
   let visualStatusText = $derived(
     readerMode !== 'visual'
       ? null
@@ -114,6 +117,9 @@
     ) {
       return;
     }
+    removeVisualIdentityListener();
+    removeVisualIdentityListener = () => {};
+    visualIdentity = null;
     visualRuntimeStoryId = activeStoryId;
     visualRuntimeAttempted = true;
     visualRuntime = createVisualRuntime(
@@ -121,6 +127,20 @@
       runtimeOrigin(),
       getSceneDialogue
     );
+    const runtime = visualRuntime;
+    const generation = runtimeGeneration;
+    if (!runtime) return;
+    removeVisualIdentityListener = runtime.controller.subscribe(snapshot => {
+      if (
+        destroyed ||
+        runtimeGeneration !== generation ||
+        visualRuntime !== runtime ||
+        visualRuntimeStoryId !== activeStoryId
+      ) {
+        return;
+      }
+      visualIdentity = snapshot.releaseIdentity;
+    });
   }
 
   async function disposeRuntimeForStoryChange(
@@ -128,6 +148,9 @@
   ): Promise<void> {
     const generation = ++runtimeGeneration;
     const runtime = visualRuntime;
+    removeVisualIdentityListener();
+    removeVisualIdentityListener = () => {};
+    visualIdentity = null;
     visualRuntime = null;
     visualRuntimeStoryId = nextStoryId;
     visualRuntimeAttempted = false;
@@ -266,6 +289,9 @@
     destroyed = true;
     runtimeGeneration += 1;
     removeVisibilityListener();
+    removeVisualIdentityListener();
+    removeVisualIdentityListener = () => {};
+    visualIdentity = null;
     const runtime = visualRuntime;
     visualRuntime = null;
     void runtime?.dispose().catch(() => {
@@ -349,6 +375,10 @@
     <div
       bind:this={readerReadyElement}
       data-testid="reader-ready"
+      data-asset-environment={visualIdentity?.assetEnvironment}
+      data-asset-preview-id={visualIdentity?.previewId ?? undefined}
+      data-asset-release-id={visualIdentity?.releaseId}
+      data-asset-manifest-sha256={visualIdentity?.manifestSha256}
       aria-hidden={isBlocking ? 'true' : undefined}
     >
       {#if readerMode === 'visual'}

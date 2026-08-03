@@ -54,6 +54,7 @@
 
   const emptySnapshot: VisualSnapshot = {
     release: 'idle',
+    releaseIdentity: null,
     activeBackground: emptyLayer,
     stagingBackground: emptyLayer,
     portrait: { ...emptyLayer, slot: 'center' },

@@ -9,6 +9,7 @@ import {
     AssetResolverError,
     type AssetResolver,
     type AssetResolverSource,
+    type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
 import {
     VisualStateController,
@@ -77,13 +78,59 @@ const flow = {
     nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
 } as unknown as StoryFlowConfig;
 
-function createRuntimeHarness(): {
+const FIXTURE_RELEASE_ID = `sha256-${'a'.repeat(64)}`;
+const FIXTURE_MANIFEST_SHA256 = 'b'.repeat(64);
+const readyPreviewSource: AssetResolverSource = {
+    environment: 'preview',
+    storyId: 'the_seventh_mirror',
+    baseUrl: 'https://assets.example/',
+    target: { kind: 'preview', previewId: 'hpa-233-preview' },
+};
+
+function validatedRelease(): ValidatedAssetRelease {
+    return {
+        pointer: {
+            schemaVersion: 1,
+            storyId: 'the_seventh_mirror',
+            releaseId: FIXTURE_RELEASE_ID,
+            manifestPath: `vn/previews/hpa-233-preview/stories/the_seventh_mirror/releases/${FIXTURE_RELEASE_ID}/runtime-manifest.json`,
+            manifestSha256: FIXTURE_MANIFEST_SHA256,
+            publishedAt: '2026-07-26T00:00:00.000Z',
+        },
+        manifest: {},
+        validatedAt: '2026-07-26T00:00:00.000Z',
+        source: 'network',
+    } as ValidatedAssetRelease;
+}
+
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, reject, resolve };
+}
+
+async function flushAsyncWork(): Promise<void> {
+    for (let index = 0; index < 8; index += 1) {
+        await Promise.resolve();
+        await tick();
+    }
+}
+
+function createRuntimeHarness(options?: {
+    source?: AssetResolverSource;
+    loadRelease?: () => Promise<ValidatedAssetRelease>;
+    now?: () => number;
+}): {
     runtime: VisualReaderRuntime;
     softRevalidate: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
     subscribe: ReturnType<typeof vi.spyOn>;
 } {
-    const source: AssetResolverSource = {
+    const source = options?.source ?? {
         environment: 'local',
         storyId: 'the_seventh_mirror',
         baseUrl: 'http://localhost:5090/assets/',
@@ -91,12 +138,15 @@ function createRuntimeHarness(): {
     };
     const resolver: AssetResolver = {
         source,
-        loadActiveRelease: vi.fn(async () => {
-            throw new AssetResolverError(
-                'unavailable',
-                'No visual release in this component test'
-            );
-        }),
+        loadActiveRelease: vi.fn(
+            options?.loadRelease ??
+                (async () => {
+                    throw new AssetResolverError(
+                        'unavailable',
+                        'No visual release in this component test'
+                    );
+                })
+        ),
         resolve: vi.fn(() => {
             throw new Error('resolve is unreachable without an active release');
         }),
@@ -116,8 +166,10 @@ function createRuntimeHarness(): {
     };
     const controller = new VisualStateController({
         resolver,
+        source,
         cache,
         getSceneDialogue: () => null,
+        now: options?.now,
     });
     const subscribe = vi.spyOn(controller, 'subscribe');
     const softRevalidate = vi.fn(async () => {});
@@ -208,7 +260,115 @@ describe('ReaderShell', () => {
             screen.getByRole('group', { name: 'Reader mode' })
         ).toHaveAttribute('data-reader-mode', 'visual');
         expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
-        expect(persistedHarness.subscribe).toHaveBeenCalledOnce();
+        // ReaderShell retains release identity while the visual leaf is gone,
+        // so both the shell and the mounted visual leaf subscribe.
+        expect(persistedHarness.subscribe).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps validated release identity on the stable reader host until invalidation', async () => {
+        const media = stubMatchMedia(false);
+        let now = 0;
+        const firstRelease = deferred<ValidatedAssetRelease>();
+        const loadRelease = vi
+            .fn()
+            .mockImplementationOnce(() => firstRelease.promise)
+            .mockRejectedValueOnce(
+                new AssetResolverError(
+                    'integrity',
+                    'Manifest checksum mismatch'
+                )
+            );
+        const harness = createRuntimeHarness({
+            source: readyPreviewSource,
+            loadRelease,
+            now: () => now,
+        });
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+
+        const host = screen.getByTestId('reader-ready');
+        expect(host).not.toHaveAttribute('data-asset-environment');
+        expect(host).not.toHaveAttribute('data-asset-release-id');
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await tick();
+        expect(host).not.toHaveAttribute('data-asset-environment');
+        expect(host).not.toHaveAttribute('data-asset-release-id');
+
+        firstRelease.resolve(validatedRelease());
+        await flushAsyncWork();
+        expect(host).toHaveAttribute(
+            'data-asset-release-id',
+            FIXTURE_RELEASE_ID
+        );
+        expect(host).toHaveAttribute('data-asset-environment', 'preview');
+        expect(host).toHaveAttribute(
+            'data-asset-preview-id',
+            'hpa-233-preview'
+        );
+        expect(host).toHaveAttribute(
+            'data-asset-manifest-sha256',
+            FIXTURE_MANIFEST_SHA256
+        );
+        expect(screen.getByTestId('visual-novel-reader')).not.toHaveAttribute(
+            'data-asset-release-id'
+        );
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await tick();
+        expect(screen.getByTestId('reader-ready')).toBe(host);
+        expect(host).toHaveAttribute(
+            'data-asset-release-id',
+            FIXTURE_RELEASE_ID
+        );
+
+        media.setMatches(true);
+        await tick();
+        expect(screen.getByTestId('reader-ready')).toBe(host);
+        expect(host).toHaveAttribute(
+            'data-asset-manifest-sha256',
+            FIXTURE_MANIFEST_SHA256
+        );
+
+        now = 60_000;
+        await harness.runtime.controller.softRevalidate();
+        await flushAsyncWork();
+        expect(host).not.toHaveAttribute('data-asset-release-id');
+        expect(host).not.toHaveAttribute('data-asset-environment');
+        expect(host).not.toHaveAttribute('data-asset-preview-id');
+        expect(host).not.toHaveAttribute('data-asset-manifest-sha256');
+    });
+
+    it('omits the preview id for a validated production release', async () => {
+        stubMatchMedia(false);
+        const harness = createRuntimeHarness({
+            source: {
+                environment: 'production',
+                storyId: 'the_seventh_mirror',
+                baseUrl: 'https://assets.example/',
+                target: { kind: 'production' },
+            },
+            loadRelease: async () => validatedRelease(),
+        });
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        const host = screen.getByTestId('reader-ready');
+        await flushAsyncWork();
+        expect(host).toHaveAttribute(
+            'data-asset-release-id',
+            FIXTURE_RELEASE_ID
+        );
+
+        expect(host).toHaveAttribute('data-asset-environment', 'production');
+        expect(host).not.toHaveAttribute('data-asset-preview-id');
     });
 
     it.each([
@@ -320,7 +480,7 @@ describe('ReaderShell', () => {
             'dispose:0:end',
             'create:replacement_story',
         ]);
-        expect(harnesses[1].subscribe).toHaveBeenCalledOnce();
+        expect(harnesses[1].subscribe).toHaveBeenCalledTimes(2);
 
         view.unmount();
         await Promise.resolve();

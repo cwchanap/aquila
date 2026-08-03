@@ -34,8 +34,16 @@ export type VisualPortraitLayer = VisualImageLayer & {
     slot: 'left' | 'center' | 'right';
 };
 
+export type VisualReleaseIdentity = Readonly<{
+    assetEnvironment: 'local' | 'preview' | 'production';
+    previewId: string | null;
+    releaseId: string;
+    manifestSha256: string;
+}>;
+
 export type VisualSnapshot = {
     release: VisualReleaseState;
+    releaseIdentity: VisualReleaseIdentity | null;
     activeBackground: VisualImageLayer;
     stagingBackground: VisualImageLayer;
     portrait: VisualPortraitLayer;

@@ -3,6 +3,7 @@ import {
     type AssetFallbackReason,
     type AssetResolutionResult,
     type AssetResolver,
+    type AssetResolverSource,
     type LogicalAssetIdentity,
     type ResolvedAsset,
     type ValidatedAssetRelease,
@@ -20,6 +21,14 @@ import {
 } from '../visual-state-controller';
 
 const storyId = 'the_seventh_mirror';
+const FIXTURE_RELEASE_ID = `sha256-${'a'.repeat(64)}`;
+const FIXTURE_MANIFEST_SHA256 = 'b'.repeat(64);
+const previewSource: AssetResolverSource = {
+    environment: 'preview',
+    storyId,
+    baseUrl: 'https://assets.example/',
+    target: { kind: 'preview', previewId: 'hpa-233-preview' },
+};
 const presentation: StoryPresentationMetadata = {
     portrait: {
         activeLimit: 1,
@@ -107,7 +116,14 @@ function fallback(
 
 function release(source: 'network' | 'last-validated-release' = 'network') {
     return {
-        pointer: { releaseId: 'sha256-fixed-release' },
+        pointer: {
+            schemaVersion: 1,
+            storyId,
+            releaseId: FIXTURE_RELEASE_ID,
+            manifestPath: `vn/previews/hpa-233-preview/stories/${storyId}/releases/${FIXTURE_RELEASE_ID}/runtime-manifest.json`,
+            manifestSha256: FIXTURE_MANIFEST_SHA256,
+            publishedAt: '2026-07-26T00:00:00.000Z',
+        },
         manifest: {},
         validatedAt: '2026-07-26T00:00:00.000Z',
         source,
@@ -120,17 +136,19 @@ function createHarness(options?: {
     resolveAsset?: (identity: LogicalAssetIdentity) => AssetResolutionResult;
     now?: () => number;
     sceneDialogue?: Record<string, readonly DialogueEntry[] | null>;
+    source?: AssetResolverSource;
 }) {
     const resolveAsset =
         options?.resolveAsset ??
         ((identity: LogicalAssetIdentity) => resolved(identity));
+    const source = options?.source ?? {
+        environment: 'local' as const,
+        storyId,
+        baseUrl: 'https://assets.example/',
+        target: { kind: 'preview' as const, previewId: 'hpa-228-test' },
+    };
     const resolver: AssetResolver = {
-        source: {
-            environment: 'local',
-            storyId,
-            baseUrl: 'https://assets.example/',
-            target: { kind: 'preview', previewId: 'hpa-228-test' },
-        },
+        source,
         loadActiveRelease: vi.fn(
             options?.loadRelease ?? (async () => release())
         ),
@@ -156,6 +174,7 @@ function createHarness(options?: {
     );
     const controller = new VisualStateController({
         resolver,
+        source,
         cache,
         getSceneDialogue,
         now: options?.now,
@@ -203,6 +222,7 @@ describe('VisualStateController', () => {
 
         expect(latest()).toEqual({
             release: 'idle',
+            releaseIdentity: null,
             activeBackground: {
                 state: 'omitted',
                 identity: null,
@@ -229,6 +249,92 @@ describe('VisualStateController', () => {
         });
         expect(Object.isFrozen(latest())).toBe(true);
         expect(Object.isFrozen(latest().activeBackground)).toBe(true);
+    });
+
+    it('publishes validated preview identity only after the release is ready', async () => {
+        const pendingRelease = deferred<ValidatedAssetRelease>();
+        const { controller, latest } = createHarness({
+            source: previewSource,
+            loadRelease: () => pendingRelease.promise,
+        });
+
+        controller.update(input([{ dialogue: 'Loading release' }]));
+
+        expect(latest().release).toBe('loading');
+        expect(latest().releaseIdentity).toBeNull();
+
+        pendingRelease.resolve(release());
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('ready');
+        expect(latest().releaseIdentity).toEqual({
+            assetEnvironment: 'preview',
+            previewId: 'hpa-233-preview',
+            releaseId: FIXTURE_RELEASE_ID,
+            manifestSha256: FIXTURE_MANIFEST_SHA256,
+        });
+        expect(Object.isFrozen(latest().releaseIdentity)).toBe(true);
+    });
+
+    it('clears validated identity for invalid releases and replacement stories', async () => {
+        let now = 0;
+        const loadRelease = vi
+            .fn()
+            .mockResolvedValueOnce(release())
+            .mockRejectedValueOnce(
+                new AssetResolverError(
+                    'integrity',
+                    'Manifest checksum mismatch'
+                )
+            );
+        const { controller, latest } = createHarness({
+            source: previewSource,
+            loadRelease,
+            now: () => now,
+        });
+
+        controller.update(input([{ dialogue: 'Ready release' }]));
+        await flushAsyncWork();
+        expect(latest().releaseIdentity).not.toBeNull();
+
+        now = 60_000;
+        await controller.softRevalidate();
+        expect(latest().release).toBe('invalid');
+        expect(latest().releaseIdentity).toBeNull();
+
+        const replacement = createHarness({ source: previewSource });
+        replacement.controller.update(input([{ dialogue: 'Story A' }]));
+        await flushAsyncWork();
+        expect(replacement.latest().releaseIdentity).not.toBeNull();
+
+        replacement.controller.update(
+            input([{ dialogue: 'Story B' }], { storyId: 'replacement_story' })
+        );
+        await flushAsyncWork();
+        expect(replacement.latest().release).toBe('idle');
+        expect(replacement.latest().releaseIdentity).toBeNull();
+    });
+
+    it('uses the validated publication target to omit a production preview id', async () => {
+        const productionSource: AssetResolverSource = {
+            environment: 'production',
+            storyId,
+            baseUrl: 'https://assets.example/',
+            target: { kind: 'production' },
+        };
+        const { controller, latest } = createHarness({
+            source: productionSource,
+        });
+
+        controller.update(input([{ dialogue: 'Production release' }]));
+        await flushAsyncWork();
+
+        expect(latest().releaseIdentity).toEqual({
+            assetEnvironment: 'production',
+            previewId: null,
+            releaseId: FIXTURE_RELEASE_ID,
+            manifestSha256: FIXTURE_MANIFEST_SHA256,
+        });
     });
 
     it('maps omitted, missing, and failed keyed visuals independently', async () => {
@@ -263,6 +369,7 @@ describe('VisualStateController', () => {
         );
         await flushAsyncWork();
         expect(latest().release).toBe('unavailable');
+        expect(latest().releaseIdentity).toBeNull();
         expect(latest().portrait.state).toBe('failed');
         expect(latest().status).toBe('unavailable');
     });
@@ -275,6 +382,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
+            source: null,
             cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
@@ -285,6 +393,7 @@ describe('VisualStateController', () => {
         controller.update(input([{ dialogue: 'Intentionally omitted' }]));
         await flushAsyncWork();
         expect(latest().release).toBe('idle');
+        expect(latest().releaseIdentity).toBeNull();
         expect(latest().stagingBackground.state).toBe('omitted');
         expect(latest().portrait.state).toBe('omitted');
         expect(latest().status).toBeNull();
@@ -300,6 +409,7 @@ describe('VisualStateController', () => {
         );
         await flushAsyncWork();
         expect(latest().release).toBe('unavailable');
+        expect(latest().releaseIdentity).toBeNull();
         expect(latest().stagingBackground.state).toBe('failed');
         expect(latest().portrait.state).toBe('failed');
         expect(latest().status).toBe('unavailable');
@@ -307,6 +417,7 @@ describe('VisualStateController', () => {
         controller.update(input([{ dialogue: 'Omitted again' }]));
         await flushAsyncWork();
         expect(latest().release).toBe('idle');
+        expect(latest().releaseIdentity).toBeNull();
         expect(latest().status).toBeNull();
         expect(cache.load).not.toHaveBeenCalled();
         expect(cache.prefetch).not.toHaveBeenCalled();
@@ -1172,6 +1283,18 @@ describe('VisualStateController', () => {
         expect(cache.setProtectedKeys).toHaveBeenLastCalledWith(new Set());
     });
 
+    it('clears a validated release identity on dispose', async () => {
+        const { controller, latest } = createHarness({ source: previewSource });
+        controller.update(input([{ dialogue: 'Ready release' }]));
+        await flushAsyncWork();
+        expect(latest().releaseIdentity).not.toBeNull();
+
+        controller.dispose();
+
+        expect(latest().release).toBe('idle');
+        expect(latest().releaseIdentity).toBeNull();
+    });
+
     it('calls the listener immediately and returns a no-op unsubscribe when disposed', () => {
         const { controller, latest } = createHarness();
         controller.dispose();
@@ -1309,6 +1432,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
+            source: null,
             cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
@@ -1393,6 +1517,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
+            source: null,
             cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });

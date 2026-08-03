@@ -1,5 +1,4 @@
 import {
-    chmod,
     mkdtemp,
     mkdir,
     readFile,
@@ -34,6 +33,7 @@ import type {
     StoredObjectMetadata,
 } from '../stores/delivery-store';
 import { LocalDeliveryStore } from '../stores/local-delivery-store';
+import { chmodTree } from './fs-tree-helpers';
 
 const STORY_ID = 'example_story';
 const PREVIEW_TARGET: PublicationTarget = {
@@ -190,26 +190,6 @@ async function snapshotFiles(
         }
     }
     return result;
-}
-
-async function chmodTree(
-    root: string,
-    dirMode: number,
-    fileMode: number,
-    relative = ''
-): Promise<void> {
-    const entries = await readdir(join(root, relative), {
-        withFileTypes: true,
-    });
-    for (const entry of entries) {
-        const path = join(relative, entry.name);
-        if (entry.isDirectory()) {
-            await chmodTree(root, dirMode, fileMode, path);
-        } else {
-            await chmod(join(root, path), fileMode);
-        }
-    }
-    await chmod(join(root, relative), dirMode);
 }
 
 class RecordingStore implements DeliveryStore {

@@ -261,6 +261,93 @@ describe('LocalDeliveryStore', () => {
         expect(dirEntries).toEqual(['raced.webp']);
     });
 
+    it('does not report a false integrity failure when a writer starts after the reader marker check', async () => {
+        // The reader checks the transaction marker once and finds none. A
+        // writer then starts, creates the marker, and renames the body into
+        // place before the reader inspects. The reader must not observe the
+        // torn state (body without metadata) as an integrity failure: it
+        // rechecks the marker, sees the in-progress writer, and retries until
+        // the writer completes — returning either the pre-write state (absent)
+        // or the completed object, never a false integrity error.
+        const root = await mkdtemp(join(tmpdir(), 'local-immutable-toctou-'));
+        let resumeReader: () => void = () => {};
+        const readerGate = new Promise<void>(resolve => {
+            resumeReader = resolve;
+        });
+        let readerMarkerCheckedResolve!: () => void;
+        const readerMarkerChecked = new Promise<void>(resolve => {
+            readerMarkerCheckedResolve = resolve;
+        });
+        let resumeWriter: () => void = () => {};
+        const writerGate = new Promise<void>(resolve => {
+            resumeWriter = resolve;
+        });
+        let writerBodyRenamedResolve!: () => void;
+        const writerBodyRenamed = new Promise<void>(resolve => {
+            writerBodyRenamedResolve = resolve;
+        });
+
+        const reader = new LocalDeliveryStore(root, {
+            afterReadMarkerCheck: async () => {
+                readerMarkerCheckedResolve();
+                await readerGate;
+            },
+        });
+        const writer = new LocalDeliveryStore(root, {
+            afterTransactionBodyRename: async () => {
+                writerBodyRenamedResolve();
+                await writerGate;
+            },
+        });
+        const key = 'vn/objects/toctou.webp';
+        const bytes = new TextEncoder().encode('toctou-body');
+
+        // Reader begins stat(): marker is absent, so it passes the initial
+        // check and pauses inside the unlocked inspection window.
+        const statPromise = reader.stat(key);
+        const readPromise = reader.read(key);
+        await readerMarkerChecked;
+
+        // While the reader is paused between its marker check and the
+        // unlocked inspection, the writer starts, creates the marker, and
+        // renames the body into place — then pauses before the metadata
+        // rename. The reader is now racing into a torn state.
+        const createPromise = writer.createImmutable({
+            key,
+            bytes,
+            contentType: 'image/webp',
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+        await writerBodyRenamed;
+
+        // Resume the reader. Its unlocked inspection observes a body without
+        // metadata; it must recheck the marker, detect the in-progress
+        // writer, and retry rather than throwing an integrity error.
+        resumeReader();
+
+        // Let the writer finish the metadata rename and clear the marker.
+        resumeWriter();
+
+        const [createResult, statResult, readResult] = await Promise.all([
+            createPromise,
+            statPromise,
+            readPromise,
+        ]);
+
+        expect(createResult).toEqual({ status: 'created' });
+        expect(statResult).toMatchObject({
+            key,
+            contentType: 'image/webp',
+            byteLength: bytes.byteLength,
+        });
+        expect(readResult).toMatchObject({
+            key,
+            contentType: 'image/webp',
+            byteLength: bytes.byteLength,
+        });
+        expect(new TextDecoder().decode(readResult.bytes)).toBe('toctou-body');
+    });
+
     it('stat() and read() against an absent destination create no directories or lock files', async () => {
         const parent = await mkdtemp(join(tmpdir(), 'local-absent-'));
         const root = join(parent, 'destination');

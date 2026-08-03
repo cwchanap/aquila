@@ -1,4 +1,5 @@
 import {
+    chmod,
     mkdtemp,
     mkdir,
     readFile,
@@ -19,6 +20,7 @@ import {
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
 import { coordinateStaleConflict } from '../../../scripts/r2-stale-conflict-coordinator';
+import { verifyStoredRelease } from '../candidate-verifier';
 import { PublisherError } from '../errors';
 import { publishRelease, type PublishReleaseOptions } from '../publish';
 import { buildPublicationPlan } from '../publication-plan';
@@ -188,6 +190,26 @@ async function snapshotFiles(
         }
     }
     return result;
+}
+
+async function chmodTree(
+    root: string,
+    dirMode: number,
+    fileMode: number,
+    relative = ''
+): Promise<void> {
+    const entries = await readdir(join(root, relative), {
+        withFileTypes: true,
+    });
+    for (const entry of entries) {
+        const path = join(relative, entry.name);
+        if (entry.isDirectory()) {
+            await chmodTree(root, dirMode, fileMode, path);
+        } else {
+            await chmod(join(root, path), fileMode);
+        }
+    }
+    await chmod(join(root, relative), dirMode);
 }
 
 class RecordingStore implements DeliveryStore {
@@ -922,5 +944,63 @@ describe('publishRelease', () => {
         expect(store.immutableRequests).toEqual([]);
         expect(store.pointerRequests).toEqual([]);
         expect(await snapshotFiles(paths.destinationRoot)).toEqual({});
+    });
+});
+
+describe('read-only plan and verify no-write contract', () => {
+    it('buildPublicationPlan performs no destination writes against an absent destination', async () => {
+        const paths = await fixture();
+        // Remove the destination root so plan inspects a nonexistent store.
+        await rm(paths.destinationRoot, { recursive: true, force: true });
+
+        const plan = await buildPublicationPlan(options(paths));
+
+        // Every candidate must be created (nothing reused) and no advisory
+        // pointer exists, since the destination is absent.
+        expect(plan.advisoryPointer.exists).toBe(false);
+        expect(plan.objects.every(object => object.status === 'create')).toBe(
+            true
+        );
+
+        // The read-only plan must not have recreated the destination root or
+        // created any vn/, .publisher-metadata, .publisher-transactions, or
+        // lock files.
+        await expect(readdir(paths.destinationRoot)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+    });
+
+    it('verifyStoredRelease performs no destination writes against a read-only existing destination', async () => {
+        const paths = await fixture();
+        const report = await publishRelease(options(paths));
+        if (
+            report.releaseId === undefined ||
+            report.manifestSha256 === undefined
+        ) {
+            throw new Error('publication did not produce a release');
+        }
+
+        const before = await snapshotFiles(paths.destinationRoot);
+        // Make the entire destination tree read-only. Any write attempt
+        // (mkdir, lock file, transaction recovery) anywhere under the root
+        // would now fail with EACCES; a side-effect-free verify must still
+        // succeed.
+        await chmodTree(paths.destinationRoot, 0o555, 0o444);
+        try {
+            const verified = await verifyStoredRelease({
+                store: paths.local,
+                storyId: STORY_ID,
+                target: PREVIEW_TARGET,
+                releaseId: report.releaseId,
+                depth: 'deep',
+            });
+            expect(verified.releaseId).toBe(report.releaseId);
+
+            const after = await snapshotFiles(paths.destinationRoot);
+            // No lock files, transaction markers, or any other writes.
+            expect(after).toEqual(before);
+        } finally {
+            await chmodTree(paths.destinationRoot, 0o755, 0o644);
+        }
     });
 });

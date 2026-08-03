@@ -9,6 +9,8 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
+    "test:release-gate": "playwright test --config=playwright.release-gate.config.ts tests/visual-novel-release-gate.spec.ts",
+    "test:production-smoke": "playwright test --config=playwright.release-gate.config.ts tests/visual-novel-production-smoke.spec.ts",
     "measure:reader": "bun scripts/measure-reader-runtime.ts"
   },
   "devDependencies": {

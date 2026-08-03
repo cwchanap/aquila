@@ -11,6 +11,12 @@ import {
     type PublicationTarget,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
+import {
+    cacheDirectives,
+    probeImageFromPage,
+    probeJsonFromPage,
+    type DecodedImageSize,
+} from './support/r2-browser-probe';
 
 /**
  * Acceptance criterion 1 of HPA-229 says *a browser* can fetch the published
@@ -58,57 +64,11 @@ if (!LIVE_CHECK_ENABLED && process.env.TEST_WORKER_INDEX === undefined) {
 // named in the failure instead of expiring the whole test.
 const DEADLINES = RUNTIME_ASSET_CACHE_POLICY.timeoutMs;
 
-function directives(header: string | null): string[] {
-    return (header ?? '')
-        .split(',')
-        .map(part => part.trim().toLowerCase())
-        .filter(Boolean);
-}
-
 // Read from the contract rather than restated here, and compared as a set so
 // any directive order is accepted.
-const REQUIRED_POINTER_DIRECTIVES = directives(
+const REQUIRED_POINTER_DIRECTIVES = cacheDirectives(
     RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
 );
-
-type FailureReason = 'timeout' | 'blocked' | 'status' | 'body' | 'decode';
-
-/**
- * The browser classifies what went wrong; the sentence an operator reads is
- * composed here, so the in-page code stays small and the wording lives once.
- */
-const FAILURE_PHRASES: Record<FailureReason, string> = {
-    timeout: 'did not answer in time',
-    blocked:
-        'was unreadable to page script — a missing ' +
-        'access-control-allow-origin, a rejected preflight, or a DNS/TLS ' +
-        'failure all look like this',
-    status: 'returned an error status',
-    body: 'did not return JSON',
-    decode: 'returned bytes the browser could not decode as an image',
-};
-
-function unusable(url: string, reason: FailureReason, detail: string): Error {
-    return new Error(
-        `GET ${url} ${FAILURE_PHRASES[reason]}: ${detail}\n${PREREQUISITES}`
-    );
-}
-
-type DecodedSize = { width: number; height: number };
-
-// This workspace's tsconfig carries no DOM lib, so the browser globals used
-// inside page.evaluate are untyped. Only the decoder needs describing, and only
-// the members used below.
-declare function createImageBitmap(
-    blob: Blob
-): Promise<DecodedSize & { close(): void }>;
-
-/** Exactly one of `text` and `size` is populated, per the requested `as`. */
-type PageProbe = {
-    cacheControl: string | null;
-    text: string | null;
-    size: DecodedSize | null;
-};
 
 /**
  * Joins with the sanctioned joiner rather than string concatenation, so the
@@ -117,109 +77,6 @@ type PageProbe = {
  */
 function assetUrl(objectPath: string): string {
     return resolveAssetUrl(ASSET_BASE, objectPath).toString();
-}
-
-/**
- * Fetches one object from inside the page, so the browser's own CORS
- * enforcement decides whether page script may read it, and — for `as: 'image'`
- * — the browser's own image pipeline decides whether the bytes decode. A shell
- * probe can do neither.
- *
- * `cache-control` is a CORS-safelisted response header, so it comes back
- * without any access-control-expose-headers cooperation.
- */
-async function probeFromPage(
-    page: Page,
-    url: string,
-    deadlineMs: number,
-    as: 'text' | 'image'
-): Promise<PageProbe> {
-    const probe = await page.evaluate(
-        async ({ target, timeoutMs, want }) => {
-            try {
-                const response = await fetch(target, {
-                    mode: 'cors',
-                    signal: AbortSignal.timeout(timeoutMs),
-                });
-                if (!response.ok) {
-                    return {
-                        ok: false as const,
-                        reason: 'status' as const,
-                        detail: `HTTP ${response.status} ${response.statusText}`,
-                    };
-                }
-                const cacheControl = response.headers.get('cache-control');
-                if (want === 'text') {
-                    const text = await response.text();
-                    return {
-                        ok: true as const,
-                        cacheControl,
-                        text,
-                        size: null,
-                    };
-                }
-                const blob = await response.blob();
-                try {
-                    const bitmap = await createImageBitmap(blob);
-                    const size = {
-                        width: bitmap.width,
-                        height: bitmap.height,
-                    };
-                    bitmap.close();
-                    return {
-                        ok: true as const,
-                        cacheControl,
-                        text: null,
-                        size,
-                    };
-                } catch (error) {
-                    return {
-                        ok: false as const,
-                        reason: 'decode' as const,
-                        detail:
-                            `${blob.size} byte(s) of ` +
-                            `${blob.type || 'an unknown media type'} — ` +
-                            `${error instanceof Error ? error.message : String(error)}`,
-                    };
-                }
-            } catch (error) {
-                const raised =
-                    error instanceof Error ? error : new Error(String(error));
-                return {
-                    ok: false as const,
-                    reason:
-                        raised.name === 'TimeoutError'
-                            ? ('timeout' as const)
-                            : ('blocked' as const),
-                    detail: `${raised.name}: ${raised.message}`,
-                };
-            }
-        },
-        { target: url, timeoutMs: deadlineMs, want: as }
-    );
-    if (!probe.ok) throw unusable(url, probe.reason, probe.detail);
-    return probe;
-}
-
-type FetchedDocument = { body: unknown; cacheControl: string | null };
-
-async function fetchJsonFromPage(
-    page: Page,
-    url: string,
-    deadlineMs: number
-): Promise<FetchedDocument> {
-    const { text, cacheControl } = await probeFromPage(
-        page,
-        url,
-        deadlineMs,
-        'text'
-    );
-    try {
-        return { body: JSON.parse(text ?? '') as unknown, cacheControl };
-    } catch {
-        const collapsed = (text ?? '').replace(/\s+/g, ' ').trim();
-        throw unusable(url, 'body', collapsed.slice(0, 160) || '<empty body>');
-    }
 }
 
 /**
@@ -241,7 +98,7 @@ async function fetchJsonFromPage(
 type DecodedVariant = {
     asset: RuntimeAssetManifestV1['assets'][number];
     format: AssetFormat;
-    size: DecodedSize;
+    size: DecodedImageSize;
 };
 
 async function decodeAllVariants(
@@ -254,15 +111,12 @@ async function decodeAllVariants(
         const variant = asset.variants[format];
         if (!variant) continue;
         const url = assetUrl(getObjectPath(variant.sha256, format));
-        const { size } = await probeFromPage(
+        const { size } = await probeImageFromPage(
             page,
             url,
             DEADLINES.asset,
-            'image'
+            PREREQUISITES
         );
-        if (size === null) {
-            throw unusable(url, 'decode', 'the browser produced no bitmap');
-        }
         decoded.push({ asset, format, size });
     }
     return decoded;
@@ -286,10 +140,11 @@ test.describe('R2 visual asset delivery', () => {
         await page.goto('/en/');
 
         const pointerUrl = assetUrl(getCurrentPointerPath(STORY_ID, TARGET));
-        const pointerDocument = await fetchJsonFromPage(
+        const pointerDocument = await probeJsonFromPage(
             page,
             pointerUrl,
-            DEADLINES.pointer
+            DEADLINES.pointer,
+            PREREQUISITES
         );
         const pointer = parseActiveReleasePointer(
             pointerDocument.body,
@@ -300,10 +155,11 @@ test.describe('R2 visual asset delivery', () => {
         const manifestUrl = assetUrl(
             getReleaseManifestPath(STORY_ID, pointer.releaseId, TARGET)
         );
-        const manifestDocument = await fetchJsonFromPage(
+        const manifestDocument = await probeJsonFromPage(
             page,
             manifestUrl,
-            DEADLINES.manifest
+            DEADLINES.manifest,
+            PREREQUISITES
         );
         const manifest = parseRuntimeAssetManifest(manifestDocument.body);
         expect(manifest.storyId).toBe(STORY_ID);
@@ -385,10 +241,11 @@ test.describe('R2 visual asset delivery', () => {
         await page.goto('/en/');
 
         const pointerUrl = assetUrl(getCurrentPointerPath(STORY_ID, TARGET));
-        const { cacheControl } = await fetchJsonFromPage(
+        const { cacheControl } = await probeJsonFromPage(
             page,
             pointerUrl,
-            DEADLINES.pointer
+            DEADLINES.pointer,
+            PREREQUISITES
         );
 
         // A client can only re-read the pointer on every navigation if the
@@ -403,7 +260,7 @@ test.describe('R2 visual asset delivery', () => {
         // dedupe the duplicate and let it pass; a sorted array keeps every
         // token, matching the shell verifier's `assertPointerRevalidation`.
         expect(
-            [...directives(cacheControl)].sort(),
+            [...cacheDirectives(cacheControl)].sort(),
             `cache-control on ${pointerUrl} was "${cacheControl ?? '<missing>'}"`
         ).toEqual([...REQUIRED_POINTER_DIRECTIVES].sort());
     });

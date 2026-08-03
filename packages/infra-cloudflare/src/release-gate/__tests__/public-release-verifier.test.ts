@@ -314,6 +314,79 @@ describe('verifyPublicRelease', () => {
         expect(statusOf(result, 'pointer.cache')).toBe('passed');
     });
 
+    it('returns a failed candidate result when the immutable manifest is unavailable', async () => {
+        const fixture = buildFixture();
+        const manifestUrl = `${ASSET_BASE_URL}/${getReleaseManifestPath(
+            STORY_ID,
+            fixture.releaseId,
+            TARGET
+        )}`;
+        const baseFetch = fixtureFetch(fixture);
+        const fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+            const url = typeof input === 'string' ? input : input.toString();
+            if (url === manifestUrl)
+                return new Response('not found', { status: 404 });
+            return baseFetch(input, init);
+        }) as typeof globalThis.fetch;
+
+        const result = await verifyPublicRelease(candidateInput(fixture), {
+            fetch,
+            decodeImage: fixtureDecoder(fixture),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(result.releaseId).toBe(fixture.releaseId);
+        expect(result.manifestSha256).toBe(fixture.manifestSha256);
+        expect(statusOf(result, 'manifest.fetch')).toBe('failed');
+        expect(result.diagnostics).toContainEqual(
+            expect.objectContaining({
+                code: 'manifest/fetch',
+                stage: 'manifest',
+                releaseId: fixture.releaseId,
+                manifestSha256: fixture.manifestSha256,
+            })
+        );
+    });
+
+    it('returns a failed active result when the immutable manifest is not JSON', async () => {
+        const fixture = buildFixture();
+        const malformedManifest = '{not-json';
+        const manifestUrl = `${ASSET_BASE_URL}/${getReleaseManifestPath(
+            STORY_ID,
+            fixture.releaseId,
+            TARGET
+        )}`;
+        const baseFetch = fixtureFetch(fixture);
+        const fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+            const url = typeof input === 'string' ? input : input.toString();
+            if (url === manifestUrl) {
+                return new Response(malformedManifest, {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' },
+                });
+            }
+            return baseFetch(input, init);
+        }) as typeof globalThis.fetch;
+
+        const result = await verifyPublicRelease(activeInput(), {
+            fetch,
+            decodeImage: fixtureDecoder(fixture),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(result.releaseId).toBe(fixture.releaseId);
+        expect(result.manifestSha256).toBe(sha256(malformedManifest));
+        expect(statusOf(result, 'manifest.fetch')).toBe('failed');
+        expect(result.diagnostics).toContainEqual(
+            expect.objectContaining({
+                code: 'manifest/fetch',
+                stage: 'manifest',
+                releaseId: fixture.releaseId,
+                manifestSha256: sha256(malformedManifest),
+            })
+        );
+    });
+
     it('reports wrong pointer CORS with a stable, safe diagnostic', async () => {
         const fixture = buildFixture();
         const result = await verifyPublicRelease(activeInput(), {
@@ -368,6 +441,24 @@ describe('verifyPublicRelease', () => {
 
         expect(result.status).toBe('failed');
         expect(statusOf(result, 'object.media-type')).toBe('failed');
+    });
+
+    it('rejects an otherwise immutable object that bypassed the edge cache', async () => {
+        const fixture = buildFixture();
+        const result = await verifyPublicRelease(candidateInput(fixture), {
+            fetch: fixtureFetch(fixture, {
+                objectHeaders: { 'cf-cache-status': 'DYNAMIC' },
+            }),
+            decodeImage: fixtureDecoder(fixture),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(statusOf(result, 'object.cache')).toBe('failed');
+        expect(
+            result.diagnostics.some(
+                diagnostic => diagnostic.code === 'public-object/cache'
+            )
+        ).toBe(true);
     });
 
     it('retains the HPA-229 requirement for at least one AVIF object', async () => {

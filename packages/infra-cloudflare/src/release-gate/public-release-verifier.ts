@@ -52,6 +52,10 @@ type JsonDocument = {
     body: unknown;
 };
 
+type JsonDocumentFetch =
+    | { ok: true; document: JsonDocument }
+    | { ok: false; text?: string };
+
 type ObjectReference = {
     identity: string;
     format: AssetFormat;
@@ -235,52 +239,66 @@ function failureContext(
     };
 }
 
+/**
+ * The V1 result requires a release/checksum identity. Once either a candidate
+ * expectation or a validated active pointer has established it, ordinary
+ * transport/body/JSON failures remain structured. Before that point (for
+ * example, a missing active pointer), a safe error is the only honest outcome.
+ */
+function documentFetchFailure(
+    state: VerificationState,
+    id: 'pointer.fetch' | 'manifest.fetch',
+    stage: 'pointer' | 'manifest',
+    code: 'pointer/fetch' | 'manifest/fetch',
+    safePath: string,
+    text?: string
+): PublicReleaseVerificationResultV1 {
+    if (stage === 'manifest' && text !== undefined) {
+        state.manifestSha256 = assertSha256<'manifest-bytes'>(sha256Hex(text));
+    }
+    state.record(id, false, failureContext(state, stage, code, safePath));
+    if (state.releaseId === undefined || state.manifestSha256 === undefined) {
+        throw new PublicReleaseVerificationError(code, stage);
+    }
+    return state.result();
+}
+
 async function fetchResponse(
     dependencies: PublicVerifierDependencies,
     url: string,
-    browserOrigin: string,
-    stage: GateStageV1,
-    code: string
-): Promise<Response> {
+    browserOrigin: string
+): Promise<Response | undefined> {
     try {
         const response = await dependencies.fetch(url, {
             headers: { origin: browserOrigin },
             signal: requestSignal(),
         });
-        if (response.status !== 200) {
-            throw new PublicReleaseVerificationError(code, stage);
-        }
-        return response;
-    } catch (error) {
-        if (error instanceof PublicReleaseVerificationError) throw error;
-        throw new PublicReleaseVerificationError(code, stage);
+        return response.status === 200 ? response : undefined;
+    } catch {
+        return undefined;
     }
 }
 
 async function fetchJsonDocument(
     dependencies: PublicVerifierDependencies,
     url: string,
-    browserOrigin: string,
-    stage: GateStageV1,
-    code: string
-): Promise<JsonDocument> {
-    const response = await fetchResponse(
-        dependencies,
-        url,
-        browserOrigin,
-        stage,
-        code
-    );
+    browserOrigin: string
+): Promise<JsonDocumentFetch> {
+    const response = await fetchResponse(dependencies, url, browserOrigin);
+    if (response === undefined) return { ok: false };
     let text: string;
     try {
         text = await response.text();
     } catch {
-        throw new PublicReleaseVerificationError(code, stage);
+        return { ok: false };
     }
     try {
-        return { response, text, body: JSON.parse(text) as unknown };
+        return {
+            ok: true,
+            document: { response, text, body: JSON.parse(text) as unknown },
+        };
     } catch {
-        throw new PublicReleaseVerificationError(code, stage);
+        return { ok: false, text };
     }
 }
 
@@ -449,16 +467,12 @@ async function verifyObjectGroup(
         );
     }
 
-    let response: Response;
-    try {
-        response = await fetchResponse(
-            dependencies,
-            objectUrl,
-            state.input.browserOrigin,
-            'public-object',
-            'public-object/fetch'
-        );
-    } catch {
+    const response = await fetchResponse(
+        dependencies,
+        objectUrl,
+        state.input.browserOrigin
+    );
+    if (response === undefined) {
         state.record(
             'object.fetch',
             false,
@@ -492,9 +506,16 @@ async function verifyObjectGroup(
         response.headers,
         first.identity
     );
+    const cacheStatus = response.headers.get('cf-cache-status')?.toUpperCase();
+    const edgeCacheEligible =
+        cacheStatus === 'MISS' ||
+        cacheStatus === 'HIT' ||
+        cacheStatus === 'EXPIRED' ||
+        cacheStatus === 'REVALIDATED';
     state.record(
         'object.cache',
-        assertImmutable(response.headers.get('cache-control')).ok,
+        assertImmutable(response.headers.get('cache-control')).ok &&
+            edgeCacheEligible,
         failureContext(
             state,
             'public-object',
@@ -656,13 +677,22 @@ export async function verifyPublicRelease(
             parsedInput.storyId,
             parsedInput.target
         );
-        const pointer = await fetchJsonDocument(
+        const pointerFetch = await fetchJsonDocument(
             dependencies,
             publicUrl(parsedInput.assetBaseUrl, pointerPath),
-            parsedInput.browserOrigin,
-            'pointer',
-            'pointer/fetch'
+            parsedInput.browserOrigin
         );
+        if (!pointerFetch.ok) {
+            return documentFetchFailure(
+                state,
+                'pointer.fetch',
+                'pointer',
+                'pointer/fetch',
+                pointerPath,
+                pointerFetch.text
+            );
+        }
+        const pointer = pointerFetch.document;
         state.record('pointer.fetch', true);
         pointerBody = pointer.body;
 
@@ -715,6 +745,7 @@ export async function verifyPublicRelease(
             );
         }
         state.releaseId = parsedInput.releaseId;
+        state.manifestSha256 = parsedInput.expectedManifestSha256;
         manifestPath = getReleaseManifestPath(
             parsedInput.storyId,
             parsedInput.releaseId,
@@ -722,13 +753,22 @@ export async function verifyPublicRelease(
         );
     }
 
-    const manifest = await fetchJsonDocument(
+    const manifestFetch = await fetchJsonDocument(
         dependencies,
         publicUrl(parsedInput.assetBaseUrl, manifestPath),
-        parsedInput.browserOrigin,
-        'manifest',
-        'manifest/fetch'
+        parsedInput.browserOrigin
     );
+    if (!manifestFetch.ok) {
+        return documentFetchFailure(
+            state,
+            'manifest.fetch',
+            'manifest',
+            'manifest/fetch',
+            manifestPath,
+            manifestFetch.text
+        );
+    }
+    const manifest = manifestFetch.document;
     state.manifestSha256 = assertSha256<'manifest-bytes'>(
         sha256Hex(manifest.text)
     );

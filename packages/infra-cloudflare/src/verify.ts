@@ -21,6 +21,8 @@ export const ORIGIN = 'https://aquila.cwchanap.dev';
 // into the delivery host. A 404 is the only definitive absence response.
 const SOURCE_PROBE_KEY =
     'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png';
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+let requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
 
 export type SmokeVerificationResult = {
     publicVerification: PublicReleaseVerificationResultV1;
@@ -31,6 +33,11 @@ export type SmokeVerificationRender = {
     output: string;
     failed: number;
 };
+
+/** @internal Overrides the source-probe deadline for deterministic tests. */
+export function _setRequestTimeout(ms: number): void {
+    requestTimeoutMs = ms;
+}
 
 export function buildSmokeVerificationInput(
     assetBaseUrl: string
@@ -52,11 +59,29 @@ async function sourceKeyIsAbsent(
     const base = new URL(assetBaseUrl);
     if (!base.pathname.endsWith('/')) base.pathname += '/';
     const url = new URL(SOURCE_PROBE_KEY, base).toString();
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => {
+            const error = new Error('source-key probe timed out');
+            controller.abort(error);
+            reject(error);
+        }, requestTimeoutMs);
+        timer.unref?.();
+    });
     try {
-        const response = await fetchImpl(url, { headers: { origin: ORIGIN } });
+        const response = await Promise.race([
+            fetchImpl(url, {
+                headers: { origin: ORIGIN },
+                signal: controller.signal,
+            }),
+            deadline,
+        ]);
         return response.status === 404;
     } catch {
         return false;
+    } finally {
+        if (timer !== undefined) clearTimeout(timer);
     }
 }
 

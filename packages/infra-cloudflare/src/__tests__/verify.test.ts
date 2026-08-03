@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PublicReleaseVerificationResultV1 } from '../release-gate/schemas';
 
 const mocks = vi.hoisted(() => ({
@@ -11,6 +11,7 @@ vi.mock('../release-gate/public-release-verifier', () => ({
 
 import {
     ORIGIN,
+    _setRequestTimeout,
     buildSmokeVerificationInput,
     formatSmokeVerification,
     verifySmokeRelease,
@@ -37,6 +38,11 @@ function passedResult(): PublicReleaseVerificationResultV1 {
 describe('HPA-229 verify compatibility wrapper', () => {
     beforeEach(() => {
         mocks.verifyPublicRelease.mockReset();
+    });
+
+    afterEach(() => {
+        _setRequestTimeout(30_000);
+        vi.useRealTimers();
     });
 
     it('retains the fixed smoke defaults as an active public verification input', () => {
@@ -69,6 +75,31 @@ describe('HPA-229 verify compatibility wrapper', () => {
         expect(requests).toContain(
             `${BASE}/the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png`
         );
+    });
+
+    it('times out a stalled source-key isolation probe through an AbortSignal', async () => {
+        vi.useFakeTimers();
+        _setRequestTimeout(25);
+        mocks.verifyPublicRelease.mockResolvedValue(passedResult());
+        const requestOptions: RequestInit[] = [];
+        const stalledFetch = vi.fn(
+            (_input: RequestInfo | URL, init?: RequestInit) => {
+                requestOptions.push(init ?? {});
+                return new Promise<Response>(() => undefined);
+            }
+        );
+        const fetch = stalledFetch as unknown as typeof globalThis.fetch;
+
+        const verification = verifySmokeRelease(BASE, { fetch });
+        await vi.advanceTimersByTimeAsync(25);
+
+        expect(stalledFetch).toHaveBeenCalledOnce();
+        const init = requestOptions[0];
+        expect(init?.signal).toBeInstanceOf(AbortSignal);
+        expect(init?.signal?.aborted).toBe(true);
+        await expect(verification).resolves.toMatchObject({
+            sourceKeyAbsent: false,
+        });
     });
 
     it('renders established PASS/FAIL output and treats source leakage as a failure', () => {

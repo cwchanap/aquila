@@ -97,6 +97,46 @@ function harness(): {
     };
 }
 
+const retainedEvidencePaths = {
+    tier1: 'artifacts/ci-tier1.json',
+    publisher: 'artifacts/publisher-candidate.json',
+    r2Candidate: 'artifacts/r2-candidate.json',
+    publicCandidate: 'artifacts/public-candidate.json',
+    publicActive: 'artifacts/public-active.json',
+    webIdentity: 'artifacts/web-identity.json',
+    browser: 'artifacts/browser-flow.json',
+    manualReview: 'artifacts/manual-review.json',
+    workflowApproval: 'artifacts/workflow-approval.json',
+    productionPointerBefore: 'artifacts/production-pointer-before.json',
+    productionPointerAfter: 'artifacts/production-pointer-after.json',
+} as const;
+
+const retainedEvidenceOptions = [
+    ['--tier1-evidence', 'configuration/missing-tier1-evidence'],
+    ['--publisher-report', 'configuration/missing-publisher-report'],
+    ['--r2-candidate-evidence', 'configuration/missing-r2-candidate-evidence'],
+    [
+        '--public-candidate-evidence',
+        'configuration/missing-public-candidate-evidence',
+    ],
+    [
+        '--public-active-evidence',
+        'configuration/missing-public-active-evidence',
+    ],
+    ['--web-identity-evidence', 'configuration/missing-web-identity-evidence'],
+    ['--browser-evidence', 'configuration/missing-browser-evidence'],
+    ['--manual-review', 'configuration/missing-manual-review'],
+    ['--workflow-approval', 'configuration/missing-workflow-approval'],
+    [
+        '--production-pointer-before',
+        'configuration/missing-production-pointer-before',
+    ],
+    [
+        '--production-pointer-after',
+        'configuration/missing-production-pointer-after',
+    ],
+] as const;
+
 const verifyPreviewArgs = [
     'verify-preview',
     '--story',
@@ -111,16 +151,28 @@ const verifyPreviewArgs = [
     'https://assets.aquila.example',
     '--web-base-url',
     'https://preview.aquila.example',
+    '--tier1-evidence',
+    retainedEvidencePaths.tier1,
     '--publisher-report',
-    'publisher/report.json',
+    retainedEvidencePaths.publisher,
+    '--r2-candidate-evidence',
+    retainedEvidencePaths.r2Candidate,
+    '--public-candidate-evidence',
+    retainedEvidencePaths.publicCandidate,
+    '--public-active-evidence',
+    retainedEvidencePaths.publicActive,
     '--browser-evidence',
-    'browser/result.json',
+    retainedEvidencePaths.browser,
     '--web-identity-evidence',
-    'web/identity.json',
+    retainedEvidencePaths.webIdentity,
     '--manual-review',
-    'manual/review.json',
+    retainedEvidencePaths.manualReview,
     '--workflow-approval',
-    'workflow/approval.json',
+    retainedEvidencePaths.workflowApproval,
+    '--production-pointer-before',
+    retainedEvidencePaths.productionPointerBefore,
+    '--production-pointer-after',
+    retainedEvidencePaths.productionPointerAfter,
     '--commit-sha',
     'f'.repeat(40),
     '--evidence-dir',
@@ -159,6 +211,56 @@ function releaseGateDependencies(
         stderr: dependencies.stderr,
         runVerifyPreview,
     } as ReleaseGateCliDependencies;
+}
+
+function withoutEvidenceOption(option: string): string[] {
+    const args = [...verifyPreviewArgs];
+    const index = args.indexOf(option);
+    if (index < 0) throw new Error(`Missing test option ${option}`);
+    args.splice(index, 2);
+    return args;
+}
+
+function withInvalidEvidencePath(option: string): string[] {
+    const args = [...verifyPreviewArgs];
+    const index = args.indexOf(option);
+    if (index < 0) throw new Error(`Missing test option ${option}`);
+    args[index + 1] = '../outside-evidence.json';
+    return args;
+}
+
+function noReadCoordinatorDependencies(dependencies: AssetsCliDependencies): {
+    dependencies: ReleaseGateCliDependencies;
+    readEvidenceJson: ReturnType<typeof vi.fn>;
+    createEvidenceReference: ReturnType<typeof vi.fn>;
+    runVisualNovelReleaseGate: ReturnType<typeof vi.fn>;
+} {
+    const readEvidenceJson = vi.fn(async () => {
+        throw new Error('Evidence must not be read for an invalid CLI input');
+    });
+    const createEvidenceReference = vi.fn(async () => {
+        throw new Error(
+            'Evidence references must not be created for an invalid CLI input'
+        );
+    });
+    const runVisualNovelReleaseGate = vi.fn(async () =>
+        parseVisualNovelReleaseGateReportV1(validGateReport)
+    );
+    return {
+        dependencies: {
+            ...releaseGateDependencies(
+                dependencies,
+                vi.fn(async () => validGateReport)
+            ),
+            runVerifyPreview: undefined,
+            readEvidenceJson,
+            createEvidenceReference,
+            runVisualNovelReleaseGate,
+        } as ReleaseGateCliDependencies,
+        readEvidenceJson,
+        createEvidenceReference,
+        runVisualNovelReleaseGate,
+    };
 }
 
 const retainedCandidatePublisherReport: PublisherReportV1 = {
@@ -233,7 +335,7 @@ const retainedCandidatePublisherReport: PublisherReportV1 = {
 };
 
 const retainedEvidence: Record<string, unknown> = {
-    'ci/result.json': {
+    [retainedEvidencePaths.tier1]: {
         schemaVersion: 1,
         commitSha: 'f'.repeat(40),
         lockfileSha256: 'd'.repeat(64),
@@ -245,8 +347,8 @@ const retainedEvidence: Record<string, unknown> = {
         status: 'passed',
         completedAt: '2026-08-03T12:00:00.000Z',
     },
-    'publisher/report.json': retainedCandidatePublisherReport,
-    'r2/result.json': {
+    [retainedEvidencePaths.publisher]: retainedCandidatePublisherReport,
+    [retainedEvidencePaths.r2Candidate]: {
         schemaVersion: 1,
         status: 'passed',
         depth: 'deep',
@@ -255,7 +357,7 @@ const retainedEvidence: Record<string, unknown> = {
         releaseId: `sha256-${'a'.repeat(64)}`,
         manifestSha256: 'b'.repeat(64),
     },
-    'public/candidate.json': {
+    [retainedEvidencePaths.publicCandidate]: {
         schemaVersion: 1,
         status: 'passed',
         mode: 'candidate',
@@ -266,7 +368,7 @@ const retainedEvidence: Record<string, unknown> = {
         checks: [{ id: 'manifest.fetch', status: 'passed' }],
         diagnostics: [],
     },
-    'public/active.json': {
+    [retainedEvidencePaths.publicActive]: {
         schemaVersion: 1,
         status: 'passed',
         mode: 'active',
@@ -277,7 +379,7 @@ const retainedEvidence: Record<string, unknown> = {
         checks: [{ id: 'manifest.fetch', status: 'passed' }],
         diagnostics: [],
     },
-    'web/identity.json': {
+    [retainedEvidencePaths.webIdentity]: {
         schemaVersion: 1,
         target: 'preview',
         webBaseUrl: 'https://preview.aquila.example',
@@ -290,7 +392,7 @@ const retainedEvidence: Record<string, unknown> = {
         manifestRequestUrl:
             'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/releases/runtime-manifest.json',
     },
-    'browser/result.json': {
+    [retainedEvidencePaths.browser]: {
         schemaVersion: 1,
         status: 'passed',
         storyId: 'the_seventh_mirror',
@@ -300,7 +402,7 @@ const retainedEvidence: Record<string, unknown> = {
         manifestSha256: 'b'.repeat(64),
         scenarioSha256: 'c'.repeat(64),
     },
-    'manual/review.json': {
+    [retainedEvidencePaths.manualReview]: {
         schemaVersion: 1,
         storyId: 'the_seventh_mirror',
         previewId: 'hpa-233',
@@ -315,7 +417,7 @@ const retainedEvidence: Record<string, unknown> = {
         representativeRoutes: ['/en/stories/the_seventh_mirror'],
         notes: ['Desktop and mobile review completed.'],
     },
-    'workflow/approval.json': {
+    [retainedEvidencePaths.workflowApproval]: {
         schemaVersion: 1,
         repository: 'cwchan/aquila',
         workflowRef: '.github/workflows/visual-novel-release-gate.yml@main',
@@ -326,7 +428,7 @@ const retainedEvidence: Record<string, unknown> = {
         environment: 'visual-novel-release-approval',
         conclusion: 'success',
     },
-    'pointer/before.json': {
+    [retainedEvidencePaths.productionPointerBefore]: {
         schemaVersion: 1,
         storyId: 'the_seventh_mirror',
         previewId: 'hpa-233',
@@ -336,7 +438,7 @@ const retainedEvidence: Record<string, unknown> = {
             manifestSha256: 'f'.repeat(64),
         },
     },
-    'pointer/after.json': {
+    [retainedEvidencePaths.productionPointerAfter]: {
         schemaVersion: 1,
         storyId: 'the_seventh_mirror',
         previewId: 'hpa-233',
@@ -408,11 +510,20 @@ describe('assets release-gate routing', () => {
                 manifestSha256: 'b'.repeat(64),
                 assetBaseUrl: 'https://assets.aquila.example',
                 webBaseUrl: 'https://preview.aquila.example',
-                publisherReportPath: 'publisher/report.json',
-                browserEvidencePath: 'browser/result.json',
-                webIdentityEvidencePath: 'web/identity.json',
-                manualReviewPath: 'manual/review.json',
-                workflowApprovalPath: 'workflow/approval.json',
+                tier1EvidencePath: retainedEvidencePaths.tier1,
+                publisherReportPath: retainedEvidencePaths.publisher,
+                r2CandidateEvidencePath: retainedEvidencePaths.r2Candidate,
+                publicCandidateEvidencePath:
+                    retainedEvidencePaths.publicCandidate,
+                publicActiveEvidencePath: retainedEvidencePaths.publicActive,
+                browserEvidencePath: retainedEvidencePaths.browser,
+                webIdentityEvidencePath: retainedEvidencePaths.webIdentity,
+                manualReviewPath: retainedEvidencePaths.manualReview,
+                workflowApprovalPath: retainedEvidencePaths.workflowApproval,
+                productionPointerBeforePath:
+                    retainedEvidencePaths.productionPointerBefore,
+                productionPointerAfterPath:
+                    retainedEvidencePaths.productionPointerAfter,
                 commitSha: 'f'.repeat(40),
                 evidenceDir: '/retained/evidence',
             })
@@ -438,6 +549,24 @@ describe('assets release-gate routing', () => {
         expect(exit).toBe(0);
         expect(test.stdout()).toBe('');
         expect(test.stderr()).toContain('status: passed');
+    });
+
+    it('documents every retained evidence artifact as an explicit preview input', async () => {
+        const test = harness();
+
+        const exit = await runReleaseGateCli(
+            ['verify-preview', '--help'],
+            releaseGateDependencies(
+                test.dependencies,
+                vi.fn(async () => validGateReport)
+            )
+        );
+
+        expect(exit).toBe(0);
+        for (const [option] of retainedEvidenceOptions) {
+            expect(test.stdout()).toContain(option);
+        }
+        expect(test.stderr()).toBe('');
     });
 
     it('assembles retained immutable evidence for the Task 4 coordinator without a publisher store', async () => {
@@ -467,7 +596,25 @@ describe('assets release-gate routing', () => {
         } as ReleaseGateCliDependencies);
 
         expect(exit).toBe(0);
-        expect(readEvidenceJson).toHaveBeenCalledTimes(11);
+        expect(readEvidenceJson.mock.calls).toEqual([
+            ['/retained/evidence', retainedEvidencePaths.publisher],
+            ['/retained/evidence', retainedEvidencePaths.tier1],
+            ['/retained/evidence', retainedEvidencePaths.r2Candidate],
+            ['/retained/evidence', retainedEvidencePaths.publicCandidate],
+            ['/retained/evidence', retainedEvidencePaths.publicActive],
+            ['/retained/evidence', retainedEvidencePaths.webIdentity],
+            ['/retained/evidence', retainedEvidencePaths.browser],
+            ['/retained/evidence', retainedEvidencePaths.manualReview],
+            ['/retained/evidence', retainedEvidencePaths.workflowApproval],
+            [
+                '/retained/evidence',
+                retainedEvidencePaths.productionPointerBefore,
+            ],
+            [
+                '/retained/evidence',
+                retainedEvidencePaths.productionPointerAfter,
+            ],
+        ]);
         expect(createEvidenceReference).toHaveBeenCalledTimes(11);
         expect(runVisualNovelReleaseGate).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -482,11 +629,101 @@ describe('assets release-gate routing', () => {
                 },
                 evidenceDir: '/retained/evidence',
                 publisherReport: retainedCandidatePublisherReport,
+                evidence: {
+                    deterministicCi: expect.objectContaining({
+                        path: retainedEvidencePaths.tier1,
+                    }),
+                    publisherCandidate: expect.objectContaining({
+                        path: retainedEvidencePaths.publisher,
+                    }),
+                    r2Candidate: expect.objectContaining({
+                        path: retainedEvidencePaths.r2Candidate,
+                    }),
+                    publicCandidate: expect.objectContaining({
+                        path: retainedEvidencePaths.publicCandidate,
+                    }),
+                    publicActiveRelease: expect.objectContaining({
+                        path: retainedEvidencePaths.publicActive,
+                    }),
+                    webIdentity: expect.objectContaining({
+                        path: retainedEvidencePaths.webIdentity,
+                    }),
+                    browserFlows: expect.objectContaining({
+                        path: retainedEvidencePaths.browser,
+                    }),
+                    manualReview: expect.objectContaining({
+                        path: retainedEvidencePaths.manualReview,
+                    }),
+                    workflowApproval: expect.objectContaining({
+                        path: retainedEvidencePaths.workflowApproval,
+                    }),
+                    productionPointerBefore: expect.objectContaining({
+                        path: retainedEvidencePaths.productionPointerBefore,
+                    }),
+                    productionPointerAfter: expect.objectContaining({
+                        path: retainedEvidencePaths.productionPointerAfter,
+                    }),
+                },
             })
         );
         expect(test.stdout().trim().split('\n')).toHaveLength(1);
         expect(test.stderr()).toBe('');
     });
+
+    it.each(retainedEvidenceOptions)(
+        'requires %s and never reads a hidden default evidence path',
+        async (option, expectedCode) => {
+            const test = harness();
+            const coordinator = noReadCoordinatorDependencies(
+                test.dependencies
+            );
+
+            const exit = await runReleaseGateCli(
+                [...withoutEvidenceOption(option), '--json'],
+                coordinator.dependencies
+            );
+
+            expect(exit).toBe(1);
+            expect(coordinator.readEvidenceJson).not.toHaveBeenCalled();
+            expect(coordinator.createEvidenceReference).not.toHaveBeenCalled();
+            expect(
+                coordinator.runVisualNovelReleaseGate
+            ).not.toHaveBeenCalled();
+            expect(parseGateDiagnosticV1(JSON.parse(test.stdout()))).toEqual(
+                expect.objectContaining({ code: expectedCode, stage: 'input' })
+            );
+            expect(test.stderr()).toBe('');
+        }
+    );
+
+    it.each(retainedEvidenceOptions)(
+        'rejects an unsafe value for %s before reading evidence',
+        async option => {
+            const test = harness();
+            const coordinator = noReadCoordinatorDependencies(
+                test.dependencies
+            );
+
+            const exit = await runReleaseGateCli(
+                [...withInvalidEvidencePath(option), '--json'],
+                coordinator.dependencies
+            );
+
+            expect(exit).toBe(2);
+            expect(coordinator.readEvidenceJson).not.toHaveBeenCalled();
+            expect(coordinator.createEvidenceReference).not.toHaveBeenCalled();
+            expect(
+                coordinator.runVisualNovelReleaseGate
+            ).not.toHaveBeenCalled();
+            expect(parseGateDiagnosticV1(JSON.parse(test.stdout()))).toEqual(
+                expect.objectContaining({
+                    code: `input/invalid-${option.slice(2)}`,
+                    stage: 'input',
+                })
+            );
+            expect(test.stderr()).toBe('');
+        }
+    );
 
     it('rejects a preview web origin equal to the configured production origin before reading evidence', async () => {
         const test = harness();

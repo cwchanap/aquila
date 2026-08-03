@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
+import { isSafeRelativePath } from '@aquila/stories/runtime-assets';
 import { parsePublisherReportV1 } from '../publisher/report';
 import { PublisherError, publisherExitCode } from '../publisher/errors';
 import type { CreateEvidenceReferenceInputV1 } from './evidence';
@@ -32,11 +33,17 @@ export type VerifyPreviewCliInputV1 = {
     manifestSha256: string;
     assetBaseUrl: string;
     webBaseUrl: string;
+    tier1EvidencePath: string;
     publisherReportPath: string;
+    r2CandidateEvidencePath: string;
+    publicCandidateEvidencePath: string;
+    publicActiveEvidencePath: string;
     browserEvidencePath: string;
     webIdentityEvidencePath: string;
     manualReviewPath: string;
     workflowApprovalPath: string;
+    productionPointerBeforePath: string;
+    productionPointerAfterPath: string;
     commitSha: string;
     evidenceDir: string;
 };
@@ -95,11 +102,17 @@ const verifyPreviewOptions = {
     'expect-manifest-sha256': { type: 'string' },
     'asset-base-url': { type: 'string' },
     'web-base-url': { type: 'string' },
+    'tier1-evidence': { type: 'string' },
     'publisher-report': { type: 'string' },
+    'r2-candidate-evidence': { type: 'string' },
+    'public-candidate-evidence': { type: 'string' },
+    'public-active-evidence': { type: 'string' },
     'browser-evidence': { type: 'string' },
     'web-identity-evidence': { type: 'string' },
     'manual-review': { type: 'string' },
     'workflow-approval': { type: 'string' },
+    'production-pointer-before': { type: 'string' },
+    'production-pointer-after': { type: 'string' },
     'commit-sha': { type: 'string' },
     'evidence-dir': { type: 'string' },
     json: { type: 'boolean' },
@@ -108,20 +121,28 @@ const verifyPreviewOptions = {
 
 const VERIFY_PREVIEW_HELP = `Usage: assets release-gate verify-preview [options]
 
-Required options:
+Required identity and execution options:
   --story <story-id>
   --preview-id <preview-id>
   --release <release-id>
   --expect-manifest-sha256 <sha256>
   --asset-base-url <https-url>
   --web-base-url <https-url>
-  --publisher-report <relative-evidence-path>
-  --browser-evidence <relative-evidence-path>
-  --web-identity-evidence <relative-evidence-path>
-  --manual-review <relative-evidence-path>
-  --workflow-approval <relative-evidence-path>
   --commit-sha <commit-sha>
   --evidence-dir <directory>
+
+Required retained evidence paths:
+  --tier1-evidence <relative-evidence-path>             deterministic CI Tier 1 result
+  --publisher-report <relative-evidence-path>           no-activation production candidate report
+  --r2-candidate-evidence <relative-evidence-path>      deep R2 candidate verification
+  --public-candidate-evidence <relative-evidence-path>  public candidate verification
+  --public-active-evidence <relative-evidence-path>     active preview public verification
+  --web-identity-evidence <relative-evidence-path>      deployed preview web identity
+  --browser-evidence <relative-evidence-path>           desktop/mobile browser flow evidence
+  --manual-review <relative-evidence-path>              approved visual review record
+  --workflow-approval <relative-evidence-path>          protected environment approval
+  --production-pointer-before <relative-evidence-path>  production pointer snapshot before gate
+  --production-pointer-after <relative-evidence-path>   production pointer snapshot after gate
 
 Options:
   --json
@@ -132,45 +153,6 @@ const ASSERT_ACTIVATION_READY_HELP =
     'Usage: assets release-gate assert-activation-ready [options]\n';
 const SMOKE_PRODUCTION_HELP =
     'Usage: assets release-gate smoke-production [options]\n';
-
-const RETAINED_EVIDENCE = {
-    deterministicCi: {
-        id: 'ci',
-        kind: 'ci-result',
-        path: 'ci/result.json',
-        mediaType: 'application/json',
-    },
-    r2Candidate: {
-        id: 'r2',
-        kind: 'r2-verification',
-        path: 'r2/result.json',
-        mediaType: 'application/json',
-    },
-    publicCandidate: {
-        id: 'public-candidate',
-        kind: 'public-verification',
-        path: 'public/candidate.json',
-        mediaType: 'application/json',
-    },
-    publicActiveRelease: {
-        id: 'public-active',
-        kind: 'public-verification',
-        path: 'public/active.json',
-        mediaType: 'application/json',
-    },
-    productionPointerBefore: {
-        id: 'pointer-before',
-        kind: 'pointer-snapshot',
-        path: 'pointer/before.json',
-        mediaType: 'application/json',
-    },
-    productionPointerAfter: {
-        id: 'pointer-after',
-        kind: 'pointer-snapshot',
-        path: 'pointer/after.json',
-        mediaType: 'application/json',
-    },
-} as const;
 
 class ReleaseGateCliError extends Error {
     constructor(
@@ -196,6 +178,14 @@ function requiredString(values: CliValues, key: string): string {
         return configurationError(`configuration/missing-${key}`);
     }
     return value.trim();
+}
+
+function requiredEvidencePath(values: CliValues, key: string): string {
+    const path = requiredString(values, key);
+    if (!isSafeRelativePath(path)) {
+        return inputError(`input/invalid-${key}`);
+    }
+    return path;
 }
 
 function parseValues(args: readonly string[]): CliValues {
@@ -250,14 +240,35 @@ function parseVerifyPreviewInput(values: CliValues): VerifyPreviewCliInputV1 {
         manifestSha256,
         assetBaseUrl,
         webBaseUrl,
-        publisherReportPath: requiredString(values, 'publisher-report'),
-        browserEvidencePath: requiredString(values, 'browser-evidence'),
-        webIdentityEvidencePath: requiredString(
+        tier1EvidencePath: requiredEvidencePath(values, 'tier1-evidence'),
+        publisherReportPath: requiredEvidencePath(values, 'publisher-report'),
+        r2CandidateEvidencePath: requiredEvidencePath(
+            values,
+            'r2-candidate-evidence'
+        ),
+        publicCandidateEvidencePath: requiredEvidencePath(
+            values,
+            'public-candidate-evidence'
+        ),
+        publicActiveEvidencePath: requiredEvidencePath(
+            values,
+            'public-active-evidence'
+        ),
+        browserEvidencePath: requiredEvidencePath(values, 'browser-evidence'),
+        webIdentityEvidencePath: requiredEvidencePath(
             values,
             'web-identity-evidence'
         ),
-        manualReviewPath: requiredString(values, 'manual-review'),
-        workflowApprovalPath: requiredString(values, 'workflow-approval'),
+        manualReviewPath: requiredEvidencePath(values, 'manual-review'),
+        workflowApprovalPath: requiredEvidencePath(values, 'workflow-approval'),
+        productionPointerBeforePath: requiredEvidencePath(
+            values,
+            'production-pointer-before'
+        ),
+        productionPointerAfterPath: requiredEvidencePath(
+            values,
+            'production-pointer-after'
+        ),
         commitSha: requiredString(values, 'commit-sha'),
         evidenceDir: requiredString(values, 'evidence-dir'),
     };
@@ -359,25 +370,22 @@ async function createVerifyPreviewInput(
         await readEvidenceJson(input.evidenceDir, input.publisherReportPath)
     );
     const tier1 = parseTier1EvidenceV1(
-        await readEvidenceJson(
-            input.evidenceDir,
-            RETAINED_EVIDENCE.deterministicCi.path
-        )
+        await readEvidenceJson(input.evidenceDir, input.tier1EvidencePath)
     );
     const r2Candidate = (await readEvidenceJson(
         input.evidenceDir,
-        RETAINED_EVIDENCE.r2Candidate.path
+        input.r2CandidateEvidencePath
     )) as R2CandidateEvidenceV1;
     const publicCandidate = parsePublicReleaseVerificationResultV1(
         await readEvidenceJson(
             input.evidenceDir,
-            RETAINED_EVIDENCE.publicCandidate.path
+            input.publicCandidateEvidencePath
         )
     );
     const publicActiveRelease = parsePublicReleaseVerificationResultV1(
         await readEvidenceJson(
             input.evidenceDir,
-            RETAINED_EVIDENCE.publicActiveRelease.path
+            input.publicActiveEvidencePath
         )
     );
     const webIdentity = parseWebIdentityEvidenceV1(
@@ -396,17 +404,19 @@ async function createVerifyPreviewInput(
     );
     const productionPointerBefore = (await readEvidenceJson(
         input.evidenceDir,
-        RETAINED_EVIDENCE.productionPointerBefore.path
+        input.productionPointerBeforePath
     )) as ProductionPointerEvidenceV1;
     const productionPointerAfter = (await readEvidenceJson(
         input.evidenceDir,
-        RETAINED_EVIDENCE.productionPointerAfter.path
+        input.productionPointerAfterPath
     )) as ProductionPointerEvidenceV1;
 
     const reference = (request: CreateEvidenceReferenceInputV1) =>
         createReference(input.evidenceDir, request);
     const evidence: GateEvidenceBindingsV1 = {
-        deterministicCi: await reference(RETAINED_EVIDENCE.deterministicCi),
+        deterministicCi: await reference(
+            namedEvidenceReference('ci', 'ci-result', input.tier1EvidencePath)
+        ),
         publisherCandidate: await reference(
             namedEvidenceReference(
                 'publisher',
@@ -414,10 +424,26 @@ async function createVerifyPreviewInput(
                 input.publisherReportPath
             )
         ),
-        r2Candidate: await reference(RETAINED_EVIDENCE.r2Candidate),
-        publicCandidate: await reference(RETAINED_EVIDENCE.publicCandidate),
+        r2Candidate: await reference(
+            namedEvidenceReference(
+                'r2',
+                'r2-verification',
+                input.r2CandidateEvidencePath
+            )
+        ),
+        publicCandidate: await reference(
+            namedEvidenceReference(
+                'public-candidate',
+                'public-verification',
+                input.publicCandidateEvidencePath
+            )
+        ),
         publicActiveRelease: await reference(
-            RETAINED_EVIDENCE.publicActiveRelease
+            namedEvidenceReference(
+                'public-active',
+                'public-verification',
+                input.publicActiveEvidencePath
+            )
         ),
         webIdentity: await reference(
             namedEvidenceReference(
@@ -448,10 +474,18 @@ async function createVerifyPreviewInput(
             )
         ),
         productionPointerBefore: await reference(
-            RETAINED_EVIDENCE.productionPointerBefore
+            namedEvidenceReference(
+                'pointer-before',
+                'pointer-snapshot',
+                input.productionPointerBeforePath
+            )
         ),
         productionPointerAfter: await reference(
-            RETAINED_EVIDENCE.productionPointerAfter
+            namedEvidenceReference(
+                'pointer-after',
+                'pointer-snapshot',
+                input.productionPointerAfterPath
+            )
         ),
     };
 

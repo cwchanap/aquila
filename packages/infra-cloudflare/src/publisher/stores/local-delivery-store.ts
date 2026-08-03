@@ -261,18 +261,25 @@ export class LocalDeliveryStore implements DeliveryStore {
      * that transient mismatch as permanent corruption. Corruption is surfaced
      * only after a subsequent stable mismatch is observed with no pending
      * marker.
+     *
+     * The whole snapshot attempt — marker wait, inspection, and mismatch
+     * retries — shares a single READ_TRANSACTION_WAIT_MS deadline measured
+     * from the start of the snapshot attempt. Marker polling and retry
+     * sleeps all check that shared deadline and surface the existing
+     * concurrency error once it is exceeded, so a writer whose marker never
+     * clears cannot keep the reader retrying past the bound.
      */
     private async readSnapshot<T>(
         key: string,
         inspect: () => Promise<T>
     ): Promise<T> {
-        const startedAt = Date.now();
+        const deadlineAt = Date.now() + READ_TRANSACTION_WAIT_MS;
         // True when the immediately preceding attempt retried a transient
         // mismatch with no pending marker. A successful inspection resets it,
         // so each mismatch episode earns one marker-independent retry.
         let retriedMismatchWithoutMarker = false;
         while (true) {
-            await this.waitForPendingTransaction(key);
+            await this.waitForPendingTransaction(key, deadlineAt);
             await this.afterReadMarkerCheck?.(key);
             let result: T;
             try {
@@ -281,8 +288,7 @@ export class LocalDeliveryStore implements DeliveryStore {
                 if (this.isTransientReadMismatch(error)) {
                     await this.afterReadMismatch?.(key);
                     const decision = await this.decideReadMismatchRetry(
-                        error,
-                        startedAt,
+                        deadlineAt,
                         key,
                         retriedMismatchWithoutMarker
                     );
@@ -301,7 +307,7 @@ export class LocalDeliveryStore implements DeliveryStore {
             // credit for the next mismatch episode.
             retriedMismatchWithoutMarker = false;
             if (await this.pendingTransactionExists(key)) {
-                await this.boundRetrySleep(startedAt, key);
+                await this.boundRetrySleep(deadlineAt, key);
                 continue;
             }
             return result;
@@ -309,10 +315,10 @@ export class LocalDeliveryStore implements DeliveryStore {
     }
 
     private async boundRetrySleep(
-        startedAt: number,
+        deadlineAt: number,
         key: string
     ): Promise<void> {
-        if (Date.now() - startedAt >= READ_TRANSACTION_WAIT_MS) {
+        if (Date.now() >= deadlineAt) {
             throw new PublisherError(
                 'concurrency',
                 'Local object transaction is still pending',
@@ -330,32 +336,31 @@ export class LocalDeliveryStore implements DeliveryStore {
 
     /**
      * Decides whether an observed read mismatch should be retried within the
-     * bounded wait window or surfaced. A transient integrity mismatch is
-     * retried while a writer's marker is present (the writer is still
-     * mid-transaction). When no marker is present the mismatch is retried at
-     * least once independent of the marker — a fast writer may have completed
-     * and cleared its marker between the mismatch observation and this check —
-     * and surfaced only after a subsequent stable mismatch with no pending
-     * marker (alreadyRetriedWithoutMarker). Non-integrity errors are always
-     * surfaced.
+     * bounded wait window or surfaced. Callers (readSnapshot() and
+     * readPointerSnapshot()) have already classified the error as a transient
+     * integrity mismatch before invoking this, so it only handles the retry
+     * policy. A transient integrity mismatch is retried while a writer's
+     * marker is present (the writer is still mid-transaction). When no marker
+     * is present the mismatch is retried at least once independent of the
+     * marker — a fast writer may have completed and cleared its marker
+     * between the mismatch observation and this check — and surfaced only
+     * after a subsequent stable mismatch with no pending marker
+     * (alreadyRetriedWithoutMarker). All waits honor the shared deadlineAt
+     * passed by the caller.
      */
     private async decideReadMismatchRetry(
-        error: unknown,
-        startedAt: number,
+        deadlineAt: number,
         key: string,
         alreadyRetriedWithoutMarker: boolean
     ): Promise<'throw' | 'retry-with-marker' | 'retry-without-marker'> {
-        if (!this.isTransientReadMismatch(error)) {
-            return 'throw';
-        }
         if (await this.pendingTransactionExists(key)) {
-            await this.boundRetrySleep(startedAt, key);
+            await this.boundRetrySleep(deadlineAt, key);
             return 'retry-with-marker';
         }
         if (alreadyRetriedWithoutMarker) {
             return 'throw';
         }
-        await this.boundRetrySleep(startedAt, key);
+        await this.boundRetrySleep(deadlineAt, key);
         return 'retry-without-marker';
     }
 
@@ -385,7 +390,7 @@ export class LocalDeliveryStore implements DeliveryStore {
      * pre- or post-write state and is returned as-is.
      */
     private async readPointerSnapshot(key: string): Promise<PointerSnapshot> {
-        const startedAt = Date.now();
+        const deadlineAt = Date.now() + READ_TRANSACTION_WAIT_MS;
         let retriedMismatchWithoutMarker = false;
         while (true) {
             let result: PointerSnapshot;
@@ -395,8 +400,7 @@ export class LocalDeliveryStore implements DeliveryStore {
                 if (this.isTransientReadMismatch(error)) {
                     await this.afterReadMismatch?.(key);
                     const decision = await this.decideReadMismatchRetry(
-                        error,
-                        startedAt,
+                        deadlineAt,
                         key,
                         retriedMismatchWithoutMarker
                     );
@@ -942,14 +946,18 @@ export class LocalDeliveryStore implements DeliveryStore {
      * in-progress writer clears the marker once the body and metadata renames
      * are durable, so waiting for it to disappear prevents observing the
      * rename gap without the reader itself writing. A marker that persists
-     * past the bound is a stale (crashed) transaction and is surfaced as a
+     * past deadlineAt is a stale (crashed) transaction and is surfaced as a
      * concurrency error; createImmutable() owns recovery under the create
-     * lock.
+     * lock. deadlineAt is the shared READ_TRANSACTION_WAIT_MS deadline
+     * measured by the caller (readSnapshot()), so marker polling and the
+     * caller's mismatch retries share one bound.
      */
-    private async waitForPendingTransaction(key: string): Promise<void> {
-        const startedAt = Date.now();
+    private async waitForPendingTransaction(
+        key: string,
+        deadlineAt: number
+    ): Promise<void> {
         while (await this.pendingTransactionExists(key)) {
-            if (Date.now() - startedAt >= READ_TRANSACTION_WAIT_MS) {
+            if (Date.now() >= deadlineAt) {
                 throw new PublisherError(
                     'concurrency',
                     'Local object transaction is still pending',

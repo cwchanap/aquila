@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import {
     access,
-    chmod,
     mkdir,
     mkdtemp,
     readFile,
@@ -13,49 +12,7 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { LocalDeliveryStore } from '../stores/local-delivery-store';
-
-async function snapshotTree(
-    root: string,
-    relative = ''
-): Promise<Record<string, string>> {
-    const result: Record<string, string> = {};
-    const entries = await readdir(join(root, relative), {
-        withFileTypes: true,
-    });
-    for (const entry of entries.sort((left, right) =>
-        left.name.localeCompare(right.name)
-    )) {
-        const path = join(relative, entry.name);
-        if (entry.isDirectory()) {
-            Object.assign(result, await snapshotTree(root, path));
-        } else {
-            result[path] = Buffer.from(
-                await readFile(join(root, path))
-            ).toString('base64');
-        }
-    }
-    return result;
-}
-
-async function chmodTree(
-    root: string,
-    dirMode: number,
-    fileMode: number,
-    relative = ''
-): Promise<void> {
-    const entries = await readdir(join(root, relative), {
-        withFileTypes: true,
-    });
-    for (const entry of entries) {
-        const path = join(relative, entry.name);
-        if (entry.isDirectory()) {
-            await chmodTree(root, dirMode, fileMode, path);
-        } else {
-            await chmod(join(root, path), fileMode);
-        }
-    }
-    await chmod(join(root, relative), dirMode);
-}
+import { chmodTree, snapshotTree } from './fs-tree-helpers';
 
 const POINTER_KEY = 'vn/stories/example/current.json';
 

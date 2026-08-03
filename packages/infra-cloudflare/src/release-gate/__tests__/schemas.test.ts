@@ -187,6 +187,21 @@ describe('PublicReleaseVerificationV1', () => {
             )
         ).toEqual(validPublicVerificationResult);
     });
+
+    it.each([
+        ['has no checks', []],
+        [
+            'contains a failed check',
+            [{ id: 'object.integrity', status: 'failed' }],
+        ],
+    ])('rejects a passing result that %s', (_label, checks) => {
+        expect(() =>
+            parsePublicReleaseVerificationResultV1({
+                ...validPublicVerificationResult,
+                checks,
+            })
+        ).toThrow();
+    });
 });
 
 describe('WebIdentityEvidenceV1', () => {

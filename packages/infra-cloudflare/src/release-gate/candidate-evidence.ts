@@ -51,6 +51,20 @@ function identitiesForDisposition(
     return [...qualified].sort();
 }
 
+function countIdentitiesByType(
+    identities: string[]
+): Record<'background' | 'portrait', number> {
+    const counts = { background: 0, portrait: 0 };
+    for (const identity of identities) {
+        const type = identity.slice(0, identity.indexOf(':'));
+        if (type !== 'background' && type !== 'portrait') {
+            return fail('Publisher coverage actions contain an invalid type');
+        }
+        counts[type] += 1;
+    }
+    return counts;
+}
+
 /**
  * Validates the retained immutable production publication report that feeds a
  * release-gate preview. It deliberately consumes the publisher-owned parser
@@ -127,6 +141,20 @@ export function validateCandidatePublisherEvidence(
         return fail(
             'Candidate coverage actions overlap included and omitted assets'
         );
+    }
+
+    const includedByType = countIdentitiesByType(includedIdentities);
+    const omittedByType = countIdentitiesByType(omittedIdentities);
+    for (const type of ['background', 'portrait'] as const) {
+        const expectedTypeCoverage = coverage.byType[type];
+        if (
+            includedByType[type] !== expectedTypeCoverage.included ||
+            omittedByType[type] !== expectedTypeCoverage.omitted
+        ) {
+            return fail(
+                'Candidate coverage actions do not match coverage by type'
+            );
+        }
     }
 
     return {

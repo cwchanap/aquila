@@ -358,7 +358,28 @@ export const publicReleaseVerificationResultV1Schema = z
         checks: z.array(publicVerificationCheckV1Schema),
         diagnostics: z.array(gateDiagnosticV1Schema),
     })
-    .strict();
+    .strict()
+    .superRefine((result, context) => {
+        if (result.status !== 'passed') return;
+
+        if (result.checks.length === 0) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'A passing public verification result requires checks',
+                path: ['checks'],
+            });
+        }
+        for (const [index, check] of result.checks.entries()) {
+            if (check.status !== 'passed') {
+                context.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message:
+                        'A passing public verification result requires every check to pass',
+                    path: ['checks', index, 'status'],
+                });
+            }
+        }
+    });
 export type PublicReleaseVerificationResultV1 = z.infer<
     typeof publicReleaseVerificationResultV1Schema
 >;

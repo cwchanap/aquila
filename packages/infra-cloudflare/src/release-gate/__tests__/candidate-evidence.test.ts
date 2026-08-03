@@ -110,6 +110,32 @@ describe('candidate publisher evidence', () => {
         expect(summary.omittedCount).toBe(1);
     });
 
+    it('rejects aggregate-matching actions assigned to the wrong asset types', () => {
+        const report = validPublisherReport();
+        report.actions = [
+            {
+                stage: 'input',
+                kind: 'include',
+                identity: 'background:opening/station',
+            },
+            {
+                stage: 'input',
+                kind: 'include',
+                identity: 'background:opening/fallback',
+            },
+            {
+                stage: 'input',
+                kind: 'omit',
+                identity: 'portrait:characters/mei',
+            },
+            { stage: 'activation', kind: 'no-op' },
+        ];
+
+        expect(() =>
+            validateCandidatePublisherEvidence(report, gateIdentity)
+        ).toThrow('Candidate coverage actions do not match coverage by type');
+    });
+
     it.each([
         [
             'wrong command',

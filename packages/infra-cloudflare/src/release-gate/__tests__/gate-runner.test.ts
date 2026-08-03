@@ -388,6 +388,25 @@ describe('visual novel release gate runner', () => {
         );
     });
 
+    it('rejects a digest-bound public candidate artifact with a failed object integrity check', async () => {
+        const input = fixtureGateInput({
+            publicCandidate: {
+                ...publicVerification('candidate'),
+                checks: [{ id: 'object.integrity', status: 'failed' }],
+            },
+        });
+        const report = await runFixture(input);
+
+        expect(report.status).toBe('failed');
+        expect(report.checks.publicCandidate.status).toBe('failed');
+        expect(report.checks.publicActiveRelease.status).toBe('not-run');
+        expect(report.diagnostics).toContainEqual(
+            expect.objectContaining({
+                stage: 'evidence-binding',
+            })
+        );
+    });
+
     it('rejects an evidence reference whose digest does not match retained bytes', async () => {
         const input = fixtureGateInput();
         input.evidence.webIdentity = {

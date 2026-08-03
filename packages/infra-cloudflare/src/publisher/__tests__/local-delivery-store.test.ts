@@ -483,6 +483,112 @@ describe('LocalDeliveryStore', () => {
         expect(readerErrors).toEqual([]);
     }, 20_000);
 
+    it('inspectPointer() does not observe a torn pointer during concurrent CAS between body and metadata renames', async () => {
+        // A writer performs compareAndSwapPointer() and pauses after the
+        // body rename but before the metadata rename. A second store instance
+        // calling inspectPointer() during that window must wait for the
+        // transaction marker to clear (the writer completes) and return
+        // either the previous pointer or the completed pointer — never a
+        // false integrity or storage failure. It must not acquire the pointer
+        // lock, recover the transaction, or remove the marker itself.
+        const root = await mkdtemp(
+            join(tmpdir(), 'local-pointer-inspect-torn-')
+        );
+        let resumeWriter: () => void = () => {};
+        const writerGate = new Promise<void>(resolve => {
+            resumeWriter = resolve;
+        });
+        let writerBodyRenamedResolve!: () => void;
+        const writerBodyRenamed = new Promise<void>(resolve => {
+            writerBodyRenamedResolve = resolve;
+        });
+        // Only the racing CAS should pause at the body-rename seam; the
+        // baseline CAS that establishes the previous pointer must complete
+        // normally.
+        let pauseOnBodyRename = false;
+        const writer = new LocalDeliveryStore(root, {
+            afterTransactionBodyRename: async () => {
+                if (!pauseOnBodyRename) return;
+                writerBodyRenamedResolve();
+                await writerGate;
+            },
+        });
+        const reader = new LocalDeliveryStore(root);
+
+        // Establish a previous pointer so the reader has a stable pre-write
+        // state to fall back to.
+        const first = await writer.compareAndSwapPointer({
+            ...pointerRequest(POINTER_KEY, JSON.stringify({ generation: 0 })),
+            expected: { exists: false },
+        });
+        const previousEtag = first.etag!;
+
+        const nextBytes = new TextEncoder().encode(
+            JSON.stringify({ generation: 1, padding: 'x'.repeat(2048) })
+        );
+        pauseOnBodyRename = true;
+        const casPromise = writer.compareAndSwapPointer({
+            key: POINTER_KEY,
+            bytes: nextBytes,
+            contentType: 'application/json',
+            cacheControl: 'no-cache, max-age=0, must-revalidate',
+            expected: { exists: true, etag: previousEtag },
+        });
+
+        // Wait for the writer to rename the body and pause before the
+        // metadata rename. The transaction marker is present at this point.
+        await writerBodyRenamed;
+
+        const transactionPath = join(
+            root,
+            '.publisher-transactions',
+            `${sha256(POINTER_KEY)}.json`
+        );
+        // The reader has not run yet; the marker is still present from the
+        // writer's in-progress transaction.
+        await expect(access(transactionPath)).resolves.toBeUndefined();
+
+        // The reader inspects the pointer while the writer is paused in the
+        // torn window. inspectPointer() must wait for the marker to clear
+        // rather than surfacing the body/metadata mismatch.
+        const inspectPromise = reader.inspectPointer(POINTER_KEY);
+
+        // Let the writer finish the metadata rename and clear the marker.
+        resumeWriter();
+
+        const [casResult, inspectResult] = await Promise.all([
+            casPromise,
+            inspectPromise,
+        ]);
+
+        expect(casResult.status).toBe('written');
+        expect(inspectResult.exists).toBe(true);
+        if (inspectResult.exists) {
+            // The reader observed the completed pointer (the writer finished
+            // before the reader's bounded wait elapsed). Either the previous
+            // or the completed etag is acceptable; a torn snapshot is not.
+            expect(
+                inspectResult.etag === previousEtag ||
+                    inspectResult.etag === casResult.etag
+            ).toBe(true);
+            expect(() =>
+                JSON.parse(new TextDecoder().decode(inspectResult.bytes))
+            ).not.toThrow();
+        }
+
+        // The read-only inspectPointer() path must not have left any pointer
+        // lock artifacts behind in the destination.
+        const pointerDir = join(root, 'vn/stories/example');
+        const dirEntries = await readdir(pointerDir);
+        expect(dirEntries).toEqual(['current.json']);
+
+        // The transaction marker was cleared by the writer completing, not by
+        // the reader recovering it.
+        await expect(access(transactionPath)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+    }, 10_000);
+
     it('recovers a pointer transaction interrupted between body and metadata renames', async () => {
         const root = await mkdtemp(join(tmpdir(), 'local-pointer-recovery-'));
         const store = new LocalDeliveryStore(root);

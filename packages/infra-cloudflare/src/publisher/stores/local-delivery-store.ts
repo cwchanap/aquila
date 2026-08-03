@@ -298,6 +298,55 @@ export class LocalDeliveryStore implements DeliveryStore {
         return error instanceof PublisherError && error.code === 'integrity';
     }
 
+    /**
+     * Observational pointer snapshot used by inspectPointer(). Like
+     * readSnapshot() it is side-effect-free (no lock, no recovery, no
+     * directory creation) and retries a transient body/metadata mismatch
+     * while a writer's transaction marker is present, so a read-only planner
+     * interleaving with an in-progress compareAndSwapPointer() between the
+     * body and metadata renames observes either the previous or the
+     * completed pointer — never a false integrity failure.
+     *
+     * Unlike readSnapshot() it does NOT wait for a pending marker before
+     * inspecting and does NOT recheck the marker after a successful
+     * inspection. A pointer transaction marker may be stale (left by a
+     * crashed writer whose temp body/metadata were never renamed), in which
+     * case the committed body/metadata are still consistent and the planner
+     * must read them without blocking or recovering — recovery is owned by
+     * compareAndSwapPointer()/readPointer() under the pointer lock. A
+     * consistent snapshot taken with a marker present is therefore a valid
+     * pre- or post-write state and is returned as-is.
+     */
+    private async readPointerSnapshot(key: string): Promise<PointerSnapshot> {
+        const startedAt = Date.now();
+        while (true) {
+            let result: PointerSnapshot;
+            try {
+                result = await this.readPointerUnlocked(key);
+            } catch (error) {
+                // A transient body/metadata mismatch (e.g. the body renamed
+                // into place before the metadata during an in-progress
+                // pointer CAS) is only retryable while a writer is
+                // mid-transaction. With no marker present the mismatch is
+                // genuine corruption; surface it rather than mask it.
+                if (
+                    !this.isTransientReadMismatch(error) ||
+                    !(await this.pendingTransactionExists(key))
+                ) {
+                    throw error;
+                }
+                await this.boundRetrySleep(startedAt, key);
+                continue;
+            }
+            // The inspection observed a consistent body/metadata pair. A
+            // pending marker may indicate an in-progress writer that has not
+            // yet renamed the body (committed state is the previous pointer)
+            // or a stale marker from a crashed writer. Both are valid
+            // observational states; return without waiting or recovering.
+            return result;
+        }
+    }
+
     private async statUnlocked(
         key: string
     ): Promise<StoredObjectMetadata | null> {
@@ -464,7 +513,7 @@ export class LocalDeliveryStore implements DeliveryStore {
 
     async inspectPointer(key: string): Promise<PointerSnapshot> {
         this.assertPointerKey(key);
-        return this.readPointerUnlocked(key);
+        return this.readPointerSnapshot(key);
     }
 
     private async readPointerUnlocked(key: string): Promise<PointerSnapshot> {

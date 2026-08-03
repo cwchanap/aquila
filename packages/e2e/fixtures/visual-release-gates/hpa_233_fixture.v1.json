@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "storyId": "hpa_233_fixture",
+  "locale": "en",
+  "directOpen": {
+    "sceneId": "opening",
+    "dialogueIndex": 1
+  },
+  "transition": {
+    "from": {
+      "sceneId": "opening",
+      "dialogueIndex": 1
+    },
+    "to": {
+      "sceneId": "opening",
+      "dialogueIndex": 2
+    },
+    "backgroundChanges": true,
+    "portraitChanges": true
+  },
+  "bookmark": {
+    "sceneId": "opening",
+    "dialogueIndex": 2
+  },
+  "omittedFallback": {
+    "sceneId": "opening",
+    "dialogueIndex": 3,
+    "identity": "portrait:characters/release_gate/missing"
+  },
+  "choice": {
+    "sceneId": "branch",
+    "dialogueIndex": 0,
+    "choiceIndex": 0,
+    "expectedSceneId": "result"
+  },
+  "unrelatedStoryIds": ["train_adventure"]
+}

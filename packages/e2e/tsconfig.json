@@ -11,6 +11,7 @@
     "types": ["node", "@playwright/test"]
   },
   "include": [
+    "reporters/**/*.ts",
     "tests/**/*.ts",
     "scripts/**/*.ts",
     "playwright.config.ts",

@@ -14,6 +14,7 @@
     "measure:reader": "bun scripts/measure-reader-runtime.ts"
   },
   "devDependencies": {
+    "@aquila/infra-cloudflare": "workspace:*",
     "@aquila/stories": "workspace:*",
     "@playwright/test": "^1.55.0"
   }

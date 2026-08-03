@@ -363,6 +363,7 @@
     class="background-layer"
     data-bg-layer="active"
     data-bg-state={snapshot.activeBackground.state}
+    data-visual-identity={snapshot.activeBackground.identity ?? undefined}
     src={snapshot.activeBackground.objectUrl ?? undefined}
     alt=""
   />
@@ -371,6 +372,7 @@
     class="background-layer background-staging"
     data-bg-layer="staging"
     data-bg-state={snapshot.stagingBackground.state}
+    data-visual-identity={snapshot.stagingBackground.identity ?? undefined}
     src={snapshot.stagingBackground.objectUrl ?? undefined}
     style:opacity={snapshot.stagingBackground.state === 'ready' ? 1 : 0}
     ontransitionend={() => controller?.commitBackgroundTransition()}
@@ -381,6 +383,7 @@
     class="visual-portrait"
     data-portrait-state={snapshot.portrait.state}
     data-portrait-slot={snapshot.portrait.slot}
+    data-visual-identity={snapshot.portrait.identity ?? undefined}
     src={snapshot.portrait.objectUrl ?? undefined}
     alt=""
   />

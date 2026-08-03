@@ -1,5 +1,7 @@
 export {
     assertVisualReviewMatchesIdentity,
+    parseBrowserEvidenceProjectV1,
+    parseBrowserEvidenceV1,
     parseGateCheckV1,
     parseGateDiagnosticV1,
     parseGateEvidenceReferenceV1,
@@ -15,6 +17,11 @@ export {
     parseWorkflowApprovalEvidenceV1,
 } from './schemas';
 export type {
+    BrowserEvidenceFlowV1,
+    BrowserEvidenceProjectNameV1,
+    BrowserEvidenceProjectV1,
+    BrowserEvidenceScenarioCaseV1,
+    BrowserEvidenceV1,
     GateCheckV1,
     GateEvidenceReferenceV1,
     PublicReleaseVerificationInputV1,

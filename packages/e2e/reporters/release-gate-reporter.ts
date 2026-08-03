@@ -1,6 +1,11 @@
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { canonicalJson } from '@aquila/stories/runtime-assets';
+import {
+    parseBrowserEvidenceV1,
+    type BrowserEvidenceFlowV1,
+    type BrowserEvidenceV1,
+} from '@aquila/infra-cloudflare/release-gate';
 import type {
     FullConfig,
     Reporter,
@@ -8,54 +13,41 @@ import type {
     TestCase,
     TestResult,
 } from '@playwright/test/reporter';
-import {
-    createReleaseGateBrowserEvidence,
-    type ReleaseGateBrowserEvidenceV1,
-} from '../tests/support/release-gate-evidence';
 import { loadReleaseGateRunContext } from '../tests/support/release-gate-env';
 
-type ProjectEvidenceInput = Omit<
-    ReleaseGateBrowserEvidenceV1,
-    'traces' | 'screenshots'
-> & {
-    traces: string[];
-    screenshots: string[];
+type BrowserEvidenceAggregateInput = Omit<
+    BrowserEvidenceV1,
+    'projects' | 'status'
+>;
+
+type ProjectEvidenceInput = {
+    evidence: unknown;
+    screenshotSources: string[];
 };
 
-type WrittenProject = {
-    project: string;
-    path: string;
-    status: 'passed' | 'failed';
-};
-
-type CapturedArtifacts = {
-    traces: string[];
-    screenshots: string[];
-};
-
-function projectFileName(project: string): string {
-    if (!/^[a-z0-9-]+$/.test(project)) {
-        throw new Error(
-            'Release-gate project name is unsafe for evidence output'
-        );
-    }
-    return `${project}.json`;
+function evidenceObject(value: unknown): Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
+        ? { ...value }
+        : {};
 }
 
-async function copyArtifacts(
+function projectNameFromEvidence(value: unknown): string {
+    const project = evidenceObject(value).project;
+    return typeof project === 'string' ? project : '';
+}
+
+async function copyScreenshots(
     evidenceDir: string,
     project: string,
-    sources: readonly string[],
-    kind: 'trace' | 'screenshot'
+    sources: readonly string[]
 ): Promise<string[]> {
     if (sources.length === 0) return [];
 
-    const outputDir = join(evidenceDir, 'artifacts', project);
+    const outputDir = join(evidenceDir, 'screenshots', project);
     await mkdir(outputDir, { recursive: true });
-    const extension = kind === 'trace' ? '.zip' : '.png';
     const copied: string[] = [];
     for (const [index, source] of sources.entries()) {
-        const relativePath = `artifacts/${project}/${kind}-${index}${extension}`;
+        const relativePath = `screenshots/${project}/screenshot-${index}.png`;
         await copyFile(resolve(source), join(evidenceDir, relativePath));
         copied.push(relativePath);
     }
@@ -63,24 +55,27 @@ async function copyArtifacts(
 }
 
 /**
- * Retains one strictly structured, credential-free document per browser
- * project. Artifact source paths are never serialized: copies are named under
- * the evidence directory and referenced only by their safe relative paths.
+ * Retains one canonical, inline browser-evidence aggregate. The reporter
+ * stores screenshots under the evidence directory but never serializes raw
+ * Playwright traces, request headers, cookies, or source attachment paths.
  */
 export async function writeReleaseGateEvidence(input: {
     evidenceDir: string;
+    aggregate: BrowserEvidenceAggregateInput;
     projectEvidence: readonly ProjectEvidenceInput[];
 }): Promise<void> {
     const evidenceDir = resolve(input.evidenceDir);
     await mkdir(evidenceDir, { recursive: true });
 
     const ordered = [...input.projectEvidence].sort((left, right) =>
-        left.project.localeCompare(right.project)
+        projectNameFromEvidence(left.evidence).localeCompare(
+            projectNameFromEvidence(right.evidence)
+        )
     );
     const projects = new Set<string>();
-    const written: WrittenProject[] = [];
+    const retainedProjects: unknown[] = [];
     for (const projectEvidence of ordered) {
-        const project = projectEvidence.project;
+        const project = projectNameFromEvidence(projectEvidence.evidence);
         if (projects.has(project)) {
             throw new Error(
                 `Release-gate evidence already exists for ${project}`
@@ -88,37 +83,29 @@ export async function writeReleaseGateEvidence(input: {
         }
         projects.add(project);
 
-        const [traces, screenshots] = await Promise.all([
-            copyArtifacts(
-                evidenceDir,
-                project,
-                projectEvidence.traces,
-                'trace'
-            ),
-            copyArtifacts(
-                evidenceDir,
-                project,
-                projectEvidence.screenshots,
-                'screenshot'
-            ),
-        ]);
-        const evidence = createReleaseGateBrowserEvidence({
-            ...projectEvidence,
-            traces,
+        const screenshots = await copyScreenshots(
+            evidenceDir,
+            project,
+            projectEvidence.screenshotSources
+        );
+        retainedProjects.push({
+            ...evidenceObject(projectEvidence.evidence),
             screenshots,
         });
-        const path = projectFileName(project);
-        await writeFile(
-            join(evidenceDir, path),
-            `${canonicalJson(evidence)}\n`,
-            'utf8'
-        );
-        written.push({ project, path, status: evidence.status });
     }
 
+    const evidence = parseBrowserEvidenceV1({
+        ...input.aggregate,
+        status: retainedProjects.every(
+            project => evidenceObject(project).status === 'passed'
+        )
+            ? 'passed'
+            : 'failed',
+        projects: retainedProjects,
+    });
     await writeFile(
-        join(evidenceDir, 'index.json'),
-        `${canonicalJson({ schemaVersion: 1, projects: written } as const)}\n`,
+        join(evidenceDir, 'browser-evidence.json'),
+        `${canonicalJson(evidence)}\n`,
         'utf8'
     );
 }
@@ -143,9 +130,7 @@ function attachmentSources(result: TestResult, contentType: string): string[] {
         .map(attachment => attachment.path!);
 }
 
-async function readEvidenceAttachment(
-    result: TestResult
-): Promise<ReleaseGateBrowserEvidenceV1 | undefined> {
+async function readEvidenceAttachment(result: TestResult): Promise<unknown> {
     const attachment = result.attachments.find(
         candidate =>
             candidate.name === 'release-gate-evidence' &&
@@ -158,63 +143,78 @@ async function readEvidenceAttachment(
             ? undefined
             : await readFile(attachment.path, 'utf8'));
     if (text === undefined) return undefined;
-    return createReleaseGateBrowserEvidence(
-        JSON.parse(text) as ReleaseGateBrowserEvidenceV1
-    );
+    return JSON.parse(text) as unknown;
+}
+
+function flowForTarget(
+    target: 'preview' | 'production'
+): BrowserEvidenceFlowV1 {
+    return target === 'preview' ? 'preview-release-gate' : 'production-smoke';
+}
+
+function scenarioCaseIds(flow: BrowserEvidenceFlowV1): readonly string[] {
+    return flow === 'preview-release-gate'
+        ? [
+              'direct-open',
+              'identity-and-requests',
+              'visual-transition',
+              'mode-swap',
+              'viewport-swap',
+              'history-focus',
+              'bookmark-restore',
+              'omitted-fallback',
+              'choice',
+              'reload-and-lazy-chunk',
+          ]
+        : ['direct-open', 'identity-and-decode', 'progression', 'read-only'];
 }
 
 function fallbackProjectEvidence(
     project: string,
     run: Awaited<ReturnType<typeof loadReleaseGateRunContext>>
-): ProjectEvidenceInput {
-    const caseIds =
-        run.env.target === 'preview'
-            ? [
-                  'direct-open',
-                  'identity-and-requests',
-                  'visual-transition',
-                  'mode-swap',
-                  'viewport-swap',
-                  'history-focus',
-                  'bookmark-restore',
-                  'omitted-fallback',
-                  'choice',
-                  'reload-and-lazy-chunk',
-              ]
-            : [
-                  'direct-open',
-                  'identity-and-decode',
-                  'progression',
-                  'read-only',
-              ];
+): unknown {
+    const flow = flowForTarget(run.env.target);
     return {
         schemaVersion: 1,
+        flow,
         project,
+        status: 'failed',
         storyId: run.scenario.storyId,
-        target: run.env.target,
-        ...(run.env.expectedIdentity.previewId === undefined
-            ? {}
-            : { previewId: run.env.expectedIdentity.previewId }),
+        target: run.env.publicationTarget,
+        assetEnvironment: run.env.expectedIdentity.assetEnvironment,
         releaseId: run.env.expectedIdentity.releaseId,
         manifestSha256: run.env.expectedIdentity.manifestSha256,
         scenarioSha256: run.scenarioSha256,
-        identity: run.env.expectedIdentity,
         requestPaths: {
             pointerRequestUrl: null,
             manifestRequestUrl: null,
-            observedUrls: [],
         },
-        scenarioCases: caseIds.map(id => ({ id, status: 'not-run' as const })),
-        status: 'failed',
-        traces: [],
+        scenarioCases: scenarioCaseIds(flow).map(id => ({
+            id,
+            status: 'not-run' as const,
+        })),
         screenshots: [],
+    };
+}
+
+function aggregateEvidence(
+    run: Awaited<ReturnType<typeof loadReleaseGateRunContext>>
+): BrowserEvidenceAggregateInput {
+    return {
+        schemaVersion: 1,
+        flow: flowForTarget(run.env.target),
+        storyId: run.scenario.storyId,
+        target: run.env.publicationTarget,
+        releaseId: run.env.expectedIdentity.releaseId,
+        manifestSha256: run.env.expectedIdentity.manifestSha256,
+        scenarioSha256: run.scenarioSha256,
     };
 }
 
 export default class ReleaseGateReporter implements Reporter {
     private readonly projects = new Set<string>();
-    private readonly evidence = new Map<string, ProjectEvidenceInput>();
-    private readonly artifacts = new Map<string, CapturedArtifacts>();
+    private readonly evidence = new Map<string, unknown>();
+    private readonly screenshots = new Map<string, string[]>();
     private readonly pending = new Set<Promise<void>>();
 
     onBegin(config: FullConfig): void {
@@ -230,37 +230,21 @@ export default class ReleaseGateReporter implements Reporter {
         if (project === undefined || !this.projects.has(project)) return;
         if (result.status === 'skipped') return;
 
-        const priorArtifacts = this.artifacts.get(project);
-        this.artifacts.set(project, {
-            traces: [
-                ...new Set([
-                    ...(priorArtifacts?.traces ?? []),
-                    ...attachmentSources(result, 'application/zip'),
-                ]),
-            ],
-            screenshots: [
-                ...new Set([
-                    ...(priorArtifacts?.screenshots ?? []),
-                    ...attachmentSources(result, 'image/png'),
-                ]),
-            ],
-        });
+        const priorScreenshots = this.screenshots.get(project) ?? [];
+        this.screenshots.set(project, [
+            ...new Set([
+                ...priorScreenshots,
+                ...attachmentSources(result, 'image/png'),
+            ]),
+        ]);
 
         const pending = (async () => {
             const browserEvidence = await readEvidenceAttachment(result);
             if (browserEvidence === undefined) return;
-            const failed = result.status !== 'passed';
+            const evidence = evidenceObject(browserEvidence);
             this.evidence.set(project, {
-                ...browserEvidence,
-                scenarioCases: failed
-                    ? [
-                          ...browserEvidence.scenarioCases,
-                          { id: 'playwright-execution', status: 'failed' },
-                      ]
-                    : browserEvidence.scenarioCases,
-                status: failed ? 'failed' : browserEvidence.status,
-                traces: attachmentSources(result, 'application/zip'),
-                screenshots: attachmentSources(result, 'image/png'),
+                ...evidence,
+                status: result.status === 'passed' ? evidence.status : 'failed',
             });
         })();
         this.pending.add(pending);
@@ -276,23 +260,16 @@ export default class ReleaseGateReporter implements Reporter {
 
         await Promise.all(this.pending);
         const run = await loadReleaseGateRunContext(process.env);
-        const projectEvidence = [...this.projects].sort().map(project => {
-            const evidence =
+        const projectEvidence = [...this.projects].sort().map(project => ({
+            evidence:
                 this.evidence.get(project) ??
-                fallbackProjectEvidence(project, run);
-            const artifacts = this.artifacts.get(project);
-            return {
-                ...evidence,
-                traces:
-                    evidence.traces.length > 0
-                        ? evidence.traces
-                        : (artifacts?.traces ?? []),
-                screenshots:
-                    evidence.screenshots.length > 0
-                        ? evidence.screenshots
-                        : (artifacts?.screenshots ?? []),
-            };
+                fallbackProjectEvidence(project, run),
+            screenshotSources: this.screenshots.get(project) ?? [],
+        }));
+        await writeReleaseGateEvidence({
+            evidenceDir,
+            aggregate: aggregateEvidence(run),
+            projectEvidence,
         });
-        await writeReleaseGateEvidence({ evidenceDir, projectEvidence });
     }
 }

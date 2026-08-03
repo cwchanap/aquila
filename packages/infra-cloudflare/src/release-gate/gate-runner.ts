@@ -19,6 +19,7 @@ import {
 } from './evidence';
 import {
     assertVisualReviewMatchesIdentity,
+    parseBrowserEvidenceV1,
     gateEvidenceReferenceV1Schema,
     parseGateEvidenceReferenceV1,
     parsePublicReleaseVerificationResultV1,
@@ -28,6 +29,7 @@ import {
     parseWebIdentityEvidenceV1,
     parseWorkflowApprovalEvidenceV1,
     publicationTargetV1Schema,
+    type BrowserEvidenceV1,
     type GateEvidenceReferenceV1,
     type PublicReleaseVerificationResultV1,
     type Tier1EvidenceV1,
@@ -57,33 +59,6 @@ const r2CandidateEvidenceV1Schema = z
     })
     .strict();
 export type R2CandidateEvidenceV1 = z.infer<typeof r2CandidateEvidenceV1Schema>;
-
-// Browser evidence is produced by the E2E workspace in a later slice. This
-// boundary pins its release identity now while retaining additional
-// project-specific fields under the browser artifact's own schema.
-const browserEvidenceV1Schema = z
-    .object({
-        schemaVersion: z.literal(1),
-        status: z.enum(['passed', 'failed']),
-        storyId: z.string().refine(isStoryId, {
-            message: 'Story id is invalid',
-        }),
-        target: publicationTargetV1Schema,
-        previewId: z.string().refine(isPreviewId, {
-            message: 'Preview id is invalid',
-        }),
-        releaseId: z.string().refine(isReleaseId, {
-            message: 'Release id is invalid',
-        }),
-        manifestSha256: z.string().refine(isSha256, {
-            message: 'Manifest checksum is invalid',
-        }),
-        scenarioSha256: z.string().refine(isSha256, {
-            message: 'Scenario checksum is invalid',
-        }),
-    })
-    .passthrough();
-export type BrowserEvidenceV1 = z.infer<typeof browserEvidenceV1Schema>;
 
 // The production pointer capture remains publisher-owned. The gate binds the
 // retained production snapshot as opaque read-only evidence and compares the
@@ -168,10 +143,6 @@ function bindingError(code: string, evidenceId?: string): never {
 
 function parseR2CandidateEvidence(input: unknown): R2CandidateEvidenceV1 {
     return r2CandidateEvidenceV1Schema.parse(input);
-}
-
-function parseBrowserEvidence(input: unknown): BrowserEvidenceV1 {
-    return browserEvidenceV1Schema.parse(input);
 }
 
 function parseProductionPointerEvidence(
@@ -512,10 +483,26 @@ function assertBrowserEvidence(
         gateError('reader-flow', 'reader-flow/failed', reference.id);
     }
     if (
+        evidence.flow !== 'preview-release-gate' ||
         evidence.target.kind !== 'preview' ||
         evidence.target.previewId !== identity.previewId ||
-        evidence.previewId !== identity.previewId ||
-        evidence.scenarioSha256 !== identity.scenarioSha256
+        evidence.storyId !== identity.storyId ||
+        evidence.releaseId !== identity.releaseId ||
+        evidence.manifestSha256 !== identity.manifestSha256 ||
+        evidence.scenarioSha256 !== identity.scenarioSha256 ||
+        evidence.projects.length !== 2 ||
+        evidence.projects[0]?.project !== 'release-gate-chromium' ||
+        evidence.projects[1]?.project !== 'release-gate-mobile-chrome' ||
+        evidence.projects.some(
+            project =>
+                project.flow !== evidence.flow ||
+                project.storyId !== evidence.storyId ||
+                project.target.kind !== 'preview' ||
+                project.target.previewId !== identity.previewId ||
+                project.releaseId !== evidence.releaseId ||
+                project.manifestSha256 !== evidence.manifestSha256 ||
+                project.scenarioSha256 !== evidence.scenarioSha256
+        )
     ) {
         bindingError(
             'evidence-binding/browser-identity-mismatch',
@@ -778,7 +765,7 @@ export async function runVisualNovelReleaseGate(
 
     if (
         !(await runCheck('browserFlows', async () => {
-            const browser = parseBrowserEvidence(input.browserEvidence);
+            const browser = parseBrowserEvidenceV1(input.browserEvidence);
             await validateEvidenceReference(
                 dependencies,
                 input.evidenceDir,

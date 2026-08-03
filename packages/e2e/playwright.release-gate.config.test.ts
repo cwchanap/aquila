@@ -117,5 +117,6 @@ describe('release-gate Playwright configuration', () => {
         expect(config.reporter).toContainEqual([
             './reporters/release-gate-reporter.ts',
         ]);
+        expect(config.use?.trace).toBe('off');
     });
 });

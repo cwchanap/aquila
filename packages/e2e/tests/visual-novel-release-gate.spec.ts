@@ -17,11 +17,8 @@ async function expectExactRoute(page: Page, expected: string): Promise<void> {
     );
 }
 
-async function expectSettledIdentity(page: Page): Promise<void> {
-    const visual = page.getByTestId('visual-novel-reader');
+async function expectShellIdentity(page: Page): Promise<void> {
     const expected = releaseGate.env.expectedIdentity;
-    await expect(visual).toHaveAttribute('data-visual-release-state', 'ready');
-
     const host = page.getByTestId('reader-ready');
     await expect(host).toHaveAttribute(
         'data-asset-environment',
@@ -43,6 +40,12 @@ async function expectSettledIdentity(page: Page): Promise<void> {
     } else {
         await expect(host).not.toHaveAttribute('data-asset-preview-id');
     }
+}
+
+async function expectSettledIdentity(page: Page): Promise<void> {
+    const visual = page.getByTestId('visual-novel-reader');
+    await expect(visual).toHaveAttribute('data-visual-release-state', 'ready');
+    await expectShellIdentity(page);
 }
 
 async function gotoVisualRoute(
@@ -83,11 +86,7 @@ async function swapVisualToTextAndBack(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Text', exact: true }).click();
     await expect(page.getByTestId('visual-novel-reader')).not.toBeAttached();
     await expectExactRoute(page, route);
-    const textHost = page.getByTestId('reader-ready');
-    await expect(textHost).toHaveAttribute(
-        'data-asset-release-id',
-        releaseGate.env.expectedIdentity.releaseId
-    );
+    await expectShellIdentity(page);
 
     await page
         .getByRole('button', { name: 'Visual Novel', exact: true })
@@ -211,18 +210,13 @@ test.describe('deployed visual-novel preview release gate', () => {
                 await page
                     .getByRole('button', { name: 'Text', exact: true })
                     .click();
+                await expectShellIdentity(page);
                 await page.setViewportSize({ width: 390, height: 844 });
                 await expectExactRoute(page, route);
-                await expect(page.getByTestId('reader-ready')).toHaveAttribute(
-                    'data-asset-manifest-sha256',
-                    releaseGate.env.expectedIdentity.manifestSha256
-                );
+                await expectShellIdentity(page);
                 await page.setViewportSize({ width: 1280, height: 800 });
                 await expectExactRoute(page, route);
-                await expect(page.getByTestId('reader-ready')).toHaveAttribute(
-                    'data-asset-release-id',
-                    releaseGate.env.expectedIdentity.releaseId
-                );
+                await expectShellIdentity(page);
                 await page
                     .getByRole('button', { name: 'Visual Novel', exact: true })
                     .click();
@@ -253,21 +247,23 @@ test.describe('deployed visual-novel preview release gate', () => {
                 const position = releaseGate.scenario.omittedFallback;
                 await gotoVisualRoute(page, position);
                 const visual = page.getByTestId('visual-novel-reader');
+                const fallbackLayer = visual.locator(
+                    `[data-visual-identity="${position.identity}"]`
+                );
+                await expect(fallbackLayer).toHaveCount(1);
                 await expect
                     .poll(async () =>
-                        visual
-                            .locator('[data-bg-state], [data-portrait-state]')
-                            .evaluateAll(nodes =>
-                                nodes.some(node =>
-                                    ['omitted', 'failed'].includes(
-                                        node.getAttribute('data-bg-state') ??
-                                            node.getAttribute(
-                                                'data-portrait-state'
-                                            ) ??
-                                            ''
-                                    )
+                        fallbackLayer.evaluateAll(nodes =>
+                            nodes.some(node =>
+                                ['missing', 'failed'].includes(
+                                    node.getAttribute('data-bg-state') ??
+                                        node.getAttribute(
+                                            'data-portrait-state'
+                                        ) ??
+                                        ''
                                 )
                             )
+                        )
                     )
                     .toBe(true);
                 const previousDialogue = new URL(page.url()).searchParams.get(
@@ -311,7 +307,7 @@ test.describe('deployed visual-novel preview release gate', () => {
                 );
                 await expectSettledIdentity(page);
                 requests.assertNoUnrelatedStoryRequest(
-                    releaseGate.scenario.unrelatedStoryIds
+                    releaseGate.scenario.unrelatedStoryChunks
                 );
                 requests.assertExpectedRequests({
                     storyId: releaseGate.env.storyId,

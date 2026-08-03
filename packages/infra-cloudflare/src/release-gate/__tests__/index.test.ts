@@ -51,6 +51,8 @@ describe('public release-gate package boundary', () => {
     it('exports only strict parsers and semantic wire validators', () => {
         expect(Object.keys(releaseGate).sort()).toEqual([
             'assertVisualReviewMatchesIdentity',
+            'parseBrowserEvidenceProjectV1',
+            'parseBrowserEvidenceV1',
             'parseGateCheckV1',
             'parseGateDiagnosticV1',
             'parseGateEvidenceReferenceV1',

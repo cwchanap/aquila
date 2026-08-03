@@ -41,7 +41,7 @@ const SCENARIO = {
         choiceIndex: 0,
         expectedSceneId: 'result',
     },
-    unrelatedStoryIds: ['train_adventure'],
+    unrelatedStoryChunks: ['/_astro/train-adventure-collection-only.js'],
 } as const;
 
 describe('release-gate environment and scenario parsing', () => {
@@ -90,7 +90,9 @@ describe('release-gate environment and scenario parsing', () => {
         );
         const reordered = parseReleaseGateScenario(
             JSON.stringify({
-                unrelatedStoryIds: ['train_adventure'],
+                unrelatedStoryChunks: [
+                    '/_astro/train-adventure-collection-only.js',
+                ],
                 choice: SCENARIO.choice,
                 omittedFallback: SCENARIO.omittedFallback,
                 bookmark: SCENARIO.bookmark,

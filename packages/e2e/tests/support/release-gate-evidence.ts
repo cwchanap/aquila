@@ -1,43 +1,22 @@
 import {
     getCurrentPointerPath,
     getReleaseManifestPath,
-    isSafeRelativePath,
-    isSha256,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
-import { parseWebIdentityEvidenceV1 } from '@aquila/infra-cloudflare/release-gate';
+import {
+    parseBrowserEvidenceProjectV1,
+    type BrowserEvidenceFlowV1,
+    type BrowserEvidenceScenarioCaseV1,
+} from '@aquila/infra-cloudflare/release-gate';
 import type { TestInfo } from '@playwright/test';
-import type {
-    ExpectedWebIdentity,
-    ReleaseGateRunContext,
-} from './release-gate-env';
+import type { ReleaseGateRunContext } from './release-gate-env';
 
-export type ReleaseGateScenarioCase = {
-    id: string;
-    status: 'passed' | 'failed' | 'not-run';
-};
+export type ReleaseGateScenarioCase = BrowserEvidenceScenarioCaseV1;
 
 export type ReleaseGateRequestPaths = {
     pointerRequestUrl: string | null;
     manifestRequestUrl: string | null;
     observedUrls: string[];
-};
-
-export type ReleaseGateBrowserEvidenceV1 = {
-    schemaVersion: 1;
-    project: string;
-    storyId: string;
-    target: 'preview' | 'production';
-    previewId?: string;
-    releaseId: string;
-    manifestSha256: string;
-    scenarioSha256: string;
-    identity: ExpectedWebIdentity;
-    requestPaths: ReleaseGateRequestPaths;
-    scenarioCases: ReleaseGateScenarioCase[];
-    status: 'passed' | 'failed';
-    traces: string[];
-    screenshots: string[];
 };
 
 type ExpectedRequestInput = {
@@ -46,35 +25,58 @@ type ExpectedRequestInput = {
     releaseId: string;
 };
 
-function requireNonEmptyString(value: unknown, name: string): string {
-    if (typeof value !== 'string' || value.trim() === '') {
-        throw new Error(`${name} must be a non-empty string`);
-    }
-    return value;
+const previewScenarioCaseIds = [
+    'direct-open',
+    'identity-and-requests',
+    'visual-transition',
+    'mode-swap',
+    'viewport-swap',
+    'history-focus',
+    'bookmark-restore',
+    'omitted-fallback',
+    'choice',
+    'reload-and-lazy-chunk',
+] as const;
+
+const productionScenarioCaseIds = [
+    'direct-open',
+    'identity-and-decode',
+    'progression',
+    'read-only',
+] as const;
+
+function flowForTarget(
+    target: 'preview' | 'production'
+): BrowserEvidenceFlowV1 {
+    return target === 'preview' ? 'preview-release-gate' : 'production-smoke';
 }
 
-function safeEvidenceUrl(value: unknown, name: string): string | null {
-    if (value === null) return null;
-    const url = requireNonEmptyString(value, name);
-    if (sanitizeHttpsRequestUrl(url) !== url) {
-        throw new Error(`${name} must be a sanitized HTTPS URL`);
-    }
-    return url;
+function scenarioCaseIds(flow: BrowserEvidenceFlowV1): readonly string[] {
+    return flow === 'preview-release-gate'
+        ? previewScenarioCaseIds
+        : productionScenarioCaseIds;
 }
 
-function safeRelativeArtifactPath(value: unknown, name: string): string {
-    const path = requireNonEmptyString(value, name);
-    if (!isSafeRelativePath(path)) {
-        throw new Error(`${name} must be a safe relative path`);
+function completeFailedScenarioCases(
+    flow: BrowserEvidenceFlowV1,
+    scenarioCases: readonly ReleaseGateScenarioCase[]
+): ReleaseGateScenarioCase[] {
+    const supplied = new Map<string, ReleaseGateScenarioCase>();
+    for (const scenarioCase of scenarioCases) {
+        if (supplied.has(scenarioCase.id)) {
+            throw new Error('Release-gate scenario case ids must be unique');
+        }
+        supplied.set(scenarioCase.id, scenarioCase);
     }
-    return path;
-}
-
-function storyChunkSegments(storyId: string): string[] {
-    const camel = storyId.replace(/_([a-z])/g, (_, letter: string) =>
-        letter.toUpperCase()
+    const expectedCaseIds = scenarioCaseIds(flow);
+    if (
+        [...supplied.keys()].some(caseId => !expectedCaseIds.includes(caseId))
+    ) {
+        throw new Error('Release-gate scenario case id is not configured');
+    }
+    return expectedCaseIds.map(
+        caseId => supplied.get(caseId) ?? { id: caseId, status: 'not-run' }
     );
-    return [storyId, storyId.split('_').join('-'), camel];
 }
 
 export function sanitizeHttpsRequestUrl(value: string): string | null {
@@ -159,135 +161,20 @@ export class ReleaseGateRequestRecorder {
         return { pointerRequestUrl, manifestRequestUrl, observedUrls };
     }
 
-    assertNoUnrelatedStoryRequest(unrelatedStoryIds: readonly string[]): void {
-        for (const storyId of unrelatedStoryIds) {
-            const requested = this.observedUrls().find(url => {
-                const path = decodeURIComponent(new URL(url).pathname);
-                return storyChunkSegments(storyId).some(segment =>
-                    path.includes(`/stories/${segment}/`)
-                );
-            });
-            if (requested !== undefined) {
-                throw new Error(
-                    `Browser requested an unrelated story chunk for ${storyId}`
-                );
-            }
+    assertNoUnrelatedStoryRequest(
+        unrelatedStoryChunks: readonly string[]
+    ): void {
+        const observedPathnames = new Set(
+            this.observedUrls().map(url => new URL(url).pathname)
+        );
+        if (
+            unrelatedStoryChunks.some(pathname =>
+                observedPathnames.has(pathname)
+            )
+        ) {
+            throw new Error('Browser requested an unrelated story chunk');
         }
     }
-}
-
-function validateIdentity(
-    input: Pick<
-        ReleaseGateBrowserEvidenceV1,
-        'target' | 'previewId' | 'releaseId' | 'manifestSha256' | 'identity'
-    >
-): ExpectedWebIdentity {
-    const identity = parseWebIdentityEvidenceV1({
-        schemaVersion: 1,
-        target: input.target,
-        webBaseUrl: 'https://release-gate.invalid',
-        assetEnvironment: input.identity.assetEnvironment,
-        ...(input.identity.previewId === undefined
-            ? {}
-            : { previewId: input.identity.previewId }),
-        releaseId: input.identity.releaseId,
-        manifestSha256: input.identity.manifestSha256,
-        pointerRequestUrl: 'https://release-gate.invalid/current.json',
-        manifestRequestUrl:
-            'https://release-gate.invalid/runtime-manifest.json',
-    });
-    if (
-        input.previewId !== identity.previewId ||
-        input.releaseId !== identity.releaseId ||
-        input.manifestSha256 !== identity.manifestSha256
-    ) {
-        throw new Error(
-            'Browser evidence identity must match its top-level release fields'
-        );
-    }
-    return {
-        assetEnvironment: identity.assetEnvironment,
-        ...(identity.previewId === undefined
-            ? {}
-            : { previewId: identity.previewId }),
-        releaseId: identity.releaseId,
-        manifestSha256: identity.manifestSha256,
-    };
-}
-
-/**
- * Produces the closed browser-evidence shape used by the custom reporter.
- * Every URL is checked again so test attachments cannot reintroduce a signed
- * URL, credentials, headers, or other private request data into retained JSON.
- */
-export function createReleaseGateBrowserEvidence(
-    input: ReleaseGateBrowserEvidenceV1
-): ReleaseGateBrowserEvidenceV1 {
-    if (input.schemaVersion !== 1) {
-        throw new Error('schemaVersion must be 1 for browser evidence');
-    }
-    const project = requireNonEmptyString(input.project, 'project');
-    const storyId = requireNonEmptyString(input.storyId, 'storyId');
-    if (input.target !== 'preview' && input.target !== 'production') {
-        throw new Error('target must be preview or production');
-    }
-    if (!isSha256(input.scenarioSha256)) {
-        throw new Error('scenarioSha256 must be a SHA-256 digest');
-    }
-    const identity = validateIdentity(input);
-    const observedUrls = input.requestPaths.observedUrls.map((url, index) =>
-        safeEvidenceUrl(url, `requestPaths.observedUrls[${index}]`)
-    );
-    if (observedUrls.some(url => url === null)) {
-        throw new Error('Observed request URLs must be present HTTPS URLs');
-    }
-
-    const scenarioCases = input.scenarioCases.map((scenarioCase, index) => {
-        const id = requireNonEmptyString(
-            scenarioCase.id,
-            `scenarioCases[${index}].id`
-        );
-        if (!['passed', 'failed', 'not-run'].includes(scenarioCase.status)) {
-            throw new Error(`scenarioCases[${index}].status is invalid`);
-        }
-        return { id, status: scenarioCase.status };
-    });
-    if (input.status !== 'passed' && input.status !== 'failed') {
-        throw new Error('status must be passed or failed');
-    }
-
-    return {
-        schemaVersion: 1,
-        project,
-        storyId,
-        target: input.target,
-        ...(input.previewId === undefined
-            ? {}
-            : { previewId: input.previewId }),
-        releaseId: identity.releaseId,
-        manifestSha256: identity.manifestSha256,
-        scenarioSha256: input.scenarioSha256,
-        identity,
-        requestPaths: {
-            pointerRequestUrl: safeEvidenceUrl(
-                input.requestPaths.pointerRequestUrl,
-                'requestPaths.pointerRequestUrl'
-            ),
-            manifestRequestUrl: safeEvidenceUrl(
-                input.requestPaths.manifestRequestUrl,
-                'requestPaths.manifestRequestUrl'
-            ),
-            observedUrls: [...new Set(observedUrls as string[])].sort(),
-        },
-        scenarioCases,
-        status: input.status,
-        traces: input.traces.map((path, index) =>
-            safeRelativeArtifactPath(path, `traces[${index}]`)
-        ),
-        screenshots: input.screenshots.map((path, index) =>
-            safeRelativeArtifactPath(path, `screenshots[${index}]`)
-        ),
-    };
 }
 
 export async function attachReleaseGateEvidence(
@@ -301,6 +188,8 @@ export async function attachReleaseGateEvidence(
     }
 ): Promise<void> {
     const { env, scenario, scenarioSha256 } = input.releaseGate;
+    const status = input.status ?? 'passed';
+    const flow = flowForTarget(env.target);
     let requestPaths: ReleaseGateRequestPaths;
     try {
         requestPaths = input.requests.assertExpectedRequests({
@@ -309,29 +198,32 @@ export async function attachReleaseGateEvidence(
             releaseId: env.expectedIdentity.releaseId,
         });
     } catch (error) {
-        if (input.status !== 'failed') throw error;
+        if (status !== 'failed') throw error;
         requestPaths = {
             pointerRequestUrl: null,
             manifestRequestUrl: null,
             observedUrls: input.requests.observedUrls(),
         };
     }
-    const evidence = createReleaseGateBrowserEvidence({
+    const evidence = parseBrowserEvidenceProjectV1({
         schemaVersion: 1,
+        flow,
         project: input.project,
+        status,
         storyId: scenario.storyId,
-        target: env.target,
-        ...(env.expectedIdentity.previewId === undefined
-            ? {}
-            : { previewId: env.expectedIdentity.previewId }),
+        target: env.publicationTarget,
+        assetEnvironment: env.expectedIdentity.assetEnvironment,
         releaseId: env.expectedIdentity.releaseId,
         manifestSha256: env.expectedIdentity.manifestSha256,
         scenarioSha256,
-        identity: env.expectedIdentity,
-        requestPaths,
-        scenarioCases: input.scenarioCases,
-        status: input.status ?? 'passed',
-        traces: [],
+        requestPaths: {
+            pointerRequestUrl: requestPaths.pointerRequestUrl,
+            manifestRequestUrl: requestPaths.manifestRequestUrl,
+        },
+        scenarioCases:
+            status === 'failed'
+                ? completeFailedScenarioCases(flow, input.scenarioCases)
+                : input.scenarioCases,
         screenshots: [],
     });
     await testInfo.attach('release-gate-evidence', {

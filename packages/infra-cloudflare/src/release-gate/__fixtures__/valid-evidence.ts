@@ -35,7 +35,7 @@ export const validGateScenario = {
         choiceIndex: 0,
         expectedSceneId: 'platform',
     },
-    unrelatedStoryIds: ['train_adventure'],
+    unrelatedStoryChunks: ['/_astro/train-adventure-collection-only.js'],
 } as const;
 
 export const validManualReview = {
@@ -91,6 +91,76 @@ export const validWebIdentityEvidence = {
         'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/current.json',
     manifestRequestUrl:
         'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/releases/runtime-manifest.json',
+} as const;
+
+const validPreviewBrowserScenarioCases = [
+    { id: 'direct-open', status: 'passed' },
+    { id: 'identity-and-requests', status: 'passed' },
+    { id: 'visual-transition', status: 'passed' },
+    { id: 'mode-swap', status: 'passed' },
+    { id: 'viewport-swap', status: 'passed' },
+    { id: 'history-focus', status: 'passed' },
+    { id: 'bookmark-restore', status: 'passed' },
+    { id: 'omitted-fallback', status: 'passed' },
+    { id: 'choice', status: 'passed' },
+    { id: 'reload-and-lazy-chunk', status: 'passed' },
+] as const;
+
+export const validBrowserEvidence = {
+    schemaVersion: 1,
+    flow: 'preview-release-gate',
+    status: 'passed',
+    storyId: 'the_seventh_mirror',
+    target: validPreviewTarget,
+    releaseId: validReleaseId,
+    manifestSha256: SHA_B,
+    scenarioSha256: SHA_C,
+    projects: [
+        {
+            schemaVersion: 1,
+            flow: 'preview-release-gate',
+            project: 'release-gate-chromium',
+            status: 'passed',
+            storyId: 'the_seventh_mirror',
+            target: validPreviewTarget,
+            assetEnvironment: 'preview',
+            releaseId: validReleaseId,
+            manifestSha256: SHA_B,
+            scenarioSha256: SHA_C,
+            requestPaths: {
+                pointerRequestUrl:
+                    'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/current.json',
+                manifestRequestUrl:
+                    'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/releases/runtime-manifest.json',
+            },
+            scenarioCases: validPreviewBrowserScenarioCases.map(
+                scenarioCase => ({ ...scenarioCase })
+            ),
+            screenshots: ['screenshots/release-gate-chromium/direct-open.png'],
+        },
+        {
+            schemaVersion: 1,
+            flow: 'preview-release-gate',
+            project: 'release-gate-mobile-chrome',
+            status: 'passed',
+            storyId: 'the_seventh_mirror',
+            target: validPreviewTarget,
+            assetEnvironment: 'preview',
+            releaseId: validReleaseId,
+            manifestSha256: SHA_B,
+            scenarioSha256: SHA_C,
+            requestPaths: {
+                pointerRequestUrl:
+                    'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/current.json',
+                manifestRequestUrl:
+                    'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/releases/runtime-manifest.json',
+            },
+            scenarioCases: validPreviewBrowserScenarioCases,
+            screenshots: [
+                'screenshots/release-gate-mobile-chrome/direct-open.png',
+            ],
+        },
+    ],
 } as const;
 
 export const validPublicVerificationResult = {

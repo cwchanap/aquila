@@ -11,10 +11,13 @@ vi.mock('bun:ffi', () => ({
 
 import type { PublisherReportV1 } from '../../publisher/report';
 import { hashCanonicalEvidence } from '../evidence';
-import type { PublicReleaseVerificationResultV1 } from '../schemas';
+import type {
+    BrowserEvidenceProjectNameV1,
+    BrowserEvidenceV1,
+    PublicReleaseVerificationResultV1,
+} from '../schemas';
 import {
     runVisualNovelReleaseGate,
-    type BrowserEvidenceV1,
     type GateEvidenceBindingsV1,
     type GateRunnerDependencies,
     type ProductionPointerEvidenceV1,
@@ -129,16 +132,60 @@ function publicVerification(
     };
 }
 
-function browserEvidence(): BrowserEvidenceV1 {
+function previewScenarioCases(): BrowserEvidenceV1['projects'][number]['scenarioCases'] {
+    return [
+        { id: 'direct-open', status: 'passed' },
+        { id: 'identity-and-requests', status: 'passed' },
+        { id: 'visual-transition', status: 'passed' },
+        { id: 'mode-swap', status: 'passed' },
+        { id: 'viewport-swap', status: 'passed' },
+        { id: 'history-focus', status: 'passed' },
+        { id: 'bookmark-restore', status: 'passed' },
+        { id: 'omitted-fallback', status: 'passed' },
+        { id: 'choice', status: 'passed' },
+        { id: 'reload-and-lazy-chunk', status: 'passed' },
+    ];
+}
+
+function browserProject(
+    project: BrowserEvidenceProjectNameV1
+): BrowserEvidenceV1['projects'][number] {
     return {
         schemaVersion: 1,
+        flow: 'preview-release-gate',
+        project,
         status: 'passed',
         storyId: 'the_seventh_mirror',
         target: PREVIEW_TARGET,
-        previewId: 'hpa-233',
+        assetEnvironment: 'preview',
         releaseId: RELEASE_ID,
         manifestSha256: MANIFEST_SHA256,
         scenarioSha256: SCENARIO_SHA256,
+        requestPaths: {
+            pointerRequestUrl:
+                'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/current.json',
+            manifestRequestUrl:
+                'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/releases/runtime-manifest.json',
+        },
+        scenarioCases: previewScenarioCases(),
+        screenshots: [`screenshots/${project}/direct-open.png`],
+    };
+}
+
+function browserEvidence(): BrowserEvidenceV1 {
+    return {
+        schemaVersion: 1,
+        flow: 'preview-release-gate',
+        status: 'passed',
+        storyId: 'the_seventh_mirror',
+        target: PREVIEW_TARGET,
+        releaseId: RELEASE_ID,
+        manifestSha256: MANIFEST_SHA256,
+        scenarioSha256: SCENARIO_SHA256,
+        projects: [
+            browserProject('release-gate-chromium'),
+            browserProject('release-gate-mobile-chrome'),
+        ],
     };
 }
 
@@ -332,6 +379,88 @@ describe('visual novel release gate runner', () => {
             )
         ).toBe(true);
         expect(report.evidence).toEqual(allEvidence(input));
+    });
+
+    it('rejects a browser artifact whose flow drifts from the preview gate', async () => {
+        const input = fixtureGateInput({
+            browserEvidence: {
+                ...browserEvidence(),
+                flow: 'production-smoke',
+            } as BrowserEvidenceV1,
+        });
+
+        const report = await runFixture(input);
+
+        expect(report.status).toBe('failed');
+        expect(report.checks.browserFlows.status).toBe('failed');
+        expect(report.diagnostics).toContainEqual(
+            expect.objectContaining({ stage: 'evidence-binding' })
+        );
+    });
+
+    it('rejects a browser artifact without the exact Desktop and Mobile project matrix', async () => {
+        const input = fixtureGateInput({
+            browserEvidence: {
+                ...browserEvidence(),
+                projects: [
+                    {
+                        project: 'release-gate-chromium',
+                    },
+                ],
+            } as BrowserEvidenceV1,
+        });
+
+        const report = await runFixture(input);
+
+        expect(report.status).toBe('failed');
+        expect(report.checks.browserFlows.status).toBe('failed');
+        expect(report.diagnostics).toContainEqual(
+            expect.objectContaining({ stage: 'evidence-binding' })
+        );
+    });
+
+    it('records a schema-valid failed aggregate as a reader-flow failure', async () => {
+        const failedBrowser = browserEvidence();
+        failedBrowser.status = 'failed';
+        failedBrowser.projects[0].status = 'failed';
+        failedBrowser.projects[0].scenarioCases[0].status = 'failed';
+        const input = fixtureGateInput({ browserEvidence: failedBrowser });
+
+        const report = await runFixture(input);
+
+        expect(report.status).toBe('failed');
+        expect(report.checks.browserFlows.status).toBe('failed');
+        expect(report.diagnostics).toContainEqual(
+            expect.objectContaining({
+                stage: 'reader-flow',
+                code: 'reader-flow/failed',
+                evidenceId: 'browser',
+            })
+        );
+    });
+
+    it('contains malformed browser identity drift in a safe binding diagnostic', async () => {
+        const mismatchedBrowser = browserEvidence();
+        mismatchedBrowser.storyId = 'another_story';
+        for (const project of mismatchedBrowser.projects) {
+            project.storyId = 'another_story';
+        }
+        const input = fixtureGateInput({ browserEvidence: mismatchedBrowser });
+
+        const report = await runFixture(input);
+
+        expect(report.status).toBe('failed');
+        expect(report.checks.browserFlows.status).toBe('failed');
+        expect(report.diagnostics).toContainEqual(
+            expect.objectContaining({
+                stage: 'evidence-binding',
+                code: 'evidence-binding/browser-identity-mismatch',
+                evidenceId: 'browser',
+            })
+        );
+        expect(JSON.stringify(report.diagnostics)).not.toContain(
+            'another_story'
+        );
     });
 
     it.each([

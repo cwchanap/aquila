@@ -334,6 +334,46 @@ const retainedCandidatePublisherReport: PublisherReportV1 = {
     pointer: { changed: false },
 };
 
+const previewBrowserScenarioCases = [
+    { id: 'direct-open', status: 'passed' },
+    { id: 'identity-and-requests', status: 'passed' },
+    { id: 'visual-transition', status: 'passed' },
+    { id: 'mode-swap', status: 'passed' },
+    { id: 'viewport-swap', status: 'passed' },
+    { id: 'history-focus', status: 'passed' },
+    { id: 'bookmark-restore', status: 'passed' },
+    { id: 'omitted-fallback', status: 'passed' },
+    { id: 'choice', status: 'passed' },
+    { id: 'reload-and-lazy-chunk', status: 'passed' },
+] as const;
+
+function previewBrowserProject(
+    project: 'release-gate-chromium' | 'release-gate-mobile-chrome'
+) {
+    return {
+        schemaVersion: 1,
+        flow: 'preview-release-gate' as const,
+        project,
+        status: 'passed' as const,
+        storyId: 'the_seventh_mirror',
+        target: { kind: 'preview' as const, previewId: 'hpa-233' },
+        assetEnvironment: 'preview' as const,
+        releaseId: `sha256-${'a'.repeat(64)}`,
+        manifestSha256: 'b'.repeat(64),
+        scenarioSha256: 'c'.repeat(64),
+        requestPaths: {
+            pointerRequestUrl:
+                'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/current.json',
+            manifestRequestUrl:
+                'https://assets.aquila.example/vn/previews/hpa-233/stories/the_seventh_mirror/releases/runtime-manifest.json',
+        },
+        scenarioCases: previewBrowserScenarioCases.map(scenarioCase => ({
+            ...scenarioCase,
+        })),
+        screenshots: [],
+    };
+}
+
 const retainedEvidence: Record<string, unknown> = {
     [retainedEvidencePaths.tier1]: {
         schemaVersion: 1,
@@ -394,13 +434,17 @@ const retainedEvidence: Record<string, unknown> = {
     },
     [retainedEvidencePaths.browser]: {
         schemaVersion: 1,
+        flow: 'preview-release-gate',
         status: 'passed',
         storyId: 'the_seventh_mirror',
         target: { kind: 'preview', previewId: 'hpa-233' },
-        previewId: 'hpa-233',
         releaseId: `sha256-${'a'.repeat(64)}`,
         manifestSha256: 'b'.repeat(64),
         scenarioSha256: 'c'.repeat(64),
+        projects: [
+            previewBrowserProject('release-gate-chromium'),
+            previewBrowserProject('release-gate-mobile-chrome'),
+        ],
     },
     [retainedEvidencePaths.manualReview]: {
         schemaVersion: 1,
@@ -667,6 +711,47 @@ describe('assets release-gate routing', () => {
             })
         );
         expect(test.stdout().trim().split('\n')).toHaveLength(1);
+        expect(test.stderr()).toBe('');
+    });
+
+    it('rejects malformed inline browser evidence before creating retained references', async () => {
+        const test = harness();
+        const malformedEvidence: Record<string, unknown> = {
+            ...retainedEvidence,
+            [retainedEvidencePaths.browser]: {
+                ...(retainedEvidence[retainedEvidencePaths.browser] as object),
+                target: 'preview-with-secret',
+            },
+        };
+        const readEvidenceJson = vi.fn(async (_directory, path: string) => {
+            const evidence = malformedEvidence[path];
+            if (evidence === undefined) throw new Error(`Missing ${path}`);
+            return evidence;
+        });
+        const createEvidenceReference = vi.fn();
+        const runVisualNovelReleaseGate = vi.fn();
+
+        const exit = await runReleaseGateCli([...verifyPreviewArgs, '--json'], {
+            ...releaseGateDependencies(
+                test.dependencies,
+                vi.fn(async () => validGateReport)
+            ),
+            runVerifyPreview: undefined,
+            readEvidenceJson,
+            createEvidenceReference,
+            runVisualNovelReleaseGate,
+        } as ReleaseGateCliDependencies);
+
+        expect(exit).toBe(2);
+        expect(createEvidenceReference).not.toHaveBeenCalled();
+        expect(runVisualNovelReleaseGate).not.toHaveBeenCalled();
+        expect(parseGateDiagnosticV1(JSON.parse(test.stdout()))).toEqual(
+            expect.objectContaining({
+                code: 'input/verify-preview-failed',
+                stage: 'input',
+            })
+        );
+        expect(test.stdout()).not.toContain('preview-with-secret');
         expect(test.stderr()).toBe('');
     });
 

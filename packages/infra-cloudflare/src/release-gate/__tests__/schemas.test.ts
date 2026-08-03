@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GATE_STAGES } from '../diagnostics';
 import {
     assertVisualReviewMatchesIdentity,
+    parseBrowserEvidenceV1,
     parseGateDiagnosticV1,
     parsePublicReleaseVerificationInputV1,
     parsePublicReleaseVerificationResultV1,
@@ -11,18 +12,26 @@ import {
     parseVisualReviewRecordV1,
     parseWebIdentityEvidenceV1,
     parseWorkflowApprovalEvidenceV1,
+    type BrowserEvidenceV1,
 } from '../schemas';
 import {
     otherValidReleaseId,
     validGateIdentity,
     validGateReport,
     validGateScenario,
+    validBrowserEvidence,
     validManualReview,
     validPublicVerificationResult,
     validTier1Evidence,
     validWebIdentityEvidence,
     validWorkflowApproval,
 } from '../__fixtures__/valid-evidence';
+
+function browserEvidenceClone(): BrowserEvidenceV1 {
+    return structuredClone(
+        validBrowserEvidence
+    ) as unknown as BrowserEvidenceV1;
+}
 
 describe('VisualNovelReleaseGateReportV1', () => {
     it('accepts every required check and evidence kind', () => {
@@ -147,6 +156,171 @@ describe('VisualNovelGateScenarioV1', () => {
                 },
             })
         ).toThrow();
+    });
+
+    it('requires sorted exact deployed unrelated-story chunk pathnames', () => {
+        const scenario = {
+            ...validGateScenario,
+            unrelatedStoryChunks: [
+                '/_astro/train-adventure-collection-only.js',
+                '/_astro/train-adventure-shared-collection-only.js',
+            ],
+        };
+
+        expect(parseVisualNovelGateScenarioV1(scenario)).toEqual(scenario);
+        expect(() =>
+            parseVisualNovelGateScenarioV1({
+                ...scenario,
+                unrelatedStoryChunks: ['train_adventure'],
+            })
+        ).toThrow();
+        expect(() =>
+            parseVisualNovelGateScenarioV1({
+                ...scenario,
+                unrelatedStoryChunks: [
+                    '/_astro/train-adventure-shared-collection-only.js',
+                    '/_astro/train-adventure-collection-only.js',
+                ],
+            })
+        ).toThrow();
+        expect(() =>
+            parseVisualNovelGateScenarioV1({
+                ...scenario,
+                unrelatedStoryChunks: [
+                    '/_astro/train-adventure-collection-only.js',
+                    '/_astro/train-adventure-collection-only.js',
+                ],
+            })
+        ).toThrow();
+    });
+});
+
+describe('BrowserEvidenceV1', () => {
+    it('accepts one inline deterministic Desktop and Mobile Chrome aggregate', () => {
+        expect(parseBrowserEvidenceV1(validBrowserEvidence)).toEqual(
+            validBrowserEvidence
+        );
+    });
+
+    it('rejects a string target and raw trace or request-secret fields', () => {
+        const stringTarget = browserEvidenceClone();
+        (stringTarget as { target: unknown }).target = 'preview';
+        expect(() => parseBrowserEvidenceV1(stringTarget)).toThrow();
+
+        const rawTrace = browserEvidenceClone();
+        (rawTrace.projects[0] as { traces?: unknown }).traces = [
+            'traces/retry.zip',
+        ];
+        expect(() => parseBrowserEvidenceV1(rawTrace)).toThrow();
+
+        const requestSecrets = browserEvidenceClone();
+        (
+            requestSecrets.projects[0].requestPaths as {
+                headers?: unknown;
+            }
+        ).headers = { authorization: 'secret' };
+        expect(() => parseBrowserEvidenceV1(requestSecrets)).toThrow();
+
+        const requestCookies = browserEvidenceClone();
+        (
+            requestCookies.projects[0].requestPaths as {
+                cookies?: unknown;
+            }
+        ).cookies = ['session=secret'];
+        expect(() => parseBrowserEvidenceV1(requestCookies)).toThrow();
+
+        const signedUrl = browserEvidenceClone();
+        signedUrl.projects[0].requestPaths.pointerRequestUrl =
+            'https://assets.aquila.example/current.json?signature=secret';
+        expect(() => parseBrowserEvidenceV1(signedUrl)).toThrow();
+    });
+
+    it.each([
+        [
+            'missing a required project',
+            (evidence: any) => evidence.projects.pop(),
+        ],
+        [
+            'contains an extra project',
+            (evidence: any) =>
+                evidence.projects.push({
+                    ...evidence.projects[1],
+                    project: 'release-gate-firefox',
+                }),
+        ],
+        [
+            'duplicates a project',
+            (evidence: any) => (evidence.projects[1] = evidence.projects[0]),
+        ],
+        [
+            'omits a required ordered case',
+            (evidence: any) => evidence.projects[0].scenarioCases.pop(),
+        ],
+        [
+            'contains an extra case',
+            (evidence: any) =>
+                evidence.projects[0].scenarioCases.push({
+                    id: 'unexpected-case',
+                    status: 'passed',
+                }),
+        ],
+        [
+            'duplicates a case',
+            (evidence: any) =>
+                (evidence.projects[0].scenarioCases[1] =
+                    evidence.projects[0].scenarioCases[0]),
+        ],
+    ])('rejects an aggregate that %s', (_label, mutate) => {
+        const evidence = browserEvidenceClone();
+        mutate(evidence);
+        expect(() => parseBrowserEvidenceV1(evidence)).toThrow();
+    });
+
+    it.each([
+        [
+            'project flow',
+            (evidence: any) => (evidence.projects[0].flow = 'production-smoke'),
+        ],
+        [
+            'project release',
+            (evidence: any) =>
+                (evidence.projects[0].releaseId = `sha256-${'f'.repeat(64)}`),
+        ],
+        [
+            'project target',
+            (evidence: any) =>
+                (evidence.projects[0].target = { kind: 'production' }),
+        ],
+        [
+            'unsafe screenshot path',
+            (evidence: any) =>
+                (evidence.projects[0].screenshots = ['../private.png']),
+        ],
+        [
+            'credential-bearing pointer URL',
+            (evidence: any) =>
+                (evidence.projects[0].requestPaths.pointerRequestUrl =
+                    'https://user:secret@assets.aquila.example/current.json'),
+        ],
+    ])('rejects %s drift from the aggregate identity', (_label, mutate) => {
+        const evidence = browserEvidenceClone();
+        mutate(evidence);
+        expect(() => parseBrowserEvidenceV1(evidence)).toThrow();
+    });
+
+    it('accepts a complete failed aggregate without allowing it to masquerade as passed', () => {
+        const evidence = browserEvidenceClone();
+        evidence.status = 'failed';
+        evidence.projects[0].status = 'failed';
+        evidence.projects[0].scenarioCases[0].status = 'failed';
+
+        expect(parseBrowserEvidenceV1(evidence)).toMatchObject({
+            status: 'failed',
+            projects: [
+                { project: 'release-gate-chromium', status: 'failed' },
+                { project: 'release-gate-mobile-chrome', status: 'passed' },
+            ],
+        });
     });
 });
 

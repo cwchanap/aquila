@@ -235,8 +235,18 @@ describe('VisualNovelReader', () => {
             document.querySelector('[data-bg-layer="active"]')
         ).toHaveAttribute('src', 'blob:active');
         expect(
+            document.querySelector('[data-bg-layer="active"]')
+        ).toHaveAttribute('data-visual-identity', 'background:room');
+        expect(
             document.querySelector('[data-bg-layer="staging"]')
         ).toHaveAttribute('src', 'blob:staging');
+        expect(
+            document.querySelector('[data-bg-layer="staging"]')
+        ).toHaveAttribute('data-visual-identity', 'background:hall');
+        expect(screen.getByTestId('visual-portrait')).toHaveAttribute(
+            'data-visual-identity',
+            'portrait:narrator-neutral'
+        );
     });
 
     it('keeps all three image elements mounted and clears absent sources', () => {
@@ -259,10 +269,19 @@ describe('VisualNovelReader', () => {
             document.querySelector('[data-bg-layer="active"]')
         ).not.toHaveAttribute('src');
         expect(
+            document.querySelector('[data-bg-layer="active"]')
+        ).not.toHaveAttribute('data-visual-identity');
+        expect(
             document.querySelector('[data-bg-layer="staging"]')
         ).not.toHaveAttribute('src');
+        expect(
+            document.querySelector('[data-bg-layer="staging"]')
+        ).not.toHaveAttribute('data-visual-identity');
         expect(screen.getByTestId('visual-portrait')).not.toHaveAttribute(
             'src'
+        );
+        expect(screen.getByTestId('visual-portrait')).not.toHaveAttribute(
+            'data-visual-identity'
         );
     });
 

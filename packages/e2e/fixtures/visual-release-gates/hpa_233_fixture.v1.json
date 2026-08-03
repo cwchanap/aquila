@@ -33,5 +33,5 @@
     "choiceIndex": 0,
     "expectedSceneId": "result"
   },
-  "unrelatedStoryIds": ["train_adventure"]
+  "unrelatedStoryChunks": ["/_astro/train-adventure-collection-only.js"]
 }

@@ -113,6 +113,49 @@ const visualNovelGatePositionV1Schema = z
     })
     .strict();
 
+function isSafePublicPathname(value: string): boolean {
+    if (
+        value.length < 2 ||
+        !value.startsWith('/') ||
+        value.startsWith('//') ||
+        value.includes('%')
+    ) {
+        return false;
+    }
+    try {
+        const parsed = new URL(value, 'https://release-gate.invalid');
+        return (
+            parsed.origin === 'https://release-gate.invalid' &&
+            parsed.pathname === value &&
+            parsed.search === '' &&
+            parsed.hash === '' &&
+            isSafeRelativePath(parsed.pathname.slice(1))
+        );
+    } catch {
+        return false;
+    }
+}
+
+const safePublicPathnameV1Schema = z.string().refine(isSafePublicPathname, {
+    message: 'Expected a safe exact public pathname',
+});
+
+const sortedUniquePublicPathnamesV1Schema = z
+    .array(safePublicPathnameV1Schema)
+    .min(1)
+    .superRefine((paths, context) => {
+        for (const [index, value] of paths.entries()) {
+            const previous = paths[index - 1];
+            if (previous !== undefined && previous >= value) {
+                context.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: [index],
+                    message: 'Pathnames must be unique and sorted',
+                });
+            }
+        }
+    });
+
 export const visualNovelGateScenarioV1Schema = z
     .object({
         schemaVersion: schemaVersionV1,
@@ -139,7 +182,11 @@ export const visualNovelGateScenarioV1Schema = z
                 expectedSceneId: nonEmptyString,
             })
             .strict(),
-        unrelatedStoryIds: z.array(storyIdV1Schema),
+        // Task 10 must materialize these from the same deployment's Vite
+        // manifest before scenario hashing and browser execution. These are
+        // exact public request pathnames, not source-name heuristics; static
+        // fixtures exercise this parser only and are never deployment proof.
+        unrelatedStoryChunks: sortedUniquePublicPathnamesV1Schema,
     })
     .strict();
 export type VisualNovelGateScenarioV1 = z.infer<
@@ -246,6 +293,307 @@ export function parseWebIdentityEvidenceV1(
     input: unknown
 ): WebIdentityEvidenceV1 {
     return webIdentityEvidenceV1Schema.parse(input);
+}
+
+const browserEvidenceFlowV1Schema = z.enum([
+    'preview-release-gate',
+    'production-smoke',
+]);
+const browserEvidenceStatusV1Schema = z.enum(['passed', 'failed']);
+const browserEvidenceCaseStatusV1Schema = z.enum([
+    'passed',
+    'failed',
+    'not-run',
+]);
+const browserEvidenceProjectNameV1Schema = z.enum([
+    'release-gate-chromium',
+    'release-gate-mobile-chrome',
+]);
+
+export type BrowserEvidenceFlowV1 = z.infer<typeof browserEvidenceFlowV1Schema>;
+export type BrowserEvidenceProjectNameV1 = z.infer<
+    typeof browserEvidenceProjectNameV1Schema
+>;
+
+const requiredBrowserScenarioCasesByFlow: Record<
+    BrowserEvidenceFlowV1,
+    readonly string[]
+> = {
+    'preview-release-gate': [
+        'direct-open',
+        'identity-and-requests',
+        'visual-transition',
+        'mode-swap',
+        'viewport-swap',
+        'history-focus',
+        'bookmark-restore',
+        'omitted-fallback',
+        'choice',
+        'reload-and-lazy-chunk',
+    ],
+    'production-smoke': [
+        'direct-open',
+        'identity-and-decode',
+        'progression',
+        'read-only',
+    ],
+};
+
+const requiredBrowserProjects: readonly BrowserEvidenceProjectNameV1[] = [
+    'release-gate-chromium',
+    'release-gate-mobile-chrome',
+];
+
+const browserEvidenceScenarioCaseV1Schema = z
+    .object({
+        id: nonEmptyString,
+        status: browserEvidenceCaseStatusV1Schema,
+    })
+    .strict();
+export type BrowserEvidenceScenarioCaseV1 = z.infer<
+    typeof browserEvidenceScenarioCaseV1Schema
+>;
+
+function publicationTargetsMatch(
+    left: PublicationTarget,
+    right: PublicationTarget
+): boolean {
+    return (
+        left.kind === right.kind &&
+        (left.kind !== 'preview' ||
+            (right.kind === 'preview' && left.previewId === right.previewId))
+    );
+}
+
+function addBrowserEvidenceIssue(
+    context: z.RefinementCtx,
+    path: Array<string | number>,
+    message: string
+): void {
+    context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path,
+        message,
+    });
+}
+
+function validateOrderedBrowserScenarioCases(
+    flow: BrowserEvidenceFlowV1,
+    scenarioCases: readonly BrowserEvidenceScenarioCaseV1[],
+    context: z.RefinementCtx,
+    path: Array<string | number>
+): void {
+    const expectedCaseIds = requiredBrowserScenarioCasesByFlow[flow];
+    if (scenarioCases.length !== expectedCaseIds.length) {
+        addBrowserEvidenceIssue(
+            context,
+            path,
+            `Expected exactly ${expectedCaseIds.length} ordered ${flow} scenario cases`
+        );
+    }
+    for (const [index, expectedId] of expectedCaseIds.entries()) {
+        if (scenarioCases[index]?.id !== expectedId) {
+            addBrowserEvidenceIssue(
+                context,
+                [...path, index, 'id'],
+                `Expected scenario case ${expectedId} at index ${index}`
+            );
+        }
+    }
+}
+
+function validateSortedUniquePaths(
+    paths: readonly string[],
+    context: z.RefinementCtx,
+    path: Array<string | number>
+): void {
+    for (const [index, value] of paths.entries()) {
+        const previous = paths[index - 1];
+        if (previous !== undefined && previous >= value) {
+            addBrowserEvidenceIssue(
+                context,
+                [...path, index],
+                'Screenshots must be unique and sorted'
+            );
+        }
+    }
+}
+
+const browserEvidenceProjectV1Schema = z
+    .object({
+        schemaVersion: schemaVersionV1,
+        flow: browserEvidenceFlowV1Schema,
+        project: browserEvidenceProjectNameV1Schema,
+        status: browserEvidenceStatusV1Schema,
+        storyId: storyIdV1Schema,
+        target: publicationTargetV1Schema,
+        assetEnvironment: z.enum(['preview', 'production']),
+        releaseId: releaseIdV1Schema,
+        manifestSha256: sha256V1Schema,
+        scenarioSha256: sha256V1Schema,
+        requestPaths: z
+            .object({
+                pointerRequestUrl: httpsCredentialFreeUrlV1Schema.nullable(),
+                manifestRequestUrl: httpsCredentialFreeUrlV1Schema.nullable(),
+            })
+            .strict(),
+        scenarioCases: z.array(browserEvidenceScenarioCaseV1Schema),
+        screenshots: z.array(safeRelativePathV1Schema),
+    })
+    .strict()
+    .superRefine((evidence, context) => {
+        const expectedTargetKind =
+            evidence.flow === 'preview-release-gate' ? 'preview' : 'production';
+        if (evidence.target.kind !== expectedTargetKind) {
+            addBrowserEvidenceIssue(
+                context,
+                ['target'],
+                `${evidence.flow} requires a ${expectedTargetKind} target`
+            );
+        }
+        if (evidence.target.kind !== evidence.assetEnvironment) {
+            addBrowserEvidenceIssue(
+                context,
+                ['assetEnvironment'],
+                'Browser evidence target and asset environment must agree'
+            );
+        }
+        if (
+            evidence.status === 'passed' &&
+            (evidence.requestPaths.pointerRequestUrl === null ||
+                evidence.requestPaths.manifestRequestUrl === null)
+        ) {
+            addBrowserEvidenceIssue(
+                context,
+                ['requestPaths'],
+                'Passing browser evidence requires pointer and manifest request URLs'
+            );
+        }
+        validateOrderedBrowserScenarioCases(
+            evidence.flow,
+            evidence.scenarioCases,
+            context,
+            ['scenarioCases']
+        );
+        if (
+            evidence.status === 'passed' &&
+            evidence.scenarioCases.some(
+                scenarioCase => scenarioCase.status !== 'passed'
+            )
+        ) {
+            addBrowserEvidenceIssue(
+                context,
+                ['scenarioCases'],
+                'Passing browser evidence requires every scenario case to pass'
+            );
+        }
+        validateSortedUniquePaths(evidence.screenshots, context, [
+            'screenshots',
+        ]);
+    });
+export type BrowserEvidenceProjectV1 = z.infer<
+    typeof browserEvidenceProjectV1Schema
+>;
+
+export function parseBrowserEvidenceProjectV1(
+    input: unknown
+): BrowserEvidenceProjectV1 {
+    return browserEvidenceProjectV1Schema.parse(input);
+}
+
+const browserEvidenceV1Schema = z
+    .object({
+        schemaVersion: schemaVersionV1,
+        flow: browserEvidenceFlowV1Schema,
+        status: browserEvidenceStatusV1Schema,
+        storyId: storyIdV1Schema,
+        target: publicationTargetV1Schema,
+        releaseId: releaseIdV1Schema,
+        manifestSha256: sha256V1Schema,
+        scenarioSha256: sha256V1Schema,
+        projects: z.array(browserEvidenceProjectV1Schema),
+    })
+    .strict()
+    .superRefine((evidence, context) => {
+        if (evidence.projects.length !== requiredBrowserProjects.length) {
+            addBrowserEvidenceIssue(
+                context,
+                ['projects'],
+                'Browser evidence requires exactly the Desktop and Mobile Chrome projects'
+            );
+        }
+        for (const [
+            index,
+            expectedProject,
+        ] of requiredBrowserProjects.entries()) {
+            const project = evidence.projects[index];
+            if (project?.project !== expectedProject) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'project'],
+                    `Expected ${expectedProject} at index ${index}`
+                );
+            }
+            if (project === undefined) continue;
+
+            if (project.flow !== evidence.flow) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'flow'],
+                    'Project flow must match aggregate flow'
+                );
+            }
+            if (project.storyId !== evidence.storyId) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'storyId'],
+                    'Project story id must match aggregate story id'
+                );
+            }
+            if (!publicationTargetsMatch(project.target, evidence.target)) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'target'],
+                    'Project target must match aggregate target'
+                );
+            }
+            if (project.releaseId !== evidence.releaseId) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'releaseId'],
+                    'Project release id must match aggregate release id'
+                );
+            }
+            if (project.manifestSha256 !== evidence.manifestSha256) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'manifestSha256'],
+                    'Project manifest checksum must match aggregate checksum'
+                );
+            }
+            if (project.scenarioSha256 !== evidence.scenarioSha256) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'scenarioSha256'],
+                    'Project scenario checksum must match aggregate checksum'
+                );
+            }
+        }
+        if (
+            evidence.status === 'passed' &&
+            evidence.projects.some(project => project.status !== 'passed')
+        ) {
+            addBrowserEvidenceIssue(
+                context,
+                ['projects'],
+                'A passing aggregate requires every browser project to pass'
+            );
+        }
+    });
+export type BrowserEvidenceV1 = z.infer<typeof browserEvidenceV1Schema>;
+
+export function parseBrowserEvidenceV1(input: unknown): BrowserEvidenceV1 {
+    return browserEvidenceV1Schema.parse(input);
 }
 
 export const tier1EvidenceV1Schema = z

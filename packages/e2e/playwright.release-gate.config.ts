@@ -116,7 +116,7 @@ export function createReleaseGatePlaywrightConfig(env: ReleaseGateEnvironment) {
         ],
         use: {
             baseURL: baseUrl.toString(),
-            trace: 'on-first-retry',
+            trace: 'off',
             screenshot: 'only-on-failure',
         },
         projects: [

@@ -5,13 +5,13 @@ import { parsePublisherReportV1 } from '../publisher/report';
 import { PublisherError, publisherExitCode } from '../publisher/errors';
 import type { CreateEvidenceReferenceInputV1 } from './evidence';
 import type {
-    BrowserEvidenceV1,
     GateEvidenceBindingsV1,
     ProductionPointerEvidenceV1,
     R2CandidateEvidenceV1,
     RunVisualNovelReleaseGateInputV1,
 } from './gate-runner';
 import {
+    parseBrowserEvidenceV1,
     parsePublicReleaseVerificationInputV1,
     parseGateDiagnosticV1,
     parsePublicReleaseVerificationResultV1,
@@ -392,10 +392,9 @@ async function createVerifyPreviewInput(
         await readEvidenceJson(input.evidenceDir, input.webIdentityEvidencePath)
     );
     assertEvidenceUrls(input, webIdentity);
-    const browserEvidence = (await readEvidenceJson(
-        input.evidenceDir,
-        input.browserEvidencePath
-    )) as BrowserEvidenceV1;
+    const browserEvidence = parseBrowserEvidenceV1(
+        await readEvidenceJson(input.evidenceDir, input.browserEvidencePath)
+    );
     const manualReview = parseVisualReviewRecordV1(
         await readEvidenceJson(input.evidenceDir, input.manualReviewPath)
     );

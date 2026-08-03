@@ -3,9 +3,9 @@ import {
     getCurrentPointerPath,
     getReleaseManifestPath,
 } from '@aquila/stories/runtime-assets';
+import { parseBrowserEvidenceProjectV1 } from '@aquila/infra-cloudflare/release-gate';
 import {
     attachReleaseGateEvidence,
-    createReleaseGateBrowserEvidence,
     ReleaseGateRequestRecorder,
     sanitizeHttpsRequestUrl,
 } from './release-gate-evidence';
@@ -68,83 +68,29 @@ describe('release-gate browser evidence', () => {
         ).toThrow(/local visual asset fixture/i);
     });
 
-    it('creates strict, safe and deterministic browser evidence', () => {
-        const evidence = createReleaseGateBrowserEvidence({
-            schemaVersion: 1,
-            project: 'release-gate-chromium',
-            storyId: STORY_ID,
-            target: 'preview',
-            previewId: TARGET.previewId,
-            releaseId: RELEASE_ID,
-            manifestSha256: SHA_A,
-            scenarioSha256: 'b'.repeat(64),
-            identity: {
-                assetEnvironment: 'preview',
-                previewId: TARGET.previewId,
-                releaseId: RELEASE_ID,
-                manifestSha256: SHA_A,
-            },
-            requestPaths: {
-                pointerRequestUrl: pointerUrl,
-                manifestRequestUrl: manifestUrl,
-                observedUrls: [pointerUrl, manifestUrl],
-            },
-            scenarioCases: [
-                { id: 'direct-open', status: 'passed' },
-                { id: 'transition', status: 'passed' },
-            ],
-            status: 'passed',
-            traces: [],
-            screenshots: [],
-        });
-
-        expect(evidence).toMatchObject({
-            schemaVersion: 1,
-            project: 'release-gate-chromium',
-            storyId: STORY_ID,
-            target: 'preview',
-            previewId: TARGET.previewId,
-            requestPaths: {
-                pointerRequestUrl: pointerUrl,
-                manifestRequestUrl: manifestUrl,
-                observedUrls: [pointerUrl, manifestUrl],
-            },
-        });
-        expect(JSON.stringify(evidence)).not.toContain('secret');
-        expect(JSON.stringify(evidence)).not.toContain('signed=');
-    });
-
-    it('rejects a browser-evidence schema version it does not understand', () => {
+    it('matches configured unrelated deployment pathnames exactly', () => {
+        const exact = new ReleaseGateRequestRecorder();
+        exact.observe(
+            'https://preview.example.test/_astro/train-adventure-collection-only.js?signature=private'
+        );
         expect(() =>
-            createReleaseGateBrowserEvidence({
-                schemaVersion: 2,
-                project: 'release-gate-chromium',
-                storyId: STORY_ID,
-                target: 'preview',
-                previewId: TARGET.previewId,
-                releaseId: RELEASE_ID,
-                manifestSha256: SHA_A,
-                scenarioSha256: 'b'.repeat(64),
-                identity: {
-                    assetEnvironment: 'preview',
-                    previewId: TARGET.previewId,
-                    releaseId: RELEASE_ID,
-                    manifestSha256: SHA_A,
-                },
-                requestPaths: {
-                    pointerRequestUrl: pointerUrl,
-                    manifestRequestUrl: manifestUrl,
-                    observedUrls: [pointerUrl, manifestUrl],
-                },
-                scenarioCases: [{ id: 'direct-open', status: 'passed' }],
-                status: 'passed',
-                traces: [],
-                screenshots: [],
-            } as never)
-        ).toThrow(/schemaVersion/i);
+            exact.assertNoUnrelatedStoryRequest([
+                '/_astro/train-adventure-collection-only.js',
+            ])
+        ).toThrow(/unrelated story chunk/i);
+
+        const nearMatch = new ReleaseGateRequestRecorder();
+        nearMatch.observe(
+            'https://preview.example.test/_astro/train-adventure-collection-only-extra.js'
+        );
+        expect(() =>
+            nearMatch.assertNoUnrelatedStoryRequest([
+                '/_astro/train-adventure-collection-only.js',
+            ])
+        ).not.toThrow();
     });
 
-    it('attaches partial structured evidence when a failed flow lacks release requests', async () => {
+    it('attaches a shared failed project record without requests or raw trace fields', async () => {
         const attachments: Buffer[] = [];
         const releaseGate = {
             env: {
@@ -165,7 +111,10 @@ describe('release-gate browser evidence', () => {
 
         await attachReleaseGateEvidence(
             {
-                attach: async (_name, attachment) => {
+                attach: async (
+                    _name: string,
+                    attachment: { body?: string | Buffer }
+                ) => {
                     if (attachment.body !== undefined) {
                         attachments.push(attachment.body as Buffer);
                     }
@@ -181,13 +130,25 @@ describe('release-gate browser evidence', () => {
         );
 
         expect(attachments).toHaveLength(1);
-        expect(JSON.parse(attachments[0]!.toString('utf8'))).toMatchObject({
+        const evidence = parseBrowserEvidenceProjectV1(
+            JSON.parse(attachments[0]!.toString('utf8'))
+        );
+        expect(evidence).toMatchObject({
+            flow: 'preview-release-gate',
+            target: TARGET,
+            assetEnvironment: 'preview',
             status: 'failed',
             requestPaths: {
                 pointerRequestUrl: null,
                 manifestRequestUrl: null,
-                observedUrls: [],
             },
         });
+        expect(evidence.scenarioCases).toHaveLength(10);
+        expect(evidence.scenarioCases[0]).toEqual({
+            id: 'direct-open',
+            status: 'failed',
+        });
+        expect(JSON.stringify(evidence)).not.toContain('observedUrls');
+        expect(JSON.stringify(evidence)).not.toContain('trace');
     });
 });

@@ -292,6 +292,12 @@ describe('BrowserEvidenceV1', () => {
                 (evidence.projects[0].target = { kind: 'production' }),
         ],
         [
+            'project web deployment',
+            (evidence: any) =>
+                (evidence.projects[0].webBaseUrl =
+                    'https://another-preview.aquila.example'),
+        ],
+        [
             'unsafe screenshot path',
             (evidence: any) =>
                 (evidence.projects[0].screenshots = ['../private.png']),
@@ -306,6 +312,19 @@ describe('BrowserEvidenceV1', () => {
         const evidence = browserEvidenceClone();
         mutate(evidence);
         expect(() => parseBrowserEvidenceV1(evidence)).toThrow();
+    });
+
+    it('requires one canonical deployed web origin in the aggregate and every project', () => {
+        const missing = browserEvidenceClone();
+        delete (missing as { webBaseUrl?: string }).webBaseUrl;
+        expect(() => parseBrowserEvidenceV1(missing)).toThrow();
+
+        const nonCanonical = browserEvidenceClone();
+        nonCanonical.webBaseUrl = 'https://preview.aquila.example/reader';
+        for (const project of nonCanonical.projects) {
+            project.webBaseUrl = nonCanonical.webBaseUrl;
+        }
+        expect(() => parseBrowserEvidenceV1(nonCanonical)).toThrow();
     });
 
     it('accepts a complete failed aggregate without allowing it to masquerade as passed', () => {

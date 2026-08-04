@@ -95,6 +95,7 @@ describe('release-gate browser evidence', () => {
         const releaseGate = {
             env: {
                 target: 'preview',
+                webBaseUrl: 'https://preview.example.test',
                 storyId: STORY_ID,
                 publicationTarget: TARGET,
                 expectedIdentity: {
@@ -135,6 +136,7 @@ describe('release-gate browser evidence', () => {
         );
         expect(evidence).toMatchObject({
             flow: 'preview-release-gate',
+            webBaseUrl: 'https://preview.example.test',
             target: TARGET,
             assetEnvironment: 'preview',
             status: 'failed',

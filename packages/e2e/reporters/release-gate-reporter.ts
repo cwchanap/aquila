@@ -179,6 +179,7 @@ function fallbackProjectEvidence(
         flow,
         project,
         status: 'failed',
+        webBaseUrl: run.env.webBaseUrl,
         storyId: run.scenario.storyId,
         target: run.env.publicationTarget,
         assetEnvironment: run.env.expectedIdentity.assetEnvironment,
@@ -203,6 +204,7 @@ function aggregateEvidence(
     return {
         schemaVersion: 1,
         flow: flowForTarget(run.env.target),
+        webBaseUrl: run.env.webBaseUrl,
         storyId: run.scenario.storyId,
         target: run.env.publicationTarget,
         releaseId: run.env.expectedIdentity.releaseId,

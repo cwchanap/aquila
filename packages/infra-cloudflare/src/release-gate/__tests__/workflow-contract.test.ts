@@ -3,13 +3,17 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import {
+    assertBrowserEvidenceDeployment,
     parseReleaseGateTarV1,
     parseReleaseGateWorkflowInputs,
     parseVercelDeploymentStdout,
     validateCandidateEntryWorkflowProvenance,
     validateReleaseGateArtifactProvenance,
 } from '../../../scripts/release-gate-workflow-evidence';
-import { validReleaseId } from '../__fixtures__/valid-evidence';
+import {
+    validBrowserEvidence,
+    validReleaseId,
+} from '../__fixtures__/valid-evidence';
 
 const ENTRY_WORKFLOW_PATH = fileURLToPath(
     new URL(
@@ -85,6 +89,20 @@ function byName(job: WorkflowJob, name: string): WorkflowStep | undefined {
 }
 
 describe('release-gate workflow evidence', () => {
+    it('binds retained browser evidence to the exact Vercel-returned deployment origin', () => {
+        expect(() =>
+            assertBrowserEvidenceDeployment(
+                validBrowserEvidence,
+                'https://preview.aquila.example'
+            )
+        ).not.toThrow();
+        expect(() =>
+            assertBrowserEvidenceDeployment(
+                validBrowserEvidence,
+                'https://another-preview.aquila.example'
+            )
+        ).toThrow(/deployment/i);
+    });
     it('fails closed on unsafe dispatch input before checkout-dependent use', () => {
         expect(parseReleaseGateWorkflowInputs(validInputs)).toMatchObject(
             validInputs
@@ -445,9 +463,9 @@ describe('visual-novel release trust-boundary workflow contract', () => {
         }
         expect(prepare.environment).toBe('visual-novel-release-preview');
         expect(finalize.environment).toBe('visual-novel-release-approval');
-        expect(
-            byName(prepare, 'Attest sealed candidate artifact')
-        ).toBeDefined();
+        expect(byName(prepare, 'Attest sealed candidate artifact')?.uses).toBe(
+            'actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d'
+        );
         expect(
             byName(prepare, 'Deploy the sealed prebuilt output')?.run
         ).toContain('vercel@${VERCEL_CLI_VERSION}" deploy --prebuilt');

@@ -611,6 +611,27 @@ export async function readValidatedJsonEvidence(
     );
 }
 
+/** Reads one repository-relative JSON file from the same no-follow descriptor
+ * used for validation. This is for standalone CLI inputs that are not one of
+ * the gate report's typed evidence-reference kinds.
+ */
+export async function readValidatedJsonFile(
+    root: string,
+    relativePath: string
+): Promise<unknown> {
+    const evidenceFile = openValidatedEvidenceFile(root, relativePath);
+    try {
+        return (
+            await readValidatedJsonValue(
+                evidenceFile.descriptor,
+                evidenceFile.identity
+            )
+        ).value;
+    } finally {
+        closeEvidenceDescriptor(evidenceFile.descriptor);
+    }
+}
+
 /**
  * Creates a validated retained-evidence reference. JSON documents are hashed
  * from their parsed canonical representation; opaque trace and screenshot

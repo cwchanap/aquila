@@ -75,6 +75,14 @@ const httpsCredentialFreeUrlV1Schema = z
         message: 'Expected an HTTPS credential-free URL',
     });
 
+const canonicalHttpsOriginV1Schema = httpsCredentialFreeUrlV1Schema.refine(
+    value => {
+        const url = new URL(value);
+        return value === url.origin;
+    },
+    { message: 'Expected one canonical HTTPS origin' }
+);
+
 const productionPublicationTargetV1Schema = z
     .object({
         kind: z.literal('production'),
@@ -425,6 +433,7 @@ const browserEvidenceProjectV1Schema = z
         flow: browserEvidenceFlowV1Schema,
         project: browserEvidenceProjectNameV1Schema,
         status: browserEvidenceStatusV1Schema,
+        webBaseUrl: canonicalHttpsOriginV1Schema,
         storyId: storyIdV1Schema,
         target: publicationTargetV1Schema,
         assetEnvironment: z.enum(['preview', 'production']),
@@ -506,6 +515,7 @@ const browserEvidenceV1Schema = z
         schemaVersion: schemaVersionV1,
         flow: browserEvidenceFlowV1Schema,
         status: browserEvidenceStatusV1Schema,
+        webBaseUrl: canonicalHttpsOriginV1Schema,
         storyId: storyIdV1Schema,
         target: publicationTargetV1Schema,
         releaseId: releaseIdV1Schema,
@@ -541,6 +551,13 @@ const browserEvidenceV1Schema = z
                     context,
                     ['projects', index, 'flow'],
                     'Project flow must match aggregate flow'
+                );
+            }
+            if (project.webBaseUrl !== evidence.webBaseUrl) {
+                addBrowserEvidenceIssue(
+                    context,
+                    ['projects', index, 'webBaseUrl'],
+                    'Project web base URL must match aggregate web base URL'
                 );
             }
             if (project.storyId !== evidence.storyId) {

@@ -1,14 +1,94 @@
-import { describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+    closeSync,
+    constants,
+    lstatSync,
+    openSync,
+    readFileSync,
+    rmSync,
+    symlinkSync,
+} from 'node:fs';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-vi.mock('bun:ffi', () => ({
-    FFIType: { i32: 5, ptr: 12 },
-    dlopen: () => ({
-        close: () => undefined,
-        symbols: { close: () => 0, openat: () => -1 },
-    }),
-    ptr: (value: Uint8Array): Uint8Array => value,
+const descriptorOpenRace = vi.hoisted(() => ({
+    beforeOpenAt: undefined as undefined | ((path: string) => void),
 }));
+
+vi.mock('bun:ffi', () => {
+    const descriptors = new Map<number, string>();
+    return {
+        FFIType: { i32: 5, ptr: 12 },
+        dlopen: () => ({
+            close: () => undefined,
+            symbols: {
+                close: (descriptor: number): number => {
+                    descriptors.delete(descriptor);
+                    try {
+                        closeSync(descriptor);
+                        return 0;
+                    } catch {
+                        return -1;
+                    }
+                },
+                openat: (
+                    directoryDescriptor: number,
+                    encodedPath: Uint8Array,
+                    flags: number
+                ): number => {
+                    const path = Buffer.from(encodedPath)
+                        .toString('utf8')
+                        .split('\0', 1)[0]!;
+                    descriptorOpenRace.beforeOpenAt?.(path);
+                    if (
+                        (flags & constants.O_NOFOLLOW) !==
+                        constants.O_NOFOLLOW
+                    ) {
+                        throw new Error(
+                            'descriptor open must not follow links'
+                        );
+                    }
+                    const parentPath = descriptors.get(directoryDescriptor);
+                    if (directoryDescriptor >= 0 && parentPath === undefined) {
+                        return -1;
+                    }
+                    const candidate =
+                        parentPath === undefined
+                            ? path
+                            : join(parentPath, path);
+                    try {
+                        const stats = lstatSync(candidate);
+                        if (
+                            stats.isSymbolicLink() ||
+                            ((flags & constants.O_DIRECTORY) !== 0 &&
+                                !stats.isDirectory())
+                        ) {
+                            return -1;
+                        }
+                        const descriptor = openSync(candidate, flags);
+                        descriptors.set(descriptor, candidate);
+                        return descriptor;
+                    } catch {
+                        return -1;
+                    }
+                },
+            },
+        }),
+        ptr: (value: Uint8Array): Uint8Array => value,
+    };
+});
+
+const temporaryDirectories: string[] = [];
+
+afterEach(async () => {
+    descriptorOpenRace.beforeOpenAt = undefined;
+    await Promise.all(
+        temporaryDirectories
+            .splice(0)
+            .map(directory => rm(directory, { force: true, recursive: true }))
+    );
+});
 
 import { runAssetsCli, type AssetsCliDependencies } from '../../publisher/cli';
 import type { PublisherReportV1 } from '../../publisher/report';
@@ -261,17 +341,11 @@ function withInvalidEvidencePath(option: string): string[] {
 
 function noReadCoordinatorDependencies(dependencies: AssetsCliDependencies): {
     dependencies: ReleaseGateCliDependencies;
-    readEvidenceJson: ReturnType<typeof vi.fn>;
-    createEvidenceReference: ReturnType<typeof vi.fn>;
+    readValidatedJsonEvidence: ReturnType<typeof vi.fn>;
     runVisualNovelReleaseGate: ReturnType<typeof vi.fn>;
 } {
-    const readEvidenceJson = vi.fn(async () => {
+    const readValidatedJsonEvidence = vi.fn(async () => {
         throw new Error('Evidence must not be read for an invalid CLI input');
-    });
-    const createEvidenceReference = vi.fn(async () => {
-        throw new Error(
-            'Evidence references must not be created for an invalid CLI input'
-        );
     });
     const runVisualNovelReleaseGate = vi.fn(async () =>
         parseVisualNovelReleaseGateReportV1(validGateReport)
@@ -283,12 +357,10 @@ function noReadCoordinatorDependencies(dependencies: AssetsCliDependencies): {
                 vi.fn(async () => validGateReport)
             ),
             runVerifyPreview: undefined,
-            readEvidenceJson,
-            createEvidenceReference,
+            readValidatedJsonEvidence,
             runVisualNovelReleaseGate,
         } as ReleaseGateCliDependencies,
-        readEvidenceJson,
-        createEvidenceReference,
+        readValidatedJsonEvidence,
         runVisualNovelReleaseGate,
     };
 }
@@ -385,6 +457,7 @@ function previewBrowserProject(
         flow: 'preview-release-gate' as const,
         project,
         status: 'passed' as const,
+        webBaseUrl: 'https://preview.aquila.example',
         storyId: 'the_seventh_mirror',
         target: { kind: 'preview' as const, previewId: 'hpa-233' },
         assetEnvironment: 'preview' as const,
@@ -466,6 +539,7 @@ const retainedEvidence: Record<string, unknown> = {
         schemaVersion: 1,
         flow: 'preview-release-gate',
         status: 'passed',
+        webBaseUrl: 'https://preview.aquila.example',
         storyId: 'the_seventh_mirror',
         target: { kind: 'preview', previewId: 'hpa-233' },
         releaseId: `sha256-${'a'.repeat(64)}`,
@@ -645,15 +719,17 @@ describe('assets release-gate routing', () => {
 
     it('assembles retained immutable evidence for the Task 4 coordinator without a publisher store', async () => {
         const test = harness();
-        const readEvidenceJson = vi.fn(async (_directory, path: string) => {
-            const evidence = retainedEvidence[path];
-            if (evidence === undefined) throw new Error(`Missing ${path}`);
-            return evidence;
-        });
-        const createEvidenceReference = vi.fn(async (_directory, request) => ({
-            ...request,
-            sha256: 'd'.repeat(64),
-        }));
+        const readValidatedJsonEvidence = vi.fn(
+            async (_directory, request: { path: string }) => {
+                const evidence = retainedEvidence[request.path];
+                if (evidence === undefined)
+                    throw new Error(`Missing ${request.path}`);
+                return {
+                    value: evidence,
+                    reference: { ...request, sha256: 'd'.repeat(64) },
+                };
+            }
+        );
         const runVisualNovelReleaseGate = vi.fn(async () =>
             parseVisualNovelReleaseGateReportV1(validGateReport)
         );
@@ -664,13 +740,18 @@ describe('assets release-gate routing', () => {
                 vi.fn(async () => validGateReport)
             ),
             runVerifyPreview: undefined,
-            readEvidenceJson,
-            createEvidenceReference,
+            readValidatedJsonEvidence,
             runVisualNovelReleaseGate,
-        } as ReleaseGateCliDependencies);
+        } as unknown as ReleaseGateCliDependencies);
 
         expect(exit).toBe(0);
-        expect(readEvidenceJson.mock.calls).toEqual([
+        expect(readValidatedJsonEvidence).toHaveBeenCalledTimes(11);
+        expect(
+            readValidatedJsonEvidence.mock.calls.map(([directory, request]) => [
+                directory,
+                request.path,
+            ])
+        ).toEqual([
             ['/retained/evidence', retainedEvidencePaths.publisher],
             ['/retained/evidence', retainedEvidencePaths.tier1],
             ['/retained/evidence', retainedEvidencePaths.r2Candidate],
@@ -689,7 +770,6 @@ describe('assets release-gate routing', () => {
                 retainedEvidencePaths.productionPointerAfter,
             ],
         ]);
-        expect(createEvidenceReference).toHaveBeenCalledTimes(11);
         expect(runVisualNovelReleaseGate).toHaveBeenCalledWith(
             expect.objectContaining({
                 identity: {
@@ -753,12 +833,17 @@ describe('assets release-gate routing', () => {
                 target: 'preview-with-secret',
             },
         };
-        const readEvidenceJson = vi.fn(async (_directory, path: string) => {
-            const evidence = malformedEvidence[path];
-            if (evidence === undefined) throw new Error(`Missing ${path}`);
-            return evidence;
-        });
-        const createEvidenceReference = vi.fn();
+        const readValidatedJsonEvidence = vi.fn(
+            async (_directory, request: { path: string }) => {
+                const evidence = malformedEvidence[request.path];
+                if (evidence === undefined)
+                    throw new Error(`Missing ${request.path}`);
+                return {
+                    value: evidence,
+                    reference: { ...request, sha256: 'd'.repeat(64) },
+                };
+            }
+        );
         const runVisualNovelReleaseGate = vi.fn();
 
         const exit = await runReleaseGateCli([...verifyPreviewArgs, '--json'], {
@@ -767,13 +852,11 @@ describe('assets release-gate routing', () => {
                 vi.fn(async () => validGateReport)
             ),
             runVerifyPreview: undefined,
-            readEvidenceJson,
-            createEvidenceReference,
+            readValidatedJsonEvidence,
             runVisualNovelReleaseGate,
-        } as ReleaseGateCliDependencies);
+        } as unknown as ReleaseGateCliDependencies);
 
         expect(exit).toBe(2);
-        expect(createEvidenceReference).not.toHaveBeenCalled();
         expect(runVisualNovelReleaseGate).not.toHaveBeenCalled();
         expect(parseGateDiagnosticV1(JSON.parse(test.stdout()))).toEqual(
             expect.objectContaining({
@@ -799,8 +882,9 @@ describe('assets release-gate routing', () => {
             );
 
             expect(exit).toBe(1);
-            expect(coordinator.readEvidenceJson).not.toHaveBeenCalled();
-            expect(coordinator.createEvidenceReference).not.toHaveBeenCalled();
+            expect(
+                coordinator.readValidatedJsonEvidence
+            ).not.toHaveBeenCalled();
             expect(
                 coordinator.runVisualNovelReleaseGate
             ).not.toHaveBeenCalled();
@@ -825,8 +909,9 @@ describe('assets release-gate routing', () => {
             );
 
             expect(exit).toBe(2);
-            expect(coordinator.readEvidenceJson).not.toHaveBeenCalled();
-            expect(coordinator.createEvidenceReference).not.toHaveBeenCalled();
+            expect(
+                coordinator.readValidatedJsonEvidence
+            ).not.toHaveBeenCalled();
             expect(
                 coordinator.runVisualNovelReleaseGate
             ).not.toHaveBeenCalled();
@@ -925,14 +1010,14 @@ describe('assets release-gate routing', () => {
     it('maps assert-activation-ready flags to the read-only assertion service', async () => {
         const test = harness();
         const assertion = vi.fn(async () => ({ status: 'passed' as const }));
-        const readJsonFile = vi.fn(async () => validGateReport);
+        const readValidatedJsonFile = vi.fn(async () => validGateReport);
         const dependencies = {
             ...releaseGateDependencies(
                 test.dependencies,
                 vi.fn(async () => validGateReport)
             ),
             assertActivationReady: assertion,
-            readJsonFile,
+            readValidatedJsonFile,
         } as unknown as ReleaseGateCliDependencies;
 
         const exit = await runReleaseGateCli(
@@ -956,6 +1041,51 @@ describe('assets release-gate routing', () => {
         );
         expect(JSON.parse(test.stdout())).toEqual({ status: 'passed' });
         expect(test.stderr()).toBe('');
+        expect(readValidatedJsonFile).toHaveBeenCalledWith(
+            '/workspace/aquila',
+            'evidence/release-gate-report.json'
+        );
+    });
+
+    it('rejects a report swapped to a symlink at the CLI descriptor boundary', async () => {
+        const repositoryRoot = await mkdtemp(
+            join(tmpdir(), 'aquila-release-gate-cli-')
+        );
+        temporaryDirectories.push(repositoryRoot);
+        const evidenceDirectory = join(repositoryRoot, 'evidence');
+        await mkdir(evidenceDirectory);
+        const reportPath = join(evidenceDirectory, 'release-gate-report.json');
+        const unsafePath = join(repositoryRoot, 'unsafe.json');
+        await writeFile(reportPath, JSON.stringify(validGateReport));
+        await writeFile(unsafePath, JSON.stringify({ status: 'forged' }));
+        let swapped = false;
+        descriptorOpenRace.beforeOpenAt = path => {
+            if (path !== 'release-gate-report.json' || swapped) return;
+            rmSync(reportPath);
+            symlinkSync('../unsafe.json', reportPath);
+            swapped = true;
+        };
+        const test = harness();
+        const assertion = vi.fn(async () => ({ status: 'passed' as const }));
+
+        const exit = await runReleaseGateCli(
+            [...assertActivationReadyArgs, '--json'],
+            {
+                ...releaseGateDependencies(
+                    test.dependencies,
+                    vi.fn(async () => validGateReport)
+                ),
+                repositoryRoot,
+                assertActivationReady: assertion,
+            }
+        );
+
+        expect(swapped).toBe(true);
+        expect(exit).toBe(2);
+        expect(assertion).not.toHaveBeenCalled();
+        expect(parseGateDiagnosticV1(JSON.parse(test.stdout()))).toMatchObject({
+            code: 'evidence/path-outside-root',
+        });
     });
 
     it('maps smoke-production flags to the read-only production coordinator', async () => {
@@ -964,6 +1094,7 @@ describe('assets release-gate routing', () => {
             schemaVersion: 1,
             flow: 'production-smoke',
             status: 'passed',
+            webBaseUrl: 'https://aquila.example.com',
             storyId: 'the_seventh_mirror',
             target: { kind: 'production' },
             releaseId: `sha256-${'a'.repeat(64)}`,
@@ -981,14 +1112,14 @@ describe('assets release-gate routing', () => {
             checks: [],
             diagnostics: [],
         }));
-        const readJsonFile = vi.fn(async () => browserEvidence);
+        const readValidatedJsonFile = vi.fn(async () => browserEvidence);
         const dependencies = {
             ...releaseGateDependencies(
                 test.dependencies,
                 vi.fn(async () => validGateReport)
             ),
             runProductionSmoke: smoke,
-            readJsonFile,
+            readValidatedJsonFile,
         } as unknown as ReleaseGateCliDependencies;
 
         const exit = await runReleaseGateCli(
@@ -1011,6 +1142,10 @@ describe('assets release-gate routing', () => {
         );
         expect(JSON.parse(test.stdout())).toMatchObject({ status: 'passed' });
         expect(test.stderr()).toBe('');
+        expect(readValidatedJsonFile).toHaveBeenCalledWith(
+            '/workspace/aquila',
+            'evidence/production-smoke.json'
+        );
     });
 
     it.each([

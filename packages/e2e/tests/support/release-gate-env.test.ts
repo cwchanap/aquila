@@ -9,6 +9,7 @@ const SHA_A = 'a'.repeat(64);
 const RELEASE_ID = `sha256-${SHA_A}`;
 
 const PREVIEW_ENV = {
+    BASE_URL: 'https://preview.example.test',
     RELEASE_GATE_TARGET: 'preview',
     RELEASE_GATE_STORY_ID: 'hpa_233_fixture',
     RELEASE_GATE_PREVIEW_ID: 'hpa-233-fixture',
@@ -69,6 +70,7 @@ describe('release-gate environment and scenario parsing', () => {
 
         expect(parseReleaseGateEnv(PREVIEW_ENV)).toMatchObject({
             target: 'preview',
+            webBaseUrl: 'https://preview.example.test',
             storyId: 'hpa_233_fixture',
             publicationTarget: {
                 kind: 'preview',
@@ -81,6 +83,21 @@ describe('release-gate environment and scenario parsing', () => {
                 manifestSha256: SHA_A,
             },
         });
+    });
+
+    it('retains BASE_URL as one canonical deployed origin', () => {
+        expect(
+            parseReleaseGateEnv({
+                ...PREVIEW_ENV,
+                BASE_URL: 'https://PREVIEW.example.test:443/',
+            }).webBaseUrl
+        ).toBe('https://preview.example.test');
+        expect(() =>
+            parseReleaseGateEnv({
+                ...PREVIEW_ENV,
+                BASE_URL: 'https://preview.example.test/reader',
+            })
+        ).toThrow(/origin/i);
     });
 
     it('strictly parses a scenario, binds it to the requested story, and hashes canonical JSON', () => {

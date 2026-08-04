@@ -10,6 +10,7 @@ vi.mock('bun:ffi', () => ({
 }));
 
 import type { PublisherReportV1 } from '../../publisher/report';
+import { createWorkflowPublicVerificationInput } from '../../../scripts/release-gate-workflow-evidence';
 import { hashCanonicalEvidence } from '../evidence';
 import type {
     BrowserEvidenceProjectNameV1,
@@ -124,7 +125,7 @@ function publicVerification(
         status: 'passed' as const,
         mode,
         storyId: 'the_seventh_mirror',
-        target: PREVIEW_TARGET,
+        target: mode === 'candidate' ? { kind: 'production' } : PREVIEW_TARGET,
         releaseId: RELEASE_ID,
         manifestSha256: MANIFEST_SHA256,
         checks: [{ id: 'manifest.fetch', status: 'passed' as const }],
@@ -155,6 +156,7 @@ function browserProject(
         flow: 'preview-release-gate',
         project,
         status: 'passed',
+        webBaseUrl: 'https://preview.aquila.example',
         storyId: 'the_seventh_mirror',
         target: PREVIEW_TARGET,
         assetEnvironment: 'preview',
@@ -177,6 +179,7 @@ function browserEvidence(): BrowserEvidenceV1 {
         schemaVersion: 1,
         flow: 'preview-release-gate',
         status: 'passed',
+        webBaseUrl: 'https://preview.aquila.example',
         storyId: 'the_seventh_mirror',
         target: PREVIEW_TARGET,
         releaseId: RELEASE_ID,
@@ -379,6 +382,93 @@ describe('visual novel release gate runner', () => {
             )
         ).toBe(true);
         expect(report.evidence).toEqual(allEvidence(input));
+    });
+
+    it('accepts the exact public evidence target forms emitted by the live workflow helper', async () => {
+        const candidate = createWorkflowPublicVerificationInput({
+            mode: 'candidate',
+            storyId: 'the_seventh_mirror',
+            previewId: 'hpa-233',
+            assetBaseUrl: 'https://assets.aquila.example',
+            browserOrigin: 'https://preview.aquila.example',
+            releaseId: RELEASE_ID,
+            expectedManifestSha256: MANIFEST_SHA256,
+            omittedIdentities: [],
+        });
+        const active = createWorkflowPublicVerificationInput({
+            mode: 'active',
+            storyId: 'the_seventh_mirror',
+            previewId: 'hpa-233',
+            assetBaseUrl: 'https://assets.aquila.example',
+            browserOrigin: 'https://preview.aquila.example',
+            releaseId: RELEASE_ID,
+            expectedManifestSha256: MANIFEST_SHA256,
+            omittedIdentities: [],
+        });
+        const input = fixtureGateInput({
+            publicCandidate: {
+                ...publicVerification('candidate'),
+                target: candidate.target,
+            },
+            publicActiveRelease: {
+                ...publicVerification('active'),
+                target: active.target,
+            },
+        });
+
+        const report = await runFixture(input);
+
+        expect(candidate.target).toEqual({ kind: 'production' });
+        expect(active.target).toEqual(PREVIEW_TARGET);
+        expect(report.status).toBe('passed');
+    });
+
+    it.each([
+        ['candidate', 'publicCandidate'],
+        ['active', 'publicActiveRelease'],
+    ] as const)(
+        'rejects a %s public artifact whose production/preview target is swapped',
+        async (_mode, key) => {
+            const baseline = fixtureInput();
+            const evidence = baseline[key];
+            const swapped = {
+                ...evidence,
+                target:
+                    evidence.target.kind === 'production'
+                        ? PREVIEW_TARGET
+                        : { kind: 'production' as const },
+            };
+            const input = fixtureGateInput({ [key]: swapped });
+
+            const report = await runFixture(input);
+
+            expect(report.status).toBe('failed');
+            expect(report.checks[key].status).toBe('failed');
+            expect(report.diagnostics).toContainEqual(
+                expect.objectContaining({
+                    code: 'evidence-binding/public-target-mismatch',
+                })
+            );
+        }
+    );
+
+    it('rejects browser evidence from another deployment with the same asset identity', async () => {
+        const evidence = browserEvidence();
+        evidence.webBaseUrl = 'https://other-preview.aquila.example';
+        for (const project of evidence.projects) {
+            project.webBaseUrl = evidence.webBaseUrl;
+        }
+        const input = fixtureGateInput({ browserEvidence: evidence });
+
+        const report = await runFixture(input);
+
+        expect(report.status).toBe('failed');
+        expect(report.checks.browserFlows.status).toBe('failed');
+        expect(report.diagnostics).toContainEqual(
+            expect.objectContaining({
+                code: 'evidence-binding/browser-identity-mismatch',
+            })
+        );
     });
 
     it('rejects a browser artifact whose flow drifts from the preview gate', async () => {

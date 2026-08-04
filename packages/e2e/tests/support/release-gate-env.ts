@@ -24,6 +24,7 @@ export type ExpectedWebIdentity = {
 
 export type ParsedReleaseGateEnv = {
     target: 'preview' | 'production';
+    webBaseUrl: string;
     storyId: string;
     publicationTarget: PublicationTarget;
     expectedIdentity: ExpectedWebIdentity;
@@ -61,6 +62,26 @@ function optional(
     return value === undefined || value === '' ? undefined : value;
 }
 
+function canonicalDeployedOrigin(value: string): string {
+    let url: URL;
+    try {
+        url = new URL(value);
+    } catch {
+        throw new Error('BASE_URL must be a canonical HTTPS origin');
+    }
+    if (
+        url.protocol !== 'https:' ||
+        url.username !== '' ||
+        url.password !== '' ||
+        url.pathname !== '/' ||
+        url.search !== '' ||
+        url.hash !== ''
+    ) {
+        throw new Error('BASE_URL must be a canonical HTTPS origin');
+    }
+    return url.origin;
+}
+
 /**
  * Scenarios use the reader's canonical zero-based dialogue index. The
  * deployed reader URL deliberately serializes that position as a one-based
@@ -86,6 +107,7 @@ export function buildReleaseGateReaderRoute(
 export function parseReleaseGateEnv(
     env: ReleaseGateEnvironment
 ): ParsedReleaseGateEnv {
+    const webBaseUrl = canonicalDeployedOrigin(required(env, 'BASE_URL'));
     const target = required(env, 'RELEASE_GATE_TARGET');
     if (target !== 'preview' && target !== 'production') {
         throw new Error('RELEASE_GATE_TARGET must be preview or production');
@@ -132,6 +154,7 @@ export function parseReleaseGateEnv(
 
     return {
         target,
+        webBaseUrl,
         storyId,
         publicationTarget,
         expectedIdentity: {

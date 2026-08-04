@@ -43,6 +43,7 @@ function projectEvidence(
         flow: 'preview-release-gate',
         project,
         status: 'passed',
+        webBaseUrl: 'https://preview.example.test',
         storyId: STORY_ID,
         target: TARGET,
         assetEnvironment: 'preview',
@@ -62,6 +63,7 @@ function projectEvidence(
 const aggregateIdentity = {
     schemaVersion: 1,
     flow: 'preview-release-gate' as const,
+    webBaseUrl: 'https://preview.example.test',
     storyId: STORY_ID,
     target: TARGET,
     releaseId: RELEASE_ID,
@@ -106,6 +108,12 @@ describe('release-gate reporter', () => {
         );
 
         expect(evidence.status).toBe('passed');
+        expect(evidence.webBaseUrl).toBe('https://preview.example.test');
+        expect(
+            evidence.projects.every(
+                project => project.webBaseUrl === 'https://preview.example.test'
+            )
+        ).toBe(true);
         expect(evidence.projects.map(project => project.project)).toEqual([
             'release-gate-chromium',
             'release-gate-mobile-chrome',

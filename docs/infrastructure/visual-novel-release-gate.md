@@ -262,8 +262,10 @@ bun --filter @aquila/infra-cloudflare assets release-gate smoke-production \
 
 The command reads the public active pointer/manifest/object checks and the
 structured browser evidence. It rejects a caller-supplied active release,
-preview/local targets, stale release IDs, stale checksums, or pointer
-revalidation failure. It does not invoke publisher mutation.
+preview/local targets, browser evidence from any other deployment origin,
+stale release IDs, stale checksums, or pointer revalidation failure. Every
+project and the aggregate retain the same canonical web origin. It does not
+invoke publisher mutation.
 
 ## 11. Rollback decision using existing verified-release rollback
 

@@ -210,6 +210,7 @@ export async function attachReleaseGateEvidence(
         flow,
         project: input.project,
         status,
+        webBaseUrl: env.webBaseUrl,
         storyId: scenario.storyId,
         target: env.publicationTarget,
         assetEnvironment: env.expectedIdentity.assetEnvironment,

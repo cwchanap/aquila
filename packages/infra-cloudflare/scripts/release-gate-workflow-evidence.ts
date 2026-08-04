@@ -24,12 +24,15 @@ import { validateCandidatePublisherEvidence } from '../src/release-gate/candidat
 import { verifyPublicRelease } from '../src/release-gate/public-release-verifier';
 import {
     parseBrowserEvidenceV1,
+    parsePublicReleaseVerificationInputV1,
     parseTier1EvidenceV1,
     parseVisualNovelGateScenarioV1,
     parseVisualReviewRecordV1,
     parseWebIdentityEvidenceV1,
     parseWorkflowApprovalEvidenceV1,
+    type BrowserEvidenceV1,
     type Tier1EvidenceV1,
+    type PublicReleaseVerificationInputV1,
     type VisualNovelGateScenarioV1,
 } from '../src/release-gate/schemas';
 import { parsePublisherReportV1 } from '../src/publisher/report';
@@ -3661,6 +3664,35 @@ async function loadCandidateSummary(
     });
 }
 
+export function createWorkflowPublicVerificationInput(input: {
+    mode: 'candidate' | 'active';
+    storyId: string;
+    previewId: string;
+    assetBaseUrl: string;
+    browserOrigin: string;
+    releaseId: string;
+    expectedManifestSha256: string;
+    omittedIdentities: string[];
+}): PublicReleaseVerificationInputV1 {
+    return parsePublicReleaseVerificationInputV1({
+        storyId: input.storyId,
+        target:
+            input.mode === 'candidate'
+                ? { kind: 'production' }
+                : { kind: 'preview', previewId: input.previewId },
+        assetBaseUrl: input.assetBaseUrl,
+        browserOrigin: input.browserOrigin,
+        mode: input.mode,
+        ...(input.mode === 'candidate'
+            ? {
+                  releaseId: input.releaseId,
+                  expectedManifestSha256: input.expectedManifestSha256,
+              }
+            : {}),
+        omittedIdentities: input.omittedIdentities,
+    });
+}
+
 async function verifyPublicEvidence(
     environment: Readonly<Record<string, string | undefined>>
 ): Promise<void> {
@@ -3677,23 +3709,18 @@ async function verifyPublicEvidence(
     const materialized = await loadMaterializedContract(inputs);
     const attestation = await loadDeploymentAttestation(inputs, materialized);
     const summary = await loadCandidateSummary(inputs, materialized);
-    const result = await verifyPublicRelease({
-        storyId: inputs.storyId,
-        target:
-            mode === 'candidate'
-                ? { kind: 'production' }
-                : { kind: 'preview', previewId: inputs.previewId },
-        assetBaseUrl: inputs.assetBaseUrl,
-        browserOrigin: attestation.deploymentUrl,
-        mode,
-        ...(mode === 'candidate'
-            ? {
-                  releaseId: inputs.releaseId,
-                  expectedManifestSha256: inputs.manifestSha256,
-              }
-            : {}),
-        omittedIdentities: summary.omittedIdentities,
-    });
+    const result = await verifyPublicRelease(
+        createWorkflowPublicVerificationInput({
+            mode,
+            storyId: inputs.storyId,
+            previewId: inputs.previewId,
+            assetBaseUrl: inputs.assetBaseUrl,
+            browserOrigin: attestation.deploymentUrl,
+            releaseId: inputs.releaseId,
+            expectedManifestSha256: inputs.manifestSha256,
+            omittedIdentities: summary.omittedIdentities,
+        })
+    );
     const evidenceRoot = resolveRepositoryPath(EVIDENCE_DIRECTORY);
     await writeCanonicalJson(
         resolve(evidenceRoot, `public-${mode}.json`),
@@ -3910,6 +3937,19 @@ async function requireProductionPointerProof(
     }
 }
 
+export function assertBrowserEvidenceDeployment(
+    input: unknown,
+    deploymentUrl: string
+): BrowserEvidenceV1 {
+    const browser = parseBrowserEvidenceV1(input);
+    if (browser.webBaseUrl !== deploymentUrl) {
+        throw new Error(
+            'Browser evidence does not match the attested deployment origin'
+        );
+    }
+    return browser;
+}
+
 async function extractWebIdentity(
     environment: Readonly<Record<string, string | undefined>>
 ): Promise<void> {
@@ -3917,11 +3957,12 @@ async function extractWebIdentity(
     const materialized = await loadMaterializedContract(inputs);
     const attestation = await loadDeploymentAttestation(inputs, materialized);
     const evidenceRoot = resolveRepositoryPath(EVIDENCE_DIRECTORY);
-    const browser = parseBrowserEvidenceV1(
+    const browser = assertBrowserEvidenceDeployment(
         await readJson(
             resolve(evidenceRoot, 'browser-evidence.json'),
             'Browser evidence'
-        )
+        ),
+        attestation.deploymentUrl
     );
     if (
         browser.status !== 'passed' ||

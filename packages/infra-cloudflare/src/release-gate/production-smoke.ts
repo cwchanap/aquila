@@ -205,7 +205,10 @@ function assertInput(input: ProductionSmokeInputV1): {
             'Production web origin must be an origin'
         );
     }
-    if (webBaseUrl.origin !== productionWebOrigin.origin) {
+    if (
+        webBaseUrl.pathname !== '/' ||
+        webBaseUrl.origin !== productionWebOrigin.origin
+    ) {
         inputError(
             'activation-target/production-origin',
             'Production smoke must use the configured production origin'
@@ -246,6 +249,7 @@ function assertInput(input: ProductionSmokeInputV1): {
     if (
         browserEvidence.flow !== 'production-smoke' ||
         browserEvidence.status !== 'passed' ||
+        browserEvidence.webBaseUrl !== productionWebOrigin.origin ||
         browserEvidence.storyId !== input.storyId ||
         browserEvidence.target.kind !== 'production' ||
         browserEvidence.releaseId !== input.releaseId ||
@@ -253,6 +257,7 @@ function assertInput(input: ProductionSmokeInputV1): {
         browserEvidence.projects.some(
             project =>
                 project.assetEnvironment !== 'production' ||
+                project.webBaseUrl !== productionWebOrigin.origin ||
                 project.target.kind !== 'production' ||
                 project.releaseId !== input.releaseId ||
                 project.manifestSha256 !== input.expectedManifestSha256

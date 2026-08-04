@@ -448,11 +448,12 @@ function assertPublicEvidence(
     if (evidence.status !== 'passed') {
         gateError('public-object', 'public-verification/failed', reference.id);
     }
-    if (
-        evidence.mode !== expectedMode ||
-        evidence.target.kind !== 'preview' ||
-        evidence.target.previewId !== identity.previewId
-    ) {
+    const hasExpectedTarget =
+        expectedMode === 'candidate'
+            ? evidence.target.kind === 'production'
+            : evidence.target.kind === 'preview' &&
+              evidence.target.previewId === identity.previewId;
+    if (evidence.mode !== expectedMode || !hasExpectedTarget) {
         bindingError('evidence-binding/public-target-mismatch', reference.id);
     }
     assertExactIdentity(evidence, identity, reference);
@@ -477,6 +478,7 @@ function assertWebIdentityEvidence(
 function assertBrowserEvidence(
     evidence: BrowserEvidenceV1,
     identity: GateIdentityV1,
+    expectedWebBaseUrl: string,
     reference: GateEvidenceReferenceV1
 ): void {
     if (evidence.status !== 'passed') {
@@ -486,6 +488,7 @@ function assertBrowserEvidence(
         evidence.flow !== 'preview-release-gate' ||
         evidence.target.kind !== 'preview' ||
         evidence.target.previewId !== identity.previewId ||
+        evidence.webBaseUrl !== expectedWebBaseUrl ||
         evidence.storyId !== identity.storyId ||
         evidence.releaseId !== identity.releaseId ||
         evidence.manifestSha256 !== identity.manifestSha256 ||
@@ -496,6 +499,7 @@ function assertBrowserEvidence(
         evidence.projects.some(
             project =>
                 project.flow !== evidence.flow ||
+                project.webBaseUrl !== expectedWebBaseUrl ||
                 project.storyId !== evidence.storyId ||
                 project.target.kind !== 'preview' ||
                 project.target.previewId !== identity.previewId ||
@@ -776,6 +780,7 @@ export async function runVisualNovelReleaseGate(
             assertBrowserEvidence(
                 browser,
                 input.identity,
+                parseWebIdentityEvidenceV1(input.webIdentity).webBaseUrl,
                 input.evidence.browserFlows
             );
         }))

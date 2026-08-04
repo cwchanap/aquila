@@ -1,10 +1,12 @@
-import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { isSafeRelativePath } from '@aquila/stories/runtime-assets';
 import { parsePublisherReportV1 } from '../publisher/report';
 import { PublisherError, publisherExitCode } from '../publisher/errors';
-import type { CreateEvidenceReferenceInputV1 } from './evidence';
+import type {
+    CreateEvidenceReferenceInputV1,
+    ValidatedJsonEvidenceV1,
+} from './evidence';
 import type {
     ActivationAssertionDependencies,
     ActivationReadyResultV1,
@@ -64,21 +66,19 @@ export type VerifyPreviewCliService = (
     input: VerifyPreviewCliInputV1
 ) => Promise<VisualNovelReleaseGateReportV1>;
 
-type ReadEvidenceJson = (
-    evidenceDir: string,
-    relativePath: string
-) => Promise<unknown>;
-
-type CreateEvidenceReference = (
+type ReadValidatedJsonEvidence = (
     evidenceDir: string,
     input: CreateEvidenceReferenceInputV1
-) => Promise<GateEvidenceReferenceV1>;
+) => Promise<ValidatedJsonEvidenceV1>;
 
 type RunGateCoordinator = (
     input: RunVisualNovelReleaseGateInputV1
 ) => Promise<VisualNovelReleaseGateReportV1>;
 
-type ReadJsonFile = (path: string) => Promise<unknown>;
+type ReadValidatedJsonFile = (
+    root: string,
+    relativePath: string
+) => Promise<unknown>;
 
 type AssertActivationReadyService = (
     input: AssertActivationReadyInputV1,
@@ -96,10 +96,9 @@ export interface ReleaseGateCliDependencies {
     stdout: WritableStream;
     stderr: WritableStream;
     runVerifyPreview?: VerifyPreviewCliService;
-    readEvidenceJson?: ReadEvidenceJson;
-    createEvidenceReference?: CreateEvidenceReference;
+    readValidatedJsonEvidence?: ReadValidatedJsonEvidence;
     runVisualNovelReleaseGate?: RunGateCoordinator;
-    readJsonFile?: ReadJsonFile;
+    readValidatedJsonFile?: ReadValidatedJsonFile;
     assertActivationReady?: AssertActivationReadyService;
     runProductionSmoke?: RunProductionSmokeService;
 }
@@ -387,31 +386,6 @@ function parseSmokeProductionInput(
     };
 }
 
-async function defaultReadEvidenceJson(
-    evidenceDir: string,
-    relativePath: string
-): Promise<unknown> {
-    const evidence = await import('./evidence');
-    const path = evidence.resolveEvidencePath(evidenceDir, relativePath);
-    try {
-        return JSON.parse(await readFile(path, 'utf8'));
-    } catch (error) {
-        if (error instanceof evidence.GateEvidenceError) throw error;
-        throw evidence.gateInputError(
-            'evidence/json-invalid',
-            'Evidence JSON is invalid'
-        );
-    }
-}
-
-async function defaultReadJsonFile(path: string): Promise<unknown> {
-    try {
-        return JSON.parse(await readFile(path, 'utf8'));
-    } catch {
-        return inputError('input/json-invalid');
-    }
-}
-
 function repositoryPath(repositoryRoot: string, relativePath: string): string {
     return resolve(repositoryRoot, relativePath);
 }
@@ -430,7 +404,7 @@ function assertPreviewWebOrigin(
     try {
         parsePublicReleaseVerificationInputV1({
             storyId: input.storyId,
-            target: { kind: 'preview', previewId: input.previewId },
+            target: { kind: 'production' },
             assetBaseUrl: input.assetBaseUrl,
             browserOrigin: productionWebOrigin,
             mode: 'candidate',
@@ -485,132 +459,116 @@ async function createVerifyPreviewInput(
     input: VerifyPreviewCliInputV1,
     dependencies: ReleaseGateCliDependencies
 ): Promise<RunVisualNovelReleaseGateInputV1> {
-    const readEvidenceJson =
-        dependencies.readEvidenceJson ?? defaultReadEvidenceJson;
-    const createReference =
-        dependencies.createEvidenceReference ??
-        (await import('./evidence')).createEvidenceReference;
-
-    const publisherReport = parsePublisherReportV1(
-        await readEvidenceJson(input.evidenceDir, input.publisherReportPath)
+    const readValidatedJsonEvidence =
+        dependencies.readValidatedJsonEvidence ??
+        (await import('./evidence')).readValidatedJsonEvidence;
+    const read = (request: CreateEvidenceReferenceInputV1) =>
+        readValidatedJsonEvidence(input.evidenceDir, request);
+    const publisher = await read(
+        namedEvidenceReference(
+            'publisher',
+            'publisher-report',
+            input.publisherReportPath
+        )
     );
-    const tier1 = parseTier1EvidenceV1(
-        await readEvidenceJson(input.evidenceDir, input.tier1EvidencePath)
+    const deterministicCi = await read(
+        namedEvidenceReference('ci', 'ci-result', input.tier1EvidencePath)
     );
-    const r2Candidate = (await readEvidenceJson(
-        input.evidenceDir,
-        input.r2CandidateEvidencePath
-    )) as R2CandidateEvidenceV1;
-    const publicCandidate = parsePublicReleaseVerificationResultV1(
-        await readEvidenceJson(
-            input.evidenceDir,
+    const r2 = await read(
+        namedEvidenceReference(
+            'r2',
+            'r2-verification',
+            input.r2CandidateEvidencePath
+        )
+    );
+    const publicCandidateSnapshot = await read(
+        namedEvidenceReference(
+            'public-candidate',
+            'public-verification',
             input.publicCandidateEvidencePath
         )
     );
-    const publicActiveRelease = parsePublicReleaseVerificationResultV1(
-        await readEvidenceJson(
-            input.evidenceDir,
+    const publicActiveSnapshot = await read(
+        namedEvidenceReference(
+            'public-active',
+            'public-verification',
             input.publicActiveEvidencePath
         )
     );
-    const webIdentity = parseWebIdentityEvidenceV1(
-        await readEvidenceJson(input.evidenceDir, input.webIdentityEvidencePath)
+    const web = await read(
+        namedEvidenceReference(
+            'web',
+            'web-identity',
+            input.webIdentityEvidencePath
+        )
     );
-    assertEvidenceUrls(input, webIdentity);
-    const browserEvidence = parseBrowserEvidenceV1(
-        await readEvidenceJson(input.evidenceDir, input.browserEvidencePath)
+    const browser = await read(
+        namedEvidenceReference(
+            'browser',
+            'playwright-result',
+            input.browserEvidencePath
+        )
     );
-    const manualReview = parseVisualReviewRecordV1(
-        await readEvidenceJson(input.evidenceDir, input.manualReviewPath)
+    const manual = await read(
+        namedEvidenceReference(
+            'manual',
+            'manual-review',
+            input.manualReviewPath
+        )
     );
-    const workflowApproval = parseWorkflowApprovalEvidenceV1(
-        await readEvidenceJson(input.evidenceDir, input.workflowApprovalPath)
+    const workflow = await read(
+        namedEvidenceReference(
+            'workflow',
+            'workflow-approval',
+            input.workflowApprovalPath
+        )
     );
-    const productionPointerBefore = (await readEvidenceJson(
-        input.evidenceDir,
-        input.productionPointerBeforePath
-    )) as ProductionPointerEvidenceV1;
-    const productionPointerAfter = (await readEvidenceJson(
-        input.evidenceDir,
-        input.productionPointerAfterPath
-    )) as ProductionPointerEvidenceV1;
+    const pointerBefore = await read(
+        namedEvidenceReference(
+            'pointer-before',
+            'pointer-snapshot',
+            input.productionPointerBeforePath
+        )
+    );
+    const pointerAfter = await read(
+        namedEvidenceReference(
+            'pointer-after',
+            'pointer-snapshot',
+            input.productionPointerAfterPath
+        )
+    );
 
-    const reference = (request: CreateEvidenceReferenceInputV1) =>
-        createReference(input.evidenceDir, request);
+    const publisherReport = parsePublisherReportV1(publisher.value);
+    const tier1 = parseTier1EvidenceV1(deterministicCi.value);
+    const r2Candidate = r2.value as R2CandidateEvidenceV1;
+    const publicCandidate = parsePublicReleaseVerificationResultV1(
+        publicCandidateSnapshot.value
+    );
+    const publicActiveRelease = parsePublicReleaseVerificationResultV1(
+        publicActiveSnapshot.value
+    );
+    const webIdentity = parseWebIdentityEvidenceV1(web.value);
+    assertEvidenceUrls(input, webIdentity);
+    const browserEvidence = parseBrowserEvidenceV1(browser.value);
+    const manualReview = parseVisualReviewRecordV1(manual.value);
+    const workflowApproval = parseWorkflowApprovalEvidenceV1(workflow.value);
+    const productionPointerBefore =
+        pointerBefore.value as ProductionPointerEvidenceV1;
+    const productionPointerAfter =
+        pointerAfter.value as ProductionPointerEvidenceV1;
+
     const evidence: GateEvidenceBindingsV1 = {
-        deterministicCi: await reference(
-            namedEvidenceReference('ci', 'ci-result', input.tier1EvidencePath)
-        ),
-        publisherCandidate: await reference(
-            namedEvidenceReference(
-                'publisher',
-                'publisher-report',
-                input.publisherReportPath
-            )
-        ),
-        r2Candidate: await reference(
-            namedEvidenceReference(
-                'r2',
-                'r2-verification',
-                input.r2CandidateEvidencePath
-            )
-        ),
-        publicCandidate: await reference(
-            namedEvidenceReference(
-                'public-candidate',
-                'public-verification',
-                input.publicCandidateEvidencePath
-            )
-        ),
-        publicActiveRelease: await reference(
-            namedEvidenceReference(
-                'public-active',
-                'public-verification',
-                input.publicActiveEvidencePath
-            )
-        ),
-        webIdentity: await reference(
-            namedEvidenceReference(
-                'web',
-                'web-identity',
-                input.webIdentityEvidencePath
-            )
-        ),
-        browserFlows: await reference(
-            namedEvidenceReference(
-                'browser',
-                'playwright-result',
-                input.browserEvidencePath
-            )
-        ),
-        manualReview: await reference(
-            namedEvidenceReference(
-                'manual',
-                'manual-review',
-                input.manualReviewPath
-            )
-        ),
-        workflowApproval: await reference(
-            namedEvidenceReference(
-                'workflow',
-                'workflow-approval',
-                input.workflowApprovalPath
-            )
-        ),
-        productionPointerBefore: await reference(
-            namedEvidenceReference(
-                'pointer-before',
-                'pointer-snapshot',
-                input.productionPointerBeforePath
-            )
-        ),
-        productionPointerAfter: await reference(
-            namedEvidenceReference(
-                'pointer-after',
-                'pointer-snapshot',
-                input.productionPointerAfterPath
-            )
-        ),
+        deterministicCi: deterministicCi.reference,
+        publisherCandidate: publisher.reference,
+        r2Candidate: r2.reference,
+        publicCandidate: publicCandidateSnapshot.reference,
+        publicActiveRelease: publicActiveSnapshot.reference,
+        webIdentity: web.reference,
+        browserFlows: browser.reference,
+        manualReview: manual.reference,
+        workflowApproval: workflow.reference,
+        productionPointerBefore: pointerBefore.reference,
+        productionPointerAfter: pointerAfter.reference,
     };
 
     return {
@@ -658,14 +616,19 @@ async function executeAssertActivationReady(
         dependencies.repositoryRoot,
         input.reportPath
     );
-    const readJsonFile = dependencies.readJsonFile ?? defaultReadJsonFile;
+    const readValidatedJsonFile =
+        dependencies.readValidatedJsonFile ??
+        (await import('./evidence')).readValidatedJsonFile;
     const assertActivationReady =
         dependencies.assertActivationReady ??
         (await import('./activation-assertion')).assertActivationReady;
     return assertActivationReady(
         {
             evidenceDir: dirname(reportPath),
-            report: await readJsonFile(reportPath),
+            report: await readValidatedJsonFile(
+                dependencies.repositoryRoot,
+                input.reportPath
+            ),
             expected: {
                 storyId: input.storyId,
                 releaseId: input.releaseId,
@@ -692,11 +655,9 @@ async function executeProductionSmoke(
             3
         );
     }
-    const browserEvidencePath = repositoryPath(
-        dependencies.repositoryRoot,
-        input.browserEvidencePath
-    );
-    const readJsonFile = dependencies.readJsonFile ?? defaultReadJsonFile;
+    const readValidatedJsonFile =
+        dependencies.readValidatedJsonFile ??
+        (await import('./evidence')).readValidatedJsonFile;
     const runProductionSmoke =
         dependencies.runProductionSmoke ??
         (await import('./production-smoke')).runProductionSmoke;
@@ -708,7 +669,10 @@ async function executeProductionSmoke(
             assetBaseUrl: input.assetBaseUrl,
             webBaseUrl: input.webBaseUrl,
             productionWebOrigin,
-            browserEvidence: await readJsonFile(browserEvidencePath),
+            browserEvidence: await readValidatedJsonFile(
+                dependencies.repositoryRoot,
+                input.browserEvidencePath
+            ),
         },
         {}
     );

@@ -17,6 +17,7 @@ function browserEvidence() {
         flow: 'production-smoke' as const,
         project: name,
         status: 'passed' as const,
+        webBaseUrl: 'https://aquila.example',
         storyId: STORY_ID,
         target: { kind: 'production' as const },
         assetEnvironment: 'production' as const,
@@ -40,6 +41,7 @@ function browserEvidence() {
         schemaVersion: 1,
         flow: 'production-smoke' as const,
         status: 'passed' as const,
+        webBaseUrl: 'https://aquila.example',
         storyId: STORY_ID,
         target: { kind: 'production' as const },
         releaseId: RELEASE_ID,
@@ -180,6 +182,33 @@ describe('production smoke', () => {
                 { verifyPublicRelease: async () => activeResult() }
             )
         ).rejects.toThrow(/local/i);
+    });
+
+    it('rejects a production web URL below the configured origin', async () => {
+        await expect(
+            runProductionSmoke(
+                fixtureInput({ webBaseUrl: 'https://aquila.example/reader' }),
+                { verifyPublicRelease: async () => activeResult() }
+            )
+        ).rejects.toMatchObject({
+            code: 'activation-target/production-origin',
+        });
+    });
+
+    it('rejects browser evidence captured from another production deployment', async () => {
+        const evidence = browserEvidence();
+        evidence.webBaseUrl = 'https://other-production.example';
+        for (const project of evidence.projects) {
+            project.webBaseUrl = evidence.webBaseUrl;
+        }
+
+        await expect(
+            runProductionSmoke(fixtureInput({ browserEvidence: evidence }), {
+                verifyPublicRelease: async () => activeResult(),
+            })
+        ).rejects.toMatchObject({
+            code: 'activation-target/browser-identity',
+        });
     });
 
     it('has no publisher activation, R2 store, or mutation dependency', () => {

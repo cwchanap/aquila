@@ -145,7 +145,7 @@ function parseR2CandidateEvidence(input: unknown): R2CandidateEvidenceV1 {
     return r2CandidateEvidenceV1Schema.parse(input);
 }
 
-function parseProductionPointerEvidence(
+export function parseProductionPointerEvidenceV1(
     input: unknown
 ): ProductionPointerEvidenceV1 {
     return productionPointerEvidenceV1Schema.parse(input);
@@ -827,10 +827,10 @@ export async function runVisualNovelReleaseGate(
     }
 
     await runCheck('productionPointerUnchanged', async () => {
-        const before = parseProductionPointerEvidence(
+        const before = parseProductionPointerEvidenceV1(
             input.productionPointerBefore
         );
-        const after = parseProductionPointerEvidence(
+        const after = parseProductionPointerEvidenceV1(
             input.productionPointerAfter
         );
         await validateEvidenceReference(

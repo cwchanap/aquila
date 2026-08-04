@@ -1,9 +1,20 @@
 import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { isSafeRelativePath } from '@aquila/stories/runtime-assets';
 import { parsePublisherReportV1 } from '../publisher/report';
 import { PublisherError, publisherExitCode } from '../publisher/errors';
 import type { CreateEvidenceReferenceInputV1 } from './evidence';
+import type {
+    ActivationAssertionDependencies,
+    ActivationReadyResultV1,
+    AssertActivationReadyInputV1,
+} from './activation-assertion';
+import type {
+    ProductionSmokeDependencies,
+    ProductionSmokeInputV1,
+    ProductionSmokeReportV1,
+} from './production-smoke';
 import type {
     GateEvidenceBindingsV1,
     ProductionPointerEvidenceV1,
@@ -22,6 +33,7 @@ import {
     type GateEvidenceReferenceV1,
     type VisualNovelReleaseGateReportV1,
 } from './schemas';
+import { gateDiagnosticExitCode } from './exit-codes';
 interface WritableStream {
     write(chunk: string): unknown;
 }
@@ -66,18 +78,17 @@ type RunGateCoordinator = (
     input: RunVisualNovelReleaseGateInputV1
 ) => Promise<VisualNovelReleaseGateReportV1>;
 
-/**
- * Task 11 owns these commands' input and result contracts. The CLI only owns
- * their command boundary today, so later services receive their raw argument
- * vector and the same safe streams without this slice inventing a wire type.
- */
-export type DeferredReleaseGateCliService = (
-    argv: readonly string[],
-    dependencies: Pick<
-        ReleaseGateCliDependencies,
-        'environment' | 'repositoryRoot' | 'stdout' | 'stderr'
-    >
-) => Promise<number>;
+type ReadJsonFile = (path: string) => Promise<unknown>;
+
+type AssertActivationReadyService = (
+    input: AssertActivationReadyInputV1,
+    dependencies?: Partial<ActivationAssertionDependencies>
+) => Promise<ActivationReadyResultV1>;
+
+type RunProductionSmokeService = (
+    input: ProductionSmokeInputV1,
+    dependencies?: Partial<ProductionSmokeDependencies>
+) => Promise<ProductionSmokeReportV1>;
 
 export interface ReleaseGateCliDependencies {
     repositoryRoot: string;
@@ -88,8 +99,9 @@ export interface ReleaseGateCliDependencies {
     readEvidenceJson?: ReadEvidenceJson;
     createEvidenceReference?: CreateEvidenceReference;
     runVisualNovelReleaseGate?: RunGateCoordinator;
-    assertActivationReady?: DeferredReleaseGateCliService;
-    smokeProduction?: DeferredReleaseGateCliService;
+    readJsonFile?: ReadJsonFile;
+    assertActivationReady?: AssertActivationReadyService;
+    runProductionSmoke?: RunProductionSmokeService;
 }
 
 type CliValues = Readonly<Record<string, string | boolean | undefined>>;
@@ -115,6 +127,27 @@ const verifyPreviewOptions = {
     'production-pointer-after': { type: 'string' },
     'commit-sha': { type: 'string' },
     'evidence-dir': { type: 'string' },
+    json: { type: 'boolean' },
+    help: { type: 'boolean', short: 'h' },
+} as const satisfies OptionSchema;
+
+const assertActivationReadyOptions = {
+    report: { type: 'string' },
+    story: { type: 'string' },
+    release: { type: 'string' },
+    'expect-manifest-sha256': { type: 'string' },
+    'commit-sha': { type: 'string' },
+    json: { type: 'boolean' },
+    help: { type: 'boolean', short: 'h' },
+} as const satisfies OptionSchema;
+
+const smokeProductionOptions = {
+    story: { type: 'string' },
+    release: { type: 'string' },
+    'expect-manifest-sha256': { type: 'string' },
+    'asset-base-url': { type: 'string' },
+    'web-base-url': { type: 'string' },
+    'browser-evidence': { type: 'string' },
     json: { type: 'boolean' },
     help: { type: 'boolean', short: 'h' },
 } as const satisfies OptionSchema;
@@ -149,10 +182,37 @@ Options:
   --help, -h
 `;
 
-const ASSERT_ACTIVATION_READY_HELP =
-    'Usage: assets release-gate assert-activation-ready [options]\n';
-const SMOKE_PRODUCTION_HELP =
-    'Usage: assets release-gate smoke-production [options]\n';
+const ASSERT_ACTIVATION_READY_HELP = `Usage: assets release-gate assert-activation-ready [options]
+
+Required retained report and exact identity:
+  --report <safe-relative-path>
+  --story <story-id>
+  --release <release-id>
+  --expect-manifest-sha256 <sha256>
+  --commit-sha <commit-sha>
+
+Options:
+  --json
+  --help, -h
+`;
+
+const SMOKE_PRODUCTION_HELP = `Usage: assets release-gate smoke-production [options]
+
+Required exact production identity and browser evidence:
+  --story <story-id>
+  --release <release-id>
+  --expect-manifest-sha256 <sha256>
+  --asset-base-url <https-url>
+  --web-base-url <https-url>
+  --browser-evidence <safe-relative-path>
+
+Environment:
+  AQUILA_PRODUCTION_WEB_ORIGIN=<https-origin>
+
+Options:
+  --json
+  --help, -h
+`;
 
 class ReleaseGateCliError extends Error {
     constructor(
@@ -188,11 +248,14 @@ function requiredEvidencePath(values: CliValues, key: string): string {
     return path;
 }
 
-function parseValues(args: readonly string[]): CliValues {
+function parseValues(
+    args: readonly string[],
+    options: OptionSchema = verifyPreviewOptions
+): CliValues {
     try {
         const parsed = parseArgs({
             args: [...args],
-            options: verifyPreviewOptions,
+            options,
             strict: true,
             allowPositionals: false,
         });
@@ -274,6 +337,56 @@ function parseVerifyPreviewInput(values: CliValues): VerifyPreviewCliInputV1 {
     };
 }
 
+function requiredRepositoryPath(values: CliValues, key: string): string {
+    const path = requiredString(values, key);
+    if (!isSafeRelativePath(path)) {
+        return inputError(`input/invalid-${key}`);
+    }
+    return path;
+}
+
+type AssertActivationReadyCliInputV1 = {
+    reportPath: string;
+    storyId: string;
+    releaseId: string;
+    manifestSha256: string;
+    commitSha: string;
+};
+
+function parseAssertActivationReadyInput(
+    values: CliValues
+): AssertActivationReadyCliInputV1 {
+    return {
+        reportPath: requiredRepositoryPath(values, 'report'),
+        storyId: requiredString(values, 'story'),
+        releaseId: requiredString(values, 'release'),
+        manifestSha256: requiredString(values, 'expect-manifest-sha256'),
+        commitSha: requiredString(values, 'commit-sha'),
+    };
+}
+
+type SmokeProductionCliInputV1 = {
+    storyId: string;
+    releaseId: string;
+    manifestSha256: string;
+    assetBaseUrl: string;
+    webBaseUrl: string;
+    browserEvidencePath: string;
+};
+
+function parseSmokeProductionInput(
+    values: CliValues
+): SmokeProductionCliInputV1 {
+    return {
+        storyId: requiredString(values, 'story'),
+        releaseId: requiredString(values, 'release'),
+        manifestSha256: requiredString(values, 'expect-manifest-sha256'),
+        assetBaseUrl: requiredString(values, 'asset-base-url'),
+        webBaseUrl: requiredString(values, 'web-base-url'),
+        browserEvidencePath: requiredRepositoryPath(values, 'browser-evidence'),
+    };
+}
+
 async function defaultReadEvidenceJson(
     evidenceDir: string,
     relativePath: string
@@ -289,6 +402,18 @@ async function defaultReadEvidenceJson(
             'Evidence JSON is invalid'
         );
     }
+}
+
+async function defaultReadJsonFile(path: string): Promise<unknown> {
+    try {
+        return JSON.parse(await readFile(path, 'utf8'));
+    } catch {
+        return inputError('input/json-invalid');
+    }
+}
+
+function repositoryPath(repositoryRoot: string, relativePath: string): string {
+    return resolve(repositoryRoot, relativePath);
 }
 
 function assertPreviewWebOrigin(
@@ -525,6 +650,70 @@ async function executeVerifyPreview(
     return runGate(gateInput);
 }
 
+async function executeAssertActivationReady(
+    input: AssertActivationReadyCliInputV1,
+    dependencies: ReleaseGateCliDependencies
+): Promise<ActivationReadyResultV1> {
+    const reportPath = repositoryPath(
+        dependencies.repositoryRoot,
+        input.reportPath
+    );
+    const readJsonFile = dependencies.readJsonFile ?? defaultReadJsonFile;
+    const assertActivationReady =
+        dependencies.assertActivationReady ??
+        (await import('./activation-assertion')).assertActivationReady;
+    return assertActivationReady(
+        {
+            evidenceDir: dirname(reportPath),
+            report: await readJsonFile(reportPath),
+            expected: {
+                storyId: input.storyId,
+                releaseId: input.releaseId,
+                manifestSha256: input.manifestSha256,
+                commitSha: input.commitSha,
+            },
+        },
+        {}
+    );
+}
+
+async function executeProductionSmoke(
+    input: SmokeProductionCliInputV1,
+    dependencies: ReleaseGateCliDependencies
+): Promise<ProductionSmokeReportV1> {
+    const productionWebOrigin =
+        dependencies.environment.AQUILA_PRODUCTION_WEB_ORIGIN;
+    if (
+        productionWebOrigin === undefined ||
+        productionWebOrigin.trim() === ''
+    ) {
+        throw new ReleaseGateCliError(
+            'environment/production-web-origin-missing',
+            3
+        );
+    }
+    const browserEvidencePath = repositoryPath(
+        dependencies.repositoryRoot,
+        input.browserEvidencePath
+    );
+    const readJsonFile = dependencies.readJsonFile ?? defaultReadJsonFile;
+    const runProductionSmoke =
+        dependencies.runProductionSmoke ??
+        (await import('./production-smoke')).runProductionSmoke;
+    return runProductionSmoke(
+        {
+            storyId: input.storyId,
+            releaseId: input.releaseId,
+            expectedManifestSha256: input.manifestSha256,
+            assetBaseUrl: input.assetBaseUrl,
+            webBaseUrl: input.webBaseUrl,
+            productionWebOrigin,
+            browserEvidence: await readJsonFile(browserEvidencePath),
+        },
+        {}
+    );
+}
+
 function emitDiagnostic(
     code: string,
     json: boolean,
@@ -540,6 +729,42 @@ function emitDiagnostic(
         return;
     }
     dependencies.stderr.write(`release-gate: ${diagnostic.code}\n`);
+}
+
+function emitActivationReadyResult(
+    result: ActivationReadyResultV1,
+    json: boolean,
+    dependencies: Pick<ReleaseGateCliDependencies, 'stdout' | 'stderr'>
+): void {
+    if (json) {
+        dependencies.stdout.write(`${JSON.stringify(result)}\n`);
+        return;
+    }
+    dependencies.stderr.write(`status: ${result.status}\n`);
+}
+
+function emitProductionSmokeReport(
+    report: ProductionSmokeReportV1,
+    json: boolean,
+    dependencies: Pick<ReleaseGateCliDependencies, 'stdout' | 'stderr'>
+): void {
+    if (json) {
+        dependencies.stdout.write(`${JSON.stringify(report)}\n`);
+        return;
+    }
+    const lines = [
+        `status: ${report.status}`,
+        `story: ${report.storyId}`,
+        `release: ${report.releaseId}`,
+        `checksum: ${report.manifestSha256}`,
+        'checks:',
+        ...report.checks.map(check => `- ${check.id}: ${check.status}`),
+    ];
+    if (report.diagnostics.length > 0) {
+        lines.push('diagnostics:');
+        lines.push(...report.diagnostics.map(item => `- ${item.code}`));
+    }
+    dependencies.stderr.write(`${lines.join('\n')}\n`);
 }
 
 async function emitGateReport(
@@ -571,6 +796,21 @@ function gateEvidenceErrorCode(error: unknown): string | undefined {
     return error.code;
 }
 
+function serviceErrorCode(error: unknown): string | undefined {
+    if (
+        typeof error !== 'object' ||
+        error === null ||
+        !('name' in error) ||
+        !('code' in error) ||
+        (error.name !== 'ActivationAssertionError' &&
+            error.name !== 'ProductionSmokeInputError') ||
+        typeof error.code !== 'string'
+    ) {
+        return undefined;
+    }
+    return error.code;
+}
+
 function errorResult(error: unknown): {
     code: string;
     exitCode: 1 | 2 | 3 | 4 | 5;
@@ -583,6 +823,13 @@ function errorResult(error: unknown): {
         return {
             code: evidenceCode,
             exitCode: evidenceCode === 'evidence/root-unavailable' ? 3 : 2,
+        };
+    }
+    const serviceCode = serviceErrorCode(error);
+    if (serviceCode !== undefined) {
+        return {
+            code: serviceCode,
+            exitCode: gateDiagnosticExitCode(serviceCode),
         };
     }
     if (error instanceof PublisherError) {
@@ -600,20 +847,6 @@ function jsonMode(argv: readonly string[]): boolean {
 
 function isHelp(argv: readonly string[]): boolean {
     return argv.includes('--help') || argv.includes('-h');
-}
-
-function commandDependencies(
-    dependencies: ReleaseGateCliDependencies
-): Pick<
-    ReleaseGateCliDependencies,
-    'environment' | 'repositoryRoot' | 'stdout' | 'stderr'
-> {
-    return {
-        environment: dependencies.environment,
-        repositoryRoot: dependencies.repositoryRoot,
-        stdout: dependencies.stdout,
-        stderr: dependencies.stderr,
-    };
 }
 
 export async function runReleaseGateCli(
@@ -655,14 +888,23 @@ export async function runReleaseGateCli(
             dependencies.stdout.write(ASSERT_ACTIVATION_READY_HELP);
             return 0;
         }
-        if (dependencies.assertActivationReady !== undefined) {
-            return dependencies.assertActivationReady(
-                args,
-                commandDependencies(dependencies)
+        try {
+            const values = parseValues(args, assertActivationReadyOptions);
+            const result = await executeAssertActivationReady(
+                parseAssertActivationReadyInput(values),
+                dependencies
             );
+            emitActivationReadyResult(
+                result,
+                values.json === true,
+                dependencies
+            );
+            return 0;
+        } catch (error) {
+            const result = errorResult(error);
+            emitDiagnostic(result.code, json, dependencies);
+            return result.exitCode;
         }
-        emitDiagnostic('configuration/service-unavailable', json, dependencies);
-        return 1;
     }
 
     if (command === 'smoke-production') {
@@ -670,14 +912,25 @@ export async function runReleaseGateCli(
             dependencies.stdout.write(SMOKE_PRODUCTION_HELP);
             return 0;
         }
-        if (dependencies.smokeProduction !== undefined) {
-            return dependencies.smokeProduction(
-                args,
-                commandDependencies(dependencies)
+        try {
+            const values = parseValues(args, smokeProductionOptions);
+            const report = await executeProductionSmoke(
+                parseSmokeProductionInput(values),
+                dependencies
             );
+            emitProductionSmokeReport(
+                report,
+                values.json === true,
+                dependencies
+            );
+            return report.status === 'passed'
+                ? 0
+                : gateDiagnosticExitCode(report.diagnostics[0]?.code ?? '');
+        } catch (error) {
+            const result = errorResult(error);
+            emitDiagnostic(result.code, json, dependencies);
+            return result.exitCode;
         }
-        emitDiagnostic('configuration/service-unavailable', json, dependencies);
-        return 1;
     }
 
     emitDiagnostic('configuration/unknown-command', json, dependencies);

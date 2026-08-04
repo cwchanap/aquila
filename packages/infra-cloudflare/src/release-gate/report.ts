@@ -6,6 +6,7 @@ import {
 } from './schemas';
 import type { GateDiagnosticV1 } from './diagnostics';
 import { EVIDENCE_MEDIA_TYPES } from './evidence';
+import { gateDiagnosticExitCode } from './exit-codes';
 
 const SAFE_DIAGNOSTIC_CODE = /^[a-z][a-z0-9]*(?:[/-][a-z0-9]+)*$/;
 const SENSITIVE_DIAGNOSTIC_CODE =
@@ -27,10 +28,6 @@ const PUBLIC_EVIDENCE_ID_BY_KIND: Record<
     'workflow-approval': 'workflow',
     'pointer-snapshot': 'pointer',
 };
-
-function isDiagnosticCategory(code: string, category: string): boolean {
-    return code === category || code.startsWith(`${category}/`);
-}
 
 function safeDiagnosticCode(code: string): string {
     return code.length <= 128 &&
@@ -233,30 +230,11 @@ export function renderGateHumanReport(report: unknown): string {
     return `${lines.join('\n')}\n`;
 }
 
-/**
- * Keeps release-gate results in the existing assets command exit taxonomy.
- */
+export { gateDiagnosticExitCode } from './exit-codes';
+
 export function gateReportExitCode(report: unknown): number {
     const parsed = parseVisualNovelReleaseGateReportV1(report);
     if (parsed.status === 'passed') return 0;
 
-    const code = parsed.diagnostics[0]?.code ?? '';
-    if (isDiagnosticCategory(code, 'configuration')) return 1;
-    if (
-        isDiagnosticCategory(code, 'storage') ||
-        isDiagnosticCategory(code, 'environment') ||
-        isDiagnosticCategory(code, 'prerequisite')
-    ) {
-        return 3;
-    }
-    if (isDiagnosticCategory(code, 'concurrency')) return 4;
-    if (
-        isDiagnosticCategory(code, 'activation-target') ||
-        isDiagnosticCategory(code, 'operation') ||
-        code === 'clock-skew' ||
-        code === 'non-monotonic-pointer-time'
-    ) {
-        return 5;
-    }
-    return 2;
+    return gateDiagnosticExitCode(parsed.diagnostics[0]?.code ?? '');
 }

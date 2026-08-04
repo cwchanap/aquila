@@ -179,6 +179,36 @@ const verifyPreviewArgs = [
     '/retained/evidence',
 ] as const;
 
+const assertActivationReadyArgs = [
+    'assert-activation-ready',
+    '--report',
+    'evidence/release-gate-report.json',
+    '--story',
+    'the_seventh_mirror',
+    '--release',
+    `sha256-${'a'.repeat(64)}`,
+    '--expect-manifest-sha256',
+    'b'.repeat(64),
+    '--commit-sha',
+    'f'.repeat(40),
+] as const;
+
+const smokeProductionArgs = [
+    'smoke-production',
+    '--story',
+    'the_seventh_mirror',
+    '--release',
+    `sha256-${'a'.repeat(64)}`,
+    '--expect-manifest-sha256',
+    'b'.repeat(64),
+    '--asset-base-url',
+    'https://assets.aquila.example',
+    '--web-base-url',
+    'https://aquila.example.com',
+    '--browser-evidence',
+    'evidence/production-smoke.json',
+] as const;
+
 function failedGateReport(
     code: string,
     stage: GateStageV1
@@ -892,26 +922,123 @@ describe('assets release-gate routing', () => {
         }
     );
 
-    it.each(['assert-activation-ready', 'smoke-production'] as const)(
-        'recognizes %s but safely reports its unavailable Task 11 service',
-        async command => {
-            const test = harness();
+    it('maps assert-activation-ready flags to the read-only assertion service', async () => {
+        const test = harness();
+        const assertion = vi.fn(async () => ({ status: 'passed' as const }));
+        const readJsonFile = vi.fn(async () => validGateReport);
+        const dependencies = {
+            ...releaseGateDependencies(
+                test.dependencies,
+                vi.fn(async () => validGateReport)
+            ),
+            assertActivationReady: assertion,
+            readJsonFile,
+        } as unknown as ReleaseGateCliDependencies;
 
-            const exit = await runReleaseGateCli(
-                [command, '--json'],
-                releaseGateDependencies(
+        const exit = await runReleaseGateCli(
+            [...assertActivationReadyArgs, '--json'],
+            dependencies
+        );
+
+        expect(exit).toBe(0);
+        expect(assertion).toHaveBeenCalledWith(
+            {
+                evidenceDir: '/workspace/aquila/evidence',
+                report: validGateReport,
+                expected: {
+                    storyId: 'the_seventh_mirror',
+                    releaseId: `sha256-${'a'.repeat(64)}`,
+                    manifestSha256: 'b'.repeat(64),
+                    commitSha: 'f'.repeat(40),
+                },
+            },
+            expect.anything()
+        );
+        expect(JSON.parse(test.stdout())).toEqual({ status: 'passed' });
+        expect(test.stderr()).toBe('');
+    });
+
+    it('maps smoke-production flags to the read-only production coordinator', async () => {
+        const test = harness();
+        const browserEvidence = {
+            schemaVersion: 1,
+            flow: 'production-smoke',
+            status: 'passed',
+            storyId: 'the_seventh_mirror',
+            target: { kind: 'production' },
+            releaseId: `sha256-${'a'.repeat(64)}`,
+            manifestSha256: 'b'.repeat(64),
+            scenarioSha256: 'c'.repeat(64),
+            projects: [],
+        };
+        const smoke = vi.fn(async () => ({
+            schemaVersion: 1,
+            status: 'passed' as const,
+            storyId: 'the_seventh_mirror',
+            target: { kind: 'production' as const },
+            releaseId: `sha256-${'a'.repeat(64)}`,
+            manifestSha256: 'b'.repeat(64),
+            checks: [],
+            diagnostics: [],
+        }));
+        const readJsonFile = vi.fn(async () => browserEvidence);
+        const dependencies = {
+            ...releaseGateDependencies(
+                test.dependencies,
+                vi.fn(async () => validGateReport)
+            ),
+            runProductionSmoke: smoke,
+            readJsonFile,
+        } as unknown as ReleaseGateCliDependencies;
+
+        const exit = await runReleaseGateCli(
+            [...smokeProductionArgs, '--json'],
+            dependencies
+        );
+
+        expect(exit).toBe(0);
+        expect(smoke).toHaveBeenCalledWith(
+            {
+                storyId: 'the_seventh_mirror',
+                releaseId: `sha256-${'a'.repeat(64)}`,
+                expectedManifestSha256: 'b'.repeat(64),
+                assetBaseUrl: 'https://assets.aquila.example',
+                webBaseUrl: 'https://aquila.example.com',
+                productionWebOrigin: 'https://aquila.example.com',
+                browserEvidence,
+            },
+            expect.anything()
+        );
+        expect(JSON.parse(test.stdout())).toMatchObject({ status: 'passed' });
+        expect(test.stderr()).toBe('');
+    });
+
+    it.each([
+        ['assert-activation-ready', 'configuration/missing-report'],
+        ['smoke-production', 'configuration/missing-story'],
+    ] as const)(
+        'requires Task 11 inputs for %s before calling its read-only service',
+        async (command, code) => {
+            const test = harness();
+            const assertion = vi.fn(async () => ({
+                status: 'passed' as const,
+            }));
+            const smoke = vi.fn(async () => ({ status: 'passed' as const }));
+
+            const exit = await runReleaseGateCli([command, '--json'], {
+                ...releaseGateDependencies(
                     test.dependencies,
                     vi.fn(async () => validGateReport)
-                )
-            );
+                ),
+                assertActivationReady: assertion,
+                runProductionSmoke: smoke,
+            } as unknown as ReleaseGateCliDependencies);
 
             expect(exit).toBe(1);
-            expect(test.stdout().trim().split('\n')).toHaveLength(1);
+            expect(assertion).not.toHaveBeenCalled();
+            expect(smoke).not.toHaveBeenCalled();
             expect(parseGateDiagnosticV1(JSON.parse(test.stdout()))).toEqual(
-                expect.objectContaining({
-                    code: 'configuration/service-unavailable',
-                    stage: 'input',
-                })
+                expect.objectContaining({ code, stage: 'input' })
             );
             expect(test.stderr()).toBe('');
         }

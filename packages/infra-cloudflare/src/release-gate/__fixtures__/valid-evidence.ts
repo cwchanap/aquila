@@ -57,7 +57,7 @@ export const validManualReview = {
 export const validWorkflowApproval = {
     schemaVersion: 1,
     repository: 'cwchan/aquila',
-    workflowRef: '.github/workflows/visual-novel-release-gate.yml@main',
+    workflowRef: '.github/workflows/visual-novel-release-live.yml@main',
     runId: 123456,
     runAttempt: 1,
     jobId: 'release-gate-finalize',

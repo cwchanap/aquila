@@ -62,6 +62,11 @@ const MAX_TAR_BYTES = 512 * 1024 * 1024;
 const MAX_TAR_ENTRY_BYTES = 128 * 1024 * 1024;
 const MAX_TAR_ENTRIES = 20_000;
 const OUTPUT_API_VERSION = 3;
+const CANDIDATE_ENTRY_WORKFLOW_NAME = 'Visual Novel Release Candidate Entry';
+const CANDIDATE_ENTRY_WORKFLOW_PATH =
+    '.github/workflows/visual-novel-release-gate.yml@main';
+const LIVE_RELEASE_GATE_WORKFLOW_PATH =
+    '.github/workflows/visual-novel-release-live.yml';
 
 export const RELEASE_GATE_ARCHIVE_LIMITS = {
     maxArchiveBytes: MAX_TAR_BYTES,
@@ -90,6 +95,18 @@ export type ReleaseGateWorkflowInputs = {
     scenarioPath: string;
     prepareRunId: string;
     manualReviewPath: string;
+};
+
+type CandidateEntryRequestV1 = {
+    schemaVersion: 1;
+    source: {
+        repository: string;
+        workflowRef: string;
+        workflowSha: string;
+        runId: string;
+        runAttempt: number;
+    };
+    input: ReleaseGateWorkflowInputs;
 };
 
 export type StoryChunkMappingV1 = {
@@ -224,10 +241,10 @@ function isMainReleaseGateWorkflowReference(
     workflowRef: string,
     repository: string
 ): boolean {
-    const workflowPath = '.github/workflows/visual-novel-release-gate.yml';
     return (
-        workflowRef === `${repository}/${workflowPath}@refs/heads/main` ||
-        workflowRef === `${workflowPath}@main`
+        workflowRef ===
+            `${repository}/${LIVE_RELEASE_GATE_WORKFLOW_PATH}@refs/heads/main` ||
+        workflowRef === `${LIVE_RELEASE_GATE_WORKFLOW_PATH}@main`
     );
 }
 
@@ -366,6 +383,59 @@ export function parseReleaseGateWorkflowInputs(
         prepareRunId,
         manualReviewPath,
     };
+}
+
+function assertExactReleaseGateInputIdentity(
+    expected: ReleaseGateWorkflowInputs,
+    actual: ReleaseGateWorkflowInputs,
+    label: string
+): void {
+    const fields: Array<keyof ReleaseGateWorkflowInputs> = [
+        'phase',
+        'candidateCommitSha',
+        'storyId',
+        'previewId',
+        'releaseId',
+        'manifestSha256',
+        'publisherReportRunId',
+        'publisherReportArtifact',
+        'assetBaseUrl',
+        'webBaseUrl',
+        'productionWebOrigin',
+        'scenarioPath',
+        'prepareRunId',
+        'manualReviewPath',
+    ];
+    for (const field of fields) {
+        if (expected[field] !== actual[field]) {
+            throw new Error(`${label} differs at ${field}`);
+        }
+    }
+}
+
+function parseCandidateEntryRequest(value: unknown): CandidateEntryRequestV1 {
+    const record = asRecord(value, 'Candidate entry request');
+    const source = asRecord(record.source, 'Candidate entry source');
+    const request: CandidateEntryRequestV1 = {
+        schemaVersion: record.schemaVersion as 1,
+        source: {
+            repository: requiredString(source, 'repository'),
+            workflowRef: requiredString(source, 'workflowRef'),
+            workflowSha: requiredString(source, 'workflowSha'),
+            runId: requiredString(source, 'runId'),
+            runAttempt: positiveInteger(source, 'runAttempt'),
+        },
+        input: parseReleaseGateWorkflowInputs(record.input),
+    };
+    if (
+        request.schemaVersion !== 1 ||
+        !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(request.source.repository) ||
+        !CANDIDATE_COMMIT_SHA_RE.test(request.source.workflowSha) ||
+        !POSITIVE_INTEGER_RE.test(request.source.runId)
+    ) {
+        throw new Error('Candidate entry request is invalid');
+    }
+    return request;
 }
 
 function parseManifest(value: unknown): Manifest {
@@ -1544,7 +1614,7 @@ function parseCandidateBuildContract(value: unknown): CandidateBuildContractV1 {
         record.outputApiVersion !== OUTPUT_API_VERSION ||
         record.phase !== 'prepare' ||
         contract.producer.workflowRef !==
-            `${contract.producer.repository}/.github/workflows/visual-novel-release-gate.yml@refs/heads/main` ||
+            `${contract.producer.repository}/${LIVE_RELEASE_GATE_WORKFLOW_PATH}@refs/heads/main` ||
         !CANDIDATE_COMMIT_SHA_RE.test(contract.producer.workflowSha) ||
         !POSITIVE_INTEGER_RE.test(contract.producer.runId) ||
         contract.producer.jobName !== 'seal-candidate' ||
@@ -1650,7 +1720,7 @@ function trustedWorkflowProvenance(
     const jobName = requiredString(record, 'GITHUB_JOB');
     if (
         workflowRef !==
-            `${repository}/.github/workflows/visual-novel-release-gate.yml@refs/heads/main` ||
+            `${repository}/${LIVE_RELEASE_GATE_WORKFLOW_PATH}@refs/heads/main` ||
         !CANDIDATE_COMMIT_SHA_RE.test(workflowSha) ||
         !POSITIVE_INTEGER_RE.test(runId) ||
         jobName !== expectedJob
@@ -2896,6 +2966,240 @@ async function emitValidatedInputs(
     }
 }
 
+/**
+ * The dispatch workflow can execute a branch-selected revision, so its
+ * artifact is deliberately treated as hostile transport. This packages the
+ * validated request for the default-branch workflow_run consumer without
+ * granting the dispatch job deployment authority.
+ */
+async function packageCandidateEntry(
+    environment: Readonly<Record<string, string | undefined>>
+): Promise<void> {
+    const inputs = workflowInputsFromEnvironment(environment);
+    const record = asRecord(environment, 'Workflow environment');
+    const entryRoot = requiredAbsoluteEnvironmentPath(
+        environment,
+        'RELEASE_GATE_CANDIDATE_ENTRY_ROOT',
+        'Candidate entry artifact root'
+    );
+    const rootParent = dirname(entryRoot);
+    await assertRealDirectory(rootParent, 'Candidate entry artifact parent');
+    const freshRoot = await createFreshRealDirectory(
+        entryRoot,
+        rootParent,
+        'Candidate entry artifact root'
+    );
+    const request: CandidateEntryRequestV1 = {
+        schemaVersion: 1,
+        source: {
+            repository: requiredString(record, 'GITHUB_REPOSITORY'),
+            workflowRef: requiredString(record, 'GITHUB_WORKFLOW_REF'),
+            workflowSha: requiredString(record, 'GITHUB_WORKFLOW_SHA'),
+            runId: requiredString(record, 'GITHUB_RUN_ID'),
+            runAttempt: positiveInteger(record, 'GITHUB_RUN_ATTEMPT'),
+        },
+        input: inputs,
+    };
+    parseCandidateEntryRequest(request);
+    await writeFileNoFollow(
+        resolve(freshRoot, 'entry-request.v1.json'),
+        freshRoot,
+        `${canonicalJson(request as unknown as JsonValue)}\n`,
+        0o444,
+        'Candidate entry request'
+    );
+    if (inputs.phase === 'finalize') {
+        const review = parseVisualReviewRecordV1(
+            await readJson(
+                resolveRepositoryPath(inputs.manualReviewPath),
+                'Manual review record'
+            )
+        );
+        await writeFileNoFollow(
+            resolve(freshRoot, 'manual-review.json'),
+            freshRoot,
+            `${canonicalJson(review as JsonValue)}\n`,
+            0o444,
+            'Candidate entry manual review'
+        );
+    }
+}
+
+/**
+ * Validates the REST metadata and downloaded bytes for the just-completed
+ * secretless entry run. Nothing in this function executes entry/candidate
+ * code: it only parses bounded files and exports validated scalar identity.
+ */
+async function validateUpstreamCandidateEntry(
+    environment: Readonly<Record<string, string | undefined>>
+): Promise<void> {
+    const current = trustedWorkflowProvenance(environment, 'entry-provenance');
+    const upstreamRunId = requiredString(
+        asRecord(environment, 'Workflow environment'),
+        'RELEASE_GATE_UPSTREAM_RUN_ID'
+    );
+    if (!POSITIVE_INTEGER_RE.test(upstreamRunId)) {
+        throw new Error('Upstream candidate entry run ID is invalid');
+    }
+    const metadataRoot = requiredAbsoluteEnvironmentPath(
+        environment,
+        'RELEASE_GATE_UPSTREAM_METADATA_ROOT',
+        'Upstream candidate entry metadata root'
+    );
+    const entryRoot = requiredAbsoluteEnvironmentPath(
+        environment,
+        'RELEASE_GATE_CANDIDATE_ENTRY_ROOT',
+        'Candidate entry artifact root'
+    );
+    await Promise.all([
+        assertDirectoryTreeNoLinks(
+            metadataRoot,
+            'Upstream candidate entry metadata root'
+        ),
+        assertDirectoryTreeNoLinks(entryRoot, 'Candidate entry artifact root'),
+    ]);
+    const [runValue, artifactsValue, requestValue] = await Promise.all([
+        readJson(
+            resolve(metadataRoot, 'run.json'),
+            'Upstream candidate entry run metadata',
+            metadataRoot
+        ),
+        readJson(
+            resolve(metadataRoot, 'artifacts.json'),
+            'Upstream candidate entry artifact metadata',
+            metadataRoot
+        ),
+        readJson(
+            resolve(entryRoot, 'entry-request.v1.json'),
+            'Candidate entry request',
+            entryRoot
+        ),
+    ]);
+    const run = asRecord(runValue, 'Upstream candidate entry run metadata');
+    const artifacts = asRecord(
+        artifactsValue,
+        'Upstream candidate entry artifact metadata'
+    );
+    const request = parseCandidateEntryRequest(requestValue);
+    const runId = positiveInteger(run, 'id').toString();
+    const runAttempt = positiveInteger(run, 'run_attempt');
+    const headSha = requiredString(run, 'head_sha');
+    const runRepository = asRecord(
+        run.repository,
+        'Upstream candidate entry repository'
+    );
+    if (
+        runId !== upstreamRunId ||
+        requiredString(run, 'name') !== CANDIDATE_ENTRY_WORKFLOW_NAME ||
+        requiredString(run, 'event') !== 'workflow_dispatch' ||
+        requiredString(run, 'conclusion') !== 'success' ||
+        requiredString(run, 'head_branch') !== 'main' ||
+        requiredString(run, 'path') !== CANDIDATE_ENTRY_WORKFLOW_PATH ||
+        requiredString(runRepository, 'full_name') !== current.repository ||
+        !CANDIDATE_COMMIT_SHA_RE.test(headSha) ||
+        request.source.repository !== current.repository ||
+        request.source.workflowRef !==
+            `${current.repository}/${CANDIDATE_ENTRY_WORKFLOW_PATH}@refs/heads/main` ||
+        request.source.workflowSha !== headSha ||
+        request.source.runId !== runId ||
+        request.source.runAttempt !== runAttempt
+    ) {
+        throw new Error(
+            'Upstream candidate entry is not the exact successful main dispatch run'
+        );
+    }
+    const expectedArtifactName = `visual-novel-raw-candidate-${runId}-${runAttempt}`;
+    const candidates = (
+        Array.isArray(artifacts.artifacts) ? artifacts.artifacts : []
+    ).filter(artifact => {
+        const candidate = asRecord(artifact, 'Candidate entry artifact');
+        const workflowRun = asRecord(
+            candidate.workflow_run,
+            'Candidate entry artifact workflow run'
+        );
+        return (
+            requiredString(candidate, 'name') === expectedArtifactName &&
+            candidate.expired === false &&
+            positiveInteger(workflowRun, 'id').toString() === runId
+        );
+    });
+    if (candidates.length !== 1) {
+        throw new Error(
+            'Upstream candidate entry must retain exactly one exact raw artifact'
+        );
+    }
+    const artifact = asRecord(candidates[0], 'Candidate entry artifact');
+    const artifactId = positiveInteger(artifact, 'id').toString();
+    const artifactDigest = normalizeArtifactDigest(
+        requiredString(artifact, 'digest'),
+        'Candidate entry artifact'
+    );
+    if (request.input.phase === 'prepare') {
+        await readRegularFileNoLinks(
+            resolve(entryRoot, 'candidate-output.v1.tar'),
+            entryRoot,
+            'Candidate entry raw output archive'
+        );
+    } else {
+        parseVisualReviewRecordV1(
+            await readJson(
+                resolve(entryRoot, 'manual-review.json'),
+                'Candidate entry manual review',
+                entryRoot
+            )
+        );
+    }
+    await emitValidatedInputs(request.input, environment);
+    await appendOutput(environment, 'entry_run_id', runId);
+    await appendOutput(environment, 'entry_run_attempt', runAttempt.toString());
+    await appendOutput(environment, 'raw_artifact_id', artifactId);
+    await appendOutput(environment, 'raw_artifact_digest', artifactDigest);
+}
+
+async function materializeCandidateEntryManualReview(
+    environment: Readonly<Record<string, string | undefined>>
+): Promise<void> {
+    const inputs = workflowInputsFromEnvironment(environment);
+    if (inputs.phase !== 'finalize') {
+        throw new Error('Candidate entry manual review is finalization-only');
+    }
+    const entryRoot = requiredAbsoluteEnvironmentPath(
+        environment,
+        'RELEASE_GATE_CANDIDATE_ENTRY_ROOT',
+        'Candidate entry artifact root'
+    );
+    await assertDirectoryTreeNoLinks(
+        entryRoot,
+        'Candidate entry artifact root'
+    );
+    const [requestValue, reviewValue] = await Promise.all([
+        readJson(
+            resolve(entryRoot, 'entry-request.v1.json'),
+            'Candidate entry request',
+            entryRoot
+        ),
+        readJson(
+            resolve(entryRoot, 'manual-review.json'),
+            'Candidate entry manual review',
+            entryRoot
+        ),
+    ]);
+    const request = parseCandidateEntryRequest(requestValue);
+    assertExactReleaseGateInputIdentity(
+        inputs,
+        request.input,
+        'Candidate entry request identity'
+    );
+    const review = parseVisualReviewRecordV1(reviewValue);
+    await writeCanonicalJson(
+        resolve(
+            resolveRepositoryPath(EVIDENCE_DIRECTORY),
+            'candidate-entry-manual-review.json'
+        ),
+        review as JsonValue
+    );
+}
+
 async function materializeFromBuild(
     environment: Readonly<Record<string, string | undefined>>
 ): Promise<void> {
@@ -3619,9 +3923,14 @@ async function validateManualReview(
     }
     const materialized = await loadMaterializedContract(inputs);
     const summary = await loadCandidateSummary(inputs, materialized);
-    const reviewPath = resolveRepositoryPath(inputs.manualReviewPath);
     const review = parseVisualReviewRecordV1(
-        await readJson(reviewPath, 'Manual review record')
+        await readJson(
+            resolve(
+                resolveRepositoryPath(EVIDENCE_DIRECTORY),
+                'candidate-entry-manual-review.json'
+            ),
+            'Candidate entry manual review'
+        )
     );
     if (
         review.decision !== 'approved' ||
@@ -3825,6 +4134,18 @@ async function main(argv: readonly string[]): Promise<void> {
         );
         return;
     }
+    if (command === 'package-candidate-entry') {
+        await packageCandidateEntry(process.env);
+        return;
+    }
+    if (command === 'validate-upstream-candidate-entry') {
+        await validateUpstreamCandidateEntry(process.env);
+        return;
+    }
+    if (command === 'materialize-candidate-entry-manual-review') {
+        await materializeCandidateEntryManualReview(process.env);
+        return;
+    }
     if (command === 'validate-trusted-workflow-context') {
         await validateTrustedWorkflowContext(process.env);
         return;
@@ -3910,7 +4231,7 @@ async function main(argv: readonly string[]): Promise<void> {
         return;
     }
     throw new Error(
-        'Usage: release-gate-workflow-evidence.ts <validate-inputs|validate-trusted-workflow-context|inspect-raw-candidate-artifact|seal-candidate-artifact|ingest-sealed-candidate-artifact|verify-sealed-output|validate-prepare-provenance|validate-tier1-reuse|validate-publisher-artifact-provenance|validate-vercel-preview-contract|materialize-scenario|attest-deployment|validate-publisher-candidate|verify-public|record-r2-candidate|initialize-production-pointer-proof|finalize-production-pointer-proof|require-production-pointer-proof|extract-web-identity|validate-manual-review|write-workflow-approval|record-stage-timing>'
+        'Usage: release-gate-workflow-evidence.ts <validate-inputs|package-candidate-entry|validate-upstream-candidate-entry|materialize-candidate-entry-manual-review|validate-trusted-workflow-context|inspect-raw-candidate-artifact|seal-candidate-artifact|ingest-sealed-candidate-artifact|verify-sealed-output|validate-prepare-provenance|validate-tier1-reuse|validate-publisher-artifact-provenance|validate-vercel-preview-contract|materialize-scenario|attest-deployment|validate-publisher-candidate|verify-public|record-r2-candidate|initialize-production-pointer-proof|finalize-production-pointer-proof|require-production-pointer-proof|extract-web-identity|validate-manual-review|write-workflow-approval|record-stage-timing>'
     );
 }
 

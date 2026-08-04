@@ -1,0 +1,924 @@
+name: Visual Novel Release Live
+
+# This workflow file is evaluated from the default branch for workflow_run.
+# It never checks out or executes the manually selected candidate revision.
+on:
+  workflow_run:
+    workflows:
+      - Visual Novel Release Candidate Entry
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: visual-novel-release-live-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+env:
+  BUN_VERSION: '1.3.1'
+  NODE_VERSION: '22'
+  VERCEL_CLI_VERSION: '54.17.2'
+  PLAYWRIGHT_BROWSERS_PATH: '0'
+  TURBO_TELEMETRY_DISABLED: '1'
+  CI: 'true'
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aquila_e2e
+
+jobs:
+  # The only bridge from the branch-selected dispatch to trusted work. It
+  # validates REST metadata and downloaded bytes before exposing scalar output.
+  entry-provenance:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      phase: ${{ steps.entry.outputs.phase }}
+      candidate_commit_sha: ${{ steps.entry.outputs.candidate_commit_sha }}
+      story_id: ${{ steps.entry.outputs.story_id }}
+      preview_id: ${{ steps.entry.outputs.preview_id }}
+      release_id: ${{ steps.entry.outputs.release_id }}
+      manifest_sha256: ${{ steps.entry.outputs.manifest_sha256 }}
+      publisher_report_run_id: ${{ steps.entry.outputs.publisher_report_run_id }}
+      publisher_report_artifact: ${{ steps.entry.outputs.publisher_report_artifact }}
+      asset_base_url: ${{ steps.entry.outputs.asset_base_url }}
+      web_base_url: ${{ steps.entry.outputs.web_base_url }}
+      production_web_origin: ${{ steps.entry.outputs.production_web_origin }}
+      scenario_path: ${{ steps.entry.outputs.scenario_path }}
+      prepare_run_id: ${{ steps.entry.outputs.prepare_run_id }}
+      manual_review_path: ${{ steps.entry.outputs.manual_review_path }}
+      entry_run_id: ${{ steps.entry.outputs.entry_run_id }}
+      entry_run_attempt: ${{ steps.entry.outputs.entry_run_attempt }}
+      raw_artifact_id: ${{ steps.entry.outputs.raw_artifact_id }}
+      raw_artifact_digest: ${{ steps.entry.outputs.raw_artifact_digest }}
+    steps:
+      - name: Checkout trusted live workflow source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install trusted dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Fetch exact upstream entry metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_GATE_UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id }}
+          RELEASE_GATE_UPSTREAM_METADATA_ROOT: ${{ runner.temp }}/release-gate-candidate-entry-metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_GATE_UPSTREAM_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          mkdir -p "$RELEASE_GATE_UPSTREAM_METADATA_ROOT"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_UPSTREAM_RUN_ID" > "$RELEASE_GATE_UPSTREAM_METADATA_ROOT/run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_UPSTREAM_RUN_ID/artifacts?per_page=100" > "$RELEASE_GATE_UPSTREAM_METADATA_ROOT/artifacts.json"
+
+      - name: Download exact candidate entry artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: visual-novel-raw-candidate-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/release-gate-candidate-entry
+
+      - name: Validate exact upstream candidate entry
+        id: entry
+        env:
+          RELEASE_GATE_EXPECTED_TRUSTED_JOB: entry-provenance
+          RELEASE_GATE_UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id }}
+          RELEASE_GATE_UPSTREAM_METADATA_ROOT: ${{ runner.temp }}/release-gate-candidate-entry-metadata
+          RELEASE_GATE_CANDIDATE_ENTRY_ROOT: ${{ runner.temp }}/release-gate-candidate-entry
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-upstream-candidate-entry
+
+  # Parses the raw artifact as hostile bytes and produces the canonical sealed
+  # candidate subject. It has no deployment environment or OIDC authority.
+  seal-candidate:
+    needs: entry-provenance
+    if: ${{ needs.entry-provenance.outputs.phase == 'prepare' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+    env:
+      RELEASE_GATE_INPUT_PHASE: prepare
+      RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA: ${{ needs.entry-provenance.outputs.candidate_commit_sha }}
+      RELEASE_GATE_INPUT_STORY_ID: ${{ needs.entry-provenance.outputs.story_id }}
+      RELEASE_GATE_INPUT_PREVIEW_ID: ${{ needs.entry-provenance.outputs.preview_id }}
+      RELEASE_GATE_INPUT_RELEASE_ID: ${{ needs.entry-provenance.outputs.release_id }}
+      RELEASE_GATE_INPUT_MANIFEST_SHA256: ${{ needs.entry-provenance.outputs.manifest_sha256 }}
+      RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID: ${{ needs.entry-provenance.outputs.publisher_report_run_id }}
+      RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT: ${{ needs.entry-provenance.outputs.publisher_report_artifact }}
+      RELEASE_GATE_INPUT_ASSET_BASE_URL: ${{ needs.entry-provenance.outputs.asset_base_url }}
+      RELEASE_GATE_INPUT_WEB_BASE_URL: ${{ needs.entry-provenance.outputs.web_base_url }}
+      RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN: ${{ needs.entry-provenance.outputs.production_web_origin }}
+      RELEASE_GATE_INPUT_SCENARIO_PATH: ${{ needs.entry-provenance.outputs.scenario_path }}
+      RELEASE_GATE_INPUT_PREPARE_RUN_ID: ''
+      RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH: ''
+    outputs:
+      sealed_artifact_id: ${{ steps.sealed-artifact.outputs.artifact-id }}
+      sealed_artifact_digest: ${{ steps.sealed-artifact.outputs.artifact-digest }}
+    steps:
+      - name: Checkout trusted live workflow source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install trusted dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate trusted workflow context
+        env:
+          RELEASE_GATE_EXPECTED_TRUSTED_JOB: seal-candidate
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-trusted-workflow-context
+
+      - name: Download exact raw candidate artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: visual-novel-raw-candidate-${{ needs.entry-provenance.outputs.entry_run_id }}-${{ needs.entry-provenance.outputs.entry_run_attempt }}
+          run-id: ${{ needs.entry-provenance.outputs.entry_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/release-gate-raw-candidate
+
+      - name: Fetch trusted candidate lockfile bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/release-gate-trusted-candidate"
+          git fetch --no-tags --depth=1 origin "$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA"
+          git show FETCH_HEAD:bun.lock > "$RUNNER_TEMP/release-gate-trusted-candidate/candidate-lockfile"
+
+      - name: Safely extract raw candidate output
+        env:
+          RELEASE_GATE_RAW_CANDIDATE_ROOT: ${{ runner.temp }}/release-gate-raw-candidate
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts inspect-raw-candidate-artifact
+
+      - name: Seal candidate output
+        env:
+          RELEASE_GATE_RAW_CANDIDATE_ROOT: ${{ runner.temp }}/release-gate-raw-candidate
+          RELEASE_GATE_TRUSTED_CANDIDATE_INPUT_ROOT: ${{ runner.temp }}/release-gate-trusted-candidate
+          RELEASE_GATE_RAW_CANDIDATE_ARTIFACT_ID: ${{ needs.entry-provenance.outputs.raw_artifact_id }}
+          RELEASE_GATE_RAW_CANDIDATE_ARTIFACT_DIGEST: ${{ needs.entry-provenance.outputs.raw_artifact_digest }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts seal-candidate-artifact
+
+      - name: Upload sealed candidate artifact
+        id: sealed-artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-novel-sealed-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .release-gate/sealed-candidate/candidate-build-contract.v1.json
+            .release-gate/sealed-candidate/tier1.json
+            .release-gate/sealed-candidate/vercel-output.v1.tar
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+
+  prepare-live:
+    needs:
+      - entry-provenance
+      - seal-candidate
+    if: ${{ needs.entry-provenance.outputs.phase == 'prepare' && needs.seal-candidate.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: visual-novel-release-preview
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    env:
+      RELEASE_GATE_INPUT_PHASE: prepare
+      RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA: ${{ needs.entry-provenance.outputs.candidate_commit_sha }}
+      RELEASE_GATE_INPUT_STORY_ID: ${{ needs.entry-provenance.outputs.story_id }}
+      RELEASE_GATE_INPUT_PREVIEW_ID: ${{ needs.entry-provenance.outputs.preview_id }}
+      RELEASE_GATE_INPUT_RELEASE_ID: ${{ needs.entry-provenance.outputs.release_id }}
+      RELEASE_GATE_INPUT_MANIFEST_SHA256: ${{ needs.entry-provenance.outputs.manifest_sha256 }}
+      RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID: ${{ needs.entry-provenance.outputs.publisher_report_run_id }}
+      RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT: ${{ needs.entry-provenance.outputs.publisher_report_artifact }}
+      RELEASE_GATE_INPUT_ASSET_BASE_URL: ${{ needs.entry-provenance.outputs.asset_base_url }}
+      RELEASE_GATE_INPUT_WEB_BASE_URL: ${{ needs.entry-provenance.outputs.web_base_url }}
+      RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN: ${{ needs.entry-provenance.outputs.production_web_origin }}
+      RELEASE_GATE_INPUT_SCENARIO_PATH: ${{ needs.entry-provenance.outputs.scenario_path }}
+      RELEASE_GATE_INPUT_PREPARE_RUN_ID: ''
+      RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH: ''
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aquila_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout trusted live workflow source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install trusted dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start live timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_LIVE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
+      - name: Initialize unproven production pointer proof
+        id: pointer-proof-initialized
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts initialize-production-pointer-proof
+
+      - name: Validate trusted workflow context
+        env:
+          RELEASE_GATE_EXPECTED_TRUSTED_JOB: prepare-live
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-trusted-workflow-context
+
+      - name: Install Playwright browsers
+        working-directory: packages/e2e
+        run: bunx playwright install --with-deps
+
+      - name: Run database migrations
+        working-directory: apps/web
+        run: bun run drizzle:migrate
+
+      - name: Validate credential-free preview project configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.RELEASE_GATE_VERCEL_PREVIEW_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.RELEASE_GATE_VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_PROJECT_ID }}
+          RELEASE_GATE_VERCEL_PREVIEW_CREDENTIAL_FREE: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_CREDENTIAL_FREE }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-vercel-preview-contract
+
+      - name: Link trusted Vercel preview project
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.RELEASE_GATE_VERCEL_PREVIEW_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.RELEASE_GATE_VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/release-gate-vercel"
+          bunx --bun "vercel@${VERCEL_CLI_VERSION}" pull --yes --environment=preview \
+            > "$RUNNER_TEMP/release-gate-vercel/pull.stdout" \
+            2> "$RUNNER_TEMP/release-gate-vercel/pull.stderr"
+
+      - name: Download exact sealed candidate artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ needs.seal-candidate.outputs.sealed_artifact_id }}
+          path: ${{ runner.temp }}/release-gate-sealed-candidate
+
+      - name: Safely extract sealed candidate output
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_SEALED_ARTIFACT_ID: ${{ needs.seal-candidate.outputs.sealed_artifact_id }}
+          RELEASE_GATE_SEALED_ARTIFACT_DIGEST: ${{ needs.seal-candidate.outputs.sealed_artifact_digest }}
+          RELEASE_GATE_SEALED_PRODUCER_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          RELEASE_GATE_SEALED_PRODUCER_RUN_ID: ${{ github.run_id }}
+          RELEASE_GATE_SEALED_PRODUCER_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts ingest-sealed-candidate-artifact
+
+      - name: Attest sealed candidate artifact
+        if: ${{ success() }}
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ runner.temp }}/release-gate-sealed-candidate
+          subject-name: visual-novel-sealed-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Capture trusted Tier 1 runtime
+        id: tier1-runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "bun_version=$(bun --version)"
+            echo "node_version=$(node --version)"
+            echo "playwright_version=$(node -p 'require("./node_modules/@playwright/test/package.json").version')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate retained Tier 1 reuse
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_TIER1_RUNTIME_BUN_VERSION: ${{ steps.tier1-runtime.outputs.bun_version }}
+          RELEASE_GATE_TIER1_RUNTIME_NODE_VERSION: ${{ steps.tier1-runtime.outputs.node_version }}
+          RELEASE_GATE_TIER1_RUNTIME_PLAYWRIGHT_VERSION: ${{ steps.tier1-runtime.outputs.playwright_version }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-tier1-reuse
+
+      - name: Rehash sealed output immediately before deploy
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_OUTPUT_CHECK_PHASE: predeploy
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-sealed-output
+
+      - name: Deploy the sealed prebuilt output
+        id: deploy-preview
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.RELEASE_GATE_VERCEL_PREVIEW_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.RELEASE_GATE_VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bunx --bun "vercel@${VERCEL_CLI_VERSION}" deploy --prebuilt --yes \
+            --meta "aquilaCandidateCommit=$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA" \
+            > "$RUNNER_TEMP/release-gate-vercel/deploy.stdout" \
+            2> "$RUNNER_TEMP/release-gate-vercel/deploy.stderr"
+
+      - name: Attest prebuilt deployment binding
+        id: deployment-attestation
+        env:
+          RELEASE_GATE_VERCEL_STDOUT_ROOT: ${{ runner.temp }}/release-gate-vercel
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts attest-deployment
+
+      - name: Rehash sealed output immediately after deploy
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_OUTPUT_CHECK_PHASE: postdeploy
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-sealed-output
+
+      - name: Resolve retained publisher artifact provenance
+        id: publisher-provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_GATE_PUBLISHER_METADATA_ROOT: ${{ runner.temp }}/release-gate-publisher-metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RELEASE_GATE_PUBLISHER_METADATA_ROOT"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID" > "$RELEASE_GATE_PUBLISHER_METADATA_ROOT/run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID/artifacts?per_page=100" > "$RELEASE_GATE_PUBLISHER_METADATA_ROOT/artifacts.json"
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-publisher-artifact-provenance
+
+      - name: Download retained publisher candidate report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ steps.publisher-provenance.outputs.publisher_artifact_id }}
+          run-id: ${{ env.RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: .release-gate/publisher-artifact
+
+      - name: Validate retained publisher candidate report
+        env:
+          RELEASE_GATE_PUBLISHER_REPORT_DIRECTORY: .release-gate/publisher-artifact
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-publisher-candidate
+
+      - name: Capture production pointer before live preview work
+        if: ${{ success() && steps.pointer-proof-initialized.outcome == 'success' }}
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ env.RELEASE_GATE_INPUT_STORY_ID }}
+        shell: bash
+        run: |
+          mkdir -p .tmp/evidence
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-before "$RELEASE_GATE_INPUT_PREVIEW_ID"
+
+      - name: Deep verify immutable production candidate
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets verify \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment production \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 --deep --json > .release-gate/evidence/r2-deep-report.json
+          RELEASE_GATE_R2_VERIFY_REPORT_PATH=.release-gate/evidence/r2-deep-report.json \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-r2-candidate
+
+      - name: Verify public immutable candidate
+        env:
+          RELEASE_GATE_PUBLIC_MODE: candidate
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Mirror immutable candidate to explicit preview
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets mirror-preview \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 --json > .release-gate/evidence/mirror-preview.json
+
+      - name: Activate immutable candidate in preview only
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets activate \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment preview --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 --json > .release-gate/evidence/activate-preview.json
+
+      - name: Verify public active preview
+        env:
+          RELEASE_GATE_PUBLIC_MODE: active
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Run remote browser release flow
+        id: browser-release-flow
+        env:
+          BASE_URL: ${{ steps.deployment-attestation.outputs.deployment_url }}
+          RELEASE_GATE_TARGET: preview
+          RELEASE_GATE_STORY_ID: ${{ env.RELEASE_GATE_INPUT_STORY_ID }}
+          RELEASE_GATE_PREVIEW_ID: ${{ env.RELEASE_GATE_INPUT_PREVIEW_ID }}
+          RELEASE_GATE_RELEASE_ID: ${{ env.RELEASE_GATE_INPUT_RELEASE_ID }}
+          RELEASE_GATE_MANIFEST_SHA256: ${{ env.RELEASE_GATE_INPUT_MANIFEST_SHA256 }}
+          RELEASE_GATE_SCENARIO: .release-gate/evidence/scenario.json
+          RELEASE_GATE_EVIDENCE_DIR: .release-gate/evidence
+          AQUILA_PRODUCTION_WEB_ORIGIN: ${{ env.RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN }}
+        run: bun --filter e2e test:release-gate
+
+      - name: Extract settled deployed web identity
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts extract-web-identity
+
+      - name: Capture production pointer after live work
+        if: ${{ always() && steps.pointer-proof-initialized.outcome == 'success' }}
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ env.RELEASE_GATE_INPUT_STORY_ID }}
+        run: bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-after "$RELEASE_GATE_INPUT_PREVIEW_ID"
+
+      - name: Finalize production pointer proof
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_POINTER_BEFORE_PATH: .tmp/evidence/production-pointer-before.json
+          RELEASE_GATE_POINTER_AFTER_PATH: .tmp/evidence/production-pointer-after.json
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts finalize-production-pointer-proof
+
+      - name: Require proven unchanged production pointer
+        if: ${{ success() }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts require-production-pointer-proof
+
+      - name: Write non-authorizing prepare summary
+        if: ${{ success() }}
+        run: |
+          {
+            echo '## Visual-novel release gate'
+            echo ''
+            echo 'PREPARE ONLY — NOT PRODUCTION AUTHORIZATION'
+            echo ''
+            echo 'Candidate code was secretless; Vercel/R2 work used only the sealed artifact.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Finalize live failure diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: prepare-live
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_LIVE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ job.status }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Upload prepare release-gate evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-novel-release-gate-prepare-${{ github.run_id }}
+          path: |
+            .release-gate/evidence/**/*.json
+            .release-gate/evidence/screenshots/**/*.png
+            .tmp/evidence/production-pointer-*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+
+  finalize-live:
+    needs: entry-provenance
+    if: ${{ needs.entry-provenance.outputs.phase == 'finalize' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: visual-novel-release-approval
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    env:
+      RELEASE_GATE_INPUT_PHASE: finalize
+      RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA: ${{ needs.entry-provenance.outputs.candidate_commit_sha }}
+      RELEASE_GATE_INPUT_STORY_ID: ${{ needs.entry-provenance.outputs.story_id }}
+      RELEASE_GATE_INPUT_PREVIEW_ID: ${{ needs.entry-provenance.outputs.preview_id }}
+      RELEASE_GATE_INPUT_RELEASE_ID: ${{ needs.entry-provenance.outputs.release_id }}
+      RELEASE_GATE_INPUT_MANIFEST_SHA256: ${{ needs.entry-provenance.outputs.manifest_sha256 }}
+      RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID: ${{ needs.entry-provenance.outputs.publisher_report_run_id }}
+      RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT: ${{ needs.entry-provenance.outputs.publisher_report_artifact }}
+      RELEASE_GATE_INPUT_ASSET_BASE_URL: ${{ needs.entry-provenance.outputs.asset_base_url }}
+      RELEASE_GATE_INPUT_WEB_BASE_URL: ${{ needs.entry-provenance.outputs.web_base_url }}
+      RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN: ${{ needs.entry-provenance.outputs.production_web_origin }}
+      RELEASE_GATE_INPUT_SCENARIO_PATH: ${{ needs.entry-provenance.outputs.scenario_path }}
+      RELEASE_GATE_INPUT_PREPARE_RUN_ID: ${{ needs.entry-provenance.outputs.prepare_run_id }}
+      RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH: ${{ needs.entry-provenance.outputs.manual_review_path }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aquila_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout trusted live workflow source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install trusted dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start live timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_LIVE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
+      - name: Initialize unproven production pointer proof
+        id: pointer-proof-initialized
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts initialize-production-pointer-proof
+
+      - name: Validate trusted workflow context
+        env:
+          RELEASE_GATE_EXPECTED_TRUSTED_JOB: finalize-live
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-trusted-workflow-context
+
+      - name: Install Playwright browsers
+        working-directory: packages/e2e
+        run: bunx playwright install --with-deps
+
+      - name: Run database migrations
+        working-directory: apps/web
+        run: bun run drizzle:migrate
+
+      - name: Resolve exact prepare artifact provenance
+        id: prepare-provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_GATE_PREPARE_METADATA_ROOT: ${{ runner.temp }}/release-gate-prepare-metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RELEASE_GATE_PREPARE_METADATA_ROOT"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PREPARE_RUN_ID" > "$RELEASE_GATE_PREPARE_METADATA_ROOT/run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PREPARE_RUN_ID/jobs?per_page=100" > "$RELEASE_GATE_PREPARE_METADATA_ROOT/jobs.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PREPARE_RUN_ID/artifacts?per_page=100" > "$RELEASE_GATE_PREPARE_METADATA_ROOT/artifacts.json"
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-prepare-provenance
+
+      - name: Validate credential-free preview project configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.RELEASE_GATE_VERCEL_PREVIEW_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.RELEASE_GATE_VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_PROJECT_ID }}
+          RELEASE_GATE_VERCEL_PREVIEW_CREDENTIAL_FREE: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_CREDENTIAL_FREE }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-vercel-preview-contract
+
+      - name: Link trusted Vercel preview project
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.RELEASE_GATE_VERCEL_PREVIEW_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.RELEASE_GATE_VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/release-gate-vercel"
+          bunx --bun "vercel@${VERCEL_CLI_VERSION}" pull --yes --environment=preview \
+            > "$RUNNER_TEMP/release-gate-vercel/pull.stdout" \
+            2> "$RUNNER_TEMP/release-gate-vercel/pull.stderr"
+
+      - name: Download exact sealed candidate artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ steps.prepare-provenance.outputs.sealed_artifact_id }}
+          run-id: ${{ steps.prepare-provenance.outputs.sealed_producer_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/release-gate-sealed-candidate
+
+      - name: Safely extract sealed candidate output
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_SEALED_ARTIFACT_ID: ${{ steps.prepare-provenance.outputs.sealed_artifact_id }}
+          RELEASE_GATE_SEALED_ARTIFACT_DIGEST: ${{ steps.prepare-provenance.outputs.sealed_artifact_digest }}
+          RELEASE_GATE_SEALED_PRODUCER_WORKFLOW_SHA: ${{ steps.prepare-provenance.outputs.sealed_producer_workflow_sha }}
+          RELEASE_GATE_SEALED_PRODUCER_RUN_ID: ${{ steps.prepare-provenance.outputs.sealed_producer_run_id }}
+          RELEASE_GATE_SEALED_PRODUCER_RUN_ATTEMPT: ${{ steps.prepare-provenance.outputs.sealed_producer_run_attempt }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts ingest-sealed-candidate-artifact
+
+      - name: Capture trusted Tier 1 runtime
+        id: tier1-runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "bun_version=$(bun --version)"
+            echo "node_version=$(node --version)"
+            echo "playwright_version=$(node -p 'require("./node_modules/@playwright/test/package.json").version')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate retained Tier 1 reuse
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_TIER1_RUNTIME_BUN_VERSION: ${{ steps.tier1-runtime.outputs.bun_version }}
+          RELEASE_GATE_TIER1_RUNTIME_NODE_VERSION: ${{ steps.tier1-runtime.outputs.node_version }}
+          RELEASE_GATE_TIER1_RUNTIME_PLAYWRIGHT_VERSION: ${{ steps.tier1-runtime.outputs.playwright_version }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-tier1-reuse
+
+      - name: Rehash sealed output immediately before deploy
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_OUTPUT_CHECK_PHASE: predeploy
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-sealed-output
+
+      - name: Deploy the sealed prebuilt output
+        id: deploy-preview
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.RELEASE_GATE_VERCEL_PREVIEW_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.RELEASE_GATE_VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.RELEASE_GATE_VERCEL_PREVIEW_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bunx --bun "vercel@${VERCEL_CLI_VERSION}" deploy --prebuilt --yes \
+            --meta "aquilaCandidateCommit=$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA" \
+            > "$RUNNER_TEMP/release-gate-vercel/deploy.stdout" \
+            2> "$RUNNER_TEMP/release-gate-vercel/deploy.stderr"
+
+      - name: Attest prebuilt deployment binding
+        id: deployment-attestation
+        env:
+          RELEASE_GATE_VERCEL_STDOUT_ROOT: ${{ runner.temp }}/release-gate-vercel
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts attest-deployment
+
+      - name: Rehash sealed output immediately after deploy
+        env:
+          RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
+          RELEASE_GATE_OUTPUT_CHECK_PHASE: postdeploy
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-sealed-output
+
+      - name: Resolve retained publisher artifact provenance
+        id: publisher-provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_GATE_PUBLISHER_METADATA_ROOT: ${{ runner.temp }}/release-gate-publisher-metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RELEASE_GATE_PUBLISHER_METADATA_ROOT"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID" > "$RELEASE_GATE_PUBLISHER_METADATA_ROOT/run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID/artifacts?per_page=100" > "$RELEASE_GATE_PUBLISHER_METADATA_ROOT/artifacts.json"
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-publisher-artifact-provenance
+
+      - name: Download retained publisher candidate report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ steps.publisher-provenance.outputs.publisher_artifact_id }}
+          run-id: ${{ env.RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: .release-gate/publisher-artifact
+
+      - name: Validate retained publisher candidate report
+        env:
+          RELEASE_GATE_PUBLISHER_REPORT_DIRECTORY: .release-gate/publisher-artifact
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-publisher-candidate
+
+      - name: Capture production pointer before live preview work
+        if: ${{ success() && steps.pointer-proof-initialized.outcome == 'success' }}
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ env.RELEASE_GATE_INPUT_STORY_ID }}
+        shell: bash
+        run: |
+          mkdir -p .tmp/evidence
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-before "$RELEASE_GATE_INPUT_PREVIEW_ID"
+
+      - name: Deep verify immutable production candidate
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets verify \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment production \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 --deep --json > .release-gate/evidence/r2-deep-report.json
+          RELEASE_GATE_R2_VERIFY_REPORT_PATH=.release-gate/evidence/r2-deep-report.json \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-r2-candidate
+
+      - name: Verify public immutable candidate
+        env:
+          RELEASE_GATE_PUBLIC_MODE: candidate
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Mirror immutable candidate to explicit preview
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets mirror-preview \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 --json > .release-gate/evidence/mirror-preview.json
+
+      - name: Activate immutable candidate in preview only
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets activate \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment preview --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 --json > .release-gate/evidence/activate-preview.json
+
+      - name: Verify public active preview
+        env:
+          RELEASE_GATE_PUBLIC_MODE: active
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Run remote browser release flow
+        id: browser-release-flow
+        env:
+          BASE_URL: ${{ steps.deployment-attestation.outputs.deployment_url }}
+          RELEASE_GATE_TARGET: preview
+          RELEASE_GATE_STORY_ID: ${{ env.RELEASE_GATE_INPUT_STORY_ID }}
+          RELEASE_GATE_PREVIEW_ID: ${{ env.RELEASE_GATE_INPUT_PREVIEW_ID }}
+          RELEASE_GATE_RELEASE_ID: ${{ env.RELEASE_GATE_INPUT_RELEASE_ID }}
+          RELEASE_GATE_MANIFEST_SHA256: ${{ env.RELEASE_GATE_INPUT_MANIFEST_SHA256 }}
+          RELEASE_GATE_SCENARIO: .release-gate/evidence/scenario.json
+          RELEASE_GATE_EVIDENCE_DIR: .release-gate/evidence
+          AQUILA_PRODUCTION_WEB_ORIGIN: ${{ env.RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN }}
+        run: bun --filter e2e test:release-gate
+
+      - name: Extract settled deployed web identity
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts extract-web-identity
+
+      - name: Capture production pointer after live work
+        if: ${{ always() && steps.pointer-proof-initialized.outcome == 'success' }}
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ env.RELEASE_GATE_INPUT_STORY_ID }}
+        run: bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-after "$RELEASE_GATE_INPUT_PREVIEW_ID"
+
+      - name: Finalize production pointer proof
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_POINTER_BEFORE_PATH: .tmp/evidence/production-pointer-before.json
+          RELEASE_GATE_POINTER_AFTER_PATH: .tmp/evidence/production-pointer-after.json
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts finalize-production-pointer-proof
+
+      - name: Require proven unchanged production pointer
+        if: ${{ success() }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts require-production-pointer-proof
+
+      - name: Download exact candidate entry artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: visual-novel-raw-candidate-${{ needs.entry-provenance.outputs.entry_run_id }}-${{ needs.entry-provenance.outputs.entry_run_attempt }}
+          run-id: ${{ needs.entry-provenance.outputs.entry_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/release-gate-candidate-entry
+
+      - name: Materialize approved manual review from candidate entry
+        env:
+          RELEASE_GATE_CANDIDATE_ENTRY_ROOT: ${{ runner.temp }}/release-gate-candidate-entry
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts materialize-candidate-entry-manual-review
+
+      - name: Validate approved manual review
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-manual-review
+
+      - name: Write protected workflow approval evidence
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts write-workflow-approval
+
+      - name: Verify final release-gate report
+        env:
+          AQUILA_PRODUCTION_WEB_ORIGIN: ${{ env.RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN }}
+          RELEASE_GATE_DEPLOYMENT_URL: ${{ steps.deployment-attestation.outputs.deployment_url }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets release-gate verify-preview \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --asset-base-url "$RELEASE_GATE_INPUT_ASSET_BASE_URL" \
+            --web-base-url "$RELEASE_GATE_DEPLOYMENT_URL" \
+            --tier1-evidence tier1.json \
+            --publisher-report publisher-report.json \
+            --r2-candidate-evidence r2-candidate.json \
+            --public-candidate-evidence public-candidate.json \
+            --public-active-evidence public-active.json \
+            --browser-evidence browser-evidence.json \
+            --web-identity-evidence web-identity.json \
+            --manual-review manual-review.json \
+            --workflow-approval workflow-approval.json \
+            --production-pointer-before production-pointer-before.json \
+            --production-pointer-after production-pointer-after.json \
+            --commit-sha "$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA" \
+            --evidence-dir .release-gate/evidence \
+            --json > .release-gate/evidence/release-gate-report.json
+
+      - name: Write finalize summary
+        if: ${{ success() }}
+        run: |
+          {
+            echo '## Visual-novel release gate'
+            echo ''
+            echo 'Protected approval used the exact sealed candidate artifact.'
+            echo 'Tier 1 reuse: reused only after exact provenance and runtime checks.'
+            echo 'Production pointer mutation remains outside this workflow.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Finalize live failure diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: finalize-live
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_LIVE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ job.status }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Upload finalize release-gate evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-novel-release-gate-finalize-${{ github.run_id }}
+          path: |
+            .release-gate/evidence/**/*.json
+            .release-gate/evidence/screenshots/**/*.png
+            .tmp/evidence/production-pointer-*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false

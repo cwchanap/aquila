@@ -21,12 +21,13 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
     REGISTERED_STORY_IDS,
     type RegisteredStoryId,
 } from '../../../packages/stories/src/story-metadata';
 
-type ManifestEntry = {
+export type ManifestEntry = {
     file: string;
     src?: string;
     name?: string;
@@ -36,9 +37,9 @@ type ManifestEntry = {
     dynamicImports?: string[];
 };
 
-type Manifest = Record<string, ManifestEntry>;
+export type Manifest = Record<string, ManifestEntry>;
 
-type ChunkModuleMetadata = {
+export type ChunkModuleMetadata = {
     schemaVersion: 1;
     chunks: Record<string, string[]>;
 };
@@ -56,6 +57,7 @@ type StaticViolation = {
 };
 
 type StoryBoundary = {
+    storyId: RegisteredStoryId;
     source: string;
     generatedDirectory: string;
 };
@@ -69,6 +71,7 @@ const storyDirectories = {
 const stories: StoryBoundary[] = REGISTERED_STORY_IDS.map(storyId => {
     const directory = storyDirectories[storyId];
     return {
+        storyId,
         source: `stories/${directory}/index.ts`,
         generatedDirectory: `generated/${directory}/`,
     };
@@ -85,7 +88,8 @@ function normalize(value: string): string {
 }
 
 function findManifestPath(): string {
-    const distDirectory = path.resolve(import.meta.dir, '../dist');
+    const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
+    const distDirectory = path.resolve(scriptDirectory, '../dist');
     const expectedPaths = [
         path.join(distDirectory, 'client/.vite/manifest.json'),
         path.join(distDirectory, 'client/manifest.json'),
@@ -391,6 +395,61 @@ function findStoryEntries(manifest: Manifest): Map<StoryBoundary, string> {
     return storyEntries;
 }
 
+/**
+ * Returns the deployed public pathname for each registered story entry from
+ * the same Vite client manifest and module metadata that this build guard
+ * verifies. Release-gate callers use this instead of inferring paths from
+ * source names, because only the emitted manifest names the deployed chunks.
+ */
+export function materializeStoryChunkPaths(
+    manifest: Manifest,
+    metadata: ChunkModuleMetadata
+): Record<RegisteredStoryId, string> {
+    const entries = findStoryEntries(manifest);
+    const paths = {} as Record<RegisteredStoryId, string>;
+
+    for (const [story, key] of entries) {
+        const entry = manifest[key];
+        if (!entry || !entry.file.endsWith('.js')) {
+            throw new Error(
+                `Story entry ${story.source} must emit one JavaScript chunk.`
+            );
+        }
+
+        const file = normalize(entry.file);
+        const modules = metadata.chunks[file];
+        if (!modules) {
+            throw new Error(`Missing story chunk module metadata for ${file}.`);
+        }
+        if (
+            !modules
+                .map(normalize)
+                .some(moduleId => moduleId.includes(story.source))
+        ) {
+            throw new Error(
+                `Story chunk metadata for ${file} does not bind ${story.source}.`
+            );
+        }
+
+        const segments = file.split('/');
+        if (
+            !file.startsWith('_astro/') ||
+            segments.some(
+                segment => segment === '' || segment === '.' || segment === '..'
+            ) ||
+            file.includes('?') ||
+            file.includes('#')
+        ) {
+            throw new Error(
+                `Story entry ${story.source} has an unsafe public chunk path: ${file}`
+            );
+        }
+        paths[story.storyId] = `/${file}`;
+    }
+
+    return paths;
+}
+
 function findReaderEntry(manifest: Manifest): string {
     const candidates = Object.entries(manifest)
         .filter(([key, entry]) =>
@@ -433,77 +492,84 @@ function isEagerStoryModule(value: string): boolean {
     );
 }
 
-const manifestPath = findManifestPath();
-const manifest = readManifest(manifestPath);
-const metadata = readChunkModuleMetadata(manifestPath);
-const readerEntry = findReaderEntry(manifest);
+export function assertStoryChunks(): void {
+    const manifestPath = findManifestPath();
+    const manifest = readManifest(manifestPath);
+    const metadata = readChunkModuleMetadata(manifestPath);
+    const readerEntry = findReaderEntry(manifest);
 
-const eagerViolation = findStaticViolation(
-    manifest,
-    metadata,
-    readerEntry,
-    isEagerStoryModule
-);
-if (eagerViolation) {
-    throw new Error(
-        `Reader static graph eagerly reaches a story registry/generated dialogue module.\nOffending module or entry: ${eagerViolation.offendingValue}\n${formatImportChain(manifest, eagerViolation.chain)}`
-    );
-}
-
-const storyEntries = findStoryEntries(manifest);
-for (const [story, storyKey] of storyEntries) {
-    const staticPath = findStaticPath(manifest, readerEntry, storyKey);
-    if (staticPath) {
-        throw new Error(
-            `${story.source} is statically reachable from the reader instead of lazy-loaded:\n${formatImportChain(manifest, staticPath)}`
-        );
-    }
-
-    const dynamicPath = findDynamicPath(manifest, readerEntry, storyKey);
-    if (manifest[storyKey].isDynamicEntry !== true) {
-        const pathDetail = dynamicPath
-            ? `\nObserved import chain:\n${formatImportChain(manifest, dynamicPath)}`
-            : '';
-        throw new Error(
-            `${story.source} is not marked as a dynamic entry.${pathDetail}`
-        );
-    }
-    if (!dynamicPath) {
-        throw new Error(
-            `${story.source} is not dynamically reachable from the reader async-registry graph.`
-        );
-    }
-
-    const otherStories = stories.filter(candidate => candidate !== story);
-    const crossStoryViolation = findStaticViolation(
+    const eagerViolation = findStaticViolation(
         manifest,
         metadata,
-        storyKey,
-        value =>
-            otherStories.some(
-                other =>
-                    value.includes(other.source) ||
-                    value.includes(other.generatedDirectory)
-            )
+        readerEntry,
+        isEagerStoryModule
     );
-    if (crossStoryViolation) {
+    if (eagerViolation) {
         throw new Error(
-            `${story.source} statically reaches another story's source/generated modules.\nOffending module or entry: ${crossStoryViolation.offendingValue}\n${formatImportChain(manifest, crossStoryViolation.chain)}`
+            `Reader static graph eagerly reaches a story registry/generated dialogue module.\nOffending module or entry: ${eagerViolation.offendingValue}\n${formatImportChain(manifest, eagerViolation.chain)}`
         );
+    }
+
+    const storyEntries = findStoryEntries(manifest);
+    for (const [story, storyKey] of storyEntries) {
+        const staticPath = findStaticPath(manifest, readerEntry, storyKey);
+        if (staticPath) {
+            throw new Error(
+                `${story.source} is statically reachable from the reader instead of lazy-loaded:\n${formatImportChain(manifest, staticPath)}`
+            );
+        }
+
+        const dynamicPath = findDynamicPath(manifest, readerEntry, storyKey);
+        if (manifest[storyKey].isDynamicEntry !== true) {
+            const pathDetail = dynamicPath
+                ? `\nObserved import chain:\n${formatImportChain(manifest, dynamicPath)}`
+                : '';
+            throw new Error(
+                `${story.source} is not marked as a dynamic entry.${pathDetail}`
+            );
+        }
+        if (!dynamicPath) {
+            throw new Error(
+                `${story.source} is not dynamically reachable from the reader async-registry graph.`
+            );
+        }
+
+        const otherStories = stories.filter(candidate => candidate !== story);
+        const crossStoryViolation = findStaticViolation(
+            manifest,
+            metadata,
+            storyKey,
+            value =>
+                otherStories.some(
+                    other =>
+                        value.includes(other.source) ||
+                        value.includes(other.generatedDirectory)
+                )
+        );
+        if (crossStoryViolation) {
+            throw new Error(
+                `${story.source} statically reaches another story's source/generated modules.\nOffending module or entry: ${crossStoryViolation.offendingValue}\n${formatImportChain(manifest, crossStoryViolation.chain)}`
+            );
+        }
+    }
+
+    const storyFiles = [...storyEntries].map(([story, key]) => ({
+        source: story.source,
+        file: manifest[key].file,
+    }));
+    if (new Set(storyFiles.map(story => story.file)).size !== stories.length) {
+        throw new Error(
+            `Stories do not have distinct emitted files:\n${storyFiles.map(story => `  ${story.source} -> ${story.file}`).join('\n')}`
+        );
+    }
+
+    materializeStoryChunkPaths(manifest, metadata);
+    process.stdout.write('Story chunk boundaries verified:\n');
+    for (const story of storyFiles) {
+        process.stdout.write(`  ${story.source} -> ${story.file}\n`);
     }
 }
 
-const storyFiles = [...storyEntries].map(([story, key]) => ({
-    source: story.source,
-    file: manifest[key].file,
-}));
-if (new Set(storyFiles.map(story => story.file)).size !== stories.length) {
-    throw new Error(
-        `Stories do not have distinct emitted files:\n${storyFiles.map(story => `  ${story.source} -> ${story.file}`).join('\n')}`
-    );
-}
-
-process.stdout.write('Story chunk boundaries verified:\n');
-for (const story of storyFiles) {
-    process.stdout.write(`  ${story.source} -> ${story.file}\n`);
+if (import.meta.main) {
+    assertStoryChunks();
 }

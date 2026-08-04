@@ -98,6 +98,7 @@
       "name": "e2e",
       "version": "0.0.1",
       "devDependencies": {
+        "@aquila/infra-cloudflare": "workspace:*",
         "@aquila/stories": "workspace:*",
         "@playwright/test": "^1.55.0",
       },
@@ -134,6 +135,7 @@
         "@vitest/coverage-v8": "^4.0.18",
         "typescript": "^5.3.3",
         "vitest": "^4.0.18",
+        "yaml": "^2.8.1",
       },
     },
     "packages/stories": {

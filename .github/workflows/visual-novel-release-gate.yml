@@ -1,0 +1,835 @@
+name: Visual Novel Release Authorization Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Run the non-authorizing prepare phase or protected finalize phase.
+        required: true
+        type: choice
+        options:
+          - prepare
+          - finalize
+      candidate_commit_sha:
+        description: Exact lowercase 40-character candidate commit SHA.
+        required: true
+        type: string
+      story_id:
+        description: Registered visual-novel story ID.
+        required: true
+        type: string
+      preview_id:
+        description: Explicit preview namespace ID.
+        required: true
+        type: string
+      release_id:
+        description: Immutable production candidate release ID.
+        required: true
+        type: string
+      manifest_sha256:
+        description: Expected immutable runtime-manifest SHA-256.
+        required: true
+        type: string
+      publisher_report_run_id:
+        description: Run ID that retained the immutable publisher report.
+        required: true
+        type: string
+      publisher_report_artifact:
+        description: Artifact name containing the immutable publisher report.
+        required: true
+        type: string
+      asset_base_url:
+        description: Public HTTPS visual-asset delivery base URL.
+        required: true
+        type: string
+      web_base_url:
+        description: HTTPS allowed-origin policy for the Vercel-returned deployment URL.
+        required: true
+        type: string
+      production_web_origin:
+        description: Production HTTPS origin that preview browser checks must not use.
+        required: true
+        type: string
+      scenario_path:
+        description: Repository-relative JSON scenario template path.
+        required: true
+        type: string
+      prepare_run_id:
+        description: Required only for finalize; prepare workflow run ID.
+        required: false
+        type: string
+      manual_review_path:
+        description: Required only for finalize; repository-relative approved review JSON.
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  BUN_VERSION: '1.3.1'
+  NODE_VERSION: '22'
+  VERCEL_CLI_VERSION: '54.17.2'
+  PLAYWRIGHT_BROWSERS_PATH: '0'
+  TURBO_TELEMETRY_DISABLED: '1'
+  CI: 'true'
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aquila_e2e
+
+jobs:
+  prepare:
+    if: ${{ inputs.phase == 'prepare' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aquila_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      # Validation must run before the user-selected candidate is checked out.
+      # Bootstrap the guard from the protected default branch; it receives no
+      # release credentials and never interpolates raw dispatch values.
+      - name: Checkout workflow guard
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup Bun for dispatch validation
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js for dispatch validation
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install workflow guard dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate dispatch inputs
+        id: inputs
+        env:
+          RELEASE_GATE_INPUT_PHASE: ${{ inputs.phase }}
+          RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA: ${{ inputs.candidate_commit_sha }}
+          RELEASE_GATE_INPUT_STORY_ID: ${{ inputs.story_id }}
+          RELEASE_GATE_INPUT_PREVIEW_ID: ${{ inputs.preview_id }}
+          RELEASE_GATE_INPUT_RELEASE_ID: ${{ inputs.release_id }}
+          RELEASE_GATE_INPUT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID: ${{ inputs.publisher_report_run_id }}
+          RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT: ${{ inputs.publisher_report_artifact }}
+          RELEASE_GATE_INPUT_ASSET_BASE_URL: ${{ inputs.asset_base_url }}
+          RELEASE_GATE_INPUT_WEB_BASE_URL: ${{ inputs.web_base_url }}
+          RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN: ${{ inputs.production_web_origin }}
+          RELEASE_GATE_INPUT_SCENARIO_PATH: ${{ inputs.scenario_path }}
+          RELEASE_GATE_INPUT_PREPARE_RUN_ID: ${{ inputs.prepare_run_id }}
+          RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH: ${{ inputs.manual_review_path }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-inputs
+
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ steps.inputs.outputs.candidate_commit_sha }}
+          persist-credentials: false
+
+      - name: Export validated release-gate identity
+        shell: bash
+        run: |
+          {
+            echo "RELEASE_GATE_INPUT_PHASE=${{ steps.inputs.outputs.phase }}"
+            echo "RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA=${{ steps.inputs.outputs.candidate_commit_sha }}"
+            echo "RELEASE_GATE_INPUT_STORY_ID=${{ steps.inputs.outputs.story_id }}"
+            echo "RELEASE_GATE_INPUT_PREVIEW_ID=${{ steps.inputs.outputs.preview_id }}"
+            echo "RELEASE_GATE_INPUT_RELEASE_ID=${{ steps.inputs.outputs.release_id }}"
+            echo "RELEASE_GATE_INPUT_MANIFEST_SHA256=${{ steps.inputs.outputs.manifest_sha256 }}"
+            echo "RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID=${{ steps.inputs.outputs.publisher_report_run_id }}"
+            echo "RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT=${{ steps.inputs.outputs.publisher_report_artifact }}"
+            echo "RELEASE_GATE_INPUT_ASSET_BASE_URL=${{ steps.inputs.outputs.asset_base_url }}"
+            echo "RELEASE_GATE_INPUT_WEB_BASE_URL=${{ steps.inputs.outputs.web_base_url }}"
+            echo "RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN=${{ steps.inputs.outputs.production_web_origin }}"
+            echo "RELEASE_GATE_INPUT_SCENARIO_PATH=${{ steps.inputs.outputs.scenario_path }}"
+            echo "RELEASE_GATE_INPUT_PREPARE_RUN_ID=${{ steps.inputs.outputs.prepare_run_id }}"
+            echo "RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH=${{ steps.inputs.outputs.manual_review_path }}"
+            echo "RELEASE_GATE_TIER1_STARTED_AT=$(date +%s)"
+          } >> "$GITHUB_ENV"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: packages/e2e
+        run: bunx playwright install --with-deps
+
+      - name: Run database migrations
+        working-directory: apps/web
+        run: bun run drizzle:migrate
+
+      - name: Run Tier 1
+        run: bun run verify:visual-novel-ci -- --evidence .release-gate/evidence/tier1.json
+
+      - name: Record Tier 1 artifact
+        env:
+          RELEASE_GATE_TIER1_MODE: prepared
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=tier1 \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_TIER1_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-tier1-artifact
+
+      - name: Start prebuilt deployment timing
+        shell: bash
+        run: echo "RELEASE_GATE_PREBUILT_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Require Vercel deployment contract
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        shell: bash
+        run: |
+          if [[ -z "$VERCEL_TOKEN" || -z "$VERCEL_ORG_ID" || -z "$VERCEL_PROJECT_ID" ]]; then
+            echo 'Vercel preview deployment credentials and linked project identifiers are required.' >&2
+            exit 1
+          fi
+
+      # The next four steps establish the mandatory Task 8 handoff before any
+      # scenario hash, review binding, or remote browser request. web_base_url
+      # is only an allow-list policy; Vercel stdout is the sole gate origin.
+      - name: Build Vercel preview output
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PUBLIC_ASSET_BASE_URL: ${{ steps.inputs.outputs.asset_base_url }}
+          PUBLIC_ASSET_ENVIRONMENT: preview
+          PUBLIC_ASSET_PREVIEW_ID: ${{ steps.inputs.outputs.preview_id }}
+          VERCEL_ENV: preview
+        shell: bash
+        run: |
+          vercel() {
+            bunx --bun "vercel@${VERCEL_CLI_VERSION}" "$@"
+          }
+          vercel pull --yes --environment=preview
+          vercel build
+
+      - name: Materialize same-build story chunks
+        id: story-chunks
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts materialize-scenario
+
+      - name: Deploy the same prebuilt output
+        id: deploy-preview
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          CANDIDATE_COMMIT_SHA: ${{ steps.inputs.outputs.candidate_commit_sha }}
+          STORY_CHUNK_MAPPING_SHA256: ${{ steps.story-chunks.outputs.mapping_sha256 }}
+        shell: bash
+        run: |
+          vercel() {
+            bunx --bun "vercel@${VERCEL_CLI_VERSION}" "$@"
+          }
+          deployment_url="$(vercel deploy --prebuilt --yes \
+            --meta "aquilaCandidateCommit=$CANDIDATE_COMMIT_SHA" \
+            --meta "aquilaStoryChunkMappingSha256=$STORY_CHUNK_MAPPING_SHA256")"
+          printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+
+      - name: Attest prebuilt deployment binding
+        id: deployment-attestation
+        env:
+          RELEASE_GATE_DEPLOYMENT_URL: ${{ steps.deploy-preview.outputs.deployment_url }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts attest-deployment
+
+      - name: Record prebuilt deployment timing
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=prebuilt-deployment \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_PREBUILT_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start live preview timing
+        shell: bash
+        run: echo "RELEASE_GATE_LIVE_PREVIEW_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Download retained publisher candidate report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ steps.inputs.outputs.publisher_report_artifact }}
+          run-id: ${{ steps.inputs.outputs.publisher_report_run_id }}
+          github-token: ${{ github.token }}
+          path: .release-gate/publisher-artifact
+
+      - name: Validate retained publisher candidate report
+        env:
+          RELEASE_GATE_PUBLISHER_REPORT_DIRECTORY: .release-gate/publisher-artifact
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-publisher-candidate
+
+      - name: Capture production pointer before live preview work
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ steps.inputs.outputs.story_id }}
+        shell: bash
+        run: |
+          mkdir -p .tmp/evidence
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-before "$RELEASE_GATE_INPUT_PREVIEW_ID"
+
+      - name: Deep verify immutable production candidate
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets verify \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment production \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 \
+            --deep \
+            --json > .release-gate/evidence/r2-deep-report.json
+          RELEASE_GATE_R2_VERIFY_REPORT_PATH=.release-gate/evidence/r2-deep-report.json \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-r2-candidate
+
+      - name: Verify public immutable candidate
+        env:
+          RELEASE_GATE_PUBLIC_MODE: candidate
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Mirror immutable candidate to explicit preview
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets mirror-preview \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 \
+            --json > .release-gate/evidence/mirror-preview.json
+
+      - name: Activate immutable candidate in preview only
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets activate \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment preview \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 \
+            --json > .release-gate/evidence/activate-preview.json
+
+      - name: Verify public active preview
+        env:
+          RELEASE_GATE_PUBLIC_MODE: active
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Record live preview timing
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=live-preview \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_LIVE_PREVIEW_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start browser timing
+        shell: bash
+        run: echo "RELEASE_GATE_BROWSER_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Run remote browser release flow
+        env:
+          BASE_URL: ${{ steps.deploy-preview.outputs.deployment_url }}
+          RELEASE_GATE_TARGET: preview
+          RELEASE_GATE_STORY_ID: ${{ steps.inputs.outputs.story_id }}
+          RELEASE_GATE_PREVIEW_ID: ${{ steps.inputs.outputs.preview_id }}
+          RELEASE_GATE_RELEASE_ID: ${{ steps.inputs.outputs.release_id }}
+          RELEASE_GATE_MANIFEST_SHA256: ${{ steps.inputs.outputs.manifest_sha256 }}
+          RELEASE_GATE_SCENARIO: .release-gate/evidence/scenario.json
+          RELEASE_GATE_EVIDENCE_DIR: .release-gate/evidence
+          AQUILA_PRODUCTION_WEB_ORIGIN: ${{ steps.inputs.outputs.production_web_origin }}
+        run: bun --filter e2e test:release-gate
+
+      - name: Extract settled deployed web identity
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts extract-web-identity
+
+      - name: Record browser timing
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=browser \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_BROWSER_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Capture and prove unchanged production pointer
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ steps.inputs.outputs.story_id }}
+          RELEASE_GATE_POINTER_BEFORE_PATH: .tmp/evidence/production-pointer-before.json
+          RELEASE_GATE_POINTER_AFTER_PATH: .tmp/evidence/production-pointer-after.json
+        shell: bash
+        run: |
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-after "$RELEASE_GATE_INPUT_PREVIEW_ID"
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts prove-production-pointer-unchanged
+
+      - name: Write non-authorizing prepare summary
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          elapsed_seconds=$(( $(date +%s) - RELEASE_GATE_TIER1_STARTED_AT ))
+          {
+            echo '## Visual-novel release gate'
+            echo ''
+            echo 'PREPARE ONLY — NOT PRODUCTION AUTHORIZATION'
+            echo ''
+            echo "Elapsed seconds from Tier 1 start: $elapsed_seconds"
+            echo 'Timeout remains 60 minutes pending a measured successful run plus 50% budget.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload prepare release-gate evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-novel-release-gate-prepare-${{ github.run_id }}
+          path: |
+            .release-gate/evidence/**/*.json
+            .release-gate/evidence/screenshots/**/*.png
+          if-no-files-found: warn
+          retention-days: 30
+          overwrite: true
+
+  finalize:
+    if: ${{ inputs.phase == 'finalize' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: visual-novel-release-approval
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aquila_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      # See prepare: trusted guard code validates the dispatch before the
+      # requested candidate checkout can affect any checkout-dependent work.
+      - name: Checkout workflow guard
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup Bun for dispatch validation
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js for dispatch validation
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install workflow guard dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate dispatch inputs
+        id: inputs
+        env:
+          RELEASE_GATE_INPUT_PHASE: ${{ inputs.phase }}
+          RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA: ${{ inputs.candidate_commit_sha }}
+          RELEASE_GATE_INPUT_STORY_ID: ${{ inputs.story_id }}
+          RELEASE_GATE_INPUT_PREVIEW_ID: ${{ inputs.preview_id }}
+          RELEASE_GATE_INPUT_RELEASE_ID: ${{ inputs.release_id }}
+          RELEASE_GATE_INPUT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID: ${{ inputs.publisher_report_run_id }}
+          RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT: ${{ inputs.publisher_report_artifact }}
+          RELEASE_GATE_INPUT_ASSET_BASE_URL: ${{ inputs.asset_base_url }}
+          RELEASE_GATE_INPUT_WEB_BASE_URL: ${{ inputs.web_base_url }}
+          RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN: ${{ inputs.production_web_origin }}
+          RELEASE_GATE_INPUT_SCENARIO_PATH: ${{ inputs.scenario_path }}
+          RELEASE_GATE_INPUT_PREPARE_RUN_ID: ${{ inputs.prepare_run_id }}
+          RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH: ${{ inputs.manual_review_path }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-inputs
+
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ steps.inputs.outputs.candidate_commit_sha }}
+          persist-credentials: false
+
+      - name: Export validated release-gate identity
+        shell: bash
+        run: |
+          {
+            echo "RELEASE_GATE_INPUT_PHASE=${{ steps.inputs.outputs.phase }}"
+            echo "RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA=${{ steps.inputs.outputs.candidate_commit_sha }}"
+            echo "RELEASE_GATE_INPUT_STORY_ID=${{ steps.inputs.outputs.story_id }}"
+            echo "RELEASE_GATE_INPUT_PREVIEW_ID=${{ steps.inputs.outputs.preview_id }}"
+            echo "RELEASE_GATE_INPUT_RELEASE_ID=${{ steps.inputs.outputs.release_id }}"
+            echo "RELEASE_GATE_INPUT_MANIFEST_SHA256=${{ steps.inputs.outputs.manifest_sha256 }}"
+            echo "RELEASE_GATE_INPUT_PUBLISHER_REPORT_RUN_ID=${{ steps.inputs.outputs.publisher_report_run_id }}"
+            echo "RELEASE_GATE_INPUT_PUBLISHER_REPORT_ARTIFACT=${{ steps.inputs.outputs.publisher_report_artifact }}"
+            echo "RELEASE_GATE_INPUT_ASSET_BASE_URL=${{ steps.inputs.outputs.asset_base_url }}"
+            echo "RELEASE_GATE_INPUT_WEB_BASE_URL=${{ steps.inputs.outputs.web_base_url }}"
+            echo "RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN=${{ steps.inputs.outputs.production_web_origin }}"
+            echo "RELEASE_GATE_INPUT_SCENARIO_PATH=${{ steps.inputs.outputs.scenario_path }}"
+            echo "RELEASE_GATE_INPUT_PREPARE_RUN_ID=${{ steps.inputs.outputs.prepare_run_id }}"
+            echo "RELEASE_GATE_INPUT_MANUAL_REVIEW_PATH=${{ steps.inputs.outputs.manual_review_path }}"
+            echo "RELEASE_GATE_TIER1_STARTED_AT=$(date +%s)"
+          } >> "$GITHUB_ENV"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: packages/e2e
+        run: bunx playwright install --with-deps
+
+      - name: Run database migrations
+        working-directory: apps/web
+        run: bun run drizzle:migrate
+
+      - name: Download retained prepare evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: visual-novel-release-gate-prepare-${{ steps.inputs.outputs.prepare_run_id }}
+          run-id: ${{ steps.inputs.outputs.prepare_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/release-gate-prepare
+
+      - name: Validate retained Tier 1 reuse
+        id: tier1-reuse
+        env:
+          RELEASE_GATE_PREPARE_EVIDENCE_DIRECTORY: ${{ runner.temp }}/release-gate-prepare
+        run: |
+          # The helper checks tier1.json and tier1-reuse.json before reuse.
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-tier1-reuse
+
+      - name: Run Tier 1
+        if: ${{ steps.tier1-reuse.outputs.reusable != 'true' }}
+        run: bun run verify:visual-novel-ci -- --evidence .release-gate/evidence/tier1.json
+
+      - name: Record final Tier 1 artifact
+        env:
+          RELEASE_GATE_TIER1_MODE: ${{ steps.tier1-reuse.outputs.reusable == 'true' && 'reused' || 'rerun' }}
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=tier1 \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_TIER1_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-tier1-artifact
+
+      - name: Start prebuilt deployment timing
+        shell: bash
+        run: echo "RELEASE_GATE_PREBUILT_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Require Vercel deployment contract
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        shell: bash
+        run: |
+          if [[ -z "$VERCEL_TOKEN" || -z "$VERCEL_ORG_ID" || -z "$VERCEL_PROJECT_ID" ]]; then
+            echo 'Vercel preview deployment credentials and linked project identifiers are required.' >&2
+            exit 1
+          fi
+
+      - name: Build Vercel preview output
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PUBLIC_ASSET_BASE_URL: ${{ steps.inputs.outputs.asset_base_url }}
+          PUBLIC_ASSET_ENVIRONMENT: preview
+          PUBLIC_ASSET_PREVIEW_ID: ${{ steps.inputs.outputs.preview_id }}
+          VERCEL_ENV: preview
+        shell: bash
+        run: |
+          vercel() {
+            bunx --bun "vercel@${VERCEL_CLI_VERSION}" "$@"
+          }
+          vercel pull --yes --environment=preview
+          vercel build
+
+      - name: Materialize same-build story chunks
+        id: story-chunks
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts materialize-scenario
+
+      - name: Deploy the same prebuilt output
+        id: deploy-preview
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          CANDIDATE_COMMIT_SHA: ${{ steps.inputs.outputs.candidate_commit_sha }}
+          STORY_CHUNK_MAPPING_SHA256: ${{ steps.story-chunks.outputs.mapping_sha256 }}
+        shell: bash
+        run: |
+          vercel() {
+            bunx --bun "vercel@${VERCEL_CLI_VERSION}" "$@"
+          }
+          deployment_url="$(vercel deploy --prebuilt --yes \
+            --meta "aquilaCandidateCommit=$CANDIDATE_COMMIT_SHA" \
+            --meta "aquilaStoryChunkMappingSha256=$STORY_CHUNK_MAPPING_SHA256")"
+          printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+
+      - name: Attest prebuilt deployment binding
+        id: deployment-attestation
+        env:
+          RELEASE_GATE_DEPLOYMENT_URL: ${{ steps.deploy-preview.outputs.deployment_url }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts attest-deployment
+
+      - name: Record prebuilt deployment timing
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=prebuilt-deployment \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_PREBUILT_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start live preview timing
+        shell: bash
+        run: echo "RELEASE_GATE_LIVE_PREVIEW_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Download retained publisher candidate report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ steps.inputs.outputs.publisher_report_artifact }}
+          run-id: ${{ steps.inputs.outputs.publisher_report_run_id }}
+          github-token: ${{ github.token }}
+          path: .release-gate/publisher-artifact
+
+      - name: Validate retained publisher candidate report
+        env:
+          RELEASE_GATE_PUBLISHER_REPORT_DIRECTORY: .release-gate/publisher-artifact
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-publisher-candidate
+
+      - name: Capture production pointer before live preview work
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ steps.inputs.outputs.story_id }}
+        shell: bash
+        run: |
+          mkdir -p .tmp/evidence
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-before "$RELEASE_GATE_INPUT_PREVIEW_ID"
+
+      - name: Deep verify immutable production candidate
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets verify \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment production \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 \
+            --deep \
+            --json > .release-gate/evidence/r2-deep-report.json
+          RELEASE_GATE_R2_VERIFY_REPORT_PATH=.release-gate/evidence/r2-deep-report.json \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-r2-candidate
+
+      - name: Verify public immutable candidate
+        env:
+          RELEASE_GATE_PUBLIC_MODE: candidate
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Mirror immutable candidate to explicit preview
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets mirror-preview \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 \
+            --json > .release-gate/evidence/mirror-preview.json
+
+      - name: Activate immutable candidate in preview only
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun --filter @aquila/infra-cloudflare assets activate \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --environment preview \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --destination r2 \
+            --json > .release-gate/evidence/activate-preview.json
+
+      - name: Verify public active preview
+        env:
+          RELEASE_GATE_PUBLIC_MODE: active
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Record live preview timing
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=live-preview \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_LIVE_PREVIEW_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start browser timing
+        shell: bash
+        run: echo "RELEASE_GATE_BROWSER_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Run remote browser release flow
+        env:
+          BASE_URL: ${{ steps.deploy-preview.outputs.deployment_url }}
+          RELEASE_GATE_TARGET: preview
+          RELEASE_GATE_STORY_ID: ${{ steps.inputs.outputs.story_id }}
+          RELEASE_GATE_PREVIEW_ID: ${{ steps.inputs.outputs.preview_id }}
+          RELEASE_GATE_RELEASE_ID: ${{ steps.inputs.outputs.release_id }}
+          RELEASE_GATE_MANIFEST_SHA256: ${{ steps.inputs.outputs.manifest_sha256 }}
+          RELEASE_GATE_SCENARIO: .release-gate/evidence/scenario.json
+          RELEASE_GATE_EVIDENCE_DIR: .release-gate/evidence
+          AQUILA_PRODUCTION_WEB_ORIGIN: ${{ steps.inputs.outputs.production_web_origin }}
+        run: bun --filter e2e test:release-gate
+
+      - name: Extract settled deployed web identity
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts extract-web-identity
+
+      - name: Record browser timing
+        shell: bash
+        run: |
+          ended_at="$(date +%s)"
+          RELEASE_GATE_STAGE_NAME=browser \
+            RELEASE_GATE_STAGE_STARTED_AT="$RELEASE_GATE_BROWSER_STARTED_AT" \
+            RELEASE_GATE_STAGE_ENDED_AT="$ended_at" \
+            bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Capture and prove unchanged production pointer
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          STORY_ID: ${{ steps.inputs.outputs.story_id }}
+          RELEASE_GATE_POINTER_BEFORE_PATH: .tmp/evidence/production-pointer-before.json
+          RELEASE_GATE_POINTER_AFTER_PATH: .tmp/evidence/production-pointer-after.json
+        shell: bash
+        run: |
+          bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-after "$RELEASE_GATE_INPUT_PREVIEW_ID"
+          bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts prove-production-pointer-unchanged
+
+      - name: Validate approved manual review
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-manual-review
+
+      - name: Write protected workflow approval evidence
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts write-workflow-approval
+
+      - name: Verify final release-gate report
+        env:
+          AQUILA_PRODUCTION_WEB_ORIGIN: ${{ steps.inputs.outputs.production_web_origin }}
+          RELEASE_GATE_DEPLOYMENT_URL: ${{ steps.deployment-attestation.outputs.deployment_url }}
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare assets release-gate verify-preview \
+            --story "$RELEASE_GATE_INPUT_STORY_ID" \
+            --preview-id "$RELEASE_GATE_INPUT_PREVIEW_ID" \
+            --release "$RELEASE_GATE_INPUT_RELEASE_ID" \
+            --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
+            --asset-base-url "$RELEASE_GATE_INPUT_ASSET_BASE_URL" \
+            --web-base-url "$RELEASE_GATE_DEPLOYMENT_URL" \
+            --tier1-evidence tier1.json \
+            --publisher-report publisher-report.json \
+            --r2-candidate-evidence r2-candidate.json \
+            --public-candidate-evidence public-candidate.json \
+            --public-active-evidence public-active.json \
+            --browser-evidence browser-evidence.json \
+            --web-identity-evidence web-identity.json \
+            --manual-review manual-review.json \
+            --workflow-approval workflow-approval.json \
+            --production-pointer-before production-pointer-before.json \
+            --production-pointer-after production-pointer-after.json \
+            --commit-sha "$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA" \
+            --evidence-dir .release-gate/evidence \
+            --json > .release-gate/evidence/release-gate-report.json
+
+      - name: Write finalize summary
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          elapsed_seconds=$(( $(date +%s) - RELEASE_GATE_TIER1_STARTED_AT ))
+          {
+            echo '## Visual-novel release gate'
+            echo ''
+            echo "Tier 1 result: ${{ steps.tier1-reuse.outputs.reusable == 'true' && 'reused' || 'rerun' }}"
+            echo "Elapsed seconds from Tier 1 start: $elapsed_seconds"
+            echo 'Protected approval emitted an activation-ready report only; production pointer mutation remains outside this workflow.'
+            echo 'Timeout remains 60 minutes pending a measured successful run plus 50% budget.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload finalize release-gate evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-novel-release-gate-finalize-${{ github.run_id }}
+          path: |
+            .release-gate/evidence/**/*.json
+            .release-gate/evidence/screenshots/**/*.png
+          if-no-files-found: warn
+          retention-days: 30

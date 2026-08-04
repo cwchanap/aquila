@@ -1,4 +1,4 @@
-name: R2 Publisher Preview Gate
+name: R2 Publisher Regression Gate
 
 on:
   workflow_dispatch:

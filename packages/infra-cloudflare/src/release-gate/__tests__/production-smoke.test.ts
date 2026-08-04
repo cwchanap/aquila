@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
     runProductionSmoke,
     type ProductionSmokeInputV1,
@@ -97,20 +97,72 @@ describe('production smoke', () => {
         ]);
     });
 
-    it('fails a different active release at post-activation-smoke', async () => {
-        const report = await runProductionSmoke(fixtureInput(), {
-            verifyPublicRelease: async () =>
-                activeResult({ releaseId: `sha256-${'d'.repeat(64)}` }),
-        });
+    it.each([
+        [
+            'a different story',
+            { storyId: 'another_story' },
+            'post-activation-smoke/story-mismatch',
+        ],
+        [
+            'a different active release',
+            { releaseId: `sha256-${'d'.repeat(64)}` },
+            'post-activation-smoke/release-mismatch',
+        ],
+        [
+            'a different manifest checksum',
+            { manifestSha256: 'e'.repeat(64) },
+            'post-activation-smoke/manifest-mismatch',
+        ],
+    ])(
+        'fails %s before passing the public active-release check',
+        async (_label, resultPatch, code) => {
+            const report = await runProductionSmoke(fixtureInput(), {
+                verifyPublicRelease: async () => activeResult(resultPatch),
+            });
 
-        expect(report.status).toBe('failed');
-        expect(report.diagnostics).toContainEqual(
-            expect.objectContaining({
-                stage: 'post-activation-smoke',
-                code: 'post-activation-smoke/release-mismatch',
-            })
-        );
-    });
+            expect(report.status).toBe('failed');
+            expect(report.checks).toEqual([
+                { id: 'public-active-release', status: 'failed' },
+                { id: 'browser-production-flow', status: 'failed' },
+                { id: 'pointer-revalidation', status: 'failed' },
+            ]);
+            expect(report.diagnostics).toContainEqual(
+                expect.objectContaining({
+                    stage: 'post-activation-smoke',
+                    code,
+                })
+            );
+        }
+    );
+
+    it.each([
+        [
+            'a percent-encoded preview segment',
+            'https://assets.aquila.example/vn/%70reviews/hpa-233',
+        ],
+        [
+            'a percent-encoded path separator before previews',
+            'https://assets.aquila.example/vn%2Fpreviews/hpa-233',
+        ],
+        [
+            'a nested percent-encoded preview segment',
+            'https://assets.aquila.example/vn/%2570reviews/hpa-233',
+        ],
+    ])(
+        'rejects %s before public verification',
+        async (_label, assetBaseUrl) => {
+            const verifyPublicRelease = vi.fn(async () => activeResult());
+
+            await expect(
+                runProductionSmoke(fixtureInput({ assetBaseUrl }), {
+                    verifyPublicRelease,
+                })
+            ).rejects.toMatchObject({
+                code: 'activation-target/preview-assets',
+            });
+            expect(verifyPublicRelease).not.toHaveBeenCalled();
+        }
+    );
 
     it('rejects preview and local identities before public verification', async () => {
         await expect(

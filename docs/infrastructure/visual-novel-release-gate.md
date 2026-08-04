@@ -230,6 +230,22 @@ production identity, representative image decoding, progression, and no
 mutating browser requests. Retain the produced `production-smoke` browser
 evidence in the final evidence directory.
 
+From the checked-out release revision, set the exact production values and run
+the remote-only suite. This starts no local server and must not use a preview
+URL:
+
+```bash
+export BASE_URL="$PRODUCTION_WEB_ORIGIN"
+export AQUILA_PRODUCTION_WEB_ORIGIN="$PRODUCTION_WEB_ORIGIN"
+export RELEASE_GATE_TARGET=production
+export RELEASE_GATE_STORY_ID="$STORY_ID"
+export RELEASE_GATE_RELEASE_ID="$RELEASE_ID"
+export RELEASE_GATE_MANIFEST_SHA256="$MANIFEST_SHA256"
+export RELEASE_GATE_SCENARIO="evidence/scenario.json"
+export RELEASE_GATE_EVIDENCE_DIR="evidence"
+bun --filter e2e test:production-smoke
+```
+
 Then run the read-only coordinator:
 
 ```bash
@@ -240,7 +256,7 @@ bun --filter @aquila/infra-cloudflare assets release-gate smoke-production \
   --expect-manifest-sha256 "$MANIFEST_SHA256" \
   --asset-base-url "$ASSET_BASE_URL" \
   --web-base-url "$PRODUCTION_WEB_ORIGIN" \
-  --browser-evidence evidence/production-smoke.json \
+  --browser-evidence evidence/browser-evidence.json \
   --json
 ```
 

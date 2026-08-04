@@ -1,14 +1,13 @@
-import { readFile } from 'node:fs/promises';
 import {
     isReleaseId,
     isSha256,
     isStoryId,
 } from '@aquila/stories/runtime-assets';
 import {
-    createEvidenceReference,
     hashCanonicalEvidence,
-    resolveEvidencePath,
     type CreateEvidenceReferenceInputV1,
+    readValidatedJsonEvidence,
+    type ValidatedJsonEvidenceV1,
 } from './evidence';
 import { parseProductionPointerEvidenceV1 } from './gate-runner';
 import {
@@ -37,14 +36,10 @@ export type AssertActivationReadyInputV1 = {
 export type ActivationReadyResultV1 = { status: 'passed' };
 
 export type ActivationAssertionDependencies = {
-    createEvidenceReference: (
+    readValidatedJsonEvidence: (
         evidenceDirectory: string,
         input: CreateEvidenceReferenceInputV1
-    ) => Promise<GateEvidenceReferenceV1>;
-    readEvidenceJson: (
-        evidenceDirectory: string,
-        relativePath: string
-    ) => Promise<unknown>;
+    ) => Promise<ValidatedJsonEvidenceV1>;
 };
 
 export class ActivationAssertionError extends Error {
@@ -159,26 +154,13 @@ function referencesByCheck(
     return references;
 }
 
-async function defaultReadEvidenceJson(
-    evidenceDirectory: string,
-    relativePath: string
-): Promise<unknown> {
-    try {
-        const path = resolveEvidencePath(evidenceDirectory, relativePath);
-        return JSON.parse(await readFile(path, 'utf8'));
-    } catch {
-        assertionError('evidence/json-invalid');
-    }
-}
-
 function resolveDependencies(
     dependencies: Partial<ActivationAssertionDependencies> | undefined
 ): ActivationAssertionDependencies {
     return {
-        createEvidenceReference:
-            dependencies?.createEvidenceReference ?? createEvidenceReference,
-        readEvidenceJson:
-            dependencies?.readEvidenceJson ?? defaultReadEvidenceJson,
+        readValidatedJsonEvidence:
+            dependencies?.readValidatedJsonEvidence ??
+            readValidatedJsonEvidence,
     };
 }
 
@@ -197,14 +179,15 @@ function assertReferenceMatches(
     }
 }
 
-async function validateEvidenceDigests(
+async function readBoundEvidence(
     evidenceDir: string,
     report: VisualNovelReleaseGateReportV1,
     dependencies: ActivationAssertionDependencies
-): Promise<void> {
+): Promise<Map<string, unknown>> {
+    const values = new Map<string, unknown>();
     for (const reference of report.evidence) {
         try {
-            const actual = await dependencies.createEvidenceReference(
+            const actual = await dependencies.readValidatedJsonEvidence(
                 evidenceDir,
                 {
                     id: reference.id,
@@ -213,42 +196,43 @@ async function validateEvidenceDigests(
                     mediaType: reference.mediaType,
                 }
             );
-            assertReferenceMatches(reference, actual);
+            assertReferenceMatches(reference, actual.reference);
+            values.set(reference.id, actual.value);
         } catch (error) {
             if (error instanceof ActivationAssertionError) throw error;
             assertionError('evidence-binding/unreadable-artifact');
         }
     }
+    return values;
 }
 
-function liveWorkflowReferenceIsTrusted(workflowRef: string): boolean {
-    return /(?:^|\/)\.github\/workflows\/visual-novel-release-live\.yml@(?:main|refs\/heads\/main)$/.test(
-        workflowRef
+function liveWorkflowReferenceIsTrusted(
+    workflowRef: string,
+    repository: string
+): boolean {
+    return (
+        workflowRef ===
+        `${repository}/.github/workflows/visual-novel-release-live.yml@refs/heads/main`
     );
 }
 
-async function validateSemanticEvidence(
+function validateSemanticEvidence(
     report: VisualNovelReleaseGateReportV1,
     references: Map<RequiredCheck, GateEvidenceReferenceV1[]>,
-    evidenceDir: string,
-    dependencies: ActivationAssertionDependencies
-): Promise<void> {
-    const getValue = async (check: RequiredCheck, index = 0) => {
+    values: Map<string, unknown>
+): void {
+    const getValue = (check: RequiredCheck, index = 0) => {
         const reference = references.get(check)?.[index];
         if (reference === undefined) assertionError('evidence-binding/missing');
-        try {
-            return await dependencies.readEvidenceJson(
-                evidenceDir,
-                reference.path
-            );
-        } catch {
-            return assertionError('evidence-binding/unreadable-artifact');
+        if (!values.has(reference.id)) {
+            assertionError('evidence-binding/unreadable-artifact');
         }
+        return values.get(reference.id);
     };
 
     try {
         const manualReview = parseVisualReviewRecordV1(
-            await getValue('manualReview')
+            getValue('manualReview')
         );
         assertVisualReviewMatchesIdentity(manualReview, report);
         if (hashCanonicalEvidence(manualReview) !== report.manualReviewSha256) {
@@ -256,19 +240,20 @@ async function validateSemanticEvidence(
         }
 
         const workflowApproval = parseWorkflowApprovalEvidenceV1(
-            await getValue('workflowApproval')
+            getValue('workflowApproval')
         );
         if (
             workflowApproval.environment !== 'visual-novel-release-approval' ||
             workflowApproval.conclusion !== 'success' ||
-            !liveWorkflowReferenceIsTrusted(workflowApproval.workflowRef)
+            !liveWorkflowReferenceIsTrusted(
+                workflowApproval.workflowRef,
+                workflowApproval.repository
+            )
         ) {
             assertionError('workflow-approval/untrusted');
         }
 
-        const webIdentity = parseWebIdentityEvidenceV1(
-            await getValue('webIdentity')
-        );
+        const webIdentity = parseWebIdentityEvidenceV1(getValue('webIdentity'));
         if (
             webIdentity.target !== 'preview' ||
             webIdentity.assetEnvironment !== 'preview' ||
@@ -280,10 +265,10 @@ async function validateSemanticEvidence(
         }
 
         const before = parseProductionPointerEvidenceV1(
-            await getValue('productionPointerUnchanged', 0)
+            getValue('productionPointerUnchanged', 0)
         );
         const after = parseProductionPointerEvidenceV1(
-            await getValue('productionPointerUnchanged', 1)
+            getValue('productionPointerUnchanged', 1)
         );
         if (
             before.storyId !== report.storyId ||
@@ -314,12 +299,11 @@ export async function assertActivationReady(
     assertReportIdentity(report, input.expected);
     const references = referencesByCheck(report);
     const dependencies = resolveDependencies(suppliedDependencies);
-    await validateEvidenceDigests(input.evidenceDir, report, dependencies);
-    await validateSemanticEvidence(
-        report,
-        references,
+    const values = await readBoundEvidence(
         input.evidenceDir,
+        report,
         dependencies
     );
+    validateSemanticEvidence(report, references, values);
     return { status: 'passed' };
 }

@@ -1,16 +1,68 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('bun:ffi', () => ({
-    FFIType: { i32: 5, ptr: 12 },
-    dlopen: () => ({
-        close: () => undefined,
-        symbols: { close: () => 0, openat: () => -1 },
-    }),
-    ptr: (value: Uint8Array): Uint8Array => value,
-}));
+vi.mock('bun:ffi', async () => {
+    const { closeSync, constants, lstatSync, openSync } = await import(
+        'node:fs'
+    );
+    const { join } = await import('node:path');
+    const descriptors = new Map<number, string>();
+    return {
+        FFIType: { i32: 5, ptr: 12 },
+        dlopen: () => ({
+            close: () => undefined,
+            symbols: {
+                close: (descriptor: number): number => {
+                    descriptors.delete(descriptor);
+                    try {
+                        closeSync(descriptor);
+                        return 0;
+                    } catch {
+                        return -1;
+                    }
+                },
+                openat: (
+                    directoryDescriptor: number,
+                    encodedPath: Uint8Array,
+                    flags: number
+                ): number => {
+                    const path = Buffer.from(encodedPath)
+                        .toString('utf8')
+                        .split('\0', 1)[0];
+                    const parentPath = descriptors.get(directoryDescriptor);
+                    if (directoryDescriptor >= 0 && parentPath === undefined) {
+                        return -1;
+                    }
+                    const candidate =
+                        parentPath === undefined
+                            ? path
+                            : join(parentPath, path);
+                    try {
+                        const stats = lstatSync(candidate);
+                        if (
+                            stats.isSymbolicLink() ||
+                            ((flags & constants.O_DIRECTORY) !== 0 &&
+                                !stats.isDirectory())
+                        ) {
+                            return -1;
+                        }
+                        const descriptor = openSync(candidate, flags);
+                        descriptors.set(descriptor, candidate);
+                        return descriptor;
+                    } catch {
+                        return -1;
+                    }
+                },
+            },
+        }),
+        ptr: (value: Uint8Array): Uint8Array => value,
+    };
+});
 
-import { hashCanonicalEvidence } from '../evidence';
+import { hashCanonicalEvidence, readValidatedJsonEvidence } from '../evidence';
 import {
     assertActivationReady,
     type AssertActivationReadyInputV1,
@@ -25,8 +77,44 @@ const PREVIEW_ID = 'hpa-233';
 const STORY_ID = 'the_seventh_mirror';
 
 type FixtureArtifacts = Record<string, unknown>;
+const temporaryDirectories: string[] = [];
 
-function fixtureArtifacts(): FixtureArtifacts {
+async function createEvidenceDirectory(): Promise<string> {
+    const directory = await mkdtemp(
+        join(tmpdir(), 'aquila-release-gate-activation-')
+    );
+    temporaryDirectories.push(directory);
+    return directory;
+}
+
+async function writeFixtureEvidence(
+    artifacts: FixtureArtifacts
+): Promise<string> {
+    const evidenceDir = await createEvidenceDirectory();
+    await Promise.all(
+        Object.entries(artifacts).map(async ([relativePath, value]) => {
+            const path = join(evidenceDir, relativePath);
+            await mkdir(dirname(path), { recursive: true });
+            await writeFile(path, `${JSON.stringify(value)}\n`, 'utf8');
+        })
+    );
+    return evidenceDir;
+}
+
+afterEach(async () => {
+    await Promise.all(
+        temporaryDirectories
+            .splice(0)
+            .map(directory => rm(directory, { recursive: true, force: true }))
+    );
+});
+
+function fixtureArtifacts(
+    workflowApprovalPatch: Partial<{
+        repository: string;
+        workflowRef: string;
+    }> = {}
+): FixtureArtifacts {
     return {
         'ci/result.json': { status: 'retained' },
         'publisher/report.json': { status: 'retained' },
@@ -73,6 +161,7 @@ function fixtureArtifacts(): FixtureArtifacts {
             actor: 'release-reviewer',
             environment: 'visual-novel-release-approval',
             conclusion: 'success',
+            ...workflowApprovalPatch,
         },
         'pointer/before.json': {
             schemaVersion: 1,
@@ -102,12 +191,17 @@ function fixtureInput(
         reportStatus: 'passed' | 'failed';
         expectedReleaseId: string;
         evidenceDigestOverride: string;
+        workflowApproval: Partial<{
+            repository: string;
+            workflowRef: string;
+        }>;
     }> = {}
 ): {
     input: AssertActivationReadyInputV1;
     dependencies: Partial<ActivationAssertionDependencies>;
+    artifacts: FixtureArtifacts;
 } {
-    const artifacts = fixtureArtifacts();
+    const artifacts = fixtureArtifacts(patch.workflowApproval);
     const reference = (
         id: string,
         kind:
@@ -202,16 +296,19 @@ function fixtureInput(
             },
         },
         dependencies: {
-            readEvidenceJson: async (_directory, path) => artifacts[path],
-            createEvidenceReference: async (_directory, input) => ({
-                ...input,
-                sha256:
-                    patch.evidenceDigestOverride !== undefined &&
-                    input.id === 'web'
-                        ? patch.evidenceDigestOverride
-                        : hashCanonicalEvidence(artifacts[input.path]),
+            readValidatedJsonEvidence: async (_directory, request) => ({
+                reference: {
+                    ...request,
+                    sha256:
+                        patch.evidenceDigestOverride !== undefined &&
+                        request.id === 'web'
+                            ? patch.evidenceDigestOverride
+                            : hashCanonicalEvidence(artifacts[request.path]),
+                },
+                value: artifacts[request.path],
             }),
         },
+        artifacts,
     };
 }
 
@@ -248,6 +345,70 @@ describe('activation readiness assertion', () => {
         await expect(
             assertActivationReady({ ...input, report: {} }, dependencies)
         ).rejects.toMatchObject({ code: 'evidence-binding/report-invalid' });
+    });
+
+    it.each([
+        [
+            'a repository that does not own the workflow reference',
+            { repository: 'another/aquila' },
+        ],
+        [
+            'a workflow reference from a different repository',
+            {
+                workflowRef:
+                    'another/aquila/.github/workflows/visual-novel-release-live.yml@refs/heads/main',
+            },
+        ],
+    ])('rejects %s', async (_label, workflowApproval) => {
+        const { input, dependencies } = fixtureInput({ workflowApproval });
+
+        await expect(
+            assertActivationReady(input, dependencies)
+        ).rejects.toMatchObject({ code: 'workflow-approval/untrusted' });
+    });
+
+    it('binds semantic parsing to a descriptor-safe JSON snapshot across a symlink swap', async () => {
+        const { input, artifacts } = fixtureInput();
+        const evidenceDir = await writeFixtureEvidence(artifacts);
+        const outsideDir = await createEvidenceDirectory();
+        const unsafeApprovalPath = join(outsideDir, 'approval.json');
+        await writeFile(
+            unsafeApprovalPath,
+            `${JSON.stringify({
+                ...(artifacts['workflow/approval.json'] as Record<
+                    string,
+                    unknown
+                >),
+                repository: 'attacker/aquila',
+            })}\n`,
+            'utf8'
+        );
+
+        let swapped = false;
+        await expect(
+            assertActivationReady(
+                { ...input, evidenceDir },
+                {
+                    readValidatedJsonEvidence: async (directory, request) => {
+                        const snapshot = await readValidatedJsonEvidence(
+                            directory,
+                            request
+                        );
+                        if (request.id === 'workflow') {
+                            const approvalPath = join(
+                                evidenceDir,
+                                request.path
+                            );
+                            await rm(approvalPath);
+                            await symlink(unsafeApprovalPath, approvalPath);
+                            swapped = true;
+                        }
+                        return snapshot;
+                    },
+                }
+            )
+        ).resolves.toEqual({ status: 'passed' });
+        expect(swapped).toBe(true);
     });
 
     it('has no publisher activation import or mutation dependency', () => {

@@ -63,6 +63,11 @@ export type CreateEvidenceReferenceInputV1 = Omit<
     'sha256'
 >;
 
+export type ValidatedJsonEvidenceV1 = {
+    reference: GateEvidenceReferenceV1;
+    value: unknown;
+};
+
 interface EvidenceFileIdentity {
     device: number;
     inode: number;
@@ -525,10 +530,10 @@ async function hashValidatedEvidenceFile(
     return createHash('sha256').update(bytes).digest('hex');
 }
 
-async function hashJsonEvidence(
+async function readValidatedJsonValue(
     descriptor: number,
     expectedIdentity: EvidenceFileIdentity
-): Promise<string> {
+): Promise<{ value: unknown; sha256: string }> {
     let parsed: unknown;
     try {
         parsed = JSON.parse(
@@ -545,13 +550,65 @@ async function hashJsonEvidence(
     }
 
     try {
-        return hashCanonicalEvidence(parsed);
+        return { value: parsed, sha256: hashCanonicalEvidence(parsed) };
     } catch {
         throw gateInputError(
             'evidence/json-invalid',
             'Evidence JSON is invalid'
         );
     }
+}
+
+async function readValidatedJsonEvidenceFromParsedInput(
+    evidenceDirectory: string,
+    parsedInput: GateEvidenceReferenceV1
+): Promise<ValidatedJsonEvidenceV1> {
+    if (parsedInput.mediaType !== 'application/json') {
+        throw gateInputError(
+            'evidence/media-type-unsupported',
+            'JSON evidence reader requires application/json'
+        );
+    }
+    const evidenceFile = openValidatedEvidenceFile(
+        evidenceDirectory,
+        parsedInput.path
+    );
+    try {
+        const { value, sha256 } = await readValidatedJsonValue(
+            evidenceFile.descriptor,
+            evidenceFile.identity
+        );
+        return {
+            reference: parseGateEvidenceReferenceV1({
+                ...parsedInput,
+                sha256,
+            }),
+            value,
+        };
+    } finally {
+        closeEvidenceDescriptor(evidenceFile.descriptor);
+    }
+}
+
+/**
+ * Reads a JSON evidence artifact through its validated no-follow descriptor,
+ * then returns both the parsed value and the digest reference derived from
+ * those exact bytes. Consumers that need semantics must retain this value
+ * rather than reopening the filesystem path after digest validation.
+ */
+export async function readValidatedJsonEvidence(
+    evidenceDirectory: string,
+    input: CreateEvidenceReferenceInputV1
+): Promise<ValidatedJsonEvidenceV1> {
+    const parsedInput = parseGateEvidenceReferenceV1({
+        ...input,
+        sha256: REFERENCE_DIGEST_PLACEHOLDER,
+    });
+    assertSupportedEvidenceMediaType(parsedInput.mediaType);
+    return readValidatedJsonEvidenceFromParsedInput(
+        evidenceDirectory,
+        parsedInput
+    );
 }
 
 /**
@@ -568,21 +625,23 @@ export async function createEvidenceReference(
         sha256: REFERENCE_DIGEST_PLACEHOLDER,
     });
     assertSupportedEvidenceMediaType(parsedInput.mediaType);
+    if (parsedInput.mediaType === 'application/json') {
+        return (
+            await readValidatedJsonEvidenceFromParsedInput(
+                evidenceDirectory,
+                parsedInput
+            )
+        ).reference;
+    }
     const evidenceFile = openValidatedEvidenceFile(
         evidenceDirectory,
         parsedInput.path
     );
     try {
-        const sha256 =
-            parsedInput.mediaType === 'application/json'
-                ? await hashJsonEvidence(
-                      evidenceFile.descriptor,
-                      evidenceFile.identity
-                  )
-                : await hashValidatedEvidenceFile(
-                      evidenceFile.descriptor,
-                      evidenceFile.identity
-                  );
+        const sha256 = await hashValidatedEvidenceFile(
+            evidenceFile.descriptor,
+            evidenceFile.identity
+        );
 
         return parseGateEvidenceReferenceV1({ ...parsedInput, sha256 });
     } finally {

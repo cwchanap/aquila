@@ -119,8 +119,31 @@ function publicUrl(baseUrl: URL, path: string): string {
     return new URL(path, base).toString();
 }
 
+function canonicalPathSegments(url: URL): string[] {
+    let path = url.pathname;
+    while (path.includes('%')) {
+        let decoded: string;
+        try {
+            decoded = decodeURIComponent(path);
+        } catch {
+            inputError(
+                'input/url',
+                'asset base URL path must use valid percent encoding'
+            );
+        }
+        if (decoded === path) {
+            inputError(
+                'input/url',
+                'asset base URL path cannot be canonicalized'
+            );
+        }
+        path = decoded;
+    }
+    return path.split('/');
+}
+
 function hasPreviewPath(url: URL): boolean {
-    return url.pathname.split('/').includes('previews');
+    return canonicalPathSegments(url).includes('previews');
 }
 
 function diagnostic(
@@ -314,8 +337,14 @@ export async function runProductionSmoke(
             'post-activation-smoke/public-verification-failed'
         );
     }
-    checks[0]!.status = 'passed';
 
+    if (publicVerification.storyId !== input.storyId) {
+        return failedReport(
+            input,
+            checks,
+            'post-activation-smoke/story-mismatch'
+        );
+    }
     if (publicVerification.releaseId !== input.releaseId) {
         return failedReport(
             input,
@@ -330,6 +359,7 @@ export async function runProductionSmoke(
             'post-activation-smoke/manifest-mismatch'
         );
     }
+    checks[0]!.status = 'passed';
     if (
         !publicVerification.checks.some(
             check => check.id === 'pointer.cache' && check.status === 'passed'

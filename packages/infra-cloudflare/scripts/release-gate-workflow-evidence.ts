@@ -56,6 +56,7 @@ const CANDIDATE_COMMIT_SHA_RE = /^[a-f0-9]{40}$/;
 const POSITIVE_INTEGER_RE = /^[1-9][0-9]*$/;
 const ARTIFACT_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const ARTIFACT_DIGEST_RE = /^sha256:[a-f0-9]{64}$/;
+const BARE_ARTIFACT_DIGEST_RE = /^[a-f0-9]{64}$/;
 const TAR_BLOCK_SIZE = 512;
 const MAX_TAR_BYTES = 512 * 1024 * 1024;
 const MAX_TAR_ENTRY_BYTES = 128 * 1024 * 1024;
@@ -206,6 +207,28 @@ function sha256(value: string | Uint8Array): string {
 
 function canonicalSha256(value: JsonValue): string {
     return sha256(canonicalJson(value));
+}
+
+/**
+ * `actions/upload-artifact` returns a bare SHA-256 while the Actions REST
+ * API returns `sha256:<hex>`. Persist one canonical form so a producer cannot
+ * influence comparison semantics through presentation alone.
+ */
+function normalizeArtifactDigest(value: string, label: string): string {
+    if (ARTIFACT_DIGEST_RE.test(value)) return value;
+    if (BARE_ARTIFACT_DIGEST_RE.test(value)) return `sha256:${value}`;
+    throw new Error(`${label} digest is invalid`);
+}
+
+function isMainReleaseGateWorkflowReference(
+    workflowRef: string,
+    repository: string
+): boolean {
+    const workflowPath = '.github/workflows/visual-novel-release-gate.yml';
+    return (
+        workflowRef === `${repository}/${workflowPath}@refs/heads/main` ||
+        workflowRef === `${workflowPath}@main`
+    );
 }
 
 function compareCanonicalStrings(left: string, right: string): number {
@@ -792,13 +815,18 @@ export function validateReleaseGateArtifactProvenance(
         phase: requiredString(record, 'phase'),
         artifactId: requiredString(record, 'artifactId'),
         artifactName: requiredString(record, 'artifactName'),
-        artifactDigest: requiredString(record, 'artifactDigest'),
+        artifactDigest: normalizeArtifactDigest(
+            requiredString(record, 'artifactDigest'),
+            'Release-gate artifact'
+        ),
         candidateCommitSha: requiredString(record, 'candidateCommitSha'),
     };
-    const expectedWorkflowRef = `${expected.repository}/.github/workflows/visual-novel-release-gate.yml@refs/heads/main`;
     if (
         provenance.repository !== expected.repository ||
-        provenance.workflowRef !== expectedWorkflowRef ||
+        !isMainReleaseGateWorkflowReference(
+            provenance.workflowRef,
+            expected.repository
+        ) ||
         !CANDIDATE_COMMIT_SHA_RE.test(provenance.workflowSha) ||
         provenance.runId !== expected.prepareRunId ||
         !Number.isSafeInteger(provenance.runAttempt) ||
@@ -1697,6 +1725,24 @@ function parseCandidateTier1(
     return tier1;
 }
 
+function assertTier1MatchesSealedContract(
+    tier1: Tier1EvidenceV1,
+    contract: CandidateBuildContractV1
+): void {
+    if (
+        canonicalSha256(tier1 as JsonValue) !== contract.tier1CanonicalSha256 ||
+        tier1.bunVersion !== contract.toolchain.bunVersion ||
+        tier1.nodeVersion !== contract.toolchain.nodeVersion ||
+        tier1.playwrightVersion !== contract.toolchain.playwrightVersion ||
+        tier1.commandSetVersion !== contract.toolchain.commandSetVersion ||
+        tier1.browserMatrix[0] !== contract.toolchain.browserMatrix[0] ||
+        tier1.browserMatrix[1] !== contract.toolchain.browserMatrix[1] ||
+        tier1.status !== 'passed'
+    ) {
+        throw new Error('Sealed candidate Tier 1 does not match its contract');
+    }
+}
+
 function exactOutputArchiveFromRawCandidate(rawArchive: ReleaseGateTarV1): {
     archiveBytes: Uint8Array;
     archive: ReleaseGateTarV1;
@@ -1860,9 +1906,13 @@ async function sealCandidateArtifact(
         asRecord(environment, 'Workflow environment'),
         'RELEASE_GATE_RAW_CANDIDATE_ARTIFACT_DIGEST'
     );
+    const normalizedRawArtifactDigest = normalizeArtifactDigest(
+        rawArtifactDigest,
+        'Raw candidate artifact'
+    );
     if (
         !POSITIVE_INTEGER_RE.test(rawArtifactId) ||
-        !ARTIFACT_DIGEST_RE.test(rawArtifactDigest)
+        !ARTIFACT_DIGEST_RE.test(normalizedRawArtifactDigest)
     ) {
         throw new Error('Raw candidate artifact identity is invalid');
     }
@@ -1880,7 +1930,7 @@ async function sealCandidateArtifact(
             ...producer,
             jobName: 'seal-candidate',
             candidateRawArtifactId: rawArtifactId,
-            candidateRawArtifactDigest: rawArtifactDigest,
+            candidateRawArtifactDigest: normalizedRawArtifactDigest,
         },
         candidateLockfileSha256,
         tier1CanonicalSha256: canonicalSha256(tier1 as JsonValue),
@@ -2029,18 +2079,17 @@ async function ingestSealedCandidateArtifact(
         inputs,
         contract.candidateLockfileSha256
     );
-    if (canonicalSha256(tier1 as JsonValue) !== contract.tier1CanonicalSha256) {
-        throw new Error(
-            'Sealed candidate Tier 1 digest differs from its contract'
-        );
-    }
+    assertTier1MatchesSealedContract(tier1, contract);
     const artifactId = requiredString(
         asRecord(environment, 'Workflow environment'),
         'RELEASE_GATE_SEALED_ARTIFACT_ID'
     );
-    const artifactDigest = requiredString(
-        asRecord(environment, 'Workflow environment'),
-        'RELEASE_GATE_SEALED_ARTIFACT_DIGEST'
+    const artifactDigest = normalizeArtifactDigest(
+        requiredString(
+            asRecord(environment, 'Workflow environment'),
+            'RELEASE_GATE_SEALED_ARTIFACT_DIGEST'
+        ),
+        'Sealed candidate artifact'
     );
     const expectedProducerWorkflowSha = requiredString(
         asRecord(environment, 'Workflow environment'),
@@ -2104,6 +2153,12 @@ async function ingestSealedCandidateArtifact(
     ) {
         throw new Error('Sealed output mapping or scenario binding changed');
     }
+    if (
+        canonicalSha256(contract.scenario as JsonValue) !==
+        contract.scenarioSha256
+    ) {
+        throw new Error('Sealed candidate scenario digest is invalid');
+    }
     const outputParent = resolveRepositoryPath('apps/web/.vercel');
     await assertRealDirectory(
         outputParent,
@@ -2138,6 +2193,21 @@ async function ingestSealedCandidateArtifact(
             mappingSha256: contract.mappingSha256,
         } as JsonValue),
         writeCanonicalJson(
+            resolve(evidenceRoot, 'scenario.json'),
+            contract.scenario as JsonValue
+        ),
+        writeCanonicalJson(
+            resolve(evidenceRoot, 'sealed-scenario-provenance.json'),
+            {
+                schemaVersion: 1,
+                candidateCommitSha: inputs.candidateCommitSha,
+                scenarioSha256: contract.scenarioSha256,
+                mappingSha256: contract.mappingSha256,
+                artifactId,
+                artifactDigest,
+            } as JsonValue
+        ),
+        writeCanonicalJson(
             resolve(evidenceRoot, 'tier1.json'),
             tier1 as JsonValue
         ),
@@ -2152,6 +2222,168 @@ async function ingestSealedCandidateArtifact(
             } as JsonValue
         ),
     ]);
+}
+
+/**
+ * Finalize never executes candidate code. It can only reuse Tier 1 when the
+ * trusted API provenance, sealed subject, evidence digest, and current
+ * toolchain are exact; any mismatch requires a fresh secretless prepare run.
+ */
+async function validateTier1Reuse(
+    environment: Readonly<Record<string, string | undefined>>
+): Promise<void> {
+    const inputs = workflowInputsFromEnvironment(environment);
+    if (inputs.phase !== 'finalize') {
+        throw new Error('Tier 1 reuse validation is finalization-only');
+    }
+    const current = trustedWorkflowProvenance(environment, 'finalize-live');
+    const evidenceRoot = resolveRepositoryPath(EVIDENCE_DIRECTORY);
+    const writeFreshUpstreamRequired = async (): Promise<void> => {
+        await writeCanonicalJson(resolve(evidenceRoot, 'tier1-reuse.json'), {
+            schemaVersion: 1,
+            mode: 'fresh-upstream-required',
+            reason: 'exact-provenance-or-toolchain-mismatch',
+            candidateCommitSha: inputs.candidateCommitSha,
+        } as JsonValue);
+        if (environment.GITHUB_STEP_SUMMARY) {
+            await appendFile(
+                environment.GITHUB_STEP_SUMMARY,
+                '- Tier 1 reuse: fresh upstream prepare required; protected lane did not rerun candidate code.\n',
+                'utf8'
+            );
+        }
+    };
+
+    try {
+        const artifactRoot = requiredAbsoluteEnvironmentPath(
+            environment,
+            'RELEASE_GATE_SEALED_ARTIFACT_ROOT',
+            'Sealed candidate artifact root'
+        );
+        const [
+            contractValue,
+            tier1Value,
+            resolvedProvenanceValue,
+            sealedValue,
+        ] = await Promise.all([
+            readJson(
+                resolve(artifactRoot, 'candidate-build-contract.v1.json'),
+                'Sealed candidate contract',
+                artifactRoot
+            ),
+            readJson(
+                resolve(evidenceRoot, 'tier1.json'),
+                'Sealed candidate Tier 1 evidence'
+            ),
+            readJson(
+                resolve(
+                    evidenceRoot,
+                    'resolved-prepare-artifact-provenance.json'
+                ),
+                'Resolved prepare artifact provenance'
+            ),
+            readJson(
+                resolve(evidenceRoot, 'sealed-artifact-provenance.json'),
+                'Sealed artifact provenance'
+            ),
+        ]);
+        const contract = parseCandidateBuildContract(contractValue);
+        assertExactCandidateInputIdentity(contract.input, inputs);
+        const tier1 = parseCandidateTier1(
+            new TextEncoder().encode(canonicalJson(tier1Value as JsonValue)),
+            inputs,
+            contract.candidateLockfileSha256
+        );
+        assertTier1MatchesSealedContract(tier1, contract);
+
+        const prepareProvenance = validateReleaseGateArtifactProvenance(
+            resolvedProvenanceValue,
+            {
+                repository: current.repository,
+                candidateCommitSha: inputs.candidateCommitSha,
+                prepareRunId: inputs.prepareRunId,
+            }
+        );
+        const sealedProvenance = asRecord(
+            sealedValue,
+            'Sealed artifact provenance'
+        );
+        const sealedArtifactId = requiredString(sealedProvenance, 'artifactId');
+        const sealedArtifactDigest = normalizeArtifactDigest(
+            requiredString(sealedProvenance, 'artifactDigest'),
+            'Sealed artifact provenance'
+        );
+        const sealedProducer = asRecord(
+            sealedProvenance.producer,
+            'Sealed artifact producer'
+        );
+        if (
+            prepareProvenance.workflowSha !== contract.producer.workflowSha ||
+            prepareProvenance.runId !== contract.producer.runId ||
+            prepareProvenance.runAttempt !== contract.producer.runAttempt ||
+            prepareProvenance.jobName !== contract.producer.jobName ||
+            sealedArtifactId !== prepareProvenance.artifactId ||
+            sealedArtifactDigest !== prepareProvenance.artifactDigest ||
+            canonicalJson(sealedProducer as JsonValue) !==
+                canonicalJson(contract.producer as unknown as JsonValue)
+        ) {
+            throw new Error('Sealed Tier 1 provenance is not exact');
+        }
+
+        const runtime = {
+            bunVersion: requiredString(
+                asRecord(environment, 'Workflow environment'),
+                'RELEASE_GATE_TIER1_RUNTIME_BUN_VERSION'
+            ),
+            nodeVersion: requiredString(
+                asRecord(environment, 'Workflow environment'),
+                'RELEASE_GATE_TIER1_RUNTIME_NODE_VERSION'
+            ),
+            playwrightVersion: requiredString(
+                asRecord(environment, 'Workflow environment'),
+                'RELEASE_GATE_TIER1_RUNTIME_PLAYWRIGHT_VERSION'
+            ),
+        };
+        if (
+            runtime.bunVersion !== contract.toolchain.bunVersion ||
+            runtime.nodeVersion !== contract.toolchain.nodeVersion ||
+            runtime.playwrightVersion !== contract.toolchain.playwrightVersion
+        ) {
+            throw new Error('Current toolchain differs from sealed Tier 1');
+        }
+
+        const reuse = {
+            schemaVersion: 1,
+            mode: 'reused',
+            phase: 'prepare',
+            candidateCommitSha: inputs.candidateCommitSha,
+            candidateLockfileSha256: contract.candidateLockfileSha256,
+            tier1CanonicalSha256: contract.tier1CanonicalSha256,
+            producer: contract.producer,
+            artifact: {
+                id: prepareProvenance.artifactId,
+                digest: prepareProvenance.artifactDigest,
+            },
+            toolchain: contract.toolchain,
+        } as JsonValue;
+        await writeCanonicalJson(
+            resolve(evidenceRoot, 'tier1-reuse.json'),
+            reuse
+        );
+        await appendOutput(environment, 'tier1_reuse_mode', 'reused');
+        if (environment.GITHUB_STEP_SUMMARY) {
+            await appendFile(
+                environment.GITHUB_STEP_SUMMARY,
+                '- Tier 1 reuse: reused (exact sealed prepare provenance and toolchain).\n',
+                'utf8'
+            );
+        }
+    } catch {
+        await writeFreshUpstreamRequired();
+        throw new Error(
+            'Tier 1 reuse requires a fresh secretless prepare candidate; protected finalize will not rerun candidate code'
+        );
+    }
 }
 
 async function verifySealedOutput(
@@ -2172,9 +2404,19 @@ async function verifySealedOutput(
             'Build contract'
         )
     );
+    const persistedScenario = parseVisualNovelGateScenarioV1(
+        await readJson(
+            resolve(evidenceRoot, 'scenario.json'),
+            'Persisted sealed scenario'
+        )
+    );
     if (
         materialized.mapping.candidateCommitSha !== inputs.candidateCommitSha ||
-        materialized.mapping.manifestSha256 !== inputs.manifestSha256
+        materialized.mapping.manifestSha256 !== inputs.manifestSha256 ||
+        canonicalSha256(persistedScenario as JsonValue) !==
+            materialized.scenarioSha256 ||
+        canonicalJson(persistedScenario as JsonValue) !==
+            canonicalJson(materialized.scenario as JsonValue)
     ) {
         throw new Error(
             'Sealed output contract does not match dispatch identity'
@@ -2309,8 +2551,7 @@ async function validatePrepareProvenance(
         runId !== inputs.prepareRunId ||
         requiredString(run, 'conclusion') !== 'success' ||
         headBranch !== 'main' ||
-        path !==
-            '.github/workflows/visual-novel-release-gate.yml@refs/heads/main' ||
+        !isMainReleaseGateWorkflowReference(path, current.repository) ||
         !CANDIDATE_COMMIT_SHA_RE.test(headSha)
     ) {
         throw new Error(
@@ -2337,7 +2578,7 @@ async function validatePrepareProvenance(
     const provenance = validateReleaseGateArtifactProvenance(
         {
             repository: current.repository,
-            workflowRef: `${current.repository}/${path}`,
+            workflowRef: path,
             workflowSha: headSha,
             runId,
             runAttempt,
@@ -2418,7 +2659,7 @@ async function validatePublisherArtifactProvenance(
         runId !== inputs.publisherReportRunId ||
         requiredString(run, 'conclusion') !== 'success' ||
         requiredString(run, 'head_branch') !== 'main' ||
-        path !== '.github/workflows/r2-publisher-preview.yml@refs/heads/main'
+        path !== '.github/workflows/r2-publisher-preview.yml@main'
     ) {
         throw new Error(
             'Publisher artifact must come from a successful main publisher workflow'
@@ -2440,10 +2681,10 @@ async function validatePublisherArtifactProvenance(
     }
     const artifact = asRecord(candidates[0], 'Publisher artifact');
     const artifactId = positiveInteger(artifact, 'id').toString();
-    const artifactDigest = requiredString(artifact, 'digest');
-    if (!ARTIFACT_DIGEST_RE.test(artifactDigest)) {
-        throw new Error('Publisher artifact digest is invalid');
-    }
+    const artifactDigest = normalizeArtifactDigest(
+        requiredString(artifact, 'digest'),
+        'Publisher artifact'
+    );
     await writeCanonicalJson(
         resolve(
             resolveRepositoryPath(EVIDENCE_DIRECTORY),
@@ -3152,61 +3393,153 @@ function parsePointerSnapshot(
     return snapshot as JsonValue;
 }
 
-async function proveProductionPointerUnchanged(
+type ProductionPointerProofStatus = 'unchanged' | 'changed' | 'unproven';
+
+async function writeProductionPointerProof(input: {
+    status: ProductionPointerProofStatus;
+    reason: string;
+    inputs?: ReleaseGateWorkflowInputs;
+}): Promise<void> {
+    const evidenceRoot = resolveRepositoryPath(EVIDENCE_DIRECTORY);
+    await writeCanonicalJson(
+        resolve(evidenceRoot, 'production-pointer-proof.json'),
+        {
+            schemaVersion: 1,
+            status: input.status,
+            reason: input.reason,
+            ...(input.inputs
+                ? {
+                      storyId: input.inputs.storyId,
+                      previewId: input.inputs.previewId,
+                      unchanged: input.status === 'unchanged',
+                  }
+                : {}),
+        } as JsonValue
+    );
+}
+
+/**
+ * Install an unproven marker before the first credentialed pointer capture.
+ * If a later stage aborts, the failure artifact remains explicit rather than
+ * falsely implying that production was observed unchanged.
+ */
+async function initializeProductionPointerProof(): Promise<void> {
+    await writeProductionPointerProof({
+        status: 'unproven',
+        reason: 'pointer-capture-not-complete',
+    });
+}
+
+/**
+ * This finalizer never reports an unproven capture as a positive proof and
+ * deliberately avoids propagating capture errors. The following success-only
+ * assertion turns a non-unchanged result into the job failure when no earlier
+ * stage has already failed.
+ */
+async function finalizeProductionPointerProof(
+    environment: Readonly<Record<string, string | undefined>>
+): Promise<void> {
+    let inputs: ReleaseGateWorkflowInputs;
+    try {
+        inputs = workflowInputsFromEnvironment(environment);
+    } catch {
+        await writeProductionPointerProof({
+            status: 'unproven',
+            reason: 'validated-identity-unavailable',
+        });
+        return;
+    }
+
+    try {
+        const beforePath = resolveRepositoryPath(
+            requireSafeRelativeEnvironmentPath(
+                environment,
+                'RELEASE_GATE_POINTER_BEFORE_PATH',
+                'Production pointer before path'
+            )
+        );
+        const afterPath = resolveRepositoryPath(
+            requireSafeRelativeEnvironmentPath(
+                environment,
+                'RELEASE_GATE_POINTER_AFTER_PATH',
+                'Production pointer after path'
+            )
+        );
+        const before = parsePointerSnapshot(
+            await readJson(beforePath, 'Production pointer before snapshot'),
+            inputs,
+            'Production pointer before snapshot'
+        );
+        const after = parsePointerSnapshot(
+            await readJson(afterPath, 'Production pointer after snapshot'),
+            inputs,
+            'Production pointer after snapshot'
+        );
+        const beforePointer = asRecord(
+            before,
+            'Production pointer before snapshot'
+        ).productionPointer as JsonValue;
+        const afterPointer = asRecord(
+            after,
+            'Production pointer after snapshot'
+        ).productionPointer as JsonValue;
+        const unchanged =
+            canonicalJson(beforePointer) === canonicalJson(afterPointer);
+        await Promise.all([
+            writeCanonicalJson(
+                resolve(
+                    resolveRepositoryPath(EVIDENCE_DIRECTORY),
+                    'production-pointer-before.json'
+                ),
+                before
+            ),
+            writeCanonicalJson(
+                resolve(
+                    resolveRepositoryPath(EVIDENCE_DIRECTORY),
+                    'production-pointer-after.json'
+                ),
+                after
+            ),
+            writeProductionPointerProof({
+                status: unchanged ? 'unchanged' : 'changed',
+                reason: unchanged
+                    ? 'matching-production-pointer-snapshots'
+                    : 'production-pointer-values-differ',
+                inputs,
+            }),
+        ]);
+    } catch {
+        await writeProductionPointerProof({
+            status: 'unproven',
+            reason: 'pointer-snapshot-unavailable',
+            inputs,
+        });
+    }
+}
+
+async function requireProductionPointerProof(
     environment: Readonly<Record<string, string | undefined>>
 ): Promise<void> {
     const inputs = workflowInputsFromEnvironment(environment);
-    const beforePath = resolveRepositoryPath(
-        requireSafeRelativeEnvironmentPath(
-            environment,
-            'RELEASE_GATE_POINTER_BEFORE_PATH',
-            'Production pointer before path'
-        )
-    );
-    const afterPath = resolveRepositoryPath(
-        requireSafeRelativeEnvironmentPath(
-            environment,
-            'RELEASE_GATE_POINTER_AFTER_PATH',
-            'Production pointer after path'
-        )
-    );
-    const before = parsePointerSnapshot(
-        await readJson(beforePath, 'Production pointer before snapshot'),
-        inputs,
-        'Production pointer before snapshot'
-    );
-    const after = parsePointerSnapshot(
-        await readJson(afterPath, 'Production pointer after snapshot'),
-        inputs,
-        'Production pointer after snapshot'
-    );
-    const beforePointer = asRecord(before, 'Production pointer before snapshot')
-        .productionPointer as JsonValue;
-    const afterPointer = asRecord(after, 'Production pointer after snapshot')
-        .productionPointer as JsonValue;
-    if (canonicalJson(beforePointer) !== canonicalJson(afterPointer)) {
-        throw new Error('Production pointer changed during the release gate');
-    }
     const evidenceRoot = resolveRepositoryPath(EVIDENCE_DIRECTORY);
-    await Promise.all([
-        writeCanonicalJson(
-            resolve(evidenceRoot, 'production-pointer-before.json'),
-            before
-        ),
-        writeCanonicalJson(
-            resolve(evidenceRoot, 'production-pointer-after.json'),
-            after
-        ),
-        writeCanonicalJson(
+    const proof = asRecord(
+        await readJson(
             resolve(evidenceRoot, 'production-pointer-proof.json'),
-            {
-                schemaVersion: 1,
-                storyId: inputs.storyId,
-                previewId: inputs.previewId,
-                unchanged: true,
-            } as JsonValue
+            'Production pointer proof'
         ),
-    ]);
+        'Production pointer proof'
+    );
+    if (
+        proof.schemaVersion !== 1 ||
+        proof.status !== 'unchanged' ||
+        proof.storyId !== inputs.storyId ||
+        proof.previewId !== inputs.previewId ||
+        proof.unchanged !== true
+    ) {
+        throw new Error(
+            'A successful release gate requires a proven unchanged production pointer'
+        );
+    }
 }
 
 async function extractWebIdentity(
@@ -3345,27 +3678,24 @@ async function recordStageTiming(
     if (!/^[a-z][a-z0-9-]{0,63}$/.test(stage)) {
         throw new Error('Release-gate stage name is invalid');
     }
-    const startedAtNanoseconds = requiredString(
+    const status =
+        optionalString(record, 'RELEASE_GATE_STAGE_STATUS') || 'unknown';
+    if (
+        !['success', 'failure', 'cancelled', 'skipped', 'unknown'].includes(
+            status
+        )
+    ) {
+        throw new Error('Release-gate stage status is invalid');
+    }
+    const startedAtNanoseconds = optionalString(
         record,
         'RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS'
     );
-    if (!/^[1-9][0-9]*$/.test(startedAtNanoseconds)) {
-        throw new Error('Release-gate stage timing is invalid');
-    }
     const endedAtNanoseconds = process.hrtime.bigint();
-    const started = BigInt(startedAtNanoseconds);
-    if (endedAtNanoseconds < started) {
-        throw new Error('Release-gate monotonic stage timing moved backwards');
-    }
 
     const evidenceRoot = resolveRepositoryPath(EVIDENCE_DIRECTORY);
     const timingPath = resolve(evidenceRoot, 'stage-timings.json');
-    let stages: Array<{
-        stage: string;
-        startedAtNanoseconds: string;
-        endedAtNanoseconds: string;
-        elapsedNanoseconds: string;
-    }> = [];
+    let stages: JsonValue[] = [];
 
     let timingArtifactExists = false;
     try {
@@ -3388,11 +3718,37 @@ async function recordStageTiming(
         stages = prior.stages.map(value => {
             const timing = asRecord(value, 'Stage timing');
             const priorStage = requiredString(timing, 'stage');
+            const priorStatus = optionalString(timing, 'status') || 'unknown';
+            const timingStatus =
+                optionalString(timing, 'timingStatus') || 'recorded';
+            if (
+                !/^[a-z][a-z0-9-]{0,63}$/.test(priorStage) ||
+                ![
+                    'success',
+                    'failure',
+                    'cancelled',
+                    'skipped',
+                    'unknown',
+                ].includes(priorStatus) ||
+                !['recorded', 'unavailable'].includes(timingStatus)
+            ) {
+                throw new Error('Stage timing artifact is invalid');
+            }
+            if (timingStatus === 'unavailable') {
+                if (typeof timing.reason !== 'string') {
+                    throw new Error('Stage timing artifact is invalid');
+                }
+                return {
+                    stage: priorStage,
+                    status: priorStatus,
+                    timingStatus,
+                    reason: timing.reason,
+                } as JsonValue;
+            }
             const priorStarted = requiredString(timing, 'startedAtNanoseconds');
             const priorEnded = requiredString(timing, 'endedAtNanoseconds');
             const priorElapsed = requiredString(timing, 'elapsedNanoseconds');
             if (
-                !/^[a-z][a-z0-9-]{0,63}$/.test(priorStage) ||
                 !/^[1-9][0-9]*$/.test(priorStarted) ||
                 !/^[1-9][0-9]*$/.test(priorEnded) ||
                 !/^[0-9]+$/.test(priorElapsed) ||
@@ -3404,21 +3760,44 @@ async function recordStageTiming(
             }
             return {
                 stage: priorStage,
+                status: priorStatus,
+                timingStatus,
                 startedAtNanoseconds: priorStarted,
                 endedAtNanoseconds: priorEnded,
                 elapsedNanoseconds: priorElapsed,
-            };
+            } as JsonValue;
         });
     }
-    if (stages.some(entry => entry.stage === stage)) {
+    if (stages.some(entry => asRecord(entry, 'Stage timing').stage === stage)) {
         throw new Error('Release-gate stage timing already exists');
     }
-    const timing = {
-        stage,
-        startedAtNanoseconds,
-        endedAtNanoseconds: endedAtNanoseconds.toString(),
-        elapsedNanoseconds: (endedAtNanoseconds - started).toString(),
-    };
+    const timing: JsonValue = ((): JsonValue => {
+        if (!/^[1-9][0-9]*$/.test(startedAtNanoseconds)) {
+            return {
+                stage,
+                status,
+                timingStatus: 'unavailable',
+                reason: 'start-marker-unavailable',
+            };
+        }
+        const started = BigInt(startedAtNanoseconds);
+        if (endedAtNanoseconds < started) {
+            return {
+                stage,
+                status,
+                timingStatus: 'unavailable',
+                reason: 'monotonic-clock-moved-backwards',
+            };
+        }
+        return {
+            stage,
+            status,
+            timingStatus: 'recorded',
+            startedAtNanoseconds,
+            endedAtNanoseconds: endedAtNanoseconds.toString(),
+            elapsedNanoseconds: (endedAtNanoseconds - started).toString(),
+        };
+    })();
     stages.push(timing);
     await writeCanonicalJson(timingPath, {
         schemaVersion: 1,
@@ -3426,9 +3805,12 @@ async function recordStageTiming(
     } as JsonValue);
     const summaryPath = environment.GITHUB_STEP_SUMMARY;
     if (summaryPath) {
+        const renderedTiming = asRecord(timing, 'Stage timing');
         await appendFile(
             summaryPath,
-            `- ${stage}: ${timing.elapsedNanoseconds}ns (monotonic)\n`,
+            renderedTiming.timingStatus === 'recorded'
+                ? `- ${stage}: ${renderedTiming.status} ${renderedTiming.elapsedNanoseconds}ns (monotonic)\n`
+                : `- ${stage}: ${renderedTiming.status} timing unavailable (${renderedTiming.reason})\n`,
             'utf8'
         );
     }
@@ -3467,6 +3849,10 @@ async function main(argv: readonly string[]): Promise<void> {
         await validatePrepareProvenance(process.env);
         return;
     }
+    if (command === 'validate-tier1-reuse') {
+        await validateTier1Reuse(process.env);
+        return;
+    }
     if (command === 'validate-publisher-artifact-provenance') {
         await validatePublisherArtifactProvenance(process.env);
         return;
@@ -3495,8 +3881,16 @@ async function main(argv: readonly string[]): Promise<void> {
         await recordR2CandidateEvidence(process.env);
         return;
     }
-    if (command === 'prove-production-pointer-unchanged') {
-        await proveProductionPointerUnchanged(process.env);
+    if (command === 'initialize-production-pointer-proof') {
+        await initializeProductionPointerProof();
+        return;
+    }
+    if (command === 'finalize-production-pointer-proof') {
+        await finalizeProductionPointerProof(process.env);
+        return;
+    }
+    if (command === 'require-production-pointer-proof') {
+        await requireProductionPointerProof(process.env);
         return;
     }
     if (command === 'extract-web-identity') {
@@ -3516,7 +3910,7 @@ async function main(argv: readonly string[]): Promise<void> {
         return;
     }
     throw new Error(
-        'Usage: release-gate-workflow-evidence.ts <validate-inputs|validate-trusted-workflow-context|inspect-raw-candidate-artifact|seal-candidate-artifact|ingest-sealed-candidate-artifact|verify-sealed-output|validate-prepare-provenance|validate-publisher-artifact-provenance|validate-vercel-preview-contract|materialize-scenario|attest-deployment|validate-publisher-candidate|verify-public|record-r2-candidate|prove-production-pointer-unchanged|extract-web-identity|validate-manual-review|write-workflow-approval|record-stage-timing>'
+        'Usage: release-gate-workflow-evidence.ts <validate-inputs|validate-trusted-workflow-context|inspect-raw-candidate-artifact|seal-candidate-artifact|ingest-sealed-candidate-artifact|verify-sealed-output|validate-prepare-provenance|validate-tier1-reuse|validate-publisher-artifact-provenance|validate-vercel-preview-contract|materialize-scenario|attest-deployment|validate-publisher-candidate|verify-public|record-r2-candidate|initialize-production-pointer-proof|finalize-production-pointer-proof|require-production-pointer-proof|extract-web-identity|validate-manual-review|write-workflow-approval|record-stage-timing>'
     );
 }
 

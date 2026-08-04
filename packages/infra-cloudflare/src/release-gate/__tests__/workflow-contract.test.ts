@@ -21,6 +21,12 @@ const WORKFLOW_PATH = fileURLToPath(
         import.meta.url
     )
 );
+const HELPER_PATH = fileURLToPath(
+    new URL(
+        '../../../scripts/release-gate-workflow-evidence.ts',
+        import.meta.url
+    )
+);
 
 const CANDIDATE_COMMIT_SHA = 'f'.repeat(40);
 const MANIFEST_SHA256 = 'a'.repeat(64);
@@ -375,6 +381,59 @@ describe('release-gate workflow evidence', () => {
             )
         ).toThrow(/main/i);
     });
+
+    it('normalizes upload-artifact digests and accepts only GitHub API main workflow paths', () => {
+        const bareDigest = 'd'.repeat(64);
+        const apiProvenance = {
+            repository: 'aquila/example',
+            workflowRef: '.github/workflows/visual-novel-release-gate.yml@main',
+            workflowSha: 'b'.repeat(40),
+            runId: '123',
+            runAttempt: 1,
+            jobName: 'seal-candidate',
+            conclusion: 'success',
+            phase: 'prepare',
+            artifactId: '456',
+            artifactName: 'visual-novel-sealed-candidate-123-1',
+            artifactDigest: bareDigest,
+            candidateCommitSha: CANDIDATE_COMMIT_SHA,
+        } as const;
+        const expected = {
+            repository: 'aquila/example',
+            candidateCommitSha: CANDIDATE_COMMIT_SHA,
+            prepareRunId: '123',
+        } as const;
+
+        expect(
+            validateReleaseGateArtifactProvenance(apiProvenance, expected)
+        ).toMatchObject({ artifactDigest: `sha256:${bareDigest}` });
+        expect(() =>
+            validateReleaseGateArtifactProvenance(
+                {
+                    ...apiProvenance,
+                    workflowRef:
+                        '.github/workflows/visual-novel-release-gate.yml@feature',
+                },
+                expected
+            )
+        ).toThrow(/main/i);
+        expect(() =>
+            validateReleaseGateArtifactProvenance(
+                {
+                    ...apiProvenance,
+                    workflowRef:
+                        '.github/workflows/visual-novel-release-gate.yml@refs/heads/main',
+                },
+                expected
+            )
+        ).toThrow(/main/i);
+        expect(() =>
+            validateReleaseGateArtifactProvenance(
+                { ...apiProvenance, artifactDigest: 'D'.repeat(64) },
+                expected
+            )
+        ).toThrow(/digest/i);
+    });
 });
 
 describe('visual-novel-release-gate workflow contract', () => {
@@ -549,9 +608,7 @@ describe('visual-novel-release-gate workflow contract', () => {
             '--evidence .release-gate/evidence/tier1.json'
         );
         expect(JSON.stringify(finalizeSteps)).not.toContain('Run Tier 1');
-        expect(JSON.stringify(finalizeSteps)).not.toContain(
-            'validate-tier1-reuse'
-        );
+        expect(JSON.stringify(finalizeSteps)).toContain('validate-tier1-reuse');
 
         const uploads = allSteps.filter(step =>
             step.name?.startsWith('Upload ')
@@ -594,11 +651,23 @@ describe('visual-novel-release-gate workflow contract', () => {
         expect(candidate?.permissions).toEqual({ contents: 'read' });
         expect(JSON.stringify(candidate)).not.toContain('secrets.');
         expect(JSON.stringify(candidate)).not.toContain('vercel pull');
-        expect(sealer?.permissions).toMatchObject({
+        expect(sealer?.permissions).toEqual({
+            contents: 'read',
+            actions: 'read',
+        });
+        expect(sealer?.permissions).not.toHaveProperty('id-token');
+        expect(sealer?.permissions).not.toHaveProperty('attestations');
+        expect(sealer?.permissions).not.toHaveProperty('artifact-metadata');
+        expect(prepare?.permissions).toMatchObject({
             'id-token': 'write',
             attestations: 'write',
             'artifact-metadata': 'write',
         });
+        expect(
+            prepare?.steps?.some(
+                step => step.name === 'Attest sealed candidate artifact'
+            )
+        ).toBe(true);
         expect(prepare?.environment).toBe('visual-novel-release-preview');
         expect(finalize?.environment).toBe('visual-novel-release-approval');
         expect(workflow.concurrency?.['cancel-in-progress']).toBe(false);
@@ -641,6 +710,120 @@ describe('visual-novel-release-gate workflow contract', () => {
             );
             expect(diagnostics?.if).toBe('${{ always() }}');
             expect(JSON.stringify(job)).not.toContain('Checkout candidate');
+        }
+    });
+
+    it('fails closed for hidden artifact evidence, branch OIDC, missing sealed scenarios, pointer proof, Tier 1 reuse, and stage timing', () => {
+        const workflow = parse(readFileSync(WORKFLOW_PATH, 'utf8')) as {
+            jobs: Record<
+                string,
+                {
+                    if?: string;
+                    'continue-on-error'?: boolean;
+                    permissions?: Record<string, string>;
+                    steps?: Array<{
+                        env?: Record<string, unknown>;
+                        if?: string;
+                        'continue-on-error'?: boolean;
+                        name?: string;
+                        run?: string;
+                        with?: Record<string, unknown>;
+                    }>;
+                }
+            >;
+        };
+        const helper = readFileSync(HELPER_PATH, 'utf8');
+        const candidate = workflow.jobs['candidate-build']!;
+        const sealer = workflow.jobs['seal-candidate']!;
+        const prepare = workflow.jobs['prepare-live']!;
+        const finalize = workflow.jobs['finalize-live']!;
+        const byName = (
+            job: {
+                steps?: Array<{
+                    'continue-on-error'?: boolean;
+                    env?: Record<string, unknown>;
+                    if?: string;
+                    name?: string;
+                    run?: string;
+                    with?: Record<string, unknown>;
+                }>;
+            },
+            name: string
+        ) => job.steps?.find(step => step.name === name);
+
+        for (const [job, name] of [
+            [candidate, 'Upload raw candidate output'],
+            [sealer, 'Upload sealed candidate artifact'],
+            [prepare, 'Upload prepare release-gate evidence'],
+            [finalize, 'Upload finalize release-gate evidence'],
+        ] as const) {
+            const upload = byName(job, name);
+            expect(upload?.with?.['include-hidden-files']).toBe(true);
+            expect(upload?.with?.['if-no-files-found']).toBe('error');
+        }
+
+        expect(candidate.permissions).not.toHaveProperty('id-token');
+        expect(sealer.permissions).not.toHaveProperty('id-token');
+        expect(sealer.permissions).not.toHaveProperty('attestations');
+        expect(sealer.permissions).not.toHaveProperty('artifact-metadata');
+        expect(sealer.if).toContain("github.ref == 'refs/heads/main'");
+        expect(sealer.if).toContain('github.workflow_ref');
+        expect(prepare.permissions).toMatchObject({
+            'id-token': 'write',
+            attestations: 'write',
+            'artifact-metadata': 'write',
+        });
+        expect(
+            byName(prepare, 'Attest sealed candidate artifact')
+        ).toBeDefined();
+
+        const ingestStart = helper.indexOf(
+            'async function ingestSealedCandidateArtifact'
+        );
+        const ingestEnd = helper.indexOf(
+            'async function verifySealedOutput',
+            ingestStart
+        );
+        expect(helper.slice(ingestStart, ingestEnd)).toContain(
+            "resolve(evidenceRoot, 'scenario.json')"
+        );
+        expect(helper).toContain("status: 'unproven'");
+        expect(helper).toContain('validate-tier1-reuse');
+        expect(JSON.stringify(finalize.steps)).toContain(
+            'Tier 1 reuse: reused'
+        );
+
+        for (const job of [prepare, finalize]) {
+            const steps = job.steps ?? [];
+            const indexOf = (name: string) =>
+                steps.findIndex(step => step.name === name);
+            expect(
+                indexOf('Initialize unproven production pointer proof')
+            ).toBeGreaterThanOrEqual(0);
+            expect(
+                indexOf('Initialize unproven production pointer proof')
+            ).toBeLessThan(
+                indexOf('Capture production pointer before live preview work')
+            );
+            const finalizer = byName(job, 'Finalize production pointer proof');
+            expect(finalizer?.if).toBe('${{ always() }}');
+            expect(finalizer?.['continue-on-error']).toBe(true);
+            expect(
+                byName(job, 'Require proven unchanged production pointer')?.if
+            ).toBe('${{ success() }}');
+        }
+
+        const timingSteps = [prepare, finalize].flatMap(job =>
+            (job.steps ?? []).filter(step =>
+                step.run?.includes('record-stage-timing')
+            )
+        );
+        expect(timingSteps.length).toBeGreaterThanOrEqual(8);
+        for (const timing of timingSteps) {
+            expect(timing.env).toMatchObject({
+                RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: expect.anything(),
+                RELEASE_GATE_STAGE_STATUS: expect.anything(),
+            });
         }
     });
 });

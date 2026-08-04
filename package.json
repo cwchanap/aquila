@@ -25,7 +25,8 @@
     "prepare": "husky",
     "drizzle:generate": "turbo run drizzle:generate --filter=web",
     "drizzle:migrate": "turbo run drizzle:migrate --filter=web",
-    "drizzle:studio": "turbo run drizzle:studio --filter=web"
+    "drizzle:studio": "turbo run drizzle:studio --filter=web",
+    "verify:visual-novel-ci": "bun scripts/verify-visual-novel-ci.ts"
   },
   "dependencies": {},
   "devDependencies": {

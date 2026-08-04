@@ -63,8 +63,9 @@ const MAX_TAR_ENTRY_BYTES = 128 * 1024 * 1024;
 const MAX_TAR_ENTRIES = 20_000;
 const OUTPUT_API_VERSION = 3;
 const CANDIDATE_ENTRY_WORKFLOW_NAME = 'Visual Novel Release Candidate Entry';
-const CANDIDATE_ENTRY_WORKFLOW_PATH =
-    '.github/workflows/visual-novel-release-gate.yml@main';
+const CANDIDATE_ENTRY_WORKFLOW_FILE_PATH =
+    '.github/workflows/visual-novel-release-gate.yml';
+const CANDIDATE_ENTRY_WORKFLOW_API_PATH = `${CANDIDATE_ENTRY_WORKFLOW_FILE_PATH}@main`;
 const LIVE_RELEASE_GATE_WORKFLOW_PATH =
     '.github/workflows/visual-novel-release-live.yml';
 
@@ -436,6 +437,81 @@ function parseCandidateEntryRequest(value: unknown): CandidateEntryRequestV1 {
         throw new Error('Candidate entry request is invalid');
     }
     return request;
+}
+
+export function validateCandidateEntryWorkflowProvenance(
+    eventValue: unknown,
+    runValue: unknown,
+    requestValue: unknown,
+    expected: {
+        repository: string;
+        upstreamRunId: string;
+    }
+): {
+    runId: string;
+    runAttempt: number;
+    headSha: string;
+    input: ReleaseGateWorkflowInputs;
+} {
+    const event = asRecord(eventValue, 'Workflow run event');
+    const eventRun = asRecord(event.workflow_run, 'Workflow run event run');
+    const eventRepository = asRecord(
+        event.repository,
+        'Workflow run event repository'
+    );
+    const eventRunRepository = asRecord(
+        eventRun.repository,
+        'Workflow run event source repository'
+    );
+    const run = asRecord(runValue, 'Upstream candidate entry run metadata');
+    const request = parseCandidateEntryRequest(requestValue);
+    const runId = positiveInteger(run, 'id').toString();
+    const runAttempt = positiveInteger(run, 'run_attempt');
+    const headSha = requiredString(run, 'head_sha');
+    const runRepository = asRecord(
+        run.repository,
+        'Upstream candidate entry repository'
+    );
+    const runtimeWorkflowRef = `${expected.repository}/${CANDIDATE_ENTRY_WORKFLOW_FILE_PATH}@refs/heads/main`;
+    if (
+        !POSITIVE_INTEGER_RE.test(expected.upstreamRunId) ||
+        requiredString(event, 'action') !== 'completed' ||
+        positiveInteger(eventRun, 'id').toString() !== expected.upstreamRunId ||
+        positiveInteger(eventRun, 'run_attempt') !== runAttempt ||
+        requiredString(eventRun, 'name') !== CANDIDATE_ENTRY_WORKFLOW_NAME ||
+        requiredString(eventRun, 'event') !== 'workflow_dispatch' ||
+        requiredString(eventRun, 'conclusion') !== 'success' ||
+        requiredString(eventRun, 'head_branch') !== 'main' ||
+        requiredString(eventRun, 'head_sha') !== headSha ||
+        requiredString(eventRun, 'path') !==
+            CANDIDATE_ENTRY_WORKFLOW_FILE_PATH ||
+        requiredString(eventRepository, 'full_name') !== expected.repository ||
+        requiredString(eventRunRepository, 'full_name') !==
+            expected.repository ||
+        runId !== expected.upstreamRunId ||
+        requiredString(run, 'name') !== CANDIDATE_ENTRY_WORKFLOW_NAME ||
+        requiredString(run, 'event') !== 'workflow_dispatch' ||
+        requiredString(run, 'conclusion') !== 'success' ||
+        requiredString(run, 'head_branch') !== 'main' ||
+        requiredString(run, 'path') !== CANDIDATE_ENTRY_WORKFLOW_API_PATH ||
+        requiredString(runRepository, 'full_name') !== expected.repository ||
+        !CANDIDATE_COMMIT_SHA_RE.test(headSha) ||
+        request.source.repository !== expected.repository ||
+        request.source.workflowRef !== runtimeWorkflowRef ||
+        request.source.workflowSha !== headSha ||
+        request.source.runId !== runId ||
+        request.source.runAttempt !== runAttempt
+    ) {
+        throw new Error(
+            'Upstream candidate entry is not the exact successful main dispatch run'
+        );
+    }
+    return {
+        runId,
+        runAttempt,
+        headSha,
+        input: request.input,
+    };
 }
 
 function parseManifest(value: unknown): Manifest {
@@ -3051,6 +3127,11 @@ async function validateUpstreamCandidateEntry(
         'RELEASE_GATE_CANDIDATE_ENTRY_ROOT',
         'Candidate entry artifact root'
     );
+    const eventPath = requiredAbsoluteEnvironmentPath(
+        environment,
+        'GITHUB_EVENT_PATH',
+        'Workflow run event path'
+    );
     await Promise.all([
         assertDirectoryTreeNoLinks(
             metadataRoot,
@@ -3058,56 +3139,39 @@ async function validateUpstreamCandidateEntry(
         ),
         assertDirectoryTreeNoLinks(entryRoot, 'Candidate entry artifact root'),
     ]);
-    const [runValue, artifactsValue, requestValue] = await Promise.all([
-        readJson(
-            resolve(metadataRoot, 'run.json'),
-            'Upstream candidate entry run metadata',
-            metadataRoot
-        ),
-        readJson(
-            resolve(metadataRoot, 'artifacts.json'),
-            'Upstream candidate entry artifact metadata',
-            metadataRoot
-        ),
-        readJson(
-            resolve(entryRoot, 'entry-request.v1.json'),
-            'Candidate entry request',
-            entryRoot
-        ),
-    ]);
-    const run = asRecord(runValue, 'Upstream candidate entry run metadata');
+    const [eventValue, runValue, artifactsValue, requestValue] =
+        await Promise.all([
+            readJson(eventPath, 'Workflow run event', dirname(eventPath)),
+            readJson(
+                resolve(metadataRoot, 'run.json'),
+                'Upstream candidate entry run metadata',
+                metadataRoot
+            ),
+            readJson(
+                resolve(metadataRoot, 'artifacts.json'),
+                'Upstream candidate entry artifact metadata',
+                metadataRoot
+            ),
+            readJson(
+                resolve(entryRoot, 'entry-request.v1.json'),
+                'Candidate entry request',
+                entryRoot
+            ),
+        ]);
     const artifacts = asRecord(
         artifactsValue,
         'Upstream candidate entry artifact metadata'
     );
-    const request = parseCandidateEntryRequest(requestValue);
-    const runId = positiveInteger(run, 'id').toString();
-    const runAttempt = positiveInteger(run, 'run_attempt');
-    const headSha = requiredString(run, 'head_sha');
-    const runRepository = asRecord(
-        run.repository,
-        'Upstream candidate entry repository'
+    const provenance = validateCandidateEntryWorkflowProvenance(
+        eventValue,
+        runValue,
+        requestValue,
+        {
+            repository: current.repository,
+            upstreamRunId,
+        }
     );
-    if (
-        runId !== upstreamRunId ||
-        requiredString(run, 'name') !== CANDIDATE_ENTRY_WORKFLOW_NAME ||
-        requiredString(run, 'event') !== 'workflow_dispatch' ||
-        requiredString(run, 'conclusion') !== 'success' ||
-        requiredString(run, 'head_branch') !== 'main' ||
-        requiredString(run, 'path') !== CANDIDATE_ENTRY_WORKFLOW_PATH ||
-        requiredString(runRepository, 'full_name') !== current.repository ||
-        !CANDIDATE_COMMIT_SHA_RE.test(headSha) ||
-        request.source.repository !== current.repository ||
-        request.source.workflowRef !==
-            `${current.repository}/${CANDIDATE_ENTRY_WORKFLOW_PATH}@refs/heads/main` ||
-        request.source.workflowSha !== headSha ||
-        request.source.runId !== runId ||
-        request.source.runAttempt !== runAttempt
-    ) {
-        throw new Error(
-            'Upstream candidate entry is not the exact successful main dispatch run'
-        );
-    }
+    const { runId, runAttempt } = provenance;
     const expectedArtifactName = `visual-novel-raw-candidate-${runId}-${runAttempt}`;
     const candidates = (
         Array.isArray(artifacts.artifacts) ? artifacts.artifacts : []
@@ -3134,7 +3198,7 @@ async function validateUpstreamCandidateEntry(
         requiredString(artifact, 'digest'),
         'Candidate entry artifact'
     );
-    if (request.input.phase === 'prepare') {
+    if (provenance.input.phase === 'prepare') {
         await readRegularFileNoLinks(
             resolve(entryRoot, 'candidate-output.v1.tar'),
             entryRoot,
@@ -3149,7 +3213,7 @@ async function validateUpstreamCandidateEntry(
             )
         );
     }
-    await emitValidatedInputs(request.input, environment);
+    await emitValidatedInputs(provenance.input, environment);
     await appendOutput(environment, 'entry_run_id', runId);
     await appendOutput(environment, 'entry_run_attempt', runAttempt.toString());
     await appendOutput(environment, 'raw_artifact_id', artifactId);

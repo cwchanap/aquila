@@ -335,7 +335,13 @@ jobs:
             echo "playwright_version=$(node -p 'require("./node_modules/@playwright/test/package.json").version')"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Start Tier 1 reuse timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_TIER1_REUSE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Validate retained Tier 1 reuse
+        id: tier1-reuse
         env:
           RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
           RELEASE_GATE_TIER1_RUNTIME_BUN_VERSION: ${{ steps.tier1-runtime.outputs.bun_version }}
@@ -343,11 +349,25 @@ jobs:
           RELEASE_GATE_TIER1_RUNTIME_PLAYWRIGHT_VERSION: ${{ steps.tier1-runtime.outputs.playwright_version }}
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-tier1-reuse
 
+      - name: Record Tier 1 reuse timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: tier1-reuse
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_TIER1_REUSE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.tier1-reuse.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
       - name: Rehash sealed output immediately before deploy
         env:
           RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
           RELEASE_GATE_OUTPUT_CHECK_PHASE: predeploy
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-sealed-output
+
+      - name: Start prebuilt deployment timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_PREBUILT_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
 
       - name: Deploy the sealed prebuilt output
         id: deploy-preview
@@ -363,6 +383,15 @@ jobs:
             --meta "aquilaCandidateCommit=$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA" \
             > "$RUNNER_TEMP/release-gate-vercel/deploy.stdout" \
             2> "$RUNNER_TEMP/release-gate-vercel/deploy.stderr"
+
+      - name: Record prebuilt deployment timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: prebuilt-deployment
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_PREBUILT_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.deploy-preview.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
 
       - name: Attest prebuilt deployment binding
         id: deployment-attestation
@@ -413,7 +442,13 @@ jobs:
           mkdir -p .tmp/evidence
           bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-before "$RELEASE_GATE_INPUT_PREVIEW_ID"
 
+      - name: Start R2 deep verification timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_R2_DEEP_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Deep verify immutable production candidate
+        id: r2-deep-verification
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
@@ -427,12 +462,42 @@ jobs:
           RELEASE_GATE_R2_VERIFY_REPORT_PATH=.release-gate/evidence/r2-deep-report.json \
             bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-r2-candidate
 
+      - name: Record R2 deep verification timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: r2-deep-verification
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_R2_DEEP_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.r2-deep-verification.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start public candidate verification timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_PUBLIC_CANDIDATE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Verify public immutable candidate
+        id: public-candidate-verification
         env:
           RELEASE_GATE_PUBLIC_MODE: candidate
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
 
+      - name: Record public candidate verification timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: public-candidate-verification
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_PUBLIC_CANDIDATE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.public-candidate-verification.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start R2 preview mirror timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_R2_MIRROR_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Mirror immutable candidate to explicit preview
+        id: r2-preview-mirror
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
@@ -444,7 +509,22 @@ jobs:
             --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
             --destination r2 --json > .release-gate/evidence/mirror-preview.json
 
+      - name: Record R2 preview mirror timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: r2-preview-mirror
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_R2_MIRROR_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.r2-preview-mirror.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start R2 preview activation timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_R2_ACTIVATE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Activate immutable candidate in preview only
+        id: r2-preview-activation
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
@@ -456,10 +536,39 @@ jobs:
             --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
             --destination r2 --json > .release-gate/evidence/activate-preview.json
 
+      - name: Record R2 preview activation timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: r2-preview-activation
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_R2_ACTIVATE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.r2-preview-activation.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start public active verification timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_PUBLIC_ACTIVE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Verify public active preview
+        id: public-active-verification
         env:
           RELEASE_GATE_PUBLIC_MODE: active
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Record public active verification timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: public-active-verification
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_PUBLIC_ACTIVE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.public-active-verification.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start browser release flow timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_BROWSER_RELEASE_FLOW_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
 
       - name: Run remote browser release flow
         id: browser-release-flow
@@ -475,10 +584,25 @@ jobs:
           AQUILA_PRODUCTION_WEB_ORIGIN: ${{ env.RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN }}
         run: bun --filter e2e test:release-gate
 
+      - name: Record browser release flow timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: browser-release-flow
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_BROWSER_RELEASE_FLOW_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.browser-release-flow.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
       - name: Extract settled deployed web identity
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts extract-web-identity
 
+      - name: Start production pointer finalization timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_POINTER_FINALIZATION_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Capture production pointer after live work
+        id: pointer-after
         if: ${{ always() && steps.pointer-proof-initialized.outcome == 'success' }}
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
@@ -487,12 +611,22 @@ jobs:
         run: bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-after "$RELEASE_GATE_INPUT_PREVIEW_ID"
 
       - name: Finalize production pointer proof
+        id: pointer-proof-finalized
         if: ${{ always() }}
         continue-on-error: true
         env:
           RELEASE_GATE_POINTER_BEFORE_PATH: .tmp/evidence/production-pointer-before.json
           RELEASE_GATE_POINTER_AFTER_PATH: .tmp/evidence/production-pointer-after.json
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts finalize-production-pointer-proof
+
+      - name: Record production pointer finalization timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: production-pointer-finalization
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_POINTER_FINALIZATION_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.pointer-proof-finalized.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
 
       - name: Require proven unchanged production pointer
         if: ${{ success() }}
@@ -680,7 +814,13 @@ jobs:
             echo "playwright_version=$(node -p 'require("./node_modules/@playwright/test/package.json").version')"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Start Tier 1 reuse timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_TIER1_REUSE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Validate retained Tier 1 reuse
+        id: tier1-reuse
         env:
           RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
           RELEASE_GATE_TIER1_RUNTIME_BUN_VERSION: ${{ steps.tier1-runtime.outputs.bun_version }}
@@ -688,11 +828,25 @@ jobs:
           RELEASE_GATE_TIER1_RUNTIME_PLAYWRIGHT_VERSION: ${{ steps.tier1-runtime.outputs.playwright_version }}
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts validate-tier1-reuse
 
+      - name: Record Tier 1 reuse timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: tier1-reuse
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_TIER1_REUSE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.tier1-reuse.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
       - name: Rehash sealed output immediately before deploy
         env:
           RELEASE_GATE_SEALED_ARTIFACT_ROOT: ${{ runner.temp }}/release-gate-sealed-candidate
           RELEASE_GATE_OUTPUT_CHECK_PHASE: predeploy
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-sealed-output
+
+      - name: Start prebuilt deployment timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_PREBUILT_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
 
       - name: Deploy the sealed prebuilt output
         id: deploy-preview
@@ -708,6 +862,15 @@ jobs:
             --meta "aquilaCandidateCommit=$RELEASE_GATE_INPUT_CANDIDATE_COMMIT_SHA" \
             > "$RUNNER_TEMP/release-gate-vercel/deploy.stdout" \
             2> "$RUNNER_TEMP/release-gate-vercel/deploy.stderr"
+
+      - name: Record prebuilt deployment timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: prebuilt-deployment
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_PREBUILT_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.deploy-preview.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
 
       - name: Attest prebuilt deployment binding
         id: deployment-attestation
@@ -758,7 +921,13 @@ jobs:
           mkdir -p .tmp/evidence
           bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-before "$RELEASE_GATE_INPUT_PREVIEW_ID"
 
+      - name: Start R2 deep verification timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_R2_DEEP_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Deep verify immutable production candidate
+        id: r2-deep-verification
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
@@ -772,12 +941,42 @@ jobs:
           RELEASE_GATE_R2_VERIFY_REPORT_PATH=.release-gate/evidence/r2-deep-report.json \
             bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-r2-candidate
 
+      - name: Record R2 deep verification timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: r2-deep-verification
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_R2_DEEP_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.r2-deep-verification.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start public candidate verification timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_PUBLIC_CANDIDATE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Verify public immutable candidate
+        id: public-candidate-verification
         env:
           RELEASE_GATE_PUBLIC_MODE: candidate
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
 
+      - name: Record public candidate verification timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: public-candidate-verification
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_PUBLIC_CANDIDATE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.public-candidate-verification.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start R2 preview mirror timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_R2_MIRROR_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Mirror immutable candidate to explicit preview
+        id: r2-preview-mirror
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
@@ -789,7 +988,22 @@ jobs:
             --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
             --destination r2 --json > .release-gate/evidence/mirror-preview.json
 
+      - name: Record R2 preview mirror timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: r2-preview-mirror
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_R2_MIRROR_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.r2-preview-mirror.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start R2 preview activation timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_R2_ACTIVATE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Activate immutable candidate in preview only
+        id: r2-preview-activation
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_SECRET_ACCESS_KEY }}
@@ -801,10 +1015,39 @@ jobs:
             --expect-manifest-sha256 "$RELEASE_GATE_INPUT_MANIFEST_SHA256" \
             --destination r2 --json > .release-gate/evidence/activate-preview.json
 
+      - name: Record R2 preview activation timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: r2-preview-activation
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_R2_ACTIVATE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.r2-preview-activation.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start public active verification timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_PUBLIC_ACTIVE_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Verify public active preview
+        id: public-active-verification
         env:
           RELEASE_GATE_PUBLIC_MODE: active
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts verify-public
+
+      - name: Record public active verification timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: public-active-verification
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_PUBLIC_ACTIVE_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.public-active-verification.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
+      - name: Start browser release flow timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_BROWSER_RELEASE_FLOW_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
 
       - name: Run remote browser release flow
         id: browser-release-flow
@@ -820,10 +1063,25 @@ jobs:
           AQUILA_PRODUCTION_WEB_ORIGIN: ${{ env.RELEASE_GATE_INPUT_PRODUCTION_WEB_ORIGIN }}
         run: bun --filter e2e test:release-gate
 
+      - name: Record browser release flow timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: browser-release-flow
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_BROWSER_RELEASE_FLOW_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.browser-release-flow.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
+
       - name: Extract settled deployed web identity
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts extract-web-identity
 
+      - name: Start production pointer finalization timing
+        if: ${{ always() }}
+        shell: bash
+        run: echo "RELEASE_GATE_POINTER_FINALIZATION_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')" >> "$GITHUB_ENV"
+
       - name: Capture production pointer after live work
+        id: pointer-after
         if: ${{ always() && steps.pointer-proof-initialized.outcome == 'success' }}
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.RELEASE_GATE_R2_PUBLISHER_ACCESS_KEY_ID }}
@@ -832,12 +1090,22 @@ jobs:
         run: bun packages/infra-cloudflare/src/publisher/r2-gate-capture-state.ts production-pointer-after "$RELEASE_GATE_INPUT_PREVIEW_ID"
 
       - name: Finalize production pointer proof
+        id: pointer-proof-finalized
         if: ${{ always() }}
         continue-on-error: true
         env:
           RELEASE_GATE_POINTER_BEFORE_PATH: .tmp/evidence/production-pointer-before.json
           RELEASE_GATE_POINTER_AFTER_PATH: .tmp/evidence/production-pointer-after.json
         run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts finalize-production-pointer-proof
+
+      - name: Record production pointer finalization timing
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          RELEASE_GATE_STAGE_NAME: production-pointer-finalization
+          RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: ${{ env.RELEASE_GATE_POINTER_FINALIZATION_STARTED_AT_NANOSECONDS }}
+          RELEASE_GATE_STAGE_STATUS: ${{ steps.pointer-proof-finalized.outcome }}
+        run: bun packages/infra-cloudflare/scripts/release-gate-workflow-evidence.ts record-stage-timing
 
       - name: Require proven unchanged production pointer
         if: ${{ success() }}

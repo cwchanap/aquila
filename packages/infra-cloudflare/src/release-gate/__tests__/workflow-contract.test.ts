@@ -6,6 +6,7 @@ import {
     parseReleaseGateTarV1,
     parseReleaseGateWorkflowInputs,
     parseVercelDeploymentStdout,
+    validateCandidateEntryWorkflowProvenance,
     validateReleaseGateArtifactProvenance,
 } from '../../../scripts/release-gate-workflow-evidence';
 import { validReleaseId } from '../__fixtures__/valid-evidence';
@@ -50,6 +51,7 @@ const validInputs = {
 } as const;
 
 type WorkflowStep = {
+    'continue-on-error'?: boolean;
     env?: Record<string, unknown>;
     id?: string;
     if?: string;
@@ -178,6 +180,143 @@ describe('release-gate workflow evidence', () => {
                 expected
             )
         ).toThrow(/main/i);
+    });
+
+    it('accepts real Candidate Entry REST and runtime refs and rejects wrong file, ref, or repository provenance', () => {
+        const repository = 'hapadona/aquila';
+        const workflowSha = 'b'.repeat(40);
+        const workflowRun = {
+            id: 8_765_432_109,
+            run_attempt: 2,
+            name: 'Visual Novel Release Candidate Entry',
+            event: 'workflow_dispatch',
+            conclusion: 'success',
+            head_branch: 'main',
+            head_sha: workflowSha,
+            path: '.github/workflows/visual-novel-release-gate.yml',
+            repository: { full_name: repository },
+        };
+        const event = {
+            action: 'completed',
+            repository: { full_name: repository },
+            workflow_run: workflowRun,
+        };
+        const run = {
+            ...workflowRun,
+            path: '.github/workflows/visual-novel-release-gate.yml@main',
+        };
+        const request = {
+            schemaVersion: 1,
+            source: {
+                repository,
+                workflowRef:
+                    'hapadona/aquila/.github/workflows/visual-novel-release-gate.yml@refs/heads/main',
+                workflowSha,
+                runId: '8765432109',
+                runAttempt: 2,
+            },
+            input: validInputs,
+        };
+        const expected = {
+            repository,
+            upstreamRunId: '8765432109',
+        };
+
+        expect(
+            validateCandidateEntryWorkflowProvenance(
+                event,
+                run,
+                request,
+                expected
+            )
+        ).toMatchObject({
+            runId: '8765432109',
+            runAttempt: 2,
+            headSha: workflowSha,
+        });
+
+        const invalidVariants = [
+            {
+                event: {
+                    ...event,
+                    workflow_run: {
+                        ...workflowRun,
+                        path: '.github/workflows/visual-novel-release-live.yml',
+                    },
+                },
+                run,
+                request,
+            },
+            {
+                event,
+                run: {
+                    ...run,
+                    path: '.github/workflows/visual-novel-release-live.yml@main',
+                },
+                request,
+            },
+            {
+                event,
+                run,
+                request: {
+                    ...request,
+                    source: {
+                        ...request.source,
+                        workflowRef:
+                            'hapadona/aquila/.github/workflows/visual-novel-release-live.yml@refs/heads/main',
+                    },
+                },
+            },
+            {
+                event,
+                run,
+                request: {
+                    ...request,
+                    source: {
+                        ...request.source,
+                        workflowRef:
+                            'hapadona/aquila/.github/workflows/visual-novel-release-gate.yml@refs/heads/release',
+                    },
+                },
+            },
+            {
+                event: {
+                    ...event,
+                    repository: { full_name: 'attacker/aquila' },
+                },
+                run,
+                request,
+            },
+            {
+                event,
+                run: {
+                    ...run,
+                    repository: { full_name: 'attacker/aquila' },
+                },
+                request,
+            },
+            {
+                event,
+                run,
+                request: {
+                    ...request,
+                    source: {
+                        ...request.source,
+                        repository: 'attacker/aquila',
+                    },
+                },
+            },
+        ];
+        for (const variant of invalidVariants) {
+            expect(() =>
+                validateCandidateEntryWorkflowProvenance(
+                    variant.event,
+                    variant.run,
+                    variant.request,
+                    expected
+                )
+            ).toThrow(/exact successful main dispatch/i);
+        }
     });
 });
 
@@ -349,5 +488,150 @@ describe('visual-novel release trust-boundary workflow contract', () => {
         expect(helper).toContain('validateUpstreamCandidateEntry');
         expect(helper).toContain('materializeCandidateEntryManualReview');
         expect(helper).toContain('visual-novel-release-live.yml');
+    });
+
+    it('records individual monotonic live-stage timings with failure and skipped outcomes in both protected lanes', () => {
+        const live = loadWorkflow(LIVE_WORKFLOW_PATH);
+        const stages = [
+            {
+                start: 'Start Tier 1 reuse timing',
+                work: 'Validate retained Tier 1 reuse',
+                finish: 'Record Tier 1 reuse timing',
+                variable: 'RELEASE_GATE_TIER1_REUSE_STARTED_AT_NANOSECONDS',
+                stage: 'tier1-reuse',
+                stepId: 'tier1-reuse',
+            },
+            {
+                start: 'Start prebuilt deployment timing',
+                work: 'Deploy the sealed prebuilt output',
+                finish: 'Record prebuilt deployment timing',
+                variable: 'RELEASE_GATE_PREBUILT_STARTED_AT_NANOSECONDS',
+                stage: 'prebuilt-deployment',
+                stepId: 'deploy-preview',
+            },
+            {
+                start: 'Start R2 deep verification timing',
+                work: 'Deep verify immutable production candidate',
+                finish: 'Record R2 deep verification timing',
+                variable: 'RELEASE_GATE_R2_DEEP_STARTED_AT_NANOSECONDS',
+                stage: 'r2-deep-verification',
+                stepId: 'r2-deep-verification',
+            },
+            {
+                start: 'Start public candidate verification timing',
+                work: 'Verify public immutable candidate',
+                finish: 'Record public candidate verification timing',
+                variable:
+                    'RELEASE_GATE_PUBLIC_CANDIDATE_STARTED_AT_NANOSECONDS',
+                stage: 'public-candidate-verification',
+                stepId: 'public-candidate-verification',
+            },
+            {
+                start: 'Start R2 preview mirror timing',
+                work: 'Mirror immutable candidate to explicit preview',
+                finish: 'Record R2 preview mirror timing',
+                variable: 'RELEASE_GATE_R2_MIRROR_STARTED_AT_NANOSECONDS',
+                stage: 'r2-preview-mirror',
+                stepId: 'r2-preview-mirror',
+            },
+            {
+                start: 'Start R2 preview activation timing',
+                work: 'Activate immutable candidate in preview only',
+                finish: 'Record R2 preview activation timing',
+                variable: 'RELEASE_GATE_R2_ACTIVATE_STARTED_AT_NANOSECONDS',
+                stage: 'r2-preview-activation',
+                stepId: 'r2-preview-activation',
+            },
+            {
+                start: 'Start public active verification timing',
+                work: 'Verify public active preview',
+                finish: 'Record public active verification timing',
+                variable: 'RELEASE_GATE_PUBLIC_ACTIVE_STARTED_AT_NANOSECONDS',
+                stage: 'public-active-verification',
+                stepId: 'public-active-verification',
+            },
+            {
+                start: 'Start browser release flow timing',
+                work: 'Run remote browser release flow',
+                finish: 'Record browser release flow timing',
+                variable:
+                    'RELEASE_GATE_BROWSER_RELEASE_FLOW_STARTED_AT_NANOSECONDS',
+                stage: 'browser-release-flow',
+                stepId: 'browser-release-flow',
+            },
+        ] as const;
+
+        for (const laneName of ['prepare-live', 'finalize-live'] as const) {
+            const lane = live.jobs[laneName]!;
+            const steps = lane.steps ?? [];
+            for (const expected of stages) {
+                const start = byName(lane, expected.start);
+                const work = byName(lane, expected.work);
+                const finish = byName(lane, expected.finish);
+                expect(start?.if).toBe('${{ always() }}');
+                expect(start?.run).toContain(
+                    `${expected.variable}=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')`
+                );
+                expect(work?.id).toBe(expected.stepId);
+                expect(finish?.if).toBe('${{ always() }}');
+                expect(finish?.['continue-on-error']).toBe(true);
+                expect(finish?.env).toEqual({
+                    RELEASE_GATE_STAGE_NAME: expected.stage,
+                    RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS: `\${{ env.${expected.variable} }}`,
+                    RELEASE_GATE_STAGE_STATUS: `\${{ steps.${expected.stepId}.outcome }}`,
+                });
+                expect(finish?.run).toContain('record-stage-timing');
+                expect(steps.indexOf(start!)).toBeLessThan(
+                    steps.indexOf(work!)
+                );
+                expect(steps.indexOf(work!)).toBeLessThan(
+                    steps.indexOf(finish!)
+                );
+            }
+
+            const pointerStart = byName(
+                lane,
+                'Start production pointer finalization timing'
+            );
+            const pointerAfter = byName(
+                lane,
+                'Capture production pointer after live work'
+            );
+            const pointerFinalize = byName(
+                lane,
+                'Finalize production pointer proof'
+            );
+            const pointerFinish = byName(
+                lane,
+                'Record production pointer finalization timing'
+            );
+            expect(pointerStart?.if).toBe('${{ always() }}');
+            expect(pointerStart?.run).toContain(
+                "RELEASE_GATE_POINTER_FINALIZATION_STARTED_AT_NANOSECONDS=$(bun --eval 'process.stdout.write(process.hrtime.bigint().toString())')"
+            );
+            expect(pointerAfter?.id).toBe('pointer-after');
+            expect(pointerFinalize?.id).toBe('pointer-proof-finalized');
+            expect(pointerFinalize?.if).toBe('${{ always() }}');
+            expect(pointerFinish).toMatchObject({
+                if: '${{ always() }}',
+                'continue-on-error': true,
+                env: {
+                    RELEASE_GATE_STAGE_NAME: 'production-pointer-finalization',
+                    RELEASE_GATE_STAGE_STARTED_AT_NANOSECONDS:
+                        '${{ env.RELEASE_GATE_POINTER_FINALIZATION_STARTED_AT_NANOSECONDS }}',
+                    RELEASE_GATE_STAGE_STATUS:
+                        '${{ steps.pointer-proof-finalized.outcome }}',
+                },
+            });
+            expect(steps.indexOf(pointerStart!)).toBeLessThan(
+                steps.indexOf(pointerAfter!)
+            );
+            expect(steps.indexOf(pointerAfter!)).toBeLessThan(
+                steps.indexOf(pointerFinalize!)
+            );
+            expect(steps.indexOf(pointerFinalize!)).toBeLessThan(
+                steps.indexOf(pointerFinish!)
+            );
+        }
     });
 });

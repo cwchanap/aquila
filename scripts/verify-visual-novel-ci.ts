@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { Client } from 'pg';
+import { parse as parsePostgresConnectionString } from 'pg-connection-string';
 import { canonicalJson, type JsonValue } from '@aquila/stories/runtime-assets';
 import {
     parseTier1EvidenceV1,
@@ -15,6 +16,25 @@ const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TEST_DATABASE_NAME = 'aquila_e2e';
 const LOCAL_DATABASE_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 const DATABASE_ENVIRONMENT_EXIT_CODE = 3;
+const EVIDENCE_INTEGRITY_EXIT_CODE = 2;
+const LOCAL_E2E_BASE_URL = 'http://localhost:5090';
+const TIER1_E2E_EXCLUDED_ENVIRONMENT_VARIABLES = [
+    'AQUILA_PRODUCTION_WEB_ORIGIN',
+    'BASE_URL',
+    'BETTER_AUTH_URL',
+    'POSTGRES_URL',
+    'PUBLIC_ASSET_BASE_URL',
+    'PUBLIC_ASSET_ENVIRONMENT',
+    'PUBLIC_ASSET_PREVIEW_ID',
+    'PUBLIC_AUTH_URL',
+    'RELEASE_GATE_TARGET',
+    'TRUSTED_ORIGINS',
+    'VERCEL_BRANCH_URL',
+    'VERCEL_PROJECT_PRODUCTION_URL',
+    'VERCEL_URL',
+    'aquila_DATABASE_URL',
+    'aquila_POSTGRES_URL',
+] as const;
 
 export type Tier1Command = readonly string[];
 
@@ -31,6 +51,7 @@ export interface Tier1Stage {
     readonly name: Tier1StageName;
     readonly command: Tier1Command;
     readonly cwd?: 'apps/web';
+    readonly env?: NodeJS.ProcessEnv;
 }
 
 export interface Tier1DatabaseProbeResult {
@@ -53,6 +74,7 @@ export interface Tier1EvidenceMetadata {
 }
 
 export interface Tier1Dependencies {
+    readonly isCheckoutClean: () => Promise<boolean>;
     readonly probeDatabase: () => Promise<Tier1DatabaseProbeResult>;
     readonly runCommand: (stage: Tier1Stage) => Promise<Tier1CommandResult>;
     readonly createEvidence: () => Promise<Tier1EvidenceV1>;
@@ -99,6 +121,7 @@ function createDefaultDatabaseClient(
 function validateTier1DatabaseTarget(
     connectionString: string
 ): string | undefined {
+    let effectiveConnection: ReturnType<typeof parsePostgresConnectionString>;
     try {
         const parsed = new URL(connectionString);
         if (
@@ -108,17 +131,27 @@ function validateTier1DatabaseTarget(
             return 'DATABASE_URL must use a PostgreSQL URL';
         }
 
-        const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
-        if (!LOCAL_DATABASE_HOSTS.has(host)) {
-            return 'DATABASE_URL must target a local PostgreSQL service';
-        }
-
-        const databaseName = decodeURIComponent(parsed.pathname.slice(1));
-        if (databaseName !== TEST_DATABASE_NAME) {
-            return `DATABASE_URL must target the ${TEST_DATABASE_NAME} test database`;
-        }
+        effectiveConnection = parsePostgresConnectionString(connectionString);
     } catch {
         return 'DATABASE_URL must be a valid PostgreSQL URL';
+    }
+
+    const host = effectiveConnection.host
+        ?.toLowerCase()
+        .replace(/^\[|\]$/g, '');
+    if (!host || !LOCAL_DATABASE_HOSTS.has(host)) {
+        return 'DATABASE_URL must target a local PostgreSQL service';
+    }
+
+    if (
+        typeof effectiveConnection.hostaddr === 'string' ||
+        typeof effectiveConnection.socket === 'string'
+    ) {
+        return 'DATABASE_URL must not use host-address or socket overrides';
+    }
+
+    if (effectiveConnection.database !== TEST_DATABASE_NAME) {
+        return `DATABASE_URL must target the ${TEST_DATABASE_NAME} test database`;
     }
 
     return undefined;
@@ -199,6 +232,27 @@ export function buildTier1Commands(): Tier1Command[] {
     ];
 }
 
+function buildTier1E2eEnvironment(
+    environment: NodeJS.ProcessEnv = process.env
+): NodeJS.ProcessEnv {
+    const e2eEnvironment = { ...environment };
+    for (const name of TIER1_E2E_EXCLUDED_ENVIRONMENT_VARIABLES) {
+        delete e2eEnvironment[name];
+    }
+
+    const databaseUrl = environment.DATABASE_URL?.trim();
+    if (databaseUrl && !validateTier1DatabaseTarget(databaseUrl)) {
+        e2eEnvironment.DATABASE_URL = databaseUrl;
+    } else {
+        delete e2eEnvironment.DATABASE_URL;
+    }
+    e2eEnvironment.BASE_URL = LOCAL_E2E_BASE_URL;
+    e2eEnvironment.CI = 'true';
+    e2eEnvironment.NODE_ENV = environment.NODE_ENV?.trim() || 'test';
+
+    return e2eEnvironment;
+}
+
 function buildTier1Stages(): Tier1Stage[] {
     const [
         compile,
@@ -219,10 +273,15 @@ function buildTier1Stages(): Tier1Stage[] {
         { name: 'stories-tests', command: storiesTests },
         { name: 'web-tests', command: webTests },
         { name: 'infra-tests', command: infraTests },
-        { name: 'reader-visual-e2e', command: readerVisualE2e },
+        {
+            name: 'reader-visual-e2e',
+            command: readerVisualE2e,
+            env: buildTier1E2eEnvironment(),
+        },
         {
             name: 'reader-lazy-loading-e2e',
             command: readerLazyLoadingE2e,
+            env: buildTier1E2eEnvironment(),
         },
     ];
 }
@@ -253,6 +312,7 @@ async function runDefaultCommand(
                 cwd: stage.cwd
                     ? resolve(REPOSITORY_ROOT, stage.cwd)
                     : REPOSITORY_ROOT,
+                env: stage.env ?? process.env,
                 stdio: 'inherit',
             });
             child.once('error', () => resolveCommand({ exitCode: null }));
@@ -287,6 +347,23 @@ function readCurrentCommitSha(): string {
         );
     }
     return commitSha;
+}
+
+function isDefaultCheckoutClean(): boolean {
+    const result = spawnSync(
+        'git',
+        ['status', '--porcelain=v1', '--untracked-files=all'],
+        {
+            cwd: REPOSITORY_ROOT,
+            encoding: 'utf8',
+        }
+    );
+    if (result.status !== 0 || result.error) {
+        throw new Error(
+            'Unable to verify checkout cleanliness for Tier 1 evidence'
+        );
+    }
+    return result.stdout === '';
 }
 
 async function createDefaultEvidence(): Promise<Tier1EvidenceV1> {
@@ -346,6 +423,7 @@ async function appendDefaultWorkflowSummary(digest: string): Promise<void> {
 
 function createDefaultDependencies(): Tier1Dependencies {
     return {
+        isCheckoutClean: async () => isDefaultCheckoutClean(),
         probeDatabase: () => probeTier1Database(),
         runCommand: runDefaultCommand,
         createEvidence: createDefaultEvidence,
@@ -373,6 +451,29 @@ function canonicalEvidenceContent(evidence: Tier1EvidenceV1): {
     };
 }
 
+async function ensureCleanCheckoutForEvidence(
+    dependencies: Tier1Dependencies
+): Promise<Tier1RunResult | undefined> {
+    let isClean: boolean;
+    try {
+        isClean = await dependencies.isCheckoutClean();
+    } catch {
+        dependencies.writeStderr(
+            '[tier1:evidence] unable to verify checkout cleanliness\n'
+        );
+        return { exitCode: 1 };
+    }
+
+    if (!isClean) {
+        dependencies.writeStderr(
+            '[tier1:evidence] refusing to emit evidence from a dirty checkout\n'
+        );
+        return { exitCode: EVIDENCE_INTEGRITY_EXIT_CODE };
+    }
+
+    return undefined;
+}
+
 export async function runTier1(
     options: Tier1RunOptions,
     dependencies: Tier1Dependencies = createDefaultDependencies()
@@ -382,6 +483,12 @@ export async function runTier1(
     }
     if (options.evidencePath) {
         assertEvidencePath(options.evidencePath);
+    }
+
+    if (options.evidencePath) {
+        const evidenceCheckoutProblem =
+            await ensureCleanCheckoutForEvidence(dependencies);
+        if (evidenceCheckoutProblem) return evidenceCheckoutProblem;
     }
 
     const stages = buildTier1Stages();
@@ -436,6 +543,10 @@ export async function runTier1(
     if (!options.evidencePath) {
         return { exitCode: 0 };
     }
+
+    const evidenceCheckoutProblem =
+        await ensureCleanCheckoutForEvidence(dependencies);
+    if (evidenceCheckoutProblem) return evidenceCheckoutProblem;
 
     try {
         const evidence = parseTier1EvidenceV1(

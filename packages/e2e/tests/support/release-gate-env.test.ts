@@ -10,6 +10,7 @@ const RELEASE_ID = `sha256-${SHA_A}`;
 
 const PREVIEW_ENV = {
     BASE_URL: 'https://preview.example.test',
+    PUBLIC_ASSET_BASE_URL: 'https://assets.example.test',
     RELEASE_GATE_TARGET: 'preview',
     RELEASE_GATE_STORY_ID: 'hpa_233_fixture',
     RELEASE_GATE_PREVIEW_ID: 'hpa-233-fixture',
@@ -71,6 +72,7 @@ describe('release-gate environment and scenario parsing', () => {
         expect(parseReleaseGateEnv(PREVIEW_ENV)).toMatchObject({
             target: 'preview',
             webBaseUrl: 'https://preview.example.test',
+            assetBaseUrl: 'https://assets.example.test',
             storyId: 'hpa_233_fixture',
             publicationTarget: {
                 kind: 'preview',
@@ -85,19 +87,26 @@ describe('release-gate environment and scenario parsing', () => {
         });
     });
 
-    it('retains BASE_URL as one canonical deployed origin', () => {
-        expect(
-            parseReleaseGateEnv({
-                ...PREVIEW_ENV,
-                BASE_URL: 'https://PREVIEW.example.test:443/',
-            }).webBaseUrl
-        ).toBe('https://preview.example.test');
-        expect(() =>
-            parseReleaseGateEnv({
-                ...PREVIEW_ENV,
-                BASE_URL: 'https://preview.example.test/reader',
-            })
-        ).toThrow(/origin/i);
+    it('retains web and asset base URLs as canonical HTTPS origins', () => {
+        const parsed = parseReleaseGateEnv({
+            ...PREVIEW_ENV,
+            BASE_URL: 'https://PREVIEW.example.test:443/',
+            PUBLIC_ASSET_BASE_URL: 'https://ASSETS.example.test:443/',
+        });
+        expect(parsed.webBaseUrl).toBe('https://preview.example.test');
+        expect(parsed.assetBaseUrl).toBe('https://assets.example.test');
+
+        for (const invalid of [
+            { BASE_URL: 'https://preview.example.test/reader' },
+            {
+                PUBLIC_ASSET_BASE_URL:
+                    'https://assets.example.test/runtime-manifest.json',
+            },
+        ]) {
+            expect(() =>
+                parseReleaseGateEnv({ ...PREVIEW_ENV, ...invalid })
+            ).toThrow(/origin/i);
+        }
     });
 
     it('strictly parses a scenario, binds it to the requested story, and hashes canonical JSON', () => {

@@ -209,7 +209,9 @@ export function renderGateHumanReport(report: unknown): string {
         `status: ${safe.status}`,
         `story: ${safe.storyId}`,
         `target: ${safe.target.kind}`,
-        `preview: ${safe.previewId}`,
+        ...(safe.target.kind === 'preview' && safe.previewId !== undefined
+            ? [`preview: ${safe.previewId}`]
+            : []),
         `release: ${safe.releaseId}`,
         `checksum: ${safe.manifestSha256}`,
         `commit: ${safe.commitSha}`,

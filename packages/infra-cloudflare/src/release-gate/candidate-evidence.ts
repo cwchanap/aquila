@@ -56,7 +56,8 @@ function countIdentitiesByType(
 ): Record<'background' | 'portrait', number> {
     const counts = { background: 0, portrait: 0 };
     for (const identity of identities) {
-        const type = identity.slice(0, identity.indexOf(':'));
+        const separator = identity.indexOf(':');
+        const type = separator === -1 ? '' : identity.slice(0, separator);
         if (type !== 'background' && type !== 'portrait') {
             return fail('Publisher coverage actions contain an invalid type');
         }

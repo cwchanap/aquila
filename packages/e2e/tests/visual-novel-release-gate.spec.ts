@@ -151,6 +151,7 @@ test.describe('deployed visual-novel preview release gate', () => {
                     storyId: releaseGate.env.storyId,
                     target: releaseGate.env.publicationTarget,
                     releaseId: releaseGate.env.expectedIdentity.releaseId,
+                    assetBaseUrl: releaseGate.env.assetBaseUrl,
                 });
                 expect(requestPaths.pointerRequestUrl).not.toBeNull();
                 expect(requestPaths.manifestRequestUrl).not.toBeNull();
@@ -176,6 +177,8 @@ test.describe('deployed visual-novel preview release gate', () => {
                 const priorBackground =
                     await activeBackground.getAttribute('src');
                 const priorPortrait = await portrait.getAttribute('src');
+                expect(priorBackground).toBeTruthy();
+                expect(priorPortrait).toBeTruthy();
 
                 await advanceTo(page, to);
                 await expect(activeBackground).toHaveAttribute(
@@ -189,13 +192,13 @@ test.describe('deployed visual-novel preview release gate', () => {
                 if (backgroundChanges) {
                     await expect(activeBackground).not.toHaveAttribute(
                         'src',
-                        priorBackground ?? ''
+                        priorBackground!
                     );
                 }
                 if (portraitChanges) {
                     await expect(portrait).not.toHaveAttribute(
                         'src',
-                        priorPortrait ?? ''
+                        priorPortrait!
                     );
                 }
                 await expectSettledIdentity(page);
@@ -313,6 +316,7 @@ test.describe('deployed visual-novel preview release gate', () => {
                     storyId: releaseGate.env.storyId,
                     target: releaseGate.env.publicationTarget,
                     releaseId: releaseGate.env.expectedIdentity.releaseId,
+                    assetBaseUrl: releaseGate.env.assetBaseUrl,
                 });
             });
         } catch (error) {

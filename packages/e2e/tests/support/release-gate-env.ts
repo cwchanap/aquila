@@ -25,6 +25,7 @@ export type ExpectedWebIdentity = {
 export type ParsedReleaseGateEnv = {
     target: 'preview' | 'production';
     webBaseUrl: string;
+    assetBaseUrl: string;
     storyId: string;
     publicationTarget: PublicationTarget;
     expectedIdentity: ExpectedWebIdentity;
@@ -62,12 +63,12 @@ function optional(
     return value === undefined || value === '' ? undefined : value;
 }
 
-function canonicalDeployedOrigin(value: string): string {
+function canonicalHttpsOrigin(value: string, name: string): string {
     let url: URL;
     try {
         url = new URL(value);
     } catch {
-        throw new Error('BASE_URL must be a canonical HTTPS origin');
+        throw new Error(`${name} must be a canonical HTTPS origin`);
     }
     if (
         url.protocol !== 'https:' ||
@@ -77,7 +78,7 @@ function canonicalDeployedOrigin(value: string): string {
         url.search !== '' ||
         url.hash !== ''
     ) {
-        throw new Error('BASE_URL must be a canonical HTTPS origin');
+        throw new Error(`${name} must be a canonical HTTPS origin`);
     }
     return url.origin;
 }
@@ -107,7 +108,11 @@ export function buildReleaseGateReaderRoute(
 export function parseReleaseGateEnv(
     env: ReleaseGateEnvironment
 ): ParsedReleaseGateEnv {
-    const webBaseUrl = canonicalDeployedOrigin(required(env, 'BASE_URL'));
+    const webBaseUrl = canonicalHttpsOrigin(required(env, 'BASE_URL'), 'BASE_URL');
+    const assetBaseUrl = canonicalHttpsOrigin(
+        required(env, 'PUBLIC_ASSET_BASE_URL'),
+        'PUBLIC_ASSET_BASE_URL'
+    );
     const target = required(env, 'RELEASE_GATE_TARGET');
     if (target !== 'preview' && target !== 'production') {
         throw new Error('RELEASE_GATE_TARGET must be preview or production');
@@ -136,9 +141,6 @@ export function parseReleaseGateEnv(
         );
     }
 
-    // Reuse the Task 1 strict identity parser rather than inventing another
-    // release/checksum grammar in the E2E package. The placeholder URLs are
-    // parser inputs only; Task 8 records the real browser-observed URLs later.
     const parsedIdentity = parseWebIdentityEvidenceV1({
         schemaVersion: 1,
         target,
@@ -155,6 +157,7 @@ export function parseReleaseGateEnv(
     return {
         target,
         webBaseUrl,
+        assetBaseUrl,
         storyId,
         publicationTarget,
         expectedIdentity: {
@@ -203,8 +206,10 @@ export async function loadReleaseGateRunContext(
     let text: string;
     try {
         text = await readFile(parsedEnv.scenarioPath, 'utf8');
-    } catch {
-        throw new Error('RELEASE_GATE_SCENARIO could not be read');
+    } catch (error) {
+        throw new Error('RELEASE_GATE_SCENARIO could not be read', {
+            cause: error,
+        });
     }
 
     return {

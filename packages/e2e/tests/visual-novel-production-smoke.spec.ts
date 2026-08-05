@@ -122,6 +122,7 @@ test.describe('deployed visual-novel production smoke', () => {
                     storyId: releaseGate.env.storyId,
                     target: releaseGate.env.publicationTarget,
                     releaseId: releaseGate.env.expectedIdentity.releaseId,
+                    assetBaseUrl: releaseGate.env.assetBaseUrl,
                 });
             });
 

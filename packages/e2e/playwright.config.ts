@@ -1,11 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const LOCAL_E2E_TEST_IGNORE = [
+    /[\\/]tests[\\/]support[\\/].*\.test\.ts$/,
+    /[\\/]tests[\\/]visual-novel-(?:release-gate|production-smoke)\.spec\.ts$/,
+];
+
 export default defineConfig({
     testDir: './tests',
-    testIgnore: [
-        /[\\/]tests[\\/]support[\\/].*\.test\.ts$/,
-        /[\\/]tests[\\/]visual-novel-(?:release-gate|production-smoke)\.spec\.ts$/,
-    ],
+    testIgnore: LOCAL_E2E_TEST_IGNORE,
     globalSetup: './tests/global-setup.ts',
     webServer: {
         command: 'cd ../../apps/web && bun run dev',
@@ -34,17 +36,22 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-            testIgnore: /reader-mobile\.spec\.ts/,
+            testIgnore: [
+                ...LOCAL_E2E_TEST_IGNORE,
+                /reader-mobile\.spec\.ts/,
+            ],
         },
         {
             name: 'mobile-chrome',
             use: { ...devices['Pixel 5'] },
             testMatch: /reader-(mobile|visual)\.spec\.ts/,
+            testIgnore: LOCAL_E2E_TEST_IGNORE,
         },
         {
             name: 'mobile-safari',
             use: { ...devices['iPhone 12'] },
             testMatch: /reader-(mobile|visual)\.spec\.ts/,
+            testIgnore: LOCAL_E2E_TEST_IGNORE,
         },
     ],
 });

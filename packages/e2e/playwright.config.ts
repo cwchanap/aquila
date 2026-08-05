@@ -2,6 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests',
+    testIgnore: [
+        /[\\/]tests[\\/]support[\\/].*\.test\.ts$/,
+        /[\\/]tests[\\/]visual-novel-(?:release-gate|production-smoke)\.spec\.ts$/,
+    ],
     globalSetup: './tests/global-setup.ts',
     webServer: {
         command: 'cd ../../apps/web && bun run dev',

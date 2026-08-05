@@ -23,6 +23,7 @@ type ExpectedRequestInput = {
     storyId: string;
     target: PublicationTarget;
     releaseId: string;
+    assetBaseUrl: string;
 };
 
 const previewScenarioCaseIds = [
@@ -57,9 +58,10 @@ function scenarioCaseIds(flow: BrowserEvidenceFlowV1): readonly string[] {
         : productionScenarioCaseIds;
 }
 
-function completeFailedScenarioCases(
+function completeScenarioCases(
     flow: BrowserEvidenceFlowV1,
-    scenarioCases: readonly ReleaseGateScenarioCase[]
+    scenarioCases: readonly ReleaseGateScenarioCase[],
+    status: 'passed' | 'failed'
 ): ReleaseGateScenarioCase[] {
     const supplied = new Map<string, ReleaseGateScenarioCase>();
     for (const scenarioCase of scenarioCases) {
@@ -73,6 +75,17 @@ function completeFailedScenarioCases(
         [...supplied.keys()].some(caseId => !expectedCaseIds.includes(caseId))
     ) {
         throw new Error('Release-gate scenario case id is not configured');
+    }
+    if (status === 'passed') {
+        if (
+            supplied.size !== expectedCaseIds.length ||
+            [...supplied.values()].some(item => item.status !== 'passed')
+        ) {
+            throw new Error(
+                'Passed release-gate evidence must contain every passed scenario case'
+            );
+        }
+        return expectedCaseIds.map(caseId => supplied.get(caseId)!);
     }
     return expectedCaseIds.map(
         caseId => supplied.get(caseId) ?? { id: caseId, status: 'not-run' }
@@ -141,20 +154,27 @@ export class ReleaseGateRequestRecorder {
             input.releaseId,
             input.target
         )}`;
-        const pointerRequestUrl = observedUrls.find(
-            url => new URL(url).pathname === pointerPath
+        const expectedAssetOrigin = new URL(input.assetBaseUrl).origin;
+        const matchesExpectedRequest = (value: string, pathname: string) => {
+            const url = new URL(value);
+            return (
+                url.origin === expectedAssetOrigin && url.pathname === pathname
+            );
+        };
+        const pointerRequestUrl = observedUrls.find(url =>
+            matchesExpectedRequest(url, pointerPath)
         );
-        const manifestRequestUrl = observedUrls.find(
-            url => new URL(url).pathname === manifestPath
+        const manifestRequestUrl = observedUrls.find(url =>
+            matchesExpectedRequest(url, manifestPath)
         );
         if (pointerRequestUrl === undefined) {
             throw new Error(
-                'Browser did not request the expected release pointer path'
+                'Browser did not request the expected release pointer origin and path'
             );
         }
         if (manifestRequestUrl === undefined) {
             throw new Error(
-                'Browser did not request the expected immutable manifest path'
+                'Browser did not request the expected immutable manifest origin and path'
             );
         }
 
@@ -196,6 +216,7 @@ export async function attachReleaseGateEvidence(
             storyId: env.storyId,
             target: env.publicationTarget,
             releaseId: env.expectedIdentity.releaseId,
+            assetBaseUrl: env.assetBaseUrl,
         });
     } catch (error) {
         if (status !== 'failed') throw error;
@@ -221,10 +242,11 @@ export async function attachReleaseGateEvidence(
             pointerRequestUrl: requestPaths.pointerRequestUrl,
             manifestRequestUrl: requestPaths.manifestRequestUrl,
         },
-        scenarioCases:
-            status === 'failed'
-                ? completeFailedScenarioCases(flow, input.scenarioCases)
-                : input.scenarioCases,
+        scenarioCases: completeScenarioCases(
+            flow,
+            input.scenarioCases,
+            status
+        ),
         screenshots: [],
     });
     await testInfo.attach('release-gate-evidence', {

@@ -11,17 +11,23 @@
  * rejects cannot pass the verifier.
  */
 import { describe, it, expect, afterEach } from 'vitest';
+import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import {
     canonicalReleaseContent,
     getCurrentPointerPath,
     getReleaseManifestPath,
     getObjectPath,
     parseRuntimeAssetManifest,
+    type ManifestByteSha256,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
 import {
     runChecks,
+    verifyPublicRelease,
+    parseVerifyArgs,
     _setFetchImpl,
     _setRequestTimeout,
     ORIGIN,
@@ -407,6 +413,89 @@ function makeFetchWithManifestCacheState(
             });
         }
         return base(input);
+    }) as typeof fetch;
+}
+
+// --- Candidate-mode fixtures for verifyPublicRelease ---
+
+// The candidate the new cases verify: the same story, but a different preview
+// namespace than the smoke pointer the active-mode fixtures serve.
+const CANDIDATE_TARGET = { kind: 'preview', previewId: 'hpa-233' } as const;
+
+// A release's manifest content is target-independent (only the pointer's
+// manifestPath is not), so one release built at module level supplies both the
+// served documents and the identity constants the tests pass as input.
+const CANDIDATE_RELEASE = buildValidRelease();
+const CANDIDATE_POINTER = JSON.parse(CANDIDATE_RELEASE.pointerText) as {
+    releaseId: string;
+    manifestSha256: string;
+};
+const FIXTURE_RELEASE_ID = CANDIDATE_POINTER.releaseId;
+const FIXTURE_MANIFEST_SHA256 =
+    CANDIDATE_POINTER.manifestSha256 as ManifestByteSha256;
+
+type CandidateFetchOverrides = {
+    /** `access-control-allow-origin` on the manifest; defaults to `*`. */
+    manifestCors?: string;
+    /** `cache-control` on object responses; defaults to IMMUTABLE_CACHE. */
+    objectCacheControl?: string;
+    /** Manifest bytes to serve; defaults to the release's own manifest. */
+    manifestText?: string;
+};
+
+/**
+ * A fetch that serves a candidate release with no pointer at all: the manifest
+ * is served at its content-addressed path in the candidate preview namespace,
+ * objects are served immutable, and the source probe answers 404. Every
+ * requested URL is recorded so tests can prove candidate mode never reads
+ * `current.json`. `overrides` exercise the rejected branches (wrong CORS,
+ * mutable object headers, an edited manifest).
+ */
+function fixtureFetch(
+    requests: string[],
+    release: ReturnType<typeof buildValidRelease> = CANDIDATE_RELEASE,
+    overrides: CandidateFetchOverrides = {}
+): typeof fetch {
+    const manifestUrl = `${BASE}/${getReleaseManifestPath(
+        STORY_ID,
+        FIXTURE_RELEASE_ID,
+        CANDIDATE_TARGET
+    )}`;
+    const bodies: Record<string, string> = {};
+    for (const asset of release.assets) {
+        bodies[asset.webpPath] = asset.webpBody;
+        bodies[asset.avifPath] = asset.avifBody;
+    }
+    return (async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        requests.push(url);
+        if (url === manifestUrl) {
+            return jsonResponse(
+                overrides.manifestText ?? release.manifestText,
+                {
+                    'cache-control': IMMUTABLE_CACHE,
+                    'access-control-allow-origin':
+                        overrides.manifestCors ?? '*',
+                    'cf-cache-status': 'HIT',
+                }
+            );
+        }
+        for (const [path, body] of Object.entries(bodies)) {
+            if (url.endsWith(path)) {
+                const format = path.endsWith('.webp') ? 'webp' : 'avif';
+                return new Response(body, {
+                    status: 200,
+                    headers: {
+                        'content-type':
+                            format === 'webp' ? 'image/webp' : 'image/avif',
+                        'cache-control':
+                            overrides.objectCacheControl ?? IMMUTABLE_CACHE,
+                        'cf-cache-status': 'HIT',
+                    },
+                });
+            }
+        }
+        return new Response('not found', { status: 404 });
     }) as typeof fetch;
 }
 
@@ -1107,4 +1196,345 @@ describe('runChecks integrity', () => {
         expect(bytesChecks.length).toBeGreaterThan(0);
         expect(bytesChecks.every(r => !r.ok)).toBe(true);
     });
+});
+
+describe('verifyPublicRelease', () => {
+    // The input every candidate case shares except where a case overrides a
+    // field. `browserOrigin` is omitted on purpose: the web app origin is a
+    // property of this delivery host, not of the release under test, so the
+    // verifier defaults it to `ORIGIN`.
+    const candidateInput = {
+        storyId: STORY_ID,
+        target: CANDIDATE_TARGET,
+        assetBaseUrl: new URL(BASE),
+        releaseId: FIXTURE_RELEASE_ID,
+        expectedManifestSha256: FIXTURE_MANIFEST_SHA256,
+    };
+
+    it('verifies an immutable candidate without reading the active pointer', async () => {
+        const requests: string[] = [];
+        const result = await verifyPublicRelease(
+            {
+                storyId: 'the_seventh_mirror',
+                target: { kind: 'preview', previewId: 'hpa-233' },
+                assetBaseUrl: new URL('https://assets.example.dev'),
+                releaseId: FIXTURE_RELEASE_ID,
+                expectedManifestSha256: FIXTURE_MANIFEST_SHA256,
+            },
+            { fetch: fixtureFetch(requests) }
+        );
+
+        expect(result.status).toBe('passed');
+        expect(requests).not.toContainEqual(
+            expect.stringContaining('/current.json')
+        );
+        // The manifest is fetched at its content-addressed path, never via the
+        // active pointer's manifestPath.
+        expect(requests).toContain(
+            `${BASE}/${getReleaseManifestPath(
+                STORY_ID,
+                FIXTURE_RELEASE_ID,
+                CANDIDATE_TARGET
+            )}`
+        );
+    });
+
+    it('derives release identity from current.json in active mode', async () => {
+        // Omitting `releaseId` keeps today's resolution: fetch `current.json`,
+        // parse the pointer, and validate the pointer/manifest pair. The
+        // recorder proves the active-mode request list still starts with the
+        // pointer.
+        const release = buildValidRelease();
+        const requests: string[] = [];
+        const base = makeFetch(release);
+        const recording = (async (
+            input: RequestInfo | URL,
+            init?: RequestInit
+        ) => {
+            requests.push(typeof input === 'string' ? input : input.toString());
+            return base(input, init);
+        }) as typeof fetch;
+        const result = await verifyPublicRelease(
+            {
+                storyId: STORY_ID,
+                target: TARGET,
+                assetBaseUrl: new URL(BASE),
+                browserOrigin: new URL(ORIGIN),
+            },
+            { fetch: recording }
+        );
+
+        expect(result.status).toBe('passed');
+        expect(requests).toContainEqual(
+            expect.stringContaining('/current.json')
+        );
+    });
+
+    it('fails an active-mode run whose pointer disagrees with --expect-manifest-sha256', async () => {
+        // Design §1: `--expect-manifest-sha256`, when given, is compared
+        // against every boundary's own observation — in active mode the
+        // pointer's `manifestSha256` is the first observation. A caller
+        // passing a digest that disagrees with the pointer must fail the run
+        // before the manifest bytes are validated against the pointer, or the
+        // caller's digest would be silently overridden by the pointer's claim.
+        const release = buildValidRelease();
+        const wrongDigest = sha256Hex(
+            'not-the-manifest-bytes'
+        ) as ManifestByteSha256;
+        const result = await verifyPublicRelease(
+            {
+                storyId: STORY_ID,
+                target: TARGET,
+                assetBaseUrl: new URL(BASE),
+                expectedManifestSha256: wrongDigest,
+            },
+            { fetch: makeFetch(release) }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(
+            names(result.results)['pointer manifestSha256 matches expected']
+        ).toBe(false);
+        // Dependent checks are skipped (abort), not silently passed — the
+        // manifest was never even fetched.
+        expect(names(result.results)['manifest contract']).toBeUndefined();
+    });
+
+    it('fails a candidate whose manifest bytes disagree with --expect-manifest-sha256', async () => {
+        // The operator supplies the digest the publisher computed at publish
+        // time. A manifest edited after publication (or served from the wrong
+        // object) disagrees with it, and the checksum check must fail the run
+        // before any dependent integrity check can pass.
+        const requests: string[] = [];
+        const wrongDigest = sha256Hex(
+            'not-the-manifest-bytes'
+        ) as ManifestByteSha256;
+        const result = await verifyPublicRelease(
+            { ...candidateInput, expectedManifestSha256: wrongDigest },
+            { fetch: fixtureFetch(requests) }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(
+            names(result.results)['manifest checksum matches expected']
+        ).toBe(false);
+        // Dependent integrity checks are skipped (abort), not silently passed.
+        expect(names(result.results)['manifest contract']).toBeUndefined();
+    });
+
+    it('rejects a candidate whose manifest CORS policy is not the wildcard', async () => {
+        // Candidate mode has no pointer to carry the CORS check, so the
+        // manifest — the root document of the candidate read — carries it. A
+        // browser reading the candidate manifest needs `*` just like it needs
+        // `*` on the active pointer.
+        const requests: string[] = [];
+        const result = await verifyPublicRelease(candidateInput, {
+            fetch: fixtureFetch(requests, CANDIDATE_RELEASE, {
+                manifestCors: 'https://wrong.example',
+            }),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)['manifest CORS']).toBe(false);
+    });
+
+    it('rejects an immutable object served with mutable cache headers', async () => {
+        // The manifest declares the object immutable, but the delivery host
+        // serves it with a revalidating policy — the HPA-227 policy violation
+        // that silently doubles every object fetch. The object's `immutable`
+        // check must fail the run.
+        const requests: string[] = [];
+        const result = await verifyPublicRelease(candidateInput, {
+            fetch: fixtureFetch(requests, CANDIDATE_RELEASE, {
+                objectCacheControl: 'public, max-age=0',
+            }),
+        });
+
+        expect(result.status).toBe('failed');
+        const [bg] = CANDIDATE_RELEASE.assets;
+        expect(names(result.results)[`webp ${bg.webpLabel} immutable`]).toBe(
+            false
+        );
+    });
+
+    it('rejects a candidate manifest carrying a forbidden prompt field', async () => {
+        // The contract forbids authoring metadata (prompts, source paths,
+        // credentials) in public runtime data. The manifest contract parser
+        // rejects a prompt field the same way the reader does, before any
+        // forbidden-keys scan runs. The expected digest is re-computed from
+        // the edited bytes so the failure is isolated to the prompt field, not
+        // the checksum.
+        const release = buildValidRelease();
+        const edited = JSON.parse(release.manifestText) as Record<
+            string,
+            unknown
+        >;
+        edited.prompt = 'a forgotten authoring prompt';
+        const manifestText = JSON.stringify(edited);
+        const requests: string[] = [];
+        const result = await verifyPublicRelease(
+            {
+                storyId: STORY_ID,
+                target: CANDIDATE_TARGET,
+                assetBaseUrl: new URL(BASE),
+                releaseId: FIXTURE_RELEASE_ID,
+                expectedManifestSha256: sha256Hex(
+                    manifestText
+                ) as ManifestByteSha256,
+            },
+            {
+                fetch: fixtureFetch(requests, release, { manifestText }),
+            }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)['manifest contract']).toBe(false);
+    });
+
+    it('rejects non-HTTPS and credential-bearing asset base URLs', async () => {
+        // The verifier proves what a browser sees over the public HTTPS host;
+        // a plaintext or credential-carrying base URL is a configuration
+        // error, rejected before any request is made.
+        await expect(
+            verifyPublicRelease(
+                {
+                    ...candidateInput,
+                    assetBaseUrl: new URL('http://assets.example.dev'),
+                },
+                { fetch: fixtureFetch([]) }
+            )
+        ).rejects.toThrow(/https/);
+        await expect(
+            verifyPublicRelease(
+                {
+                    ...candidateInput,
+                    assetBaseUrl: new URL(
+                        'https://user:pass@assets.example.dev'
+                    ),
+                },
+                { fetch: fixtureFetch([]) }
+            )
+        ).rejects.toThrow(/credential/i);
+    });
+});
+
+describe('parseVerifyArgs', () => {
+    it('defaults to the smoke preview active-mode invocation with no arguments', () => {
+        // The HPA-229 smoke invocation (`bun --filter @aquila/infra-cloudflare
+        // verify`) must keep meaning the_seventh_mirror / preview smoke /
+        // active mode.
+        const args = parseVerifyArgs([]);
+        expect(args.storyId).toBe('the_seventh_mirror');
+        expect(args.target).toEqual({ kind: 'preview', previewId: 'smoke' });
+        expect(args.releaseId).toBeUndefined();
+        expect(args.expectedManifestSha256).toBeUndefined();
+        expect(args.assetBaseUrl).toBeUndefined();
+        expect(args.json).toBe(false);
+    });
+
+    it('parses a candidate verification invocation', () => {
+        const args = parseVerifyArgs([
+            '--story',
+            'the_seventh_mirror',
+            '--preview-id',
+            'hpa-233',
+            '--release',
+            `sha256-${'a'.repeat(64)}`,
+            '--expect-manifest-sha256',
+            FIXTURE_MANIFEST_SHA256,
+            '--asset-base-url',
+            'https://assets.example.dev',
+            '--json',
+        ]);
+        expect(args.storyId).toBe('the_seventh_mirror');
+        expect(args.target).toEqual({ kind: 'preview', previewId: 'hpa-233' });
+        expect(args.releaseId).toBe(`sha256-${'a'.repeat(64)}`);
+        expect(args.expectedManifestSha256).toBe(FIXTURE_MANIFEST_SHA256);
+        expect(args.assetBaseUrl).toBe('https://assets.example.dev');
+        expect(args.json).toBe(true);
+    });
+
+    it('parses a production target without a preview id', () => {
+        // Post-activation production verification passes no preview id; the
+        // explicit environment disambiguates it from the smoke default.
+        const args = parseVerifyArgs(['--environment', 'production']);
+        expect(args.target).toEqual({ kind: 'production' });
+    });
+
+    it('rejects --preview-id for a production target', () => {
+        expect(() =>
+            parseVerifyArgs([
+                '--environment',
+                'production',
+                '--preview-id',
+                'smoke',
+            ])
+        ).toThrow(/must not provide --preview-id/);
+    });
+
+    it('rejects a malformed --expect-manifest-sha256', () => {
+        expect(() =>
+            parseVerifyArgs(['--expect-manifest-sha256', 'not-a-digest'])
+        ).toThrow(/Invalid --expect-manifest-sha256/);
+    });
+
+    it('rejects a non-HTTPS --asset-base-url', () => {
+        expect(() =>
+            parseVerifyArgs(['--asset-base-url', 'http://assets.example.dev'])
+        ).toThrow(/must use https/);
+    });
+});
+
+describe('verify CLI --json setup failures', () => {
+    const execFileAsync = promisify(execFile);
+    const repositoryRoot = fileURLToPath(
+        new URL('../../../../', import.meta.url)
+    );
+    const verifyCli = ['packages/infra-cloudflare/src/verify.ts'];
+
+    /**
+     * Runs the real CLI (`bun src/verify.ts`) with `--json` and an argument
+     * set that fails during setup, and asserts stdout carries exactly one
+     * parseable `{"status":"failed",...}` object (the release gate redirects
+     * stdout into a report file, so an empty or human-text stdout would
+     * render as UNPARSEABLE instead of a structured failure).
+     */
+    async function expectJsonFailure(
+        args: string[],
+        errorPattern: RegExp
+    ): Promise<void> {
+        let failure:
+            | (Error & { code?: number; stdout?: string; stderr?: string })
+            | undefined;
+        try {
+            await execFileAsync('bun', [...verifyCli, ...args], {
+                cwd: repositoryRoot,
+            });
+        } catch (error) {
+            failure = error as typeof failure;
+        }
+
+        expect(failure?.code).toBe(1);
+        const stdout = failure?.stdout ?? '';
+        // Exactly one result object on stdout — never an empty or partial
+        // report the summary step would label UNPARSEABLE.
+        expect(stdout.trim().split('\n')).toHaveLength(1);
+        const report = JSON.parse(stdout) as { status: string; error?: string };
+        expect(report.status).toBe('failed');
+        expect(report.error).toMatch(errorPattern);
+    }
+
+    it('emits one failed result object for a bad-argument setup failure', async () => {
+        await expectJsonFailure(
+            ['--environment', 'bogus', '--json'],
+            /must be production or preview/
+        );
+    }, 30_000);
+
+    it('emits one failed result object for a non-HTTPS base URL setup failure', async () => {
+        await expectJsonFailure(
+            ['--asset-base-url', 'http://assets.example.dev', '--json'],
+            /must use https/
+        );
+    }, 30_000);
 });

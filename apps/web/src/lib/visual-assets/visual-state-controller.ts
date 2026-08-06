@@ -1,8 +1,10 @@
 import {
     AssetResolverError,
     qualifyAssetIdentity,
+    type ActiveReleasePointerV1,
     type AssetFallback,
     type AssetResolver,
+    type AssetResolverSource,
     type LogicalAssetIdentity,
 } from '@aquila/stories/runtime-assets';
 import type {
@@ -17,6 +19,7 @@ import type {
     VisualImageLayer,
     VisualLayerState,
     VisualPortraitLayer,
+    VisualReleaseIdentity,
     VisualReleaseState,
     VisualSnapshot,
 } from './types';
@@ -44,6 +47,13 @@ export type VisualControllerInput = {
 
 export type VisualStateControllerOptions = {
     resolver: AssetResolver | null;
+    /**
+     * The validated asset source that produced the resolver. Threaded from
+     * `source-factory.ts` so the controller never rereads `import.meta.env`
+     * to derive release identity — the source (environment + target) is the
+     * single source of truth for which release this story resolves.
+     */
+    source: AssetResolverSource | null;
     cache: VisualAssetCache;
     getSceneDialogue: GetSceneDialogue;
     now?: () => number;
@@ -113,6 +123,7 @@ function initialSnapshot(): VisualSnapshot {
         activeBackground: imageLayer('omitted'),
         stagingBackground: imageLayer('omitted'),
         portrait: portraitLayer('omitted', 'center'),
+        releaseIdentity: null,
         status: null,
     });
 }
@@ -157,6 +168,7 @@ function releaseStateForError(error: unknown): VisualReleaseState {
 
 export class VisualStateController {
     private readonly resolver: AssetResolver | null;
+    private readonly source: AssetResolverSource | null;
     private readonly cache: VisualAssetCache;
     private readonly getSceneDialogue: GetSceneDialogue;
     private readonly now: () => number;
@@ -186,6 +198,7 @@ export class VisualStateController {
 
     constructor(options: VisualStateControllerOptions) {
         this.resolver = options.resolver;
+        this.source = options.source;
         this.cache = options.cache;
         this.getSceneDialogue = options.getSceneDialogue;
         this.now = options.now ?? Date.now;
@@ -211,6 +224,9 @@ export class VisualStateController {
             previousStoryId !== input.storyId
         ) {
             this.prefetchedEdges.clear();
+            // The validated release belongs to the previous story; its
+            // identity must not leak onto the replacement.
+            this.publish({ releaseIdentity: null });
         }
         this.prepareLoadingLayers(input);
         void this.prepareCurrentInput(input, generation);
@@ -469,6 +485,7 @@ export class VisualStateController {
                         validated.source === 'last-validated-release'
                             ? 'stale-but-usable'
                             : 'ready',
+                    releaseIdentity: this.releaseIdentityFor(validated.pointer),
                 });
                 if (revalidating) this.prefetchedEdges.clear();
                 return true;
@@ -484,7 +501,10 @@ export class VisualStateController {
                 // layers fail rather than displaying expired assets.
                 this.activeReleaseId = null;
                 this.releaseGeneration += 1;
-                this.publish({ release: releaseStateForError(error) });
+                this.publish({
+                    release: releaseStateForError(error),
+                    releaseIdentity: null,
+                });
                 return false;
             })
             .finally(() => {
@@ -494,6 +514,27 @@ export class VisualStateController {
             });
         this.releasePromise = promise;
         return promise;
+    }
+
+    /**
+     * Builds the release identity from the threaded source (environment +
+     * target) plus the validated pointer (release id + manifest checksum).
+     * Without a source there is nothing to identify, so the identity is null.
+     */
+    private releaseIdentityFor(
+        pointer: ActiveReleasePointerV1
+    ): VisualReleaseIdentity | null {
+        const source = this.source;
+        if (source === null) return null;
+        return Object.freeze({
+            assetEnvironment: source.environment,
+            previewId:
+                source.target.kind === 'preview'
+                    ? source.target.previewId
+                    : null,
+            releaseId: pointer.releaseId,
+            manifestSha256: pointer.manifestSha256,
+        });
     }
 
     private async loadBackground(
@@ -628,12 +669,12 @@ export class VisualStateController {
 
     private applyFallbackReleaseState(fallback: AssetFallback): void {
         if (fallback.reason === 'release-unavailable') {
-            this.publish({ release: 'unavailable' });
+            this.publish({ release: 'unavailable', releaseIdentity: null });
         } else if (
             fallback.reason === 'invalid-release' ||
             fallback.reason === 'integrity-failure'
         ) {
-            this.publish({ release: 'invalid' });
+            this.publish({ release: 'invalid', releaseIdentity: null });
         }
     }
 

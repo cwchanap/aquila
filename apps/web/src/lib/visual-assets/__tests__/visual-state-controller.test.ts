@@ -3,6 +3,7 @@ import {
     type AssetFallbackReason,
     type AssetResolutionResult,
     type AssetResolver,
+    type AssetResolverSource,
     type LogicalAssetIdentity,
     type ResolvedAsset,
     type ValidatedAssetRelease,
@@ -107,12 +108,37 @@ function fallback(
 
 function release(source: 'network' | 'last-validated-release' = 'network') {
     return {
-        pointer: { releaseId: 'sha256-fixed-release' },
+        pointer: {
+            releaseId: 'sha256-fixed-release',
+            manifestSha256:
+                '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        },
         manifest: {},
         validatedAt: '2026-07-26T00:00:00.000Z',
         source,
     } as ValidatedAssetRelease;
 }
+
+const localSource: AssetResolverSource = {
+    environment: 'local',
+    storyId,
+    baseUrl: 'https://assets.example/',
+    target: { kind: 'preview', previewId: 'hpa-228-test' },
+};
+
+const previewSource: AssetResolverSource = {
+    environment: 'preview',
+    storyId,
+    baseUrl: 'https://assets.example/',
+    target: { kind: 'preview', previewId: 'hpa-233' },
+};
+
+const productionSource: AssetResolverSource = {
+    environment: 'production',
+    storyId,
+    baseUrl: 'https://assets.example/',
+    target: { kind: 'production' },
+};
 
 function createHarness(options?: {
     loadRelease?: () => Promise<ValidatedAssetRelease>;
@@ -120,17 +146,18 @@ function createHarness(options?: {
     resolveAsset?: (identity: LogicalAssetIdentity) => AssetResolutionResult;
     now?: () => number;
     sceneDialogue?: Record<string, readonly DialogueEntry[] | null>;
+    source?: AssetResolverSource | null;
 }) {
     const resolveAsset =
         options?.resolveAsset ??
         ((identity: LogicalAssetIdentity) => resolved(identity));
+    const source = options?.source === undefined ? localSource : options.source;
     const resolver: AssetResolver = {
-        source: {
-            environment: 'local',
-            storyId,
-            baseUrl: 'https://assets.example/',
-            target: { kind: 'preview', previewId: 'hpa-228-test' },
-        },
+        // A null threaded source never co-occurs with a resolver in
+        // production (source-factory builds the resolver from the source), but
+        // the harness keeps them decoupled so tests can pin identity to the
+        // threaded source rather than to whatever the resolver carries.
+        source: source ?? localSource,
         loadActiveRelease: vi.fn(
             options?.loadRelease ?? (async () => release())
         ),
@@ -156,6 +183,7 @@ function createHarness(options?: {
     );
     const controller = new VisualStateController({
         resolver,
+        source,
         cache,
         getSceneDialogue,
         now: options?.now,
@@ -225,10 +253,110 @@ describe('VisualStateController', () => {
                 height: null,
                 slot: 'center',
             },
+            releaseIdentity: null,
             status: null,
         });
         expect(Object.isFrozen(latest())).toBe(true);
         expect(Object.isFrozen(latest().activeBackground)).toBe(true);
+    });
+
+    it('publishes validated identity when the release becomes ready', async () => {
+        const { controller, latest } = createHarness({
+            source: previewSource,
+        });
+
+        controller.update(input([{ dialogue: 'Visual', background: 'room' }]));
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('ready');
+        expect(latest().releaseIdentity).toEqual({
+            assetEnvironment: 'preview',
+            previewId: 'hpa-233',
+            releaseId: 'sha256-fixed-release',
+            manifestSha256:
+                '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        });
+    });
+
+    it('keeps the identity of a validated release while serving it stale-but-usable', async () => {
+        const { controller, latest } = createHarness({
+            source: previewSource,
+            loadRelease: async () => release('last-validated-release'),
+        });
+
+        controller.update(input([{ dialogue: 'Cached', background: 'room' }]));
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('stale-but-usable');
+        expect(latest().releaseIdentity).toEqual({
+            assetEnvironment: 'preview',
+            previewId: 'hpa-233',
+            releaseId: 'sha256-fixed-release',
+            manifestSha256:
+                '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        });
+    });
+
+    it('derives production identity without a preview id', async () => {
+        const { controller, latest } = createHarness({
+            source: productionSource,
+        });
+
+        controller.update(input([{ dialogue: 'Visual', background: 'room' }]));
+        await flushAsyncWork();
+
+        expect(latest().releaseIdentity).toEqual({
+            assetEnvironment: 'production',
+            previewId: null,
+            releaseId: 'sha256-fixed-release',
+            manifestSha256:
+                '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        });
+    });
+
+    it('clears identity on invalid release, story replacement, and dispose', async () => {
+        // An invalid release never yields identity.
+        const invalid = createHarness({
+            loadRelease: async () => {
+                throw new AssetResolverError(
+                    'integrity',
+                    'Manifest checksum mismatch'
+                );
+            },
+        });
+        invalid.controller.update(
+            input([{ dialogue: 'Broken', background: 'room' }])
+        );
+        await flushAsyncWork();
+        expect(invalid.latest().release).toBe('invalid');
+        expect(invalid.latest().releaseIdentity).toBeNull();
+
+        // A validated release publishes identity...
+        const { controller, latest } = createHarness();
+        controller.update(input([{ dialogue: 'Visual', background: 'room' }]));
+        await flushAsyncWork();
+        expect(latest().releaseIdentity).not.toBeNull();
+
+        // ...which is cleared the moment the story is replaced...
+        controller.update(
+            input([{ dialogue: 'Other story' }], { storyId: 'other_story' })
+        );
+        await flushAsyncWork();
+        expect(latest().releaseIdentity).toBeNull();
+
+        // ...and never survives dispose.
+        controller.dispose();
+        expect(latest().releaseIdentity).toBeNull();
+    });
+
+    it('never publishes identity without a source even when the release loads', async () => {
+        const { controller, latest } = createHarness({ source: null });
+
+        controller.update(input([{ dialogue: 'Visual', background: 'room' }]));
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('ready');
+        expect(latest().releaseIdentity).toBeNull();
     });
 
     it('maps omitted, missing, and failed keyed visuals independently', async () => {
@@ -275,6 +403,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
+            source: null,
             cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
@@ -330,6 +459,37 @@ describe('VisualStateController', () => {
         expect(latest().release).toBe('invalid');
         expect(latest().stagingBackground.state).toBe('failed');
         expect(latest().status).toBe('unavailable');
+    });
+
+    it('clears identity when a validated release later degrades to invalid or unavailable', async () => {
+        // A validated release publishes its identity...
+        const { controller, latest } = createHarness({
+            source: previewSource,
+            resolveAsset: identity => {
+                if (identity.key === 'corrupted') {
+                    return fallback(identity, 'integrity-failure');
+                }
+                if (identity.key === 'gone') {
+                    return fallback(identity, 'release-unavailable');
+                }
+                return resolved(identity);
+            },
+        });
+        controller.update(input([{ dialogue: 'Visual', background: 'room' }]));
+        await flushAsyncWork();
+        expect(latest().release).toBe('ready');
+        expect(latest().releaseIdentity).not.toBeNull();
+
+        // ...and an integrity failure on a later asset load must drop it, so
+        // reader-ready cannot keep advertising a release the controller no
+        // longer trusts. The initial-load failure path already cleared
+        // identity; this covers the post-validation degradation path.
+        controller.update(
+            input([{ dialogue: 'Corrupted', background: 'corrupted' }])
+        );
+        await flushAsyncWork();
+        expect(latest().release).toBe('invalid');
+        expect(latest().releaseIdentity).toBeNull();
     });
 
     it('keeps stale release state while a layer is ready', async () => {
@@ -1309,6 +1469,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
+            source: null,
             cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });
@@ -1393,6 +1554,7 @@ describe('VisualStateController', () => {
         };
         const controller = new VisualStateController({
             resolver: null,
+            source: null,
             cache: cache,
             getSceneDialogue: vi.fn(() => null),
         });

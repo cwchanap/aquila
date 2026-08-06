@@ -1,16 +1,19 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     getCurrentPointerPath,
-    getObjectPath,
     getReleaseManifestPath,
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
-    resolveAssetUrl,
-    type AssetFormat,
     type PublicationTarget,
-    type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
+import {
+    assetUrl,
+    decodeAllVariants,
+    directives,
+    fetchJsonFromPage,
+    type ProbeContext,
+} from './support/r2-browser-probe';
 
 /**
  * Acceptance criterion 1 of HPA-229 says *a browser* can fetch the published
@@ -58,215 +61,17 @@ if (!LIVE_CHECK_ENABLED && process.env.TEST_WORKER_INDEX === undefined) {
 // named in the failure instead of expiring the whole test.
 const DEADLINES = RUNTIME_ASSET_CACHE_POLICY.timeoutMs;
 
-function directives(header: string | null): string[] {
-    return (header ?? '')
-        .split(',')
-        .map(part => part.trim().toLowerCase())
-        .filter(Boolean);
-}
+const PROBE: ProbeContext = {
+    assetBase: ASSET_BASE,
+    assetDeadlineMs: DEADLINES.asset,
+    prerequisites: PREREQUISITES,
+};
 
 // Read from the contract rather than restated here, and compared as a set so
 // any directive order is accepted.
 const REQUIRED_POINTER_DIRECTIVES = directives(
     RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
 );
-
-type FailureReason = 'timeout' | 'blocked' | 'status' | 'body' | 'decode';
-
-/**
- * The browser classifies what went wrong; the sentence an operator reads is
- * composed here, so the in-page code stays small and the wording lives once.
- */
-const FAILURE_PHRASES: Record<FailureReason, string> = {
-    timeout: 'did not answer in time',
-    blocked:
-        'was unreadable to page script — a missing ' +
-        'access-control-allow-origin, a rejected preflight, or a DNS/TLS ' +
-        'failure all look like this',
-    status: 'returned an error status',
-    body: 'did not return JSON',
-    decode: 'returned bytes the browser could not decode as an image',
-};
-
-function unusable(url: string, reason: FailureReason, detail: string): Error {
-    return new Error(
-        `GET ${url} ${FAILURE_PHRASES[reason]}: ${detail}\n${PREREQUISITES}`
-    );
-}
-
-type DecodedSize = { width: number; height: number };
-
-// This workspace's tsconfig carries no DOM lib, so the browser globals used
-// inside page.evaluate are untyped. Only the decoder needs describing, and only
-// the members used below.
-declare function createImageBitmap(
-    blob: Blob
-): Promise<DecodedSize & { close(): void }>;
-
-/** Exactly one of `text` and `size` is populated, per the requested `as`. */
-type PageProbe = {
-    cacheControl: string | null;
-    text: string | null;
-    size: DecodedSize | null;
-};
-
-/**
- * Joins with the sanctioned joiner rather than string concatenation, so the
- * relative path is checked for traversal and the base for scheme and
- * credential-freeness before anything is fetched.
- */
-function assetUrl(objectPath: string): string {
-    return resolveAssetUrl(ASSET_BASE, objectPath).toString();
-}
-
-/**
- * Fetches one object from inside the page, so the browser's own CORS
- * enforcement decides whether page script may read it, and — for `as: 'image'`
- * — the browser's own image pipeline decides whether the bytes decode. A shell
- * probe can do neither.
- *
- * `cache-control` is a CORS-safelisted response header, so it comes back
- * without any access-control-expose-headers cooperation.
- */
-async function probeFromPage(
-    page: Page,
-    url: string,
-    deadlineMs: number,
-    as: 'text' | 'image'
-): Promise<PageProbe> {
-    const probe = await page.evaluate(
-        async ({ target, timeoutMs, want }) => {
-            try {
-                const response = await fetch(target, {
-                    mode: 'cors',
-                    signal: AbortSignal.timeout(timeoutMs),
-                });
-                if (!response.ok) {
-                    return {
-                        ok: false as const,
-                        reason: 'status' as const,
-                        detail: `HTTP ${response.status} ${response.statusText}`,
-                    };
-                }
-                const cacheControl = response.headers.get('cache-control');
-                if (want === 'text') {
-                    const text = await response.text();
-                    return {
-                        ok: true as const,
-                        cacheControl,
-                        text,
-                        size: null,
-                    };
-                }
-                const blob = await response.blob();
-                try {
-                    const bitmap = await createImageBitmap(blob);
-                    const size = {
-                        width: bitmap.width,
-                        height: bitmap.height,
-                    };
-                    bitmap.close();
-                    return {
-                        ok: true as const,
-                        cacheControl,
-                        text: null,
-                        size,
-                    };
-                } catch (error) {
-                    return {
-                        ok: false as const,
-                        reason: 'decode' as const,
-                        detail:
-                            `${blob.size} byte(s) of ` +
-                            `${blob.type || 'an unknown media type'} — ` +
-                            `${error instanceof Error ? error.message : String(error)}`,
-                    };
-                }
-            } catch (error) {
-                const raised =
-                    error instanceof Error ? error : new Error(String(error));
-                return {
-                    ok: false as const,
-                    reason:
-                        raised.name === 'TimeoutError'
-                            ? ('timeout' as const)
-                            : ('blocked' as const),
-                    detail: `${raised.name}: ${raised.message}`,
-                };
-            }
-        },
-        { target: url, timeoutMs: deadlineMs, want: as }
-    );
-    if (!probe.ok) throw unusable(url, probe.reason, probe.detail);
-    return probe;
-}
-
-type FetchedDocument = { body: unknown; cacheControl: string | null };
-
-async function fetchJsonFromPage(
-    page: Page,
-    url: string,
-    deadlineMs: number
-): Promise<FetchedDocument> {
-    const { text, cacheControl } = await probeFromPage(
-        page,
-        url,
-        deadlineMs,
-        'text'
-    );
-    try {
-        return { body: JSON.parse(text ?? '') as unknown, cacheControl };
-    } catch {
-        const collapsed = (text ?? '').replace(/\s+/g, ' ').trim();
-        throw unusable(url, 'body', collapsed.slice(0, 160) || '<empty body>');
-    }
-}
-
-/**
- * Decodes every asset's variant of `format` the manifest offers, returning each
- * decoded bitmap alongside its manifest asset so the caller can compare the
- * decoded dimensions against `asset.width` / `asset.height` — the same contract
- * the reader enforces in `decoded-asset-cache.ts` ("Asset dimensions mismatch"
- * when the decoded size differs from the manifest). The object path is
- * recomputed from the variant digest with the layout helper rather than taken
- * from the manifest verbatim, so a manifest pointing somewhere else could not
- * redirect this fetch.
- *
- * A manifest with an incorrect width or height can pass pointer integrity,
- * object checksum validation, and browser decoding while the actual reader
- * rejects it — so decoding only the first variant and asserting `> 0` (as this
- * spec once did) is not enough. Every seeded asset is decoded and its
- * dimensions checked against the manifest.
- */
-type DecodedVariant = {
-    asset: RuntimeAssetManifestV1['assets'][number];
-    format: AssetFormat;
-    size: DecodedSize;
-};
-
-async function decodeAllVariants(
-    page: Page,
-    manifest: RuntimeAssetManifestV1,
-    format: AssetFormat
-): Promise<DecodedVariant[]> {
-    const decoded: DecodedVariant[] = [];
-    for (const asset of manifest.assets) {
-        const variant = asset.variants[format];
-        if (!variant) continue;
-        const url = assetUrl(getObjectPath(variant.sha256, format));
-        const { size } = await probeFromPage(
-            page,
-            url,
-            DEADLINES.asset,
-            'image'
-        );
-        if (size === null) {
-            throw unusable(url, 'decode', 'the browser produced no bitmap');
-        }
-        decoded.push({ asset, format, size });
-    }
-    return decoded;
-}
 
 test.describe('R2 visual asset delivery', () => {
     test.skip(() => !LIVE_CHECK_ENABLED, SKIP_REASON);
@@ -285,11 +90,15 @@ test.describe('R2 visual asset delivery', () => {
         // host is cross-origin and its CORS policy is exercised, not bypassed.
         await page.goto('/en/');
 
-        const pointerUrl = assetUrl(getCurrentPointerPath(STORY_ID, TARGET));
+        const pointerUrl = assetUrl(
+            ASSET_BASE,
+            getCurrentPointerPath(STORY_ID, TARGET)
+        );
         const pointerDocument = await fetchJsonFromPage(
             page,
             pointerUrl,
-            DEADLINES.pointer
+            DEADLINES.pointer,
+            PROBE
         );
         const pointer = parseActiveReleasePointer(
             pointerDocument.body,
@@ -298,12 +107,14 @@ test.describe('R2 visual asset delivery', () => {
         );
 
         const manifestUrl = assetUrl(
+            ASSET_BASE,
             getReleaseManifestPath(STORY_ID, pointer.releaseId, TARGET)
         );
         const manifestDocument = await fetchJsonFromPage(
             page,
             manifestUrl,
-            DEADLINES.manifest
+            DEADLINES.manifest,
+            PROBE
         );
         const manifest = parseRuntimeAssetManifest(manifestDocument.body);
         expect(manifest.storyId).toBe(STORY_ID);
@@ -327,7 +138,12 @@ test.describe('R2 visual asset delivery', () => {
 
         // `variants.webp` is required per asset, so this is reachable only when
         // the release published no assets at all.
-        const webpVariants = await decodeAllVariants(page, manifest, 'webp');
+        const webpVariants = await decodeAllVariants(
+            page,
+            manifest,
+            'webp',
+            PROBE
+        );
         if (webpVariants.length === 0) {
             throw new Error(
                 `${manifestUrl} published no assets, so there is nothing for ` +
@@ -361,7 +177,12 @@ test.describe('R2 visual asset delivery', () => {
         // must still decode in the browser this spec runs in, which supports
         // AVIF, and their decoded dimensions must match the manifest just as
         // WebP's do.
-        const avifVariants = await decodeAllVariants(page, manifest, 'avif');
+        const avifVariants = await decodeAllVariants(
+            page,
+            manifest,
+            'avif',
+            PROBE
+        );
         expect(
             avifVariants.length,
             `${manifestUrl} offers no avif variant — image/avif is an HPA-229 acceptance criterion`
@@ -384,11 +205,15 @@ test.describe('R2 visual asset delivery', () => {
     }) => {
         await page.goto('/en/');
 
-        const pointerUrl = assetUrl(getCurrentPointerPath(STORY_ID, TARGET));
+        const pointerUrl = assetUrl(
+            ASSET_BASE,
+            getCurrentPointerPath(STORY_ID, TARGET)
+        );
         const { cacheControl } = await fetchJsonFromPage(
             page,
             pointerUrl,
-            DEADLINES.pointer
+            DEADLINES.pointer,
+            PROBE
         );
 
         // A client can only re-read the pointer on every navigation if the

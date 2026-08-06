@@ -9,6 +9,7 @@ import {
     AssetResolverError,
     type AssetResolver,
     type AssetResolverSource,
+    type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
 import {
     VisualStateController,
@@ -77,13 +78,41 @@ const flow = {
     nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
 } as unknown as StoryFlowConfig;
 
-function createRuntimeHarness(): {
+const FIXTURE_RELEASE_ID = 'sha256-fixed-release';
+const FIXTURE_MANIFEST_SHA256 =
+    '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
+const previewAssetSource: AssetResolverSource = {
+    environment: 'preview',
+    storyId: 'the_seventh_mirror',
+    baseUrl: 'https://assets.example/',
+    target: { kind: 'preview', previewId: 'hpa-233' },
+};
+
+function readyRelease(): ValidatedAssetRelease {
+    return {
+        pointer: {
+            releaseId: FIXTURE_RELEASE_ID,
+            manifestSha256: FIXTURE_MANIFEST_SHA256,
+        },
+        manifest: {},
+        validatedAt: '2026-07-26T00:00:00.000Z',
+        source: 'network',
+    } as ValidatedAssetRelease;
+}
+
+function createRuntimeHarness(
+    options: {
+        loadRelease?: () => Promise<ValidatedAssetRelease>;
+        source?: AssetResolverSource;
+    } = {}
+): {
     runtime: VisualReaderRuntime;
     softRevalidate: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
     subscribe: ReturnType<typeof vi.spyOn>;
 } {
-    const source: AssetResolverSource = {
+    const source: AssetResolverSource = options.source ?? {
         environment: 'local',
         storyId: 'the_seventh_mirror',
         baseUrl: 'http://localhost:5090/assets/',
@@ -91,12 +120,15 @@ function createRuntimeHarness(): {
     };
     const resolver: AssetResolver = {
         source,
-        loadActiveRelease: vi.fn(async () => {
-            throw new AssetResolverError(
-                'unavailable',
-                'No visual release in this component test'
-            );
-        }),
+        loadActiveRelease: vi.fn(
+            options.loadRelease ??
+                (async () => {
+                    throw new AssetResolverError(
+                        'unavailable',
+                        'No visual release in this component test'
+                    );
+                })
+        ),
         resolve: vi.fn(() => {
             throw new Error('resolve is unreachable without an active release');
         }),
@@ -116,6 +148,7 @@ function createRuntimeHarness(): {
     };
     const controller = new VisualStateController({
         resolver,
+        source,
         cache,
         getSceneDialogue: () => null,
     });
@@ -208,7 +241,9 @@ describe('ReaderShell', () => {
             screen.getByRole('group', { name: 'Reader mode' })
         ).toHaveAttribute('data-reader-mode', 'visual');
         expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
-        expect(persistedHarness.subscribe).toHaveBeenCalledOnce();
+        // The shell subscribes to hold release identity across leaf unmounts,
+        // and the mounted visual leaf subscribes for its layers.
+        expect(persistedHarness.subscribe).toHaveBeenCalledTimes(2);
     });
 
     it.each([
@@ -320,7 +355,8 @@ describe('ReaderShell', () => {
             'dispose:0:end',
             'create:replacement_story',
         ]);
-        expect(harnesses[1].subscribe).toHaveBeenCalledOnce();
+        // Shell subscription (release identity) + leaf subscription.
+        expect(harnesses[1].subscribe).toHaveBeenCalledTimes(2);
 
         view.unmount();
         await Promise.resolve();
@@ -423,6 +459,126 @@ describe('ReaderShell', () => {
         expect(ready).toHaveAttribute('inert');
         expect(visualStatus).toBeVisible();
         expect(ready).not.toContainElement(visualStatus);
+    });
+
+    it('hosts release identity on reader-ready across mode changes and breakpoint swaps', async () => {
+        const mm = stubMatchMedia(false);
+        const harness = createRuntimeHarness({
+            source: previewAssetSource,
+            loadRelease: async () => readyRelease(),
+        });
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+        const host = screen.getByTestId('reader-ready');
+
+        // Absent before the release validates.
+        expect(host).not.toHaveAttribute('data-asset-release-id');
+        expect(host).not.toHaveAttribute('data-asset-environment');
+        expect(host).not.toHaveAttribute('data-asset-preview-id');
+        expect(host).not.toHaveAttribute('data-asset-manifest-sha256');
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await waitFor(() =>
+            expect(host).toHaveAttribute(
+                'data-asset-release-id',
+                FIXTURE_RELEASE_ID
+            )
+        );
+        expect(host).toHaveAttribute('data-asset-environment', 'preview');
+        expect(host).toHaveAttribute('data-asset-preview-id', 'hpa-233');
+        expect(host).toHaveAttribute(
+            'data-asset-manifest-sha256',
+            FIXTURE_MANIFEST_SHA256
+        );
+
+        // The visual leaf itself never hosts the identity.
+        expect(screen.getByTestId('visual-novel-reader')).not.toHaveAttribute(
+            'data-asset-release-id'
+        );
+
+        // Survives the visual -> text mode switch (the visual leaf unmounts).
+        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await tick();
+        expect(
+            screen.queryByTestId('visual-novel-reader')
+        ).not.toBeInTheDocument();
+        expect(host).toHaveAttribute(
+            'data-asset-release-id',
+            FIXTURE_RELEASE_ID
+        );
+
+        // Survives responsive breakpoint swaps of the text leaf.
+        mm.setMatches(true);
+        await waitFor(() =>
+            expect(screen.getByLabelText('Tap to continue')).toBeInTheDocument()
+        );
+        expect(host).toHaveAttribute(
+            'data-asset-release-id',
+            FIXTURE_RELEASE_ID
+        );
+        mm.setMatches(false);
+        await waitFor(() =>
+            expect(screen.getByText('Back to Home')).toBeInTheDocument()
+        );
+        expect(host).toHaveAttribute(
+            'data-asset-release-id',
+            FIXTURE_RELEASE_ID
+        );
+    });
+
+    it('keeps asset identity off the host when the release cannot validate', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const harness = createRuntimeHarness();
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+
+        const host = screen.getByTestId('reader-ready');
+        await waitFor(() =>
+            expect(screen.getByTestId('visual-novel-reader')).toHaveAttribute(
+                'data-visual-release-state',
+                'unavailable'
+            )
+        );
+        expect(host).not.toHaveAttribute('data-asset-release-id');
+        expect(host).not.toHaveAttribute('data-asset-environment');
+        expect(host).not.toHaveAttribute('data-asset-preview-id');
+        expect(host).not.toHaveAttribute('data-asset-manifest-sha256');
+    });
+
+    it('omits data-asset-preview-id for a production release', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const harness = createRuntimeHarness({
+            source: {
+                environment: 'production',
+                storyId: 'the_seventh_mirror',
+                baseUrl: 'https://assets.example/',
+                target: { kind: 'production' },
+            },
+            loadRelease: async () => readyRelease(),
+        });
+        render(ReaderShell, {
+            props: { createVisualRuntime: () => harness.runtime },
+        });
+
+        const host = screen.getByTestId('reader-ready');
+        await waitFor(() =>
+            expect(host).toHaveAttribute(
+                'data-asset-release-id',
+                FIXTURE_RELEASE_ID
+            )
+        );
+        expect(host).toHaveAttribute('data-asset-environment', 'production');
+        expect(host).not.toHaveAttribute('data-asset-preview-id');
+        expect(host).toHaveAttribute(
+            'data-asset-manifest-sha256',
+            FIXTURE_MANIFEST_SHA256
+        );
     });
 
     it('keeps the dialogue bridge deferred for the visual reader runtime', () => {

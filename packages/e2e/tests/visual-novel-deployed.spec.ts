@@ -1,0 +1,632 @@
+import { expect, test, type Page } from '@playwright/test';
+import {
+    RUNTIME_ASSET_CACHE_POLICY,
+    getReleaseManifestPath,
+    isPreviewId,
+    isReleaseId,
+    isSha256,
+    parseRuntimeAssetManifest,
+    type PublicationTarget,
+    type RuntimeAssetManifestV1,
+} from '@aquila/stories/runtime-assets';
+import {
+    getStoryContent,
+    getStoryFlow,
+    type StoryFlowConfig,
+} from '@aquila/stories/stories';
+import type { DialogueMap } from '@aquila/stories/types';
+import {
+    assetUrl,
+    fetchJsonFromPage,
+    type ProbeContext,
+} from './support/r2-browser-probe';
+import { ReaderPage, VisualReaderPage } from './utils';
+
+/**
+ * HPA-233 release gate: prove the DEPLOYED reader serves one specific release.
+ *
+ * Runs only through `playwright.release-gate.config.ts` (no webServer, HTTPS
+ * non-loopback BASE_URL required). The flow drives the deployed web app in a
+ * real browser, waits until the visual runtime reports its release as `ready`,
+ * and then asserts the resolved release identity (`data-asset-*` on the stable
+ * `reader-ready` host) against the env-pinned release. It then exercises the
+ * reader through background/portrait changes, mode and breakpoint swaps, a
+ * bookmark restore, one choice, and a forced-delivery-failure fallback — none
+ * of which may block the reader or change the resolved identity.
+ *
+ * Env: BASE_URL, RELEASE_GATE_STORY_ID (default the_seventh_mirror),
+ * RELEASE_GATE_RELEASE_ID, RELEASE_GATE_MANIFEST_SHA256 (required), and
+ * RELEASE_GATE_PREVIEW_ID (preview run only — omit it for a production run).
+ */
+
+const LOCALE = 'en';
+const DEFAULT_STORY_ID = 'the_seventh_mirror';
+
+const STORY_ID = (process.env.RELEASE_GATE_STORY_ID ?? DEFAULT_STORY_ID).trim();
+const RELEASE_ID = (process.env.RELEASE_GATE_RELEASE_ID ?? '').trim();
+const MANIFEST_SHA256 = (process.env.RELEASE_GATE_MANIFEST_SHA256 ?? '').trim();
+const PREVIEW_ID = (process.env.RELEASE_GATE_PREVIEW_ID ?? '').trim();
+
+function requireGateEnv(value: string, name: string): string {
+    if (value === '') {
+        throw new Error(
+            `visual-novel-deployed.spec.ts: ${name} is required — set it ` +
+                'alongside BASE_URL when running the release gate ' +
+                '(bun --filter e2e test:release-gate).'
+        );
+    }
+    return value;
+}
+
+requireGateEnv(RELEASE_ID, 'RELEASE_GATE_RELEASE_ID');
+requireGateEnv(MANIFEST_SHA256, 'RELEASE_GATE_MANIFEST_SHA256');
+if (!isReleaseId(RELEASE_ID)) {
+    throw new Error(
+        `visual-novel-deployed.spec.ts: RELEASE_GATE_RELEASE_ID "${RELEASE_ID}" ` +
+            'must look like sha256-<64 hex chars>.'
+    );
+}
+if (!isSha256(MANIFEST_SHA256)) {
+    throw new Error(
+        `visual-novel-deployed.spec.ts: RELEASE_GATE_MANIFEST_SHA256 ` +
+            `"${MANIFEST_SHA256}" must be a 64-character lowercase SHA-256 digest.`
+    );
+}
+if (PREVIEW_ID !== '' && !isPreviewId(PREVIEW_ID)) {
+    throw new Error(
+        `visual-novel-deployed.spec.ts: RELEASE_GATE_PREVIEW_ID "${PREVIEW_ID}" ` +
+            'is not a valid preview id.'
+    );
+}
+
+const TARGET: PublicationTarget = PREVIEW_ID
+    ? { kind: 'preview', previewId: PREVIEW_ID }
+    : { kind: 'production' };
+
+/** Preview runs pin the preview id; production runs assert it is absent. */
+const EXPECTED_IDENTITY = {
+    environment: (PREVIEW_ID ? 'preview' : 'production') as
+        | 'preview'
+        | 'production',
+    previewId: PREVIEW_ID || null,
+    releaseId: RELEASE_ID,
+    manifestSha256: MANIFEST_SHA256,
+};
+
+// English UI strings, kept in sync with
+// packages/stories/src/translations/en.json. The local specs hardcode these
+// same strings (reader-visual.spec.ts, MobileReaderPage); importing the
+// translations module would pull JSON into a Playwright-processed spec, which
+// the transform cannot resolve under Bun.
+const t = {
+    textMode: 'Text',
+    visualNovelMode: 'Visual Novel',
+    bookmark: '📖 Bookmark',
+    bookmarkSaved: 'Bookmark saved!',
+    continueReading: 'Continue Reading',
+    visualAssetFallback: 'Some visuals are unavailable',
+    openHistory: 'Open history',
+} as const;
+
+const PREREQUISITES =
+    `Requires the deployed reader at ${process.env.BASE_URL ?? '<BASE_URL>'} to ` +
+    `serve release ${RELEASE_ID} of ${STORY_ID} from its configured CDN ` +
+    '(HPA-233 release gate).';
+
+const probeFor = (assetBase: string): ProbeContext => ({
+    assetBase,
+    assetDeadlineMs: RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset,
+    prerequisites: PREREQUISITES,
+});
+
+const readerUrl = (storyId: string, sceneId: string, dialogue: number) =>
+    `/${LOCALE}/reader?story=${storyId}&scene=${sceneId}&dialogue=${dialogue}`;
+
+const dialogueUrl = (line: number) => new RegExp(`[?&]dialogue=${line}(?:&|$)`);
+
+async function expectCanonicalVisualLine(
+    page: Page,
+    line: number
+): Promise<void> {
+    await expect(page).toHaveURL(dialogueUrl(line));
+    await expect(
+        page
+            .getByTestId('visual-novel-reader')
+            .getByText(new RegExp(`^Page ${line} of \\d+$`))
+    ).toBeVisible();
+}
+
+/** The leaf reports `ready` once the release validated; wait generously. */
+async function waitForVisualReady(page: Page): Promise<void> {
+    await expect(page.getByTestId('visual-novel-reader')).toHaveAttribute(
+        'data-visual-release-state',
+        'ready',
+        { timeout: 30_000 }
+    );
+}
+
+/**
+ * The release identity lives on the STABLE `reader-ready` host (Task 2), so it
+ * must survive text-mode switches, breakpoint swaps, and full reloads. Missing
+ * attributes, a local environment, or a mismatched release/checksum all fail
+ * the gate.
+ */
+async function expectReleaseIdentity(
+    page: Page,
+    expected: typeof EXPECTED_IDENTITY
+): Promise<void> {
+    const host = new ReaderPage(page).ready;
+    await expect(host).toHaveAttribute(
+        'data-asset-environment',
+        expected.environment
+    );
+    if (expected.previewId !== null) {
+        await expect(host).toHaveAttribute(
+            'data-asset-preview-id',
+            expected.previewId
+        );
+    } else {
+        // Production run: the attribute must be ABSENT (the value-less form —
+        // `/.+/` would let an empty `data-asset-preview-id=""` through).
+        await expect(host).not.toHaveAttribute('data-asset-preview-id');
+    }
+    await expect(host).toHaveAttribute(
+        'data-asset-release-id',
+        expected.releaseId
+    );
+    await expect(host).toHaveAttribute(
+        'data-asset-manifest-sha256',
+        expected.manifestSha256
+    );
+}
+
+/**
+ * The flow's anchors, computed from the story content the deployed app itself
+ * serves (never hardcoded per story): one scene with a portrait change and a
+ * later background change, entered at a non-zero position just before the
+ * portrait change. Step 3 additionally requires the release to cover the
+ * change targets — the gate proves the reader LOADS what the release
+ * publishes, not merely that it survives.
+ */
+type SceneAnchors = {
+    sceneId: string;
+    startPage: number;
+    portraitPage: number;
+    backgroundPage: number;
+};
+
+function findSceneAnchors(
+    dialogue: DialogueMap,
+    flow: StoryFlowConfig
+): SceneAnchors {
+    const scenes = flow.nodes.filter(node => node.kind === 'scene');
+    for (const node of scenes) {
+        if (node.kind !== 'scene') continue;
+        const lines = dialogue[node.sceneId];
+        if (!lines || lines.length < 3) continue;
+        // First index where the portrait changes (both lines carry one).
+        const portraitPair = lines.findIndex(
+            (entry, index) =>
+                index + 1 < lines.length &&
+                entry.portrait !== undefined &&
+                lines[index + 1].portrait !== undefined &&
+                entry.portrait !== lines[index + 1].portrait
+        );
+        const backgroundPair = lines.findIndex(
+            (entry, index) =>
+                index + 1 < lines.length &&
+                entry.background !== undefined &&
+                lines[index + 1].background !== undefined &&
+                entry.background !== lines[index + 1].background
+        );
+        if (portraitPair < 0 || backgroundPair < 0) continue;
+        const startPage = portraitPair + 1;
+        const portraitPage = portraitPair + 2;
+        const backgroundPage = backgroundPair + 2;
+        // Non-zero start position, and both changes must be exercised by
+        // advancing forward from the start (portrait first, background later).
+        if (startPage < 2 || backgroundPage <= portraitPage) continue;
+        return {
+            sceneId: node.sceneId,
+            startPage,
+            portraitPage,
+            backgroundPage,
+        };
+    }
+    throw new Error(
+        `visual-novel-deployed.spec.ts: story "${STORY_ID}" has no scene with ` +
+            'a portrait change followed by a background change at a non-zero ' +
+            'position — the release gate needs such a scene to exercise the ' +
+            'deployed reader.'
+    );
+}
+
+/**
+ * `train_adventure` is the only story with choice nodes today; the gate story
+ * itself (the_seventh_mirror) is linear. The choice step therefore drives the
+ * choice-bearing scene of train_adventure — the deployed reader renders it
+ * with or without a release (the visual runtime has no resolver for it), which
+ * is exactly the "choices must never block" property the gate asserts.
+ */
+type ChoiceAnchors = {
+    sceneId: string;
+    dialoguePage: number;
+    prompt: string;
+    optionLabel: string;
+    nextScene: string;
+};
+
+function findChoiceAnchors(): ChoiceAnchors {
+    const CHOICE_STORY = 'train_adventure';
+    const content = getStoryContent(CHOICE_STORY, LOCALE);
+    const flow = getStoryFlow(CHOICE_STORY);
+    if (!flow) {
+        throw new Error(
+            `visual-novel-deployed.spec.ts: no flow for "${CHOICE_STORY}".`
+        );
+    }
+    const scene = flow.nodes.find(
+        (node): node is Extract<typeof node, { kind: 'scene' }> =>
+            node.kind === 'scene' && (node.next?.startsWith('choice:') ?? false)
+    );
+    if (!scene || !scene.next) {
+        throw new Error(
+            `visual-novel-deployed.spec.ts: "${CHOICE_STORY}" has no choice scene.`
+        );
+    }
+    const choiceId = scene.next.slice('choice:'.length);
+    const choice = content.choices[choiceId];
+    const lines = content.dialogue[scene.sceneId];
+    const option = choice?.options[0];
+    if (!choice || !lines || !option) {
+        throw new Error(
+            `visual-novel-deployed.spec.ts: "${CHOICE_STORY}" choice ` +
+                `"${choiceId}" is malformed.`
+        );
+    }
+    return {
+        sceneId: scene.sceneId,
+        dialoguePage: lines.length,
+        prompt: choice.prompt,
+        optionLabel: option.label,
+        nextScene: option.nextScene,
+    };
+}
+
+/**
+ * Advance one click per line, asserting the canonical URL each time — a
+ * skipped line would otherwise cascade into every later assertion. The reader
+ * skips the typewriter effect on a click while a line is still typing (it
+ * does not advance), so each click waits for the typewriter to finish first.
+ */
+async function advanceTo(
+    page: Page,
+    visual: VisualReaderPage,
+    fromPage: number,
+    toPage: number
+): Promise<void> {
+    for (let line = fromPage; line < toPage; line++) {
+        await expect(page.getByTestId('visual-typewriter-cursor')).toHaveCount(
+            0
+        );
+        await visual.root.click();
+        await expect(page).toHaveURL(dialogueUrl(line + 1));
+    }
+}
+
+function requireCovered(
+    manifest: RuntimeAssetManifestV1,
+    type: 'background' | 'portrait',
+    key: string,
+    what: string
+): void {
+    const covered = manifest.assets.some(
+        asset => asset.identity.type === type && asset.identity.key === key
+    );
+    if (!covered) {
+        throw new Error(
+            `The release ${RELEASE_ID} omits the ${type} "${key}" that the ` +
+                `reader must load ${what} — the gate cannot prove the reader ` +
+                'loads new visuals from this release. Publish a release that ' +
+                'covers the exercised scene.'
+        );
+    }
+}
+
+const content = getStoryContent(STORY_ID, LOCALE);
+const flow = getStoryFlow(STORY_ID);
+if (!flow) {
+    throw new Error(
+        `visual-novel-deployed.spec.ts: unknown story "${STORY_ID}".`
+    );
+}
+const anchors = findSceneAnchors(content.dialogue, flow);
+const choiceAnchors = findChoiceAnchors();
+
+test.describe('Deployed visual-novel release gate', () => {
+    test('serves the pinned release end to end in a real browser', async ({
+        page,
+    }) => {
+        // The whole flow is one journey through the deployed reader; the two
+        // projects (desktop + mobile Chromium) each run it from their own
+        // viewport. Two release validations happen (initial load and the
+        // return to the gate story after the choice), each with network
+        // deadlines from the cache policy.
+        test.setTimeout(240_000);
+        const visual = new VisualReaderPage(page);
+
+        // -- Step 1: open the story in visual mode at a non-zero position. --
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'visual');
+        });
+        // Capture the release manifest the reader fetches on load so the
+        // delivery base and every object URL are derived from the LIVE layout
+        // — never hardcoded. waitForResponse is started before goto and bound
+        // to the release-readiness budget (30s, matching waitForVisualReady):
+        // the manifest must arrive during initial load, so resolving it here
+        // rather than through an unbounded response listener fails the test
+        // with a clear diagnostic instead of hanging until the 240s timeout.
+        const manifestResponse = page.waitForResponse(
+            response => response.url().endsWith('/runtime-manifest.json'),
+            { timeout: 30_000 }
+        );
+        await page.goto(
+            readerUrl(STORY_ID, anchors.sceneId, anchors.startPage)
+        );
+        await expect(visual.root).toBeVisible();
+        await expectCanonicalVisualLine(page, anchors.startPage);
+
+        let manifestUrl: string;
+        try {
+            manifestUrl = (await manifestResponse).url();
+        } catch {
+            throw new Error(
+                'The deployed reader never fetched a release manifest ' +
+                    `(expected ${RELEASE_ID} of ${STORY_ID}) — is the release ` +
+                    'published and pointed at for this deploy?'
+            );
+        }
+
+        // -- Step 2: release ready, and the exact pinned identity on reader-ready. --
+        await waitForVisualReady(page);
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+
+        // Derive the delivery base from the manifest URL the reader used and
+        // probe the manifest from page script (cross-origin, CORS-enforced) —
+        // the same browser-side delivery check the gate exists to make.
+        const slashIndex = manifestUrl.indexOf('/vn/');
+        if (slashIndex < 0) {
+            throw new Error(
+                `Manifest URL "${manifestUrl}" is not under /vn/ — cannot ` +
+                    'derive the delivery base.'
+            );
+        }
+        const assetBase = manifestUrl.slice(0, slashIndex);
+        const { body } = await fetchJsonFromPage(
+            page,
+            assetUrl(
+                assetBase,
+                getReleaseManifestPath(STORY_ID, RELEASE_ID, TARGET)
+            ),
+            RUNTIME_ASSET_CACHE_POLICY.timeoutMs.manifest,
+            probeFor(assetBase)
+        );
+        const manifest = parseRuntimeAssetManifest(body);
+        expect(manifest.storyId).toBe(STORY_ID);
+        expect(manifest.releaseId).toBe(RELEASE_ID);
+
+        // -- Step 3: advance through a portrait change and a background change. --
+        // The change targets must be covered by the release (see
+        // requireCovered) — the reader must actually LOAD them.
+        const dialogue = content.dialogue[anchors.sceneId];
+        const portraitAfter = dialogue[anchors.portraitPage - 1].portrait;
+        const backgroundAfter = dialogue[anchors.backgroundPage - 1].background;
+        if (!portraitAfter || !backgroundAfter) {
+            throw new Error(
+                'Assertion bug: anchor lines carry no portrait/background.'
+            );
+        }
+        requireCovered(
+            manifest,
+            'portrait',
+            portraitAfter,
+            'on the portrait change'
+        );
+        requireCovered(
+            manifest,
+            'background',
+            backgroundAfter,
+            'on the background change'
+        );
+
+        const portraitSrcBefore = await visual.portrait.getAttribute('src');
+        await advanceTo(page, visual, anchors.startPage, anchors.portraitPage);
+        await expect(visual.portrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        if (portraitSrcBefore !== null) {
+            await expect(visual.portrait).not.toHaveAttribute(
+                'src',
+                portraitSrcBefore
+            );
+        }
+
+        const backgroundSrcBefore =
+            await visual.activeBackground.getAttribute('src');
+        await advanceTo(
+            page,
+            visual,
+            anchors.portraitPage,
+            anchors.backgroundPage
+        );
+        await expect(visual.activeBackground).toHaveAttribute(
+            'data-bg-state',
+            'ready'
+        );
+        if (backgroundSrcBefore !== null) {
+            await expect(visual.activeBackground).not.toHaveAttribute(
+                'src',
+                backgroundSrcBefore
+            );
+        }
+
+        // -- Step 4: visual<->text — same line, same identity. --
+        const line = anchors.backgroundPage;
+        await page
+            .getByRole('button', { name: t.textMode, exact: true })
+            .click();
+        // The visual leaf unmounts in text mode; the canonical line survives in
+        // the URL (the text reader renders its own progress widget).
+        await expect(
+            page.getByTestId('visual-novel-reader')
+        ).not.toBeAttached();
+        await expect(page).toHaveURL(dialogueUrl(line));
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+
+        await page
+            .getByRole('button', { name: t.visualNovelMode, exact: true })
+            .click();
+        await waitForVisualReady(page);
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+
+        // -- Step 5: resize desktop<->mobile — same line, same identity. --
+        await page.setViewportSize({ width: 844, height: 390 });
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+
+        // -- Step 6: restore a bookmark, then take one choice. --
+        await page
+            .getByRole('button', { name: t.bookmark, exact: true })
+            .click();
+        const prompt = page.getByRole('dialog', { name: 'Prompt' });
+        await expect(prompt).toBeVisible();
+        await prompt
+            .locator('input[type="text"]')
+            .fill(`release-gate ${anchors.sceneId} line ${line}`);
+        await prompt.getByRole('button', { name: 'OK' }).click();
+        const alert = page.getByRole('alertdialog', { name: 'Alert' });
+        await expect(alert).toContainText(t.bookmarkSaved);
+        await alert.getByRole('button', { name: 'OK' }).click();
+        await expect(alert).not.toBeAttached();
+
+        // Restore through the local bookmarks card: same scene, same line,
+        // same identity after a fresh load and re-validation.
+        await page.goto(`/${LOCALE}/bookmarks`);
+        const card = page.locator('[data-testid="local-bookmark-card"]');
+        await expect(card).toBeVisible();
+        await card.getByRole('link', { name: t.continueReading }).click();
+        await expect(page).toHaveURL(dialogueUrl(line));
+        await waitForVisualReady(page);
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+
+        // One choice, computed from the story content the app itself ships.
+        await page.goto(
+            readerUrl(
+                'train_adventure',
+                choiceAnchors.sceneId,
+                choiceAnchors.dialoguePage
+            )
+        );
+        await expect(visual.root).toBeVisible();
+        await expect(page.getByText(choiceAnchors.prompt)).toBeVisible();
+        await page
+            .getByRole('button', {
+                name: choiceAnchors.optionLabel,
+                exact: true,
+            })
+            .click();
+        await expect(page).toHaveURL(
+            new RegExp(`[?&]scene=${choiceAnchors.nextScene}(?:&|$)`)
+        );
+        await expect(page).toHaveURL(dialogueUrl(1));
+        await expect(visual.root).toBeVisible();
+
+        // -- Step 7: a forced delivery failure must not block. --
+        // Return to the gate story one line before its background change. The
+        // background on the next line IS covered by the release (requireCovered
+        // proved it above), so this is not a manifest omission: it is a FORCED
+        // DELIVERY FAILURE — every variant path the manifest exposes for that
+        // object (webp and the optional avif, HPA-227), whichever the reader
+        // prefers, is intercepted with 404 so its bytes can never arrive, and
+        // the reader must keep going.
+        //
+        // The routes must be installed BEFORE the goto: the reader's
+        // warmWithinScene prefetch fires during navigation (visual-state-
+        // controller.ts), so routes installed after the page settles would let
+        // a fast CDN populate the decoded cache first — the click would then
+        // use cached bytes and the fallback banner would never appear. The
+        // blocked-request counter additionally proves the reader actually
+        // asked for the intercepted asset at least once (prefetch or the
+        // click-driven load), so a step whose routes never matched fails
+        // loudly instead of asserting nothing.
+        const blockedEntry = manifest.assets.find(
+            asset =>
+                asset.identity.type === 'background' &&
+                asset.identity.key === backgroundAfter
+        );
+        if (!blockedEntry) {
+            // requireCovered already proved this key is in the served
+            // manifest; a mismatch here is a spec bug and must fail loudly.
+            throw new Error(
+                'Assertion bug: the background covered in step 3 is no ' +
+                    'longer present in the served manifest.'
+            );
+        }
+        const blockedPatterns: string[] = [];
+        let blockedRequests = 0;
+        for (const variant of [
+            blockedEntry.variants.webp,
+            blockedEntry.variants.avif,
+        ]) {
+            if (!variant) continue;
+            const pattern = `**/${variant.path}`;
+            blockedPatterns.push(pattern);
+            await page.route(pattern, route => {
+                blockedRequests += 1;
+                return route.fulfill({ status: 404, body: 'missing' });
+            });
+        }
+        await page.goto(
+            readerUrl(STORY_ID, anchors.sceneId, anchors.backgroundPage - 1)
+        );
+        await waitForVisualReady(page);
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+
+        const fallbackSrcBefore =
+            await visual.activeBackground.getAttribute('src');
+        await visual.root.click();
+        await expect(page).toHaveURL(dialogueUrl(anchors.backgroundPage));
+        await expectCanonicalVisualLine(page, anchors.backgroundPage);
+        // Fallback surfaced without blocking: the banner names the condition,
+        // the prior background stays, and the controls remain usable.
+        await expect(page.getByRole('status')).toHaveText(
+            t.visualAssetFallback
+        );
+        if (fallbackSrcBefore !== null) {
+            await expect(visual.activeBackground).toHaveAttribute(
+                'src',
+                fallbackSrcBefore
+            );
+        }
+        // The interception was exercised: the reader asked for the blocked
+        // object at least once. Zero means the routes never matched and this
+        // step asserted nothing.
+        expect(blockedRequests).toBeGreaterThanOrEqual(1);
+        for (const pattern of blockedPatterns) {
+            await page.unroute(pattern);
+        }
+        await expect(
+            page.getByRole('button', { name: t.openHistory })
+        ).toBeEnabled();
+        await expect(
+            page.getByRole('button', { name: t.visualNovelMode, exact: true })
+        ).toBeEnabled();
+        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+    });
+});

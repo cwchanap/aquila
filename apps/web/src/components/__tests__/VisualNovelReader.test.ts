@@ -128,6 +128,7 @@ const readySnapshot: VisualSnapshot = {
         height: 1200,
         slot: 'right',
     },
+    releaseIdentity: null,
     status: null,
 };
 
@@ -245,6 +246,7 @@ describe('VisualNovelReader', () => {
             activeBackground: omittedLayer,
             stagingBackground: omittedLayer,
             portrait: { ...omittedLayer, slot: 'center' },
+            releaseIdentity: null,
             status: null,
         });
         renderReader({
@@ -422,6 +424,7 @@ describe('VisualNovelReader', () => {
                 identity: 'portrait:narrator-neutral',
                 slot: 'right',
             },
+            releaseIdentity: null,
             status: 'unavailable',
         });
         renderReader({

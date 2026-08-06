@@ -57,6 +57,7 @@
     activeBackground: emptyLayer,
     stagingBackground: emptyLayer,
     portrait: { ...emptyLayer, slot: 'center' },
+    releaseIdentity: null,
     status: null,
   };
 

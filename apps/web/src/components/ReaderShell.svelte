@@ -10,6 +10,7 @@
   } from '@/lib/reader-mode';
   import {
     createVisualRuntime as createDefaultVisualRuntime,
+    type VisualReleaseIdentity,
     type VisualSnapshot,
     type VisualReaderRuntime,
   } from '@/lib/visual-assets';
@@ -65,6 +66,10 @@
   let readerMode = $state(readReaderMode());
   let visualRuntime: VisualReaderRuntime | null = $state(null);
   let visualStatus = $state<VisualSnapshot['status']>(null);
+  // Identity of the validated release serving visuals. Held in shell state
+  // (not in the visual leaf) so the data-asset-* attributes on the reader-ready
+  // host survive text-mode switches and responsive leaf remounts.
+  let visualIdentity = $state<VisualReleaseIdentity | null>(null);
   let visualRuntimeStoryId: string | null = $state(null);
   let visualRuntimeAttempted = $state(false);
   let visualRuntimeTransitioning = $state(false);
@@ -157,6 +162,21 @@
       return;
     }
     if (wantsVisualRuntime) ensureVisualRuntime(activeStoryId);
+  });
+
+  // Track the validated release identity on the shell itself: the visual leaf
+  // subscribes for its layers, but it unmounts on text-mode switches and
+  // responsive remounts, so the identity must live here and be rendered on the
+  // stable `reader-ready` host. Clearing the runtime clears the identity.
+  $effect(() => {
+    const runtime = visualRuntime;
+    if (!runtime) {
+      visualIdentity = null;
+      return;
+    }
+    return runtime.controller.subscribe((snapshot) => {
+      visualIdentity = snapshot.releaseIdentity;
+    });
   });
 
   let lastActiveLineKey: string | null = $state(null);
@@ -349,6 +369,10 @@
     <div
       bind:this={readerReadyElement}
       data-testid="reader-ready"
+      data-asset-environment={visualIdentity?.assetEnvironment}
+      data-asset-preview-id={visualIdentity?.previewId ?? undefined}
+      data-asset-release-id={visualIdentity?.releaseId}
+      data-asset-manifest-sha256={visualIdentity?.manifestSha256}
       aria-hidden={isBlocking ? 'true' : undefined}
     >
       {#if readerMode === 'visual'}

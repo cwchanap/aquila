@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { parseArgs, type ParseArgsConfig } from 'node:util';
 import {
     assertReleaseIdMatchesContentSha256,
     assertSha256,
@@ -6,12 +7,17 @@ import {
     getCurrentPointerPath,
     getObjectPath,
     getReleaseManifestPath,
+    isPreviewId,
+    isReleaseId,
+    isSha256,
+    isStoryId,
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
     validatePointerManifestPair,
     type ActiveReleasePointerV1,
     type AssetFormat,
     type ManifestByteSha256,
+    type PublicationTarget,
     type ReleaseContentSha256,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
@@ -22,7 +28,7 @@ import {
     findForbiddenKeys,
     type CheckResult,
 } from './assertions';
-import { loadR2DeliveryConfig } from './config';
+import { loadR2DeliveryConfig, type R2DeliveryConfig } from './config';
 import { summarize, type ManifestVariant } from './documents';
 
 const STORY_ID = 'the_seventh_mirror';
@@ -164,6 +170,7 @@ export function _setFetchImpl(impl: typeof fetch): void {
  */
 async function request(
     url: string,
+    fetchImpl: typeof fetch,
     headers: Record<string, string> = {}
 ): Promise<RequestOutcome> {
     try {
@@ -183,9 +190,11 @@ type JsonDocument = { response: Response; body: unknown; text: string };
 
 async function requireJsonDocument(
     url: string,
-    check: string
+    check: string,
+    origin: string,
+    fetchImpl: typeof fetch
 ): Promise<JsonDocument> {
-    const outcome = await request(url, { origin: ORIGIN });
+    const outcome = await request(url, fetchImpl, { origin });
     if (!outcome.ok) {
         throw new CheckAborted(check, `GET ${url} failed: ${outcome.detail}`);
     }
@@ -228,9 +237,13 @@ async function checkObject(
     format: AssetFormat,
     variant: ManifestVariant,
     label: string,
+    origin: string,
+    fetchImpl: typeof fetch,
     results: CheckResult[]
 ): Promise<void> {
-    const outcome = await request(`${base}/${objectPath}`, { origin: ORIGIN });
+    const outcome = await request(`${base}/${objectPath}`, fetchImpl, {
+        origin,
+    });
     if (!outcome.ok) {
         results.push({
             name: `${format} ${label} object`,
@@ -304,11 +317,12 @@ async function checkObject(
  */
 async function checkCacheHit(
     base: string,
-    objectPath: string
+    objectPath: string,
+    fetchImpl: typeof fetch
 ): Promise<CheckResult> {
     const observed: string[] = [];
     for (let attempt = 0; attempt < CACHE_HIT_ATTEMPTS; attempt += 1) {
-        const outcome = await request(`${base}/${objectPath}`);
+        const outcome = await request(`${base}/${objectPath}`, fetchImpl);
         if (!outcome.ok) {
             return {
                 name: 'object cache hit',
@@ -332,9 +346,10 @@ async function checkCacheHit(
 }
 
 async function checkSourceKeyAbsentFromDelivery(
-    base: string
+    base: string,
+    fetchImpl: typeof fetch
 ): Promise<CheckResult> {
-    const outcome = await request(`${base}/${SOURCE_PROBE_KEY}`);
+    const outcome = await request(`${base}/${SOURCE_PROBE_KEY}`, fetchImpl);
     if (!outcome.ok) {
         return {
             name: 'source key absent from delivery bucket',
@@ -366,14 +381,139 @@ function checkForbiddenKeys(
     };
 }
 
-export async function runChecks(
-    base: string,
-    results: CheckResult[]
+/**
+ * Inputs to a public CDN verification run. With `releaseId` present the run is
+ * in candidate mode: the manifest is fetched at its content-addressed path and
+ * `current.json` is never read — the point is to verify a release before it is
+ * pointed at. Without it the run is in active mode and derives release identity
+ * from `current.json`, exactly as the no-argument CLI invocation always has.
+ */
+export type PublicVerifyInput = {
+    storyId: string;
+    target: PublicationTarget;
+    assetBaseUrl: URL;
+    /**
+     * Origin sent on JSON and object probes, and the policy the delivery host's
+     * CORS rule must allow. Defaults to `ORIGIN` — the web app origin is a
+     * property of this delivery host, not of the release under test.
+     */
+    browserOrigin?: URL;
+    releaseId?: string; // candidate mode when present
+    expectedManifestSha256?: ManifestByteSha256;
+};
+
+export type PublicVerifyOptions = {
+    /** Overrides the module-level fetch indirection for a single invocation. */
+    fetch?: typeof fetch;
+};
+
+export type PublicVerifyOutcome = {
+    status: 'passed' | 'failed';
+    results: CheckResult[];
+};
+
+/**
+ * The delivery host serves the public publication layout over HTTPS only.
+ * Credentials in the URL would be sent or echoed by some clients and could
+ * leak through `Origin`-dependent responses; reject the configuration before
+ * a single request is made.
+ */
+function assertSafeAssetBaseUrl(url: URL): void {
+    if (url.protocol !== 'https:') {
+        throw new Error(
+            `--asset-base-url must use https:, got ${url.protocol}//`
+        );
+    }
+    if (url.username !== '' || url.password !== '') {
+        throw new Error('--asset-base-url must not carry credentials');
+    }
+}
+
+/**
+ * Everything the shared manifest-and-objects section needs to know about how
+ * the manifest path and its expected digest were resolved.
+ */
+interface ResolvedManifestContext {
+    manifestPath: string;
+    /**
+     * Reference digest the manifest bytes are compared against. Active mode
+     * always has the pointer's `manifestSha256`; candidate mode has it only
+     * when `--expect-manifest-sha256` is given. `null` skips the checksum
+     * check entirely.
+     */
+    expectedManifestSha256: ManifestByteSha256 | null;
+    /**
+     * Check names differ by mode so an operator can tell which reference the
+     * digest was compared against, as do the abort details that describe a
+     * failed critical check.
+     */
+    checksumCheckName: string;
+    checksumMismatchDetail: string;
+    integrityCheckName: string;
+    integrityAbortDetail: string;
+    /**
+     * Mode-specific integrity validation, run once the manifest parses. Active
+     * mode validates the pointer/manifest pair; candidate mode verifies the
+     * manifest declares the requested release.
+     */
+    integrityCheck: (
+        parsed: RuntimeAssetManifestV1,
+        manifestByteDigest: ManifestByteSha256
+    ) => void;
+    /**
+     * Candidate mode has no pointer, so the manifest is the root document and
+     * carries the CORS check; active mode checks the pointer's CORS instead.
+     */
+    checkCors: boolean;
+    /**
+     * Documents scanned for forbidden keys; the manifest body itself is
+     * appended by the shared section (pointer + manifest in active mode,
+     * manifest only in candidate mode).
+     */
+    documents: Array<{ label: string; body: unknown }>;
+}
+
+async function runChecksForInput(
+    input: PublicVerifyInput,
+    results: CheckResult[],
+    fetchImpl: typeof fetch
 ): Promise<void> {
-    const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
+    assertSafeAssetBaseUrl(input.assetBaseUrl);
+    const base = input.assetBaseUrl.toString().replace(/\/+$/, '');
+    const origin = (input.browserOrigin ?? new URL(ORIGIN)).toString();
+    if (input.releaseId === undefined) {
+        await runActiveChecks(input, base, origin, results, fetchImpl);
+    } else {
+        await runCandidateChecks(
+            input,
+            input.releaseId,
+            base,
+            origin,
+            results,
+            fetchImpl
+        );
+    }
+}
+
+/**
+ * Active mode: fetch `current.json`, validate the pointer against the story
+ * and target, derive the manifest path from the pointer's releaseId, then hand
+ * the resolved documents to the shared manifest-and-objects section.
+ */
+async function runActiveChecks(
+    input: PublicVerifyInput,
+    base: string,
+    origin: string,
+    results: CheckResult[],
+    fetchImpl: typeof fetch
+): Promise<void> {
+    const { storyId, target } = input;
+    const pointerPath = getCurrentPointerPath(storyId, target);
     const pointer = await requireJsonDocument(
         `${base}/${pointerPath}`,
-        'pointer fetch'
+        'pointer fetch',
+        origin,
+        fetchImpl
     );
     const pointerHeaders = pointer.response.headers;
     results.push(
@@ -434,8 +574,8 @@ export async function runChecks(
     try {
         pointerParsed = parseActiveReleasePointer(
             pointer.body,
-            TARGET,
-            STORY_ID
+            target,
+            storyId
         );
         results.push({
             name: 'pointer contract',
@@ -460,9 +600,9 @@ export async function runChecks(
     let manifestPath: string;
     try {
         manifestPath = getReleaseManifestPath(
-            STORY_ID,
+            storyId,
             pointerParsed.releaseId,
-            TARGET
+            target
         );
     } catch (error) {
         throw new CheckAborted(
@@ -476,9 +616,128 @@ export async function runChecks(
         detail: `manifestPath: ${pointerParsed.manifestPath} (expected ${manifestPath})`,
     });
 
+    // Design §1: `--expect-manifest-sha256` is optional but, when given, every
+    // boundary compares its own observation against that one value. In active
+    // mode the pointer's `manifestSha256` is the first observation of the
+    // digest, so a caller-supplied expected digest must agree with it BEFORE
+    // the manifest bytes are validated against the pointer — otherwise a
+    // caller passing the wrong digest would be silently overridden by the
+    // pointer's own (possibly stale or tampered) claim.
+    if (input.expectedManifestSha256 !== undefined) {
+        const agrees =
+            pointerParsed.manifestSha256 === input.expectedManifestSha256;
+        results.push({
+            name: 'pointer manifestSha256 matches expected',
+            ok: agrees,
+            detail: `pointer declares ${pointerParsed.manifestSha256} (expected: ${input.expectedManifestSha256})`,
+        });
+        if (!agrees) {
+            throw new CheckAborted(
+                'pointer manifestSha256',
+                'pointer manifestSha256 does not match --expect-manifest-sha256 (dependent checks skipped)'
+            );
+        }
+    }
+
+    await runChecksForManifest(
+        {
+            manifestPath,
+            expectedManifestSha256: pointerParsed.manifestSha256,
+            checksumCheckName: 'manifest checksum matches pointer',
+            checksumMismatchDetail:
+                'manifest bytes do not match pointer.manifestSha256 (dependent checks skipped)',
+            integrityCheckName: 'pointer/manifest pair',
+            integrityAbortDetail:
+                'pair validation failed (dependent checks skipped)',
+            integrityCheck: (parsed, digest) =>
+                validatePointerManifestPair(pointerParsed, parsed, digest),
+            checkCors: false,
+            documents: [{ label: 'pointer', body: pointer.body }],
+        },
+        input,
+        base,
+        origin,
+        results,
+        fetchImpl
+    );
+}
+
+/**
+ * Candidate mode: the manifest is fetched at its content-addressed path derived
+ * directly from the requested releaseId — `current.json` is never read, because
+ * it still points at the active release. The manifest is the root document, so
+ * it carries the CORS check, and the requested releaseId takes the role the
+ * pointer plays in active mode.
+ */
+async function runCandidateChecks(
+    input: PublicVerifyInput,
+    releaseId: string,
+    base: string,
+    origin: string,
+    results: CheckResult[],
+    fetchImpl: typeof fetch
+): Promise<void> {
+    const { storyId, target } = input;
+    let manifestPath: string;
+    try {
+        manifestPath = getReleaseManifestPath(storyId, releaseId, target);
+    } catch (error) {
+        throw new CheckAborted(
+            'releaseId',
+            `requested release ${releaseId} is unusable: ${describeError(error)}`
+        );
+    }
+
+    await runChecksForManifest(
+        {
+            manifestPath,
+            expectedManifestSha256: input.expectedManifestSha256 ?? null,
+            checksumCheckName: 'manifest checksum matches expected',
+            checksumMismatchDetail:
+                'manifest bytes do not match the expected digest (dependent checks skipped)',
+            integrityCheckName: 'releaseId matches requested candidate',
+            integrityAbortDetail:
+                'requested releaseId does not match the served manifest (dependent checks skipped)',
+            integrityCheck: parsed => {
+                if (parsed.releaseId !== releaseId) {
+                    throw new Error(
+                        `Manifest declares release ${parsed.releaseId}, requested ${releaseId}`
+                    );
+                }
+            },
+            checkCors: true,
+            documents: [],
+        },
+        input,
+        base,
+        origin,
+        results,
+        fetchImpl
+    );
+}
+
+/**
+ * The checks shared by both modes, from the manifest fetch onward. The pointer
+ * section (active mode only) resolves the context; everything after the
+ * manifest response is identical for an active release and a candidate: header
+ * contract, byte checksum against the resolved reference, contract parse,
+ * mode-specific integrity validation, canonical-content releaseId, every
+ * object, and the delivery-host probes.
+ */
+async function runChecksForManifest(
+    resolved: ResolvedManifestContext,
+    input: PublicVerifyInput,
+    base: string,
+    origin: string,
+    results: CheckResult[],
+    fetchImpl: typeof fetch
+): Promise<void> {
+    const { manifestPath } = resolved;
     const manifest = await requireJsonDocument(
         `${base}/${manifestPath}`,
-        'manifest fetch'
+        'manifest fetch',
+        origin,
+        fetchImpl
     );
     const manifestHeaders = manifest.response.headers;
     results.push(
@@ -496,6 +755,17 @@ export async function runChecks(
             assertImmutable(manifestHeaders.get('cache-control'))
         )
     );
+    if (resolved.checkCors) {
+        // Candidate mode has no pointer, so the manifest's CORS policy is the
+        // only one a browser read of the candidate depends on. Same policy,
+        // same failure semantics as the active-mode pointer CORS check.
+        const allowOrigin = manifestHeaders.get('access-control-allow-origin');
+        results.push({
+            name: 'manifest CORS',
+            ok: allowOrigin === '*',
+            detail: `access-control-allow-origin: ${allowOrigin ?? '<missing>'} (contract requires *)`,
+        });
+    }
     // The immutable cache rule has two branches — `/vn/objects/*` and
     // `*/runtime-manifest.json`. JSON is not edge-cached by default on
     // Cloudflare, so the manifest's cacheability is entirely the rule's doing:
@@ -521,31 +791,36 @@ export async function runChecks(
         detail: `cf-cache-status: ${manifestCacheStatus ?? '<missing>'}`,
     });
 
-    // The manifest byte digest must match the pointer's `manifestSha256` — the
-    // same check the reader makes before it trusts the manifest. Without it a
-    // manifest edited after publication (but with a valid first webp/avif
-    // entry) could pass every other check while the reader rejects it with
-    // "Manifest checksum mismatch".
+    // The manifest byte digest must match the resolved reference — the
+    // pointer's `manifestSha256` in active mode, `--expect-manifest-sha256` in
+    // candidate mode — the same check the reader makes before it trusts the
+    // manifest. Without it a manifest edited after publication (but with a
+    // valid first webp/avif entry) could pass every other check while the
+    // reader rejects it with "Manifest checksum mismatch".
     const manifestByteDigest = assertSha256<'manifest-bytes'>(
         sha256Hex(manifest.text)
     ) as ManifestByteSha256;
-    const checksumMatches = manifestByteDigest === pointerParsed.manifestSha256;
-    results.push({
-        name: 'manifest checksum matches pointer',
-        ok: checksumMatches,
-        detail: `sha256(manifest bytes): ${manifestByteDigest} (pointer.manifestSha256: ${pointerParsed.manifestSha256})`,
-    });
-    if (!checksumMatches) {
-        throw new CheckAborted(
-            'manifest checksum',
-            'manifest bytes do not match pointer.manifestSha256 (dependent checks skipped)'
-        );
+    if (resolved.expectedManifestSha256 !== null) {
+        const checksumMatches =
+            manifestByteDigest === resolved.expectedManifestSha256;
+        results.push({
+            name: resolved.checksumCheckName,
+            ok: checksumMatches,
+            detail: `sha256(manifest bytes): ${manifestByteDigest} (expected: ${resolved.expectedManifestSha256})`,
+        });
+        if (!checksumMatches) {
+            throw new CheckAborted(
+                'manifest checksum',
+                resolved.checksumMismatchDetail
+            );
+        }
     }
 
-    // Parse the manifest with the reader's contract parser, then validate the
-    // pointer/manifest pair and re-derive the releaseId from canonical manifest
-    // content. These are the integrity checks that make the verifier's verdict
-    // match the reader's: a release the reader rejects cannot pass the verifier.
+    // Parse the manifest with the reader's contract parser, then run the
+    // mode-specific integrity validation and re-derive the releaseId from
+    // canonical manifest content. These are the integrity checks that make the
+    // verifier's verdict match the reader's: a release the reader rejects
+    // cannot pass the verifier.
     let manifestParsed: RuntimeAssetManifestV1;
     try {
         manifestParsed = parseRuntimeAssetManifest(manifest.body);
@@ -567,20 +842,14 @@ export async function runChecks(
     }
     if (
         !runIntegrityCheck(
-            'pointer/manifest pair',
-            () => {
-                validatePointerManifestPair(
-                    pointerParsed,
-                    manifestParsed,
-                    manifestByteDigest
-                );
-            },
+            resolved.integrityCheckName,
+            () => resolved.integrityCheck(manifestParsed, manifestByteDigest),
             results
         )
     ) {
         throw new CheckAborted(
-            'pointer/manifest pair',
-            'pair validation failed (dependent checks skipped)'
+            resolved.integrityCheckName,
+            resolved.integrityAbortDetail
         );
     }
     if (
@@ -716,6 +985,8 @@ export async function runChecks(
                     byteLength: variant.byteLength,
                 },
                 label,
+                origin,
+                fetchImpl,
                 results
             );
         }
@@ -747,46 +1018,55 @@ export async function runChecks(
     }
 
     if (cacheProbePath !== null) {
-        results.push(await checkCacheHit(base, cacheProbePath));
+        results.push(await checkCacheHit(base, cacheProbePath, fetchImpl));
     }
-    results.push(await checkSourceKeyAbsentFromDelivery(base));
+    results.push(await checkSourceKeyAbsentFromDelivery(base, fetchImpl));
     results.push(
         checkForbiddenKeys([
-            { label: 'pointer', body: pointer.body },
+            ...resolved.documents,
             { label: 'manifest', body: manifest.body },
         ])
     );
 }
 
 /**
- * Sets `exitCode` rather than calling `process.exit`, which can truncate
- * buffered stdout when it is a pipe — exactly the CI log capture where an
- * operator needs the check lines most.
+ * Verifies the default smoke release in active mode. Kept for the test
+ * harness, which exercises the pipeline directly with a substituted fetch; the
+ * CLI and the candidate-mode tests go through `verifyPublicRelease`, which
+ * wraps the same pipeline and turns a critical failure into a failed outcome.
  */
-function report(results: CheckResult[]): void {
-    let failed = 0;
-    for (const result of results) {
-        const label = result.ok ? 'PASS' : result.warning ? 'WARN' : 'FAIL';
-        if (!result.ok && !result.warning) failed += 1;
-        console.log(`${label}  ${result.name} — ${result.detail}`);
-    }
-    if (failed > 0) {
-        console.error(`\n${failed} check(s) failed.`);
-        process.exitCode = 1;
-        return;
-    }
-    console.log('\nAll required checks passed.');
+export async function runChecks(
+    base: string,
+    results: CheckResult[]
+): Promise<void> {
+    await runChecksForInput(
+        {
+            storyId: STORY_ID,
+            target: TARGET,
+            assetBaseUrl: new URL(base),
+            browserOrigin: new URL(ORIGIN),
+        },
+        results,
+        fetchImpl
+    );
 }
 
-async function main(): Promise<void> {
-    const config = await loadR2DeliveryConfig();
-    const base = `https://${config.hostname}`;
+/**
+ * Runs a public CDN verification for an arbitrary story, target, and (in
+ * candidate mode) release. Critical failures that `runChecks` reports by
+ * throwing `CheckAborted` are captured as a failed outcome here, so callers
+ * (the CLI, the release gate) get one result object; input-level configuration
+ * errors (unsafe base URL) still throw. The status reflects the check rows:
+ * a run whose non-critical checks failed is `failed` even though nothing
+ * threw.
+ */
+export async function verifyPublicRelease(
+    input: PublicVerifyInput,
+    options: PublicVerifyOptions = {}
+): Promise<PublicVerifyOutcome> {
     const results: CheckResult[] = [];
-    console.log(
-        `Verifying ${base} — story ${STORY_ID}, preview ${PREVIEW_ID}\n`
-    );
     try {
-        await runChecks(base, results);
+        await runChecksForInput(input, results, options.fetch ?? fetchImpl);
     } catch (error) {
         if (!(error instanceof CheckAborted)) throw error;
         results.push({
@@ -795,7 +1075,258 @@ async function main(): Promise<void> {
             detail: `${error.detail} (dependent checks skipped)`,
         });
     }
-    report(results);
+    return {
+        status: results.some(r => !r.ok && !r.warning) ? 'failed' : 'passed',
+        results,
+    };
+}
+
+/**
+ * Command-line inputs resolved by `parseVerifyArgs`. `assetBaseUrl` is
+ * resolved against the delivery config's hostname when absent, so the no-arg
+ * invocation keeps using the committed delivery host.
+ */
+export type VerifyCliArgs = {
+    storyId: string;
+    target: PublicationTarget;
+    releaseId?: string; // candidate mode when present
+    expectedManifestSha256?: ManifestByteSha256;
+    assetBaseUrl?: string;
+    json: boolean;
+};
+
+const VERIFY_OPTIONS = {
+    story: { type: 'string' },
+    environment: { type: 'string' },
+    'preview-id': { type: 'string' },
+    release: { type: 'string' },
+    'expect-manifest-sha256': { type: 'string' },
+    'asset-base-url': { type: 'string' },
+    json: { type: 'boolean' },
+} as const satisfies ParseArgsConfig['options'];
+
+/**
+ * Parses the verifier's command-line arguments. No arguments must keep meaning
+ * `the_seventh_mirror` / preview `smoke` / active mode, so the HPA-229 smoke
+ * invocation and its tests are unaffected. `--environment production` targets
+ * the production namespace (with `--preview-id` forbidden, mirroring the
+ * publisher CLI); `--release` selects candidate mode.
+ */
+export function parseVerifyArgs(argv: string[]): VerifyCliArgs {
+    const { values } = parseArgs({ args: argv, options: VERIFY_OPTIONS });
+    const storyId = typeof values.story === 'string' ? values.story : STORY_ID;
+    if (!isStoryId(storyId)) {
+        throw new Error(`Invalid --story: ${storyId}`);
+    }
+    const environment =
+        typeof values.environment === 'string' ? values.environment : 'preview';
+    let target: PublicationTarget;
+    if (environment === 'production') {
+        if (values['preview-id'] !== undefined) {
+            throw new Error(
+                'Production verification must not provide --preview-id'
+            );
+        }
+        target = { kind: 'production' };
+    } else if (environment === 'preview') {
+        const previewId =
+            typeof values['preview-id'] === 'string'
+                ? values['preview-id']
+                : PREVIEW_ID;
+        if (!isPreviewId(previewId)) {
+            throw new Error(`Invalid --preview-id: ${previewId}`);
+        }
+        target = { kind: 'preview', previewId };
+    } else {
+        throw new Error('--environment must be production or preview');
+    }
+    const releaseId =
+        typeof values.release === 'string' ? values.release : undefined;
+    if (releaseId !== undefined && !isReleaseId(releaseId)) {
+        throw new Error(`Invalid --release: ${releaseId}`);
+    }
+    const expectedManifestSha256 =
+        typeof values['expect-manifest-sha256'] === 'string'
+            ? values['expect-manifest-sha256']
+            : undefined;
+    if (
+        expectedManifestSha256 !== undefined &&
+        !isSha256(expectedManifestSha256)
+    ) {
+        throw new Error('Invalid --expect-manifest-sha256');
+    }
+    const assetBaseUrl =
+        typeof values['asset-base-url'] === 'string'
+            ? values['asset-base-url']
+            : undefined;
+    if (assetBaseUrl !== undefined) {
+        assertSafeAssetBaseUrl(new URL(assetBaseUrl));
+    }
+    return {
+        storyId,
+        target,
+        ...(releaseId !== undefined ? { releaseId } : {}),
+        ...(expectedManifestSha256 !== undefined
+            ? {
+                  expectedManifestSha256:
+                      expectedManifestSha256 as ManifestByteSha256,
+              }
+            : {}),
+        ...(assetBaseUrl !== undefined ? { assetBaseUrl } : {}),
+        json: values.json === true,
+    };
+}
+
+function renderCheckLine(result: CheckResult): string {
+    const label = result.ok ? 'PASS' : result.warning ? 'WARN' : 'FAIL';
+    return `${label}  ${result.name} — ${result.detail}`;
+}
+
+/**
+ * Prints the per-check lines and returns the number of hard failures. The
+ * summary line is printed by the caller so its stream matches the pre-json
+ * behaviour exactly: failures on stderr, success on stdout (both on stderr in
+ * `--json` mode, where stdout carries only the result object).
+ */
+function report(
+    results: CheckResult[],
+    progress: (line: string) => void
+): number {
+    let failed = 0;
+    for (const result of results) {
+        if (!result.ok && !result.warning) failed += 1;
+        progress(renderCheckLine(result));
+    }
+    return failed;
+}
+
+/**
+ * Sets `exitCode` rather than calling `process.exit`, which can truncate
+ * buffered stdout when it is a pipe — exactly the CI log capture where an
+ * operator needs the check lines most.
+ */
+async function main(): Promise<void> {
+    // `--json` mode must emit exactly one structured result object to stdout
+    // even when setup fails before argument parsing completes (the release
+    // gate redirects stdout into a report file and reads it back, so an empty
+    // or human-text stdout would render as UNPARSEABLE instead of a failed
+    // result). The raw argv scan picks up `--json` even when parsing itself
+    // fails; human detail always goes to stderr.
+    const jsonRequested = process.argv.slice(2).includes('--json');
+    const fail = (error: unknown): void => {
+        const detail = describeError(error);
+        if (jsonRequested) {
+            process.stdout.write(
+                `${JSON.stringify({ status: 'failed', error: detail })}\n`
+            );
+        } else {
+            console.error(`verify: ${detail}`);
+        }
+        process.exitCode = 1;
+    };
+    let args: VerifyCliArgs;
+    try {
+        args = parseVerifyArgs(process.argv.slice(2));
+    } catch (error) {
+        fail(error);
+        return;
+    }
+    const json = args.json;
+    let config: R2DeliveryConfig;
+    try {
+        config = await loadR2DeliveryConfig();
+    } catch (error) {
+        if (json) {
+            process.stdout.write(
+                `${JSON.stringify({
+                    status: 'failed',
+                    error: describeError(error),
+                    storyId: args.storyId,
+                    target: args.target,
+                    releaseId: args.releaseId ?? null,
+                })}\n`
+            );
+        } else {
+            console.error(`verify: ${describeError(error)}`);
+        }
+        process.exitCode = 1;
+        return;
+    }
+    // Human progress goes to stderr in `--json` mode so stdout carries exactly
+    // one result object; without `--json` the output is byte-identical to the
+    // pre-parameterization verifier.
+    const progress = (line: string): void =>
+        json ? console.error(line) : console.log(line);
+    let base: string | undefined;
+    try {
+        base = args.assetBaseUrl ?? `https://${config.hostname}`;
+        const input: PublicVerifyInput = {
+            storyId: args.storyId,
+            target: args.target,
+            assetBaseUrl: new URL(base),
+            browserOrigin: new URL(ORIGIN),
+            ...(args.releaseId !== undefined
+                ? { releaseId: args.releaseId }
+                : {}),
+            ...(args.expectedManifestSha256 !== undefined
+                ? { expectedManifestSha256: args.expectedManifestSha256 }
+                : {}),
+        };
+        const targetDescription =
+            input.target.kind === 'production'
+                ? 'production'
+                : `preview ${input.target.previewId}`;
+        const releaseSuffix =
+            input.releaseId !== undefined ? `, release ${input.releaseId}` : '';
+        progress(
+            `Verifying ${base} — story ${input.storyId}, ${targetDescription}${releaseSuffix}\n`
+        );
+        const outcome = await verifyPublicRelease(input);
+        const failed = report(outcome.results, progress);
+        if (failed > 0) {
+            console.error(`\n${failed} check(s) failed.`);
+        } else if (json) {
+            console.error('\nAll required checks passed.');
+        } else {
+            console.log('\nAll required checks passed.');
+        }
+        if (json) {
+            process.stdout.write(
+                `${JSON.stringify({
+                    status: outcome.status,
+                    baseUrl: base,
+                    storyId: input.storyId,
+                    target: input.target,
+                    releaseId: input.releaseId ?? null,
+                    results: outcome.results,
+                    failedChecks: failed,
+                })}\n`
+            );
+        }
+        if (failed > 0) process.exitCode = 1;
+    } catch (error) {
+        // A pre-verification or setup failure (config load, URL construction,
+        // an unsafe base URL) is still one structured failed result in
+        // `--json` mode; without `--json` the output matches the
+        // pre-parameterization verifier's stderr message exactly.
+        if (json) {
+            process.stdout.write(
+                `${JSON.stringify({
+                    status: 'failed',
+                    error: describeError(error),
+                    ...(base !== undefined ? { baseUrl: base } : {}),
+                    storyId: args.storyId,
+                    target: args.target,
+                    releaseId: args.releaseId ?? null,
+                })}\n`
+            );
+        } else {
+            console.error(
+                `Verification could not run: ${describeError(error)}`
+            );
+        }
+        process.exitCode = 1;
+    }
 }
 
 // Entry-point guard, intentionally false whenever this module is imported

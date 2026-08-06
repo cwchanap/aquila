@@ -1,0 +1,237 @@
+name: Visual Novel Release Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      story:
+        description: Story id to gate (e.g. the_seventh_mirror)
+        required: true
+        type: string
+      release_id:
+        description: Release id (sha256-<64 hex>) from the retained publish report
+        required: true
+        type: string
+      manifest_sha256:
+        description: Manifest byte checksum from the retained publish report
+        required: true
+        type: string
+      preview_id:
+        description: Preview namespace id the candidate is mirrored into
+        required: true
+        type: string
+      preview_url:
+        description: HTTPS origin of the deployed preview reader (e.g. https://…vercel.app)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: '1.3.1'
+  NODE_VERSION: '22'
+  TURBO_TELEMETRY_DISABLED: '1'
+  PLAYWRIGHT_BROWSERS_PATH: '0'
+  CI: 'true'
+  # Public origin of the R2 delivery host — not a secret. The reader uses the
+  # same origin (see .env.example PUBLIC_ASSET_BASE_URL).
+  PUBLIC_ASSET_BASE_URL: https://assets.aquila.cwchanap.dev
+  GATE_STORY: ${{ inputs.story }}
+  GATE_RELEASE_ID: ${{ inputs.release_id }}
+  GATE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+  GATE_PREVIEW_ID: ${{ inputs.preview_id }}
+  GATE_PREVIEW_URL: ${{ inputs.preview_url }}
+
+jobs:
+  visual-novel-release-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prepare reports directory
+        run: mkdir -p .tmp/reports
+
+      - name: Require scoped publisher credentials
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "$R2_PUBLISHER_ACCESS_KEY_ID" || -z "$R2_PUBLISHER_SECRET_ACCESS_KEY" ]]; then
+            echo 'Scoped R2 publisher secrets are not configured.' >&2
+            exit 1
+          fi
+
+      - name: Verify release in deep storage
+        # The candidate was created with `--no-activate`: its objects and
+        # manifest live in the PRODUCTION namespace while the production
+        # pointer was never moved. Verify it WHERE it was published — the
+        # production namespace — because mirror-preview has not created the
+        # preview manifest yet, so a fresh gate run has nothing to verify in
+        # preview at this point.
+        #
+        # `assets verify` is READ-ONLY (candidate-verifier.ts only reads the
+        # delivery store and moves no pointer), so `--environment production`
+        # here does NOT weaken the production-pointer safety invariant. The
+        # invariant is: no command that can MOVE the production pointer
+        # (publish/activate/rollback targeting production) runs in this
+        # workflow — the only pointer-moving activation is the preview one
+        # below, and production activation/rollback stay manual commands
+        # guarded by --confirm-production.
+        shell: bash
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun packages/infra-cloudflare/src/publisher/cli.ts verify \
+            --story "$GATE_STORY" \
+            --environment production \
+            --release "$GATE_RELEASE_ID" \
+            --expect-manifest-sha256 "$GATE_MANIFEST_SHA256" \
+            --destination r2 \
+            --deep \
+            --json > .tmp/reports/storage-verify.json
+
+      - name: Mirror release into preview namespace
+        shell: bash
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun packages/infra-cloudflare/src/publisher/cli.ts mirror-preview \
+            --story "$GATE_STORY" \
+            --release "$GATE_RELEASE_ID" \
+            --preview-id "$GATE_PREVIEW_ID" \
+            --expect-manifest-sha256 "$GATE_MANIFEST_SHA256" \
+            --destination r2 \
+            --json > .tmp/reports/mirror-preview.json
+
+      - name: Activate release in preview namespace
+        # This is the workflow's ONLY pointer move, and it is confined to the
+        # preview namespace. The production pointer is never moved here — that
+        # stays a manual `assets activate/rollback --confirm-production`.
+        shell: bash
+        env:
+          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
+          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+        run: |
+          bun packages/infra-cloudflare/src/publisher/cli.ts activate \
+            --story "$GATE_STORY" \
+            --environment preview \
+            --preview-id "$GATE_PREVIEW_ID" \
+            --release "$GATE_RELEASE_ID" \
+            --expect-manifest-sha256 "$GATE_MANIFEST_SHA256" \
+            --destination r2 \
+            --json > .tmp/reports/activate-preview.json
+
+      - name: Verify the public CDN serves the release
+        # Active mode: `--release` is deliberately OMITTED so the verifier
+        # reads the preview `current.json` pointer that the activate step just
+        # moved, and checks the pointer's CORS, edge-bypass/revalidation
+        # policy, manifestPath pairing, and pointer/manifest pair validation —
+        # none of which candidate mode (--release) performs, because it
+        # content-addresses the immutable manifest and never reads the pointer.
+        # `--expect-manifest-sha256` still pins the exact manifest bytes.
+        #
+        # The verifier (packages/infra-cloudflare/src/verify.ts) only makes
+        # unauthenticated public requests and must never hold an R2 credential
+        # or Cloudflare token. Do not add publisher secrets to this step.
+        shell: bash
+        run: |
+          bun --filter @aquila/infra-cloudflare verify \
+            --story "$GATE_STORY" \
+            --preview-id "$GATE_PREVIEW_ID" \
+            --expect-manifest-sha256 "$GATE_MANIFEST_SHA256" \
+            --asset-base-url "$PUBLIC_ASSET_BASE_URL" \
+            --json > .tmp/reports/public-verify.json
+
+      - name: Install Playwright Chromium
+        working-directory: packages/e2e
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run deployed reader release-gate spec
+        working-directory: packages/e2e
+        env:
+          BASE_URL: ${{ inputs.preview_url }}
+          RELEASE_GATE_STORY_ID: ${{ inputs.story }}
+          RELEASE_GATE_RELEASE_ID: ${{ inputs.release_id }}
+          RELEASE_GATE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          RELEASE_GATE_PREVIEW_ID: ${{ inputs.preview_id }}
+        shell: bash
+        run: |
+          set +e
+          bun run test:release-gate
+          exit_code=$?
+          set -e
+          GATE_SPEC_EXIT="$exit_code" GATE_REPORT_PATH="$GITHUB_WORKSPACE/.tmp/reports/deployed-spec.json" bun -e '
+            const { writeFile } = await import("node:fs/promises");
+            await writeFile(
+              process.env.GATE_REPORT_PATH,
+              `${JSON.stringify({ status: process.env.GATE_SPEC_EXIT === "0" ? "passed" : "failed", exitCode: Number(process.env.GATE_SPEC_EXIT) })}\n`
+            );
+          '
+          exit "$exit_code"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-gate-playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: packages/e2e/playwright-report/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Print release gate summary
+        if: always()
+        shell: bash
+        run: |
+          bun -e '
+            const { existsSync } = await import("node:fs");
+            const { readFile } = await import("node:fs/promises");
+            const steps = [
+              ["storage deep verify", ".tmp/reports/storage-verify.json"],
+              ["mirror-preview", ".tmp/reports/mirror-preview.json"],
+              ["activate preview", ".tmp/reports/activate-preview.json"],
+              ["public CDN verify", ".tmp/reports/public-verify.json"],
+              ["deployed spec", ".tmp/reports/deployed-spec.json"],
+            ];
+            console.log("Release gate summary");
+            console.log(`Story: ${process.env.GATE_STORY}`);
+            console.log(`Release: ${process.env.GATE_RELEASE_ID}`);
+            console.log(`Manifest checksum: ${process.env.GATE_MANIFEST_SHA256}`);
+            console.log(`Preview id: ${process.env.GATE_PREVIEW_ID}`);
+            console.log(`Preview URL: ${process.env.GATE_PREVIEW_URL}`);
+            for (const [label, path] of steps) {
+              let status = "NOT REACHED";
+              if (existsSync(path)) {
+                try {
+                  const report = JSON.parse(await readFile(path, "utf8"));
+                  const value = report.status;
+                  status =
+                    value === "success" || value === "no-op" || value === "passed"
+                      ? "PASS"
+                      : `FAIL (${value ?? "unknown"})`;
+                } catch {
+                  status = "UNPARSEABLE";
+                }
+              }
+              console.log(`${label}: ${status}`);
+            }
+          '

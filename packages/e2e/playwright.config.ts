@@ -1,8 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const REMOTE_RELEASE_GATE_SPEC = /visual-novel-deployed\.spec\.ts/;
+
 export default defineConfig({
     testDir: './tests',
     globalSetup: './tests/global-setup.ts',
+    testIgnore: REMOTE_RELEASE_GATE_SPEC,
     webServer: {
         command: 'cd ../../apps/web && bun run dev',
         url: 'http://localhost:5090',
@@ -30,7 +33,9 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-            testIgnore: /reader-mobile\.spec\.ts/,
+            // Project-level testIgnore replaces the top-level value, so keep
+            // the remote-only spec excluded alongside the desktop-only rule.
+            testIgnore: [REMOTE_RELEASE_GATE_SPEC, /reader-mobile\.spec\.ts/],
         },
         {
             name: 'mobile-chrome',

@@ -34,10 +34,23 @@ export type VisualPortraitLayer = VisualImageLayer & {
     slot: 'left' | 'center' | 'right';
 };
 
+/**
+ * Identity of the validated runtime asset release currently serving visuals.
+ * Absent (null) until a release validates, and cleared again when the release
+ * becomes invalid, the runtime is disposed, or the story changes.
+ */
+export type VisualReleaseIdentity = {
+    assetEnvironment: 'local' | 'preview' | 'production';
+    previewId: string | null;
+    releaseId: string;
+    manifestSha256: string;
+};
+
 export type VisualSnapshot = {
     release: VisualReleaseState;
     activeBackground: VisualImageLayer;
     stagingBackground: VisualImageLayer;
     portrait: VisualPortraitLayer;
+    releaseIdentity: VisualReleaseIdentity | null;
     status: 'stale' | 'fallback' | 'unavailable' | null;
 };

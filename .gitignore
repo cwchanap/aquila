@@ -44,3 +44,4 @@ coverage/
 
 # Wrangler local simulation state
 .wrangler/
+.superpowers/

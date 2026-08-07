@@ -4,9 +4,9 @@
 
 **Goal:** Publish The Seventh Mirror as Aquila's first production R2-backed visual-novel release, prove preview/production/rollback behavior, archive the authoring originals privately, then remove production-sized story binaries from Git/Vercel while preserving tiny local fixtures.
 
-**Architecture:** Reuse the HPA-227 runtime contracts, HPA-230 immutable publisher, HPA-229 R2 buckets/domain, HPA-233 preview release gate, and HPA-228 local fixture tooling. HPA-231 adds only story-specific release classification, a private archive/restore runbook, one structural release-plan test, repository cleanup, and one story-specific footprint guard. No new runtime, publisher, storage, approval, or migration abstraction is introduced.
+**Architecture:** Reuse HPA-227 runtime contracts, HPA-228 local fixtures, HPA-229 R2 delivery plus documented Vercel source configuration, HPA-230 immutable publisher, HPA-233 preview release gate, and HPA-234 reader state. HPA-231 adds only story-specific release classification, a one-time private archive/restore runbook, one structural release-plan test, repository cleanup, and one story-specific footprint guard. Missing artwork is explicitly omitted for v1 rather than silently treated as a complete illustrated story.
 
-**Tech Stack:** Bun 1.3.1, TypeScript, Vitest, Sharp, `@aquila/stories/runtime-assets`, `@aquila/infra-cloudflare`, GitHub Actions, Cloudflare R2 S3-compatible API, AWS CLI for the one-time private-source sync, Playwright release gate.
+**Tech Stack:** Bun 1.3.1, TypeScript, Vitest, Sharp, existing `@aquila/stories/runtime-assets`, existing `@aquila/infra-cloudflare` publisher, GitHub Actions, Cloudflare R2 S3-compatible API, AWS CLI for one-time private-source sync, Vercel production configuration, Playwright release gate.
 
 ## Global Constraints
 
@@ -19,9 +19,10 @@
 - Do not add generic multi-story migration orchestration.
 - Do not add a generalized private-source synchronization system.
 - Do not add new visual reader caching/revalidation behavior.
-- Production cleanup is forbidden until production activation, smoke verification, and rollback/reactivation proof have all passed.
+- Production cleanup is forbidden until production activation, smoke verification, rollback/activation-back proof, and final restoration of the intended primary release all pass.
 - Public runtime manifests/object metadata must not expose prompts, source paths, provider metadata, private bucket identifiers, or credentials.
 - Existing delivery-publisher credentials remain delivery-only. Private-source archive credentials are operator-only and never committed.
+- Missing v1 artwork is allowed and must be explicitly omitted; producing missing artwork is not part of HPA-231.
 
 ---
 
@@ -31,7 +32,7 @@
 
 - `packages/stories/release-plans/the_seventh_mirror.json` — complete production classification of compiler-generated visual keys.
 - `packages/stories/src/runtime-assets/__tests__/the-seventh-mirror-release-plan.test.ts` — structural coverage test that still passes after production source binaries leave Git.
-- `docs/infrastructure/the-seventh-mirror-r2-migration.md` — archive/restore/publish/activate/rollback commands plus retained release evidence.
+- `docs/infrastructure/the-seventh-mirror-r2-migration.md` — archive/restore/publish/env/activate/rollback commands plus retained release evidence.
 - `apps/web/scripts/assert-visual-asset-footprint.ts` — narrow guard for the four source fixtures and committed HPA-228 local runtime fixture graph.
 - `apps/web/scripts/__tests__/assert-visual-asset-footprint.test.ts` — focused guard tests.
 
@@ -45,14 +46,14 @@
 - `.github/workflows/build-and-lint.yml`
 - generated HPA-228 local fixture files under `apps/web/public/assets/vn/`
 
-### Delete after release proof
+### Delete after live proof
 
 - Every other file under `packages/assets/media/the_seventh_mirror/**`.
 - Any stale local VN object under `apps/web/public/assets/vn/` not referenced by the regenerated HPA-228 pointer/manifest.
 
 ---
 
-### Task 1: Add the production release plan and structural coverage test
+### Task 1: Define and freeze the v1 production release classification
 
 **Files:**
 - Create: `packages/stories/release-plans/the_seventh_mirror.json`
@@ -60,7 +61,7 @@
 
 **Interfaces:**
 - Consumes: `packages/stories/src/generated/theSeventhMirror/image-assets.json`, `parseStoryAssetReleasePlan()`, `qualifyAssetIdentity()`.
-- Produces: one HPA-227-compatible production release plan with exact compiler-key coverage and stable source paths.
+- Produces: one HPA-227-compatible production release plan with exact compiler-key coverage, reviewed include/omit counts, and stable source paths for every included asset.
 
 - [ ] **Step 1: Write the failing structural test**
 
@@ -76,6 +77,10 @@ import { parseStoryAssetReleasePlan, qualifyAssetIdentity } from '..';
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '../../..');
 
+// Deliberate failing sentinel. Task 1 Step 5 replaces it with the reviewed
+// migration-time included count before this test is committed.
+const EXPECTED_INCLUDED_COUNT = -1;
+
 async function readJson(path: string): Promise<unknown> {
     return JSON.parse(await readFile(path, 'utf8'));
 }
@@ -88,7 +93,7 @@ type GeneratedAssets = {
 };
 
 describe('The Seventh Mirror production release plan', () => {
-    it('classifies every generated visual identity exactly once', async () => {
+    it('classifies every generated visual identity with reviewed v1 coverage', async () => {
         const generated = (await readJson(
             resolve(
                 packageRoot,
@@ -137,11 +142,16 @@ describe('The Seventh Mirror production release plan', () => {
             const id = qualifyAssetIdentity(entry.identity);
             expect(entry.sourcePath).toBe(generatedById.get(id));
         }
+
+        const includedCount = plan.entries.filter(
+            entry => entry.disposition === 'included'
+        ).length;
+        expect(includedCount).toBe(EXPECTED_INCLUDED_COUNT);
     });
 });
 ```
 
-- [ ] **Step 2: Run the test and verify the production plan is the only missing piece**
+- [ ] **Step 2: Run the test and verify the production plan is missing**
 
 ```bash
 bun --filter @aquila/stories test -- the-seventh-mirror-release-plan
@@ -149,7 +159,12 @@ bun --filter @aquila/stories test -- the-seventh-mirror-release-plan
 
 Expected: FAIL because `release-plans/the_seventh_mirror.json` does not exist.
 
-- [ ] **Step 3: Scaffold the release plan once from compiler inventory and source availability**
+- [ ] **Step 3: Scaffold the complete production plan using the explicit v1 inclusion rule**
+
+The default v1 rule is:
+
+- source exists at archive time → `included`;
+- source missing → `omitted` with reason `Authoring art not produced for HPA-231 v1`.
 
 Run from repository root before any source cleanup:
 
@@ -186,7 +201,7 @@ const entries = raw
       : {
           identity,
           disposition: "omitted",
-          reason: "Source artwork unavailable at HPA-231 migration",
+          reason: "Authoring art not produced for HPA-231 v1",
           ...(section === undefined ? {} : { section }),
         };
   })
@@ -208,9 +223,73 @@ await Bun.write(
 '
 ```
 
-Review every omitted entry and any existing artwork that should intentionally fall back. The scaffold is a one-off operator command and must not become a committed generator.
+Do not commit the scaffold command as a reusable generator.
 
-- [ ] **Step 4: Run the structural test**
+- [ ] **Step 4: Print and review the exact v1 classification before freezing it**
+
+```bash
+bun -e '
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+
+const plan = await Bun.file(
+  "packages/stories/release-plans/the_seventh_mirror.json"
+).json();
+const sourceRoot = resolve("packages/assets/media");
+const included = plan.entries.filter((entry) => entry.disposition === "included");
+const omitted = plan.entries.filter((entry) => entry.disposition === "omitted");
+const omittedDespiteExistingSource = omitted.filter((entry) => {
+  const generated = [
+    ...(plan.entries ?? []),
+  ];
+  return typeof entry.sourcePath === "string" && existsSync(resolve(sourceRoot, entry.sourcePath));
+});
+
+console.log(`included=${included.length}`);
+console.log(`omitted=${omitted.length}`);
+console.log(`total=${plan.entries.length}`);
+console.log(`omittedDespiteExistingSource=${omittedDespiteExistingSource.length}`);
+for (const entry of omitted.slice(0, 20)) {
+  console.log(`omit ${entry.identity.type}:${entry.identity.key} — ${entry.reason}`);
+}
+'
+```
+
+Because omitted plan entries correctly have no `sourcePath`, the `omittedDespiteExistingSource` diagnostic above remains zero for the scaffold. If an existing source is intentionally omitted during manual review, verify the corresponding compiler path directly before replacing its reason with a specific explanation.
+
+Review requirements:
+
+- the counts are plausible for the current checkout;
+- every missing-source omission uses the shared v1 reason;
+- any existing source deliberately changed to `omitted` has a specific reason;
+- no missing artwork is created as part of HPA-231.
+
+Record the reviewed included/omitted counts in `docs/infrastructure/the-seventh-mirror-r2-migration.md` when Task 2 creates it.
+
+- [ ] **Step 5: Freeze the reviewed included count into the structural test**
+
+Run this after any intentional plan edits from Step 4:
+
+```bash
+bun -e '
+const planPath = "packages/stories/release-plans/the_seventh_mirror.json";
+const testPath = "packages/stories/src/runtime-assets/__tests__/the-seventh-mirror-release-plan.test.ts";
+const plan = await Bun.file(planPath).json();
+const included = plan.entries.filter((entry) => entry.disposition === "included").length;
+const current = await Bun.file(testPath).text();
+const sentinel = "const EXPECTED_INCLUDED_COUNT = -1;";
+if (!current.includes(sentinel)) {
+  throw new Error("expected included-count sentinel is missing");
+}
+await Bun.write(
+  testPath,
+  current.replace(sentinel, `const EXPECTED_INCLUDED_COUNT = ${included};`)
+);
+console.log(`froze EXPECTED_INCLUDED_COUNT=${included}`);
+'
+```
+
+- [ ] **Step 6: Run the structural test**
 
 ```bash
 bun --filter @aquila/stories test -- the-seventh-mirror-release-plan
@@ -218,7 +297,7 @@ bun --filter @aquila/stories test -- the-seventh-mirror-release-plan
 
 Expected: PASS.
 
-- [ ] **Step 5: Run the real HPA-230 plan against the original source tree**
+- [ ] **Step 7: Run the real HPA-230 plan against the original source tree**
 
 ```bash
 rm -rf .tmp/hpa-231-plan-destination
@@ -233,9 +312,14 @@ bun --filter @aquila/infra-cloudflare assets -- plan \
   --json > .tmp/hpa-231-plan.json
 ```
 
-Require `coverage.totals.unclassified === 0`, no input/source/encoding errors, and a release ID/checksum in the report.
+Require:
 
-- [ ] **Step 6: Commit**
+- `coverage.totals.unclassified === 0`;
+- report included/omitted counts equal the reviewed plan counts;
+- there are no input/source/encoding errors;
+- the report contains `releaseId` and `manifestSha256`.
+
+- [ ] **Step 8: Commit the production classification**
 
 ```bash
 git add \
@@ -246,16 +330,16 @@ git commit -m "feat: classify Seventh Mirror production assets"
 
 ---
 
-### Task 2: Archive and restore the authoring sources once
+### Task 2: Archive and restore the v1 authoring snapshot once
 
 **Files:**
 - Create: `docs/infrastructure/the-seventh-mirror-r2-migration.md`
 
 **Interfaces:**
 - Consumes: current `packages/assets/media/the_seventh_mirror/**`, generated `image-assets.json`, production release plan, private `aquila-vn-source` bucket.
-- Produces: immutable private archive prefix and a documented restore procedure that reconstructs a valid publisher source root.
+- Produces: immutable private migration snapshot and a documented restore procedure that reconstructs a valid publisher source root.
 
-- [ ] **Step 1: Start the runbook with fixed infrastructure values**
+- [ ] **Step 1: Create the migration runbook and state the snapshot boundary explicitly**
 
 Create `docs/infrastructure/the-seventh-mirror-r2-migration.md`:
 
@@ -268,10 +352,19 @@ Delivery bucket: `aquila-vn-delivery`
 R2 account id: `91ee89a03a31b5354a25c49228e4ab85`
 R2 S3 endpoint: `https://91ee89a03a31b5354a25c49228e4ab85.r2.cloudflarestorage.com`
 
+The base archive is the HPA-231 v1 migration snapshot of the source art that
+exists in Git at migration time. It is not a claim that every generated story
+key has artwork. Missing generated keys remain explicit release-plan omissions.
+Future newly produced art requires a new immutable archive prefix (or a
+specifically documented overlay) plus a release-plan amendment; HPA-231 does not
+provide an automatic sync service.
+
 Private source sync uses an operator-only R2 Access Key ID / Secret Access Key
 scoped to `aquila-vn-source`. Never commit or print those values. The delivery
 publisher credentials remain scoped to `aquila-vn-delivery`.
 ```
+
+Append the reviewed Task 1 `included`, `omitted`, and `total` counts.
 
 - [ ] **Step 2: Build the local archive directory and checksums**
 
@@ -356,7 +449,15 @@ console.log(restored.releaseId, restored.manifestSha256);
 
 Expected: exit `0` with identical release ID/checksum.
 
-- [ ] **Step 6: Document `ARCHIVE_ID`, upload, restore, checksum, and `--source-root "$RESTORE_ROOT/media"` procedure in the runbook**
+- [ ] **Step 6: Record the concrete archive identity and restore command in the runbook**
+
+Record:
+
+- `ARCHIVE_ID`;
+- full private prefix without credentials;
+- checksum verification result;
+- restored release ID and manifest checksum;
+- `--source-root <restore>/media` as the republishing path.
 
 - [ ] **Step 7: Commit**
 
@@ -367,16 +468,16 @@ git commit -m "docs: add Seventh Mirror source restore runbook"
 
 ---
 
-### Task 3: Publish the immutable production candidate and qualify it in preview
+### Task 3: Publish the primary candidate and qualify it through HPA-233
 
 **Files:**
 - Modify: `docs/infrastructure/the-seventh-mirror-r2-migration.md`
 
 **Interfaces:**
-- Consumes: production release plan, original source root, HPA-230 publisher, HPA-233 release gate.
+- Consumes: production release plan, original/restored source root, HPA-230 publisher, HPA-233 release gate.
 - Produces: retained primary release ID/checksum plus automated and manual preview approval.
 
-- [ ] **Step 1: Publish without activation**
+- [ ] **Step 1: Publish without production activation**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- publish \
@@ -389,7 +490,7 @@ bun --filter @aquila/infra-cloudflare assets -- publish \
   --json > .tmp/hpa-231-publish.json
 ```
 
-- [ ] **Step 2: Derive identifiers only from the retained report**
+- [ ] **Step 2: Derive identifiers only from the retained JSON report**
 
 ```bash
 RELEASE_ID=$(bun -e '
@@ -404,7 +505,7 @@ console.log(report.manifestSha256);
 ')
 ```
 
-- [ ] **Step 3: Deep-verify the stored production candidate**
+- [ ] **Step 3: Deep-verify the stored primary candidate**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- verify \
@@ -419,9 +520,9 @@ bun --filter @aquila/infra-cloudflare assets -- verify \
 
 Expected: `status: "success"`.
 
-- [ ] **Step 4: Deploy an isolated preview using `PUBLIC_ASSET_PREVIEW_ID=hpa-231-gate`**
+- [ ] **Step 4: Deploy an isolated preview that resolves the HPA-231 preview namespace**
 
-Use:
+Configure the preview deployment:
 
 ```text
 PUBLIC_ASSET_BASE_URL=https://assets.aquila.cwchanap.dev/
@@ -429,7 +530,7 @@ PUBLIC_ASSET_ENVIRONMENT=preview
 PUBLIC_ASSET_PREVIEW_ID=hpa-231-gate
 ```
 
-Store the deployed HTTPS origin in `PREVIEW_URL`.
+Use the resulting HTTPS deployment origin as the HPA-233 `preview_url` input.
 
 - [ ] **Step 5: Trigger the existing Visual Novel Release Gate**
 
@@ -437,30 +538,32 @@ Use workflow inputs:
 
 ```text
 story=the_seventh_mirror
-release_id=$RELEASE_ID
-manifest_sha256=$MANIFEST_SHA256
+release_id=<RELEASE_ID from .tmp/hpa-231-publish.json>
+manifest_sha256=<MANIFEST_SHA256 from .tmp/hpa-231-publish.json>
 preview_id=hpa-231-gate
-preview_url=$PREVIEW_URL
+preview_url=<HTTPS preview deployment produced in Step 4>
 ```
 
 Expected: storage deep verify, mirror-preview, preview activation, public CDN verify, and deployed browser spec all PASS.
 
-- [ ] **Step 6: Perform one manual representative visual review**
+- [ ] **Step 6: Perform one manual representative visual review scoped to the v1 ship set**
 
-Record one HPA-231 Linear checklist covering:
+Visit representative early, middle, and late story positions and record:
 
 ```text
-[ ] early-scene background change
-[ ] middle/late-scene background
-[ ] portrait/expression change
-[ ] intentional omitted/missing fallback
-[ ] one choice path where available
-[ ] desktop presentation
-[ ] mobile presentation
+[ ] at least one included background transition renders correctly
+[ ] at least one included portrait/expression transition renders correctly when available
+[ ] at least one omitted/missing asset uses the expected fallback without blocking progression
+[ ] one choice path works where available
+[ ] desktop presentation is acceptable
+[ ] mobile presentation is acceptable
 [ ] text -> visual -> text preserves the exact active line
+[ ] any middle/late position without included art is recorded as expected fallback, not treated as a migration defect
 ```
 
-- [ ] **Step 7: Record the primary release ID/checksum, preview ID, preview deployment, workflow run, and manual review result in the runbook**
+- [ ] **Step 7: Record primary candidate evidence in the runbook**
+
+Record release ID/checksum, include/omit counts, preview ID, workflow run URL/number, preview deployment, and manual review result.
 
 - [ ] **Step 8: Commit**
 
@@ -471,16 +574,57 @@ git commit -m "docs: record Seventh Mirror candidate qualification"
 
 ---
 
-### Task 4: Activate production and prove the live reader
+### Task 4: Wire the production reader to R2 once, then activate and smoke-test
 
 **Files:**
 - Modify: `docs/infrastructure/the-seventh-mirror-r2-migration.md`
 
 **Interfaces:**
-- Consumes: qualified primary release ID/checksum.
-- Produces: production pointer on the exact candidate and passing active CDN/browser smoke.
+- Consumes: qualified primary release ID/checksum and HPA-229 production asset-source contract.
+- Produces: production deployment that resolves remote production R2 assets plus an active, smoke-tested primary pointer.
 
-- [ ] **Step 1: Activate production**
+- [ ] **Step 1: Configure the Vercel Production environment before pointer activation**
+
+In the Aquila Vercel project, set exactly:
+
+```text
+PUBLIC_ASSET_BASE_URL=https://assets.aquila.cwchanap.dev/
+PUBLIC_ASSET_ENVIRONMENT=production
+```
+
+Ensure this variable is **not** set for Production:
+
+```text
+PUBLIC_ASSET_PREVIEW_ID
+```
+
+Do not change Development defaults; local development intentionally uses bundled fixtures.
+
+- [ ] **Step 2: Redeploy production once for the build-time public environment change**
+
+Create one production deployment containing the configuration from Step 1. This is the only Vercel rebuild introduced by HPA-231 and is a prerequisite configuration deployment, not an asset release deployment.
+
+- [ ] **Step 3: Prove the deployed reader is routing to the remote production pointer before activation**
+
+Open The Seventh Mirror visual mode on the production deployment and inspect the browser Network panel.
+
+Require a request whose URL begins:
+
+```text
+https://assets.aquila.cwchanap.dev/vn/stories/the_seventh_mirror/current.json
+```
+
+Require no request to:
+
+```text
+/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/current.json
+```
+
+A 404 from the remote production pointer is acceptable before first activation; the checkpoint proves source routing.
+
+Record the production deployment identity and network-preflight result in the runbook.
+
+- [ ] **Step 4: Activate the primary release**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- activate \
@@ -493,7 +637,7 @@ bun --filter @aquila/infra-cloudflare assets -- activate \
   --json > .tmp/hpa-231-production-activate.json
 ```
 
-- [ ] **Step 2: Verify the active production CDN pointer/manifest/object chain**
+- [ ] **Step 5: Verify the active production CDN pointer/manifest/object chain**
 
 ```bash
 bun --filter @aquila/infra-cloudflare verify \
@@ -504,7 +648,7 @@ bun --filter @aquila/infra-cloudflare verify \
   --json > .tmp/hpa-231-production-public-verify.json
 ```
 
-- [ ] **Step 3: Run the deployed production reader release-gate spec**
+- [ ] **Step 6: Run the deployed production reader release-gate spec**
 
 ```bash
 BASE_URL=https://aquila.cwchanap.dev \
@@ -515,9 +659,9 @@ RELEASE_GATE_PREVIEW_ID= \
 bun --filter e2e test:release-gate
 ```
 
-Expected: desktop/mobile reader flows pass with the exact production release identity and active line preserved across text/visual switches.
+Expected: desktop/mobile flows pass with the exact production release identity and active line preserved across text/visual switches.
 
-- [ ] **Step 4: Record production activation and smoke results in the runbook and commit**
+- [ ] **Step 7: Record the one-time env deployment plus production activation/smoke result and commit**
 
 ```bash
 git add docs/infrastructure/the-seventh-mirror-r2-migration.md
@@ -526,16 +670,16 @@ git commit -m "docs: record Seventh Mirror production activation"
 
 ---
 
-### Task 5: Prove pointer-only production rollback and reactivation
+### Task 5: Select a compatible rollback peer and prove pointer-only rollback
 
 **Files:**
 - Modify: `docs/infrastructure/the-seventh-mirror-r2-migration.md`
 
 **Interfaces:**
-- Consumes: primary verified production release plus either a previous verified full-story release or a controlled second verified release.
-- Produces: successful rollback to another verified release and activation back to the release that was current before rollback.
+- Consumes: active primary production release, checked-in production plan, existing release history/public immutable manifests.
+- Produces: machine-validated rollback peer or one controlled synthetic peer; successful rollback, activation-back proof, and final restoration of the primary release.
 
-- [ ] **Step 1: List deep-verified production releases**
+- [ ] **Step 1: List production releases with deep verification**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- releases \
@@ -546,23 +690,162 @@ bun --filter @aquila/infra-cloudflare assets -- releases \
   --json > .tmp/hpa-231-production-releases.json
 ```
 
-Inspect candidate manifests against the checked-in production plan. If a previous full-story release is valid, set its identifiers as `ROLLBACK_RELEASE_ID` and `ROLLBACK_MANIFEST_SHA256`, keep the primary `$RELEASE_ID`/`$MANIFEST_SHA256` as the release to reactivate, and continue at Step 7.
+- [ ] **Step 2: Machine-check previous releases against the exact HPA-231 production plan**
 
-- [ ] **Step 2: If no previous full-story release exists, create a temporary second source root**
+Run from repository root:
 
 ```bash
-REVISION_SOURCE_ROOT=.tmp/hpa-231-revision-source
-rm -rf "$REVISION_SOURCE_ROOT"
-cp -R packages/assets/media "$REVISION_SOURCE_ROOT"
+set +e
+bun --cwd packages/infra-cloudflare -e '
+import { createHash } from "node:crypto";
+import { readFile, writeFile } from "node:fs/promises";
+import {
+  getReleaseManifestPath,
+  parseRuntimeAssetManifest,
+  parseStoryAssetReleasePlan,
+  validateRuntimeManifestCoverage,
+} from "@aquila/stories/runtime-assets";
+
+const repositoryRoot = "../..";
+const report = JSON.parse(
+  await readFile(`${repositoryRoot}/.tmp/hpa-231-production-releases.json`, "utf8")
+);
+const plan = parseStoryAssetReleasePlan(
+  JSON.parse(
+    await readFile(
+      `${repositoryRoot}/packages/stories/release-plans/the_seventh_mirror.json`,
+      "utf8"
+    )
+  )
+);
+const baseUrl = "https://assets.aquila.cwchanap.dev/";
+
+for (const candidate of report.releases ?? []) {
+  if (candidate.active) continue;
+  if (candidate.deepVerified !== true) continue;
+  if (typeof candidate.releaseId !== "string") continue;
+  if (typeof candidate.manifestSha256 !== "string") continue;
+
+  const manifestPath = getReleaseManifestPath(
+    "the_seventh_mirror",
+    candidate.releaseId,
+    { kind: "production" }
+  );
+  const response = await fetch(new URL(manifestPath, baseUrl));
+  if (!response.ok) continue;
+  const text = await response.text();
+  const sha256 = createHash("sha256").update(text, "utf8").digest("hex");
+  if (sha256 !== candidate.manifestSha256) continue;
+
+  let manifest;
+  try {
+    manifest = parseRuntimeAssetManifest(JSON.parse(text));
+    validateRuntimeManifestCoverage(manifest, plan);
+  } catch {
+    continue;
+  }
+  if (manifest.releaseId !== candidate.releaseId) continue;
+
+  await writeFile(
+    `${repositoryRoot}/.tmp/hpa-231-rollback-peer.json`,
+    `${JSON.stringify({
+      releaseId: candidate.releaseId,
+      manifestSha256: candidate.manifestSha256,
+    })}\n`
+  );
+  console.log(`eligible rollback peer: ${candidate.releaseId}`);
+  process.exit(0);
+}
+
+console.error("no eligible previous production release");
+process.exit(2);
+'
+PEER_STATUS=$?
+set -e
 ```
 
-- [ ] **Step 3: Make one deterministic tiny revision while preserving logical identity and dimensions**
+Interpretation:
+
+- `PEER_STATUS=0`: use `.tmp/hpa-231-rollback-peer.json` in Step 3.
+- `PEER_STATUS=2`: no previous release matches the current production plan; continue at Step 7 to create a synthetic peer.
+- any other exit: stop and fix the concrete command/network/input failure.
+
+This step is the definition of “same full-story release” for HPA-231: the peer must match the same production plan/included set; it does not mean every generated chapter has artwork.
+
+- [ ] **Step 3: Load the machine-validated previous peer identifiers**
+
+Only when `PEER_STATUS=0`:
+
+```bash
+ROLLBACK_RELEASE_ID=$(bun -e '
+const value = await Bun.file(".tmp/hpa-231-rollback-peer.json").json();
+console.log(value.releaseId);
+')
+ROLLBACK_MANIFEST_SHA256=$(bun -e '
+const value = await Bun.file(".tmp/hpa-231-rollback-peer.json").json();
+console.log(value.manifestSha256);
+')
+```
+
+Keep the primary `$RELEASE_ID` and `$MANIFEST_SHA256` as the release to restore after rollback.
+
+- [ ] **Step 4: Roll back to the compatible previous release**
+
+Only when `PEER_STATUS=0`:
+
+```bash
+bun --filter @aquila/infra-cloudflare assets -- rollback \
+  --story the_seventh_mirror \
+  --environment production \
+  --release "$ROLLBACK_RELEASE_ID" \
+  --expect-manifest-sha256 "$ROLLBACK_MANIFEST_SHA256" \
+  --confirm-production the_seventh_mirror \
+  --destination r2 \
+  --json > .tmp/hpa-231-production-rollback.json
+```
+
+Run the production public verifier and deployed release-gate browser spec with the rollback identifiers. Both must pass.
+
+- [ ] **Step 5: Activate the primary release again**
+
+Only when `PEER_STATUS=0`:
+
+```bash
+bun --filter @aquila/infra-cloudflare assets -- activate \
+  --story the_seventh_mirror \
+  --environment production \
+  --release "$RELEASE_ID" \
+  --expect-manifest-sha256 "$MANIFEST_SHA256" \
+  --confirm-production the_seventh_mirror \
+  --destination r2 \
+  --json > .tmp/hpa-231-production-activate-back.json
+```
+
+Do not use `--reactivate`; the primary is inactive after rollback.
+
+Run the production public verifier and deployed browser spec again with the primary identifiers. Both must pass.
+
+- [ ] **Step 6: Record the previous-peer rollback proof and continue to Task 6**
+
+Record both release IDs/checksums, the machine peer-selection result, rollback verification, and primary activation-back result. Skip Steps 7-14.
+
+- [ ] **Step 7: If no compatible previous peer exists, create a temporary synthetic source root**
+
+Only when `PEER_STATUS=2`:
+
+```bash
+SYNTHETIC_SOURCE_ROOT=.tmp/hpa-231-synthetic-source
+rm -rf "$SYNTHETIC_SOURCE_ROOT"
+cp -R packages/assets/media "$SYNTHETIC_SOURCE_ROOT"
+```
+
+- [ ] **Step 8: Make one deterministic tiny revision while preserving dimensions**
 
 ```bash
 bun -e '
 import { rename } from "node:fs/promises";
 import sharp from "sharp";
-const path = ".tmp/hpa-231-revision-source/the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png";
+const path = ".tmp/hpa-231-synthetic-source/the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png";
 const temporary = `${path}.hpa-231.tmp.png`;
 const before = await sharp(path).metadata();
 await sharp(path)
@@ -577,32 +860,32 @@ await rename(temporary, path);
 '
 ```
 
-Visually inspect `chapter_1/ch1_act2_s1` and accept the 1% brightness adjustment before publication.
+Manually inspect the revised source image and confirm the 1% brightness change is acceptable for a temporary rollback peer.
 
-- [ ] **Step 4: Publish and deep-verify the controlled second candidate**
+- [ ] **Step 9: Publish and deep-verify the synthetic candidate without activation**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --story the_seventh_mirror \
   --environment production \
   --plan packages/stories/release-plans/the_seventh_mirror.json \
-  --source-root "$REVISION_SOURCE_ROOT" \
+  --source-root "$SYNTHETIC_SOURCE_ROOT" \
   --destination r2 \
   --no-activate \
-  --json > .tmp/hpa-231-second-publish.json
+  --json > .tmp/hpa-231-synthetic-publish.json
 
-SECOND_RELEASE_ID=$(bun -e '
-const report = await Bun.file(".tmp/hpa-231-second-publish.json").json();
+SYNTHETIC_RELEASE_ID=$(bun -e '
+const report = await Bun.file(".tmp/hpa-231-synthetic-publish.json").json();
 if (typeof report.releaseId !== "string") throw new Error("missing releaseId");
 console.log(report.releaseId);
 ')
-SECOND_MANIFEST_SHA256=$(bun -e '
-const report = await Bun.file(".tmp/hpa-231-second-publish.json").json();
+SYNTHETIC_MANIFEST_SHA256=$(bun -e '
+const report = await Bun.file(".tmp/hpa-231-synthetic-publish.json").json();
 if (typeof report.manifestSha256 !== "string") throw new Error("missing manifestSha256");
 console.log(report.manifestSha256);
 ')
 
-if [ "$SECOND_RELEASE_ID" = "$RELEASE_ID" ]; then
+if [ "$SYNTHETIC_RELEASE_ID" = "$RELEASE_ID" ]; then
   echo "controlled revision did not create a second release" >&2
   exit 1
 fi
@@ -610,101 +893,98 @@ fi
 bun --filter @aquila/infra-cloudflare assets -- verify \
   --story the_seventh_mirror \
   --environment production \
-  --release "$SECOND_RELEASE_ID" \
-  --expect-manifest-sha256 "$SECOND_MANIFEST_SHA256" \
+  --release "$SYNTHETIC_RELEASE_ID" \
+  --expect-manifest-sha256 "$SYNTHETIC_MANIFEST_SHA256" \
   --destination r2 \
   --deep \
-  --json > .tmp/hpa-231-second-verify.json
+  --json > .tmp/hpa-231-synthetic-verify.json
 ```
 
-- [ ] **Step 5: Archive the controlled source delta privately**
+Do not run a second HPA-233 preview gate. This release is an operational rollback peer, not the intended final content.
 
-```bash
-REVISION_ARCHIVE_ID="${ARCHIVE_ID}-revision-2"
-REVISION_ARCHIVE_ROOT=.tmp/hpa-231-revision-archive
-REVISED_RELATIVE=the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png
-
-rm -rf "$REVISION_ARCHIVE_ROOT"
-mkdir -p \
-  "$REVISION_ARCHIVE_ROOT/media/the_seventh_mirror/backgrounds/chapter_1" \
-  "$REVISION_ARCHIVE_ROOT/metadata"
-cp "$REVISION_SOURCE_ROOT/$REVISED_RELATIVE" \
-  "$REVISION_ARCHIVE_ROOT/media/$REVISED_RELATIVE"
-printf "%s\n" "$ARCHIVE_ID" > "$REVISION_ARCHIVE_ROOT/metadata/base-archive.txt"
-cp packages/stories/release-plans/the_seventh_mirror.json \
-  "$REVISION_ARCHIVE_ROOT/metadata/release-plan.json"
-(
-  cd "$REVISION_ARCHIVE_ROOT"
-  LC_ALL=C find media metadata -type f | sort | while IFS= read -r file; do
-    shasum -a 256 "$file"
-  done > SHA256SUMS
-)
-
-aws s3 sync "$REVISION_ARCHIVE_ROOT/" \
-  "s3://aquila-vn-source/authoring/the_seventh_mirror/$REVISION_ARCHIVE_ID/" \
-  --endpoint-url "$R2_ENDPOINT" \
-  --no-progress
-```
-
-Document that reproducing the second release means restoring `$ARCHIVE_ID` and then overlaying `$REVISION_ARCHIVE_ID` on the restore root.
-
-- [ ] **Step 6: Qualify and activate the controlled second release**
-
-Run the HPA-233 preview gate with preview id `hpa-231-rollback-proof` and the second identifiers. After it passes, activate the second release normally and rerun the Task 4 production public/browser smoke with the second identifiers.
-
-Then set:
-
-```bash
-CURRENT_RELEASE_ID="$SECOND_RELEASE_ID"
-CURRENT_MANIFEST_SHA256="$SECOND_MANIFEST_SHA256"
-ROLLBACK_RELEASE_ID="$RELEASE_ID"
-ROLLBACK_MANIFEST_SHA256="$MANIFEST_SHA256"
-```
-
-- [ ] **Step 7: For the previous-release path, set the release that is current before rollback**
-
-If Steps 2-6 were skipped because a valid previous release already existed:
-
-```bash
-CURRENT_RELEASE_ID="$RELEASE_ID"
-CURRENT_MANIFEST_SHA256="$MANIFEST_SHA256"
-```
-
-`ROLLBACK_RELEASE_ID` and `ROLLBACK_MANIFEST_SHA256` remain the verified previous release values selected in Step 1.
-
-- [ ] **Step 8: Roll back by changing only production `current.json`**
-
-```bash
-bun --filter @aquila/infra-cloudflare assets -- rollback \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$ROLLBACK_RELEASE_ID" \
-  --expect-manifest-sha256 "$ROLLBACK_MANIFEST_SHA256" \
-  --confirm-production the_seventh_mirror \
-  --destination r2 \
-  --json > .tmp/hpa-231-production-rollback.json
-```
-
-Run the public verifier and deployed release-gate browser spec using the rollback identifiers. Both must pass.
-
-- [ ] **Step 9: Activate the previously-current verified release again**
-
-Use normal `activate`; `--reactivate` is intentionally not used because after rollback the requested release is no longer active.
+- [ ] **Step 10: Activate the synthetic peer temporarily and production-smoke it**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- activate \
   --story the_seventh_mirror \
   --environment production \
-  --release "$CURRENT_RELEASE_ID" \
-  --expect-manifest-sha256 "$CURRENT_MANIFEST_SHA256" \
+  --release "$SYNTHETIC_RELEASE_ID" \
+  --expect-manifest-sha256 "$SYNTHETIC_MANIFEST_SHA256" \
   --confirm-production the_seventh_mirror \
   --destination r2 \
-  --json > .tmp/hpa-231-production-reactivate.json
+  --json > .tmp/hpa-231-synthetic-activate.json
 ```
 
-Run the production public verifier and deployed release-gate browser spec again using the current identifiers. Both must pass.
+Run:
 
-- [ ] **Step 10: Record both release identities and rollback/reactivation results, then commit**
+```bash
+bun --filter @aquila/infra-cloudflare verify \
+  --story the_seventh_mirror \
+  --environment production \
+  --expect-manifest-sha256 "$SYNTHETIC_MANIFEST_SHA256" \
+  --asset-base-url https://assets.aquila.cwchanap.dev \
+  --json
+
+BASE_URL=https://aquila.cwchanap.dev \
+RELEASE_GATE_STORY_ID=the_seventh_mirror \
+RELEASE_GATE_RELEASE_ID="$SYNTHETIC_RELEASE_ID" \
+RELEASE_GATE_MANIFEST_SHA256="$SYNTHETIC_MANIFEST_SHA256" \
+RELEASE_GATE_PREVIEW_ID= \
+bun --filter e2e test:release-gate
+```
+
+Both must pass.
+
+- [ ] **Step 11: Roll back from the synthetic peer to the fully qualified primary release**
+
+```bash
+bun --filter @aquila/infra-cloudflare assets -- rollback \
+  --story the_seventh_mirror \
+  --environment production \
+  --release "$RELEASE_ID" \
+  --expect-manifest-sha256 "$MANIFEST_SHA256" \
+  --confirm-production the_seventh_mirror \
+  --destination r2 \
+  --json > .tmp/hpa-231-synthetic-rollback-to-primary.json
+```
+
+Run the primary production public verifier and deployed browser spec. Both must pass.
+
+- [ ] **Step 12: Activate the synthetic peer again to prove activation-back semantics**
+
+```bash
+bun --filter @aquila/infra-cloudflare assets -- activate \
+  --story the_seventh_mirror \
+  --environment production \
+  --release "$SYNTHETIC_RELEASE_ID" \
+  --expect-manifest-sha256 "$SYNTHETIC_MANIFEST_SHA256" \
+  --confirm-production the_seventh_mirror \
+  --destination r2 \
+  --json > .tmp/hpa-231-synthetic-activate-back.json
+```
+
+Run the synthetic production public verifier and deployed browser spec again. Both must pass.
+
+- [ ] **Step 13: Restore the intended primary release as the final production state**
+
+The synthetic peer exists only for pointer-operation proof. Restore the primary before cleanup:
+
+```bash
+bun --filter @aquila/infra-cloudflare assets -- activate \
+  --story the_seventh_mirror \
+  --environment production \
+  --release "$RELEASE_ID" \
+  --expect-manifest-sha256 "$MANIFEST_SHA256" \
+  --confirm-production the_seventh_mirror \
+  --destination r2 \
+  --json > .tmp/hpa-231-final-primary-activate.json
+```
+
+Run the primary production public verifier and deployed browser spec one final time. Both must pass.
+
+- [ ] **Step 14: Record the synthetic-peer proof and commit the runbook update**
+
+Record synthetic release ID/checksum, deep verification, temporary activation smoke, rollback to primary, activation-back proof, and final primary restoration. Do not add a synthetic-source archive or evidence schema.
 
 ```bash
 git add docs/infrastructure/the-seventh-mirror-r2-migration.md
@@ -721,12 +1001,19 @@ git commit -m "docs: record Seventh Mirror rollback proof"
 - Regenerate: `apps/web/public/assets/vn/**` HPA-228 local fixture release.
 
 **Interfaces:**
-- Consumes: successful Task 5 release proof and existing `apps/web/scripts/build-visual-fixtures.ts`.
+- Consumes: successful Task 5 proof with the intended primary release active.
 - Produces: clean checkout containing only four small source fixtures and a consistent local runtime fixture.
 
-- [ ] **Step 1: Enforce the migration checkpoint manually before deletion**
+- [ ] **Step 1: Enforce the cleanup checkpoint before deletion**
 
-Do not continue unless the runbook contains concrete values/results for the private archive restore, active production release, production public/browser smoke, rollback, and activation back to the previously-current release.
+Do not continue unless the runbook contains concrete values/results for:
+
+- private archive restore;
+- reviewed v1 include/omit counts;
+- production R2 env/network preflight;
+- primary production activation and public/browser smoke;
+- rollback and activation-back proof;
+- final confirmation that `$RELEASE_ID` / `$MANIFEST_SHA256` is active again.
 
 - [ ] **Step 2: Downsize the four retained source fixtures in place**
 
@@ -795,9 +1082,7 @@ bun --filter web verify:visual-fixtures
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the source cleanup and regenerated fixture graph after the footprint guard in Task 7 also passes**
-
-Do not commit a state that leaves known stale `apps/web/public/assets/vn/objects/**` files.
+Do not commit yet; Task 7 removes any stale local VN objects and adds the CI guard in the same cleanup commit.
 
 ---
 
@@ -813,9 +1098,9 @@ Do not commit a state that leaves known stale `apps/web/public/assets/vn/objects
 - Consumes: four approved source fixture paths and the committed HPA-228 preview pointer/manifest/object graph.
 - Produces: credential-free failure when a production-sized The Seventh Mirror source or stale/unreferenced committed local VN file returns.
 
-- [ ] **Step 1: Write the failing guard tests with a complete valid temporary fixture tree**
+- [ ] **Step 1: Write the failing guard tests**
 
-Create `apps/web/scripts/__tests__/assert-visual-asset-footprint.test.ts`:
+Create `apps/web/scripts/__tests__/assert-visual-asset-footprint.test.ts` with four cases:
 
 ```ts
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -823,6 +1108,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+    assertSha256,
     getCurrentPointerPath,
     getObjectPath,
     getReleaseManifestPath,
@@ -831,7 +1117,7 @@ import { assertVisualAssetFootprint } from '../assert-visual-asset-footprint';
 
 const STORY_ID = 'the_seventh_mirror';
 const TARGET = { kind: 'preview', previewId: 'hpa-228-local' } as const;
-const OBJECT_SHA = 'a'.repeat(64);
+const OBJECT_SHA = assertSha256<'object-content'>('a'.repeat(64));
 const MANIFEST_SHA = 'b'.repeat(64);
 const RELEASE_ID = `sha256-${'c'.repeat(64)}`;
 const APPROVED = [
@@ -839,7 +1125,7 @@ const APPROVED = [
     'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png',
     'the_seventh_mirror/characters/asakura_mio/base.png',
     'the_seventh_mirror/characters/asakura_yuma/base.png',
-] as const;
++] as const;
 
 const created: string[] = [];
 
@@ -855,7 +1141,6 @@ async function writeText(path: string, value: string): Promise<void> {
 }
 
 async function validTree(): Promise<{
-    root: string;
     mediaRoot: string;
     publicRoot: string;
 }> {
@@ -870,7 +1155,7 @@ async function validTree(): Promise<{
         await writeFile(path, Buffer.from('fixture'));
     }
 
-    const objectPath = getObjectPath(OBJECT_SHA as never, 'webp');
+    const objectPath = getObjectPath(OBJECT_SHA, 'webp');
     const manifestPath = getReleaseManifestPath(STORY_ID, RELEASE_ID, TARGET);
     const pointerPath = getCurrentPointerPath(STORY_ID, TARGET);
     const assets = [
@@ -919,7 +1204,7 @@ async function validTree(): Promise<{
     );
     await writeText(join(publicRoot, objectPath), 'x');
 
-    return { root, mediaRoot, publicRoot };
+    return { mediaRoot, publicRoot };
 }
 
 describe('assertVisualAssetFootprint', () => {
@@ -935,7 +1220,6 @@ describe('assertVisualAssetFootprint', () => {
         const extra = join(mediaRoot, 'the_seventh_mirror/extra/full.png');
         await mkdir(dirname(extra), { recursive: true });
         await writeFile(extra, Buffer.from('extra'));
-
         await expect(
             assertVisualAssetFootprint({ mediaRoot, publicRoot })
         ).rejects.toThrow(/unexpected Seventh Mirror fixture source/i);
@@ -944,7 +1228,6 @@ describe('assertVisualAssetFootprint', () => {
     it('rejects an oversized approved fixture source', async () => {
         const { mediaRoot, publicRoot } = await validTree();
         await writeFile(join(mediaRoot, APPROVED[0]), Buffer.alloc(513 * 1024));
-
         await expect(
             assertVisualAssetFootprint({ mediaRoot, publicRoot })
         ).rejects.toThrow(/fixture source exceeds/i);
@@ -955,7 +1238,6 @@ describe('assertVisualAssetFootprint', () => {
         const orphan = join(publicRoot, 'vn/objects/orphan.webp');
         await mkdir(dirname(orphan), { recursive: true });
         await writeFile(orphan, Buffer.from('orphan'));
-
         await expect(
             assertVisualAssetFootprint({ mediaRoot, publicRoot })
         ).rejects.toThrow(/unreferenced local VN file/i);
@@ -963,15 +1245,13 @@ describe('assertVisualAssetFootprint', () => {
 });
 ```
 
-When implementing, use `assertSha256<'object-content'>()` instead of the `as never` shortcut in the final committed test so the fixture stays type-safe.
-
 - [ ] **Step 2: Run the focused test and verify it fails because the guard module does not exist**
 
 ```bash
 bun --filter web test:run -- scripts/__tests__/assert-visual-asset-footprint.test.ts
 ```
 
-- [ ] **Step 3: Implement the minimal guard**
+- [ ] **Step 3: Implement the minimal story-specific guard**
 
 Create `apps/web/scripts/assert-visual-asset-footprint.ts`:
 
@@ -1101,18 +1381,7 @@ if (import.meta.main) {
 }
 ```
 
-- [ ] **Step 4: Make the test fixture type-safe and run it**
-
-Replace the temporary `OBJECT_SHA as never` in Step 1 with:
-
-```ts
-import { assertSha256 } from '@aquila/stories/runtime-assets';
-
-const objectSha = assertSha256<'object-content'>(OBJECT_SHA);
-const objectPath = getObjectPath(objectSha, 'webp');
-```
-
-Then run:
+- [ ] **Step 4: Run the focused guard tests**
 
 ```bash
 bun --filter web test:run -- scripts/__tests__/assert-visual-asset-footprint.test.ts
@@ -1204,7 +1473,7 @@ bun --filter web verify:asset-footprint
 
 Expected: exactly four approved source fixture paths and only the HPA-228 active local pointer/manifest/referenced objects.
 
-- [ ] **Step 3: Prove republishing starts from the private archive rather than Git**
+- [ ] **Step 3: Prove republishing starts from the private v1 archive rather than Git**
 
 Restore the base archive into `.tmp/hpa-231-final-restore`, verify `SHA256SUMS`, and run:
 
@@ -1219,24 +1488,59 @@ bun --filter @aquila/infra-cloudflare assets -- plan \
   --json > .tmp/hpa-231-final-restore-plan.json
 ```
 
-Expected: the restored base archive reproduces the retained base release identity. If the controlled revision is the final active release, overlay its recorded delta archive before running the same plan check for the final release identity.
+Expected: restored archive reproduces the retained primary release ID and manifest checksum.
 
-- [ ] **Step 4: Record concrete final evidence in the runbook**
+- [ ] **Step 4: Re-run the active production identity check after repository cleanup**
 
-Add a final Markdown section with actual values for source archive ID, primary release ID/checksum, rollback target ID/checksum, final active release ID/checksum, preview gate result, manual review result, production smoke result, rollback result, activation-back result, and credential-free verification result.
+```bash
+bun --filter @aquila/infra-cloudflare verify \
+  --story the_seventh_mirror \
+  --environment production \
+  --expect-manifest-sha256 "$MANIFEST_SHA256" \
+  --asset-base-url https://assets.aquila.cwchanap.dev \
+  --json
 
-- [ ] **Step 5: Commit the final runbook**
+BASE_URL=https://aquila.cwchanap.dev \
+RELEASE_GATE_STORY_ID=the_seventh_mirror \
+RELEASE_GATE_RELEASE_ID="$RELEASE_ID" \
+RELEASE_GATE_MANIFEST_SHA256="$MANIFEST_SHA256" \
+RELEASE_GATE_PREVIEW_ID= \
+bun --filter e2e test:release-gate
+```
+
+Expected: production remains on the primary release; Git cleanup did not affect runtime delivery.
+
+- [ ] **Step 5: Record concrete final evidence in the runbook**
+
+Add actual values/results for:
+
+- reviewed included/omitted/total counts;
+- source archive ID and restore result;
+- primary release ID/checksum;
+- preview gate and manual review result;
+- production Vercel asset-source environment and network preflight;
+- production activation/smoke result;
+- rollback peer selection result;
+- rollback target ID/checksum or synthetic peer ID/checksum;
+- activation-back result;
+- final primary release identity;
+- cleanup/footprint result;
+- final credential-free verification result.
+
+Plain Markdown only; do not add an evidence schema.
+
+- [ ] **Step 6: Commit the final runbook**
 
 ```bash
 git add docs/infrastructure/the-seventh-mirror-r2-migration.md
 git commit -m "docs: finalize Seventh Mirror R2 migration"
 ```
 
-- [ ] **Step 6: Add one concise HPA-231 completion comment**
+- [ ] **Step 7: Add one concise HPA-231 completion comment**
 
-The comment must state the concrete archive prefix, both release IDs/checksums used for rollback proof, final active release, preview/manual/production results, cleanup result, and final verification commands. Plain Markdown only; do not add an evidence schema.
+The comment must summarize the same concrete values from Step 5 and explicitly state that the private archive is a v1 migration snapshot, not a complete art set.
 
-- [ ] **Step 7: Move HPA-231 to Done, then close HPA-216**
+- [ ] **Step 8: Move HPA-231 to Done, then close HPA-216**
 
 Only after all HPA-231 acceptance criteria are proven. HPA-216 must not be closed first.
 
@@ -1245,15 +1549,20 @@ Only after all HPA-231 acceptance criteria are proven. HPA-216 must not be close
 ## Self-Review Checklist
 
 - [ ] Every compiler authoring key is explicitly included or omitted.
+- [ ] The v1 inclusion rule is explicit; missing art cannot silently masquerade as a fully illustrated release.
+- [ ] The reviewed included count is frozen in the structural test and counts are recorded in the runbook.
 - [ ] CI structural coverage remains valid after production sources leave Git.
-- [ ] Original images plus generation metadata are privately archived, checksummed, and restorable.
+- [ ] Original v1 images plus generation metadata are privately archived, checksummed, and restorable.
+- [ ] The archive is documented as a migration snapshot, not a complete story art set.
 - [ ] Candidate publication uses HPA-230 `--no-activate` and retained exact report identifiers.
-- [ ] Preview qualification delegates to HPA-233 plus one concise manual review.
-- [ ] Production activation and smoke reuse existing commands only.
-- [ ] Rollback/reactivation is pointer-only and uses two verified full-story releases.
-- [ ] The first-release path creates only one controlled source revision when necessary.
-- [ ] Repository cleanup waits until rollback/reactivation proof passes.
+- [ ] The primary candidate delegates preview qualification to HPA-233 plus one concise manual review.
+- [ ] Production Vercel `PUBLIC_ASSET_*` wiring is deployed once before pointer activation and remote-pointer routing is proven.
+- [ ] After that one-time configuration deploy, asset activation does not require a Vercel rebuild.
+- [ ] Rollback peer selection is executable and requires deep verification, exact manifest checksum, and `validateRuntimeManifestCoverage` against the current production plan.
+- [ ] The first-release fallback creates only one controlled synthetic peer and does not run a redundant second preview gate.
+- [ ] The intended primary release is restored before cleanup.
+- [ ] Repository cleanup waits until production smoke and rollback/activation-back proof pass.
 - [ ] Only four tiny existing fixture source paths remain in Git.
-- [ ] The footprint guard is narrow and story-specific.
-- [ ] Clean-checkout tests/local fixtures still work and private restore is the republish path.
+- [ ] The footprint guard remains narrow and story-specific rather than being merged into fixture-integrity verification.
+- [ ] Clean-checkout tests/local fixtures work and private restore is the production republish path.
 - [ ] No new schema/version/storage/runtime/release framework is introduced.

@@ -316,7 +316,7 @@ Before production activation, failures leave only immutable candidate data and r
 
 ### Live migration checks
 
-- measured include/omit counts and explicit omission review;
+- branch-measured include/omit counts and explicit omission review;
 - source archive upload, restore, and checksum verification;
 - production `assets plan` from original and restored source roots;
 - immutable production candidate publish with `--no-activate`;
@@ -379,7 +379,7 @@ Rejected. Deep verification plus exact production public/browser smoke is suffic
 HPA-231 is complete when:
 
 - every compiler-generated visual identity is included or omitted in the checked-in production plan;
-- the v1 inclusion policy and reviewed include/omit counts are recorded;
+- the v1 inclusion policy and branch-measured, reviewed include/omit counts are recorded;
 - every included asset publishes into a valid prompt-free immutable runtime manifest;
 - omitted identities are absent from runtime data and reader progression continues through fallback;
 - the exact primary candidate passes HPA-233 preview CDN/browser qualification;

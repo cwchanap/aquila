@@ -45,3 +45,6 @@ coverage/
 # Wrangler local simulation state
 .wrangler/
 .superpowers/
+
+# local scratch / migration report output (e.g. .tmp/hpa-231-*.json)
+.tmp/

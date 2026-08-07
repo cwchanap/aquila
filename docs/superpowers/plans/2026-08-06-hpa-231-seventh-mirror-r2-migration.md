@@ -18,6 +18,10 @@
 - No command block may depend on shell variables exported by a previous block. Re-derive values from retained files/reports every time.
 - Removal means removal from current repository HEAD/canonical delivery paths. Do not rewrite Git history.
 
+### Command Conventions
+
+Every `@aquila/infra-cloudflare` publisher/verify command below runs the CLI directly by file path from the repository root — `bun packages/infra-cloudflare/src/publisher/cli.ts …` (the `assets` script) and `bun packages/infra-cloudflare/src/verify.ts …` (the `verify` script) — instead of `bun --filter @aquila/infra-cloudflare …`. On Bun ≥ 1.3.14 the `--filter` runner prefixes every stdout line with `<package> <script>:`, which corrupts the JSON captured to `.tmp/*.json` and breaks every later `Bun.file(".tmp/*.json").json()` parse; the direct invocation keeps stdout as clean JSON (progress logs stay on stderr). Vitest and lint invocations keep `bun --filter`, since their result is read from the exit code and reporter output, not parsed JSON.
+
 ---
 
 ## File Structure
@@ -252,7 +256,7 @@ Expected: PASS.
 ```bash
 rm -rf .tmp/hpa-231-plan-destination
 mkdir -p .tmp
-bun --filter @aquila/infra-cloudflare assets -- plan \
+bun packages/infra-cloudflare/src/publisher/cli.ts plan \
   --story the_seventh_mirror \
   --environment production \
   --plan packages/stories/release-plans/the_seventh_mirror.json \
@@ -307,7 +311,7 @@ runtime delivery paths. It does not rewrite Git history; historical blobs remain
 reachable in older commits.
 ```
 
-Append the Task 1 included/omitted/total counts and any unreferenced source-art findings.
+Append the Task 1 included/omitted/total counts and any unreferenced source-art findings. Known unreferenced source images (present on disk but absent from the generated compiler catalog, confirmed during this plan's Task 1 run): `the_seventh_mirror/characters/asakura_yuma/sad.png` and `the_seventh_mirror/characters/asakura_yuma/scared.png`. Record these in the runbook as compiler drift / unused authoring art; do not invent release-plan identities for them, and do not delete them here — Task 6 governs source removal only after the live-proof checkpoint.
 
 - [ ] **Step 2: Remove filesystem junk, create archive ID, and persist it to disk**
 
@@ -378,7 +382,7 @@ Expected: every archived file reports `OK`.
 ```bash
 RESTORE_ROOT=.tmp/hpa-231-restored
 rm -rf .tmp/hpa-231-restore-destination
-bun --filter @aquila/infra-cloudflare assets -- plan \
+bun packages/infra-cloudflare/src/publisher/cli.ts plan \
   --story the_seventh_mirror \
   --environment production \
   --plan packages/stories/release-plans/the_seventh_mirror.json \
@@ -417,7 +421,7 @@ git commit -m "docs: add Seventh Mirror source restore runbook"
 - [ ] **Step 1: Publish without production activation**
 
 ```bash
-bun --filter @aquila/infra-cloudflare assets -- publish \
+bun packages/infra-cloudflare/src/publisher/cli.ts publish \
   --story the_seventh_mirror \
   --environment production \
   --plan packages/stories/release-plans/the_seventh_mirror.json \
@@ -433,7 +437,7 @@ bun --filter @aquila/infra-cloudflare assets -- publish \
 RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); if(typeof r.releaseId!=="string") throw new Error("missing releaseId"); console.log(r.releaseId)')
 MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); if(typeof r.manifestSha256!=="string") throw new Error("missing manifestSha256"); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare assets -- verify \
+bun packages/infra-cloudflare/src/publisher/cli.ts verify \
   --story the_seventh_mirror \
   --environment production \
   --release "$RELEASE_ID" \
@@ -553,7 +557,7 @@ A remote 404 is acceptable before first activation. Record the deployment identi
 RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.releaseId)')
 MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare assets -- activate \
+bun packages/infra-cloudflare/src/publisher/cli.ts activate \
   --story the_seventh_mirror \
   --environment production \
   --release "$RELEASE_ID" \
@@ -568,7 +572,7 @@ bun --filter @aquila/infra-cloudflare assets -- activate \
 ```bash
 MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare verify \
+bun packages/infra-cloudflare/src/verify.ts \
   --story the_seventh_mirror \
   --environment production \
   --expect-manifest-sha256 "$MANIFEST_SHA256" \
@@ -611,7 +615,7 @@ git commit -m "docs: record Seventh Mirror production activation"
 - [ ] **Step 1: Record current production release history for context only**
 
 ```bash
-bun --filter @aquila/infra-cloudflare assets -- releases \
+bun packages/infra-cloudflare/src/publisher/cli.ts releases \
   --story the_seventh_mirror \
   --environment production \
   --destination r2 \
@@ -664,7 +668,7 @@ Manually inspect the revised image once.
 - [ ] **Step 4: Publish the synthetic release without activation**
 
 ```bash
-bun --filter @aquila/infra-cloudflare assets -- publish \
+bun packages/infra-cloudflare/src/publisher/cli.ts publish \
   --story the_seventh_mirror \
   --environment production \
   --plan packages/stories/release-plans/the_seventh_mirror.json \
@@ -686,7 +690,7 @@ if [ "$PRIMARY_RELEASE_ID" = "$SYNTHETIC_RELEASE_ID" ]; then
   exit 1
 fi
 
-bun --filter @aquila/infra-cloudflare assets -- verify \
+bun packages/infra-cloudflare/src/publisher/cli.ts verify \
   --story the_seventh_mirror \
   --environment production \
   --release "$SYNTHETIC_RELEASE_ID" \
@@ -704,7 +708,7 @@ Do not run a second HPA-233 preview gate.
 SYNTHETIC_RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-synthetic-publish.json").json(); console.log(r.releaseId)')
 SYNTHETIC_MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-synthetic-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare assets -- activate \
+bun packages/infra-cloudflare/src/publisher/cli.ts activate \
   --story the_seventh_mirror \
   --environment production \
   --release "$SYNTHETIC_RELEASE_ID" \
@@ -713,7 +717,7 @@ bun --filter @aquila/infra-cloudflare assets -- activate \
   --destination r2 \
   --json > .tmp/hpa-231-synthetic-activate.json
 
-bun --filter @aquila/infra-cloudflare verify \
+bun packages/infra-cloudflare/src/verify.ts \
   --story the_seventh_mirror \
   --environment production \
   --expect-manifest-sha256 "$SYNTHETIC_MANIFEST_SHA256" \
@@ -727,7 +731,7 @@ bun --filter @aquila/infra-cloudflare verify \
 PRIMARY_RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.releaseId)')
 PRIMARY_MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare assets -- rollback \
+bun packages/infra-cloudflare/src/publisher/cli.ts rollback \
   --story the_seventh_mirror \
   --environment production \
   --release "$PRIMARY_RELEASE_ID" \
@@ -736,7 +740,7 @@ bun --filter @aquila/infra-cloudflare assets -- rollback \
   --destination r2 \
   --json > .tmp/hpa-231-rollback-to-primary.json
 
-bun --filter @aquila/infra-cloudflare verify \
+bun packages/infra-cloudflare/src/verify.ts \
   --story the_seventh_mirror \
   --environment production \
   --expect-manifest-sha256 "$PRIMARY_MANIFEST_SHA256" \
@@ -750,7 +754,7 @@ bun --filter @aquila/infra-cloudflare verify \
 SYNTHETIC_RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-synthetic-publish.json").json(); console.log(r.releaseId)')
 SYNTHETIC_MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-synthetic-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare assets -- activate \
+bun packages/infra-cloudflare/src/publisher/cli.ts activate \
   --story the_seventh_mirror \
   --environment production \
   --release "$SYNTHETIC_RELEASE_ID" \
@@ -759,7 +763,7 @@ bun --filter @aquila/infra-cloudflare assets -- activate \
   --destination r2 \
   --json > .tmp/hpa-231-synthetic-activate-back.json
 
-bun --filter @aquila/infra-cloudflare verify \
+bun packages/infra-cloudflare/src/verify.ts \
   --story the_seventh_mirror \
   --environment production \
   --expect-manifest-sha256 "$SYNTHETIC_MANIFEST_SHA256" \
@@ -775,7 +779,7 @@ Use normal `activate`, not `--reactivate`, because synthetic is inactive after r
 PRIMARY_RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.releaseId)')
 PRIMARY_MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare assets -- activate \
+bun packages/infra-cloudflare/src/publisher/cli.ts activate \
   --story the_seventh_mirror \
   --environment production \
   --release "$PRIMARY_RELEASE_ID" \
@@ -784,7 +788,7 @@ bun --filter @aquila/infra-cloudflare assets -- activate \
   --destination r2 \
   --json > .tmp/hpa-231-final-primary-activate.json
 
-bun --filter @aquila/infra-cloudflare verify \
+bun packages/infra-cloudflare/src/verify.ts \
   --story the_seventh_mirror \
   --environment production \
   --expect-manifest-sha256 "$PRIMARY_MANIFEST_SHA256" \
@@ -1152,7 +1156,7 @@ aws s3 sync "$R2_PREFIX" "$RESTORE_ROOT/" \
 )
 
 rm -rf .tmp/hpa-231-final-plan-destination
-bun --filter @aquila/infra-cloudflare assets -- plan \
+bun packages/infra-cloudflare/src/publisher/cli.ts plan \
   --story the_seventh_mirror \
   --environment production \
   --plan packages/stories/release-plans/the_seventh_mirror.json \
@@ -1170,7 +1174,7 @@ Then compare `.tmp/hpa-231-final-restore-plan.json` with `.tmp/hpa-231-publish.j
 PRIMARY_RELEASE_ID=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.releaseId)')
 PRIMARY_MANIFEST_SHA256=$(bun -e 'const r=await Bun.file(".tmp/hpa-231-publish.json").json(); console.log(r.manifestSha256)')
 
-bun --filter @aquila/infra-cloudflare verify \
+bun packages/infra-cloudflare/src/verify.ts \
   --story the_seventh_mirror \
   --environment production \
   --expect-manifest-sha256 "$PRIMARY_MANIFEST_SHA256" \

@@ -80,6 +80,8 @@ Missing artwork is allowed. Producing it is an HPA-231 non-goal.
 
 The initial plan may be scaffolded by one operator command in the implementation plan. That command is intentionally not promoted to a permanent `sync-release-plan` tool. Production inclusion is a release decision: a newly appearing image must not silently become shippable merely because a synchronization script saw a file. Future art work can amend the committed release plan explicitly in the feature that introduces that art.
 
+This also makes compiler drift intentional and visible: if the generated identity set changes, the existing coverage test fails until the release plan is explicitly amended. If a source file appears for an already-omitted identity, the committed omission remains in force until a future release deliberately changes it to `included`.
+
 ### Structural validation
 
 The production-plan test belongs with the existing HPA-230 publisher helpers. It:

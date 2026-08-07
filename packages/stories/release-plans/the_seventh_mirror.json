@@ -1,0 +1,3166 @@
+{
+  "schemaVersion": 1,
+  "storyId": "the_seventh_mirror",
+  "channel": "production",
+  "entries": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act1_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act1_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act1_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act1_s1.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act2_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act2_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act3_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act3_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act4_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act4_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act5_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act5_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act6_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act6_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_1/ch1_act7_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/backgrounds/chapter_1/ch1_act7_s0.png",
+      "section": "chapter_1"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act2_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act2_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act6_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act6_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_10/ch10_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_10"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_11/ch11_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_11"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_12/ch12_act9_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_12"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act5_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_13/ch13_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_13"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_14/ch14_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_14"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_15/ch15_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_15"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_16/ch16_act6_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_16"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_17/ch17_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_17"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_18/ch18_act8_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_18"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act10_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act10_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_19/ch19_act9_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_19"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_2/ch2_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_2"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_2/ch2_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_2"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_2/ch2_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_2"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_2/ch2_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_2"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_20/ch20_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_20"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act2_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act6_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act6_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_21/ch21_act8_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_21"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_22/ch22_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_22"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_23/ch23_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_23"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_24/ch24_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_24"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act7_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act7_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act7_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act8_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_25/ch25_act8_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_25"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act4_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act5_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act6_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act6_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act7_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act8_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_26/ch26_act8_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_26"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act5_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act5_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act5_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_27/ch27_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_27"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act1_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act1_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act2_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act4_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act4_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act5_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act5_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act5_s3"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act7_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_28/ch28_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_28"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_3/ch3_act6_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_3"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act4_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act4_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act5_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act7_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act7_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_4/ch4_act8_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_4"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act3_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act5_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act5_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act6_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act7_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act8_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_5/ch5_act8_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_5"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_6/ch6_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_6"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act1_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act2_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_7/ch7_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_7"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act7_s1"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_8/ch8_act7_s2"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_8"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act10_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act1_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act2_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act3_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act4_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act5_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act6_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act7_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act8_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "chapter_9/ch9_act9_s0"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1",
+      "section": "chapter_9"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "ahara_maho/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "ahara_maho/determined"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/angry"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/angry.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/determined"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/determined.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/exhausted"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/exhausted.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/sad"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/sad.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/scared"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/scared.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_mio/shocked"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_mio/shocked.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_sae/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_sae/determined"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_yuma/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_yuma/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "asakura_yuma/determined"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/asakura_yuma/determined.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "chida_kosuke/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/chida_kosuke/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "chida_kosuke/determined"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/chida_kosuke/determined.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "chida_kosuke/scared"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/chida_kosuke/scared.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "external_doctor/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fujikawa_mari/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fujikawa_mari/determined"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/fujikawa_mari/determined.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fujikawa_mari/guarded"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fujikawa_mari/sad"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/fujikawa_mari/sad.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fujikawa_mari/shocked"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/fujikawa_mari/shocked.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kusakube_satoru/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/kusakube_satoru/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kusakube_satoru/determined"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/kusakube_satoru/determined.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kusakube_satoru/sad"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "minase_yoshino/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "minase_yoshino/determined"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "minase_yoshino/guarded"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/minase_yoshino/guarded.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "minase_yoshino/sad"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/minase_yoshino/sad.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "minase_yoshino/shocked"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/minase_yoshino/shocked.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "miura_naoko/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "nagano_aunt/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "nagano_aunt/determined"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "nagihara_yui/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "onodera_naoki/guarded"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/onodera_naoki/guarded.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "saeki_tatsuya/angry"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/saeki_tatsuya/angry.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "saeki_tatsuya/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/saeki_tatsuya/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "saeki_tatsuya/determined"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/saeki_tatsuya/determined.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "saeki_tatsuya/guarded"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/saeki_tatsuya/guarded.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "shiraishi_kotone/base"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/shiraishi_kotone/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "shiraishi_kotone/guilty"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/shiraishi_kotone/guilty.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "shiraishi_kotone/sad"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/shiraishi_kotone/sad.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "shiraishi_kotone/shocked"
+      },
+      "disposition": "included",
+      "sourcePath": "the_seventh_mirror/characters/shiraishi_kotone/shocked.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "takagi_shuichi/base"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "takagi_shuichi/guarded"
+      },
+      "disposition": "omitted",
+      "reason": "Authoring art not produced for HPA-231 v1"
+    }
+  ]
+}

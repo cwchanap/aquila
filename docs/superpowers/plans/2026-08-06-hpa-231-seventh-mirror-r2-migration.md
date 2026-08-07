@@ -899,14 +899,37 @@ The second command may still fail until Task 7 adds the new footprint checks and
 - Consumes: existing HPA-228 fixture source/plan/pointer/manifest/object graph.
 - Produces: one verifier that covers both fixture integrity and the narrow HPA-231 source footprint.
 
-- [ ] **Step 1: Add source-footprint coverage to the existing test suite**
+- [ ] **Step 1: Extend the fs mocks and happy path in the existing test file**
 
-Extend the current `node:fs/promises` mock in `apps/web/scripts/__tests__/verify-visual-fixtures.test.ts` with `readdir` and `stat` mocks, then add focused cases for:
+The current test mocks `access` and `readFile`. Extend that mock to expose `readdir` and `stat`, and make the default happy path report exactly the four approved source files plus only the active story-local pointer/manifest.
+
+Add stable mocks alongside the existing fs mocks:
+
+```ts
+const mockReaddir = vi.fn();
+const mockStat = vi.fn();
+
+vi.mock('node:fs/promises', () => ({
+    access: mockAccess,
+    readFile: mockReadFile,
+    readdir: mockReaddir,
+    stat: mockStat,
+    default: {
+        access: mockAccess,
+        readFile: mockReadFile,
+        readdir: mockReaddir,
+        stat: mockStat,
+    },
+}));
+```
+
+Update `wireHappyPath()` so `mockReaddir` returns directory entries representing the four existing fixture paths when walking the media root and returns only `current.json` plus the active release directory/manifest for the story-local preview tree. Make `mockStat` return a small source size such as `1024` bytes by default.
+
+- [ ] **Step 2: Add three focused regression cases**
 
 ```ts
 it('rejects an unexpected Seventh Mirror source fixture', async () => {
-    // Make readdir expose a fifth PNG under the story source root.
-    // Existing happy-path reads remain valid.
+    wireHappyPath({ extraSourcePath: 'the_seventh_mirror/characters/extra/base.png' });
     const { verifyVisualFixtures } = await importVerify();
     await expect(verifyVisualFixtures()).rejects.toThrow(
         /unexpected Seventh Mirror fixture source/i
@@ -914,16 +937,13 @@ it('rejects an unexpected Seventh Mirror source fixture', async () => {
 });
 
 it('rejects an oversized retained source fixture', async () => {
-    // Return > 768 KiB for one approved source from stat().
+    wireHappyPath({ sourceSizeBytes: 769 * 1024 });
     const { verifyVisualFixtures } = await importVerify();
-    await expect(verifyVisualFixtures()).rejects.toThrow(
-        /fixture source exceeds/i
-    );
+    await expect(verifyVisualFixtures()).rejects.toThrow(/fixture source exceeds/i);
 });
 
 it('rejects a stale story-local preview manifest', async () => {
-    // Make the story-local preview directory contain a second runtime-manifest.json
-    // not referenced by current.json.
+    wireHappyPath({ includeStaleManifest: true });
     const { verifyVisualFixtures } = await importVerify();
     await expect(verifyVisualFixtures()).rejects.toThrow(
         /stale Seventh Mirror fixture release document/i
@@ -931,19 +951,17 @@ it('rejects a stale story-local preview manifest', async () => {
 });
 ```
 
-Keep the existing hash, byte-length, dimension, pointer, and coverage tests unchanged.
+Implement the named `wireHappyPath` options directly in the existing helper rather than creating another fixture-test framework.
 
-- [ ] **Step 2: Run the focused verifier tests and confirm they fail before implementation**
+- [ ] **Step 3: Run the existing verifier test file and confirm the new cases fail**
 
 ```bash
 bun --filter web test:run -- scripts/__tests__/verify-visual-fixtures.test.ts
 ```
 
-Expected: the new cases FAIL.
+- [ ] **Step 4: Add the narrow footprint checks to `verify-visual-fixtures.ts`**
 
-- [ ] **Step 3: Extend `verify-visual-fixtures.ts` rather than creating another script**
-
-Add imports/options/constants:
+Change imports/options/constants:
 
 ```ts
 import { access, readdir, readFile, stat } from 'node:fs/promises';
@@ -964,7 +982,7 @@ export type VerifyVisualFixturesOptions = {
 };
 ```
 
-Add one local recursive file helper:
+Add a local recursive helper:
 
 ```ts
 async function walkFiles(root: string): Promise<string[]> {
@@ -981,14 +999,14 @@ async function walkFiles(root: string): Promise<string[]> {
 }
 ```
 
-At the start of `verifyVisualFixtures()`, derive:
+At the beginning of `verifyVisualFixtures()`:
 
 ```ts
 const mediaRoot =
     options.mediaRoot ?? resolve(repositoryRoot, 'packages/assets/media');
 ```
 
-After existing release coverage validation, add the exact-source and size checks:
+After existing release coverage validation, add:
 
 ```ts
 const sourceFiles = await walkFiles(resolve(mediaRoot, STORY_ID));
@@ -1017,9 +1035,29 @@ if (totalSourceBytes > MAX_FIXTURE_TOTAL_BYTES) {
 }
 ```
 
-After successfully parsing the pointer, walk only the story-local preview directory and permit only `current.json` plus `pointer.manifestPath` under that directory. Do not reject unrelated shared `vn/objects/**` globally.
+After `pointer` and `manifest` are available, enforce the reverse story-local release-document set without touching shared `vn/objects/**`:
 
-- [ ] **Step 4: Run the verifier tests**
+```ts
+const storyRoot = resolve(
+    publicRoot,
+    'vn/previews/hpa-228-local/stories/the_seventh_mirror'
+);
+const allowedStoryFiles = new Set([
+    resolve(publicRoot, getCurrentPointerPath(STORY_ID, PREVIEW_TARGET)),
+    resolve(publicRoot, pointer.manifestPath),
+]);
+for (const path of await walkFiles(storyRoot)) {
+    if (!allowedStoryFiles.has(path)) {
+        problems.push(
+            `stale Seventh Mirror fixture release document: ${relative(publicRoot, path)}`
+        );
+    }
+}
+```
+
+Keep the existing referenced-object hash/byte-length/dimension checks unchanged. Do not add a global unreferenced-object rejection for `vn/objects/**`.
+
+- [ ] **Step 5: Run the verifier tests**
 
 ```bash
 bun --filter web test:run -- scripts/__tests__/verify-visual-fixtures.test.ts
@@ -1027,7 +1065,7 @@ bun --filter web test:run -- scripts/__tests__/verify-visual-fixtures.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Run the verifier against the real regenerated fixture tree**
+- [ ] **Step 6: Run the verifier against the real regenerated fixture tree**
 
 ```bash
 bun --filter web verify:visual-fixtures
@@ -1035,7 +1073,7 @@ bun --filter web verify:visual-fixtures
 
 If it reports stale story-local preview manifests, delete only those exact stale files and rerun. Do not broaden the allowlist.
 
-- [ ] **Step 6: Add the existing verifier to Build & Lint CI**
+- [ ] **Step 7: Add the existing verifier to Build & Lint CI**
 
 Add after `compile:check` in `.github/workflows/build-and-lint.yml`:
 
@@ -1046,7 +1084,7 @@ Add after `compile:check` in `.github/workflows/build-and-lint.yml`:
 
 No new package script is needed; `verify:visual-fixtures` already exists.
 
-- [ ] **Step 7: Commit Tasks 6 and 7 together**
+- [ ] **Step 8: Commit Tasks 6 and 7 together**
 
 ```bash
 git add \

@@ -56,3 +56,49 @@ publication identity exactly:
   `sha256-ec3ba7cf9b94f21396c1a2d1fe632d46f6a938056d6186dd0675fa7cb842607e`
 - Manifest SHA-256:
   `cc9f403e3875b5bb17e3b09fd8f13dca75e2f2170898c9fa1e2cce9b1f3c2bb7`
+
+## Primary candidate qualification
+
+Qualified on 2026-08-08 without activating the production pointer:
+
+- Release ID:
+  `sha256-ec3ba7cf9b94f21396c1a2d1fe632d46f6a938056d6186dd0675fa7cb842607e`
+- Manifest SHA-256:
+  `cc9f403e3875b5bb17e3b09fd8f13dca75e2f2170898c9fa1e2cce9b1f3c2bb7`
+- Preview pointer: `hpa-231-gate`
+- Preview deployment:
+  `https://aquila-36ozmdfmn-cwchanaps-projects.vercel.app`
+- HPA-233 release gate:
+  `https://github.com/cwchanap/aquila/actions/runs/31293468525`
+  (job `93194665245`)
+
+The HPA-233 workflow passed deep R2 verification, preview-pointer mirroring and
+activation, public-CDN verification, and its deployed-reader Playwright checks
+for both desktop and mobile Chromium. The successful workflow also exercised a
+choice path with `train_adventure`; The Seventh Mirror itself is linear, so no
+story-local choice was available for the manual review.
+
+Manual v1 review results:
+
+- PASS: an included background transition rendered both reviewed room images.
+- PASS: an included portrait transition changed from Yuma to Mio while retaining
+  the active background.
+- PASS: a later omitted position showed the expected unavailable-visuals
+  fallback, and Continue advanced from page 1 to page 2 without blocking.
+- N/A: no choice exists in the linear The Seventh Mirror flow; the automated
+  cross-story choice-path check passed as noted above.
+- PASS: the included background, portrait, dialogue, and progression controls
+  were readable and usable at desktop and 393x851 mobile viewports.
+- PASS: visual to text to visual to text mode changes preserved the exact active
+  line at page 11 of 29.
+- EXPECTED: later positions without included art use fallback presentation and
+  are not migration failures.
+
+The narrow mobile capture also exposed overlapping reader chrome near the top
+edge. It did not cover the migrated artwork, dialogue, or Continue control and
+is recorded as a non-blocking reader-layout observation outside the R2 payload
+qualification.
+
+The protected preview was reviewed with a short-lived Vercel automation bypass.
+That temporary bypass was revoked immediately after the manual review; the
+credential was not retained in the repository or this runbook.

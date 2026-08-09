@@ -201,3 +201,43 @@ and manifest:
   `sha256-ec3ba7cf9b94f21396c1a2d1fe632d46f6a938056d6186dd0675fa7cb842607e`
 - Final manifest SHA-256:
   `cc9f403e3875b5bb17e3b09fd8f13dca75e2f2170898c9fa1e2cce9b1f3c2bb7`
+
+## Final verification and repository cleanup
+
+Completed on 2026-08-08. Current repository HEAD contains exactly four tracked
+The Seventh Mirror visual fixtures:
+
+| Fixture                                 | Dimensions |   Bytes |
+| --------------------------------------- | ---------: | ------: |
+| `backgrounds/chapter_1/ch1_act2_s0.png` |    959x540 | 641,782 |
+| `backgrounds/chapter_1/ch1_act2_s1.png` |    959x540 | 619,415 |
+| `characters/asakura_mio/base.png`       |    450x600 | 313,844 |
+| `characters/asakura_yuma/base.png`      |    450x600 | 287,237 |
+
+The four fixtures total 1,862,278 bytes. The other 36 production source images
+were removed from Git tracking and from the canonical runtime media tree. An
+ignored local working copy remains under
+`.tmp/hpa-231-local-production-assets/` for the operator; it is not part of the
+repository or runtime delivery path. The final private-archive restore remains
+locally under `.tmp/hpa-231-final-restore/` for the same reason.
+
+CI now runs the strict visual-fixture verifier after `compile:check`. It enforces
+the exact four-path allowlist, image dimensions, individual and total byte
+budgets, and the absence of stale production-image references from tracked
+story documentation. The final verification set passed:
+
+- Story compilation drift check.
+- Stories package tests: 201 passed.
+- Infrastructure tests: 407 passed.
+- Web package tests: 1,609 passed.
+- Strict fixture verifier.
+- Monorepo lint: 4 tasks passed.
+- Monorepo production build: 4 tasks passed.
+- Fresh production public-chain verification, including immutable object
+  checksums and lengths, cache headers, CORS, and source-key exclusion.
+- Production release gate in desktop and mobile Chromium: 2 passed.
+
+The final production pointer still identifies the qualified primary release and
+manifest documented above. Cleanup applies to current HEAD and canonical paths
+only. Historical large blobs remain in Git history; HPA-231 performed no history
+rewrite.

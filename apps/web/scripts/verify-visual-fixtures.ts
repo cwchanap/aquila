@@ -47,8 +47,13 @@ async function walkFiles(root: string): Promise<string[]> {
     async function walk(dir: string): Promise<void> {
         for (const entry of await readdir(dir, { withFileTypes: true })) {
             const path = resolve(dir, entry.name);
+            if (entry.isSymbolicLink()) {
+                throw new Error(
+                    `symbolic link rejected in fixture tree: ${path}`
+                );
+            }
             if (entry.isDirectory()) await walk(path);
-            else files.push(path);
+            else if (entry.isFile()) files.push(path);
         }
     }
     await walk(root);
@@ -96,13 +101,7 @@ export async function verifyVisualFixtures(
     const availableSourcePaths = new Set<string>();
     for (const asset of authoringCatalog.assets) {
         try {
-            await access(
-                resolve(
-                    repositoryRoot,
-                    'packages/assets/media',
-                    asset.sourcePath
-                )
-            );
+            await access(resolve(mediaRoot, asset.sourcePath));
             availableSourcePaths.add(asset.sourcePath);
         } catch {
             // Coverage validation reports an included plan entry whose source is absent.

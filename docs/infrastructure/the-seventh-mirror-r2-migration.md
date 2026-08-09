@@ -43,15 +43,23 @@ Intended immutable prefix:
 
 The local snapshot contains 40 source images, the generated image catalog, the
 reviewed production release plan, and a `SHA256SUMS` manifest covering all 42
-payload files. Local checksum verification passed for every entry. The archive
-upload placed all 43 objects (42 payload files plus `SHA256SUMS`) at the intended
-private prefix with no transfer errors.
+payload files. The destination R2 prefix was verified empty before upload
+(empty-prefix preflight). The archive upload placed all 43 objects (42 payload
+files plus `SHA256SUMS`) at the intended private prefix with no transfer errors.
+After upload, the remote object set was listed and compared against the
+`SHA256SUMS` entries to confirm an exact object-set match — the remote contains
+exactly the 43 expected keys and no others. The object count and per-file
+checksum status are not standalone immutability evidence; the empty-prefix
+preflight plus the exact remote object-set comparison together establish
+write-once semantics for the prefix.
 
 A fresh restore downloaded all 43 objects with no transfer errors, and
 `shasum -a 256 -c SHA256SUMS` reported `OK` for every payload. Planning the
-production release from the restored `media/` tree reproduced the original
-publication identity exactly:
+production release from the restored `media/` tree using the archived plan at
+`metadata/release-plan.json` (checksum-verified as part of `SHA256SUMS`)
+reproduced the original publication identity exactly:
 
+- Archived plan path (within restore): `metadata/release-plan.json`
 - Release ID:
   `sha256-ec3ba7cf9b94f21396c1a2d1fe632d46f6a938056d6186dd0675fa7cb842607e`
 - Manifest SHA-256:
@@ -89,8 +97,8 @@ Manual v1 review results:
   cross-story choice-path check passed as noted above.
 - PASS: the included background, portrait, dialogue, and progression controls
   were readable and usable at desktop and 393x851 mobile viewports.
-- PASS: visual to text to visual to text mode changes preserved the exact active
-  line at page 11 of 29.
+- PASS: switching between visual and text modes (in both directions) preserved
+  the exact active line at page 11 of 29.
 - EXPECTED: later positions without included art use fallback presentation and
   are not migration failures.
 

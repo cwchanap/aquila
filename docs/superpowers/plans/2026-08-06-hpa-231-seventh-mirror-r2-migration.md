@@ -322,7 +322,12 @@ ARCHIVE_ID="$(date -u +%Y-%m-%d)-$(git rev-parse --short=12 HEAD)"
 printf '%s\n' "$ARCHIVE_ID" > .tmp/hpa-231-archive-id
 
 ARCHIVE_ROOT=.tmp/hpa-231-source-archive
-rm -rf "$ARCHIVE_ROOT"
+# Reject reusable or dirty local snapshots — fail if a prior archive root
+# exists instead of silently overwriting it.
+if [ -e "$ARCHIVE_ROOT" ]; then
+  echo "archive root already exists: $ARCHIVE_ROOT — remove it explicitly before re-running" >&2
+  exit 1
+fi
 mkdir -p "$ARCHIVE_ROOT/media" "$ARCHIVE_ROOT/metadata"
 cp -R packages/assets/media/the_seventh_mirror "$ARCHIVE_ROOT/media/"
 cp packages/stories/src/generated/theSeventhMirror/image-assets.json \
@@ -330,10 +335,18 @@ cp packages/stories/src/generated/theSeventhMirror/image-assets.json \
 cp packages/stories/release-plans/the_seventh_mirror.json \
   "$ARCHIVE_ROOT/metadata/release-plan.json"
 (
+  set -euo pipefail
   cd "$ARCHIVE_ROOT"
   LC_ALL=C find media metadata -type f | sort | while IFS= read -r file; do
     shasum -a 256 "$file"
   done > SHA256SUMS
+  # Validate the manifest includes every expected archive file before upload.
+  EXPECTED_COUNT=$(LC_ALL=C find media metadata -type f | wc -l | tr -d ' ')
+  MANIFEST_COUNT=$(wc -l < SHA256SUMS | tr -d ' ')
+  if [ "$EXPECTED_COUNT" != "$MANIFEST_COUNT" ]; then
+    echo "SHA256SUMS entry count ($MANIFEST_COUNT) does not match file count ($EXPECTED_COUNT)" >&2
+    exit 1
+  fi
 )
 ```
 
@@ -348,9 +361,30 @@ R2_ENDPOINT=https://91ee89a03a31b5354a25c49228e4ab85.r2.cloudflarestorage.com
 R2_PREFIX="s3://aquila-vn-source/authoring/the_seventh_mirror/$ARCHIVE_ID/"
 export AWS_DEFAULT_REGION=auto
 
+# Verify the destination R2 prefix is empty before uploading. A non-empty
+# prefix means the archive is not write-once — abort instead of merging.
+PREFIX_CONTENTS=$(aws s3 ls "$R2_PREFIX" --endpoint-url "$R2_ENDPOINT" --no-progress 2>/dev/null || true)
+if [ -n "$PREFIX_CONTENTS" ]; then
+  echo "destination prefix is not empty: $R2_PREFIX" >&2
+  exit 1
+fi
+
 aws s3 sync "$ARCHIVE_ROOT/" "$R2_PREFIX" \
   --endpoint-url "$R2_ENDPOINT" \
   --no-progress
+
+# Exact object-set check: list remote keys and compare against SHA256SUMS
+# entries to verify the remote has exactly the expected objects — no more,
+# no fewer. Counts and checksums alone are not standalone immutability
+# evidence; the empty-prefix preflight above plus this exact-set comparison
+# together establish write-once semantics.
+EXPECTED_KEYS=$(cd "$ARCHIVE_ROOT" && LC_ALL=C find media metadata -type f -printf '%P\n' | sort && echo SHA256SUMS)
+REMOTE_KEYS=$(aws s3 ls "$R2_PREFIX" --endpoint-url "$R2_ENDPOINT" --no-progress --recursive | awk '{print $4}' | sort)
+if [ "$EXPECTED_KEYS" != "$REMOTE_KEYS" ]; then
+  echo "remote object set does not match expected archive contents" >&2
+  diff <(echo "$EXPECTED_KEYS") <(echo "$REMOTE_KEYS") >&2
+  exit 1
+fi
 ```
 
 Never use `--delete`.
@@ -385,7 +419,7 @@ rm -rf .tmp/hpa-231-restore-destination
 bun packages/infra-cloudflare/src/publisher/cli.ts plan \
   --story the_seventh_mirror \
   --environment production \
-  --plan packages/stories/release-plans/the_seventh_mirror.json \
+  --plan "$RESTORE_ROOT/metadata/release-plan.json" \
   --source-root "$RESTORE_ROOT/media" \
   --destination local \
   --destination-root .tmp/hpa-231-restore-destination \
@@ -628,8 +662,9 @@ Do not branch on this list. Pre-HPA-231 releases were created without the new pr
 - [ ] **Step 2: Create a temporary source root and verify the revision target is included**
 
 ```bash
+RESTORE_ROOT=.tmp/hpa-231-restored
 bun -e '
-const plan=await Bun.file("packages/stories/release-plans/the_seventh_mirror.json").json();
+const plan=await Bun.file(".tmp/hpa-231-restored/metadata/release-plan.json").json();
 const target=plan.entries.find((entry)=>
   entry.identity.type==="background" && entry.identity.key==="chapter_1/ch1_act2_s1"
 );
@@ -639,7 +674,7 @@ if (!target || target.disposition !== "included") {
 '
 
 rm -rf .tmp/hpa-231-synthetic-source
-cp -R packages/assets/media .tmp/hpa-231-synthetic-source
+cp -R "$RESTORE_ROOT/media" .tmp/hpa-231-synthetic-source
 ```
 
 - [ ] **Step 3: Apply one deterministic tiny brightness revision without changing dimensions**
@@ -671,7 +706,7 @@ Manually inspect the revised image once.
 bun packages/infra-cloudflare/src/publisher/cli.ts publish \
   --story the_seventh_mirror \
   --environment production \
-  --plan packages/stories/release-plans/the_seventh_mirror.json \
+  --plan .tmp/hpa-231-restored/metadata/release-plan.json \
   --source-root .tmp/hpa-231-synthetic-source \
   --destination r2 \
   --no-activate \
@@ -929,7 +964,7 @@ vi.mock('node:fs/promises', () => ({
 
 Update `wireHappyPath()` so `mockReaddir` returns directory entries representing the four existing fixture paths when walking the media root and returns only `current.json` plus the active release directory/manifest for the story-local preview tree. Make `mockStat` return a small source size such as `1024` bytes by default.
 
-- [ ] **Step 2: Add three focused regression cases**
+- [ ] **Step 2: Add four focused regression cases**
 
 ```ts
 it('rejects an unexpected Seventh Mirror source fixture', async () => {
@@ -951,6 +986,16 @@ it('rejects a stale story-local preview manifest', async () => {
     const { verifyVisualFixtures } = await importVerify();
     await expect(verifyVisualFixtures()).rejects.toThrow(
         /stale Seventh Mirror fixture release document/i
+    );
+});
+
+it('rejects a missing approved fixture source', async () => {
+    wireHappyPath({
+        omitApprovedSource: 'the_seventh_mirror/characters/asakura_mio/base.png',
+    });
+    const { verifyVisualFixtures } = await importVerify();
+    await expect(verifyVisualFixtures()).rejects.toThrow(
+        /approved fixture source missing/i
     );
 });
 ```
@@ -986,7 +1031,8 @@ export type VerifyVisualFixturesOptions = {
 };
 ```
 
-Add a local recursive helper:
+Add a local recursive helper that rejects symbolic links and only retains
+regular files within the approved tree:
 
 ```ts
 async function walkFiles(root: string): Promise<string[]> {
@@ -994,8 +1040,13 @@ async function walkFiles(root: string): Promise<string[]> {
     async function walk(dir: string): Promise<void> {
         for (const entry of await readdir(dir, { withFileTypes: true })) {
             const path = resolve(dir, entry.name);
+            if (entry.isSymbolicLink()) {
+                throw new Error(
+                    `symbolic link rejected in fixture tree: ${path}`
+                );
+            }
             if (entry.isDirectory()) await walk(path);
-            else files.push(path);
+            else if (entry.isFile()) files.push(path);
         }
     }
     await walk(root);
@@ -1003,12 +1054,22 @@ async function walkFiles(root: string): Promise<string[]> {
 }
 ```
 
+This helper is used for both the media-root fixture scan and the story-local
+preview tree walk; both paths get the same symlink rejection and
+regular-file-only retention.
+
 At the beginning of `verifyVisualFixtures()`:
 
 ```ts
 const mediaRoot =
     options.mediaRoot ?? resolve(repositoryRoot, 'packages/assets/media');
 ```
+
+Ensure the existing release-coverage source check resolves `asset.sourcePath`
+against `mediaRoot` (not a hardcoded `packages/assets/media` path) so that an
+override `mediaRoot` is applied consistently to both the coverage check and the
+fixture scan below. Add a regression test that wires mocks for a custom
+`mediaRoot` and verifies both validation paths use the override.
 
 After existing release coverage validation, add:
 
@@ -1159,7 +1220,7 @@ rm -rf .tmp/hpa-231-final-plan-destination
 bun packages/infra-cloudflare/src/publisher/cli.ts plan \
   --story the_seventh_mirror \
   --environment production \
-  --plan packages/stories/release-plans/the_seventh_mirror.json \
+  --plan "$RESTORE_ROOT/metadata/release-plan.json" \
   --source-root "$RESTORE_ROOT/media" \
   --destination local \
   --destination-root .tmp/hpa-231-final-plan-destination \

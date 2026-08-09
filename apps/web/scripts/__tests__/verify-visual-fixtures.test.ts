@@ -191,6 +191,9 @@ function wireHappyPath(overrides?: {
     extraSourcePath?: string;
     sourceSizeBytes?: number;
     includeStaleManifest?: boolean;
+    omitApprovedSource?: string;
+    mediaRootSuffix?: string;
+    symlinkName?: string;
 }) {
     const release = buildConsistentRelease();
     const imageAssets = overrides?.imageAssets ?? imageAssetsJson();
@@ -200,36 +203,45 @@ function wireHappyPath(overrides?: {
     const objectBytes = overrides?.objectBytes ?? release.objectBuffers;
     const activeReleaseDirectory = release.manifestPath.split('/').at(-2)!;
     const staleReleaseDirectory = `sha256-${'f'.repeat(64)}`;
+    const mediaRootSuffix =
+        overrides?.mediaRootSuffix ?? '/packages/assets/media';
+    const omit = overrides?.omitApprovedSource;
 
     const entry = (name: string, directory: boolean) => ({
         name,
         isDirectory: () => directory,
         isFile: () => !directory,
+        isSymbolicLink: () => false,
     });
 
     mockReaddir.mockImplementation(async (path: string) => {
         const p = String(path).replaceAll('\\', '/');
-        if (p.endsWith('/packages/assets/media/the_seventh_mirror')) {
+        if (p.endsWith(`${mediaRootSuffix}/the_seventh_mirror`)) {
             return [entry('backgrounds', true), entry('characters', true)];
         }
-        if (
-            p.endsWith('/packages/assets/media/the_seventh_mirror/backgrounds')
-        ) {
+        if (p.endsWith(`${mediaRootSuffix}/the_seventh_mirror/backgrounds`)) {
             return [entry('chapter_1', true)];
         }
         if (
             p.endsWith(
-                '/packages/assets/media/the_seventh_mirror/backgrounds/chapter_1'
+                `${mediaRootSuffix}/the_seventh_mirror/backgrounds/chapter_1`
             )
         ) {
-            return [
+            const files = [
                 entry('ch1_act2_s0.png', false),
                 entry('ch1_act2_s1.png', false),
-            ];
+            ].filter(e => e.name !== omit?.split('/').at(-1));
+            if (overrides?.symlinkName) {
+                files.push({
+                    name: overrides.symlinkName,
+                    isDirectory: () => false,
+                    isFile: () => false,
+                    isSymbolicLink: () => true,
+                });
+            }
+            return files;
         }
-        if (
-            p.endsWith('/packages/assets/media/the_seventh_mirror/characters')
-        ) {
+        if (p.endsWith(`${mediaRootSuffix}/the_seventh_mirror/characters`)) {
             const entries = [
                 entry('asakura_mio', true),
                 entry('asakura_yuma', true),
@@ -239,17 +251,19 @@ function wireHappyPath(overrides?: {
         }
         if (
             p.endsWith(
-                '/packages/assets/media/the_seventh_mirror/characters/asakura_mio'
+                `${mediaRootSuffix}/the_seventh_mirror/characters/asakura_mio`
             ) ||
             p.endsWith(
-                '/packages/assets/media/the_seventh_mirror/characters/asakura_yuma'
+                `${mediaRootSuffix}/the_seventh_mirror/characters/asakura_yuma`
             ) ||
             (overrides?.extraSourcePath &&
                 p.endsWith(
-                    '/packages/assets/media/the_seventh_mirror/characters/extra'
+                    `${mediaRootSuffix}/the_seventh_mirror/characters/extra`
                 ))
         ) {
-            return [entry('base.png', false)];
+            return [entry('base.png', false)].filter(
+                e => e.name !== omit?.split('/').at(-1)
+            );
         }
         if (p.endsWith('/stories/the_seventh_mirror')) {
             return [entry('current.json', false), entry('releases', true)];
@@ -276,7 +290,18 @@ function wireHappyPath(overrides?: {
     });
     mockStat.mockResolvedValue({ size: overrides?.sourceSizeBytes ?? 1024 });
 
-    mockAccess.mockImplementation(async () => undefined);
+    mockAccess.mockImplementation(async (path: string) => {
+        // When a custom mediaRootSuffix is provided, only succeed for paths
+        // under that root. This catches regressions where the verifier
+        // hardcodes the default media root instead of using the override.
+        if (
+            overrides?.mediaRootSuffix &&
+            !String(path).includes(overrides.mediaRootSuffix)
+        ) {
+            throw new Error(`access denied: ${path}`);
+        }
+        return undefined;
+    });
     mockReadFile.mockImplementation(async (path: string) => {
         const p = String(path);
         if (p.includes('image-assets.json')) return imageAssets;
@@ -387,6 +412,38 @@ describe('verify-visual-fixtures', () => {
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(
             /stale Seventh Mirror fixture release document/i
+        );
+    });
+
+    it('rejects a missing approved fixture source', async () => {
+        wireHappyPath({
+            omitApprovedSource:
+                'the_seventh_mirror/characters/asakura_mio/base.png',
+        });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /approved fixture source missing/i
+        );
+    });
+
+    it('uses the override mediaRoot for both coverage and fixture-scan paths', async () => {
+        // Wire mocks for a custom media root suffix. mockAccess only succeeds
+        // for paths containing the custom suffix, so if the verifier hardcodes
+        // the default packages/assets/media path for the coverage check, the
+        // coverage validation will fail with missing source assets.
+        const customSuffix = '/custom/media-root';
+        wireHappyPath({ mediaRootSuffix: customSuffix });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(
+            verifyVisualFixtures({ mediaRoot: customSuffix })
+        ).resolves.toBeUndefined();
+    });
+
+    it('rejects a symbolic link in the fixture source tree', async () => {
+        wireHappyPath({ symlinkName: 'symlink.png' });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /symbolic link rejected in fixture tree/i
         );
     });
 

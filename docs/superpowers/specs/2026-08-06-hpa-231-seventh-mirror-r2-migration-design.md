@@ -117,7 +117,9 @@ containing:
 
 The upload remains a manual S3-compatible `aws s3 sync` with an operator-only credential scoped to `aquila-vn-source`. HPA-230's delivery publisher does not gain authoring-source responsibilities.
 
-A restore drill downloads the prefix to an empty directory, verifies `SHA256SUMS`, then runs the existing production `assets plan` with the restored `media/` directory as `--source-root`. The restored plan must produce the same `releaseId` and `manifestSha256` as the original snapshot.
+The archive prefix is **write-once**: the destination R2 prefix must be verified empty before upload (empty-prefix preflight), and after upload the remote object set must be listed and compared against `SHA256SUMS` for an exact object-set match — the remote must contain exactly the expected keys and no others. Object counts and per-file checksum status alone are not standalone immutability evidence; the empty-prefix preflight plus the exact object-set comparison together establish write-once semantics. Reusable or dirty local snapshots must be rejected — the archive root must not already exist when creating a new archive.
+
+A restore drill downloads the prefix to an empty directory, verifies `SHA256SUMS`, then runs the existing production `assets plan` with the restored `media/` directory as `--source-root` and the restored `metadata/release-plan.json` as `--plan`. The restored plan must produce the same `releaseId` and `manifestSha256` as the original snapshot.
 
 Future newly produced art gets a new immutable archive prefix (or an explicitly documented overlay) plus a deliberate release-plan amendment. No automatic source synchronization is added.
 

@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { resolveAutomationBypassHeaders } from './release-gate-automation';
 
 /**
  * Remote-only release-gate configuration (HPA-233).
@@ -72,6 +73,9 @@ function resolveBaseUrl(raw: string | undefined): string {
 }
 
 const baseURL = resolveBaseUrl(process.env.BASE_URL);
+const automationBypassHeaders = resolveAutomationBypassHeaders(
+    process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+);
 
 export default defineConfig({
     testDir: './tests',
@@ -85,6 +89,9 @@ export default defineConfig({
     reporter: [['html', { open: 'never' }], ['list']],
     use: {
         baseURL,
+        ...(automationBypassHeaders
+            ? { extraHTTPHeaders: automationBypassHeaders }
+            : {}),
         // A gate failure must leave the evidence behind: traces are kept on
         // failure and screenshots are taken on failure.
         trace: 'retain-on-failure',

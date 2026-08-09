@@ -37,6 +37,7 @@ import { ReaderPage, VisualReaderPage } from './utils';
  * Env: BASE_URL, RELEASE_GATE_STORY_ID (default the_seventh_mirror),
  * RELEASE_GATE_RELEASE_ID, RELEASE_GATE_MANIFEST_SHA256 (required), and
  * RELEASE_GATE_PREVIEW_ID (preview run only — omit it for a production run).
+ * VERCEL_AUTOMATION_BYPASS_SECRET authenticates protected Vercel previews.
  */
 
 const LOCALE = 'en';

@@ -3,8 +3,9 @@
  *
  * The verifier reads the authoring image-assets catalog, a release plan, the
  * active pointer, the runtime manifest, and every referenced object file, then
- * aggregates problems. We mock `node:fs/promises` (access/readFile) and `sharp`
- * so we can drive each error-handling branch without real fixtures on disk.
+ * aggregates problems. We mock `node:fs/promises`
+ * (access/readFile/readdir/stat) and `sharp` so we can drive each error-handling
+ * branch without real fixtures on disk.
  * The `@aquila/stories/runtime-assets` package is used for real — its parsers
  * and validators exercise the actual contract logic.
  */
@@ -24,11 +25,20 @@ import {
 const mockAccess = vi.fn<(path: string) => Promise<void>>();
 const mockReadFile =
     vi.fn<(path: string, encoding?: string) => Promise<string | Buffer>>();
+const mockReaddir = vi.fn();
+const mockStat = vi.fn();
 
 vi.mock('node:fs/promises', () => ({
     access: mockAccess,
     readFile: mockReadFile,
-    default: { access: mockAccess, readFile: mockReadFile },
+    readdir: mockReaddir,
+    stat: mockStat,
+    default: {
+        access: mockAccess,
+        readFile: mockReadFile,
+        readdir: mockReaddir,
+        stat: mockStat,
+    },
 }));
 
 const metadataMock = vi.fn();
@@ -178,6 +188,9 @@ function wireHappyPath(overrides?: {
     manifestText?: string;
     objectBytes?: Map<string, Buffer>;
     objectDimensions?: (path: string) => { width: number; height: number };
+    extraSourcePath?: string;
+    sourceSizeBytes?: number;
+    includeStaleManifest?: boolean;
 }) {
     const release = buildConsistentRelease();
     const imageAssets = overrides?.imageAssets ?? imageAssetsJson();
@@ -185,6 +198,83 @@ function wireHappyPath(overrides?: {
     const pointerText = overrides?.pointerText ?? release.pointerText;
     const manifestText = overrides?.manifestText ?? release.manifestText;
     const objectBytes = overrides?.objectBytes ?? release.objectBuffers;
+    const activeReleaseDirectory = release.manifestPath.split('/').at(-2)!;
+    const staleReleaseDirectory = `sha256-${'f'.repeat(64)}`;
+
+    const entry = (name: string, directory: boolean) => ({
+        name,
+        isDirectory: () => directory,
+        isFile: () => !directory,
+    });
+
+    mockReaddir.mockImplementation(async (path: string) => {
+        const p = String(path).replaceAll('\\', '/');
+        if (p.endsWith('/packages/assets/media/the_seventh_mirror')) {
+            return [entry('backgrounds', true), entry('characters', true)];
+        }
+        if (
+            p.endsWith('/packages/assets/media/the_seventh_mirror/backgrounds')
+        ) {
+            return [entry('chapter_1', true)];
+        }
+        if (
+            p.endsWith(
+                '/packages/assets/media/the_seventh_mirror/backgrounds/chapter_1'
+            )
+        ) {
+            return [
+                entry('ch1_act2_s0.png', false),
+                entry('ch1_act2_s1.png', false),
+            ];
+        }
+        if (
+            p.endsWith('/packages/assets/media/the_seventh_mirror/characters')
+        ) {
+            const entries = [
+                entry('asakura_mio', true),
+                entry('asakura_yuma', true),
+            ];
+            if (overrides?.extraSourcePath) entries.push(entry('extra', true));
+            return entries;
+        }
+        if (
+            p.endsWith(
+                '/packages/assets/media/the_seventh_mirror/characters/asakura_mio'
+            ) ||
+            p.endsWith(
+                '/packages/assets/media/the_seventh_mirror/characters/asakura_yuma'
+            ) ||
+            (overrides?.extraSourcePath &&
+                p.endsWith(
+                    '/packages/assets/media/the_seventh_mirror/characters/extra'
+                ))
+        ) {
+            return [entry('base.png', false)];
+        }
+        if (p.endsWith('/stories/the_seventh_mirror')) {
+            return [entry('current.json', false), entry('releases', true)];
+        }
+        if (p.endsWith('/stories/the_seventh_mirror/releases')) {
+            const entries = [entry(activeReleaseDirectory, true)];
+            if (overrides?.includeStaleManifest) {
+                entries.push(entry(staleReleaseDirectory, true));
+            }
+            return entries;
+        }
+        if (
+            p.endsWith(
+                `/stories/the_seventh_mirror/releases/${activeReleaseDirectory}`
+            ) ||
+            (overrides?.includeStaleManifest &&
+                p.endsWith(
+                    `/stories/the_seventh_mirror/releases/${staleReleaseDirectory}`
+                ))
+        ) {
+            return [entry('runtime-manifest.json', false)];
+        }
+        throw new Error(`Unexpected readdir path: ${p}`);
+    });
+    mockStat.mockResolvedValue({ size: overrides?.sourceSizeBytes ?? 1024 });
 
     mockAccess.mockImplementation(async () => undefined);
     mockReadFile.mockImplementation(async (path: string) => {
@@ -271,6 +361,32 @@ describe('verify-visual-fixtures', () => {
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(
             /release coverage:/
+        );
+    });
+
+    it('rejects an unexpected Seventh Mirror source fixture', async () => {
+        wireHappyPath({
+            extraSourcePath: 'the_seventh_mirror/characters/extra/base.png',
+        });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /unexpected Seventh Mirror fixture source/i
+        );
+    });
+
+    it('rejects an oversized retained source fixture', async () => {
+        wireHappyPath({ sourceSizeBytes: 769 * 1024 });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /fixture source exceeds/i
+        );
+    });
+
+    it('rejects a stale story-local preview manifest', async () => {
+        wireHappyPath({ includeStaleManifest: true });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /stale Seventh Mirror fixture release document/i
         );
     });
 

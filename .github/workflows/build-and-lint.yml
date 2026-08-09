@@ -40,6 +40,9 @@ jobs:
       - name: Verify generated stories match compiler output
         run: bun run compile:check
 
+      - name: Verify visual fixtures and asset footprint
+        run: bun --filter web verify:visual-fixtures
+
       - name: Run unit tests
         run: bun --filter @aquila/stories test
 

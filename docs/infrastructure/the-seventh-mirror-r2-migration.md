@@ -150,3 +150,54 @@ immutable-object checksum and byte-length, content type, cache, CORS, source-key
 absence, and forbidden-JSON-key check. The full deployed production release
 gate then passed in both desktop and mobile Chromium (`2 passed`), serving the
 pinned release end to end through the production reader.
+
+## Controlled rollback proof
+
+Completed on 2026-08-08 with the primary release restored as the final
+production state.
+
+The initial deep release-history read found one valid, deeply verified release,
+the active primary. A synthetic rollback peer was then built from the same
+reviewed production plan and source snapshot by applying a deterministic 1%
+brightness increase only to the included
+`background:chapter_1/ch1_act2_s1` source. Manual inspection passed, the source
+dimensions remained `1672x941`, and the source SHA-256 changed from
+`85ac0b7d416e2737e4a0f0764da94d13ee31bbb7e4526db6ebeacbbe68162d59` to
+`7dd94d6c201ffeef4e414d0b08c79d0b91cdd575a1c6d968cef89518899055d9`.
+
+Synthetic immutable release:
+
+- Release ID:
+  `sha256-9f59ac8d080d5935749bd4a265f7e25ef3d001f6339e755a0df4bcaaa6901cb5`
+- Manifest SHA-256:
+  `8209522976ed61595751ded6b36aeb310db889acdab25c65e0e030e3286771c6`
+- Included/omitted: 38/318
+- Objects created/reused: 2/45
+- Manifests created: 1
+- Pointer writes during publish: 0
+
+The synthetic publish retained the two reviewed portrait aspect-ratio warnings
+for `kusakube_satoru/base` and `saeki_tatsuya/determined`; it produced no
+errors. Deep verification passed, the synthetic release ID differed from the
+primary, and no redundant HPA-233 preview gate was run.
+
+The controlled production pointer sequence then passed exactly as planned:
+
+1. Normal activation changed primary to synthetic; the public chain verified
+   with zero failed checks.
+2. Rollback changed synthetic to primary; the public chain verified with zero
+   failed checks.
+3. Normal activation changed primary back to synthetic, proving activation-back
+   semantics without `--reactivate`; the public chain verified with zero failed
+   checks.
+4. Final normal activation changed synthetic to primary; the public chain
+   verified with zero failed checks.
+
+The fail-safe restoration path was not needed. A separate fresh CDN read after
+the sequence confirmed the final live pointer identifies the primary release
+and manifest:
+
+- Final release ID:
+  `sha256-ec3ba7cf9b94f21396c1a2d1fe632d46f6a938056d6186dd0675fa7cb842607e`
+- Final manifest SHA-256:
+  `cc9f403e3875b5bb17e3b09fd8f13dca75e2f2170898c9fa1e2cce9b1f3c2bb7`

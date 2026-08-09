@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { resolveAutomationBypassHeaders } from './release-gate-automation';
+import { RELEASE_GATE_STORAGE_STATE_PATH } from './release-gate-automation';
 
 /**
  * Remote-only release-gate configuration (HPA-233).
@@ -73,12 +73,16 @@ function resolveBaseUrl(raw: string | undefined): string {
 }
 
 const baseURL = resolveBaseUrl(process.env.BASE_URL);
-const automationBypassHeaders = resolveAutomationBypassHeaders(
+const hasAutomationBypass = Boolean(
     process.env.VERCEL_AUTOMATION_BYPASS_SECRET
 );
 
 export default defineConfig({
     testDir: './tests',
+    // Authenticate outside the traced browser context, then give each project
+    // only Vercel's scoped bypass cookie. Global HTTP headers would also be
+    // sent to the cross-origin R2 CDN, causing CORS failure and secret leakage.
+    globalSetup: './release-gate-global-setup.ts',
     // Only the deployed-flow spec may run here; the local specs require the
     // dev server this config deliberately cannot provide.
     testMatch: /visual-novel-deployed\.spec\.ts/,
@@ -89,8 +93,8 @@ export default defineConfig({
     reporter: [['html', { open: 'never' }], ['list']],
     use: {
         baseURL,
-        ...(automationBypassHeaders
-            ? { extraHTTPHeaders: automationBypassHeaders }
+        ...(hasAutomationBypass
+            ? { storageState: RELEASE_GATE_STORAGE_STATE_PATH }
             : {}),
         // A gate failure must leave the evidence behind: traces are kept on
         // failure and screenshots are taken on failure.

@@ -27,17 +27,20 @@ const mockReadFile =
     vi.fn<(path: string, encoding?: string) => Promise<string | Buffer>>();
 const mockReaddir = vi.fn();
 const mockStat = vi.fn();
+const mockLstat = vi.fn();
 
 vi.mock('node:fs/promises', () => ({
     access: mockAccess,
     readFile: mockReadFile,
     readdir: mockReaddir,
     stat: mockStat,
+    lstat: mockLstat,
     default: {
         access: mockAccess,
         readFile: mockReadFile,
         readdir: mockReaddir,
         stat: mockStat,
+        lstat: mockLstat,
     },
 }));
 
@@ -194,6 +197,7 @@ function wireHappyPath(overrides?: {
     omitApprovedSource?: string;
     mediaRootSuffix?: string;
     symlinkName?: string;
+    symlinkRoot?: boolean;
 }) {
     const release = buildConsistentRelease();
     const imageAssets = overrides?.imageAssets ?? imageAssetsJson();
@@ -289,6 +293,21 @@ function wireHappyPath(overrides?: {
         throw new Error(`Unexpected readdir path: ${p}`);
     });
     mockStat.mockResolvedValue({ size: overrides?.sourceSizeBytes ?? 1024 });
+
+    // walkFiles calls lstat on each root before readdir. By default every
+    // root is a regular directory. When symlinkRoot is set, the
+    // the_seventh_mirror media root is a symlink so the verifier rejects it
+    // before descending.
+    mockLstat.mockResolvedValue({ isSymbolicLink: () => false });
+    if (overrides?.symlinkRoot) {
+        mockLstat.mockImplementation(async (path: string) => {
+            const p = String(path).replaceAll('\\', '/');
+            if (p.endsWith(`${mediaRootSuffix}/the_seventh_mirror`)) {
+                return { isSymbolicLink: () => true };
+            }
+            return { isSymbolicLink: () => false };
+        });
+    }
 
     mockAccess.mockImplementation(async (path: string) => {
         // When a custom mediaRootSuffix is provided, only succeed for paths
@@ -441,6 +460,14 @@ describe('verify-visual-fixtures', () => {
 
     it('rejects a symbolic link in the fixture source tree', async () => {
         wireHappyPath({ symlinkName: 'symlink.png' });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /symbolic link rejected in fixture tree/i
+        );
+    });
+
+    it('rejects a symbolic-link the_seventh_mirror root', async () => {
+        wireHappyPath({ symlinkRoot: true });
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(
             /symbolic link rejected in fixture tree/i

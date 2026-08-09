@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { access, readdir, readFile, stat } from 'node:fs/promises';
+import { access, lstat, readdir, readFile, stat } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import {
     assertReleaseIdMatchesContentSha256,
@@ -42,6 +42,10 @@ async function readJson(path: string): Promise<unknown> {
 }
 
 async function walkFiles(root: string): Promise<string[]> {
+    const rootStats = await lstat(root);
+    if (rootStats.isSymbolicLink()) {
+        throw new Error(`symbolic link rejected in fixture tree: ${root}`);
+    }
     const files: string[] = [];
     async function walk(dir: string): Promise<void> {
         for (const entry of await readdir(dir, { withFileTypes: true })) {

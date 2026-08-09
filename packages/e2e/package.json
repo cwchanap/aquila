@@ -9,6 +9,7 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
+    "test:release-gate-config": "bun test ./release-gate-automation.test.ts",
     "test:release-gate": "playwright test --config playwright.release-gate.config.ts",
     "measure:reader": "bun scripts/measure-reader-runtime.ts"
   },

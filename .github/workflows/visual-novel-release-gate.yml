@@ -72,10 +72,15 @@ jobs:
         env:
           R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
           R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         shell: bash
         run: |
           if [[ -z "$R2_PUBLISHER_ACCESS_KEY_ID" || -z "$R2_PUBLISHER_SECRET_ACCESS_KEY" ]]; then
             echo 'Scoped R2 publisher secrets are not configured.' >&2
+            exit 1
+          fi
+          if [[ -z "$VERCEL_AUTOMATION_BYPASS_SECRET" ]]; then
+            echo 'Vercel automation bypass secret is not configured.' >&2
             exit 1
           fi
 
@@ -174,6 +179,7 @@ jobs:
           RELEASE_GATE_RELEASE_ID: ${{ inputs.release_id }}
           RELEASE_GATE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
           RELEASE_GATE_PREVIEW_ID: ${{ inputs.preview_id }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         shell: bash
         run: |
           set +e

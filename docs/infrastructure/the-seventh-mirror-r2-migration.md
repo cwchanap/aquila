@@ -102,3 +102,51 @@ qualification.
 The protected preview was reviewed with a short-lived Vercel automation bypass.
 That temporary bypass was revoked immediately after the manual review; the
 credential was not retained in the repository or this runbook.
+
+## Production activation
+
+Activated on 2026-08-08 after the primary candidate qualification passed.
+
+The Vercel Production environment was confirmed to contain exactly:
+
+```text
+PUBLIC_ASSET_BASE_URL=https://assets.aquila.cwchanap.dev/
+PUBLIC_ASSET_ENVIRONMENT=production
+```
+
+`PUBLIC_ASSET_PREVIEW_ID` was absent from Production. The existing production
+source deployment was rebuilt once so the build-time asset configuration took
+effect without deploying the HPA-231 feature branch:
+
+- Deployment ID: `dpl_AA6yRHaZPHRoDr21zGz2W1FD8EVc`
+- Deployment URL:
+  `https://aquila-5kcw29q09-cwchanaps-projects.vercel.app`
+- Production URL: `https://aquila.cwchanap.dev`
+- Final deployment status: Ready
+
+Before pointer activation, the rebuilt production reader requested:
+
+```text
+https://assets.aquila.cwchanap.dev/vn/stories/the_seventh_mirror/current.json
+```
+
+The request returned the expected first-activation HTTP 404. No request used
+the repository-local preview path
+`/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/current.json`.
+
+Production activation then wrote exactly one pointer and changed no payload
+objects:
+
+- Active release ID:
+  `sha256-ec3ba7cf9b94f21396c1a2d1fe632d46f6a938056d6186dd0675fa7cb842607e`
+- Active manifest SHA-256:
+  `cc9f403e3875b5bb17e3b09fd8f13dca75e2f2170898c9fa1e2cce9b1f3c2bb7`
+- Pointer key: `vn/stories/the_seventh_mirror/current.json`
+- Pointer writes: 1
+- Objects or manifests created/reused: 0
+
+The fresh public-chain verification passed every required pointer, manifest,
+immutable-object checksum and byte-length, content type, cache, CORS, source-key
+absence, and forbidden-JSON-key check. The full deployed production release
+gate then passed in both desktop and mobile Chromium (`2 passed`), serving the
+pinned release end to end through the production reader.

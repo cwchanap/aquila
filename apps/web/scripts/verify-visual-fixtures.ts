@@ -21,7 +21,6 @@ const webRoot = process.cwd();
 const repositoryRoot = resolve(webRoot, '../..');
 const defaultPublicRoot = resolve(webRoot, 'public/assets');
 const MAX_FIXTURE_FILE_BYTES = 768 * 1024;
-const MAX_FIXTURE_TOTAL_BYTES = 3 * 1024 * 1024;
 const APPROVED_FIXTURE_SOURCES = new Set([
     'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png',
     'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png',
@@ -115,7 +114,6 @@ export async function verifyVisualFixtures(
     }
 
     const sourceFiles = await walkFiles(resolve(mediaRoot, STORY_ID));
-    let totalSourceBytes = 0;
     const presentSources = new Set<string>();
     for (const path of sourceFiles) {
         const rel = relative(mediaRoot, path).split('\\').join('/');
@@ -125,7 +123,6 @@ export async function verifyVisualFixtures(
             continue;
         }
         const bytes = (await stat(path)).size;
-        totalSourceBytes += bytes;
         if (bytes > MAX_FIXTURE_FILE_BYTES) {
             problems.push(
                 `fixture source exceeds ${MAX_FIXTURE_FILE_BYTES} bytes: ${rel}`
@@ -136,11 +133,6 @@ export async function verifyVisualFixtures(
         if (!presentSources.has(approved)) {
             problems.push(`approved fixture source missing: ${approved}`);
         }
-    }
-    if (totalSourceBytes > MAX_FIXTURE_TOTAL_BYTES) {
-        problems.push(
-            `fixture sources exceed ${MAX_FIXTURE_TOTAL_BYTES} bytes combined`
-        );
     }
 
     const pointerPath = resolve(

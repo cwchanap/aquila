@@ -53,6 +53,13 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Run release-gate automation unit tests
+        # Focused regression for the Vercel bypass credential not leaking to
+        # cross-origin R2 requests. Runs before Playwright since it needs no
+        # browser; packages/e2e has no `test` script, so use the scoped script.
+        working-directory: packages/e2e
+        run: bun run test:release-gate-config
+
       - name: Install Playwright browsers
         working-directory: packages/e2e
         run: bunx playwright install --with-deps

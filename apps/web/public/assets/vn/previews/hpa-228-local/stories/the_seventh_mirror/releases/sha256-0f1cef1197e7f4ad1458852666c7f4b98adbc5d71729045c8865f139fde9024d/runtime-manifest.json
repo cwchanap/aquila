@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "storyId": "the_seventh_mirror",
-  "releaseId": "sha256-9ec642a37a531d9d59fb22470ef95e35493e6b7b9c92b240fd59ff0014fa1b4d",
+  "releaseId": "sha256-0f1cef1197e7f4ad1458852666c7f4b98adbc5d71729045c8865f139fde9024d",
   "assets": [
     {
       "identity": {
@@ -45,9 +45,9 @@
       "variants": {
         "webp": {
           "format": "webp",
-          "path": "vn/objects/a930d03b393e3c2c2005018eef18328b2cc1cab5934628f0e6b8237040a2cccb.webp",
-          "sha256": "a930d03b393e3c2c2005018eef18328b2cc1cab5934628f0e6b8237040a2cccb",
-          "byteLength": 17138
+          "path": "vn/objects/6556ca83ebbe31cbc236d0c1ce3d544a1d1cfa0ec627852a12e3259feb8ca4c1.webp",
+          "sha256": "6556ca83ebbe31cbc236d0c1ce3d544a1d1cfa0ec627852a12e3259feb8ca4c1",
+          "byteLength": 25322
         }
       },
       "width": 450,
@@ -62,9 +62,9 @@
       "variants": {
         "webp": {
           "format": "webp",
-          "path": "vn/objects/aa3669c33656995b535653b315f40cb4c7bb52f248eb79f6ce3189ab49e883e7.webp",
-          "sha256": "aa3669c33656995b535653b315f40cb4c7bb52f248eb79f6ce3189ab49e883e7",
-          "byteLength": 15654
+          "path": "vn/objects/de3db15c3c91dde3097a312fdb0d18e5283b7d39bbb686822773adfe98a8cd90.webp",
+          "sha256": "de3db15c3c91dde3097a312fdb0d18e5283b7d39bbb686822773adfe98a8cd90",
+          "byteLength": 25744
         }
       },
       "width": 450,

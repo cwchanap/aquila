@@ -149,6 +149,18 @@ export class VisualReaderPage {
         return this.root.getByTestId('visual-portrait');
     }
 
+    get dialogueBox() {
+        return this.root.getByTestId('visual-dialogue-box');
+    }
+
+    get dialogueBody() {
+        return this.root.getByTestId('visual-dialogue-body');
+    }
+
+    get dialogueFooter() {
+        return this.root.getByTestId('visual-dialogue-footer');
+    }
+
     async goto(dialogue = 6) {
         await this.page.addInitScript(() => {
             localStorage.setItem('aquila:reader-mode:v1', 'visual');

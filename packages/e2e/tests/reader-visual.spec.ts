@@ -130,6 +130,102 @@ test.describe('Visual novel reader', () => {
         );
     });
 
+    test('keeps the dialogue panel geometry stable across responsive viewports', async ({
+        page,
+    }) => {
+        const viewports = [
+            { width: 1280, height: 800, expectedHeight: 288 },
+            { width: 390, height: 844, expectedHeight: 0.4 * 844 },
+            { width: 844, height: 390, expectedHeight: 152 },
+        ] as const;
+
+        for (const viewport of viewports) {
+            await page.setViewportSize(viewport);
+            const visual = new VisualReaderPage(page);
+            await visual.goto(6);
+
+            const initialBox = await visual.dialogueBox.boundingBox();
+            expect(
+                initialBox,
+                'dialogue box is measurable after navigation'
+            ).not.toBe(null);
+            if (!initialBox) continue;
+            expect(
+                Math.abs(initialBox.height - viewport.expectedHeight),
+                `dialogue height at ${viewport.width}x${viewport.height}`
+            ).toBeLessThanOrEqual(1);
+            await expect(visual.dialogueBody).toBeVisible();
+            await expect(visual.dialogueFooter).toBeVisible();
+
+            // Deep links restore a nonzero line as already revealed. Advance
+            // once so the next line gives us a real in-flight typewriter
+            // measurement before the completion click below.
+            await expect(
+                page.getByTestId('visual-typewriter-cursor')
+            ).not.toBeAttached();
+            await visual.root.click();
+            await expect(page).toHaveURL(dialogueUrl(7));
+            await expect(
+                page.getByTestId('visual-typewriter-cursor')
+            ).toBeVisible();
+            const typingBox = await visual.dialogueBox.boundingBox();
+            expect(
+                typingBox,
+                'dialogue box is measurable while typing'
+            ).not.toBe(null);
+            if (!typingBox) continue;
+            expect(
+                Math.abs(typingBox.height - initialBox.height),
+                `typing height delta at ${viewport.width}x${viewport.height}`
+            ).toBeLessThanOrEqual(1);
+
+            await visual.root.click();
+            await expect(
+                page.getByTestId('visual-typewriter-cursor')
+            ).not.toBeAttached();
+            const completeBox = await visual.dialogueBox.boundingBox();
+            expect(
+                completeBox,
+                'dialogue box is measurable after typing'
+            ).not.toBe(null);
+            if (!completeBox) continue;
+            expect(
+                Math.abs(completeBox.height - initialBox.height),
+                `completed height delta at ${viewport.width}x${viewport.height}`
+            ).toBeLessThanOrEqual(1);
+            await expect(visual.dialogueBody).toBeVisible();
+            await expect(visual.dialogueFooter).toBeVisible();
+
+            const historyBox = await page
+                .getByRole('button', { name: 'Open history' })
+                .boundingBox();
+            expect(historyBox, 'History is measurable').not.toBe(null);
+            if (!historyBox) continue;
+            expect(historyBox.x).toBeGreaterThanOrEqual(
+                completeBox.x + completeBox.width - historyBox.width - 16 - 1
+            );
+            expect(historyBox.x + historyBox.width).toBeLessThanOrEqual(
+                completeBox.x + completeBox.width + 1
+            );
+            expect(historyBox.y).toBeGreaterThanOrEqual(completeBox.y - 1);
+            expect(historyBox.y + historyBox.height).toBeLessThanOrEqual(
+                completeBox.y + completeBox.height / 2
+            );
+
+            await expect(visual.portrait).toHaveAttribute(
+                'data-portrait-state',
+                'ready'
+            );
+            const portraitBox = await visual.portrait.boundingBox();
+            expect(portraitBox, 'portrait is measurable').not.toBe(null);
+            if (portraitBox) {
+                expect(portraitBox.y + portraitBox.height).toBeLessThanOrEqual(
+                    completeBox.y - 12 + 1
+                );
+            }
+        }
+    });
+
     test('crossfades line 10 to line 11 without clearing active', async ({
         page,
     }) => {

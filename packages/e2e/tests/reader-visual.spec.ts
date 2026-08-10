@@ -516,6 +516,76 @@ test.describe('Visual novel reader', () => {
         }
     });
 
+    test('scrolls the dialogue body from the keyboard without advancing', async ({
+        page,
+    }, testInfo) => {
+        // The mobile projects model touch-only devices; keep this keyboard
+        // interaction proof on desktop Chromium while retaining the mobile
+        // viewport geometry and component-level accessibility contract.
+        test.skip(testInfo.project.name !== 'chromium');
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'visual');
+        });
+        await page.goto(
+            '/en/reader?story=train_adventure&scene=act3&dialogue=47'
+        );
+        const visual = new VisualReaderPage(page);
+        const body = visual.dialogueBody;
+        await expect(visual.root).toBeVisible();
+        await expect(body).toHaveAttribute('role', 'region');
+        await expect(body).toHaveAttribute('aria-label', 'Dialogue content');
+        await expect(body).toHaveAttribute('tabindex', '0');
+
+        const beforeUrl = page.url();
+        const beforeDialogue = await body.locator('.dialogue-text').innerText();
+        const beforeFooter = await visual.dialogueFooter.boundingBox();
+        expect(
+            beforeFooter,
+            'footer is measurable before keyboard scrolling'
+        ).not.toBe(null);
+        if (!beforeFooter) return;
+
+        const keys = [
+            ['Space', ' '],
+            ['PageDown', 'PageDown'],
+            ['ArrowDown', 'ArrowDown'],
+        ] as const;
+        for (const [label, key] of keys) {
+            await body.evaluate(element => {
+                (element as HTMLElement).scrollTop = 0;
+            });
+            await body.focus();
+            await expect(body).toBeFocused();
+            await body.press(key);
+            await expect
+                .poll(() =>
+                    body.evaluate(element => (element as HTMLElement).scrollTop)
+                )
+                .toBeGreaterThan(0);
+
+            expect(page.url(), `${label} changed the reader URL`).toBe(
+                beforeUrl
+            );
+            expect(
+                await body.locator('.dialogue-text').innerText(),
+                `${label} changed the dialogue line`
+            ).toBe(beforeDialogue);
+            const afterFooter = await visual.dialogueFooter.boundingBox();
+            expect(afterFooter, `${label} left the footer measurable`).not.toBe(
+                null
+            );
+            if (afterFooter) {
+                expect(
+                    Math.abs(afterFooter.y - beforeFooter.y)
+                ).toBeLessThanOrEqual(1);
+                expect(
+                    Math.abs(afterFooter.height - beforeFooter.height)
+                ).toBeLessThanOrEqual(1);
+            }
+        }
+    });
+
     test('keeps essential controls unobscured in mobile landscape', async ({
         page,
     }, testInfo) => {

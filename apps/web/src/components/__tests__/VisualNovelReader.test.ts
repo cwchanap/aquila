@@ -37,6 +37,7 @@ vi.mock('@aquila/stories/translations', () => ({
             historyTitle: 'History',
             openHistory: 'Open history',
             closeHistory: 'Close history',
+            dialogueBodyLabel: 'Dialogue content',
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
             readerMode: 'Reader mode',
@@ -313,6 +314,23 @@ describe('VisualNovelReader', () => {
         expect(
             screen.getByTestId('visual-dialogue-footer')
         ).toBeInTheDocument();
+    });
+
+    it('exposes the dialogue body as a focusable interactive region', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({ isInitialMount: false });
+        const body = screen.getByTestId('visual-dialogue-body');
+
+        expect(body).toHaveAttribute('role', 'region');
+        expect(body).toHaveAttribute('aria-label', 'Dialogue content');
+        expect(body).toHaveAttribute('tabindex', '0');
+        expect(body).toHaveAttribute('data-reader-interactive');
+
+        body.focus();
+        expect(body).toHaveFocus();
+        await fireEvent.keyDown(body, { key: ' ' });
+        await fireEvent.keyDown(body, { key: 'Enter' });
+        expect(onIndexChange).not.toHaveBeenCalled();
     });
 
     it('keeps all three image elements mounted and clears absent sources', () => {

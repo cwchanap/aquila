@@ -421,7 +421,15 @@
         {t.reader.openHistory}
       </button>
 
-      <div class="dialogue-body" data-testid="visual-dialogue-body">
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <div
+        class="dialogue-body"
+        data-testid="visual-dialogue-body"
+        data-reader-interactive
+        role="region"
+        aria-label={t.reader.dialogueBodyLabel}
+        tabindex="0"
+      >
         {#if currentName}
           <p class="speaker">{currentName}</p>
         {/if}

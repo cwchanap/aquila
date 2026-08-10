@@ -38,6 +38,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             closeMenu: 'Close menu',
             openHistory: 'Open history',
             closeHistory: 'Close history',
+            dialogueBodyLabel: 'Dialogue content',
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
             previousLine: 'Previous line',

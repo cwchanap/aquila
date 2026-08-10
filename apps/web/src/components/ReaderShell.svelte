@@ -377,7 +377,7 @@
     {showBookmarkButton}
     {backUrl}
     bookmarkDisabled={isBlocking}
-    triggerUnavailable={leafOverlayOpen}
+    triggerUnavailable={leafOverlayOpen && !isBlocking}
   />
 {/if}
 

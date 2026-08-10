@@ -432,7 +432,7 @@
       <Button
         bind:element={historyButton}
         variant="menu"
-        className="history-control absolute top-3 right-3 z-[1] min-w-11 rounded-full {controlBase}"
+        className="history-control absolute top-3 right-3 z-[1] min-w-11 w-auto rounded-full {controlBase}"
         data-reader-interactive
         aria-label={t.reader.openHistory}
         onclick={() => (backlogOpen = true)}

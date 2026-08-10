@@ -461,6 +461,61 @@ test.describe('Visual novel reader', () => {
         await expect(visual.root).toBeVisible();
     });
 
+    test('keeps History clear of long choice content on mobile portrait', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'visual');
+        });
+        await page.goto(
+            '/en/reader?story=train_adventure&scene=act3&dialogue=47'
+        );
+        const visual = new VisualReaderPage(page);
+        await expect(visual.root).toBeVisible();
+        await expect(visual.dialogueBody).toBeVisible();
+        await expect(
+            visual.dialogueBody.locator('.dialogue-text')
+        ).toBeVisible();
+
+        const history = page.getByRole('button', { name: 'Open history' });
+        const historyBox = await history.boundingBox();
+        const dialogueBox = await visual.dialogueBody
+            .locator('.dialogue-text')
+            .boundingBox();
+        expect(historyBox, 'History is measurable').not.toBe(null);
+        expect(dialogueBox, 'dialogue text is measurable').not.toBe(null);
+        if (!historyBox || !dialogueBox) return;
+        expect(
+            boxesOverlap(historyBox, dialogueBox),
+            'History must not cover the first visible dialogue text'
+        ).toBe(false);
+
+        await visual.dialogueBody.evaluate(element => {
+            element.scrollTop = element.scrollHeight;
+        });
+        const bodyBox = await visual.dialogueBody.boundingBox();
+        expect(bodyBox, 'dialogue body is measurable after scrolling').not.toBe(
+            null
+        );
+        if (!bodyBox) return;
+
+        const content = visual.dialogueBody.locator(':scope > *');
+        for (let index = 0; index < (await content.count()); index += 1) {
+            const contentBox = await content.nth(index).boundingBox();
+            if (!contentBox) continue;
+            const visibleInBody =
+                contentBox.y < bodyBox.y + bodyBox.height &&
+                contentBox.y + contentBox.height > bodyBox.y;
+            if (visibleInBody) {
+                expect(
+                    boxesOverlap(historyBox, contentBox),
+                    `visible dialogue content ${index} must not sit beneath History`
+                ).toBe(false);
+            }
+        }
+    });
+
     test('keeps essential controls unobscured in mobile landscape', async ({
         page,
     }, testInfo) => {

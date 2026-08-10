@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type {
     ChoiceDefinition,
@@ -271,6 +277,28 @@ describe('VisualNovelReader', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: 'Open history' })
+        ).toBeInTheDocument();
+    });
+
+    it('keeps History and both dialogue rows mounted inside the panel while typing', async () => {
+        setReducedMotion(false);
+        renderReader();
+
+        const box = screen.getByTestId('visual-dialogue-box');
+        expect(
+            within(box).getByRole('button', { name: 'Open history' })
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('visual-dialogue-body')).toBeInTheDocument();
+        expect(
+            screen.getByTestId('visual-dialogue-footer')
+        ).toBeInTheDocument();
+        expect(document.querySelector('.reader-controls')).toBeNull();
+
+        await vi.runAllTimersAsync();
+
+        expect(screen.getByTestId('visual-dialogue-body')).toBeInTheDocument();
+        expect(
+            screen.getByTestId('visual-dialogue-footer')
         ).toBeInTheDocument();
     });
 

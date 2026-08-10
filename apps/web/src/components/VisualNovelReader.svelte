@@ -405,69 +405,80 @@
       />
     </aside>
 
-    <nav class="reader-controls">
+    <section
+      class="dialogue-box"
+      data-testid="visual-dialogue-box"
+      aria-live="off"
+    >
       <button
         bind:this={historyButton}
         type="button"
+        class="history-control"
         data-reader-interactive
+        aria-label={t.reader.openHistory}
         onclick={() => (backlogOpen = true)}
       >
         {t.reader.openHistory}
       </button>
-    </nav>
 
-    <section class="dialogue-box" aria-live="off">
-      {#if currentName}
-        <p class="speaker">{currentName}</p>
-      {/if}
+      <div class="dialogue-body" data-testid="visual-dialogue-body">
+        {#if currentName}
+          <p class="speaker">{currentName}</p>
+        {/if}
 
-      {#if currentDialogue}
-        <p class="dialogue-text">
-          {#if isTyping}
-            {typingText}<span
-              data-testid="visual-typewriter-cursor"
-              class="typewriter-cursor"
-              aria-hidden="true"
-            ></span>
-          {:else}
-            {currentDialogue.dialogue}
-          {/if}
-        </p>
-      {/if}
+        {#if currentDialogue}
+          <p class="dialogue-text">
+            {#if isTyping}
+              {typingText}<span
+                data-testid="visual-typewriter-cursor"
+                class="typewriter-cursor"
+                aria-hidden="true"
+              ></span>
+            {:else}
+              {currentDialogue.dialogue}
+            {/if}
+          </p>
+        {/if}
 
-      {#if showChoices}
-        <div class="choices">
-          <p>{choice?.prompt}</p>
-          {#each choice?.options ?? [] as option (option.id)}
+        {#if showChoices}
+          <div class="choices">
+            <p>{choice?.prompt}</p>
+            {#each choice?.options ?? [] as option (option.id)}
+              <button
+                type="button"
+                data-reader-interactive
+                onclick={() => onChoice(option.nextScene)}
+              >
+                {option.label}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+
+      <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
+        <div class="action-slot">
+          {#if !showChoices && !isTyping && currentDialogue}
             <button
               type="button"
+              class="next-control"
               data-reader-interactive
-              onclick={() => onChoice(option.nextScene)}
+              onclick={advance}
             >
-              {option.label}
+              {#if !isLastDialogue}
+                {t.reader.continue}
+              {:else if canGoNext}
+                {t.reader.nextScene}
+              {:else}
+                {t.reader.complete}
+              {/if}
             </button>
-          {/each}
-        </div>
-      {:else if !isTyping && currentDialogue}
-        <button
-          type="button"
-          class="next-control"
-          data-reader-interactive
-          onclick={advance}
-        >
-          {#if !isLastDialogue}
-            {t.reader.continue}
-          {:else if canGoNext}
-            {t.reader.nextScene}
-          {:else}
-            {t.reader.complete}
           {/if}
-        </button>
-      {/if}
-
-      {#if dialogue.length > 0}
-        <p class="progress">{progressText}</p>
-      {/if}
+        </div>
+        {#if dialogue.length > 0}
+          <p class="progress">{progressText}</p>
+        {/if}
+      </footer>
     </section>
   </div>
 
@@ -484,6 +495,7 @@
 
 <style>
   .visual-novel-reader {
+    --dialogue-box-height: 18rem;
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -512,13 +524,20 @@
 
   .visual-portrait {
     position: absolute;
-    bottom: clamp(12rem, 28vh, 20rem);
+    bottom: calc(
+      var(--dialogue-box-height) +
+      max(1rem, env(safe-area-inset-bottom)) +
+      0.75rem
+    );
     z-index: -1;
     display: block;
     width: auto;
     max-width: min(48vw, 42rem);
     height: auto;
-    max-height: calc(100dvh - clamp(14rem, 32vh, 22rem));
+    max-height: calc(
+      100dvh - var(--dialogue-box-height) - 3.5rem -
+        env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
     object-fit: contain;
     object-position: bottom;
     filter: drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
@@ -556,18 +575,7 @@
     margin: -1rem 0 -1rem -1rem;
   }
 
-  .reader-controls {
-    position: absolute;
-    top: max(1rem, env(safe-area-inset-top));
-    right: max(1rem, env(safe-area-inset-right));
-    z-index: 20;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0.5rem;
-  }
-
-  .reader-controls button,
+  .history-control,
   .next-control,
   .choices button {
     min-height: 2.75rem;
@@ -583,7 +591,7 @@
     cursor: pointer;
   }
 
-  .reader-controls button:focus-visible,
+  .history-control:focus-visible,
   .next-control:focus-visible,
   .choices button:focus-visible {
     outline: 3px solid #7dd3fc;
@@ -592,11 +600,16 @@
 
   .dialogue-box {
     position: absolute;
+    box-sizing: border-box;
     right: max(1rem, env(safe-area-inset-right));
     bottom: max(1rem, env(safe-area-inset-bottom));
     left: max(4rem, env(safe-area-inset-left));
     z-index: 10;
     max-width: 72rem;
+    height: var(--dialogue-box-height);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(2.75rem, auto);
     padding: clamp(1rem, 2.5vw, 2rem);
     margin-inline: auto;
     color: #f8fafc;
@@ -605,6 +618,33 @@
     border-radius: clamp(1rem, 2vw, 1.5rem);
     box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.48);
     backdrop-filter: blur(1rem);
+  }
+
+  .history-control {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 1;
+    min-width: 2.75rem;
+  }
+
+  .dialogue-body {
+    min-height: 0;
+    padding-right: 3.5rem;
+    overflow-y: auto;
+  }
+
+  .dialogue-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 2.75rem;
+    gap: 1rem;
+  }
+
+  .action-slot {
+    min-width: 0;
+    flex: 1;
   }
 
   .speaker,
@@ -639,7 +679,7 @@
 
   .next-control {
     display: block;
-    margin: 1rem 0 0 auto;
+    margin: 0 0 0 auto;
   }
 
   .choices {
@@ -655,7 +695,8 @@
   }
 
   .progress {
-    margin-top: 0.75rem;
+    flex-shrink: 0;
+    margin: 0;
     color: rgb(226 232 240 / 0.72);
     font-size: 0.8rem;
     text-align: right;
@@ -668,37 +709,26 @@
   }
 
   @media (max-width: 47.99rem) and (orientation: portrait) {
-    .reader-controls {
-      left: max(4rem, env(safe-area-inset-left));
+    .visual-novel-reader {
+      --dialogue-box-height: 40dvh;
     }
 
     .visual-portrait {
-      bottom: min(42dvh, 22rem);
       max-width: 82vw;
-      max-height: 52dvh;
-    }
-
-    .dialogue-box {
-      max-height: 40dvh;
-      overflow-y: auto;
     }
   }
 
   @media (max-height: 31rem) and (orientation: landscape) {
-    .visual-portrait {
-      bottom: 8.5rem;
-      max-width: 42vw;
-      max-height: calc(100dvh - 10rem);
+    .visual-novel-reader {
+      --dialogue-box-height: 9.5rem;
     }
 
-    .reader-controls {
-      max-width: 70vw;
+    .visual-portrait {
+      max-width: 42vw;
     }
 
     .dialogue-box {
-      max-height: 9.5rem;
       padding-block: 0.75rem;
-      overflow-y: auto;
     }
 
     .dialogue-text {

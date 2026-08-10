@@ -74,11 +74,11 @@ const FIXTURE_SOURCE_PATHS = [
 const FIXTURE_SOURCE_METADATA = new Map([
     [
         FIXTURE_SOURCE_PATHS[0],
-        { format: 'png', width: 1672, height: 941, hasAlpha: false },
+        { format: 'png', width: 959, height: 540, hasAlpha: false },
     ],
     [
         FIXTURE_SOURCE_PATHS[1],
-        { format: 'png', width: 1672, height: 941, hasAlpha: false },
+        { format: 'png', width: 959, height: 540, hasAlpha: false },
     ],
     [
         FIXTURE_SOURCE_PATHS[2],

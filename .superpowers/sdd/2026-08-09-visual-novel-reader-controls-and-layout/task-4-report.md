@@ -95,3 +95,53 @@ are the planned Task 5 RED state.
   backgrounds remain valid.
 - No known concerns remain within Task 4 scope. Task 5 still must replace the
   RGB portrait source fixtures and regenerate the content-addressed outputs.
+
+## Follow-up: align background dimensions with real fixtures
+
+The first Task 4 implementation used a stale 1672×941 background expectation.
+Real-verifier evidence from the checked-in fixture tree showed both background
+PNGs are 959×540 RGB (opaque), and the existing runtime manifest already records
+959×540 for both `chapter_1/ch1_act2_s0` and `chapter_1/ch1_act2_s1`. The
+manifest evidence is visible in:
+
+```text
+apps/web/public/assets/vn/previews/hpa-228-local/stories/the_seventh_mirror/releases/sha256-9ec642a37a531d9d59fb22470ef95e35493e6b7b9c92b240fd59ff0014fa1b4d/runtime-manifest.json
+```
+
+### Follow-up RED
+
+I first changed only the test Sharp source metadata to 959×540 and ran:
+
+```text
+rtk bun --filter web test scripts/__tests__/verify-visual-fixtures.test.ts
+```
+
+It failed in the two happy-path tests with the expected stale-production
+diagnostics:
+
+```text
+background source must be a 1672 x 941 PNG: ...ch1_act2_s0.png
+background source must be a 1672 x 941 PNG: ...ch1_act2_s1.png
+```
+
+### Follow-up GREEN
+
+I then changed only the two background entries in the production metadata map
+to 959×540. The focused Task 4 suite passed:
+
+```text
+rtk bun --filter web test scripts/__tests__/verify-visual-fixtures.test.ts scripts/__tests__/build-visual-fixtures.test.ts
+Test Files  2 passed (2)
+Tests       27 passed (27)
+```
+
+`rtk bun --filter web lint` and `rtk git diff --check` also passed. No fixture
+build or real verifier run was performed in this follow-up because the portrait
+source/output objects remain intentionally in Task 5's transitional state.
+
+### Scope and preservation
+
+The follow-up diff contains exactly the verifier and verifier-test text files.
+The two pre-existing, uncommitted Task 5 portrait PNG modifications remained
+untouched and unstaged throughout; no asset, manifest, pointer, or builder
+files changed.

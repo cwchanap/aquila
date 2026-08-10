@@ -30,11 +30,11 @@ type FixtureSourceExpectation = {
 const APPROVED_FIXTURE_SOURCES = new Map<string, FixtureSourceExpectation>([
     [
         'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png',
-        { width: 1672, height: 941, requiresAlpha: false },
+        { width: 959, height: 540, requiresAlpha: false },
     ],
     [
         'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png',
-        { width: 1672, height: 941, requiresAlpha: false },
+        { width: 959, height: 540, requiresAlpha: false },
     ],
     [
         'the_seventh_mirror/characters/asakura_mio/base.png',

@@ -4,7 +4,7 @@ import { VisualReaderPage } from './utils';
 const READER_PATH =
     '/en/reader?story=the_seventh_mirror&scene=ch1_act2&dialogue=';
 const MIO_OBJECT =
-    '**/vn/objects/a930d03b393e3c2c2005018eef18328b2cc1cab5934628f0e6b8237040a2cccb.webp';
+    '**/vn/objects/6556ca83ebbe31cbc236d0c1ce3d544a1d1cfa0ec627852a12e3259feb8ca4c1.webp';
 const SECOND_BACKGROUND_OBJECT =
     '**/vn/objects/8bfdc7f3c41049680918be340114f37ed433763672369c86c84ef620b1d8aaba.webp';
 

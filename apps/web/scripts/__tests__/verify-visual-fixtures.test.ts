@@ -221,6 +221,8 @@ function wireHappyPath(overrides?: {
         height: number;
         hasAlpha: boolean;
     }>;
+    sourceIsOpaque?: (path: string) => boolean;
+    objectIsOpaque?: (path: string) => boolean;
     extraSourcePath?: string;
     sourceSizeBytes?: number;
     includeStaleManifest?: boolean;
@@ -368,40 +370,51 @@ function wireHappyPath(overrides?: {
         throw new Error(`Unexpected readFile path: ${p}`);
     });
 
-    // sharp metadata for source and object checks. Source paths and object
-    // buffers use distinct metadata so each verifier boundary is exercised.
+    // sharp metadata + stats for source and object checks. Source paths and
+    // object buffers use distinct metadata so each verifier boundary is
+    // exercised. `stats` reports actual pixel alpha so the verifier can require
+    // real transparency, not just an alpha channel.
     const dims = overrides?.objectDimensions;
-    sharpMock.mockImplementation((input: unknown) => ({
-        metadata: vi.fn(async () => {
-            if (typeof input === 'string') {
-                const sourcePath = FIXTURE_SOURCE_PATHS.find(path =>
-                    input.endsWith(path)
-                );
-                const defaults = FIXTURE_SOURCE_METADATA.get(sourcePath!);
-                return {
-                    ...defaults,
-                    ...(overrides?.sourceMetadata?.(input) ?? {}),
-                };
-            }
-
+    sharpMock.mockImplementation((input: unknown) => {
+        const isSource = typeof input === 'string';
+        let objectPath = '';
+        if (!isSource) {
             const content = String(input);
-            let objectPath = '';
             for (const [candidatePath, buffer] of objectBytes) {
                 if (content === buffer.toString('utf8')) {
                     objectPath = candidatePath;
                     break;
                 }
             }
-            const dimensions = dims?.(objectPath);
-            return {
-                format: 'webp',
-                width: dimensions?.width ?? 960,
-                height: dimensions?.height ?? 540,
-                hasAlpha: true,
-                ...(overrides?.objectMetadata?.(objectPath) ?? {}),
-            };
-        }),
-    }));
+        }
+        return {
+            metadata: vi.fn(async () => {
+                if (isSource) {
+                    const sourcePath = FIXTURE_SOURCE_PATHS.find(path =>
+                        input.endsWith(path)
+                    );
+                    const defaults = FIXTURE_SOURCE_METADATA.get(sourcePath!);
+                    return {
+                        ...defaults,
+                        ...(overrides?.sourceMetadata?.(input) ?? {}),
+                    };
+                }
+                const dimensions = dims?.(objectPath);
+                return {
+                    format: 'webp',
+                    width: dimensions?.width ?? 960,
+                    height: dimensions?.height ?? 540,
+                    hasAlpha: true,
+                    ...(overrides?.objectMetadata?.(objectPath) ?? {}),
+                };
+            }),
+            stats: vi.fn(async () => ({
+                isOpaque: isSource
+                    ? (overrides?.sourceIsOpaque?.(input) ?? false)
+                    : (overrides?.objectIsOpaque?.(objectPath) ?? false),
+            })),
+        };
+    });
 }
 
 /** Dynamically (re-)imports the script under test. */
@@ -619,6 +632,28 @@ describe('verify-visual-fixtures', () => {
         wireHappyPath({
             objectMetadata: path =>
                 path === portraitObjectPath ? { hasAlpha: false } : {},
+        });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /portrait object does not preserve alpha/
+        );
+    });
+
+    it('rejects a portrait source whose alpha channel is fully opaque', async () => {
+        wireHappyPath({
+            sourceIsOpaque: path => path.includes('/characters/asakura_mio/'),
+        });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /portrait source must be a 450 x 600 PNG with alpha/
+        );
+    });
+
+    it('rejects a portrait WebP whose alpha channel is fully opaque', async () => {
+        const release = buildConsistentRelease();
+        const portraitObjectPath = [...release.objectBuffers.keys()][2]!;
+        wireHappyPath({
+            objectIsOpaque: path => path === portraitObjectPath,
         });
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(

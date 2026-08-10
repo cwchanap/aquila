@@ -24,7 +24,7 @@ function renderSettings(
 }
 
 afterEach(() => {
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
     vi.clearAllMocks();
 });
 

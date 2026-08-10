@@ -153,11 +153,16 @@ export async function verifyVisualFixtures(
         }
         try {
             const metadata = await sharp(path).metadata();
-            const metadataMatches =
+            let metadataMatches =
                 metadata.format === 'png' &&
                 metadata.width === expected.width &&
-                metadata.height === expected.height &&
-                (!expected.requiresAlpha || metadata.hasAlpha === true);
+                metadata.height === expected.height;
+            if (expected.requiresAlpha) {
+                const hasActualAlpha =
+                    metadata.hasAlpha === true &&
+                    !(await sharp(path).stats()).isOpaque;
+                metadataMatches = metadataMatches && hasActualAlpha;
+            }
             if (!metadataMatches) {
                 const description = expected.requiresAlpha
                     ? `portrait source must be a ${expected.width} x ${expected.height} PNG with alpha`
@@ -247,7 +252,8 @@ export async function verifyVisualFixtures(
                 }
                 if (
                     asset.identity.type === 'portrait' &&
-                    metadata.hasAlpha !== true
+                    (metadata.hasAlpha !== true ||
+                        (await sharp(bytes).stats()).isOpaque)
                 ) {
                     problems.push(
                         `portrait object does not preserve alpha: ${object.path}`

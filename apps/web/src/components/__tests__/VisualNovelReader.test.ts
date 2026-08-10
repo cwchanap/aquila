@@ -265,6 +265,19 @@ describe('VisualNovelReader', () => {
         ).toHaveAttribute('src', 'blob:staging');
     });
 
+    it('uses the left empty portrait snapshot when no controller is supplied', () => {
+        setReducedMotion(false);
+        renderReader({ controller: null, isInitialMount: false });
+
+        expect(screen.getByTestId('visual-portrait')).toHaveAttribute(
+            'data-portrait-slot',
+            'left'
+        );
+        expect(screen.getByTestId('visual-portrait')).not.toHaveAttribute(
+            'src'
+        );
+    });
+
     it('does not own Home or Bookmark controls in Visual mode', () => {
         setReducedMotion(false);
         renderReader();

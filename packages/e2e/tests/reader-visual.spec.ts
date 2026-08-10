@@ -659,6 +659,56 @@ test.describe('Visual novel reader', () => {
 
         await expect(page).toHaveURL(dialogueUrl(6));
     });
+
+    test('keeps Settings accessible when a replacement load fails with the History overlay open', async ({
+        page,
+    }) => {
+        const visual = new VisualReaderPage(page);
+        await visual.goto(6);
+
+        // Open the History overlay — leafOverlayOpen becomes true, which
+        // normally disables the shell's Settings trigger.
+        const historyTrigger = page.getByRole('button', {
+            name: 'Open history',
+        });
+        await historyTrigger.click();
+        const backlog = page.getByRole('dialog', { name: 'History' });
+        await expect(backlog).toBeVisible();
+
+        // Block the replacement story's entry module so the cross-story
+        // popstate navigation fails with loadStatus = 'error' while the
+        // old payload (and the History overlay) remain mounted.
+        const MIDNIGHT_SEGMENT = '/stories/dontSaveMeBeforeMidnight/';
+        await page.route(
+            url =>
+                decodeURIComponent(url.pathname).includes(MIDNIGHT_SEGMENT) &&
+                decodeURIComponent(url.pathname).endsWith('/index.ts'),
+            route => route.abort()
+        );
+
+        // Trigger a cross-story navigation via popstate — the reader is
+        // already mounted, so this is a replacement load, not a fresh mount.
+        await page.evaluate(() => {
+            history.pushState(
+                null,
+                '',
+                '/en/reader?story=dont_save_me_before_midnight&scene=act1&dialogue=1'
+            );
+            dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        // The replacement load fails — the error alert appears on top of
+        // the preserved payload.
+        await expect(page.getByRole('alert')).toBeVisible();
+
+        // The Settings trigger must remain accessible even though the
+        // History overlay is still open (leafOverlayOpen is true). Without
+        // the !isBlocking guard on triggerUnavailable, the trigger would be
+        // disabled and the user would be unable to reach Home/mode/retry.
+        await expect(visual.settingsButton).toBeEnabled();
+        await visual.openSettings();
+        await expect(visual.settingsDialog).toBeVisible();
+    });
 });
 
 test.describe('Visual novel reader — prefers-reduced-motion', () => {

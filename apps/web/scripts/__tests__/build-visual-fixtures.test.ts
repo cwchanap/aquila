@@ -125,7 +125,7 @@ describe('build-visual-fixtures', () => {
         );
     });
 
-    it('uses explicit alpha-safe WebP encoder settings for every fixture', async () => {
+    it('uses legacy background and alpha-safe portrait WebP settings', async () => {
         const buffer = fakeBuffer('encoder-options');
         sharpMock.mockImplementation(() => {
             const chain = createChain();
@@ -138,7 +138,25 @@ describe('build-visual-fixtures', () => {
         const { buildVisualFixtures } = await importBuild();
         await buildVisualFixtures();
 
-        expect(webpMock).toHaveBeenCalledWith({
+        expect(webpMock).toHaveBeenNthCalledWith(1, {
+            quality: 82,
+            effort: 6,
+            smartSubsample: true,
+        });
+        expect(webpMock).toHaveBeenNthCalledWith(2, {
+            quality: 82,
+            effort: 6,
+            smartSubsample: true,
+        });
+        expect(webpMock).toHaveBeenNthCalledWith(3, {
+            quality: 82,
+            alphaQuality: 100,
+            lossless: false,
+            preset: 'picture',
+            smartSubsample: true,
+            effort: 6,
+        });
+        expect(webpMock).toHaveBeenNthCalledWith(4, {
             quality: 82,
             alphaQuality: 100,
             lossless: false,

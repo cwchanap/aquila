@@ -66,14 +66,18 @@ export async function buildVisualFixtures(): Promise<void> {
         );
         const bytes = await sharp(source)
             .resize({ ...fixture.resize, withoutEnlargement: true })
-            .webp({
-                quality: 82,
-                alphaQuality: 100,
-                lossless: false,
-                preset: 'picture',
-                smartSubsample: true,
-                effort: 6,
-            })
+            .webp(
+                fixture.type === 'portrait'
+                    ? {
+                          quality: 82,
+                          alphaQuality: 100,
+                          lossless: false,
+                          preset: 'picture',
+                          smartSubsample: true,
+                          effort: 6,
+                      }
+                    : { quality: 82, effort: 6, smartSubsample: true }
+            )
             .toBuffer();
         const objectSha256 = assertSha256<'object-content'>(sha256(bytes));
         const metadata = await sharp(bytes).metadata();

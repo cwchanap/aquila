@@ -89,6 +89,7 @@
   let backlogOpen = $state(false);
   let actPanelOpen = $state(false);
   let historyButton: globalThis.HTMLButtonElement | null = $state(null);
+  let dialogueBody: globalThis.HTMLDivElement | null = $state(null);
 
   let t = $derived(getTranslations(locale));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
@@ -255,6 +256,15 @@
   function handleKeydown(event: KeyboardEvent): void {
     if (event.defaultPrevented || interactionDisabled) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (
+      event.target === dialogueBody &&
+      [' ', 'PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(
+        event.key
+      )
+    ) {
+      // Keep native scrolling available without letting the reader advance.
+      return;
+    }
     if (event.key !== 'Enter' && event.key !== ' ') return;
     if (isReaderInteractiveTarget(event.target ?? document.activeElement)) return;
     event.preventDefault();
@@ -423,9 +433,9 @@
 
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
+        bind:this={dialogueBody}
         class="dialogue-body"
         data-testid="visual-dialogue-body"
-        data-reader-interactive
         role="region"
         aria-label={t.reader.dialogueBodyLabel}
         tabindex="0"

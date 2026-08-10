@@ -53,6 +53,9 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             readerMode: 'Reader mode',
             textMode: 'Text',
             visualNovelMode: 'Visual Novel',
+            openSettings: 'Open reader settings',
+            settingsTitle: 'Reader settings',
+            closeSettings: 'Close reader settings',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -128,6 +131,16 @@ afterEach(() => {
 });
 
 describe('NovelReader — controlled contract', () => {
+    it('does not own Home or Bookmark controls on desktop Text', () => {
+        renderReader({ backUrl: '/en/', showBookmarkButton: true });
+
+        expect(
+            screen.queryByRole('link', { name: 'Back to Home' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Bookmark' })
+        ).not.toBeInTheDocument();
+    });
     it('renders the active line at the dialogueIndex prop', async () => {
         renderReader({ dialogueIndex: 0 });
         await vi.runAllTimersAsync();
@@ -363,7 +376,7 @@ describe('NovelReader — controlled contract', () => {
 describe('NovelReader — basic rendering', () => {
     it('renders the component shell', () => {
         renderReader({ dialogueIndex: 0 });
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(document.querySelector('.novel-reader')).toBeInTheDocument();
     });
 
     it('displays the resolved character name', async () => {
@@ -373,13 +386,9 @@ describe('NovelReader — basic rendering', () => {
         });
     });
 
-    it('shows the bookmark button when enabled', () => {
-        renderReader({ showBookmarkButton: true });
-        expect(screen.getByText('Bookmark')).toBeInTheDocument();
-    });
-
-    it('hides the bookmark button when disabled', () => {
-        renderReader({ showBookmarkButton: false });
+    it('does not render Home or Bookmark controls', () => {
+        renderReader({ backUrl: '/en/', showBookmarkButton: true });
+        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
         expect(screen.queryByText('Bookmark')).not.toBeInTheDocument();
     });
 });
@@ -609,17 +618,6 @@ describe('NovelReader — navigation buttons', () => {
 });
 
 describe('NovelReader — bookmark & progress', () => {
-    it('calls onBookmark with dialogueIndex + 1', async () => {
-        const onBookmark = vi.fn();
-        renderReader({
-            dialogueIndex: 0,
-            onBookmark,
-            showBookmarkButton: true,
-        });
-        await fireEvent.click(screen.getByText('Bookmark'));
-        expect(onBookmark).toHaveBeenCalledWith(1);
-    });
-
     it('shows progress (dialogueIndex + 1) / total', async () => {
         renderReader({ dialogueIndex: 0 });
         await vi.runAllTimersAsync();
@@ -635,22 +633,11 @@ describe('NovelReader — bookmark & progress', () => {
     });
 });
 
-describe('NovelReader — localization & back button', () => {
-    it('renders with the Chinese locale', () => {
+describe('NovelReader — localization', () => {
+    it('renders without desktop Home or Bookmark controls in Chinese', () => {
         renderReader({ locale: 'zh' });
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
-    });
-
-    it('uses the provided backUrl', () => {
-        renderReader({ backUrl: '/en/stories' });
-        const backLink = screen.getByText('Back to Home').closest('a');
-        expect(backLink).toHaveAttribute('href', '/en/stories');
-    });
-
-    it('defaults the back URL to /', () => {
-        renderReader({});
-        const backLink = screen.getByText('Back to Home').closest('a');
-        expect(backLink).toHaveAttribute('href', '/');
+        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+        expect(screen.queryByText('Bookmark')).not.toBeInTheDocument();
     });
 });
 
@@ -742,7 +729,7 @@ describe('NovelReader — act panel navigation guard', () => {
 describe('NovelReader — edge cases', () => {
     it('handles an empty dialogue array without crashing', () => {
         renderReader({ dialogue: [], dialogueIndex: 0 });
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(document.querySelector('.novel-reader')).toBeInTheDocument();
     });
 
     it('does not crash when startTyping is called with an out-of-bounds index', async () => {
@@ -750,13 +737,13 @@ describe('NovelReader — edge cases', () => {
             dialogue: [],
             dialogueIndex: 0,
         });
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(document.querySelector('.novel-reader')).toBeInTheDocument();
         // Rerender with a non-empty dialogue at an out-of-bounds index so
         // Signal 1 calls startTyping with an undefined entry (line 117):
         // startTyping returns immediately without animating.
         await rerenderRaw({ dialogue: [mockDialogue[0]], dialogueIndex: 5 });
         await vi.runAllTimersAsync();
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(document.querySelector('.novel-reader')).toBeInTheDocument();
     });
 
     it('handles a dialogue without a character', async () => {

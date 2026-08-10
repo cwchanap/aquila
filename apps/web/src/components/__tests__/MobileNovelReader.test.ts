@@ -52,6 +52,9 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             readerMode: 'Reader mode',
             textMode: 'Text',
             visualNovelMode: 'Visual Novel',
+            openSettings: 'Open reader settings',
+            settingsTitle: 'Reader settings',
+            closeSettings: 'Close reader settings',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -116,6 +119,21 @@ function renderReader(overrides: Record<string, unknown> = {}) {
 
 describe('MobileNovelReader', () => {
     afterEach(() => vi.clearAllMocks());
+
+    it('keeps Home and Bookmark in the mobile menu and emits the Visual mode change', async () => {
+        const onModeChange = vi.fn();
+        renderReader({ onModeChange });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+        expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Open reader settings' })
+        ).not.toBeInTheDocument();
+
+        await fireEvent.click(screen.getByLabelText('Visual Novel'));
+        expect(onModeChange).toHaveBeenCalledWith('visual');
+    });
 
     describe('controlled contract', () => {
         it('renders the active line at the dialogueIndex prop', async () => {

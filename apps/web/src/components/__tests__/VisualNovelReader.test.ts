@@ -36,6 +36,9 @@ vi.mock('@aquila/stories/translations', () => ({
             readerMode: 'Reader mode',
             textMode: 'Text',
             visualNovelMode: 'Visual Novel',
+            openSettings: 'Open reader settings',
+            settingsTitle: 'Reader settings',
+            closeSettings: 'Close reader settings',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -194,6 +197,7 @@ function renderReader(overrides: Record<string, unknown> = {}) {
         backUrl: '/en/stories',
         isInitialMount: true,
         interactionDisabled: false,
+        onOverlayChange: vi.fn(),
         ...overrides,
     };
     const result = render(VisualNovelReader, { props });
@@ -209,6 +213,22 @@ function renderReader(overrides: Record<string, unknown> = {}) {
 describe('VisualNovelReader', () => {
     afterEach(() => {
         vi.clearAllMocks();
+    });
+
+    it('reports History overlay ownership to the shell and clears it on close/unmount', async () => {
+        setReducedMotion(false);
+        const onOverlayChange = vi.fn();
+        const { unmount } = renderReader({ onOverlayChange });
+        const trigger = screen.getByRole('button', { name: 'Open history' });
+
+        await fireEvent.click(trigger);
+        expect(onOverlayChange).toHaveBeenLastCalledWith(true);
+
+        await fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+        expect(onOverlayChange).toHaveBeenLastCalledWith(false);
+
+        unmount();
+        expect(onOverlayChange).toHaveBeenLastCalledWith(false);
     });
 
     it('renders stable verified image layers and the visual release hooks', () => {
@@ -237,6 +257,21 @@ describe('VisualNovelReader', () => {
         expect(
             document.querySelector('[data-bg-layer="staging"]')
         ).toHaveAttribute('src', 'blob:staging');
+    });
+
+    it('does not own Home or Bookmark controls in Visual mode', () => {
+        setReducedMotion(false);
+        renderReader();
+
+        expect(
+            screen.queryByRole('link', { name: 'Back to Home' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Bookmark' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Open history' })
+        ).toBeInTheDocument();
     });
 
     it('keeps all three image elements mounted and clears absent sources', () => {
@@ -605,7 +640,8 @@ describe('VisualNovelReader', () => {
 
     it('toggles the act panel open and closed via the toggle button', async () => {
         setReducedMotion(false);
-        renderReader({ isInitialMount: false });
+        const onOverlayChange = vi.fn();
+        renderReader({ isInitialMount: false, onOverlayChange });
 
         const toggle = screen.getByRole('button', {
             name: 'Open acts panel',
@@ -614,6 +650,7 @@ describe('VisualNovelReader', () => {
         expect(
             screen.getByRole('button', { name: 'Close acts panel' })
         ).toBeInTheDocument();
+        expect(onOverlayChange).toHaveBeenLastCalledWith(true);
 
         await fireEvent.click(
             screen.getByRole('button', { name: 'Close acts panel' })
@@ -621,6 +658,7 @@ describe('VisualNovelReader', () => {
         expect(
             screen.getByRole('button', { name: 'Open acts panel' })
         ).toBeInTheDocument();
+        expect(onOverlayChange).toHaveBeenLastCalledWith(false);
     });
 
     it('calls onNavigate when the act panel selects a different scene', async () => {
@@ -636,19 +674,6 @@ describe('VisualNovelReader', () => {
         );
         await fireEvent.click(screen.getByText('Act 2'));
         expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
-    });
-
-    it('calls onBookmark with dialogueIndex + 1 when the bookmark button is clicked', async () => {
-        setReducedMotion(false);
-        const onBookmark = vi.fn();
-        renderReader({
-            dialogueIndex: 1,
-            onBookmark,
-            isInitialMount: false,
-        });
-
-        await fireEvent.click(screen.getByRole('button', { name: 'Bookmark' }));
-        expect(onBookmark).toHaveBeenCalledWith(2);
     });
 
     it('renders choices for a choice-only scene with empty dialogue', async () => {

@@ -28,13 +28,12 @@ async function swapVisualToTextAndBack(
     page: Page,
     line: number
 ): Promise<void> {
-    await page.getByRole('button', { name: 'Text', exact: true }).click();
+    const visual = new VisualReaderPage(page);
+    await visual.chooseMode('Text');
     await expect(page.getByTestId('visual-novel-reader')).not.toBeAttached();
     await expect(page).toHaveURL(dialogueUrl(line));
 
-    await page
-        .getByRole('button', { name: 'Visual Novel', exact: true })
-        .click();
+    await visual.chooseMode('Visual Novel');
     await expectCanonicalVisualLine(page, line);
 }
 
@@ -75,9 +74,8 @@ async function expectEssentialControlsNotToOverlapPortrait(
     if (!portraitBox) return;
 
     const controls = [
-        ['reader mode', visual.modeControl],
+        ['reader settings', visual.settingsButton],
         ['history', page.getByRole('button', { name: 'Open history' })],
-        ['bookmark', page.getByRole('button', { name: '📖 Bookmark' })],
         ['continue', page.getByRole('button', { name: 'Continue' })],
     ] as const;
 
@@ -194,18 +192,38 @@ test.describe('Visual novel reader', () => {
         await expect(line).toBeVisible();
         await expect(page).toHaveURL(dialogueUrl(7));
 
-        await page
-            .getByRole('button', { name: 'Visual Novel', exact: true })
-            .click();
+        const visual = new VisualReaderPage(page);
+        await visual.chooseMode('Visual Novel');
         await expectCanonicalVisualLine(page, 7);
         await expect(line).toBeVisible();
 
-        await page.getByRole('button', { name: 'Text', exact: true }).click();
+        await visual.chooseMode('Text');
         await expect(
             page.getByTestId('visual-novel-reader')
         ).not.toBeAttached();
         await expect(page).toHaveURL(dialogueUrl(7));
         await expect(line).toBeVisible();
+    });
+
+    test('switches mobile Text to Visual without changing the canonical line and restores Settings focus', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'text');
+        });
+        await page.goto(`${READER_PATH}7`);
+        await expect(page).toHaveURL(dialogueUrl(7));
+
+        const menuButton = page.getByRole('button', { name: 'Open menu' });
+        await menuButton.click();
+        await page.getByRole('button', { name: 'Visual Novel' }).click();
+
+        await expect(page.getByTestId('visual-novel-reader')).toBeVisible();
+        await expect(page).toHaveURL(dialogueUrl(7));
+        await expect(
+            page.getByRole('button', { name: 'Open reader settings' })
+        ).toBeFocused();
     });
 
     test('restores direct links through reload, back, and forward without mode swaps changing lines', async ({
@@ -262,8 +280,9 @@ test.describe('Visual novel reader', () => {
         await expect(
             page.getByRole('button', { name: 'Open history' })
         ).toBeEnabled();
+        await visual.openSettings();
         await expect(
-            page.getByRole('button', { name: 'Visual Novel', exact: true })
+            visual.settingsDialog.getByRole('button', { name: 'Visual Novel' })
         ).toBeEnabled();
     });
 
@@ -353,8 +372,8 @@ test.describe('Visual novel reader', () => {
         await page.setViewportSize({ width: 844, height: 390 });
         const visual = new VisualReaderPage(page);
         await visual.goto(6);
-        await expect(visual.modeControl).toBeVisible();
-        await expect(visual.modeControl).toBeEnabled();
+        await expect(visual.settingsButton).toBeVisible();
+        await expect(visual.settingsButton).toBeEnabled();
         await visual.root.click();
         await openAndCloseVisualBacklog(page);
         await expectEssentialControlsNotToOverlapPortrait(page);

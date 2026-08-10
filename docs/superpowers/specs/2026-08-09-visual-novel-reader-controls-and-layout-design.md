@@ -1,7 +1,7 @@
 # Visual Novel Reader Controls and Layout
 
 Date: 2026-08-09  
-Status: Approved
+Status: Revised after review; pending approval
 
 ## Goal
 
@@ -39,10 +39,11 @@ visual-asset work.
 
 | Decision | Choice |
 | --- | --- |
-| Settings ownership | One shared popup rendered by `ReaderShell` in both Text and Visual modes |
+| Settings ownership | Shell popup in Visual mode at every breakpoint and desktop Text; mobile Text keeps its existing single menu |
 | Popup contents | Bookmark, Text/Visual mode toggle, Back to Home |
-| Home/Bookmark chrome | Removed from Visual, desktop Text, and mobile Text leaves; available only in Settings |
-| History | Always-visible control in the dialogue-box header, at its top-right corner |
+| Mobile Text controls | Existing hamburger remains the sole menu and gains a Visual Novel action; its Home and Bookmark actions remain there |
+| Home/Bookmark chrome | Removed from Visual and desktop Text leaves; available in shell Settings there |
+| History | Always-visible control absolutely anchored at the dialogue box's top-right corner |
 | Portrait slots | `left | right` only; unspecified portraits default to left |
 | Portrait assets | Transparent 450 x 600 RGBA PNGs preserving the existing characters and crop |
 | Dialogue height | Fixed per responsive layout class; content scrolls internally |
@@ -53,8 +54,8 @@ visual-asset work.
 ### In scope
 
 - A reusable, accessible reader-settings popup.
-- Moving the mode control and every leaf reader's Bookmark/Home actions into
-  it.
+- Moving the mode control and the Visual/desktop-Text Bookmark and Home actions
+  into it without creating a second mobile-Text menu.
 - Moving the visual History control into the dialogue box.
 - Fixed dialogue-box geometry at desktop, mobile portrait, and compact
   landscape layouts.
@@ -79,9 +80,12 @@ visual-asset work.
 ### Shared settings surface
 
 Add `ReaderSettingsMenu.svelte` and render it from `ReaderShell`, alongside the
-existing visual-status surface and outside the `reader-ready` subtree. This is
-the only settings trigger and popup for the reader route, regardless of the
-active mode or breakpoint.
+existing visual-status surface and outside the `reader-ready` subtree. It is
+the Settings surface in Visual mode at every breakpoint and in Text mode at
+desktop breakpoints. In mobile Text mode it is not rendered or focusable;
+`MobileNovelReader`'s existing hamburger remains the one control surface and
+gains a Visual Novel action. This prevents two visually and semantically
+competing mobile menus while preserving a path into Visual mode.
 
 `ReaderShell` already owns the persisted reader mode and receives the bookmark
 callback, bookmark visibility, active dialogue index, and home URL. It passes
@@ -100,6 +104,7 @@ type ReaderSettingsMenuProps = {
   showBookmarkButton: boolean;
   backUrl: string;
   bookmarkDisabled: boolean;
+  triggerUnavailable: boolean;
 };
 ```
 
@@ -111,7 +116,18 @@ payload is blocked, matching the existing shell-level mode-control behavior.
 
 `ReaderShell` owns `settingsOpen` and binds it to the component's Svelte 5
 `$bindable` `open` prop. No callback, event bus, or second store mirrors this
-state.
+state. It also owns an ephemeral `leafOverlayOpen` flag reported by
+`VisualNovelReader` through `onOverlayChange(open)`. The callback reports
+`backlogOpen || actPanelOpen`, reports `false` during cleanup, and the shell
+resets it on mode replacement. While true, the Settings trigger is removed
+from pointer and focus interaction and cannot open above a leaf-owned overlay.
+
+The shell derives Settings availability from
+`readerMode === 'visual' || !isMobile`. If a responsive change enters mobile
+Text while Settings is open, an effect closes it and clears `settingsOpen`
+before the mobile leaf becomes interactive, then moves focus to the mounted
+mobile menu trigger when focus was inside Settings. This prevents a breakpoint
+change from leaving the reader inert or focus on a removed trigger.
 
 The existing load-blocking contract is reused completely:
 
@@ -124,7 +140,15 @@ The existing `reader-ready` inert attribute synchronization uses
 `interactionDisabled={leafDisabled}`. This prevents pointer interaction and
 also blocks the leaves' window-level Enter/Space handlers, which do not rely on
 ancestor inert state. Settings stays outside `reader-ready`, so its trigger and
-dialog remain operable.
+dialog remain operable. The `reader-ready` `aria-hidden` value is derived from
+the same `leafDisabled` value, rather than continuing to follow only
+`isBlocking`.
+
+`leafOverlayOpen` is deliberately not part of `leafDisabled`: making the
+entire `reader-ready` subtree inert would also inert the leaf-owned focus-trap
+dialog. It gates only the shell Settings trigger. Mobile Text does not report
+its drawer/backlog state because the shell trigger is absent at that
+breakpoint.
 
 ### Popup interaction
 
@@ -140,31 +164,45 @@ The popup is an anchored dialog with a scrim:
 - Opening focuses the first actionable item.
 - Escape, the close button, or the scrim closes it.
 - Closing restores focus to the settings trigger.
-- Selecting Text or Visual updates the persisted shell mode, closes the popup,
-  and restores focus to the still-mounted settings trigger.
-- Selecting Bookmark closes the popup before calling the existing bookmark
-  callback, so the existing prompt is not opened behind a focus trap.
+- Selecting Text or Visual closes the active menu, awaits `tick()`, updates the
+  persisted shell mode, awaits the replacement leaf, and focuses that mode's
+  surviving menu trigger. This matters for mobile Visual-to-Text and
+  Text-to-Visual switches, where the initiating trigger is unmounted.
+- Selecting Bookmark sets `settingsOpen = false`, awaits Svelte's `tick()`, and
+  only then calls the existing bookmark callback. The popup focus trap is
+  fully deactivated before the bookmark prompt synchronously focuses its input,
+  so focus restoration cannot steal focus back to the Settings trigger.
 - Back to Home is a normal localized link to `backUrl`.
 
 The Text/Visual choice is a two-button segmented control with `aria-pressed`.
-It is available in both modes, making the popup the way to enter and leave
-Visual mode.
+It is the mode control in Visual and desktop Text. Mobile Text enters Visual
+through an equivalent translated action in its existing hamburger menu; once
+Visual is active, the shell popup provides the way back to Text.
 
-### One Home/Bookmark control map
+`ReaderSettingsMenu` follows the proven `VisualBacklog` dialog shape and uses
+the existing `focusTrap` action directly. It does not reuse or extend
+`apps/web/src/components/ui/Modal.svelte`: that component has no focus trap or
+focus-restoration contract and still exposes the legacy Svelte 4 slot API, so
+making it the reader primitive would expand this task into an unrelated modal
+refactor.
 
-The shell popup becomes the only owner of Home, Bookmark, and reader mode:
+### Responsive Home/Bookmark control map
+
+The ownership map has one menu at each breakpoint and mode:
 
 - `VisualNovelReader` removes Home and Bookmark from its top navigation;
 - `NovelReader` removes its top-right Home link and bottom Bookmark button,
   while retaining dialogue progress;
-- `MobileNovelReader` removes Home and Bookmark from its auto-hiding chrome,
-  while retaining the mobile menu toggle, Acts, History, and progress.
+- `MobileNovelReader` retains Home, Bookmark, the mobile menu toggle, Acts,
+  History, and progress in its auto-hiding chrome, and adds the translated
+  Visual Novel mode action there.
 
 The shell stops passing `backUrl`, `onBookmark`, and `showBookmarkButton` to
-leaf components that no longer consume them. History remains leaf-owned:
-visual History moves to the dialogue header, mobile History remains in mobile
-chrome, and the desktop Text reader is unchanged because it has no separate
-backlog control.
+Visual and desktop Text leaves that no longer consume them; mobile Text keeps
+those existing props. It passes the existing mode-change callback to mobile
+Text for the new Visual Novel action. History remains leaf-owned: visual
+History moves to the dialogue box, mobile History remains in mobile chrome,
+and desktop Text remains unchanged because it has no separate backlog control.
 
 ## Visual Reader Layout
 
@@ -174,31 +212,33 @@ Remove Home, History, and Bookmark from `VisualNovelReader`'s top navigation.
 Home and Bookmark move to the shared settings popup. History stays leaf-owned
 because its backlog and focus restoration belong to `VisualNovelReader`.
 
-The dialogue box gains a header row:
-
-- speaker name on the left when one exists;
-- History button on the right in all dialogue states.
-
-For narration, the empty speaker area collapses while History remains aligned
-to the top-right. The History button stays at least 44 x 44, retains the
-existing focus-return behavior, and continues to open the current-scene
-backlog through the active line.
+The dialogue box becomes the History button's positioning context. History is
+absolutely anchored at its top-right in all dialogue states rather than taking
+a dedicated grid row. The scrollable body reserves matching right padding of
+at least the 44 px target plus its visual gap, so speaker and dialogue text can
+never render underneath it. For narration, no empty speaker placeholder is
+reserved. The History button stays at least 44 x 44, retains the existing
+focus-return behavior, and continues to open the current-scene backlog through
+the active line.
 
 ### Fixed dialogue geometry
 
-The dialogue box uses `box-sizing: border-box`, `overflow: hidden`, and a
-three-row grid:
+The dialogue box uses `position: relative`, `box-sizing: border-box`,
+`overflow: hidden`, and a two-row grid:
 
 ```text
-header: speaker + History
-body: dialogue or choices; minmax(0, 1fr); internally scrollable
-footer: reserved action slot + progress
+body: speaker + dialogue or choices; minmax(0, 1fr); internally scrollable
+footer: reserved action slot and progress in one 44px-minimum row
+History: absolute top-right overlay; body reserves its width
 ```
 
 The footer remains in the grid while typing. The Continue/Next/Complete action
 is hidden but its slot is reserved until it becomes actionable. Consequently,
 the transition from partial typewriter text to complete text cannot change the
-dialogue-box height or move the progress indicator.
+dialogue-box height or move the progress indicator. Combining action and
+progress in the footer, and keeping History out of grid flow, leaves useful
+text space within the compact `9.5rem` panel without reducing any interactive
+target below 44 px.
 
 The fixed responsive heights are:
 
@@ -285,13 +325,22 @@ acceptable.
 After editing:
 
 1. inspect both images over light and dark checkerboard-style backgrounds;
-2. verify width, height, PNG format, and `hasAlpha: true` with the existing
-   image tooling;
+2. extend `apps/web/scripts/verify-visual-fixtures.ts` to inspect each approved
+   source with Sharp and verify width, height, PNG format, and `hasAlpha: true`;
 3. regenerate the local content-addressed visual fixture using the existing
-   publisher/fixture path;
-4. run the existing fixture verifier and ensure pointer/manifest hashes match;
+   `apps/web/scripts/build-visual-fixtures.ts` path;
+4. have that same verifier assert each emitted portrait WebP retains alpha,
+   then ensure pointer/manifest hashes and size limits still match;
 5. verify in the browser that scene backgrounds remain visible around each
    character silhouette.
+
+The fixture builder uses the full production-equivalent WebP option set:
+`quality: 82`, `alphaQuality: 100`, `lossless: false`, `preset: 'picture'`,
+`smartSubsample: true`, and `effort: 6`. These values remain explicit in the
+web fixture builder. Importing `ENCODER_POLICY_V1` directly would require a new
+web-to-infrastructure workspace dependency and a new package export solely for
+test fixtures; that coupling is not justified here. The verifier checks the
+property that matters at the boundary—the emitted portrait still has alpha.
 
 No credentials, upload, active-pointer mutation, or remote release activation
 is authorized by this design.
@@ -300,19 +349,23 @@ is authorized by this design.
 
 ### Settings flow
 
-1. User opens the shell-level settings trigger.
+1. A Visual or desktop-Text user opens the shell-level Settings trigger; a
+   mobile-Text user selects Visual Novel in the existing hamburger menu.
 2. `ReaderShell` marks the popup open; `leafDisabled` drives both
    `reader-ready` inert synchronization and every leaf's
    `interactionDisabled` prop.
 3. Mode selection calls the existing `setReaderMode` path; the dialogue index,
-   scene, URL, and retained visual runtime are unchanged.
-4. Bookmark calls the existing callback with `dialogueIndex + 1`.
+   scene, URL, and retained visual runtime are unchanged, and focus moves to
+   the surviving Settings or mobile-menu trigger after the replacement leaf
+   mounts.
+4. Bookmark closes Settings, awaits `tick()`, and calls the existing callback
+   with `dialogueIndex + 1`.
 5. Home follows the existing `backUrl`.
 6. Closing restores focus and re-enables the leaf reader.
 
 ### History flow
 
-1. User activates History in the dialogue header.
+1. User activates History at the dialogue box's top-right.
 2. `VisualNovelReader` makes its content inert and opens `VisualBacklog`.
 3. The backlog derives entries from `dialogue.slice(0, dialogueIndex + 1)`.
 4. Closing restores focus to the History button in its new location.
@@ -331,13 +384,16 @@ relying on icon-only or English-only text.
 
 - All controls have at least a 44 x 44 target.
 - The settings popup and backlog each have one focus owner; they cannot be open
-  simultaneously because opening settings disables the leaf surface.
+  simultaneously because a leaf overlay makes the Settings trigger
+  unavailable, while opening Settings disables the leaf surface.
 - Popup and backlog both support Escape, focus trapping, inert background
   content, and deterministic focus restoration.
 - Settings actions are marked as reader-interactive, so pointer or keyboard
   activation cannot advance dialogue.
 - `leafDisabled` prevents window-level Enter/Space handlers from skipping or
   advancing typewriter text while Settings is open.
+- `reader-ready` uses `leafDisabled` for both `inert` and `aria-hidden`, keeping
+  the accessibility tree and interaction state synchronized.
 - The fixed dialogue body retains keyboard and touch scrolling.
 - `prefers-reduced-motion` continues to disable decorative transitions without
   changing layout geometry.
@@ -353,21 +409,48 @@ relying on icon-only or English-only text.
   is absent.
 - Existing explicit left/right resolution remains green.
 
+The contract slice updates not just generated output but every handwritten
+fixture that currently encodes `center`, including:
+
+- `apps/web/src/lib/__tests__/reader-intent.test.ts`;
+- `apps/web/src/lib/__tests__/reader-manager.test.ts` and
+  `reader-manager-coverage.test.ts`;
+- `apps/web/src/lib/visual-assets/__tests__/visual-state-controller.test.ts`;
+- `apps/web/src/components/__tests__/VisualNovelReader.test.ts`;
+- `packages/stories/src/__tests__/stories.test.ts`;
+- `packages/stories/src/async/__tests__/loader.test.ts`;
+- `packages/stories/src/compiler/__tests__/parse-characters.test.ts` and
+  `emit.test.ts`.
+
 ### Component tests
 
 - Settings trigger opens the dialog, focus enters it, and Escape/scrim/close
   restore trigger focus.
 - Text/Visual selection changes mode in both directions and closes the popup.
+- Mode changes and a desktop-to-mobile breakpoint change move focus to the
+  surviving Settings or mobile-menu trigger rather than leaving it on removed
+  chrome.
 - Bookmark uses the active one-based dialogue number and is omitted or disabled
-  under the existing guards.
+  under the existing guards; after selection, the bookmark prompt input—not
+  the Settings trigger—owns focus.
 - Home uses the supplied localized URL.
-- Desktop Text, mobile Text, and Visual leaves no longer render Home or
-  Bookmark controls.
+- Desktop Text and Visual leaves no longer render Home or Bookmark controls.
+- Mobile Text retains one hamburger menu, retains Home/Bookmark, adds the
+  Visual Novel action, and does not render a second Settings trigger.
 - `settingsOpen` drives the same inert attribute synchronization and
-  `interactionDisabled` props as the existing load-blocking state.
-- Visual History renders inside the dialogue header and restores focus there.
+  `interactionDisabled` props as the existing load-blocking state, and
+  `aria-hidden` follows the same derived value.
+- Opening the visual backlog or Acts panel makes the shell Settings trigger
+  unavailable; closing or unmounting it restores trigger availability.
+- Visual History renders at the dialogue box's top-right and restores focus
+  there.
 - Visual top navigation no longer contains Home, History, or Bookmark.
 - The reserved footer remains present during typing and after completion.
+
+The component task updates the directly affected suites in sequence with the
+chrome change: `apps/web/src/components/__tests__/ReaderShell.test.ts`,
+`NovelReader.test.ts`, `MobileNovelReader.test.ts`, and
+`VisualNovelReader.test.ts`.
 
 ### Asset tests
 
@@ -376,13 +459,21 @@ relying on icon-only or English-only text.
   two base identities and its WebP encoding preserves alpha.
 - Fixture verification and pointer/manifest integrity checks pass.
 
+The asset task extends
+`apps/web/scripts/__tests__/verify-visual-fixtures.test.ts` and
+`build-visual-fixtures.test.ts` alongside their corresponding scripts; it does
+not create a parallel verifier.
+
 ### Browser tests
 
 - Text mode opens Settings and switches to Visual without changing the URL
-  line; Visual opens Settings and switches back to Text.
-- Bookmark, Home, and mode controls are found only in the popup.
-- Desktop Text, mobile Text, and Visual modes are each checked for duplicate
-  Home/Bookmark chrome.
+  line on desktop; mobile Text uses its existing menu for the same transition;
+  Visual opens Settings and switches back to Text.
+- Bookmark, Home, and mode controls are found only in the Settings popup for
+  Visual and desktop Text, and only in the existing hamburger menu for mobile
+  Text.
+- Desktop Text, mobile Text, and Visual modes are each checked for duplicate or
+  competing menu chrome.
 - Enter and Space do not skip or advance text while Settings is open.
 - History is visibly located at the dialogue box's top-right and opens/closes
   the backlog with correct focus restoration.
@@ -397,14 +488,21 @@ relying on icon-only or English-only text.
 - Page identity, non-blank rendering, framework-overlay absence, console
   health, screenshot evidence, and target interaction paths are recorded.
 
+The browser task updates `packages/e2e/tests/reader-visual.spec.ts` and the
+selectors/page objects in `packages/e2e/tests/utils.ts` in the same slice as
+chrome removal. Existing mobile bookmark/back page-object flows remain; tests
+add the mobile Text-to-Visual mode path rather than moving those actions to a
+second menu.
+
 ## Acceptance Criteria
 
 The change is complete when:
 
-1. One Settings trigger is present in desktop Text, mobile Text, and Visual
-   modes.
-2. Its popup is the only surface containing Bookmark, Text/Visual mode, and
-   Back to Home.
+1. One Settings trigger is present in desktop Text and Visual modes; mobile
+   Text has only its existing hamburger trigger.
+2. The Settings popup is the only surface containing Bookmark, Text/Visual
+   mode, and Back to Home in Visual and desktop Text; mobile Text keeps those
+   actions in its one existing menu.
 3. A user can return from Visual to Text without changing their story position.
 4. History is at the top-right of the visual dialogue box and retains the
    accessible backlog behavior.
@@ -420,17 +518,23 @@ The change is complete when:
 
 The implementation plan must keep independently risky changes observable:
 
-1. Establish RED tests for shell settings state, all-leaf Home/Bookmark
-   de-duplication, and Enter/Space blocking before changing reader chrome.
-2. Implement and verify the shell popup and complete `leafDisabled` gate as one
-   coherent slice.
+1. Establish RED tests in the four named component suites for shell Settings
+   state, Visual/desktop-Text Home/Bookmark de-duplication, the mobile single-
+   menu mode path, leaf-overlay exclusion, bookmark-prompt focus, and
+   Enter/Space blocking before changing reader chrome.
+2. Implement and verify the shell popup, `tick()` bookmark handoff,
+   `onOverlayChange` exclusion, and complete `leafDisabled` inert/
+   `aria-hidden`/interaction gate as one coherent slice. Update
+   `reader-visual.spec.ts` and `utils.ts` with that chrome slice.
 3. Implement fixed dialogue geometry and portrait clearance as a separate
    slice with browser bounding-box evidence at every layout class.
-4. Change the portrait-slot compiler/runtime contract in its own slice and
-   regenerate all story presentation files.
-5. Inventory portrait assets and add a failing alpha assertion before editing
-   binaries; perform background removal and fixture regeneration in a dedicated
-   asset slice with its own integrity and browser smoke checks.
+4. Change the portrait-slot compiler/runtime contract in its own slice, update
+   every named handwritten `center` fixture, and regenerate all story
+   presentation files.
+5. Add failing source/output alpha assertions to the existing fixture verifier
+   and its tests before editing binaries; then perform background removal,
+   production-equivalent fixture encoding, and fixture regeneration in a
+   dedicated asset slice with its own integrity and browser smoke checks.
 6. Finish with combined focused tests, the repository regression suite, and a
    rendered desktop/mobile interaction pass.
 
@@ -444,9 +548,9 @@ layout acceptance.
 | Risk | Mitigation |
 | --- | --- |
 | Removing `center` breaks stale generated metadata | Regenerate every story presentation file and make compiler/type tests fail on center |
-| Popup competes with loading or backlog overlays | Keep popup shell-owned above blocking content; drive the complete `leafDisabled` contract; prevent simultaneous backlog interaction |
+| Popup competes with loading or leaf-owned overlays | Drive the complete `leafDisabled` contract while Settings is open; use `onOverlayChange` to make its trigger unavailable while a Visual backlog or Acts panel owns focus |
 | Enter/Space advances beneath an open popup | Pass `leafDisabled` to every leaf's existing `interactionDisabled` guard and add keyboard regression tests |
-| Home/Bookmark remain duplicated in Text leaves | Remove them from all three leaves and assert the popup is their only rendered owner at each breakpoint |
+| Home/Bookmark remain duplicated or mobile gets two menus | Remove them from Visual and desktop Text, retain one mobile hamburger owner, and assert the responsive ownership map at each breakpoint |
 | Fixed height clips long content | Put dialogue and choices in a dedicated internal scroll row and retain pointer-movement guards |
 | Fixed panel intersects portrait geometry | Derive portrait offsets from the shared height variable and assert the minimum gap by bounding box at each layout class |
 | Background removal damages hair or clothing edges | Edit from the current images, inspect over contrasting backgrounds, and reject changes beyond background removal |

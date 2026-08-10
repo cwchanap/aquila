@@ -704,6 +704,13 @@ test.describe('Visual novel reader', () => {
         // the preserved payload.
         await expect(page.getByRole('alert')).toBeVisible();
 
+        // The History overlay must still be open (leafOverlayOpen is true)
+        // at the point we verify Settings — that is the precondition that
+        // would normally disable the shell's Settings trigger. The reader-
+        // ready host gets aria-hidden under isBlocking, so getByRole cannot
+        // see the dialog; use a CSS locator to confirm it remains attached.
+        await expect(page.locator('.visual-backlog')).toBeAttached();
+
         // The Settings trigger must remain accessible even though the
         // History overlay is still open (leafOverlayOpen is true). Without
         // the !isBlocking guard on triggerUnavailable, the trigger would be

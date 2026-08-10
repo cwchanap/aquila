@@ -44,7 +44,7 @@ visual-asset work.
 | Mobile Text controls | Existing hamburger remains the sole menu and gains a Visual Novel action; its Home and Bookmark actions remain there |
 | Home/Bookmark chrome | Removed from Visual and desktop Text leaves; available in shell Settings there |
 | History | Always-visible control absolutely anchored at the dialogue box's top-right corner |
-| Portrait slots | `left | right` only; unspecified portraits default to left |
+| Portrait slots | `left` or `right` only; unspecified portraits default to left |
 | Portrait assets | Transparent 450 x 600 RGBA PNGs preserving the existing characters and crop |
 | Dialogue height | Fixed per responsive layout class; content scrolls internally |
 | Remote publication | Not part of this change; update source and local verification fixtures only |

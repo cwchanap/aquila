@@ -5,6 +5,7 @@
   import { getTranslations } from '@aquila/stories/translations';
   import type { ReaderMode } from '@/lib/reader-mode';
   import { focusTrap } from '@/lib/focus-trap';
+  import Button from '@/components/ui/Button.svelte';
 
   let {
     open = $bindable(false),
@@ -28,7 +29,7 @@
     triggerUnavailable: boolean;
   } = $props();
 
-  let trigger: globalThis.HTMLButtonElement | null = $state(null);
+  let trigger: HTMLElement | null = $state(null);
   let t = $derived(getTranslations(locale));
 
   function close(): void {
@@ -61,11 +62,11 @@
   data-reader-settings
   class="pointer-events-none fixed inset-0 z-[90]"
 >
-  <button
+  <Button
     id="reader-settings-trigger"
-    type="button"
-    bind:this={trigger}
-    class="pointer-events-auto fixed right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm hover:bg-white disabled:pointer-events-none disabled:opacity-50"
+    bind:element={trigger}
+    variant="menu"
+    className="pointer-events-auto fixed right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm hover:bg-white hover:scale-100 normal-case tracking-normal font-semibold text-base p-0 border-0 disabled:pointer-events-none disabled:opacity-50"
     style="top: calc(0.75rem + env(safe-area-inset-top)); right: calc(0.75rem + env(safe-area-inset-right));"
     aria-label={t.reader.openSettings}
     aria-haspopup="dialog"
@@ -75,7 +76,7 @@
     onclick={() => (open = true)}
   >
     <Cog size={20} aria-hidden="true" />
-  </button>
+  </Button>
 
   {#if open}
     <button

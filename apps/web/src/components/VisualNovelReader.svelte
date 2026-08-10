@@ -9,6 +9,7 @@
   import { getTranslations } from '@aquila/stories/translations';
   import ActPanel from '@/components/ActPanel.svelte';
   import VisualBacklog from '@/components/VisualBacklog.svelte';
+  import Button from '@/components/ui/Button.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import {
     getReaderAdvanceDecision,
@@ -88,8 +89,16 @@
   let sceneVersion = $state(0);
   let backlogOpen = $state(false);
   let actPanelOpen = $state(false);
-  let historyButton: globalThis.HTMLButtonElement | null = $state(null);
+  let historyButton: HTMLElement | null = $state(null);
   let dialogueBody: globalThis.HTMLDivElement | null = $state(null);
+
+  // Dark glassmorphism control styling for the dialogue-box buttons, inlined
+  // so it applies through Button.svelte (scoped CSS cannot reach a child
+  // component internal element). The menu-variant gradient/transform/type
+  // treatments are overridden by the later utilities (tailwind-merge resolves
+  // conflicts in favour of the className passed to Button).
+  const controlBase =
+    'min-h-11 px-4 py-[0.65rem] text-inherit text-base tracking-normal normal-case font-bold font-sans bg-slate-900/[0.78] border border-white/30 shadow-[0_0.5rem_1.5rem_rgb(0,0,0,0.25)] backdrop-blur-[0.75rem] cursor-pointer hover:scale-100 hover:translate-y-0 focus:ring-sky-300';
 
   let t = $derived(getTranslations(locale));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
@@ -420,16 +429,16 @@
       data-testid="visual-dialogue-box"
       aria-live="off"
     >
-      <button
-        bind:this={historyButton}
-        type="button"
-        class="history-control"
+      <Button
+        bind:element={historyButton}
+        variant="menu"
+        className="history-control absolute top-3 right-3 z-[1] min-w-11 rounded-full {controlBase}"
         data-reader-interactive
         aria-label={t.reader.openHistory}
         onclick={() => (backlogOpen = true)}
       >
         {t.reader.openHistory}
-      </button>
+      </Button>
 
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
@@ -462,13 +471,14 @@
           <div class="choices">
             <p>{choice?.prompt}</p>
             {#each choice?.options ?? [] as option (option.id)}
-              <button
-                type="button"
+              <Button
+                variant="menu"
+                className="w-full text-left rounded-xl {controlBase}"
                 data-reader-interactive
                 onclick={() => onChoice(option.nextScene)}
               >
                 {option.label}
-              </button>
+              </Button>
             {/each}
           </div>
         {/if}
@@ -477,9 +487,9 @@
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
         <div class="action-slot">
           {#if !showChoices && !isTyping && currentDialogue}
-            <button
-              type="button"
-              class="next-control"
+            <Button
+              variant="menu"
+              className="next-control block ml-auto w-auto rounded-full {controlBase}"
               data-reader-interactive
               onclick={advance}
             >
@@ -490,7 +500,7 @@
               {:else}
                 {t.reader.complete}
               {/if}
-            </button>
+            </Button>
           {/if}
         </div>
         {#if dialogue.length > 0}
@@ -588,29 +598,6 @@
     margin: -1rem 0 -1rem -1rem;
   }
 
-  .history-control,
-  .next-control,
-  .choices button {
-    min-height: 2.75rem;
-    padding: 0.65rem 1rem;
-    color: inherit;
-    font: inherit;
-    font-weight: 700;
-    background: rgb(15 23 42 / 0.78);
-    border: 1px solid rgb(255 255 255 / 0.28);
-    border-radius: 999px;
-    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.25);
-    backdrop-filter: blur(0.75rem);
-    cursor: pointer;
-  }
-
-  .history-control:focus-visible,
-  .next-control:focus-visible,
-  .choices button:focus-visible {
-    outline: 3px solid #7dd3fc;
-    outline-offset: 2px;
-  }
-
   .dialogue-box {
     position: absolute;
     box-sizing: border-box;
@@ -631,14 +618,6 @@
     border-radius: clamp(1rem, 2vw, 1.5rem);
     box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.48);
     backdrop-filter: blur(1rem);
-  }
-
-  .history-control {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    z-index: 1;
-    min-width: 2.75rem;
   }
 
   .dialogue-body {
@@ -690,21 +669,10 @@
     animation: cursor-pulse 800ms ease-in-out infinite;
   }
 
-  .next-control {
-    display: block;
-    margin: 0 0 0 auto;
-  }
-
   .choices {
     display: grid;
     gap: 0.75rem;
     margin-top: 1rem;
-  }
-
-  .choices button {
-    width: 100%;
-    text-align: left;
-    border-radius: 0.75rem;
   }
 
   .progress {

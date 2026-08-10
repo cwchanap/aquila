@@ -33,6 +33,7 @@
     type = 'button' as 'button' | 'submit' | 'reset',
     disabled = false,
     onclick,
+    element = $bindable<HTMLElement | null>(null),
     children,
     ...restProps
   }: {
@@ -43,6 +44,7 @@
     type?: 'button' | 'submit' | 'reset';
     disabled?: boolean;
     onclick?: (e: MouseEvent) => void;
+    element?: HTMLElement | null;
     children?: import('svelte').Snippet;
     [key: string]: unknown;
   } = $props();
@@ -51,11 +53,11 @@
 </script>
 
 {#if href}
-  <a {href} class={finalClass} {onclick} {...restProps}>
+  <a bind:this={element} {href} class={finalClass} {onclick} {...restProps}>
     {@render children?.()}
   </a>
 {:else}
-  <button class={finalClass} {onclick} {type} {disabled} aria-disabled={disabled} {...restProps}>
+  <button bind:this={element} class={finalClass} {onclick} {type} {disabled} aria-disabled={disabled} {...restProps}>
     {@render children?.()}
   </button>
 {/if}

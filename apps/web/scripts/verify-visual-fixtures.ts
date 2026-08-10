@@ -21,12 +21,30 @@ const webRoot = process.cwd();
 const repositoryRoot = resolve(webRoot, '../..');
 const defaultPublicRoot = resolve(webRoot, 'public/assets');
 const MAX_FIXTURE_FILE_BYTES = 768 * 1024;
-const APPROVED_FIXTURE_SOURCES = new Set([
-    'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png',
-    'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png',
-    'the_seventh_mirror/characters/asakura_mio/base.png',
-    'the_seventh_mirror/characters/asakura_yuma/base.png',
-]);
+type FixtureSourceExpectation = {
+    width: number;
+    height: number;
+    requiresAlpha: boolean;
+};
+
+const APPROVED_FIXTURE_SOURCES = new Map<string, FixtureSourceExpectation>([
+    [
+        'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png',
+        { width: 1672, height: 941, requiresAlpha: false },
+    ],
+    [
+        'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s1.png',
+        { width: 1672, height: 941, requiresAlpha: false },
+    ],
+    [
+        'the_seventh_mirror/characters/asakura_mio/base.png',
+        { width: 450, height: 600, requiresAlpha: true },
+    ],
+    [
+        'the_seventh_mirror/characters/asakura_yuma/base.png',
+        { width: 450, height: 600, requiresAlpha: true },
+    ],
+] as const);
 
 export type VerifyVisualFixturesOptions = {
     publicRoot?: string;
@@ -122,7 +140,8 @@ export async function verifyVisualFixtures(
     for (const path of sourceFiles) {
         const rel = relative(mediaRoot, path).split('\\').join('/');
         presentSources.add(rel);
-        if (!APPROVED_FIXTURE_SOURCES.has(rel)) {
+        const expected = APPROVED_FIXTURE_SOURCES.get(rel);
+        if (!expected) {
             problems.push(`unexpected Seventh Mirror fixture source: ${rel}`);
             continue;
         }
@@ -132,8 +151,24 @@ export async function verifyVisualFixtures(
                 `fixture source exceeds ${MAX_FIXTURE_FILE_BYTES} bytes: ${rel}`
             );
         }
+        try {
+            const metadata = await sharp(path).metadata();
+            const metadataMatches =
+                metadata.format === 'png' &&
+                metadata.width === expected.width &&
+                metadata.height === expected.height &&
+                (!expected.requiresAlpha || metadata.hasAlpha === true);
+            if (!metadataMatches) {
+                const description = expected.requiresAlpha
+                    ? `portrait source must be a ${expected.width} x ${expected.height} PNG with alpha`
+                    : `background source must be a ${expected.width} x ${expected.height} PNG`;
+                problems.push(`${description}: ${rel}`);
+            }
+        } catch (error) {
+            problems.push(`source metadata ${rel}: ${String(error)}`);
+        }
     }
-    for (const approved of APPROVED_FIXTURE_SOURCES) {
+    for (const approved of APPROVED_FIXTURE_SOURCES.keys()) {
         if (!presentSources.has(approved)) {
             problems.push(`approved fixture source missing: ${approved}`);
         }
@@ -209,6 +244,14 @@ export async function verifyVisualFixtures(
                     metadata.height !== asset.height
                 ) {
                     problems.push(`object dimensions mismatch: ${object.path}`);
+                }
+                if (
+                    asset.identity.type === 'portrait' &&
+                    metadata.hasAlpha !== true
+                ) {
+                    problems.push(
+                        `portrait object does not preserve alpha: ${object.path}`
+                    );
                 }
             } catch (error) {
                 problems.push(`object ${assetId}: ${String(error)}`);

@@ -33,13 +33,11 @@
     locale: Locale;
     presentation: StoryPresentationMetadata | null;
     onChoice: (nextScene: string) => void;
-    onBookmark: (dialogueNumber: number) => void;
     onNext: () => void;
     onNavigate: (sceneId: string) => void;
     onIndexChange: (index: number) => void;
     onVisualStatusChange?: (status: VisualSnapshot['status']) => void;
-    showBookmarkButton: boolean;
-    backUrl: string;
+    onOverlayChange?: (open: boolean) => void;
     isInitialMount: boolean;
     interactionDisabled: boolean;
   };
@@ -73,13 +71,11 @@
     locale,
     presentation,
     onChoice,
-    onBookmark,
     onNext,
     onNavigate,
     onIndexChange,
     onVisualStatusChange = () => {},
-    showBookmarkButton,
-    backUrl,
+    onOverlayChange = () => {},
     isInitialMount,
     interactionDisabled,
   }: Props = $props();
@@ -122,6 +118,10 @@
     onVisualStatusChange(snapshot.status);
   });
 
+  $effect(() => {
+    onOverlayChange(backlogOpen || actPanelOpen);
+  });
+
   onMount(() => {
     const mediaQuery = globalThis.matchMedia?.(
       '(prefers-reduced-motion: reduce)'
@@ -142,6 +142,7 @@
   onDestroy(() => {
     sceneVersion += 1;
     onVisualStatusChange(null);
+    onOverlayChange(false);
   });
 
   $effect(() => {
@@ -405,7 +406,6 @@
     </aside>
 
     <nav class="reader-controls">
-      <a href={backUrl} data-reader-interactive>{t.common.backToHome}</a>
       <button
         bind:this={historyButton}
         type="button"
@@ -414,15 +414,6 @@
       >
         {t.reader.openHistory}
       </button>
-      {#if showBookmarkButton}
-        <button
-          type="button"
-          data-reader-interactive
-          onclick={() => onBookmark(dialogueIndex + 1)}
-        >
-          {t.reader.bookmark}
-        </button>
-      {/if}
     </nav>
 
     <section class="dialogue-box" aria-live="off">
@@ -576,7 +567,6 @@
     gap: 0.5rem;
   }
 
-  .reader-controls a,
   .reader-controls button,
   .next-control,
   .choices button {
@@ -593,13 +583,7 @@
     cursor: pointer;
   }
 
-  .reader-controls a {
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-  }
-
-  .reader-controls :is(a, button):focus-visible,
+  .reader-controls button:focus-visible,
   .next-control:focus-visible,
   .choices button:focus-visible {
     outline: 3px solid #7dd3fc;

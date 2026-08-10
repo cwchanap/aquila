@@ -16,6 +16,7 @@
   } from '@/lib/visual-assets';
   import NovelReader from '@/components/NovelReader.svelte';
   import MobileNovelReader from '@/components/MobileNovelReader.svelte';
+  import ReaderSettingsMenu from '@/components/ReaderSettingsMenu.svelte';
   import VisualNovelReader from '@/components/VisualNovelReader.svelte';
 
   let {
@@ -204,7 +205,7 @@
   // the blocking state without replacing the mounted reader subtree.
   $effect(() => {
     if (!readerReadyElement) return;
-    if (isBlocking) readerReadyElement.setAttribute('inert', '');
+    if (leafDisabled) readerReadyElement.setAttribute('inert', '');
     else readerReadyElement.removeAttribute('inert');
   });
 
@@ -227,6 +228,37 @@
     return window.matchMedia(MOBILE_QUERY).matches;
   }
   let isMobile = $state(readMatch());
+  let settingsOpen = $state(false);
+  let leafOverlayOpen = $state(false);
+  let settingsAvailable = $derived(readerMode === 'visual' || !isMobile);
+  let leafDisabled = $derived(isBlocking || settingsOpen);
+
+  async function changeReaderMode(mode: ReaderMode): Promise<void> {
+    leafOverlayOpen = false;
+    setReaderMode(mode);
+    await tick();
+    const triggerId =
+      mode === 'text' && isMobile
+        ? 'mobile-reader-menu-trigger'
+        : 'reader-settings-trigger';
+    document.getElementById(triggerId)?.focus();
+  }
+
+  function handleVisualOverlayChange(open: boolean): void {
+    leafOverlayOpen = open;
+  }
+
+  $effect(() => {
+    if (settingsAvailable || !settingsOpen) return;
+    const focusWasInSettings =
+      document.activeElement?.closest('[data-reader-settings]') !== null;
+    settingsOpen = false;
+    void tick().then(() => {
+      if (focusWasInSettings) {
+        document.getElementById('mobile-reader-menu-trigger')?.focus();
+      }
+    });
+  });
 
   // Tracks whether ANY leaf reader has ever mounted in this ReaderShell
   // instance. The first leaf to mount sees `isInitialMount=true` (a genuine
@@ -328,29 +360,19 @@
   {/if}
 {/snippet}
 
-<div
-  role="group"
-  class="fixed z-[80]"
-  style="top: calc(0.75rem + env(safe-area-inset-top)); right: calc(0.75rem + env(safe-area-inset-right));"
-  data-reader-mode={readerMode}
-  aria-label={t.reader.readerMode}
-  data-reader-interactive
->
-  <button
-    type="button"
-    aria-pressed={readerMode === 'text'}
-    onclick={() => setReaderMode('text')}
-  >
-    {t.reader.textMode}
-  </button>
-  <button
-    type="button"
-    aria-pressed={readerMode === 'visual'}
-    onclick={() => setReaderMode('visual')}
-  >
-    {t.reader.visualNovelMode}
-  </button>
-</div>
+{#if settingsAvailable}
+  <ReaderSettingsMenu
+    bind:open={settingsOpen}
+    {locale}
+    mode={readerMode}
+    onModeChange={changeReaderMode}
+    onBookmark={() => onBookmark(dialogueIndex + 1)}
+    {showBookmarkButton}
+    {backUrl}
+    bookmarkDisabled={isBlocking}
+    triggerUnavailable={leafOverlayOpen}
+  />
+{/if}
 
 {#if visualStatusText}
   <p
@@ -373,7 +395,7 @@
       data-asset-preview-id={visualIdentity?.previewId ?? undefined}
       data-asset-release-id={visualIdentity?.releaseId}
       data-asset-manifest-sha256={visualIdentity?.manifestSha256}
-      aria-hidden={isBlocking ? 'true' : undefined}
+      aria-hidden={leafDisabled ? 'true' : undefined}
     >
       {#if readerMode === 'visual'}
         <VisualNovelReader
@@ -391,14 +413,12 @@
           {locale}
           {presentation}
           {onChoice}
-          {onBookmark}
           {onNext}
           {onNavigate}
           onVisualStatusChange={handleVisualStatusChange}
-          {backUrl}
-          {showBookmarkButton}
+          onOverlayChange={handleVisualOverlayChange}
           {isInitialMount}
-          interactionDisabled={isBlocking}
+          interactionDisabled={leafDisabled}
         />
       {:else if isMobile}
         <MobileNovelReader
@@ -417,8 +437,9 @@
           {onNavigate}
           {backUrl}
           {showBookmarkButton}
+          onModeChange={changeReaderMode}
           {isInitialMount}
-          interactionDisabled={isBlocking}
+          interactionDisabled={leafDisabled}
         />
       {:else}
         <NovelReader
@@ -432,13 +453,10 @@
           {canGoNext}
           {locale}
           {onChoice}
-          {onBookmark}
           {onNext}
           {onNavigate}
-          {backUrl}
-          {showBookmarkButton}
           {isInitialMount}
-          interactionDisabled={isBlocking}
+          interactionDisabled={leafDisabled}
         />
       {/if}
     </div>

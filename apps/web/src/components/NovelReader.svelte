@@ -28,11 +28,8 @@
     canGoNext = false,
     locale = 'en',
     onChoice = () => {},
-    onBookmark = () => {},
     onNext = () => {},
     onNavigate = () => {},
-    backUrl = '/',
-    showBookmarkButton = true,
     isInitialMount = true,
     interactionDisabled = false,
   }: {
@@ -46,11 +43,8 @@
     canGoNext?: boolean;
     locale?: Locale;
     onChoice?: (nextScene: string) => void;
-    onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
-    backUrl?: string;
-    showBookmarkButton?: boolean;
     isInitialMount?: boolean;
     interactionDisabled?: boolean;
   } = $props();
@@ -274,16 +268,6 @@
 
   <!-- Main content area -->
   <main class="flex-1 flex items-center justify-center p-6 relative min-w-0">
-    <!-- Back button at top right -->
-    <div class="absolute top-6 right-6 z-10">
-      <a
-        href={backUrl}
-        class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-      >
-        {t.common.backToHome}
-      </a>
-    </div>
-
     <div class="w-full max-w-4xl">
     <!-- Main dialogue box with glassmorphism style -->
     <div
@@ -379,17 +363,7 @@
     </div>
 
     <!-- Action buttons -->
-    <div class="mt-6 flex justify-between items-center">
-      <!-- Bookmark button -->
-      {#if showBookmarkButton}
-        <button
-          onclick={() => onBookmark(dialogueIndex + 1)}
-          class="px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-slate-700 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-white/40"
-        >
-          {t.reader.bookmark}
-        </button>
-      {/if}
-
+    <div class="mt-6 flex justify-end items-center">
       <!-- Progress indicator -->
       <div class="text-white/90 text-sm font-medium">
         {t.reader.pageDisplay

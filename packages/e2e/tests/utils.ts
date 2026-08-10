@@ -107,8 +107,34 @@ export class VisualReaderPage {
         return this.page.getByTestId('visual-novel-reader');
     }
 
-    get modeControl() {
-        return this.page.locator('[data-reader-mode][role="group"]');
+    get settingsButton() {
+        return this.page.getByRole('button', { name: 'Open reader settings' });
+    }
+
+    get settingsDialog() {
+        return this.page.getByRole('dialog', { name: 'Reader settings' });
+    }
+
+    async openSettings() {
+        await this.settingsButton.click();
+        await expect(this.settingsDialog).toBeVisible();
+    }
+
+    async chooseMode(mode: 'Text' | 'Visual Novel') {
+        // Mobile Text owns mode switching through its persistent hamburger;
+        // the shell intentionally hides the desktop Settings trigger there.
+        if (
+            mode === 'Visual Novel' &&
+            !(await this.settingsButton.isVisible())
+        ) {
+            await this.page.getByRole('button', { name: 'Open menu' }).click();
+            await this.page
+                .getByRole('button', { name: 'Visual Novel' })
+                .click();
+            return;
+        }
+        await this.openSettings();
+        await this.settingsDialog.getByRole('button', { name: mode }).click();
     }
 
     get activeBackground() {
@@ -183,6 +209,11 @@ export class MobileReaderPage {
         return labels[this.locale];
     }
 
+    private get visualNovelModeLabel() {
+        const labels = { en: 'Visual Novel', zh: '視覺小說' };
+        return labels[this.locale];
+    }
+
     private get backToHomeLabel() {
         const labels = { en: '← Back to Home', zh: '← 返回主頁' };
         return labels[this.locale];
@@ -207,6 +238,10 @@ export class MobileReaderPage {
     // Bookmark control lives in the chrome bar, so the menu must be open first.
     get bookmarkButton() {
         return this.page.getByLabel(this.bookmarkLabel);
+    }
+
+    get visualNovelModeButton() {
+        return this.page.getByLabel(this.visualNovelModeLabel);
     }
 
     // Custom prompt dialog rendered by lib/ui-dialogs.ts showPrompt().

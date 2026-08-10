@@ -50,6 +50,9 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             readerMode: 'Reader mode',
             textMode: 'Text',
             visualNovelMode: 'Visual Novel',
+            openSettings: 'Open reader settings',
+            settingsTitle: 'Reader settings',
+            closeSettings: 'Close reader settings',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -199,6 +202,13 @@ function stubMatchMedia(initial: boolean) {
     };
 }
 
+async function chooseReaderMode(mode: 'Text' | 'Visual Novel'): Promise<void> {
+    await fireEvent.click(
+        screen.getByRole('button', { name: 'Open reader settings' })
+    );
+    await fireEvent.click(screen.getByRole('button', { name: mode }));
+}
+
 describe('ReaderShell', () => {
     // The global beforeEach in test-setup.ts resets readerState; seed the
     // store here so the bridge derives non-empty dialogue/locale.
@@ -214,6 +224,24 @@ describe('ReaderShell', () => {
     });
     afterEach(() => vi.clearAllMocks());
 
+    it('owns a settings modal outside the reader-ready subtree while it is open', async () => {
+        stubMatchMedia(false);
+        const onIndexChange = vi.fn();
+        render(ReaderShell, { props: { onIndexChange } });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+
+        expect(screen.getByTestId('reader-ready')).toHaveAttribute('inert');
+        expect(screen.getByTestId('reader-ready')).toHaveAttribute(
+            'aria-hidden',
+            'true'
+        );
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
     it('defaults to Text and restores Visual synchronously without a Text leaf flash', () => {
         stubMatchMedia(false);
         const defaultFactory = vi.fn(() => createRuntimeHarness().runtime);
@@ -222,8 +250,8 @@ describe('ReaderShell', () => {
         });
 
         expect(
-            screen.getByRole('group', { name: 'Reader mode' })
-        ).toHaveAttribute('data-reader-mode', 'text');
+            screen.getByRole('button', { name: 'Open reader settings' })
+        ).toBeInTheDocument();
         expect(
             screen.queryByTestId('visual-novel-reader')
         ).not.toBeInTheDocument();
@@ -238,8 +266,8 @@ describe('ReaderShell', () => {
         });
 
         expect(
-            screen.getByRole('group', { name: 'Reader mode' })
-        ).toHaveAttribute('data-reader-mode', 'visual');
+            screen.getByRole('button', { name: 'Open reader settings' })
+        ).toBeInTheDocument();
         expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
         // The shell subscribes to hold release identity across leaf unmounts,
         // and the mounted visual leaf subscribes for its layers.
@@ -252,7 +280,7 @@ describe('ReaderShell', () => {
         ['replacement error', 'error', true],
     ] as const)(
         'keeps the mode control interactive during %s',
-        (_label, status, hasPayload) => {
+        async (_label, status, hasPayload) => {
             stubMatchMedia(false);
             readerState.hasActivePayload = hasPayload;
             readerState.activeFlow = hasPayload ? flow : null;
@@ -266,10 +294,11 @@ describe('ReaderShell', () => {
 
             render(ReaderShell);
 
-            const control = screen.getByRole('group', {
-                name: 'Reader mode',
+            const trigger = screen.getByRole('button', {
+                name: 'Open reader settings',
             });
-            expect(control).toHaveAttribute('data-reader-interactive');
+            expect(trigger).toBeEnabled();
+            await fireEvent.click(trigger);
             expect(screen.getByRole('button', { name: 'Text' })).toBeEnabled();
             expect(
                 screen.getByRole('button', { name: 'Visual Novel' })
@@ -286,9 +315,7 @@ describe('ReaderShell', () => {
         await vi.runAllTimersAsync();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Visual Novel' })
-        );
+        await chooseReaderMode('Visual Novel');
         await tick();
         expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
@@ -298,7 +325,7 @@ describe('ReaderShell', () => {
         expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
 
-        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await chooseReaderMode('Text');
         await vi.runAllTimersAsync();
         expect(screen.getByLabelText('Tap to continue')).toBeInTheDocument();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
@@ -332,14 +359,10 @@ describe('ReaderShell', () => {
             props: { createVisualRuntime: createRuntime },
         });
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Visual Novel' })
-        );
+        await chooseReaderMode('Visual Novel');
         await tick();
-        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Visual Novel' })
-        );
+        await chooseReaderMode('Text');
+        await chooseReaderMode('Visual Novel');
         await tick();
         expect(createRuntime).toHaveBeenCalledTimes(1);
         expect(harnesses[0].dispose).not.toHaveBeenCalled();
@@ -370,18 +393,14 @@ describe('ReaderShell', () => {
             props: { createVisualRuntime: () => harness.runtime },
         });
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Visual Novel' })
-        );
+        await chooseReaderMode('Visual Novel');
         await tick();
         expect(harness.softRevalidate).not.toHaveBeenCalled();
 
-        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await chooseReaderMode('Text');
         await vi.advanceTimersByTimeAsync(60_001);
         expect(harness.softRevalidate).not.toHaveBeenCalled();
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Visual Novel' })
-        );
+        await chooseReaderMode('Visual Novel');
         expect(harness.softRevalidate).toHaveBeenCalledTimes(1);
 
         await vi.advanceTimersByTimeAsync(60_001);
@@ -478,9 +497,7 @@ describe('ReaderShell', () => {
         expect(host).not.toHaveAttribute('data-asset-preview-id');
         expect(host).not.toHaveAttribute('data-asset-manifest-sha256');
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Visual Novel' })
-        );
+        await chooseReaderMode('Visual Novel');
         await waitFor(() =>
             expect(host).toHaveAttribute(
                 'data-asset-release-id',
@@ -500,7 +517,7 @@ describe('ReaderShell', () => {
         );
 
         // Survives the visual -> text mode switch (the visual leaf unmounts).
-        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await chooseReaderMode('Text');
         await tick();
         expect(
             screen.queryByTestId('visual-novel-reader')
@@ -521,7 +538,9 @@ describe('ReaderShell', () => {
         );
         mm.setMatches(false);
         await waitFor(() =>
-            expect(screen.getByText('Back to Home')).toBeInTheDocument()
+            expect(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            ).toBeInTheDocument()
         );
         expect(host).toHaveAttribute(
             'data-asset-release-id',
@@ -711,7 +730,9 @@ describe('ReaderShell', () => {
     it('renders the desktop reader at >= lg', async () => {
         stubMatchMedia(false);
         render(ReaderShell, { props: { onIndexChange: () => {} } });
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        ).toBeInTheDocument();
         expect(
             screen.queryByLabelText('Tap to continue')
         ).not.toBeInTheDocument();
@@ -726,7 +747,9 @@ describe('ReaderShell', () => {
     it('switches readers when the media query changes', async () => {
         const mm = stubMatchMedia(false);
         render(ReaderShell, { props: { onIndexChange: () => {} } });
-        expect(screen.getByText('Back to Home')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        ).toBeInTheDocument();
         mm.setMatches(true);
         await waitFor(() => {
             expect(
@@ -867,7 +890,9 @@ describe('ReaderShell', () => {
         // Swap across the breakpoint -> desktop leaf mounts at index 0.
         mm.setMatches(false);
         await waitFor(() =>
-            expect(screen.getByText('Back to Home')).toBeInTheDocument()
+            expect(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            ).toBeInTheDocument()
         );
         // The desktop leaf must NOT re-animate line 0 (no typewriter cursor).
         expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
@@ -908,7 +933,9 @@ describe('ReaderShell', () => {
         try {
             const view = render(ReaderShell);
             // readMatch returns false → desktop reader renders.
-            expect(screen.getByText('Back to Home')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            ).toBeInTheDocument();
             expect(
                 screen.queryByLabelText('Tap to continue')
             ).not.toBeInTheDocument();
@@ -930,10 +957,10 @@ describe('ReaderShell', () => {
 
         // Default mode is 'text'. Clicking Text again should be a no-op:
         // setReaderMode returns early (readerMode === mode).
-        await fireEvent.click(screen.getByRole('button', { name: 'Text' }));
+        await chooseReaderMode('Text');
         expect(
-            screen.getByRole('group', { name: 'Reader mode' })
-        ).toHaveAttribute('data-reader-mode', 'text');
+            screen.getByRole('button', { name: 'Open reader settings' })
+        ).toBeInTheDocument();
         // The visual runtime factory must not have been called.
         expect(defaultFactory).not.toHaveBeenCalled();
     });

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import type {
     DialogueEntry,
     ChoiceDefinition,
@@ -10,13 +10,14 @@
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
+  import type { ReaderMode } from '@/lib/reader-mode';
   import {
     getReaderAdvanceDecision,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
-  import { House, Layers, ChevronLeft, History, Bookmark } from 'lucide-svelte';
+  import { House, Layers, ChevronLeft, History, Bookmark, Film } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
 
   // Pure controlled reader. All session state arrives via props; the only
@@ -35,6 +36,7 @@
     onBookmark = () => {},
     onNext = () => {},
     onNavigate = () => {},
+    onModeChange = () => {},
     backUrl = '/',
     showBookmarkButton = true,
     isInitialMount = true,
@@ -53,6 +55,7 @@
     onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
+    onModeChange?: (mode: ReaderMode) => void | Promise<void>;
     backUrl?: string;
     showBookmarkButton?: boolean;
     isInitialMount?: boolean;
@@ -232,6 +235,12 @@
     if (decision === 'advance-scene') onNext();
   }
 
+  async function enterVisualMode(): Promise<void> {
+    chromeVisible = false;
+    await tick();
+    await onModeChange('visual');
+  }
+
   function goBack(): void {
     if (interactionDisabled) return;
     // Overlays own their own taps; never step the scene from under them.
@@ -314,6 +323,7 @@
   <button
     type="button"
     bind:this={menuToggleButton}
+    id="mobile-reader-menu-trigger"
     class="absolute left-3 top-3 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 text-slate-700 shadow backdrop-blur-sm"
     style="top: calc(0.75rem + env(safe-area-inset-top));"
     aria-label={chromeVisible ? t.reader.closeMenu : t.reader.openMenu}
@@ -370,6 +380,18 @@
           }}
         >
           <History size={20} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+          aria-label={t.reader.visualNovelMode}
+          onclick={() => void enterVisualMode()}
+          use:longpress={{
+            onLongPress: (node) => showTooltip(node, t.reader.visualNovelMode),
+            onRelease: hideTooltip,
+          }}
+        >
+          <Film size={20} aria-hidden="true" />
         </button>
         {#if showBookmarkButton}
           <button

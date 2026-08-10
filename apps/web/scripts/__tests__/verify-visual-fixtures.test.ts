@@ -44,7 +44,6 @@ vi.mock('node:fs/promises', () => ({
     },
 }));
 
-const metadataMock = vi.fn();
 const sharpMock = vi.fn();
 
 vi.mock('sharp', () => ({
@@ -71,6 +70,25 @@ const FIXTURE_SOURCE_PATHS = [
     'the_seventh_mirror/characters/asakura_mio/base.png',
     'the_seventh_mirror/characters/asakura_yuma/base.png',
 ];
+
+const FIXTURE_SOURCE_METADATA = new Map([
+    [
+        FIXTURE_SOURCE_PATHS[0],
+        { format: 'png', width: 1672, height: 941, hasAlpha: false },
+    ],
+    [
+        FIXTURE_SOURCE_PATHS[1],
+        { format: 'png', width: 1672, height: 941, hasAlpha: false },
+    ],
+    [
+        FIXTURE_SOURCE_PATHS[2],
+        { format: 'png', width: 450, height: 600, hasAlpha: true },
+    ],
+    [
+        FIXTURE_SOURCE_PATHS[3],
+        { format: 'png', width: 450, height: 600, hasAlpha: true },
+    ],
+] as const);
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -191,6 +209,18 @@ function wireHappyPath(overrides?: {
     manifestText?: string;
     objectBytes?: Map<string, Buffer>;
     objectDimensions?: (path: string) => { width: number; height: number };
+    sourceMetadata?: (path: string) => Partial<{
+        format: string;
+        width: number;
+        height: number;
+        hasAlpha: boolean;
+    }>;
+    objectMetadata?: (path: string) => Partial<{
+        format: string;
+        width: number;
+        height: number;
+        hasAlpha: boolean;
+    }>;
     extraSourcePath?: string;
     sourceSizeBytes?: number;
     includeStaleManifest?: boolean;
@@ -338,34 +368,40 @@ function wireHappyPath(overrides?: {
         throw new Error(`Unexpected readFile path: ${p}`);
     });
 
-    // sharp metadata for object dimension checks. The verifier calls
-    // sharp(bytes).metadata() and compares to asset.width/height. The bytes
-    // are passed to `sharp(bytes)`, so we capture them there and thread them
-    // into the metadata call.
+    // sharp metadata for source and object checks. Source paths and object
+    // buffers use distinct metadata so each verifier boundary is exercised.
     const dims = overrides?.objectDimensions;
-    if (dims) {
-        sharpMock.mockImplementation((input: unknown) => {
+    sharpMock.mockImplementation((input: unknown) => ({
+        metadata: vi.fn(async () => {
+            if (typeof input === 'string') {
+                const sourcePath = FIXTURE_SOURCE_PATHS.find(path =>
+                    input.endsWith(path)
+                );
+                const defaults = FIXTURE_SOURCE_METADATA.get(sourcePath!);
+                return {
+                    ...defaults,
+                    ...(overrides?.sourceMetadata?.(input) ?? {}),
+                };
+            }
+
             const content = String(input);
-            let resolved = { width: 960, height: 540 };
-            for (const [objectPath, buffer] of objectBytes) {
+            let objectPath = '';
+            for (const [candidatePath, buffer] of objectBytes) {
                 if (content === buffer.toString('utf8')) {
-                    resolved = dims(objectPath);
+                    objectPath = candidatePath;
                     break;
                 }
             }
+            const dimensions = dims?.(objectPath);
             return {
-                metadata: vi.fn(async () => resolved),
+                format: 'webp',
+                width: dimensions?.width ?? 960,
+                height: dimensions?.height ?? 540,
+                hasAlpha: true,
+                ...(overrides?.objectMetadata?.(objectPath) ?? {}),
             };
-        });
-    } else {
-        sharpMock.mockImplementation(() => ({
-            metadata: metadataMock,
-        }));
-        metadataMock.mockImplementation(async () => {
-            // Default: 960x540 matches the consistent release manifest.
-            return { width: 960, height: 540 };
-        });
-    }
+        }),
+    }));
 }
 
 /** Dynamically (re-)imports the script under test. */
@@ -555,6 +591,38 @@ describe('verify-visual-fixtures', () => {
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(
             /object dimensions mismatch:/
+        );
+    });
+
+    it.each([
+        ['format', { format: 'jpeg' }],
+        ['width', { width: 449 }],
+        ['height', { height: 599 }],
+        ['alpha', { hasAlpha: false }],
+    ] as const)(
+        'rejects a portrait source with an invalid %s',
+        async (_field, metadata) => {
+            wireHappyPath({
+                sourceMetadata: path =>
+                    path.includes('/characters/asakura_mio/') ? metadata : {},
+            });
+            const { verifyVisualFixtures } = await importVerify();
+            await expect(verifyVisualFixtures()).rejects.toThrow(
+                /portrait source must be a 450 x 600 PNG with alpha/
+            );
+        }
+    );
+
+    it('rejects a portrait WebP that does not preserve alpha', async () => {
+        const release = buildConsistentRelease();
+        const portraitObjectPath = [...release.objectBuffers.keys()][2]!;
+        wireHappyPath({
+            objectMetadata: path =>
+                path === portraitObjectPath ? { hasAlpha: false } : {},
+        });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /portrait object does not preserve alpha/
         );
     });
 

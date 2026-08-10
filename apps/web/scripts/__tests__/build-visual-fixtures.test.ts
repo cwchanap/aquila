@@ -27,11 +27,12 @@ vi.mock('node:fs/promises', () => ({
 const toBufferMock = vi.fn();
 const metadataMock = vi.fn();
 const toFileMock = vi.fn();
+const webpMock = vi.fn();
 
 function createChain() {
     const chain = {
         resize: vi.fn().mockReturnThis(),
-        webp: vi.fn().mockReturnThis(),
+        webp: webpMock.mockReturnThis(),
         avif: vi.fn().mockReturnThis(),
         toBuffer: toBufferMock,
         metadata: metadataMock,
@@ -122,6 +123,30 @@ describe('build-visual-fixtures', () => {
             expect.stringContaining('src/lib/visual-assets'),
             { recursive: true }
         );
+    });
+
+    it('uses explicit alpha-safe WebP encoder settings for every fixture', async () => {
+        const buffer = fakeBuffer('encoder-options');
+        sharpMock.mockImplementation(() => {
+            const chain = createChain();
+            chain.toBuffer.mockResolvedValue(buffer);
+            chain.metadata.mockResolvedValue({ width: 960, height: 540 });
+            chain.toFile.mockResolvedValue({ size: 1 });
+            return chain;
+        });
+
+        const { buildVisualFixtures } = await importBuild();
+        await buildVisualFixtures();
+
+        expect(webpMock).toHaveBeenCalledWith({
+            quality: 82,
+            alphaQuality: 100,
+            lossless: false,
+            preset: 'picture',
+            smartSubsample: true,
+            effort: 6,
+        });
+        expect(webpMock).toHaveBeenCalledTimes(4);
     });
 
     it('computes object SHA-256 from canonical content and writes the manifest', async () => {

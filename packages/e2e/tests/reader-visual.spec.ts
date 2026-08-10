@@ -536,6 +536,7 @@ test.describe('Visual novel reader', () => {
         await expect(body).toHaveAttribute('role', 'region');
         await expect(body).toHaveAttribute('aria-label', 'Dialogue content');
         await expect(body).toHaveAttribute('tabindex', '0');
+        await expect(body).not.toHaveAttribute('data-reader-interactive');
 
         const beforeUrl = page.url();
         const beforeDialogue = await body.locator('.dialogue-text').innerText();
@@ -584,6 +585,38 @@ test.describe('Visual novel reader', () => {
                 ).toBeLessThanOrEqual(1);
             }
         }
+    });
+
+    test('advances on a stationary dialogue-body tap', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const visual = new VisualReaderPage(page);
+        await visual.goto(6);
+        await expectCanonicalVisualLine(page, 6);
+
+        await visual.dialogueBody.click();
+
+        await expectCanonicalVisualLine(page, 7);
+    });
+
+    test('does not advance after a moved dialogue-body pointer gesture', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const visual = new VisualReaderPage(page);
+        await visual.goto(6);
+        await expectCanonicalVisualLine(page, 6);
+
+        const body = await visual.dialogueBody.boundingBox();
+        expect(body, 'dialogue body is measurable').not.toBe(null);
+        if (!body) return;
+        const startX = body.x + body.width / 2;
+        const startY = body.y + body.height / 2;
+        await page.mouse.move(startX, startY);
+        await page.mouse.down();
+        await page.mouse.move(startX, startY + 80, { steps: 4 });
+        await page.mouse.up();
+
+        await expectCanonicalVisualLine(page, 6);
     });
 
     test('keeps essential controls unobscured in mobile landscape', async ({

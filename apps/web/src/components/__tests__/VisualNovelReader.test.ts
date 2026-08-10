@@ -316,7 +316,7 @@ describe('VisualNovelReader', () => {
         ).toBeInTheDocument();
     });
 
-    it('exposes the dialogue body as a focusable interactive region', async () => {
+    it('exposes the dialogue body as a focusable scroll region', async () => {
         setReducedMotion(false);
         const { onIndexChange } = renderReader({ isInitialMount: false });
         const body = screen.getByTestId('visual-dialogue-body');
@@ -324,12 +324,72 @@ describe('VisualNovelReader', () => {
         expect(body).toHaveAttribute('role', 'region');
         expect(body).toHaveAttribute('aria-label', 'Dialogue content');
         expect(body).toHaveAttribute('tabindex', '0');
-        expect(body).toHaveAttribute('data-reader-interactive');
+        expect(body).not.toHaveAttribute('data-reader-interactive');
 
         body.focus();
         expect(body).toHaveFocus();
         await fireEvent.keyDown(body, { key: ' ' });
+        expect(onIndexChange).not.toHaveBeenCalled();
         await fireEvent.keyDown(body, { key: 'Enter' });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+    });
+
+    it('advances on a stationary dialogue-body pointer tap', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        const body = screen.getByTestId('visual-dialogue-body');
+
+        await fireEvent.pointerDown(body, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 200,
+        });
+        await fireEvent.pointerUp(body, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 200,
+        });
+
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+    });
+
+    it('does not advance after a dialogue-body pointer gesture moves', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        const body = screen.getByTestId('visual-dialogue-body');
+
+        await fireEvent.pointerDown(body, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 200,
+        });
+        await fireEvent.pointerMove(body, {
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 250,
+        });
+        await fireEvent.pointerUp(body, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 200,
+        });
+
         expect(onIndexChange).not.toHaveBeenCalled();
     });
 

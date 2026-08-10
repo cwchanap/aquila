@@ -319,7 +319,7 @@ function emitPresentation(dir: ParsedCharacterDirectory): string {
         `export const storyPresentation = {\n` +
         `    portrait: {\n` +
         `        activeLimit: 1,\n` +
-        `        defaultSlot: "center",\n` +
+        `        defaultSlot: "left",\n` +
         slotsBlock +
         `    },\n` +
         `} as const satisfies StoryPresentationMetadata;\n`

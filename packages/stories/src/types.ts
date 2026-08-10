@@ -8,7 +8,7 @@ export type DialogueEntry = {
 
 export type DialogueMap = { [sectionKey: string]: DialogueEntry[] };
 
-export type PortraitSlot = 'left' | 'center' | 'right';
+export type PortraitSlot = 'left' | 'right';
 
 export type StoryPresentationMetadata = {
     portrait: {

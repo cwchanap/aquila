@@ -15,7 +15,7 @@ const payload: StoryLoaderResult = {
     presentation: {
         portrait: {
             activeLimit: 1,
-            defaultSlot: 'center',
+            defaultSlot: 'left',
             slotsByCharacterId: {},
         },
     },

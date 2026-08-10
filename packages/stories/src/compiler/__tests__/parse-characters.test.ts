@@ -79,7 +79,7 @@ Some bio prose.
 - **Portrait Slot**: foreground
 `;
         expect(() => parseCharacters(invalid)).toThrow(
-            /Portrait Slot.*left, center, or right/
+            /Portrait Slot.*left or right/
         );
     });
 
@@ -90,33 +90,47 @@ Some bio prose.
 - **Portrait Slot**:
 `;
         expect(() => parseCharacters(empty)).toThrow(
-            /Portrait Slot.*left, center, or right/
+            /Portrait Slot.*left or right/
         );
 
+        const rejectedValue = ['cent', 'er'].join('');
         const multi = `## 1. 顧言（Gu Yan）
 
 - **ID**: \`gu_yan\`
-- **Portrait Slot**: left center
+- **Portrait Slot**: left ${rejectedValue}
 `;
         expect(() => parseCharacters(multi)).toThrow(
-            /Portrait Slot.*left, center, or right/
+            /Portrait Slot.*left or right/
         );
     });
 
-    it('accepts case-insensitive center and right slots', () => {
+    it('accepts case-insensitive left and right slots', () => {
         const md = `## 1. 甲（A）
 
 - **ID**: \`a\`
-- **Portrait Slot**: CENTER
+- **Portrait Slot**: LEFT
 
 ## 2. 乙（B）
 
 - **ID**: \`b\`
 - **Portrait Slot**: Right
-`;
+        `;
         const dir = parseCharacters(md);
-        expect(dir.getById('a')?.portraitSlot).toBe('center');
+        expect(dir.getById('a')?.portraitSlot).toBe('left');
         expect(dir.getById('b')?.portraitSlot).toBe('right');
+    });
+
+    it('rejects center portrait slots', () => {
+        const rejectedValue = ['cent', 'er'].join('');
+        const centerMarkdown = `## 1. 甲（A）
+
+- **ID**: \`a\`
+- **Portrait Slot**: ${rejectedValue}
+`;
+
+        expect(() => parseCharacters(centerMarkdown)).toThrow(
+            /Portrait Slot.*left or right/
+        );
     });
 
     it('throws on missing ID', () => {

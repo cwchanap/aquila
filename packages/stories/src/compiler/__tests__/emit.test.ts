@@ -242,10 +242,10 @@ describe('emitStory', () => {
         expect(charFile).toContain('export class CharacterDirectory');
     });
 
-    it('generates story presentation metadata with a center fallback', () => {
+    it('generates story presentation metadata with a left fallback', () => {
         emitStory(story, dir, mockCharDir);
         const presentation = readFileSync(join(dir, 'presentation.ts'), 'utf8');
-        expect(presentation).toContain('defaultSlot: "center"');
+        expect(presentation).toContain('defaultSlot: "left"');
         expect(presentation).toContain('["li_jie"]: "left"');
         expect(presentation).toContain('activeLimit: 1');
     });

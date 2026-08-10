@@ -73,7 +73,7 @@ function parsePortraitSlot(line: string): PortraitSlot | null | undefined {
     // empty or multi-token value is a hard error rather than a silently ignored
     // line that would fall back to the default slot.
     const value = match[1].trim().toLowerCase();
-    if (value === 'left' || value === 'center' || value === 'right') {
+    if (value === 'left' || value === 'right') {
         return value;
     }
     return null;
@@ -178,7 +178,7 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
         const portraitSlotMatch = parsePortraitSlot(line);
         if (portraitSlotMatch === null) {
             throw new Error(
-                `[story-compiler] character "${currentName}" has invalid Portrait Slot; expected left, center, or right`
+                `[story-compiler] character "${currentName}" has invalid Portrait Slot; expected left or right`
             );
         }
         if (portraitSlotMatch !== undefined) {

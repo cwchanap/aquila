@@ -437,7 +437,7 @@
         aria-label={t.reader.openHistory}
         onclick={() => (backlogOpen = true)}
       >
-        {t.reader.openHistory}
+        {t.reader.historyTitle}
       </Button>
 
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->

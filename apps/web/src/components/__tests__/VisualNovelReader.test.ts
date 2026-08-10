@@ -82,7 +82,7 @@ const flow = {
 const presentation: StoryPresentationMetadata = {
     portrait: {
         activeLimit: 1,
-        defaultSlot: 'center',
+        defaultSlot: 'left',
         slotsByCharacterId: { narrator: 'right' },
     },
 };
@@ -308,7 +308,7 @@ describe('VisualNovelReader', () => {
             release: 'ready',
             activeBackground: omittedLayer,
             stagingBackground: omittedLayer,
-            portrait: { ...omittedLayer, slot: 'center' },
+            portrait: { ...omittedLayer, slot: 'left' },
             releaseIdentity: null,
             status: null,
         });

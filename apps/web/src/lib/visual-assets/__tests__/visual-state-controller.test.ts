@@ -251,7 +251,7 @@ describe('VisualStateController', () => {
                 objectUrl: null,
                 width: null,
                 height: null,
-                slot: 'center',
+                slot: 'left',
             },
             releaseIdentity: null,
             status: null,
@@ -626,7 +626,7 @@ describe('VisualStateController', () => {
         ['mio', presentation, 'left'],
         ['yuma', presentation, 'right'],
         ['unassigned', presentation, 'right'],
-        ['unassigned', null, 'center'],
+        ['unassigned', null, 'left'],
     ] as const)(
         'places character %s in its deterministic portrait slot',
         async (characterId, metadata, expectedSlot) => {

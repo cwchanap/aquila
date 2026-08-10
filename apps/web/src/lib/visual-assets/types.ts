@@ -31,7 +31,7 @@ export type VisualImageLayer = {
 };
 
 export type VisualPortraitLayer = VisualImageLayer & {
-    slot: 'left' | 'center' | 'right';
+    slot: 'left' | 'right';
 };
 
 /**

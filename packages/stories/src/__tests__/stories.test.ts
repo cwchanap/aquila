@@ -107,7 +107,7 @@ describe('getStoryContent', () => {
         expect(result).toBeDefined();
         expect(result.dialogue).toBeDefined();
         expect(result.choices).toBeDefined();
-        expect(result.presentation.portrait.defaultSlot).toBe('center');
+        expect(result.presentation.portrait.defaultSlot).toBe('left');
     });
 
     it('falls back to train_adventure for unknown storyId', () => {

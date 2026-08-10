@@ -5,7 +5,7 @@ import type { StoryPresentationMetadata } from "../../types";
 export const storyPresentation = {
     portrait: {
         activeLimit: 1,
-        defaultSlot: "center",
+        defaultSlot: "left",
         slotsByCharacterId: {},
     },
 } as const satisfies StoryPresentationMetadata;

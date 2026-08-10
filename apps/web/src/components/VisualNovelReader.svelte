@@ -54,7 +54,7 @@
     release: 'idle',
     activeBackground: emptyLayer,
     stagingBackground: emptyLayer,
-    portrait: { ...emptyLayer, slot: 'center' },
+    portrait: { ...emptyLayer, slot: 'left' },
     releaseIdentity: null,
     status: null,
   };
@@ -545,11 +545,6 @@
 
   .visual-portrait[data-portrait-slot='left'] {
     left: max(3vw, env(safe-area-inset-left));
-  }
-
-  .visual-portrait[data-portrait-slot='center'] {
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .visual-portrait[data-portrait-slot='right'] {

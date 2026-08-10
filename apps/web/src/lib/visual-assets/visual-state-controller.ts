@@ -122,7 +122,7 @@ function initialSnapshot(): VisualSnapshot {
         release: 'idle' as const,
         activeBackground: imageLayer('omitted'),
         stagingBackground: imageLayer('omitted'),
-        portrait: portraitLayer('omitted', 'center'),
+        portrait: portraitLayer('omitted', 'left'),
         releaseIdentity: null,
         status: null,
     });
@@ -912,7 +912,7 @@ export class VisualStateController {
                 ? input.presentation?.portrait.slotsByCharacterId[characterId]
                 : undefined) ??
             input.presentation?.portrait.defaultSlot ??
-            'center'
+            'left'
         );
     }
 

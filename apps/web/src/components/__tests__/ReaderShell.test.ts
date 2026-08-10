@@ -242,6 +242,81 @@ describe('ReaderShell', () => {
         expect(onIndexChange).not.toHaveBeenCalled();
     });
 
+    it('keeps shell Settings as the mobile Text escape hatch while the reader is blocking', async () => {
+        stubMatchMedia(true);
+        render(ReaderShell, { props: { backUrl: '/en/' } });
+        await vi.runAllTimersAsync();
+
+        readerState.loadStatus = 'loading';
+        await tick();
+
+        const ready = screen.getByTestId('reader-ready');
+        expect(ready).toHaveAttribute('inert');
+        expect(ready).toHaveAttribute('aria-hidden', 'true');
+        expect(
+            ready.querySelector('#mobile-reader-menu-trigger')
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Open menu' })
+        ).not.toBeInTheDocument();
+
+        const settingsTrigger = screen.getByRole('button', {
+            name: 'Open reader settings',
+        });
+        expect(settingsTrigger).toBeEnabled();
+        await fireEvent.click(settingsTrigger);
+
+        expect(
+            screen.getByRole('link', { name: 'Back to Home' })
+        ).toHaveAttribute('href', '/en/');
+        expect(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        ).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Bookmark' })).toBeDisabled();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close reader settings' })
+        );
+        await tick();
+        expect(settingsTrigger).toHaveFocus();
+
+        readerState.loadStatus = 'ready';
+        await tick();
+        await tick();
+
+        expect(
+            screen.queryByRole('dialog', { name: 'Reader settings' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Open reader settings' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Open menu' })).toHaveFocus();
+    });
+
+    it('hands Settings focus to the mobile hamburger before responsive removal', async () => {
+        const mm = stubMatchMedia(false);
+        render(ReaderShell);
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        expect(
+            screen.getByRole('button', { name: 'Close reader settings' })
+        ).toHaveFocus();
+
+        mm.setMatches(true);
+        await tick();
+        await tick();
+
+        expect(
+            screen.queryByRole('dialog', { name: 'Reader settings' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Open reader settings' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Open menu' })).toHaveFocus();
+    });
+
     it('defaults to Text and restores Visual synchronously without a Text leaf flash', () => {
         stubMatchMedia(false);
         const defaultFactory = vi.fn(() => createRuntimeHarness().runtime);

@@ -230,7 +230,10 @@
   let isMobile = $state(readMatch());
   let settingsOpen = $state(false);
   let leafOverlayOpen = $state(false);
-  let settingsAvailable = $derived(readerMode === 'visual' || !isMobile);
+  let restoreMobileMenuFocus = $state(false);
+  let settingsAvailable = $derived(
+    readerMode === 'visual' || !isMobile || isBlocking
+  );
   let leafDisabled = $derived(isBlocking || settingsOpen);
 
   async function changeReaderMode(mode: ReaderMode): Promise<void> {
@@ -238,7 +241,7 @@
     setReaderMode(mode);
     await tick();
     const triggerId =
-      mode === 'text' && isMobile
+      mode === 'text' && isMobile && !isBlocking
         ? 'mobile-reader-menu-trigger'
         : 'reader-settings-trigger';
     document.getElementById(triggerId)?.focus();
@@ -248,15 +251,19 @@
     leafOverlayOpen = open;
   }
 
-  $effect(() => {
-    if (settingsAvailable || !settingsOpen) return;
+  $effect.pre(() => {
+    if (settingsAvailable) return;
     const focusWasInSettings =
       document.activeElement?.closest('[data-reader-settings]') !== null;
-    settingsOpen = false;
+    if (focusWasInSettings) restoreMobileMenuFocus = true;
+    if (settingsOpen) settingsOpen = false;
+  });
+
+  $effect(() => {
+    if (settingsAvailable || !restoreMobileMenuFocus) return;
+    restoreMobileMenuFocus = false;
     void tick().then(() => {
-      if (focusWasInSettings) {
-        document.getElementById('mobile-reader-menu-trigger')?.focus();
-      }
+      document.getElementById('mobile-reader-menu-trigger')?.focus();
     });
   });
 

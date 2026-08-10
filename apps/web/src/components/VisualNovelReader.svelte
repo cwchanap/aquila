@@ -625,7 +625,7 @@
 
   .dialogue-body {
     min-height: 0;
-    padding-right: 3.5rem;
+    padding-right: 9rem;
     overflow-y: auto;
   }
 

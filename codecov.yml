@@ -6,6 +6,19 @@ codecov:
 comment:
   after_n_builds: 2
 
+coverage:
+  status:
+    project:
+      default:
+        target: 95%
+        threshold: 0%
+        informational: false
+    patch:
+      default:
+        target: 95%
+        threshold: 0%
+        informational: false
+
 ignore:
   - "apps/web/scripts/assert-story-chunks.ts"
   - "apps/web/scripts/measure-reader-bundles.ts"

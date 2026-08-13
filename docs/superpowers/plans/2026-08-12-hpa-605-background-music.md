@@ -73,11 +73,9 @@ expect(result.entries).toMatchObject([
 ]);
 ```
 
-Add a case proving `bg`, `sfx`, and `bgm` can all be pending and consumed by the same next entry.
+Add one case with pending `bg`, `sfx`, and `bgm` blocks immediately before one dialogue and assert all three fields land on that entry.
 
 - [ ] **Step 2: Add failing strict-validation tests**
-
-Cover:
 
 ```ts
 expect(() => parse('```bgm\n\n```')).toThrow(/invalid bgm block/);
@@ -90,9 +88,13 @@ expect(() =>
   )
 ).toThrow(/pending bgm/);
 expect(() => parse('```bgm\ndawn-apartment\n```')).toThrow(/unconsumed bgm/);
+expect(() =>
+  parse('```bgm\nDawn-Apartment\n```\n\n**旁白**：x')
+).toThrow(/invalid bgm block/);
+expect(() =>
+  parse('```bgm\ndawn apartment\n```\n\n**旁白**：x')
+).toThrow(/invalid bgm block/);
 ```
-
-Also cover multi-token and capitalized bodies. The only valid body forms are one lowercase hyphenated key or `stop`.
 
 - [ ] **Step 3: Run the parser tests and confirm RED**
 
@@ -119,7 +121,7 @@ export function isBgmCueKey(value: string): value is BgmCueKey {
 }
 ```
 
-Export them from `packages/stories/src/index.ts` in the same style as the SFX symbols.
+Export these from `packages/stories/src/index.ts` beside the SFX exports.
 
 - [ ] **Step 5: Add the IR/runtime field**
 
@@ -129,44 +131,54 @@ Add exactly:
 bgm?: string | null;
 ```
 
-to `DialogueEntryIR` and runtime `DialogueEntry`. Do not create a command object or enum.
+to `DialogueEntryIR` and runtime `DialogueEntry`.
 
 - [ ] **Step 6: Implement strict pending BGM parsing**
 
-Use:
+Add:
 
 ```ts
 const BGM_BLOCK_RE =
   /^```bgm[ \t]*\n[ \t]*(stop|[a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
+```
 
+Import `isBgmCueKey`, then add:
+
+```ts
 let pendingBgm: string | null | undefined;
 ```
 
-On a matched block:
+Inside the block loop, after `sfx` handling and before dialogue parsing:
 
 ```ts
-if (pendingBgm !== undefined) {
-  throw new Error(
-    `[story-compiler] ${sourcePath}: pending bgm was not consumed before another bgm block`
-  );
-}
-
-const token = bgmMatch[1];
-if (token === 'stop') {
-  pendingBgm = null;
-} else {
-  if (!isBgmCueKey(token)) {
+const bgmMatch = BGM_BLOCK_RE.exec(block);
+if (bgmMatch) {
+  if (pendingBgm !== undefined) {
     throw new Error(
-      `[story-compiler] ${sourcePath}: unknown bgm cue "${token}"`
+      `[story-compiler] ${sourcePath}: pending bgm was not consumed before another bgm block`
     );
   }
-  pendingBgm = token;
+  const token = bgmMatch[1];
+  if (token === 'stop') {
+    pendingBgm = null;
+  } else {
+    if (!isBgmCueKey(token)) {
+      throw new Error(
+        `[story-compiler] ${sourcePath}: unknown bgm cue "${token}"`
+      );
+    }
+    pendingBgm = token;
+  }
+  continue;
+}
+if (block.startsWith('```bgm')) {
+  throw new Error(
+    `[story-compiler] ${sourcePath}: invalid bgm block; expected one lowercase hyphenated cue key or stop`
+  );
 }
 ```
 
-If a block begins with `````bgm`` but fails `BGM_BLOCK_RE`, throw `invalid bgm block`.
-
-Consume with an explicit undefined test for both normal and default-speaker entries:
+When emitting either default-speaker narration or a named-speaker entry:
 
 ```ts
 if (pendingBgm !== undefined) {
@@ -175,7 +187,15 @@ if (pendingBgm !== undefined) {
 }
 ```
 
-At EOF, throw when `pendingBgm !== undefined`.
+After the loop:
+
+```ts
+if (pendingBgm !== undefined) {
+  throw new Error(
+    `[story-compiler] ${sourcePath}: unconsumed bgm at end of scene`
+  );
+}
+```
 
 - [ ] **Step 7: Run parser tests and confirm GREEN**
 
@@ -187,22 +207,14 @@ Expected: PASS.
 
 - [ ] **Step 8: Add failing emitter tests for string/null/omission**
 
-Create entries with:
-
-```ts
-{ bgm: 'dawn-apartment' }
-{ bgm: null }
-{}
-```
-
-Assert the generated scene contains:
+Create IR entries carrying `bgm: 'dawn-apartment'`, `bgm: null`, and no BGM. Assert generated output contains:
 
 ```text
 bgm: "dawn-apartment"
 bgm: null
 ```
 
-and does not emit BGM for the unauthored entry.
+and omits BGM on the third entry.
 
 - [ ] **Step 9: Run emitter tests and confirm RED**
 
@@ -212,7 +224,7 @@ bun --filter @aquila/stories test -- emit.test.ts
 
 Expected: FAIL because emitter ignores BGM.
 
-- [ ] **Step 10: Emit BGM with `!== undefined`**
+- [ ] **Step 10: Emit BGM with an explicit undefined check**
 
 In `emitSceneFile`:
 
@@ -221,8 +233,6 @@ if (e.bgm !== undefined) {
   parts.push(`bgm: ${e.bgm === null ? 'null' : q(e.bgm)}`);
 }
 ```
-
-Do not use `if (e.bgm)`.
 
 - [ ] **Step 11: Run focused and full stories tests**
 
@@ -266,9 +276,11 @@ git commit -m "feat: add background music authoring"
 
 - [ ] **Step 1: Write failing catalog/player tests**
 
-Use an injected fake audio factory:
+Use two fake audio elements with `play`, `pause`, writable `currentTime`, and writable `loop`.
 
 ```ts
+expect(resolveLocalBgmUrl('unknown')).toBeUndefined();
+
 const first = fakeAudio();
 const second = fakeAudio();
 const createAudio = vi
@@ -277,15 +289,12 @@ const createAudio = vi
   .mockReturnValueOnce(second);
 const player = createBgmPlayer(createAudio);
 
-expect(resolveLocalBgmUrl('unknown')).toBeUndefined();
-
 player.play('dawn-apartment');
 expect(first.loop).toBe(true);
 expect(first.play).toHaveBeenCalledTimes(1);
 
 player.play('dawn-apartment');
 expect(createAudio).toHaveBeenCalledTimes(1);
-expect(first.play).toHaveBeenCalledTimes(1);
 
 player.play('tension-pulse');
 expect(first.pause).toHaveBeenCalledTimes(1);
@@ -293,14 +302,7 @@ expect(first.currentTime).toBe(0);
 expect(second.play).toHaveBeenCalledTimes(1);
 ```
 
-Also test:
-
-- unknown runtime key logs and creates no audio;
-- `stop()` pauses/rewinds/clears;
-- `dispose()` is idempotent and makes later `play()` inert;
-- synchronous `play()` throw is contained;
-- rejected `play()` promise is contained;
-- after rejection, a later `play(sameKey)` retries by creating/playing again.
+Add cases for unknown runtime key logging, `stop()`, idempotent `dispose()`, synchronous `play()` throw, rejected `play()` promise, and same-key retry after rejection.
 
 - [ ] **Step 2: Write failing preference tests**
 
@@ -309,9 +311,10 @@ expect(readBgmEnabled(emptyStorage)).toBe(true);
 writeBgmEnabled(false, storage);
 expect(storage.getItem(BGM_ENABLED_KEY)).toBe('false');
 expect(readBgmEnabled(storage)).toBe(false);
+expect(readBgmEnabled(null)).toBe(true);
 ```
 
-Include `null` storage and throwing `getItem`/`setItem` storage.
+Use fake storages whose `getItem` and `setItem` throw and assert reads default true/writes do not throw.
 
 - [ ] **Step 3: Run the new tests and confirm RED**
 
@@ -336,13 +339,14 @@ export function resolveLocalBgmUrl(cueKey: string): string | undefined {
 }
 ```
 
-Do not use `null` for catalog absence and do not reuse the visual asset resolver.
-
 - [ ] **Step 5: Implement the native looping player**
 
-Use the same containment pattern as `sfx-player.ts`:
+Create `bgm-player.ts`:
 
 ```ts
+import { logger } from '@/lib/logger';
+import { resolveLocalBgmUrl } from './bgm-catalog';
+
 export interface BgmPlayer {
   play(cueKey: string): void;
   stop(): void;
@@ -353,34 +357,79 @@ type AudioLike = Pick<
   HTMLAudioElement,
   'play' | 'pause' | 'currentTime' | 'loop'
 >;
-```
+type CreateAudio = (src: string) => AudioLike;
 
-Minimal state:
+export function createBgmPlayer(
+  createAudio: CreateAudio = src => new Audio(src)
+): BgmPlayer {
+  let current: AudioLike | null = null;
+  let currentKey: string | null = null;
+  let disposed = false;
 
-```ts
-let current: AudioLike | null = null;
-let currentKey: string | null = null;
-let disposed = false;
-```
+  function stopCurrent(): void {
+    const audio = current;
+    current = null;
+    currentKey = null;
+    if (!audio) return;
+    try {
+      audio.pause();
+    } catch {
+      // Best-effort loop cleanup.
+    }
+    try {
+      audio.currentTime = 0;
+    } catch {
+      // Best-effort loop cleanup.
+    }
+  }
 
-Rules:
+  return {
+    play(cueKey: string): void {
+      if (disposed) return;
+      const src = resolveLocalBgmUrl(cueKey);
+      if (!src) {
+        logger.warn('Unknown visual-novel BGM cue', { cueKey });
+        return;
+      }
+      if (current && currentKey === cueKey) return;
 
-```ts
-const src = resolveLocalBgmUrl(cueKey);
-if (!src) {
-  logger.warn('Unknown visual-novel BGM cue', { cueKey });
-  return;
+      stopCurrent();
+      try {
+        const audio = createAudio(src);
+        audio.loop = true;
+        current = audio;
+        currentKey = cueKey;
+        const result = audio.play();
+        void result.catch(() => {
+          if (current === audio) {
+            current = null;
+            currentKey = null;
+          }
+        });
+      } catch {
+        current = null;
+        currentKey = null;
+      }
+    },
+    stop(): void {
+      stopCurrent();
+    },
+    dispose(): void {
+      if (disposed) return;
+      disposed = true;
+      stopCurrent();
+    },
+  };
 }
-if (current && currentKey === cueKey) return;
 ```
-
-Before a new key, pause/reset the previous element. Set `audio.loop = true` before `play()`.
-
-If `play()` rejects, clear `current/currentKey` only if they still identify that request so a later activation can retry.
 
 - [ ] **Step 6: Implement the direct BGM preference**
 
+Create `bgm-preference.ts`:
+
 ```ts
+import { getBrowserStorage } from '@/lib/reader-mode';
+
 export const BGM_ENABLED_KEY = 'aquila:bgm-enabled:v1';
 
 export function readBgmEnabled(
@@ -404,8 +453,6 @@ export function writeBgmEnabled(
   }
 }
 ```
-
-Do not create a generic preference store.
 
 - [ ] **Step 7: Run BGM unit tests and confirm GREEN**
 
@@ -450,11 +497,11 @@ git commit -m "feat: add local background music player"
 
 - [ ] **Step 1: Strengthen the existing SFX fixture test before refactoring**
 
-Keep an assertion that build mode reproduces the committed SFX bytes and verify mode rejects byte drift. Do not change the expected SFX output.
+Add/retain a test that snapshots the committed SFX fixture bytes, runs `buildSfxFixtures()`, rereads those files, and asserts byte equality. Keep the existing verify-mode drift rejection test.
 
-- [ ] **Step 2: Add failing generic-helper and BGM fixture tests**
+- [ ] **Step 2: Add failing generic-helper and BGM tests**
 
-Test the generic file loops with a temporary output directory:
+Use a temporary directory:
 
 ```ts
 const fixtureBytes = {
@@ -466,13 +513,13 @@ expect(await readFile(resolve(tmpDir, 'a.wav'))).toEqual(fixtureBytes['a.wav']);
 expect(await readFile(resolve(tmpDir, 'b.wav'))).toEqual(fixtureBytes['b.wav']);
 ```
 
-For BGM, assert the fixture set is exactly:
+For BGM, assert generated file names equal:
 
 ```ts
 ['dawn-apartment.wav', 'tension-pulse.wav']
 ```
 
-and verify mode checks deterministic byte equality plus PCM structure.
+and verify mode rejects byte drift.
 
 - [ ] **Step 3: Run fixture tests and confirm RED**
 
@@ -480,9 +527,9 @@ and verify mode checks deterministic byte equality plus PCM structure.
 bun --filter web test -- build-sfx-fixtures.test.ts build-bgm-fixtures.test.ts
 ```
 
-Expected: BGM/generic-helper tests fail because the helper/generator do not exist.
+Expected: BGM/generic-helper tests fail.
 
-- [ ] **Step 4: Extract PCM and file-loop helpers**
+- [ ] **Step 4: Extract the full PCM and file-loop helper**
 
 Create `audio-fixture.ts`:
 
@@ -494,15 +541,61 @@ export const AUDIO_FIXTURE_SAMPLE_RATE = 8_000;
 const CHANNELS = 1;
 const BITS_PER_SAMPLE = 16;
 
+function pcm16Wav(samples: Int16Array): Buffer {
+  const dataBytes = samples.length * 2;
+  const buffer = Buffer.alloc(44 + dataBytes);
+  buffer.write('RIFF', 0, 'ascii');
+  buffer.writeUInt32LE(36 + dataBytes, 4);
+  buffer.write('WAVE', 8, 'ascii');
+  buffer.write('fmt ', 12, 'ascii');
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(CHANNELS, 22);
+  buffer.writeUInt32LE(AUDIO_FIXTURE_SAMPLE_RATE, 24);
+  buffer.writeUInt32LE(AUDIO_FIXTURE_SAMPLE_RATE * CHANNELS * 2, 28);
+  buffer.writeUInt16LE(CHANNELS * 2, 32);
+  buffer.writeUInt16LE(BITS_PER_SAMPLE, 34);
+  buffer.write('data', 36, 'ascii');
+  buffer.writeUInt32LE(dataBytes, 40);
+  for (let i = 0; i < samples.length; i += 1) {
+    buffer.writeInt16LE(samples[i], 44 + i * 2);
+  }
+  return buffer;
+}
+
 export function synthPcm16Wav(
   durationMs: number,
   sampleAt: (timeSeconds: number, progress: number) => number
 ): Buffer {
-  // Move the current deterministic synthesis/PCM-16 encoding here unchanged.
+  const count = Math.round(
+    (AUDIO_FIXTURE_SAMPLE_RATE * durationMs) / 1000
+  );
+  const samples = new Int16Array(count);
+  for (let i = 0; i < count; i += 1) {
+    const t = i / AUDIO_FIXTURE_SAMPLE_RATE;
+    const progress = i / Math.max(1, count - 1);
+    const value = Math.max(-1, Math.min(1, sampleAt(t, progress)));
+    samples[i] = Math.round(value * 0x7fff);
+  }
+  return pcm16Wav(samples);
 }
 
 export function verifyPcm16Wav(name: string, bytes: Buffer): void {
-  // Move the current RIFF/WAVE/fmt/PCM/mono/16-bit/data-length checks here unchanged.
+  if (bytes.toString('ascii', 0, 4) !== 'RIFF')
+    throw new Error(`${name}: RIFF`);
+  if (bytes.toString('ascii', 8, 12) !== 'WAVE')
+    throw new Error(`${name}: WAVE`);
+  if (bytes.toString('ascii', 12, 16) !== 'fmt ')
+    throw new Error(`${name}: fmt`);
+  if (bytes.readUInt16LE(20) !== 1) throw new Error(`${name}: not PCM`);
+  if (bytes.readUInt16LE(22) !== 1) throw new Error(`${name}: not mono`);
+  if (bytes.readUInt16LE(34) !== 16) throw new Error(`${name}: not PCM-16`);
+  if (bytes.toString('ascii', 36, 40) !== 'data')
+    throw new Error(`${name}: data`);
+  const dataBytes = bytes.readUInt32LE(40);
+  if (dataBytes <= 0 || bytes.length !== 44 + dataBytes) {
+    throw new Error(`${name}: invalid data length`);
+  }
 }
 
 export async function buildAudioFixtures(
@@ -540,11 +633,9 @@ export async function runAudioFixtureCli(
 }
 ```
 
-The bodies of `synthPcm16Wav` and `verifyPcm16Wav` are direct moves of the current logic, not new DSP behavior.
+- [ ] **Step 5: Refactor SFX to shared helpers and verify bytes immediately**
 
-- [ ] **Step 5: Refactor SFX to the shared helper and verify bytes immediately**
-
-Keep the SFX fixture formulas/output root unchanged. Replace its build/verify loops with:
+Keep the current SFX `fixtures()` formulas and output path. Replace synthesis calls with `synthPcm16Wav`, then define:
 
 ```ts
 export async function buildSfxFixtures(): Promise<void> {
@@ -565,15 +656,26 @@ Run:
 ```bash
 bun --filter web test -- build-sfx-fixtures.test.ts
 bun --filter web verify:sfx-fixtures
+git diff --exit-code -- apps/web/public/assets/vn/audio/sfx
 ```
 
-Expected: PASS with no SFX binary diff.
+Expected: PASS and no SFX binary diff.
 
-- [ ] **Step 6: Implement two deterministic BGM loops**
+- [ ] **Step 6: Implement the BGM fixture script**
 
-Create `build-bgm-fixtures.ts` with:
+Create `build-bgm-fixtures.ts`:
 
 ```ts
+import { resolve } from 'node:path';
+import {
+  buildAudioFixtures,
+  runAudioFixtureCli,
+  synthPcm16Wav,
+  verifyAudioFixtures,
+} from './audio-fixture';
+
+const outputRoot = resolve(process.cwd(), 'public/assets/vn/audio/bgm');
+
 function fixtures(): Record<string, Buffer> {
   return {
     'dawn-apartment.wav': synthPcm16Wav(
@@ -590,13 +692,21 @@ function fixtures(): Record<string, Buffer> {
     ),
   };
 }
+
+export async function buildBgmFixtures(): Promise<void> {
+  await buildAudioFixtures(outputRoot, fixtures());
+}
+
+export async function verifyBgmFixtures(): Promise<void> {
+  await verifyAudioFixtures(outputRoot, fixtures());
+}
+
+if (import.meta.main) {
+  await runAudioFixtureCli(buildBgmFixtures, verifyBgmFixtures);
+}
 ```
 
-Use the same shared `buildAudioFixtures`, `verifyAudioFixtures`, and `runAudioFixtureCli` wrappers as SFX.
-
-The four frequencies complete integer cycle counts in two seconds; add no fade/crossfade logic.
-
-- [ ] **Step 7: Add package commands**
+- [ ] **Step 7: Add package commands and CI verification**
 
 Add to `apps/web/package.json`:
 
@@ -605,38 +715,23 @@ Add to `apps/web/package.json`:
 "verify:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts --verify"
 ```
 
-Keep the existing SFX commands unchanged.
+Add beside the existing fixture verification in `.github/workflows/build-and-lint.yml`:
 
-- [ ] **Step 8: Generate and verify committed BGM fixtures**
+```bash
+bun --filter web verify:bgm-fixtures
+```
+
+- [ ] **Step 8: Generate and verify BGM fixtures**
 
 ```bash
 bun --filter web build:bgm-fixtures
 bun --filter web verify:bgm-fixtures
-```
-
-Expected: PASS and exactly two files under `public/assets/vn/audio/bgm/`.
-
-- [ ] **Step 9: Add BGM verification to the existing CI workflow**
-
-In `.github/workflows/build-and-lint.yml`, add:
-
-```bash
-bun --filter web verify:bgm-fixtures
-```
-
-beside the existing visual/SFX fixture verification. Do not add another workflow.
-
-- [ ] **Step 10: Run all fixture tests/verifiers**
-
-```bash
 bun --filter web test -- build-sfx-fixtures.test.ts build-bgm-fixtures.test.ts
-bun --filter web verify:sfx-fixtures
-bun --filter web verify:bgm-fixtures
 ```
 
-Expected: PASS.
+Expected: PASS and exactly two new WAVs under `public/assets/vn/audio/bgm/`.
 
-- [ ] **Step 11: Commit the fixture slice**
+- [ ] **Step 9: Commit the fixture slice**
 
 ```bash
 git add apps/web/scripts/audio-fixture.ts \
@@ -668,18 +763,14 @@ git commit -m "test: add deterministic bgm fixtures"
 
 - [ ] **Step 1: Update the settings test helper with required BGM props**
 
-Add defaults:
+Add:
 
 ```ts
 bgmEnabled: true,
 onBgmEnabledChange: vi.fn(),
 ```
 
-Do not make the props optional just to avoid updating callers/tests.
-
 - [ ] **Step 2: Add failing Visual/Text settings tests**
-
-Visual mode:
 
 ```ts
 expect(
@@ -687,9 +778,9 @@ expect(
 ).toHaveAttribute('aria-pressed', 'true');
 ```
 
-Click the button and assert `onBgmEnabledChange(false)` fires without invoking the SFX callback.
+Click the BGM button and assert `onBgmEnabledChange(false)` fires while the SFX callback does not.
 
-Text mode must omit both audio toggles.
+Render `mode="text"` and assert both audio toggle labels are absent.
 
 - [ ] **Step 3: Run settings tests and confirm RED**
 
@@ -697,9 +788,9 @@ Text mode must omit both audio toggles.
 bun --filter web test -- ReaderSettingsMenu.test.ts
 ```
 
-Expected: FAIL because BGM props/copy/UI do not exist.
+Expected: FAIL.
 
-- [ ] **Step 4: Add translation keys**
+- [ ] **Step 4: Add exact translations**
 
 English:
 
@@ -709,9 +800,15 @@ English:
 "backgroundMusicOff": "Off"
 ```
 
-Add natural Traditional Chinese equivalents in `zh.json`. Keep SFX copy unchanged.
+Traditional Chinese:
 
-- [ ] **Step 5: Add required props and the Visual-only BGM toggle**
+```json
+"backgroundMusic": "背景音樂",
+"backgroundMusicOn": "開啟",
+"backgroundMusicOff": "關閉"
+```
+
+- [ ] **Step 5: Add required props and the Visual-only toggle**
 
 Props:
 
@@ -720,11 +817,12 @@ bgmEnabled: boolean;
 onBgmEnabledChange: (enabled: boolean) => void;
 ```
 
-Inside the existing `mode === 'visual'` block:
+Inside the existing `{#if mode === 'visual'}` block, add a button with the same classes as the SFX toggle:
 
 ```svelte
 <button
   type="button"
+  class="flex items-center justify-between rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
   aria-pressed={bgmEnabled}
   aria-label={t.reader.backgroundMusic}
   onclick={() => onBgmEnabledChange(!bgmEnabled)}
@@ -735,8 +833,6 @@ Inside the existing `mode === 'visual'` block:
   </span>
 </button>
 ```
-
-Use the same styling as SFX. Add no slider or new settings component.
 
 - [ ] **Step 6: Run settings tests and confirm GREEN**
 
@@ -768,15 +864,15 @@ git commit -m "feat: add background music setting"
 - Modify: `apps/web/src/components/__tests__/ReaderShell.test.ts`
 
 **Interfaces:**
-- Reuses/exports: `isForwardAdjacent(previous, next, flow)` from `sfx-transition.ts`; implementation unchanged.
+- Reuses/exports: `isForwardAdjacent(previous, next, flow)` from `sfx-transition.ts`; body unchanged.
 - Produces: `activeBgmAt(entries, index): string | null | undefined`.
 - Produces: `nextBgmSelection(previous, next, entries, selectedKey, flow): string | null`.
 - Consumes: `createBgmPlayer?: () => BgmPlayer`, `readBgmEnabled`, `writeBgmEnabled`.
 - Produces: plain shell-local `selectedBgmKey` and `bgmActivated`, plus reactive `bgmEnabled`.
 
-- [ ] **Step 1: Write failing tests for `activeBgmAt`**
+- [ ] **Step 1: Write failing pure selection tests**
 
-Create `bgm-transition.test.ts`:
+Create `bgm-transition.test.ts` with:
 
 ```ts
 const entries: DialogueEntry[] = [
@@ -793,13 +889,10 @@ expect(activeBgmAt(entries, 1)).toBe('dawn-apartment');
 expect(activeBgmAt(entries, 3)).toBe('tension-pulse');
 expect(activeBgmAt(entries, 5)).toBeNull();
 expect(activeBgmAt([{ dialogue: 'x' }], 0)).toBeUndefined();
+expect(activeBgmAt([], 0)).toBeUndefined();
 ```
 
-Also cover out-of-range high index clamping to `entries.length - 1` and empty entries returning `undefined`.
-
-- [ ] **Step 2: Write failing tests for safe inherited-selection fallback**
-
-Use positions/flows equivalent to existing SFX transition fixtures:
+Build minimal `LinePosition` fixtures and direct-linear/direct-choice/jump flows, then assert:
 
 ```ts
 expect(
@@ -819,29 +912,27 @@ expect(
 ).toBeNull();
 ```
 
-Cover these additional cases:
+Add assertions for:
 
-- direct choice edge + cue-less destination retains inherited selection;
-- same-scene backward/index jump with no local answer clears;
-- non-forward destination whose local scan finds `tension-pulse` returns `tension-pulse`;
-- non-forward destination whose local scan finds `null` returns `null`;
-- fresh/restored cue-less scene returns `null`;
+- direct choice edge retains inherited selection;
+- same-scene backward and `+2` jump with no local answer return `null`;
+- non-forward destination with local `tension-pulse` returns that key;
+- non-forward destination with local `null` returns `null`;
+- fresh cue-less scene returns `null`;
 - story replacement cue-less scene returns `null`;
-- story replacement with local command returns that local command.
+- story replacement with local command returns that command.
 
-Do **not** add mode/enabled/activation cases; those are not selection inputs.
-
-- [ ] **Step 3: Run selection tests and confirm RED**
+- [ ] **Step 2: Run selection tests and confirm RED**
 
 ```bash
 bun --filter web test -- bgm-transition.test.ts
 ```
 
-Expected: FAIL because BGM selection helpers do not exist and `isForwardAdjacent` is private.
+Expected: FAIL because helpers do not exist and `isForwardAdjacent` is private.
 
-- [ ] **Step 4: Export the existing HPA-604 structural helper**
+- [ ] **Step 3: Export the existing structural helper and implement BGM selection**
 
-Change only visibility in `sfx-transition.ts`:
+In `sfx-transition.ts`, only add `export`:
 
 ```ts
 export function isForwardAdjacent(
@@ -849,13 +940,16 @@ export function isForwardAdjacent(
   next: LinePosition,
   flow: StoryFlowConfig | null
 ): boolean {
-  // Existing body unchanged.
+  if (previous.storyId !== next.storyId) return false;
+  if (previous.sceneId === next.sceneId) {
+    return next.index === previous.index + 1;
+  }
+  return (
+    next.index === 0 &&
+    isDirectFlowEdge(flow, previous.sceneId, next.sceneId)
+  );
 }
 ```
-
-Do not move it to a generic navigation module.
-
-- [ ] **Step 5: Implement `activeBgmAt` and `nextBgmSelection`**
 
 Create `bgm-transition.ts`:
 
@@ -893,19 +987,17 @@ export function nextBgmSelection(
 }
 ```
 
-This is the complete pure policy. Add no playback actions, mode, preference, activation, history walk, or navigation-reason enum.
-
-- [ ] **Step 6: Run selection + existing SFX transition tests and confirm GREEN**
+- [ ] **Step 4: Run selection + SFX transition tests and confirm GREEN**
 
 ```bash
 bun --filter web test -- bgm-transition.test.ts sfx-transition.test.ts
 ```
 
-Expected: PASS and unchanged SFX behavior.
+Expected: PASS.
 
-- [ ] **Step 7: Extend the ReaderShell test harness with an injected BGM player**
+- [ ] **Step 5: Extend the ReaderShell harness and add failing real-path activation tests**
 
-Use:
+Inject:
 
 ```ts
 const bgmPlayer = {
@@ -915,86 +1007,49 @@ const bgmPlayer = {
 };
 ```
 
-Pass `createBgmPlayer={() => bgmPlayer}`.
-
-- [ ] **Step 8: Add failing initial/current-scene and pointer activation tests**
-
-Use a scene with:
+Use a scene where line 0 has `dawn-apartment` and initial `dialogueIndex = 1`. Assert initial render does not play, then:
 
 ```ts
-[
-  { dialogue: 'a', bgm: 'dawn-apartment' },
-  { dialogue: 'b' },
-]
-```
-
-Start at index `1` and assert current-scene scanning arms but does not autoplay:
-
-```ts
-expect(bgmPlayer.play).not.toHaveBeenCalled();
 await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
 expect(bgmPlayer.play).toHaveBeenCalledWith('dawn-apartment');
 ```
 
-This specifically proves restore on a later line uses the local earlier command.
-
-- [ ] **Step 9: Add failing keyboard activation tests using the real event path**
-
-Dispatch Enter/Space from `document.body`, not the `reader-ready` div:
+For keyboard, rerender/reset the harness and dispatch from `document.body`:
 
 ```ts
 await fireEvent.keyDown(document.body, { key: 'Enter' });
 expect(bgmPlayer.play).toHaveBeenCalledWith('dawn-apartment');
 ```
 
-Repeat for Space.
+Repeat for Space. Assert ArrowDown, Ctrl+Enter, and Enter on the Settings button do not activate.
 
-Assert no activation for:
-
-```ts
-await fireEvent.keyDown(document.body, { key: 'ArrowDown' });
-await fireEvent.keyDown(document.body, { key: 'Enter', ctrlKey: true });
-await fireEvent.keyDown(screen.getByRole('button', { name: /settings/i }), {
-  key: 'Enter',
-});
-```
-
-The last case must not count as the reader keyboard activation path.
-
-- [ ] **Step 10: Add failing selection-change/jump wiring tests**
-
-Keep component coverage focused on shell integration:
-
-1. Forward cue-less line retains the active loop with no extra play/stop call.
-2. Local same-key result does not restart.
-3. Local `tension-pulse` result calls `play('tension-pulse')` once when activated.
-4. Local `null` result calls `stop()`.
-5. Reuse the existing `jumpFlow`: after activating `dawn-apartment`, jump to cue-less non-adjacent `act3`; assert one stop and then another eligible activation does **not** replay `dawn-apartment` because selection was cleared.
-6. Jump to a destination scene/index whose local scan finds `tension-pulse`; assert that local key is selected/played instead of keeping source music.
-
-- [ ] **Step 11: Add failing mode/preference/remount/story lifecycle tests**
+- [ ] **Step 6: Add failing selection/jump/lifecycle wiring tests**
 
 Cover:
 
-- Visual -> Text stops and resets activation but retains selection;
-- Text -> Visual does not autoplay;
-- next eligible Visual pointer/key gesture resumes retained selection;
-- disabling BGM stops immediately and resets activation;
-- re-enabling from the Visual Settings toggle resumes selected BGM because that click is an explicit user gesture;
-- responsive leaf remount does not restart;
-- story replacement stops old BGM, clears old selection/activation, scans the new current scene, and may arm a new local key without autoplay;
-- SFX still receives its own command while BGM is active;
-- shell destroy calls `bgmPlayer.dispose()` exactly once.
+- forward cue-less line: no extra play/stop;
+- local same-key result: no restart;
+- local `tension-pulse`: one `play('tension-pulse')` when activated;
+- local `null`: one stop;
+- existing `jumpFlow` to cue-less non-adjacent `act3`: stop/clear, then another activation does not replay stale `dawn-apartment`;
+- non-forward destination whose local scan finds `tension-pulse`: select/play that local key;
+- Visual -> Text stops/resets activation but retains selection;
+- Text -> Visual no autoplay, next eligible gesture resumes;
+- disable stops/resets activation, Visual re-enable from Settings resumes selection;
+- responsive remount no restart;
+- story replacement stops old audio, resets activation, scans new scene, arms local key without autoplay;
+- SFX plays independently while BGM active;
+- destroy disposes once.
 
-- [ ] **Step 12: Run ReaderShell tests and confirm RED**
+- [ ] **Step 7: Run ReaderShell tests and confirm RED**
 
 ```bash
 bun --filter web test -- ReaderShell.test.ts
 ```
 
-Expected: FAIL because ReaderShell does not yet own BGM.
+Expected: FAIL.
 
-- [ ] **Step 13: Inject BGM player/preference and keep internal lifecycle state non-reactive**
+- [ ] **Step 8: Add BGM state/factory to ReaderShell**
 
 Imports:
 
@@ -1008,9 +1063,9 @@ import { nextBgmSelection } from '@/lib/audio/bgm-transition';
 import { isReaderInteractiveTarget } from '@/lib/reader-interaction';
 ```
 
-Add factory prop parallel to SFX.
+Add `createBgmPlayer = createDefaultBgmPlayer` to props and type it as `() => BgmPlayer`/`typeof createDefaultBgmPlayer` in the same style as SFX.
 
-State:
+Initialize:
 
 ```ts
 const bgmPlayer = createBgmPlayer();
@@ -1019,9 +1074,7 @@ let selectedBgmKey: string | null = null;
 let bgmActivated = false;
 ```
 
-Do not make `selectedBgmKey` or `bgmActivated` `$state`; they are imperative lifecycle state and are not rendered.
-
-- [ ] **Step 14: Add pointer and window-keyboard activation**
+- [ ] **Step 9: Add scoped pointer activation and window keyboard activation**
 
 ```ts
 function activateBgm(): void {
@@ -1041,29 +1094,17 @@ function handleBgmActivationKey(event: KeyboardEvent): void {
 }
 ```
 
-Attach keyboard at window level:
+Add at shell level:
 
 ```svelte
 <svelte:window onkeydown={handleBgmActivationKey} />
 ```
 
-If `ReaderShell` already needs another `<svelte:window>` directive for future edits, combine handlers on the same Svelte special element rather than adding duplicate markup solely for style.
+Add `onpointerdown={activateBgm}` to the existing `data-testid="reader-ready"` div. Do not register pointer activation on `window`.
 
-Keep pointer activation on the stable reader subtree:
+- [ ] **Step 10: Apply selection diffs in the existing position effect**
 
-```svelte
-<div
-  bind:this={readerReadyElement}
-  data-testid="reader-ready"
-  onpointerdown={activateBgm}
->
-```
-
-Do **not** move pointer activation to `window`; clicking the external Settings trigger should not start BGM.
-
-- [ ] **Step 15: Apply selection diffs in the existing position-change effect**
-
-After existing visual revalidation/SFX handling, use plain local state:
+After existing visual/SFX handling:
 
 ```ts
 const storyChanged =
@@ -1096,18 +1137,19 @@ if (!storyChanged && previousBgmKey !== null && nextBgmKey === null) {
 }
 ```
 
-This effect reads no reactive BGM selection/activation values that it writes through. `bgmEnabled` also stays out of this effect: disabling sets `bgmActivated = false`, and enabling is handled by the explicit settings callback.
+`selectedBgmKey` and `bgmActivated` are plain variables, so this does not add reactive self-dependencies to the effect.
 
-- [ ] **Step 16: Add mode/preference lifecycle**
+- [ ] **Step 11: Add mode/preference lifecycle and Settings props**
 
-When entering Text mode:
+When switching to Text inside `setReaderMode`:
 
 ```ts
-bgmPlayer.stop();
-bgmActivated = false;
+if (mode === 'text') {
+  sfxPlayer.stop();
+  bgmPlayer.stop();
+  bgmActivated = false;
+}
 ```
-
-Retain `selectedBgmKey`.
 
 Add:
 
@@ -1130,19 +1172,27 @@ function setBgmEnabled(enabled: boolean): void {
 }
 ```
 
-Pass required BGM props to `ReaderSettingsMenu` and call `bgmPlayer.dispose()` on destroy beside SFX disposal.
+Pass:
 
-- [ ] **Step 17: Run ReaderShell tests and confirm GREEN**
+```svelte
+{bgmEnabled}
+onBgmEnabledChange={setBgmEnabled}
+```
+
+to `ReaderSettingsMenu`.
+
+In `onDestroy`, call:
+
+```ts
+bgmPlayer.dispose();
+```
+
+beside `sfxPlayer.dispose()`.
+
+- [ ] **Step 12: Run ReaderShell and focused audio tests and confirm GREEN**
 
 ```bash
 bun --filter web test -- ReaderShell.test.ts
-```
-
-Expected: PASS.
-
-- [ ] **Step 18: Run the focused audio/settings suite together**
-
-```bash
 bun --filter web test -- \
   bgm-player.test.ts \
   bgm-preference.test.ts \
@@ -1154,9 +1204,9 @@ bun --filter web test -- \
   sfx-transition.test.ts
 ```
 
-Expected: PASS; existing SFX behavior remains unchanged.
+Expected: PASS.
 
-- [ ] **Step 19: Commit the selection/lifecycle slice**
+- [ ] **Step 13: Commit the selection/lifecycle slice**
 
 ```bash
 git add apps/web/src/lib/audio/sfx-transition.ts \
@@ -1179,49 +1229,38 @@ git commit -m "feat: play persistent background music"
 **Interfaces:**
 - Demonstrates: `dawn-apartment` start, `tension-pulse` change, explicit `stop`.
 - Leaves existing Act 4 `notification-beep` SFX untouched.
-- Provides a real compiler -> generated-payload check before manual runtime smoke.
 
 - [ ] **Step 1: Add the pinned calm opening command in Act 1**
 
-Exactly:
-
-````markdown
+```markdown
 ```bgm
 dawn-apartment
 ```
 
 **旁白**：手機螢幕亮了。
-````
-
-Do not add any other Act 1 BGM command.
+```
 
 - [ ] **Step 2: Add the pinned tension change in Act 4**
 
-Exactly:
-
-````markdown
+```markdown
 ```bgm
 tension-pulse
 ```
 
 **朝倉澪**：兩週前。悠真收到學校轉發的「關東青少年睡眠支援計畫」通知。
-````
-
-Do not move it to the later phone SFX beat.
+```
 
 - [ ] **Step 3: Add the pinned stop in Act 4**
 
-Exactly:
-
-````markdown
+```markdown
 ```bgm
 stop
 ```
 
 **旁白**：澪點頭。琴音走出咖啡店的時候，下午的陽光從門口斜進來，把她的影子拉得很長，像一條安靜的尾巴。
-````
+```
 
-Do not author a fourth command.
+Do not add a fourth BGM block and do not move/change the existing `notification-beep` SFX block.
 
 - [ ] **Step 4: Compile generated stories**
 
@@ -1229,11 +1268,9 @@ Do not author a fourth command.
 bun run compile:stories
 ```
 
-Expected: Act 1/Act 4 generated scenes update.
+Expected: generated Act 1/Act 4 scenes update.
 
-- [ ] **Step 5: Assert the three real generated BGM payloads literally exist**
-
-Run:
+- [ ] **Step 5: Assert the real generated payloads literally exist**
 
 ```bash
 grep -F 'bgm: "dawn-apartment"' \
@@ -1244,30 +1281,25 @@ grep -F 'bgm: null' \
   packages/stories/src/generated/theSeventhMirror/scenes/ch1_act4.ts
 ```
 
-Expected: each command prints a matching generated line. This is the cheap real-story compiler -> payload assertion; do not build a new E2E harness for it.
+Expected: three matching generated lines.
 
-- [ ] **Step 6: Inspect the raw/generated diff**
+- [ ] **Step 6: Inspect raw/generated scope**
 
 ```bash
 git diff -- packages/stories/raw/theSeventhMirror \
   packages/stories/src/generated/theSeventhMirror
 ```
 
-Confirm:
+Confirm exactly three raw BGM blocks, unchanged `notification-beep`, and only corresponding generated payload changes.
 
-- exactly three raw `bgm` blocks were added at the pinned lines;
-- existing `notification-beep` SFX is untouched;
-- only corresponding generated scene payloads changed;
-- no story-wide formatting churn.
-
-- [ ] **Step 7: Run stories tests and generated-drift check**
+- [ ] **Step 7: Run stories tests and drift check**
 
 ```bash
 bun --filter @aquila/stories test
 bun run compile:check
 ```
 
-Expected: PASS with no generated drift.
+Expected: PASS.
 
 - [ ] **Step 8: Commit the narrow story demonstration**
 
@@ -1283,10 +1315,10 @@ git commit -m "feat: demonstrate background music cues"
 ### Task 7: Full verification, manual smoke, and final YAGNI audit
 
 **Files:**
-- No planned production-file changes. If verification exposes a concrete defect, add the smallest focused regression test/fix before repeating the relevant checks.
+- No planned production-file changes. A verification failure must be fixed with the smallest focused regression test and corresponding code change before rerunning the affected checks.
 
 **Interfaces:**
-- Verifies the complete HPA-605 contract and confirms deferred roadmap work did not leak into this branch.
+- Verifies the complete HPA-605 contract and deferred-boundary discipline.
 
 - [ ] **Step 1: Run the full stories suite**
 
@@ -1302,9 +1334,9 @@ Expected: PASS.
 bun --filter web test:coverage
 ```
 
-Expected: PASS and configured project/patch coverage remains at or above 95%.
+Expected: PASS with configured project/patch coverage at or above 95%.
 
-- [ ] **Step 3: Verify both audio fixture families**
+- [ ] **Step 3: Verify audio fixtures**
 
 ```bash
 bun --filter web verify:sfx-fixtures
@@ -1325,29 +1357,27 @@ Expected: PASS.
 
 - [ ] **Step 5: Perform the manual Visual-reader audio smoke**
 
-With headphones/local web reader:
+With headphones/local reader:
 
 1. Fresh Visual load at Act 1 line 0 is silent.
 2. Pointer interaction on reader content starts `dawn-apartment`.
-3. Reload directly on a later Act 1 line; no autoplay occurs, then first pointer/Enter/Space gesture starts `dawn-apartment` via current-scene scan.
-4. Keyboard-only Enter/Space from normal body focus activates BGM while normal reader keyboard navigation continues.
-5. Several forward cue-less lines do not restart the loop.
-6. Direct linear/choice scene progression with no local destination command retains inherited BGM.
-7. Non-adjacent cue-less Act-panel jump to a scene with no local command stops/clears the stale loop; another gesture does not resurrect it.
-8. Jump/backward movement to a destination position with an earlier local BGM command uses that local command.
-9. The Act 4 pinned tension line switches once to `tension-pulse`.
-10. Existing `notification-beep` SFX plays independently over BGM.
-11. The pinned `stop` becomes silent.
+3. Reload a later Act 1 line; no autoplay, then first pointer/Enter/Space gesture starts `dawn-apartment` from current-scene scan.
+4. Keyboard-only Enter/Space from normal body focus activates BGM while reader keyboard navigation continues.
+5. Forward cue-less lines do not restart.
+6. Direct linear/choice scene progression without a local destination command retains inherited BGM.
+7. Cue-less non-adjacent Act-panel jump to a scene with no local command stops/clears stale BGM; another gesture does not resurrect it.
+8. Jump/backward movement to a destination with an earlier local BGM command uses that local command.
+9. Act 4 tension line switches once to `tension-pulse`.
+10. Existing `notification-beep` SFX overlays independently.
+11. Pinned `stop` becomes silent.
 12. SFX/BGM toggles persist independently; BGM disable stops immediately and Visual re-enable may resume from the settings click.
-13. Visual -> Text stops BGM; Text -> Visual does not autoplay; next eligible Visual gesture resumes retained selection.
-14. Responsive breakpoint remount does not restart.
+13. Visual -> Text stops; Text -> Visual does not autoplay; next eligible Visual gesture resumes retained selection.
+14. Responsive remount does not restart.
 15. Fresh restore in a scene with no local BGM command stays silent rather than traversing prior scenes/history.
 
-Record only concrete failures. Do not broaden the feature during smoke testing.
+- [ ] **Step 6: Run the final YAGNI audit**
 
-- [ ] **Step 6: Run the final YAGNI boundary audit**
-
-Confirm the diff contains none of:
+Reject/remove any diff introducing:
 
 ```text
 AudioManager / channel registry / mixer
@@ -1364,8 +1394,6 @@ Phaser audio changes
 story-wide BGM/SFX pass
 ```
 
-If one appears without a failing HPA-605 acceptance test requiring it, remove it and rerun affected checks.
-
 - [ ] **Step 7: Review final scope and diff hygiene**
 
 ```bash
@@ -1379,8 +1407,8 @@ Expected scope only:
 - BGM compiler contract/tests;
 - local BGM catalog/player/preference/tests;
 - shared deterministic audio-fixture mechanics plus two BGM WAVs/CI verifier;
-- one Visual-mode BGM setting;
-- current-scene selection helper + minimal SFX helper export;
-- `ReaderShell` playback/activation lifecycle and tests;
+- Visual-only BGM setting;
+- current-scene BGM selection helper + minimal SFX helper export;
+- `ReaderShell` playback/activation lifecycle/tests;
 - exactly three raw BGM commands plus generated payloads;
 - design/plan docs.

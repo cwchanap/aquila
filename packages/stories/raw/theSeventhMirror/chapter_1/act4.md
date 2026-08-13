@@ -92,6 +92,10 @@ small cafe near university campus at early afternoon, warm soft light through la
 
 **旁白**：澪看了一眼那包軟糖，喉嚨有點緊。她低頭繼續吃飯，把那點情緒壓回胃裡，和玉子燒一起嚥下去。
 
+```sfx
+notification-beep
+```
+
 **旁白**：這時候，澪的手機響了。螢幕亮起來——編輯組的來電。
 
 **旁白**：澪盯著螢幕，筷子還夾著半塊玉子燒。她不想接，但也不想讓它一直響。

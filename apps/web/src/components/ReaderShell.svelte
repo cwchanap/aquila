@@ -265,7 +265,8 @@
     } else if (
       nextBgmKey !== null &&
       nextBgmKey !== previousBgmKey &&
-      bgmActivated
+      bgmActivated &&
+      bgmEnabled
     ) {
       bgmPlayer.play(nextBgmKey);
     }

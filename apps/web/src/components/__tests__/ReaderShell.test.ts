@@ -857,6 +857,34 @@ describe('ReaderShell', () => {
         expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
     });
 
+    it('does not play a later local cue after a gesture while BGM is disabled', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Background Music' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close reader settings' })
+        );
+        bgm.player.play.mockClear();
+
+        // A gesture while disabled still records autoplay eligibility, but it
+        // must not permit a later cue change to start playback.
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        readerState.dialogueIndex = 2;
+        await tick();
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+    });
+
     it('does not restart BGM across responsive reader remounts', async () => {
         const mm = stubMatchMedia(false);
         readerState.dialogue = bgmDialogue;

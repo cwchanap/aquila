@@ -632,6 +632,42 @@ describe('ReaderShell', () => {
         expect(harnesses[1].dispose).toHaveBeenCalledOnce();
     });
 
+    it('swallows a disposing runtime error during story replacement and still creates the next runtime', async () => {
+        stubMatchMedia(false);
+        const failingHarness = createRuntimeHarness();
+        failingHarness.dispose.mockImplementation(async () => {
+            throw new Error('dispose blew up');
+        });
+        const nextHarness = createRuntimeHarness();
+        const createRuntime = vi.fn((storyId: string) => {
+            // First call serves the failing runtime; subsequent calls serve
+            // the replacement. The storyId argument is received but not
+            // needed to select the harness — the call index suffices.
+            void storyId;
+            return createRuntime.mock.calls.length === 1
+                ? failingHarness.runtime
+                : nextHarness.runtime;
+        });
+        render(ReaderShell, {
+            props: { createVisualRuntime: createRuntime },
+        });
+
+        await chooseReaderMode('Visual Novel');
+        await tick();
+        expect(createRuntime).toHaveBeenCalledTimes(1);
+
+        readerState.storyId = 'replacement_story';
+        await tick();
+        await Promise.resolve();
+        await tick();
+
+        // The failing dispose was called, the error was swallowed, and the
+        // replacement runtime was still created.
+        expect(failingHarness.dispose).toHaveBeenCalledOnce();
+        expect(createRuntime).toHaveBeenCalledTimes(2);
+        expect(nextHarness.subscribe).toHaveBeenCalledTimes(2);
+    });
+
     it('requests revalidation only on aged visual lifecycle events and never from a timer', async () => {
         stubMatchMedia(false);
         const harness = createRuntimeHarness();

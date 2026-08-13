@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { StoryFlowConfig } from '@aquila/stories';
-import { nextSfxCommand, type LinePosition } from '@/lib/audio/sfx-transition';
+import {
+    nextSfxCommand,
+    sameLinePosition,
+    type LinePosition,
+} from '@/lib/audio/sfx-transition';
 
 const flow = {
     start: 'a',
@@ -73,5 +77,55 @@ describe('nextSfxCommand', () => {
                 type: 'noop',
             }
         );
+    });
+
+    it('does not play when the flow is null and the scene changes', () => {
+        // Covers isDirectFlowEdge's `if (!flow) return false` branch —
+        // a forward scene transition with no flow graph cannot be verified
+        // as adjacent, so the command is noop.
+        expect(
+            nextSfxCommand(p('a', 2), p('b', 0), 'door-open', {
+                mode: 'visual',
+                enabled: true,
+                flow: null,
+            })
+        ).toEqual({ type: 'noop' });
+    });
+
+    it('does not play for a forward jump to a non-adjacent scene via a linear edge', () => {
+        // Scene 'a' has next='b'. Jumping from 'a' to 'c' is forward but not
+        // a direct edge — covers isDirectFlowEdge's
+        // `if (!scene.next.startsWith('choice:')) return false` branch where
+        // scene.next is a plain scene id that does not match the target.
+        expect(
+            nextSfxCommand(p('a', 2), p('c', 0), 'door-open', visual)
+        ).toEqual({ type: 'noop' });
+    });
+});
+
+describe('sameLinePosition', () => {
+    it('returns false when left is null', () => {
+        expect(sameLinePosition(null, p('a', 0))).toBe(false);
+    });
+
+    it('returns true when storyId, sceneId, and index all match', () => {
+        expect(sameLinePosition(p('a', 0), p('a', 0))).toBe(true);
+    });
+
+    it('returns false when the index differs', () => {
+        expect(sameLinePosition(p('a', 0), p('a', 1))).toBe(false);
+    });
+
+    it('returns false when the sceneId differs', () => {
+        expect(sameLinePosition(p('a', 0), p('b', 0))).toBe(false);
+    });
+
+    it('returns false when the storyId differs', () => {
+        expect(
+            sameLinePosition(
+                { storyId: 'other', sceneId: 'a', index: 0 },
+                p('a', 0)
+            )
+        ).toBe(false);
     });
 });

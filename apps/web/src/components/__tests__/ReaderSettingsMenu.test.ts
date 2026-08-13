@@ -18,6 +18,8 @@ function renderSettings(
             backUrl: '/en/',
             bookmarkDisabled: false,
             triggerUnavailable: false,
+            sfxEnabled: true,
+            onSfxEnabledChange: vi.fn(),
             ...overrides,
         },
     });
@@ -132,5 +134,21 @@ describe('ReaderSettingsMenu', () => {
             screen.getByRole('button', { name: 'Open reader settings' })
         ).toBeDisabled();
         unavailable.unmount();
+    });
+
+    it('shows and toggles Sound Effects only in Visual mode', async () => {
+        const onSfxEnabledChange = vi.fn();
+        const view = renderSettings({ onSfxEnabledChange, mode: 'visual' });
+
+        const toggle = screen.getByRole('button', { name: /Sound effects/i });
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        await fireEvent.click(toggle);
+        expect(onSfxEnabledChange).toHaveBeenCalledWith(false);
+
+        view.unmount();
+        renderSettings({ mode: 'text' });
+        expect(
+            screen.queryByRole('button', { name: /Sound effects/i })
+        ).not.toBeInTheDocument();
     });
 });

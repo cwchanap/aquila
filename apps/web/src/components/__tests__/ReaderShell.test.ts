@@ -54,6 +54,9 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             openSettings: 'Open reader settings',
             settingsTitle: 'Reader settings',
             closeSettings: 'Close reader settings',
+            soundEffects: 'Sound effects',
+            soundEffectsOn: 'On',
+            soundEffectsOff: 'Off',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -77,9 +80,26 @@ const mockDialogue: DialogueEntry[] = [
     { characterId: 'narrator', dialogue: 'Third dialogue line.' },
 ];
 
+const sfxDialogue: DialogueEntry[] = [
+    { characterId: 'narrator', dialogue: 'Silent first line.' },
+    {
+        characterId: 'narrator',
+        dialogue: 'Door opens on the second line.',
+        sfx: 'door-open',
+    },
+];
+
 const flow = {
     start: 'act1',
     nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
+} as unknown as StoryFlowConfig;
+
+const jumpFlow = {
+    start: 'act1',
+    nodes: [
+        { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+        { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+    ],
 } as unknown as StoryFlowConfig;
 
 const FIXTURE_RELEASE_ID = 'sha256-fixed-release';
@@ -166,6 +186,16 @@ function createRuntimeHarness(
         softRevalidate,
         dispose,
         subscribe,
+    };
+}
+
+function createSfxHarness() {
+    return {
+        player: {
+            play: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        },
     };
 }
 
@@ -412,6 +442,146 @@ describe('ReaderShell', () => {
             screen.queryByLabelText('Tap to continue')
         ).not.toBeInTheDocument();
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
+    });
+
+    it('plays a forward visual line cue once while the initial line stays silent', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = sfxDialogue;
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        expect(sfx.player.play).not.toHaveBeenCalled();
+        await chooseReaderMode('Visual Novel');
+        readerState.dialogueIndex = 1;
+        await tick();
+
+        expect(sfx.player.play).toHaveBeenCalledOnce();
+        expect(sfx.player.play).toHaveBeenCalledWith('door-open');
+    });
+
+    it('keeps one SFX player across responsive remounts without replaying the current position', async () => {
+        const mm = stubMatchMedia(false);
+        readerState.dialogue = sfxDialogue;
+        readerState.dialogueIndex = 1;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const sfx = createSfxHarness();
+        const createSfxPlayer = vi.fn(() => sfx.player);
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        expect(createSfxPlayer).toHaveBeenCalledOnce();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+        mm.setMatches(true);
+        await tick();
+        mm.setMatches(false);
+        await tick();
+
+        expect(createSfxPlayer).toHaveBeenCalledOnce();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('does not play a cue for a non-adjacent scene jump', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = sfxDialogue;
+        readerState.activeFlow = jumpFlow;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        readerState.currentSceneId = 'act3';
+        readerState.dialogue = [sfxDialogue[1]];
+        await tick();
+
+        expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('stops SFX when switching from Visual to Text', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        await chooseReaderMode('Text');
+
+        expect(sfx.player.stop).toHaveBeenCalledOnce();
+    });
+
+    it('stops on disable and does not replay the current line when re-enabled', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = sfxDialogue;
+        readerState.dialogueIndex = 1;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        const toggle = screen.getByRole('button', { name: 'Sound effects' });
+        await fireEvent.click(toggle);
+        expect(sfx.player.stop).toHaveBeenCalledOnce();
+        expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+        await fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('stops on story replacement without playing the replacement line', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = sfxDialogue;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        readerState.storyId = 'replacement_story';
+        readerState.currentSceneId = 'replacement';
+        readerState.dialogue = [sfxDialogue[1]];
+        await tick();
+
+        expect(sfx.player.stop).toHaveBeenCalledOnce();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('disposes the SFX player once on unmount', () => {
+        stubMatchMedia(false);
+        const sfx = createSfxHarness();
+        const view = render(ReaderShell, {
+            props: { createSfxPlayer: () => sfx.player },
+        });
+
+        view.unmount();
+
+        expect(sfx.player.dispose).toHaveBeenCalledOnce();
     });
 
     it('creates one retained runtime and disposes it before replacement and on destroy', async () => {

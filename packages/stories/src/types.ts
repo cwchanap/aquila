@@ -3,6 +3,7 @@ export type DialogueEntry = {
     characterId?: string;
     dialogue: string;
     sfx?: string;
+    bgm?: string | null;
     background?: string;
     portrait?: string;
 };

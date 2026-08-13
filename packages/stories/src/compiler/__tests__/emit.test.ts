@@ -191,6 +191,48 @@ describe('emitStory', () => {
         expect(scene.match(/sfx:/g)).toHaveLength(1);
     });
 
+    it('emits authored BGM strings and stops while omitting untouched entries', () => {
+        const storyWithBgm: StoryIR = {
+            storyId: 'demo_story',
+            name: 'demoStory',
+            start: 'act1',
+            scenes: [
+                {
+                    id: 'act1',
+                    entries: [
+                        {
+                            characterId: 'narrator',
+                            displayName: '旁白',
+                            dialogue: 'morning',
+                            bgm: 'dawn-apartment',
+                        },
+                        {
+                            characterId: 'narrator',
+                            displayName: '旁白',
+                            dialogue: 'quiet',
+                            bgm: null,
+                        },
+                        {
+                            characterId: 'narrator',
+                            displayName: '旁白',
+                            dialogue: 'silence',
+                        },
+                    ],
+                    next: null,
+                    sourcePath: 'act1.md',
+                },
+            ],
+            choices: [],
+        };
+
+        emitStory(storyWithBgm, dir, mockCharDir);
+        const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
+
+        expect(scene).toContain('bgm: "dawn-apartment"');
+        expect(scene).toContain('bgm: null');
+        expect(scene.match(/bgm:/g)).toHaveLength(2);
+    });
+
     it('emits image-assets.json manifest', () => {
         const storyWithManifest: StoryIR = {
             storyId: 'demo_story',

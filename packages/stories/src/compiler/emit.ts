@@ -93,6 +93,9 @@ function emitSceneFile(
             if (e.sfx) {
                 parts.push(`sfx: ${q(e.sfx)}`);
             }
+            if (e.bgm !== undefined) {
+                parts.push(`bgm: ${e.bgm === null ? 'null' : q(e.bgm)}`);
+            }
             if (e.background) {
                 if (
                     hasBackgrounds &&

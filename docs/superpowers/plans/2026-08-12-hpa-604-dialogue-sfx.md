@@ -2,24 +2,28 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add compile-validated one-shot SFX cues to Aquila story dialogue and play them exactly once from the stable web `ReaderShell` lifecycle using native browser audio and three local fixtures.
+**Goal:** Add compile-validated one-shot SFX cues to Aquila story dialogue and play them only on genuine forward visual-reader progression using native browser audio and three reproducible local fixtures.
 
-**Architecture:** Story Markdown carries one logical `sfx` key for the next dialogue entry. `@aquila/stories` owns a temporary three-key HPA-604 allowlist plus parser/emitter propagation; `apps/web` owns URL resolution, native `HTMLAudioElement` playback, one persisted boolean, and a pure transition helper. `ReaderShell` reuses its existing active-line key as the only line-identity machine and delegates side effects to an injected player.
+**Architecture:** Story Markdown carries one logical `sfx` key for the next dialogue entry. `@aquila/stories` owns a temporary three-key HPA-604 bootstrap allowlist and compiler propagation. `apps/web` owns a tiny typed URL catalog, a one-element native player, one persisted boolean, and a pure transition helper. `ReaderShell` keeps one structured previous line position shared by visual revalidation and SFX classification; it does not create a parallel audio identity tracker.
 
-**Tech Stack:** Bun 1.3.1, TypeScript 5.9, Svelte 5, Vitest, Testing Library, native `HTMLAudioElement`, static PCM WAV fixtures.
+**Tech Stack:** Bun 1.3.1, TypeScript 5.9, Svelte 5, Vitest, Testing Library, native `HTMLAudioElement`, deterministic PCM WAV fixtures.
 
 ## Global Constraints
 
-- Keep runtime `DialogueEntry.sfx` as `string`, not a closed runtime union.
-- HPA-604's `SFX_CUE_KEYS` is a bootstrap allowlist only; HPA-606 replaces semantic key validation with per-story `audio-plan.json`.
-- Story Markdown contains logical cue keys only: no URLs, paths, provider/model IDs, prompts, volume, delay, or channels.
+- Keep runtime `DialogueEntry.sfx` as `string`, not `SfxCueKey`.
+- HPA-604's `SFX_CUE_KEYS` is bootstrap authority only; HPA-606 replaces semantic key validation with per-story `audio-plan.json`.
+- Story Markdown contains logical keys only: no URLs, paths, prompts, provider/model IDs, volume, delay, or channels.
 - Playback belongs to `ReaderShell`, never `VisualNovelReader` or typewriter/render effects.
-- Reuse `ReaderShell`'s existing `${storyId}\u0000${currentSceneId}\u0000${dialogueIndex}` identity; do not add `sfxStoryId`/`sfxLineKey` state.
+- Keep exactly one previous `LinePosition` in the shell; do not keep a NUL-string tracker plus an SFX tracker.
+- Play only on same-scene `index + 1` or a direct forward flow edge to destination index 0.
+- Normal linear and choice-driven forward scene transitions are eligible; backward movement and non-adjacent Act-panel jumps are silent.
 - Use native browser audio only; no audio framework, manager, mixer, event bus, generic timeline, or global preference store.
-- Runtime playback failures stay silent from the player's perspective.
-- SFX is Visual-mode-only. Do not add the setting to the mobile Text hamburger.
+- Runtime playback failures never block reader progression.
+- SFX is Visual-mode-only; hide its control in Text settings and do not add it to the mobile Text hamburger.
 - Generate exactly three local fixtures and annotate exactly three existing early Seventh Mirror beats.
-- Do not implement BGM, ElevenLabs integration, R2 audio delivery, Phaser parity, story-wide sound design, or authoring-skill changes.
+- Keep local URL resolution in one catalog module. HPA-610 replaces that seam with its dedicated audio resolver; do not generalize the visual `WebAssetResolver` in HPA-604.
+- Final web verification must run `test:coverage` because Codecov requires 95% project and patch coverage.
+- Do not implement BGM, ElevenLabs, R2 audio delivery, Phaser parity, story-wide sound design, or authoring-skill changes.
 
 ---
 
@@ -27,21 +31,21 @@
 
 **Stories package**
 
-- Create `packages/stories/src/audio-cues.ts` — temporary HPA-604 logical cue allowlist/type guard.
+- Create `packages/stories/src/audio-cues.ts` — temporary three-key bootstrap allowlist/type guard.
 - Modify `packages/stories/src/index.ts` — export bootstrap cue contract.
-- Modify `packages/stories/src/compiler/parse-scene.ts` — parse, validate, consume, and reject dropped `sfx` blocks.
-- Modify `packages/stories/src/compiler/ir.ts` — add optional SFX field.
-- Modify `packages/stories/src/types.ts` — add optional runtime SFX field.
-- Modify `packages/stories/src/compiler/emit.ts` — emit SFX only when present.
-- Modify `packages/stories/src/compiler/__tests__/parse-scene.test.ts` — strict authoring cases.
-- Modify `packages/stories/src/compiler/__tests__/emit.test.ts` — generated output contract.
+- Modify `packages/stories/src/compiler/parse-scene.ts` — strict pending-SFX parsing.
+- Modify `packages/stories/src/compiler/ir.ts` — add `sfx?: string`.
+- Modify `packages/stories/src/types.ts` — add runtime `sfx?: string`.
+- Modify `packages/stories/src/compiler/emit.ts` — emit SFX only when authored.
+- Modify `packages/stories/src/compiler/__tests__/parse-scene.test.ts`.
+- Modify `packages/stories/src/compiler/__tests__/emit.test.ts`.
 
 **Web audio**
 
-- Create `apps/web/src/lib/audio/sfx-catalog.ts` — map bootstrap logical keys to local fixture URLs.
+- Create `apps/web/src/lib/audio/sfx-catalog.ts` — typed bootstrap logical-key -> local URL map.
 - Create `apps/web/src/lib/audio/sfx-player.ts` — one-element native player.
-- Create `apps/web/src/lib/audio/sfx-preference.ts` — persisted boolean reusing `getBrowserStorage()`.
-- Create `apps/web/src/lib/audio/sfx-transition.ts` — pure line-transition command classifier.
+- Create `apps/web/src/lib/audio/sfx-preference.ts` — persisted boolean using `getBrowserStorage()`.
+- Create `apps/web/src/lib/audio/sfx-transition.ts` — `LinePosition`, flow-edge check, and pure SFX command classifier.
 - Create `apps/web/src/lib/__tests__/sfx-player.test.ts`.
 - Create `apps/web/src/lib/__tests__/sfx-preference.test.ts`.
 - Create `apps/web/src/lib/__tests__/sfx-transition.test.ts`.
@@ -55,8 +59,11 @@
 - Modify `packages/stories/src/translations/en.json`.
 - Modify `packages/stories/src/translations/zh.json`.
 
-**Fixtures/content**
+**Reproducible fixtures**
 
+- Create `apps/web/scripts/build-sfx-fixtures.ts` — deterministic builder plus `--verify` mode.
+- Modify `apps/web/package.json` — add build/verify scripts.
+- Modify `.github/workflows/build-and-lint.yml` — verify SFX fixtures in CI.
 - Create `apps/web/public/assets/vn/audio/sfx/door-open.wav`.
 - Create `apps/web/public/assets/vn/audio/sfx/notification-beep.wav`.
 - Create `apps/web/public/assets/vn/audio/sfx/impact.wav`.
@@ -80,13 +87,13 @@
 - Test: `packages/stories/src/compiler/__tests__/emit.test.ts`
 
 **Interfaces:**
-- Produces: `SFX_CUE_KEYS`, `SfxCueKey`, `isSfxCueKey(value: string): value is SfxCueKey`.
-- Produces: `DialogueEntryIR.sfx?: string` and `DialogueEntry.sfx?: string`.
-- Contract: valid HPA-604 Markdown keys are exactly `door-open`, `notification-beep`, `impact`.
+- Produces `SFX_CUE_KEYS`, `SfxCueKey`, `isSfxCueKey(value)`.
+- Produces `DialogueEntryIR.sfx?: string` and `DialogueEntry.sfx?: string`.
+- Valid bootstrap keys are exactly `door-open`, `notification-beep`, `impact`.
 
-- [ ] **Step 1: Add failing parser tests for valid next-entry consumption and `bg` coexistence**
+- [ ] **Step 1: Add failing parser tests for valid consumption and coexistence**
 
-Append focused cases to `parse-scene.test.ts`:
+Append to `parse-scene.test.ts`:
 
 ```ts
 it('applies sfx to exactly the next dialogue entry', () => {
@@ -147,19 +154,20 @@ it('consumes sfx on default-speaker narration', () => {
 });
 ```
 
-- [ ] **Step 2: Add failing parser tests for the authoring failures that must not become silence**
+- [ ] **Step 2: Add failing parser tests for authoring failures**
 
 ```ts
 it.each([
     ['empty', ['```sfx', '', '```'].join('\n')],
     ['multi-token', ['```sfx', 'door open', '```'].join('\n')],
     ['unknown', ['```sfx', 'door-opne', '```'].join('\n')],
+    ['capitalized', ['```sfx', 'Door-Open', '```'].join('\n')],
 ])('rejects %s sfx blocks', (_label, block) => {
     const md = [block, '', '**旁白**：hello'].join('\n');
     expect(() => parseScene(md, resolve, 'act1.md')).toThrow(/sfx/i);
 });
 
-it('rejects a second sfx block while one is still pending', () => {
+it('rejects a second sfx block while one is pending', () => {
     const md = [
         '```sfx',
         'door-open',
@@ -171,11 +179,10 @@ it('rejects a second sfx block while one is still pending', () => {
         '',
         '**旁白**：hello',
     ].join('\n');
-
     expect(() => parseScene(md, resolve, 'act1.md')).toThrow(/pending sfx/i);
 });
 
-it('rejects an unconsumed sfx block at end of scene', () => {
+it('rejects an unconsumed sfx block at EOF', () => {
     const md = [
         '**旁白**：hello',
         '',
@@ -183,7 +190,6 @@ it('rejects an unconsumed sfx block at end of scene', () => {
         'door-open',
         '```',
     ].join('\n');
-
     expect(() => parseScene(md, resolve, 'act1.md')).toThrow(/unconsumed sfx/i);
 });
 ```
@@ -194,9 +200,9 @@ Run:
 bun --filter @aquila/stories test -- parse-scene.test.ts
 ```
 
-Expected: FAIL because `sfx` is not parsed/validated yet.
+Expected: FAIL because `sfx` is not parsed yet.
 
-- [ ] **Step 3: Add the temporary three-key stories-package allowlist**
+- [ ] **Step 3: Add the bootstrap cue module and exports**
 
 Create `packages/stories/src/audio-cues.ts`:
 
@@ -214,32 +220,26 @@ export function isSfxCueKey(value: string): value is SfxCueKey {
 }
 ```
 
-Modify `packages/stories/src/index.ts`:
+Add to `packages/stories/src/index.ts`:
 
 ```ts
 export { SFX_CUE_KEYS, isSfxCueKey } from './audio-cues';
 export type { SfxCueKey } from './audio-cues';
 ```
 
-Do not make `DialogueEntry.sfx` use `SfxCueKey`; this allowlist is compile/bootstrap authority only and HPA-606 will replace it with per-story audio-plan validation.
+Do not type runtime `DialogueEntry.sfx` as `SfxCueKey`.
 
 - [ ] **Step 4: Extend compiler/runtime types**
 
-In `DialogueEntryIR` add:
+Add to `DialogueEntryIR` and runtime `DialogueEntry`:
 
 ```ts
 sfx?: string;
 ```
 
-In runtime `DialogueEntry` add:
+- [ ] **Step 5: Implement strict pending-SFX parsing**
 
-```ts
-sfx?: string;
-```
-
-- [ ] **Step 5: Implement strict pending-SFX parsing without changing `bg` semantics**
-
-In `parse-scene.ts`, import the type guard and add a strict one-line fence regex:
+In `parse-scene.ts`:
 
 ```ts
 import { isSfxCueKey } from '../audio-cues';
@@ -248,13 +248,13 @@ const SFX_BLOCK_RE =
     /^```sfx[ \t]*\n[ \t]*([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
 ```
 
-Add state beside `pendingBg`:
+Add beside `pendingBg`:
 
 ```ts
 let pendingSfx: string | undefined;
 ```
 
-Handle a valid SFX block before dialogue parsing:
+Handle SFX before normal paragraph parsing:
 
 ```ts
 const sfxMatch = SFX_BLOCK_RE.exec(block);
@@ -280,32 +280,19 @@ if (block.startsWith('```sfx')) {
 }
 ```
 
-When emitting a default-speaker entry, include and consume SFX independently from background:
+Consume `pendingSfx` in both default-speaker and explicit-speaker paths, independently of `pendingBg`:
 
 ```ts
-entries.push({
-    characterId: defaultSpeaker.id,
-    displayName: defaultSpeaker.displayName,
-    dialogue: (wrapped ? wrapped[1] : oneLine).trim(),
-    ...(pendingBg !== undefined
-        ? { backgroundPrompt: pendingBg }
-        : {}),
-    ...(pendingSfx !== undefined ? { sfx: pendingSfx } : {}),
-});
-pendingBg = undefined;
+...(pendingSfx !== undefined ? { sfx: pendingSfx } : {}),
+```
+
+then set:
+
+```ts
 pendingSfx = undefined;
 ```
 
-For explicit speaker entries:
-
-```ts
-if (pendingSfx !== undefined) {
-    entry.sfx = pendingSfx;
-    pendingSfx = undefined;
-}
-```
-
-After the loop, reject a dropped one-shot:
+After the loop:
 
 ```ts
 if (pendingSfx !== undefined) {
@@ -315,9 +302,9 @@ if (pendingSfx !== undefined) {
 }
 ```
 
-Do not add equivalent duplicate/EOF failures for `bg` in this ticket.
+Do not change `bg` duplicate/EOF behavior.
 
-- [ ] **Step 6: Run parser tests and verify green**
+- [ ] **Step 6: Run parser tests**
 
 ```bash
 bun --filter @aquila/stories test -- parse-scene.test.ts
@@ -327,7 +314,7 @@ Expected: PASS.
 
 - [ ] **Step 7: Add failing emitter coverage**
 
-In `emit.test.ts`, add an SFX-bearing entry and assert both presence and omission:
+Add to `emit.test.ts`:
 
 ```ts
 it('emits sfx only on authored entries', () => {
@@ -335,26 +322,24 @@ it('emits sfx only on authored entries', () => {
         storyId: 'demo_story',
         name: 'demoStory',
         start: 'act1',
-        scenes: [
-            {
-                id: 'act1',
-                entries: [
-                    {
-                        characterId: 'narrator',
-                        displayName: '旁白',
-                        dialogue: 'door',
-                        sfx: 'door-open',
-                    },
-                    {
-                        characterId: 'narrator',
-                        displayName: '旁白',
-                        dialogue: 'quiet',
-                    },
-                ],
-                next: null,
-                sourcePath: 'act1.md',
-            },
-        ],
+        scenes: [{
+            id: 'act1',
+            entries: [
+                {
+                    characterId: 'narrator',
+                    displayName: '旁白',
+                    dialogue: 'door',
+                    sfx: 'door-open',
+                },
+                {
+                    characterId: 'narrator',
+                    displayName: '旁白',
+                    dialogue: 'quiet',
+                },
+            ],
+            next: null,
+            sourcePath: 'act1.md',
+        }],
         choices: [],
     };
 
@@ -376,7 +361,7 @@ Expected: FAIL until emitter propagation is added.
 
 - [ ] **Step 8: Emit `sfx` only when present**
 
-In `emitSceneFile`, after dialogue and before/after visual fields:
+Inside `emitSceneFile`:
 
 ```ts
 if (e.sfx) {
@@ -408,103 +393,112 @@ git commit -m "feat(stories): add dialogue sfx contract"
 
 ---
 
-### Task 2: Build the tiny web audio seam and pure transition logic
+### Task 2: Build the tiny web audio seam and forward-transition classifier
 
 **Files:**
 - Create: `apps/web/src/lib/audio/sfx-catalog.ts`
 - Create: `apps/web/src/lib/audio/sfx-player.ts`
 - Create: `apps/web/src/lib/audio/sfx-preference.ts`
 - Create: `apps/web/src/lib/audio/sfx-transition.ts`
-- Create: `apps/web/src/lib/__tests__/sfx-player.test.ts`
-- Create: `apps/web/src/lib/__tests__/sfx-preference.test.ts`
-- Create: `apps/web/src/lib/__tests__/sfx-transition.test.ts`
+- Test: `apps/web/src/lib/__tests__/sfx-player.test.ts`
+- Test: `apps/web/src/lib/__tests__/sfx-preference.test.ts`
+- Test: `apps/web/src/lib/__tests__/sfx-transition.test.ts`
 
 **Interfaces:**
-- Consumes: `SfxCueKey` from `@aquila/stories` for catalog completeness only.
-- Produces: `SfxPlayer { play(string), stop(), dispose() }`.
-- Produces: `createSfxPlayer(audioFactory?)`.
-- Produces: `readSfxEnabled`, `writeSfxEnabled`, `SFX_ENABLED_KEY`.
-- Produces: `nextSfxCommand(previousLineKey, nextLineKey, cueKey, options)`.
 
-- [ ] **Step 1: Write the pure transition table first**
+```ts
+export interface SfxPlayer {
+    play(cueKey: string): void;
+    stop(): void;
+    dispose(): void;
+}
 
-Create `apps/web/src/lib/__tests__/sfx-transition.test.ts`:
+export type LinePosition = {
+    storyId: string;
+    sceneId: string;
+    index: number;
+};
+
+export type SfxCommand =
+    | { type: 'play'; cueKey: string }
+    | { type: 'stop' }
+    | { type: 'noop' };
+```
+
+- [ ] **Step 1: Add failing transition-table tests**
+
+Create `sfx-transition.test.ts` with a tiny flow containing one linear edge and one choice edge:
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { nextSfxCommand } from '@/lib/audio/sfx-transition';
+import type { StoryFlowConfig } from '@aquila/stories';
+import { nextSfxCommand, type LinePosition } from '@/lib/audio/sfx-transition';
 
-const key = (story: string, scene: string, index: number) =>
-    `${story}\u0000${scene}\u0000${index}`;
+const flow = {
+    start: 'a',
+    nodes: [
+        { kind: 'scene', id: 'a', sceneId: 'a', next: 'b' },
+        { kind: 'scene', id: 'b', sceneId: 'b', next: 'choice:fork' },
+        {
+            kind: 'choice',
+            id: 'choice:fork',
+            choiceId: 'fork',
+            nextByOption: { left: 'c', right: 'd' },
+        },
+        { kind: 'scene', id: 'c', sceneId: 'c', next: null },
+        { kind: 'scene', id: 'd', sceneId: 'd', next: null },
+        { kind: 'scene', id: 'old', sceneId: 'old', next: null },
+    ],
+} satisfies StoryFlowConfig;
 
-describe('nextSfxCommand', () => {
-    it.each([
-        [
-            'first observation primes',
-            null,
-            key('story-a', 'act1', 0),
+const p = (sceneId: string, index: number): LinePosition => ({
+    storyId: 'story',
+    sceneId,
+    index,
+});
+
+const visual = { mode: 'visual' as const, enabled: true, flow };
+
+it.each([
+    ['initial', null, p('a', 0), 'door-open', 'noop'],
+    ['same position', p('a', 0), p('a', 0), 'door-open', 'noop'],
+    ['forward line', p('a', 0), p('a', 1), 'door-open', 'play'],
+    ['backward line', p('a', 2), p('a', 1), 'door-open', 'noop'],
+    ['forward index jump', p('a', 0), p('a', 2), 'door-open', 'noop'],
+    ['linear scene edge', p('a', 3), p('b', 0), 'door-open', 'play'],
+    ['choice scene edge', p('b', 3), p('c', 0), 'door-open', 'play'],
+    ['non-adjacent scene jump', p('c', 1), p('a', 0), 'door-open', 'noop'],
+    ['reverse scene edge', p('b', 0), p('a', 0), 'door-open', 'noop'],
+] as const)(
+    '%s',
+    (_label, previous, next, cueKey, expected) => {
+        expect(nextSfxCommand(previous, next, cueKey, visual).type).toBe(expected);
+    }
+);
+
+it('stops on story replacement', () => {
+    expect(
+        nextSfxCommand(
+            p('a', 1),
+            { storyId: 'replacement', sceneId: 'start', index: 0 },
             'door-open',
-            { mode: 'visual' as const, enabled: true },
-            { type: 'prime' },
-        ],
-        [
-            'same line is a noop',
-            key('story-a', 'act1', 0),
-            key('story-a', 'act1', 0),
-            'door-open',
-            { mode: 'visual' as const, enabled: true },
-            { type: 'noop' },
-        ],
-        [
-            'same-story line change plays',
-            key('story-a', 'act1', 0),
-            key('story-a', 'act1', 1),
-            'door-open',
-            { mode: 'visual' as const, enabled: true },
-            { type: 'play', cueKey: 'door-open' },
-        ],
-        [
-            'same-story scene change plays',
-            key('story-a', 'act1', 3),
-            key('story-a', 'act2', 0),
-            'impact',
-            { mode: 'visual' as const, enabled: true },
-            { type: 'play', cueKey: 'impact' },
-        ],
-        [
-            'cue-less line is a noop',
-            key('story-a', 'act1', 0),
-            key('story-a', 'act1', 1),
-            undefined,
-            { mode: 'visual' as const, enabled: true },
-            { type: 'noop' },
-        ],
-        [
-            'text mode is a noop',
-            key('story-a', 'act1', 0),
-            key('story-a', 'act1', 1),
-            'door-open',
-            { mode: 'text' as const, enabled: true },
-            { type: 'noop' },
-        ],
-        [
-            'disabled sfx is a noop',
-            key('story-a', 'act1', 0),
-            key('story-a', 'act1', 1),
-            'door-open',
-            { mode: 'visual' as const, enabled: false },
-            { type: 'noop' },
-        ],
-        [
-            'story replacement stops instead of playing replacement cue',
-            key('story-a', 'act9', 4),
-            key('story-b', 'act1', 0),
-            'door-open',
-            { mode: 'visual' as const, enabled: true },
-            { type: 'stop' },
-        ],
-    ])('%s', (_label, previous, next, cue, options, expected) => {
-        expect(nextSfxCommand(previous, next, cue, options)).toEqual(expected);
+            visual
+        )
+    ).toEqual({ type: 'stop' });
+});
+
+it.each([
+    [{ mode: 'text' as const, enabled: true, flow }, 'text'],
+    [{ mode: 'visual' as const, enabled: false, flow }, 'disabled'],
+])('does not play while %s', (options) => {
+    expect(nextSfxCommand(p('a', 0), p('a', 1), 'door-open', options)).toEqual({
+        type: 'noop',
+    });
+});
+
+it('does not play an uncued forward transition', () => {
+    expect(nextSfxCommand(p('a', 0), p('a', 1), undefined, visual)).toEqual({
+        type: 'noop',
     });
 });
 ```
@@ -515,51 +509,111 @@ Run:
 bun --filter web test -- sfx-transition.test.ts
 ```
 
-Expected: FAIL because the helper does not exist.
+Expected: FAIL because the module does not exist.
 
-- [ ] **Step 2: Implement the pure helper using the story prefix already embedded in the shell key**
+- [ ] **Step 2: Implement one structured transition helper**
 
-Create `apps/web/src/lib/audio/sfx-transition.ts`:
+Create `sfx-transition.ts`:
 
 ```ts
 import type { ReaderMode } from '@/lib/reader-mode';
+import type { StoryFlowConfig } from '@aquila/stories';
+
+export type LinePosition = {
+    storyId: string;
+    sceneId: string;
+    index: number;
+};
 
 export type SfxCommand =
-    | { type: 'prime' }
     | { type: 'play'; cueKey: string }
     | { type: 'stop' }
     | { type: 'noop' };
 
-function storyIdFromLineKey(lineKey: string): string {
-    const separator = lineKey.indexOf('\u0000');
-    return separator === -1 ? lineKey : lineKey.slice(0, separator);
+export function sameLinePosition(
+    left: LinePosition | null,
+    right: LinePosition
+): boolean {
+    return (
+        left !== null &&
+        left.storyId === right.storyId &&
+        left.sceneId === right.sceneId &&
+        left.index === right.index
+    );
+}
+
+function isDirectFlowEdge(
+    flow: StoryFlowConfig | null,
+    fromSceneId: string,
+    toSceneId: string
+): boolean {
+    if (!flow) return false;
+    const scene = flow.nodes.find(
+        node => node.kind === 'scene' && node.sceneId === fromSceneId
+    );
+    if (!scene || scene.kind !== 'scene' || !scene.next) return false;
+    if (scene.next === toSceneId) return true;
+    if (!scene.next.startsWith('choice:')) return false;
+
+    const choice = flow.nodes.find(
+        node => node.kind === 'choice' && node.id === scene.next
+    );
+    return (
+        choice?.kind === 'choice' &&
+        Object.values(choice.nextByOption).includes(toSceneId)
+    );
+}
+
+function isForwardAdjacent(
+    previous: LinePosition,
+    next: LinePosition,
+    flow: StoryFlowConfig | null
+): boolean {
+    if (previous.storyId !== next.storyId) return false;
+    if (previous.sceneId === next.sceneId) {
+        return next.index === previous.index + 1;
+    }
+    return (
+        next.index === 0 &&
+        isDirectFlowEdge(flow, previous.sceneId, next.sceneId)
+    );
 }
 
 export function nextSfxCommand(
-    previousLineKey: string | null,
-    nextLineKey: string,
+    previous: LinePosition | null,
+    next: LinePosition,
     cueKey: string | undefined,
-    options: { mode: ReaderMode; enabled: boolean }
+    options: {
+        mode: ReaderMode;
+        enabled: boolean;
+        flow: StoryFlowConfig | null;
+    }
 ): SfxCommand {
-    if (previousLineKey === null) return { type: 'prime' };
-    if (previousLineKey === nextLineKey) return { type: 'noop' };
-    if (
-        storyIdFromLineKey(previousLineKey) !== storyIdFromLineKey(nextLineKey)
-    ) {
-        return { type: 'stop' };
+    if (!previous) return { type: 'noop' };
+    if (previous.storyId !== next.storyId) return { type: 'stop' };
+    if (!isForwardAdjacent(previous, next, options.flow)) {
+        return { type: 'noop' };
     }
-    if (options.mode === 'visual' && options.enabled && cueKey) {
-        return { type: 'play', cueKey };
+    if (options.mode !== 'visual' || !options.enabled || !cueKey) {
+        return { type: 'noop' };
     }
-    return { type: 'noop' };
+    return { type: 'play', cueKey };
 }
 ```
 
-Run the focused test again; expected PASS.
+Do not add string parsing or a second line tracker.
 
-- [ ] **Step 3: Add the typed local catalog**
+- [ ] **Step 3: Run transition tests**
 
-Create `apps/web/src/lib/audio/sfx-catalog.ts`:
+```bash
+bun --filter web test -- sfx-transition.test.ts
+```
+
+Expected: PASS.
+
+- [ ] **Step 4: Add the typed local catalog**
+
+Create `sfx-catalog.ts`:
 
 ```ts
 import type { SfxCueKey } from '@aquila/stories';
@@ -569,93 +623,26 @@ export const LOCAL_SFX_CATALOG = {
     'notification-beep': '/assets/vn/audio/sfx/notification-beep.wav',
     impact: '/assets/vn/audio/sfx/impact.wav',
 } satisfies Record<SfxCueKey, string>;
+
+export function resolveLocalSfxUrl(cueKey: string): string | undefined {
+    return (LOCAL_SFX_CATALOG as Readonly<Record<string, string>>)[cueKey];
+}
 ```
 
-Do not export URLs into the stories package.
+- [ ] **Step 5: Add player tests, including both exception paths**
 
-- [ ] **Step 4: Write player tests before implementation**
+Create `sfx-player.test.ts`. Use injected fake audio objects and mock `@/lib/logger`.
 
-Create `apps/web/src/lib/__tests__/sfx-player.test.ts` with a minimal fake audio object:
+Required cases:
 
 ```ts
-import { describe, expect, it, vi } from 'vitest';
-import { createSfxPlayer } from '@/lib/audio/sfx-player';
-
-function fakeAudio(playImpl: () => Promise<void> = async () => {}) {
-    return {
-        pause: vi.fn(),
-        play: vi.fn(playImpl),
-        currentTime: 7,
-    } as unknown as HTMLAudioElement;
-}
-
-describe('createSfxPlayer', () => {
-    it('plays a catalog cue and replaces the previous element', () => {
-        const first = fakeAudio();
-        const second = fakeAudio();
-        const createAudio = vi
-            .fn()
-            .mockReturnValueOnce(first)
-            .mockReturnValueOnce(second);
-        const player = createSfxPlayer(createAudio);
-
-        player.play('door-open');
-        player.play('impact');
-
-        expect(createAudio).toHaveBeenNthCalledWith(
-            1,
-            '/assets/vn/audio/sfx/door-open.wav'
-        );
-        expect(first.pause).toHaveBeenCalledOnce();
-        expect(first.currentTime).toBe(0);
-        expect(second.play).toHaveBeenCalledOnce();
-    });
-
-    it('stops the current cue before quietly ignoring an unknown runtime key', () => {
-        const audio = fakeAudio();
-        const createAudio = vi.fn(() => audio);
-        const player = createSfxPlayer(createAudio);
-
-        player.play('door-open');
-        player.play('not-in-runtime-catalog');
-
-        expect(audio.pause).toHaveBeenCalledOnce();
-        expect(createAudio).toHaveBeenCalledOnce();
-    });
-
-    it('contains a rejected play promise', async () => {
-        const audio = fakeAudio(async () => {
-            throw new Error('autoplay blocked');
-        });
-        const player = createSfxPlayer(() => audio);
-
-        expect(() => player.play('door-open')).not.toThrow();
-        await Promise.resolve();
-    });
-
-    it('stop and dispose pause/rewind and dispose makes the player inert', () => {
-        const first = fakeAudio();
-        const second = fakeAudio();
-        const createAudio = vi
-            .fn()
-            .mockReturnValueOnce(first)
-            .mockReturnValueOnce(second);
-        const player = createSfxPlayer(createAudio);
-
-        player.play('door-open');
-        player.stop();
-        expect(first.pause).toHaveBeenCalledOnce();
-        expect(first.currentTime).toBe(0);
-
-        player.play('impact');
-        player.dispose();
-        expect(second.pause).toHaveBeenCalledOnce();
-        expect(second.currentTime).toBe(0);
-
-        player.play('door-open');
-        expect(createAudio).toHaveBeenCalledTimes(2);
-    });
-});
+it('starts a catalog cue', () => { /* assert createAudio URL + play once */ });
+it('replaces the current cue and rewinds it', () => { /* pause + currentTime=0 */ });
+it('logs and returns for an unknown runtime key', () => { /* logger.warn once */ });
+it('contains a rejected play promise', async () => { /* play -> Promise.reject */ });
+it('contains a synchronous play throw', () => { /* play throws before returning */ });
+it('contains pause/rewind failures during stop', () => { /* pause/currentTime setter throw */ });
+it('disposes once and becomes inert', () => { /* later play is ignored */ });
 ```
 
 Run:
@@ -664,14 +651,15 @@ Run:
 bun --filter web test -- sfx-player.test.ts
 ```
 
-Expected: FAIL because player module does not exist.
+Expected: FAIL because the player does not exist.
 
-- [ ] **Step 5: Implement one-current-element native playback**
+- [ ] **Step 6: Implement the native one-element player**
 
-Create `apps/web/src/lib/audio/sfx-player.ts`:
+Create `sfx-player.ts`:
 
 ```ts
-import { LOCAL_SFX_CATALOG } from './sfx-catalog';
+import { logger } from '@/lib/logger';
+import { resolveLocalSfxUrl } from './sfx-catalog';
 
 export interface SfxPlayer {
     play(cueKey: string): void;
@@ -679,12 +667,13 @@ export interface SfxPlayer {
     dispose(): void;
 }
 
-type AudioFactory = (src: string) => HTMLAudioElement;
+type AudioLike = Pick<HTMLAudioElement, 'play' | 'pause' | 'currentTime'>;
+type CreateAudio = (src: string) => AudioLike;
 
 export function createSfxPlayer(
-    createAudio: AudioFactory = src => new Audio(src)
+    createAudio: CreateAudio = src => new Audio(src)
 ): SfxPlayer {
-    let current: HTMLAudioElement | null = null;
+    let current: AudioLike | null = null;
     let disposed = false;
 
     function stopCurrent(): void {
@@ -693,9 +682,13 @@ export function createSfxPlayer(
         if (!audio) return;
         try {
             audio.pause();
+        } catch {
+            // Best-effort one-shot cleanup.
+        }
+        try {
             audio.currentTime = 0;
         } catch {
-            // Playback cleanup is best-effort.
+            // Best-effort one-shot cleanup.
         }
     }
 
@@ -703,17 +696,20 @@ export function createSfxPlayer(
         play(cueKey: string): void {
             if (disposed) return;
             stopCurrent();
-            const src = (
-                LOCAL_SFX_CATALOG as Readonly<Record<string, string>>
-            )[cueKey];
-            if (!src) return;
-
-            const audio = createAudio(src);
-            current = audio;
+            const src = resolveLocalSfxUrl(cueKey);
+            if (!src) {
+                logger.warn('Unknown visual-novel SFX cue', { cueKey });
+                return;
+            }
             try {
-                void audio.play().catch(() => {});
+                const audio = createAudio(src);
+                current = audio;
+                const result = audio.play();
+                void result.catch(() => {
+                    if (current === audio) current = null;
+                });
             } catch {
-                // Native play can also throw synchronously in test/non-browser shims.
+                current = null;
             }
         },
         stop(): void {
@@ -728,60 +724,27 @@ export function createSfxPlayer(
 }
 ```
 
-Run the focused player test; expected PASS.
+If TypeScript rejects `Pick<HTMLAudioElement, 'currentTime'>` assignment semantics, replace the alias with a local interface containing mutable `currentTime: number`; do not broaden the abstraction.
 
-- [ ] **Step 6: Write preference tests that prove shared storage semantics**
+- [ ] **Step 7: Run player tests**
 
-Create `apps/web/src/lib/__tests__/sfx-preference.test.ts`:
-
-```ts
-import { describe, expect, it } from 'vitest';
-import {
-    readSfxEnabled,
-    SFX_ENABLED_KEY,
-    writeSfxEnabled,
-} from '@/lib/audio/sfx-preference';
-
-function storage(initial: string | null = null): Storage {
-    let value = initial;
-    return {
-        getItem: () => value,
-        setItem: (_key, next) => {
-            value = next;
-        },
-    } as Storage;
-}
-
-describe('sfx preference', () => {
-    it('defaults enabled and round-trips explicit values', () => {
-        const s = storage();
-        expect(readSfxEnabled(s)).toBe(true);
-        writeSfxEnabled(false, s);
-        expect(readSfxEnabled(s)).toBe(false);
-        writeSfxEnabled(true, s);
-        expect(readSfxEnabled(s)).toBe(true);
-    });
-
-    it('uses the expected key and tolerates storage failures', () => {
-        expect(SFX_ENABLED_KEY).toBe('aquila:sfx-enabled:v1');
-        const broken = {
-            getItem: () => {
-                throw new Error('blocked');
-            },
-            setItem: () => {
-                throw new Error('blocked');
-            },
-        } as unknown as Storage;
-
-        expect(readSfxEnabled(broken)).toBe(true);
-        expect(() => writeSfxEnabled(false, broken)).not.toThrow();
-    });
-});
+```bash
+bun --filter web test -- sfx-player.test.ts
 ```
 
-- [ ] **Step 7: Implement preference helpers by reusing `getBrowserStorage()`**
+Expected: PASS.
 
-Create `apps/web/src/lib/audio/sfx-preference.ts`:
+- [ ] **Step 8: Add preference tests and implementation using shared storage access**
+
+Create `sfx-preference.test.ts` covering:
+
+- absent value -> enabled;
+- stored `false` -> disabled;
+- stored `true` -> enabled;
+- write stores `true`/`false`;
+- throwing storage read/write does not escape.
+
+Create `sfx-preference.ts`:
 
 ```ts
 import { getBrowserStorage } from '@/lib/reader-mode';
@@ -810,15 +773,10 @@ export function writeSfxEnabled(
 }
 ```
 
-Do not copy the `globalThis.localStorage` try/catch from `reader-mode.ts`.
-
-- [ ] **Step 8: Run all focused web-audio tests**
+Run:
 
 ```bash
-bun --filter web test -- \
-  sfx-transition.test.ts \
-  sfx-player.test.ts \
-  sfx-preference.test.ts
+bun --filter web test -- sfx-preference.test.ts
 ```
 
 Expected: PASS.
@@ -833,12 +791,12 @@ git add apps/web/src/lib/audio/sfx-catalog.ts \
   apps/web/src/lib/__tests__/sfx-player.test.ts \
   apps/web/src/lib/__tests__/sfx-preference.test.ts \
   apps/web/src/lib/__tests__/sfx-transition.test.ts
-git commit -m "feat(web): add native sfx player"
+git commit -m "feat(web): add visual-novel sfx seam"
 ```
 
 ---
 
-### Task 3: Wire the existing ReaderShell identity and settings surface
+### Task 3: Integrate SFX with the single ReaderShell position tracker and Visual-only settings
 
 **Files:**
 - Modify: `apps/web/src/components/ReaderShell.svelte`
@@ -849,13 +807,88 @@ git commit -m "feat(web): add native sfx player"
 - Modify: `packages/stories/src/translations/zh.json`
 
 **Interfaces:**
-- Consumes: `createSfxPlayer(): SfxPlayer`, `nextSfxCommand(...)`, `readSfxEnabled()`, `writeSfxEnabled()`.
-- Extends `ReaderShell` props with injectable `createSfxPlayer?: () => SfxPlayer`.
-- Extends `ReaderSettingsMenu` required props with `sfxEnabled` and `onSfxEnabledChange`.
+- `ReaderShell` gains injectable `createSfxPlayer?: () => SfxPlayer`.
+- `ReaderSettingsMenu` gains required `sfxEnabled: boolean` and `onSfxEnabledChange(enabled: boolean)` props.
 
-- [ ] **Step 1: Add the SFX fake and minimal integration cases to `ReaderShell.test.ts`**
+- [ ] **Step 1: Extend `ReaderSettingsMenu.test.ts` required props and add Visual-only toggle tests**
 
-Add a harness:
+Update `renderSettings()` defaults:
+
+```ts
+sfxEnabled: true,
+onSfxEnabledChange: vi.fn(),
+```
+
+Add:
+
+```ts
+it('shows and toggles Sound Effects only in Visual mode', async () => {
+    const onSfxEnabledChange = vi.fn();
+    const view = renderSettings({ onSfxEnabledChange, mode: 'visual' });
+
+    const toggle = screen.getByRole('button', { name: /Sound effects/i });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await fireEvent.click(toggle);
+    expect(onSfxEnabledChange).toHaveBeenCalledWith(false);
+
+    view.unmount();
+    renderSettings({ mode: 'text' });
+    expect(
+        screen.queryByRole('button', { name: /Sound effects/i })
+    ).not.toBeInTheDocument();
+});
+```
+
+Because this test uses real translations, missing translation keys fail here rather than being hidden by the `ReaderShell` translation mock.
+
+- [ ] **Step 2: Add translations and Visual-only menu UI**
+
+Add reader keys:
+
+`en.json`:
+
+```json
+"soundEffects": "Sound effects",
+"soundEffectsOn": "On",
+"soundEffectsOff": "Off"
+```
+
+`zh.json`:
+
+```json
+"soundEffects": "音效",
+"soundEffectsOn": "開啟",
+"soundEffectsOff": "關閉"
+```
+
+Add props to `ReaderSettingsMenu.svelte` and render after the mode selector:
+
+```svelte
+{#if mode === 'visual'}
+  <button
+    type="button"
+    class="flex items-center justify-between rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+    aria-pressed={sfxEnabled}
+    aria-label={t.reader.soundEffects}
+    onclick={() => onSfxEnabledChange(!sfxEnabled)}
+  >
+    <span>{t.reader.soundEffects}</span>
+    <span>{sfxEnabled ? t.reader.soundEffectsOn : t.reader.soundEffectsOff}</span>
+  </button>
+{/if}
+```
+
+Run:
+
+```bash
+bun --filter web test -- ReaderSettingsMenu.test.ts
+```
+
+Expected: PASS.
+
+- [ ] **Step 3: Add a fake SFX player to `ReaderShell.test.ts` and focused integration cases**
+
+Extend mocked reader translations with the three SFX keys. Add a harness:
 
 ```ts
 function createSfxHarness() {
@@ -869,111 +902,36 @@ function createSfxHarness() {
 }
 ```
 
-Give the second existing mock line one cue:
+Add only integration cases that pure helper tests cannot prove:
 
-```ts
-const mockDialogue: DialogueEntry[] = [
-    { characterId: 'narrator', dialogue: 'First dialogue line.' },
-    {
-        characterId: 'narrator',
-        dialogue: 'Second dialogue line.',
-        sfx: 'door-open',
-    },
-    { characterId: 'narrator', dialogue: 'Third dialogue line.' },
-];
-```
+1. initial line is silent, then `dialogueIndex = 1` in Visual mode delegates that line's cue once;
+2. responsive remount keeps the same injected player and does not replay an unchanged position;
+3. a non-adjacent scene jump updates the shell but does not call `play`;
+4. Visual -> Text calls `stop`;
+5. disabling SFX calls `stop`, and re-enabling does not replay current line;
+6. story replacement calls `stop` and does not play replacement line;
+7. unmount calls `dispose` once.
 
-Add focused shell wiring tests:
+Use SFX-bearing test dialogue only in tests that need it; do not rewrite the entire existing fixture array.
 
-```ts
-it('primes silently then delegates one cue for a real Visual line change', async () => {
-    stubMatchMedia(false);
-    localStorage.setItem(READER_MODE_KEY, 'visual');
-    const { player } = createSfxHarness();
-    render(ReaderShell, { props: { createSfxPlayer: () => player } });
+- [ ] **Step 4: Integrate one structured position tracker in `ReaderShell`**
 
-    expect(player.play).not.toHaveBeenCalled();
-
-    readerState.dialogueIndex = 1;
-    await tick();
-
-    expect(player.play).toHaveBeenCalledOnce();
-    expect(player.play).toHaveBeenCalledWith('door-open');
-});
-
-it('does not recreate or replay sfx across a responsive remount', async () => {
-    const mm = stubMatchMedia(false);
-    localStorage.setItem(READER_MODE_KEY, 'visual');
-    readerState.dialogueIndex = 1;
-    const { player } = createSfxHarness();
-    const createPlayer = vi.fn(() => player);
-    render(ReaderShell, { props: { createSfxPlayer: createPlayer } });
-
-    mm.setMatches(true);
-    await tick();
-    mm.setMatches(false);
-    await tick();
-
-    expect(createPlayer).toHaveBeenCalledOnce();
-    expect(player.play).not.toHaveBeenCalled();
-});
-
-it('stops on story replacement without autoplaying the replacement line', async () => {
-    stubMatchMedia(false);
-    localStorage.setItem(READER_MODE_KEY, 'visual');
-    const { player } = createSfxHarness();
-    render(ReaderShell, { props: { createSfxPlayer: () => player } });
-
-    readerState.storyId = 'replacement_story';
-    readerState.currentSceneId = 'act1';
-    readerState.dialogueIndex = 0;
-    readerState.dialogue = [
-        { dialogue: 'Replacement first line', sfx: 'door-open' },
-    ];
-    await tick();
-
-    expect(player.stop).toHaveBeenCalledOnce();
-    expect(player.play).not.toHaveBeenCalled();
-});
-
-it('disposes the injected player with the shell', () => {
-    stubMatchMedia(false);
-    const { player } = createSfxHarness();
-    const view = render(ReaderShell, {
-        props: { createSfxPlayer: () => player },
-    });
-
-    view.unmount();
-
-    expect(player.dispose).toHaveBeenCalledOnce();
-});
-```
-
-Run:
-
-```bash
-bun --filter web test -- ReaderShell.test.ts
-```
-
-Expected: FAIL because the shell does not accept/use the player yet.
-
-- [ ] **Step 2: Replace the existing line effect with one shared progression observer**
-
-Add imports in `ReaderShell.svelte`:
+Import:
 
 ```ts
 import {
   createSfxPlayer as createDefaultSfxPlayer,
   type SfxPlayer,
 } from '@/lib/audio/sfx-player';
-import { nextSfxCommand } from '@/lib/audio/sfx-transition';
+import { readSfxEnabled, writeSfxEnabled } from '@/lib/audio/sfx-preference';
 import {
-  readSfxEnabled,
-  writeSfxEnabled,
-} from '@/lib/audio/sfx-preference';
+  nextSfxCommand,
+  sameLinePosition,
+  type LinePosition,
+} from '@/lib/audio/sfx-transition';
 ```
 
-Add the injectable prop beside `createVisualRuntime`:
+Add injected prop:
 
 ```ts
 createSfxPlayer = createDefaultSfxPlayer,
@@ -985,34 +943,29 @@ with type:
 createSfxPlayer?: () => SfxPlayer;
 ```
 
-Create shell-owned instances once:
+Create shell-owned values once:
 
 ```ts
-let sfxEnabled = $state(readSfxEnabled());
 const sfxPlayer = createSfxPlayer();
+let sfxEnabled = $state(readSfxEnabled());
+let lastActivePosition: LinePosition | null = $state(null);
 ```
 
-Replace the current `lastActiveLineKey` effect with one observer that preserves visual revalidation and adds SFX commands without another identity tracker:
+Replace `lastActiveLineKey` with the structured position. The single progression effect becomes:
 
 ```ts
-let lastActiveLineKey: string | null = $state(null);
 $effect(() => {
-    const activeLineKey =
-        `${storyId}\u0000${currentSceneId}\u0000${dialogueIndex}`;
-    const previousLineKey = lastActiveLineKey;
-    const lineChanged =
-        previousLineKey !== null && previousLineKey !== activeLineKey;
-    const command = nextSfxCommand(
-        previousLineKey,
-        activeLineKey,
-        dialogue[dialogueIndex]?.sfx,
-        { mode: readerMode, enabled: sfxEnabled }
-    );
-
-    lastActiveLineKey = activeLineKey;
+    const nextPosition: LinePosition = {
+        storyId,
+        sceneId: currentSceneId,
+        index: dialogueIndex,
+    };
+    const previous = lastActivePosition;
+    if (sameLinePosition(previous, nextPosition)) return;
+    lastActivePosition = nextPosition;
 
     if (
-        lineChanged &&
+        previous !== null &&
         readerMode === 'visual' &&
         visualRuntime &&
         visualRuntimeStoryId === storyId
@@ -1020,16 +973,22 @@ $effect(() => {
         void visualRuntime.softRevalidate();
     }
 
+    const command = nextSfxCommand(
+        previous,
+        nextPosition,
+        dialogue[dialogueIndex]?.sfx,
+        { mode: readerMode, enabled: sfxEnabled, flow: activeFlow }
+    );
     if (command.type === 'play') sfxPlayer.play(command.cueKey);
     else if (command.type === 'stop') sfxPlayer.stop();
 });
 ```
 
-Do not call `softRevalidate()` on the initial `prime`; the existing behavior is retained by `previousLineKey !== null`.
+This is the only previous-line tracker.
 
-- [ ] **Step 3: Add explicit mode/preference/destroy cleanup**
+- [ ] **Step 5: Add explicit mode/preference cleanup**
 
-In `setReaderMode`:
+In `setReaderMode`, before/while changing to Text:
 
 ```ts
 if (mode === 'text') sfxPlayer.stop();
@@ -1052,126 +1011,22 @@ In `onDestroy`:
 sfxPlayer.dispose();
 ```
 
-Because changing mode/preference does not change `activeLineKey`, the shared effect returns `noop` for the current line and re-enable/Text->Visual cannot replay it.
-
-- [ ] **Step 4: Update the settings component test helper before changing required props**
-
-In `ReaderSettingsMenu.test.ts`, extend `renderSettings()`:
-
-```ts
-sfxEnabled: true,
-onSfxEnabledChange: vi.fn(),
-```
-
-Add a direct settings contract test:
-
-```ts
-it('exposes and toggles the sound-effects preference', async () => {
-    const onSfxEnabledChange = vi.fn();
-    const view = renderSettings({ onSfxEnabledChange, sfxEnabled: true });
-
-    const enabled = screen.getByRole('button', { name: /Sound effects/i });
-    expect(enabled).toHaveAttribute('aria-pressed', 'true');
-    await fireEvent.click(enabled);
-    expect(onSfxEnabledChange).toHaveBeenCalledWith(false);
-
-    view.unmount();
-    renderSettings({ sfxEnabled: false });
-    expect(
-        screen.getByRole('button', { name: /Sound effects/i })
-    ).toHaveAttribute('aria-pressed', 'false');
-});
-```
-
-Run `ReaderSettingsMenu.test.ts`; expected FAIL until props/UI/translations exist.
-
-- [ ] **Step 5: Add settings props, UI, and translation parity**
-
-Pass from `ReaderShell`:
+Pass settings props:
 
 ```svelte
 {sfxEnabled}
 onSfxEnabledChange={setSfxEnabled}
 ```
 
-Add required props in `ReaderSettingsMenu.svelte`:
-
-```ts
-sfxEnabled: boolean;
-onSfxEnabledChange: (enabled: boolean) => void;
-```
-
-Render after the Text/Visual selector:
-
-```svelte
-<button
-  type="button"
-  class="flex items-center justify-between rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
-  aria-pressed={sfxEnabled}
-  onclick={() => onSfxEnabledChange(!sfxEnabled)}
->
-  <span>{t.reader.soundEffects}</span>
-  <span>{sfxEnabled ? t.reader.soundEffectsOn : t.reader.soundEffectsOff}</span>
-</button>
-```
-
-Add to `packages/stories/src/translations/en.json` under `reader`:
-
-```json
-"soundEffects": "Sound effects",
-"soundEffectsOn": "On",
-"soundEffectsOff": "Off"
-```
-
-Add to `zh.json`:
-
-```json
-"soundEffects": "音效",
-"soundEffectsOn": "開啟",
-"soundEffectsOff": "關閉"
-```
-
-Update the mocked `reader` translation object in `ReaderShell.test.ts` with the same three English keys.
-
-Do not modify `MobileNovelReader` for this setting.
-
-- [ ] **Step 6: Add one shell settings-wiring assertion**
-
-Extend `ReaderShell.test.ts` with a small test that opens settings, starts from enabled, clicks Sound effects, and checks `player.stop()` plus persistence:
-
-```ts
-it('stops immediately and persists when sfx is disabled', async () => {
-    stubMatchMedia(false);
-    localStorage.setItem(READER_MODE_KEY, 'visual');
-    const { player } = createSfxHarness();
-    render(ReaderShell, { props: { createSfxPlayer: () => player } });
-
-    await fireEvent.click(
-        screen.getByRole('button', { name: 'Open reader settings' })
-    );
-    await fireEvent.click(
-        screen.getByRole('button', { name: /Sound effects/i })
-    );
-
-    expect(player.stop).toHaveBeenCalledOnce();
-    expect(localStorage.getItem('aquila:sfx-enabled:v1')).toBe('false');
-});
-```
-
-- [ ] **Step 7: Run the focused reader/settings suite**
+- [ ] **Step 6: Run focused shell/settings tests**
 
 ```bash
-bun --filter web test -- \
-  ReaderSettingsMenu.test.ts \
-  ReaderShell.test.ts \
-  sfx-transition.test.ts \
-  sfx-player.test.ts \
-  sfx-preference.test.ts
+bun --filter web test -- ReaderShell.test.ts ReaderSettingsMenu.test.ts
 ```
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit ReaderShell/settings integration**
+- [ ] **Step 7: Commit reader integration**
 
 ```bash
 git add apps/web/src/components/ReaderShell.svelte \
@@ -1180,14 +1035,17 @@ git add apps/web/src/components/ReaderShell.svelte \
   apps/web/src/components/__tests__/ReaderSettingsMenu.test.ts \
   packages/stories/src/translations/en.json \
   packages/stories/src/translations/zh.json
-git commit -m "feat(web): play dialogue sfx from reader shell"
+git commit -m "feat(web): play dialogue sfx on forward progression"
 ```
 
 ---
 
-### Task 4: Generate valid local WAV fixtures and annotate three existing beats
+### Task 4: Add reproducible PCM fixtures, CI verification, and three authored beats
 
 **Files:**
+- Create: `apps/web/scripts/build-sfx-fixtures.ts`
+- Modify: `apps/web/package.json`
+- Modify: `.github/workflows/build-and-lint.yml`
 - Create: `apps/web/public/assets/vn/audio/sfx/door-open.wav`
 - Create: `apps/web/public/assets/vn/audio/sfx/notification-beep.wav`
 - Create: `apps/web/public/assets/vn/audio/sfx/impact.wav`
@@ -1197,91 +1055,141 @@ git commit -m "feat(web): play dialogue sfx from reader shell"
 - Regenerate: `packages/stories/src/generated/theSeventhMirror/scenes/ch1_act4.ts`
 
 **Interfaces:**
-- Authored keys must exactly match the bootstrap allowlist and web catalog.
-- WAVs are 8 kHz, mono, 16-bit PCM RIFF/WAVE files generated from synthetic samples.
+- `bun --filter web build:sfx-fixtures` regenerates all three WAVs deterministically.
+- `bun --filter web verify:sfx-fixtures` structurally validates and byte-compares committed fixtures to regenerated expected bytes.
 
-- [ ] **Step 1: Generate three deterministic, license-free PCM WAV fixtures**
+- [ ] **Step 1: Add the committed deterministic fixture builder/verifier**
 
-Run this one-off Bun script from the repository root; do not commit the script itself:
+Create `apps/web/scripts/build-sfx-fixtures.ts`:
 
-```bash
-mkdir -p /tmp/aquila-hpa604
-cat >/tmp/aquila-hpa604/generate-wav.ts <<'EOF'
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+```ts
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 
-const sampleRate = 8000;
+const SAMPLE_RATE = 8_000;
+const CHANNELS = 1;
+const BITS_PER_SAMPLE = 16;
+const webRoot = process.cwd();
+const outputRoot = resolve(webRoot, 'public/assets/vn/audio/sfx');
 
-function writeWav(
-    path: string,
-    durationSeconds: number,
-    sample: (t: number) => number
-): void {
-    const sampleCount = Math.floor(sampleRate * durationSeconds);
-    const data = Buffer.alloc(sampleCount * 2);
-    for (let i = 0; i < sampleCount; i += 1) {
-        const t = i / sampleRate;
-        const value = Math.max(-1, Math.min(1, sample(t)));
-        data.writeInt16LE(Math.round(value * 32767), i * 2);
+function pcm16Wav(samples: Int16Array): Buffer {
+    const dataBytes = samples.length * 2;
+    const buffer = Buffer.alloc(44 + dataBytes);
+    buffer.write('RIFF', 0, 'ascii');
+    buffer.writeUInt32LE(36 + dataBytes, 4);
+    buffer.write('WAVE', 8, 'ascii');
+    buffer.write('fmt ', 12, 'ascii');
+    buffer.writeUInt32LE(16, 16);
+    buffer.writeUInt16LE(1, 20); // PCM
+    buffer.writeUInt16LE(CHANNELS, 22);
+    buffer.writeUInt32LE(SAMPLE_RATE, 24);
+    buffer.writeUInt32LE(SAMPLE_RATE * CHANNELS * 2, 28);
+    buffer.writeUInt16LE(CHANNELS * 2, 32);
+    buffer.writeUInt16LE(BITS_PER_SAMPLE, 34);
+    buffer.write('data', 36, 'ascii');
+    buffer.writeUInt32LE(dataBytes, 40);
+    for (let i = 0; i < samples.length; i += 1) {
+        buffer.writeInt16LE(samples[i], 44 + i * 2);
     }
-
-    const header = Buffer.alloc(44);
-    header.write('RIFF', 0);
-    header.writeUInt32LE(36 + data.length, 4);
-    header.write('WAVE', 8);
-    header.write('fmt ', 12);
-    header.writeUInt32LE(16, 16);
-    header.writeUInt16LE(1, 20); // PCM
-    header.writeUInt16LE(1, 22); // mono
-    header.writeUInt32LE(sampleRate, 24);
-    header.writeUInt32LE(sampleRate * 2, 28);
-    header.writeUInt16LE(2, 32);
-    header.writeUInt16LE(16, 34);
-    header.write('data', 36);
-    header.writeUInt32LE(data.length, 40);
-
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, Buffer.concat([header, data]));
+    return buffer;
 }
 
-const out = 'apps/web/public/assets/vn/audio/sfx';
+function synth(
+    durationMs: number,
+    sampleAt: (timeSeconds: number, progress: number) => number
+): Buffer {
+    const count = Math.round((SAMPLE_RATE * durationMs) / 1000);
+    const samples = new Int16Array(count);
+    for (let i = 0; i < count; i += 1) {
+        const t = i / SAMPLE_RATE;
+        const progress = i / Math.max(1, count - 1);
+        const value = Math.max(-1, Math.min(1, sampleAt(t, progress)));
+        samples[i] = Math.round(value * 0x7fff);
+    }
+    return pcm16Wav(samples);
+}
 
-writeWav(`${out}/notification-beep.wav`, 0.18, t => {
-    const envelope = Math.min(1, t / 0.01) * Math.exp(-5 * t);
-    return 0.45 * Math.sin(2 * Math.PI * 880 * t) * envelope;
-});
+function fixtures(): Record<string, Buffer> {
+    return {
+        'notification-beep.wav': synth(180, (t, p) =>
+            Math.sin(2 * Math.PI * 880 * t) * Math.sin(Math.PI * p) * 0.5
+        ),
+        'impact.wav': synth(220, (t, p) =>
+            Math.sin(2 * Math.PI * 95 * t) * Math.exp(-7 * p) * 0.9
+        ),
+        'door-open.wav': synth(450, (t, p) => {
+            const frequency = 150 - 70 * p;
+            return Math.sin(2 * Math.PI * frequency * t) * (1 - p) * 0.55;
+        }),
+    };
+}
 
-writeWav(`${out}/impact.wav`, 0.22, t => {
-    const envelope = Math.exp(-18 * t);
-    return (
-        0.7 * Math.sin(2 * Math.PI * 90 * t) +
-        0.25 * Math.sin(2 * Math.PI * 180 * t)
-    ) * envelope;
-});
+function verifyWav(name: string, bytes: Buffer): void {
+    if (bytes.toString('ascii', 0, 4) !== 'RIFF') throw new Error(`${name}: RIFF`);
+    if (bytes.toString('ascii', 8, 12) !== 'WAVE') throw new Error(`${name}: WAVE`);
+    if (bytes.toString('ascii', 12, 16) !== 'fmt ') throw new Error(`${name}: fmt`);
+    if (bytes.readUInt16LE(20) !== 1) throw new Error(`${name}: not PCM`);
+    if (bytes.readUInt16LE(22) !== 1) throw new Error(`${name}: not mono`);
+    if (bytes.readUInt16LE(34) !== 16) throw new Error(`${name}: not PCM-16`);
+    if (bytes.toString('ascii', 36, 40) !== 'data') throw new Error(`${name}: data`);
+    const dataBytes = bytes.readUInt32LE(40);
+    if (dataBytes <= 0 || bytes.length !== 44 + dataBytes) {
+        throw new Error(`${name}: invalid data length`);
+    }
+}
 
-writeWav(`${out}/door-open.wav`, 0.35, t => {
-    const frequency = 140 + 180 * t;
-    const envelope = Math.min(1, t / 0.02) * Math.exp(-5 * t);
-    return (
-        0.38 * Math.sin(2 * Math.PI * frequency * t) +
-        0.12 * Math.sin(2 * Math.PI * 60 * t)
-    ) * envelope;
-});
-EOF
-bun /tmp/aquila-hpa604/generate-wav.ts
+export async function buildSfxFixtures(): Promise<void> {
+    for (const [name, bytes] of Object.entries(fixtures())) {
+        const path = resolve(outputRoot, name);
+        await mkdir(dirname(path), { recursive: true });
+        await writeFile(path, bytes);
+    }
+}
+
+export async function verifySfxFixtures(): Promise<void> {
+    for (const [name, expected] of Object.entries(fixtures())) {
+        const actual = await readFile(resolve(outputRoot, name));
+        verifyWav(name, actual);
+        if (!actual.equals(expected)) {
+            throw new Error(`${name}: committed bytes differ from deterministic generator`);
+        }
+    }
+}
+
+if (import.meta.main) {
+    if (process.argv.includes('--verify')) await verifySfxFixtures();
+    else await buildSfxFixtures();
+}
 ```
 
-Verify file structure, not just non-empty bytes:
+- [ ] **Step 2: Wire build/verify scripts and CI verification**
+
+Add to `apps/web/package.json`:
+
+```json
+"build:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts",
+"verify:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts --verify"
+```
+
+In `.github/workflows/build-and-lint.yml`, directly after visual fixture verification:
+
+```yaml
+      - name: Verify SFX fixtures
+        run: bun --filter web verify:sfx-fixtures
+```
+
+- [ ] **Step 3: Generate and verify the WAV files**
 
 ```bash
-file apps/web/public/assets/vn/audio/sfx/*.wav
+bun --filter web build:sfx-fixtures
+bun --filter web verify:sfx-fixtures
 ```
 
-Expected for each file: RIFF/WAVE, Microsoft PCM, 16-bit mono, 8000 Hz (wording varies by `file` version).
+Expected: both commands exit 0 and the three exact WAV paths exist.
 
-- [ ] **Step 2: Add only the three approved authoring cues**
+- [ ] **Step 4: Annotate exactly three existing story beats**
 
-In `packages/stories/raw/theSeventhMirror/chapter_1/act1.md`, immediately before the existing foot-floor line:
+In `chapter_1/act1.md`, place:
 
 ````markdown
 ```sfx
@@ -1289,13 +1197,9 @@ impact
 ```
 ````
 
-Immediately before the existing line:
+immediately before the existing narration where Mio's feet hit the floor.
 
-```markdown
-**旁白**：澪推開悠真的房門。
-```
-
-add:
+Place:
 
 ````markdown
 ```sfx
@@ -1303,7 +1207,9 @@ door-open
 ```
 ````
 
-In `packages/stories/raw/theSeventhMirror/chapter_1/act4.md`, immediately before the existing line where Mio's phone rings (`澪的手機響了`), add:
+immediately before `**旁白**：澪推開悠真的房門。`.
+
+In `chapter_1/act4.md`, place:
 
 ````markdown
 ```sfx
@@ -1311,40 +1217,36 @@ notification-beep
 ```
 ````
 
-Do not add any other audio direction.
+immediately before the existing narration where Mio's phone rings.
 
-- [ ] **Step 3: Compile stories and inspect the exact generated fields**
+Do not annotate any additional lines.
+
+- [ ] **Step 5: Regenerate stories and inspect only the intended generated scene files**
 
 ```bash
 bun run compile:stories
-```
-
-Inspect:
-
-```bash
-git diff -- \
-  packages/stories/src/generated/theSeventhMirror/scenes/ch1_act1.ts \
+git diff -- packages/stories/src/generated/theSeventhMirror/scenes/ch1_act1.ts \
   packages/stories/src/generated/theSeventhMirror/scenes/ch1_act4.ts
 ```
 
-Expected:
+Expected: exactly three emitted `sfx` properties across those two generated scene files.
 
-- exactly one `sfx: "impact"` and one `sfx: "door-open"` in `ch1_act1.ts`;
-- exactly one `sfx: "notification-beep"` in `ch1_act4.ts`;
-- uncued generated entries remain structurally unchanged.
-
-- [ ] **Step 4: Run stories tests after real source compilation**
+- [ ] **Step 6: Run focused compiler and fixture verification**
 
 ```bash
-bun --filter @aquila/stories test
+bun --filter @aquila/stories test -- parse-scene.test.ts emit.test.ts
+bun --filter web verify:sfx-fixtures
 ```
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit fixtures and authored/generated cues with explicit paths**
+- [ ] **Step 7: Commit fixtures/content/CI wiring**
 
 ```bash
-git add apps/web/public/assets/vn/audio/sfx/door-open.wav \
+git add apps/web/scripts/build-sfx-fixtures.ts \
+  apps/web/package.json \
+  .github/workflows/build-and-lint.yml \
+  apps/web/public/assets/vn/audio/sfx/door-open.wav \
   apps/web/public/assets/vn/audio/sfx/notification-beep.wav \
   apps/web/public/assets/vn/audio/sfx/impact.wav \
   packages/stories/raw/theSeventhMirror/chapter_1/act1.md \
@@ -1354,103 +1256,93 @@ git add apps/web/public/assets/vn/audio/sfx/door-open.wav \
 git commit -m "feat(story): add local dialogue sfx fixtures"
 ```
 
-Do not use `git add -p` or `git add -A` for this task.
+Do not use `git add -p` or `git add -A`.
 
 ---
 
-### Task 5: Run full verification and manual lifecycle smoke
+### Task 5: Run full coverage-aware verification and manual lifecycle smoke
 
-**Files:**
-- No planned source changes. If a verification command changes generated output, stop and reconcile that drift with the task that owns the file before proceeding.
+**Files:** none unless verification exposes a defect.
 
-**Interfaces:**
-- Verifies the complete HPA-604 acceptance contract.
+**Interfaces:** this task proves the implementation against repository CI gates and HPA-604 lifecycle requirements.
 
-- [ ] **Step 1: Run the complete automated verification set from repository root**
+- [ ] **Step 1: Run the full automated verification set**
 
 ```bash
 bun --filter @aquila/stories test
-bun --filter web test
+bun --filter web test:coverage
+bun --filter web verify:sfx-fixtures
 bun run compile:check
 bun run lint
 bun run build
 ```
 
-Expected: every command exits 0. `compile:check` must leave no diff in generated story output.
+Expected: every command exits 0. `test:coverage` is mandatory because `.github/workflows/unit-tests.yml` uses it and `codecov.yml` requires 95% project and patch coverage.
 
-- [ ] **Step 2: Confirm the implementation diff stayed inside the planned surface**
+If `test:coverage` exposes uncovered new branches, add focused tests rather than exclusions. In particular, confirm coverage exists for:
+
+- unknown runtime cue diagnostic;
+- rejected `play()` promise;
+- synchronous `play()` throw;
+- pause/rewind failure containment;
+- first-position `noop`;
+- backward index and forward index-jump `noop`;
+- non-adjacent scene-jump `noop`;
+- Visual -> Text `stop`;
+- Visual-only settings toggle branch.
+
+There is no separator-less line-key branch to cover because HPA-604 no longer parses opaque NUL-joined keys.
+
+- [ ] **Step 2: Run manual progression/navigation smoke in Visual mode**
+
+Verify in this order:
+
+1. initial/restored line is silent;
+2. normal forward line progression plays an authored cue exactly once;
+3. all three local fixtures can be reached and heard;
+4. moving backward within a scene does not replay a cue;
+5. browser Back to an earlier position does not replay a cue;
+6. Act panel jump to a non-adjacent earlier/read scene does not replay a cue;
+7. a real linear next-scene transition may play an authored destination cue;
+8. a real choice transition may play an authored destination cue;
+9. History open/close and responsive breakpoint remount do not replay;
+10. disabling SFX during playback stops immediately;
+11. re-enabling does not replay the current line;
+12. reload preserves the muted preference;
+13. switching to Text stops playback, hides the SFX control, and later dialogue remains silent.
+
+- [ ] **Step 3: Confirm the final diff stays within HPA-604 scope**
 
 ```bash
 git status --short
-git diff main...HEAD --name-only
+git diff main...HEAD --stat
 ```
 
-Expected implementation paths are limited to:
+Expected scope:
 
-```text
-packages/stories/src/audio-cues.ts
-packages/stories/src/index.ts
-packages/stories/src/compiler/parse-scene.ts
-packages/stories/src/compiler/ir.ts
-packages/stories/src/types.ts
-packages/stories/src/compiler/emit.ts
-packages/stories/src/compiler/__tests__/parse-scene.test.ts
-packages/stories/src/compiler/__tests__/emit.test.ts
-apps/web/src/lib/audio/sfx-catalog.ts
-apps/web/src/lib/audio/sfx-player.ts
-apps/web/src/lib/audio/sfx-preference.ts
-apps/web/src/lib/audio/sfx-transition.ts
-apps/web/src/lib/__tests__/sfx-player.test.ts
-apps/web/src/lib/__tests__/sfx-preference.test.ts
-apps/web/src/lib/__tests__/sfx-transition.test.ts
-apps/web/src/components/ReaderShell.svelte
-apps/web/src/components/ReaderSettingsMenu.svelte
-apps/web/src/components/__tests__/ReaderShell.test.ts
-apps/web/src/components/__tests__/ReaderSettingsMenu.test.ts
-packages/stories/src/translations/en.json
-packages/stories/src/translations/zh.json
-apps/web/public/assets/vn/audio/sfx/door-open.wav
-apps/web/public/assets/vn/audio/sfx/notification-beep.wav
-apps/web/public/assets/vn/audio/sfx/impact.wav
-packages/stories/raw/theSeventhMirror/chapter_1/act1.md
-packages/stories/raw/theSeventhMirror/chapter_1/act4.md
-packages/stories/src/generated/theSeventhMirror/scenes/ch1_act1.ts
-packages/stories/src/generated/theSeventhMirror/scenes/ch1_act4.ts
-```
+- story SFX metadata/compiler/tests;
+- web SFX transition/player/preference/settings/tests;
+- one deterministic SFX fixture script + package/CI verification wiring;
+- three WAV fixtures;
+- exactly three Seventh Mirror authoring annotations and regenerated output.
 
-Documentation-plan files may also be present if implementation is performed on this planning branch. Any other source path requires an explicit scope explanation before merge.
+There must be no BGM implementation, audio-plan schema, R2 resolver, visual-resolver generalization, Phaser changes, generic event/audio manager, or story-wide cue pass.
 
-- [ ] **Step 3: Run the manual web-reader smoke**
+- [ ] **Step 4: Commit only if verification required a follow-up fix**
 
-Start the web app with the project's existing development command and exercise a Seventh Mirror path containing the three annotated lines.
-
-Verify, in order:
-
-1. initial/restored Visual line stays silent;
-2. foot-floor `impact` plays once on entering that line;
-3. bedroom `door-open` plays once;
-4. phone `notification-beep` plays once;
-5. open/close Settings and History while on a cued line — no replay;
-6. cross the `1023px` responsive breakpoint — no replay;
-7. disable Sound effects while a fixture is playing — it stops immediately;
-8. reload — disabled state persists;
-9. re-enable — current line does not replay;
-10. advance to a later cue — playback resumes;
-11. switch to Text — current effect stops and later cues remain silent;
-12. switch back to Visual — current line does not replay.
-
-- [ ] **Step 4: Record verification evidence in the implementation PR description**
-
-Record the five automated commands and the manual smoke result. Do not claim passing status for any command that was not freshly run.
+Stage the exact files changed by that fix and use a narrow commit message describing the defect. Do not create a no-op verification commit.
 
 ---
 
-## Review Resolution Embedded in This Plan
+## Self-Review Against Planning Feedback
 
-- **Compiler contract:** accepted. HPA-604 now has a tiny shared three-key bootstrap allowlist, strict malformed/unknown/pending/EOF failures, and `Record<SfxCueKey, string>` catalog completeness. HPA-606 still owns the real per-story audio-plan authority.
-- **Line identity:** accepted. No SFX-specific identity state; `nextSfxCommand` is pure and consumes the existing shell line key.
-- **Storage reuse:** accepted. `sfx-preference.ts` imports `getBrowserStorage()`.
-- **Settings tests:** accepted. `ReaderSettingsMenu.test.ts` is explicitly in the file map and owns direct toggle semantics.
-- **Fixtures:** accepted. WAVs are generated as valid deterministic PCM, then checked with `file`.
-- **Agentic staging:** accepted. Every commit step names exact paths; no `git add -p` or `git add -A`.
+- **Compiler contract:** strict bootstrap allowlist, malformed/unknown/pending/EOF failures, and typed catalog completeness retained.
+- **Navigation:** corrected. The helper uses structured positions and direct flow adjacency, so backward movement and non-adjacent Act-panel jumps do not play. Actual linear/choice progression remains eligible.
+- **Identity:** one structured previous position replaces the opaque string tracker; no duplicate line-identity machine.
+- **History terminology:** corrected. `VisualBacklog` is read-only; `ActPanel` is the scene-jump surface.
+- **Fixture reproducibility:** corrected. A committed deterministic builder has a structural + byte-equality verify mode and CI command.
+- **Coverage:** corrected. Final verification uses the same `web test:coverage` mode as CI and explicitly covers exception/navigation branches.
+- **Settings:** corrected. Sound Effects renders only in Visual settings; direct menu tests own visibility and `aria-pressed` behavior.
+- **Runtime diagnostics:** corrected. Unknown runtime keys use the existing logger while staying invisible to the reader.
+- **HPA-610 boundary:** clarified. HPA-604 keeps one local catalog seam; HPA-610 replaces it with its dedicated audio resolver rather than turning the image-specific `WebAssetResolver` into a generic media subsystem.
 - **Non-goals:** unchanged.

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add strict line-authored persistent BGM commands, one native looping browser channel, independent persisted BGM settings, deterministic local fixtures, and three narrow Seventh Mirror demonstration beats.
+**Goal:** Add strict line-authored persistent BGM commands, one native looping browser channel, independent persisted BGM settings, deterministic local fixtures, safe cue-less jump behavior, and three narrow Seventh Mirror demonstration beats.
 
-**Architecture:** Keep BGM parallel to HPA-604 SFX rather than introducing a shared audio manager. The compiler emits `bgm?: string | null` (`undefined` keep, string select, `null` stop); `ReaderShell` owns selected-track and user-activation state across responsive remounts, while a tiny `BgmPlayer` owns one native looping element and suppresses duplicate-key restarts.
+**Architecture:** Keep BGM parallel to HPA-604 SFX rather than introducing a shared audio manager. The compiler emits `bgm?: string | null`; a pure `bgm-transition.ts` reuses HPA-604's structural forward-adjacency rule so ordinary forward movement retains the selected loop while cue-less non-forward in-session moves stop/clear it. `ReaderShell` owns selected-track and user-activation state across responsive remounts and executes the helper's play/stop/noop result; a tiny `BgmPlayer` owns one native looping element and suppresses duplicate-key restarts.
 
 **Tech Stack:** Bun 1.3.1, TypeScript 5.9, Svelte 5, Vitest, native `HTMLAudioElement`, existing `@aquila/stories` compiler and translations.
 
@@ -18,6 +18,8 @@
 - HPA-610 will replace local URL resolution; do not generalize the visual asset resolver or add R2 logic here.
 - Initial/restored content must never autoplay. Playback begins only after an eligible Visual-reader/settings user gesture.
 - Do not reconstruct historical BGM state by traversing browser history or the story graph.
+- Explicit destination BGM commands (`string` or `null`) apply regardless of navigation origin. With no destination command, genuine forward adjacency retains the selected track; a non-forward in-session move stops and clears it.
+- Reuse/export HPA-604's existing structural `isForwardAdjacent`; do not add navigation-reason state solely for audio.
 - Exactly three existing early Seventh Mirror beats demonstrate calm start, tension change, and explicit stop; HPA-607 owns the full story audio pass.
 - Final web verification uses `bun --filter web test:coverage` because patch/project coverage gates are 95%.
 
@@ -244,7 +246,7 @@ git commit -m "feat: add background music authoring"
 - Test: `apps/web/src/lib/__tests__/bgm-preference.test.ts`
 
 **Interfaces:**
-- Produces: `resolveLocalBgmUrl(cueKey: string): string | null`
+- Produces: `resolveLocalBgmUrl(cueKey: string): string | undefined`
 - Produces: `BgmPlayer { play(cueKey: string): void; stop(): void; dispose(): void }`
 - Produces: `createBgmPlayer(createAudio?)`
 - Produces: `readBgmEnabled(storage?): boolean`, `writeBgmEnabled(enabled, storage?): void`
@@ -275,7 +277,7 @@ expect(first.currentTime).toBe(0);
 expect(second.play).toHaveBeenCalledTimes(1);
 ```
 
-Also test unknown runtime key logging, `stop()`, idempotent `dispose()`, synchronous `play()` throw, rejected `play()` promise, and retry after rejection.
+Also assert `resolveLocalBgmUrl('unknown')` is `undefined`, then test unknown runtime key logging, `stop()`, idempotent `dispose()`, synchronous `play()` throw, rejected `play()` promise, and retry after rejection.
 
 - [ ] **Step 2: Write failing preference tests**
 
@@ -312,12 +314,12 @@ export const LOCAL_BGM_CATALOG = {
   'tension-pulse': '/assets/vn/audio/bgm/tension-pulse.wav',
 } satisfies Record<BgmCueKey, string>;
 
-export function resolveLocalBgmUrl(cueKey: string): string | null {
-  return (LOCAL_BGM_CATALOG as Record<string, string>)[cueKey] ?? null;
+export function resolveLocalBgmUrl(cueKey: string): string | undefined {
+  return (LOCAL_BGM_CATALOG as Readonly<Record<string, string>>)[cueKey];
 }
 ```
 
-Do not reuse the visual `WebAssetResolver`.
+Keep the absent encoding identical to `resolveLocalSfxUrl`. Do not use `null` here and do not reuse the visual `WebAssetResolver`.
 
 - [ ] **Step 5: Implement the native BGM player**
 
@@ -339,7 +341,7 @@ let currentKey: string | null = null;
 let disposed = false;
 ```
 
-Before a new key, pause/reset/clear the previous element. On a rejected `play()` promise, clear `current` and `currentKey` only if they still refer to that request, so a later user gesture can retry. Do not show a toast or mutate reader state.
+Resolve with `const src = resolveLocalBgmUrl(cueKey); if (!src) { ... }` just like SFX. Before a new key, pause/reset/clear the previous element. On a rejected `play()` promise, clear `current` and `currentKey` only if they still refer to that request, so a later user gesture can retry. Do not show a toast or mutate reader state.
 
 - [ ] **Step 6: Implement the BGM preference**
 
@@ -657,19 +659,165 @@ git commit -m "feat: add background music setting"
 
 ---
 
-### Task 5: Integrate persistent BGM selection and autoplay-safe lifecycle into ReaderShell
+### Task 5: Classify BGM transitions and wire the autoplay-safe ReaderShell lifecycle
 
 **Files:**
+- Modify: `apps/web/src/lib/audio/sfx-transition.ts`
+- Create: `apps/web/src/lib/audio/bgm-transition.ts`
+- Test: `apps/web/src/lib/__tests__/bgm-transition.test.ts`
 - Modify: `apps/web/src/components/ReaderShell.svelte`
 - Modify: `apps/web/src/components/__tests__/ReaderShell.test.ts`
 
 **Interfaces:**
-- Consumes: `createBgmPlayer?: () => BgmPlayer`
-- Consumes: `readBgmEnabled`, `writeBgmEnabled`
-- Consumes: current `DialogueEntry.bgm?: string | null`
-- Produces: shell-owned `selectedBgmKey`, `bgmActivated`, lifecycle and activation handling.
+- Reuses/exports: `isForwardAdjacent(previous: LinePosition, next: LinePosition, flow: StoryFlowConfig | null): boolean` from `sfx-transition.ts`.
+- Produces: `BgmPlaybackAction = play | stop | noop`.
+- Produces: `BgmTransition { selectedKey: string | null; action: BgmPlaybackAction }`.
+- Produces: `nextBgmTransition(previous, next, command, selectedKey, options): BgmTransition`.
+- Consumes: `createBgmPlayer?: () => BgmPlayer`, `readBgmEnabled`, `writeBgmEnabled`, and current `DialogueEntry.bgm?: string | null`.
+- Produces: shell-owned `selectedBgmKey`, `bgmActivated`, lifecycle and activation wiring without inlining the navigation/command matrix.
 
-- [ ] **Step 1: Extend the ReaderShell test harness with an injected BGM player**
+- [ ] **Step 1: Write the failing pure BGM transition matrix**
+
+Create `bgm-transition.test.ts` with small positions/flows and table-test these cases:
+
+```ts
+// Fresh/restored: arm, never autoplay.
+expect(nextBgmTransition(null, act1Line0, 'dawn-apartment', null, active))
+  .toEqual({ selectedKey: 'dawn-apartment', action: { type: 'noop' } });
+expect(nextBgmTransition(null, act1Line0, undefined, null, active))
+  .toEqual({ selectedKey: null, action: { type: 'noop' } });
+
+// Ordinary forward: retain without replay.
+expect(nextBgmTransition(act1Line0, act1Line1, undefined, 'dawn-apartment', active))
+  .toEqual({ selectedKey: 'dawn-apartment', action: { type: 'noop' } });
+
+// Cue-less non-forward jump: stop and clear.
+expect(nextBgmTransition(act1Line1, act3Line0, undefined, 'dawn-apartment', activeWithJumpFlow))
+  .toEqual({ selectedKey: null, action: { type: 'stop' } });
+
+// Explicit destination command wins even on a jump.
+expect(nextBgmTransition(act1Line1, act3Line0, 'tension-pulse', 'dawn-apartment', activeWithJumpFlow))
+  .toEqual({ selectedKey: 'tension-pulse', action: { type: 'play', cueKey: 'tension-pulse' } });
+```
+
+Also cover:
+
+- direct linear edge to destination index `0` with no command -> retain/noop;
+- direct choice edge to destination index `0` with no command -> retain/noop;
+- same-scene backward and `+2` jump with no command -> clear/stop;
+- reverse scene movement with no command -> clear/stop;
+- explicit `null` on forward or non-forward movement -> clear/stop;
+- string command while Text, disabled, or not activated -> select/noop;
+- story replacement with no command -> clear/stop;
+- story replacement with a string command -> arm new key while returning stop for the old player.
+
+- [ ] **Step 2: Run the BGM transition test and confirm RED**
+
+Run:
+
+```bash
+bun --filter web test -- bgm-transition.test.ts
+```
+
+Expected: FAIL because `bgm-transition.ts` does not exist and `isForwardAdjacent` is not exported.
+
+- [ ] **Step 3: Export the existing HPA-604 adjacency helper and implement BGM classification**
+
+Change only the visibility of the existing helper in `sfx-transition.ts`:
+
+```ts
+export function isForwardAdjacent(
+  previous: LinePosition,
+  next: LinePosition,
+  flow: StoryFlowConfig | null
+): boolean {
+  // Existing implementation unchanged.
+}
+```
+
+Do not move it into a generic navigation module.
+
+Create `bgm-transition.ts`:
+
+```ts
+import type { ReaderMode } from '@/lib/reader-mode';
+import type { StoryFlowConfig } from '@aquila/stories';
+import {
+  isForwardAdjacent,
+  type LinePosition,
+} from './sfx-transition';
+
+export type BgmPlaybackAction =
+  | { type: 'play'; cueKey: string }
+  | { type: 'stop' }
+  | { type: 'noop' };
+
+export type BgmTransition = {
+  selectedKey: string | null;
+  action: BgmPlaybackAction;
+};
+
+export function nextBgmTransition(
+  previous: LinePosition | null,
+  next: LinePosition,
+  command: string | null | undefined,
+  selectedKey: string | null,
+  options: {
+    mode: ReaderMode;
+    enabled: boolean;
+    activated: boolean;
+    flow: StoryFlowConfig | null;
+  }
+): BgmTransition {
+  if (!previous) {
+    return {
+      selectedKey: typeof command === 'string' ? command : null,
+      action: { type: 'noop' },
+    };
+  }
+
+  if (previous.storyId !== next.storyId) {
+    return {
+      selectedKey: typeof command === 'string' ? command : null,
+      action: { type: 'stop' },
+    };
+  }
+
+  if (command === null) {
+    return { selectedKey: null, action: { type: 'stop' } };
+  }
+
+  if (typeof command === 'string') {
+    return {
+      selectedKey: command,
+      action:
+        options.mode === 'visual' && options.enabled && options.activated
+          ? { type: 'play', cueKey: command }
+          : { type: 'noop' },
+    };
+  }
+
+  if (!isForwardAdjacent(previous, next, options.flow)) {
+    return { selectedKey: null, action: { type: 'stop' } };
+  }
+
+  return { selectedKey, action: { type: 'noop' } };
+}
+```
+
+This is the whole policy. Do not add graph walking, a navigation reason enum, or a generic audio transition framework.
+
+- [ ] **Step 4: Run pure transition tests and existing SFX transition tests**
+
+Run:
+
+```bash
+bun --filter web test -- bgm-transition.test.ts sfx-transition.test.ts
+```
+
+Expected: PASS; exporting `isForwardAdjacent` does not change SFX semantics.
+
+- [ ] **Step 5: Extend the ReaderShell test harness with an injected BGM player**
 
 Use a fake like:
 
@@ -681,58 +829,25 @@ const bgmPlayer = {
 };
 ```
 
-Pass `createBgmPlayer={() => bgmPlayer}` so component tests assert commands without invoking browser media.
+Pass `createBgmPlayer={() => bgmPlayer}` so component tests assert wiring without invoking browser media.
 
-- [ ] **Step 2: Add failing initial-arm and user-activation tests**
+- [ ] **Step 6: Add failing ReaderShell activation and lifecycle wiring tests**
 
-Cover an initial payload whose current line has `bgm: 'dawn-apartment'`:
+Keep the component suite focused on wiring rather than duplicating the pure matrix. Cover:
 
-```ts
-expect(bgmPlayer.play).not.toHaveBeenCalled();
-fireEvent.pointerDown(screen.getByTestId('reader-ready'));
-expect(bgmPlayer.play).toHaveBeenCalledWith('dawn-apartment');
-```
+1. Initial payload with `bgm: 'dawn-apartment'` arms without playback; pointerdown then starts it.
+2. Enter/Space activate; ArrowDown does not.
+3. Ordinary line/direct-scene progression with no destination command does not stop or restart the selected track.
+4. Reuse the existing `jumpFlow` harness: after activating `dawn-apartment`, navigate to non-adjacent `act3` with no BGM command; expect one `stop()`, then another `reader-ready` pointerdown must **not** call `play('dawn-apartment')` again because selection was cleared.
+5. A new explicit key executes `play(newKey)`; explicit stop executes `stop()`.
+6. Visual -> Text stops and resets activation; Text -> Visual does not autoplay; the next eligible Visual gesture resumes the retained selection.
+7. Disabling stops immediately; re-enabling in Visual mode resumes from that explicit settings gesture.
+8. Responsive leaf remount does not restart BGM.
+9. Story replacement stops the old player, resets activation, and may arm a new story's current-line key without autoplay.
+10. Shell destroy calls `bgmPlayer.dispose()` exactly once.
+11. SFX still receives its own command while BGM is selected.
 
-Add Enter/Space keyboard activation coverage. A non-activation key such as ArrowDown must not start BGM.
-
-- [ ] **Step 3: Add failing persistence/change/stop tests**
-
-Build a small dialogue sequence:
-
-```ts
-[
-  { dialogue: 'a', bgm: 'dawn-apartment' },
-  { dialogue: 'b' },
-  { dialogue: 'c', bgm: 'dawn-apartment' },
-  { dialogue: 'd', bgm: 'tension-pulse' },
-  { dialogue: 'e', bgm: null },
-]
-```
-
-After activation assert:
-
-- advancing onto `b` makes no BGM call;
-- same-key command on `c` is allowed to call `play('dawn-apartment')`, with duplicate restart suppression owned by `BgmPlayer`;
-- `d` calls `play('tension-pulse')` once;
-- `e` calls `stop()` and clears selection.
-
-Also cover a scene transition with no destination command retaining the selected track.
-
-- [ ] **Step 4: Add failing mode/preference/remount/story lifecycle tests**
-
-Cover:
-
-- Visual -> Text stops and resets activation;
-- Text -> Visual does not call `play()` automatically;
-- next eligible Visual pointerdown resumes selected BGM;
-- disabling BGM stops immediately;
-- re-enabling in Visual mode resumes selected BGM from that explicit toggle gesture;
-- responsive leaf remount does not restart BGM;
-- story replacement stops, clears selected key, resets activation, and may arm a new story's current-line command without autoplay;
-- shell destroy calls `bgmPlayer.dispose()` exactly once;
-- SFX still receives its own command while BGM is selected.
-
-- [ ] **Step 5: Run ReaderShell tests and confirm RED**
+- [ ] **Step 7: Run ReaderShell tests and confirm RED**
 
 Run:
 
@@ -742,7 +857,7 @@ bun --filter web test -- ReaderShell.test.ts
 
 Expected: FAIL because ReaderShell does not know BGM yet.
 
-- [ ] **Step 6: Inject and initialize the BGM player/preference**
+- [ ] **Step 8: Inject and initialize the BGM player/preference/helper**
 
 Add imports and the optional factory prop parallel to SFX:
 
@@ -752,6 +867,7 @@ import {
   type BgmPlayer,
 } from '@/lib/audio/bgm-player';
 import { readBgmEnabled, writeBgmEnabled } from '@/lib/audio/bgm-preference';
+import { nextBgmTransition } from '@/lib/audio/bgm-transition';
 ```
 
 Props/state:
@@ -764,7 +880,7 @@ let selectedBgmKey: string | null = $state(null);
 let bgmActivated = $state(false);
 ```
 
-- [ ] **Step 7: Add the stable Visual activation handler**
+- [ ] **Step 9: Add the stable Visual activation handler**
 
 Add:
 
@@ -789,33 +905,41 @@ onpointerdown={activateBgm}
 onkeydown={handleBgmActivationKey}
 ```
 
-Keep the guards in `ReaderShell`; do not add audio-specific callbacks to `VisualNovelReader`.
+Keep gesture wiring in `ReaderShell`; do not add audio-specific callbacks to `VisualNovelReader`.
 
-- [ ] **Step 8: Apply BGM commands inside the existing position-change effect**
+- [ ] **Step 10: Apply the pure BGM transition result inside the existing position-change effect**
 
-After `lastActivePosition` is updated and SFX handling runs, add logic equivalent to:
+After `lastActivePosition` is updated and SFX handling runs:
 
 ```ts
-if (previous !== null && previous.storyId !== nextPosition.storyId) {
-  selectedBgmKey = null;
-  bgmActivated = false;
+const bgmTransition = nextBgmTransition(
+  previous,
+  nextPosition,
+  dialogue[dialogueIndex]?.bgm,
+  selectedBgmKey,
+  {
+    mode: readerMode,
+    enabled: bgmEnabled,
+    activated: bgmActivated,
+    flow: activeFlow,
+  }
+);
+selectedBgmKey = bgmTransition.selectedKey;
+
+if (bgmTransition.action.type === 'play') {
+  bgmPlayer.play(bgmTransition.action.cueKey);
+} else if (bgmTransition.action.type === 'stop') {
   bgmPlayer.stop();
 }
 
-const bgmCommand = dialogue[dialogueIndex]?.bgm;
-if (bgmCommand !== undefined) {
-  selectedBgmKey = bgmCommand;
-  if (bgmCommand === null) {
-    bgmPlayer.stop();
-  } else if (readerMode === 'visual' && bgmEnabled && bgmActivated) {
-    bgmPlayer.play(bgmCommand);
-  }
+if (previous !== null && previous.storyId !== nextPosition.storyId) {
+  bgmActivated = false;
 }
 ```
 
-Unlike SFX, do not require forward adjacency for explicit BGM commands and do not add another transition helper.
+Do not restate explicit-command, adjacency, mode, enabled, or activated branches in the Svelte effect.
 
-- [ ] **Step 9: Add mode and preference lifecycle**
+- [ ] **Step 11: Add mode and preference lifecycle**
 
 When entering Text mode:
 
@@ -849,7 +973,7 @@ Pass `bgmEnabled` / `onBgmEnabledChange={setBgmEnabled}` to `ReaderSettingsMenu`
 
 On destroy call `bgmPlayer.dispose()` beside SFX disposal.
 
-- [ ] **Step 10: Run ReaderShell tests and confirm GREEN**
+- [ ] **Step 12: Run ReaderShell tests and confirm GREEN**
 
 Run:
 
@@ -859,7 +983,7 @@ bun --filter web test -- ReaderShell.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 11: Run the focused audio/settings suite together**
+- [ ] **Step 13: Run the focused audio/settings suite together**
 
 Run:
 
@@ -867,6 +991,7 @@ Run:
 bun --filter web test -- \
   bgm-player.test.ts \
   bgm-preference.test.ts \
+  bgm-transition.test.ts \
   ReaderSettingsMenu.test.ts \
   ReaderShell.test.ts \
   sfx-player.test.ts \
@@ -876,10 +1001,13 @@ bun --filter web test -- \
 
 Expected: PASS; existing SFX behavior remains unchanged.
 
-- [ ] **Step 12: Commit the ReaderShell lifecycle slice**
+- [ ] **Step 14: Commit the transition/lifecycle slice**
 
 ```bash
-git add apps/web/src/components/ReaderShell.svelte \
+git add apps/web/src/lib/audio/sfx-transition.ts \
+  apps/web/src/lib/audio/bgm-transition.ts \
+  apps/web/src/lib/__tests__/bgm-transition.test.ts \
+  apps/web/src/components/ReaderShell.svelte \
   apps/web/src/components/__tests__/ReaderShell.test.ts
 git commit -m "feat: play persistent background music"
 ```
@@ -895,11 +1023,12 @@ git commit -m "feat: play persistent background music"
 
 **Interfaces:**
 - Demonstrates: `dawn-apartment` start, `tension-pulse` change, explicit `stop`.
+- Keeps the existing Act 4 `notification-beep` SFX untouched to prove channel independence.
 - Does not attempt full story audio direction.
 
 - [ ] **Step 1: Add the calm opening command in Act 1**
 
-Place exactly before the existing opening narration:
+Place exactly before the current opening narration:
 
 ````markdown
 ```bgm
@@ -911,26 +1040,30 @@ dawn-apartment
 
 Do not add more Act 1 BGM commands.
 
-- [ ] **Step 2: Add the tension change in Act 4**
+- [ ] **Step 2: Add the pinned tension change in Act 4**
 
-Place `tension-pulse` at the first sustained suspicious/tension turn around the sleep-program timeline or phone-call beat, not on a throwaway sentence:
+Place exactly before this existing line:
 
 ````markdown
 ```bgm
 tension-pulse
 ```
+
+**朝倉澪**：兩週前。悠真收到學校轉發的「關東青少年睡眠支援計畫」通知。
 ````
 
-The command should precede the chosen dialogue entry and remain the only BGM change in that short demonstration section.
+Do not move it to the later phone SFX beat. The existing `notification-beep` remains untouched.
 
-- [ ] **Step 3: Add one explicit stop in Act 4**
+- [ ] **Step 3: Add the pinned explicit stop in Act 4**
 
-When that demonstration beat resolves or immediately before the next major location transition, add:
+Place exactly before the current source line:
 
 ````markdown
 ```bgm
 stop
 ```
+
+**旁白**：澪點頭。琴音走出咖啡店的時候，下午的陽光從門口斜進來，把她的影子拉得很長，像一條安靜的尾巴。
 ````
 
 Do not author a fourth BGM command.
@@ -954,7 +1087,7 @@ git diff -- packages/stories/raw/theSeventhMirror \
   packages/stories/src/generated/theSeventhMirror
 ```
 
-Confirm exactly three raw `bgm` blocks were added and only corresponding generated scene payloads changed. No story-wide formatting churn is acceptable.
+Confirm exactly three raw `bgm` blocks were added at the three pinned lines and only corresponding generated scene payloads changed. No story-wide formatting churn is acceptable.
 
 - [ ] **Step 6: Run stories tests and generated-drift check**
 
@@ -1028,15 +1161,17 @@ With headphones and the local web reader:
 1. Fresh Visual load on the opening BGM line is silent.
 2. First pointer/Enter/Space interaction starts `dawn-apartment`.
 3. Several cue-less dialogue advances do not restart it.
-4. A scene transition without a BGM command retains it.
-5. The Act 4 tension command switches once to `tension-pulse`.
-6. The authored `stop` becomes silent.
-7. HPA-604 SFX still plays independently over BGM.
-8. SFX and BGM toggles persist independently.
-9. BGM disable stops immediately; re-enable from the explicit settings click may resume the selected track.
-10. Visual -> Text stops BGM; Text -> Visual does not autoplay; the next eligible Visual interaction resumes.
-11. Crossing the responsive breakpoint does not restart the current track.
-12. Reloading on a cue-less line remains silent rather than reconstructing history.
+4. A direct linear/choice scene transition without a BGM command retains it.
+5. While the loop is active, make a non-adjacent Act-panel jump to a cue-less destination: music stops, and another reader interaction does not resume the stale key.
+6. Confirm an explicit destination BGM command still applies even when reached by a non-forward jump.
+7. The pinned Act 4 tension command switches once to `tension-pulse`.
+8. The pinned Act 4 `stop` becomes silent.
+9. The existing Act 4 `notification-beep` SFX still plays independently over BGM.
+10. SFX and BGM toggles persist independently.
+11. BGM disable stops immediately; re-enable from the explicit settings click may resume the selected track.
+12. Visual -> Text stops BGM; Text -> Visual does not autoplay; the next eligible Visual interaction resumes.
+13. Crossing the responsive breakpoint does not restart the current track.
+14. Reloading on a cue-less line remains silent rather than reconstructing history.
 
 Record only concrete failures; do not broaden the feature while smoking it.
 
@@ -1046,6 +1181,7 @@ Confirm the diff contains none of the following:
 
 ```text
 AudioManager / channel registry / mixer
+new navigation-reason state solely for audio
 Web Audio API graph
 crossfade / fade scheduler / ducking
 volume slider or per-line volume metadata
@@ -1070,4 +1206,4 @@ git diff main...HEAD --stat
 git diff --check
 ```
 
-Expected: only HPA-605 compiler, local web audio/settings/lifecycle, deterministic fixtures, three story commands, generated output, tests, and the design/plan documents.
+Expected: only HPA-605 compiler, local web audio/settings/transition/lifecycle, deterministic fixtures, three story commands, generated output, tests, and the design/plan documents.

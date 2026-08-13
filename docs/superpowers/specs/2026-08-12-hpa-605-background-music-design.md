@@ -1,13 +1,13 @@
 # HPA-605 Persistent Background Music and Audio Settings
 
 Date: 2026-08-12
-Status: Proposed planning refinement of the accepted Linear scope
+Status: Proposed planning refinement of the accepted Linear scope; revised after navigation-semantics review
 
 ## Goal
 
 Extend Aquila's just-landed visual-novel audio foundation with one persistent looping background-music channel and one independent persisted Background Music on/off preference.
 
-The implementation stays local-fixture only. It proves authoring, compiler propagation, browser autoplay handling, persistent track selection across dialogue/scene changes, independent SFX/BGM controls, and clean reader lifecycle ownership without introducing production audio delivery or a general audio engine.
+The implementation stays local-fixture only. It proves authoring, compiler propagation, browser autoplay handling, persistent track selection across ordinary forward dialogue/scene changes, safe reset on cue-less non-forward in-session navigation, independent SFX/BGM controls, and clean reader lifecycle ownership without introducing production audio delivery or a general audio engine.
 
 ## Why HPA-605 Is the Next Actionable Ticket
 
@@ -29,8 +29,10 @@ Implementing any of those first would either duplicate temporary cue authority o
 - `packages/stories/src/audio-cues.ts` is the temporary HPA-604 cue authority and is already documented as a bootstrap seam to be replaced by HPA-606.
 - `packages/stories/src/compiler/ir.ts`, `packages/stories/src/types.ts`, and `packages/stories/src/compiler/emit.ts` are the existing IR -> runtime payload -> generated-scene path.
 - `apps/web/src/components/ReaderShell.svelte` already owns stable story/scene/index state, Visual/Text mode transitions, SFX playback, and visual-runtime lifecycle across responsive leaf remounts.
-- `ReaderShell` retains one structured `LinePosition`, so BGM command application can share the same position-change effect instead of introducing a second navigation tracker.
+- `ReaderShell` retains one structured `LinePosition`, so BGM can reuse the same previous/current position pair instead of introducing a second navigation tracker.
+- HPA-604 already classifies genuine forward adjacency in `apps/web/src/lib/audio/sfx-transition.ts`: same-scene `index + 1`, or a direct linear/choice flow edge to destination index `0`. `ReaderShell.test.ts` already has a `jumpFlow` harness and proves a non-adjacent scene jump is distinct from ordinary forward progression.
 - `apps/web/src/lib/audio/sfx-player.ts`, `sfx-catalog.ts`, and `sfx-preference.ts` establish small native-browser, local-catalog, and persisted-preference seams. BGM can stay parallel without generalizing them into an audio framework.
+- `resolveLocalSfxUrl()` returns `string | undefined`; the BGM catalog should preserve that existing absent-value convention. `null` is needed only on `DialogueEntry.bgm`, where it represents an authored stop command.
 - `ReaderSettingsMenu.svelte` already renders a Visual-only SFX toggle and receives state/callbacks from `ReaderShell`.
 - `apps/web/scripts/build-sfx-fixtures.ts` already provides deterministic PCM-16 fixture generation and verification. HPA-605 is the second audio-fixture consumer, which is enough justification to extract only the WAV synthesis/verification helper while keeping SFX and BGM fixture definitions separate.
 - The web workspace already has `test:coverage`, and repository Codecov policy requires at least 95% project and patch coverage.
@@ -39,12 +41,12 @@ Implementing any of those first would either duplicate temporary cue authority o
 
 ### Option A — Parallel BGM seam on the existing ReaderShell lifecycle (recommended)
 
-Add strict `bgm` authoring, one `bgm?: string | null` runtime command field, a small local BGM catalog/player/preference, and BGM selection state in `ReaderShell`.
+Add strict `bgm` authoring, one `bgm?: string | null` runtime command field, a small local BGM catalog/player/preference, one pure BGM transition classifier, and BGM selection state in `ReaderShell`.
 
 Pros:
 
-- directly reuses the proven HPA-604 ownership boundary;
-- minimum new concepts;
+- directly reuses the proven HPA-604 ownership boundary and forward-adjacency semantics;
+- minimum new concepts while keeping the state matrix out of the Svelte effect;
 - keeps SFX and BGM behavior independently testable;
 - HPA-610 can later replace only URL resolution;
 - HPA-606 can later replace only bootstrap cue validation.
@@ -75,18 +77,19 @@ Rejected. It cannot express an in-scene music change or explicit silence at a pr
 | Browser API | Native `HTMLAudioElement` only |
 | Runtime concurrency | One looping BGM element, independent from one-shot SFX |
 | Story payload | `bgm?: string | null` |
-| `undefined` | No command; retain selected track |
-| `string` | Select/start that logical BGM key |
-| `null` | Explicit stop; clear selected track |
+| `undefined` | No authored command; retain selection only across genuine forward adjacency, otherwise clear/stop on an in-session non-forward move |
+| `string` | Select/start that logical BGM key; explicit destination commands apply regardless of how the destination was reached |
+| `null` | Explicit stop; clear selected track regardless of how the destination was reached |
 | Authoring stop token | Reserved literal `stop`, compiled to `null` |
 | HPA-605 cue authority | Temporary two-key `@aquila/stories` allowlist |
 | Long-term cue authority | HPA-606 per-story `audio-plan.json` |
-| Runtime URL resolution | One local web BGM catalog module |
+| Runtime URL resolution | One local web BGM catalog returning `string | undefined` |
 | Preference | Independent persisted BGM boolean using `getBrowserStorage()` |
 | Settings visibility | SFX and BGM toggles appear only while Settings is in Visual mode |
 | Autoplay | Initial commands arm only; playback starts after an eligible user gesture |
-| Track persistence | Shell remembers the selected key across dialogue/scene changes |
-| History reconstruction | None; only explicit commands mutate the remembered track |
+| Track persistence | Shell remembers the selected key across ordinary forward dialogue and direct linear/choice scene progression |
+| Non-forward navigation | Cue-less backward/index-jump/non-adjacent scene navigation stops and clears the remembered key instead of leaking the old loop |
+| History reconstruction | None; fresh/restored cue-less content stays silent rather than walking prior story state |
 | Fixtures | Two deterministic local PCM-16 loops: calm and tension |
 | Story demonstration | Exactly three early commands: calm start, tension change, explicit stop |
 | Coverage | Final web verification uses `test:coverage` |
@@ -156,7 +159,7 @@ Do not change the unrelated visual `bg` authoring behavior.
 
 ## BGM Playback Boundary
 
-Add two focused web modules under `apps/web/src/lib/audio/`:
+Add focused web modules under `apps/web/src/lib/audio/`:
 
 ```ts
 export interface BgmPlayer {
@@ -173,6 +176,8 @@ export const LOCAL_BGM_CATALOG = {
   'dawn-apartment': '/assets/vn/audio/bgm/dawn-apartment.wav',
   'tension-pulse': '/assets/vn/audio/bgm/tension-pulse.wav',
 } satisfies Record<BgmCueKey, string>;
+
+export function resolveLocalBgmUrl(cueKey: string): string | undefined;
 ```
 
 The player owns one native audio element at a time and keeps its own current logical key only to suppress duplicate restarts.
@@ -193,6 +198,53 @@ The player owns one native audio element at a time and keeps its own current log
 
 Do not add crossfade, fade timers, a channel registry, a mixer, Web Audio API nodes, or shared media-framework types.
 
+## Pure BGM Transition Classification
+
+Do not repeat HPA-604's shell-embedded state-matrix problem. Keep BGM position/command classification in one pure module:
+
+```text
+apps/web/src/lib/audio/bgm-transition.ts
+```
+
+Reuse the existing structural navigation rule by exporting `isForwardAdjacent` from `sfx-transition.ts`; do not add a navigation-reason store or a generic audio/navigation framework.
+
+Use a small result contract:
+
+```ts
+export type BgmPlaybackAction =
+  | { type: 'play'; cueKey: string }
+  | { type: 'stop' }
+  | { type: 'noop' };
+
+export type BgmTransition = {
+  selectedKey: string | null;
+  action: BgmPlaybackAction;
+};
+
+export function nextBgmTransition(
+  previous: LinePosition | null,
+  next: LinePosition,
+  command: string | null | undefined,
+  selectedKey: string | null,
+  options: {
+    mode: ReaderMode;
+    enabled: boolean;
+    activated: boolean;
+    flow: StoryFlowConfig | null;
+  }
+): BgmTransition;
+```
+
+Rules, in order:
+
+1. **Fresh/restored shell (`previous === null`)**: a string command becomes the armed selection with `noop`; `null`/`undefined` leave selection clear and do not play. Do not reconstruct prior story state.
+2. **Story replacement**: stop the old player; a destination string may become the new armed selection, while `null`/`undefined` leave it clear. `ReaderShell` resets `bgmActivated` so the replacement story never autoplays.
+3. **Explicit destination command (`string` or `null`)**: apply it regardless of adjacency. `null` clears/stops. A string selects the key and returns `play` only when Visual mode, enabled, and already activated; otherwise it arms with `noop`.
+4. **No command + genuine forward adjacency**: retain the current selection and return `noop`; an already-running loop continues without restart.
+5. **No command + non-forward in-session move**: clear the selection and return `stop`. This covers same-scene backward/index jumps, reverse browser-history movement, and non-adjacent Act-panel scene jumps.
+
+A direct linear or choice edge to destination index `0` remains forward adjacency, matching HPA-604. An Act-panel jump that is structurally identical to that direct edge remains indistinguishable without new navigation-reason state; HPA-605 does not add such state.
+
 ## ReaderShell BGM State
 
 `ReaderShell` owns:
@@ -206,14 +258,13 @@ let bgmActivated = $state(false);
 
 Use the existing position-change effect. After the shell updates `lastActivePosition` and handles SFX:
 
-1. if the story changed, stop BGM, clear `selectedBgmKey`, and reset `bgmActivated`;
-2. read the destination entry's `bgm` property;
-3. if it is `undefined`, do nothing;
-4. if it is `null`, clear `selectedBgmKey` and stop immediately;
-5. if it is a string, set `selectedBgmKey` to that key;
-6. if Visual mode, BGM enabled, and `bgmActivated` are all true, call `bgmPlayer.play(key)`.
+1. read the destination entry's `bgm` property;
+2. call `nextBgmTransition(previous, nextPosition, command, selectedBgmKey, { mode: readerMode, enabled: bgmEnabled, activated: bgmActivated, flow: activeFlow })`;
+3. assign the returned `selectedKey` exactly once;
+4. execute only the returned `play` or `stop` side effect;
+5. when the story changes, reset `bgmActivated = false` after classification so a destination string remains armed but silent.
 
-This intentionally differs from SFX transition classification. SFX is a one-shot event and must distinguish genuine forward progression. BGM is persistent state: an explicit destination command may select/stop a track regardless of how that destination was reached, while destinations with no command leave the current track untouched.
+The shell effect does not duplicate command/adjacency/mode/preference rules. Gesture wiring, preference writes, mode lifecycle, and player ownership remain in `ReaderShell`; transition policy lives in the pure helper.
 
 ### No history reconstruction
 
@@ -223,9 +274,11 @@ On a fresh/restored shell:
 
 - a BGM command on the current line is armed but not autoplayed;
 - a current line with no BGM command starts silent until a later authored command;
-- ordinary in-session dialogue and scene transitions persist the selected track correctly.
+- ordinary forward in-session dialogue and direct linear/choice scene transitions persist the selected track;
+- a cue-less non-forward in-session move stops/clears rather than guessing which older track should have been active;
+- an explicit destination BGM command still applies even on a jump.
 
-This is the smallest deterministic behavior that satisfies the accepted local-runtime scope without introducing route-state reconstruction for branching stories.
+This gives deterministic in-session behavior without route-state reconstruction for branching stories.
 
 ## User Activation and Autoplay
 
@@ -248,7 +301,7 @@ Entering Text mode stops BGM and resets `bgmActivated`; the selected key remains
 
 Disabling BGM stops immediately and resets `bgmActivated`. Re-enabling BGM is itself an explicit user gesture, so it may set `bgmActivated = true` and resume the selected key immediately when Visual mode is active.
 
-Story replacement stops, clears selection, and resets activation. Shell destroy disposes the player.
+Story replacement stops the old player, keeps only an explicit destination selection, and resets activation. Shell destroy disposes the player.
 
 ## Preference and Settings
 
@@ -314,9 +367,11 @@ Add `build:bgm-fixtures` and `verify:bgm-fixtures` scripts and run `verify:bgm-f
 
 Annotate exactly three existing early Seventh Mirror beats and no more:
 
-1. `chapter_1/act1.md`: start `dawn-apartment` before the opening phone-screen narration.
-2. `chapter_1/act4.md`: switch to `tension-pulse` at the first sustained suspicious/tension beat around the sleep-program timeline/phone-call turn.
-3. `chapter_1/act4.md`: author `stop` when that short tension demonstration resolves or before the next major location transition.
+1. `chapter_1/act1.md`: start `dawn-apartment` immediately before `**旁白**：手機螢幕亮了。`.
+2. `chapter_1/act4.md`: switch to `tension-pulse` immediately before `**朝倉澪**：兩週前。悠真收到學校轉發的「關東青少年睡眠支援計畫」通知。`.
+3. `chapter_1/act4.md`: author `stop` immediately before the current source line `**旁白**：澪點頭。琴音走出咖啡店的時候，下午的陽光從門口斜進來，把她的影子拉得很長，像一條安靜的尾巴。`.
+
+The existing `notification-beep` SFX in Act 4 remains untouched and proves SFX/BGM independence during the demonstration.
 
 This is fixture proof, not a complete sound-direction pass. HPA-607 owns the full story audit.
 
@@ -364,13 +419,31 @@ Cover:
 Cover:
 
 - catalog hit creates/starts a looping element;
+- catalog miss returns `undefined` and logs non-blockingly in the player;
 - same key does not restart;
 - new key pauses/rewinds/replaces the previous element;
 - stop clears the active element;
-- unknown runtime key logs and returns;
 - synchronous and rejected `play()` failures are contained;
 - rejected playback can retry later;
 - dispose is idempotent and makes the player inert.
+
+### Pure BGM transition helper
+
+Table-test:
+
+- initial string command -> arm selection, `noop`;
+- initial cue-less/restored line -> clear selection, `noop`;
+- same-scene `+1` with no command -> retain selection, `noop`;
+- direct linear flow edge to destination index `0` with no command -> retain selection, `noop`;
+- direct choice flow edge to destination index `0` with no command -> retain selection, `noop`;
+- same-scene backward or `+2` index jump with no command -> clear selection, `stop`;
+- non-adjacent scene jump with no command -> clear selection, `stop`;
+- reverse scene movement with no command -> clear selection, `stop`;
+- explicit string on a non-forward jump -> select it and `play` when Visual/enabled/activated;
+- explicit null on any move -> clear selection, `stop`;
+- string command while Text/disabled/not activated -> select it, `noop`;
+- story replacement with no command -> clear selection, `stop`;
+- story replacement with a string command -> arm the new selection while stopping the old player; shell resets activation.
 
 ### Preference/settings
 
@@ -383,23 +456,21 @@ Cover:
 - BGM click calls `onBgmEnabledChange` with the inverse value;
 - Text settings show neither audio toggle.
 
-### ReaderShell lifecycle
+### ReaderShell wiring/lifecycle
 
 Cover:
 
 - initial line BGM command arms without calling `play()`;
 - first eligible Visual pointer/keyboard activation starts the selected track;
-- ordinary cue-less line advancement does not restart;
-- same-key authored command does not restart;
-- a new key switches once;
-- explicit stop clears once;
-- scene transition with no BGM command retains the selected track;
+- ordinary cue-less line/direct-scene advancement does not restart;
+- a non-adjacent `jumpFlow` scene move with no destination command stops and clears so a later activation cannot resume the stale key;
+- a new key and explicit stop execute the helper's commands;
 - responsive remount does not restart;
 - Text mode stops and requires fresh Visual activation;
 - disabling stops immediately;
 - re-enabling from the Visual settings gesture may resume selected BGM;
 - SFX remains independent while BGM plays;
-- story replacement clears/stops;
+- story replacement resets activation and does not autoplay the new story;
 - destroy disposes once;
 - playback failures do not block navigation.
 
@@ -425,22 +496,25 @@ bun run build
 
 Manual smoke with headphones:
 
-1. fresh Visual load with an opening BGM cue stays silent;
-2. first reader interaction starts the calm loop;
-3. advance through several cue-less lines and a scene transition without restart;
-4. reach the tension command and hear one direct track switch;
-5. reach `stop` and hear silence;
-6. verify SFX still plays independently;
-7. disable/enable BGM and SFX independently;
-8. switch Visual -> Text -> Visual and confirm no automatic replay before the next eligible Visual interaction;
-9. cross the responsive breakpoint and confirm the current track does not restart;
-10. reload on a non-command line and confirm the reader remains silent rather than inventing historical BGM state.
+1. fresh Visual load with the opening BGM cue stays silent;
+2. first reader interaction starts `dawn-apartment`;
+3. advance through several cue-less lines and a direct scene transition without restart;
+4. while a loop is active, make a non-adjacent Act-panel jump to a cue-less destination and confirm music stops; another reader interaction must not resume the stale key;
+5. reach an explicitly authored destination cue and confirm it applies regardless of jump/advance origin;
+6. reach the pinned Act 4 tension command and hear one direct switch to `tension-pulse`;
+7. reach the pinned Act 4 `stop` and hear silence;
+8. verify the existing `notification-beep` SFX still plays independently;
+9. disable/enable BGM and SFX independently;
+10. switch Visual -> Text -> Visual and confirm no automatic replay before the next eligible Visual interaction;
+11. cross the responsive breakpoint and confirm the current track does not restart;
+12. reload on a non-command line and confirm the reader remains silent rather than inventing historical BGM state.
 
 ## YAGNI / KISS Boundaries
 
 Do not add:
 
 - a generic audio manager, channel registry, mixer, or event/timeline system;
+- a generic navigation-reason store solely for audio;
 - Web Audio API graphs;
 - crossfades, fades, ducking, stems, ambience, or voice channels;
 - volume sliders or per-line audio metadata;

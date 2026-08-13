@@ -7,7 +7,13 @@
  * verification) without touching the filesystem.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import {
+    existsSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -371,6 +377,30 @@ describe('build-sfx-fixtures', () => {
                 expect(existsSync(sfxDir)).toBe(true);
                 const files = readdirSync(sfxDir).sort();
                 expect(files).toEqual([...FIXTURE_NAMES].sort());
+            } finally {
+                rmSync(tempDir, { recursive: true, force: true });
+            }
+        });
+
+        it('preserves the committed SFX fixture bytes', () => {
+            const committed = new Map(
+                FIXTURE_NAMES.map(name => [
+                    name,
+                    readFileSync(
+                        join(process.cwd(), 'public/assets/vn/audio/sfx', name)
+                    ),
+                ])
+            );
+            const tempDir = mkdtempSync(join(tmpdir(), 'sfx-byte-stability-'));
+            const runner = `import { buildSfxFixtures } from ${JSON.stringify(scriptPath)}; await buildSfxFixtures();`;
+            try {
+                execFileSync('bun', ['-e', runner], { cwd: tempDir });
+                const outputRoot = join(tempDir, 'public/assets/vn/audio/sfx');
+                for (const name of FIXTURE_NAMES) {
+                    expect(readFileSync(join(outputRoot, name))).toEqual(
+                        committed.get(name)
+                    );
+                }
             } finally {
                 rmSync(tempDir, { recursive: true, force: true });
             }

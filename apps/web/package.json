@@ -22,7 +22,9 @@
     "build:visual-fixtures": "bun scripts/build-visual-fixtures.ts",
     "verify:visual-fixtures": "bun scripts/verify-visual-fixtures.ts",
     "build:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts",
-    "verify:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts --verify"
+    "verify:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts --verify",
+    "build:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts",
+    "verify:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts --verify"
   },
   "dependencies": {
     "@aquila/stories": "workspace:*",

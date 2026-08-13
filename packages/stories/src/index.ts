@@ -20,3 +20,5 @@ export { getStoryContent, getStoryFlow } from './stories';
 export type { StoryLoaderResult, StoryFlowConfig } from './stories';
 export { translations, getTranslations } from './translations';
 export type { Locale, Translations } from './translations';
+export { SFX_CUE_KEYS, isSfxCueKey } from './audio-cues';
+export type { SfxCueKey } from './audio-cues';

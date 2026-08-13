@@ -1,8 +1,11 @@
 import type { DialogueEntryIR } from './ir';
 import type { ResolvedCharacter } from './config';
+import { isSfxCueKey } from '../audio-cues';
 
 const HEADER_RE = /^\*\*(.+?)\*\*(?:\s*\[([^\]]+)\])?[：:]\s*([\s\S]*)$/;
 const BG_BLOCK_RE = /^```bg\s*\n([\s\S]*?)\n```$/;
+const SFX_BLOCK_RE =
+    /^```sfx[ \t]*\n[ \t]*([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
 
 export interface ParseSceneResult {
     title?: string;
@@ -24,6 +27,7 @@ export function parseScene(
     let title: string | undefined;
     const entries: DialogueEntryIR[] = [];
     let pendingBg: string | undefined;
+    let pendingSfx: string | undefined;
 
     for (const block of blocks) {
         if (block.startsWith('# ')) {
@@ -36,6 +40,27 @@ export function parseScene(
         if (bgMatch) {
             pendingBg = bgMatch[1].trim();
             continue;
+        }
+        const sfxMatch = SFX_BLOCK_RE.exec(block);
+        if (sfxMatch) {
+            if (pendingSfx !== undefined) {
+                throw new Error(
+                    `[story-compiler] ${sourcePath}: pending sfx "${pendingSfx}" was not consumed before another sfx block`
+                );
+            }
+            const cueKey = sfxMatch[1];
+            if (!isSfxCueKey(cueKey)) {
+                throw new Error(
+                    `[story-compiler] ${sourcePath}: unknown sfx cue "${cueKey}"`
+                );
+            }
+            pendingSfx = cueKey;
+            continue;
+        }
+        if (block.startsWith('```sfx')) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: invalid sfx block; expected one lowercase hyphenated cue key`
+            );
         }
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);
@@ -52,8 +77,10 @@ export function parseScene(
                     ...(pendingBg !== undefined
                         ? { backgroundPrompt: pendingBg }
                         : {}),
+                    ...(pendingSfx !== undefined ? { sfx: pendingSfx } : {}),
                 });
                 pendingBg = undefined;
+                pendingSfx = undefined;
                 continue;
             }
             throw new Error(
@@ -78,10 +105,20 @@ export function parseScene(
             entry.backgroundPrompt = pendingBg;
             pendingBg = undefined;
         }
+        if (pendingSfx !== undefined) {
+            entry.sfx = pendingSfx;
+            pendingSfx = undefined;
+        }
         if (expressionKey) {
             entry.expressionKey = expressionKey;
         }
         entries.push(entry);
+    }
+
+    if (pendingSfx !== undefined) {
+        throw new Error(
+            `[story-compiler] ${sourcePath}: unconsumed sfx "${pendingSfx}" at end of scene`
+        );
     }
 
     return { title, entries };

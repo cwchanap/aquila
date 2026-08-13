@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕亮了。", background: Background.Chapter_1_Ch1_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕亮了。", bgm: "dawn-apartment", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是鬧鐘，是那種自己醒過來的亮——沒有聲音，沒有震動，只是螢幕從黑裡浮上來，像水底冒出的一盞燈。朝倉澪睜開眼的時候，夢還黏在眼皮內側，摳不掉。", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "夢裡沒什麼內容，只有幾個模糊的畫面。", background: Background.Chapter_1_Ch1_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一片黑色的海面，平得像沒有人碰過的墨。", background: Background.Chapter_1_Ch1_Act1_S0 },

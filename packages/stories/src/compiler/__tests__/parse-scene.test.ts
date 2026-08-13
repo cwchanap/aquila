@@ -183,4 +183,93 @@ describe('parseScene', () => {
         expect(result.entries[0].backgroundPrompt).toBe('月台');
         expect(result.entries[0].expressionKey).toBe('scared');
     });
+
+    it('applies sfx to exactly the next dialogue entry', () => {
+        const md = [
+            '```sfx',
+            'door-open',
+            '```',
+            '',
+            '**旁白**：第一段。',
+            '',
+            '**旁白**：第二段。',
+        ].join('\n');
+
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.entries[0].sfx).toBe('door-open');
+        expect(result.entries[1].sfx).toBeUndefined();
+    });
+
+    it('applies pending bg and sfx to the same next entry', () => {
+        const md = [
+            '```bg',
+            '月台夜景',
+            '```',
+            '',
+            '```sfx',
+            'notification-beep',
+            '```',
+            '',
+            '**李杰**：手機亮了。',
+        ].join('\n');
+
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.entries[0]).toMatchObject({
+            backgroundPrompt: '月台夜景',
+            sfx: 'notification-beep',
+        });
+    });
+
+    it('consumes sfx on default-speaker narration', () => {
+        const narrator = { id: 'narrator', displayName: '旁白' };
+        const md = ['```sfx', 'impact', '```', '', '腳落在地板上。'].join('\n');
+
+        const result = parseScene(md, resolve, 'act1.md', narrator);
+
+        expect(result.entries[0]).toMatchObject({
+            characterId: 'narrator',
+            dialogue: '腳落在地板上。',
+            sfx: 'impact',
+        });
+    });
+
+    it.each([
+        ['empty', ['```sfx', '', '```'].join('\n')],
+        ['multi-token', ['```sfx', 'door open', '```'].join('\n')],
+        ['unknown', ['```sfx', 'door-opne', '```'].join('\n')],
+        ['capitalized', ['```sfx', 'Door-Open', '```'].join('\n')],
+    ])('rejects %s sfx blocks', (_label, block) => {
+        const md = [block, '', '**旁白**：hello'].join('\n');
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(/sfx/i);
+    });
+
+    it('rejects a second sfx block while one is pending', () => {
+        const md = [
+            '```sfx',
+            'door-open',
+            '```',
+            '',
+            '```sfx',
+            'impact',
+            '```',
+            '',
+            '**旁白**：hello',
+        ].join('\n');
+
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /pending sfx/i
+        );
+    });
+
+    it('rejects an unconsumed sfx block at EOF', () => {
+        const md = ['**旁白**：hello', '', '```sfx', 'door-open', '```'].join(
+            '\n'
+        );
+
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /unconsumed sfx/i
+        );
+    });
 });

@@ -9,6 +9,7 @@ export interface DialogueEntryIR {
     // canonicalized form for misspelled/verbose source labels.
     displayName: string;
     dialogue: string;
+    sfx?: string;
     backgroundPrompt?: string;
     expressionKey?: string;
     background?: string;

@@ -90,6 +90,9 @@ function emitSceneFile(
                 `character: ${q(e.displayName)}`,
                 `dialogue: ${q(e.dialogue)}`,
             ];
+            if (e.sfx) {
+                parts.push(`sfx: ${q(e.sfx)}`);
+            }
             if (e.background) {
                 if (
                     hasBackgrounds &&

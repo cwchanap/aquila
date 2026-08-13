@@ -156,6 +156,41 @@ describe('emitStory', () => {
         expect(backgrounds).toContain('Root_Act1_S0 = "_root/act1_s0"');
     });
 
+    it('emits sfx only on authored entries', () => {
+        const storyWithSfx: StoryIR = {
+            storyId: 'demo_story',
+            name: 'demoStory',
+            start: 'act1',
+            scenes: [
+                {
+                    id: 'act1',
+                    entries: [
+                        {
+                            characterId: 'narrator',
+                            displayName: '旁白',
+                            dialogue: 'door',
+                            sfx: 'door-open',
+                        },
+                        {
+                            characterId: 'narrator',
+                            displayName: '旁白',
+                            dialogue: 'quiet',
+                        },
+                    ],
+                    next: null,
+                    sourcePath: 'act1.md',
+                },
+            ],
+            choices: [],
+        };
+
+        emitStory(storyWithSfx, dir, mockCharDir);
+        const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
+
+        expect(scene).toContain('sfx: "door-open"');
+        expect(scene.match(/sfx:/g)).toHaveLength(1);
+    });
+
     it('emits image-assets.json manifest', () => {
         const storyWithManifest: StoryIR = {
             storyId: 'demo_story',

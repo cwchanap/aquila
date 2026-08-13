@@ -2,6 +2,7 @@ export type DialogueEntry = {
     character?: string;
     characterId?: string;
     dialogue: string;
+    sfx?: string;
     background?: string;
     portrait?: string;
 };

@@ -46,6 +46,9 @@ jobs:
       - name: Verify SFX fixtures
         run: bun --filter web verify:sfx-fixtures
 
+      - name: Verify BGM fixtures
+        run: bun --filter web verify:bgm-fixtures
+
       - name: Run unit tests
         run: bun --filter @aquila/stories test
 

@@ -235,6 +235,113 @@ describe('parseScene', () => {
         });
     });
 
+    it('applies BGM start, change, and stop to the next dialogue entry', () => {
+        const narrator = { id: 'narrator', displayName: '旁白' };
+        const markdown = `# Scene
+
+\`\`\`bgm
+dawn-apartment
+\`\`\`
+
+**旁白**：First.
+
+**旁白**：Second.
+
+\`\`\`bgm
+stop
+\`\`\`
+
+**旁白**：Third.`;
+
+        const result = parseScene(markdown, resolve, 'fixture.md', narrator);
+
+        expect(result.entries).toMatchObject([
+            { dialogue: 'First.', bgm: 'dawn-apartment' },
+            { dialogue: 'Second.' },
+            { dialogue: 'Third.', bgm: null },
+        ]);
+    });
+
+    it('applies pending bg, sfx, and BGM to the same next entry', () => {
+        const md = [
+            '```bg',
+            '月台夜景',
+            '```',
+            '',
+            '```sfx',
+            'notification-beep',
+            '```',
+            '',
+            '```bgm',
+            'tension-pulse',
+            '```',
+            '',
+            '**李杰**：手機亮了。',
+        ].join('\n');
+
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.entries[0]).toMatchObject({
+            backgroundPrompt: '月台夜景',
+            sfx: 'notification-beep',
+            bgm: 'tension-pulse',
+        });
+    });
+
+    it.each([
+        ['empty', ['```bgm', '', '```'].join('\n'), /invalid bgm block/],
+        [
+            'unknown',
+            ['```bgm', 'unknown-track', '```'].join('\n'),
+            /unknown bgm cue/,
+        ],
+        [
+            'capitalized',
+            ['```bgm', 'Dawn-Apartment', '```'].join('\n'),
+            /invalid bgm block/,
+        ],
+        [
+            'multi-token',
+            ['```bgm', 'dawn apartment', '```'].join('\n'),
+            /invalid bgm block/,
+        ],
+    ])('rejects %s BGM blocks', (_label, block, error) => {
+        const md = [block, '', '**旁白**：hello'].join('\n');
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(error);
+    });
+
+    it('rejects a second BGM block while one is pending', () => {
+        const md = [
+            '```bgm',
+            'dawn-apartment',
+            '```',
+            '',
+            '```bgm',
+            'tension-pulse',
+            '```',
+            '',
+            '**旁白**：hello',
+        ].join('\n');
+
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /pending bgm/i
+        );
+    });
+
+    it('rejects an unconsumed BGM block at EOF', () => {
+        const md = [
+            '**旁白**：hello',
+            '',
+            '```bgm',
+            'dawn-apartment',
+            '```',
+        ].join('\n');
+
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /unconsumed bgm/i
+        );
+    });
+
     it.each([
         ['empty', ['```sfx', '', '```'].join('\n')],
         ['multi-token', ['```sfx', 'door open', '```'].join('\n')],

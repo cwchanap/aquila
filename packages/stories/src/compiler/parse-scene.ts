@@ -1,11 +1,13 @@
 import type { DialogueEntryIR } from './ir';
 import type { ResolvedCharacter } from './config';
-import { isSfxCueKey } from '../audio-cues';
+import { isBgmCueKey, isSfxCueKey } from '../audio-cues';
 
 const HEADER_RE = /^\*\*(.+?)\*\*(?:\s*\[([^\]]+)\])?[：:]\s*([\s\S]*)$/;
 const BG_BLOCK_RE = /^```bg\s*\n([\s\S]*?)\n```$/;
 const SFX_BLOCK_RE =
     /^```sfx[ \t]*\n[ \t]*([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
+const BGM_BLOCK_RE =
+    /^```bgm[ \t]*\n[ \t]*(stop|[a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
 
 export interface ParseSceneResult {
     title?: string;
@@ -28,6 +30,7 @@ export function parseScene(
     const entries: DialogueEntryIR[] = [];
     let pendingBg: string | undefined;
     let pendingSfx: string | undefined;
+    let pendingBgm: string | null | undefined;
 
     for (const block of blocks) {
         if (block.startsWith('# ')) {
@@ -62,6 +65,31 @@ export function parseScene(
                 `[story-compiler] ${sourcePath}: invalid sfx block; expected one lowercase hyphenated cue key`
             );
         }
+        const bgmMatch = BGM_BLOCK_RE.exec(block);
+        if (bgmMatch) {
+            if (pendingBgm !== undefined) {
+                throw new Error(
+                    `[story-compiler] ${sourcePath}: pending bgm was not consumed before another bgm block`
+                );
+            }
+            const token = bgmMatch[1];
+            if (token === 'stop') {
+                pendingBgm = null;
+            } else {
+                if (!isBgmCueKey(token)) {
+                    throw new Error(
+                        `[story-compiler] ${sourcePath}: unknown bgm cue "${token}"`
+                    );
+                }
+                pendingBgm = token;
+            }
+            continue;
+        }
+        if (block.startsWith('```bgm')) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: invalid bgm block; expected one lowercase hyphenated cue key or stop`
+            );
+        }
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);
         if (!m) {
@@ -78,9 +106,11 @@ export function parseScene(
                         ? { backgroundPrompt: pendingBg }
                         : {}),
                     ...(pendingSfx !== undefined ? { sfx: pendingSfx } : {}),
+                    ...(pendingBgm !== undefined ? { bgm: pendingBgm } : {}),
                 });
                 pendingBg = undefined;
                 pendingSfx = undefined;
+                pendingBgm = undefined;
                 continue;
             }
             throw new Error(
@@ -109,6 +139,10 @@ export function parseScene(
             entry.sfx = pendingSfx;
             pendingSfx = undefined;
         }
+        if (pendingBgm !== undefined) {
+            entry.bgm = pendingBgm;
+            pendingBgm = undefined;
+        }
         if (expressionKey) {
             entry.expressionKey = expressionKey;
         }
@@ -118,6 +152,11 @@ export function parseScene(
     if (pendingSfx !== undefined) {
         throw new Error(
             `[story-compiler] ${sourcePath}: unconsumed sfx "${pendingSfx}" at end of scene`
+        );
+    }
+    if (pendingBgm !== undefined) {
+        throw new Error(
+            `[story-compiler] ${sourcePath}: unconsumed bgm at end of scene`
         );
     }
 

@@ -10,6 +10,7 @@ export interface DialogueEntryIR {
     displayName: string;
     dialogue: string;
     sfx?: string;
+    bgm?: string | null;
     backgroundPrompt?: string;
     expressionKey?: string;
     background?: string;

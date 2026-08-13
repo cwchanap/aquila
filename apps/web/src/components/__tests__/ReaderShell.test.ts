@@ -57,6 +57,9 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             soundEffects: 'Sound effects',
             soundEffectsOn: 'On',
             soundEffectsOff: 'Off',
+            backgroundMusic: 'Background Music',
+            backgroundMusicOn: 'On',
+            backgroundMusicOff: 'Off',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -89,6 +92,22 @@ const sfxDialogue: DialogueEntry[] = [
     },
 ];
 
+const bgmDialogue: DialogueEntry[] = [
+    {
+        characterId: 'narrator',
+        dialogue: 'Dawn starts here.',
+        bgm: 'dawn-apartment',
+    },
+    { characterId: 'narrator', dialogue: 'Dawn continues.' },
+    {
+        characterId: 'narrator',
+        dialogue: 'Tension begins.',
+        bgm: 'tension-pulse',
+    },
+    { characterId: 'narrator', dialogue: 'Silence follows.', bgm: null },
+    { characterId: 'narrator', dialogue: 'Silence continues.' },
+];
+
 const flow = {
     start: 'act1',
     nodes: [{ kind: 'scene', id: 'act1', sceneId: 'act1', next: null }],
@@ -99,6 +118,15 @@ const jumpFlow = {
     nodes: [
         { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
         { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+    ],
+} as unknown as StoryFlowConfig;
+
+const bgmFlow = {
+    start: 'act1',
+    nodes: [
+        { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+        { kind: 'scene', id: 'act2', sceneId: 'act2', next: 'act3' },
+        { kind: 'scene', id: 'act3', sceneId: 'act3', next: null },
     ],
 } as unknown as StoryFlowConfig;
 
@@ -199,6 +227,16 @@ function createSfxHarness() {
     };
 }
 
+function createBgmHarness() {
+    return {
+        player: {
+            play: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        },
+    };
+}
+
 function stubMatchMedia(initial: boolean) {
     let listeners: Array<(e: { matches: boolean }) => void> = [];
     const mql = {
@@ -238,6 +276,20 @@ async function chooseReaderMode(mode: 'Text' | 'Visual Novel'): Promise<void> {
         screen.getByRole('button', { name: 'Open reader settings' })
     );
     await fireEvent.click(screen.getByRole('button', { name: mode }));
+}
+
+function renderVisualWithBgm(
+    bgm: ReturnType<typeof createBgmHarness>,
+    overrides: Record<string, unknown> = {}
+): ReturnType<typeof render> {
+    localStorage.setItem(READER_MODE_KEY, 'visual');
+    return render(ReaderShell, {
+        props: {
+            createBgmPlayer: () => bgm.player,
+            createVisualRuntime: () => createRuntimeHarness().runtime,
+            ...overrides,
+        },
+    });
 }
 
 describe('ReaderShell', () => {
@@ -582,6 +634,297 @@ describe('ReaderShell', () => {
         view.unmount();
 
         expect(sfx.player.dispose).toHaveBeenCalledOnce();
+    });
+
+    it('does not autoplay the restored BGM until the reader-ready host is activated', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 1;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
+    it.each(['Enter', ' '] as const)(
+        'activates restored BGM from an unmodified %s body key',
+        async key => {
+            stubMatchMedia(false);
+            readerState.dialogue = bgmDialogue;
+            readerState.dialogueIndex = 1;
+            const bgm = createBgmHarness();
+            renderVisualWithBgm(bgm);
+
+            await fireEvent.keyDown(document.body, { key });
+            expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+        }
+    );
+
+    it('filters non-activation keys, modified keys, and interactive targets', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+
+        await fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+        await fireEvent.keyDown(document.body, { key: 'Enter', ctrlKey: true });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        await fireEvent.keyDown(screen.getByRole('button', { name: 'Text' }), {
+            key: 'Enter',
+        });
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+    });
+
+    it('retains a cue-less forward line without restarting or stopping BGM', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+        bgm.player.stop.mockClear();
+
+        readerState.dialogueIndex = 1;
+        await tick();
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        expect(bgm.player.stop).not.toHaveBeenCalled();
+    });
+
+    it('does not restart a local command when the selected key is unchanged', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+        bgm.player.stop.mockClear();
+
+        readerState.dialogue = [
+            { dialogue: 'Same cue', bgm: 'dawn-apartment' },
+        ];
+        readerState.dialogueIndex = 0;
+        await tick();
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        expect(bgm.player.stop).not.toHaveBeenCalled();
+    });
+
+    it('plays a changed local cue exactly once after activation', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+
+        readerState.dialogueIndex = 2;
+        await tick();
+
+        expect(bgm.player.play).toHaveBeenCalledOnce();
+        expect(bgm.player.play).toHaveBeenCalledWith('tension-pulse');
+    });
+
+    it('stops when a local null command clears the active cue', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.stop.mockClear();
+
+        readerState.dialogueIndex = 3;
+        await tick();
+
+        expect(bgm.player.stop).toHaveBeenCalledOnce();
+    });
+
+    it('clears a stale cue on a non-adjacent jump and does not replay it later', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        readerState.activeFlow = bgmFlow;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+        bgm.player.stop.mockClear();
+
+        readerState.currentSceneId = 'act3';
+        readerState.dialogue = [{ dialogue: 'Non-adjacent silence.' }];
+        readerState.dialogueIndex = 0;
+        await tick();
+
+        expect(bgm.player.stop).toHaveBeenCalledOnce();
+        expect(bgm.player.play).not.toHaveBeenCalled();
+
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(bgm.player.play).not.toHaveBeenCalled();
+    });
+
+    it('plays a local cue on a non-forward destination', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        readerState.activeFlow = bgmFlow;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+
+        readerState.currentSceneId = 'act3';
+        readerState.dialogue = [
+            { dialogue: 'Local tension.', bgm: 'tension-pulse' },
+        ];
+        readerState.dialogueIndex = 0;
+        await tick();
+
+        expect(bgm.player.play).toHaveBeenCalledOnce();
+        expect(bgm.player.play).toHaveBeenCalledWith('tension-pulse');
+    });
+
+    it('stops and resets activation on Visual to Text while retaining selection', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+        bgm.player.stop.mockClear();
+
+        await chooseReaderMode('Text');
+        expect(bgm.player.stop).toHaveBeenCalledOnce();
+        await chooseReaderMode('Visual Novel');
+        expect(bgm.player.play).not.toHaveBeenCalled();
+
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
+    it('resumes retained selection only after a Text to Visual activation', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        localStorage.setItem(READER_MODE_KEY, 'text');
+        const bgm = createBgmHarness();
+        const view = render(ReaderShell, {
+            props: {
+                createBgmPlayer: () => bgm.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        await chooseReaderMode('Visual Novel');
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+        view.unmount();
+    });
+
+    it('stops on disable and resumes the selected cue from Settings', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+        bgm.player.stop.mockClear();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        const toggle = screen.getByRole('button', {
+            name: 'Background Music',
+        });
+        await fireEvent.click(toggle);
+        expect(bgm.player.stop).toHaveBeenCalledOnce();
+        expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+        await fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        expect(bgm.player.play).toHaveBeenCalledOnce();
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
+    it('does not restart BGM across responsive reader remounts', async () => {
+        const mm = stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 1;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+
+        mm.setMatches(true);
+        await tick();
+        mm.setMatches(false);
+        await tick();
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+    });
+
+    it('stops old BGM on story replacement and arms a local replacement cue without autoplay', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        bgm.player.play.mockClear();
+        bgm.player.stop.mockClear();
+
+        readerState.storyId = 'replacement_story';
+        readerState.currentSceneId = 'replacement';
+        readerState.dialogue = [
+            { dialogue: 'Replacement tension.', bgm: 'tension-pulse' },
+        ];
+        readerState.dialogueIndex = 0;
+        await tick();
+
+        expect(bgm.player.stop).toHaveBeenCalledOnce();
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(bgm.player.play).toHaveBeenCalledWith('tension-pulse');
+    });
+
+    it('keeps SFX playback independent while BGM is active', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = [
+            { dialogue: 'Start', bgm: 'dawn-apartment' },
+            { dialogue: 'Cue', sfx: 'door-open' },
+        ];
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        const sfx = createSfxHarness();
+        renderVisualWithBgm(bgm, { createSfxPlayer: () => sfx.player });
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+
+        readerState.dialogueIndex = 1;
+        await tick();
+
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+        expect(sfx.player.play).toHaveBeenCalledWith('door-open');
+    });
+
+    it('disposes the BGM player once on unmount', () => {
+        stubMatchMedia(false);
+        const bgm = createBgmHarness();
+        const view = renderVisualWithBgm(bgm);
+
+        view.unmount();
+
+        expect(bgm.player.dispose).toHaveBeenCalledOnce();
     });
 
     it('creates one retained runtime and disposes it before replacement and on destroy', async () => {

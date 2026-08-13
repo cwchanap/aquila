@@ -48,7 +48,7 @@ function isDirectFlowEdge(
     );
 }
 
-function isForwardAdjacent(
+export function isForwardAdjacent(
     previous: LinePosition,
     next: LinePosition,
     flow: StoryFlowConfig | null

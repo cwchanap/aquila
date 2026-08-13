@@ -14,6 +14,13 @@
   } from '@/lib/audio/sfx-player';
   import { readSfxEnabled, writeSfxEnabled } from '@/lib/audio/sfx-preference';
   import {
+    createBgmPlayer as createDefaultBgmPlayer,
+    type BgmPlayer,
+  } from '@/lib/audio/bgm-player';
+  import { readBgmEnabled, writeBgmEnabled } from '@/lib/audio/bgm-preference';
+  import { nextBgmSelection } from '@/lib/audio/bgm-transition';
+  import { isReaderInteractiveTarget } from '@/lib/reader-interaction';
+  import {
     nextSfxCommand,
     sameLinePosition,
     type LinePosition,
@@ -38,6 +45,7 @@
     getSceneDialogue = () => null,
     createVisualRuntime = createDefaultVisualRuntime,
     createSfxPlayer = createDefaultSfxPlayer,
+    createBgmPlayer = createDefaultBgmPlayer,
     onRetry = () => {},
     showBookmarkButton = true,
     backUrl = '/',
@@ -53,6 +61,7 @@
     ) => readonly DialogueEntry[] | null;
     createVisualRuntime?: typeof createDefaultVisualRuntime;
     createSfxPlayer?: () => SfxPlayer;
+    createBgmPlayer?: () => BgmPlayer;
     onRetry?: () => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
@@ -79,6 +88,10 @@
   let readerMode = $state(readReaderMode());
   const sfxPlayer = createSfxPlayer();
   let sfxEnabled = $state(readSfxEnabled());
+  const bgmPlayer = createBgmPlayer();
+  let bgmEnabled = $state(readBgmEnabled());
+  let selectedBgmKey: string | null = null;
+  let bgmActivated = false;
   let visualRuntime: VisualReaderRuntime | null = $state(null);
   let visualStatus = $state<VisualSnapshot['status']>(null);
   // Identity of the validated release serving visuals. Held in shell state
@@ -105,7 +118,11 @@
 
   function setReaderMode(mode: ReaderMode): void {
     if (readerMode === mode) return;
-    if (mode === 'text') sfxPlayer.stop();
+    if (mode === 'text') {
+      sfxPlayer.stop();
+      bgmPlayer.stop();
+      bgmActivated = false;
+    }
     const retainedRuntime =
       mode === 'visual' &&
       visualRuntimeStoryId === storyId
@@ -223,6 +240,35 @@
     );
     if (command.type === 'play') sfxPlayer.play(command.cueKey);
     else if (command.type === 'stop') sfxPlayer.stop();
+
+    const storyChanged =
+      previous !== null && previous.storyId !== nextPosition.storyId;
+
+    if (storyChanged) {
+      bgmPlayer.stop();
+      selectedBgmKey = null;
+      bgmActivated = false;
+    }
+
+    const previousBgmKey = selectedBgmKey;
+    const nextBgmKey = nextBgmSelection(
+      previous,
+      nextPosition,
+      dialogue,
+      selectedBgmKey,
+      activeFlow
+    );
+    selectedBgmKey = nextBgmKey;
+
+    if (!storyChanged && previousBgmKey !== null && nextBgmKey === null) {
+      bgmPlayer.stop();
+    } else if (
+      nextBgmKey !== null &&
+      nextBgmKey !== previousBgmKey &&
+      bgmActivated
+    ) {
+      bgmPlayer.play(nextBgmKey);
+    }
   });
 
   // Svelte updates `inert` as a DOM property, which does not reflect to an
@@ -278,6 +324,43 @@
     sfxEnabled = enabled;
     writeSfxEnabled(enabled);
     if (!enabled) sfxPlayer.stop();
+  }
+
+  function activateBgm(): void {
+    if (readerMode !== 'visual' || leafDisabled) return;
+    bgmActivated = true;
+    if (bgmEnabled && selectedBgmKey) {
+      bgmPlayer.play(selectedBgmKey);
+    }
+  }
+
+  function handleBgmActivationKey(event: KeyboardEvent): void {
+    if (readerMode !== 'visual' || leafDisabled) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    if (isReaderInteractiveTarget(event.target ?? document.activeElement)) {
+      return;
+    }
+    activateBgm();
+  }
+
+  function setBgmEnabled(enabled: boolean): void {
+    if (bgmEnabled === enabled) return;
+    bgmEnabled = enabled;
+    writeBgmEnabled(enabled);
+
+    if (!enabled) {
+      bgmActivated = false;
+      bgmPlayer.stop();
+      return;
+    }
+
+    if (readerMode === 'visual' && selectedBgmKey) {
+      bgmActivated = true;
+      bgmPlayer.play(selectedBgmKey);
+    }
   }
 
   function handleVisualOverlayChange(open: boolean): void {
@@ -359,6 +442,7 @@
     runtimeGeneration += 1;
     removeVisibilityListener();
     sfxPlayer.dispose();
+    bgmPlayer.dispose();
     const runtime = visualRuntime;
     visualRuntime = null;
     void runtime?.dispose().catch(() => {
@@ -366,6 +450,8 @@
     });
   });
 </script>
+
+<svelte:window onkeydown={handleBgmActivationKey} />
 
 {#snippet loadSurface()}
   {#if loadStatus === 'error'}
@@ -409,6 +495,8 @@
     onModeChange={changeReaderMode}
     {sfxEnabled}
     onSfxEnabledChange={setSfxEnabled}
+    {bgmEnabled}
+    onBgmEnabledChange={setBgmEnabled}
     onBookmark={() => onBookmark(dialogueIndex + 1)}
     {showBookmarkButton}
     {backUrl}
@@ -434,6 +522,7 @@
     <div
       bind:this={readerReadyElement}
       data-testid="reader-ready"
+      onpointerdown={activateBgm}
       data-asset-environment={visualIdentity?.assetEnvironment}
       data-asset-preview-id={visualIdentity?.previewId ?? undefined}
       data-asset-release-id={visualIdentity?.releaseId}

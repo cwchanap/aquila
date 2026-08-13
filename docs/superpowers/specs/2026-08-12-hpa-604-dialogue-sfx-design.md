@@ -1,51 +1,50 @@
 # HPA-604 Dialogue-Triggered SFX
 
 Date: 2026-08-12  
-Status: Accepted in Linear; revised after planning review
+Status: Accepted in Linear; revised after two planning reviews
 
 ## Goal
 
-Add Aquila's first narrow visual-novel audio slice: a story author can attach one logical SFX cue to the next dialogue entry, the compiler rejects malformed or unknown HPA-604 cue keys, and the web visual-novel reader plays the cue once when the active line genuinely changes.
+Add Aquila's first narrow visual-novel audio slice: story Markdown can attach one logical SFX cue to the next dialogue entry, the compiler rejects invalid HPA-604 cue authoring, and the web visual-novel reader plays that cue once on genuine forward progression.
 
-This remains a local-fixture foundation. It proves authoring, compiler propagation, stable reader lifecycle ownership, native browser playback, and one persisted on/off preference without introducing production audio delivery or a general audio engine.
+This remains a local-fixture foundation. It proves authoring, compiler propagation, stable reader lifecycle ownership, native browser playback, one persisted on/off preference, and navigation-safe playback without introducing production audio delivery or a general audio engine.
 
 ## Why HPA-604 Is the Next Actionable Ticket
 
-HPA-604 has no blockers and is the foundation for HPA-605 (persistent BGM), HPA-606 (per-story audio plans and authoring workflow), and HPA-610 (R2 audio resolution). Implementing a downstream ticket first would either duplicate this lifecycle work or force a broader abstraction before the one-shot behavior is proven.
+HPA-604 has no blockers and is the foundation for HPA-605 (persistent BGM), HPA-606 (per-story audio plans and authoring workflow), and HPA-610 (R2 audio resolution). Implementing a downstream ticket first would duplicate lifecycle work or force broader abstractions before the one-shot behavior is proven.
 
 ## Current Code Evidence
 
-- `packages/stories/src/compiler/parse-scene.ts` already supports a fenced `bg` block with pending metadata consumed by the next emitted dialogue entry.
-- Unknown speakers already fail compilation in `parse-scene.ts`; malformed SFX authoring should follow that fail-loud authoring contract.
-- `packages/stories/src/compiler/validate.ts` warns for unknown expressions because a base portrait fallback exists. SFX has no equivalent authoring fallback, so an HPA-604 cue typo should not silently compile.
-- `packages/stories/src/compiler/ir.ts`, `packages/stories/src/types.ts`, and `packages/stories/src/compiler/emit.ts` form the existing IR -> runtime `DialogueEntry` -> generated-scene path.
-- `apps/web/src/components/ReaderShell.svelte` already owns one stable `${storyId}\u0000${currentSceneId}\u0000${dialogueIndex}` identity across responsive leaf remounts. HPA-604 must reuse that identity rather than create a second SFX-specific line tracker.
-- `ReaderShell` already owns Text/Visual mode changes, story-runtime replacement, and destruction cleanup.
-- `apps/web/src/components/ReaderSettingsMenu.svelte` is the existing shared Visual settings surface, and `apps/web/src/components/__tests__/ReaderSettingsMenu.test.ts` has a required-prop render helper that must evolve with the component contract.
-- `apps/web/src/lib/reader-mode.ts` exports `getBrowserStorage()`. The visual asset runtime already reuses it, so SFX preference code should do the same instead of duplicating browser-storage access.
-- There is no existing web `HTMLAudioElement` abstraction to reuse. Phaser `AudioContext` usage is a separate runtime and remains out of scope.
+- `packages/stories/src/compiler/parse-scene.ts` already supports fenced `bg` blocks with pending metadata consumed by the next emitted dialogue entry.
+- Unknown speakers already fail compilation. Unknown expressions only warn because the visual pipeline has a base-portrait fallback. SFX has no equivalent authoring fallback, so invalid cue authoring must fail loudly.
+- `packages/stories/src/compiler/ir.ts`, `packages/stories/src/types.ts`, and `packages/stories/src/compiler/emit.ts` are the existing IR -> runtime payload -> generated scene path.
+- `apps/web/src/components/ReaderShell.svelte` already owns the stable active story/scene/index lifecycle across responsive leaf remounts and Text/Visual mode changes.
+- `ReaderManager.goToScene()` is shared by normal scene navigation, choices, and Act-panel navigation; browser history restores state through `loadIntent(..., 'popstate')`. Therefore a raw position change is not sufficient evidence that the user advanced normally.
+- `VisualNovelReader`'s History button opens `VisualBacklog`, which is read-only for the current scene. The navigable scene-jump surface is `ActPanel`.
+- `apps/web/src/lib/reader-mode.ts` exports `getBrowserStorage()`. The visual asset runtime already reuses it.
+- `apps/web/src/components/__tests__/ReaderSettingsMenu.test.ts` owns the required-prop render helper for the shared settings menu.
+- `apps/web/scripts/build-visual-fixtures.ts` and `verify-visual-fixtures.ts` establish the repository pattern for reproducible checked-in fixtures plus structural verification.
+- `.github/workflows/unit-tests.yml` runs `apps/web` with `bun run test:coverage`, and `codecov.yml` requires 95% project and patch coverage.
+- `apps/web/src/lib/logger.ts` is the existing non-user-facing diagnostic seam.
+- The Phaser audio path in `packages/game` is a separate runtime and remains out of scope.
 
-## Considered Approaches
+## Product Decisions
 
-### 1. Shell-owned one-shot player with a pure transition helper — chosen
-
-`ReaderShell` continues to own the single active-line identity it already tracks. A pure helper classifies the transition and returns an SFX command; the shell performs the side effect through an injected player.
-
-Advantages:
-
-- one line-identity machine instead of parallel visual/SFX trackers;
-- transition combinatorics are table-testable without a large Svelte component matrix;
-- the visual leaf remains presentation-only;
-- browser audio stays out of story/compiler packages;
-- no global store, event bus, mixer, or generic timeline is introduced.
-
-### 2. Play inside `VisualNovelReader` — rejected
-
-The visual leaf remounts at responsive boundaries and is deliberately not the stable progression owner. Playback there would make replay safety depend on component mount behavior.
-
-### 3. General audio manager/event bus — rejected
-
-A mixer/channel/event architecture anticipates BGM, ambience, voice, volume, ducking, and production delivery. HPA-604 only needs one one-shot channel and three local fixtures.
+| Concern | Decision |
+| --- | --- |
+| Playback owner | `ReaderShell`, never `VisualNovelReader` |
+| Browser API | Native `HTMLAudioElement` only |
+| Runtime concurrency | One current one-shot element |
+| Story payload | `sfx?: string` |
+| HPA-604 cue authority | Temporary three-key `@aquila/stories` allowlist |
+| Long-term cue authority | HPA-606 per-story `audio-plan.json` |
+| Runtime URL resolution | One local web catalog module |
+| Preference | One persisted boolean using `getBrowserStorage()` |
+| Settings visibility | SFX control appears only while Settings is in Visual mode |
+| Forward playback | Same-scene `index + 1`, or direct forward flow edge to destination index 0 |
+| Rewinds/jumps | Silent |
+| Fixtures | Three deterministic synthetic PCM WAV files |
+| Coverage | Final web verification runs `test:coverage` |
 
 ## Bootstrap Cue Contract
 
@@ -65,11 +64,11 @@ export function isSfxCueKey(value: string): value is SfxCueKey {
 }
 ```
 
-Export the values/type from `@aquila/stories` so both the compiler and web catalog depend on the same bootstrap key set.
+Export the values/type from `@aquila/stories` so the compiler and local web catalog share the same bootstrap key set.
 
-This is intentionally **not** the long-term authoring source of truth. HPA-606 explicitly introduces per-story `docs/audio-plan.json` files and compiler validation against those plans. At that point the parser-level three-key membership check can be removed/replaced without compatibility work. HPA-604 does not implement any part of the audio-plan schema.
+This is intentionally not the long-term authoring source of truth. HPA-606 introduces per-story `docs/audio-plan.json` and compiler validation against those plans. HPA-606 should replace the bootstrap membership check without compatibility work.
 
-Keep runtime `DialogueEntry.sfx` typed as `string`, not `SfxCueKey`. Generated HPA-604 output will only contain validated keys, but the runtime boundary stays tolerant so HPA-610 can change URL resolution in one place and hand-built/test payloads with unknown keys still fail quietly.
+Keep runtime `DialogueEntry.sfx` as `string`, not `SfxCueKey`. Generated HPA-604 content is compile-validated, while hand-built/test/future runtime payloads remain tolerant.
 
 ## Authoring Contract
 
@@ -85,23 +84,23 @@ door-open
 
 Rules:
 
-- the body is one logical key, never a URL, file path, prompt, provider/model identifier, volume, delay, or channel;
-- the key must be one of `SFX_CUE_KEYS`;
-- empty bodies, whitespace-separated/multi-token bodies, unknown keys, malformed `sfx` fences, and unsupported capitalization fail compilation;
-- only one `sfx` block may be pending at a time; a second arrives before a dialogue entry is an authoring error rather than silently overwriting a lost cue;
-- a pending SFX at end-of-file is an authoring error rather than a silently dropped cue;
+- body is one logical cue key; never a URL, path, prompt, provider/model identifier, volume, delay, or channel;
+- key must be one of `SFX_CUE_KEYS`;
+- empty, malformed, whitespace-separated/multi-token, unsupported capitalization, and unknown keys fail compilation;
+- only one SFX block may be pending; a second pending block fails rather than overwriting a lost one-shot;
+- pending SFX at EOF fails rather than being silently dropped;
 - `bg` and `sfx` may both be pending and both apply to the same next dialogue entry;
-- the pending SFX is consumed by the next emitted dialogue entry, including default-speaker narration, then cleared;
-- an entry without an `sfx` block emits no `sfx` property;
-- no compatibility alias or alternate syntax is added.
+- pending SFX is consumed by the next emitted dialogue entry, including default-speaker narration;
+- entries without SFX emit no `sfx` field;
+- no alternate syntax or compatibility alias is added.
 
-`bg` keeps its current behavior. This ticket does not retroactively tighten duplicate/unconsumed background blocks because background metadata has different semantics and doing so would be unrelated scope.
+`bg` keeps its current behavior. HPA-604 does not retroactively tighten background duplicate/EOF behavior because background prompts have a different IR-to-resolution lifecycle.
 
-Add `sfx?: string` to `DialogueEntryIR` and runtime `DialogueEntry`. `emitSceneFile` emits `sfx: "..."` only when present.
+Add `sfx?: string` to `DialogueEntryIR` and runtime `DialogueEntry`. `emitSceneFile` emits `sfx` only when present.
 
 ## Web Audio Boundary
 
-Add a small web-only module under `apps/web/src/lib/audio/`:
+Add a small web-only player seam under `apps/web/src/lib/audio/`:
 
 ```ts
 export interface SfxPlayer {
@@ -111,23 +110,22 @@ export interface SfxPlayer {
 }
 ```
 
-The default implementation uses native `HTMLAudioElement`/`Audio` and owns at most one current element.
+The default implementation owns at most one native audio element.
 
-`play(cueKey)` behavior:
+`play(cueKey)`:
 
-1. stop and rewind any currently owned effect;
-2. resolve `cueKey` from the local catalog;
-3. if the runtime key is unknown, return quietly;
-4. create/start the native audio element;
-5. contain synchronous playback failures and rejected `play()` promises.
+1. stop/rewind the current one-shot;
+2. resolve the logical key through the local catalog;
+3. if the runtime key is unknown, log one concise diagnostic and return;
+4. create the native audio element;
+5. call `play()`;
+6. contain both synchronous throws and rejected play promises.
 
-`stop()` pauses and rewinds the current element and releases the reference. `dispose()` performs the same cleanup and makes the player inert for the destroyed shell.
+`stop()` contains pause/rewind failures, releases the current reference, and never affects reader state. `dispose()` stops once and makes the player inert.
 
-The shell-to-player contract remains logical-key based. `ReaderShell` never sees paths, future R2 URLs, or provider metadata.
+Unknown runtime keys are silent from the player's perspective: no banner, toast, blocked progression, or thrown error. Logging is diagnostic only.
 
-## Local Catalog and Fixtures
-
-Keep the web catalog static and explicit:
+The local catalog is explicit and type-linked:
 
 ```ts
 import type { SfxCueKey } from '@aquila/stories';
@@ -139,90 +137,163 @@ export const LOCAL_SFX_CATALOG = {
 } satisfies Record<SfxCueKey, string>;
 ```
 
-The shared type makes a missing bootstrap catalog mapping a TypeScript error without making the compiler depend on `apps/web`.
+HPA-604 does not reuse the image-specific `WebAssetResolver`; that resolver indexes `RuntimeAssetManifestV1` visual assets and owns image-release behavior. HPA-610 already specifies a specialized audio resolver parallel in purpose to the visual resolver. The HPA-604 boundary is simply that all local URL resolution is isolated in this one catalog module, so HPA-610 can replace that seam without changing story Markdown or reader components.
 
-Generate three tiny synthetic PCM WAV fixtures in the implementation task. They must contain valid RIFF/WAVE headers and 16-bit mono PCM samples, not merely non-empty bytes. Synthetic generation keeps licensing/provenance trivial and makes the fixtures reproducible.
+## Reproducible Local SFX Fixtures
 
-Do not add an asset manifest, preload system, service worker policy, cache abstraction, or R2 resolver.
+Create one committed script:
 
-For the manual demonstration, annotate only three existing Seventh Mirror chapter-1 beats:
+```text
+apps/web/scripts/build-sfx-fixtures.ts
+```
+
+It supports both build and verify modes:
+
+```text
+bun --filter web build:sfx-fixtures
+bun --filter web verify:sfx-fixtures
+```
+
+Build mode writes exactly three deterministic synthetic WAV files:
+
+- `door-open.wav`
+- `notification-beep.wav`
+- `impact.wav`
+
+Use 8 kHz, mono, PCM-16 RIFF/WAVE. The clips are deliberately synthetic and tiny; fidelity is secondary to distinctness and a valid browser-decodable container.
+
+Verify mode reads the committed files and asserts at minimum:
+
+- `RIFF` container marker;
+- `WAVE` format marker;
+- `fmt ` chunk exists and reports PCM format 1;
+- one channel;
+- 16 bits per sample;
+- `data` chunk exists and has non-zero sample bytes.
+
+Add `build:sfx-fixtures` and `verify:sfx-fixtures` scripts to `apps/web/package.json`. Add `bun --filter web verify:sfx-fixtures` beside the existing visual-fixture verification step in `build-and-lint.yml`.
+
+Annotate only three existing Seventh Mirror beats:
 
 - foot-to-floor impact in `chapter_1/act1.md` -> `impact`;
 - Yuma bedroom door opening in `chapter_1/act1.md` -> `door-open`;
 - phone ringing in `chapter_1/act4.md` -> `notification-beep`.
 
-Broader story-wide sound direction belongs to HPA-607.
+Broader sound direction belongs to HPA-607.
 
-## One Shared Line-Identity Machine
+## One Structured Line-Position Tracker
 
-Do not add `sfxStoryId`, `sfxLineKey`, or another shell effect that independently primes and diffs line identity.
-
-Keep the existing shell-owned key:
+Do not keep the opaque NUL-joined line key for one subsystem and introduce a second SFX tracker for another. Replace the shell's current `lastActiveLineKey` representation with one structured position:
 
 ```ts
-const activeLineKey =
-  `${storyId}\u0000${currentSceneId}\u0000${dialogueIndex}`;
+export type LinePosition = {
+  storyId: string;
+  sceneId: string;
+  index: number;
+};
 ```
 
-Extract the SFX decision into a pure helper:
+`ReaderShell` retains exactly one previous `LinePosition | null`. Both visual revalidation and SFX transition classification consume that same previous/current pair.
+
+Use a pure helper:
 
 ```ts
 export type SfxCommand =
-  | { type: 'prime' }
   | { type: 'play'; cueKey: string }
   | { type: 'stop' }
   | { type: 'noop' };
 
 export function nextSfxCommand(
-  previousLineKey: string | null,
-  nextLineKey: string,
+  previous: LinePosition | null,
+  next: LinePosition,
   cueKey: string | undefined,
-  options: { mode: ReaderMode; enabled: boolean }
+  options: {
+    mode: ReaderMode;
+    enabled: boolean;
+    flow: StoryFlowConfig | null;
+  }
 ): SfxCommand;
 ```
 
-The helper uses the story-id prefix already embedded in the shell key:
+No `prime` command is needed. The first observation returns `noop`; the shell stores it as the baseline.
 
-- `previousLineKey === null` -> `prime`;
-- identical key -> `noop`;
-- different story-id prefix -> `stop` (the replacement story's first line is primed silently by the shell update);
-- same story + changed line + Visual + enabled + cue -> `play`;
-- otherwise -> `noop`.
+### Forward-progression rule
 
-`ReaderManager.applySession()` updates `storyId`, scene, index, and dialogue together when a replacement payload is applied, while replacement loading preserves the previous active payload. Therefore the existing shell key changes directly from old-story line to new-story line, allowing the helper to distinguish replacement from an in-story scene transition without another state machine.
+A cue is eligible to play only when all of these hold:
 
-The existing `ReaderShell` effect becomes the single progression observer:
+- previous and next belong to the same story;
+- Visual mode is active;
+- SFX is enabled;
+- the destination line has a cue;
+- the transition is a genuine forward adjacency.
 
-1. compute `activeLineKey`;
-2. retain the previous value;
-3. update `lastActiveLineKey` once;
-4. preserve the existing visual `softRevalidate()` behavior for a real line change;
-5. obtain `nextSfxCommand(previous, active, currentCue, options)`;
-6. call `player.play()` or `player.stop()` only for side-effect commands.
+Forward adjacency is either:
 
-Mode/preference lifecycle remains explicit:
+1. same scene and `next.index === previous.index + 1`; or
+2. different scene, `next.index === 0`, and the active flow contains a direct edge from `previous.sceneId` to `next.sceneId`.
 
-- Visual -> Text calls `player.stop()` immediately;
-- Text -> Visual does not change line identity and therefore does not replay;
-- disabling SFX persists `false` and calls `player.stop()` immediately;
-- re-enabling does not change identity and therefore does not replay;
-- shell destroy calls `player.dispose()`.
+The direct flow-edge check supports both:
 
-A cue-less in-story line does not automatically stop a currently playing one-shot. A later cue replaces it. This preserves the accepted one-shot replacement behavior.
+- a scene node whose `next` is the destination scene; and
+- a scene node whose `next` is a choice node with `nextByOption` containing the destination scene.
+
+Therefore normal linear scene progression and an actual user choice remain legitimate forward scene transitions and may play the destination cue. This preserves HPA-604's accepted "later real line or scene transition" behavior.
+
+The following are silent:
+
+- initial/restored line;
+- unchanged position;
+- same-scene backward movement;
+- same-scene index jumps greater than one;
+- reverse browser-history movement;
+- non-adjacent Act-panel scene jumps;
+- arbitrary same-story scene jumps not connected by a direct flow edge.
+
+A story replacement returns `stop` and primes the replacement position silently through the shell's normal state update.
+
+The current History backlog does not navigate, so opening/closing it is an unchanged-position `noop`. Act-panel navigation is the scene-jump case that requires explicit coverage.
+
+This structural rule intentionally does not add a second transition-reason store to `ReaderManager` or `readerState`. A direct Act-panel jump to the immediately adjacent flow node is structurally indistinguishable from normal progression and may play; distinguishing identical destination transitions by UI origin would require new orchestration state that is not justified for HPA-604.
+
+## ReaderShell Integration
+
+The single shell progression effect should:
+
+1. construct `nextPosition` from `storyId`, `currentSceneId`, and `dialogueIndex`;
+2. compare it with `lastActivePosition`;
+3. return immediately when unchanged;
+4. store the new position exactly once;
+5. preserve existing visual `softRevalidate()` behavior for real line/scene position changes while Visual runtime is active;
+6. call `nextSfxCommand(previous, next, dialogue[dialogueIndex]?.sfx, { mode, enabled, flow })`;
+7. execute only `play` or `stop` side effects.
+
+Mode/preference lifecycle stays explicit:
+
+- Visual -> Text stops immediately;
+- Text -> Visual does not replay the current position;
+- disabling SFX persists `false` and stops immediately;
+- re-enabling does not replay the current position;
+- shell destroy disposes the player.
+
+A cue-less forward line does not automatically stop the current one-shot. A later cue replaces it.
+
+Inject `createSfxPlayer` through `ReaderShell` in the same style as `createVisualRuntime`; do not introduce a global audio singleton.
 
 ## Preference and Settings
 
-Add one small preference module that reuses browser storage:
+Add one small preference module that imports the existing storage helper:
 
 ```ts
 import { getBrowserStorage } from '@/lib/reader-mode';
 ```
 
-Recommended contract:
+Contract:
 
 ```ts
 export const SFX_ENABLED_KEY = 'aquila:sfx-enabled:v1';
-export function readSfxEnabled(storage: Storage | null = getBrowserStorage()): boolean;
+export function readSfxEnabled(
+  storage: Storage | null = getBrowserStorage()
+): boolean;
 export function writeSfxEnabled(
   enabled: boolean,
   storage: Storage | null = getBrowserStorage()
@@ -231,16 +302,29 @@ export function writeSfxEnabled(
 
 Semantics:
 
-- default enabled when no value exists;
+- default enabled when absent;
 - read/write exceptions are swallowed;
 - no generic preference store;
 - `ReaderShell` owns reactive `sfxEnabled`;
-- `ReaderSettingsMenu` receives `sfxEnabled` and `onSfxEnabledChange`;
-- render one translated toggle/button with `aria-pressed`.
+- `ReaderSettingsMenu` receives `sfxEnabled` and `onSfxEnabledChange`.
 
-Update `ReaderSettingsMenu.test.ts`'s `renderSettings()` helper with the new required props and assert the toggle state/callback there. Keep only integration-level settings assertions in `ReaderShell.test.ts`.
+The shared settings component exists in desktop Text mode too, but SFX playback is Visual-only. Therefore render the SFX control only when `mode === 'visual'`:
 
-Because SFX is Visual-only and the shared settings menu exists at every Visual breakpoint, do not add the control to the mobile Text hamburger.
+```svelte
+{#if mode === 'visual'}
+  <!-- Sound Effects toggle -->
+{/if}
+```
+
+Do not add the control to the mobile Text hamburger.
+
+`ReaderSettingsMenu.test.ts` directly owns toggle semantics and visibility:
+
+- Visual mode shows the toggle with correct `aria-pressed`;
+- click calls `onSfxEnabledChange` with the inverse value;
+- Text mode omits the toggle.
+
+Add English and Traditional Chinese translation strings.
 
 ## Error Handling
 
@@ -248,104 +332,114 @@ Because SFX is Visual-only and the shared settings menu exists at every Visual b
 
 Compilation fails for:
 
-- empty/malformed/multi-token `sfx` blocks;
-- keys not in the HPA-604 bootstrap `SFX_CUE_KEYS`;
-- a second `sfx` block while another is pending;
+- empty/malformed/multi-token SFX blocks;
+- keys outside `SFX_CUE_KEYS`;
+- a second SFX block while another is pending;
 - pending SFX left unconsumed at EOF.
 
 ### Runtime playback failures
 
-Runtime remains strictly best-effort:
+Runtime remains best-effort:
 
-- unknown runtime key: no playback, no reader error;
-- missing/broken WAV URL: contained by the player/native element;
-- autoplay rejection: contained by the player;
-- stop/rewind failure: contained by the player;
-- localStorage unavailable: default preference remains usable for the session.
+- unknown runtime key: concise logger diagnostic, no playback, no reader error;
+- broken/missing URL: contained;
+- synchronous `play()` throw: contained;
+- rejected `play()` promise: contained;
+- pause/rewind failure: contained;
+- localStorage unavailable: session remains usable with the default preference.
 
-Do not surface toast/banner/error UI for SFX failures.
+No user-facing audio error UI is added.
 
 ## Testing Strategy
 
 ### Story compiler
 
-Extend parser/emitter tests to prove:
+Cover:
 
-- valid cue applies to exactly the next dialogue entry;
-- explicit-speaker and default-speaker narration both consume it;
-- `sfx` and `bg` both apply to the same next entry;
-- entries without SFX remain unchanged;
-- empty/malformed/multi-token keys fail;
-- unknown key fails;
-- consecutive unconsumed `sfx` blocks fail;
-- pending SFX at EOF fails;
-- generated scene output includes `sfx` only when authored.
+- next-entry consumption;
+- explicit/default-speaker narration;
+- `bg + sfx` on the same next entry;
+- omission when unauthored;
+- empty/malformed/multi-token/unknown key failures;
+- duplicate pending failure;
+- EOF pending failure;
+- emitter presence/omission.
 
 ### Pure transition helper
 
-Use table-driven tests for:
+Table-test:
 
-- first observation -> `prime`;
-- identical key -> `noop`;
-- same-story line/scene transition with Visual+enabled cue -> `play`;
-- same transition without cue -> `noop`;
-- Text or disabled -> `noop`;
-- story replacement -> `stop` even if the new line has a cue.
+- first observation -> `noop`;
+- identical position -> `noop`;
+- same-scene `+1` Visual/enabled/cued -> `play`;
+- same-scene backward -> `noop`;
+- same-scene forward jump `+2` or more -> `noop`;
+- same-story direct linear flow edge to index 0 -> `play`;
+- same-story direct choice flow edge to index 0 -> `play`;
+- non-adjacent Act-panel scene jump -> `noop`;
+- reverse scene transition -> `noop`;
+- Text/disabled/uncued forward transition -> `noop`;
+- story replacement -> `stop`.
 
-These tests own the progression combinatorics.
+### Player/preference
 
-### Web player/preference
+Cover:
 
-Focused tests cover:
-
-- catalog hit starts one native element;
+- catalog hit creates and starts one element;
 - second cue pauses/rewinds/replaces the first;
-- unknown runtime key is quiet;
-- rejected `play()` does not escape;
+- unknown runtime key logs and returns;
+- rejected `play()` promise is contained;
+- synchronous `play()` throw is contained;
+- pause throwing during stop/replacement is contained;
 - stop/dispose cleanup;
-- preference default/read/write/storage-failure behavior using the shared `getBrowserStorage()` default.
+- preference default/read/write/storage failures.
 
-### Reader settings
+### ReaderSettingsMenu
 
-`ReaderSettingsMenu.test.ts` covers:
+Cover new required props, Visual-only rendering, `aria-pressed`, and callback behavior.
 
-- required SFX props in its render helper;
-- `aria-pressed` reflects enabled/disabled state;
-- click calls `onSfxEnabledChange` with the toggled value.
+### ReaderShell
 
-### ReaderShell integration
+Keep integration coverage small:
 
-Keep the component matrix small. Cover only wiring that pure tests cannot prove:
+- initial observation does not play; one real forward line delegates one cue;
+- responsive remount keeps one injected player and does not replay;
+- a non-adjacent Act-panel jump does not play;
+- Visual -> Text stops;
+- disabling SFX stops;
+- story replacement stops and replacement line stays silent;
+- destroy disposes.
 
-- initial line does not call `play`, then a real Visual line advancement delegates one cue;
-- injected player is not recreated by responsive remounts and unchanged identity does not replay;
-- Visual -> Text and disabling SFX call `stop`;
-- destroy calls `dispose`;
-- story replacement integrates with the helper and stays silent for the replacement line.
-
-Do not add audio tests to `VisualNovelReader`.
+Pure helper tests own the transition matrix.
 
 ## Verification
 
-Automated:
+Focused tests are run during implementation tasks. Final verification must include the same coverage mode CI uses:
 
 ```bash
 bun --filter @aquila/stories test
-bun --filter web test
+bun --filter web test:coverage
+bun --filter web verify:sfx-fixtures
 bun run compile:check
 bun run lint
 bun run build
 ```
 
+`test:coverage` replaces a redundant final plain `web test` run and directly exercises the repository's 95% Codecov project/patch gate.
+
 Manual smoke:
 
-1. load the fixture path in Visual mode and confirm the initial/restored line is silent;
-2. advance to the three authored cues and hear each once;
-3. open/close settings/history and cross the responsive breakpoint without replay;
-4. disable SFX during playback and confirm it stops immediately;
-5. reload and confirm the muted preference persists;
-6. re-enable and confirm the current line does not replay;
-7. switch to Text and confirm later authored cues remain silent.
+1. load the fixture path in Visual mode; initial/restored line is silent;
+2. advance normally to the three authored cues and hear each once;
+3. move backward within a scene and confirm no cue replays;
+4. use browser Back to return to an earlier position and confirm no cue replays;
+5. use the Act panel to jump to a non-adjacent previously read scene and confirm no cue replays;
+6. make a real choice/linear scene advance and confirm an authored destination cue can play;
+7. open/close History/settings and cross the responsive breakpoint without replay;
+8. disable SFX during playback and confirm it stops immediately;
+9. reload and confirm muted preference persists;
+10. re-enable and confirm current line does not replay;
+11. switch to Text and confirm the SFX control is absent and later cues remain silent.
 
 ## Non-Goals
 
@@ -353,11 +447,13 @@ Manual smoke:
 - ElevenLabs/API generation or credentials
 - per-story `audio-plan.json` schema or usage reporting (HPA-606)
 - R2 audio manifests, release pointers, publishing, CDN resolution, or production activation
+- modifying the visual `WebAssetResolver` into a generic media resolver
 - Phaser/game-runtime parity
 - generic timeline/event infrastructure
+- new reader navigation-reason state solely for audio
 - story-wide SFX direction or authoring-skill updates
-- analytics or telemetry for audio playback
+- user-facing audio diagnostics, analytics, or telemetry
 
 ## Follow-On Boundary
 
-HPA-605 may add a persistent BGM channel beside this one-shot seam. HPA-606 replaces the bootstrap three-key compiler membership check with provider-neutral per-story `audio-plan.json` validation and usage reporting. HPA-610 may replace the local catalog's URL-resolution source with validated per-story R2 audio releases. HPA-604 keeps those later concerns out of the implementation while leaving the shell-to-player runtime API as logical-key `string`.
+HPA-605 may add a persistent BGM channel beside this one-shot seam. HPA-606 replaces the bootstrap three-key compiler membership check with provider-neutral per-story `audio-plan.json` validation and usage reporting. HPA-610 replaces the local URL-resolution seam with its dedicated validated audio-release resolver while preserving shell-owned playback. None of those later concerns need broader abstractions in HPA-604.

@@ -46,6 +46,10 @@ small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin
 
 **朝倉澪**：（內心）起來吧。
 
+```sfx
+impact
+```
+
 **旁白**：她坐起來的動作很慢，像一具沒上緊發條的東西。腳踩到地板的時候涼意從腳底竄上來，她哆嗦了一下，沒去拿拖鞋，赤腳站了一會兒。
 
 **旁白**：隔壁那間房沒有聲音。
@@ -56,6 +60,10 @@ small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin
 
 ```bg
 small Japanese teenager's bedroom, morning light through curtains, unmade bed with school uniform draped on chair, game controller on desk, cheap earbuds, unopened snack bag, half-finished math homework, spare glasses case on desk corner, sneakers in corner, school bag, lived-in but empty, muted warm-cool palette, moody cinematic visual-novel background art
+```
+
+```sfx
+door-open
 ```
 
 **旁白**：澪推開悠真的房門。

@@ -43,6 +43,9 @@ jobs:
       - name: Verify visual fixtures and asset footprint
         run: bun --filter web verify:visual-fixtures
 
+      - name: Verify SFX fixtures
+        run: bun --filter web verify:sfx-fixtures
+
       - name: Run unit tests
         run: bun --filter @aquila/stories test
 

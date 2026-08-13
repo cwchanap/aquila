@@ -20,7 +20,9 @@
     "drizzle:migrate": "bun ./scripts/drizzle-migrate-safe.ts",
     "drizzle:studio": "drizzle-kit studio",
     "build:visual-fixtures": "bun scripts/build-visual-fixtures.ts",
-    "verify:visual-fixtures": "bun scripts/verify-visual-fixtures.ts"
+    "verify:visual-fixtures": "bun scripts/verify-visual-fixtures.ts",
+    "build:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts",
+    "verify:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts --verify"
   },
   "dependencies": {
     "@aquila/stories": "workspace:*",

@@ -50,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "順路買的。悠真每次來辦公室都翻這個。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯謝謝。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看了一眼那包軟糖，喉嚨有點緊。她低頭繼續吃飯，把那點情緒壓回胃裡，和玉子燒一起嚥下去。", background: Background.Chapter_1_Ch1_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這時候，澪的手機響了。螢幕亮起來——編輯組的來電。", background: Background.Chapter_1_Ch1_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這時候，澪的手機響了。螢幕亮起來——編輯組的來電。", sfx: "notification-beep", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪盯著螢幕，筷子還夾著半塊玉子燒。她不想接，但也不想讓它一直響。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音伸手過來，看了一眼來電顯示，然後直接按掉。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "我等一下幫妳回。今天妳不處理這個。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },

@@ -1,6 +1,6 @@
 # HPA-604 Dialogue-Triggered SFX
 
-Date: 2026-08-12  
+Date: 2026-08-12
 Status: Accepted in Linear; revised after two planning reviews
 
 ## Goal

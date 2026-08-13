@@ -20,6 +20,8 @@ function renderSettings(
             triggerUnavailable: false,
             sfxEnabled: true,
             onSfxEnabledChange: vi.fn(),
+            bgmEnabled: true,
+            onBgmEnabledChange: vi.fn(),
             ...overrides,
         },
     });
@@ -149,6 +151,33 @@ describe('ReaderSettingsMenu', () => {
         renderSettings({ mode: 'text' });
         expect(
             screen.queryByRole('button', { name: /Sound effects/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows and toggles Background Music independently in Visual mode', async () => {
+        const onBgmEnabledChange = vi.fn();
+        const onSfxEnabledChange = vi.fn();
+        const view = renderSettings({
+            mode: 'visual',
+            onBgmEnabledChange,
+            onSfxEnabledChange,
+        });
+
+        const toggle = screen.getByRole('button', {
+            name: /background music/i,
+        });
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        await fireEvent.click(toggle);
+        expect(onBgmEnabledChange).toHaveBeenCalledWith(false);
+        expect(onSfxEnabledChange).not.toHaveBeenCalled();
+
+        view.unmount();
+        renderSettings({ mode: 'text' });
+        expect(
+            screen.queryByRole('button', { name: /background music/i })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /sound effects/i })
         ).not.toBeInTheDocument();
     });
 });

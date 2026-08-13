@@ -14,6 +14,8 @@
     onModeChange,
     sfxEnabled,
     onSfxEnabledChange,
+    bgmEnabled,
+    onBgmEnabledChange,
     onBookmark,
     showBookmarkButton,
     backUrl,
@@ -26,6 +28,8 @@
     onModeChange: (mode: ReaderMode) => void | Promise<void>;
     sfxEnabled: boolean;
     onSfxEnabledChange: (enabled: boolean) => void;
+    bgmEnabled: boolean;
+    onBgmEnabledChange: (enabled: boolean) => void;
     onBookmark: () => void;
     showBookmarkButton: boolean;
     backUrl: string;
@@ -144,6 +148,18 @@
           <span>{t.reader.soundEffects}</span>
           <span>
             {sfxEnabled ? t.reader.soundEffectsOn : t.reader.soundEffectsOff}
+          </span>
+        </button>
+        <button
+          type="button"
+          class="flex items-center justify-between rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+          aria-pressed={bgmEnabled}
+          aria-label={t.reader.backgroundMusic}
+          onclick={() => onBgmEnabledChange(!bgmEnabled)}
+        >
+          <span>{t.reader.backgroundMusic}</span>
+          <span>
+            {bgmEnabled ? t.reader.backgroundMusicOn : t.reader.backgroundMusicOff}
           </span>
         </button>
       {/if}

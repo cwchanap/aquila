@@ -9,6 +9,16 @@
     type ReaderMode,
   } from '@/lib/reader-mode';
   import {
+    createSfxPlayer as createDefaultSfxPlayer,
+    type SfxPlayer,
+  } from '@/lib/audio/sfx-player';
+  import { readSfxEnabled, writeSfxEnabled } from '@/lib/audio/sfx-preference';
+  import {
+    nextSfxCommand,
+    sameLinePosition,
+    type LinePosition,
+  } from '@/lib/audio/sfx-transition';
+  import {
     createVisualRuntime as createDefaultVisualRuntime,
     type VisualReleaseIdentity,
     type VisualSnapshot,
@@ -27,6 +37,7 @@
     onIndexChange = () => {},
     getSceneDialogue = () => null,
     createVisualRuntime = createDefaultVisualRuntime,
+    createSfxPlayer = createDefaultSfxPlayer,
     onRetry = () => {},
     showBookmarkButton = true,
     backUrl = '/',
@@ -41,6 +52,7 @@
       sceneId: string
     ) => readonly DialogueEntry[] | null;
     createVisualRuntime?: typeof createDefaultVisualRuntime;
+    createSfxPlayer?: () => SfxPlayer;
     onRetry?: () => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
@@ -65,6 +77,8 @@
   let t = $derived(getTranslations(locale));
   let readerReadyElement: HTMLElement | null = $state(null);
   let readerMode = $state(readReaderMode());
+  const sfxPlayer = createSfxPlayer();
+  let sfxEnabled = $state(readSfxEnabled());
   let visualRuntime: VisualReaderRuntime | null = $state(null);
   let visualStatus = $state<VisualSnapshot['status']>(null);
   // Identity of the validated release serving visuals. Held in shell state
@@ -91,6 +105,7 @@
 
   function setReaderMode(mode: ReaderMode): void {
     if (readerMode === mode) return;
+    if (mode === 'text') sfxPlayer.stop();
     const retainedRuntime =
       mode === 'visual' &&
       visualRuntimeStoryId === storyId
@@ -180,23 +195,34 @@
     });
   });
 
-  let lastActiveLineKey: string | null = $state(null);
+  let lastActivePosition: LinePosition | null = $state(null);
   $effect(() => {
-    const activeLineKey =
-      `${storyId}\u0000${currentSceneId}\u0000${dialogueIndex}`;
-    if (lastActiveLineKey === null) {
-      lastActiveLineKey = activeLineKey;
-      return;
-    }
-    if (activeLineKey === lastActiveLineKey) return;
-    lastActiveLineKey = activeLineKey;
+    const nextPosition: LinePosition = {
+      storyId,
+      sceneId: currentSceneId,
+      index: dialogueIndex,
+    };
+    const previous = lastActivePosition;
+    if (sameLinePosition(previous, nextPosition)) return;
+    lastActivePosition = nextPosition;
+
     if (
+      previous !== null &&
       readerMode === 'visual' &&
       visualRuntime &&
       visualRuntimeStoryId === storyId
     ) {
       void visualRuntime.softRevalidate();
     }
+
+    const command = nextSfxCommand(
+      previous,
+      nextPosition,
+      dialogue[dialogueIndex]?.sfx,
+      { mode: readerMode, enabled: sfxEnabled, flow: activeFlow }
+    );
+    if (command.type === 'play') sfxPlayer.play(command.cueKey);
+    else if (command.type === 'stop') sfxPlayer.stop();
   });
 
   // Svelte updates `inert` as a DOM property, which does not reflect to an
@@ -245,6 +271,13 @@
         ? 'mobile-reader-menu-trigger'
         : 'reader-settings-trigger';
     document.getElementById(triggerId)?.focus();
+  }
+
+  function setSfxEnabled(enabled: boolean): void {
+    if (sfxEnabled === enabled) return;
+    sfxEnabled = enabled;
+    writeSfxEnabled(enabled);
+    if (!enabled) sfxPlayer.stop();
   }
 
   function handleVisualOverlayChange(open: boolean): void {
@@ -325,6 +358,7 @@
     destroyed = true;
     runtimeGeneration += 1;
     removeVisibilityListener();
+    sfxPlayer.dispose();
     const runtime = visualRuntime;
     visualRuntime = null;
     void runtime?.dispose().catch(() => {
@@ -373,6 +407,8 @@
     {locale}
     mode={readerMode}
     onModeChange={changeReaderMode}
+    {sfxEnabled}
+    onSfxEnabledChange={setSfxEnabled}
     onBookmark={() => onBookmark(dialogueIndex + 1)}
     {showBookmarkButton}
     {backUrl}

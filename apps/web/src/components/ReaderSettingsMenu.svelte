@@ -12,6 +12,8 @@
     locale,
     mode,
     onModeChange,
+    sfxEnabled,
+    onSfxEnabledChange,
     onBookmark,
     showBookmarkButton,
     backUrl,
@@ -22,6 +24,8 @@
     locale: Locale;
     mode: ReaderMode;
     onModeChange: (mode: ReaderMode) => void | Promise<void>;
+    sfxEnabled: boolean;
+    onSfxEnabledChange: (enabled: boolean) => void;
     onBookmark: () => void;
     showBookmarkButton: boolean;
     backUrl: string;
@@ -128,6 +132,21 @@
           {t.reader.visualNovelMode}
         </button>
       </div>
+
+      {#if mode === 'visual'}
+        <button
+          type="button"
+          class="flex items-center justify-between rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+          aria-pressed={sfxEnabled}
+          aria-label={t.reader.soundEffects}
+          onclick={() => onSfxEnabledChange(!sfxEnabled)}
+        >
+          <span>{t.reader.soundEffects}</span>
+          <span>
+            {sfxEnabled ? t.reader.soundEffectsOn : t.reader.soundEffectsOff}
+          </span>
+        </button>
+      {/if}
 
       {#if showBookmarkButton}
         <button

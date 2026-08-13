@@ -4,6 +4,10 @@
 small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin curtains, unmade single bed, glowing phone screen on futon edge, cheap electronic wall clock, sparse furnishings, muted cold palette, moody cinematic visual-novel background art, wide establishing shot
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：手機螢幕亮了。
 
 **旁白**：不是鬧鐘，是那種自己醒過來的亮——沒有聲音，沒有震動，只是螢幕從黑裡浮上來，像水底冒出的一盞燈。朝倉澪睜開眼的時候，夢還黏在眼皮內側，摳不掉。

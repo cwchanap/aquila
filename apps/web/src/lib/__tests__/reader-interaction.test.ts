@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     getReaderAdvanceDecision,
     isReaderInteractiveTarget,
+    isReaderProgressionTarget,
 } from '@/lib/reader-interaction';
 
 describe('getReaderAdvanceDecision', () => {
@@ -68,5 +69,24 @@ describe('isReaderInteractiveTarget', () => {
         expect(isReaderInteractiveTarget(editor)).toBe(true);
         expect(isReaderInteractiveTarget(markedChild)).toBe(true);
         expect(isReaderInteractiveTarget(root)).toBe(false);
+    });
+});
+
+describe('isReaderProgressionTarget', () => {
+    it('recognizes marked progression controls and their descendants', () => {
+        const button = document.createElement('button');
+        button.dataset.readerProgression = '';
+        const child = document.createElement('span');
+        button.append(child);
+        expect(isReaderProgressionTarget(button)).toBe(true);
+        expect(isReaderProgressionTarget(child)).toBe(true);
+    });
+
+    it('returns false for non-progression interactive elements', () => {
+        const button = document.createElement('button');
+        const marked = document.createElement('div');
+        marked.dataset.readerInteractive = '';
+        expect(isReaderProgressionTarget(button)).toBe(false);
+        expect(isReaderProgressionTarget(marked)).toBe(false);
     });
 });

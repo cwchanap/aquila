@@ -17,12 +17,24 @@ export function nextBgmSelection(
     next: LinePosition,
     entries: readonly DialogueEntry[],
     selectedKey: string | null,
-    flow: StoryFlowConfig | null
+    flow: StoryFlowConfig | null,
+    previousSceneLength: number | null = null
 ): string | null {
     const local = activeBgmAt(entries, next.index);
     if (local !== undefined) return local;
     if (!previous) return null;
     if (previous.storyId !== next.storyId) return null;
-    if (isForwardAdjacent(previous, next, flow)) return selectedKey;
-    return null;
+    if (!isForwardAdjacent(previous, next, flow)) return null;
+    // Cross-scene inheritance requires the source to have been at its
+    // final dialogue line. Act-panel jumps reset to index 0 and must
+    // not be mistaken for genuine forward adjacency. When the previous
+    // scene's length is unknown (null), fall back to the legacy behavior.
+    if (
+        previous.sceneId !== next.sceneId &&
+        previousSceneLength !== null &&
+        previous.index !== previousSceneLength - 1
+    ) {
+        return null;
+    }
+    return selectedKey;
 }

@@ -94,7 +94,7 @@ describe('nextBgmSelection', () => {
         ).toBe('dawn-apartment');
     });
 
-    it('retains selection across direct linear and choice edges', () => {
+    it('retains selection across direct linear and choice edges from the final line', () => {
         const cueLess = [{ dialogue: 'line' }];
         expect(
             nextBgmSelection(
@@ -102,7 +102,8 @@ describe('nextBgmSelection', () => {
                 p('act2', 0),
                 cueLess,
                 'dawn-apartment',
-                linearFlow
+                linearFlow,
+                3
             )
         ).toBe('dawn-apartment');
         expect(
@@ -111,7 +112,46 @@ describe('nextBgmSelection', () => {
                 p('act2', 0),
                 cueLess,
                 'dawn-apartment',
-                choiceFlow
+                choiceFlow,
+                3
+            )
+        ).toBe('dawn-apartment');
+    });
+
+    it('clears a cue-less destination when a cross-scene jump originates mid-scene', () => {
+        const cueLess = [{ dialogue: 'line' }];
+        expect(
+            nextBgmSelection(
+                p('act1', 0),
+                p('act2', 0),
+                cueLess,
+                'dawn-apartment',
+                linearFlow,
+                3
+            )
+        ).toBeNull();
+        expect(
+            nextBgmSelection(
+                p('act1', 1),
+                p('act2', 0),
+                cueLess,
+                'dawn-apartment',
+                choiceFlow,
+                3
+            )
+        ).toBeNull();
+    });
+
+    it('falls back to legacy behavior when previousSceneLength is unknown', () => {
+        const cueLess = [{ dialogue: 'line' }];
+        expect(
+            nextBgmSelection(
+                p('act1', 0),
+                p('act2', 0),
+                cueLess,
+                'dawn-apartment',
+                linearFlow,
+                null
             )
         ).toBe('dawn-apartment');
     });

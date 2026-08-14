@@ -699,6 +699,64 @@ describe('ReaderShell', () => {
         expect(bgm.player.play).not.toHaveBeenCalled();
     });
 
+    it('activates BGM when the Continue button is clicked', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await vi.runAllTimersAsync();
+
+        const continueButton = screen.getByRole('button', {
+            name: 'Continue',
+        });
+        await fireEvent.pointerDown(continueButton);
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
+    it('activates BGM when Enter lands on a focused Continue button', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await vi.runAllTimersAsync();
+
+        const continueButton = screen.getByRole('button', {
+            name: 'Continue',
+        });
+        continueButton.focus();
+        await fireEvent.keyDown(continueButton, { key: 'Enter' });
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
+    it('activates BGM when a choice button is clicked', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = [
+            {
+                characterId: 'narrator',
+                dialogue: 'Dawn starts here.',
+                bgm: 'dawn-apartment',
+            },
+            { characterId: 'narrator', dialogue: 'Choose your path.' },
+        ];
+        readerState.dialogueIndex = 1;
+        readerState.choice = {
+            prompt: 'Which way?',
+            options: [
+                { id: 'left', label: 'Go left', nextScene: 'act2' },
+                { id: 'right', label: 'Go right', nextScene: 'act3' },
+            ],
+        };
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+        await vi.runAllTimersAsync();
+
+        const choiceButton = screen.getByRole('button', { name: 'Go left' });
+        await fireEvent.pointerDown(choiceButton);
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
     it('retains a cue-less forward line without restarting or stopping BGM', async () => {
         stubMatchMedia(false);
         readerState.dialogue = bgmDialogue;

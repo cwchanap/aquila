@@ -163,4 +163,35 @@ describe('createBgmPlayer', () => {
         expect(createAudio).toHaveBeenCalledTimes(1);
         expect(second.play).not.toHaveBeenCalled();
     });
+
+    it('swallows a throw from pause() during stopCurrent cleanup', () => {
+        const audio = fakeAudio(2);
+        audio.pause.mockImplementation(() => {
+            throw new Error('pause unavailable');
+        });
+        const player = createBgmPlayer(() => audio);
+
+        player.play('dawn-apartment');
+        // stopCurrent must not propagate the pause() throw; currentTime is
+        // still reset afterwards.
+        expect(() => player.stop()).not.toThrow();
+        expect(audio.currentTime).toBe(0);
+    });
+
+    it('swallows a throw from the currentTime setter during stopCurrent cleanup', () => {
+        const audio = fakeAudio(2);
+        Object.defineProperty(audio, 'currentTime', {
+            get: () => 2,
+            set: () => {
+                throw new Error('seek locked');
+            },
+            configurable: true,
+        });
+        const player = createBgmPlayer(() => audio);
+
+        player.play('dawn-apartment');
+        // pause() still runs; the currentTime setter throw is swallowed.
+        expect(() => player.stop()).not.toThrow();
+        expect(audio.pause).toHaveBeenCalledTimes(1);
+    });
 });

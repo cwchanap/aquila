@@ -1232,33 +1232,33 @@ git commit -m "feat: play persistent background music"
 
 - [ ] **Step 1: Add the pinned calm opening command in Act 1**
 
-```markdown
+````markdown
 ```bgm
 dawn-apartment
 ```
 
 **旁白**：手機螢幕亮了。
-```
+````
 
 - [ ] **Step 2: Add the pinned tension change in Act 4**
 
-```markdown
+````markdown
 ```bgm
 tension-pulse
 ```
 
 **朝倉澪**：兩週前。悠真收到學校轉發的「關東青少年睡眠支援計畫」通知。
-```
+````
 
 - [ ] **Step 3: Add the pinned stop in Act 4**
 
-```markdown
+````markdown
 ```bgm
 stop
 ```
 
 **旁白**：澪點頭。琴音走出咖啡店的時候，下午的陽光從門口斜進來，把她的影子拉得很長，像一條安靜的尾巴。
-```
+````
 
 Do not add a fourth BGM block and do not move/change the existing `notification-beep` SFX block.
 

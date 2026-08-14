@@ -61,7 +61,7 @@ This preserves both important properties:
 | Playback owner | `ReaderShell`, never `VisualNovelReader` |
 | Browser API | Native `HTMLAudioElement` only |
 | Runtime concurrency | One looping BGM element, independent from one-shot SFX |
-| Story payload | `bgm?: string | null` |
+| Story payload | `bgm?: string \| null` |
 | `undefined` in dialogue | No authored command on that dialogue entry |
 | `string` in dialogue | Select/start that logical BGM key |
 | `null` in dialogue | Explicit stop; clear selected track |

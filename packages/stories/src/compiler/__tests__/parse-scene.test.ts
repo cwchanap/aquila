@@ -245,21 +245,47 @@ dawn-apartment
 
 **旁白**：First.
 
+\`\`\`bgm
+tension-pulse
+\`\`\`
+
 **旁白**：Second.
 
 \`\`\`bgm
 stop
 \`\`\`
 
-**旁白**：Third.`;
+**旁白**：Third.
+
+**旁白**：Fourth.`;
 
         const result = parseScene(markdown, resolve, 'fixture.md', narrator);
 
-        expect(result.entries).toMatchObject([
-            { dialogue: 'First.', bgm: 'dawn-apartment' },
-            { dialogue: 'Second.' },
-            { dialogue: 'Third.', bgm: null },
-        ]);
+        expect(result.entries).toHaveLength(4);
+        expect(result.entries[0]).toEqual({
+            characterId: 'narrator',
+            displayName: '旁白',
+            dialogue: 'First.',
+            bgm: 'dawn-apartment',
+        });
+        expect(result.entries[1]).toEqual({
+            characterId: 'narrator',
+            displayName: '旁白',
+            dialogue: 'Second.',
+            bgm: 'tension-pulse',
+        });
+        expect(result.entries[2]).toEqual({
+            characterId: 'narrator',
+            displayName: '旁白',
+            dialogue: 'Third.',
+            bgm: null,
+        });
+        expect(result.entries[3]).toEqual({
+            characterId: 'narrator',
+            displayName: '旁白',
+            dialogue: 'Fourth.',
+        });
+        expect(result.entries[3]).not.toHaveProperty('bgm');
     });
 
     it('applies pending bg, sfx, and BGM to the same next entry', () => {

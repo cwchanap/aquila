@@ -327,8 +327,9 @@
     if (!enabled) sfxPlayer.stop();
   }
 
-  function activateBgm(): void {
+  function activateBgm(event?: PointerEvent | KeyboardEvent): void {
     if (readerMode !== 'visual' || leafDisabled) return;
+    if (event && isReaderInteractiveTarget(event.target)) return;
     bgmActivated = true;
     if (bgmEnabled && selectedBgmKey) {
       bgmPlayer.play(selectedBgmKey);

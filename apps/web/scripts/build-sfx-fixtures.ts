@@ -34,6 +34,11 @@ export async function verifySfxFixtures(): Promise<void> {
     await verifyAudioFixtures(outputRoot, fixtures());
 }
 
+// Entry-point guard, intentionally false whenever this module is imported
+// (including by tests); the true branch is exercised by the subprocess CLI
+// test instead.
+/* v8 ignore start */
 if (import.meta.main) {
     await runAudioFixtureCli(buildSfxFixtures, verifySfxFixtures);
 }
+/* v8 ignore stop */

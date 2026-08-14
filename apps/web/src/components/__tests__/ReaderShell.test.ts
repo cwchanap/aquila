@@ -680,6 +680,25 @@ describe('ReaderShell', () => {
         expect(bgm.player.play).not.toHaveBeenCalled();
     });
 
+    it('does not activate BGM when an unmodified Enter lands on an interactive target while settings are closed', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = bgmDialogue;
+        readerState.dialogueIndex = 0;
+        const bgm = createBgmHarness();
+        renderVisualWithBgm(bgm);
+
+        // Settings are closed (leafDisabled is false) and the reader is in
+        // visual mode, so handleBgmActivationKey reaches the interactive-
+        // target guard. The settings trigger is a button, so the keydown
+        // must be filtered out before activateBgm runs.
+        await fireEvent.keyDown(
+            screen.getByRole('button', { name: 'Open reader settings' }),
+            { key: 'Enter' }
+        );
+
+        expect(bgm.player.play).not.toHaveBeenCalled();
+    });
+
     it('retains a cue-less forward line without restarting or stopping BGM', async () => {
         stubMatchMedia(false);
         readerState.dialogue = bgmDialogue;

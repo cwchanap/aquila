@@ -30,3 +30,14 @@ export function isReaderInteractiveTarget(target: EventTarget | null): boolean {
         ) !== null
     );
 }
+
+/**
+ * Reader progression controls (Continue, Next Scene, choice buttons) are
+ * interactive elements that ALSO count as eligible BGM activation gestures.
+ * They carry `data-reader-progression` to distinguish them from settings,
+ * history, and other interactive UI that should not activate BGM.
+ */
+export function isReaderProgressionTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof Element)) return false;
+    return target.closest('[data-reader-progression]') !== null;
+}

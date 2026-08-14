@@ -19,7 +19,10 @@
   } from '@/lib/audio/bgm-player';
   import { readBgmEnabled, writeBgmEnabled } from '@/lib/audio/bgm-preference';
   import { nextBgmSelection } from '@/lib/audio/bgm-transition';
-  import { isReaderInteractiveTarget } from '@/lib/reader-interaction';
+  import {
+    isReaderInteractiveTarget,
+    isReaderProgressionTarget,
+  } from '@/lib/reader-interaction';
   import {
     nextSfxCommand,
     sameLinePosition,
@@ -251,12 +254,17 @@
     }
 
     const previousBgmKey = selectedBgmKey;
+    const previousSceneLength =
+      previous && previous.sceneId !== nextPosition.sceneId
+        ? getSceneDialogue(previous.storyId, previous.sceneId)?.length ?? null
+        : null;
     const nextBgmKey = nextBgmSelection(
       previous,
       nextPosition,
       dialogue,
       selectedBgmKey,
-      activeFlow
+      activeFlow,
+      previousSceneLength
     );
     selectedBgmKey = nextBgmKey;
 
@@ -329,7 +337,13 @@
 
   function activateBgm(event?: PointerEvent | KeyboardEvent): void {
     if (readerMode !== 'visual' || leafDisabled) return;
-    if (event && isReaderInteractiveTarget(event.target)) return;
+    if (
+      event &&
+      isReaderInteractiveTarget(event.target) &&
+      !isReaderProgressionTarget(event.target)
+    ) {
+      return;
+    }
     bgmActivated = true;
     if (bgmEnabled && selectedBgmKey) {
       bgmPlayer.play(selectedBgmKey);
@@ -342,7 +356,11 @@
       return;
     }
     if (event.key !== 'Enter' && event.key !== ' ') return;
-    if (isReaderInteractiveTarget(event.target ?? document.activeElement)) {
+    const target = event.target ?? document.activeElement;
+    if (
+      isReaderInteractiveTarget(target) &&
+      !isReaderProgressionTarget(target)
+    ) {
       return;
     }
     activateBgm();

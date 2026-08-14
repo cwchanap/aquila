@@ -475,6 +475,7 @@
                 variant="menu"
                 className="w-full text-left rounded-xl {controlBase}"
                 data-reader-interactive
+                data-reader-progression
                 onclick={() => onChoice(option.nextScene)}
               >
                 {option.label}
@@ -491,6 +492,7 @@
               variant="menu"
               className="next-control block ml-auto w-auto rounded-full {controlBase}"
               data-reader-interactive
+              data-reader-progression
               onclick={advance}
             >
               {#if !isLastDialogue}

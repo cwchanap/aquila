@@ -1,6 +1,6 @@
 # HPA-607 Seventh Mirror Audio Audit Design
 
-**Issue:** HPA-607 — Audit and author audio cues across The Seventh Mirror  
+**Issue:** HPA-607 — Audit The Seventh Mirror and author its complete visual-novel audio plan  
 **Date:** 2026-08-14  
 **Status:** Proposed
 
@@ -14,7 +14,7 @@ HPA-606 established the audio-authoring contract for raw stories:
 - `audio:report` derives placement counts, unresolved keys, and unused planned cues from compiled story data.
 - The web SFX/BGM catalogs may contain only a small playable subset of the story plan.
 
-The Seventh Mirror currently contains 28 chapters and a small HPA-606 bootstrap: three SFX identities, two BGM identities, representative placements, and five local placeholder catalog mappings. HPA-607 turns that bootstrap into the story-wide audio direction without adding a second inventory or generation/publishing machinery.
+The Seventh Mirror contains 28 chapters and a small HPA-606 bootstrap: three SFX identities, two BGM identities, representative placements, and five local placeholder catalog mappings. HPA-607 turns that bootstrap into the story-wide audio direction without adding a second inventory or generation/publishing machinery.
 
 ## Goals
 
@@ -24,6 +24,8 @@ The Seventh Mirror currently contains 28 chapters and a small HPA-606 bootstrap:
 4. Keep repeated motifs on stable cue identities suitable for later generation and publishing.
 5. Keep `docs/audio-plan.json` complete and schema-valid as the single cue identity/intent registry.
 6. Use the existing compiler/report/review seams to detect drift while authoring.
+7. Bound downstream generation work before HPA-608/HPA-609 by reporting the final palette size, intended duration where calculable, and candidate-generation request/credit estimate where calculable.
+8. Preserve a story that remains understandable with audio muted.
 
 ## Non-goals
 
@@ -33,6 +35,7 @@ The Seventh Mirror currently contains 28 chapters and a small HPA-606 bootstrap:
 - Add a second audio inventory, sync utility, generated TypeScript union, or cue database.
 - Populate the web catalog for every planned cue.
 - Add a new review agent or audio-specific compiler subsystem.
+- Price a future provider contract that HPA-607 does not own.
 
 ## Approaches considered
 
@@ -45,7 +48,7 @@ Read each chapter and immediately add cues.
 
 ### B. Read-only story audit, then author in small batches — chosen
 
-First read canon, plans, and all acts in story order without changing placements. Use that pass to identify recurring emotional states, physical motifs, location signatures, and likely BGM transition boundaries. Then author chapters in small sequential batches while growing the canonical plan only as cues receive real placements.
+First read canon, plans, and all acts in story order without changing placements. Use that pass to identify recurring emotional states, physical motifs, location signatures, intentionally silent sections, and likely BGM transition boundaries. Then author chapters in small sequential batches while growing the canonical plan only as cues receive real placements.
 
 **Pros:** story-wide coherence without new machinery; changes stay reviewable; compiler/report feedback remains useful after every batch.  
 **Cons:** requires one full read before edits begin.
@@ -69,7 +72,7 @@ Read in this order:
 3. chapter plan documents under `packages/stories/raw/theSeventhMirror/docs/`
 4. every act under `chapter_1/` through `chapter_28/`, in story order
 
-Do not edit acts during this pass. Capture working observations only; do not commit a second inventory file. The output of the pass is a mental/working palette: recurring motifs, music states, likely stops/transitions, and cue identities that should be reused.
+Do not edit acts during this pass. Capture working observations only; do not commit a second inventory file. The pass should identify recurring motifs, music states, likely stops/transitions, deliberately silent sections, and ideas worth deferring rather than forcing into HPA-607.
 
 ### Pass 2: author in seven four-chapter batches
 
@@ -79,9 +82,10 @@ For each batch:
 
 1. Add or adjust `[sfx]` / `[bgm]` placements in the acts.
 2. Add a plan entry when a cue identity receives its first real placement.
-3. Reuse existing keys for recurring identities instead of minting near-duplicates.
+3. Reuse existing keys for recurring identities instead of minting aliases or near-duplicates.
 4. Run compile and `audio:report` before moving to the next batch.
 5. Check cross-chapter BGM state and recurring motifs at meaningful boundaries.
+6. Re-read representative edited sections muted; audio should enrich the prose, not carry facts required to understand it.
 
 This keeps the committed `audio-plan.json` close to actual usage rather than front-loading a large speculative palette that appears as unused report noise.
 
@@ -103,11 +107,26 @@ Keep entries limited to the HPA-606 schema. Do not add local URLs, provider/mode
 
 The report remains the only usage inventory. HPA-607 should react to unresolved keys and unintended unused entries rather than duplicating those facts in another file.
 
+### Linear HPA-607: final audit summary
+
+The issue itself owns the human-readable completion summary rather than another committed artifact. After the final palette is validated, post:
+
+- exact base commit used for the audit;
+- 28/28 chapters reviewed;
+- final unique SFX count;
+- final unique BGM count;
+- total intended duration where the plan provides enough information to calculate it;
+- estimated candidate-generation request/credit bound where calculable from the final palette and chosen downstream assumptions;
+- deliberately silent sections;
+- deferred audio ideas that should not be smuggled into generation/publishing work.
+
+If provider pricing or retry policy is not yet defined, report the known request-count bound/formula and state what remains unknown rather than inventing a price.
+
 ### Web catalogs: representative local playback only
 
 The HPA-606 catalogs currently map five bootstrap keys to placeholder audio. HPA-607 does not expand those catalogs to mirror the final palette.
 
-If an existing bootstrap key remains a valid story identity, keep it. If the audit proves one should be removed or renamed, update the minimal catalog accordingly so every local catalog key remains a member of the story plan. No compatibility layer is needed for bootstrap keys that have no external users.
+If an existing bootstrap key remains a valid story identity, keep it. If the audit proves one should be removed or renamed, update the minimal catalog accordingly so every local catalog key remains a member of the story plan. For reader spot checks, the small placeholder subset may be adjusted to cover representative scenes, but it should remain deliberately bounded. No compatibility layer is needed for bootstrap keys that have no external users.
 
 ## Palette rules
 
@@ -117,6 +136,7 @@ If an existing bootstrap key remains a valid story identity, keep it. If the aud
 - Name the audible/narrative identity, not a chapter number or one-off implementation detail.
 - Reuse a key when the intended generated sound should genuinely be the same asset.
 - Split a key when generation intent materially differs, even if both moments belong to the same broad motif.
+- Do not keep duplicate/alias keys for the same intended asset.
 - Prefer a modest story-level palette over one key per line or scene.
 
 ### SFX direction
@@ -155,16 +175,24 @@ After each batch:
 - run the story audio report;
 - fix unresolved keys immediately;
 - inspect unused planned keys and remove speculative entries unless intentionally about to be used in the same batch;
-- check BGM state at the beginning/end of the batch and any strong internal transition.
+- check for duplicate/alias identities;
+- check BGM state at the beginning/end of the batch and any strong internal transition;
+- ensure the edited section still reads coherently with audio muted.
 
-During the authoring pass, use the existing `reviewing-written-stories` workflow with an `audio-continuity` checkpoint for representative high-risk transitions rather than reviewing every line through a separate agent. Representative checks should cover at least:
+Use the existing `reviewing-written-stories` workflow with an `audio-continuity` checkpoint for representative high-risk transitions rather than reviewing every line through a separate agent.
 
-- an early chapter after the bootstrap material;
-- a major midpoint transition;
-- a late-story transition where recurring motifs converge;
-- the ending/final BGM stop state.
+Before completion, run local-reader spot checks covering representative:
 
-Final validation requires the existing story tests and canon checks to remain green.
+- early-story material;
+- middle-story material;
+- late-story material;
+- reveal beat;
+- player-choice beat;
+- quiet/silent beat.
+
+Only a small placeholder/local-audio subset needs to be mapped for these checks. The goal is placement/state validation, not to pre-build HPA-608/HPA-609 assets.
+
+Final repository verification uses the existing Bun scripts and structural story audit; HPA-607 should not add a new validation framework.
 
 ## Risks and mitigations
 
@@ -176,7 +204,7 @@ Final validation requires the existing story tests and canon checks to remain gr
 ### Over-cueing
 
 **Risk:** authored audio competes with prose and dialogue.  
-**Mitigation:** silence is the default; add only beats whose audio contributes information, rhythm, atmosphere, or motif continuity.
+**Mitigation:** silence is the default; add only beats whose audio contributes information, rhythm, atmosphere, or motif continuity; re-read representative sections muted.
 
 ### BGM leakage
 
@@ -188,15 +216,23 @@ Final validation requires the existing story tests and canon checks to remain gr
 **Risk:** a key exists in only one side of the contract.  
 **Mitigation:** use the HPA-606 compiler/report after each batch; do not create another inventory.
 
+### Unbounded downstream generation spend
+
+**Risk:** HPA-608 starts with an unexpectedly large palette or unclear retry assumptions.  
+**Mitigation:** finish HPA-607 with exact identity counts and a provider-neutral request/credit bound where calculable; defer provider-specific pricing until the generation workflow owns those assumptions.
+
 ## Acceptance mapping
 
 HPA-607 is complete when:
 
 - all 28 chapters have been reviewed in story order;
-- the acts express one coherent, sparse audio direction;
-- repeated motifs use stable identities and BGM uses explicit start/stop semantics;
+- the acts express one coherent, sparse audio direction and remain understandable muted;
+- repeated motifs use stable identities with no duplicate/alias keys;
+- BGM uses intentional sustained start/change/stop semantics;
 - `docs/audio-plan.json` contains the complete final identity/intent set and passes schema validation;
 - `audio:report` has no unresolved keys and no accidental unused planned cues;
-- representative audio-continuity checks find no unresolved state/motif problems;
-- story compile, tests, and canon checks pass;
+- representative audio-continuity and local-reader checks cover early/middle/late, reveal, choice, and quiet material;
+- the local placeholder catalog remains a deliberately small subset of the story plan;
+- the existing story compile/tests/lint/structural checks pass;
+- HPA-607 contains the final audit/cost-bound summary;
 - no second inventory, generator, publisher, or full local placeholder catalog has been introduced.

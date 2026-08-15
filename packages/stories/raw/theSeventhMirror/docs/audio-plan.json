@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "key": "dawn-apartment",
+      "type": "bgm",
+      "prompt": "Instrumental psychological mystery underscore for a cold Tokyo dawn, restrained piano and soft synth texture, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "tension-pulse",
+      "type": "bgm",
+      "prompt": "Instrumental restrained investigation tension pulse, low synth texture and subtle percussion, seamless loop without a dramatic climax",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "door-open",
+      "type": "sfx",
+      "prompt": "Heavy old Japanese apartment door opening with a dry hinge creak, close perspective, one-shot",
+      "durationMs": 2200
+    },
+    {
+      "key": "impact",
+      "type": "sfx",
+      "prompt": "Muted body-weight impact on an apartment floor, close dry interior perspective, one-shot",
+      "durationMs": 900
+    },
+    {
+      "key": "notification-beep",
+      "type": "sfx",
+      "prompt": "Short modern smartphone alert beep, clean close perspective, one-shot",
+      "durationMs": 900
+    }
+  ]
+}

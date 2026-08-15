@@ -4,6 +4,14 @@
 small Tokyo apartment living room, early morning grey light, low table with notebook and pen, television on low volume showing disaster-sync test news, a young woman sitting on the floor hunched over paper notes, muted cold palette, moody cinematic visual-novel background art, wide shot
 ```
 
+```bgm
+dawn-apartment
+```
+
+```sfx
+pa-announcement
+```
+
 **旁白**：06:30。她坐在客廳地板上。電視開著，聲音轉到最小。螢幕上正在播防災同步測試的新聞——同一則。和她醒來那天早上看到的一模一樣。同樣的畫面。同樣的標題。同樣的字。
 
 **旁白**：她盯著螢幕看了十秒。然後她拿起手機。

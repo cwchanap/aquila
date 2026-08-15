@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:05。", background: Background.Chapter_8_Ch8_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:05。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安室走廊。急診行政窗口外。", background: Background.Chapter_8_Ch8_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊比等候區更窄。兩側是灰白色的牆。地上有黃線。黃線外面是「禁止進入」。黃線裡面是保安室和行政辦公區。澪站在黃線外面。", background: Background.Chapter_8_Ch8_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不能進去。不是鎖著。是黃線。黃線的意思是——你可以看見，但你沒有資格踩過去。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Base },
@@ -18,11 +18,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田。交通案件。私物一式。安全暫存。受領時間——", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "受領時間那一欄。數字。她看見了。", background: Background.Chapter_8_Ch8_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯23:18。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她盯著那個數字。夾子被翻回去了。窗口裡的人把夾子收進去。玻璃窗拉下來。關了。", background: Background.Chapter_8_Ch8_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她盯著那個數字。夾子被翻回去了。窗口裡的人把夾子收進去。玻璃窗拉下來。關了。", sfx: "door-latch", background: Background.Chapter_8_Ch8_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯23:18。受領時間。23:18。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不對。剛才。在急診裡。我看見袋子從臨時保管點被轉出來。那個時候——", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她閉上眼睛。在腦子裡翻那張紙。翻她記下的時間。翻她站在急診走廊裡看見保安推車經過的那一刻。", background: Background.Chapter_8_Ch8_Act2_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯23:35。我看見袋子被轉出來的時候，大約是23:35。我記得。因為那時候我剛看完手機。琴音的通話記錄還在螢幕上。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯23:35。我看見袋子被轉出來的時候，大約是23:35。我記得。因為那時候我剛看完手機。琴音那則訊息還在螢幕上。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯受領時間23:18。我看見袋子轉出來23:35。受領時間比我看到袋子移動——早了十七分鐘。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她睜開眼睛。走廊的燈很白。白得讓人頭暈。", background: Background.Chapter_8_Ch8_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯可以解釋。內部登記時間。系統預建單號。臨時編碼先建好，再執行交接。醫院可以這樣說。站務可以這樣說。任何一個看流程的人都可以這樣說。", background: Background.Chapter_8_Ch8_Act2_S0, portrait: Portrait.AsakuraMio_Base },

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:40。", background: Background.Chapter_6_Ch6_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:40。", bgm: "institutional-drone", background: Background.Chapter_6_Ch6_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站務安全室。一張金屬桌。一把塑膠椅。牆上的監視螢幕顯示著車站各個角度的靜止畫面——月台、閘口、通道入口。轉角之後的畫面是灰色的。沒有訊號。", background: Background.Chapter_6_Ch6_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在椅子上。她的手放在膝蓋上。血已經乾了，在她的指縫裡結成暗褐色的細線。桌上有一杯紙杯水。她沒有碰。", background: Background.Chapter_6_Ch6_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "對面坐著一個人。不是站務員了。是警察。先遣到場的。年輕。筆記本攤開，筆拿在手裡。", background: Background.Chapter_6_Ch6_Act7_S0 },

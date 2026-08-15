@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:05。", background: Background.Chapter_8_Ch8_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:05。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門後面的聲音停了。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是突然停。是慢慢變少。腳步聲先少。然後器械碰撞的聲音少了。然後低語少了。最後什麼都沒了。像一條河退潮。退到只剩地板縫裡的水痕。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門開了。", background: Background.Chapter_8_Ch8_Act7_S0 },
@@ -41,10 +41,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是怎麼救千田。是誰一定要他不能醒來。", background: Background.Chapter_8_Ch8_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那行字。唸了一遍。沒有出聲。在腦子裡唸的。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯對。問題變了。第一輪我問的是「千田為什麼會死」。第二輪我問的是「為什麼他不能活著開口」。這不是同一個問題。", background: Background.Chapter_8_Ch8_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機在口袋裡震了一下。她掏出來。螢幕亮了。頂部跳出一條通知。不是琴音。是新聞推送。", background: Background.Chapter_8_Ch8_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機在口袋裡震了一下。她掏出來。螢幕亮了。頂部跳出一條通知。不是琴音。是新聞推送。", sfx: "notification-beep", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "灣岸新交通深夜事件，搬送男性傷者急變。詳細確認中。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯傷者。不是「死者」。不是「不治」。是「傷者」。詳細確認中。媒體還沒拿到正式說法。醫院裡已經確認了。外面還沒有。", background: Background.Chapter_8_Ch8_Act7_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她關掉螢幕。又亮了。又一條。這次是琴音。", background: Background.Chapter_8_Ch8_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她關掉螢幕。又亮了。又一條。這次是琴音。", sfx: "notification-beep", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "澪，拜託妳先離開那裡。", background: Background.Chapter_8_Ch8_Act7_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "九個字。沒有標點。沒有解釋。沒有「為什麼還在」。沒有「發生什麼事了」。只有一個指令。拜託。離開。那裡。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她知道我在醫院。我沒有告訴她我還在。她上次通話的時候，我說「我晚點回去」。她怎麼知道我還沒走。", background: Background.Chapter_8_Ch8_Act7_S0, portrait: Portrait.AsakuraMio_Scared },
@@ -55,7 +55,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來。塞進內袋。她從牆邊站直。走廊中段那三個人已經散了。警察往急診出口走。站務人員往另一個方向。醫護回了觀察區。門又關上了。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向出口。", background: Background.Chapter_8_Ch8_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:20。醫院大廳。", background: Background.Chapter_8_Ch8_Act7_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "自動門在她面前滑開。夜風灌進來。很涼。帶著一點海的味道。灣岸的方向。", background: Background.Chapter_8_Ch8_Act7_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "自動門在她面前滑開。夜風灌進來。很涼。帶著一點海的味道。灣岸的方向。", bgm: "night-street", background: Background.Chapter_8_Ch8_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走過大廳。腳步聲在空蕩蕩的磁磚地上很響。牆上有一張海報。不起眼。比急診告示板小很多。掛在出口旁邊的牆角。", background: Background.Chapter_8_Ch8_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她掃了一眼。", background: Background.Chapter_8_Ch8_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "海報上寫著「災害時青少年心理支援合作醫療網」。下面是一排合作機構的名稱。字很小。她沒有停下來看。但她的視線停在海報角落。那裡有一個標誌。很小。一條波浪線。像睡眠圖的波形。像腦電波的曲線。", background: Background.Chapter_8_Ch8_Act7_S1 },
@@ -87,6 +87,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她轉身。背對著海。朝回家的方向走。路燈一盞一盞在她前面亮著。又一盞一盞在她身後暗下去。", background: Background.Chapter_8_Ch8_Act7_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "天還沒亮。但她知道，天會亮的。天亮之後，她不再先查千田。她要回家。打開悠真的房間。把睡眠研究說明單、學校通知、遊戲帳號座標、小鏡子背面的刮痕、黑色海的塗鴉——全部放在同一張桌上。", background: Background.Chapter_8_Ch8_Act7_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她第一次把問題從「悠真在哪裡」改成「悠真為什麼被選中」。", background: Background.Chapter_8_Ch8_Act7_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "風從灣岸吹過來。很涼。帶著海的味道。黑色的海在她背後。很安靜。像在等她回頭。", background: Background.Chapter_8_Ch8_Act7_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "風從灣岸吹過來。很涼。帶著海的味道。黑色的海在她背後。很安靜。像在等她回頭。", bgm: null, background: Background.Chapter_8_Ch8_Act7_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有回頭。", background: Background.Chapter_8_Ch8_Act7_S2 },
 ];

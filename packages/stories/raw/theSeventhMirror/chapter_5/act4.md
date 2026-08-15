@@ -4,6 +4,10 @@
 cozy Japanese cafe near a university campus, lunchtime, warm ambient lighting, wooden tables, a few students with laptops, two young women sitting across from each other with drinks and a sandwich, muted warm palette, moody cinematic visual-novel background art, medium shot
 ```
 
+```bgm
+safe-harbor
+```
+
 **旁白**：12:30。大學附近那家咖啡店。琴音選的。她發訊息說「你一定又沒吃飯，我帶東西給你」，澪回了一個「好」。
 
 **旁白**：澪推門進去的時候，琴音已經坐在靠窗的位置。桌上放著兩杯熱飲、一個三明治、一個布丁。琴音看見她，笑了一下，把熱飲推過來。

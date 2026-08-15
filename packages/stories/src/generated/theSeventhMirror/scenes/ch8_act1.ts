@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:50。", background: Background.Chapter_8_Ch8_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:50。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灣岸中央急救醫療中心。急診等候區。", background: Background.Chapter_8_Ch8_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在第三排塑膠椅上。不是因為想坐。是因為她走不出去。", background: Background.Chapter_8_Ch8_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個小時前她被帶進這裡。站務安全人員和警方的先遣人員先後問過她同一件事——施工通道裡她看到了什麼。她說了。他們說還要補。", background: Background.Chapter_8_Ch8_Act1_S0 },
@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有寫下「勝利」兩個字。手指停在紙上。", background: Background.Chapter_8_Ch8_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不對。不是勝利。是「暫時穩定」。醫院裡沒有「勝利」這個詞。只有「觀察」。只有「等」。只有「還沒有急變」。", background: Background.Chapter_8_Ch8_Act1_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來。塞回內袋。手指碰到小鏡子的布套。涼的。", background: Background.Chapter_8_Ch8_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊另一側傳來輪子聲。很輕。橡膠輪碾過塑膠地板的聲音。她抬頭。", background: Background.Chapter_8_Ch8_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊另一側傳來輪子聲。很輕。橡膠輪碾過塑膠地板的聲音。她抬頭。", sfx: "trolley-wheels", background: Background.Chapter_8_Ch8_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一名保安推著保管推車從走廊那頭走過。推車上放著幾個不透明的收納箱。其中一個箱子的側面貼著標籤。她看不清標籤上的字。但箱子的尺寸、推車的方向——", background: Background.Chapter_8_Ch8_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯保安室的方向。病人物袋。還在那裡。", background: Background.Chapter_8_Ch8_Act1_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田暫時穩定。但袋子不在他身邊。袋子在保安室。在流程裡。在「安全暫存」裡。", background: Background.Chapter_8_Ch8_Act1_S0, portrait: Portrait.AsakuraMio_Scared },

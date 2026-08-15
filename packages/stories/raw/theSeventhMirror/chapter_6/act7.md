@@ -4,6 +4,10 @@
 station safety room at night, small windowless office with fluorescent ceiling light, metal desk with incident report forms, plastic chair, security monitor showing frozen camera feeds on the wall, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:40。
 
 **旁白**：站務安全室。一張金屬桌。一把塑膠椅。牆上的監視螢幕顯示著車站各個角度的靜止畫面——月台、閘口、通道入口。轉角之後的畫面是灰色的。沒有訊號。

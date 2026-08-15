@@ -4,6 +4,10 @@
 modern Tokyo waterfront transit station interior at night, wide concourse with multiple platforms, scattered commuters, escalators, internal connecting bridge overhead, construction zone with plastic sheeting and reflective tape to one side, station signage, surveillance camera red dots, convenience store glow in the distance, cold blue-white fluorescent lighting mixed with warm accent lights, visual-novel background art, wide establishing shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：20:30。她已經在站裡待了一個多小時。她沒有去第七車的月台。她先走了一遍整個站。
 
 **朝倉澪** [determined]：（內心）⋯⋯動線。先搞清楚動線。
@@ -44,15 +48,27 @@ view from behind a pillar in a Tokyo station concourse at night, partial view of
 
 **旁白**：她看見一個人。
 
+```sfx
+toolbox-roll
+```
+
 **旁白**：從連絡橋的方向走過來。穿著維修外套。戴口罩。戴帽子。帽子壓得很低。推著一個工具箱。工具箱是那種灰色的、有輪子的、上面貼著資產標籤的。那個人走得很快。不是趕路的那種快。是熟的那種快——像走過很多次這條路，不需要看標示，不需要猶豫。
 
 **朝倉澪** [scared]：（內心）⋯⋯維修人員。
+
+```sfx
+card-access-beep
+```
 
 **旁白**：她看著那個人走到施工通道入口。她看著那個人停下來。她看著那個人從口袋裡掏出一張卡片——像工作證，或者權限卡——在入口旁邊的感應器上刷了一下。
 
 **旁白**：門開了。那個人推著工具箱走進去。門在身後慢慢關上。
 
 **朝倉澪** [base]：（內心）⋯⋯進去了。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她本能地想拍照。她把手機掏出來。她舉起來。她對著那個方向按了一下。
 
@@ -61,6 +77,10 @@ view from behind a pillar in a Tokyo station concourse at night, partial view of
 **朝倉澪** [base]：（內心）⋯⋯不夠。但先留著。
 
 **旁白**：她把手機收起來。她不敢再拍。她怕閃光——她確認過閃光是關的，但她還是怕。她怕那個人會回頭。她怕被發現。
+
+```sfx
+pa-announcement
+```
 
 **旁白**：車站廣播響了。
 

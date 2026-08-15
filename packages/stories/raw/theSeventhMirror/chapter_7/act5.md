@@ -4,6 +4,10 @@
 hospital ER corridor at night, fluorescent lighting, a nurse pushing a cart with an opaque storage box, a security officer in uniform waiting by a staff elevator, institutional blue-grey tones, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：00:15。
 
 **旁白**：急診走廊。
@@ -29,6 +33,10 @@ hospital ER corridor at night, fluorescent lighting, a nurse pushing a cart with
 **旁白**：正常的聲音。正常的流程。沒有人壓低音量。沒有人東張西望。他們在走廊中間說這些話，像在交接一份普通的文件。
 
 **朝倉澪** [base]：（內心）⋯⋯交通案件。安全保管。保安室暫存。警方交接前先封。每一個詞都是正常的。每一個詞都是她不能質疑的。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：保安從口袋裡拿出一張新的封口標籤。白色的。比袋上那張小。他把它貼在保管箱的封口處。壓了一下。標籤蓋住了箱蓋和箱體的接縫。
 
@@ -59,6 +67,10 @@ hospital ER corridor at night, fluorescent lighting, a nurse pushing a cart with
 **朝倉澪** [base]：⋯⋯我知道了。
 
 **旁白**：她停下來。
+
+```sfx
+door-latch
+```
 
 **旁白**：保安轉回去。推車消失在門後。門關上了。鎖扣響了一聲。
 

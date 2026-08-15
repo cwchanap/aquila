@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:45。", background: Background.Chapter_7_Ch7_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:45。", bgm: "night-street", background: Background.Chapter_7_Ch7_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "路上。", background: Background.Chapter_7_Ch7_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在計程車後座。窗外的灣岸道路在夜裡變成一條安靜的光帶。路燈間隔很遠。每經過一盞，車內就亮一下，暗一下。", background: Background.Chapter_7_Ch7_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有用手機搜尋。她從外套內袋摸出那張摺起來的紙，攤開，又從另一個口袋找到一支短筆——悠真書桌抽屜裡的那種。她開始寫。不是句子，是關鍵詞。像在把腦子裡的東西往外倒。", background: Background.Chapter_7_Ch7_Act2_S0 },
@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她想起千田在車站走廊裡的聲音。很輕。像用最後一點力氣說的。", background: Background.Chapter_7_Ch7_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯被送進去⋯⋯不代表安全⋯⋯", background: Background.Chapter_7_Ch7_Act2_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來，塞回內袋。窗外的建築越來越密。灣岸中央急救醫療中心的方向。", background: Background.Chapter_7_Ch7_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:10。", background: Background.Chapter_7_Ch7_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:10。", bgm: "institutional-drone", background: Background.Chapter_7_Ch7_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "急診接待區。", background: Background.Chapter_7_Ch7_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "燈光很亮。那種醫院特有的、沒有死角的白。地板是淺色的磁磚，反著光。護理人員在櫃台後面走動，腳步很快，沒有聲音。空氣裡有消毒水的味道，蓋住了所有別的東西。", background: Background.Chapter_7_Ch7_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有陰謀基地的感覺。就是一間醫院。一間在深夜還亮著燈的急診室。", background: Background.Chapter_7_Ch7_Act2_S1 },

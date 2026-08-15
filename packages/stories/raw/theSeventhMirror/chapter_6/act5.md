@@ -4,6 +4,10 @@
 construction passage entrance at night, station staff and security guards rushing in through the plastic curtain gap, cold white fluorescent light, reflective tape on floor edges, emergency alert panel glowing red on the wall, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:13。
 
 **旁白**：腳步聲。不止一雙。從通道入口的方向傳過來，急促，沉重，塑膠隔離簾被扯開又彈回去的聲音。

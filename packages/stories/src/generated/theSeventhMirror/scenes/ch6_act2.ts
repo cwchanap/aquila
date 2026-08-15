@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沿著牆走。腳下的防滑膠墊吸收了大部分聲音，但她的呼吸很重，她得用嘴吸氣才能不讓喘息聲傳出去。", background: Background.Chapter_6_Ch6_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沿著牆走。腳下的防滑膠墊吸收了大部分聲音，但她的呼吸很重，她得用嘴吸氣才能不讓喘息聲傳出去。", bgm: "passage-hum", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "前面。轉角之後。千田的聲音。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不大。像在質問，又像在確認。被塑膠布和通風聲切得很碎，她只接到幾個音節。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "中央流不是這樣⋯⋯", background: Background.Chapter_6_Ch6_Act2_S0, portrait: Portrait.ChidaKosuke_Base },
@@ -23,7 +23,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個詞。她記住了。和站外聽到的碎片一樣，但現在她看得更清楚——那不是隨口說的話，是平板上的正式格式。像系統通知。像真的從控制中心發出來的東西。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田今晚確實在等中央流和第七車的同步問題。這幾個詞剛好踩在他已經在擔心的那件事上。他不是蠢。他是剛好被踩中了。", background: Background.Chapter_6_Ch6_Act2_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後——", background: Background.Chapter_6_Ch6_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一聲鈍響。", background: Background.Chapter_6_Ch6_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一聲鈍響。", sfx: "impact", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是金屬掉落。不是東西撞地。是那種悶的、厚的聲音。像人體撞上金屬欄杆。像骨頭和鐵管之間隔了一層衣服但沒隔住多少。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯！", background: Background.Chapter_6_Ch6_Act2_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她衝過去。塑膠布被她推開，在她臉側刮過，她沒有感覺。轉角。燈光在這裡閃了一下。她看見——", background: Background.Chapter_6_Ch6_Act2_S0 },
@@ -38,9 +38,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "維修人員抬頭。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "帽簷。口罩。護目鏡——或者透明面罩，她分不清，光線在閃。臉全部被遮住。她看不見性別。她看不見年紀。她看不見表情。她只看見一個被遮蔽的臉，朝她的方向轉過來。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯看不見。什麼都看不見。", background: Background.Chapter_6_Ch6_Act2_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "工具箱在地上。側面貼著反光膠帶，在燈光下亮了一條。輪子還在轉，像剛被推動過。", background: Background.Chapter_6_Ch6_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "工具箱在地上。側面貼著反光膠帶，在燈光下亮了一條。輪子還在轉，像剛被推動過。", sfx: "toolbox-roll", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後——", background: Background.Chapter_6_Ch6_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "側門。她之前沒注意到的那扇門。門邊的讀卡器發出一聲短促的提示音。綠光。亮了。", background: Background.Chapter_6_Ch6_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "側門。她之前沒注意到的那扇門。門邊的讀卡器發出一聲短促的提示音。綠光。亮了。", sfx: "card-access-beep", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "維修人員轉身。走向側門。動作不快不慢。沒有跑。像走一條走過很多次的路。門開了。他側身出去。門關上。幾乎是立刻的。讀卡器的綠光熄滅。", background: Background.Chapter_6_Ch6_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯走了。他走了。", background: Background.Chapter_6_Ch6_Act2_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯追——", background: Background.Chapter_6_Ch6_Act2_S0, portrait: Portrait.AsakuraMio_Shocked },

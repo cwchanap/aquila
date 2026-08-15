@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:14。她打開筆記型電腦。她沒有登入工作帳號。她用無痕視窗。她搜尋「千田浩介」。", background: Background.Chapter_5_Ch5_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:14。她打開筆記型電腦。她沒有登入工作帳號。她用無痕視窗。她搜尋「千田浩介」。", bgm: "sleepless-vigil", background: Background.Chapter_5_Ch5_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）第一輪⋯⋯我搜過這個名字。那時候他已經死了。新聞出來了。訃聞出來了。公司發了聲明。現在他還沒死。那些東西應該⋯⋯還沒被寫出來。", background: Background.Chapter_5_Ch5_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "結果跳出來了。", background: Background.Chapter_5_Ch5_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一則——幾年前一場公共安全災害警報技術講座的名單。主辦單位是某個產業協會。講題是「區域同步警示系統的容錯設計」。出席者名單列了三十幾個人。其中一個是：千田浩介。職稱寫的是「系統整合工程師」。", background: Background.Chapter_5_Ch5_Act3_S0 },

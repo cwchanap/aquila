@@ -6,11 +6,11 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:55。", background: Background.Chapter_8_Ch8_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:55。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安室外。行政走廊。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站起來的時候，腿還有點麻。她在販賣機旁坐了太久。琴音的聲音還黏在耳朵裡。「那個人的。」三個字。她甩不掉。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沿著允許通行的走廊走。不是闖禁區。只是站不住。只是需要動。等候區的椅子太硬。燈光太亮。琴音的通話記錄太刺眼。", background: Background.Chapter_8_Ch8_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊轉角傳來輪子壓過地板的聲音。很輕。很平穩。像推車。", background: Background.Chapter_8_Ch8_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊轉角傳來輪子壓過地板的聲音。很輕。很平穩。像推車。", sfx: "trolley-wheels", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停下來。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個穿制服的醫院保安推著一輛推車從走廊另一側過來。推車上有一只箱子。不透明。深灰色的硬殼。上面貼著封條。封條比她之前在急診臨時保管區看到的更完整——邊緣沒有翹起，編號欄位都填了。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯WCE-07。", background: Background.Chapter_8_Ch8_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
@@ -51,12 +51,12 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯可能仍在箱中。也可能已不在。", background: Background.Chapter_8_Ch8_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯最可怕的是，現在沒有人需要回答我。", background: Background.Chapter_8_Ch8_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來。塞回內袋。", background: Background.Chapter_8_Ch8_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊空了。推車走了。簽字的人走了。保安回到保安室裡。門關上了。", background: Background.Chapter_8_Ch8_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊空了。推車走了。簽字的人走了。保安回到保安室裡。門關上了。", sfx: "door-latch", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有人搶，沒有人跑。連槍都沒有人拔。沒有人威脅她。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "只是有人把一只箱子推過轉角。簽了一張單子。真相就離她遠了一層。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪。外殼被畫面定義。第二輪。外殼被流程吞掉。兩次都不是被搶走的。兩次都是被改成了我看不懂、也無權質疑的格式。", background: Background.Chapter_8_Ch8_Act5_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在走廊中間。背後是關上的保安室門。前方是空掉的轉角。", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我救下了第七車裡的千田。但那個東西——他拼命要交給我的東西——正在一層一層地離開我。", background: Background.Chapter_8_Ch8_Act5_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "販賣機的方向傳來馬達的嗡嗡聲。很遠。很持續。像什麼都沒發生過。", background: Background.Chapter_8_Ch8_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "販賣機的方向傳來馬達的嗡嗡聲。很遠。很持續。像什麼都沒發生過。", sfx: "vending-machine-hum", background: Background.Chapter_8_Ch8_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她轉身走回等候區。沒有別的地方可以去。", background: Background.Chapter_8_Ch8_Act5_S0 },
 ];

@@ -4,6 +4,10 @@
 hospital ER waiting area at night, rows of plastic chairs under bright fluorescent light, a vending machine glowing in the corner, phone screen light reflected on a tired face, quiet institutional atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：23:50。
 
 **旁白**：等候區。販賣機旁。
@@ -19,6 +23,10 @@ hospital ER waiting area at night, rows of plastic chairs under bright fluoresce
 **旁白**：她把手機拿出來。螢幕亮了。她看的是通話鍵。
 
 **朝倉澪** [sad]：（內心）⋯⋯我好像真的改變了一件事。千田沒有死在第七車。我想告訴她。我想聽她說「妳做得好」。我想——
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震動。不是訊息。是來電。螢幕上跳出一個名字。白石琴音。
 
@@ -49,6 +57,10 @@ hospital ER waiting area at night, rows of plastic chairs under bright fluoresce
 **朝倉澪** [shocked]：（內心）⋯⋯她說出來了。四個字。停住，改口。灣岸那邊吧。救護車大概往那邊送。
 
 **朝倉澪** [shocked]：（內心）⋯⋯我沒有告訴她。我沒有傳給她。我沒有說過這四個字。備忘錄裡有。但她看不到備忘錄。紙上有。但她看不到那張紙。
+
+```sfx
+vending-machine-hum
+```
 
 **旁白**：等候區的燈光還是那麼亮。販賣機的馬達在遠處嗡嗡響。她聽見自己的呼吸。
 

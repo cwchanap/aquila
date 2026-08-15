@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。大學附近那家咖啡店。琴音選的。她發訊息說「你一定又沒吃飯，我帶東西給你」，澪回了一個「好」。", background: Background.Chapter_5_Ch5_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。大學附近那家咖啡店。琴音選的。她發訊息說「你一定又沒吃飯，我帶東西給你」，澪回了一個「好」。", bgm: "safe-harbor", background: Background.Chapter_5_Ch5_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進去的時候，琴音已經坐在靠窗的位置。桌上放著兩杯熱飲、一個三明治、一個布丁。琴音看見她，笑了一下，把熱飲推過來。", background: Background.Chapter_5_Ch5_Act4_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "你臉色好差。昨晚又沒睡？", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯嗯。", background: Background.Chapter_5_Ch5_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },

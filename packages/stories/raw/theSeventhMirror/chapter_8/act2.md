@@ -4,6 +4,10 @@
 hospital security office corridor at night, dim fluorescent lighting, half-open administrative window with a clipboard visible through the glass, security door with narrow wire-glass panel, cold institutional atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：01:05。
 
 **旁白**：保安室走廊。急診行政窗口外。
@@ -28,6 +32,10 @@ hospital security office corridor at night, dim fluorescent lighting, half-open 
 
 **朝倉澪** [shocked]：（內心）⋯⋯23:18。
 
+```sfx
+door-latch
+```
+
 **旁白**：她盯著那個數字。夾子被翻回去了。窗口裡的人把夾子收進去。玻璃窗拉下來。關了。
 
 **朝倉澪** [scared]：（內心）⋯⋯23:18。受領時間。23:18。
@@ -36,7 +44,7 @@ hospital security office corridor at night, dim fluorescent lighting, half-open 
 
 **旁白**：她閉上眼睛。在腦子裡翻那張紙。翻她記下的時間。翻她站在急診走廊裡看見保安推車經過的那一刻。
 
-**朝倉澪** [determined]：（內心）⋯⋯23:35。我看見袋子被轉出來的時候，大約是23:35。我記得。因為那時候我剛看完手機。琴音的通話記錄還在螢幕上。
+**朝倉澪** [determined]：（內心）⋯⋯23:35。我看見袋子被轉出來的時候，大約是23:35。我記得。因為那時候我剛看完手機。琴音那則訊息還在螢幕上。
 
 **朝倉澪** [scared]：（內心）⋯⋯受領時間23:18。我看見袋子轉出來23:35。受領時間比我看到袋子移動——早了十七分鐘。
 

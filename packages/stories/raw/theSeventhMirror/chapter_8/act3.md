@@ -4,11 +4,19 @@
 hospital observation area corridor at night, fluorescent lighting, a wheeled bed being moved past partially drawn curtains, oxygen equipment on a mobile stand, medical staff silhouettes behind fabric dividers, cold clinical atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：01:25。
 
 **旁白**：急診觀察區外。走廊盡頭。
 
 **旁白**：澪沒有坐回等候區。她站在走廊和等候區的交界處。牆上有一扇玻璃窗。窗的另一邊是觀察區。簾子。推床。監測儀。氧氣架。
+
+```sfx
+trolley-wheels
+```
 
 **旁白**：走廊深處傳來輪子聲。不是推車。是病床。有人在推床。
 
@@ -103,6 +111,10 @@ hospital observation area corridor at night, fluorescent lighting, a wheeled bed
 **旁白**：她把手從玻璃上拿下來。玻璃上留了兩個掌印。很快被冷氣吹乾了。消失了。
 
 **朝倉澪** [determined]：（內心）⋯⋯他沒有留下證詞。他留下了一個手勢。一個會折磨我的手勢。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：簾子後面傳出監測儀的聲音。嗶。嗶。嗶。很規律。很安靜。
 

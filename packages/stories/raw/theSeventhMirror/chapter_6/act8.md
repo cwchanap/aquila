@@ -4,6 +4,10 @@
 outside the station at night, Tokyo waterfront, empty sidewalk with wet pavement, distant city lights reflected on the bay, cold blue night sky, ambulance tail lights already gone, quiet urban stillness, visual-novel background art, wide shot
 ```
 
+```bgm
+night-street
+```
+
 **旁白**：22:18。
 
 **旁白**：站外。
@@ -58,6 +62,10 @@ outside the station at night, Tokyo waterfront, empty sidewalk with wet pavement
 
 **朝倉澪** [determined]：（內心）⋯⋯我沒有告訴任何人。
 
+```sfx
+notification-beep
+```
+
 **旁白**：手機震動。
 
 **旁白**：不是備忘錄。是訊息。
@@ -105,6 +113,10 @@ outside the station at night, Tokyo waterfront, empty sidewalk with wet pavement
 **旁白**：她看著灣岸道路的盡頭。救護車消失的那個方向。
 
 **朝倉澪** [sad]：（內心）⋯⋯但我看著救護車消失在灣岸道路盡頭，第一次明白：我改變的也許只是死亡的地址。
+
+```sfx
+notification-beep
+```
 
 **旁白**：風又吹過來。她的手在口袋裡握著那面小鏡子。鏡子的邊緣很涼。口袋裡的手機又震了一下。她沒有掏出來。
 

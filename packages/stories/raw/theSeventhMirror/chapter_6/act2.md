@@ -4,6 +4,10 @@
 construction passage corner at night, plastic sheeting partitions creating a blind corner, cold white fluorescent light flickering slightly, reflective tape strips on floor and equipment, a maintenance toolbox with reflective strips visible, side door with card reader in the far wall, visual-novel background art, medium shot
 ```
 
+```bgm
+passage-hum
+```
+
 **旁白**：她沿著牆走。腳下的防滑膠墊吸收了大部分聲音，但她的呼吸很重，她得用嘴吸氣才能不讓喘息聲傳出去。
 
 **旁白**：前面。轉角之後。千田的聲音。
@@ -38,6 +42,10 @@ construction passage corner at night, plastic sheeting partitions creating a bli
 
 **旁白**：然後——
 
+```sfx
+impact
+```
+
 **旁白**：一聲鈍響。
 
 **旁白**：不是金屬掉落。不是東西撞地。是那種悶的、厚的聲音。像人體撞上金屬欄杆。像骨頭和鐵管之間隔了一層衣服但沒隔住多少。
@@ -68,9 +76,17 @@ construction passage corner at night, plastic sheeting partitions creating a bli
 
 **朝倉澪** [shocked]：（內心）⋯⋯看不見。什麼都看不見。
 
+```sfx
+toolbox-roll
+```
+
 **旁白**：工具箱在地上。側面貼著反光膠帶，在燈光下亮了一條。輪子還在轉，像剛被推動過。
 
 **旁白**：然後——
+
+```sfx
+card-access-beep
+```
 
 **旁白**：側門。她之前沒注意到的那扇門。門邊的讀卡器發出一聲短促的提示音。綠光。亮了。
 

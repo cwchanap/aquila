@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:01。", background: Background.Chapter_5_Ch5_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:01。", bgm: "tension-pulse", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看見他了。", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "人群裡。柱子之間。一個穿深色外套的男人。四十多歲。中等身高。頭髮短。戴眼鏡。他走路的時候微微低著頭，像在確認方向，又像不想被認出來。", background: Background.Chapter_5_Ch5_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田。", background: Background.Chapter_5_Ch5_Act8_S0, portrait: Portrait.AsakuraMio_Shocked },
@@ -39,7 +39,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不。", background: Background.Chapter_5_Ch5_Act8_S1, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她本能地張開嘴。", background: Background.Chapter_5_Ch5_Act8_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "千田——", background: Background.Chapter_5_Ch5_Act8_S1, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "同一瞬間。", background: Background.Chapter_5_Ch5_Act8_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "同一瞬間。", sfx: "pa-announcement", background: Background.Chapter_5_Ch5_Act8_S1 },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "現在進行防災同步測試。請各位市民配合。", background: Background.Chapter_5_Ch5_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播蓋過了她。她的聲音被吞掉了。她喊出來的那兩個字，連她自己都幾乎聽不見——它們被那種平的、沒有起伏的防災語調壓進了地板裡。", background: Background.Chapter_5_Ch5_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "維修人員回頭看了一眼。", background: Background.Chapter_5_Ch5_Act8_S1 },
@@ -53,11 +53,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田和維修人員已經走到入口。千田的背影消失在門裡。維修人員跟在後面。門正在關。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:04。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走到門邊。", background: Background.Chapter_5_Ch5_Act8_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門沒有完全關上。留了一條縫。不大。剛好夠一個人側身擠進去。她看見裡面——一條走廊。燈光是冷的、白的、像醫院又不像醫院的那種光。牆上有管線。地上有灰。千田的腳步聲在前面。維修人員的工具箱輪子在地板上滾動的聲音在前面。", background: Background.Chapter_5_Ch5_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門是關著的。門邊垂著塑膠隔離簾。簾子和一台低矮設備車之間，留著一條搬運通道。不大。剛好夠一個人側身鑽進去。她看見裡面——一條走廊。燈光是冷的、白的、像醫院又不像醫院的那種光。牆上有管線。地上有灰。千田的腳步聲在前面。維修人員的工具箱輪子在地板上滾動的聲音在前面。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手伸進斜背包。她摸到內層的小布套。她握住小鏡子。鏡面涼涼的，貼著她的手心。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯上一輪，死在我面前的男人，這一輪還沒有上車。", background: Background.Chapter_5_Ch5_Act8_S2, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯而帶走他的，不是列車。", background: Background.Chapter_5_Ch5_Act8_S2, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她側身。她擠進那條縫。門在她身後發出一聲很輕的扣響。像鎖舌卡進定位。", background: Background.Chapter_5_Ch5_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她側身。她鑽進那條縫。塑膠簾的邊條。金屬扣環那一截。刮了一下。她沒有出聲。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在施工通道裡。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊很長。燈光很白。空氣裡有一種金屬和灰塵的味道。千田的背影在前面，越走越遠。維修人員跟在他旁邊，手裡的平板亮著。", background: Background.Chapter_5_Ch5_Act8_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我剛走過的，是一扇寫著「維修人員以外禁止」的門。", background: Background.Chapter_5_Ch5_Act8_S2, portrait: Portrait.AsakuraMio_Determined },
@@ -66,5 +66,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是誰能進入第七車。", background: Background.Chapter_5_Ch5_Act8_S2, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯是千田浩介為什麼會帶著傷上車。", background: Background.Chapter_5_Ch5_Act8_S2, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的燈光很白。千田的腳步聲在前面。她握緊手裡的小鏡子。她往前走。", background: Background.Chapter_5_Ch5_Act8_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門在她身後關上了。", background: Background.Chapter_5_Ch5_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那條縫，在她身後合攏了。", background: Background.Chapter_5_Ch5_Act8_S2 },
 ];

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:50。", background: Background.Chapter_7_Ch7_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:50。", bgm: "institutional-drone", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等候區。販賣機旁。", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在最靠牆的椅子上。指尖碰著口袋裡那張紙。灣岸中央急救醫療中心。WCE-07。三行。只有她知道。", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她聞得到自己的手。洗過了。濕紙巾擦過了。但血的味道還在皮膚紋路裡。鐵鏽味。很淡。別人聞不到。", background: Background.Chapter_7_Ch7_Act4_S0 },
@@ -14,7 +14,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我差點想打給她。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機拿出來。螢幕亮了。她看的是通話鍵。", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我好像真的改變了一件事。千田沒有死在第七車。我想告訴她。我想聽她說「妳做得好」。我想——", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。不是訊息。是來電。螢幕上跳出一個名字。白石琴音。", background: Background.Chapter_7_Ch7_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。不是訊息。是來電。螢幕上跳出一個名字。白石琴音。", sfx: "notification-beep", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她接了。", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "妳在哪裡？我很擔心。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聲音是軟的。是真的著急。不是演的。至少聽起來不是。", background: Background.Chapter_7_Ch7_Act4_S0 },
@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯灣岸中央。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她說出來了。四個字。停住，改口。灣岸那邊吧。救護車大概往那邊送。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我沒有告訴她。我沒有傳給她。我沒有說過這四個字。備忘錄裡有。但她看不到備忘錄。紙上有。但她看不到那張紙。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等候區的燈光還是那麼亮。販賣機的馬達在遠處嗡嗡響。她聽見自己的呼吸。", background: Background.Chapter_7_Ch7_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等候區的燈光還是那麼亮。販賣機的馬達在遠處嗡嗡響。她聽見自己的呼吸。", sfx: "vending-machine-hum", background: Background.Chapter_7_Ch7_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "妳怎麼知道是灣岸中央？", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "我只是猜的。妳別這樣。", background: Background.Chapter_7_Ch7_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "語氣更軟了。像在照顧一個生病的人。像在哄。", background: Background.Chapter_7_Ch7_Act4_S0 },

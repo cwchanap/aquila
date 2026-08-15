@@ -4,6 +4,10 @@
 Tokyo waterfront road at night, seen from inside a moving taxi, wet asphalt reflecting traffic lights, distant high-rise buildings with scattered lit windows, cold blue night sky, quiet urban landscape, visual-novel background art, wide shot
 ```
 
+```bgm
+night-street
+```
+
 **旁白**：22:45。
 
 **旁白**：路上。
@@ -28,6 +32,10 @@ Tokyo waterfront road at night, seen from inside a moving taxi, wet asphalt refl
 
 ```bg
 hospital emergency reception area at night, bright fluorescent lighting, white tiled floor, reception counter with acrylic partition, waiting chairs along the wall, a few people sitting quietly, nurses moving efficiently in the background, clean clinical atmosphere, visual-novel background art, medium shot
+```
+
+```bgm
+institutional-drone
 ```
 
 **旁白**：23:10。

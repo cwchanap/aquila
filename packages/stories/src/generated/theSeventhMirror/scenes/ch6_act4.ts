@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:10。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:10。", bgm: "passage-hum" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田的眼睛半開著。但不像在看她。像在看一個還沒對焦的東西。他的嘴唇在動，沒有聲音，像在咀嚼一個還沒成形的字。" },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他不知道我是誰。他現在分不清。", portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她壓著傷口。她看著他的臉。她說了一句話。不大。但很清楚。" },

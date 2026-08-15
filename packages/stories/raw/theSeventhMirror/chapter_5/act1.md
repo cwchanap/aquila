@@ -4,6 +4,10 @@
 small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin curtains, unmade single bed, glowing phone screen, cheap electronic wall clock, sparse furnishings, a small hand mirror on a desk next to scattered handwritten notes, muted cold palette, moody cinematic visual-novel background art, wide establishing shot
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：6:13。
 
 **旁白**：她盯著那四個數字。螢幕沒有跳。時鐘沒有動。世界停在那個位置，像有人把影格按住，等她確認。
@@ -43,6 +47,10 @@ small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin
 **旁白**：但鏡子還在這裡。像從來沒有被拿起來過。像那一週從來沒有發生過。
 
 **朝倉澪** [scared]：（內心）沒有跟我回來。
+
+```sfx
+mirror-chime
+```
 
 **旁白**：她站起來。赤腳。她走到書桌前，拿起小鏡子。鏡面朝上。背面朝下。她翻過來——悠真刻的痕跡還在。那些刮痕還在。鏡子是真的。鏡子是這個星期一的鏡子。
 

@@ -4,6 +4,10 @@
 hospital administrative corridor at night, fluorescent ceiling light, polished linoleum floor reflecting overhead tubes, a security office door half-visible at the far end, an opaque storage box on a wheeled cart being pushed along the corridor, cold clinical atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：01:55。
 
 **旁白**：保安室外。行政走廊。
@@ -11,6 +15,10 @@ hospital administrative corridor at night, fluorescent ceiling light, polished l
 **旁白**：澪站起來的時候，腿還有點麻。她在販賣機旁坐了太久。琴音的聲音還黏在耳朵裡。「那個人的。」三個字。她甩不掉。
 
 **旁白**：她沿著允許通行的走廊走。不是闖禁區。只是站不住。只是需要動。等候區的椅子太硬。燈光太亮。琴音的通話記錄太刺眼。
+
+```sfx
+trolley-wheels
+```
 
 **旁白**：走廊轉角傳來輪子壓過地板的聲音。很輕。很平穩。像推車。
 
@@ -94,6 +102,10 @@ hospital administrative corridor at night, fluorescent ceiling light, polished l
 
 **旁白**：她把紙摺起來。塞回內袋。
 
+```sfx
+door-latch
+```
+
 **旁白**：走廊空了。推車走了。簽字的人走了。保安回到保安室裡。門關上了。
 
 **旁白**：沒有人搶，沒有人跑。連槍都沒有人拔。沒有人威脅她。
@@ -105,6 +117,10 @@ hospital administrative corridor at night, fluorescent ceiling light, polished l
 **旁白**：她站在走廊中間。背後是關上的保安室門。前方是空掉的轉角。
 
 **朝倉澪** [base]：（內心）⋯⋯我救下了第七車裡的千田。但那個東西——他拼命要交給我的東西——正在一層一層地離開我。
+
+```sfx
+vending-machine-hum
+```
 
 **旁白**：販賣機的方向傳來馬達的嗡嗡聲。很遠。很持續。像什麼都沒發生過。
 

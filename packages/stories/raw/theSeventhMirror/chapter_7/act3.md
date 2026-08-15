@@ -4,6 +4,10 @@
 hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vending machine glow at the far end, half-open staff door with a narrow gap, quiet clinical atmosphere, visual-novel background art, medium shot looking down the corridor
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：23:30。
 
 **旁白**：急診走廊。
@@ -81,6 +85,10 @@ hospital ER corridor at night, bright fluorescent lighting, linoleum floor, vend
 **旁白**：她退了一步。
 
 **朝倉澪** [base]：⋯⋯好。
+
+```sfx
+door-latch
+```
 
 **旁白**：保安看了她一眼。沒有再說什麼。他走過去，把那扇半開的門推上了。鎖扣響了一聲。
 

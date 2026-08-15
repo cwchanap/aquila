@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:04。", background: Background.Chapter_6_Ch6_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:04。", bgm: "passage-hum", background: Background.Chapter_6_Ch6_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她已經在裡面了。", background: Background.Chapter_6_Ch6_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊比她想像的長。燈光是冷的、白的，那種沒有溫度的日光燈白，照得牆上的管線和地上的灰塵都像被泡進顯影液裡。", background: Background.Chapter_6_Ch6_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "左邊牆面掛著半透明的塑膠布，從天花板垂下來，邊緣貼著反光膠帶，隨通風口的氣流微微晃動。右邊是裸露的配線槽。地上鋪著防滑膠墊，腳踩上去沒有聲音。", background: Background.Chapter_6_Ch6_Act1_S0 },

@@ -4,6 +4,10 @@
 small Tokyo apartment desk, laptop screen glowing in morning light, scattered handwritten notes, a young woman leaning forward typing intently, muted cool palette, moody cinematic visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：08:14。她打開筆記型電腦。她沒有登入工作帳號。她用無痕視窗。她搜尋「千田浩介」。
 
 **朝倉澪** [determined]：（內心）第一輪⋯⋯我搜過這個名字。那時候他已經死了。新聞出來了。訃聞出來了。公司發了聲明。現在他還沒死。那些東西應該⋯⋯還沒被寫出來。

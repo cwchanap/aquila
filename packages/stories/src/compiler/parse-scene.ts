@@ -1,6 +1,5 @@
 import type { DialogueEntryIR } from './ir';
 import type { ResolvedCharacter } from './config';
-import { isBgmCueKey, isSfxCueKey } from '../audio-cues';
 
 const HEADER_RE = /^\*\*(.+?)\*\*(?:\s*\[([^\]]+)\])?[：:]\s*([\s\S]*)$/;
 const BG_BLOCK_RE = /^```bg\s*\n([\s\S]*?)\n```$/;
@@ -51,13 +50,7 @@ export function parseScene(
                     `[story-compiler] ${sourcePath}: pending sfx "${pendingSfx}" was not consumed before another sfx block`
                 );
             }
-            const cueKey = sfxMatch[1];
-            if (!isSfxCueKey(cueKey)) {
-                throw new Error(
-                    `[story-compiler] ${sourcePath}: unknown sfx cue "${cueKey}"`
-                );
-            }
-            pendingSfx = cueKey;
+            pendingSfx = sfxMatch[1];
             continue;
         }
         if (block.startsWith('```sfx')) {
@@ -76,11 +69,6 @@ export function parseScene(
             if (token === 'stop') {
                 pendingBgm = null;
             } else {
-                if (!isBgmCueKey(token)) {
-                    throw new Error(
-                        `[story-compiler] ${sourcePath}: unknown bgm cue "${token}"`
-                    );
-                }
                 pendingBgm = token;
             }
             continue;

@@ -13,6 +13,8 @@ import type { ParsedCharacterDirectory } from './parse-characters';
 import { buildResolveCharacter } from './resolve-character';
 import { resolveSceneAssets, buildAssetManifest } from './resolve-assets';
 import type { SceneAssets } from './resolve-assets';
+import { loadAudioPlan } from '../audio-plan';
+import { collectAudioUsage, validateAudioUsage } from './audio-usage';
 
 export interface CompileOptions {
     rawDir: string;
@@ -20,6 +22,7 @@ export interface CompileOptions {
     outDir: string;
     choicesPath: string;
     config: StoryCompilerConfig;
+    writeOutputs?: boolean;
 }
 
 function loadCharacterDir(opts: CompileOptions): ParsedCharacterDirectory {
@@ -100,11 +103,18 @@ export function compileStory(opts: CompileOptions): StoryIR {
         assetManifest,
     };
 
-    const warnings = validateStory(story, portraitMap);
-    for (const w of warnings) console.warn(w);
+    const audioPlan = loadAudioPlan(opts.rawDir);
+    const audioUsage = collectAudioUsage(story);
+    const warnings = [
+        ...validateAudioUsage(audioUsage, audioPlan, 'docs/audio-plan.json'),
+        ...validateStory(story, portraitMap),
+    ];
+    for (const warning of warnings) console.warn(warning);
 
-    emitStory(story, opts.outDir, charDir);
-    scaffoldChoices(story, opts.choicesPath);
+    if (opts.writeOutputs !== false) {
+        emitStory(story, opts.outDir, charDir);
+        scaffoldChoices(story, opts.choicesPath);
+    }
     return story;
 }
 

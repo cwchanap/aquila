@@ -314,13 +314,28 @@ stop
         });
     });
 
+    it('accepts an unknown but syntactically valid SFX key', () => {
+        const result = parseScene(
+            ['```sfx', 'new-door-cue', '```', '', '**旁白**：Door.'].join('\n'),
+            resolve,
+            'fixture.md'
+        );
+        expect(result.entries[0].sfx).toBe('new-door-cue');
+    });
+
+    it('accepts an unknown but syntactically valid BGM key', () => {
+        const result = parseScene(
+            ['```bgm', 'new-music-cue', '```', '', '**旁白**：Music.'].join(
+                '\n'
+            ),
+            resolve,
+            'fixture.md'
+        );
+        expect(result.entries[0].bgm).toBe('new-music-cue');
+    });
+
     it.each([
         ['empty', ['```bgm', '', '```'].join('\n'), /invalid bgm block/],
-        [
-            'unknown',
-            ['```bgm', 'unknown-track', '```'].join('\n'),
-            /unknown bgm cue/,
-        ],
         [
             'capitalized',
             ['```bgm', 'Dawn-Apartment', '```'].join('\n'),
@@ -371,7 +386,6 @@ stop
     it.each([
         ['empty', ['```sfx', '', '```'].join('\n')],
         ['multi-token', ['```sfx', 'door open', '```'].join('\n')],
-        ['unknown', ['```sfx', 'door-opne', '```'].join('\n')],
         ['capitalized', ['```sfx', 'Door-Open', '```'].join('\n')],
     ])('rejects %s sfx blocks', (_label, block) => {
         const md = [block, '', '**旁白**：hello'].join('\n');

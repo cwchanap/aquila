@@ -13,7 +13,7 @@ import type { ParsedCharacterDirectory } from './parse-characters';
 import { buildResolveCharacter } from './resolve-character';
 import { resolveSceneAssets, buildAssetManifest } from './resolve-assets';
 import type { SceneAssets } from './resolve-assets';
-import { loadAudioPlan } from '../audio-plan';
+import { loadAudioPlan } from '../audio-plan-loader';
 import { collectAudioUsage, validateAudioUsage } from './audio-usage';
 
 export interface CompileOptions {

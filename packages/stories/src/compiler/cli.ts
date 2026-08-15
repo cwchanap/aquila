@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { compileStory } from './compile';
 import type { StoryCompilerConfig } from './config';
 import type { StoryIR } from './ir';
-import { loadAudioPlan } from '../audio-plan';
+import { loadAudioPlan } from '../audio-plan-loader';
 import { buildAudioUsageReport, collectAudioUsage } from './audio-usage';
 
 const here = dirname(fileURLToPath(import.meta.url)); // .../src/compiler

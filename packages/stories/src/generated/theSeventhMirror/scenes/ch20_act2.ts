@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:25。M-00 外部醫療工作站。走廊比指揮室這一側更深。更安靜。螢光燈被調到最低。監測面板的綠光是唯一穩定的光源。外部醫師坐在工作站前。醫療協調人站在他身後。凪原站在走廊側。沒有靠近。", background: Background.Chapter_20_Ch20_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:25。M-00 外部醫療工作站。走廊比指揮室這一側更深。更安靜。螢光燈被調到最低。監測面板的綠光是唯一穩定的光源。外部醫師坐在工作站前。醫療協調人站在他身後。凪原站在走廊側。沒有靠近。", sfx: "monitor-beep", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部在工作站右側。三浦在左側。指定專家在最後面——一名由警方安排到場的獨立技術人員。他不看凪原。只看螢幕。", background: Background.Chapter_20_Ch20_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在觀察窗旁邊。窗後的呼吸曲線還在跑。很慢。她不看窗。她看工作站螢幕。她看醫師核驗。", background: Background.Chapter_20_Ch20_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先看醫療。先確認——能不能搬。能不能停。⋯⋯如果是真的——如果真的不能直接拔線——那我也不能讓人拔。⋯⋯可是「不能拔」和「不能離開」是兩件事。⋯⋯她把它們混在一起了。我不能讓她混。", background: Background.Chapter_20_Ch20_Act2_S0, portrait: Portrait.AsakuraMio_Determined },

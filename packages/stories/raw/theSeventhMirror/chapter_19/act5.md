@@ -4,6 +4,10 @@
 Tsukuba central police station, plain office room, laptop and documents on table, phone set to speakerphone, fluorescent lighting, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：11:50。B2 外。筑波中央署。三浦的筆電上顯示內部轉送紀錄。逐欄。逐項。
 
 **三浦奈緒子**：內部轉送紀錄。22:17。出發——B2。經路——內部服務電梯。接收——關聯法人。目的區——M。
@@ -52,6 +56,10 @@ Tsukuba central police station, plain office room, laptop and documents on table
 
 **旁白**：日下部把草案逐頁核對。簽名。蓋章。三浦送往檢察方面。檢察聯絡法院值班程序。
 
+```sfx
+notification-beep
+```
+
 **旁白**：13:15。三浦的手機響了。筑波端傳來最新監控。
 
 **三浦奈緒子**：控制方反應。門禁收緊。M 區責任欄——再次更新。
@@ -85,6 +93,10 @@ Tsukuba central police station, plain office room, laptop and documents on table
 **旁白**：電話掛斷。千田的說明很短。他從未進入深層。他只看過圖。他知道的是建築結構——不是裡面有什麼。
 
 **朝倉澪** [determined]：（內心）⋯⋯跨棟防火通道。不是秘密通道。是建築法規要求的逃生路徑。被用來連接兩個法人區域。服務電梯公開面板只到 B2。M 區需要授權。雙法人授權。單一法人打不開。——難怪高城說「不由本法人管理」。不是推卸。是真的。B2 的法人打不開 M 區的門。需要兩個法人一起授權。
+
+```sfx
+notification-beep
+```
 
 **旁白**：14:50。三浦的手機響了。檢察方面回覆。法院值班裁判官——核發限定搜索／扣押許可狀。
 

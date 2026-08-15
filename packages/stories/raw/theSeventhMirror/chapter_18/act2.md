@@ -4,6 +4,10 @@
 Tsukuba central police station, slightly larger meeting room with long table, overhead fluorescent light, frosted windows facing interior corridor, chairs arranged for formal inquiry, documents and a recording device on table, muted cool grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：12:20。筑波中央署。三樓的正式詢問室。
 
 **旁白**：三浦奈緒子把一份書面照會攤在桌上。標題——失蹤未成年人安否查證相關搬送紀錄正式照會。收件人——東關東災害支援搬送協同組合。發件人——茨城縣警筑波方面。
@@ -71,6 +75,10 @@ Tsukuba central police station, slightly larger meeting room with long table, ov
 **三浦奈緒子**：今天到這裡。後續以書面為準。
 
 **搬送公司合規主管**：了解。
+
+```sfx
+door-latch
+```
 
 **旁白**：13:18。合規主管收起文件。離開。走廊的門關上。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:20。B2。地下二層。共同研究支援、人員待機、設備保全區。高城修一站在電梯口。他沒有被要求開放這一層。他自己開的。", background: Background.Chapter_19_Ch19_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:20。B2。地下二層。共同研究支援、人員待機、設備保全區。高城修一站在電梯口。他沒有被要求開放這一層。他自己開的。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.TakagiShuichi, character: "高城修一", dialogue: "為了表示配合，本法人自願開放 B2。目前區域已完成清空與清潔。各位可以自由查看。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.TakagiShuichi_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門打開。裡面不是秘密儀器大廳。不是科幻艙。是一個普通的地下待機區。研究床。無障礙衛浴。緊急呼叫按鈕。輪椅與寢台動線。清潔完成的工作站。螢光燈。白牆。像一間被制度洗得過度乾淨的休息室。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯普通。太普通了。如果這裡關過人——痕跡在哪裡。如果悠真待過——東西在哪裡。全部清空了。床單換了。工作站擦乾淨了。看起來像從來沒有人用過。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -31,7 +31,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AharaMaho, character: "相原真帆", dialogue: "搬送規程本身允許在上述條件下開封。不是警方隨意開啟。是規程自己寫的。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.AharaMaho_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "高城沉默了幾秒。他看了一眼設施合規主管。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.FacilityCompliance, character: "設施合規主管", dialogue: "依搬送規程相關條文。條件成立。同意依規程辦理開封。", background: Background.Chapter_19_Ch19_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "全程記錄。封條號抄錄。開封時間記錄。在場者簽名。三浦、日下部、相原、設施合規主管、未成年後見人視訊見證。鑑識人員拍照。", background: Background.Chapter_19_Ch19_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "全程記錄。封條號抄錄。開封時間記錄。在場者簽名。三浦、日下部、相原、設施合規主管、未成年後見人視訊見證。鑑識人員拍照。", sfx: "camera-shutter", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "封緘外殼打開。裡面是一份折疊文件。三浦展開。逐欄念出。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "管理碼——G07／12。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "氏名——朝倉悠真。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.MiuraNaoko_Base },
@@ -40,7 +40,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "未成年後見人——長野母方阿姨。相符。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "22:17——內部轉送。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "次區域——M。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.MiuraNaoko_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "文件展開在桌上。封條號、開封時間、在場者簽名——全部記錄在案。三浦把文件影本放進證物袋。原件由設施合規主管保管，警方保留影本與開封紀錄。", background: Background.Chapter_19_Ch19_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "文件展開在桌上。封條號、開封時間、在場者簽名——全部記錄在案。三浦把文件影本放進證物袋。原件由設施合規主管保管，警方保留影本與開封紀錄。", sfx: "evidence-bag-seal", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "正式確認。G07／12——朝倉悠真。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:50。B2。封緘開啟完畢。G07／12 等於朝倉悠真。不再是推測。不再是四個來源的交叉。是封緘文件上的姓名。是規程下的正式確認。", background: Background.Chapter_19_Ch19_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯G07／12 是悠真。現在——正式的。文件承認了。封緘承認了。規程承認了。不再是我寫在筆記本旁邊的名字。是制度自己寫出來的。朝倉悠真。", background: Background.Chapter_19_Ch19_Act4_S0, portrait: Portrait.AsakuraMio_Determined },

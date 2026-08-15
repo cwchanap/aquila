@@ -4,6 +4,14 @@
 Tsukuba research facility M-zone, medical workstation alcove outside M-00 room, evening, cold fluorescent lighting, monitoring screens showing respiratory and neural waveforms, medical equipment readouts, muted sterile palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
+```sfx
+monitor-beep
+```
+
 **旁白**：20:25。M-00 外部醫療工作站。走廊比指揮室這一側更深。更安靜。螢光燈被調到最低。監測面板的綠光是唯一穩定的光源。外部醫師坐在工作站前。醫療協調人站在他身後。凪原站在走廊側。沒有靠近。
 
 **旁白**：日下部在工作站右側。三浦在左側。指定專家在最後面——一名由警方安排到場的獨立技術人員。他不看凪原。只看螢幕。

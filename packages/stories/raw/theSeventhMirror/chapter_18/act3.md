@@ -4,6 +4,10 @@
 public whistleblower support organization interview room, neutral government building interior, clean white walls, ceiling-mounted security camera visible, two exits marked with green signs, long table with chairs on both sides, soft even fluorescent lighting, muted neutral palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:00。公益通報者支援機構。面談室。
 
 **旁白**：場地是千田選的。公共建築。有監視器。兩個出口。公益通報律師和支援人員在場。一名便衣刑警——日下部。不在警署。不讓 TKS 的人進來。
@@ -11,6 +15,10 @@ public whistleblower support organization interview room, neutral government bui
 **旁白**：澪坐在日下部旁邊。不是旁聽席。是桌子這一側。千田要求只見一名刑警——但日下部帶了澪。以失蹤未成年人家屬的身分。千田沒有拒絕。
 
 **朝倉澪** [determined]：（內心）⋯⋯他沒有拒絕我。他要求一名刑警。日下部是那一名。我是家屬。他看見我的時候——沒有說不行。他只看了一眼。然後讓我坐下。
+
+```bgm
+stop
+```
 
 **旁白**：15:03。千田浩介坐在桌子對面。
 
@@ -101,6 +109,10 @@ public whistleblower support organization interview room, neutral government bui
 **千田浩介**：⋯⋯對。
 
 **朝倉澪** [determined]：（內心）⋯⋯他承認了。他排程了 18:42。他排程了那則訊息。訊息還沒到。現在是 15:15。訊息要到 18:42 才會到。但他已經排好了。他已經——在我不知道他排程的情況下——排好了和我的封存預測完全一樣的時間和內容。這不是下午才串通的。他早就排好了。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：15:22。千田把那張紙推回澪這一側。他的表情慢慢收回去了。不是恢復平靜。是重新把東西收好。像剛才那一瞬間的失控從未發生過。
 

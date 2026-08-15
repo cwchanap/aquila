@@ -6,9 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:08。門禁關上。車消失了。", background: Background.Chapter_17_Ch17_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:08。門禁關上。車消失了。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的手已經在車門把上。", background: Background.Chapter_17_Ch17_Act6_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "攔它。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "攔它。", bgm: "tension-pulse", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "坐下。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "它進去了——", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "我知道。坐下。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
@@ -22,7 +22,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪停住了。一隻腳在車外。一隻腳在車裡。手還在門把上。", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "回來。坐下。聽我說完。然後妳再決定要不要跑。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:09。澪慢慢把腳收回車裡。關上車門。手還在發抖。但她坐下了。", background: Background.Chapter_17_Ch17_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:09。澪慢慢把腳收回車裡。關上車門。手還在發抖。但她坐下了。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他說聽完再決定。好。聽。聽完再說。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "七個理由。妳聽。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "第一——沒看見人。後門開了十秒。升降板。固定架。固定帶。簾子。隔板。沒有人影。沒有擔架。沒有病人。沒有監測設備。妳看見的是設備。不是人。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
@@ -64,7 +64,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "但升降板是空的。固定架是空的。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "空的。對。空的可以解釋為——今天沒有載人。今天載的是設備。空的固定架——是因為人還沒上車。或者——今天不需要。或者——這輛車本來就兼運。今天這一趟——載的是設備。公開業務寫的是搬送。車體有載人設備。兩者放在一起——多用途。合法。合理。夠用。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他說得對。多用途。合法。合理。每一項都能解釋升降板和固定架。普通解釋——不需要陰謀。不需要悠真。但普通解釋也不能排除悠真。多用途——可以載設備。也可以載人。今天載的是什麼——看不見。內部封閉艙——三層遮蔽。看得見的是設備。看不見的是裡面。普通解釋夠用。但不等於真相。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:18。日下部的手機震動。一條訊息。", background: Background.Chapter_17_Ch17_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:18。日下部的手機震動。一條訊息。", sfx: "notification-beep", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "茨城便衣聯絡人。已抵達研究區外圍。目前在公共道路另一側待命。未進入園區。未表明身份。", background: Background.Chapter_17_Ch17_Act6_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "到了。比我預計的早了一點。", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "他看到車了嗎？", background: Background.Chapter_17_Ch17_Act6_S0, portrait: Portrait.AsakuraMio_Base },

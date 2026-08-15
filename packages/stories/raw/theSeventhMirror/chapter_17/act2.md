@@ -4,6 +4,10 @@
 24-hour convenience store interior early Monday morning, fluorescent lighting, glass windows showing grey dawn street, a small table by the window with two plastic chairs, shelves of drinks and onigiri in background, muted cool palette with warm fluorescent patches, visual-novel background art, medium shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：06:45。朝倉家附近。二十四小時便利店。
 
 **旁白**：澪坐在靠窗的位置。面前放著一杯沒打開的礦泉水。手機螢幕朝下扣在桌上。
@@ -49,6 +53,10 @@
 **日下部悟**：⋯⋯沒有第四排。
 
 **旁白**：他停住了。
+
+```sfx
+vending-machine-hum
+```
 
 **旁白**：便利店裡很安靜。冷櫃的馬達在嗡。窗外有一輛車經過。然後又安靜了。
 

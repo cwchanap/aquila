@@ -4,6 +4,10 @@
 neutral protection point near the interview room, institutional waiting area with plain walls, fluorescent lighting, multiple exits, security camera, a few chairs and a low table, evening light fading outside windows, muted cool grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：17:15。面談室隔壁。一間中立保護地點。公益通報者支援機構提供的等待空間。
 
 **旁白**：律師、千田、日下部、澪。一名便衣在門外走廊。
@@ -49,6 +53,10 @@ neutral protection point near the interview room, institutional waiting area wit
 **旁白**：18:41:50。
 
 **旁白**：18:42。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震動。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:05。筑波外圍公共停車區。日下部的車裡。", background: Background.Chapter_17_Ch17_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:05。筑波外圍公共停車區。日下部的車裡。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機響了。東京端。日下部接起來。聽了大概兩分鐘。沒有說太多。只回了幾句確認。掛掉。", background: Background.Chapter_17_Ch17_Act8_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "聯絡到千田了。", background: Background.Chapter_17_Ch17_Act8_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯他還活著？", background: Background.Chapter_17_Ch17_Act8_S0, portrait: Portrait.AsakuraMio_Base },

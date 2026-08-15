@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:25。M 區。悠真房間外側的工作站。螢光燈。白牆。監測面板的綠光。悠真已經被外部醫療團隊接管。相原完成了一時保護。長野阿姨在視訊那頭沉默了很久。日下部說完了那句話——這一次，他活著。", background: Background.Chapter_19_Ch19_Act9_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:25。M 區。悠真房間外側的工作站。螢光燈。白牆。監測面板的綠光。悠真已經被外部醫療團隊接管。相原完成了一時保護。長野阿姨在視訊那頭沉默了很久。日下部說完了那句話——這一次，他活著。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在房門外的摺疊椅上。膝蓋軟。不是因為累。是因為終於可以累了。悠真在裡面。活著。鎮靜。感測貼片。靜脈管路。外部醫師在床邊調整設定。護士在記錄數值。房間不再是研究方的。是警方的。是兒童相談所的。是外部醫療的。", background: Background.Chapter_19_Ch19_Act9_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他活著。在裡面。閉著眼。呼吸很淺。但活著。我可以停下來了嗎。不行。還沒有。醫師還在。還沒有全部停掉。", background: Background.Chapter_19_Ch19_Act9_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師從床邊直起身。他看著工作站螢幕。眉頭收緊。然後走向門外。走向澪旁邊的那台監測面板。", background: Background.Chapter_19_Ch19_Act9_S0 },
@@ -38,7 +38,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "可以。", background: Background.Chapter_19_Ch19_Act9_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:50。工作站。外部醫師輸入醫療安全指令。螢幕跳出一個新的欄位。緊急醫療身分模組。載入中。", background: Background.Chapter_19_Ch19_Act9_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯載入中。基準母體。M-00。是什麼。是模型。是設備。是——人。如果是人。是誰。為什麼連在悠真身上。為什麼停不掉。", background: Background.Chapter_19_Ch19_Act9_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的進度條跑完了。欄位展開。", background: Background.Chapter_19_Ch19_Act9_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的進度條跑完了。欄位展開。", bgm: null, background: Background.Chapter_19_Ch19_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。M 區。工作站。螢光燈。綠光。四行字還在上面。M-00。基準母體。狀態：維持中。參照連線：使用中。", background: Background.Chapter_19_Ch19_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "下方——緊急醫療身分模組。第一欄。氏名。", background: Background.Chapter_19_Ch19_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日十一小時八分鐘。", background: Background.Chapter_19_Ch19_Act9_S0 },

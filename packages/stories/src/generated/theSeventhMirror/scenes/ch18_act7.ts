@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:55。保護地點。中立建築的會面室。螢光燈。桌上攤著筆記本、封存預測影本、排程建立憑證副本。千田在隔壁房間。律師在場。日下部坐在對面。", background: Background.Chapter_18_Ch18_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:55。保護地點。中立建築的會面室。螢光燈。桌上攤著筆記本、封存預測影本、排程建立憑證副本。千田在隔壁房間。律師在場。日下部坐在對面。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌上的筆電亮了。三浦奈緒子警部補的視訊。筑波端。晚間資料到了。兩批。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯兩批。第一批——B2 的建築細節。第二批——搬送公司的去識別化派車控。等了一整天的東西。中午只拿到地下二層存在、消防圖有避難路線。剩下的——電梯、緊急呼叫、正式名稱——全標在晚間這批。派車控也是。中午公司只說一般制度，不肯回答特定班次。現在——正式照會、法務遮蔽之後——終於給了。", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "第一批到了。B2 晚間補齊。", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.MiuraNaoko_Base },
@@ -40,7 +40,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯同意確認——委託方聲明済。不是警方確認。不是監護人確認。是委託方自己聲明。聲明済。不是同意済。是委託方說「我確認過了」。", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三浦看著螢幕。她沒有急著下結論。她把視訊畫面切到合規主管那一端。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "最後一個問題。這個班次，是設備類嗎？", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.MiuraNaoko_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕那頭沉默了兩秒。", background: Background.Chapter_18_Ch18_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕那頭沉默了兩秒。", bgm: null, background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.TransportCompliance, character: "搬送公司合規主管", dialogue: "不是。是人員類。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "會面室裡沒有聲音。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯人員類。不是設備類。不是檢體。不是資料。不是一箱硬碟。是人員類。一名青少年。需要介助。有委託方陪同。清晨被送進 B2。和悠真預約頁同一個碼。人員類。", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.AsakuraMio_Shocked },
@@ -53,7 +53,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三浦在視訊那頭補了一句。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "派車控的去識別化欄位已經保全。原始版本不覆蓋、不自動刪除。後續若取得正式監護人聲明與兒少安否程序，可再申請進一步欄位。", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "收到。", background: Background.Chapter_18_Ch18_Act7_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "視訊掛斷。螢幕暗下來。會面室恢復螢光燈的嗡嗡聲。", background: Background.Chapter_18_Ch18_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "視訊掛斷。螢幕暗下來。會面室恢復螢光燈的嗡嗡聲。", sfx: "fluorescent-hum", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:05。澪拿起筆。翻到筆記本那一頁。派車控的欄位已經被日下部抄在上面。「年齡帶——10 代／未成年區分」那一欄旁邊，空白。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在那個空白上寫了一個名字。", background: Background.Chapter_18_Ch18_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "朝倉悠真。", background: Background.Chapter_18_Ch18_Act7_S0 },

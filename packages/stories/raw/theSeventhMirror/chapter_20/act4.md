@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, controlled incident archive room, night, cold fluorescent lighting, long table with sealed document boxes and terminal screens, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：22:35。受控事故檔案室。M 區走廊盡頭一間沒有窗戶的房間。比臨時指揮室更窄。更安靜。牆邊有一排鐵櫃。鐵櫃上貼著封條。封條上的日期——十年前。
 
 **旁白**：凪原站在桌的一端。她沒有坐下。法律顧問在她右後方。手裡拿著一份書面目錄。每翻一頁，都在欄位裡填時間、責任人與閱覽者。
@@ -193,6 +197,10 @@ Tsukuba research facility M-zone, controlled incident archive room, night, cold 
 **旁白**：澪看著桌上那個藍色文件夾。翻開的那一頁。紗英的簽名。事故後第二日。完整的黑色海。倒月。七條線。遠方光。
 
 **朝倉澪** [sad]：（內心）⋯⋯媽媽。⋯⋯妳是第一個看見完整海的人。⋯⋯其他人都只看到碎片。妳把它拼起來了。⋯⋯然後他們把妳的拼圖拿走。做成模板。塞進機器。塞進其他孩子的腦裡。⋯⋯十年。⋯⋯妳畫的那片海。變成了悠真畫的那片海。變成了水瀨葵畫的那片海。變成了所有孩子夢裡的那片海。⋯⋯那不是訊號的海。⋯⋯那是妳的海。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：00:05。凪原把文件夾收回鐵櫃。封條重新貼上。法律顧問在目錄上簽了時間。
 

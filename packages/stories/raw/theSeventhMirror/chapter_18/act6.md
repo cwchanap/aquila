@@ -4,6 +4,10 @@
 neutral protection point interior, night, fluorescent lighting, plain waiting area with chairs and low table, window showing dark sky, security camera red light, muted cool grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：19:30。保護地點。夜已經完全暗了。
 
 **旁白**：日下部坐在門邊。手機調成震動。耳機線從口袋延伸到一耳。便衣從灣岸施工通道周邊持續回報。日下部聽一句，在筆記本上寫一行。
@@ -31,6 +35,10 @@ neutral protection point interior, night, fluorescent lighting, plain waiting ar
 **日下部悟**：太近——那個人不會出現。過多警力——他會轉身走。讓他進來。讓他做完。讓他離開。然後——順著鏈追。
 
 **朝倉澪** [determined]：（內心）⋯⋯不攔截。不逮捕。讓他進來。讓他做完。讓他離開。然後追。前兩輪——千田在 21:04 被襲擊。這一次千田不在。那個人來了——等不到千田。他會怎麼做？他會查看。確認。然後——處理掉那件東西。然後離開。警方不攔他。只記。只追。
+
+```sfx
+notification-beep
+```
 
 **旁白**：20:38。日下部坐直了。手機震動。他接聽。聽了十秒。
 
@@ -108,6 +116,10 @@ neutral protection point interior, night, fluorescent lighting, plain waiting ar
 
 **朝倉澪** [shocked]：（內心）⋯⋯筑波。同一個法人縮寫。代領臨時卡的承包商和筑波搬送委託方——有交叉。同一個法人。同一條鏈。筑波那邊的搬送——和今晚施工通道的臨時卡——連在一起了。
 
+```sfx
+notification-beep
+```
+
 **旁白**：21:20。日下部的手機響了。便衣傳來幾張照片。低解析。遠距離。從外部拍攝。
 
 **旁白**：日下部把手機轉向澪。
@@ -151,6 +163,10 @@ neutral protection point interior, night, fluorescent lighting, plain waiting ar
 **日下部悟**：第二個時間點命中了。
 
 **朝倉澪** [determined]：（內心）⋯⋯命中了。兩個。18:42。21:04。兩個時間點。兩項封存預測。全部命中。07:15 寫的。18:42 收到的。21:04 出現的。全部命中。
+
+```bgm
+stop
+```
 
 **旁白**：21:35。房間裡安靜了。
 

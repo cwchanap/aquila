@@ -4,6 +4,10 @@
 neutral protection site interior, night, plain meeting room with overhead fluorescent light, phone on table set to speakerphone, documents spread out, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：22:20。保護地點。會面室。電話擴音。長野那一端接通了。
 
 **旁白**：日下部先說明身份。失蹤未成年人安否查證。正式監護人確認程序。需要她核對幾項同意內容。語氣放慢。沒有提循環。沒有提筑波地下。只說——悠真的研究參加，需要她確認當初簽了什麼。
@@ -114,6 +118,10 @@ neutral protection site interior, night, plain meeting room with overhead fluore
 Tsukuba research facility interior, deep underground corridor, cold fluorescent lighting, sealed doors, no windows, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+passage-hum
+```
+
 **旁白**：在澪看不見的地方。在警方監看不見的地方。園區內部。
 
 **旁白**：G07／12 由 B2 轉往更深層區域。不經外部車輛出口。不經公共門禁。內部通道。
@@ -128,6 +136,10 @@ Tsukuba research facility interior, deep underground corridor, cold fluorescent 
 
 ```bg
 neutral protection site interior, night, plain meeting room with overhead fluorescent light, phone and documents on table, muted cool palette, visual-novel background art, medium shot
+```
+
+```bgm
+institutional-drone
 ```
 
 **旁白**：這些——澪不知道。日下部不知道。三浦不知道。警方監看的外部出口——沒有車輛離開。沒有東西經公共道路出去。
@@ -165,6 +177,10 @@ neutral protection site interior, night, plain meeting room with overhead fluore
 **朝倉澪** [determined]：（內心）⋯⋯朝倉悠真。文件不肯寫他的名字。但我知道。G07／12 是他。四個來源。同一個碼。——他不是一箱硬碟。是我的弟弟。
 
 **旁白**：她把筆放下。合上筆記本。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：23:00。保護地點。會面室。螢光燈嗡嗡地響。窗外是第三輪星期一的夜。筑波在黑暗裡。出口被監看。沒有車輛離開。
 

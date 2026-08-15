@@ -4,6 +4,10 @@
 same public parking area on the outskirts of Tsukuba research district, late morning turning toward midday, overcast light slightly brighter, grey asphalt, low concrete wall, distant research buildings behind perimeter fence, muted cool grey-blue palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：11:05。筑波外圍公共停車區。日下部的車裡。
 
 **旁白**：手機響了。東京端。日下部接起來。聽了大概兩分鐘。沒有說太多。只回了幾句確認。掛掉。

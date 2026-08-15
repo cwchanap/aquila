@@ -6,9 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。筑波中央署。交接室。螢光燈還沒完全暖起來。三台監控螢幕排成一列，每台顯示一個園區外圍出口的夜間紀錄。三浦奈緒子站在最左邊那台前面，手裡拿著夜間勤務日誌。日下部坐在桌角。澪坐在靠牆的摺疊椅上，外套拉鍊拉到下巴。", background: Background.Chapter_19_Ch19_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。筑波中央署。交接室。螢光燈還沒完全暖起來。三台監控螢幕排成一列，每台顯示一個園區外圍出口的夜間紀錄。三浦奈緒子站在最左邊那台前面，手裡拿著夜間勤務日誌。日下部坐在桌角。澪坐在靠牆的摺疊椅上，外套拉鍊拉到下巴。", sfx: "fluorescent-hum", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真失蹤第八日。第三輪星期二。窗外天還沒全亮。", background: Background.Chapter_19_Ch19_Act1_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯一夜。整夜盯著出口。沒有睡。不是不困——是不敢。閉眼就會回到星期一。回到 06:13。回到手機震動的那一下。已經第三輪了。身體記得每一輪的疲憊，但時間不會因為我累就快轉。", background: Background.Chapter_19_Ch19_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯一夜。整夜盯著出口。沒有睡。不是不困——是不敢。閉眼就會回到星期一。回到 06:13。回到手機震動的那一下。已經第三輪了。身體記得每一輪的疲憊，但時間不會因為我累就快轉。", sfx: "phone-vibrate", background: Background.Chapter_19_Ch19_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "夜間監控交接。結果出來了。", background: Background.Chapter_19_Ch19_Act1_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三浦把日誌翻到最後一頁。逐項念。", background: Background.Chapter_19_Ch19_Act1_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "園區北口、西口、南口——三個公開車輛出口。夜間離開車輛共四十七輛。全部完成外圍查驗。", background: Background.Chapter_19_Ch19_Act1_S0, portrait: Portrait.MiuraNaoko_Base },

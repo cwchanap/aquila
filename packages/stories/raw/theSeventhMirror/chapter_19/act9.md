@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, workstation alcove outside a sealed medical room, evening, cold fluorescent lighting, monitor glow on white walls, muted sterile palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:25。M 區。悠真房間外側的工作站。螢光燈。白牆。監測面板的綠光。悠真已經被外部醫療團隊接管。相原完成了一時保護。長野阿姨在視訊那頭沉默了很久。日下部說完了那句話——這一次，他活著。
 
 **旁白**：澪坐在房門外的摺疊椅上。膝蓋軟。不是因為累。是因為終於可以累了。悠真在裡面。活著。鎮靜。感測貼片。靜脈管路。外部醫師在床邊調整設定。護士在記錄數值。房間不再是研究方的。是警方的。是兒童相談所的。是外部醫療的。
@@ -67,6 +71,10 @@ Tsukuba research facility M-zone, workstation alcove outside a sealed medical ro
 **旁白**：18:50。工作站。外部醫師輸入醫療安全指令。螢幕跳出一個新的欄位。緊急醫療身分模組。載入中。
 
 **朝倉澪** [determined]：（內心）⋯⋯載入中。基準母體。M-00。是什麼。是模型。是設備。是——人。如果是人。是誰。為什麼連在悠真身上。為什麼停不掉。
+
+```bgm
+stop
+```
 
 **旁白**：螢幕上的進度條跑完了。欄位展開。
 

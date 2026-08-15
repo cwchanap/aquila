@@ -4,6 +4,10 @@
 highway interior of unmarked police sedan, early morning grey light through windshield, Metropolitan Expressway concrete walls streaming past, dashboard clock glowing 07:40, overcast sky, muted cool grey-blue palette, visual-novel background art, medium shot from passenger seat
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：07:40。首都高速。
 
 **旁白**：日下部的車是一輛沒有標記的警用轎車。深灰色。沒有警燈。沒有警笛。車裡只有儀表板的冷光和窗外不斷流過的混凝土隔音牆。
@@ -111,6 +115,10 @@ highway interior of unmarked police sedan, early morning grey light through wind
 **日下部悟**：我知道。一問——他們就知道有人在查。今天能拍的東西就拍不到了。明天能查的東西就查不到了。不接觸。只看。
 
 **朝倉澪** [determined]：（內心）⋯⋯他懂。不是因為我解釋了。是因為他自己就是刑警。他知道接觸等於驚動。驚動等於路線改道。前兩輪——沒有人接觸過筑波。沒有人驚動過。所以這條路還在。今天——也不能驚動。讓路留著。
+
+```sfx
+notification-beep
+```
 
 **旁白**：08:36。常磐道。澪看了一眼手機。一條訊息。日下部的——他剛用車載藍牙發出去的。
 

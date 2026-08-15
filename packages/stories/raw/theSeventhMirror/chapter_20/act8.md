@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, M-00 medical area corridor, pre-dawn, dimmed lighting, reinforced glass observation window, medical monitoring equipment visible through glass, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：03:25。M 區。M-00 醫療區外側走廊。螢光燈的頻率比指揮室更低。地板的顏色更深。像一條被刻意調暗的通道。
 
 **旁白**：人員已經輪替過一次。外部醫師換了人。國家級醫療協調人在旁邊確認藥物與設備參數。呼吸治療師到了——白色制服。手裡拿著一份既有醫療設定表。
@@ -34,6 +38,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor, pre-dawn, dimmed l
 Tsukuba research facility M-zone, M-00 medical room interior, pre-dawn, dimmed clinical lighting, long-term life-support bed, ventilator, infusion pumps, neural monitoring leads, muted desaturated palette, visual-novel background art, medium shot
 ```
 
+```sfx
+ventilator-cycle
+```
+
 **旁白**：房間比透過觀察窗看起來更小。更安靜。設備的聲音很密。呼吸迴路。輸注幫浦。神經監測導線。全部在跑。全部亮著綠光。
 
 **旁白**：床上——一個人。
@@ -47,6 +55,10 @@ Tsukuba research facility M-zone, M-00 medical room interior, pre-dawn, dimmed c
 **旁白**：呼吸治療師走到床邊。他看著監測器。確認了呼吸頻率。確認了血氧。然後他拿起發聲閥。動作很慢。像在拆一件很舊的東西。
 
 **呼吸治療師**：適應期開始。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：他接上發聲閥。調整了氣囊壓力。監測器上的數字跳了一下。然後穩住了。
 
@@ -87,6 +99,10 @@ Tsukuba research facility M-zone, M-00 medical room interior, pre-dawn, dimmed c
 **旁白**：呼吸治療師看著監測器。血氧九十四。呼吸頻率十八。在範圍內。
 
 **旁白**：她的嘴唇動了。氣切套管上方。發聲閥的氣流通過。一個很小的、很乾的、像很久沒有被使用過的聲音。
+
+```bgm
+stop
+```
 
 **朝倉紗英**：⋯⋯第三次了嗎。
 

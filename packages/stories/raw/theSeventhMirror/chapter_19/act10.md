@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, workstation alcove outside a sealed medical room, evening, cold fluorescent lighting, monitor glow on white walls, muted sterile palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：19:05。M 區。工作站。緊急醫療身分模組展開了。第一欄。氏名。
 
 **旁白**：朝倉紗英。
@@ -60,6 +64,10 @@ Tsukuba research facility M-zone, workstation alcove outside a sealed medical ro
 Tsukuba research facility M-zone, emergency observation corridor, evening, dimmed lighting, reinforced glass observation window, medical monitoring equipment visible through glass, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：走廊。白色。隔音。比悠真那一側更深。更安靜。腳步聲被地板吃掉。螢光燈的頻率更低。像一條被刻意調暗的通道。
 
 **旁白**：盡頭。一扇門。沒有門牌。只有一個小窗。強化玻璃。窗戶下方貼著一張標籤。
@@ -72,9 +80,17 @@ Tsukuba research facility M-zone, emergency observation corridor, evening, dimme
 
 **旁白**：澪走到窗前。
 
+```sfx
+monitor-beep
+```
+
 **旁白**：窗後是一個房間。比悠真的房間更安靜。更暗。沒有研究床。是一張長期維生床。床邊的設備比悠真那一側多。監測器。輸注幫浦。神經監測導線。呼吸迴路。全部在跑。全部亮著綠光。
 
 **旁白**：床上——一個人。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：成人女性。長期生命維持。神經監測。胸口緩慢起伏。很慢。像在用最少的力氣呼吸。頭髮比家庭照片裡更長。更灰。散在枕頭上。臉很瘦。皮膚很薄。但——
 

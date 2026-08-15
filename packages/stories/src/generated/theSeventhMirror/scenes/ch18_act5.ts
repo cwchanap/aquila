@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:15。面談室隔壁。一間中立保護地點。公益通報者支援機構提供的等待空間。", background: Background.Chapter_18_Ch18_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:15。面談室隔壁。一間中立保護地點。公益通報者支援機構提供的等待空間。", bgm: "tension-pulse", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "律師、千田、日下部、澪。一名便衣在門外走廊。", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田的常用手機不在他身上。封存在證物袋裡。律師拿著。他口袋裡是另一台——不是他平時那台。", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯常用手機封存了。千田不連平台。不共享位置。不進共享日程。警方不冒充他傳送訊息。他把自己從系統裡拔出來了。前兩輪他沒有做過這件事。這一次——他做了。", background: Background.Chapter_18_Ch18_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:41:30。", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:41:50。", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:42。", background: Background.Chapter_18_Ch18_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", background: Background.Chapter_18_Ch18_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", sfx: "notification-beep", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕亮起。一條訊息。", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "想知道朝倉悠真在哪裡，今晚 21:17。灣岸新交通，新木場方向，第七車。帶上悠真留下的那件東西。不要報警。", background: Background.Chapter_18_Ch18_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯來了。18:42。和前兩輪一模一樣。一字不差。想知道朝倉悠真在哪裡。今晚 21:17。灣岸新交通。新木場方向。第七車。帶上悠真留下的那件東西。不要報警。一字不差。", background: Background.Chapter_18_Ch18_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },

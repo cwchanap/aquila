@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:20。臨時指揮室。摺疊桌。螢幕。文件。咖啡杯的殘漬。三個人的影子被螢光燈壓得很扁。", background: Background.Chapter_20_Ch20_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:20。臨時指揮室。摺疊桌。螢幕。文件。咖啡杯的殘漬。三個人的影子被螢光燈壓得很扁。", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "從十九點四十五分到現在，已經超過六小時。函館夜潮的資料還攤在桌上。系統血統圖。三組日期材料。軍事近失的節錄。非地球已知系統來源的結論。全部被日下部、指定專家和外部醫師交叉確認過。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原唯坐在桌的一端。深色風衣。銀框眼鏡。姿勢沒有變過。像從走進這間房間到現在，她的脊椎就沒有彎過一次。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在牆邊。雙臂交叉。他沒有坐。", background: Background.Chapter_20_Ch20_Act7_S0 },
@@ -25,8 +25,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三句。一句比一句短。像在釘釘子。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原沒有辯護。她看著澪。眼鏡後面的眼睛沒有波動。像在讀一份已經讀過很多次的報告。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "我們是在保護她的身分。", background: Background.Chapter_20_Ch20_Act7_S0, portrait: Portrait.NagiharaYui_Base },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "你們把她從世界上刪掉了。", background: Background.Chapter_20_Ch20_Act7_S0, portrait: Portrait.AsakuraMio_Angry },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間安靜了。螢光燈的嗡聲變得很大。", background: Background.Chapter_20_Ch20_Act7_S0 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "你們把她從世界上刪掉了。", bgm: null, background: Background.Chapter_20_Ch20_Act7_S0, portrait: Portrait.AsakuraMio_Angry },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間安靜了。螢光燈的嗡聲變得很大。", sfx: "fluorescent-hum", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原的手指在桌面上停了一下。然後她繼續。", background: Background.Chapter_20_Ch20_Act7_S0 },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "我沒有要妳原諒。我只要求妳先分清楚，哪些線現在拔掉會讓她自由，哪些會讓她死。", background: Background.Chapter_20_Ch20_Act7_S0, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "外部醫師已經確認——可以開始共同接管。可以封存藥物與設備。可以評估分階段撤離。可以在她清醒時重新取得本人意願。這些都不是「今晚粗暴拔線」。", background: Background.Chapter_20_Ch20_Act7_S0, portrait: Portrait.AsakuraMio_Determined },

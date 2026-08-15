@@ -4,6 +4,10 @@
 Tsukuba public research building conference room, morning, institutional meeting room with long table, overhead projector showing document pages, plain white walls, fluorescent lighting, muted cool-grey palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：08:50。筑波公開研究棟。會議室。長桌。投影機。白牆。螢光燈。過度乾淨的空間。像一間從來沒有人真正開會的會議室。
 
 **旁白**：到場——三浦。日下部。相原。外部醫師。設施合規主管。澪。桌子的另一端——高城修一。研究倫理與運用管理責任人。身後站著兩名設施法務與行政人員。

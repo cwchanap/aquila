@@ -4,6 +4,10 @@
 neutral protection site interior, night, plain meeting room with overhead fluorescent light, laptop and documents on table, video call screen glowing, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:55。保護地點。中立建築的會面室。螢光燈。桌上攤著筆記本、封存預測影本、排程建立憑證副本。千田在隔壁房間。律師在場。日下部坐在對面。
 
 **旁白**：桌上的筆電亮了。三浦奈緒子警部補的視訊。筑波端。晚間資料到了。兩批。
@@ -72,6 +76,10 @@ neutral protection site interior, night, plain meeting room with overhead fluore
 
 **三浦奈緒子**：最後一個問題。這個班次，是設備類嗎？
 
+```bgm
+stop
+```
+
 **旁白**：螢幕那頭沉默了兩秒。
 
 **搬送公司合規主管**：不是。是人員類。
@@ -97,6 +105,10 @@ neutral protection site interior, night, plain meeting room with overhead fluore
 **三浦奈緒子**：派車控的去識別化欄位已經保全。原始版本不覆蓋、不自動刪除。後續若取得正式監護人聲明與兒少安否程序，可再申請進一步欄位。
 
 **日下部悟**：收到。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：視訊掛斷。螢幕暗下來。會面室恢復螢光燈的嗡嗡聲。
 

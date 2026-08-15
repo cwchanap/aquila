@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:35。受控事故檔案室。M 區走廊盡頭一間沒有窗戶的房間。比臨時指揮室更窄。更安靜。牆邊有一排鐵櫃。鐵櫃上貼著封條。封條上的日期——十年前。", background: Background.Chapter_20_Ch20_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:35。受控事故檔案室。M 區走廊盡頭一間沒有窗戶的房間。比臨時指揮室更窄。更安靜。牆邊有一排鐵櫃。鐵櫃上貼著封條。封條上的日期——十年前。", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原站在桌的一端。她沒有坐下。法律顧問在她右後方。手裡拿著一份書面目錄。每翻一頁，都在欄位裡填時間、責任人與閱覽者。", background: Background.Chapter_20_Ch20_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "指定專家坐在桌的另一端。他的終端接著警方保全的資料碟。不接設施內部網路。不接凪原帶來的設備。只看獨立材料。", background: Background.Chapter_20_Ch20_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在門邊。雙臂交叉。三浦在走廊另一端處理令狀後續。外部醫師已經回 M-00 醫療區值班。", background: Background.Chapter_20_Ch20_Act4_S0 },
@@ -101,6 +101,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:00。受控事故檔案室。鐵櫃。封條。三組日期材料。軍事近失的節錄。紗英的手寫字。紗英的素描。十年前的黑暗平面。十年前的錯位月光。十年前的七次亮脈衝。", background: Background.Chapter_20_Ch20_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著桌上那個藍色文件夾。翻開的那一頁。紗英的簽名。事故後第二日。完整的黑色海。倒月。七條線。遠方光。", background: Background.Chapter_20_Ch20_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯媽媽。⋯⋯妳是第一個看見完整海的人。⋯⋯其他人都只看到碎片。妳把它拼起來了。⋯⋯然後他們把妳的拼圖拿走。做成模板。塞進機器。塞進其他孩子的腦裡。⋯⋯十年。⋯⋯妳畫的那片海。變成了悠真畫的那片海。變成了水瀨葵畫的那片海。變成了所有孩子夢裡的那片海。⋯⋯那不是訊號的海。⋯⋯那是妳的海。", background: Background.Chapter_20_Ch20_Act4_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。凪原把文件夾收回鐵櫃。封條重新貼上。法律顧問在目錄上簽了時間。", background: Background.Chapter_20_Ch20_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。凪原把文件夾收回鐵櫃。封條重新貼上。法律顧問在目錄上簽了時間。", sfx: "evidence-bag-seal", background: Background.Chapter_20_Ch20_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日六小時八分鐘。", background: Background.Chapter_20_Ch20_Act4_S0 },
 ];

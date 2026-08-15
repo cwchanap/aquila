@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:15。日下部的車。停在便利店旁的停車格。引擎沒熄。", background: Background.Chapter_17_Ch17_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:15。日下部的車。停在便利店旁的停車格。引擎沒熄。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在副駕。筆記本攤在膝上。筆拿在手裡。日下部在駕駛座。側身朝著她。車窗外的天色又亮了一格。", background: Background.Chapter_17_Ch17_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "我手寫。你記錄封存時間。然後我們簽名。", background: Background.Chapter_17_Ch17_Act3_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯寫什麼。", background: Background.Chapter_17_Ch17_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },

@@ -4,9 +4,17 @@
 public parking area on the outskirts of Tsukuba research district, late morning overcast light, grey asphalt, low concrete boundary wall, distant grey-white research buildings behind a perimeter fence, a few parked cars, muted cool grey-blue palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：09:35。筑波外圍公共停車區。
 
 **旁白**：茨城縣警的便衣聯絡人九點二十左右到的。車輛進入地下坡道時他還在路上。沒趕上入門。但他趕上了離開。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：灰白搬送車從園區雙重門禁駛出。後門半開。外部作業艙在駛上公共道路前短暫可見。
 

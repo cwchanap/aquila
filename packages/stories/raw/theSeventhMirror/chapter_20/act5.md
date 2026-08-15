@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, controlled incident archive room, night, cold fluorescent lighting, long table with sealed document boxes and terminal screens, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：00:05。同一間檔案室。鐵櫃的封條剛貼回去。法律顧問翻到目錄下一頁。凪原沒有離開。她站在原地。像從走進這間房間到現在，她的腳就沒有挪過位置。
 
 **旁白**：指定專家的終端還亮著。日下部靠在牆上。他換了一個姿勢——左肩抵著牆面。不是放鬆。是身體在告訴他已經坐太久了。

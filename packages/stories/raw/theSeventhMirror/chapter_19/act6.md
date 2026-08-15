@@ -4,6 +4,10 @@
 Tsukuba research facility B2 underground floor, controlled waiting area, plain bench, fluorescent lighting, security door with access indicator lights, radio on table, muted sterile palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:30。B2。受控等候區。一張長椅。一扇安全門。門上的門禁指示燈——紅。澪坐在長椅上。面前的小桌上放著一台無線電。音量調到能聽見。不能調到能說話。
 
 **旁白**：初始搜索隊伍在門另一邊整隊。三浦。日下部。相原。外部醫師。一名護士。鑑識人員。設施代表。高城在場——作為法人配合人員。不是自願。是令狀要求。
@@ -14,6 +18,10 @@ Tsukuba research facility B2 underground floor, controlled waiting area, plain b
 
 **三浦奈緒子**：先找人。再處理直接相關資料。
 
+```sfx
+card-access-beep
+```
+
 **旁白**：門禁指示燈由紅轉黃。雙法人授權程序啟動。高城在授權面板上刷了法人卡。設施代表刷了另一張。兩個法人。兩道授權。
 
 **旁白**：服務電梯。公開面板上只有 B2。高城刷卡後——面板上多出一個樓層。M。
@@ -22,9 +30,17 @@ Tsukuba research facility B2 underground floor, controlled waiting area, plain b
 
 **旁白**：電梯門開了。不是誇張的深井。不是科幻通道。是一條跨棟防火走廊。白色牆面。防火門。應急照明。像兩棟建築之間的標準連接層。因為它就是。
 
+```sfx
+door-seal
+```
+
 **旁白**：搜索隊伍進入。門在他們身後關上。門禁指示燈由黃轉紅。澪留在這一邊。
 
 **朝倉澪** [sad]：（內心）⋯⋯門關了。紅燈。他們進去了。我在這裡。只能聽無線電。看門禁燈。等。
+
+```sfx
+radio-feed
+```
 
 **旁白**：無線電傳來聲音。三浦的聲音。信號穩定。
 
@@ -67,6 +83,10 @@ Tsukuba research facility B2 underground floor, controlled waiting area, plain b
 **旁白**：無線電裡傳來三浦最後一句。
 
 **三浦奈緒子**：家屬——可以進入。
+
+```sfx
+card-access-beep
+```
 
 **旁白**：門禁指示燈由紅轉綠。門鎖解開的聲音。門開了。
 

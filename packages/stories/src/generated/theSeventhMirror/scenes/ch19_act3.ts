@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:50。筑波公開研究棟。會議室。長桌。投影機。白牆。螢光燈。過度乾淨的空間。像一間從來沒有人真正開會的會議室。", background: Background.Chapter_19_Ch19_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:50。筑波公開研究棟。會議室。長桌。投影機。白牆。螢光燈。過度乾淨的空間。像一間從來沒有人真正開會的會議室。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "到場——三浦。日下部。相原。外部醫師。設施合規主管。澪。桌子的另一端——高城修一。研究倫理與運用管理責任人。身後站著兩名設施法務與行政人員。", background: Background.Chapter_19_Ch19_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯高城。五十二歲左右。灰髮。金屬框眼鏡。深灰色西裝。表情像在讀內部規程。他不是黑衣人。不是反派。他是一個真心相信文件的人。這才是最難突破的——他永遠有下一張表。", background: Background.Chapter_19_Ch19_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.TakagiShuichi, character: "高城修一", dialogue: "早安。今天依正式安否確認程序，本法人提供完整同意與醫療安全文件。", background: Background.Chapter_19_Ch19_Act3_S0, portrait: Portrait.TakagiShuichi_Base },

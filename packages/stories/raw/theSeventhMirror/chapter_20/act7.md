@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, temporary command room, deep night, cold fluorescent lighting, monitors and documents spread across folding tables, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：02:20。臨時指揮室。摺疊桌。螢幕。文件。咖啡杯的殘漬。三個人的影子被螢光燈壓得很扁。
 
 **旁白**：從十九點四十五分到現在，已經超過六小時。函館夜潮的資料還攤在桌上。系統血統圖。三組日期材料。軍事近失的節錄。非地球已知系統來源的結論。全部被日下部、指定專家和外部醫師交叉確認過。
@@ -42,7 +46,15 @@ Tsukuba research facility M-zone, temporary command room, deep night, cold fluor
 
 **凪原唯**：我們是在保護她的身分。
 
+```bgm
+stop
+```
+
 **朝倉澪** [angry]：你們把她從世界上刪掉了。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：房間安靜了。螢光燈的嗡聲變得很大。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。筑波中央署。二樓的小型行政查詢室。", background: Background.Chapter_18_Ch18_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。筑波中央署。二樓的小型行政查詢室。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三浦奈緒子警部補已經在裡面了。桌上攤著一台公務筆電、一份書面查詢申請、和一杯還沒動過的茶。她看見日下部和澪進來，點了一下頭，沒有寒暄。", background: Background.Chapter_18_Ch18_Act1_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "建築概要第一批到了。消防圖也在。訪客圖是公開的，已經調出來。", background: Background.Chapter_18_Ch18_Act1_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上分成三個視窗。三浦把筆電轉過來，讓日下部和澪都能看見。", background: Background.Chapter_18_Ch18_Act1_S0 },

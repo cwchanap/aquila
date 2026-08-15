@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:20。筑波中央署。三樓的正式詢問室。", background: Background.Chapter_18_Ch18_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:20。筑波中央署。三樓的正式詢問室。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三浦奈緒子把一份書面照會攤在桌上。標題——失蹤未成年人安否查證相關搬送紀錄正式照會。收件人——東關東災害支援搬送協同組合。發件人——茨城縣警筑波方面。", background: Background.Chapter_18_Ch18_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "照會的措辭很精確。不提綁架。不提神鏡。不提循環。只寫——一名失蹤未成年人可能與筑波研究支援棟的搬送流程相關，請公司保全並提供必要資料以協助安否查證。", background: Background.Chapter_18_Ch18_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯失蹤未成年人安否查證。這是三浦能用的最正式的理由。不是搜查。不是逮捕。是安否。是「這個孩子可能在你的車上，請你幫忙確認他還好」。這個理由——能讓公司保存資料。不能讓公司直接交出名字。", background: Background.Chapter_18_Ch18_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -40,7 +40,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三浦沒有追問。她在照會回執上寫下合規主管的口頭確認——原始派車控已下令保存，遮蔽後分類資料於晚間前提供，特定班次分類待正式程序。", background: Background.Chapter_18_Ch18_Act2_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "今天到這裡。後續以書面為準。", background: Background.Chapter_18_Ch18_Act2_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.TransportCompliance, character: "搬送公司合規主管", dialogue: "了解。", background: Background.Chapter_18_Ch18_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:18。合規主管收起文件。離開。走廊的門關上。", background: Background.Chapter_18_Ch18_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:18。合規主管收起文件。離開。走廊的門關上。", sfx: "door-latch", background: Background.Chapter_18_Ch18_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "詢問室裡剩下三浦、日下部和澪。", background: Background.Chapter_18_Ch18_Act2_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "他不會自己交出來。", background: Background.Chapter_18_Ch18_Act2_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "他不會。但他已經保存了。原始版本不能覆蓋。這就夠了。晚間的遮蔽資料——分類欄會在裡面。", background: Background.Chapter_18_Ch18_Act2_S0, portrait: Portrait.MiuraNaoko_Base },

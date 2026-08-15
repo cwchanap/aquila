@@ -1,7 +1,7 @@
 # HPA-606 Per-Story Audio Plans and Authoring Guidance
 
 Date: 2026-08-13
-Status: Revised after written-spec review; awaiting approval for implementation planning
+Status: Implemented in PR #55 (feat(stories): add per-story audio plans)
 
 ## Goal
 

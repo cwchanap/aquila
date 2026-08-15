@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:20。調查媒體辦公室。", background: Background.Chapter_15_Ch15_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:20。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在桌前。桌燈的光比剛才暗了一格。她把燈臂壓低了一些。光圈縮小。只照到筆記本和手機。", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕上是公共文件查詢系統的介面。她輸入了文件名稱——設定檔目的記述書。", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "結果出來了。一條。", background: Background.Chapter_15_Ch15_Act6_S0 },
@@ -104,7 +104,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機拿出來。看了一眼。沒有新訊息。琴音今天沒有傳任何東西。", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放回桌上。站起來。把桌燈關掉。辦公室暗下來。只有窗外的路燈透進一點光。", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把筆記本收進背包。拉鏈拉好。鎖櫃的鑰匙在內袋裡。草圖信封在鎖櫃裡。重新封好了。", background: Background.Chapter_15_Ch15_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:30。她關門。鎖上。", background: Background.Chapter_15_Ch15_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:30。她關門。鎖上。", bgm: "night-street", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外面是星期六的深夜。距星期一 06:13——約一日七小時四十三分鐘。", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走進夜裡。背包裡有筆記本。筆記本裡有六條可確認。四條合理推測。八條仍不能成立。有一個比對表。有四個名字。有一份不公開文件的目錄。有三個合法追查入口。和一個保留了「如果」的推測。", background: Background.Chapter_15_Ch15_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "同一件東西。四個名字。尖銳物。刃物狀金屬片。離線設定載體。千田交給我的東西。", background: Background.Chapter_15_Ch15_Act6_S0 },

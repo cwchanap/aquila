@@ -4,7 +4,15 @@
 small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen off, desk lamp providing warm focused light on notebook and documents, window showing dark residential street, deeper night palette with lamp glow dominant, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：18:30。調查媒體辦公室。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：澪推門進來。前輩已經走了。桌上留了一張便條——回覆信已存檔，下週再討論後續。辦公室裡只有她一個人。螢光燈管嗡了一聲。
 
@@ -203,6 +211,10 @@ small investigation media office at night, cramped room with two desks and a pub
 **旁白**：她把手機放回桌上。站起來。把桌燈關掉。辦公室暗下來。只有窗外的路燈透進一點光。
 
 **旁白**：她把筆記本收進背包。拉鏈拉好。鎖櫃的鑰匙在內袋裡。信封在鎖櫃裡。
+
+```bgm
+night-street
+```
 
 **旁白**：22:00。她關門。鎖上。
 

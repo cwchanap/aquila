@@ -4,6 +4,10 @@
 same archive retired-hardware viewing area, display cases of retired emergency communication equipment along one wall, fluorescent ceiling light, reading table with an open manual and an archival box, muted institutional palette with grey-green and beige tones, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：12:15。東京都防災學習館附設研修資料室。退役硬體閱覽區。
 
 **旁白**：研修資料室的後方有一個隔間。門上寫著——退役硬體閱覽區。裡面比前面小。三面牆沿著放展示櫃。櫃裡是退役通信設備——舊型手持終端、退役控制台面板、幾組拆解過的模組。中間有兩張閱覽桌。日光燈。沒有窗。
@@ -136,6 +140,10 @@ same archive retired-hardware viewing area, display cases of retired emergency c
 
 **朝倉澪**：好。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：她拿起手機。一頁一頁拍。
 
 **旁白**：封面。交付編號。改訂日期。退役標記。目錄頁。第一章概要。第二章載體照片頁。結構詳圖。第三章正常拔出。第四章異常取出隔離處理。第五章標籤規則。第六章研修鏡像注意事項。
@@ -151,6 +159,10 @@ same archive retired-hardware viewing area, display cases of retired emergency c
 **旁白**：離線設定載體。
 
 **朝倉澪** [shocked]：（內心）⋯⋯離線設定載體。這是手冊給它的名字。離線。設定。載體。三個詞。不是武器。不是刀片。不是尖銳物。是——載體。用來攜帶設定版本的東西。用來在網路中斷時把設定帶到現場的東西。用來讓控制台承認一個版本的東西。
+
+```sfx
+pa-announcement
+```
 
 **朝倉澪** [shocked]：（內心）⋯⋯第一輪。車廂裡。千田把它塞給我的時候。車廂的安全系統——
 
@@ -211,6 +223,10 @@ same archive retired-hardware viewing area, display cases of retired emergency c
 **旁白**：她走出退役硬體閱覽區。穿過研修資料室。金屬架上的盒裝資料在日光燈下排列著。紙本目錄抽屜靜靜地沿牆排開。樓下還有學校團體的聲音。
 
 **旁白**：她走下樓梯。穿過大廳。防災模型展示區。地震體驗區。退役消防設備。小學生已經走了。大廳安靜了一些。
+
+```bgm
+grey-city
+```
 
 **旁白**：她走出防災學習館。外面的空氣比裡面暖。一點半的太陽。灰白色。不是很亮。
 

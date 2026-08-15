@@ -208,6 +208,12 @@
       "prompt": "Overcast day street and transit walking state, muted traffic and wind textures, no warmth, seamless loop",
       "durationMs": 90000,
       "loop": true
+    },
+    {
+      "key": "fluorescent-hum",
+      "type": "sfx",
+      "prompt": "Fluorescent tube hum, office and archive texture layer with ignition and off registers, seamless loop",
+      "durationMs": 20000
     }
   ]
 }

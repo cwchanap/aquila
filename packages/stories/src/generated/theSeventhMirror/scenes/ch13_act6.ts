@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:00。兼職辦公室。", background: Background.Chapter_13_Ch13_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪用鑰匙開門。辦公室裡沒有人。前輩今天沒排班。兩張桌子。一台公共資料終端。螢光燈管嗡了一聲才亮起來，像還沒睡醒。", background: Background.Chapter_13_Ch13_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:00。兼職辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_13_Ch13_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪用鑰匙開門。辦公室裡沒有人。前輩今天沒排班。兩張桌子。一台公共資料終端。螢光燈管嗡了一聲才亮起來，像還沒睡醒。", sfx: "fluorescent-hum", background: Background.Chapter_13_Ch13_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她先把背包放下。從裡面拿出那個密封信封。", background: Background.Chapter_13_Ch13_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第三份。", background: Background.Chapter_13_Ch13_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "信封裡是鏡子正反面的照片列印件。不是雲端副本。不是手機相簿。是紙。是可以在沒有網路的情況下打開的東西。", background: Background.Chapter_13_Ch13_Act6_S0 },

@@ -4,6 +4,10 @@
 small Tokyo apartment interior, late afternoon light through a single window, cluttered desk with notebooks and a closed drawer, muted warm-grey palette with thin amber from low sun, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：15:20。朝倉家。
 
 **旁白**：澪把門帶上。沒有開燈。下午的光從窗戶斜進來，把書桌切成一半亮一半暗。
@@ -81,6 +85,10 @@ small Tokyo apartment interior, late afternoon light through a single window, cl
 **朝倉澪** [sad]：（內心）⋯⋯我不讓你只剩一個編號。上面那行是系統寫給你的名字。下面這行是我寫給你的名字。
 
 **旁白**：她看著那兩行。一行有問號。一行沒有。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震動。
 

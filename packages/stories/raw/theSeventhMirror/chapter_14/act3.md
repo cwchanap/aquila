@@ -4,6 +4,10 @@
 family restaurant near the council building, bright daytime interior, booth seating by window, simple table with water glass and notebook, warm overhead lighting mixing with afternoon sun through glass, casual muted palette with soft yellows and beiges, visual-novel background art, medium shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：11:45。資料室附近的家庭餐廳。
 
 **旁白**：澪坐在靠窗的位子。點了一杯水。沒有點餐。

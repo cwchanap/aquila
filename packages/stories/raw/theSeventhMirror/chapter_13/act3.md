@@ -4,6 +4,10 @@
 police station technical briefing room, fluorescent lighting, long table with a laptop and printed documents, projector screen showing a de-identified cropped image, institutional grey walls, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：17:36。灣岸署。技術說明室。
 
 **旁白**：比物件確認室大一點。一張長桌。桌上有一台筆電。幾份列印文件。牆上有一面投影螢幕，沒有開。

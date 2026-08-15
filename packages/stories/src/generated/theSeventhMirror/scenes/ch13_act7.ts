@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:40。同一間辦公室。同一台終端。", background: Background.Chapter_13_Ch13_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:40。同一間辦公室。同一台終端。", bgm: "sleepless-vigil", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪在搜尋欄裡換了幾個字。", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灣岸新交通。防災同步測試。採購。", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "結果比上一輪多。地方政府採購資訊系統的公開附件。交通公司的測試公告。防災同步測試概要。她一個一個點開。", background: Background.Chapter_13_Ch13_Act7_S0 },
@@ -28,7 +28,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她回到搜尋結果。點開第二份文件。交通公司的測試公告。格式不同。但同樣——系統名稱寫著 TKS-SYNC，沒有設定檔欄，沒有同步群欄。", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第三份。防災同步測試概要。同樣。系統名稱有。設定檔沒有。同步群沒有。", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯三份現行公開文件。都沒有設定檔名稱。都沒有同步群。不是某一份漏了。是現行版本統一刪除。公開資料的格式被整理過——外面的人看不到實際配置。", background: Background.Chapter_13_Ch13_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她靠回椅背。螢光燈管又嗡了一聲。", background: Background.Chapter_13_Ch13_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她靠回椅背。螢光燈管又嗡了一聲。", sfx: "fluorescent-hum", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小野寺在警署說過一句話。設定檔名稱和群組映射會隨版本更新。現行手冊未必等於事件當晚配置。當時我沒多想——任何工程師都知道版本會變。可是現在——", background: Background.Chapter_13_Ch13_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐直。看著螢幕上那三份沒有設定檔欄的公開文件。", background: Background.Chapter_13_Ch13_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯現行版本把這些欄位拿掉了。但版本會更新。意思是——以前有舊版本。舊版本是在欄位被拿掉之前製作的。舊版本裡——這些欄位還在嗎？", background: Background.Chapter_13_Ch13_Act7_S0, portrait: Portrait.AsakuraMio_Determined },

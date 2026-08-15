@@ -4,6 +4,10 @@
 small police station interview room, fluorescent ceiling lighting, plain table with two chairs, institutional grey walls, a camera tripod in the corner, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：17:02。灣岸署。物件確認室。
 
 **旁白**：一間不大的房間。灰牆。日光燈。一張桌子。兩把椅子。角落有一台相機腳架。
@@ -53,6 +57,10 @@ small police station interview room, fluorescent ceiling lighting, plain table w
 **朝倉澪** [determined]：可以。請戴手套。
 
 **旁白**：刑警戴上棉手套。把鏡子從封袋裡取出來。放在桌上。正面朝上。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：他拿起相機。拍正面。拍背面。拍側面。每一面兩張。閃光燈沒有開。
 
@@ -105,6 +113,10 @@ small police station interview room, fluorescent ceiling lighting, plain table w
 **朝倉澪** [determined]：（內心）⋯⋯它回來了。一個小時。拍照。測量。斜光。簽名。然後它回到我手裡。沒有被扣留。沒有被交給研究中心。沒有被交給 TKS。我帶它進來，我帶它出去。
 
 **旁白**：她把封袋放進背包。拉鏈拉好。
+
+```sfx
+door-knock
+```
 
 **旁白**：17:35。門被敲了兩下。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:45。資料室附近的家庭餐廳。", background: Background.Chapter_14_Ch14_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:45。資料室附近的家庭餐廳。", bgm: null, background: Background.Chapter_14_Ch14_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在靠窗的位子。點了一杯水。沒有點餐。", background: Background.Chapter_14_Ch14_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把筆記本翻開。放在桌上。手機放在旁邊。螢幕朝下。", background: Background.Chapter_14_Ch14_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先跳過私人筆記。只抄文件。A 和 B。只寫紙上有的。不混進我記得的。", background: Background.Chapter_14_Ch14_Act3_S0, portrait: Portrait.AsakuraMio_Determined },

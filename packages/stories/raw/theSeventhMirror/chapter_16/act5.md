@@ -4,6 +4,10 @@
 small investigation media office, Sunday evening, desk lamp casting warm circle of light on open notebook and three printed pages, fluorescent light off, darker than afternoon, quiet evening Tokyo street silence outside window, muted warm and cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：17:00。調查媒體辦公室。
 
 **旁白**：澪推門進來。前輩在。桌燈亮著。螢光燈沒開。
@@ -21,6 +25,10 @@ small investigation media office, Sunday evening, desk lamp casting warm circle 
 **旁白**：她打開通訊軟體。找到佐伯的對話。傳送三張裁切圖。
 
 **旁白**：等。
+
+```sfx
+notification-beep
+```
 
 **旁白**：17:25。佐伯回覆了。
 
@@ -79,6 +87,10 @@ small investigation media office, Sunday evening, desk lamp casting warm circle 
 **調查媒體前輩**：TKS 法務。昨天我追問了 Chapter 14 的後續——小野寺在警署的說法。他們說今天會回。應該快了。
 
 **朝倉澪** [determined]：（內心）⋯⋯TKS 法務第二封回覆。小野寺 Chapter 13 的說法。他們要正式回覆了。昨天第一封是防禦性收窄——退役教材不代表現行配置。歷史名稱可能是維護用語。今天第二封——可能是針對小野寺的說法。他們會怎麼處理。
+
+```sfx
+notification-beep
+```
 
 **旁白**：19:00。前輩桌上的終端傳來一聲提示音。
 

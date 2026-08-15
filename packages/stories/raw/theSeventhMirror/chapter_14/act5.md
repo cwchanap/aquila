@@ -4,6 +4,10 @@
 local council archive reading room, rows of wooden desks with green-shaded lamps, shelves of bound documents behind glass, afternoon light through high windows, quiet institutional atmosphere, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：14:20。都政資料閱覽室。
 
 **旁白**：澪第二次走進來。上午的閱覽申請還在櫃台。她出示身分證件。填寫追加調閱單。報上同一個資料包編號。
@@ -11,6 +15,10 @@ local council archive reading room, rows of wooden desks with green-shaded lamps
 **資料室職員**：追加調閱——運用結果速報及復舊確認摘要。同一資料包內。請在閱覽室等候。閉館前三十分鐘為拍攝截止時間。
 
 **朝倉澪**：好。
+
+```sfx
+trolley-wheels
+```
 
 **旁白**：她坐到上午同一個位置。綠罩燈。木桌。安靜。幾分鐘後，職員推著資料車過來。一個新的文件夾。比上午的厚。
 
@@ -88,6 +96,10 @@ local council archive reading room, rows of wooden desks with green-shaded lamps
 
 **旁白**：別紙 C——設定檔別名對照表。
 
+```bgm
+stop
+```
+
 **旁白**：她的手指停在那一行。
 
 **朝倉澪** [determined]：（內心）⋯⋯別紙 C。設定檔別名對照表。
@@ -145,6 +157,10 @@ local council archive reading room, rows of wooden desks with green-shaded lamps
 **佐伯達也**：可以記錄。不要解讀。
 
 **旁白**：她把手機放回桌上。看了一眼時間。15:40。閉館前三十分鐘。拍攝截止時間快到了。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她拿起手機。對著文件 C 逐頁拍攝。封面。目錄。正文。附件目錄。別紙 C 替代頁。每一頁都包含前後文。不只拍關鍵欄位。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:15。地方議會／都政資料閱覽室。", background: Background.Chapter_14_Ch14_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:15。地方議會／都政資料閱覽室。", bgm: "institutional-drone", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪在櫃台前出示身分證件。", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "朝倉澪小姐，九點的預約。資料包編號確認了，麻煩填一下閱覽申請。", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她填寫申請單。姓名。證件號碼。調閱目的——公開資料查證。資料包編號。", background: Background.Chapter_14_Ch14_Act2_S0 },
@@ -94,7 +94,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "讓我確認一下頁面。", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "職員走過來。翻看附件三和附件四。確認沒有被拆釘。確認頁面完整。", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "可以了。拍照的時候要拍完整頁面，包括頁碼和配布日期。", background: Background.Chapter_14_Ch14_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪拿起手機。一頁一頁拍。", background: Background.Chapter_14_Ch14_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪拿起手機。一頁一頁拍。", sfx: "camera-shutter", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "附件三封面。配布日期。委員會章。變更申請完整頁。臨時映射那一欄。申請編號。", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "附件四封面。參數附頁完整頁。四個通道的補正值。服務名稱與發送端識別。同一申請編號。", background: Background.Chapter_14_Ch14_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不只拍 G07 或 7000ms 的孤立格子。她拍完整頁。拍前後文。拍頁碼。拍收件戳。", background: Background.Chapter_14_Ch14_Act2_S0 },

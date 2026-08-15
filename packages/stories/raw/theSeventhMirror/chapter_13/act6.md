@@ -4,7 +4,15 @@
 small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, stacks of document folders and printed web archives on every surface, window showing dark residential street with distant elevated train tracks, muted cool palette with faint monitor glow, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：20:00。兼職辦公室。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：澪用鑰匙開門。辦公室裡沒有人。前輩今天沒排班。兩張桌子。一台公共資料終端。螢光燈管嗡了一聲才亮起來，像還沒睡醒。
 

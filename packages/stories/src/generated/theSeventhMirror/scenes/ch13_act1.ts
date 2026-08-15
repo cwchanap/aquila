@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:20。朝倉家。", background: Background.Chapter_13_Ch13_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:20。朝倉家。", bgm: "sleepless-vigil", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪把門帶上。沒有開燈。下午的光從窗戶斜進來，把書桌切成一半亮一半暗。", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有立刻去拿鏡子。", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先確認狀態。和出門前一樣。不能有任何新東西出現在它上面。", background: Background.Chapter_13_Ch13_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -45,7 +45,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "朝倉悠真。", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我不讓你只剩一個編號。上面那行是系統寫給你的名字。下面這行是我寫給你的名字。", background: Background.Chapter_13_Ch13_Act1_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那兩行。一行有問號。一行沒有。", background: Background.Chapter_13_Ch13_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", background: Background.Chapter_13_Ch13_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", sfx: "notification-beep", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起來。螢幕亮起。一則訊息。", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "晚上回來嗎？我把吃的放妳家門口。", background: Background.Chapter_13_Ch13_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯琴音。", background: Background.Chapter_13_Ch13_Act1_S0, portrait: Portrait.AsakuraMio_Determined },

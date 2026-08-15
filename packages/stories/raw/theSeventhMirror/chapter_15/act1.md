@@ -4,6 +4,10 @@
 small investigation media office, Saturday morning pale light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light mixing with cool grey daylight, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：07:20。星期六。調查媒體辦公室。
 
 **旁白**：澪推門進來。前輩已經到了。比平日早。桌上的終端螢幕亮著。螢光燈管還沒開，只有窗外的灰白光和螢幕的冷光混在一起。
@@ -167,6 +171,10 @@ small investigation media office, Saturday morning pale light through a single w
 **訊息**：好。
 
 **旁白**：她把手機放下。看著筆記本。
+
+```sfx
+notification-beep
+```
 
 **旁白**：08:30。前輩那邊的終端傳來一聲提示音。前輩看了一眼。
 

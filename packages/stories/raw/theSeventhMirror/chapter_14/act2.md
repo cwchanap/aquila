@@ -4,6 +4,10 @@
 local council archive reading room, rows of wooden tables with green banker's lamps, shelves of bound documents behind glass doors, quiet institutional atmosphere, cool fluorescent overhead lighting with warm lamp accents, muted beige and grey-green palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：10:15。地方議會／都政資料閱覽室。
 
 **旁白**：澪在櫃台前出示身分證件。
@@ -179,6 +183,10 @@ local council archive reading room, rows of wooden tables with green banker's la
 **旁白**：職員走過來。翻看附件三和附件四。確認沒有被拆釘。確認頁面完整。
 
 **資料室職員**：可以了。拍照的時候要拍完整頁面，包括頁碼和配布日期。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：澪拿起手機。一頁一頁拍。
 

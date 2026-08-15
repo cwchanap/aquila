@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:00。監督委員會辦公大樓。公開引用目錄查詢終端室。", background: Background.Chapter_16_Ch16_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:00。監督委員會辦公大樓。公開引用目錄查詢終端室。", bgm: "institutional-drone", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間很小。幾台查詢終端靠牆排列。沒有窗戶。螢光燈。很安靜。星期日。只有她一個人。", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐在終端前。螢幕亮著。查詢介面。監督委員會歷年引用目錄。", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她輸入——TOKYO。", background: Background.Chapter_16_Ch16_Act4_S0 },
@@ -50,11 +50,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第四日主題落地——東京不是城市。", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯東京不是城市。從三份文件拼出來的。議會摘要說它不是地域配置。驗收說明書說它不指涉地名。監督委員會說公開名是偽裝。三者拼合——東京不是城市。這是第四日的主題。今天落地了。", background: Background.Chapter_16_Ch16_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但「東京是什麼」——仍不知道。情境。同步用途。情境屬性。這些詞出現了。但它們的具體內容——不知道。情境是什麼情境。同步的是什麼。情境屬性是什麼屬性。三份文件都沒有回答。它們只回答了——東京不是什麼。不是城市。不是地名。不是地域配置。不是指涉。是什麼——仍不知道。", background: Background.Chapter_16_Ch16_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:00。她拍下螢幕。條目。欄位。目錄名稱。查詢時間。", background: Background.Chapter_16_Ch16_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:00。她拍下螢幕。條目。欄位。目錄名稱。查詢時間。", sfx: "camera-shutter", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:15。她確認沒有其他 TOKYO 相關條目。", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有。只有一條。", background: Background.Chapter_16_Ch16_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:20。她站起來。走出終端室。", background: Background.Chapter_16_Ch16_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:25。她走出監督委員會辦公大樓。外面是星期日下午。光線開始暗了。", background: Background.Chapter_16_Ch16_Act4_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:25。她走出監督委員會辦公大樓。外面是星期日下午。光線開始暗了。", bgm: "grey-city", background: Background.Chapter_16_Ch16_Act4_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯三份。全部調完了。議會。驗收。監督委員會。三個獨立來源。三份文件。同一件事——東京不是城市。回去。回辦公室。整理。與佐伯確認證據邊界。", background: Background.Chapter_16_Ch16_Act4_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向車站。", background: Background.Chapter_16_Ch16_Act4_S1 },
 ];

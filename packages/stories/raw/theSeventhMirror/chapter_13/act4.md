@@ -4,6 +4,10 @@
 police station evidence confirmation room, cold white fluorescent lighting, metal desk with evidence log forms and a transparent evidence bag, scale ruler and measuring tools, institutional claustrophobic atmosphere, late afternoon light filtered through frosted window, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:10。物件確認室。
 
 **旁白**：小野寺把預約頁裁切圖還給承辦人。他的手指在紙邊停了一下，像在確認自己沒有留下指紋，又像在確認自己沒有再多看一眼。然後他轉向承辦人。

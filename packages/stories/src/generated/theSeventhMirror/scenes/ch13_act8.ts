@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:25。同一間辦公室。終端螢幕上的光變了一點。從採購資料庫跳到了另一個頁面。", background: Background.Chapter_13_Ch13_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:25。同一間辦公室。終端螢幕上的光變了一點。從採購資料庫跳到了另一個頁面。", bgm: "sleepless-vigil", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪從採購案號往回追。現行附件的文件編號指向一個更早的來源——地方議會安全委員會的會議附件。她找到了一個快取頁面。頁面標頭寫著會議日期。日期在灣岸測試批准之前。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這份附件的製作日期，比現行採購版早。比測試批准早。比——公開資安遮蔽模板統一之前還早。", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她點開附件。頁面載入得很慢。舊格式。舊排版。表格的欄位和現行版不一樣。", background: Background.Chapter_13_Ch13_Act8_S0 },
@@ -18,7 +18,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "系統——TKS-SYNC。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "設定檔名稱——", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "TOKYO。", background: Background.Chapter_13_Ch13_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指停在觸控板上。沒有動。", background: Background.Chapter_13_Ch13_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指停在觸控板上。沒有動。", bgm: null, background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯TOKYO。", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上那五個字母。全大寫。英數字。不是地名欄。不是實施區域欄。實施區域欄已經寫了灣岸新交通測試區間。TOKYO 在旁邊那一格。設定檔名稱那一格。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯地區欄寫的是灣岸新交通。設定檔欄寫的是 TOKYO。兩個不同的欄。兩個不同的東西。如果 TOKYO 只是東京的地區設定——為什麼實施區域欄不直接寫東京都？為什麼需要兩個欄位？為什麼地區是灣岸新交通，設定檔卻是 TOKYO？", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Shocked },
@@ -57,8 +57,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩者映射：未取得。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯未取得。不是不存在。是我還沒拿到。同步群欄被遮蔽了。設定檔名稱和同步群之間的關係，在這份文件裡看不到。要看到——需要找到同步群欄沒有被遮蔽的版本。需要找到更舊的版本。或者——需要找到另一份沒有被模板整理過的文件。", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把筆放下。靠回椅背。", background: Background.Chapter_13_Ch13_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:55。螢光燈管又嗡了一聲。辦公室裡沒有別的聲音。窗外的高架軌道偶爾傳來一輛晚班車的聲音。很輕。像什麼東西劃過夜色。", background: Background.Chapter_13_Ch13_Act8_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小野寺說——設定檔名稱和群組映射會隨版本更新。他說的是普通技術概念。但現在它變成了我的調查方向。舊版本保留了設定檔名稱。舊版本的同步群欄被遮蔽。更舊的版本——有沒有可能連同步群都還沒遮掉？", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:55。螢光燈管又嗡了一聲。辦公室裡沒有別的聲音。窗外的高架軌道偶爾傳來一輛晚班車的聲音。很輕。像什麼東西劃過夜色。", sfx: "fluorescent-hum", background: Background.Chapter_13_Ch13_Act8_S0 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小野寺說——設定檔名稱和群組映射會隨版本更新。他說的是普通技術概念。但現在它變成了我的調查方向。舊版本保留了設定檔名稱。舊版本的同步群欄被遮蔽。更舊的版本——有沒有可能連同步群都還沒遮掉？", sfx: "train-hum", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯下一步。查設定檔的版本歷史。比較現行附件和舊快取。找出被刪除的群組映射。這不是小野寺私下遞給我的答案。這是我自己從版本差異推導出來的問題。", background: Background.Chapter_13_Ch13_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻到筆記本最前面。找到她之前寫的那個問題。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這套系統用什麼資料，把他們分進 G07？", background: Background.Chapter_13_Ch13_Act8_S0 },
@@ -72,7 +72,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "設定檔名稱——TOKYO。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "地區欄已經寫著灣岸新交通，另一格卻又寫著 TOKYO。它可能仍然只是東京用設定；但從這一夜開始，「東京」對澪而言，不再只是地名。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她合上筆記本。收進背包。", background: Background.Chapter_13_Ch13_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:15。她關燈。鎖門。", background: Background.Chapter_13_Ch13_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:15。她關燈。鎖門。", bgm: "night-street", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外面是星期四的深夜。距星期一 06:13——大約還有三天七小時五十八分鐘。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走進夜裡。背包裡有筆記本。筆記本裡有一個五個字母的英文字。和一個還沒有被回答的問題。", background: Background.Chapter_13_Ch13_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "為什麼 TOKYO 和灣岸新交通要分開寫？它們到底是不是同一個東西？", background: Background.Chapter_13_Ch13_Act8_S0 },

@@ -4,6 +4,10 @@
 small investigation media office late at night, same cramped room, desk lamp turned low casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：20:30。調查媒體辦公室。
 
 **旁白**：澪坐在桌前。桌燈的光比剛才暗了一格。她把燈臂壓低了一些。光圈縮小。只照到筆記本和手機。
@@ -181,6 +185,10 @@ small investigation media office late at night, same cramped room, desk lamp tur
 **旁白**：她走到門口。停了一秒。
 
 **朝倉澪** [determined]：（內心）⋯⋯七小時四十三分鐘。如果白光再來——就剩這麼多。第四日結束了。東京不是城市。從一開始就不是。千田叫我不要救的——可能從來不是一座城市。高度吻合。不是證明。但方向對了。
+
+```bgm
+night-street
+```
 
 **旁白**：她開門。走出去。鎖上。
 

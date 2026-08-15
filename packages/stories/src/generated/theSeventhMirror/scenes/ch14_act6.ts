@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:30。調查媒體辦公室。", background: Background.Chapter_14_Ch14_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進來。前輩已經走了。桌上留了一張便條——回覆信已存檔，下週再討論後續。辦公室裡只有她一個人。螢光燈管嗡了一聲。", background: Background.Chapter_14_Ch14_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:30。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_14_Ch14_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進來。前輩已經走了。桌上留了一張便條——回覆信已存檔，下週再討論後續。辦公室裡只有她一個人。螢光燈管嗡了一聲。", sfx: "fluorescent-hum", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她先沒有坐下。打開背包最內層。拉鏈拉開。拿出那個牛皮紙信封。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "密封的。膠帶完好。裡面是一張鏡背裁切照片。從那天開始就一直跟著她。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這份不能留在家裡。抽屜裡已經有照片和儲存卡了。這個密封件——放鎖櫃。跟案件資料分開。跟私人筆記分開。獨立備份。家裡如果出事——至少還有這一份。", background: Background.Chapter_14_Ch14_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -106,7 +106,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:55。她把手機拿出來。看了一眼。沒有新訊息。琴音早上那句「早上有吃嗎」還在對話紀錄裡。早上回了她一個「有」字之後，琴音沒有再傳新訊息。也沒有新增任何東西。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放回桌上。站起來。把桌燈關掉。辦公室暗下來。只有窗外的路燈透進一點光。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把筆記本收進背包。拉鏈拉好。鎖櫃的鑰匙在內袋裡。信封在鎖櫃裡。", background: Background.Chapter_14_Ch14_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:00。她關門。鎖上。", background: Background.Chapter_14_Ch14_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:00。她關門。鎖上。", bgm: "night-street", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外面是星期五的深夜。距星期一 06:13——大約兩天八小時十三分鐘。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走進夜裡。背包裡有筆記本。筆記本裡有三份文件的抄錄。有一個缺失的附件名稱。有三個不畫等號的詞。和一個不是她自己數出來的七秒。", background: Background.Chapter_14_Ch14_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "東京可能仍然只是東京。", background: Background.Chapter_14_Ch14_Act6_S0 },

@@ -4,6 +4,10 @@
 archive technical-records area, public query terminal with microfilm reader, rows of metal shelves holding retired public-safety equipment manuals and bound procurement records, faded institutional green walls, afternoon light through high windows casting long pale rectangles on linoleum floor, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：13:50。防災學習館附設研修資料室。技術紀錄區。
 
 **旁白**：澪從退役硬體閱覽區走過來。走廊盡頭是另一個房間。門上貼著一張標示——公共安全技術紀錄。館內查詢終端。微縮膠片閱讀機。
@@ -144,6 +148,10 @@ archive technical-records area, public query terminal with microfilm reader, row
 
 **旁白**：她回到鐵架。翻開兩本裝訂冊的封面內頁。把館藏登錄編號、送存日期、主管單位全部抄進筆記本。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：然後她拿起手機。對著採購驗收附件的簽署欄那一頁拍了一張。包含完整頁面。頁碼。裝訂冊編號。不只是簽署欄。
 
 **旁白**：又翻到研討會論文集的講者名單那一頁。拍了一張。同樣包含完整頁面。
@@ -173,6 +181,10 @@ archive technical-records area, public query terminal with microfilm reader, row
 **旁白**：不等於千田當晚做過。
 
 **旁白**：界線。清楚。不能跨。
+
+```bgm
+grey-city
+```
 
 **旁白**：15:10。她走出資料室大門。外面的空氣比館內冷。下午的光已經開始變弱。距星期一 06:13——大約一天十五小時四十三分鐘。
 

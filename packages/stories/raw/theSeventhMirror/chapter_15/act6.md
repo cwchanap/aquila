@@ -4,6 +4,10 @@
 small investigation media office late at night, same cramped room, desk lamp turned lower casting smaller warmer circle of light on open notebook fresh page, fluorescent light off, darker and colder than before, quiet late-night Tokyo street silence outside window, deeper night palette with only lamp glow, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：21:20。調查媒體辦公室。
 
 **旁白**：澪坐在桌前。桌燈的光比剛才暗了一格。她把燈臂壓低了一些。光圈縮小。只照到筆記本和手機。
@@ -199,6 +203,10 @@ small investigation media office late at night, same cramped room, desk lamp tur
 **旁白**：她把手機放回桌上。站起來。把桌燈關掉。辦公室暗下來。只有窗外的路燈透進一點光。
 
 **旁白**：她把筆記本收進背包。拉鏈拉好。鎖櫃的鑰匙在內袋裡。草圖信封在鎖櫃裡。重新封好了。
+
+```bgm
+night-street
+```
 
 **旁白**：22:30。她關門。鎖上。
 

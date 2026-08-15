@@ -1,16 +1,16 @@
 # HPA-607 Seventh Mirror Audio Audit Implementation Plan
 
-**Goal:** Complete a read-only-first audit, then author the final SFX/BGM direction across all 28 chapters of The Seventh Mirror using the HPA-606 fenced-block + audio-plan + compiler/report workflow.
+**Goal:** Audit all 28 chapters read-only first, then author the final SFX/BGM direction using the existing fenced-block + `audio-plan.json` + compiler/report workflow, with every act self-contained for BGM when entered directly.
 
-**Architecture:** Markdown acts remain placement truth, `docs/audio-plan.json` remains cue identity/generation-intent truth, `audio:report` remains the only derived usage inventory, and Linear HPA-607 stores the human working checkpoint/final summary. No second repo inventory or new audio tooling.
+**Architecture:** Markdown acts own SFX placement and scene-entry BGM state. `docs/audio-plan.json` owns cue identity/generation intent. Compiler failures own hard cue validation. `audio:report` owns derived usage/unused facts. Agent B owns semantic audio review. Linear owns restart-safe human checkpoints. No second repo inventory or new audio tooling.
 
-**Tech stack:** Markdown, JSON/Zod story schema, TypeScript story compiler, Bun/Vitest, existing `reviewing-written-stories` Agent B.
+**Tech stack:** Markdown, JSON/Zod, TypeScript story compiler, Bun/Vitest, existing `reviewing-written-stories` Agent B.
 
 **Design:** `docs/superpowers/specs/2026-08-14-hpa-607-seventh-mirror-audio-audit-design.md`
 
 ---
 
-## Task 1: Capture the clean HPA-606 baseline
+## Task 1: Capture a clean HPA-606 baseline
 
 **Read:**
 
@@ -18,111 +18,123 @@
 - `packages/stories/src/compiler/parse-scene.ts`
 - `packages/stories/src/compiler/cli.ts`
 - `packages/stories/src/compiler/audio-usage.ts`
+- `apps/web/src/lib/audio/bgm-transition.ts`
+- `apps/web/src/lib/audio/bgm-player.ts`
 - `.agents/skills/writing-story-acts/SKILL.md`
 - `.agents/skills/reviewing-written-stories/SKILL.md`
 - `apps/web/src/lib/audio/sfx-catalog.ts`
 - `apps/web/src/lib/audio/bgm-catalog.ts`
 - `apps/web/src/lib/__tests__/audio-catalog-plan.test.ts`
-- `packages/stories/package.json`
 - root `package.json`
 
-### Step 1: Record the exact implementation base commit
+### Step 1: Record the implementation base
 
 ```bash
 git rev-parse HEAD
 ```
 
-Keep the SHA for the final HPA-607 Linear summary. Do not create a committed audit file.
+Keep the SHA for the final Linear summary. Do not create a committed audit file.
 
-### Step 2: Confirm the live bootstrap before editing
+### Step 2: Confirm the live bootstrap
 
-The current starting hypotheses on `main` are:
+Starting hypotheses on `main`:
 
 - SFX: `door-open`, `notification-beep`, `impact`
 - BGM: `dawn-apartment`, `tension-pulse`
 
-Confirm their current placements and the matching five local placeholder mappings before changing anything.
+Confirm their existing placements and the matching five local placeholder mappings.
 
-### Step 3: Verify the repository baseline
+### Step 3: Verify clean generated output before content edits
 
 ```bash
-bun --filter @aquila/stories compile
+bun run compile:check
 bun --filter @aquila/stories test
 bun --filter @aquila/stories audio:report theSeventhMirror
 ```
 
 Expected:
 
-- compile succeeds;
+- compile-generated output already matches tracked files;
 - story tests pass;
-- report contains the live HPA-606 usage and any current `unused` rows;
-- no assumption is made that the report contains “unresolved” keys—unknown/type-mismatched cues are compiler failures instead.
+- report contains current usage plus any current `unused` rows;
+- unknown/type-mismatched cues remain compiler failures, not successful report rows.
+
+Stop and resolve baseline drift before beginning HPA-607 content work.
 
 ---
 
-## Task 2: Perform the full read-only audio-direction audit
+## Task 2: Perform Pass 1 as seven restart-safe read-only blocks
 
-**Read only:**
+### Step 1: Read story-wide context once
 
-- `packages/stories/raw/theSeventhMirror/canon/*.md`
+Read:
+
+- `packages/stories/raw/theSeventhMirror/canon/`
 - `packages/stories/raw/theSeventhMirror/docs/00_high_level_plan_final.md`
-- chapter plan documents under `packages/stories/raw/theSeventhMirror/docs/`
-- every act under `chapter_1/` through `chapter_28/`, in story order
 
-### Step 1: Read canon and high-level structure first
+Identify story-wide motifs, sustained emotional/music states, recurring locations/objects, major reveal bands, and likely intentional-silence states.
 
-Identify story-wide recurring elements that may deserve stable audio identity:
+Do not edit acts.
 
-- physical/object motifs;
-- distinctive locations/environments;
-- supernatural/mirror/glitch motifs;
-- repeated investigation, grief, pursuit, revelation, or quiet states;
-- BGM transitions and deliberate silence.
+### Step 2: Audit chapters 1–4 read-only
 
-Do not edit acts yet.
+Read the acts in story order. Keep `chapter_1_plan.md` through `chapter_4_plan.md` available and consult relevant sections when they clarify reveal timing, recurring locations, motifs, or emotional intent. Do not require a second cover-to-cover plan read when the authored acts already make the point clear.
 
-### Step 2: Read all 28 chapters in story order
+Track privately:
 
-For every chapter, note privately:
+- candidate reusable SFX identities;
+- intended BGM state at each act entry;
+- genuine mid-act BGM changes;
+- deliberate silence;
+- reuse of prior identities;
+- deferred ideas.
 
-- candidate SFX moments that add information, rhythm, atmosphere, or motif continuity;
-- likely BGM start/change/stop boundaries;
-- whether an earlier identity should recur;
-- scenes that should remain silent;
-- ideas worth deferring rather than forcing into HPA-607.
+Post one short HPA-607 Linear checkpoint for chapters 1–4.
 
-Do not commit scratch notes or a second palette file.
+### Step 3: Repeat the same read-only checkpoint for the remaining blocks
 
-### Step 3: Reconcile the working palette
+In order:
 
-Reduce near-duplicate candidates and choose stable kebab-case identities.
+1. chapters 5–8
+2. chapters 9–12
+3. chapters 13–16
+4. chapters 17–20
+5. chapters 21–24
+6. chapters 25–28
+
+For each block:
+
+- read acts in order;
+- consult only the relevant corresponding chapter-plan sections for context required by HPA-607;
+- do not edit Markdown;
+- post one concise Linear checkpoint before moving on.
+
+These comments are the restart seam. Do not commit scratch notes or a second palette file.
+
+### Step 4: Reconcile the complete working direction
+
+After all seven blocks, reconcile near-duplicates and post one pre-authoring HPA-607 comment containing:
+
+- proposed stable SFX/BGM identities and kind;
+- deliberately silent states/sections;
+- deferred ideas;
+- proposed bootstrap rename/merge decisions with rationale.
 
 Rules:
 
-- reuse a key only when HPA-608 should generate the same asset;
-- split when generation intent materially differs;
+- reuse one key only when HPA-608 should generate the same asset;
+- split only when generation intent materially differs;
 - avoid routine micro-foley;
-- start from the five live HPA-606 keys, not invented bootstrap names;
-- rename/merge a bootstrap key only when the full-story read justifies it.
+- start from the five live HPA-606 keys;
+- no compatibility layer for bootstrap names with no external users.
 
-### Step 4: Persist the read-only audit checkpoint on Linear HPA-607
-
-Post one concise comment containing:
-
-- proposed SFX/BGM identities and type;
-- deliberately silent sections/states;
-- deferred ideas;
-- any proposed bootstrap rename/merge and rationale.
-
-This is the restart-safe human checkpoint for later batches. It is not a machine-readable second inventory and does not replace `audio-plan.json`.
+Do not add all proposed identities to `audio-plan.json` yet. The plan grows only on first real placement.
 
 ---
 
-## Authoring contract used by every batch
+## Authoring contract used by Tasks 3–9
 
-### Fenced audio syntax
-
-Attach cues to the **next dialogue entry** using the existing parser contract.
+### Fenced syntax only
 
 SFX:
 
@@ -134,145 +146,185 @@ door-open
 **旁白**：澪推開房門。
 ````
 
-Start/change BGM:
+BGM key:
 
 ````markdown
 ```bgm
 tension-pulse
 ```
 
-**朝倉澪**：兩週前。悠真收到學校轉發的通知。
+**旁白**：時間軸上的線收緊了。
 ````
 
-Stop BGM:
+BGM silence:
 
 ````markdown
 ```bgm
 stop
 ```
 
-**旁白**：房間重新安靜下來。
+**旁白**：房間裡只剩呼吸聲。
 ````
 
-Do not use `[sfx](key)`, `[bgm](key)`, or `[bgm](stop)` Markdown links. The compiler does not treat them as audio commands.
+Do not use `[sfx](key)` / `[bgm](key)` Markdown links.
+
+### Scene-opening BGM invariant
+
+Every act must declare its intended BGM state **before the first dialogue entry**:
+
+- `bgm <planned-key>` when the act should open under music; or
+- `bgm stop` when it should open silent.
+
+Background fences may appear first, but the BGM fence must still attach to the first dialogue entry.
+
+Re-state the same BGM key across adjacent acts when the sustained state continues. Do not mint a new key merely because an act/chapter changed. The player no-ops when the same key is already active, while the explicit opener also makes fresh loads, bookmarks, replacements, and act-panel jumps correct.
+
+Later BGM fences within an act are only for genuine state changes.
 
 ### Plan update rule
 
-When a cue receives its **first real placement**, add its entry to:
+Add an `audio-plan.json` row only when its identity receives its first real placement.
 
-`packages/stories/raw/theSeventhMirror/docs/audio-plan.json`
+Before minting a key:
 
-Do not front-load future entries. Reuse the Linear checkpoint and existing plan before minting a new key.
+1. check the reconciled Linear palette;
+2. check current `audio-plan.json`;
+3. reuse an existing identity when generation intent matches.
 
-### What each validator owns
+### Validator responsibilities
 
-**Compiler owns hard contract failures:**
+**Compiler:** hard failures for unknown key, type mismatch, invalid fence/schema, or other compiler errors.
 
-- unknown cue key;
-- cue kind mismatch;
-- invalid audio fence syntax;
-- other story compiler failures.
+**`audio:report`:** usage counts/locations, BGM stop locations, and unused plan rows.
 
-**`audio:report` owns derived usage facts:**
+**Agent B/manual review:** likely aliases, scene-entry BGM intent, mid-scene continuity, over-cueing, reveal spoilers, intentional silence, and muted readability.
 
-- cue usage count and locations;
-- BGM stop locations;
-- unused plan entries.
+Do not claim `audio:report` computes active BGM state or semantic aliases.
 
-**Agent B/manual review owns semantic judgments:**
+---
 
-- likely aliases / duplicated meaning;
-- over-cueing or micro-foley;
-- BGM continuity/leakage;
-- reveal/mood spoilers;
-- intentional silence;
-- muted readability.
+## Required validation/commit loop for every four-chapter authoring batch
 
-Do not claim the report detects aliases or active BGM state.
+Run this loop in Tasks 3–9.
 
-### Required batch validation loop
-
-Run this after **every** four-chapter batch before moving on:
-
-1. Compile:
+### 1. Compile the authored changes
 
 ```bash
 bun --filter @aquila/stories compile
 ```
 
-2. Report:
+This writes tracked generated output under `packages/stories/src/generated` and may touch story scaffolding under `packages/stories/src/stories`.
+
+### 2. Inspect the Seventh Mirror usage report
 
 ```bash
 bun --filter @aquila/stories audio:report theSeventhMirror
 ```
 
-3. Fix any compiler failure immediately.
-4. Inspect `report.unused`; remove speculative plan rows unless the same batch is about to consume them.
-5. Run chapter-level **Agent B only** from `.agents/skills/reviewing-written-stories/SKILL.md` on the edited chapter group with optional audio continuity enabled. Do not spawn Agents A/C or add Agent D.
-6. Re-read the edited chapters with audio conceptually muted; no plot-essential information may depend on sound.
-7. Check BGM in/out at each edited chapter boundary using report locations plus the source acts:
-   - identify the last authored BGM command/stop before the boundary;
-   - identify the next chapter’s first authored BGM command when present;
-   - confirm carry, stop, or change is intentional.
-8. Consult the Linear palette checkpoint before adding any identity during fixes.
+- fix compiler failures before proceeding;
+- remove accidental/speculative `unused` plan rows;
+- use report locations for placement review, not for active-state inference.
 
-Do not add a BGM-state report, alias detector, or second inventory.
+### 3. Check the scene-opening invariant
 
----
+For every act in the edited four chapters, confirm a `bgm` key or `bgm stop` attaches to the first dialogue entry.
 
-## Task 3: Author chapters 1–4 and settle the bootstrap
+This replaces the old cross-boundary “infer the carried state from history” exercise. The state is now explicit in each act. Agent B still judges whether the declared state is narratively correct.
 
-**Modify:**
+### 4. Run Agent B only
 
-- `packages/stories/raw/theSeventhMirror/chapter_1/act*.md`
-- `packages/stories/raw/theSeventhMirror/chapter_2/act*.md`
-- `packages/stories/raw/theSeventhMirror/chapter_3/act*.md`
-- `packages/stories/raw/theSeventhMirror/chapter_4/act*.md`
-- `packages/stories/raw/theSeventhMirror/docs/audio-plan.json`
+Use chapter-level `reviewing-written-stories` Agent B with optional audio continuity over the edited chapter group.
 
-**Modify only if a live bootstrap key changes or a representative placeholder must move:**
+Review:
 
-- `apps/web/src/lib/audio/sfx-catalog.ts`
-- `apps/web/src/lib/audio/bgm-catalog.ts`
+- stable object/location/motif identities;
+- scene-opening BGM intent;
+- genuine mid-scene BGM changes;
+- reveal/mood spoilers;
+- selective SFX density;
+- deliberate silence;
+- muted readability.
 
-### Steps
+Do not spawn Agents A/C and do not add Agent D.
 
-1. Re-evaluate `door-open`, `notification-beep`, `impact`, `dawn-apartment`, and `tension-pulse` against the full-story audit.
-2. Keep, rename, merge, or remove them only based on actual story-wide identity needs.
-3. If a bootstrap identity changes, update its placements + plan + tiny local catalog subset together.
-4. Author sparse fenced cues through chapters 1–4.
-5. Run the required batch validation loop.
-6. If local catalogs changed, also run:
+### 5. Re-read the batch muted
+
+No plot-essential fact, choice meaning, or required emotional logic may exist only in audio.
+
+### 6. Run web tests when plan/catalog membership may have changed
+
+Run when **either**:
+
+- a plan key is renamed or removed; or
+- `LOCAL_SFX_CATALOG` / `LOCAL_BGM_CATALOG` changes.
 
 ```bash
 bun --filter web test
 ```
 
-7. Commit:
+Adding a new plan-only key does not require this per-batch web run because catalog ⊆ plan cannot be broken by addition.
+
+### 7. Stage canonical and generated output together
 
 ```bash
-git add packages/stories/raw/theSeventhMirror apps/web/src/lib/audio
-git commit -m "feat(story): author Seventh Mirror audio cues for chapters 1-4"
+git add \
+  packages/stories/raw/theSeventhMirror \
+  packages/stories/src/generated \
+  packages/stories/src/stories
 ```
 
-Omit the web path when catalogs did not change.
+If local catalogs changed, also stage:
+
+```bash
+git add apps/web/src/lib/audio
+```
+
+### 8. Verify the staged generated output is reproducible
+
+Run **after staging** the expected generated changes:
+
+```bash
+bun run compile:check
+```
+
+`compile:check` recompiles and uses `git diff` against the index. If compilation produces anything different from the staged generated/story output, it fails. Running this before staging legitimate generated changes would produce a false failure.
+
+### 9. Commit the self-consistent batch
+
+Use the task-specific commit message below.
+
+---
+
+## Task 3: Author chapters 1–4 and settle the bootstrap
+
+**Modify:** chapter 1–4 acts and `docs/audio-plan.json`.
+
+**Modify only if required:** local SFX/BGM catalogs.
+
+Steps:
+
+1. Re-evaluate `door-open`, `notification-beep`, `impact`, `dawn-apartment`, and `tension-pulse` against the complete Pass-1 audit.
+2. If a bootstrap identity changes, update its placements + plan + tiny local catalog subset together.
+3. Add the explicit scene-entry BGM declaration to every act in chapters 1–4.
+4. Add sparse SFX and genuine mid-act BGM changes.
+5. Run the required validation/commit loop.
+6. Commit:
+
+```bash
+git commit -m "feat(story): author Seventh Mirror audio cues for chapters 1-4"
+```
 
 ---
 
 ## Task 4: Author chapters 5–8
 
-**Modify:** chapters 5–8 acts and `docs/audio-plan.json`.
-
-### Steps
-
-1. Author sparse fenced cues in story order.
+1. Add explicit scene-entry BGM state to every act.
 2. Reuse established identities where generation intent matches.
-3. Do not restart BGM solely because a chapter changed.
-4. Run the required batch validation loop.
+3. Add sparse SFX / genuine mid-act BGM changes only.
+4. Run the required validation/commit loop.
 5. Commit:
 
 ```bash
-git add packages/stories/raw/theSeventhMirror
 git commit -m "feat(story): author Seventh Mirror audio cues for chapters 5-8"
 ```
 
@@ -280,17 +332,12 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 5-8"
 
 ## Task 5: Author chapters 9–12
 
-**Modify:** chapters 9–12 acts and `docs/audio-plan.json`.
-
-### Steps
-
-1. Continue the established palette; add only genuinely new identities.
-2. Avoid new BGM keys for minor tone variations that an existing sustained state can carry.
-3. Run the required batch validation loop.
+1. Continue the established palette; avoid new BGM identities for minor tone variants.
+2. Add explicit scene-entry BGM state to every act.
+3. Run the required validation/commit loop.
 4. Commit:
 
 ```bash
-git add packages/stories/raw/theSeventhMirror
 git commit -m "feat(story): author Seventh Mirror audio cues for chapters 9-12"
 ```
 
@@ -298,17 +345,12 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 9-12"
 
 ## Task 6: Author chapters 13–16
 
-**Modify:** chapters 13–16 acts and `docs/audio-plan.json`.
-
-### Steps
-
-1. Author the midpoint batch, preferring established motif identities.
-2. Pay special attention to BGM state around the strongest midpoint transition.
-3. Run the required batch validation loop.
+1. Prefer established motif identities through the midpoint.
+2. Make each act’s opening state explicit; use later fences only for genuine changes.
+3. Run the required validation/commit loop.
 4. Commit:
 
 ```bash
-git add packages/stories/raw/theSeventhMirror
 git commit -m "feat(story): author Seventh Mirror audio cues for chapters 13-16"
 ```
 
@@ -316,17 +358,13 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 13-16"
 
 ## Task 7: Author chapters 17–20
 
-**Modify:** chapters 17–20 acts and `docs/audio-plan.json`.
-
-### Steps
-
 1. Continue the established palette.
-2. Treat a sudden increase in new keys as a prompt to re-check the Linear checkpoint for aliases.
-3. Run the required batch validation loop.
-4. Commit:
+2. Treat a sudden increase in new keys as a prompt to re-check the Linear palette for aliases.
+3. Add explicit scene-entry BGM state to every act.
+4. Run the required validation/commit loop.
+5. Commit:
 
 ```bash
-git add packages/stories/raw/theSeventhMirror
 git commit -m "feat(story): author Seventh Mirror audio cues for chapters 17-20"
 ```
 
@@ -334,17 +372,13 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 17-20"
 
 ## Task 8: Author chapters 21–24
 
-**Modify:** chapters 21–24 acts and `docs/audio-plan.json`.
-
-### Steps
-
-1. Emphasize motif payoff and continuity rather than novelty.
-2. Add new identities only when the generated asset truly needs to differ.
-3. Run the required batch validation loop.
-4. Commit:
+1. Favor motif payoff/reuse over novelty.
+2. Add a new identity only when the generated asset truly needs to differ.
+3. Add explicit scene-entry BGM state to every act.
+4. Run the required validation/commit loop.
+5. Commit:
 
 ```bash
-git add packages/stories/raw/theSeventhMirror
 git commit -m "feat(story): author Seventh Mirror audio cues for chapters 21-24"
 ```
 
@@ -352,18 +386,13 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 21-24"
 
 ## Task 9: Author chapters 25–28 and close the ending state
 
-**Modify:** chapters 25–28 acts and `docs/audio-plan.json`.
-
-### Steps
-
 1. Resolve recurring motifs with existing identities where appropriate.
-2. Check the final acts for an intentional last BGM start/change and explicit stop when the ending should return to silence.
-3. Confirm no accidental carry-over survives because an earlier state was merely omitted.
-4. Run the required batch validation loop.
+2. Give every final act an explicit opening key or `stop`.
+3. Use explicit `stop` at the ending only when the intended final state is silence.
+4. Run the required validation/commit loop.
 5. Commit:
 
 ```bash
-git add packages/stories/raw/theSeventhMirror
 git commit -m "feat(story): author Seventh Mirror audio cues for chapters 25-28"
 ```
 
@@ -371,16 +400,7 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 25-28"
 
 ## Task 10: Run representative local-reader checks
 
-**Review/modify only when needed:**
-
-- representative early/middle/late acts;
-- representative reveal, choice, and quiet/silent beats;
-- `apps/web/src/lib/audio/sfx-catalog.ts`;
-- `apps/web/src/lib/audio/bgm-catalog.ts`.
-
-### Step 1: Choose the smallest useful representative set
-
-Cover:
+Cover at minimum:
 
 - early story;
 - middle story;
@@ -391,122 +411,156 @@ Cover:
 
 One scene may cover multiple categories.
 
-### Step 2: Keep the local catalog deliberately tiny
+### Step 1: Keep placeholder playback bounded
 
-Reuse or minimally swap the placeholder subset needed to exercise representative SFX/BGM start/change/stop behavior.
+Reuse or minimally swap the existing tiny local placeholder subset. Do not mirror the final plan into the web catalogs.
 
-Do not mirror the whole final palette into the web catalog. `apps/web/src/lib/__tests__/audio-catalog-plan.test.ts` already enforces catalog ⊆ plan with matching type.
+Every local catalog key must remain in `audio-plan.json` with the matching type.
 
-### Step 3: Check audio-on and muted behavior
+### Step 2: Establish the runtime preconditions before judging audio
 
-Using the existing SFX/BGM preference controls, verify:
+For the audio-on pass:
 
-- cue timing feels intentional;
-- BGM persists/stops correctly through representative navigation;
-- quiet scenes remain quiet;
-- muted mode leaves story meaning and choices understandable.
+1. switch the reader to **visual mode**;
+2. enable SFX and BGM preferences;
+3. perform one normal reader progression click/keypress to satisfy BGM activation;
+4. then navigate/evaluate the representative scenes.
 
-Do not generate production audio for this check.
+Text mode suppresses audio by design. A visual asset `fallback` / `unavailable` status is not itself an audio blocker, so missing production visual assets do not invalidate this HPA-607 audio check.
 
-### Step 4: If catalog mappings changed
+### Step 3: Verify behavior
+
+Check:
+
+- scene-entry BGM is correct when entering directly and through normal progression;
+- re-stating the same sustained key does not audibly restart it;
+- genuine changes/stops occur at intended lines;
+- SFX timing is selective and meaningful;
+- quiet scenes remain quiet.
+
+Then disable audio and confirm story meaning/choices remain understandable.
+
+### Step 4: If representative catalog mappings changed
 
 ```bash
 bun --filter web test
 ```
 
-Commit only useful final representative mappings.
+Stage/commit only useful final placeholder changes.
 
 ---
 
-## Task 11: Final palette cleanup and repository verification
+## Task 11: Final repository verification
 
-### Step 1: Final audio report
+Start from the committed Task 9/10 state with a clean working tree.
+
+### Step 1: Final report
 
 ```bash
 bun --filter @aquila/stories audio:report theSeventhMirror
 ```
 
-Final expectations:
+Expect:
 
 - every used cue already passed compiler membership/type validation;
-- `unused` contains no accidental speculative plan rows;
-- report locations support the final manual BGM-boundary review.
+- no accidental `unused` plan rows;
+- report locations agree with final authored placements.
 
-Do not claim the report proves alias freedom, BGM active state, or muted readability; those were covered by Agent B/manual checks.
+Do not claim the report proves alias freedom, scene-entry intent, or muted readability; those are Agent B/manual results.
 
 ### Step 2: Final repository verification
 
 ```bash
 bun compile:stories
 bun --filter @aquila/stories test
+bun --filter web test
 bun run compile:check
 bun run lint
 bun --filter @aquila/stories audio:report theSeventhMirror
 ```
 
-There is no `.agents/skills/reviewing-written-stories/scripts/audit_novel.py` on `main`; do not add or invoke one for HPA-607.
+The final web test is unconditional because `apps/web/src/lib/__tests__/audio-catalog-plan.test.ts` is the guard for local catalog ⊆ final plan.
 
-### Step 3: Final cleanup commit if needed
+### Step 3: Confirm no generated drift was left behind
 
 ```bash
-git add packages/stories/raw/theSeventhMirror apps/web/src/lib/audio
-git commit -m "chore(story): finalize Seventh Mirror audio palette"
+git status --short
 ```
 
-Skip when Task 9/10 already leaves the repository clean.
+Expected: clean working tree. If compilation generated legitimate drift, fix/stage/commit it before calling HPA-607 complete.
 
 ---
 
-## Task 12: Post the HPA-607 completion summary
+## Task 12: Compute canonical generation scope and post the completion summary
 
 **Update:** Linear HPA-607.  
-**Do not create:** another committed audit/report file.
+**Do not create:** a committed report/palette file.
 
-### Step 1: Compute canonical final facts
+### Step 1: Compute counts and intended generated duration from `audio-plan.json`
 
-From the final `audio-plan.json`, report:
+Do not scrape the Bun workspace-filtered `audio:report` output for these numbers. `audio-plan.json` is the canonical identity/duration source and every asset has required `durationMs`.
 
-- exact base commit from Task 1;
-- chapters reviewed: 28/28;
-- unique SFX identity count;
-- unique BGM identity count;
-- sum of `durationMs` once per unique SFX identity;
-- sum of `durationMs` once per unique BGM identity;
-- total summed intended generated asset duration;
-- deliberately silent sections/states;
-- deferred ideas.
+Use the already-required Bun runtime:
+
+```bash
+bun -e '
+const p = await Bun.file("packages/stories/raw/theSeventhMirror/docs/audio-plan.json").json();
+const sum = xs => xs.reduce((n, a) => n + a.durationMs, 0);
+const sfx = p.assets.filter(a => a.type === "sfx");
+const bgm = p.assets.filter(a => a.type === "bgm");
+console.log(JSON.stringify({
+  sfx: sfx.length,
+  bgm: bgm.length,
+  sfxDurationMs: sum(sfx),
+  bgmDurationMs: sum(bgm),
+  totalDurationMs: sum(p.assets)
+}, null, 2));
+'
+```
 
 `durationMs` is intended generated asset duration. Do not multiply looping BGM by playback time.
 
-### Step 2: Bound candidate-generation work
+If machine-readable usage-report JSON is needed for a separate reason, invoke the compiler CLI directly from `packages/stories` rather than scraping prefixed workspace output. HPA-607 does not need report JSON for identity/duration arithmetic.
+
+### Step 2: Bound generation requests/credits
 
 Let:
 
 - `N = unique SFX + unique BGM identities`
-- `C = candidates requested per identity` when downstream policy defines it
-- `R = retry allowance per identity` when defined
+- `C = candidates requested per identity` if HPA-608 has defined it
+- `R = retry allowance` if defined
 
-Record at minimum the one-candidate baseline of `N` generation requests. If HPA-608 has defined candidate/retry assumptions by execution time, record the corresponding bound/formula such as `N × C` plus the stated retry allowance.
+Record at minimum the one-candidate baseline of `N` requests. If downstream candidate/retry assumptions exist by execution time, report the corresponding formula/bound. If provider credit/pricing semantics remain unknown, state the unknowns instead of inventing a price.
 
-If provider credit/pricing semantics are still unknown, state the formula and unknown assumptions rather than inventing a price.
+### Step 3: Post one completion comment to HPA-607
 
-### Step 3: Post one concise completion comment
+Include:
 
-Include the facts above plus confirmation that:
+- base commit;
+- chapters reviewed: 28/28;
+- unique SFX count;
+- unique BGM count;
+- SFX/BGM/total intended duration;
+- deliberately silent states/sections;
+- deferred ideas;
+- generation request/credit bound or formula;
+- confirmation that all seven authoring batches received Agent B audio review;
+- confirmation that every act has an explicit scene-entry BGM state;
+- final verification results.
 
-- compile/tests/compile:check/lint passed;
-- `audio:report.unused` is clean or any deliberate exception is named;
-- seven Agent B batch reviews completed;
-- representative local-reader audio-on/muted checks completed;
-- no production generation or publishing occurred.
+Do not call ElevenLabs.
 
 ---
 
-## Execution notes
+## Execution discipline
 
-- Keep the work content-focused. If HPA-607 exposes a compiler/report defect, fix only the smallest defect blocking this workflow; do not pull HPA-608/HPA-609 into scope.
-- Do not preserve bootstrap names for compatibility alone; there are no external users requiring aliases.
-- Do not add provider/model/runtime metadata, generated audio, R2 URLs, manifests, or narration artifacts.
+- Do not edit acts during Pass 1.
 - Do not commit scratch audit notes or derived report snapshots.
-- Keep each four-chapter batch independently compile/report/review clean so work can resume without reconstructing hidden state.
-- Prefer silence, reuse, and deletion over new machinery or speculative keys.
+- Keep chapter-plan documents as targeted context, not a mandatory redundant second prose pass.
+- Grow `audio-plan.json` only on first real placement.
+- Every act explicitly declares its BGM state at entry; sustained state is expressed by repeating the same key, not by relying on navigation history.
+- Keep SFX sparse and motif/meaning driven.
+- Keep local catalogs tiny.
+- Stage tracked generated/story output with every raw authoring batch before `compile:check`.
+- Run web tests on plan key rename/removal or catalog edits, and always in final verification.
+- Prefer reuse, silence, and deletion over new machinery or speculative keys.

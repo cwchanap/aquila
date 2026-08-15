@@ -18,6 +18,20 @@ export interface CollectedAudioUsage {
     bgmStops: AudioUsageLocation[];
 }
 
+export interface AudioUsageReportAsset {
+    type: AudioAssetType;
+    key: string;
+    usageCount: number;
+    usages: AudioUsageLocation[];
+}
+
+export interface AudioUsageReport {
+    story: string;
+    assets: AudioUsageReportAsset[];
+    bgmStops: AudioUsageLocation[];
+    unused: Array<{ type: AudioAssetType; key: string }>;
+}
+
 function qualified(type: AudioAssetType, key: string): string {
     return `${type}:${key.normalize('NFC')}`;
 }
@@ -44,6 +58,52 @@ export function collectAudioUsage(story: StoryIR): CollectedAudioUsage {
         });
     }
     return { cues, bgmStops };
+}
+
+export function buildAudioUsageReport(
+    storyName: string,
+    usage: CollectedAudioUsage,
+    plan: AudioPlanV1 | undefined
+): AudioUsageReport {
+    const byQualifiedId = new Map<string, AudioUsageReportAsset>();
+    for (const cue of usage.cues) {
+        const id = qualified(cue.type, cue.key);
+        let asset = byQualifiedId.get(id);
+        if (!asset) {
+            asset = { type: cue.type, key: cue.key, usageCount: 0, usages: [] };
+            byQualifiedId.set(id, asset);
+        }
+        asset.usageCount += 1;
+        asset.usages.push({
+            sceneId: cue.sceneId,
+            sourcePath: cue.sourcePath,
+            entryIndex: cue.entryIndex,
+        });
+    }
+
+    const assets = [...byQualifiedId.values()].sort((left, right) =>
+        compareQualifiedAssetIds(
+            qualified(left.type, left.key),
+            qualified(right.type, right.key)
+        )
+    );
+
+    const unused = (plan?.assets ?? [])
+        .filter(asset => !byQualifiedId.has(qualified(asset.type, asset.key)))
+        .sort((left, right) =>
+            compareQualifiedAssetIds(
+                qualified(left.type, left.key),
+                qualified(right.type, right.key)
+            )
+        )
+        .map(asset => ({ type: asset.type, key: asset.key }));
+
+    return {
+        story: storyName,
+        assets,
+        bgmStops: [...usage.bgmStops],
+        unused,
+    };
 }
 
 export function validateAudioUsage(

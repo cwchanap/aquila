@@ -25,7 +25,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "compile": "bun src/compiler/cli.ts"
+    "compile": "bun src/compiler/cli.ts",
+    "audio:report": "bun src/compiler/cli.ts --report"
   },
   "dependencies": {
     "zod": "^3.24.2"

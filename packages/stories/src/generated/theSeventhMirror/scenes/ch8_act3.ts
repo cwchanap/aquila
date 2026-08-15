@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:25。", background: Background.Chapter_8_Ch8_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:25。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "急診觀察區外。走廊盡頭。", background: Background.Chapter_8_Ch8_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有坐回等候區。她站在走廊和等候區的交界處。牆上有一扇玻璃窗。窗的另一邊是觀察區。簾子。推床。監測儀。氧氣架。", background: Background.Chapter_8_Ch8_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊深處傳來輪子聲。不是推車。是病床。有人在推床。", background: Background.Chapter_8_Ch8_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊深處傳來輪子聲。不是推車。是病床。有人在推床。", sfx: "trolley-wheels", background: Background.Chapter_8_Ch8_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看見一張床被推出來。床上有個人。臉色灰白。氧氣面罩罩著半張臉。透明的面罩裡有霧氣。一進。一出。很淺。很慢。", background: Background.Chapter_8_Ch8_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田。", background: Background.Chapter_8_Ch8_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他被推過走廊。從處置區往觀察區的方向。兩個醫護跟在床邊。一個推床。一個調整點滴架。腳步很快。但沒有跑。", background: Background.Chapter_8_Ch8_Act3_S0 },
@@ -56,7 +56,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他知道。他知道那個東西不在了。他想告訴我。但他說不出來。面罩擋著。喉嚨沒有力氣。醫護在旁邊。沒有人能正式記錄他說的話。", background: Background.Chapter_8_Ch8_Act3_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手從玻璃上拿下來。玻璃上留了兩個掌印。很快被冷氣吹乾了。消失了。", background: Background.Chapter_8_Ch8_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他沒有留下證詞。他留下了一個手勢。一個會折磨我的手勢。", background: Background.Chapter_8_Ch8_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "簾子後面傳出監測儀的聲音。嗶。嗶。嗶。很規律。很安靜。", background: Background.Chapter_8_Ch8_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "簾子後面傳出監測儀的聲音。嗶。嗶。嗶。很規律。很安靜。", sfx: "monitor-beep", background: Background.Chapter_8_Ch8_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯每一次他可能醒來的時候，都剛好沒有可以聽見他的人。在處置區，我隔著簾子縫。在觀察區，我隔著玻璃。醫護在旁邊，但他們只聽見「疼痛反射」。", background: Background.Chapter_8_Ch8_Act3_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是沒有人。是沒有能正式記錄的人。是沒有被允許聽見的人。", background: Background.Chapter_8_Ch8_Act3_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她退了一步。兩步。離開玻璃窗。走廊的燈照在她臉上。她看起來很疲倦。眼下有青黑色的影子。", background: Background.Chapter_8_Ch8_Act3_S0 },

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。她坐在客廳地板上。電視開著，聲音轉到最小。螢幕上正在播防災同步測試的新聞——同一則。和她醒來那天早上看到的一模一樣。同樣的畫面。同樣的標題。同樣的字。", background: Background.Chapter_5_Ch5_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。她坐在客廳地板上。電視開著，聲音轉到最小。螢幕上正在播防災同步測試的新聞——同一則。和她醒來那天早上看到的一模一樣。同樣的畫面。同樣的標題。同樣的字。", sfx: "pa-announcement", bgm: "dawn-apartment", background: Background.Chapter_5_Ch5_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她盯著螢幕看了十秒。然後她拿起手機。", background: Background.Chapter_5_Ch5_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）先確認。一項一項。", background: Background.Chapter_5_Ch5_Act2_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她打開訊息列表。白石琴音。最後一則對話——她發出去的那條「琴音，我在第七車。有人倒下了。我現在在警署。」——不在了。對話停在悠真失蹤後那幾天的日常問候。琴音問她有沒有吃飯。她回了一個「嗯」。", background: Background.Chapter_5_Ch5_Act2_S0 },

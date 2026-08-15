@@ -4,9 +4,17 @@
 hospital ER treatment area corridor at night, fluorescent lighting, a row of curtained patient bays, one curtain slightly parted showing a narrow gap, oxygen equipment and monitors visible inside, cold clinical atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：00:35。
 
 **旁白**：急診處置區外。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：澪沒有回等候區。她拐進了另一條走廊。兩側是一排用簾子隔開的處置區。淺藍色的簾子。有的拉著。有的半開。裡面傳出監測儀的嗶嗶聲。很規律。
 

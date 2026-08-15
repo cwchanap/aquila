@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:30。", background: Background.Chapter_7_Ch7_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:30。", bgm: "institutional-drone", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "急診走廊。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐不住。她站起來，沿著允許通行的走廊走。不是闖禁區。只是在等候區、販賣機、洗手間和急診走廊之間移動。像一個等不到消息的人會做的事。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊很長。左邊是等候區的玻璃門。右邊是一排關著的診間。盡頭有一扇半開的門。門上沒有標誌。門縫透出裡面的光。", background: Background.Chapter_7_Ch7_Act3_S0 },
@@ -45,7 +45,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不要動手。不要硬闖。如果現在搶或闖，我會親手把自己變成另一個問題。變成「企圖取走證物的可疑人物」。然後我就再也碰不到這條線了。", background: Background.Chapter_7_Ch7_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她退了一步。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯好。", background: Background.Chapter_7_Ch7_Act3_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安看了她一眼。沒有再說什麼。他走過去，把那扇半開的門推上了。鎖扣響了一聲。", background: Background.Chapter_7_Ch7_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安看了她一眼。沒有再說什麼。他走過去，把那扇半開的門推上了。鎖扣響了一聲。", sfx: "door-latch", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊恢復安靜。燈光還是那麼亮。消毒水的味道還是在。", background: Background.Chapter_7_Ch7_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯記住三件事。病人物袋確實存在。袋內有薄硬反光物。保管編號WCE-07——後面看不清。", background: Background.Chapter_7_Ch7_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯其餘的模糊。不要像專業調查員。記住這三個。夠了。", background: Background.Chapter_7_Ch7_Act3_S0, portrait: Portrait.AsakuraMio_Determined },

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:13。", background: Background.Chapter_6_Ch6_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:13。", bgm: "institutional-drone", background: Background.Chapter_6_Ch6_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "腳步聲。不止一雙。從通道入口的方向傳過來，急促，沉重，塑膠隔離簾被扯開又彈回去的聲音。", background: Background.Chapter_6_Ch6_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪抬起頭。", background: Background.Chapter_6_Ch6_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩個人。穿站務制服的。後面跟著一個穿深色制服的保全。他們繞過設備車，衝進通道，手電筒的光柱在牆上掃來掃去。", background: Background.Chapter_6_Ch6_Act5_S0 },

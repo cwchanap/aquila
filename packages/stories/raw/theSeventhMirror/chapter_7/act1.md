@@ -4,6 +4,10 @@
 station safety area corridor at night, fluorescent ceiling light, plastic chairs along the wall, small desk with incident report forms and a paper cup, wet wipes packet, cold institutional atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：22:20。
 
 **旁白**：站務安全區。走廊盡頭的塑膠椅。
@@ -25,6 +29,10 @@ station safety area corridor at night, fluorescent ceiling light, plastic chairs
 **旁白**：一個站務人員拿著手機走近。不是打電話。是拍照。
 
 **站務人員**：請把手伸出來。掌心朝上。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她伸出手。血乾在指縫裡，暗褐色的細線從指節爬到手腕。閃光燈亮了一下。又一下。手背。掌心。袖口。
 
@@ -110,9 +118,17 @@ station platform at night, seen from the staff exit corridor, platform 7 still o
 
 **朝倉澪** [sad]：（內心）⋯⋯這本該是勝利。
 
+```sfx
+train-doors
+```
+
 **旁白**：她看著那扇開著的車門。燈光從車廂裡照出來，落在月台地面上，方方正正的一塊光。一個乘客走進去。門關了。車開了。
 
 **朝倉澪** [determined]：（內心）⋯⋯但這不是勝利。這是一種更不安的空白。死亡沒有發生在這裡。它只是換了地址。
+
+```sfx
+train-hum
+```
 
 **旁白**：她走出站務出口。夜風從灣岸方向吹過來。她的手在口袋裡。右手碰著那張摺起來的紙。左手碰著小鏡子的布套。
 

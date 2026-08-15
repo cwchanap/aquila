@@ -4,6 +4,10 @@
 ambulance loading area outside the station at night, paramedics loading a stretcher into the back of an ambulance, red emergency lights flashing, wet pavement reflecting light, Tokyo waterfront in the far background, cold blue night sky, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:20。
 
 **旁白**：救護人員到了。兩個人。穿深藍色制服，戴手套，拎著急救箱和摺疊擔架。他們從通道入口側身擠進來，蹲在千田兩側。
@@ -62,6 +66,10 @@ ambulance loading area outside the station at night, paramedics loading a stretc
 
 **旁白**：澪跟在後面。沒有人叫她停。也沒有人叫她跟上。她只是跟著。
 
+```bgm
+night-street
+```
+
 **旁白**：站外。夜風。灣岸道路的車燈在遠處流動。救護車的紅燈在旋轉，把地面上的水漬染成一圈一圈的紅色。
 
 **旁白**：擔架被推到救護車後門。救護人員把它抬起來，滑進車廂。千田的臉在擔架的白色床單上顯得很灰。
@@ -85,6 +93,10 @@ ambulance loading area outside the station at night, paramedics loading a stretc
 **朝倉澪** [shocked]：（內心）⋯⋯什麼意思？別讓誰把什麼換成救援？別讓他們把外殼換成救援流程的一部分？別讓他們把攻擊換成救援事故？
 
 **朝倉澪** [shocked]：（內心）⋯⋯他說不清楚。他沒有力氣說清楚了。但他在看我。他在確認我聽到了。
+
+```sfx
+door-seal
+```
 
 **旁白**：救護車的後門關上了。金屬碰撞聲。很沉。很悶。像一個句號。
 

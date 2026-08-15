@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:18。", background: Background.Chapter_6_Ch6_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:18。", bgm: "night-street", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站外。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "救護車已經走了。灣岸道路上只剩普通的車流，紅色尾燈和白色頭燈交替著往遠處走。風從海面方向吹過來，帶著一股金屬和潮水混在一起的味道。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在人行道上。她的手垂在身側。血乾了。袖口上也是。她把手插進口袋，把沾血的手指藏起來。她不想再看見。", background: Background.Chapter_6_Ch6_Act8_S0 },
@@ -33,7 +33,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但我現在需要看見它們排在一起。我需要看見結構。", background: Background.Chapter_6_Ch6_Act8_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她盯著螢幕。灣岸中央急救醫療中心。這幾個字在備忘錄裡，和其他關鍵詞排在一起。不是公開資訊。不是車站廣播。不是電子看板。是救護和站務在現場說出來的。只有站在那個位置、在那個時間、聽到那句話的人才知道。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我沒有告訴任何人。", background: Background.Chapter_6_Ch6_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", background: Background.Chapter_6_Ch6_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", sfx: "notification-beep", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是備忘錄。是訊息。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她低頭。螢幕上方跳出一條通知。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "妳在哪裡？還好嗎？", background: Background.Chapter_6_Ch6_Act8_S0 },
@@ -57,7 +57,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這本該算是勝利。", background: Background.Chapter_6_Ch6_Act8_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著灣岸道路的盡頭。救護車消失的那個方向。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但我看著救護車消失在灣岸道路盡頭，第一次明白：我改變的也許只是死亡的地址。", background: Background.Chapter_6_Ch6_Act8_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "風又吹過來。她的手在口袋裡握著那面小鏡子。鏡子的邊緣很涼。口袋裡的手機又震了一下。她沒有掏出來。", background: Background.Chapter_6_Ch6_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "風又吹過來。她的手在口袋裡握著那面小鏡子。鏡子的邊緣很涼。口袋裡的手機又震了一下。她沒有掏出來。", sfx: "notification-beep", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在灣岸的夜色裡。身後是車站。前方是道路。道路的盡頭是一所她沒有去過的醫院。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田在那裡。外殼在那裡。", background: Background.Chapter_6_Ch6_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而她站在這裡。滿手乾涸的血。口袋裡藏著一面沒有交出去的鏡子。手機裡躺著一條還沒有回的訊息。", background: Background.Chapter_6_Ch6_Act8_S0 },

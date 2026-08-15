@@ -4,11 +4,19 @@
 Tokyo street at dusk, young woman walking alone on a sidewalk under sodium streetlights, crossbody bag, phone vibrating in hand, distant elevated railway and station lights, cold blue-grey evening palette, visual-novel background art, wide shot
 ```
 
+```bgm
+night-street
+```
+
 **旁白**：18:42。
 
 **旁白**：她走在街上。從家裡出來已經一個多小時了——她沒有待在家裡等。她怕自己坐著坐著就會開始懷疑。
 
 **旁白**：灣岸新交通的方向。她不急。還早。她只是不能停。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震了。
 
@@ -50,7 +58,15 @@ Tokyo street at dusk, young woman walking alone on a sidewalk under sodium stree
 entrance of a modern Tokyo waterfront transit station at evening, glass and steel architecture, scattered commuters, automated ticket gates glowing, station signage, disaster-sync test notice poster on a pillar, cold blue evening light mixed with warm interior lighting, visual-novel background art, wide establishing shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：19:08。她走進灣岸新交通的車站。
+
+```sfx
+pa-announcement
+```
 
 **旁白**：她剛過剪票口的時候，車站廣播響了。
 
@@ -60,7 +76,15 @@ entrance of a modern Tokyo waterfront transit station at evening, glass and stee
 
 **旁白**：她等自己的手機。
 
+```sfx
+sync-glitch
+```
+
 **旁白**：一秒。兩秒。⋯⋯七秒。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震了。
 

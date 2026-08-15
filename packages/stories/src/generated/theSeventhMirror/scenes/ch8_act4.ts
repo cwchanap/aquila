@@ -6,14 +6,14 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:40。", background: Background.Chapter_8_Ch8_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:40。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等候區角落。販賣機旁。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在最靠牆的那張椅子上。膝蓋併著。手機握在手裡，螢幕暗著。販賣機的馬達在幾步之外嗡嗡響。沒有人來買東西。整排椅子只有她。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "簾子拉上了。千田的手勢被簾子吃掉了。她退回等候區的時候，腿有點軟。不是因為走太多路。是因為那隻手——反覆抓空，像在找一片薄薄的東西——還在她眼睛裡。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他醒了。他知道。他知道那個東西不在他身上了。他想告訴我。但他說不出完整的句子。我也接不到。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把臉埋進手心。消毒水的味道從指縫裡鑽上來。混著一點鐵鏽。她的手洗過了。但有些味道洗不掉。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪。我想過要對琴音說「我改變了一件事」。我差點就說了。現在——那句話變得更難說。因為我改變的那件事，好像只是把死亡搬到了另一個房間。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", background: Background.Chapter_8_Ch8_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。", sfx: "notification-beep", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是訊息。是來電。螢幕亮起來。一個名字。白石琴音。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那個名字。第二次了。今晚第二次。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯接。不要讓她覺得我在躲。越躲她越急。越急她越會說出不該說的。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
@@ -26,7 +26,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "妳不要再管那些東西了，好不好？", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "語氣很普通。像在勸一個不肯睡覺的人。像在哄。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "什麼東西？", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "販賣機的馬達停了一下。又開始響。她聽見自己的呼吸。很淺。", background: Background.Chapter_8_Ch8_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "販賣機的馬達停了一下。又開始響。她聽見自己的呼吸。很淺。", sfx: "vending-machine-hum", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有立刻接上。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一秒。兩秒。那種停頓很長。長到像在找話，又像在後悔。", background: Background.Chapter_8_Ch8_Act4_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "我是說……案件裡那些東西。現場的、警察要查的、那個人的……都不要碰。", background: Background.Chapter_8_Ch8_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },

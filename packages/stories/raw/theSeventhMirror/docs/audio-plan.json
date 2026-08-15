@@ -133,6 +133,68 @@
       "prompt": "Pre-dawn bay waterfront ambience, wind, metal-salt air, black water, coldest emptiest register, seamless loop",
       "durationMs": 90000,
       "loop": true
+    },
+    {
+      "key": "sleepless-vigil",
+      "type": "bgm",
+      "prompt": "Exhausted grey desk and vigil drone, faint clock undertone, no domestic warmth, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "passage-hum",
+      "type": "bgm",
+      "prompt": "Construction-passage and facility ventilation drone, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "card-access-beep",
+      "type": "sfx",
+      "prompt": "Short access approval tone and latch, the recurring permission motif, identity-neutral, one-shot",
+      "durationMs": 700
+    },
+    {
+      "key": "toolbox-roll",
+      "type": "sfx",
+      "prompt": "Heavy casters rolling on concrete, unhurried, the disguised worker's audio signature, identity-neutral, loop",
+      "durationMs": 10000
+    },
+    {
+      "key": "door-seal",
+      "type": "sfx",
+      "prompt": "Heavy manual door close and latch tongue-into-strike, punctuation, one-shot",
+      "durationMs": 1500
+    },
+    {
+      "key": "door-latch",
+      "type": "sfx",
+      "prompt": "Light institutional door or window catch click, the shut-out motif, one-shot",
+      "durationMs": 600
+    },
+    {
+      "key": "vending-machine-hum",
+      "type": "sfx",
+      "prompt": "Appliance hum of a vending machine or cooler, seamless loop",
+      "durationMs": 20000
+    },
+    {
+      "key": "monitor-beep",
+      "type": "sfx",
+      "prompt": "Regular electronic countdown beeps, counting down, seamless loop",
+      "durationMs": 12000
+    },
+    {
+      "key": "trolley-wheels",
+      "type": "sfx",
+      "prompt": "Rubber wheels on linoleum, hospital carts and beds, seamless loop",
+      "durationMs": 12000
+    },
+    {
+      "key": "code-blue-rush",
+      "type": "sfx",
+      "prompt": "Hushed suppressed emergency, rapid footsteps, fast trolley, soft metal clatter, no alarm, one-shot",
+      "durationMs": 15000
     }
   ]
 }

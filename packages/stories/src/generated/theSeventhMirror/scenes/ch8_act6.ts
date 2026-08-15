@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:20。", background: Background.Chapter_8_Ch8_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:20。", bgm: "institutional-drone", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "急診等候區。澪坐在角落的塑膠椅上。已經坐了二十幾分鐘。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "交接箱消失在走廊轉角之後，她沒有追。她知道追不上。也沒有資格追。她走回等候區，坐下來，把那張紙攤在膝蓋上。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "販賣機的燈還亮著。牆上的鐘走得很慢。走廊盡頭偶爾有腳步聲經過，又消失。沒有人來找她。沒有人叫她。她被流程放在這裡，像一件還沒被歸檔的物品。", background: Background.Chapter_8_Ch8_Act6_S0 },
@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個字。壓進紙裡。她看著那四個字。筆畫很淺，但她認得出來。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯暫時穩定。他還在觀察區。還在呼吸。簾子後面的監測儀還在響。這一輪，至少到現在為止，他還活著。", background: Background.Chapter_8_Ch8_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來。塞回內袋。手指碰到小鏡子的布套。涼的。她靠在椅背上。閉了一下眼睛。", background: Background.Chapter_8_Ch8_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她聽見腳步聲。", background: Background.Chapter_8_Ch8_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她聽見腳步聲。", sfx: "code-blue-rush", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是一個人。是好幾個人。腳步很急。但沒有跑。醫院裡的腳步聲很少會真的跑起來。他們只是走得很快。鞋底磨過地板的聲音連成一片。從走廊另一頭過來。從觀察區的方向。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是警報。是腳步。醫院裡的聲音都被壓低了。警報被壓成腳步。呼叫被壓成低聲。這比警報更可怕。", background: Background.Chapter_8_Ch8_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她睜開眼睛。坐直了。", background: Background.Chapter_8_Ch8_Act6_S0 },
@@ -72,7 +72,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我能闖進施工通道。卻闖不進一片拉上的簾子。", background: Background.Chapter_8_Ch8_Act6_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的燈亮了一下。又暗了。有人把觀察區的門帶上了。縫消失了。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在牆邊。手在口袋裡。右手碰著那張紙。左手碰著小鏡子的布套。紙上「暫時穩定」四個字還在。但已經不對了。", background: Background.Chapter_8_Ch8_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊恢復安靜。不是真的安靜。是聲音被關在門後面了。她聽不見了。", background: Background.Chapter_8_Ch8_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊恢復安靜。不是真的安靜。是聲音被關在門後面了。她聽不見了。", bgm: null, background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我救下了第七車裡的千田。我讓他避開了那一刀。我讓他活著進了醫院。然後呢。", background: Background.Chapter_8_Ch8_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她閉上眼睛。走廊的燈光透過眼皮，是一片很淡的橘。門後面的聲音越來越少。像潮水在退。", background: Background.Chapter_8_Ch8_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等候區的販賣機還亮著。嗡嗡地響。像什麼都沒發生過。", background: Background.Chapter_8_Ch8_Act6_S0 },

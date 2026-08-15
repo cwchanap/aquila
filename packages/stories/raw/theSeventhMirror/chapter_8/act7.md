@@ -4,6 +4,10 @@
 hospital ER corridor at night, observation area door now closed, fluorescent lighting dimmed, a few medical staff walking slowly out of the observation area, one person on the phone, heavy quiet atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：03:05。
 
 **旁白**：門後面的聲音停了。
@@ -74,11 +78,19 @@ hospital ER corridor at night, observation area door now closed, fluorescent lig
 
 **朝倉澪** [determined]：（內心）⋯⋯對。問題變了。第一輪我問的是「千田為什麼會死」。第二輪我問的是「為什麼他不能活著開口」。這不是同一個問題。
 
+```sfx
+notification-beep
+```
+
 **旁白**：手機在口袋裡震了一下。她掏出來。螢幕亮了。頂部跳出一條通知。不是琴音。是新聞推送。
 
 **訊息**：灣岸新交通深夜事件，搬送男性傷者急變。詳細確認中。
 
 **朝倉澪** [base]：（內心）⋯⋯傷者。不是「死者」。不是「不治」。是「傷者」。詳細確認中。媒體還沒拿到正式說法。醫院裡已經確認了。外面還沒有。
+
+```sfx
+notification-beep
+```
 
 **旁白**：她關掉螢幕。又亮了。又一條。這次是琴音。
 
@@ -105,6 +117,10 @@ hospital lobby at night, automatic glass doors leading outside, dark sky visible
 ```
 
 **旁白**：03:20。醫院大廳。
+
+```bgm
+night-street
+```
 
 **旁白**：自動門在她面前滑開。夜風灌進來。很涼。帶著一點海的味道。灣岸的方向。
 
@@ -173,6 +189,10 @@ hospital exterior at night, empty road leading toward the bay, dark sky with no 
 **旁白**：天還沒亮。但她知道，天會亮的。天亮之後，她不再先查千田。她要回家。打開悠真的房間。把睡眠研究說明單、學校通知、遊戲帳號座標、小鏡子背面的刮痕、黑色海的塗鴉——全部放在同一張桌上。
 
 **旁白**：她第一次把問題從「悠真在哪裡」改成「悠真為什麼被選中」。
+
+```bgm
+stop
+```
 
 **旁白**：風從灣岸吹過來。很涼。帶著海的味道。黑色的海在她背後。很安靜。像在等她回頭。
 

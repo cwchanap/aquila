@@ -4,6 +4,10 @@
 hospital ER waiting area at night, rows of plastic chairs mostly empty, vending machine glow in the corner, fluorescent ceiling light, cold institutional atmosphere, a few people sitting with their heads down, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：00:50。
 
 **旁白**：灣岸中央急救醫療中心。急診等候區。
@@ -87,6 +91,10 @@ hospital ER waiting area at night, rows of plastic chairs mostly empty, vending 
 **朝倉澪** [sad]：（內心）⋯⋯不對。不是勝利。是「暫時穩定」。醫院裡沒有「勝利」這個詞。只有「觀察」。只有「等」。只有「還沒有急變」。
 
 **旁白**：她把紙摺起來。塞回內袋。手指碰到小鏡子的布套。涼的。
+
+```sfx
+trolley-wheels
+```
 
 **旁白**：走廊另一側傳來輪子聲。很輕。橡膠輪碾過塑膠地板的聲音。她抬頭。
 

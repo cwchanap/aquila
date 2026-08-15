@@ -4,11 +4,19 @@
 construction passage wall corner at night, a man slumped against the wall pressing his ribs, dark jacket visibly dampening, first pool of blood forming on the floor against the wall base, cold white fluorescent light from above, plastic sheeting in background, reflective tape on floor edge, visual-novel background art, close shot
 ```
 
+```bgm
+passage-hum
+```
+
 **旁白**：21:06。
 
 **旁白**：她跪在他旁邊。
 
 **旁白**：千田的手按著肋下。手指很用力，指節發白，但壓不住。他的深色外套在那個位置已經變得潮濕——不是被水潑到的那種濕，是更暗、更沉的濕。血沿著外套的縫線往下走，像在找一條可以流出來的路。
+
+```sfx
+blood-drip
+```
 
 **旁白**：地上。第一灘血。
 

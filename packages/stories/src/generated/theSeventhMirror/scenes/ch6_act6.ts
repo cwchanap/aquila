@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:20。", background: Background.Chapter_6_Ch6_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:20。", bgm: "institutional-drone", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "救護人員到了。兩個人。穿深藍色制服，戴手套，拎著急救箱和摺疊擔架。他們從通道入口側身擠進來，蹲在千田兩側。", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Paramedic, character: "救護人員", dialogue: "有意識嗎？", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.StationStaff, character: "站務人員", dialogue: "半清醒。剛才還能說幾個字。呼吸很淺。", background: Background.Chapter_6_Ch6_Act6_S0 },
@@ -35,7 +35,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯灣岸中央急救醫療中心。記住了。", background: Background.Chapter_6_Ch6_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "擔架被推出通道。站務員和保全拉開警戒帶讓路。救護人員推著擔架穿過月台後方的員工通道，往站外的救護車停靠區走。", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪跟在後面。沒有人叫她停。也沒有人叫她跟上。她只是跟著。", background: Background.Chapter_6_Ch6_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站外。夜風。灣岸道路的車燈在遠處流動。救護車的紅燈在旋轉，把地面上的水漬染成一圈一圈的紅色。", background: Background.Chapter_6_Ch6_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站外。夜風。灣岸道路的車燈在遠處流動。救護車的紅燈在旋轉，把地面上的水漬染成一圈一圈的紅色。", bgm: "night-street", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "擔架被推到救護車後門。救護人員把它抬起來，滑進車廂。千田的臉在擔架的白色床單上顯得很灰。", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他的眼睛動了。", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "開了。半開。焦點不在救護人員身上。不在站務員身上。在澪身上。", background: Background.Chapter_6_Ch6_Act6_S0 },
@@ -47,7 +47,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯別讓他們。換成救援。", background: Background.Chapter_6_Ch6_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯什麼意思？別讓誰把什麼換成救援？別讓他們把外殼換成救援流程的一部分？別讓他們把攻擊換成救援事故？", background: Background.Chapter_6_Ch6_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他說不清楚。他沒有力氣說清楚了。但他在看我。他在確認我聽到了。", background: Background.Chapter_6_Ch6_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "救護車的後門關上了。金屬碰撞聲。很沉。很悶。像一個句號。", background: Background.Chapter_6_Ch6_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "救護車的後門關上了。金屬碰撞聲。很沉。很悶。像一個句號。", sfx: "door-seal", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "引擎聲變大。車燈亮起來。救護車緩緩駛離站外停靠區，匯入灣岸道路的車流。紅色尾燈在夜色裡越來越小。", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在原地。風吹過她的頭髮。她的手垂在身側。手指上的血已經開始乾了，變成暗褐色的薄殼，在風裡繃著她的皮膚。", background: Background.Chapter_6_Ch6_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她轉頭。月台方向。電子看板。", background: Background.Chapter_6_Ch6_Act6_S0 },

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:20。", background: Background.Chapter_7_Ch7_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:20。", bgm: "institutional-drone", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站務安全區。走廊盡頭的塑膠椅。", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐下來。不是因為想坐。是因為站務人員叫她等一下。最後一份表格還沒填完。", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "剛才她站在站外。風很大。手機震動——琴音來訊。七個字。妳在哪裡。還好嗎。她看了。她沒有立刻回。", background: Background.Chapter_7_Ch7_Act1_S0 },
@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "發送。她把手機收進口袋。被叫回來繼續走流程。", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個站務人員拿著手機走近。不是打電話。是拍照。", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.StationStaff, character: "站務人員", dialogue: "請把手伸出來。掌心朝上。", background: Background.Chapter_7_Ch7_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她伸出手。血乾在指縫裡，暗褐色的細線從指節爬到手腕。閃光燈亮了一下。又一下。手背。掌心。袖口。", background: Background.Chapter_7_Ch7_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她伸出手。血乾在指縫裡，暗褐色的細線從指節爬到手腕。閃光燈亮了一下。又一下。手背。掌心。袖口。", sfx: "camera-shutter", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.StationStaff, character: "站務人員", dialogue: "外套袖口先不要洗。之後可能要確認。", background: Background.Chapter_7_Ch7_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯我知道。", background: Background.Chapter_7_Ch7_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著自己的袖口。深色的布料上有一塊更深的痕跡。已經乾了。已經變成布的一部分。", background: Background.Chapter_7_Ch7_Act1_S0 },
@@ -57,9 +57,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪。這裡有屍體。有封鎖線。有鑑識。有我站在車廂裡拿著外殼的畫面。", background: Background.Chapter_7_Ch7_Act1_S1, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第二輪。什麼都沒有。月台在運作。列車在開。乘客在上下車。", background: Background.Chapter_7_Ch7_Act1_S1, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這本該是勝利。", background: Background.Chapter_7_Ch7_Act1_S1, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那扇開著的車門。燈光從車廂裡照出來，落在月台地面上，方方正正的一塊光。一個乘客走進去。門關了。車開了。", background: Background.Chapter_7_Ch7_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那扇開著的車門。燈光從車廂裡照出來，落在月台地面上，方方正正的一塊光。一個乘客走進去。門關了。車開了。", sfx: "train-doors", background: Background.Chapter_7_Ch7_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但這不是勝利。這是一種更不安的空白。死亡沒有發生在這裡。它只是換了地址。", background: Background.Chapter_7_Ch7_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出站務出口。夜風從灣岸方向吹過來。她的手在口袋裡。右手碰著那張摺起來的紙。左手碰著小鏡子的布套。", background: Background.Chapter_7_Ch7_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出站務出口。夜風從灣岸方向吹過來。她的手在口袋裡。右手碰著那張摺起來的紙。左手碰著小鏡子的布套。", sfx: "train-hum", background: Background.Chapter_7_Ch7_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯去醫院。不是探病。是確認三件事。千田是否仍活著。病人物袋是否存在。外殼是否被轉走。", background: Background.Chapter_7_Ch7_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯灣岸中央急救醫療中心。", background: Background.Chapter_7_Ch7_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向灣岸道路。救護車早就消失了。但方向她記得。", background: Background.Chapter_7_Ch7_Act1_S1 },

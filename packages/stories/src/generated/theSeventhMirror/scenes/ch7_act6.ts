@@ -6,9 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:35。", background: Background.Chapter_7_Ch7_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:35。", bgm: "institutional-drone", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "急診處置區外。", background: Background.Chapter_7_Ch7_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有回等候區。她拐進了另一條走廊。兩側是一排用簾子隔開的處置區。淺藍色的簾子。有的拉著。有的半開。裡面傳出監測儀的嗶嗶聲。很規律。", background: Background.Chapter_7_Ch7_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有回等候區。她拐進了另一條走廊。兩側是一排用簾子隔開的處置區。淺藍色的簾子。有的拉著。有的半開。裡面傳出監測儀的嗶嗶聲。很規律。", sfx: "monitor-beep", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第三個。簾子拉著。但沒有完全合攏。中間有一條縫。只有一隻眼睛的寬度。", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停下來。", background: Background.Chapter_7_Ch7_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "透過那條縫，她看見了一張床。床上有人。臉上罩著氧氣面罩。透明的。霧氣在面罩裡面一進一出。胸口在起伏。很淺。很慢。但起伏著。", background: Background.Chapter_7_Ch7_Act6_S0 },

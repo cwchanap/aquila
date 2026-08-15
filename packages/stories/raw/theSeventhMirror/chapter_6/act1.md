@@ -4,6 +4,10 @@
 construction passage interior at night, cold white fluorescent corridor, plastic sheeting draped along walls, reflective safety tape on floor edges, exposed pipes and cable trays overhead, low ventilation hum, sterile industrial atmosphere, visual-novel background art, medium shot looking down the corridor
 ```
 
+```bgm
+passage-hum
+```
+
 **旁白**：21:04。
 
 **旁白**：她已經在裡面了。

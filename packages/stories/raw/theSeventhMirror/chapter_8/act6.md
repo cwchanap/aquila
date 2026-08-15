@@ -4,6 +4,10 @@
 hospital waiting area at night, rows of empty plastic chairs, vending machine glow in the corner, fluorescent ceiling light dimmed to night mode, a clock on the wall reading past 2 AM, cold institutional silence, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：02:20。
 
 **旁白**：急診等候區。澪坐在角落的塑膠椅上。已經坐了二十幾分鐘。
@@ -29,6 +33,10 @@ hospital waiting area at night, rows of empty plastic chairs, vending machine gl
 **朝倉澪** [base]：（內心）⋯⋯暫時穩定。他還在觀察區。還在呼吸。簾子後面的監測儀還在響。這一輪，至少到現在為止，他還活著。
 
 **旁白**：她把紙摺起來。塞回內袋。手指碰到小鏡子的布套。涼的。她靠在椅背上。閉了一下眼睛。
+
+```sfx
+code-blue-rush
+```
 
 **旁白**：然後她聽見腳步聲。
 
@@ -135,6 +143,10 @@ hospital waiting area at night, rows of empty plastic chairs, vending machine gl
 **旁白**：走廊盡頭的燈亮了一下。又暗了。有人把觀察區的門帶上了。縫消失了。
 
 **旁白**：她站在牆邊。手在口袋裡。右手碰著那張紙。左手碰著小鏡子的布套。紙上「暫時穩定」四個字還在。但已經不對了。
+
+```bgm
+stop
+```
 
 **旁白**：走廊恢復安靜。不是真的安靜。是聲音被關在門後面了。她聽不見了。
 

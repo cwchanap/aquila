@@ -4,6 +4,10 @@
 hospital ER waiting area corner at night, vending machine glow casting cold blue-white light on a row of empty plastic chairs, one figure slumped against the wall under bright fluorescent ceiling light, quiet institutional atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：01:40。
 
 **旁白**：等候區角落。販賣機旁。
@@ -17,6 +21,10 @@ hospital ER waiting area corner at night, vending machine glow casting cold blue
 **旁白**：她把臉埋進手心。消毒水的味道從指縫裡鑽上來。混著一點鐵鏽。她的手洗過了。但有些味道洗不掉。
 
 **朝倉澪** [sad]：（內心）⋯⋯第一輪。我想過要對琴音說「我改變了一件事」。我差點就說了。現在——那句話變得更難說。因為我改變的那件事，好像只是把死亡搬到了另一個房間。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震動。
 
@@ -43,6 +51,10 @@ hospital ER waiting area corner at night, vending machine glow casting cold blue
 **旁白**：語氣很普通。像在勸一個不肯睡覺的人。像在哄。
 
 **朝倉澪** [base]：什麼東西？
+
+```sfx
+vending-machine-hum
+```
 
 **旁白**：販賣機的馬達停了一下。又開始響。她聽見自己的呼吸。很淺。
 

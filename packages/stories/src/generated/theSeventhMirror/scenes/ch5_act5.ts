@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:20。", background: Background.Chapter_5_Ch5_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:20。", bgm: "sleepless-vigil", background: Background.Chapter_5_Ch5_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐在書桌前。筆記本翻到新的一頁。她在最上面寫了三個字：選項表。", background: Background.Chapter_5_Ch5_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）一個一個來。", background: Background.Chapter_5_Ch5_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她寫下第一行。", background: Background.Chapter_5_Ch5_Act5_S0 },
@@ -50,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來。她從衣架上拿下斜背包。她從書桌上拿起小鏡子。", background: Background.Chapter_5_Ch5_Act5_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著它。悠真在背面刻了一些痕跡。她用拇指摸了一下那些痕跡。凹痕很淺。她一直以為那只是弟弟的塗鴉。", background: Background.Chapter_5_Ch5_Act5_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真。", background: Background.Chapter_5_Ch5_Act5_S2, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子放進斜背包內層的小布套裡。她拉上拉鍊。她把背包掛在肩上。她調了一下帶子。", background: Background.Chapter_5_Ch5_Act5_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子放進斜背包內層的小布套裡。她拉上拉鍊。她把背包掛在肩上。她調了一下帶子。", sfx: "mirror-chime", background: Background.Chapter_5_Ch5_Act5_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）這一次，是我自己帶上它的。不是因為那封訊息叫我帶。", background: Background.Chapter_5_Ch5_Act5_S2, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她回到書桌。她在筆記本上寫下安全措施。", background: Background.Chapter_5_Ch5_Act5_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機定位開啟。", background: Background.Chapter_5_Ch5_Act5_S2 },

@@ -4,6 +4,10 @@
 small Tokyo apartment desk in afternoon light, notebook open with handwritten lists and crossed-out options, a pen, a small hand mirror nearby, a young woman leaning over the page with focused expression, muted warm-cool palette, moody cinematic visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：15:20。
 
 **旁白**：她坐在書桌前。筆記本翻到新的一頁。她在最上面寫了三個字：選項表。
@@ -103,6 +107,10 @@ small Tokyo apartment desk, a young woman's hand placing a small hand mirror int
 **旁白**：她看著它。悠真在背面刻了一些痕跡。她用拇指摸了一下那些痕跡。凹痕很淺。她一直以為那只是弟弟的塗鴉。
 
 **朝倉澪** [sad]：（內心）⋯⋯悠真。
+
+```sfx
+mirror-chime
+```
 
 **旁白**：她把鏡子放進斜背包內層的小布套裡。她拉上拉鍊。她把背包掛在肩上。她調了一下帶子。
 

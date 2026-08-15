@@ -4,6 +4,10 @@
 Tokyo waterfront transit station concourse at night, view through crowd and pillars toward a construction passage entrance, a middle-aged man in a dark jacket visible among commuters, cold fluorescent lighting mixed with warm accent lights, scattered passengers, surveillance camera red dots, visual-novel background art, medium shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：21:01。
 
 **旁白**：她看見他了。
@@ -76,6 +80,10 @@ Tokyo waterfront transit station, closer view of a construction passage entrance
 
 **朝倉澪** [shocked]：千田——
 
+```sfx
+pa-announcement
+```
+
 **旁白**：同一瞬間。
 
 **廣播**：現在進行防災同步測試。請各位市民配合。
@@ -99,7 +107,7 @@ Tokyo waterfront transit station, closer view of a construction passage entrance
 ---
 
 ```bg
-Tokyo waterfront transit station construction passage entrance at night, heavy door half-closed, plastic sheeting, reflective tape, warning sign reading "maintenance personnel only", a young woman's hand reaching toward the door edge, cold fluorescent lighting from inside the passage, dark corridor beyond, visual-novel background art, close shot
+Tokyo waterfront transit station construction passage entrance at night, heavy door closed, plastic curtain and a low equipment cart leaving a narrow gap, reflective tape, warning sign reading "maintenance personnel only", a young woman's hand reaching toward the gap, cold fluorescent lighting from inside the passage, dark corridor beyond, visual-novel background art, close shot
 ```
 
 **旁白**：她離開柱子。她穿過人群。她往施工通道的方向走。她沒有跑——跑會被看見。她用最快的走路速度。她繞過一個推行李箱的人。她繞過一個低頭看手機的學生。
@@ -110,7 +118,7 @@ Tokyo waterfront transit station construction passage entrance at night, heavy d
 
 **旁白**：她走到門邊。
 
-**旁白**：門沒有完全關上。留了一條縫。不大。剛好夠一個人側身擠進去。她看見裡面——一條走廊。燈光是冷的、白的、像醫院又不像醫院的那種光。牆上有管線。地上有灰。千田的腳步聲在前面。維修人員的工具箱輪子在地板上滾動的聲音在前面。
+**旁白**：門是關著的。門邊垂著塑膠隔離簾。簾子和一台低矮設備車之間，留著一條搬運通道。不大。剛好夠一個人側身鑽進去。她看見裡面——一條走廊。燈光是冷的、白的、像醫院又不像醫院的那種光。牆上有管線。地上有灰。千田的腳步聲在前面。維修人員的工具箱輪子在地板上滾動的聲音在前面。
 
 **旁白**：她把手伸進斜背包。她摸到內層的小布套。她握住小鏡子。鏡面涼涼的，貼著她的手心。
 
@@ -118,7 +126,7 @@ Tokyo waterfront transit station construction passage entrance at night, heavy d
 
 **朝倉澪** [determined]：（內心）⋯⋯而帶走他的，不是列車。
 
-**旁白**：她側身。她擠進那條縫。門在她身後發出一聲很輕的扣響。像鎖舌卡進定位。
+**旁白**：她側身。她鑽進那條縫。塑膠簾的邊條。金屬扣環那一截。刮了一下。她沒有出聲。
 
 **旁白**：她站在施工通道裡。
 
@@ -136,4 +144,4 @@ Tokyo waterfront transit station construction passage entrance at night, heavy d
 
 **旁白**：走廊盡頭的燈光很白。千田的腳步聲在前面。她握緊手裡的小鏡子。她往前走。
 
-**旁白**：門在她身後關上了。
+**旁白**：那條縫，在她身後合攏了。

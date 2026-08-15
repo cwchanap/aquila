@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:06。", background: Background.Chapter_6_Ch6_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:06。", bgm: "passage-hum", background: Background.Chapter_6_Ch6_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她跪在他旁邊。", background: Background.Chapter_6_Ch6_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田的手按著肋下。手指很用力，指節發白，但壓不住。他的深色外套在那個位置已經變得潮濕——不是被水潑到的那種濕，是更暗、更沉的濕。血沿著外套的縫線往下走，像在找一條可以流出來的路。", background: Background.Chapter_6_Ch6_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "地上。第一灘血。", background: Background.Chapter_6_Ch6_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "地上。第一灘血。", sfx: "blood-drip", background: Background.Chapter_6_Ch6_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯地上。", background: Background.Chapter_6_Ch6_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不在第七車。不在月台。不在她第一輪看見死亡的那個座位旁邊。在這裡。在施工通道。靠牆。灰色的防滑膠墊上，一灘暗紅色的液體正在慢慢擴大邊緣。", background: Background.Chapter_6_Ch6_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯血在通道。不在車廂。", background: Background.Chapter_6_Ch6_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },

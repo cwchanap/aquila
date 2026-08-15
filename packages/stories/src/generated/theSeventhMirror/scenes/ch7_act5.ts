@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:15。", background: Background.Chapter_7_Ch7_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:15。", bgm: "institutional-drone", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "急診走廊。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站起來。不是因為聽見什麼。是因為她坐不住了。她沿著走廊走。和之前一樣的路線。等候區。販賣機。走廊盡頭。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那扇門開了。", background: Background.Chapter_7_Ch7_Act5_S0 },
@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "對。安全保管。先轉保安室暫存。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "正常的聲音。正常的流程。沒有人壓低音量。沒有人東張西望。他們在走廊中間說這些話，像在交接一份普通的文件。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯交通案件。安全保管。保安室暫存。警方交接前先封。每一個詞都是正常的。每一個詞都是她不能質疑的。", background: Background.Chapter_7_Ch7_Act5_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安從口袋裡拿出一張新的封口標籤。白色的。比袋上那張小。他把它貼在保管箱的封口處。壓了一下。標籤蓋住了箱蓋和箱體的接縫。", background: Background.Chapter_7_Ch7_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安從口袋裡拿出一張新的封口標籤。白色的。比袋上那張小。他把它貼在保管箱的封口處。壓了一下。標籤蓋住了箱蓋和箱體的接縫。", sfx: "evidence-bag-seal", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯WCE-07。", background: Background.Chapter_7_Ch7_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那張新標籤。它貼在封口處。不是故意遮住什麼。但它剛好蓋住了透明袋露在外面的那一角。剛好擋住了她記下的那個部分編號。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是刻意遮的。是貼在封口處。從我的角度，它剛好擋住了。", background: Background.Chapter_7_Ch7_Act5_S0, portrait: Portrait.AsakuraMio_Base },
@@ -34,7 +34,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "語氣很平。沒有懷疑。沒有警告。只是陳述規定。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯我知道了。", background: Background.Chapter_7_Ch7_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停下來。", background: Background.Chapter_7_Ch7_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安轉回去。推車消失在門後。門關上了。鎖扣響了一聲。", background: Background.Chapter_7_Ch7_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保安轉回去。推車消失在門後。門關上了。鎖扣響了一聲。", sfx: "door-latch", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊恢復安靜。", background: Background.Chapter_7_Ch7_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是被偷走。是被更正式地帶走。被表格。被蓋章。被簽名。被刷卡。被一扇只有識別證能打開的門。", background: Background.Chapter_7_Ch7_Act5_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯偷走還可以報警。這個不能。這是流程。這是保管。這是「警方交接前先封」。我質疑流程，就等於質疑整間醫院在做事的方式。沒有人會站在我這邊。", background: Background.Chapter_7_Ch7_Act5_S0, portrait: Portrait.AsakuraMio_Sad },

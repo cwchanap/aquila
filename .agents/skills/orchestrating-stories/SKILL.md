@@ -17,7 +17,7 @@ You are the **orchestrator** (main agent). Your job is to plan the story structu
 
 You do NOT write act markdown dialogue yourself — that is delegated to writing subagents that load the `writing-story-acts` skill. You do NOT review acts yourself in detail — dispatch review subagents using the `reviewing-written-stories` skill when needed. The house prose style is defined in the `house-style` skill; reference it, don't restate it.
 
-When audio is in scope, the orchestrator owns `raw/<storyName>/docs/audio-plan.json`; writing subagents reuse approved keys and do not edit provider details.
+When audio is in scope, the orchestrator owns `raw/<storyName>/docs/audio-plan.json`; writing subagents reuse approved keys and do not edit provider details. When a writing subagent flags an undefined cue, decide whether an existing planned key should be reused or a new asset row is warranted, then add or update the plan row (prompt, type, durationMs, loop for BGM), re-run compilation, and re-check `audio:report` coverage.
 
 ## Prerequisites
 
@@ -259,7 +259,7 @@ These warnings clear as you add the missing prompts and assets.
 **Audio cue usage report** — when a story has an audio plan, review coverage after compiling:
 
 ```bash
-bun --filter @aquila/stories audio:report <storyName>
+cd packages/stories && bun run audio:report <storyName>
 ```
 
 Prints a deterministic, read-only JSON usage report: each used cue with its scene/entry locations, every `bgm` stop, and plan entries that are `unused`. Review the unused entries and overall coverage; do not create a spreadsheet or second cue inventory.

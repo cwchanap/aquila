@@ -81,7 +81,7 @@ train interior, warm fluorescent lighting, empty seats
 - Multiple `bg` blocks in one scene create distinct **sections** (indexed `s0`, `s1`, `s2`, …). Each section gets its own background image.
 - **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
 
-**Audio cue blocks** — ` ```sfx ` and ` ```bgm ` fenced blocks attach an audio cue to the **next** dialogue entry and carry forward like `bg` blocks. Each block contains a single lowercase-hyphenated cue key from the story's audio plan; `stop` is reserved for BGM:
+**Audio cue blocks** — ` ```sfx ` and ` ```bgm ` fenced blocks both attach a cue to the **next** dialogue entry, but behave differently at runtime: an SFX **fires once** at that entry (a one-shot), while BGM playback **persists** from that entry until the next `bgm` block or a `stop`. Each block contains a single lowercase-hyphenated cue key from the story's audio plan; `stop` is reserved for BGM:
 
 ````markdown
 ```sfx

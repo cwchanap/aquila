@@ -25,7 +25,7 @@
 Run:
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
 ```
 
 Expected: compile succeeds with the HPA-606 bootstrap cues.
@@ -35,7 +35,7 @@ Expected: compile succeeds with the HPA-606 bootstrap cues.
 Run:
 
 ```bash
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 Expected: the report recognizes the current three SFX and two BGM plan identities, with no unresolved authored key.
@@ -47,8 +47,7 @@ Record the counts in temporary working notes only. Do not commit a report snapsh
 Run:
 
 ```bash
-pnpm --filter @hpa/stories test
-pnpm --filter @hpa/stories test:canon
+pnpm --filter @aquila/stories test
 ```
 
 Expected: green before content editing begins.
@@ -140,8 +139,8 @@ Add each new identity to `audio-plan.json` when its first real placement is auth
 Run:
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 Expected:
@@ -189,8 +188,8 @@ Pay special attention to BGM continuation from chapter 4 into chapter 5; do not 
 Run:
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 Expected: zero unresolved keys; all new plan entries have intentional placements; chapter 8 exits with intentional BGM state.
@@ -234,8 +233,8 @@ Do not introduce a new review skill or persist a second inventory.
 ### Step 3: Validate
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 ### Step 4: Commit
@@ -269,8 +268,8 @@ Run a focused `audio-continuity` review around the strongest midpoint transition
 ### Step 3: Validate
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 ### Step 4: Commit
@@ -300,8 +299,8 @@ At this point, the palette should grow more slowly. Treat a sudden increase in n
 ### Step 2: Validate
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 ### Step 3: Commit
@@ -331,8 +330,8 @@ Emphasize motif payoff and continuity rather than introducing novelty for its ow
 ### Step 2: Validate
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 ### Step 3: Commit
@@ -375,8 +374,8 @@ Use the existing reviewer with an `audio-continuity` checkpoint for a late-story
 ### Step 4: Validate
 
 ```bash
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 ### Step 5: Commit
@@ -401,7 +400,7 @@ git commit -m "feat(story): author Seventh Mirror audio cues for chapters 25-28"
 ### Step 1: Run the final report and resolve all drift
 
 ```bash
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 Final expectations:
@@ -432,10 +431,9 @@ Expected: no structural regression introduced by the Markdown edits.
 ### Step 4: Run the full story verification set
 
 ```bash
-pnpm --filter @hpa/stories test
-pnpm --filter @hpa/stories test:canon
-pnpm --filter @hpa/stories compile --story theSeventhMirror
-pnpm --filter @hpa/stories audio:report --story theSeventhMirror
+pnpm --filter @aquila/stories test
+pnpm --filter @aquila/stories compile --story theSeventhMirror
+pnpm --filter @aquila/stories audio:report --story theSeventhMirror
 ```
 
 Expected: all commands pass; final report has no unresolved identity/placement drift.

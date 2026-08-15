@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, temporary command room, early evening, cold fluorescent lighting, whiteboard covered with configuration data and version lineage notes, documents spread across tables, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：17:50。臨時指揮室。白板上的字跡乾了。上一場的排程和控制措施還留在上面。指定專家在旁邊的桌上攤開另一疊文件。
 
 **旁白**：這一疊不是排程。是版本治理鏈。R1。R2。R3。
@@ -71,6 +75,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor, evening, dimmed li
 **旁白**：紗英的眼睛半開著。和凌晨一樣。呼吸迴路的聲音很慢。
 
 **旁白**：日下部把一張紙放在紗英視線範圍內。紙上只有 R3 的可見摘要——三句引用、檢查表欄位。沒有版本編號。沒有 R4。沒有任何快捷選項。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：呼吸治療師接上發聲閥。氣流的節奏變了。
 
@@ -166,6 +174,10 @@ Tsukuba research facility M-zone, temporary command room, early evening, cold fl
 
 **旁白**：他在圖的右側補了一行小字。
 
+```bgm
+stop
+```
+
 **指定專家**：換句話說——R4 的作者，是還沒走到那個星期一的某個版本的妳。
 
 **朝倉澪** [shocked]：（內心）⋯⋯下一個星期一。⋯⋯不是過去。是未來。⋯⋯R4 不是隱藏的第四輪。是一條還沒發生的可能未來。⋯⋯如果它存在——它來自我還沒走到的下一個七天。
@@ -193,6 +205,10 @@ Tsukuba research facility M-zone, temporary command room, early evening, cold fl
 **旁白**：澪合上筆記本。她的手在發抖。不是冷。是某種被太多碎片同時壓著的重量。
 
 **朝倉澪** [exhausted]：（內心）⋯⋯兩條通道。⋯⋯一條是我的。一條是未來送回來的。⋯⋯R3 只管第二條。⋯⋯R4 如果存在——它在第二條裡。⋯⋯而第二條的作者——⋯⋯不知道。還不知道。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：19:20。指揮室。螢光燈的嗡聲很穩。白板上的字跡已經乾透了。
 

@@ -4,6 +4,10 @@
 Long-term neurorehabilitation medical center in northwest Chiba, patient ward corridor, morning, soft natural light from large windows, medical equipment hum, white walls with pale blue handrails, bed-side controller unit visible through observation window, muted clinical palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：08:15。千葉縣北西部。長期神經復健醫療中心。三層樓。白色外牆。停車場很小。入口旁邊種了一排低矮的灌木。不像醫院。像一個被忘記的地方。
 
 **朝倉澪** [exhausted]：（內心）美空在這裡。四年了。十三歲。長期意識障礙。REMOTE CAL ACTIVE。
@@ -86,6 +90,10 @@ Long-term neurorehabilitation medical center in northwest Chiba, patient ward co
 
 **旁白**：09:30。澪跟著真理走到病房門口。透過觀察窗，她看見了美空。
 
+```sfx
+ventilator-cycle
+```
+
 **旁白**：十三歲。很瘦。頭髮被紮成兩條細辮。呼吸器的節奏很慢。很穩。床旁邊有一個小小的收音機。沒有開。琴音坐在床邊的椅子上。
 
 **旁白**：琴音沒有看見窗外的人。她在看美空。她的手放在美空的手背上。很輕。
@@ -101,6 +109,10 @@ Long-term neurorehabilitation medical center in northwest Chiba, patient ward co
 **旁白**：真理看著她。沒有立即回答。她的手指碰了一下觀察窗的玻璃。很輕。然後她收回手。
 
 **朝倉澪** [exhausted]：（內心）不是只有身體。琴音說的。她相信。她真的相信。可是——床側控制器裡有一枚不屬於院方的晶片。而那枚晶片——能重新打開鏡島。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：09:40。走廊。螢光燈。五方文件簽署完畢。設備間的門被貼上司法保全封條。
 

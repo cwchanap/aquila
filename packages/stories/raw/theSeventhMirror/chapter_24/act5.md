@@ -4,6 +4,10 @@
 controlled meeting room adjacent to Misora's patient room, observation window showing medical bed with sleeping 13-year-old girl, bedside controller unit with sealed panel, test bench with same-model retired cartridge and manufacturer service simulator, cold fluorescent lighting, muted clinical palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：13:25。受控會談室。美空病房隔壁。觀察窗。透過玻璃可以看見病房裡面——十三歲的女孩。呼吸器。監測螢幕。三條線。很平。控制器左側的面板貼著五方封條。
 
 **旁白**：會談室裡多了一張測試台。上面放著——同型退役卡匣。製造商服務模擬器。固件版本一致的測試控制器。三樣東西。排列整齊。像手術前的器械盤。
@@ -130,6 +134,10 @@ controlled meeting room adjacent to Misora's patient room, observation window sh
 
 **旁白**：他插入原位操作探測器。不拔除。不碰觸卡匣。只透過操作口執行。
 
+```bgm
+stop
+```
+
 **旁白**：14:20。他開始執行。螢幕上——Domain-P 的狀態列開始變化。
 
 **旁白**：EXECUTION — DISABLED。
@@ -252,6 +260,10 @@ CLOCK／RESET DOMAIN    UNCHANGED
 **獨立系統安全人員**：這不是——所有公共權限消失。制度級根仍存在。emergency override 仍存在。另造公共 token 的能力——仍存在。今天的操作只做到一件事——這張卡匣。這枚序號。這個 epoch。不能被遠端復活。不能被帶往鏡島。不能被當成公共授權的一部分。
 
 **朝倉澪** [exhausted]：⋯⋯我知道。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：15:10。會談室裡的人開始收拾。司法保全封存記錄。外部醫師最後看了一眼監測螢幕。數值穩定。三條線。很平。
 

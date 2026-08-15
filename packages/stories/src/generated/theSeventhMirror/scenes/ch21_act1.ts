@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:15。M 區。指揮走廊。", background: Background.Chapter_21_Ch21_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:15。M 區。指揮走廊。", bgm: "institutional-drone", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三小時的睡眠沒有讓澪的肩膀鬆下來。食物堵在胃裡。咖啡已經涼了。她看著桌面上排列的東西——三個牛皮紙信封，一個不透明封袋，一份程序文件。全部封緘。全部貼著編號。", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯控制組 B。白光觀察之前建的。之後從來沒在第三輪用過。⋯⋯B1 是我寫的隨機句。B3 是我佈置的物件位置。B2 是日下部的符號順序。B4——誰都沒看過。⋯⋯今天才打開。", background: Background.Chapter_21_Ch21_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部坐在對面。他面前放著一個信封。封口有他的簽名和日期。他沒有碰它。", background: Background.Chapter_21_Ch21_Act1_S0 },
@@ -60,7 +60,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "受測者意願。需要確認。", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師走到觀察窗旁邊。呼吸治療師已經在裡面——他正在檢查發聲閥和眼動追蹤器的狀態。透過玻璃，紗英躺在床上。胸口很慢地起伏。", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "我進去確認。用既有眼動方式。只問一個問題——是否願意參與。", background: Background.Chapter_21_Ch21_Act1_S0, portrait: Portrait.ExternalDoctor_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他進去了。門關上。透過觀察窗，澪看見他走到床邊。彎腰。說了什麼。聲音傳不過玻璃。", background: Background.Chapter_21_Ch21_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他進去了。門關上。透過觀察窗，澪看見他走到床邊。彎腰。說了什麼。聲音傳不過玻璃。", sfx: "ventilator-cycle", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紗英的眼睛動了。很慢。眼皮下面。然後——很慢地——打開了一半。", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師等了幾秒。然後他又說了什麼。更短。", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紗英的眼球向右移動了一次。然後回到中間。", background: Background.Chapter_21_Ch21_Act1_S0 },
@@ -73,7 +73,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "可以。", background: Background.Chapter_21_Ch21_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "可以。", background: Background.Chapter_21_Ch21_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把封緘件放進設備箱。扣上鎖扣。箱子發出一聲很輕的喀聲。", background: Background.Chapter_21_Ch21_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:57。走廊裡只剩下設備的聲音和螢光燈的嗡聲。", background: Background.Chapter_21_Ch21_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:57。走廊裡只剩下設備的聲音和螢光燈的嗡聲。", sfx: "fluorescent-hum", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著觀察窗。窗後那個人還在呼吸。很慢。像在用最少的力氣等著什麼。", background: Background.Chapter_21_Ch21_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯B1。玻璃狐狸沒有右耳。⋯⋯B3。紅色迴紋針在類比時鐘下方。十圓硬幣在錄音器左側。⋯⋯這些是我帶回來的。第二輪的我。⋯⋯B2 是日下部帶回來的。空心圓。黑方塊。三角形。雙線。⋯⋯我們沒有一起回到星期一。我們各自帶了各自的碎片。⋯⋯可是媽媽——⋯⋯如果她真的知道——⋯⋯她知道的是兩個不同的人、各自隔離帶回的東西。", background: Background.Chapter_21_Ch21_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她閉上眼睛。只一秒。然後睜開。", background: Background.Chapter_21_Ch21_Act1_S0 },

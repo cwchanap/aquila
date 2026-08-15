@@ -4,6 +4,10 @@
 secured judicial preservation room with multiple monitors, Patient-Root Location Index terminal, evidence binders on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：11:15。保全室。不是會議室。比會議室小。牆上沒有窗。三面螢幕。中間那面掛著 Patient-Root Location Index 的終端。左邊是 C2 外圍的即時影像。右邊是家屬通知室的待機畫面。
 
 **旁白**：澪坐在終端前面。日下部在她左側。司法保全在門邊。外部醫師坐在末端。獨立系統安全人員站在螢幕旁邊。
@@ -50,6 +54,10 @@ LEGAL STATUS      RESEARCH-ASSIST／SEALED
 **旁白**：11:35。外部醫師拿起通訊器。他對 C2 外圍的外部醫療團隊下達指令。聲音很簡潔。像在讀清單。
 
 **外部醫師**：獨立生命體徵確認。目標——G07／08。要求——心率、呼吸、基礎腦電。獨立設備讀取。不接觸設施內部系統。現場時間戳。床號與患者識別交叉。回報——即時。
+
+```sfx
+radio-feed
+```
 
 **旁白**：通訊器裡傳來回覆。很短。確認。
 
@@ -195,6 +203,10 @@ family notification room, small table with two chairs, soft lighting, tissue box
 **兒少專業人員**：我們尚未完成現場接管。也不能承諾她現在能安全移動。
 
 **旁白**：佳乃坐下了。不是主動坐下。是——膝蓋軟了。她坐在椅子上。她的手還握著包的帶子。
+
+```bgm
+stop
+```
 
 **旁白**：很長的沉默。空調的聲音填進房間。
 

@@ -6,13 +6,13 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:45。M-00 外部醫療區。不是病房。是病房旁邊一間隔出來的觀察室。中間有一面牆。牆上有安全視訊。螢幕裡是紗英的床側。", background: Background.Chapter_24_Ch24_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:45。M-00 外部醫療區。不是病房。是病房旁邊一間隔出來的觀察室。中間有一面牆。牆上有安全視訊。螢幕裡是紗英的床側。", bgm: "institutional-drone", background: Background.Chapter_24_Ch24_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在觀察室裡。她不進去。她不能進去。紗英的同意不能由家屬在場引導。患者權利代表在螢幕另一側——病房裡面。外部醫師也在裡面。呼吸治療師在床邊。獨立系統安全人員在觀察室的另一端，看著另一個螢幕——技術記錄。", background: Background.Chapter_24_Ch24_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原坐在觀察室角落。她不說話。她只是看。", background: Background.Chapter_24_Ch24_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她在裡面。螢幕裡。紗英。我的母親。被宣稱多年前病逝的人。現在躺在 M-00 外部醫療區的床上。雙向穩定閉環。半昏迷。發聲閥在她喉部。她能說話。極少。極短。像在節省最後的能量。", background: Background.Chapter_24_Ch24_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:50。外部醫師走到紗英床邊。他坐下。他的動作很慢。像在靠近一個隨時可能碎掉的東西。", background: Background.Chapter_24_Ch24_Act2_S0 },
-    { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "紗英女士。我是外部醫療的醫師。我不屬於這間設施。今天要問妳幾個問題。不是關於過去。是關於——妳的資料未來可以被怎麼用。", background: Background.Chapter_24_Ch24_Act2_S0, portrait: Portrait.ExternalDoctor_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕裡。紗英的眼睛動了一下。很慢。半睜。她沒有點頭。但她的嘴唇——動了。", background: Background.Chapter_24_Ch24_Act2_S0 },
+    { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "紗英女士。我是外部醫療的醫師。我不屬於這間設施。今天要問妳幾個問題。不是關於過去。是關於——妳的資料未來可以被怎麼用。", bgm: null, background: Background.Chapter_24_Ch24_Act2_S0, portrait: Portrait.ExternalDoctor_Base },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕裡。紗英的眼睛動了一下。很慢。半睜。她沒有點頭。但她的嘴唇——動了。", sfx: "ventilator-cycle", background: Background.Chapter_24_Ch24_Act2_S0 },
     { characterId: CharacterId.AsakuraSae, character: "朝倉紗英", dialogue: "⋯⋯嗯。", background: Background.Chapter_24_Ch24_Act2_S0, portrait: Portrait.AsakuraSae_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很輕。像氣流通過一條很窄的縫。呼吸治療師看了一下監測儀。血氧穩定。呼吸頻率在可接受範圍。他對外部醫師點頭。", background: Background.Chapter_24_Ch24_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她的聲音。我透過螢幕聽見她的聲音。很薄。很小心。像踩在很薄的冰上。可是——她是清醒的。她在聽。她知道有人在那裡。", background: Background.Chapter_24_Ch24_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },

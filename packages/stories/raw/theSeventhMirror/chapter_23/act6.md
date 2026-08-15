@@ -4,6 +4,14 @@
 long-term neurorehabilitation medical center, Misora's patient room and adjacent equipment closet, late afternoon, medical bed with sleeping 13-year-old girl, monitoring equipment, hidden service panel behind bedside controller unit, fluorescent lighting, muted clinical palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
+```sfx
+ventilator-cycle
+```
+
 **旁白**：16:30。美空病房。十三歲的女孩躺在床上。呼吸器的節奏很慢。很穩。螢幕上的數字沒有變。腦電。自律。呼吸。三條線。很平。
 
 **旁白**：澪站在門口。她第一次看見美空。不是螢幕上的代碼。不是家屬資料裡的名字。是——一個在呼吸的孩子。
@@ -58,6 +66,10 @@ long-term neurorehabilitation medical center, Misora's patient room and adjacent
 
 **朝倉澪** [shocked]：（內心）銀色載體。千田在電車上塞給我的東西——看起來像那個。邊緣鋒利。有血。可是——這枚不一樣。這枚在槽裡。指示窗亮著。它是活的。
 
+```sfx
+monitor-beep
+```
+
 **旁白**：17:00。獨立系統安全人員用原位只讀探測器掃描卡匣。不拔除。不碰觸。只讀。
 
 **獨立系統安全人員**：硬體序號——與缺失清單一致。雙卡扣。細長指示窗。Domain-C——綁定 G07／03。Domain-P——仍存在。
@@ -79,6 +91,10 @@ long-term neurorehabilitation medical center, Misora's patient room and adjacent
 **外部醫師**：建立原位只讀鑑識。防拆封條。五方共同控制。任何更改——全程錄影、簽章及醫療記錄。
 
 **院內臨床保管方**：確認。實體設備由院內臨床保管方控制。服務操作由院方執行。禁止單人解除。禁止移往鏡島。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：17:30。司法保全貼上防拆封條。封條有編號。有時間戳。有五方簽章的位置。
 
@@ -109,6 +125,10 @@ long-term neurorehabilitation medical center, Misora's patient room and adjacent
 **外部醫師**：不拔。在替代橋接建立以前。
 
 **旁白**：琴音點了一下頭。她走了。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：18:05。澪站在空了的病房裡。她看著床上的美空。看著呼吸器的節奏。看著控制器左側被貼上封條的面板。
 

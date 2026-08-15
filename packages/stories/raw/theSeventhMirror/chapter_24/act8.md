@@ -4,6 +4,10 @@
 sealed audit room, secure video terminals showing regulatory authority feeds, wall monitor displaying continuity authority trace diagram, laptops and sealed evidence logs, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：20:10。封緘稽核室。不是會議室。是一間更小的房間。牆上的螢幕掛著主管機關安全視訊。側邊另一個螢幕顯示封緘稽核的不可改寫記錄。桌上只有筆電和封好的文件。
 
 **旁白**：澪坐在桌邊。日下部在她對面。獨立系統安全人員站在螢幕前。琴音和辯護人在另一側。千田透過遠端音訊連線。凪原和內閣法律顧問在主管機關安全視訊的另一端。
@@ -81,6 +85,10 @@ ESCROW STATE          DISTRIBUTED／READY
 
 **旁白**：凪原的聲音從喇叭傳出來。很平。像在讀論文。
 
+```sfx
+radio-feed
+```
+
 **凪原唯**：確認。我在本輪前確認並續期了該套件。
 
 **旁白**：她頓了一下。
@@ -148,6 +156,10 @@ BUNDLE HASH     TOKYO-7／<BUNDLE-HASH>
 **日下部悟**：千田。continuity 狀態機。
 
 **旁白**：千田的聲音從喇叭傳出來。很穩。像在讀文件。
+
+```sfx
+radio-feed
+```
 
 **千田浩介**：舊 continuity HSM 使用簡單狀態機。它只識別三個問題。
 
@@ -232,6 +244,10 @@ SHARE-CONT         ELIGIBLE
 
 **旁白**：凪原的聲音從喇叭傳出來。沒有波動。
 
+```bgm
+stop
+```
+
 **凪原唯**：穩定。這是我唯一在乎的詞。人類沒有準備好自由面對未來。所以未來必須先被整理。
 
 **旁白**：她停了一下。
@@ -305,6 +321,10 @@ CONTINUITY-0                       ARMED
 **旁白**：CONTINUITY-0 ARMED。
 
 **朝倉澪** [exhausted]：（內心）第五版的設計裡沒有母體。目標裡沒有。標頭裡寫著 NONE。可是——不到二十四小時後。星期日 23:50。系統會把所有人的拒絕重新命名為營運失聯。它不會說「他們拒絕了」。它會說——「他們失聯了」。然後——用替代份額填上去。不需要母體。不需要任何人的同意。只需要——沒有人能讓它聽見「不」。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：23:55。封緘稽核室。螢幕暗了。螢光燈還亮著。空調的聲音填進縫隙。
 

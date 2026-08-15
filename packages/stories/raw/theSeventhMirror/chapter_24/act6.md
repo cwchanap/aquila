@@ -4,6 +4,10 @@
 offline replay room, multiple monitors showing M-00 node and Misora node data side by side, physiological phase waveforms, EEG traces, sleep transition markers, dim cool lighting, equipment hum, muted clinical palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:25。離線回放室。不是病房。不是會議室。是一間沒有窗的小房間。四面螢幕。左邊兩面——M-00 節點。右邊兩面——美空節點。中間一面——比對矩陣。數據在跑。波形在動。很慢。像兩個人在不同房間裡各自呼吸，而這裡只是聽他們的回聲。
 
 **旁白**：澪坐在中間的椅子上。日下部在她左側。外部醫師坐在末端。獨立系統安全人員站在 M-00 螢幕旁邊。司法保全在門邊。
@@ -166,6 +170,10 @@ ACTIVE／D     LOCAL ROOT PENDING／HOLD
 **旁白**：PASSIVE-CONCORDANT。STAGE-1。NOT ESTABLISHED。PROHIBITED。
 
 **朝倉澪** [exhausted]：（內心）不可以離線。可是——第一次不是只知道不能拔。第一次知道——拔以前還缺什麼。這不是終點。這是——起點。真正的起點。不是「沒有母體」的目標。是——「每個人要有自己的路」的開始。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：17:30。她走出回放室。走廊的螢光燈和裡面一樣亮。門在她身後關上。數據不再跑。波形不再動。四個節點的狀態——被封進記錄裡。等明天。等 C2 進場。等 continuity 阻斷。等公開證據。等——第七日。
 

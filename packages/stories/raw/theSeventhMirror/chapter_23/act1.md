@@ -4,7 +4,15 @@
 Tsukuba research facility M-zone, temporary command room, early morning, cold fluorescent lighting, folding tables with laptops and sealed evidence folders, dim grey light through reinforced observation window, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：07:00。M 區。指揮走廊。星期五。第三輪。悠真失蹤第十一日。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：澪睡了不到兩小時。她分不清是閉眼還是睡著。胃裡只有半杯水和一片乾吐司。走廊的螢光燈和昨天一樣亮。和每一輪一樣亮。
 

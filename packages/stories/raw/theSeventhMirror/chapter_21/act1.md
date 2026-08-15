@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, morning, cold fluorescent lighting, folding tables with sealed document envelopes and evidence bags, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：08:15。M 區。指揮走廊。
 
 **旁白**：三小時的睡眠沒有讓澪的肩膀鬆下來。食物堵在胃裡。咖啡已經涼了。她看著桌面上排列的東西——三個牛皮紙信封，一個不透明封袋，一份程序文件。全部封緘。全部貼著編號。
@@ -112,6 +116,10 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 
 **外部醫師**：我進去確認。用既有眼動方式。只問一個問題——是否願意參與。
 
+```sfx
+ventilator-cycle
+```
+
 **旁白**：他進去了。門關上。透過觀察窗，澪看見他走到床邊。彎腰。說了什麼。聲音傳不過玻璃。
 
 **旁白**：紗英的眼睛動了。很慢。眼皮下面。然後——很慢地——打開了一半。
@@ -137,6 +145,10 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 **朝倉澪** [determined]：可以。
 
 **旁白**：她把封緘件放進設備箱。扣上鎖扣。箱子發出一聲很輕的喀聲。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：08:57。走廊裡只剩下設備的聲音和螢光燈的嗡聲。
 

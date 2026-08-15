@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:25。離線回放室。不是病房。不是會議室。是一間沒有窗的小房間。四面螢幕。左邊兩面——M-00 節點。右邊兩面——美空節點。中間一面——比對矩陣。數據在跑。波形在動。很慢。像兩個人在不同房間裡各自呼吸，而這裡只是聽他們的回聲。", background: Background.Chapter_24_Ch24_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:25。離線回放室。不是病房。不是會議室。是一間沒有窗的小房間。四面螢幕。左邊兩面——M-00 節點。右邊兩面——美空節點。中間一面——比對矩陣。數據在跑。波形在動。很慢。像兩個人在不同房間裡各自呼吸，而這裡只是聽他們的回聲。", bgm: "institutional-drone", background: Background.Chapter_24_Ch24_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在中間的椅子上。日下部在她左側。外部醫師坐在末端。獨立系統安全人員站在 M-00 螢幕旁邊。司法保全在門邊。", background: Background.Chapter_24_Ch24_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有琴音。沒有真理。沒有辯護人。這裡不是家屬會談。不是五方控制。是——技術驗證。", background: Background.Chapter_24_Ch24_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）被動驗證。不進行新斷線。不進行新刺激。不進行活體壓力測試。只用歷史回放。只用被動影子。只用外部醫療感測交叉。看——本地影子能不能在不碰患者的情況下，與獨立醫療觀察相符。", background: Background.Chapter_24_Ch24_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -79,6 +79,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:20。她站起來。膝蓋很僵。她走到門口。她回頭看了一眼螢幕。暗了。最後的畫面還殘留一秒。", background: Background.Chapter_24_Ch24_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "PASSIVE-CONCORDANT。STAGE-1。NOT ESTABLISHED。PROHIBITED。", background: Background.Chapter_24_Ch24_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不可以離線。可是——第一次不是只知道不能拔。第一次知道——拔以前還缺什麼。這不是終點。這是——起點。真正的起點。不是「沒有母體」的目標。是——「每個人要有自己的路」的開始。", background: Background.Chapter_24_Ch24_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:30。她走出回放室。走廊的螢光燈和裡面一樣亮。門在她身後關上。數據不再跑。波形不再動。四個節點的狀態——被封進記錄裡。等明天。等 C2 進場。等 continuity 阻斷。等公開證據。等——第七日。", background: Background.Chapter_24_Ch24_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:30。她走出回放室。走廊的螢光燈和裡面一樣亮。門在她身後關上。數據不再跑。波形不再動。四個節點的狀態——被封進記錄裡。等明天。等 C2 進場。等 continuity 阻斷。等公開證據。等——第七日。", sfx: "fluorescent-hum", background: Background.Chapter_24_Ch24_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十二小時四十三分鐘。", background: Background.Chapter_24_Ch24_Act6_S0 },
 ];

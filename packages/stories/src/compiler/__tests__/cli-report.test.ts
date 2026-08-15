@@ -55,6 +55,7 @@ describe('cli --report', () => {
             'sfx:evidence-bag-seal',
             'sfx:fluorescent-hum',
             'sfx:impact',
+            'sfx:letter-confirm',
             'sfx:mirror-chime',
             'sfx:monitor-beep',
             'sfx:notification-beep',
@@ -71,7 +72,7 @@ describe('cli --report', () => {
             'sfx:vending-machine-hum',
             'sfx:ventilator-cycle',
         ]);
-        expect(report.bgmStops).toHaveLength(26);
+        expect(report.bgmStops).toHaveLength(44);
         expect(report.unused).toEqual([]);
     });
 

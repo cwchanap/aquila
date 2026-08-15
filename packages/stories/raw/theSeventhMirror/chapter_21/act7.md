@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, M-00 medical area, night, dimmed clinical lighting, ventilator and infusion pumps humming, eye-tracking letter board mounted on adjustable arm beside bed, muted desaturated palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：20:10。M-00 醫療區。換班結束。紗英的生命徵象在記錄板上被抄了兩次——一次是上一班，一次是這一班。數字幾乎一樣。
 
 **旁白**：她睡了不到一小時。不是自然入睡。是疲勞把意識壓下去的。現在眼睛又開了一半。
@@ -44,7 +48,19 @@ Tsukuba research facility M-zone, M-00 medical area, night, dimmed clinical ligh
 
 **旁白**：紗英的瞳孔很小。但她盯著板子。盯著某一個位置。
 
+```bgm
+stop
+```
+
+```sfx
+letter-confirm
+```
+
 **旁白**：游標停在一個字母上。停了兩秒。確認。游標跳到下一個。停。確認。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：很慢。每一個字都要等。呼吸器的節奏沒有變。但房間裡所有人都停了。
 
@@ -100,6 +116,10 @@ Tsukuba research facility M-zone, M-00 medical area, night, dimmed clinical ligh
 
 **旁白**：呼吸治療師把板子的螢幕調暗。金屬臂收到一邊。紗英的呼吸慢慢降下來。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：但螢幕上的字還在。外部醫師把它拍下來。然後他看著澪。
 
 **外部醫師**：妳知道這是什麼意思嗎？
@@ -132,15 +152,15 @@ Tsukuba research facility M-zone, M-00 medical area, night, dimmed clinical ligh
 
 **日下部悟**：如果 R4 來自已經發生過的循環，應該有殘留紀錄。版本治理鏈不會憑空缺一個編號。⋯⋯R1、R2、R3 是七年前的。R4 跳了七年。七年裡沒有第四版。⋯⋯它不是被刪除的。是從來沒有在這條時間線裡被寫下。
 
-**指定專家**：如果它不是來自既往循環——那時間來源只剩一個可能。
+**指定專家**：如果它不是來自既往循環——那時間來源只剩一個可能。18:50 推論過的那個。
 
-**朝倉澪**：哪一個？
+**朝倉澪**：⋯⋯下一個回聲窗。⋯⋯那時只是推論。
 
-**指定專家**：下一個回聲窗。
+**指定專家**：現在不是了。她把它拼出來了。
 
 **旁白**：澪看著他。
 
-**指定專家**：額外託管回聲服從七日規則。來源必須在某個星期一 06:13 前形成，由該次白光向前回送七日。⋯⋯如果 R4 不是來自過去，它只能來自一條由當前第三輪繼續向前、在下一個星期一 06:13 前完成的可能未來。
+**指定專家**：額外託管回聲服從七日規則。來源必須在某個星期一 06:13 前形成，由該次白光向前回送七日。⋯⋯傍晚的推論——R4 只能來自當前第三輪繼續向前、在下一個星期一 06:13 前完成的可能未來。
 
 **旁白**：他在桌上畫了一條線。
 

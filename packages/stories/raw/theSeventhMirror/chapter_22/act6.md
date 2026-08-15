@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, corridor converted into temporary joint safety meeting space, late afternoon, folding tables arranged in U-shape, laptops and printed forms, large monitor showing decision interface with receiver dependency panel, cold fluorescent lighting, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：17:10。M 區。走廊。摺疊桌被重新排成 U 形。筆電打開。螢幕上是決策介面。活動接收者依存圖。代碼。狀態欄。沒有名字。
 
 **旁白**：澪站在 U 形桌的開口處。她沒有坐下。她看著螢幕。看著那些代碼。M-00。G07／03。高依存遠端單元 B。LEGACY／02。
@@ -226,6 +230,10 @@ Tsukuba research facility M-zone, corridor converted into temporary joint safety
 
 **日下部悟**：臨時共同安全會議決議——R4／RECONSTRUCTED。INTERIM STATUS——NOT PRE-AUTHORIZED。USE——FORENSIC／FAILURE-MODE ONLY。REVIEW——EVENT-TRIGGERED ONLY。全體同意。
 
+```bgm
+stop
+```
+
 **旁白**：18:25。走廊裡沒有掌聲。沒有鬆一口氣的聲音。只有椅子被推回的聲音。文件被收進資料袋的聲音。筆電被合上的聲音。
 
 **旁白**：澪坐在原位。她沒有站起來。她看著桌上那份反對書副本。她看著那行字。
@@ -344,11 +352,19 @@ Tsukuba research facility M-zone, corridor converted into temporary joint safety
 
 **朝倉澪** [exhausted]：（內心）不是取消 R4。是——不讓 R4 變成預設。不讓未撤離者變成預先寫好的代價。不讓母親的名字在還沒有人看過的時候就被劃掉。
 
+```sfx
+fluorescent-hum
+```
+
 **旁白**：19:00。走廊。螢光燈。U 形桌被拆回摺疊桌。筆電合上。螢幕暗了。
 
 **旁白**：凪原站在走廊那端。她還沒有走。她的身後站著內閣法律顧問。白袍。銀框眼鏡。
 
 **旁白**：她看著澪。澪也看著她。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：兩個人之間隔著整條走廊。十公尺。螢光燈。呼吸器的節奏從觀察窗後面傳過來。很慢。
 
@@ -374,6 +390,10 @@ Tsukuba research facility M-zone, corridor converted into temporary joint safety
 
 **旁白**：澪看著她的背影。白袍。銀框眼鏡的反光。脊椎沒有彎。像從走進這棟建築到離開，她的姿勢就沒有變過一次。
 
+```sfx
+door-latch
+```
+
 **旁白**：然後她不見了。走廊盡頭的門關上。螢光燈還亮著。
 
 **旁白**：19:15。日下部走到澪旁邊。他的聲音很低。
@@ -391,6 +411,10 @@ Tsukuba research facility M-zone, corridor converted into temporary joint safety
 **旁白**：澪看著他。他的臉很疲憊。眼下的陰影很深。但他的眼睛是清醒的。
 
 **朝倉澪** [exhausted]：⋯⋯嗯。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：她沒有動。她坐在那裡。手裡拿著會議記錄。看著走廊。看著螢光燈。看著觀察窗後面呼吸器的節奏。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:30。美空病房。十三歲的女孩躺在床上。呼吸器的節奏很慢。很穩。螢幕上的數字沒有變。腦電。自律。呼吸。三條線。很平。", background: Background.Chapter_23_Ch23_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:30。美空病房。十三歲的女孩躺在床上。呼吸器的節奏很慢。很穩。螢幕上的數字沒有變。腦電。自律。呼吸。三條線。很平。", sfx: "ventilator-cycle", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在門口。她第一次看見美空。不是螢幕上的代碼。不是家屬資料裡的名字。是——一個在呼吸的孩子。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）十三歲。比悠真小兩歲。頭髮很細。手腕上的腕帶很鬆。她看起來——比她的年齡更小。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音走進來。辯護人在她旁邊。院內臨床保管方已經在設備間等候。外部醫師站在床側。司法保全在門邊。獨立系統安全人員站在控制器旁邊。", background: Background.Chapter_23_Ch23_Act6_S0 },
@@ -33,7 +33,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "銀色。很薄。邊緣有兩個卡扣。中間有一道細長的指示窗。指示窗亮著微弱的光。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著那枚卡匣。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）銀色載體。千田在電車上塞給我的東西——看起來像那個。邊緣鋒利。有血。可是——這枚不一樣。這枚在槽裡。指示窗亮著。它是活的。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:00。獨立系統安全人員用原位只讀探測器掃描卡匣。不拔除。不碰觸。只讀。", background: Background.Chapter_23_Ch23_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:00。獨立系統安全人員用原位只讀探測器掃描卡匣。不拔除。不碰觸。只讀。", sfx: "monitor-beep", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "硬體序號——與缺失清單一致。雙卡扣。細長指示窗。Domain-C——綁定 G07／03。Domain-P——仍存在。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "兩域在同一硬體外殼內。彼此隔離。使用不同不可匯出金鑰。", background: Background.Chapter_23_Ch23_Act6_S0 },
@@ -44,7 +44,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看著院內臨床保管方。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "建立原位只讀鑑識。防拆封條。五方共同控制。任何更改——全程錄影、簽章及醫療記錄。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.ClinicalCustodian, character: "院內臨床保管方", dialogue: "確認。實體設備由院內臨床保管方控制。服務操作由院方執行。禁止單人解除。禁止移往鏡島。", background: Background.Chapter_23_Ch23_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:30。司法保全貼上防拆封條。封條有編號。有時間戳。有五方簽章的位置。", background: Background.Chapter_23_Ch23_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:30。司法保全貼上防拆封條。封條有編號。有時間戳。有五方簽章的位置。", sfx: "evidence-bag-seal", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音站在旁邊。她看著封條被貼上去。她的表情沒有變。但她的手——放在身側的手——指尖碰了一下自己的手腕。很輕。像在確認什麼已經不在那裡了。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她看著封條。她看著——自己帶來的東西被控制住了。她沒有反抗。她沒有試圖阻止。因為——她要的就是這個。她要的是美空不被拔除。而這正是——五方控制的目的。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:45。獨立系統安全人員完成原位只讀鑑識的初始掃描。他收起探測器。", background: Background.Chapter_23_Ch23_Act6_S0 },
@@ -59,7 +59,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是問句。是陳述。是確認。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "不拔。在替代橋接建立以前。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音點了一下頭。她走了。", background: Background.Chapter_23_Ch23_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05。澪站在空了的病房裡。她看著床上的美空。看著呼吸器的節奏。看著控制器左側被貼上封條的面板。", background: Background.Chapter_23_Ch23_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05。澪站在空了的病房裡。她看著床上的美空。看著呼吸器的節奏。看著控制器左側被貼上封條的面板。", sfx: "ventilator-cycle", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她的合作。第一次產生了不可替代的價值。沒有她——找不到槽位。沒有她——不能安全建立原位控制。她不是被洗白。她還要面對自己的選擇。可是——她剛才做的事，是真的有用。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "呼吸器的節奏從床那邊傳過來。很慢。很穩。", background: Background.Chapter_23_Ch23_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）美空。十三歲。還在呼吸。卡匣在位。不拔除。五方控制。第一次——有人在她床邊建立了一條不只是依賴中央的路。", background: Background.Chapter_23_Ch23_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },

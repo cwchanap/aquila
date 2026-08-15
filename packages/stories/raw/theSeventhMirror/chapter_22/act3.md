@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, corridor between system security group and external medical group workstations, late morning, laptops showing receiver dependency status panels with colored indicators, printed assessment forms on folding tables, cold fluorescent lighting, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：11:10。M 區。走廊。
 
 **旁白**：日下部站在走廊中間。他的面前放著一台筆電。螢幕上是活動接收者依存狀態面板。他沒有碰鍵盤。他在等兩組各自就位。
@@ -223,6 +227,10 @@ OTHER ACTIVE                 4
 **旁白**：白板上的四行代碼在走廊盡頭的光線裡微微反光。
 
 **朝倉澪** [exhausted]：（內心）身體在外面。系統在裡面。中間——是一條還沒有被切斷的線。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：12:30。走廊。螢光燈。呼吸器的節奏從觀察窗後面傳過來。很慢。
 

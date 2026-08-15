@@ -4,6 +4,10 @@
 Hospital safety conference room, morning, long table with laptops and printed evidence folders, large monitor showing work order chain diagrams, cold fluorescent lighting, muted institutional palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：09:40。醫院安全會議室。長桌。螢幕。三台筆電。日下部坐在主位。指定專家坐在他旁邊。司法保全人員在角落記錄。澪坐在長桌末端。她面前沒有筆電。只有一杯水。
 
 **旁白**：螢幕亮了。指定專家調出第一份資料。
@@ -84,6 +88,14 @@ Hospital safety conference room, morning, long table with laptops and printed ev
 
 **日下部悟**：妳不在場。
 
+```bgm
+stop
+```
+
+```sfx
+door-latch
+```
+
 **旁白**：11:10。正式詢問室。門關上了。澪站在走廊裡。她看不見裡面。她聽不見內容。只有門上方的一盞小燈亮著——紅色。表示詢問進行中。
 
 ```bg
@@ -95,6 +107,10 @@ Hospital corridor outside formal questioning room, late morning, cold fluorescen
 **旁白**：她坐在走廊的椅子上。椅子很硬。塑膠的。她什麼都不能做。只能等。
 
 **朝倉澪** [exhausted]：（內心）不要回她。不要質問她。不要在病房裡展示懷疑。不要使用前兩輪記憶。讓程序走。讓程序走完。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：12:05。門上的紅燈滅了。門開了。日下部走出來。他的表情沒有變。但他的腳步比進去時慢了半拍。
 

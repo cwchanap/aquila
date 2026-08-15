@@ -6,14 +6,14 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。臨時共同安全會議室。星期六。第三輪。悠真失蹤事件第十二日。", background: Background.Chapter_24_Ch24_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。臨時共同安全會議室。星期六。第三輪。悠真失蹤事件第十二日。", bgm: "sleepless-vigil", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪睡了不到三個小時。不是在床上。是在會議室角落的摺疊椅上。有人替她蓋了一條薄毯。她不記得是誰。醒來的時候毯子滑到地上。螢光燈已經亮了。", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）06:30。距星期一 06:13。約一日二十三小時四十三分。還在倒數。", background: Background.Chapter_24_Ch24_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "會議室被重新整理過。昨晚的證物袋都封好了。長桌。筆電。封好的文件。牆上的螢幕亮著——版本系統的介面。最上面一行。", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "KAGAMI-SAFE／R5。", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "下面是一排空欄位。第一個。", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "AUTHOR。", background: Background.Chapter_24_Ch24_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:35。人陸續到了。日下部坐在澪對面。他的罐裝咖啡沒有打開。外部醫師坐在末端。獨立系統安全人員站在螢幕旁邊。患者權利代表坐在另一側——她昨晚就到了。獨立的。不隸屬任何一方。司法保全在門邊。院內臨床保管方在角落。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。", background: Background.Chapter_24_Ch24_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:35。人陸續到了。日下部坐在澪對面。他的罐裝咖啡沒有打開。外部醫師坐在末端。獨立系統安全人員站在螢幕旁邊。患者權利代表坐在另一側——她昨晚就到了。獨立的。不隸屬任何一方。司法保全在門邊。院內臨床保管方在角落。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。", sfx: "radio-feed", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原唯坐在長桌的另一端。內閣法律顧問在她旁邊。她沒有看螢幕。她在看桌面。", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她還在。她還沒有被問詢。她在這裡——因為她的職務體系和這份文件有關。可是她不能簽。她不是患者權利。不是外部醫療。不是系統安全。她是——設計了舊系統的人。", background: Background.Chapter_24_Ch24_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:40。獨立系統安全人員把螢幕上的空欄位投射到牆上。AUTHOR。空白。游標在閃。", background: Background.Chapter_24_Ch24_Act1_S0 },
@@ -78,6 +78,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:35。會議室裡的人開始站起來。外部醫師收起夾板。患者權利代表整理她的文件。獨立系統安全人員關掉螢幕。螢光燈還亮著。", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）沒有母體。不是——已經沒有母體。是——設計裡不再有一個母體。目標裡不再有。可是現況裡——紗英還在閉環上。美空還在中央 fallback。葵還沒有被找到。所有人仍在母體留下的系統裡。今天的任務——不是假裝已經離開。是——規定怎麼離開。", background: Background.Chapter_24_Ch24_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:40。澪站起來。膝蓋很僵。她看了一眼螢幕。暗了。最後的畫面還殘留一秒。AUTHORSHIP。FEDERATED。NO SINGLE OWNER。", background: Background.Chapter_24_Ch24_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向門口。走廊的螢光燈和昨天一樣亮。和每一輪一樣亮。", background: Background.Chapter_24_Ch24_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向門口。走廊的螢光燈和昨天一樣亮。和每一輪一樣亮。", sfx: "fluorescent-hum", background: Background.Chapter_24_Ch24_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日二十二小時三十三分鐘。", background: Background.Chapter_24_Ch24_Act1_S0 },
 ];

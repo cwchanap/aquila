@@ -4,6 +4,10 @@
 temporary joint security conference room, large table with multiple laptops and sealed evidence binders, wall monitor showing R5 signature panel, court and family-representative video feeds on side screens, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:05。臨時共同安全會議室。長桌。筆電。封好的證據文件。牆上的螢幕掛著 R5 簽署面板。側邊兩個小螢幕——一個是法院連線，一個是家屬代表連線。
 
 **旁白**：澪坐在長桌中段。日下部在她左側。獨立系統安全人員站在螢幕前。外部醫師坐在末端。患者權利代表坐在法院連線的螢幕旁邊。司法保全在門邊。院內臨床保管方在另一側。
@@ -29,6 +33,10 @@ temporary joint security conference room, large table with multiple laptops and 
 **獨立系統安全人員**：系統安全。確認 Domain-P 隔離不可遠端逆轉。確認 Domain-C 保留。確認患者綁定本地臨床根。確認 EXPORT LOCKED。簽署範圍——技術授權。
 
 **旁白**：他簽名。時間戳。
+
+```sfx
+radio-feed
+```
 
 **旁白**：18:30。患者權利代表透過法院連線簽署。她的聲音從喇叭裡傳出來。溫和。精確。
 
@@ -80,6 +88,10 @@ CASE OFFICER        ASAKURA／POLICE
 **日下部悟**：臨時保全由內部監察、值班檢察／法院及醫療安全官共同簽發。父親不是國家級密鑰持有人。他是案件承辦人、通知持有人及續期窗口。
 
 **朝倉澪** [exhausted]：（內心）不是單人密鑰。他不是一個人拿著一把鑰匙擋住系統。他是——承辦人。他透過案件、法院和醫療，讓系統停過一次。一次。七年前。
+
+```bgm
+stop
+```
 
 **旁白**：19:05。日下部切換到下一份記錄。案件分類變更。
 
@@ -176,6 +188,10 @@ ENFORCEMENT           PARTIAL／PENDING
 **旁白**：澪坐在原位。她看著螢幕上最後的畫面。DISTRIBUTED PATIENT-SAFETY HOLD。ENFORCEMENT PARTIAL。
 
 **朝倉澪** [exhausted]：（內心）父親停過一次。透過程序。不是密鑰。然後案件換了名字。hold 沒有跟著。他失蹤了。沒有人接手。所有人的安全一起失效了。七年。這次——不能這樣。這次不能因為一個人不見了，或案件被換了名字，所有人的安全就一起失效。可是——continuity HSM 不認得我們的拒絕。它會把法院凍結當成失聯。它會把醫療拒絕當成失聯。它會把所有人的「不」——重新命名成「沒有」。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：20:10。會議室空了。螢光燈還亮著。空調的聲音填進縫隙。
 

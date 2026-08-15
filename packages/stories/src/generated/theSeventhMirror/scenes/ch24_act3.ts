@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:15。美空節點。離線安全室。不是病房。是病房旁邊一間被清空設備的房間。獨立感測架好了。牆上的螢幕掛著美空局部影子的狀態面板。桌上放著筆電和驗證紀錄。", background: Background.Chapter_24_Ch24_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在桌邊。日下部在她對面。獨立系統安全人員站在螢幕前。外部醫師坐在末端。院內臨床保管方在另一側。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。", background: Background.Chapter_24_Ch24_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:15。美空節點。離線安全室。不是病房。是病房旁邊一間被清空設備的房間。獨立感測架好了。牆上的螢幕掛著美空局部影子的狀態面板。桌上放著筆電和驗證紀錄。", bgm: "institutional-drone", background: Background.Chapter_24_Ch24_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在桌邊。日下部在她對面。獨立系統安全人員站在螢幕前。外部醫師坐在末端。院內臨床保管方在另一側。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。", sfx: "radio-feed", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上還是昨晚的畫面。LOCAL SHADOW SEED。SUBJECT G07／03。STATUS AVAILABLE。VALIDATE REQUIRED。", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）美空。十三歲。還在睡。局部影子種子存在。還沒有驗證。今天——不是要讓她醒。不是要讓她離開中央。是——證明她的節奏能不能在本地被看見。能不能跟外部醫療的獨立感測一致。", background: Background.Chapter_24_Ch24_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:20。千田的聲音從喇叭裡傳出來。很穩。像在讀文件。但——比昨天慢了一點。像在挑選每一個字。", background: Background.Chapter_24_Ch24_Act3_S0 },
@@ -106,7 +106,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:10。房間裡的人開始收拾。外部醫師收起獨立感測設備。獨立系統安全人員封存驗證紀錄。院內臨床保管方確認設備狀態未變。", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著螢幕。最後的畫面。PASSIVE-CONCORDANT。STAGE-1。EXPORT LOCKED。", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不拿走她的節奏。不複製她。不送出她。只是——讓她自己的機器和外面的醫生一起看。看見了。方向一致。然後——停下來。不往前推。不假裝成功。這是——我能給她的。不是醒來。不是離開。是——被看見。被兩個獨立的來源看見。被——承認存在。", background: Background.Chapter_24_Ch24_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:15。她站起來。膝蓋很僵。她走向門口。走廊的螢光燈還亮著。病房裡的呼吸器還在。很慢。很穩。", background: Background.Chapter_24_Ch24_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:15。她站起來。膝蓋很僵。她走向門口。走廊的螢光燈還亮著。病房裡的呼吸器還在。很慢。很穩。", sfx: "ventilator-cycle", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "美空沒有醒。", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但她的節奏——第一次——在本地被看見了。而且——外面的醫生也看見了。", background: Background.Chapter_24_Ch24_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十八小時五十八分鐘。", background: Background.Chapter_24_Ch24_Act3_S0 },

@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, system security group workstation area, mid-afternoon, large monitor showing R4 failure envelope diagram with timeline and condition gates, laptops with candidate family summaries, printed risk assessment forms, cold fluorescent lighting, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:10。M 區。系統安全組工作站。螢幕上打開了一張圖。不是依存圖。不是閉環圖。是一條時間軸。軸上標著六個條件閘門。每個閘門旁邊寫著一行字。
 
 **旁白**：日下部站在螢幕旁邊。他的聲音回到了程序模式。像在讀一份結構化報告。
@@ -124,6 +128,10 @@ Tsukuba research facility M-zone, system security group workstation area, mid-af
 
 **旁白**：她頓了一下。她的聲音和往常一樣——學術。精確。不帶情緒。但她的語速慢了一拍。只有一拍。
 
+```bgm
+stop
+```
+
 **凪原唯**：到那個時點，妳會只剩幾秒。
 
 **旁白**：她看著澪。不是看著白板。不是看著螢幕。是看著澪。
@@ -213,6 +221,10 @@ Tsukuba research facility M-zone, system security group workstation area, mid-af
 **旁白**：澪看著他。他的臉很疲憊。眼下的陰影很深。但他的眼睛是清醒的。他在等她。不是等她回答。是等她要求。
 
 **朝倉澪** [determined]：把名字補回去。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：16:35。走廊。螢光燈。螢幕上的圖還在。六個閘門。兩條路線。四個紅區。四個代碼。沒有名字。
 

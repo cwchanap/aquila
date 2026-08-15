@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:15。保全室。不是會議室。比會議室小。牆上沒有窗。三面螢幕。中間那面掛著 Patient-Root Location Index 的終端。左邊是 C2 外圍的即時影像。右邊是家屬通知室的待機畫面。", background: Background.Chapter_24_Ch24_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:15。保全室。不是會議室。比會議室小。牆上沒有窗。三面螢幕。中間那面掛著 Patient-Root Location Index 的終端。左邊是 C2 外圍的即時影像。右邊是家屬通知室的待機畫面。", bgm: "institutional-drone", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在終端前面。日下部在她左側。司法保全在門邊。外部醫師坐在末端。獨立系統安全人員站在螢幕旁邊。", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:20。新的醫療／司法命令送達。不是日下部申請的。是法院在 R5 患者安全程序啟動後自動核發的。命令的標頭只有一行。", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "PATIENT-ROOT LOCATION INDEX — AUTHORIZED。", background: Background.Chapter_24_Ch24_Act4_S0 },
@@ -25,7 +25,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "確認。外部醫療團隊已在 C2 外圍待命。獨立設備。獨立通道。不使用設施內部監測。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:35。外部醫師拿起通訊器。他對 C2 外圍的外部醫療團隊下達指令。聲音很簡潔。像在讀清單。", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "獨立生命體徵確認。目標——G07／08。要求——心率、呼吸、基礎腦電。獨立設備讀取。不接觸設施內部系統。現場時間戳。床號與患者識別交叉。回報——即時。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.ExternalDoctor_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "通訊器裡傳來回覆。很短。確認。", background: Background.Chapter_24_Ch24_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "通訊器裡傳來回覆。很短。確認。", sfx: "radio-feed", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:40。保全室裡安靜了。每個人都在等。螢幕上的 C2 外圍影像沒有變化。灰色的建築。外圍的車道。沒有人進出。", background: Background.Chapter_24_Ch24_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）等。等外部醫療進去。等他們用獨立設備讀到葵的心率。等他們確認——不是系統宣稱的活動。是——一個十四歲的女孩仍有呼吸。仍有心跳。仍有腦電。仍活著。", background: Background.Chapter_24_Ch24_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:55。通訊器響了。外部醫師接起來。他聽了很久。他的表情沒有變。但他的手——拿著筆的手——停了一下。然後繼續寫。", background: Background.Chapter_24_Ch24_Act4_S0 },
@@ -90,7 +90,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佳乃還站著。她的嘴唇動了一下。沒有發出聲音。然後——", background: Background.Chapter_24_Ch24_Act4_S1 },
     { characterId: CharacterId.ChildWelfareOfficer, character: "兒少專業人員", dialogue: "我們尚未完成現場接管。也不能承諾她現在能安全移動。", background: Background.Chapter_24_Ch24_Act4_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佳乃坐下了。不是主動坐下。是——膝蓋軟了。她坐在椅子上。她的手還握著包的帶子。", background: Background.Chapter_24_Ch24_Act4_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很長的沉默。空調的聲音填進房間。", background: Background.Chapter_24_Ch24_Act4_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很長的沉默。空調的聲音填進房間。", bgm: null, background: Background.Chapter_24_Ch24_Act4_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她抬起頭。她的眼睛——不是感激。不是釋然。是——一個已經被騙過太多次的人，在聽到「找到了」三個字時的第一反應。", background: Background.Chapter_24_Ch24_Act4_S1 },
     { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "你們找到的是她，還是又一個編號？", background: Background.Chapter_24_Ch24_Act4_S1, portrait: Portrait.MinaseYoshino_Guarded },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "保全室裡。澪看著螢幕。她的手指碰著桌面的邊緣。", background: Background.Chapter_24_Ch24_Act4_S1 },

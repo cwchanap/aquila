@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:00。M 區。指揮走廊。星期五。第三輪。悠真失蹤第十一日。", background: Background.Chapter_23_Ch23_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪睡了不到兩小時。她分不清是閉眼還是睡著。胃裡只有半杯水和一片乾吐司。走廊的螢光燈和昨天一樣亮。和每一輪一樣亮。", background: Background.Chapter_23_Ch23_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:00。M 區。指揮走廊。星期五。第三輪。悠真失蹤第十一日。", bgm: "sleepless-vigil", background: Background.Chapter_23_Ch23_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪睡了不到兩小時。她分不清是閉眼還是睡著。胃裡只有半杯水和一片乾吐司。走廊的螢光燈和昨天一樣亮。和每一輪一樣亮。", sfx: "fluorescent-hum", background: Background.Chapter_23_Ch23_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）距星期一 06:13。約二日二十三小時十三分。還在倒數。", background: Background.Chapter_23_Ch23_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌面被重新整理過。昨晚的證物袋都封好了。編號貼好了。螢幕暗了。但她的手機——她口袋裡的手機——螢幕朝下。從昨晚到現在，一直朝下。", background: Background.Chapter_23_Ch23_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "七個字被蓋在下面。", background: Background.Chapter_23_Ch23_Act1_S0 },

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05。臨時共同安全會議室。長桌。筆電。封好的證據文件。牆上的螢幕掛著 R5 簽署面板。側邊兩個小螢幕——一個是法院連線，一個是家屬代表連線。", background: Background.Chapter_24_Ch24_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05。臨時共同安全會議室。長桌。筆電。封好的證據文件。牆上的螢幕掛著 R5 簽署面板。側邊兩個小螢幕——一個是法院連線，一個是家屬代表連線。", bgm: "institutional-drone", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在長桌中段。日下部在她左側。獨立系統安全人員站在螢幕前。外部醫師坐在末端。患者權利代表坐在法院連線的螢幕旁邊。司法保全在門邊。院內臨床保管方在另一側。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。獨立系統安全人員把 R5 簽署面板投射到主螢幕上。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "R5 必要領域簽署。每一項權限只能由真正擁有該權限的人簽自己的部分。不可互相替代。", background: Background.Chapter_24_Ch24_Act7_S0 },
@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:25。獨立系統安全人員簽。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "系統安全。確認 Domain-P 隔離不可遠端逆轉。確認 Domain-C 保留。確認患者綁定本地臨床根。確認 EXPORT LOCKED。簽署範圍——技術授權。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他簽名。時間戳。", background: Background.Chapter_24_Ch24_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:30。患者權利代表透過法院連線簽署。她的聲音從喇叭裡傳出來。溫和。精確。", background: Background.Chapter_24_Ch24_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:30。患者權利代表透過法院連線簽署。她的聲音從喇叭裡傳出來。溫和。精確。", sfx: "radio-feed", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.PatientRightsRep, character: "獨立患者權利代表", dialogue: "患者權利。確認紗英限制性同意經兩段程序。確認撤回能力與 SAFE PAUSE。確認任何模糊均被解讀為不授權。簽署範圍——患者權利證明。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她簽名。時間戳。遠端。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:35。司法保全簽。", background: Background.Chapter_24_Ch24_Act7_S0 },
@@ -41,7 +41,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "臨時保全由內部監察、值班檢察／法院及醫療安全官共同簽發。父親不是國家級密鑰持有人。他是案件承辦人、通知持有人及續期窗口。", background: Background.Chapter_24_Ch24_Act7_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不是單人密鑰。他不是一個人拿著一把鑰匙擋住系統。他是——承辦人。他透過案件、法院和醫療，讓系統停過一次。一次。七年前。", background: Background.Chapter_24_Ch24_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。日下部切換到下一份記錄。案件分類變更。", background: Background.Chapter_24_Ch24_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。日下部切換到下一份記錄。案件分類變更。", bgm: null, background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "```text CRIMINAL／PATIENT-SAFETY DOCKET         ↓ NATIONAL SECURITY／CRITICAL INFRASTRUCTURE EVENT ```", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "父親失蹤前後，案件由刑事／患者安全 docket 被重新分類為國安基礎設施事件。", background: Background.Chapter_24_Ch24_Act7_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他停了一下。", background: Background.Chapter_24_Ch24_Act7_S0 },
@@ -79,6 +79,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:05。法院連線切斷。家屬代表連線切斷。螢幕暗了。會議室裡的人開始收拾。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在原位。她看著螢幕上最後的畫面。DISTRIBUTED PATIENT-SAFETY HOLD。ENFORCEMENT PARTIAL。", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）父親停過一次。透過程序。不是密鑰。然後案件換了名字。hold 沒有跟著。他失蹤了。沒有人接手。所有人的安全一起失效了。七年。這次——不能這樣。這次不能因為一個人不見了，或案件被換了名字，所有人的安全就一起失效。可是——continuity HSM 不認得我們的拒絕。它會把法院凍結當成失聯。它會把醫療拒絕當成失聯。它會把所有人的「不」——重新命名成「沒有」。", background: Background.Chapter_24_Ch24_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:10。會議室空了。螢光燈還亮著。空調的聲音填進縫隙。", background: Background.Chapter_24_Ch24_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:10。會議室空了。螢光燈還亮著。空調的聲音填進縫隙。", sfx: "fluorescent-hum", background: Background.Chapter_24_Ch24_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約一日十小時三分鐘。", background: Background.Chapter_24_Ch24_Act7_S0 },
 ];

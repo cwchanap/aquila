@@ -4,6 +4,10 @@
 M-00 external medical area, partitioned observation room with safe video link, monitor showing Sae's bedside and low-burden communication board, clinical equipment humming softly, cool fluorescent lighting, muted desaturated palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：07:45。M-00 外部醫療區。不是病房。是病房旁邊一間隔出來的觀察室。中間有一面牆。牆上有安全視訊。螢幕裡是紗英的床側。
 
 **旁白**：澪坐在觀察室裡。她不進去。她不能進去。紗英的同意不能由家屬在場引導。患者權利代表在螢幕另一側——病房裡面。外部醫師也在裡面。呼吸治療師在床邊。獨立系統安全人員在觀察室的另一端，看著另一個螢幕——技術記錄。
@@ -14,7 +18,15 @@ M-00 external medical area, partitioned observation room with safe video link, m
 
 **旁白**：07:50。外部醫師走到紗英床邊。他坐下。他的動作很慢。像在靠近一個隨時可能碎掉的東西。
 
+```bgm
+stop
+```
+
 **外部醫師**：紗英女士。我是外部醫療的醫師。我不屬於這間設施。今天要問妳幾個問題。不是關於過去。是關於——妳的資料未來可以被怎麼用。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：螢幕裡。紗英的眼睛動了一下。很慢。半睜。她沒有點頭。但她的嘴唇——動了。
 

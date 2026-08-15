@@ -4,6 +4,10 @@
 long-term neurorehabilitation medical center, controlled family meeting room, afternoon, reinforced glass partition, small table with four chairs, fluorescent lighting, muted clinical palette, observation camera in corner, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:00。受控家屬會談室。不是詢問室。牆上沒有錄影紅燈。但角落的攝影機亮著。桌子比詢問室的小。四張椅子。琴音坐在左邊。辯護人坐在她旁邊。澪坐在對面。日下部站在門邊。
 
 **旁白**：藤川真理坐在長桌末端。她的手放在膝蓋上。手指沒有握緊。也沒有鬆開。像一個人已經把所有力氣用完了，只剩下姿勢。
@@ -45,6 +49,10 @@ long-term neurorehabilitation medical center, controlled family meeting room, af
 **白石琴音** [sad]：找回來了。可是——沒有醒。之後就沒有醒過。
 
 **朝倉澪** [exhausted]：（內心）九歲。四年。現在十三歲。長期意識障礙。一直在閉環上。
+
+```bgm
+stop
+```
 
 **白石琴音** [sad]：根憑證裝上去之前——中央參照中斷過一次。十三點四秒。
 

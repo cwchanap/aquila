@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:10。M 區。走廊。", background: Background.Chapter_22_Ch22_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:10。M 區。走廊。", bgm: "institutional-drone", background: Background.Chapter_22_Ch22_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在走廊中間。他的面前放著一台筆電。螢幕上是活動接收者依存狀態面板。他沒有碰鍵盤。他在等兩組各自就位。", background: Background.Chapter_22_Ch22_Act3_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "紅區評估。程序如下。", background: Background.Chapter_22_Ch22_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "系統安全組和外部醫療組——獨立評估。不交叉。不討論。系統組判參照依存級別、本地備援狀態、閉環斷開後的訊號結果。外部醫療組判自然故障時的生理資料、腦電、呼吸、自律神經、藥物、意識、中斷風險。", background: Background.Chapter_22_Ch22_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
@@ -113,6 +113,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）身體可以搬走。醫療可以接管。可是系統不放——人就不算離開。這就是「未撤離」。這就是母親和那三個人現在的狀態。", background: Background.Chapter_22_Ch22_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "白板上的四行代碼在走廊盡頭的光線裡微微反光。", background: Background.Chapter_22_Ch22_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）身體在外面。系統在裡面。中間——是一條還沒有被切斷的線。", background: Background.Chapter_22_Ch22_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。走廊。螢光燈。呼吸器的節奏從觀察窗後面傳過來。很慢。", background: Background.Chapter_22_Ch22_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。走廊。螢光燈。呼吸器的節奏從觀察窗後面傳過來。很慢。", sfx: "ventilator-cycle", background: Background.Chapter_22_Ch22_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約三日十七小時四十三分鐘。", background: Background.Chapter_22_Ch22_Act3_S0 },
 ];

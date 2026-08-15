@@ -6,9 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:35。車站角落。長椅。", background: Background.Chapter_10_Ch10_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:35。車站角落。長椅。", bgm: "grey-city", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在長椅上。旁邊沒有人。對面是月台的樓梯口。有人上上下下。沒有人看她。她把掌機放在膝蓋上。打開。遊戲私訊介面。", background: Background.Chapter_10_Ch10_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "no_moon 的對話框還在。四行訊息。安靜地排在那裡。她早上沒有回。現在對方又發了一行。", background: Background.Chapter_10_Ch10_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "no_moon 的對話框還在。四行訊息。安靜地排在那裡。她早上沒有回。現在對方又發了一行。", sfx: "notification-beep", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.NoMoon, character: "no_moon", dialogue: "看見了嗎？", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯看見了。我看見了。藍色魚。黑色海。倒月。明天檢查。四十一日。水瀨葵。全部看見了。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但不能直接打水瀨葵。對方說過不要在網路上寫真名。帳號可以被別人拿去用。人說的話也可以。我不能讓這個名字出現在打字紀錄裡。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -45,14 +45,14 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這不是情報術語。這是一個被嚇怕的人學會的笨道理。大人會改口。圖不會。很老套。很笨。但很真。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著對話框。對方又發了一行。這次比較長。", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.NoMoon, character: "no_moon", dialogue: "今天 16:30。清澄區民中心，一樓公開休息區。找藍色傘的人。", background: Background.Chapter_10_Ch10_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她盯著那行字。16:30。清澄區民中心。一樓公開休息區。藍色傘。", background: Background.Chapter_10_Ch10_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她盯著那行字。16:30。清澄區民中心。一樓公開休息區。藍色傘。", sfx: "notification-beep", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.NoMoon, character: "no_moon", dialogue: "別帶警察。別帶記者。", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.NoMoon, character: "no_moon", dialogue: "也別帶一來就問名字的人。", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.NoMoon, character: "no_moon", dialogue: "別打電話，不想留下聲音紀錄。", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不要帶警察。不要帶記者。不要帶一來就問名字的人。電話不要打。不想留下聲音紀錄。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這些規則不是神秘組織的規則。是一個被嚇怕的人列出的清單。每一條都對應一次被傷害的經驗。帶過警察。被警察記了名字。帶過記者。被記者寫了報導。有人一來就問名字。問完就消失。打過電話。聲音被錄下來。每一條都是一道疤。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯清澄區民中心。一樓公開休息區。自動販賣機、公告欄、老人下棋的地方。不是秘密基地，不是倉庫或地下室，只是誰都能進去的公共場所。他們選那裡，因為也怕。不是危險的人，是被危險嚇怕的人。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她按了截圖。螢幕閃了一下。然後她摸出那張紙。攤開。找到空白。抄。", background: Background.Chapter_10_Ch10_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她按了截圖。螢幕閃了一下。然後她摸出那張紙。攤開。找到空白。抄。", sfx: "camera-shutter", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯16:30。清澄區民中心。一樓公開休息區。藍色傘。不帶警察。不帶記者。不問名字。不打電話。一個字一個字。壓得很重。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她抄完。看著紙上那幾行。字比早上更歪了。手在抖。她把手張開。握攏。再張開。五根手指。都在。只是慢。只是抖。", background: Background.Chapter_10_Ch10_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯要不要去。", background: Background.Chapter_10_Ch10_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },

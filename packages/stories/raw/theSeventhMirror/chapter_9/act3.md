@@ -4,6 +4,10 @@
 teenager's bedroom in a small Tokyo apartment, morning light filtering through half-closed curtains, desk cluttered with sports drink bottle, highlighters, game controller, cheap earphones, a printed sheet about a sleep study, snack wrapper peeking from under the bed, wall corner with a dark crayon drawing of a black sea, lived-in but abandoned feeling, visual-novel background art, wide shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：07:15。悠真的房間。
 
 **旁白**：門推開的時候，空氣沒有動。房間裡的空氣是停的。八天沒有人呼吸的空氣。帶著一點悶。一點甜。是床下那包沒丟的零食包裝的味道。

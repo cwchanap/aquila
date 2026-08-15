@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:10。澪從包裡拿出另一個信封。", background: Background.Chapter_11_Ch11_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:10。澪從包裡拿出另一個信封。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是裝影本的那個。是她在出門前另外準備的。信封是白色的。普通的。沒有寫字。封口沒有黏。她只是把開口折了兩折。", background: Background.Chapter_11_Ch11_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把信封放在桌面上。沒有推出去。只是放下。", background: Background.Chapter_11_Ch11_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯案例卡背面那個欄位。「孩子自行留下記號」。每一張卡都有。有些填了。有些空著。填了的不只是圖。是刻痕。是孩子在私人物件上自己留下的東西。悠真也有。我帶來了。不是原件。是照片。是描圖。是筆記。夠了。夠讓他們看見。不夠到讓他們碰原件。", background: Background.Chapter_11_Ch11_Act6_S0, portrait: Portrait.AsakuraMio_Determined },

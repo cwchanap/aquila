@@ -4,6 +4,14 @@
 community center lounge area, vending machines humming along one wall, plastic chairs and low table with convenience store rice balls and bottled tea, afternoon light through frosted windows, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
+```sfx
+vending-machine-hum
+```
+
 **旁白**：12:10。區民館休息區。
 
 **旁白**：閱覽室的燈被隔壁時段的人借走了。佐伯把文件套收進舊電腦包，拉鏈拉了兩次。兩個人移到走廊盡頭的休息區。自動販賣機嗡嗡響。桌上擺著便利店買的飯糰和一瓶茶。

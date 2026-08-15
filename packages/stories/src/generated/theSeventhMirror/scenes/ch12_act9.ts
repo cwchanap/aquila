@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:55。圖書館外。", background: Background.Chapter_12_Ch12_Act9_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:55。圖書館外。", bgm: "grey-city", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門口的石階。旁邊有一堵矮牆。佐伯把文件套放在牆上。澪坐在石階上。下午的光從巷子那邊斜過來。遠處是清澄站的高架軌道。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯拿出一張空白紙。在上面畫了兩條直線。把紙分成左右兩欄。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "左邊寫確定的，右邊寫不確定的。", background: Background.Chapter_12_Ch12_Act9_S0, portrait: Portrait.SaekiTatsuya_Determined },
@@ -88,7 +88,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他朝車站的方向走。走了幾步。停了一下。沒有回頭。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "悠真的欄位表填得很清楚。", background: Background.Chapter_12_Ch12_Act9_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他走了。", background: Background.Chapter_12_Ch12_Act9_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪一個人坐在圖書館門口的石階上。下午的光正在變薄。遠處的高架軌道上有一輛車經過。聲音從上面傳下來。很輕。像一條線被拉過天空。", background: Background.Chapter_12_Ch12_Act9_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪一個人坐在圖書館門口的石階上。下午的光正在變薄。遠處的高架軌道上有一輛車經過。聲音從上面傳下來。很輕。像一條線被拉過天空。", sfx: "train-hum", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻開私人筆記。最後看了一眼那一頁。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／12。", background: Background.Chapter_12_Ch12_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "旁邊寫了兩次「悠真」。", background: Background.Chapter_12_Ch12_Act9_S0 },

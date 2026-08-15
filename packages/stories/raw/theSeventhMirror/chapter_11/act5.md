@@ -4,6 +4,10 @@
 small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table covered with de-identified case cards arranged in rows, grey folder open at center, convenience store wrappers and hospital receipts pushed to one side, muted institutional palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：19:35。佐伯把案例卡排成三列。每張卡白紙黑字。沒有照片。沒有全名。代號在最上面。下面是年齡、失蹤日數、材料類型。
 
 **旁白**：他不讓家屬輪流講故事。他說過一次：故事會讓人記住情緒，忘記日期。

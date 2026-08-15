@@ -4,6 +4,10 @@
 Yuma's bedroom, morning light through curtains, desk with game console still powered on, small monitor glowing, scattered game notes and empty drink cans, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：09:45。悠真的房間。
 
 **旁白**：螢幕還亮著。
@@ -25,6 +29,10 @@ Yuma's bedroom, morning light through curtains, desk with game console still pow
 **朝倉澪** [determined]：（內心）⋯⋯但安全的路，已經沒有幾條了。外殼拿不到。琴音不能信。警方要筆錄。日下部說公開入口會留下紀錄。我能碰的，只剩悠真自己留下的東西。
 
 **旁白**：她按了登入。
+
+```sfx
+notification-beep
+```
 
 **旁白**：螢幕跳轉。載入畫面。然後右下角跳出一行系統提示。很小。灰底白字。像一張貼在角落的便條。
 

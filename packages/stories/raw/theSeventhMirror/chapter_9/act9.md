@@ -4,6 +4,10 @@
 game interface, private message folder view, small thumbnails in a grid, some locked with key icons, dim blue-grey UI, text labels barely legible, visual-novel background art, close-up on screen
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：10:15。悠真的遊戲帳號。私人訊息介面。
 
 **旁白**：澪沒有關掉黑色海地圖。她把它留在背景。然後點進悠真的私人訊息記錄。
@@ -71,6 +75,10 @@ game interface, private message folder view, small thumbnails in a grid, some lo
 **朝倉澪** [exhausted]：（內心）⋯⋯悠真不是一個人。他在跟別人一起記錄這些東西。他們用遊戲藏。因為沒有別的地方可以藏。
 
 **旁白**：她把紙摺起來。塞回內袋。螢幕上的縮圖還亮著。上鎖的還是上鎖。看不清的還是看不清。她沒有關掉介面。她還想再看一遍。
+
+```sfx
+notification-beep
+```
 
 **旁白**：然後螢幕右下角跳出一個新的提示。不是系統通知。是一則訊息。
 

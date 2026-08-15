@@ -4,6 +4,10 @@
 public library reference area, rows of data terminals with beige monitors, shelves of bound government bulletins and corporate registry volumes, fluorescent ceiling lighting, quiet afternoon atmosphere, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：12:50。公共圖書館。
 
 **旁白**：從區民館走過來花了二十分鐘。中間在便利店買了三明治和罐裝咖啡。佐伯邊走邊吃。澪把三明治塞進包裡，到圖書館門口才拆開。

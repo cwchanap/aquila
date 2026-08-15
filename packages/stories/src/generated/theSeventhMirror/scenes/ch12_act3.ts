@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:46。澪起身。走向走廊。手機在口袋裡。", background: Background.Chapter_12_Ch12_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:46。澪起身。走向走廊。手機在口袋裡。", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十分鐘。十點以前。警方要她回覆攜帶小鏡子原件的時段。", background: Background.Chapter_12_Ch12_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯十點。佐伯不知道這件事。他不知道我手機裡有一則灣岸署的訊息。他不知道我今晚五點要帶那面鏡子去署內。他不知道那面鏡子可能被收走。", background: Background.Chapter_12_Ch12_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在走廊窗邊。打開手機。找到灣岸署的訊息。", background: Background.Chapter_12_Ch12_Act3_S0 },
@@ -14,7 +14,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Message, character: "訊息", dialogue: "本日17:00可攜帶原件到署確認。希望完成拍照與記錄後當日返還；如需暫存，請提供收據、保管人員與用途說明。", background: Background.Chapter_12_Ch12_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我不是在跟警方談判。我沒有那個資格。我只是在學會留下程序痕跡。如果鏡子被暫時保管，我要有收據。要有保管人員的名字。要有用途說明。這不是法律手段。這是一個普通人能做的最後一道防線。", background: Background.Chapter_12_Ch12_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "發送。", background: Background.Chapter_12_Ch12_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩分鐘後。回覆。", background: Background.Chapter_12_Ch12_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩分鐘後。回覆。", sfx: "notification-beep", background: Background.Chapter_12_Ch12_Act3_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "已確認。請攜帶身分證件與原件。", background: Background.Chapter_12_Ch12_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯已確認。兩個字。沒有提返還。沒有提收據。沒有提保管人員。只說帶身分證件和原件。", background: Background.Chapter_12_Ch12_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那行回覆。看了幾秒。", background: Background.Chapter_12_Ch12_Act3_S0 },

@@ -4,6 +4,10 @@
 Tokyo sidewalk under overcast sky, afternoon, Mio walking past low residential buildings, tired figure with bag strap held tight, grey light, visual-novel background art, medium shot
 ```
 
+```bgm
+grey-city
+```
+
 **旁白**：14:05。回家途中。
 
 **旁白**：澪沒有直接回家。她走得很慢。不是因為累。是因為在想。16:30。清澄區民中心。藍色傘。她還沒決定去不去。

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:08。燈亮回來。", background: Background.Chapter_11_Ch11_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:08。燈亮回來。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有宣誓。沒有祈禱。沒有人站到前面做總結。沒有教主。", background: Background.Chapter_11_Ch11_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "家屬做的只是——", background: Background.Chapter_11_Ch11_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "把影本重新放回不同顏色的資料夾。藍色是水瀨的。灰色是佐伯的。米色是藤川的。顏色不是暗號。是因為便宜文具店剛好只有這幾種。", background: Background.Chapter_11_Ch11_Act8_S0 },
@@ -53,12 +53,12 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "水瀨佳乃沒有追問。她點了一下頭。很輕。像收下一件她不會退還、也不會拆開的東西。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩個人走到區民館門口。水瀨佳乃往左。澪往右。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:30。澪回到門口那張桌角箱旁邊。憑編號取回自己的手機。撕開封口。螢幕亮起來。網路恢復。", background: Background.Chapter_11_Ch11_Act8_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩則先前已發出的通知跳出來。", background: Background.Chapter_11_Ch11_Act8_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩則先前已發出的通知跳出來。", sfx: "notification-beep", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一則。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.ShiraishiKotone, character: "琴音", dialogue: "醒了回我。我把吃的放冰箱。", background: Background.Chapter_11_Ch11_Act8_S1, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05 發出的。三個多小時前。琴音不知道她在哪裡。琴音以為她在睡覺。琴音把吃的放進冰箱。等她醒。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯琴音。妳還在等我。妳不知道我今晚去了哪裡。妳不知道我剛才聽了什麼。妳不知道我現在手裡拿著一張空白模板和三個不能說出口的東西。妳只知道我還沒回妳。妳把吃的放冰箱。等我醒。", background: Background.Chapter_11_Ch11_Act8_S1, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二則。來自灣岸署。", background: Background.Chapter_11_Ch11_Act8_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二則。來自灣岸署。", sfx: "notification-beep", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "關於上次筆錄提到的小鏡子，請在明天上午十點前回覆方便帶原件到警署確認的時間。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "上午十時。明天。距離現在不到十二個小時。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯七點半家庭餐廳。九點區民館。十點灣岸署。小鏡子原件還在我上鎖的抽屜裡。如果我十點前帶去署內，它可能被暫時保管。可能被扣押。可能再也拿不回來。在它離開我手上之前，我必須完成所有我能完成的記錄。", background: Background.Chapter_11_Ch11_Act8_S1, portrait: Portrait.AsakuraMio_Determined },
@@ -67,7 +67,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "七個欄位。七個空格。等她今晚填入悠真的資料。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯千田說過東京。一個在他死前數十日便留下錄音的孩子，也可能說過相同的音節。兩條不同的資料鏈。一條是瀕死工程師的遺言。一條是失蹤少女的夢話。它們是否共享同一個隱藏的來源，我不知道。", background: Background.Chapter_11_Ch11_Act8_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我只知道一件事。千田不是唯一一個說出這個詞的人。在他死之前，已經有一個孩子的夢裡裝著同樣的聲音。", background: Background.Chapter_11_Ch11_Act8_S1, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:45。區民館的門在她身後關上。走廊的日光燈滅了一排。夜風從停車場那邊過來。涼的。帶著一點遠處的水氣。", background: Background.Chapter_11_Ch11_Act8_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:45。區民館的門在她身後關上。走廊的日光燈滅了一排。夜風從停車場那邊過來。涼的。帶著一點遠處的水氣。", bgm: "night-street", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放進口袋。空白模板折在外套內袋裡。三個不能說出口的東西壓在胸口。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向公車站。", background: Background.Chapter_11_Ch11_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她還不知道孩子口中的東京是什麼。她只知道，那不是千田一個人的瘋話。", background: Background.Chapter_11_Ch11_Act8_S1 },

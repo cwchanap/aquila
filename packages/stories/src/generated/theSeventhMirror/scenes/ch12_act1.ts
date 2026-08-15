@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:28。清澄站前家庭餐廳。剛開門。店裡只有兩桌客人。", background: Background.Chapter_12_Ch12_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:28。清澄站前家庭餐廳。剛開門。店裡只有兩桌客人。", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在靠窗的位子。背對入口。她選這個位子是因為窗外的光從左邊過來，照在桌面上不會反光。", background: Background.Chapter_12_Ch12_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把背包裡的東西一件一件拿出來。動作慢。像在清點。", background: Background.Chapter_12_Ch12_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等比例照片。鏡背描圖。悠真欄位表——佐伯昨晚給的那張空白模板，她昨晚填了一半。學校說明單與預約頁列印。不連網的舊數位相機。官方筆記。私人筆記。", background: Background.Chapter_12_Ch12_Act1_S0 },

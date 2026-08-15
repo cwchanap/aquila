@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:30。澪坐在書桌前。窗簾拉了一半。下午的光斜進來，照在桌面上那面小鏡子旁邊。", background: Background.Chapter_11_Ch11_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:30。澪坐在書桌前。窗簾拉了一半。下午的光斜進來，照在桌面上那面小鏡子旁邊。", bgm: "dawn-apartment", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機先震了一下。水瀨佳乃的訊息。很短。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "18:30。清澄區民館三樓。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "帶影本，不要帶原件。", background: Background.Chapter_11_Ch11_Act1_S0 },
@@ -24,10 +24,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從抽屜深處拿出一台舊數位相機。不是手機。是她高中時用過的那台。沒有自動上傳。沒有雲端同步。拍完只存在記憶卡裡。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不能用現在的手機拍。手機會備份。備份會上去。上去就不知道誰看得到。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把小鏡子從信封裡取出來。放在白紙上。旁邊放一把普通直尺。", background: Background.Chapter_11_Ch11_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她先拍正面。鏡面朝上。螢幕很小，她看了兩遍，確認對焦。然後翻過來。拍背面。", background: Background.Chapter_11_Ch11_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她先拍正面。鏡面朝上。螢幕很小，她看了兩遍，確認對焦。然後翻過來。拍背面。", sfx: "camera-shutter", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "背面那些刮痕在下午的光裡看起來比她記憶中更淺。不像刻字。更像被什麼尖的東西反覆劃過同一個位置，劃到留下痕跡但沒有完全刻穿。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不是一次劃出來的。同一個位置。同一個方向。重複了很多次。不是摔到地上磨到的。不是放在口袋裡自然磨損的。是人為的。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把相機湊近。拍刮痕的近照。一張。兩張。側邊一張。換角度再一張。", background: Background.Chapter_11_Ch11_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把相機湊近。拍刮痕的近照。一張。兩張。側邊一張。換角度再一張。", sfx: "camera-shutter", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她拿出一張透明描圖紙。覆在鏡背上。用細字筆描出每一道痕跡的位置和方向。手很穩。像在做查核報告。", background: Background.Chapter_11_Ch11_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯位置。方向。長度。間距。先記。不解讀。", background: Background.Chapter_11_Ch11_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "描完之後她把描圖紙拿起來，對著窗光看。幾條短線。不規則。有些間距很近，像被擠在一起。有些分開。她看不出那是一個字。也看不出那是一個數字。更像是多段記號被疊在同一個小區域裡。", background: Background.Chapter_11_Ch11_Act1_S0 },

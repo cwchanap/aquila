@@ -4,6 +4,10 @@
 small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, long table with grey folders face-down, convenience store rice balls and hospital receipts scattered among photocopies, numbered opaque pouches visible in a corner box, muted institutional palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：19:05。基線寫完了。佐伯把那張兩欄卡片收進透明套，和其他家屬的資料放在一起。他沒有宣布「又一個共同案例」。他只是把筆蓋扣上，看了一眼桌面。
 
 **旁白**：然後他伸手，翻開桌上一個灰色資料夾。

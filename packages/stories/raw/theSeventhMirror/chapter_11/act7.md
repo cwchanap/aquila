@@ -4,6 +4,10 @@
 small community center meeting room, lights partially dimmed, old projector and low-brightness screen, chairs arranged in a semicircle around a table with an old offline laptop and a single speaker, numbered opaque bags visible in a box at the corner of the table, muted cool-grey palette with faint amber from the dimmed ceiling lights, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：20:28。燈暗了一半。
 
 **旁白**：不是儀式。是那台舊投影機和低亮度螢幕需要。椅子被拉成半圓，因為牆邊只有兩個插座，音箱線也只夠拉到那個位置。
@@ -51,6 +55,10 @@ small community center meeting room, lights partially dimmed, old projector and 
 **佐伯達也** [determined]：外面的證據是——家長把片段交給學校輔導員，郵件日期比共用資料夾還早。但完整錄音只有家裡有。所以內容的可信度比日期證明低。
 
 **佐伯達也** [determined]：證據等級——日期部分中等，完整錄音弱。僅列參考。
+
+```sfx
+sleep-talk-recording
+```
 
 **旁白**：他按了播放。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:15。悠真的房間。", background: Background.Chapter_9_Ch9_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:15。悠真的房間。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門推開的時候，空氣沒有動。房間裡的空氣是停的。八天沒有人呼吸的空氣。帶著一點悶。一點甜。是床下那包沒丟的零食包裝的味道。", background: Background.Chapter_9_Ch9_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在門口。沒有進去。她看著房間。", background: Background.Chapter_9_Ch9_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒喝完的運動飲料還在桌上。藍色的瓶身。瓶蓋歪歪地擱著。悠真每次喝完都不轉緊。她唸過他很多次。他每次都說「下次」。下次。下次。八天了。沒有下次。", background: Background.Chapter_9_Ch9_Act3_S0 },

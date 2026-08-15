@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:45。她們坐了幾分鐘。誰都沒有先說正事。", background: Background.Chapter_10_Ch10_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:45。她們坐了幾分鐘。誰都沒有先說正事。", bgm: null, background: Background.Chapter_10_Ch10_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後水瀨佳乃開口了。不是問名字。不是問背景。她說了一句讓澪一瞬間繃緊的話。", background: Background.Chapter_10_Ch10_Act8_S0 },
     { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "不要給我看照片。妳先說，他畫的海裡有什麼。", background: Background.Chapter_10_Ch10_Act8_S0, portrait: Portrait.MinaseYoshino_Guarded },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯⋯⋯她在測我。她在反過來測我。她不讓我拿照片出來。她要我先用嘴巴說。說錯了就結束。說對了才往下走。", background: Background.Chapter_10_Ch10_Act8_S0, portrait: Portrait.AsakuraMio_Scared },

@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:30。", background: Background.Chapter_9_Ch9_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從布套裡把小鏡子拿出來。", background: Background.Chapter_9_Ch9_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:30。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從布套裡把小鏡子拿出來。", sfx: "mirror-chime", background: Background.Chapter_9_Ch9_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很小。很輕。塑膠的。扭蛋機裡轉出來的便宜貨。背面印著一個褪色的卡通圖案，邊緣有毛邊，一看就是五十圓的東西。悠真塞給她的時候她還嫌棄過。「整天嫌這嫌那，照照鏡子吧。」他當時笑得很得意。那種早就算準了的笑。", background: Background.Chapter_9_Ch9_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻到背面。", background: Background.Chapter_9_Ch9_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "卡通圖案已經褪得快看不出了。上面有幾道刮痕。她以前看過這些痕。每次拿起鏡子都會碰到。她一直以為是磨損。五十圓的東西，放口袋，放包包，跟鑰匙跟手機擠在一起，弄成這樣很正常。", background: Background.Chapter_9_Ch9_Act7_S0 },

@@ -4,6 +4,10 @@
 community center reading room, late morning light through large windows growing warmer, long table covered with printed documents and highlighters, four folder colors neatly separated, quiet weekday morning, muted warm-grey palette with increasing amber tones, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：10:02。回到閱覽室。
 
 **旁白**：桌上還是剛才那四套文件。藍色、灰色、米色、白色。

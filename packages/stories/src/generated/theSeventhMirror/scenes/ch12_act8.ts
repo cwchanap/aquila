@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:50。公共圖書館。", background: Background.Chapter_12_Ch12_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:50。公共圖書館。", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "從區民館走過來花了二十分鐘。中間在便利店買了三明治和罐裝咖啡。佐伯邊走邊吃。澪把三明治塞進包裡，到圖書館門口才拆開。", background: Background.Chapter_12_Ch12_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "圖書館的資料終端在二樓。不連外網。可以查法人登記、舊招標公告、防災研討會紙本節目表、圖書館保存的公司簡介、舊網站快取摘要。", background: Background.Chapter_12_Ch12_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯坐在終端前。澪拉了一把椅子坐在旁邊。螢幕是米色的。字很大。像在讀紙本電話簿。", background: Background.Chapter_12_Ch12_Act8_S0 },

@@ -4,6 +4,10 @@
 small Tokyo apartment room, afternoon light through curtains, cluttered desk with old laptop and notebooks, a small hand mirror lying on white paper beside a plastic ruler, muted warm-grey palette with faint amber from low afternoon sun, visual-novel background art, medium shot
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：15:30。澪坐在書桌前。窗簾拉了一半。下午的光斜進來，照在桌面上那面小鏡子旁邊。
 
 **旁白**：手機先震了一下。水瀨佳乃的訊息。很短。
@@ -40,11 +44,19 @@ small Tokyo apartment room, afternoon light through curtains, cluttered desk wit
 
 **旁白**：她把小鏡子從信封裡取出來。放在白紙上。旁邊放一把普通直尺。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：她先拍正面。鏡面朝上。螢幕很小，她看了兩遍，確認對焦。然後翻過來。拍背面。
 
 **旁白**：背面那些刮痕在下午的光裡看起來比她記憶中更淺。不像刻字。更像被什麼尖的東西反覆劃過同一個位置，劃到留下痕跡但沒有完全刻穿。
 
 **朝倉澪** [determined]：（內心）⋯⋯不是一次劃出來的。同一個位置。同一個方向。重複了很多次。不是摔到地上磨到的。不是放在口袋裡自然磨損的。是人為的。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她把相機湊近。拍刮痕的近照。一張。兩張。側邊一張。換角度再一張。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:30。澪的房間。", background: Background.Chapter_9_Ch9_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:30。澪的房間。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從醫院回來已經快一個小時了。外套還掛在椅背上。沒有脫。上面沾著消毒水、血、雨水和夜班急診走廊的味道。她沒有換衣服。她沒有洗澡。她坐下來。打開筆記本。拿起筆。", background: Background.Chapter_9_Ch9_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有睡。", background: Background.Chapter_9_Ch9_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不能睡。睡了就會做夢。做了夢就會看見那片海。看見那片海就會忘記現在是第幾輪。不能睡。", background: Background.Chapter_9_Ch9_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },

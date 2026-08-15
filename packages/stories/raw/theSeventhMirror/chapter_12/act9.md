@@ -4,6 +4,10 @@
 outside public library, stone steps and low concrete wall beside the entrance, afternoon light slanting across a quiet residential street, distant elevated train tracks, muted warm-grey palette with faint amber from low sun, visual-novel background art, medium shot
 ```
 
+```bgm
+grey-city
+```
+
 **旁白**：13:55。圖書館外。
 
 **旁白**：門口的石階。旁邊有一堵矮牆。佐伯把文件套放在牆上。澪坐在石階上。下午的光從巷子那邊斜過來。遠處是清澄站的高架軌道。
@@ -167,6 +171,10 @@ outside public library, stone steps and low concrete wall beside the entrance, a
 **佐伯達也** [determined]：悠真的欄位表填得很清楚。
 
 **旁白**：然後他走了。
+
+```sfx
+train-hum
+```
 
 **旁白**：澪一個人坐在圖書館門口的石階上。下午的光正在變薄。遠處的高架軌道上有一輛車經過。聲音從上面傳下來。很輕。像一條線被拉過天空。
 

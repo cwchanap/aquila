@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05。清澄區民館。三樓。", background: Background.Chapter_11_Ch11_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:05。清澄區民館。三樓。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在走廊盡頭。電梯出來左轉，走到底。走廊很普通。日光燈。塑膠地板。佈告欄上貼著書法班招生、育兒相談預約、町內會防災講習、老人手機教室的公告。每一張都褪了色。每一張都像在這裡貼了很久。", background: Background.Chapter_11_Ch11_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯就是這裡。普通到不能再普通。沒有任何東西讓你覺得這棟樓裡正在發生不普通的事。", background: Background.Chapter_11_Ch11_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震了一下。琴音。", background: Background.Chapter_11_Ch11_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震了一下。琴音。", sfx: "notification-beep", background: Background.Chapter_11_Ch11_Act2_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "醒了回我。我把吃的放冰箱。", background: Background.Chapter_11_Ch11_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯⋯⋯", background: Background.Chapter_11_Ch11_Act2_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著那行字。很普通的關心。像每一天都會收到的那種。", background: Background.Chapter_11_Ch11_Act2_S0 },
@@ -47,12 +47,12 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "新來的人，先說自己已經看過哪些案例資料。", background: Background.Chapter_11_Ch11_Act2_S1, portrait: Portrait.MinaseYoshino_Guarded },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先說已經看過什麼。不是先問我弟弟畫了什麼。是先問我已經被污染了多少。", background: Background.Chapter_11_Ch11_Act2_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她明白了。這不是偏執。這是防污染。", background: Background.Chapter_11_Ch11_Act2_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門邊有人正在匆忙地按手機。螢幕亮著。手指很快。像在回最後一則工作訊息。回完之後他把螢幕按滅，關掉通知預覽，調成飛航模式，拿起一個編號袋，把手機放進去，拉上封口。動作很熟練。像做過很多次。", background: Background.Chapter_11_Ch11_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門邊有人正在匆忙地按手機。螢幕亮著。手指很快。像在回最後一則工作訊息。回完之後他把螢幕按滅，關掉通知預覽，調成飛航模式，拿起一個編號袋，把手機放進去，拉上封口。動作很熟練。像做過很多次。", sfx: "evidence-bag-seal", background: Background.Chapter_11_Ch11_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "袋子放進紙箱。箱子在桌角。所有人都看得見。", background: Background.Chapter_11_Ch11_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯封口之後，桌上就不會再出現私人手機了。所有人都在同一個狀態。沒有人能偷拍。沒有人能偷傳。沒有人比別人多一條對外的線。", background: Background.Chapter_11_Ch11_Act2_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪拿出自己的手機。她先看了一眼。", background: Background.Chapter_11_Ch11_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯琴音沒有新回覆。「我會晚點回。」她沒有再追問。", background: Background.Chapter_11_Ch11_Act2_S1, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她關掉通知預覽。飛航模式。拿起一個編號袋。數字是 7。", background: Background.Chapter_11_Ch11_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她關掉通知預覽。飛航模式。拿起一個編號袋。數字是 7。", sfx: "evidence-bag-seal", background: Background.Chapter_11_Ch11_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯7。", background: Background.Chapter_11_Ch11_Act2_S1, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她頓了一下。然後把手機放進去。拉上封口。放進紙箱。", background: Background.Chapter_11_Ch11_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "口袋空了。手機不在身上了。那種輕的感覺很陌生。像少了一層皮。", background: Background.Chapter_11_Ch11_Act2_S1 },

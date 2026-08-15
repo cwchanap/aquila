@@ -4,6 +4,10 @@
 game private message interface, a new chat window opening on screen, dim blue-grey UI, single message bubble appearing, Yuma's room in soft morning light behind the monitor, visual-novel background art, close-up on screen
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：10:32。悠真的房間。遊戲私訊介面。
 
 **旁白**：訊息來自一個帳號。名字很短。沒有頭像。或者說頭像是一片暗色。像月亮被摳掉了。
@@ -12,6 +16,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 
 **旁白**：澪看著那個名字。reverse_moon。倒過來的月亮。剛才在共享資料夾裡見過。她不確定這是巧合還是——
 
+```sfx
+notification-beep
+```
+
 **旁白**：訊息先到了。一行字。沒有打招呼。沒有解釋。像沒打招呼就推門進來的人。
 
 **no_moon**：暗號。
@@ -19,6 +27,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 **朝倉澪** [scared]：（內心）⋯⋯暗號。什麼暗號。悠真沒有跟我說過任何暗號。我不知道該回什麼。
 
 **旁白**：她沒有回。手指離開鍵盤。放在膝蓋上。
+
+```sfx
+notification-beep
+```
 
 **旁白**：過了幾秒。對方又發了一行。
 
@@ -29,6 +41,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 **朝倉澪** [scared]：（內心）⋯⋯他知道。他知道坐在螢幕前面的不是悠真。帳號離線八天突然上線，操作方式完全不像悠真。他上線會先開地圖、看活動、跟好友打招呼。我直接翻了私人資料夾，在翻舊檔。正常人不會這樣用帳號。
 
 **旁白**：她還是沒有回。
+
+```sfx
+notification-beep
+```
 
 **旁白**：第三行。
 
@@ -42,6 +58,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 
 **朝倉澪** [determined]：（內心）⋯⋯不能回太快。不能回太多。我不知道對方是誰。可能是幫手。可能是家屬。也可能是陷阱。可能是讓悠真消失的那些人。他們也在等這個帳號亮起來。
 
+```sfx
+notification-beep
+```
+
 **旁白**：對方沒有等她回覆。又發了一行。
 
 **no_moon**：黑色海不是他一個人看見的。
@@ -51,6 +71,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 **朝倉澪** [shocked]：（內心）⋯⋯他說了。他直接說了。黑色海。不是他一個人。不是我弟弟一個人看見的。剛才那些檔名。black_sea。kuro_umi。reverse_moon。那個海不是水。這些不是巧合。是真的。有別的孩子。有別的人看見了同樣的東西。
 
 **旁白**：她的手指在發抖。不是冷。是某種從胃底升上來的緊，讓她呼吸變淺。她一直懷疑的事被一個陌生人用一句話證實了。
+
+```sfx
+notification-beep
+```
 
 **旁白**：對方又發了一行。最後一行。
 
@@ -64,6 +88,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 
 **朝倉澪** [determined]：（內心）⋯⋯截圖。先截圖。手抄。然後不回。或者只回非常短的一句。不能讓對方知道我慌了。也不能讓對方覺得我什麼都不懂。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：她按了截圖。螢幕閃了一下。她把四行訊息連帶帳號名一起存進手機。然後摸出那張紙。攤開。找到最後一條空白。抄。no_moon。四行訊息。一個字一個字。壓得很重。
 
 **旁白**：她抄完。看著紙上密密麻麻的字。座標。檔名。帳號。現在又多了四行陌生人的訊息。一整頁。全是悠真留下的東西引出來的。
@@ -71,6 +99,10 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 **朝倉澪** [exhausted]：（內心）⋯⋯我要不要回。回什麼。回「你是誰」？他不一定會答。回「你認識悠真」又太明顯。不回？沉默也是一種回答。代表我不是悠真、不知道暗號、在猶豫。
 
 **朝倉澪** [determined]：（內心）⋯⋯先不回。先把這些收好。11:30 要去灣岸署。我不能在這裡耗太久。
+
+```sfx
+notification-beep
+```
 
 **旁白**：就在這時。她的手機震了一下。
 
@@ -107,5 +139,13 @@ game private message interface, a new chat window opening on screen, dim blue-gr
 **旁白**：她關掉螢幕。
 
 **旁白**：房間暗下來。只有窗簽縫裡的上午光。灰的。薄的。像還沒完全醒過來的天色。
+
+```sfx
+door-latch
+```
+
+```bgm
+stop
+```
 
 **旁白**：她走出悠真的房間。帶上門。門扣發出一聲很輕的響。然後什麼都沒有了。

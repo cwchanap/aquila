@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:15。悠真的遊戲帳號。私人訊息介面。", background: Background.Chapter_9_Ch9_Act9_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:15。悠真的遊戲帳號。私人訊息介面。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有關掉黑色海地圖。她把它留在背景。然後點進悠真的私人訊息記錄。", background: Background.Chapter_9_Ch9_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是普通聊天。聊天群在另一個欄位。這裡是私人資料夾。幾個帳號之間共享的空間。看起來像在傳攻略檔案。但檔名不對。", background: Background.Chapter_9_Ch9_Act9_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "black_sea", background: Background.Chapter_9_Ch9_Act9_S0 },
@@ -40,6 +40,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯black_sea。kuro_umi。reverse_moon。line7。四個檔名。三個帳號。一個地區不在東京。一個停在「明天檢查」。一個說那個海不是水。", background: Background.Chapter_9_Ch9_Act9_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真不是一個人。他在跟別人一起記錄這些東西。他們用遊戲藏。因為沒有別的地方可以藏。", background: Background.Chapter_9_Ch9_Act9_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把紙摺起來。塞回內袋。螢幕上的縮圖還亮著。上鎖的還是上鎖。看不清的還是看不清。她沒有關掉介面。她還想再看一遍。", background: Background.Chapter_9_Ch9_Act9_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後螢幕右下角跳出一個新的提示。不是系統通知。是一則訊息。", background: Background.Chapter_9_Ch9_Act9_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後螢幕右下角跳出一個新的提示。不是系統通知。是一則訊息。", sfx: "notification-beep", background: Background.Chapter_9_Ch9_Act9_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "來自一個她沒見過的帳號。", background: Background.Chapter_9_Ch9_Act9_S0 },
 ];

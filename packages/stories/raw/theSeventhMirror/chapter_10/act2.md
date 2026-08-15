@@ -4,6 +4,10 @@
 small Tokyo apartment room, morning light, desk cluttered with two notebooks side by side, pen in hand, jacket draped over chair, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：10:52。澪的房間。她把背包扔在床上。拉開書桌抽屜。摸出兩本筆記。一本藍色。一本黑色。藍色是舊的。黑色是昨天開始用的。
 
 **朝倉澪** [exhausted]：（內心）⋯⋯兩本。一本給警察看。一本不給任何人看。
@@ -96,6 +100,10 @@ apartment entrance hallway, shoes being put on, backpack on shoulders, morning l
 street near a police station, coin lockers lined up outside a small station building, morning overcast light, pedestrians passing, visual-novel background art, medium shot
 ```
 
+```bgm
+grey-city
+```
+
 **旁白**：11:06。灣岸署前一站。車站旁的投幣置物櫃。一排。灰色的鐵門。編號從01到24。她站在櫃子前面。背包拉鍊拉開。摸出悠真的舊掌機。
 
 **朝倉澪** [determined]：（內心）⋯⋯這裡。置物櫃。投幣式。沒有登入。沒有實名。放進去。鎖上。鑰匙帶走。補完筆錄再回來拿。
@@ -114,9 +122,17 @@ street near a police station, coin lockers lined up outside a small station buil
 train interior, morning commute, half-empty seats, fluorescent lighting, notebook open on lap, pen in hand, visual-novel background art, medium shot
 ```
 
+```sfx
+train-doors
+```
+
 **旁白**：11:12。電車。她搶在車門關上前擠進去。車廂裡人不多。上午的平峰時段。她找到一個角落的位置。坐下。把背包放在膝蓋上。拉開拉鍊。拿出藍色筆記。
 
 **朝倉澪** [determined]：（內心）⋯⋯補寫。時間線還沒寫完。施工通道的細節。維修人員的制服顏色。側門的位置。千田倒下之前說了什麼。這些要在進灣岸署之前整理好。不然問話的時候會亂。
+
+```sfx
+train-hum
+```
 
 **旁白**：她翻開筆記。找到中間的空白。開始寫。車廂在搖。字跟著搖。她用左手壓住頁面。右手寫。
 
@@ -152,6 +168,10 @@ train interior, morning commute, half-empty seats, fluorescent lighting, noteboo
 
 **旁白**：車廂搖了一下。她的筆尖在紙上拖出一道無意義的線。她把筆收起來。合上筆記。捏著鼻樑。眼睛後面很酸。不是想哭。是一夜沒睡的乾。
 
+```sfx
+notification-beep
+```
+
 **旁白**：手機震了。簡訊。她低頭看。
 
 **旁白**：琴音。
@@ -177,6 +197,10 @@ train interior, morning commute, half-empty seats, fluorescent lighting, noteboo
 **朝倉澪** [sad]：（內心）⋯⋯我不是不需要朋友。我只是現在不敢把任何路線交給任何人。
 
 **朝倉澪** [sad]：（內心）⋯⋯琴音也好。no_moon 也好。警察也好。每一條線我都只能自己走。
+
+```sfx
+pa-announcement
+```
 
 **旁白**：車廂廣播響了。下一站。灣岸。她把筆記塞回背包。站起來。腿還是軟的。她扶了一下扶手。站穩。
 

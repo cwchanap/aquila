@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:47。佐伯把那張 PDF 影本放在桌面正中央。", background: Background.Chapter_12_Ch12_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:47。佐伯把那張 PDF 影本放在桌面正中央。", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "米色資料夾裡的其他文件被他推到旁邊。只有這一張。正面朝上。", background: Background.Chapter_12_Ch12_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這是藤川真理在美空失蹤前從醫療追蹤入口下載的裝置異常報告。", background: Background.Chapter_12_Ch12_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列印版。不是螢幕截圖。", background: Background.Chapter_12_Ch12_Act5_S0 },

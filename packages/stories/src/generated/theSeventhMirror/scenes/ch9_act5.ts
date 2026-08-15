@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:30。", background: Background.Chapter_9_Ch9_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:30。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "簡訊的比對告一段落。澪把寫滿語氣分析的那頁筆記推到桌角，指尖還壓著最後一行——「她能證明這句話不像悠真。不能證明它不是悠真。」壓了幾秒，鬆開。", background: Background.Chapter_9_Ch9_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "說明單已經在她手裡了。關東青少年睡眠支援計畫。折成四折的痕跡還在，角被壓皺了，紙面上有一道淺淺的摺痕橫過標題。悠真兩週前從學校帶回來的。她當時看了一眼，覺得就是普通的校園健康計畫。", background: Background.Chapter_9_Ch9_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯普通的。", background: Background.Chapter_9_Ch9_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },

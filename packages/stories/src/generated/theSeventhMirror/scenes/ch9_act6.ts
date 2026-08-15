@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:05。", background: Background.Chapter_9_Ch9_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她按下播放。", background: Background.Chapter_9_Ch9_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:05。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她按下播放。", sfx: "sleep-talk-recording", background: Background.Chapter_9_Ch9_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "前幾秒是空的。只有底噪。那種房間裡沒人說話時的聲音——冷氣運轉的微嗡，窗外偶爾一輛車經過的低頻，床單摩擦的細碎聲。然後是呼吸。很慢。很重。像睡得很深的人。", background: Background.Chapter_9_Ch9_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後是聲音。", background: Background.Chapter_9_Ch9_Act6_S0 },
     { characterId: CharacterId.DreamVoice, character: "夢話聲音", dialogue: "⋯⋯嗯⋯⋯", background: Background.Chapter_9_Ch9_Act6_S0 },
@@ -60,7 +60,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我和悠真的夢。不是各做各的夢。是同一片海。", background: Background.Chapter_9_Ch9_Act6_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有把這句話寫下來。不是不想寫。是手在抖。寫不穩。她只用指甲在筆記邊緣壓了一個深深的痕。沒有字。只有壓痕。", background: Background.Chapter_9_Ch9_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "錄音還在跑。波形走到盡頭。兩分十七秒。最後幾秒是空的。只有呼吸。然後是靜音。然後播放結束。", background: Background.Chapter_9_Ch9_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清單往下還有一個檔案。更短。幾秒。她點開。不是夢話。是規律的靜電。沙沙的。均勻的。是家裡那台舊接收器開著沒人聽時的底噪——悠真以前常錄這種聲音，當睡眠背景。", background: Background.Chapter_9_Ch9_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清單往下還有一個檔案。更短。幾秒。她點開。不是夢話。是規律的靜電。沙沙的。均勻的。是家裡那台舊接收器開著沒人聽時的底噪——悠真以前常錄這種聲音，當睡眠背景。", sfx: "receiver-static", background: Background.Chapter_9_Ch9_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不像語音，像座標在唱。", background: Background.Chapter_9_Ch9_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有追下去。少年人會錄各種聲音做實驗。她把檔案關掉。", background: Background.Chapter_9_Ch9_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把耳機拔出來。線又纏在一起了。她沒有理它。", background: Background.Chapter_9_Ch9_Act6_S0 },

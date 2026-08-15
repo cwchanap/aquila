@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:10。區民館休息區。", background: Background.Chapter_12_Ch12_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:10。區民館休息區。", sfx: "vending-machine-hum", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "閱覽室的燈被隔壁時段的人借走了。佐伯把文件套收進舊電腦包，拉鏈拉了兩次。兩個人移到走廊盡頭的休息區。自動販賣機嗡嗡響。桌上擺著便利店買的飯糰和一瓶茶。", background: Background.Chapter_12_Ch12_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯拆飯糰的包裝。動作很慢。像在確認拉鏈和包裝是同一種程序。", background: Background.Chapter_12_Ch12_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "為什麼你們都不直接去筑波？", background: Background.Chapter_12_Ch12_Act7_S0, portrait: Portrait.AsakuraMio_Determined },

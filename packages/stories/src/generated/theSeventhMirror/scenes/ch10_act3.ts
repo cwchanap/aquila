@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。灣岸署。問話室。不是正式逮捕。但比昨晚在站務室裡的臨時聽取嚴肅得多。桌子。錄音筆。表格。兩名警員坐在對面。一名負責問。一名負責寫。", background: Background.Chapter_10_Ch10_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。灣岸署。問話室。不是正式逮捕。但比昨晚在站務室裡的臨時聽取嚴肅得多。桌子。錄音筆。表格。兩名警員坐在對面。一名負責問。一名負責寫。", bgm: "institutional-drone", background: Background.Chapter_10_Ch10_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "牆上的時鐘。11:31。她看了一眼。和手機對了一下。差兩秒。手機11:30:58。時鐘11:31:00。她不知道哪個比較準。她把手機放在桌上。螢幕朝上。保持開機。通知裡寫的。", background: Background.Chapter_10_Ch10_Act3_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "朝倉澪小姐。關於昨夜灣岸新交通限制區傷害事件及搬送後死亡一案，請配合補充說明。身分證件確認過了。我們開始錄音。", background: Background.Chapter_10_Ch10_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。", background: Background.Chapter_10_Ch10_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },

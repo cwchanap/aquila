@@ -4,6 +4,10 @@
 teenager's bedroom desk close-up, morning light, a printed screenshot of a text message lying on the desk surface, pen and notebook beside it, three sorted piles of papers visible at the edges of the frame, visual-novel background art, close shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：08:00。悠真的房間。澪的桌前。
 
 **旁白**：她拿起那張紙。簡訊截圖的列印紙。悠真失蹤那天晚上十一點多發的。警方判定他可能自願離家的關鍵證據。

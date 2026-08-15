@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:05。回家途中。", background: Background.Chapter_10_Ch10_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:05。回家途中。", bgm: "grey-city", background: Background.Chapter_10_Ch10_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有直接回家。她走得很慢。不是因為累。是因為在想。16:30。清澄區民中心。藍色傘。她還沒決定去不去。", background: Background.Chapter_10_Ch10_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先確認。低風險確認。不搜敏感詞。不登入工作帳號。只看公開頁。只看已經找到的東西。", background: Background.Chapter_10_Ch10_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在路上找了一家咖啡店。不是連鎖的。很小的。角落有一張桌子。插座在牆上。她點了一杯最便宜的。坐下來。打開手機。不是掌機。是手機。用行動數據。不連店裡的網路。", background: Background.Chapter_10_Ch10_Act6_S0 },

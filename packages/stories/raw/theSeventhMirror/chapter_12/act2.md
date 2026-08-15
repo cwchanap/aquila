@@ -4,6 +4,10 @@
 public community center reading room, morning, long wooden tables with fluorescent ceiling lighting, shelves of local publications and newspapers, quiet, few elderly people reading, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：09:03。清澄區民館一樓閱覽室。剛開門。暖氣還沒上來。桌面的木紋摸起來涼的。
 
 **旁白**：佐伯已經到了。他坐在靠牆的長桌。電腦包放在腳邊。桌上空的。

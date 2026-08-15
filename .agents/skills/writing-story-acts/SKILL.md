@@ -102,7 +102,7 @@ Audio rules:
 - **No provider metadata in acts**: no URLs, file paths, provider/model names, prompts, durations, or candidate metadata — those live in the plan.
 - **SFX is selective**, not sentence-by-sentence Foley — cue meaningful actions only.
 - **BGM only at sustained state/location/mood changes** — not per beat or at arbitrary act boundaries.
-- **Silence is valid**: an explicit ` ```bgm stop ` or the absence of a block is a legitimate audio state.
+- **Silence is valid**: an explicit ` ```bgm stop ` is required to end currently active BGM. Omitting an audio block preserves whatever BGM is currently playing (silence if none is active); it does not stop playback.
 - **Recurring identities stay consistent** — the same object, location, or motif always uses the same cue key.
 - **Plot-essential information must remain understandable when muted** — never make required story information audio-only.
 - **Undefined needed cue**: flag it to the orchestrator to add to the plan instead of inventing a key.

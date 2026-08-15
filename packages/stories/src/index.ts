@@ -25,7 +25,6 @@ export {
     AudioAssetTypeSchema,
     AudioPlanAssetSchema,
     AudioPlanV1Schema,
-    loadAudioPlan,
     parseAudioPlan,
 } from './audio-plan';
 export type { AudioAssetType, AudioPlanAsset, AudioPlanV1 } from './audio-plan';

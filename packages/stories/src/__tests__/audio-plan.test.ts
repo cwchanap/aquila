@@ -2,7 +2,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { loadAudioPlan, parseAudioPlan } from '../audio-plan';
+import { loadAudioPlan } from '../audio-plan-loader';
+import { parseAudioPlan } from '../audio-plan';
 
 const validPlan = {
     schemaVersion: 1,

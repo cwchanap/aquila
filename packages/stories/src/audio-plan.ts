@@ -1,5 +1,3 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { z } from 'zod';
 import { isSafeLogicalKey } from './runtime-assets/paths';
 
@@ -69,27 +67,4 @@ export type AudioPlanV1 = z.infer<typeof AudioPlanV1Schema>;
 
 export function parseAudioPlan(value: unknown): AudioPlanV1 {
     return AudioPlanV1Schema.parse(value);
-}
-
-export function loadAudioPlan(rawDir: string): AudioPlanV1 | undefined {
-    const planPath = join(rawDir, 'docs', 'audio-plan.json');
-    if (!existsSync(planPath)) return undefined;
-
-    let value: unknown;
-    try {
-        value = JSON.parse(readFileSync(planPath, 'utf8'));
-    } catch (error) {
-        throw new Error(
-            `[story-compiler] ${planPath}: invalid audio-plan JSON`,
-            { cause: error }
-        );
-    }
-
-    try {
-        return parseAudioPlan(value);
-    } catch (error) {
-        throw new Error(`[story-compiler] ${planPath}: invalid audio plan`, {
-            cause: error,
-        });
-    }
 }

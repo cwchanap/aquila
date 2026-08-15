@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "正式問話在另一個房間。比站務室小，比站務室冷。牆上沒有窗戶，只有一面不知道是不是單向鏡的玻璃。桌上有一台筆電、一疊空白表格、兩杯紙杯水。日下部坐在她對面。年輕警員坐在旁邊，負責打字。", background: Background.Chapter_3_Ch3_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "正式問話在另一個房間。比站務室小，比站務室冷。牆上沒有窗戶，只有一面不知道是不是單向鏡的玻璃。桌上有一台筆電、一疊空白表格、兩杯紙杯水。日下部坐在她對面。年輕警員坐在旁邊，負責打字。", bgm: "institutional-drone", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是審訊室。沒有鐵桌，沒有固定椅，沒有那種電影裡會出現的強光燈。它只是一個普通的、冷的、燈光太白的小房間。但正因為它普通，它才可怕。它讓她覺得自己正在經歷的不是審判，而是填表。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "開始記錄。請從妳收到訊息開始說。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "我是收到訊息才去的。", background: Background.Chapter_3_Ch3_Act5_S0, portrait: Portrait.AsakuraMio_Base },
@@ -87,7 +87,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不確定。她不確定那半秒代表什麼。也許他只是想到了別的事。也許他只是手酸了。但她就是覺得——那四個字對他來說不是「意味不明」。對他來說，那四個字是別的什麼。一個他還不能說的什麼。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有問。她知道他不會回答。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "時間在走。她不知道幾點了。房間裡沒有鐘。她的手機不在手邊——還在年輕警員那邊，螢幕朝下放在桌上。", background: Background.Chapter_3_Ch3_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後門響了。", background: Background.Chapter_3_Ch3_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後門響了。", sfx: "door-knock", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是推開。是敲。三下。很輕。像怕打擾到什麼。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "年輕警員起身去開門。門開了一條縫。一隻手從縫裡伸進來，拿著一張紙。警員接過紙，門又關上了。", background: Background.Chapter_3_Ch3_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看那張紙。看了五秒。", background: Background.Chapter_3_Ch3_Act5_S0 },

@@ -4,6 +4,10 @@
 Tokyo street at evening dusk, convenience store exterior with warm fluorescent glow spilling onto sidewalk, vending machine light, sparse pedestrians, sky deep indigo fading to black, cold blue ambient light, moody cinematic visual-novel background art, wide establishing shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：研究中心的玻璃門在身後合上時，澪才發現自己一直在憋氣。
 
 **旁白**：傍晚的街道比想像中安靜。便利店的招牌亮著，那種永遠不會熄的、過分禮貌的白光，把人行道切成一半亮一半暗。她站在亮的那一半，手裡捏著那張被對方「順手」塞過來的宣傳單。
@@ -14,6 +18,10 @@ Tokyo street at evening dusk, convenience store exterior with warm fluorescent g
 
 **朝倉澪**：(內心)他們在說謊。不是慌張的那種說謊，是受過訓練的那種。
 
+```sfx
+notification-beep
+```
+
 **旁白**：手機在口袋裡震了一下。
 
 **旁白**：不是預約提醒，不是琴音。是那種她從沒見過的推送——沒有應用名稱，沒有頭像，通知欄只露出一行字，後面被截斷。
@@ -21,6 +29,10 @@ Tokyo street at evening dusk, convenience store exterior with warm fluorescent g
 **朝倉澪**：(內心)⋯⋯
 
 **旁白**：她站在便利店門口的暖光裡，把螢幕點開。
+
+```bgm
+tension-pulse
+```
 
 **訊息**：想知道朝倉悠真在哪裡，今晚 21:17。灣岸新交通，新木場方向，第七車。帶上悠真留下的那件東西。不要報警。
 
@@ -91,6 +103,10 @@ Tokyo street at evening dusk, convenience store exterior with warm fluorescent g
 **朝倉澪**：(內心)有人會知道我在哪。
 
 **旁白**：她不知道那個人是誰。但她需要「有人」這件事成立。
+
+```sfx
+mirror-chime
+```
 
 **旁白**：最後，她從包包側袋拿出那面小鏡子，塞進外套口袋。鏡面涼涼的，邊緣那道刮痕在她指腹下刮了一下。
 

@@ -4,6 +4,10 @@
 bright clinical waiting area of a sleep research clinic, automatic glass doors, clean white walls, free sleep hygiene posters, rows of plastic chairs, a parent and child filling out questionnaires at a low table, reception counter with polite smiling staff, fluorescent lighting, pale blue accents, calm institutional atmosphere, moody cinematic visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：研究中心的東京分部在一棟普通的商業大樓二樓。
 
 **旁白**：玻璃門，自動開合。門上貼著一張淡藍色的標誌——像一彎月牙，又像一段拉平的睡眠波形，線條很細，不仔細看會以為只是裝飾。

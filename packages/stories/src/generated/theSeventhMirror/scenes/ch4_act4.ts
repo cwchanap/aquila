@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "星期二傍晚。她沒有睡很久。琴音走了之後她躺了兩個小時，醒來的時候窗外已經開始暗。她做的第一件事是打開手機，搜「有明車輛基地」。", background: Background.Chapter_4_Ch4_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "星期二傍晚。她沒有睡很久。琴音走了之後她躺了兩個小時，醒來的時候窗外已經開始暗。她做的第一件事是打開手機，搜「有明車輛基地」。", bgm: "night-street", background: Background.Chapter_4_Ch4_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灣岸新交通的官方網站有一頁車輛基地介紹。有明基地。位於灣岸線南端。負責車輛維護、夜間停泊、事故車輛暫存。頁面很乾淨，幾張空拍照片，一段制式文字。沒有提到任何事故。沒有提到第七車。沒有提到她。", background: Background.Chapter_4_Ch4_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）車在那裡。站務主管說的。明天上午移過去。", background: Background.Chapter_4_Ch4_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻到客服頁面。有一支電話。有一個線上諮詢表單。她盯著表單看了很久。表單要填姓名、聯絡方式、諮詢事項。她知道如果填下去，她的名字就會進入一條紀錄。一條「朝倉澪曾經查詢事故車資料」的紀錄。", background: Background.Chapter_4_Ch4_Act4_S0 },

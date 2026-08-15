@@ -4,6 +4,10 @@
 Wangan New Transit car 7 interior at night, white cold lighting restored but dimmer, single passenger slumping forward in seat, dark wet stain spreading on seat edge, monitor red dot steadily glowing, visual-novel background art, suffocating enclosed atmosphere
 ```
 
+```bgm
+carriage-drone
+```
+
 **旁白**：廣播結束的那一刻，千田的肩膀鬆了下來。像一個人終於等到某個噪音過去，整個人往下一沉。
 
 **朝倉澪**：(內心)他鬆了。
@@ -14,7 +18,15 @@ Wangan New Transit car 7 interior at night, white cold lighting restored but dim
 
 **旁白**：然後她看見座位邊緣。
 
+```sfx
+blood-drip
+```
+
 **旁白**：一道暗色的濕痕，從他大腿外側往下滲，沿著座椅的縫隙走，在塑料椅面上積成一小灘。在車廂的白光下，那灘東西的顏色深到發黑。
+
+```bgm
+tension-pulse
+```
 
 **朝倉澪** [shocked]：(內心)血。
 
@@ -54,7 +66,15 @@ Wangan New Transit car 7 interior at night, white cold lighting restored but dim
 
 **千田浩介** [determined]：不要救東京。
 
+```bgm
+stop
+```
+
 **旁白**：四個字。乾淨。獨立。沒有上下文。像一句被單獨刻下來的東西。
+
+```sfx
+train-hum
+```
 
 **旁白**：然後他閉上眼睛。
 

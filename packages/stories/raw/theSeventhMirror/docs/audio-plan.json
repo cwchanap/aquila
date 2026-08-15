@@ -32,6 +32,107 @@
       "type": "sfx",
       "prompt": "Short modern smartphone alert beep, clean close perspective, one-shot",
       "durationMs": 900
+    },
+    {
+      "key": "pa-announcement",
+      "type": "sfx",
+      "prompt": "Flat synthetic disaster-sync PA voice announcement, identical delivery every recurrence, station and carriage share one voice, one-shot",
+      "durationMs": 5000
+    },
+    {
+      "key": "train-hum",
+      "type": "sfx",
+      "prompt": "Low-frequency train bed, approach and interior and distant-pass mix registers, seamless loop",
+      "durationMs": 30000
+    },
+    {
+      "key": "train-doors",
+      "type": "sfx",
+      "prompt": "Automated unhurried pneumatic train door open and close, the seventh-car seal, one-shot",
+      "durationMs": 2500
+    },
+    {
+      "key": "mirror-chime",
+      "type": "sfx",
+      "prompt": "Tiny cheap toy-glass ping, slightly dulled with a scratched-back texture, one-shot",
+      "durationMs": 700
+    },
+    {
+      "key": "receiver-static",
+      "type": "sfx",
+      "prompt": "Shortwave static hiss from a modified old receiver, distant stations, seamless loop",
+      "durationMs": 15000
+    },
+    {
+      "key": "sync-glitch",
+      "type": "sfx",
+      "prompt": "Short digital stutter and desync marker, the seven-second offset motif, one-shot",
+      "durationMs": 800
+    },
+    {
+      "key": "blood-drip",
+      "type": "sfx",
+      "prompt": "Slow liquid drip on plastic seat and floor, close dry interior, seamless loop",
+      "durationMs": 8000
+    },
+    {
+      "key": "evidence-bag-seal",
+      "type": "sfx",
+      "prompt": "Seal tape and zip closure of things becoming evidence, one-shot",
+      "durationMs": 900
+    },
+    {
+      "key": "camera-shutter",
+      "type": "sfx",
+      "prompt": "Camera shutter and flash, evidence capture, one-shot",
+      "durationMs": 400
+    },
+    {
+      "key": "door-knock",
+      "type": "sfx",
+      "prompt": "Light knock on a door, three taps, close perspective, one-shot",
+      "durationMs": 700
+    },
+    {
+      "key": "phone-vibrate",
+      "type": "sfx",
+      "prompt": "Phone vibration, rhythmic heartbeat-like pulses, seamless loop",
+      "durationMs": 6000
+    },
+    {
+      "key": "institutional-drone",
+      "type": "bgm",
+      "prompt": "Cold institutional procedural drone, polite fluorescent wall, low synthetic room tone, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "safe-harbor",
+      "type": "bgm",
+      "prompt": "Warm tentative cafe register, quiet acoustic guitar and soft keyboard warmth, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "carriage-drone",
+      "type": "bgm",
+      "prompt": "Sealed transit car unease bed, low mechanical clinical hum, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "night-street",
+      "type": "bgm",
+      "prompt": "Open-night Tokyo street ambience, distant traffic, wind, sparse sodium lamps, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "bay-waterfront",
+      "type": "bgm",
+      "prompt": "Pre-dawn bay waterfront ambience, wind, metal-salt air, black water, coldest emptiest register, seamless loop",
+      "durationMs": 90000,
+      "loop": true
     }
   ]
 }

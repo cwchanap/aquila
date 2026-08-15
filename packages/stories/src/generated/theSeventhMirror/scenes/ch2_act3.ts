@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "男人開口之前，先做了一件事。他把視線在車頂的紅點和車門旁的廣播面板之間來回了兩次，像在量一段距離。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "男人開口之前，先做了一件事。他把視線在車頂的紅點和車門旁的廣播面板之間來回了兩次，像在量一段距離。", bgm: "carriage-drone" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他壓低聲音。不是那種故作神秘的低，是真的在控制音量——低到剛好讓澪聽見，再往上一格就會被空調聲蓋掉。" },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "把手機螢幕翻過去。朝下。", portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯為什麼？", portrait: Portrait.AsakuraMio_Base },
@@ -24,7 +24,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "發訊息的人⋯⋯不是隨機的⋯⋯", portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)不是隨機的？", portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "什麼意思？誰發的？", portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播又響了。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播又響了。", sfx: "pa-announcement" },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "同步測試第二段，請乘客留意車內資訊顯示。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那種平到沒有起伏的合成女聲蓋過來的一瞬間，男人把聲音收得更低，像在跟廣播搶一個縫隙。" },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "⋯⋯不要先看畫面。", portrait: Portrait.ChidaKosuke_Base },
@@ -45,7 +45,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "不是為了安全。", portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音又斷了。這次不是被廣播蓋掉——是他自己撐不住。他的肩膀往前垮了下來，手在外套內側壓得更緊，眉心那條紋又擠出來。他閉了一下眼，像在等一陣什麼從身體裡過去。" },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "你到底——", portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播又響了。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播又響了。", sfx: "pa-announcement" },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "同步測試第三段，請乘客留意車內資訊顯示。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那層合成女聲蓋過來的時候，千田的身體鬆了一瞬。不是放鬆。是像有人替他按了暫停。他等廣播的尾音散掉，才重新開口，聲音比剛才更低、更碎。" },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "⋯⋯等一下。", portrait: Portrait.ChidaKosuke_Base },

@@ -4,6 +4,10 @@
 sealed maintenance platform at night, overhead industrial lights, transit car 7 door open, railway safety personnel in reflective vests, paramedics with equipment, control center staff with tablets, cold clinical atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+carriage-drone
+```
+
 **旁白**：門開的那一秒，冷風灌進來。不是自然風，是月台通風系統吹出來的、帶著混凝土和金屬味的冷氣。澪的眼睛被外面的燈光刺了一下——比車廂裡亮，比車廂裡白，白到所有東西都失去了厚度。
 
 **旁白**：門外站著的人比她預期的多。
@@ -38,6 +42,10 @@ sealed maintenance platform at night, overhead industrial lights, transit car 7 
 
 **鐵道安全人員**：小姐，請過來這邊。不要看那裡。
 
+```bgm
+institutional-drone
+```
+
 **旁白**：她被引導著走出車門。腳踩到月台地面的那一刻，感覺和車廂裡完全不同——混凝土，硬的，冷的，沒有車廂地板那種被計算過的減震。她的膝蓋有點軟，但沒有倒。
 
 ```bg
@@ -55,6 +63,10 @@ sealed maintenance platform near transit car 7 door, railway safety personnel gu
 **旁白**：警察到了。
 
 **旁白**：不是一個。是三個。兩個穿制服，一個穿便衣。便衣那個手裡拿著一個透明的證物袋和一雙手套。他戴上手套的動作很慢——不是慎重，是習慣。像每天都要做很多次的事。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：鑑識人員從安全人員手裡接過了外殼。他掀開防護罩，用戴著手套的手把外殼拾起來，翻了一面，看了看，然後放進透明證物袋裡。封口。貼標籤。
 
@@ -74,6 +86,10 @@ sealed maintenance platform near transit car 7 door, railway safety personnel gu
 
 **旁白**：她聽見自己的話在空氣裡停了一秒。然後她意識到——這句話聽起來是什麼意思。「是他給我的。」她承認了。她承認她拿著它。她承認她知道它在那裡。她想把意思修正回來，但嘴巴已經比腦子慢了。
 
+```sfx
+evidence-bag-seal
+```
+
 **旁白**：便衣警察看了她一眼。沒有接話。他在證物袋上又寫了一行字，然後把袋子裝進一個更大的不透明夾鏈袋裡。
 
 **旁白**：外殼消失了。
@@ -81,6 +97,10 @@ sealed maintenance platform near transit car 7 door, railway safety personnel gu
 **旁白**：不是物理意義上的消失。它被裝進了袋子，袋子被放進了箱子，箱子被一個制服警察提走了。從澪的視線裡，它就是消失了。像一樣東西從她的世界裡被剪下來，貼進了另一個世界。
 
 **旁白**：然後他們開始處理她。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：一個救護人員走過來，讓她把手放下來。他看了看她的雙手——不是在檢查她有沒有受傷，是在看血跡分布。他拿出手機，拍了一張。又拍了一張。閃光燈在月台的冷光裡顯得多餘，但還是閃了。
 
@@ -93,6 +113,10 @@ sealed maintenance platform near transit car 7 door, railway safety personnel gu
 **旁白**：她的外套。深色的、袖口沾了血的那件。她穿著它上了車，穿著它按了緊急通話鈕，穿著它壓了千田的傷口。袖口內側洇開的那片深色在冷風裡已經變硬了。
 
 **旁白**：她脫了。手臂從袖管裡抽出來的時候，她打了一個冷顫——不是因為冷，是因為脫掉外套之後，她突然意識到自己裡面的衣服是乾淨的。只有手和外套是髒的。身體是乾淨的。這應該說明什麼。她不知道現在有没有人在意這件事。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：外套被裝進另一個透明證物袋。封口。標籤。她沒有去看標籤上寫了什麼。
 

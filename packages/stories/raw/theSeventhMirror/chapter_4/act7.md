@@ -4,6 +4,10 @@
 small Tokyo apartment living room at night, dim desk lamp, scattered sticky notes and notebooks on low table, phone face-up on cushion glowing with notifications, muted cold palette, curtains half-drawn, visual-novel background art, wide shot
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：星期五。
 
 **旁白**：新聞的用詞變了。
@@ -35,6 +39,10 @@ small Tokyo apartment living room at night, dim desk lamp, scattered sticky note
 ---
 
 **旁白**：星期六。
+
+```sfx
+notification-beep
+```
 
 **旁白**：上午十點，她收到一封正式回覆。不是新聞。是警方透過她備案時留下的聯絡方式發的通知。
 
@@ -86,6 +94,10 @@ small Tokyo apartment living room at night, dim desk lamp, scattered sticky note
 
 **旁白**：星期日。
 
+```sfx
+notification-beep
+```
+
 **旁白**：下午，客服回覆了她星期四寄出的第三次查詢。
 
 **客服**：事故車的原始安全資料和備份，預計在下週一清晨六點左右轉送到公共安全資料保全窗口。這些資料需要經過警方或司法程序才能調閱，我們無法直接提供給您。
@@ -100,6 +112,14 @@ small Tokyo apartment living room at night, dim desk lamp, scattered sticky note
 
 **旁白**：這是她第一輪最後能做的事。不是翻案。不是拿到證據。只是站在遠處，看著自己的最後一條線被裝上車，開走。
 
+```bgm
+tension-pulse
+```
+
+```sfx
+phone-vibrate
+```
+
 **旁白**：晚上，東京市區到處出現防災同步測試提醒。街頭螢幕。車站看板。手機推播。比上週更頻繁。澪坐在客廳裡，手機每半小時就震一次——「防災同步測試」「防災同步測試」「防災同步測試」——像心跳，穩定，規律，不像是測試。
 
 **朝倉澪** [exhausted]：（內心）太多了。這不像測試。
@@ -108,6 +128,10 @@ small Tokyo apartment living room at night, dim desk lamp, scattered sticky note
 
 ```bg
 dark dreamscape, vast black ocean surface flat as ink stretching to horizon, no sky no stars, faint white shape far away like an inverted crescent moon, oppressive silence, visual-novel background art, wide shot
+```
+
+```bgm
+stop
 ```
 
 **旁白**：她又夢見了那片海。
@@ -122,6 +146,10 @@ dark dreamscape, vast black ocean surface flat as ink stretching to horizon, no 
 
 ```bg
 small Tokyo apartment bedroom at pre-dawn, dim grey-blue light, phone on futon edge, headache, visual-novel background art, wide shot
+```
+
+```bgm
+dawn-apartment
 ```
 
 **旁白**：頭痛。太陽穴兩側，像有人用拇指按著，持續地按，不鬆手。

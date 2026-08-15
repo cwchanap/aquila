@@ -4,6 +4,10 @@
 small Japanese teenager's bedroom, morning light through curtains, unmade bed with school uniform draped on chair, game controller on desk, cheap earbuds, unopened snack bag, half-finished math homework, spare glasses case on desk corner, sneakers in corner, school bag, lived-in but empty, muted warm-cool palette, moody cinematic visual-novel background art
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：澪站在悠真的桌前，手指碰到那團纏在一起的手把線。
 
 **旁白**：線纏得很亂，是悠真的習慣——他永遠不會把手把線收好，每次都隨手一繞，下次用的時候再罵一句「怎麼又打結」。澪以前會唸他，唸到他翻白眼。
@@ -34,6 +38,10 @@ small Tokyo apartment bedroom, desk by window, morning light, cheap small plasti
 
 **朝倉澪**：（內心）便宜東西就是這樣。
 
+```sfx
+mirror-chime
+```
+
 **旁白**：她拿起鏡子，翻到背面，又翻回正面。鏡面映出她自己的臉——眼下青黑，嘴唇乾，頭髮沒梳。
 
 **朝倉澪**：（內心）⋯⋯看看自己。
@@ -57,6 +65,10 @@ small Tokyo apartment bedroom, desk by window, morning light, cheap small plasti
 **朝倉澪**：（內心）今天再去一次。
 
 **旁白**：她站起來，經過走廊那面舊層架——上面堆的東西很久沒人動過，都是母親留下的。
+
+```sfx
+receiver-static
+```
 
 **旁白**：一架改裝過的短波接收器靠在角落，外殼發黃，天線用膠帶纏過一截。母親生前愛聽，現在插上電也收不到幾個台，大多只剩一陣陣的靜電沙沙聲。悠真每回經過都要停一下，側著頭聽，問他在聽什麼也說不上來——就一個習慣。
 

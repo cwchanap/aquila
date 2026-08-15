@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在悠真的桌前，手指碰到那團纏在一起的手把線。", background: Background.Chapter_1_Ch1_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在悠真的桌前，手指碰到那團纏在一起的手把線。", bgm: "dawn-apartment", background: Background.Chapter_1_Ch1_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "線纏得很亂，是悠真的習慣——他永遠不會把手把線收好，每次都隨手一繞，下次用的時候再罵一句「怎麼又打結」。澪以前會唸他，唸到他翻白眼。", background: Background.Chapter_1_Ch1_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她鬆開那團線的時候，想起另一樣東西。", background: Background.Chapter_1_Ch1_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "失蹤前幾天，悠真放學回來，把一個東西塞進她手裡。", background: Background.Chapter_1_Ch1_Act2_S0 },
@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "現在那面鏡子放在澪自己的桌上。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "鏡面有一點刮痕，背面也有幾道細痕，像被鑰匙或零錢磨到的樣子——五十圓的東西，放口袋放包包，弄成這樣很正常。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）便宜東西就是這樣。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起鏡子，翻到背面，又翻回正面。鏡面映出她自己的臉——眼下青黑，嘴唇乾，頭髮沒梳。", background: Background.Chapter_1_Ch1_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起鏡子，翻到背面，又翻回正面。鏡面映出她自己的臉——眼下青黑，嘴唇乾，頭髮沒梳。", sfx: "mirror-chime", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯看看自己。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子放回桌上，沒有再多看。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "文件上，悠真的監護人是住在長野的阿姨。阿姨忙，一年見不了幾次面，簽名蓋章的事找她，日常的事找不到她。", background: Background.Chapter_1_Ch1_Act2_S1 },
@@ -31,7 +31,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪把鏡子收進包包側袋，拉上拉鏈。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）今天再去一次。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來，經過走廊那面舊層架——上面堆的東西很久沒人動過，都是母親留下的。", background: Background.Chapter_1_Ch1_Act2_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一架改裝過的短波接收器靠在角落，外殼發黃，天線用膠帶纏過一截。母親生前愛聽，現在插上電也收不到幾個台，大多只剩一陣陣的靜電沙沙聲。悠真每回經過都要停一下，側著頭聽，問他在聽什麼也說不上來——就一個習慣。", background: Background.Chapter_1_Ch1_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一架改裝過的短波接收器靠在角落，外殼發黃，天線用膠帶纏過一截。母親生前愛聽，現在插上電也收不到幾個台，大多只剩一陣陣的靜電沙沙聲。悠真每回經過都要停一下，側著頭聽，問他在聽什麼也說不上來——就一個習慣。", sfx: "receiver-static", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "旁邊壓著一本翻舊的《腦波與睡眠研究入門》，書背脫了膠；還有一張褪色的合照——一群穿實驗袍的人在北海道某個研究會上拍的，母親站在第二排邊邊，笑得很淡。澪小時候問過一次，母親只說「很早以前的工作」，沒再往下講。", background: Background.Chapter_1_Ch1_Act2_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯都是沒人要的舊東西。", background: Background.Chapter_1_Ch1_Act2_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她最後看了一眼悠真房間的方向，沒有走過去，拿起包包出了門。", background: Background.Chapter_1_Ch1_Act2_S1 },

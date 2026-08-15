@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "星期三。她從早上開始搜千田浩介。", background: Background.Chapter_4_Ch4_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "星期三。她從早上開始搜千田浩介。", bgm: "dawn-apartment", background: Background.Chapter_4_Ch4_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "搜尋引擎的結果很少。第一頁全是新聞——「灣岸新交通第七車死亡事件」「車內男性死亡」「系統工程相關男性倒臥車廂」。沒有維基百科。沒有公司頁面。沒有社群帳號。沒有演講影片。沒有論文。只有新聞。而新聞裡的千田浩介只有一個身分——「系統工程相關男性」。", background: Background.Chapter_4_Ch4_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）系統工程相關。不是工程師。不是研究員。是「相關」。連職稱都不給他。", background: Background.Chapter_4_Ch4_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻了五頁。第五頁開始出現無關結果——另一個千田、另一個浩介、一篇二十年前的地產新聞裡剛好出現了這三個字的組合。她停了。", background: Background.Chapter_4_Ch4_Act5_S0 },

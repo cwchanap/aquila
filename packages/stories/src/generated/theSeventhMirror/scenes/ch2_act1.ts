@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車門在身後合上的聲音比澪預期的輕。", background: Background.Chapter_2_Ch2_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車門在身後合上的聲音比澪預期的輕。", sfx: "train-doors", bgm: "carriage-drone", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是悶響，是一種被計算過的、剛剛好的扣合聲。她沒有回頭，但背脊感覺得到——門鎖了。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)出不去。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第七車比月台亮。不是亮得舒服，是亮得不對。白色冷光從天花板直直打下來，把座椅、扶手、地板都照得沒有陰影。乾淨得像沒有人坐過。安靜得像沒有人會來。", background: Background.Chapter_2_Ch2_Act1_S0 },
@@ -20,11 +20,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的視線掃過車廂內側。緊急通話按鈕在靠近第六車那側的牆板上，金屬罩，紅色小字。她記住它的位置。手機握在右手裡，螢幕亮著，拇指停在撥號鍵上緣。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)隨時能按。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車頂角落的監視器亮著一個紅點。不大，像一粒不會熄的火星，穩穩地盯著整節車廂。", background: Background.Chapter_2_Ch2_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播響了。", background: Background.Chapter_2_Ch2_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播響了。", sfx: "pa-announcement", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.Announcement, character: "廣播", dialogue: "夜間防災同步測試進行中，請乘客留意後續公告。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "和月台上同一種合成女聲，平到沒有起伏。在這節空蕩蕩的車廂裡，那聲音被白色冷光襯得更薄，像一層均勻的、蓋在所有東西上面的膜。", background: Background.Chapter_2_Ch2_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "幾秒後，澪的手機才震了一下。通知欄跳出同一則防災測試訊息。", background: Background.Chapter_2_Ch2_Act1_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)又晚了。", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "幾秒後，澪的手機才震了一下。通知欄跳出同一則防災測試訊息。", sfx: "notification-beep", background: Background.Chapter_2_Ch2_Act1_S0 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)又晚了。", sfx: "sync-glitch", background: Background.Chapter_2_Ch2_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把通知劃掉。沒有多想。現在她在意的不是推送延遲，是這節車廂裡除了她之外，還有沒有別人。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "有。", background: Background.Chapter_2_Ch2_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂盡頭，靠窗的位子，坐著一個人。", background: Background.Chapter_2_Ch2_Act1_S0 },

@@ -4,6 +4,10 @@
 Tokyo street corner near a residential area at dusk, narrow sidewalk between apartment buildings and a low concrete wall, sodium streetlight just flickering on, cold grey-blue light, a young woman with a crossbody bag standing still, visual-novel background art, medium shot
 ```
 
+```bgm
+night-street
+```
+
 **旁白**：星期四傍晚。澪從便利店出來。手裡提著一袋飯糰和一瓶水。她走回家的路上要經過一個街角。那個街角有一盞路燈、一面低矮的混凝土牆、和一個站在牆邊等她的人。
 
 **旁白**：日下部。

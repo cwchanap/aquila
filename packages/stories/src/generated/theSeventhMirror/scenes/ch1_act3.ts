@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "警局的冷氣太強了。", background: Background.Chapter_1_Ch1_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "警局的冷氣太強了。", bgm: "institutional-drone", background: Background.Chapter_1_Ch1_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在受理台前的塑膠椅上，包包放在膝上，手放在包包側袋的拉鏈上——那裡面裝著那面小鏡子。她不知道為什麼要帶著它出門，只是出門前最後一刻把它塞了進去。", background: Background.Chapter_1_Ch1_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）第七天了。再問一次。", background: Background.Chapter_1_Ch1_Act3_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她已經來過三次。每次都是同樣的問題，每次得到的答案都差不多。但她還是來了，像她還是會走進悠真的房間一樣——明知道推不開，還是要伸手。", background: Background.Chapter_1_Ch1_Act3_S0 },
@@ -45,7 +45,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "腳步聲從走廊那頭過來，停在她旁邊。", background: Background.Chapter_1_Ch1_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪抬頭。一個穿深色西裝的男人站在那裡，領帶鬆著，臉上有很深的疲態。她沒見過這個人——不是前幾次接待她的那個。", background: Background.Chapter_1_Ch1_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "男人看了一眼受理台後的警員，又看了一眼澪，視線在她放在台面的手機上掃過，然後——停了一下。", background: Background.Chapter_1_Ch1_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看的是她包包側袋露出來的那面小鏡子。半截塑膠邊緣從拉鏈縫裡露出來，褪色的卡通圖案朝上。", background: Background.Chapter_1_Ch1_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看的是她包包側袋露出來的那面小鏡子。半截塑膠邊緣從拉鏈縫裡露出來，褪色的卡通圖案朝上。", sfx: "mirror-chime", background: Background.Chapter_1_Ch1_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "停頓很短。短到澪差點以為是自己看錯。然後那個男人把視線收回去，像什麼都沒發生。", background: Background.Chapter_1_Ch1_Act3_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部", dialogue: "妳是朝倉源一郎的女兒吧。", background: Background.Chapter_1_Ch1_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪愣了一下。", background: Background.Chapter_1_Ch1_Act3_S0 },

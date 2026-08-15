@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "星期四傍晚。澪從便利店出來。手裡提著一袋飯糰和一瓶水。她走回家的路上要經過一個街角。那個街角有一盞路燈、一面低矮的混凝土牆、和一個站在牆邊等她的人。", background: Background.Chapter_4_Ch4_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "星期四傍晚。澪從便利店出來。手裡提著一袋飯糰和一瓶水。她走回家的路上要經過一個街角。那個街角有一盞路燈、一面低矮的混凝土牆、和一個站在牆邊等她的人。", bgm: "night-street", background: Background.Chapter_4_Ch4_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部。", background: Background.Chapter_4_Ch4_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他靠在牆上。深色西裝。領帶鬆了。手插在口袋裡。他看見她的時候沒有動。像早就知道她會從這裡走過。", background: Background.Chapter_4_Ch4_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他怎麼知道我會走這裡。", background: Background.Chapter_4_Ch4_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },

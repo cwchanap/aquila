@@ -6,13 +6,13 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播結束的那一刻，千田的肩膀鬆了下來。像一個人終於等到某個噪音過去，整個人往下一沉。", background: Background.Chapter_2_Ch2_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廣播結束的那一刻，千田的肩膀鬆了下來。像一個人終於等到某個噪音過去，整個人往下一沉。", bgm: "carriage-drone", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他鬆了。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但那個「鬆」不對。不是放鬆。是撐到現在的那口氣洩掉了。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他一直壓在外套內側的那隻手，慢慢往下滑。先是離開胸口的位置，滑到腰際，再滑到座椅扶手上，最後垂在身側，手指鬆開，掌心朝上。澪這才看見——他外套內側那一截，深色的布料濕了一片。不是被雨淋的那種濕，是慢慢洇開的、邊緣發暗的那種。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她看見座位邊緣。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一道暗色的濕痕，從他大腿外側往下滲，沿著座椅的縫隙走，在塑料椅面上積成一小灘。在車廂的白光下，那灘東西的顏色深到發黑。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)血。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一道暗色的濕痕，從他大腿外側往下滲，沿著座椅的縫隙走，在塑料椅面上積成一小灘。在車廂的白光下，那灘東西的顏色深到發黑。", sfx: "blood-drip", background: Background.Chapter_2_Ch2_Act5_S0 },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)血。", bgm: "tension-pulse", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她聞到了。剛才一直被她當成車廂清潔劑的那股金屬味，現在濃了一倍，甜腥甜腥的，像硬幣被捏熱之後的味道。不是清潔劑。是血。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "你受傷了？誰幹的？", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的聲音比她預期的急。千田沒有立刻回答。他的視線從她臉上移開，落到她左手——落到她左手裡那塊銀色的金屬上。他看了它一眼，像在確認一件已經做完的事。交付完成了。東西在她手上了。", background: Background.Chapter_2_Ch2_Act5_S0 },
@@ -31,8 +31,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "他們會說是來救援的。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.ChidaKosuke_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他說這句話的時候，眼睛是睜著的，看著車廂頂部那顆監視器的紅點。聲音比前兩句清楚，像把最後一點力氣都擠進了這幾個字裡。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "不要救東京。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.ChidaKosuke_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個字。乾淨。獨立。沒有上下文。像一句被單獨刻下來的東西。", background: Background.Chapter_2_Ch2_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他閉上眼睛。", background: Background.Chapter_2_Ch2_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個字。乾淨。獨立。沒有上下文。像一句被單獨刻下來的東西。", bgm: null, background: Background.Chapter_2_Ch2_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他閉上眼睛。", sfx: "train-hum", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的右手還撐著他。她的左手還握著那塊銀色外殼——她沒有放開，不是因為她想握著，是因為他剛才那一攥把她的手指都攥僵了，她在恐慌裡根本沒想到要鬆手。", background: Background.Chapter_2_Ch2_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)急救。先急救。", background: Background.Chapter_2_Ch2_Act5_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她做了一件查核員在混亂裡會做的事——她開始照順序動。", background: Background.Chapter_2_Ch2_Act5_S0 },

@@ -4,6 +4,10 @@
 small cafe near university campus at early afternoon, warm soft light through large windows, wooden tables, whiteboard with colorful sticky notes on one wall, laptop open on table, half-eaten bento boxes and a teapot, cozy cluttered investigative-media workspace vibe, muted warm palette, moody cinematic visual-novel background art, medium shot
 ```
 
+```bgm
+safe-harbor
+```
+
 **旁白**：咖啡店在大學西門外那條商店街的盡頭，門面不大，招牌上的字掉了一半漆。二樓是調查媒體借來堆資料的小辦公室，一樓借給學生當自習空間，點一杯飲料就能坐一整個下午。
 
 **旁白**：澪推門進去的時候，琴音已經坐在靠窗的位子。桌上擺了兩個便當盒、一壺熱茶，和一台開著文件的筆電。她身後那面白板貼滿了彩色便利貼，是上週某篇查核報告殘留下來的。

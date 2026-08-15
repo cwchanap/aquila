@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:30。她進門之後沒有開大燈。她開了書桌上的那盞檯燈。燈光是暖黃色的，但房間太暗，暖黃色只夠照亮桌面一小圈。其他地方都是黑的。", background: Background.Chapter_4_Ch4_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:30。她進門之後沒有開大燈。她開了書桌上的那盞檯燈。燈光是暖黃色的，但房間太暗，暖黃色只夠照亮桌面一小圈。其他地方都是黑的。", bgm: "dawn-apartment", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她做的第一件事不是脫外套。是拉開斜背包的拉鍊。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指摸進內層。小布套還在。她捏了一下。硬的、扁的、圓角的。鏡子還在。她把布套拉出來，打開。小鏡子在掌心裡反了一下檯燈的光。", background: Background.Chapter_4_Ch4_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)還在。", background: Background.Chapter_4_Ch4_Act2_S0, portrait: Portrait.AsakuraMio_Base },

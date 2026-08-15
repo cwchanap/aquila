@@ -4,11 +4,19 @@
 Wangan New Transit car 7 interior at night, train stopped at sealed maintenance platform, cold white lighting, a man slumped unconscious in seat with dark blood spreading on seat and floor, a young woman standing with bloodied hands, one hand holding a silver metal object, monitor red dot glowing steadily, closed doors, oppressive surveillance atmosphere, visual-novel background art
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：銀色外殼貼在掌心。血正沿著她的生命線往下流。
 
 **朝倉澪** [scared]：(內心)放下。
 
 **旁白**：這兩個字是廣播教的。不是她想的。她腦子裡的第一個念頭還是「壓住傷口」。千田的呼吸已經淺到她得湊近才能確認——胸口在動，很慢，慢到像是在跟什麼東西商量。
+
+```sfx
+pa-announcement
+```
 
 **廣播**：第七車乘客，請立即放下手中的尖銳物。雙手離開物品，退後兩步。
 
@@ -31,6 +39,10 @@ Wangan New Transit car 7 interior at night, train stopped at sealed maintenance 
 **朝倉澪**：千田先生。
 
 **旁白**：沒有回應。連呼吸的幅度都沒有變化。她不確定他聽不聽得到。她不確定他還在不在。
+
+```sfx
+pa-announcement
+```
 
 **廣播**：請放下尖銳物。退後兩步。雙手可見。
 
@@ -58,6 +70,10 @@ Wangan New Transit car 7 interior at night, train stopped at sealed maintenance 
 
 **旁白**：她沒有時間想這兩個字代表什麼。她只來得及把它記住。像拍照一樣——快門按下去，畫面存進來，之後再想是什麼意思。
 
+```sfx
+pa-announcement
+```
+
 **廣播**：請退後兩步。雙手可見。遠離物品。
 
 **旁白**：她的右手還壓在千田身上。
@@ -65,6 +81,10 @@ Wangan New Transit car 7 interior at night, train stopped at sealed maintenance 
 **朝倉澪** [scared]：(內心)退後。退後就是放開他。
 
 **旁白**：她感覺得到千田的體溫在往下走。隔著外套，那股熱正在變成不對勁的涼。她的手掌貼著他的肋下，血還在往外滲，但速度比剛才慢了——不是因為止住了，是因為越來越沒有東西可以滲了。
+
+```sfx
+blood-drip
+```
 
 **旁白**：她鬆開了右手。
 
@@ -77,6 +97,10 @@ Wangan New Transit car 7 interior at night, train stopped at sealed maintenance 
 **旁白**：她舉起雙手。掌心朝外，手指張開，讓監視器看見她手裡什麼都沒有。血從她的手腕沿著小臂內側往下走，在袖口內側洇開一小片深色。
 
 **旁白**：車門沒有開。
+
+```bgm
+stop
+```
 
 **旁白**：廣播也停了。沒有第五次指令，沒有「謝謝配合」，沒有「門即將開啟」。只有車廂的空調聲和千田越來越淺的呼吸——如果那還算呼吸的話。
 

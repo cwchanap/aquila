@@ -4,6 +4,10 @@
 late night Tokyo residential streets, empty sidewalks under sodium streetlights, cold blue-black sky, distant elevated highway, a young woman in an oversized thin grey jacket walking alone with a crossbody bag, visual-novel background art, wide shot
 ```
 
+```bgm
+night-street
+```
+
 **旁白**：01:30。她不知道確切的數字。是她走出警署之後，路過一家還沒關的便利店，透過玻璃看見牆上的鐘，才確認的。在那之前她一直沒看手機。手機在外側口袋裡，被備份過，被貼過取證標籤，現在又回到她身上。但它不完全是她的了。
 
 **旁白**：灰色外套太大。肩線掉到上臂中間，袖子長出一截，她得把袖口捲兩圈才能露出手指。站務給的。她原來那件——染了血的那件——在證物袋裡。她不知道它現在在哪個房間、哪個櫃子、被寫上什麼編號。她只知道它不再屬於她了。
@@ -45,6 +49,10 @@ close-up of a smartphone screen in the dark, news push notification glowing cold
 ```
 
 **旁白**：一則新聞推播。三分鐘前跳的。標題很短，像還沒寫完。
+
+```sfx
+notification-beep
+```
 
 **訊息**：灣岸新交通第七車男性乘客心肺停止後死亡確認，警方正向同車女性聽取情況。
 

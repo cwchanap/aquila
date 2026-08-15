@@ -4,6 +4,10 @@
 small Tokyo apartment desk by window, morning light filtering through thin curtains, scattered handwritten notes and printed forms spread across desk surface, a phone showing calendar screenshots, a cup of cold tea, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：08:30。
 
 **旁白**：簡訊的比對告一段落。澪把寫滿語氣分析的那頁筆記推到桌角，指尖還壓著最後一行——「她能證明這句話不像悠真。不能證明它不是悠真。」壓了幾秒，鬆開。

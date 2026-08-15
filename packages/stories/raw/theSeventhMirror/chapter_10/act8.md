@@ -4,6 +4,10 @@
 public community center rest area, afternoon light shifting to early evening, vending machines humming, chess game still in progress at the corner table, two women sitting across from each other at a window table, a blue umbrella leaning against the table leg, muted warm-grey palette with faint amber from low sun through glass, visual-novel background art, medium shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：16:45。她們坐了幾分鐘。誰都沒有先說正事。
 
 **旁白**：然後水瀨佳乃開口了。不是問名字。不是問背景。她說了一句讓澪一瞬間繃緊的話。

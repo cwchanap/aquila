@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:03。清澄區民館一樓閱覽室。剛開門。暖氣還沒上來。桌面的木紋摸起來涼的。", background: Background.Chapter_12_Ch12_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:03。清澄區民館一樓閱覽室。剛開門。暖氣還沒上來。桌面的木紋摸起來涼的。", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯已經到了。他坐在靠牆的長桌。電腦包放在腳邊。桌上空的。", background: Background.Chapter_12_Ch12_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走過去。坐下。把背包放在椅子上。", background: Background.Chapter_12_Ch12_Act2_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "影本。去識別化。不帶名字。不帶地址。只留條款頁和頁尾。", background: Background.Chapter_12_Ch12_Act2_S0, portrait: Portrait.SaekiTatsuya_Determined },

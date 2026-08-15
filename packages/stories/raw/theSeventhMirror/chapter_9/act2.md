@@ -4,6 +4,14 @@
 small Tokyo apartment room at early morning, pale grey-blue light through window, desk lamp still on but dimmer against the growing daylight, phone face-down on the desk next to the closed notebook, jacket still on the chair, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
+```sfx
+notification-beep
+```
+
 **旁白**：06:30。手機震了。
 
 **旁白**：不是琴音。不是新聞推送。螢幕上跳出一條正式語氣的訊息。字很小。排列得很整齊。像公文。
@@ -25,6 +33,10 @@ small Tokyo apartment room at early morning, pale grey-blue light through window
 **朝倉澪** [exhausted]：（內心）⋯⋯好。我知道了。11:30。我會去。但在那之前⋯⋯
 
 **旁白**：她沒有把這句話想完。因為手機又震了。
+
+```sfx
+notification-beep
+```
 
 **旁白**：這次是琴音。
 
@@ -79,5 +91,9 @@ small Tokyo apartment room at early morning, pale grey-blue light through window
 **旁白**：她站在門前。手放在門把上。金屬的門把很涼。
 
 **朝倉澪** [exhausted]：（內心）⋯⋯悠真。我回來了。
+
+```sfx
+door-open
+```
 
 **旁白**：07:15。她推開門。

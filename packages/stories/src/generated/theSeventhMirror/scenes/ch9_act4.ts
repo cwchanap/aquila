@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:00。悠真的房間。澪的桌前。", background: Background.Chapter_9_Ch9_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:00。悠真的房間。澪的桌前。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起那張紙。簡訊截圖的列印紙。悠真失蹤那天晚上十一點多發的。警方判定他可能自願離家的關鍵證據。", background: Background.Chapter_9_Ch9_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "八個字。一個句號。", background: Background.Chapter_9_Ch9_Act4_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "我想冷靜幾天，不用找我。", background: Background.Chapter_9_Ch9_Act4_S0 },

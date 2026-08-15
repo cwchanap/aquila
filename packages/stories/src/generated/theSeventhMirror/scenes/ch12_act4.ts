@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:02。回到閱覽室。", background: Background.Chapter_12_Ch12_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:02。回到閱覽室。", bgm: "institutional-drone", background: Background.Chapter_12_Ch12_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌上還是剛才那四套文件。藍色、灰色、米色、白色。", background: Background.Chapter_12_Ch12_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯把咖啡杯挪到桌角，杯底在紙面上留了一個淺色的圓印。他沒有擦。", background: Background.Chapter_12_Ch12_Act4_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "接下來比對異常時間。", background: Background.Chapter_12_Ch12_Act4_S0, portrait: Portrait.SaekiTatsuya_Determined },

@@ -4,6 +4,10 @@
 community center corridor, fluorescent ceiling lights, linoleum floor, morning light from exit door at far end, notice boards with calligraphy class and parenting workshop flyers, quiet, one person standing by the window checking phone, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：09:46。澪起身。走向走廊。手機在口袋裡。
 
 **旁白**：十分鐘。十點以前。警方要她回覆攜帶小鏡子原件的時段。
@@ -19,6 +23,10 @@ community center corridor, fluorescent ceiling lights, linoleum floor, morning l
 **朝倉澪** [determined]：（內心）⋯⋯我不是在跟警方談判。我沒有那個資格。我只是在學會留下程序痕跡。如果鏡子被暫時保管，我要有收據。要有保管人員的名字。要有用途說明。這不是法律手段。這是一個普通人能做的最後一道防線。
 
 **旁白**：發送。
+
+```sfx
+notification-beep
+```
 
 **旁白**：兩分鐘後。回覆。
 

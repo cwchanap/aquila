@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:20。清澄區民中心。一樓。公開休息區。", background: Background.Chapter_10_Ch10_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:20。清澄區民中心。一樓。公開休息區。", bgm: null, background: Background.Chapter_10_Ch10_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在入口。沒有馬上走進去。", background: Background.Chapter_10_Ch10_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先看。先看清楚。出口在哪。人在哪。傘在哪。", background: Background.Chapter_10_Ch10_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她做了所有能做的笨拙準備。出門前把地點寫在一張紙上，夾進家中筆記本。沒有帶小鏡子。沒有告訴琴音。沒有告訴警方。手機開機，但定位分享關掉。悠真的舊掌機塞在背包底層，靜音。", background: Background.Chapter_10_Ch10_Act7_S0 },

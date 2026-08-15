@@ -4,7 +4,15 @@
 small Tokyo apartment desk, close shot of a phone screen showing an audio waveform timeline, earbud cable trailing from the phone, a notebook page with handwritten words visible at the edge of frame, dim morning light, muted cool palette, visual-novel background art
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：09:05。
+
+```sfx
+sleep-talk-recording
+```
 
 **旁白**：她按下播放。
 
@@ -111,6 +119,10 @@ small Tokyo apartment desk, close shot of a phone screen showing an audio wavefo
 **旁白**：她沒有把這句話寫下來。不是不想寫。是手在抖。寫不穩。她只用指甲在筆記邊緣壓了一個深深的痕。沒有字。只有壓痕。
 
 **旁白**：錄音還在跑。波形走到盡頭。兩分十七秒。最後幾秒是空的。只有呼吸。然後是靜音。然後播放結束。
+
+```sfx
+receiver-static
+```
 
 **旁白**：清單往下還有一個檔案。更短。幾秒。她點開。不是夢話。是規律的靜電。沙沙的。均勻的。是家裡那台舊接收器開著沒人聽時的底噪——悠真以前常錄這種聲音，當睡眠背景。
 

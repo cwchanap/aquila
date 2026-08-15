@@ -4,11 +4,19 @@
 community center third floor corridor, fluorescent ceiling lights, linoleum floor, bulletin boards with flyers for calligraphy class and parenting consultation, ordinary municipal building interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:05。清澄區民館。三樓。
 
 **旁白**：澪站在走廊盡頭。電梯出來左轉，走到底。走廊很普通。日光燈。塑膠地板。佈告欄上貼著書法班招生、育兒相談預約、町內會防災講習、老人手機教室的公告。每一張都褪了色。每一張都像在這裡貼了很久。
 
 **朝倉澪** [determined]：（內心）⋯⋯就是這裡。普通到不能再普通。沒有任何東西讓你覺得這棟樓裡正在發生不普通的事。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震了一下。琴音。
 
@@ -90,6 +98,10 @@ small municipal meeting room, fluorescent lights at normal brightness, folding t
 
 **旁白**：她明白了。這不是偏執。這是防污染。
 
+```sfx
+evidence-bag-seal
+```
+
 **旁白**：門邊有人正在匆忙地按手機。螢幕亮著。手指很快。像在回最後一則工作訊息。回完之後他把螢幕按滅，關掉通知預覽，調成飛航模式，拿起一個編號袋，把手機放進去，拉上封口。動作很熟練。像做過很多次。
 
 **旁白**：袋子放進紙箱。箱子在桌角。所有人都看得見。
@@ -99,6 +111,10 @@ small municipal meeting room, fluorescent lights at normal brightness, folding t
 **旁白**：澪拿出自己的手機。她先看了一眼。
 
 **朝倉澪** [determined]：（內心）⋯⋯琴音沒有新回覆。「我會晚點回。」她沒有再追問。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：她關掉通知預覽。飛航模式。拿起一個編號袋。數字是 7。
 

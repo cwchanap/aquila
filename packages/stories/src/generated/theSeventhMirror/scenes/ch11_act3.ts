@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:35。會議室裡大約八到十個人。", background: Background.Chapter_11_Ch11_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:35。會議室裡大約八到十個人。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "燈沒有調暗。投影幕空白。桌面上的資料夾封面朝下。沒有人急著翻開任何東西。", background: Background.Chapter_11_Ch11_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間很普通。也很疲憊。", background: Background.Chapter_11_Ch11_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌上散著便利店飯糰的包裝紙。有人帶了校服照片，放在資料夾旁邊，照片朝上。一張醫院繳費單被壓在紙杯下面。透明套裝插著一張學生交通卡。一件反光工作背心掛在椅背上。一個透明夾鏈袋裡裝著孩子沒用完的藥，標籤還在。有人把紙本排班表攤在膝上，用鉛筆在格子裡算著什麼。", background: Background.Chapter_11_Ch11_Act3_S0 },

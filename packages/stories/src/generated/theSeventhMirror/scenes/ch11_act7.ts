@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:28。燈暗了一半。", background: Background.Chapter_11_Ch11_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:28。燈暗了一半。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是儀式。是那台舊投影機和低亮度螢幕需要。椅子被拉成半圓，因為牆邊只有兩個插座，音箱線也只夠拉到那個位置。", background: Background.Chapter_11_Ch11_Act7_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "接下來這段，外面的人最容易誤會。", background: Background.Chapter_11_Ch11_Act7_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "播放孩子的睡夢錄音。", background: Background.Chapter_11_Ch11_Act7_S0, portrait: Portrait.SaekiTatsuya_Determined },
@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "錄音一。佐伯蓮。16 歲。失蹤約第 24 日。", background: Background.Chapter_11_Ch11_Act7_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "外面的證據是——家長把片段交給學校輔導員，郵件日期比共用資料夾還早。但完整錄音只有家裡有。所以內容的可信度比日期證明低。", background: Background.Chapter_11_Ch11_Act7_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "證據等級——日期部分中等，完整錄音弱。僅列參考。", background: Background.Chapter_11_Ch11_Act7_S0, portrait: Portrait.SaekiTatsuya_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他按了播放。", background: Background.Chapter_11_Ch11_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他按了播放。", sfx: "sleep-talk-recording", background: Background.Chapter_11_Ch11_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "音箱裡傳出一個少年的聲音。不是清晰的語句。是夢裡的聲音。含混。被床單摩擦和電器底噪蓋住一半。", background: Background.Chapter_11_Ch11_Act7_S0 },
     { characterId: CharacterId.DreamVoice, character: "夢話聲音", dialogue: "線⋯⋯不是路⋯⋯", background: Background.Chapter_11_Ch11_Act7_S0 },
     { characterId: CharacterId.DreamVoice, character: "夢話聲音", dialogue: "海沒有上面⋯⋯", background: Background.Chapter_11_Ch11_Act7_S0 },

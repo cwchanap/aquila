@@ -195,6 +195,19 @@
       "type": "sfx",
       "prompt": "Hushed suppressed emergency, rapid footsteps, fast trolley, soft metal clatter, no alarm, one-shot",
       "durationMs": 15000
+    },
+    {
+      "key": "sleep-talk-recording",
+      "type": "sfx",
+      "prompt": "Diegetic children's sleep-talk playback: room tone, slow breathing, muffled underwater voice, long irregular gaps, seamless loop",
+      "durationMs": 20000
+    },
+    {
+      "key": "grey-city",
+      "type": "bgm",
+      "prompt": "Overcast day street and transit walking state, muted traffic and wind textures, no warmth, seamless loop",
+      "durationMs": 90000,
+      "loop": true
     }
   ]
 }

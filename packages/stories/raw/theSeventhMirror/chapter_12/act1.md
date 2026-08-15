@@ -4,6 +4,10 @@
 Japanese family restaurant interior, early morning, booths by large windows, soft overcast light from left, nearly empty restaurant, paper menus and salt shakers on tables, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：07:28。清澄站前家庭餐廳。剛開門。店裡只有兩桌客人。
 
 **旁白**：澪坐在靠窗的位子。背對入口。她選這個位子是因為窗外的光從左邊過來，照在桌面上不會反光。

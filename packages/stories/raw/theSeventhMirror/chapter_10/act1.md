@@ -4,6 +4,10 @@
 hallway outside a boy's bedroom door, morning light filtering through a window at the end of the corridor, dust motes suspended in grey air, the door just closed, visual-novel background art, narrow shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：10:42。走廊。
 
 **旁白**：悠真房間的門剛帶上。
@@ -35,6 +39,10 @@ hallway outside a boy's bedroom door, morning light filtering through a window a
 **朝倉澪** [determined]：（內心）⋯⋯他說先別去筑波。他知道座標。
 
 **朝倉澪** [determined]：（內心）⋯⋯他知道有人在等這個帳號亮起來。這不是可以晾著的東西。
+
+```sfx
+door-latch
+```
 
 **旁白**：她轉身。推開門。門扣又響了一聲。
 
@@ -182,6 +190,10 @@ Yuma's room, morning light through curtain gap, desk with gaming monitor dark, o
 
 **旁白**：她剛想打字問 bluefish_7 是誰。手指剛碰到鍵盤。
 
+```sfx
+notification-beep
+```
+
 **旁白**：手機震了。
 
 **旁白**：不是遊戲。是行事曆。提醒還掛在螢幕頂部。
@@ -203,6 +215,10 @@ Yuma's room, morning light through curtain gap, desk with gaming monitor dark, o
 **朝倉澪** [exhausted]：（內心）時間不夠了。我不能在這裡繼續聊。
 
 **朝倉澪** [determined]：（內心）⋯⋯截圖。手抄。bluefish_7。先記下來。晚點查。現在必須走。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她按了截圖。
 
@@ -275,6 +291,10 @@ Yuma's room, morning light through curtain gap, desk with gaming monitor dark, o
 **旁白**：她沒有回頭看悠真的房間。
 
 **旁白**：她帶上門。
+
+```sfx
+door-latch
+```
 
 **旁白**：門扣響了一聲。
 

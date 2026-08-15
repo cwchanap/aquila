@@ -4,6 +4,10 @@
 public community center rest area, afternoon light through large windows, vending machines humming along one wall, small children's reading corner with low bookshelves, elderly men playing chess at a corner table, bulletin board with disaster preparedness lecture poster, a blue umbrella leaning against a table, muted warm-grey palette, visual-novel background art, wide shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：16:20。清澄區民中心。一樓。公開休息區。
 
 **旁白**：澪站在入口。沒有馬上走進去。

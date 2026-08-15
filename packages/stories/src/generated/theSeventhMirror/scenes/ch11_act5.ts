@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:35。佐伯把案例卡排成三列。每張卡白紙黑字。沒有照片。沒有全名。代號在最上面。下面是年齡、失蹤日數、材料類型。", background: Background.Chapter_11_Ch11_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:35。佐伯把案例卡排成三列。每張卡白紙黑字。沒有照片。沒有全名。代號在最上面。下面是年齡、失蹤日數、材料類型。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不讓家屬輪流講故事。他說過一次：故事會讓人記住情緒，忘記日期。", background: Background.Chapter_11_Ch11_Act5_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "在看案例以前，先把證據品質分清楚。不是所有日期都一樣可靠。", background: Background.Chapter_11_Ch11_Act5_S0, portrait: Portrait.SaekiTatsuya_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他拿出一張紙。上面是他自己畫的表格。三欄。三級。", background: Background.Chapter_11_Ch11_Act5_S0 },

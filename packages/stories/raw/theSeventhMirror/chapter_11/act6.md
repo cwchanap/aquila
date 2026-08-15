@@ -4,6 +4,10 @@
 small community center meeting room, evening, fluorescent ceiling lights at normal brightness, blank white projector screen, three de-identified case cards arranged in a row at center, grey folder open nearby, an unopened envelope placed at the table edge, document sleeves and label tape set aside, muted institutional palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：20:10。澪從包裡拿出另一個信封。
 
 **旁白**：不是裝影本的那個。是她在出門前另外準備的。信封是白色的。普通的。沒有寫字。封口沒有黏。她只是把開口折了兩折。

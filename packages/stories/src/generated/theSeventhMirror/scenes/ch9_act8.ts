@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:45。悠真的房間。", background: Background.Chapter_9_Ch9_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:45。悠真的房間。", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕還亮著。", background: Background.Chapter_9_Ch9_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遊戲主機沒有關。悠真失蹤八天了，但那台主機一直維持待機狀態，螢幕邊緣的呼吸燈一明一滅。像在替他呼吸。", background: Background.Chapter_9_Ch9_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他以前也這樣。出門不關機。說「回來還要重新載入很麻煩」。我罵過他三次。他每次都說「姐，電費我出」。然後繼續不關。", background: Background.Chapter_9_Ch9_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯帳號一上線，就可能有人看見。離線八天突然變上線中。任何在等的人都會注意到。", background: Background.Chapter_9_Ch9_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯但安全的路，已經沒有幾條了。外殼拿不到。琴音不能信。警方要筆錄。日下部說公開入口會留下紀錄。我能碰的，只剩悠真自己留下的東西。", background: Background.Chapter_9_Ch9_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她按了登入。", background: Background.Chapter_9_Ch9_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕跳轉。載入畫面。然後右下角跳出一行系統提示。很小。灰底白字。像一張貼在角落的便條。", background: Background.Chapter_9_Ch9_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕跳轉。載入畫面。然後右下角跳出一行系統提示。很小。灰底白字。像一張貼在角落的便條。", sfx: "notification-beep", background: Background.Chapter_9_Ch9_Act8_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "朝倉悠真：離線 8 日 → 上線中", background: Background.Chapter_9_Ch9_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯離線八日。系統記得。它一直在數。八天。悠真失蹤的每一天，這個帳號都在這裡安靜地累計空白。", background: Background.Chapter_9_Ch9_Act8_S0, portrait: Portrait.AsakuraMio_Scared },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "好友列表跟著更新。左側欄位一排灰色頭像。灰色的意思是離線。離線很久。但其中有幾個——三個，也許四個——在悠真帳號上線的瞬間短暫亮了一下。邊框從灰跳成綠。然後又暗回去。", background: Background.Chapter_9_Ch9_Act8_S0 },

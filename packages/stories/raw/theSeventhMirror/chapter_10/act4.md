@@ -4,6 +4,10 @@
 police station exit, overcast midday light, concrete steps leading down to a sidewalk, Mio standing outside with phone in hand, tired figure in dark jacket, grey Tokyo sky, visual-novel background art, medium shot
 ```
 
+```bgm
+grey-city
+```
+
 **旁白**：12:45。灣岸署外。
 
 **旁白**：澪站在階梯底下。手機還在口袋裡震。不是來電。是警方最後那句話的餘震。保持手機開機。近期不要離開都內太遠。後續可能還要提供小鏡子確認。
@@ -153,6 +157,10 @@ convenience store corner seating, small table by window, overcast light through 
 **旁白**：她會把便利店冰棒的棍子收集起來。在上面寫日期。用奇異筆。很小的字。一根一根。放在房間的鐵盒裡。她說那是她的日記。
 
 **朝倉澪** [sad]：（內心）⋯⋯冰棒棍。寫日期。鐵盒。日記。
+
+```sfx
+vending-machine-hum
+```
 
 **旁白**：澪看著那行字。看了很久。便利店外面有人在結帳。冰櫃的馬達在嗡。她都沒聽見。
 

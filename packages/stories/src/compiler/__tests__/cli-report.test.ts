@@ -34,13 +34,41 @@ describe('cli --report', () => {
                     `${asset.type}:${asset.key}`
             )
         ).toEqual([
+            'bgm:bay-waterfront',
+            'bgm:carriage-drone',
             'bgm:dawn-apartment',
+            'bgm:grey-city',
+            'bgm:institutional-drone',
+            'bgm:night-street',
+            'bgm:passage-hum',
+            'bgm:safe-harbor',
+            'bgm:sleepless-vigil',
             'bgm:tension-pulse',
+            'sfx:blood-drip',
+            'sfx:camera-shutter',
+            'sfx:card-access-beep',
+            'sfx:code-blue-rush',
+            'sfx:door-knock',
+            'sfx:door-latch',
             'sfx:door-open',
+            'sfx:door-seal',
+            'sfx:evidence-bag-seal',
             'sfx:impact',
+            'sfx:mirror-chime',
+            'sfx:monitor-beep',
             'sfx:notification-beep',
+            'sfx:pa-announcement',
+            'sfx:phone-vibrate',
+            'sfx:receiver-static',
+            'sfx:sleep-talk-recording',
+            'sfx:sync-glitch',
+            'sfx:toolbox-roll',
+            'sfx:train-doors',
+            'sfx:train-hum',
+            'sfx:trolley-wheels',
+            'sfx:vending-machine-hum',
         ]);
-        expect(report.bgmStops).toHaveLength(1);
+        expect(report.bgmStops).toHaveLength(12);
         expect(report.unused).toEqual([]);
     });
 

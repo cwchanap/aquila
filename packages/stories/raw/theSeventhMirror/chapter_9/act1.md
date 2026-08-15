@@ -4,6 +4,10 @@
 small Tokyo apartment room before dawn, desk lamp casting weak yellow circle on a cluttered table, notebook open with handwritten columns, pen lying across the page, window showing deep blue-black sky with no light yet, faint smell of antiseptic and rain clinging to a jacket draped over the chair, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：04:30。澪的房間。
 
 **旁白**：她從醫院回來已經快一個小時了。外套還掛在椅背上。沒有脫。上面沾著消毒水、血、雨水和夜班急診走廊的味道。她沒有換衣服。她沒有洗澡。她坐下來。打開筆記本。拿起筆。

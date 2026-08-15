@@ -4,6 +4,10 @@
 small community center meeting room, lights returning to normal brightness, people gathering folders and bags, numbered phone bags being retrieved from the corner box, ordinary clutter of rice balls and paper schedules and hospital receipts on the table, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:08。燈亮回來。
 
 **旁白**：沒有宣誓。沒有祈禱。沒有人站到前面做總結。沒有教主。
@@ -102,6 +106,10 @@ community center corridor, fluorescent ceiling lights, linoleum floor, notice bo
 
 **旁白**：21:30。澪回到門口那張桌角箱旁邊。憑編號取回自己的手機。撕開封口。螢幕亮起來。網路恢復。
 
+```sfx
+notification-beep
+```
+
 **旁白**：兩則先前已發出的通知跳出來。
 
 **旁白**：第一則。
@@ -111,6 +119,10 @@ community center corridor, fluorescent ceiling lights, linoleum floor, notice bo
 **旁白**：18:05 發出的。三個多小時前。琴音不知道她在哪裡。琴音以為她在睡覺。琴音把吃的放進冰箱。等她醒。
 
 **朝倉澪** [sad]：（內心）⋯⋯琴音。妳還在等我。妳不知道我今晚去了哪裡。妳不知道我剛才聽了什麼。妳不知道我現在手裡拿著一張空白模板和三個不能說出口的東西。妳只知道我還沒回妳。妳把吃的放冰箱。等我醒。
+
+```sfx
+notification-beep
+```
 
 **旁白**：第二則。來自灣岸署。
 
@@ -129,6 +141,10 @@ community center corridor, fluorescent ceiling lights, linoleum floor, notice bo
 **朝倉澪** [determined]：（內心）⋯⋯千田說過東京。一個在他死前數十日便留下錄音的孩子，也可能說過相同的音節。兩條不同的資料鏈。一條是瀕死工程師的遺言。一條是失蹤少女的夢話。它們是否共享同一個隱藏的來源，我不知道。
 
 **朝倉澪** [determined]：（內心）⋯⋯我只知道一件事。千田不是唯一一個說出這個詞的人。在他死之前，已經有一個孩子的夢裡裝著同樣的聲音。
+
+```bgm
+night-street
+```
 
 **旁白**：21:45。區民館的門在她身後關上。走廊的日光燈滅了一排。夜風從停車場那邊過來。涼的。帶著一點遠處的水氣。
 

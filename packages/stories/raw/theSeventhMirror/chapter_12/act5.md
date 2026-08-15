@@ -4,6 +4,10 @@
 community center reading room, mid-morning light now fully illuminating the table, sun past the rooftop opposite, documents and folders spread out with a PDF printout placed center, two sealed envelopes set aside, warm amber-tinged natural light, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：10:47。佐伯把那張 PDF 影本放在桌面正中央。
 
 **旁白**：米色資料夾裡的其他文件被他推到旁邊。只有這一張。正面朝上。

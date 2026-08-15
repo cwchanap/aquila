@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。基線寫完了。佐伯把那張兩欄卡片收進透明套，和其他家屬的資料放在一起。他沒有宣布「又一個共同案例」。他只是把筆蓋扣上，看了一眼桌面。", background: Background.Chapter_11_Ch11_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。基線寫完了。佐伯把那張兩欄卡片收進透明套，和其他家屬的資料放在一起。他沒有宣布「又一個共同案例」。他只是把筆蓋扣上，看了一眼桌面。", bgm: "institutional-drone", background: Background.Chapter_11_Ch11_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他伸手，翻開桌上一個灰色資料夾。", background: Background.Chapter_11_Ch11_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯封面朝下放了快半小時。從我進來的時候就朝下。他不是忘了。他是故意等我先把看過什麼說清楚，才翻。", background: Background.Chapter_11_Ch11_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "資料夾封面是普通的灰色。沒有標籤。沒有印刷字。像文具店買的那種最便宜的款式。", background: Background.Chapter_11_Ch11_Act4_S0 },

@@ -4,9 +4,17 @@
 station corner bench, overcast afternoon, concrete platform with metal railing, a small handheld game device glowing in Mio's lap, tired young woman sitting alone, grey Tokyo sky, visual-novel background art, medium shot
 ```
 
+```bgm
+grey-city
+```
+
 **旁白**：13:35。車站角落。長椅。
 
 **旁白**：澪坐在長椅上。旁邊沒有人。對面是月台的樓梯口。有人上上下下。沒有人看她。她把掌機放在膝蓋上。打開。遊戲私訊介面。
+
+```sfx
+notification-beep
+```
 
 **旁白**：no_moon 的對話框還在。四行訊息。安靜地排在那裡。她早上沒有回。現在對方又發了一行。
 
@@ -82,6 +90,10 @@ station corner bench, overcast afternoon, concrete platform with metal railing, 
 
 **no_moon**：今天 16:30。清澄區民中心，一樓公開休息區。找藍色傘的人。
 
+```sfx
+notification-beep
+```
+
 **旁白**：她盯著那行字。16:30。清澄區民中心。一樓公開休息區。藍色傘。
 
 **no_moon**：別帶警察。別帶記者。
@@ -95,6 +107,10 @@ station corner bench, overcast afternoon, concrete platform with metal railing, 
 **朝倉澪** [exhausted]：（內心）⋯⋯這些規則不是神秘組織的規則。是一個被嚇怕的人列出的清單。每一條都對應一次被傷害的經驗。帶過警察。被警察記了名字。帶過記者。被記者寫了報導。有人一來就問名字。問完就消失。打過電話。聲音被錄下來。每一條都是一道疤。
 
 **朝倉澪** [determined]：（內心）⋯⋯清澄區民中心。一樓公開休息區。自動販賣機、公告欄、老人下棋的地方。不是秘密基地，不是倉庫或地下室，只是誰都能進去的公共場所。他們選那裡，因為也怕。不是危險的人，是被危險嚇怕的人。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她按了截圖。螢幕閃了一下。然後她摸出那張紙。攤開。找到空白。抄。
 

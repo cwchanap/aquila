@@ -4,6 +4,10 @@
 small municipal meeting room interior, fluorescent lights at normal brightness, folding tables in loose rectangle, eight to ten adults seated, blank white projector screen, folders face-down on tables, convenience store rice balls, school uniform photos in frames, hospital bills, transit cards in clear sleeves, reflective work vests, half-used medicine packets, paper shift schedules on laps, ordinary tired community-center interior, neutral institutional lighting, muted cool-grey palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:35。會議室裡大約八到十個人。
 
 **旁白**：燈沒有調暗。投影幕空白。桌面上的資料夾封面朝下。沒有人急著翻開任何東西。

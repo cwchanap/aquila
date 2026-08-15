@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。手機震了。", background: Background.Chapter_9_Ch9_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。手機震了。", sfx: "notification-beep", bgm: "sleepless-vigil", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是琴音。不是新聞推送。螢幕上跳出一條正式語氣的訊息。字很小。排列得很整齊。像公文。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "關於昨夜灣岸新交通限制區傷害事件及搬送後死亡一案，請朝倉澪小姐於本日上午11:30至灣岸署配合補充說明。請保持手機開機，並攜帶身分證件。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯限制區傷害事件。搬送後死亡。一案。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把訊息讀了第二遍。然後第三遍。不是在理解內容。是在理解限制。每一句話都是一條繩子。請保持手機開機。請攜帶身分證件。請於本日上午。三條繩子。繫在不同的地方。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯好。我知道了。11:30。我會去。但在那之前⋯⋯", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有把這句話想完。因為手機又震了。", background: Background.Chapter_9_Ch9_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這次是琴音。", background: Background.Chapter_9_Ch9_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這次是琴音。", sfx: "notification-beep", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "今天要補筆錄吧？別一個人硬撐。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十五個字。沒有標點。語氣軟的。像在照顧人。像以前一樣。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她知道。她知道今天要補筆錄。我沒有告訴她。警方訊息剛到。她怎麼知道。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -44,5 +44,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向走廊。走廊盡頭有一扇門。關著。門上貼著一張褪色的遊戲海報。邊角翹起來了。悠真失蹤前一直說要換。一直沒換。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在門前。手放在門把上。金屬的門把很涼。", background: Background.Chapter_9_Ch9_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真。我回來了。", background: Background.Chapter_9_Ch9_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:15。她推開門。", background: Background.Chapter_9_Ch9_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:15。她推開門。", sfx: "door-open", background: Background.Chapter_9_Ch9_Act2_S0 },
 ];

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:45。灣岸署外。", background: Background.Chapter_10_Ch10_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:45。灣岸署外。", bgm: "grey-city", background: Background.Chapter_10_Ch10_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在階梯底下。手機還在口袋裡震。不是來電。是警方最後那句話的餘震。保持手機開機。近期不要離開都內太遠。後續可能還要提供小鏡子確認。", background: Background.Chapter_10_Ch10_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯出來了。暫時出來了。不是自由。只是被放回世界。像假釋。像借出來的。", background: Background.Chapter_10_Ch10_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她往回走了兩站。找到那個投幣置物櫃。鑰匙在錢包夾層裡。她轉了兩次才轉開。手在抖。不是冷。是一夜沒睡之後的那種細抖。像手機在口袋裡震動的頻率。只是手。", background: Background.Chapter_10_Ch10_Act4_S0 },
@@ -79,7 +79,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "頁面又寫了一行。", background: Background.Chapter_10_Ch10_Act4_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她會把便利店冰棒的棍子收集起來。在上面寫日期。用奇異筆。很小的字。一根一根。放在房間的鐵盒裡。她說那是她的日記。", background: Background.Chapter_10_Ch10_Act4_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯冰棒棍。寫日期。鐵盒。日記。", background: Background.Chapter_10_Ch10_Act4_S1, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著那行字。看了很久。便利店外面有人在結帳。冰櫃的馬達在嗡。她都沒聽見。", background: Background.Chapter_10_Ch10_Act4_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著那行字。看了很久。便利店外面有人在結帳。冰櫃的馬達在嗡。她都沒聽見。", sfx: "vending-machine-hum", background: Background.Chapter_10_Ch10_Act4_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真也收集東西。他的抽屜裡有交通卡。有遊戲點數卡。有考試講義。有畫了黑色海的筆記本。每一樣都是他留下的。每一樣都在等他回來拿。", background: Background.Chapter_10_Ch10_Act4_S1, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯水瀨葵的鐵盒也在等。冰棒棍上的日期停在四十一日前。不會再增加了。除非她回來。", background: Background.Chapter_10_Ch10_Act4_S1, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把視線移回頁面頂端。那行字。", background: Background.Chapter_10_Ch10_Act4_S1 },

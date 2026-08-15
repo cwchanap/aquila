@@ -4,6 +4,10 @@
 community center reading room, approaching noon light, sun high enough to wash out shadows on the table, documents being reorganized into stacks, four folders closed and aligned, two coffee cups empty at the corner, warm bright palette with muted grey undertones, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：11:35。
 
 **旁白**：佐伯把四個資料夾重新排成一列。藍色。灰色。米色。白色。
@@ -109,6 +113,10 @@ community center reading room, approaching noon light, sun high enough to wash o
 **朝倉澪** [determined]：（內心）⋯⋯三個小時。06:13。G07。兩層分流。選擇偏差。五個未知。這些是今天上午的全部。不是答案。是結構。佐伯說的不是「我找到了真相」。是「這些紙是同一個後台生出來的。這些孩子被同一個系統分進了同一個群。這個群至少編到十二。其他的一切——未知。」
 
 **旁白**：她跟著佐伯走出閱覽室。走廊的日光燈還在嗡嗡響。門在身後關上。
+
+```sfx
+notification-beep
+```
 
 **旁白**：她口袋裡的手機震了一下。一則提醒。
 

@@ -4,7 +4,15 @@
 small Tokyo apartment desk, a small cheap plastic hand mirror resting on a notebook page, a phone flashlight beam raking across the mirror's back surface at a low angle, scratches catching the light, morning light dimmed in background, muted cool palette, visual-novel background art, close shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：09:30。
+
+```sfx
+mirror-chime
+```
 
 **旁白**：她從布套裡把小鏡子拿出來。
 

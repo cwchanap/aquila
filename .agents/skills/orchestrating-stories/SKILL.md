@@ -259,7 +259,7 @@ These warnings clear as you add the missing prompts and assets.
 **Audio cue usage report** — when a story has an audio plan, review coverage after compiling:
 
 ```bash
-cd packages/stories && bun run audio:report <storyName>
+cd packages/stories && bun run audio:report "${STORY_NAME}"
 ```
 
 Prints a deterministic, read-only JSON usage report: each used cue with its scene/entry locations, every `bgm` stop, and plan entries that are `unused`. Review the unused entries and overall coverage; do not create a spreadsheet or second cue inventory.

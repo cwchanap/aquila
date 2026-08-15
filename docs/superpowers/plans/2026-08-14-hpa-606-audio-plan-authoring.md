@@ -30,7 +30,8 @@
 
 ### Create
 
-- `packages/stories/src/audio-plan.ts` — strict V1 schema, pure parser, thin loader.
+- `packages/stories/src/audio-plan.ts` — strict V1 schema, pure parser (no filesystem access).
+- `packages/stories/src/audio-plan-loader.ts` — Node-only filesystem loader (kept out of the package entry so browser bundles never pull in `node:fs`/`node:path`).
 - `packages/stories/src/__tests__/audio-plan.test.ts` — schema/parser/loader tests.
 - `packages/stories/src/compiler/audio-usage.ts` — usage collection, validation, report shaping.
 - `packages/stories/src/compiler/__tests__/audio-usage.test.ts` — pure usage tests.
@@ -63,6 +64,7 @@
 
 **Files:**
 - Create: `packages/stories/src/audio-plan.ts`
+- Create: `packages/stories/src/audio-plan-loader.ts`
 - Create: `packages/stories/src/__tests__/audio-plan.test.ts`
 - Modify: `packages/stories/src/index.ts`
 
@@ -73,8 +75,8 @@
   - `AudioAssetType = 'sfx' | 'bgm'`
   - `AudioPlanAsset`
   - `AudioPlanV1`
-  - `parseAudioPlan(value: unknown): AudioPlanV1`
-  - `loadAudioPlan(rawDir: string): AudioPlanV1 | undefined`
+  - `parseAudioPlan(value: unknown): AudioPlanV1` (from `audio-plan.ts`)
+  - `loadAudioPlan(rawDir: string): AudioPlanV1 | undefined` (from `audio-plan-loader.ts`)
 
 - [ ] **Step 1: Write failing parser tests**
 
@@ -791,8 +793,12 @@ In `packages/stories/package.json`:
 Create `cli-report.test.ts`. Resolve the stories package root with `dirname(fileURLToPath(import.meta.url))`, run:
 
 ```ts
+// Vitest workers run under Node, but the compiler CLI imports TypeScript
+// modules without extensions, so it must be launched with the repo's package
+// manager (Bun). Resolve the executable via npm_execpath, falling back to bun.
+const cliRuntime = process.env.npm_execpath ?? 'bun';
 execFileSync(
-    process.execPath,
+    cliRuntime,
     ['src/compiler/cli.ts', '--report', 'theSeventhMirror'],
     { cwd: packageRoot, encoding: 'utf8' }
 );

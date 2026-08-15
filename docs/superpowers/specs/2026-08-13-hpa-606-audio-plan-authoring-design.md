@@ -62,7 +62,7 @@ Canonical path:
 packages/stories/raw/<storyName>/docs/audio-plan.json
 ```
 
-Add `packages/stories/src/audio-plan.ts` with a strict provider-neutral contract, exported types, a pure parser, and a tiny filesystem loader.
+Add `packages/stories/src/audio-plan.ts` with a strict provider-neutral contract, exported types, and a pure parser (no filesystem access). The filesystem loader lives in a separate `packages/stories/src/audio-plan-loader.ts` (Node-only, kept out of the package entry so browser bundles never pull in `node:fs`/`node:path`); `audio-plan.ts` owns only the pure schema/parser while `audio-plan-loader.ts` owns filesystem loading.
 
 ### Shape
 

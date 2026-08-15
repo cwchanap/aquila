@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, corridor between sealed candidate storage and future-data group workstation, early afternoon, laptops showing sealed candidate folders with timestamp locks, printed metadata sheets in transparent evidence sleeves, cold fluorescent lighting, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：13:20。M 區。午休結束。走廊裡的摺疊桌被收走了一半。系統安全組的筆電合著。外部醫療組的資料袋封了口。三個方案家族的候選——A、B、C——全部封存。編號。簽名。時間戳。
 
 **旁白**：日下部站在走廊中間。他的面前放著一個透明證物套。套裡面是一張紙。紙上只有三行字。他沒有打開它。
@@ -127,6 +131,10 @@ Tsukuba research facility M-zone, corridor between sealed candidate storage and 
 **旁白**：凪原沒有移動。銀框眼鏡。白袍。脊椎沒有彎。
 
 **朝倉澪** [determined]：（內心）為了避免更大災難。為了穩定。她把一個人改寫成代碼。然後讓代碼撐住系統。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：走廊盡頭的螢光燈嗡了一聲。沒有人抬頭。
 
@@ -265,6 +273,10 @@ Tsukuba research facility M-zone, corridor between sealed candidate storage and 
 **旁白**：澪看了她一眼。然後收回視線。
 
 **朝倉澪** [exhausted]：（內心）她把母親維持成 M-00。未來的我把母親留在閉環上。同一個人。同一個選擇。差別只在——她們各自先把誰從代價裡拿走。而留下的人——都是母親。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：15:10。M 區。走廊。呼吸器的節奏從觀察窗後面傳過來。很慢。
 

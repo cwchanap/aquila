@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, system security group workstation, mid-morning, multiple laptop screens showing KAGAMI-01 topology diagrams and dependency graphs, cold blue-white monitor glow, folding table covered with printed schematics, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：09:00。系統安全組的工作區。
 
 **旁白**：千田把螢幕轉過來。不是轉給澪看——澪坐在走廊盡頭，看不到這個螢幕。他轉給日下部和指定專家看。
@@ -149,6 +153,10 @@ M-00 ⇄ 共用穩定閉環
 **旁白**：她閉上眼睛。額頭靠著牆。牆很涼。和昨晚的玻璃一樣涼。
 
 **朝倉澪** [exhausted]：（內心）兩條線還沒有分開。臨床和公共。病人和公共輸出。在 COMMIT-GATE 之前——它們共用同一條上游。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：螢光燈的嗡聲填進安靜的走廊。
 

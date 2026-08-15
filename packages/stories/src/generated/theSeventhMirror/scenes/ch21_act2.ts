@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:00。M-00 醫療區。", background: Background.Chapter_21_Ch21_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:00。M-00 醫療區。", bgm: "institutional-drone", background: Background.Chapter_21_Ch21_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "神經心理人員已經在裡面。設備箱打開了。三個牛皮紙信封拆封。不透明封袋放在桌面上——沒有開。她面前是一台離線平板，螢幕上只有題目編號和選項文字。", background: Background.Chapter_21_Ch21_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "呼吸治療師站在床邊。發聲閥沒有接。今天不用聲音。用眼動和字母溝通板。", background: Background.Chapter_21_Ch21_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紗英的眼睛半開著。瞳孔很小。房間的燈太暗。但她在看。", background: Background.Chapter_21_Ch21_Act2_S0 },
@@ -67,7 +67,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "第二段結束。測試完成。", background: Background.Chapter_21_Ch21_Act2_S1 },
     { characterId: CharacterId.RespiratoryTherapist, character: "呼吸治療師", dialogue: "呼吸頻率二十二。建議中止所有溝通。", background: Background.Chapter_21_Ch21_Act2_S1 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "中止。休息。", background: Background.Chapter_21_Ch21_Act2_S1, portrait: Portrait.ExternalDoctor_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:34。測試結束。紗英的眼睛閉上了。呼吸治療師切換了呼吸迴路的模式。設備的聲音回到原來的節奏。", background: Background.Chapter_21_Ch21_Act2_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:34。測試結束。紗英的眼睛閉上了。呼吸治療師切換了呼吸迴路的模式。設備的聲音回到原來的節奏。", sfx: "ventilator-cycle", background: Background.Chapter_21_Ch21_Act2_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "神經心理人員拿著平板走出來。她的表情沒有變化。沒有驚訝。沒有興奮。像在讀一份還沒有完成的報告。", background: Background.Chapter_21_Ch21_Act2_S1 },
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "結果比對需要時間——封存答案、拆封保管件、核對編號，這些不在此刻進行。", background: Background.Chapter_21_Ch21_Act2_S1 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "多久。", background: Background.Chapter_21_Ch21_Act2_S1, portrait: Portrait.KusakubeSatoru_Base },
@@ -91,9 +91,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻到表格第二頁。上面是一份排查清單。", background: Background.Chapter_21_Ch21_Act2_S2 },
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "第三輪封緘件由不同保管人持有。保管人之間在測試前無互相接觸、討論或核對紀錄。M 區訪問紀錄、通訊紀錄、工作站日誌——未發現 B 組內容被口述、輸入或傳輸。研究設施內部系統——未發現 B 組內容存檔。凪原唯方面——未提供、未接觸、未參與題目設計。", background: Background.Chapter_21_Ch21_Act2_S2 },
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "未發現普通資訊交換渠道。", background: Background.Chapter_21_Ch21_Act2_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊裡很安靜。只有螢光燈的嗡聲。和觀察窗後面設備的聲音。", background: Background.Chapter_21_Ch21_Act2_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊裡很安靜。只有螢光燈的嗡聲。和觀察窗後面設備的聲音。", sfx: "fluorescent-hum", background: Background.Chapter_21_Ch21_Act2_S2 },
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "正式紀錄如下。", background: Background.Chapter_21_Ch21_Act2_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她讀。每一個字都很慢。像在刻。", background: Background.Chapter_21_Ch21_Act2_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她讀。每一個字都很慢。像在刻。", bgm: null, background: Background.Chapter_21_Ch21_Act2_S2 },
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "低負荷盲測出現多項跨保管者異常匹配。受測者能拒絕誘餌，並對沒人看過的內容選擇未知。測試前未發現普通資訊交換渠道。資訊來源未定。", background: Background.Chapter_21_Ch21_Act2_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停下來。看了一眼在場所有人。", background: Background.Chapter_21_Ch21_Act2_S2 },
     { characterId: CharacterId.NeuropsychProfessional, character: "獨立神經心理專業人員", dialogue: "尚不能排除——未發現的 M-00 資訊通道。對保管者記憶的未知讀取。偶然與樣本過少。其他未明機制。", background: Background.Chapter_21_Ch21_Act2_S2 },

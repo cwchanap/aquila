@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, M-00 medical room interior, morning, dimmed clinical lighting, long-term life-support bed, ventilator, infusion pumps, neural monitoring leads, eye-tracking device mounted at bedside, letter board on adjustable arm, muted desaturated palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：09:00。M-00 醫療區。
 
 **旁白**：神經心理人員已經在裡面。設備箱打開了。三個牛皮紙信封拆封。不透明封袋放在桌面上——沒有開。她面前是一台離線平板，螢幕上只有題目編號和選項文字。
@@ -130,6 +134,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor outside observation
 
 **外部醫師**：中止。休息。
 
+```sfx
+ventilator-cycle
+```
+
 **旁白**：09:34。測試結束。紗英的眼睛閉上了。呼吸治療師切換了呼吸迴路的模式。設備的聲音回到原來的節奏。
 
 **旁白**：神經心理人員拿著平板走出來。她的表情沒有變化。沒有驚訝。沒有興奮。像在讀一份還沒有完成的報告。
@@ -182,9 +190,17 @@ Tsukuba research facility M-zone, emergency observation corridor, late morning, 
 
 **獨立神經心理專業人員**：未發現普通資訊交換渠道。
 
+```sfx
+fluorescent-hum
+```
+
 **旁白**：走廊裡很安靜。只有螢光燈的嗡聲。和觀察窗後面設備的聲音。
 
 **獨立神經心理專業人員**：正式紀錄如下。
+
+```bgm
+stop
+```
 
 **旁白**：她讀。每一個字都很慢。像在刻。
 

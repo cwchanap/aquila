@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:10。走廊。同一張塑膠椅。同一盞紅燈。門關著。詢問繼續。", background: Background.Chapter_23_Ch23_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:10。走廊。同一張塑膠椅。同一盞紅燈。門關著。詢問繼續。", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在走廊裡。她吃了半個飯糰。是日下部中午塞給她的。她不餓。但她吃了。因為他說過——超過二十三點必須去睡。因為她需要撐住。", background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她在裡面。第二次了。辯護人在。日下部在。我在外面。又是等。", background: Background.Chapter_23_Ch23_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:15。門上方的小燈亮了。紅色。詢問進行中。", background: Background.Chapter_23_Ch23_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:15。門上方的小燈亮了。紅色。詢問進行中。", bgm: null, background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她什麼都聽不見。門是隔音的。她只能看見那盞燈。", background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）任務快取。日下部中午說過——他今天下午會出示任務快取。琴音裝置裡的。他沒有給我看內容。他說——先讓她看。先讓辯護人看。然後再告訴我。", background: Background.Chapter_23_Ch23_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:30。她站起來。走了一圈。走廊不長。十步到底。折返。十步回來。她坐下。又站起來。", background: Background.Chapter_23_Ch23_Act4_S0 },
@@ -17,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:00。她坐在椅子上。她的手放在膝蓋上。她閉上眼睛。不是睡著。是在整理。她在腦裡排列今天上午的證據鏈。", background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）FAMILY-ASSIST 請求。特權代理轉製。承包商工單。一次性門禁。維修服。工具袋。裝置二次驗證。21:04 影像。五條交叉。同一個人。然後——她承認了。穿了那件衣服。去拿了東西。持有人沒有來。", background: Background.Chapter_23_Ch23_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）可是——工具袋裡有什麼。她被告知了什麼。她知道不知道自己不是正式承包人員。她——", background: Background.Chapter_23_Ch23_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:30。門開了。紅燈滅了。日下部走出來。他的手裡拿著一份封存的筆錄。他在澪面前停下。", background: Background.Chapter_23_Ch23_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:30。門開了。紅燈滅了。日下部走出來。他的手裡拿著一份封存的筆錄。他在澪面前停下。", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "任務快取。四行。", background: Background.Chapter_23_Ch23_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有打開筆錄。他背出來了。像在讀證物清單。", background: Background.Chapter_23_Ch23_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "RECOVER CLINICAL ROOT。PREVENT ASSET EGRESS。SEPARATE TETHER IF OBSTRUCTED。ESCALATE ON NON-COMPLIANCE。", background: Background.Chapter_23_Ch23_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },

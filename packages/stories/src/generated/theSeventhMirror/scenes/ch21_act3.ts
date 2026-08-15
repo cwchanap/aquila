@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:00。M 區。指揮走廊。", background: Background.Chapter_21_Ch21_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:00。M 區。指揮走廊。", bgm: "institutional-drone", background: Background.Chapter_21_Ch21_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌面被清空過一次。現在又排滿了。不是證物袋——是文件夾。舊的。封面發黃。邊角有水漬。像從一個很久沒有人打開的櫃子裡取出來的。", background: Background.Chapter_21_Ch21_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部坐在桌前。他面前放著一個硬殼文件夾。封面貼著編號標籤。標籤上印著——", background: Background.Chapter_21_Ch21_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "`KAGAMI-SAFE`", background: Background.Chapter_21_Ch21_Act3_S0 },
@@ -124,7 +124,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "`KAGAMI-SAFE／R2`——七年前五月上旬。千田。KAGAMI-01。COMMIT-GATE。七秒邊界。", background: Background.Chapter_21_Ch21_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "`KAGAMI-SAFE／R3`——七年前五月下旬。紗英臨床安全紀錄。索引與部分摘要。正文不完整。", background: Background.Chapter_21_Ch21_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯三個版本。三個人。⋯⋯爸爸建了框架。千田補了技術。紗英留下了臨床安全原則。⋯⋯他們沒有同桌制定計畫。他們各自貢獻了一部分。爸爸把它們放進同一個案件編號。⋯⋯然後鏈斷了。六月之後。爸爸消失。R1 到 R3 沒有完成正式演練。⋯⋯七年後——我在這裡。拿著他們留下的碎片。⋯⋯而下一個星期一——TOKYO-7 的排程還在那裡。M-00 校準。一致性層 armed。公共路徑 staged。⋯⋯爸爸說——無法安全切離時，不得啟動 TOKYO。⋯⋯現在呢。現在能安全切離嗎。⋯⋯我不知道。還不知道。", background: Background.Chapter_21_Ch21_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:22。日下部站起來。他把文件夾交給指定專家封存。他看了一眼觀察窗。窗後那個人還在呼吸。很慢。", background: Background.Chapter_21_Ch21_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:22。日下部站起來。他把文件夾交給指定專家封存。他看了一眼觀察窗。窗後那個人還在呼吸。很慢。", sfx: "ventilator-cycle", background: Background.Chapter_21_Ch21_Act3_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "先吃飯。紗英和悠真要休息。下午繼續。", background: Background.Chapter_21_Ch21_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯好。", background: Background.Chapter_21_Ch21_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:30。走廊裡的人開始移動。有人在收文件。有人在收筆電。有人在換班。", background: Background.Chapter_21_Ch21_Act3_S0 },

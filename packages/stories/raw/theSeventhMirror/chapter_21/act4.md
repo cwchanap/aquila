@@ -4,6 +4,10 @@
 Tsukuba research facility, child-friendly interview room, afternoon, soft natural light through frosted windows, low table with drawing paper and colored pencils, muted warm palette, visual-novel background art, wide shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：14:10。筑波關聯設施。一間被臨時改裝過的房間。窗簾是暖色的。桌上放著圖畫紙和色筆。不是審訊室。不是病房。是一個被刻意弄得不像任何制度空間的空間。
 
 **旁白**：兒少專業人員坐在悠真斜對面。外部醫師在旁邊，看著監測平板。攝影機架在角落。紅燈亮著。
@@ -145,6 +149,10 @@ Tsukuba research facility, child-friendly interview room, afternoon, soft natura
 **旁白**：澪站起來。膝蓋在發抖。不是冷。是某種她還沒有名字的東西。
 
 **朝倉澪** [determined]：（內心）⋯⋯同一場危機。很多個後來。哪一個最安全。哪一個最像真的。哪一個最容易相信。⋯⋯選不一致的時候，聲音和畫面會變強。⋯⋯星期一。大家。同一個版本。⋯⋯大家是誰——不知道。⋯⋯可是「同一個版本」這四個字，和排程裡的 STAGED——⋯⋯不。現在不能連。先記下來。先記下來。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：她走出房間。走廊的螢光燈比剛才更亮。像從一個被刻意調暖的空間，被推回制度的溫度。
 

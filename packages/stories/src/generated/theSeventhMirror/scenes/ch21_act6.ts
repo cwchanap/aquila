@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:50。臨時指揮室。白板上的字跡乾了。上一場的排程和控制措施還留在上面。指定專家在旁邊的桌上攤開另一疊文件。", background: Background.Chapter_21_Ch21_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:50。臨時指揮室。白板上的字跡乾了。上一場的排程和控制措施還留在上面。指定專家在旁邊的桌上攤開另一疊文件。", bgm: "institutional-drone", background: Background.Chapter_21_Ch21_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這一疊不是排程。是版本治理鏈。R1。R2。R3。", background: Background.Chapter_21_Ch21_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "R1 和 R2 已經在上午建立。父親的安全原則。千田的技術附錄。現在——R3。", background: Background.Chapter_21_Ch21_Act6_S0 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "KAGAMI-SAFE／R3。紗英臨床安全修訂。", background: Background.Chapter_21_Ch21_Act6_S0 },
@@ -38,7 +38,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:15。M-00 醫療區。澪站在觀察窗外。日下部在裡面。外部醫師在旁邊監測。呼吸治療師確認發聲閥參數。", background: Background.Chapter_21_Ch21_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紗英的眼睛半開著。和凌晨一樣。呼吸迴路的聲音很慢。", background: Background.Chapter_21_Ch21_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部把一張紙放在紗英視線範圍內。紙上只有 R3 的可見摘要——三句引用、檢查表欄位。沒有版本編號。沒有 R4。沒有任何快捷選項。", background: Background.Chapter_21_Ch21_Act6_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "呼吸治療師接上發聲閥。氣流的節奏變了。", background: Background.Chapter_21_Ch21_Act6_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "呼吸治療師接上發聲閥。氣流的節奏變了。", sfx: "ventilator-cycle", background: Background.Chapter_21_Ch21_Act6_S1 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "這份摘要——針對的是什麼？", background: Background.Chapter_21_Ch21_Act6_S1, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紗英的眼球動了。很慢。從左到右。像在讀。", background: Background.Chapter_21_Ch21_Act6_S1 },
     { characterId: CharacterId.AsakuraSae, character: "朝倉紗英", dialogue: "⋯⋯額外。", background: Background.Chapter_21_Ch21_Act6_S1, portrait: Portrait.AsakuraSae_Base },
@@ -81,7 +81,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "```text 本週星期一 06:13         ↑ 七日回聲 下一個星期一 06:13 前完成的可能未來 R4 ```", background: Background.Chapter_21_Ch21_Act6_S2 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "R4 不來自已經發生的第一輪、第二輪或隱藏既往輪次。它只能來自當前第三輪繼續向前、在下一個星期一 06:13 前完成、並由該次白光把託管回聲送回本週星期一 06:13 的可能未來。", background: Background.Chapter_21_Ch21_Act6_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他在圖的右側補了一行小字。", background: Background.Chapter_21_Ch21_Act6_S2 },
-    { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "換句話說——R4 的作者，是還沒走到那個星期一的某個版本的妳。", background: Background.Chapter_21_Ch21_Act6_S2 },
+    { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "換句話說——R4 的作者，是還沒走到那個星期一的某個版本的妳。", bgm: null, background: Background.Chapter_21_Ch21_Act6_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯下一個星期一。⋯⋯不是過去。是未來。⋯⋯R4 不是隱藏的第四輪。是一條還沒發生的可能未來。⋯⋯如果它存在——它來自我還沒走到的下一個七天。", background: Background.Chapter_21_Ch21_Act6_S2, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "當前距離下一個星期一 06:13——", background: Background.Chapter_21_Ch21_Act6_S2, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看了一眼手機。", background: Background.Chapter_21_Ch21_Act6_S2 },
@@ -95,6 +95,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:15。指揮室。白板上寫滿了。兩種記憶通道。R3 的三句引用。檢查表的六個欄位。紗英的三個確認。下一回聲窗的時間錨。不能重建的六個空白。", background: Background.Chapter_21_Ch21_Act6_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪合上筆記本。她的手在發抖。不是冷。是某種被太多碎片同時壓著的重量。", background: Background.Chapter_21_Ch21_Act6_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯兩條通道。⋯⋯一條是我的。一條是未來送回來的。⋯⋯R3 只管第二條。⋯⋯R4 如果存在——它在第二條裡。⋯⋯而第二條的作者——⋯⋯不知道。還不知道。", background: Background.Chapter_21_Ch21_Act6_S2, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:20。指揮室。螢光燈的嗡聲很穩。白板上的字跡已經乾透了。", background: Background.Chapter_21_Ch21_Act6_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:20。指揮室。螢光燈的嗡聲很穩。白板上的字跡已經乾透了。", sfx: "fluorescent-hum", background: Background.Chapter_21_Ch21_Act6_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約四日十小時五十三分鐘。", background: Background.Chapter_21_Ch21_Act6_S2 },
 ];

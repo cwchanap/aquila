@@ -4,11 +4,19 @@
 Hospital corridor outside formal questioning room, early afternoon, cold fluorescent lighting, closed door with red indicator light above, empty chairs along wall, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：13:10。走廊。同一張塑膠椅。同一盞紅燈。門關著。詢問繼續。
 
 **旁白**：澪坐在走廊裡。她吃了半個飯糰。是日下部中午塞給她的。她不餓。但她吃了。因為他說過——超過二十三點必須去睡。因為她需要撐住。
 
 **朝倉澪** [exhausted]：（內心）她在裡面。第二次了。辯護人在。日下部在。我在外面。又是等。
+
+```bgm
+stop
+```
 
 **旁白**：13:15。門上方的小燈亮了。紅色。詢問進行中。
 
@@ -25,6 +33,10 @@ Hospital corridor outside formal questioning room, early afternoon, cold fluores
 **朝倉澪** [exhausted]：（內心）FAMILY-ASSIST 請求。特權代理轉製。承包商工單。一次性門禁。維修服。工具袋。裝置二次驗證。21:04 影像。五條交叉。同一個人。然後——她承認了。穿了那件衣服。去拿了東西。持有人沒有來。
 
 **朝倉澪** [exhausted]：（內心）可是——工具袋裡有什麼。她被告知了什麼。她知道不知道自己不是正式承包人員。她——
+
+```bgm
+institutional-drone
+```
 
 **旁白**：14:30。門開了。紅燈滅了。日下部走出來。他的手裡拿著一份封存的筆錄。他在澪面前停下。
 

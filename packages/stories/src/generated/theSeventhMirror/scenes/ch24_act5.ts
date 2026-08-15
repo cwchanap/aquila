@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:25。受控會談室。美空病房隔壁。觀察窗。透過玻璃可以看見病房裡面——十三歲的女孩。呼吸器。監測螢幕。三條線。很平。控制器左側的面板貼著五方封條。", background: Background.Chapter_24_Ch24_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:25。受控會談室。美空病房隔壁。觀察窗。透過玻璃可以看見病房裡面——十三歲的女孩。呼吸器。監測螢幕。三條線。很平。控制器左側的面板貼著五方封條。", bgm: "institutional-drone", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "會談室裡多了一張測試台。上面放著——同型退役卡匣。製造商服務模擬器。固件版本一致的測試控制器。三樣東西。排列整齊。像手術前的器械盤。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在觀察窗旁邊。日下部在她左側。琴音坐在對面。辯護人在琴音旁邊。藤川真理坐在末端。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "獨立系統安全人員站在測試台前。外部醫師站在觀察窗旁邊——他的視線在美空的監測螢幕和測試台之間來回。院內臨床保管方在控制器旁邊。司法保全在門邊。", background: Background.Chapter_24_Ch24_Act5_S0 },
@@ -69,7 +69,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:15。獨立系統安全人員走到觀察窗後面的病房裡。院內臨床保管方跟在後面。外部醫師留在會談室——他的眼睛盯著監測螢幕的即時讀數。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "透過觀察窗，澪看見獨立系統安全人員走到床側控制器旁邊。他沒有打開封條。封條上有一個預留的操作口——只夠插入探測器。不夠拔除卡匣。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他插入原位操作探測器。不拔除。不碰觸卡匣。只透過操作口執行。", background: Background.Chapter_24_Ch24_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:20。他開始執行。螢幕上——Domain-P 的狀態列開始變化。", background: Background.Chapter_24_Ch24_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:20。他開始執行。螢幕上——Domain-P 的狀態列開始變化。", bgm: null, background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "EXECUTION — DISABLED。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "會談室裡沒有人發出聲音。外部醫師的眼睛沒有離開監測螢幕。美空的呼吸——沒有變化。腦電——沒有變化。自律——沒有變化。三條線。很平。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "SESSION MATERIAL — ZEROIZED。", background: Background.Chapter_24_Ch24_Act5_S0 },
@@ -124,7 +124,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看了一眼澪。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "這不是——所有公共權限消失。制度級根仍存在。emergency override 仍存在。另造公共 token 的能力——仍存在。今天的操作只做到一件事——這張卡匣。這枚序號。這個 epoch。不能被遠端復活。不能被帶往鏡島。不能被當成公共授權的一部分。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯我知道。", background: Background.Chapter_24_Ch24_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。會談室裡的人開始收拾。司法保全封存記錄。外部醫師最後看了一眼監測螢幕。數值穩定。三條線。很平。", background: Background.Chapter_24_Ch24_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。會談室裡的人開始收拾。司法保全封存記錄。外部醫師最後看了一眼監測螢幕。數值穩定。三條線。很平。", sfx: "evidence-bag-seal", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音站起來。她的膝蓋很僵。她走到觀察窗前。她看著裡面。美空。十三歲。呼吸很慢。很穩。控制器左側的封條還在。封條上的編號沒有變。五方簽章的位置沒有變。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但封條下面——Domain-P 已經不在了。", background: Background.Chapter_24_Ch24_Act5_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "⋯⋯不拔。", background: Background.Chapter_24_Ch24_Act5_S0, portrait: Portrait.ShiraishiKotone_Sad },

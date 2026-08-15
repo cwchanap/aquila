@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, temporary command room, afternoon, cold fluorescent lighting, multiple monitors showing configuration data, documents and laptops spread across folding tables, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:10。臨時指揮室。六個來源。三台筆記型電腦。兩疊列印文件。一面白板。指定專家站在白板前面。日下部站在門邊。澪坐在桌前。她的筆記本翻開著。
 
 **旁白**：悠真剛被帶去休息。澪沒有跟過去。她知道接下來這兩個小時不能分心。
@@ -246,6 +250,10 @@ MAR-CONT             PROTECTIVE TRANSFER CLASS
 **旁白**：澪看著白板。她的筆記本上已經寫了七頁。字很小。很密。像在抄一份還沒有被歸檔的證據清單。
 
 **朝倉澪** [exhausted]：（內心）⋯⋯星期一仍在排程裡。⋯⋯我們凍結了遠端。凍結了提交。凍結了營運。駐點了鏡島。⋯⋯可是本地有預簽署套件。有備用電源。有 auto-prep。有一枚不知道在誰手上的原始簽署載體。⋯⋯風險沒有解除。只是被分拆了。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：17:50。指揮室。螢光燈的嗡聲很穩。白板上的字跡還沒乾。
 

@@ -4,6 +4,10 @@
 long-term neurorehabilitation medical center, clinical safety terminal room, evening, large monitor showing cartridge domain status panel, laptops and sealed evidence logs on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:10。臨床安全終端室。不是病房。是設備間旁邊一間小房間。螢幕掛在牆上。桌上放著筆電和封好的鑑識記錄。螢光燈很亮。空調很冷。
 
 **旁白**：澪坐在桌邊。日下部在她對面。獨立系統安全人員站在螢幕前。外部醫師坐在末端。琴音和辯護人在另一側。千田不在場。他在保護地點。透過遠端。
@@ -37,6 +41,10 @@ long-term neurorehabilitation medical center, clinical safety terminal room, eve
 **旁白**：琴音看著螢幕。她的嘴唇動了一下。沒有發出聲音。
 
 **朝倉澪** [exhausted]：（內心）她在聽。她在聽——Domain-C 不需要公共輸出。她在聽——她一直被告知，拿走卡匣就會害死美空。可是——Domain-C 的臨床功能可以獨立存在。不需要公共閉環。不需要 M-00。
+
+```sfx
+radio-feed
+```
 
 **旁白**：18:45。第三重確認。千田的遠端證詞。由律師與警方在保護地點記錄。音訊連線。聲音很穩。像在讀文件。
 

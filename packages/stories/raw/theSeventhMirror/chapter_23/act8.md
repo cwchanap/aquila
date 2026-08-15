@@ -4,6 +4,14 @@
 long-term neurorehabilitation medical center, corridor outside Misora's room and controlled meeting room, late night, fluorescent lighting, sealed equipment panel visible through observation window, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
+```sfx
+ventilator-cycle
+```
+
 **旁白**：21:30。美空病房外的走廊。受控會談室。門半開。走廊的螢光燈和白天一樣亮。呼吸器的節奏從病房裡傳出來。很慢。很穩。
 
 **旁白**：琴音坐在會談室裡。辯護人在她旁邊。澪坐在對面。日下部站在門邊。藤川真理坐在末端。
@@ -68,6 +76,10 @@ long-term neurorehabilitation medical center, corridor outside Misora's room and
 
 **旁白**：澪看著她。看著她的眼睛。琴音的眼睛裡沒有攻擊。沒有計算。只有——一個已經把所有力氣用完的人，等著最後一個答案。
 
+```bgm
+stop
+```
+
 **朝倉澪** [exhausted]：不能答應。
 
 **旁白**：琴音的表情沒有崩潰。她沒有哭。她只是——低下頭。很慢。像一片被風推過去的葉子。
@@ -88,6 +100,10 @@ long-term neurorehabilitation medical center, corridor outside Misora's room and
 
 **朝倉澪** [exhausted]：⋯⋯嗯。
 
+```sfx
+door-seal
+```
+
 **旁白**：他走了。門關上。腳步聲在走廊裡變遠。
 
 **旁白**：22:50。澪走到病房外的觀察窗。她看著裡面。美空還在睡。呼吸器的節奏沒有變。控制器左側的面板被貼上封條。封條有編號。有五方簽章。
@@ -95,6 +111,10 @@ long-term neurorehabilitation medical center, corridor outside Misora's room and
 **旁白**：螢幕上的監測數值還在跑。腦電。自律。呼吸。三條線。很平。
 
 **朝倉澪** [exhausted]：（內心）美空。十三歲。還在呼吸。卡匣在位。五方控制。Domain-C 存在。局部影子存在。PARTIAL。UNVALIDATED。還沒有完成。可是——它在那裡。它撐住過。它不需要永遠依賴同一個中央。
+
+```sfx
+phone-vibrate
+```
 
 **旁白**：23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。
 

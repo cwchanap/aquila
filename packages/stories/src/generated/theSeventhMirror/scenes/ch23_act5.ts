@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:00。受控家屬會談室。不是詢問室。牆上沒有錄影紅燈。但角落的攝影機亮著。桌子比詢問室的小。四張椅子。琴音坐在左邊。辯護人坐在她旁邊。澪坐在對面。日下部站在門邊。", background: Background.Chapter_23_Ch23_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:00。受控家屬會談室。不是詢問室。牆上沒有錄影紅燈。但角落的攝影機亮著。桌子比詢問室的小。四張椅子。琴音坐在左邊。辯護人坐在她旁邊。澪坐在對面。日下部站在門邊。", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "藤川真理坐在長桌末端。她的手放在膝蓋上。手指沒有握緊。也沒有鬆開。像一個人已經把所有力氣用完了，只剩下姿勢。", background: Background.Chapter_23_Ch23_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師先開口。他看著真理。", background: Background.Chapter_23_Ch23_Act5_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "外部醫療確認。在替代橋接建立以前——不會拔除卡匣。這是醫療判斷。不是調查讓步。", background: Background.Chapter_23_Ch23_Act5_S0, portrait: Portrait.ExternalDoctor_Base },
@@ -27,7 +27,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停了一下。", background: Background.Chapter_23_Ch23_Act5_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "找回來了。可是——沒有醒。之後就沒有醒過。", background: Background.Chapter_23_Ch23_Act5_S0, portrait: Portrait.ShiraishiKotone_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）九歲。四年。現在十三歲。長期意識障礙。一直在閉環上。", background: Background.Chapter_23_Ch23_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "根憑證裝上去之前——中央參照中斷過一次。十三點四秒。", background: Background.Chapter_23_Ch23_Act5_S0, portrait: Portrait.ShiraishiKotone_Sad },
+    { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "根憑證裝上去之前——中央參照中斷過一次。十三點四秒。", bgm: null, background: Background.Chapter_23_Ch23_Act5_S0, portrait: Portrait.ShiraishiKotone_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指在桌面下收緊了。", background: Background.Chapter_23_Ch23_Act5_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "她沒有本地影子。什麼都沒有。十三點四秒——呼吸、自律、腦電——全部嚴重失穩。她差一點——", background: Background.Chapter_23_Ch23_Act5_S0, portrait: Portrait.ShiraishiKotone_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有說完。她把那句話吞回去了。", background: Background.Chapter_23_Ch23_Act5_S0 },

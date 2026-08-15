@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, late morning, cold fluorescent lighting, folding tables with document boxes and sealed evidence files, laptops displaying case management systems, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：11:00。M 區。指揮走廊。
 
 **旁白**：桌面被清空過一次。現在又排滿了。不是證物袋——是文件夾。舊的。封面發黃。邊角有水漬。像從一個很久沒有人打開的櫃子裡取出來的。
@@ -253,6 +257,10 @@ CENTRAL FANOUT GATEWAY     REQUIRED
 **旁白**：`KAGAMI-SAFE／R3`——七年前五月下旬。紗英臨床安全紀錄。索引與部分摘要。正文不完整。
 
 **朝倉澪** [determined]：（內心）⋯⋯三個版本。三個人。⋯⋯爸爸建了框架。千田補了技術。紗英留下了臨床安全原則。⋯⋯他們沒有同桌制定計畫。他們各自貢獻了一部分。爸爸把它們放進同一個案件編號。⋯⋯然後鏈斷了。六月之後。爸爸消失。R1 到 R3 沒有完成正式演練。⋯⋯七年後——我在這裡。拿著他們留下的碎片。⋯⋯而下一個星期一——TOKYO-7 的排程還在那裡。M-00 校準。一致性層 armed。公共路徑 staged。⋯⋯爸爸說——無法安全切離時，不得啟動 TOKYO。⋯⋯現在呢。現在能安全切離嗎。⋯⋯我不知道。還不知道。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：13:22。日下部站起來。他把文件夾交給指定專家封存。他看了一眼觀察窗。窗後那個人還在呼吸。很慢。
 

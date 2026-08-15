@@ -4,7 +4,15 @@
 Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, morning, cold fluorescent lighting, folding tables with sealed document envelopes and laptops, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：08:00。M 區。指揮走廊。星期四。第三輪。悠真失蹤第十日。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：澪幾乎沒有睡。三小時。可能不到。她分不清是閉眼還是睡著。胃裡只有半杯涼咖啡和一塊沒吃完的飯糰。走廊的螢光燈和昨天一樣亮。和前天一樣亮。和每一輪一樣亮。
 
@@ -89,6 +97,10 @@ Tsukuba research facility M-zone, emergency observation corridor converted to te
 **日下部悟**：這不是審判。不是投票。不是看誰的記憶最完整。
 
 **日下部悟**：是看系統自己會留下哪些路。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：走廊裡安靜了幾秒。設備的嗡聲填進來。呼吸器的節奏從觀察窗後面傳過來。很慢。
 

@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, small conference room converted into technical evidence workspace, night, large monitor showing G07 remote clinical dependency panel with receiver status columns, laptops and sealed evidence bags on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:15。同一間小會議室。螢幕換了畫面。不是硬體登錄庫。是 G07 遠端臨床依存面板。活動接收者狀態欄。代碼。狀態。連線。
 
 **旁白**：澪坐在原位。日下部坐在對面。千田在他旁邊。指定專家站在螢幕前。外部醫師走進來。他在門口停了一下。然後在長桌末端坐下。打開自己的筆電。
@@ -98,6 +102,10 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：螢幕上出現一個新的欄位。不是代碼。不是狀態。是——人。
 
+```bgm
+stop
+```
+
 **指定專家**：家屬協力／緊急聯絡——琴音（姊）。
 
 **旁白**：琴音。
@@ -184,6 +192,10 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **千田浩介**：兩個事實之間——還沒有橋。
 
+```sfx
+door-latch
+```
+
 **旁白**：他走了。門關上。腳步聲在走廊裡變遠。
 
 **朝倉澪** [exhausted]：（內心）還沒有橋。兩個事實。中間是空的。attestation 在美空節點。琴音是美空的姊姊。
@@ -192,7 +204,15 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **朝倉澪** [exhausted]：（內心）可是——誰帶來的。誰插入的。誰在 21:04 拿著共享臨時卡。不知道。還不知道。後續。
 
+```sfx
+phone-vibrate
+```
+
 **旁白**：澪的手機震動了一下。
+
+```sfx
+notification-beep
+```
 
 **旁白**：她低頭看。螢幕亮了。一條訊息。
 
@@ -311,6 +331,10 @@ Tsukuba research facility M-zone, small conference room converted into technical
 **旁白**：但她知道——螢幕暗掉之前，最後一個畫面上寫著什麼。
 
 **旁白**：G07／03。藤川美空。REMOTE CAL ACTIVE。琴音（姊）。
+
+```sfx
+ventilator-cycle
+```
 
 **旁白**：23:10。走廊。螢光燈。呼吸器的節奏從觀察窗後面傳過來。很慢。很穩。
 

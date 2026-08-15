@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:00。M 區。小會議室。會議結束以後，走廊那端的房間被重新整理過。摺疊桌收了。換成兩張長桌。一張放筆電。一張放證物。", background: Background.Chapter_22_Ch22_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:00。M 區。小會議室。會議結束以後，走廊那端的房間被重新整理過。摺疊桌收了。換成兩張長桌。一張放筆電。一張放證物。", bgm: "institutional-drone", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上是 KAGAMI 硬體登錄庫。不是決策介面。不是依存圖。是另一種畫面。序號。型號。安全晶片狀態。歸還記錄。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在長桌的一側。她的面前放著會議記錄副本。她沒有翻開。日下部坐在對面。千田坐在他旁邊。指定專家站在螢幕前。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:05。指定專家把第一份資料拉到螢幕中央。", background: Background.Chapter_22_Ch22_Act7_S0 },
@@ -49,7 +49,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後指定專家切換到當輪庫存資料。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "當輪 KAGAMI 庫存影像。同型載體。薄銀色防靜電外殼、雙卡扣、細長指示窗。接口位置——左側偏下。邊角形制——圓角。與封緘當晚便衣記錄的形制高度吻合。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩組影像並排。一組是便衣在昏暗交接區拍的。一組是庫存資料裡的標準照。光線不同。角度不同。但外殼的形狀、卡扣的位置、指示窗的比例——像同一個模子。", background: Background.Chapter_22_Ch22_Act7_S0 },
-    { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "第一輪。我交給她的那個。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.ChidaKosuke_Base },
+    { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "第一輪。我交給她的那個。", bgm: null, background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田的聲音很低。他看著螢幕。看著那個銀色外殼。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "薄銀色。防靜電。雙卡扣。一側有細長的指示窗。邊緣鋒利。上面有血。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_22_Ch22_Act7_S0 },
@@ -57,7 +57,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他也是。他也是繞過程序的。不是因為他想犯罪。是因為他知道自己只剩一次機會。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田沒有抬頭。他看著螢幕上那個銀色外殼。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）可是——繞過程序的人留下的痕跡，和故意掩蓋的人留下的痕跡，在系統裡看起來一樣。無借出。無工作單。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢光燈嗡嗡地響。會議室裡沒有別的聲音。", background: Background.Chapter_22_Ch22_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢光燈嗡嗡地響。會議室裡沒有別的聲音。", sfx: "fluorescent-hum", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）差別只在動機。而系統不記錄動機。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:35。指定專家把跨輪證據也調出來了。但放在螢幕下方。不是主畫面。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "跨輪草圖證據。第一輪——記憶的草圖。第三輪早晨——封緘重畫。兩者均為記憶重製。不是直接證據。", background: Background.Chapter_22_Ch22_Act7_S0 },
@@ -129,7 +129,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）銀色外殼。千田交給我的那個。第一輪。電車上。他壓著肋下。血。他說不要救東京。那個外殼——沒有跟回來。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的庫存影像還亮著。薄銀色。防靜電。雙卡扣。細長指示窗。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）可是它的形制——跟缺失載體一樣。跟美空節點出現過的 attestation 一樣。同一條鏈。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "證物袋一個一個封好。編號貼上去。金屬扣的聲音很輕。", background: Background.Chapter_22_Ch22_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "證物袋一個一個封好。編號貼上去。金屬扣的聲音很輕。", sfx: "evidence-bag-seal", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）千田從安全庫拿出來。交給我。我沒有守住。然後——某一輪——它出現在美空的醫療節點。沒有借出。沒有工作單。然後——它不見了。", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌面上的證物袋排成一列。銀色外殼的影像還留在螢幕角落。", background: Background.Chapter_22_Ch22_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）現在——它可能在哪裡。可能在一個合法技師的工具箱裡。可能在某個維護人員的口袋裡。也可能——", background: Background.Chapter_22_Ch22_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。臨時指揮室。六個來源。三台筆記型電腦。兩疊列印文件。一面白板。指定專家站在白板前面。日下部站在門邊。澪坐在桌前。她的筆記本翻開著。", background: Background.Chapter_21_Ch21_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。臨時指揮室。六個來源。三台筆記型電腦。兩疊列印文件。一面白板。指定專家站在白板前面。日下部站在門邊。澪坐在桌前。她的筆記本翻開著。", bgm: "institutional-drone", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真剛被帶去休息。澪沒有跟過去。她知道接下來這兩個小時不能分心。", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "六個獨立來源。逐一核對。不依賴凪原口述。", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "指定專家在白板上寫了六行編號。", background: Background.Chapter_21_Ch21_Act5_S0 },
@@ -120,6 +120,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:30。白板上寫滿了。六個來源。當輪排程。硬證據、證詞、推論三層。七條控制措施。一枚缺失載體。四條不能硬關的理由。", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著白板。她的筆記本上已經寫了七頁。字很小。很密。像在抄一份還沒有被歸檔的證據清單。", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯星期一仍在排程裡。⋯⋯我們凍結了遠端。凍結了提交。凍結了營運。駐點了鏡島。⋯⋯可是本地有預簽署套件。有備用電源。有 auto-prep。有一枚不知道在誰手上的原始簽署載體。⋯⋯風險沒有解除。只是被分拆了。", background: Background.Chapter_21_Ch21_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:50。指揮室。螢光燈的嗡聲很穩。白板上的字跡還沒乾。", background: Background.Chapter_21_Ch21_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:50。指揮室。螢光燈的嗡聲很穩。白板上的字跡還沒乾。", sfx: "fluorescent-hum", background: Background.Chapter_21_Ch21_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約四日十二小時二十三分鐘。", background: Background.Chapter_21_Ch21_Act5_S0 },
 ];

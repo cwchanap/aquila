@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:30。美空病房外的走廊。受控會談室。門半開。走廊的螢光燈和白天一樣亮。呼吸器的節奏從病房裡傳出來。很慢。很穩。", background: Background.Chapter_23_Ch23_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:30。美空病房外的走廊。受控會談室。門半開。走廊的螢光燈和白天一樣亮。呼吸器的節奏從病房裡傳出來。很慢。很穩。", sfx: "ventilator-cycle", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音坐在會談室裡。辯護人在她旁邊。澪坐在對面。日下部站在門邊。藤川真理坐在末端。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:35。琴音開始提供最後一批資料。她的聲音很平。像在讀清單。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "支援代理的案件別名。FAMILY-STABILITY。CASE-G07-03。ROLE——PRIVILEGED BROKER。OPERATOR ID——SEALED。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.ShiraishiKotone_Sad },
@@ -38,7 +38,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "六個字。很輕。很直接。沒有計算。沒有試探。只是一個姊姊——把最後的問題交出來。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她問我。她問我能不能讓美空醒。她把所有的希望——放在這個問題裡。她做了所有她做的事——就是為了這個。讓美空醒。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著她。看著她的眼睛。琴音的眼睛裡沒有攻擊。沒有計算。只有——一個已經把所有力氣用完的人，等著最後一個答案。", background: Background.Chapter_23_Ch23_Act8_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "不能答應。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "不能答應。", bgm: null, background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音的表情沒有崩潰。她沒有哭。她只是——低下頭。很慢。像一片被風推過去的葉子。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "我只答應——不會先把她寫成代價。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有抬頭。但她的肩膀——沒有垮。不是因為釋懷。是因為——這是她聽到的第一個沒有說謊的答案。", background: Background.Chapter_23_Ch23_Act8_S0 },
@@ -48,11 +48,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:40。會談室的人開始撤離。日下部最後走。他在門口停了一下。他看了一眼澪。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "今天到這裡。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯嗯。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他走了。門關上。腳步聲在走廊裡變遠。", background: Background.Chapter_23_Ch23_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他走了。門關上。腳步聲在走廊裡變遠。", sfx: "door-seal", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:50。澪走到病房外的觀察窗。她看著裡面。美空還在睡。呼吸器的節奏沒有變。控制器左側的面板被貼上封條。封條有編號。有五方簽章。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的監測數值還在跑。腦電。自律。呼吸。三條線。很平。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）美空。十三歲。還在呼吸。卡匣在位。五方控制。Domain-C 存在。局部影子存在。PARTIAL。UNVALIDATED。還沒有完成。可是——它在那裡。它撐住過。它不需要永遠依賴同一個中央。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。", background: Background.Chapter_23_Ch23_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。", sfx: "phone-vibrate", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "星期一以前。Domain-P 撤銷。其他患者影子。高層 override。後續再談。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放回口袋。她看了一眼走廊盡頭。螢光燈。白色的。很亮。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）星期一。還有兩天多。卡匣被控制了。直接帶往鏡島的風險下降了。可是——Domain-P 還在。其他紅區患者還沒有自己的影子。高層的 emergency override 還在。另一枚制度級根——還不知道在誰手裡。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },

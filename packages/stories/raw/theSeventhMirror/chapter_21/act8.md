@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, M-00 medical area corridor outside observation window, late night, dimmed fluorescent lighting, monitors reflecting off reinforced glass, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:30。M-00 醫療區外側走廊。紗英睡了。呼吸治療師留在裡面監測。其他人退到走廊。
 
 **旁白**：澪站在觀察窗前。她沒有坐下。她的手按在玻璃上。玻璃很涼。
@@ -11,6 +15,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor outside observation
 **朝倉澪** [exhausted]：（內心）⋯⋯R4。作者是我。⋯⋯未來的我。⋯⋯寫了一整套方案。⋯⋯然後說不要送回來。⋯⋯為什麼。⋯⋯為什麼寫了又不送回來。⋯⋯如果方案是對的——為什麼不送。⋯⋯如果方案是錯的——為什麼寫。
 
 **旁白**：然後——
+
+```bgm
+stop
+```
 
 **旁白**：不是睡著。不是暈。是什麼東西從很遠的地方撞過來。像白光。但不是白光。比白光更碎。更短。更安靜。
 
@@ -90,6 +98,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor outside observation
 
 **朝倉澪** [determined]：（內心）⋯⋯他們是對的。⋯⋯主觀回聲不能當證據。⋯⋯可是那個聲音是我的。⋯⋯那個字跡是我的。⋯⋯那條未來裡的我——寫了方案。然後拒絕把方案送回來。⋯⋯只留下拒絕的理由。⋯⋯不是留下答案。是留下拒絕答案的自由。
 
+```sfx
+ventilator-cycle
+```
+
 **旁白**：22:05。紗英醒了。不是完全清醒。是眼睛又開了一半。她看向門口。看向走廊。
 
 **旁白**：呼吸治療師確認了數字。
@@ -99,6 +111,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor outside observation
 **旁白**：紗英的視線移動。看向溝通板。呼吸治療師看了外部醫師一眼。外部醫師點頭。
 
 **旁白**：板子被調回來。螢幕亮了。沒有快捷選項。沒有提示。字母矩陣。
+
+```sfx
+letter-confirm
+```
 
 **旁白**：游標移動。很慢。一個字母。一個字母。
 
@@ -141,6 +157,10 @@ Tsukuba research facility M-zone, M-00 medical area corridor outside observation
 **外部醫師**：中止。讓她休息。
 
 **旁白**：板子被調暗。紗英的呼吸慢慢降下來。她睡著了。或者回到了那個半昏迷的地方。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：走廊裡很安靜。外部醫師把螢幕上的字拍下來。然後他看著獨立神經心理專業人員。
 

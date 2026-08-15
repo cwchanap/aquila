@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:00。系統安全組的工作區。", background: Background.Chapter_22_Ch22_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:00。系統安全組的工作區。", bgm: "institutional-drone", background: Background.Chapter_22_Ch22_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田把螢幕轉過來。不是轉給澪看——澪坐在走廊盡頭，看不到這個螢幕。他轉給日下部和指定專家看。", background: Background.Chapter_22_Ch22_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上是一張拓撲圖。不是普通的網路圖。是 KAGAMI-01 的 CAL／PHASE 匯流排架構。", background: Background.Chapter_22_Ch22_Act2_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "先看這張。", background: Background.Chapter_22_Ch22_Act2_S0, portrait: Portrait.ChidaKosuke_Base },
@@ -77,7 +77,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）C 是硬切。切斷共用閉環。母親和遠端病人一起斷。未來的我——在那個失敗包絡裡——選了 C。先讓悠真安全。然後切。不等待其他人。", background: Background.Chapter_22_Ch22_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她閉上眼睛。額頭靠著牆。牆很涼。和昨晚的玻璃一樣涼。", background: Background.Chapter_22_Ch22_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）兩條線還沒有分開。臨床和公共。病人和公共輸出。在 COMMIT-GATE 之前——它們共用同一條上游。", background: Background.Chapter_22_Ch22_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢光燈的嗡聲填進安靜的走廊。", background: Background.Chapter_22_Ch22_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢光燈的嗡聲填進安靜的走廊。", sfx: "fluorescent-hum", background: Background.Chapter_22_Ch22_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）所以切上游的時候——兩邊一起斷。不是選擇犧牲誰。是結構上無法只傷一邊。", background: Background.Chapter_22_Ch22_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:05。日下部走到走廊中間。他的聲音不大。但所有人都聽到了。", background: Background.Chapter_22_Ch22_Act2_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "候選封存完成。十分鐘休息。之後進入紅區評估。", background: Background.Chapter_22_Ch22_Act2_S0, portrait: Portrait.KusakubeSatoru_Base },

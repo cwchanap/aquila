@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:40。醫院安全會議室。長桌。螢幕。三台筆電。日下部坐在主位。指定專家坐在他旁邊。司法保全人員在角落記錄。澪坐在長桌末端。她面前沒有筆電。只有一杯水。", background: Background.Chapter_23_Ch23_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:40。醫院安全會議室。長桌。螢幕。三台筆電。日下部坐在主位。指定專家坐在他旁邊。司法保全人員在角落記錄。澪坐在長桌末端。她面前沒有筆電。只有一杯水。", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕亮了。指定專家調出第一份資料。", background: Background.Chapter_23_Ch23_Act3_S0 },
     { characterId: CharacterId.DesignatedExpert, character: "指定專家", dialogue: "琴音的家屬應用——FAMILY-ASSIST。權限範圍。接收病人設備通知。完成家屬身分確認。申請臨床支援。參與照護流程。接收任務摘要。", background: Background.Chapter_23_Ch23_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_23_Ch23_Act3_S0 },
@@ -46,11 +46,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "11:10。正式詢問開始。琴音以成年人身分。辯護人在場。", background: Background.Chapter_23_Ch23_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "我不在場。", background: Background.Chapter_23_Ch23_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "妳不在場。", background: Background.Chapter_23_Ch23_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:10。正式詢問室。門關上了。澪站在走廊裡。她看不見裡面。她聽不見內容。只有門上方的一盞小燈亮著——紅色。表示詢問進行中。", background: Background.Chapter_23_Ch23_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:10。正式詢問室。門關上了。澪站在走廊裡。她看不見裡面。她聽不見內容。只有門上方的一盞小燈亮著——紅色。表示詢問進行中。", sfx: "door-latch", bgm: null, background: Background.Chapter_23_Ch23_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她在裡面。琴音在裡面。辯護人在她旁邊。日下部在對面。我在外面。", background: Background.Chapter_23_Ch23_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐在走廊的椅子上。椅子很硬。塑膠的。她什麼都不能做。只能等。", background: Background.Chapter_23_Ch23_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不要回她。不要質問她。不要在病房裡展示懷疑。不要使用前兩輪記憶。讓程序走。讓程序走完。", background: Background.Chapter_23_Ch23_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:05。門上的紅燈滅了。門開了。日下部走出來。他的表情沒有變。但他的腳步比進去時慢了半拍。", background: Background.Chapter_23_Ch23_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:05。門上的紅燈滅了。門開了。日下部走出來。他的表情沒有變。但他的腳步比進去時慢了半拍。", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act3_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他在澪面前停下。他沒有坐下。他站著。", background: Background.Chapter_23_Ch23_Act3_S1 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "她取得辯護人。辯護人在場。她有限承認。", background: Background.Chapter_23_Ch23_Act3_S1, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "⋯⋯她說了什麼。", background: Background.Chapter_23_Ch23_Act3_S1, portrait: Portrait.AsakuraMio_Determined },

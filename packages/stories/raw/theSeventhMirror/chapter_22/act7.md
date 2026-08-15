@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, small conference room converted into technical evidence workspace, night, single large monitor showing KAGAMI hardware registry and attestation logs, laptops and sealed evidence bags on table, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：20:00。M 區。小會議室。會議結束以後，走廊那端的房間被重新整理過。摺疊桌收了。換成兩張長桌。一張放筆電。一張放證物。
 
 **旁白**：螢幕上是 KAGAMI 硬體登錄庫。不是決策介面。不是依存圖。是另一種畫面。序號。型號。安全晶片狀態。歸還記錄。
@@ -90,6 +94,10 @@ Tsukuba research facility M-zone, small conference room converted into technical
 
 **旁白**：兩組影像並排。一組是便衣在昏暗交接區拍的。一組是庫存資料裡的標準照。光線不同。角度不同。但外殼的形狀、卡扣的位置、指示窗的比例——像同一個模子。
 
+```bgm
+stop
+```
+
 **千田浩介**：第一輪。我交給她的那個。
 
 **旁白**：千田的聲音很低。他看著螢幕。看著那個銀色外殼。
@@ -105,6 +113,10 @@ Tsukuba research facility M-zone, small conference room converted into technical
 **旁白**：千田沒有抬頭。他看著螢幕上那個銀色外殼。
 
 **朝倉澪** [exhausted]：（內心）可是——繞過程序的人留下的痕跡，和故意掩蓋的人留下的痕跡，在系統裡看起來一樣。無借出。無工作單。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：螢光燈嗡嗡地響。會議室裡沒有別的聲音。
 
@@ -249,6 +261,10 @@ Tsukuba research facility M-zone, small conference room converted into technical
 **旁白**：螢幕上的庫存影像還亮著。薄銀色。防靜電。雙卡扣。細長指示窗。
 
 **朝倉澪** [exhausted]：（內心）可是它的形制——跟缺失載體一樣。跟美空節點出現過的 attestation 一樣。同一條鏈。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：證物袋一個一個封好。編號貼上去。金屬扣的聲音很輕。
 

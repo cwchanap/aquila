@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。臨床安全終端室。不是病房。是設備間旁邊一間小房間。螢幕掛在牆上。桌上放著筆電和封好的鑑識記錄。螢光燈很亮。空調很冷。", background: Background.Chapter_23_Ch23_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。臨床安全終端室。不是病房。是設備間旁邊一間小房間。螢幕掛在牆上。桌上放著筆電和封好的鑑識記錄。螢光燈很亮。空調很冷。", bgm: "institutional-drone", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在桌邊。日下部在她對面。獨立系統安全人員站在螢幕前。外部醫師坐在末端。琴音和辯護人在另一側。千田不在場。他在保護地點。透過遠端。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:15。獨立系統安全人員把卡匣的韌體讀取結果投射到螢幕上。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "第一重確認。韌體雙密鑰域。", background: Background.Chapter_23_Ch23_Act7_S0 },
@@ -23,7 +23,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "不只是控制方設下的障礙。也是病人隔離與隱私保護。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音看著螢幕。她的嘴唇動了一下。沒有發出聲音。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她在聽。她在聽——Domain-C 不需要公共輸出。她在聽——她一直被告知，拿走卡匣就會害死美空。可是——Domain-C 的臨床功能可以獨立存在。不需要公共閉環。不需要 M-00。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:45。第三重確認。千田的遠端證詞。由律師與警方在保護地點記錄。音訊連線。聲音很穩。像在讀文件。", background: Background.Chapter_23_Ch23_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:45。第三重確認。千田的遠端證詞。由律師與警方在保護地點記錄。音訊連線。聲音很穩。像在讀文件。", sfx: "radio-feed", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "我不是要拿走她的生命支持。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他停了一下。", background: Background.Chapter_23_Ch23_Act7_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "我要的是能建立屬於她自己的參照根。", background: Background.Chapter_23_Ch23_Act7_S0, portrait: Portrait.ChidaKosuke_Base },

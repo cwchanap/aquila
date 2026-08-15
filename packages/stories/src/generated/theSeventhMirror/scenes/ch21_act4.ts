@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:10。筑波關聯設施。一間被臨時改裝過的房間。窗簾是暖色的。桌上放著圖畫紙和色筆。不是審訊室。不是病房。是一個被刻意弄得不像任何制度空間的空間。", background: Background.Chapter_21_Ch21_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:10。筑波關聯設施。一間被臨時改裝過的房間。窗簾是暖色的。桌上放著圖畫紙和色筆。不是審訊室。不是病房。是一個被刻意弄得不像任何制度空間的空間。", bgm: null, background: Background.Chapter_21_Ch21_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兒少專業人員坐在悠真斜對面。外部醫師在旁邊，看著監測平板。攝影機架在角落。紅燈亮著。", background: Background.Chapter_21_Ch21_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在房間另一端。離悠真三公尺。她能看見他。他沒有看她。", background: Background.Chapter_21_Ch21_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真。⋯⋯他瘦了。下巴更尖了。校服袖子空了一截。⋯⋯可是他在那裡。他坐著。他清醒。⋯⋯不要打斷。不要補。讓他自己說。", background: Background.Chapter_21_Ch21_Act4_S0, portrait: Portrait.AsakuraMio_Sad },
@@ -77,6 +77,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:05。房間空了。色筆還在桌上。圖畫紙被證物袋收走。", background: Background.Chapter_21_Ch21_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站起來。膝蓋在發抖。不是冷。是某種她還沒有名字的東西。", background: Background.Chapter_21_Ch21_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯同一場危機。很多個後來。哪一個最安全。哪一個最像真的。哪一個最容易相信。⋯⋯選不一致的時候，聲音和畫面會變強。⋯⋯星期一。大家。同一個版本。⋯⋯大家是誰——不知道。⋯⋯可是「同一個版本」這四個字，和排程裡的 STAGED——⋯⋯不。現在不能連。先記下來。先記下來。", background: Background.Chapter_21_Ch21_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出房間。走廊的螢光燈比剛才更亮。像從一個被刻意調暖的空間，被推回制度的溫度。", background: Background.Chapter_21_Ch21_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出房間。走廊的螢光燈比剛才更亮。像從一個被刻意調暖的空間，被推回制度的溫度。", bgm: "institutional-drone", background: Background.Chapter_21_Ch21_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約四日十五小時八分鐘。", background: Background.Chapter_21_Ch21_Act4_S0 },
 ];

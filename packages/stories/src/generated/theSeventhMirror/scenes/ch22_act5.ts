@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。M 區。系統安全組工作站。螢幕上打開了一張圖。不是依存圖。不是閉環圖。是一條時間軸。軸上標著六個條件閘門。每個閘門旁邊寫著一行字。", background: Background.Chapter_22_Ch22_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。M 區。系統安全組工作站。螢幕上打開了一張圖。不是依存圖。不是閉環圖。是一條時間軸。軸上標著六個條件閘門。每個閘門旁邊寫著一行字。", bgm: "institutional-drone", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在螢幕旁邊。他的聲音回到了程序模式。像在讀一份結構化報告。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "R4 失敗包絡。技術模型判定——只有在以下最小失敗條件全部成立時，R4 才會成為可能未來中可理解的候選。", background: Background.Chapter_22_Ch22_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他指向第一個閘門。", background: Background.Chapter_22_Ch22_Act5_S0 },
@@ -66,7 +66,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的臉沒有變。但她的眼睛在四個紅區上停了比平常更長的時間。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "失敗包絡成立時——CONSENSUS COMMIT 已進入不可逆前段。VALIDATION COHORT 已開始異常一致化。距 public fanout 只剩極短時間。", background: Background.Chapter_22_Ch22_Act5_S0, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她頓了一下。她的聲音和往常一樣——學術。精確。不帶情緒。但她的語速慢了一拍。只有一拍。", background: Background.Chapter_22_Ch22_Act5_S0 },
-    { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "到那個時點，妳會只剩幾秒。", background: Background.Chapter_22_Ch22_Act5_S0, portrait: Portrait.NagiharaYui_Base },
+    { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "到那個時點，妳會只剩幾秒。", bgm: null, background: Background.Chapter_22_Ch22_Act5_S0, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著澪。不是看著白板。不是看著螢幕。是看著澪。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊裡沒有聲音。所有人都聽到了那句話。不是「妳會有時間選擇」。不是「妳可以慢慢決定」。是——只剩幾秒。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著她。凪原的臉沒有變。銀框眼鏡。白袍。但她的眼睛是清醒的。不是冷漠。是清醒。她在說一個她見過的時點。不是理論。是經驗。", background: Background.Chapter_22_Ch22_Act5_S0 },
@@ -111,7 +111,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "下一步。妳要什麼。", background: Background.Chapter_22_Ch22_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著他。他的臉很疲憊。眼下的陰影很深。但他的眼睛是清醒的。他在等她。不是等她回答。是等她要求。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "把名字補回去。", background: Background.Chapter_22_Ch22_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:35。走廊。螢光燈。螢幕上的圖還在。六個閘門。兩條路線。四個紅區。四個代碼。沒有名字。", background: Background.Chapter_22_Ch22_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:35。走廊。螢光燈。螢幕上的圖還在。六個閘門。兩條路線。四個紅區。四個代碼。沒有名字。", sfx: "fluorescent-hum", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原站在牆邊。她的手在口袋裡。她聽到了「把名字補回去」。她的臉沒有變。但她的下巴收了一點。只有一點。像在準備接住什麼。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:50。日下部開始聯絡外部人員。公共營運方。外部醫療主管。警方。司法。TKS。兒少。主管機關。臨時共同安全會議。十七點十分開始。", background: Background.Chapter_22_Ch22_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在走廊盡頭。她沒有動。她的手放在膝蓋上。她看著螢幕上那四個代碼。沒有名字。沒有年齡。沒有 HUMAN。", background: Background.Chapter_22_Ch22_Act5_S0 },

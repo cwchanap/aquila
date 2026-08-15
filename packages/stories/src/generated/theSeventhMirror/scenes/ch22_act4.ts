@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:20。M 區。午休結束。走廊裡的摺疊桌被收走了一半。系統安全組的筆電合著。外部醫療組的資料袋封了口。三個方案家族的候選——A、B、C——全部封存。編號。簽名。時間戳。", background: Background.Chapter_22_Ch22_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:20。M 區。午休結束。走廊裡的摺疊桌被收走了一半。系統安全組的筆電合著。外部醫療組的資料袋封了口。三個方案家族的候選——A、B、C——全部封存。編號。簽名。時間戳。", bgm: "institutional-drone", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在走廊中間。他的面前放著一個透明證物套。套裡面是一張紙。紙上只有三行字。他沒有打開它。", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "候選封存完成。現在解封昨日最低限度 R4 元資料。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "程序。未來資料組只整理昨日既有內容。不新增。不推論。不補完。澪主觀回聲另封。標記——非證據。最後才做一致性比對。不參與候選生成。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
@@ -68,7 +68,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）凪原。她把紗英維持成 M-00。十年。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原沒有移動。銀框眼鏡。白袍。脊椎沒有彎。", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）為了避免更大災難。為了穩定。她把一個人改寫成代碼。然後讓代碼撐住系統。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的螢光燈嗡了一聲。沒有人抬頭。", background: Background.Chapter_22_Ch22_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的螢光燈嗡了一聲。沒有人抬頭。", sfx: "fluorescent-hum", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）未來的我——把紗英留在閉環上。為了阻止 public fanout。同一個人。同一個選擇。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的手指收了一下。又鬆開。", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）差別只在——她們各自先把誰從代價裡拿走。凪原拿走的是自己。未來的我拿走的是悠真。留下的是同一個人。母親。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -137,6 +137,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凪原站在牆邊。她的手在口袋裡。沒有動。像從走進這棟建築到現在，她的姿勢就沒有變過一次。", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看了她一眼。然後收回視線。", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她把母親維持成 M-00。未來的我把母親留在閉環上。同一個人。同一個選擇。差別只在——她們各自先把誰從代價裡拿走。而留下的人——都是母親。", background: Background.Chapter_22_Ch22_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。M 區。走廊。呼吸器的節奏從觀察窗後面傳過來。很慢。", background: Background.Chapter_22_Ch22_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。M 區。走廊。呼吸器的節奏從觀察窗後面傳過來。很慢。", sfx: "ventilator-cycle", background: Background.Chapter_22_Ch22_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約三日十五小時三分鐘。", background: Background.Chapter_22_Ch22_Act4_S0 },
 ];

@@ -4,6 +4,10 @@
 temporary joint security conference room, long table with laptops and sealed evidence binders, wall monitor showing version system prompt with blank AUTHOR field, cold fluorescent lighting, grey morning light through reinforced window, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：06:30。臨時共同安全會議室。星期六。第三輪。悠真失蹤事件第十二日。
 
 **旁白**：澪睡了不到三個小時。不是在床上。是在會議室角落的摺疊椅上。有人替她蓋了一條薄毯。她不記得是誰。醒來的時候毯子滑到地上。螢光燈已經亮了。
@@ -17,6 +21,10 @@ temporary joint security conference room, long table with laptops and sealed evi
 **旁白**：下面是一排空欄位。第一個。
 
 **旁白**：AUTHOR。
+
+```sfx
+radio-feed
+```
 
 **旁白**：06:35。人陸續到了。日下部坐在澪對面。他的罐裝咖啡沒有打開。外部醫師坐在末端。獨立系統安全人員站在螢幕旁邊。患者權利代表坐在另一側——她昨晚就到了。獨立的。不隸屬任何一方。司法保全在門邊。院內臨床保管方在角落。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。
 
@@ -163,6 +171,10 @@ ACTIVE SWITCH                      PROHIBITED
 **朝倉澪** [exhausted]：（內心）沒有母體。不是——已經沒有母體。是——設計裡不再有一個母體。目標裡不再有。可是現況裡——紗英還在閉環上。美空還在中央 fallback。葵還沒有被找到。所有人仍在母體留下的系統裡。今天的任務——不是假裝已經離開。是——規定怎麼離開。
 
 **旁白**：07:40。澪站起來。膝蓋很僵。她看了一眼螢幕。暗了。最後的畫面還殘留一秒。AUTHORSHIP。FEDERATED。NO SINGLE OWNER。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：她走向門口。走廊的螢光燈和昨天一樣亮。和每一輪一樣亮。
 

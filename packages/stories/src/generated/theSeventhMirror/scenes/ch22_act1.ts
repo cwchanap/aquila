@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:00。M 區。指揮走廊。星期四。第三輪。悠真失蹤第十日。", background: Background.Chapter_22_Ch22_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪幾乎沒有睡。三小時。可能不到。她分不清是閉眼還是睡著。胃裡只有半杯涼咖啡和一塊沒吃完的飯糰。走廊的螢光燈和昨天一樣亮。和前天一樣亮。和每一輪一樣亮。", background: Background.Chapter_22_Ch22_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:00。M 區。指揮走廊。星期四。第三輪。悠真失蹤第十日。", bgm: "institutional-drone", background: Background.Chapter_22_Ch22_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪幾乎沒有睡。三小時。可能不到。她分不清是閉眼還是睡著。胃裡只有半杯涼咖啡和一塊沒吃完的飯糰。走廊的螢光燈和昨天一樣亮。和前天一樣亮。和每一輪一樣亮。", sfx: "fluorescent-hum", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）距星期一 06:13。約三日二十二小時十三分。還在倒數。一直在倒數。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌面被清空過一次，又重新排列。現在放著的不再是封緘信封。是三台筆記型電腦。三個資料夾。三組不同顏色的識別貼紙——藍、白、黃。", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部站在桌前。他換了襯衫。鬍子刮過了。但眼下的陰影比昨天更深。他面前放著一份程序文件。文件標題只有一行。", background: Background.Chapter_22_Ch22_Act1_S0 },
@@ -49,7 +49,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他停了一下。然後他說了最後一條。", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "這不是審判。不是投票。不是看誰的記憶最完整。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "是看系統自己會留下哪些路。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊裡安靜了幾秒。設備的嗡聲填進來。呼吸器的節奏從觀察窗後面傳過來。很慢。", background: Background.Chapter_22_Ch22_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊裡安靜了幾秒。設備的嗡聲填進來。呼吸器的節奏從觀察窗後面傳過來。很慢。", sfx: "ventilator-cycle", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他說的不是安慰。是規則。可是規則比安慰有用。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "設備的嗡聲填進走廊的縫隙。", background: Background.Chapter_22_Ch22_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）規則不會因為疲勞而變形。不會因為恐懼而彎曲。我需要規則。我太累了。我不能再靠直覺。", background: Background.Chapter_22_Ch22_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },

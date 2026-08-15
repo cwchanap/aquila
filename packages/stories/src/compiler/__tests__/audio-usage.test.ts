@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { AudioPlanV1 } from '../../audio-plan';
 import type { StoryIR } from '../ir';
-import { collectAudioUsage, validateAudioUsage } from '../audio-usage';
+import {
+    buildAudioUsageReport,
+    collectAudioUsage,
+    validateAudioUsage,
+} from '../audio-usage';
 
 const story: StoryIR = {
     storyId: 'fixture_story',
@@ -96,6 +100,65 @@ describe('collectAudioUsage', () => {
         expect(usage.bgmStops).toEqual([
             { sceneId: 'act2', sourcePath: 'act2.md', entryIndex: 1 },
         ]);
+    });
+});
+
+describe('buildAudioUsageReport', () => {
+    it('aggregates and deduplicates cue usage into a deterministic report', () => {
+        const report = buildAudioUsageReport(
+            'fixtureStory',
+            collectAudioUsage(story),
+            {
+                schemaVersion: 1,
+                assets: [
+                    ...plan.assets,
+                    {
+                        key: 'unused-cue',
+                        type: 'sfx',
+                        prompt: 'Unused',
+                        durationMs: 500,
+                    },
+                ],
+            }
+        );
+        expect(report).toEqual({
+            story: 'fixtureStory',
+            assets: [
+                {
+                    type: 'bgm',
+                    key: 'dawn-apartment',
+                    usageCount: 1,
+                    usages: [
+                        {
+                            sceneId: 'act1',
+                            sourcePath: 'act1.md',
+                            entryIndex: 1,
+                        },
+                    ],
+                },
+                {
+                    type: 'sfx',
+                    key: 'door-open',
+                    usageCount: 2,
+                    usages: [
+                        {
+                            sceneId: 'act1',
+                            sourcePath: 'act1.md',
+                            entryIndex: 0,
+                        },
+                        {
+                            sceneId: 'act2',
+                            sourcePath: 'act2.md',
+                            entryIndex: 0,
+                        },
+                    ],
+                },
+            ],
+            bgmStops: [
+                { sceneId: 'act2', sourcePath: 'act2.md', entryIndex: 1 },
+            ],
+            unused: [{ type: 'sfx', key: 'unused-cue' }],
+        });
     });
 });
 

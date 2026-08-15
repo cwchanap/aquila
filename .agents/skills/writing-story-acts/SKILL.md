@@ -32,6 +32,7 @@ Read ALL of these before writing any dialogue:
 2. **The chapter/act plan** (e.g. `docs/chapter_N_plan.md`) — the source of truth for scene content, time, location, and required plot beats.
 3. **The previous act** (if you're not writing the first in a batch) — for voice/POV/prop continuity across the seam.
 4. **The house style guide** — load the `house-style` skill. It defines voice, pacing, POV, tone, and references, and lists reference example acts to read for voice calibration. Read one of those canon acts before writing to calibrate tone.
+5. **`packages/stories/raw/<storyName>/docs/audio-plan.json` when it exists or audio direction is in scope** — reuse its exact cue keys. If a needed cue is not defined there, flag it to the orchestrator instead of inventing an alias.
 
 ## Step 2: Markdown Format
 
@@ -79,6 +80,32 @@ train interior, warm fluorescent lighting, empty seats
 - The background **carries forward** to all following entries — no need to repeat it.
 - Multiple `bg` blocks in one scene create distinct **sections** (indexed `s0`, `s1`, `s2`, …). Each section gets its own background image.
 - **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
+
+**Audio cue blocks** — ` ```sfx ` and ` ```bgm ` fenced blocks attach an audio cue to the **next** dialogue entry and carry forward like `bg` blocks. Each block contains a single lowercase-hyphenated cue key from the story's audio plan; `stop` is reserved for BGM:
+
+````markdown
+```sfx
+door-open
+```
+
+```bgm
+dawn-apartment
+```
+
+```bgm
+stop
+```
+````
+
+Audio rules:
+- **Reuse the exact plan keys** from `docs/audio-plan.json` — never invent variants or aliases.
+- **No provider metadata in acts**: no URLs, file paths, provider/model names, prompts, durations, or candidate metadata — those live in the plan.
+- **SFX is selective**, not sentence-by-sentence Foley — cue meaningful actions only.
+- **BGM only at sustained state/location/mood changes** — not per beat or at arbitrary act boundaries.
+- **Silence is valid**: an explicit ` ```bgm stop ` or the absence of a block is a legitimate audio state.
+- **Recurring identities stay consistent** — the same object, location, or motif always uses the same cue key.
+- **Plot-essential information must remain understandable when muted** — never make required story information audio-only.
+- **Undefined needed cue**: flag it to the orchestrator to add to the plan instead of inventing a key.
 
 **Expression override tags** — put a `[key]` between the bold name and the colon to override the portrait for that line:
 

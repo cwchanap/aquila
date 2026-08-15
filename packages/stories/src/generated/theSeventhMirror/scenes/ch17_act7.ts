@@ -6,9 +6,9 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:35。筑波外圍公共停車區。", background: Background.Chapter_17_Ch17_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:35。筑波外圍公共停車區。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "茨城縣警的便衣聯絡人九點二十左右到的。車輛進入地下坡道時他還在路上。沒趕上入門。但他趕上了離開。", background: Background.Chapter_17_Ch17_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰白搬送車從園區雙重門禁駛出。後門半開。外部作業艙在駛上公共道路前短暫可見。", background: Background.Chapter_17_Ch17_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰白搬送車從園區雙重門禁駛出。後門半開。外部作業艙在駛上公共道路前短暫可見。", sfx: "camera-shutter", background: Background.Chapter_17_Ch17_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "折疊式升降板收在側邊。固定架空著。沒有大型設備。沒有空的輪椅。外層門簾被風掀了一下，又落下。", background: Background.Chapter_17_Ch17_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯空的。升降板在，固定架也在，但沒有設備，沒有輪椅。進去時看不見裡面，出來時——外面還是空的。如果裡面有人，就在內部艙。但內部艙還是看不見。", background: Background.Chapter_17_Ch17_Act7_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "內部封閉轉送艙仍由不透明內門與固定隔板遮蔽。從公共道路的角度——看不見裡面有沒有人。", background: Background.Chapter_17_Ch17_Act7_S0 },

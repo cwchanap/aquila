@@ -4,6 +4,10 @@
 Tsukuba research facility underground floor B2, common research support area, cleaned workstations, plain medical-grade walls, fluorescent lighting, wheelchair-accessible corridor, no windows, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：10:20。B2。地下二層。共同研究支援、人員待機、設備保全區。高城修一站在電梯口。他沒有被要求開放這一層。他自己開的。
 
 **高城修一**：為了表示配合，本法人自願開放 B2。目前區域已完成清空與清潔。各位可以自由查看。
@@ -54,6 +58,10 @@ Tsukuba research facility underground floor B2, common research support area, cl
 
 **設施合規主管**：依搬送規程相關條文。條件成立。同意依規程辦理開封。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：全程記錄。封條號抄錄。開封時間記錄。在場者簽名。三浦、日下部、相原、設施合規主管、未成年後見人視訊見證。鑑識人員拍照。
 
 **旁白**：封緘外殼打開。裡面是一份折疊文件。三浦展開。逐欄念出。
@@ -71,6 +79,10 @@ Tsukuba research facility underground floor B2, common research support area, cl
 **三浦奈緒子**：22:17——內部轉送。
 
 **三浦奈緒子**：次區域——M。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：文件展開在桌上。封條號、開封時間、在場者簽名——全部記錄在案。三浦把文件影本放進證物袋。原件由設施合規主管保管，警方保留影本與開封紀錄。
 

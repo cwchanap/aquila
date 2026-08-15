@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:35。臨時指揮室。回到走廊這一側。摺疊桌。文件箱。觀察窗的綠光。呼吸曲線還在跑。凪原坐下了。第一次。她坐在桌對面的摺疊椅上。背挺直。手放在膝蓋上。法律顧問站在她身後。醫療協調人去了 M-00 工作站那側。", background: Background.Chapter_20_Ch20_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:35。臨時指揮室。回到走廊這一側。摺疊桌。文件箱。觀察窗的綠光。呼吸曲線還在跑。凪原坐下了。第一次。她坐在桌對面的摺疊椅上。背挺直。手放在膝蓋上。法律顧問站在她身後。醫療協調人去了 M-00 工作站那側。", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部把一份文件放到桌上。不是凪原帶來的。是警方已經保全的。", background: Background.Chapter_20_Ch20_Act3_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "這份不是妳提供的。是搜索範圍內已經扣押的。同意文件。", background: Background.Chapter_20_Ch20_Act3_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "封面寫著——朝倉紗英。初始觀察同意書。", background: Background.Chapter_20_Ch20_Act3_S0 },

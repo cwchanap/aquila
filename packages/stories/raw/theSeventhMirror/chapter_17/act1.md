@@ -4,7 +4,15 @@
 small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and bookshelf visible, small hand mirror on desk surface, phone screen glowing in the dark, muted blue-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：06:13。星期一。朝倉家。
+
+```sfx
+phone-vibrate
+```
 
 **旁白**：手機震動。和前兩輪一樣的震動。一樣的時間。一樣的頻率。
 
@@ -24,9 +32,17 @@ small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and 
 
 **旁白**：小鏡子。在書桌上。背面朝上。
 
+```sfx
+mirror-chime
+```
+
 **旁白**：她拿起來。翻到背面。刻痕還在。和前兩輪一樣的刻痕。只能看見部分筆畫。不能單獨還原完整代碼。
 
 **朝倉澪** [determined]：（內心）⋯⋯鏡子回來了。第三次。刻痕一樣。只能部分對得上。讀不出完整代碼。記住。
+
+```bgm
+sleepless-vigil
+```
 
 **旁白**：06:17。她把鏡子放下。拉開書桌抽屜。拿出筆記本。翻到空白頁。拿起筆。
 
@@ -73,6 +89,10 @@ small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and 
 **朝倉澪** [shocked]：（內心）⋯⋯在。G07／12。第二階段預約頁。家庭共享備份裡的舊截圖。清晰。這一次還在。不靠之前的記憶。不靠悠真手機。這是今天的普通證據。
 
 **旁白**：她把兩張截圖存進自己的手機。確認解析度。確認日期戳。確認來源標記——家庭共享雲端／家中平板同步備份。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：06:25。她回到書桌。拿起小鏡子。翻到背面。用手機相機拍下刻痕。開閃光燈。拍三張。選最清晰的一張。
 
@@ -130,6 +150,10 @@ small Tokyo apartment bedroom, predawn darkness thinning to cold grey, desk and 
 
 ```bg
 Tokyo residential street early Monday morning, grey predawn light, narrow lanes between old houses, a 24-hour convenience store sign glowing in the distance, few pedestrians, muted cool palette, visual-novel background art, wide shot
+```
+
+```bgm
+grey-city
 ```
 
 **旁白**：外面是第三輪的星期一清晨。和前兩輪一樣的灰白光。一樣的安靜。一樣的空氣溫度。

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:20。保護地點。會面室。電話擴音。長野那一端接通了。", background: Background.Chapter_18_Ch18_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:20。保護地點。會面室。電話擴音。長野那一端接通了。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部先說明身份。失蹤未成年人安否查證。正式監護人確認程序。需要她核對幾項同意內容。語氣放慢。沒有提循環。沒有提筑波地下。只說——悠真的研究參加，需要她確認當初簽了什麼。", background: Background.Chapter_18_Ch18_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "電話那頭沉默了幾秒。然後一個女人的聲音。疲憊。但清醒。", background: Background.Chapter_18_Ch18_Act8_S0 },
     { characterId: CharacterId.NaganoAunt, character: "長野的母方阿姨", dialogue: "⋯⋯我簽的⋯⋯是睡眠檢查吧。學校轉介的。就⋯⋯普通的健康研究。", background: Background.Chapter_18_Ch18_Act8_S0, portrait: Portrait.NaganoAunt_Base },
@@ -59,13 +59,13 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯沒有。界線。能證明的——一名青少年被送進 B2。不能證明的——那個人就是悠真。不能證明——他有危險。不能證明——他在呼救。設施說穩定。系統說沒有警示。門檻——不夠。但出口監看——有用。如果悠真經外部車輛離開——會被看見。如果沒有離開——就還在裡面。", background: Background.Chapter_18_Ch18_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:50。三浦確認筑波端所有公共車輛出口已開始監看。夜間離開的任何車輛將被依法接觸查驗。搬送、門禁、電梯與建築資料保全程序已啟動。", background: Background.Chapter_18_Ch18_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "同一時間——", background: Background.Chapter_18_Ch18_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在澪看不見的地方。在警方監看不見的地方。園區內部。", background: Background.Chapter_18_Ch18_Act8_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在澪看不見的地方。在警方監看不見的地方。園區內部。", bgm: "passage-hum", background: Background.Chapter_18_Ch18_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／12 由 B2 轉往更深層區域。不經外部車輛出口。不經公共門禁。內部通道。", background: Background.Chapter_18_Ch18_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "B2 的紀錄被改為「轉送完成」。", background: Background.Chapter_18_Ch18_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "管理責任轉到另一法人。另一維持區。", background: Background.Chapter_18_Ch18_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一份範圍過度寬泛的監護同意文件開始準備。", background: Background.Chapter_18_Ch18_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "壓力開始向千田與律師那一端施加。", background: Background.Chapter_18_Ch18_Act8_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這些——澪不知道。日下部不知道。三浦不知道。警方監看的外部出口——沒有車輛離開。沒有東西經公共道路出去。", background: Background.Chapter_18_Ch18_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這些——澪不知道。日下部不知道。三浦不知道。警方監看的外部出口——沒有車輛離開。沒有東西經公共道路出去。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "出口監看仍有價值。它證明——悠真沒有經外部車輛離開園區。他還在裡面。或者在更深的地方。", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:55。會面室。日下部把筆記本翻到最後。派車控那一頁。每一欄都抄在上面。識別碼。搬送種別。年齡帶。搬送對象。介助區分。付添。目的。身份資料。同意確認。車輛。時間。", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他拿起筆。在「搬送種別」下面畫了一條線。", background: Background.Chapter_18_Ch18_Act8_S2 },
@@ -83,7 +83,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "朝倉悠真。", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯朝倉悠真。文件不肯寫他的名字。但我知道。G07／12 是他。四個來源。同一個碼。——他不是一箱硬碟。是我的弟弟。", background: Background.Chapter_18_Ch18_Act8_S2, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把筆放下。合上筆記本。", background: Background.Chapter_18_Ch18_Act8_S2 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。保護地點。會面室。螢光燈嗡嗡地響。窗外是第三輪星期一的夜。筑波在黑暗裡。出口被監看。沒有車輛離開。", background: Background.Chapter_18_Ch18_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。保護地點。會面室。螢光燈嗡嗡地響。窗外是第三輪星期一的夜。筑波在黑暗裡。出口被監看。沒有車輛離開。", sfx: "fluorescent-hum", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "翌晨。正式安否確認。同意文件程序。倫理主管到場。兒少相關人員。長野的監護人陳述。全部排在天亮之後。", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約六日七小時十三分鐘。", background: Background.Chapter_18_Ch18_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部在「搬送種別」下面畫了一條線。", background: Background.Chapter_18_Ch18_Act8_S2 },

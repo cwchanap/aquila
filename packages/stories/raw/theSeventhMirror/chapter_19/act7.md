@@ -4,6 +4,10 @@
 M zone research room interior, late afternoon, white soundproofed walls, single research bed with thin mattress, IV stand, sensor cables to monitoring equipment, soft ambient light shielding on windows, sterile clinical palette, no restraints, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：16:45。M 區。門牌上只有一行字。
 
 **旁白**：G07／12。
@@ -11,6 +15,14 @@ M zone research room interior, late afternoon, white soundproofed walls, single 
 **旁白**：門旁的緊急身份欄寫著另一個名字。朝倉悠真。
 
 **朝倉澪** [shocked]：（內心）⋯⋯悠真。
+
+```bgm
+stop
+```
+
+```sfx
+monitor-beep
+```
 
 **旁白**：門開了。房間比澪想像的更普通。白色隔音牆。一張研究床。床邊一架監測儀器，螢幕上的波形很慢、很規律。窗戶有遮光裝置，光被壓得很低。空氣裡有一種消毒水與某種甜膩化學味混在一起的氣味——像醫院，又不像醫院。沒有鐵鏈。沒有科幻艙。沒有任何看起來像囚禁的東西。只有一間被洗得太乾淨的睡眠實驗室。
 
@@ -43,6 +55,10 @@ M zone research room interior, late afternoon, white soundproofed walls, single 
 **朝倉澪** [shocked]：（內心）⋯⋯他醒了。
 
 **旁白**：那雙眼睛比澪記得的更暗。不是因為光線。是因為太累了。像一個人從很深很深的水底往上游，游到水面才發現自己只剩最後一口氣。
+
+```sfx
+mirror-chime
+```
 
 **悠真**：鏡子⋯⋯還在嗎？
 

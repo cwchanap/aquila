@@ -4,6 +4,10 @@
 Tsukuba central police station video room, morning, plain room with large wall-mounted monitor showing video call interface, table with laptop and documents, overhead fluorescent light, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：07:25。筑波中央署。視訊室。牆上的螢幕亮著。長野那一端接通了。畫面裡是一個普通客廳。沙發。毛毯。背後的窗簾拉著。長野的母方阿姨坐在螢幕前。眼圈紅。但清醒。
 
 **旁白**：相原真帆坐在螢幕正對面。桌上攤著一個薄資料夾。三浦在側邊記錄。日下部靠牆站。澪坐在相原旁邊。
@@ -101,6 +105,10 @@ Tsukuba central police station video room, morning, plain room with large wall-m
 **相原真帆**：08:50。公開研究棟。他們會拿出文件。我會問問題。妳——負責記住他是誰。
 
 **朝倉澪** [determined]：（內心）⋯⋯記住他是誰。不是 G07／12。不是反應評估協力者。不是青少年人員類。是朝倉悠真。十五歲。會把交通卡借給朋友。用遊戲邏輯理解世界。我的弟弟。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：08:35。視訊室。螢光燈嗡嗡地響。窗外天已經全亮了。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:50。筑波支援棟外圍。公共道路停車區。", background: Background.Chapter_17_Ch17_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:50。筑波支援棟外圍。公共道路停車區。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部從後座拿出一台有時間紀錄的公務相機。裝上長焦鏡頭。檢查電池。檢查記憶卡。把一張手寫觀察表夾在方向盤上。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪拿起筆記本。翻到空白頁。在頂端寫——", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "普通物流基線。", background: Background.Chapter_17_Ch17_Act5_S0 },
@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪寫——", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:00–09:01。訪客活動。數人。便服。資料夾。手推車。普通訪客。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯基線建好了。通勤、配送、接駁、維護、訪客。六項。全部是星期一早上該有的東西。沒有一個需要攔查。接下來——找不一樣的。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:02。澪的筆停了一下。", background: Background.Chapter_17_Ch17_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:02。澪的筆停了一下。", sfx: "camera-shutter", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遠處。服務口方向。一輛車正在駛入。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰白色。中型。比剛才的檢體物流車大一號。比接駁巴士小一號。車身沒有公司商標。沒有食材供應的名字。沒有清潔公司的標誌。沒有 TKS 維護的字樣。車身是素面的灰白色。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯來了。灰白。中型。素面。沒有商標。和基線上的每一輛都不一樣。食材車有商標。清潔車有商標。檢體車有標誌。TKS 車有字樣。這一輛——什麼都沒有。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -62,13 +62,13 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:05。日下部放下相機。看了一眼手錶。在觀察表上寫——", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:03–09:05。灰白中型搬送車。後門短暫開啟約十秒。外部作業艙可見：折疊輪椅升降板、空輪椅固定架、固定帶、搬送工具、外層門簾。內部封閉艙由不透明內門、固定隔板、第二層隱私簾遮蔽。未看見乘員。未看見人影。未看見擔架。未看見醫療監測設備。前擋風玻璃內側大字路線牌：G07／12、B2。姓名與詳細分類欄折角遮住。長焦連續影片約二十秒。公共道路合法位置。拍攝方向朝服務口。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他記錄了。每一項。看得見的、看不見的，都寫了。升降板、固定架、搬送工具——寫了。乘員、人影、擔架、設備——寫了「未看見」。他沒有把空的寫成有人。他寫的是事實。不是推測。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:06。車緩緩駛入第一道門禁與第二道門禁之間的緩衝區。第一道門在車身後關上。", background: Background.Chapter_17_Ch17_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:06。車緩緩駛入第一道門禁與第二道門禁之間的緩衝區。第一道門在車身後關上。", sfx: "door-seal", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "路線牌仍然在擋風玻璃內側。G07／12。B2。從公共位置仍然可見——但角度開始變了。車在轉向。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:07。第二道門禁打開。車駛入。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "方向——向下。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是駛入地面建築。不是駛入訪客入口。是駛入一條地下服務坡道。坡道入口在兩道門禁之後。從公共位置只能看見坡道入口的邊緣。看不見坡道裡面。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯地下。它往下走了。雙重門禁。然後地下。訪客地圖上有這條坡道嗎？上次記憶裡——沒有。地圖只到 B1。這條坡道不在地圖上。在空白的地方。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:08。車完全消失在坡道入口。第二道門禁關上。", background: Background.Chapter_17_Ch17_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:08。車完全消失在坡道入口。第二道門禁關上。", sfx: "door-seal", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "服務口恢復安靜。剛才的灰白車——不見了。好像從來沒有出現過。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著關上的門禁。手握著筆記本。指節發白。", background: Background.Chapter_17_Ch17_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯G07／12。進去了。第三次星期一。悠真文件裡的碼——被送進了一條地圖沒有的地下路線。我看見了。日下部拍下了。二十秒。連續。完整。這是今天的證據。不是記憶。不是推測。是影像。", background: Background.Chapter_17_Ch17_Act5_S0, portrait: Portrait.AsakuraMio_Determined },

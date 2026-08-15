@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。M 區。工作站。緊急醫療身分模組展開了。第一欄。氏名。", background: Background.Chapter_19_Ch19_Act10_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:05。M 區。工作站。緊急醫療身分模組展開了。第一欄。氏名。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act10_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "朝倉紗英。", background: Background.Chapter_19_Ch19_Act10_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯朝倉紗英。⋯⋯那是。那是媽媽的名字。", background: Background.Chapter_19_Ch19_Act10_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的字沒有動。白底。黑字。一行一行往下展開。", background: Background.Chapter_19_Ch19_Act10_S0 },
@@ -32,15 +32,15 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "可以。依緊急安全程序。設施醫療人員帶路。只到觀察窗。不進入。", background: Background.Chapter_19_Ch19_Act10_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:20。設施醫療人員從走廊另一端走過來。白色制服。沒有名牌。腳步穩。像走過這條走廊很多次。", background: Background.Chapter_19_Ch19_Act10_S0 },
     { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "依緊急安全程序。M-00 觀察窗。不開門。不進入。只記錄可見狀態。請跟我來。", background: Background.Chapter_19_Ch19_Act10_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊。白色。隔音。比悠真那一側更深。更安靜。腳步聲被地板吃掉。螢光燈的頻率更低。像一條被刻意調暗的通道。", background: Background.Chapter_19_Ch19_Act10_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊。白色。隔音。比悠真那一側更深。更安靜。腳步聲被地板吃掉。螢光燈的頻率更低。像一條被刻意調暗的通道。", bgm: null, background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "盡頭。一扇門。沒有門牌。只有一個小窗。強化玻璃。窗戶下方貼著一張標籤。", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "M-00。", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "醫護人員停在門邊。沒有開門。沒有刷卡。他只是站在觀察窗旁邊。", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.MedicalStaff, character: "醫護", dialogue: "透過這裡。不開門。不碰設備。", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走到窗前。", background: Background.Chapter_19_Ch19_Act10_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗後是一個房間。比悠真的房間更安靜。更暗。沒有研究床。是一張長期維生床。床邊的設備比悠真那一側多。監測器。輸注幫浦。神經監測導線。呼吸迴路。全部在跑。全部亮著綠光。", background: Background.Chapter_19_Ch19_Act10_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗後是一個房間。比悠真的房間更安靜。更暗。沒有研究床。是一張長期維生床。床邊的設備比悠真那一側多。監測器。輸注幫浦。神經監測導線。呼吸迴路。全部在跑。全部亮著綠光。", sfx: "monitor-beep", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "床上——一個人。", background: Background.Chapter_19_Ch19_Act10_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "成人女性。長期生命維持。神經監測。胸口緩慢起伏。很慢。像在用最少的力氣呼吸。頭髮比家庭照片裡更長。更灰。散在枕頭上。臉很瘦。皮膚很薄。但——", background: Background.Chapter_19_Ch19_Act10_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "成人女性。長期生命維持。神經監測。胸口緩慢起伏。很慢。像在用最少的力氣呼吸。頭髮比家庭照片裡更長。更灰。散在枕頭上。臉很瘦。皮膚很薄。但——", sfx: "ventilator-cycle", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "左眉側。一道舊疤。", background: Background.Chapter_19_Ch19_Act10_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯左眉。那道疤。小時候她指給我看過。說不痛。說別怕。⋯⋯是她。是媽媽。⋯⋯不。先看名字。再看人。再看名字。", background: Background.Chapter_19_Ch19_Act10_S1, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪退後一步。她不看窗內。她轉身。走回工作站。看螢幕。", background: Background.Chapter_19_Ch19_Act10_S1 },

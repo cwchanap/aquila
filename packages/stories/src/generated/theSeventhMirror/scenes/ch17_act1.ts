@@ -6,8 +6,8 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13。星期一。朝倉家。", background: Background.Chapter_17_Ch17_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。和前兩輪一樣的震動。一樣的時間。一樣的頻率。", background: Background.Chapter_17_Ch17_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13。星期一。朝倉家。", bgm: null, background: Background.Chapter_17_Ch17_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機震動。和前兩輪一樣的震動。一樣的時間。一樣的頻率。", sfx: "phone-vibrate", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第三次。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她張開眼睛。天花板。書桌。窗簾縫透進的灰白光。和第一輪醒來時一樣。和第二輪醒來時一樣。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第三次星期一。06:13。手機震動的方式都一樣。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Base },
@@ -16,9 +16,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯日期對了。第三次。同一個星期一。悠真失蹤第七日。前兩輪的記憶都在。第一輪。第二輪。全部都在。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐起來。視線移到書桌。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小鏡子。在書桌上。背面朝上。", background: Background.Chapter_17_Ch17_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起來。翻到背面。刻痕還在。和前兩輪一樣的刻痕。只能看見部分筆畫。不能單獨還原完整代碼。", background: Background.Chapter_17_Ch17_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起來。翻到背面。刻痕還在。和前兩輪一樣的刻痕。只能看見部分筆畫。不能單獨還原完整代碼。", sfx: "mirror-chime", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯鏡子回來了。第三次。刻痕一樣。只能部分對得上。讀不出完整代碼。記住。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:17。她把鏡子放下。拉開書桌抽屜。拿出筆記本。翻到空白頁。拿起筆。", background: Background.Chapter_17_Ch17_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:17。她把鏡子放下。拉開書桌抽屜。拿出筆記本。翻到空白頁。拿起筆。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在頁面頂端寫——", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第三輪。星期一。06:13。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "下面寫——", background: Background.Chapter_17_Ch17_Act1_S0 },
@@ -41,7 +41,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／12。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯在。G07／12。第二階段預約頁。家庭共享備份裡的舊截圖。清晰。這一次還在。不靠之前的記憶。不靠悠真手機。這是今天的普通證據。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把兩張截圖存進自己的手機。確認解析度。確認日期戳。確認來源標記——家庭共享雲端／家中平板同步備份。", background: Background.Chapter_17_Ch17_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:25。她回到書桌。拿起小鏡子。翻到背面。用手機相機拍下刻痕。開閃光燈。拍三張。選最清晰的一張。", background: Background.Chapter_17_Ch17_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:25。她回到書桌。拿起小鏡子。翻到背面。用手機相機拍下刻痕。開閃光燈。拍三張。選最清晰的一張。", sfx: "camera-shutter", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯鏡背照片。今天拍的。刻痕只能部分對得上。讀不出完整代碼。照片存好。原件——藏回去。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子放回抽屜深處。壓在一疊舊講義下面。關上抽屜。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:27。她打開手機瀏覽器。依記憶中的搜尋路徑，重新取得筑波設施公開頁面。", background: Background.Chapter_17_Ch17_Act1_S0 },
@@ -68,7 +68,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他答應了。沒有多問。這一次的日下部。不記得上一次。可能保有一些碎片。不知道。要試試看。先讓他自己回想。再給半句提示。先說跟案子無關的。再問案子。順序不能反。反了——提示會影響結果。記住。", background: Background.Chapter_17_Ch17_Act1_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機收進口袋。拿起背包。把筆記本、手機充電線、裝著所有截圖的資料夾確認一遍。", background: Background.Chapter_17_Ch17_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:38。她開門。走出去。", background: Background.Chapter_17_Ch17_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外面是第三輪的星期一清晨。和前兩輪一樣的灰白光。一樣的安靜。一樣的空氣溫度。", background: Background.Chapter_17_Ch17_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外面是第三輪的星期一清晨。和前兩輪一樣的灰白光。一樣的安靜。一樣的空氣溫度。", bgm: "grey-city", background: Background.Chapter_17_Ch17_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約七日。", background: Background.Chapter_17_Ch17_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第三次。同樣的清晨。同樣的街道。但這一次不一樣。這一次我有兩次記憶。有八行筆記。有今天的普通證據。有不重演的紀律。今天——把不被承認的記憶轉成警察能保全的證據。今天——不讓千田第三次死在同一條施工通道。", background: Background.Chapter_17_Ch17_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
 ];

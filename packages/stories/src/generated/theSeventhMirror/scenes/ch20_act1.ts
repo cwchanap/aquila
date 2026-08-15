@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:45。M 區。緊急觀察走廊被臨時清空了一側。摺疊桌。筆電。文件箱。像一個倉促搭起來的指揮室。觀察窗的綠光還在背後。呼吸曲線還在跑。", background: Background.Chapter_20_Ch20_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:45。M 區。緊急觀察走廊被臨時清空了一側。摺疊桌。筆電。文件箱。像一個倉促搭起來的指揮室。觀察窗的綠光還在背後。呼吸曲線還在跑。", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在摺疊椅上。三十分鐘的短睡沒有讓她清醒多少。食物還堵在胃裡。不是飽。是身體還不確定自己可以吃東西了。她看著觀察窗。窗後那個人的胸口還在起伏。很慢。", background: Background.Chapter_20_Ch20_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯M-00。基準母體。維持中。朝倉紗英。死了十年。⋯⋯還在呼吸。⋯⋯三十分鐘。只睡了三十分鐘。不夠。但不睡的話身體會垮。日下部說的。他說——先吃。先睡。資料我們看著。⋯⋯他看著了。他看見了。左眉的疤。死亡登記。十年。⋯⋯現在呢。現在誰要來。", background: Background.Chapter_20_Ch20_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的門開了。腳步聲。不是一個人。三個人。第一個走在前面。深色風衣。銀框眼鏡。黑色短髮。步伐穩。不快不慢。像走進過很多次這種走廊。", background: Background.Chapter_20_Ch20_Act1_S0 },

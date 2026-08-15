@@ -60,6 +60,7 @@ describe('cli --report', () => {
             'sfx:notification-beep',
             'sfx:pa-announcement',
             'sfx:phone-vibrate',
+            'sfx:radio-feed',
             'sfx:receiver-static',
             'sfx:sleep-talk-recording',
             'sfx:sync-glitch',
@@ -68,8 +69,9 @@ describe('cli --report', () => {
             'sfx:train-hum',
             'sfx:trolley-wheels',
             'sfx:vending-machine-hum',
+            'sfx:ventilator-cycle',
         ]);
-        expect(report.bgmStops).toHaveLength(16);
+        expect(report.bgmStops).toHaveLength(26);
         expect(report.unused).toEqual([]);
     });
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:45。澪轉向外部醫師。", background: Background.Chapter_19_Ch19_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:45。澪轉向外部醫師。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "把他帶走。現在。", background: Background.Chapter_19_Ch19_Act8_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "不能現在拔線。", background: Background.Chapter_19_Ch19_Act8_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "他活著。他醒了。為什麼不能——", background: Background.Chapter_19_Ch19_Act8_S0, portrait: Portrait.AsakuraMio_Angry },
@@ -32,7 +32,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "這一次，他活著。", background: Background.Chapter_19_Ch19_Act8_S1, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "五個字。沒有解釋。沒有提上一輪。沒有提千田。沒有提令狀。沒有提循環。只有這五個字。", background: Background.Chapter_19_Ch19_Act8_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這一次。他活著。上一輪——悠真在哪裡，她不知道。上一輪她沒有走到這一步。這一次——她走到了。他在裡面。在呼吸。在睡。記得鏡子。", background: Background.Chapter_19_Ch19_Act8_S1, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊很安靜。監測儀的聲音從門縫裡漏出來，很輕。澪坐在地上。日下部靠著牆。兩個人都沒有再說話。", background: Background.Chapter_19_Ch19_Act8_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊很安靜。監測儀的聲音從門縫裡漏出來，很輕。澪坐在地上。日下部靠著牆。兩個人都沒有再說話。", sfx: "monitor-beep", background: Background.Chapter_19_Ch19_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:20。外部醫師從房間裡走出來。他的表情變了。不是剛才那種臨床的專注。是另一種東西。像踩到了一塊以為是平地的東西，發現底下是空的。", background: Background.Chapter_19_Ch19_Act8_S1 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "刺激設定——大部分已停止。封存完成。", background: Background.Chapter_19_Ch19_Act8_S1, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "但有一條輸入——沒有關掉。", background: Background.Chapter_19_Ch19_Act8_S1, portrait: Portrait.ExternalDoctor_Base },

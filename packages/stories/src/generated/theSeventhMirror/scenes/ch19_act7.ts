@@ -6,11 +6,11 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:45。M 區。門牌上只有一行字。", background: Background.Chapter_19_Ch19_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "16:45。M 區。門牌上只有一行字。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／12。", background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門旁的緊急身份欄寫著另一個名字。朝倉悠真。", background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真。", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門開了。房間比澪想像的更普通。白色隔音牆。一張研究床。床邊一架監測儀器，螢幕上的波形很慢、很規律。窗戶有遮光裝置，光被壓得很低。空氣裡有一種消毒水與某種甜膩化學味混在一起的氣味——像醫院，又不像醫院。沒有鐵鏈。沒有科幻艙。沒有任何看起來像囚禁的東西。只有一間被洗得太乾淨的睡眠實驗室。", background: Background.Chapter_19_Ch19_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門開了。房間比澪想像的更普通。白色隔音牆。一張研究床。床邊一架監測儀器，螢幕上的波形很慢、很規律。窗戶有遮光裝置，光被壓得很低。空氣裡有一種消毒水與某種甜膩化學味混在一起的氣味——像醫院，又不像醫院。沒有鐵鏈。沒有科幻艙。沒有任何看起來像囚禁的東西。只有一間被洗得太乾淨的睡眠實驗室。", sfx: "monitor-beep", bgm: null, background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "床上的人比澪記憶中更瘦。臉頰凹下去一點。太陽穴和耳後貼著感測貼片，細線連到床邊的儀器。左手臂有一條靜脈管路，膠帶貼得很整齊。他穿的不是校服，是一件淺灰的無扣上衣，像醫院的那種。", background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯瘦了。八天。瘦了這麼多。", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師已經在床邊。他先看了監測螢幕，再低頭檢查呼吸、管路與貼片。動作很快，沒有浪費時間在表情上。", background: Background.Chapter_19_Ch19_Act7_S0 },
@@ -26,7 +26,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很輕。像水面下有什麼東西浮上來，又差一點沉回去。他的眼睛睜開了一條縫。不是看天花板。是偏過來，看向她。", background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他醒了。", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那雙眼睛比澪記得的更暗。不是因為光線。是因為太累了。像一個人從很深很深的水底往上游，游到水面才發現自己只剩最後一口氣。", background: Background.Chapter_19_Ch19_Act7_S0 },
-    { characterId: CharacterId.AsakuraYuma, character: "悠真", dialogue: "鏡子⋯⋯還在嗎？", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraYuma_Base },
+    { characterId: CharacterId.AsakuraYuma, character: "悠真", dialogue: "鏡子⋯⋯還在嗎？", sfx: "mirror-chime", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraYuma_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聲音很輕。很啞。像很久沒有用過的東西被重新打開。四個字加一個問號。沒有解釋。沒有「姐」。沒有「我在哪」。只有鏡子。", background: Background.Chapter_19_Ch19_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯鏡子。他記得。失蹤前塞給我的那面扭蛋鏡子。背後刻著 G07／12。他記得。", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "在。一直都在。", background: Background.Chapter_19_Ch19_Act7_S0, portrait: Portrait.AsakuraMio_Base },

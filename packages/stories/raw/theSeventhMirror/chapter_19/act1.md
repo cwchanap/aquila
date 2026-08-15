@@ -4,9 +4,21 @@
 Tsukuba central police station, early morning, plain office room with overhead fluorescent light, monitors showing perimeter camera feeds, documents and thermos on desk, cold blue-grey dawn light through window blinds, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
+```sfx
+fluorescent-hum
+```
+
 **旁白**：06:30。筑波中央署。交接室。螢光燈還沒完全暖起來。三台監控螢幕排成一列，每台顯示一個園區外圍出口的夜間紀錄。三浦奈緒子站在最左邊那台前面，手裡拿著夜間勤務日誌。日下部坐在桌角。澪坐在靠牆的摺疊椅上，外套拉鍊拉到下巴。
 
 **旁白**：悠真失蹤第八日。第三輪星期二。窗外天還沒全亮。
+
+```sfx
+phone-vibrate
+```
 
 **朝倉澪** [exhausted]：（內心）⋯⋯一夜。整夜盯著出口。沒有睡。不是不困——是不敢。閉眼就會回到星期一。回到 06:13。回到手機震動的那一下。已經第三輪了。身體記得每一輪的疲憊，但時間不會因為我累就快轉。
 

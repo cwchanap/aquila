@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:45。朝倉家附近。二十四小時便利店。", background: Background.Chapter_17_Ch17_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:45。朝倉家附近。二十四小時便利店。", bgm: null, background: Background.Chapter_17_Ch17_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在靠窗的位置。面前放著一杯沒打開的礦泉水。手機螢幕朝下扣在桌上。", background: Background.Chapter_17_Ch17_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門推開。日下部悟走進來。深色西裝。領帶鬆了。眼下有青黑色。清晨勤務的疲態。他掃了一眼店內。看見澪。走過來。拉開對面的椅子坐下。", background: Background.Chapter_17_Ch17_Act2_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯說吧。五分鐘能驗證什麼。", background: Background.Chapter_17_Ch17_Act2_S0, portrait: Portrait.KusakubeSatoru_Base },
@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的嘴張開。聲音從喉嚨裡出來。不是思考過的聲音。是被什麼東西推出來的。", background: Background.Chapter_17_Ch17_Act2_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯沒有第四排。", background: Background.Chapter_17_Ch17_Act2_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他停住了。", background: Background.Chapter_17_Ch17_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "便利店裡很安靜。冷櫃的馬達在嗡。窗外有一輛車經過。然後又安靜了。", background: Background.Chapter_17_Ch17_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "便利店裡很安靜。冷櫃的馬達在嗡。窗外有一輛車經過。然後又安靜了。", sfx: "vending-machine-hum", background: Background.Chapter_17_Ch17_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部看著澪。眼睛裡有東西在動。不是憤怒。不是理解。是一種——不確定自己在哪裡的表情。", background: Background.Chapter_17_Ch17_Act2_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯我為什麼會說這個。", background: Background.Chapter_17_Ch17_Act2_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "因為你見過那台販賣機。但不是這一輪見過的。", background: Background.Chapter_17_Ch17_Act2_S0, portrait: Portrait.AsakuraMio_Base },

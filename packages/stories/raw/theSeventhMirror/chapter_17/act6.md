@@ -4,9 +4,17 @@
 same public roadside parking area outside Tsukuba research support building, overcast morning light, rear service gate now closed after vehicle entered underground ramp, tension in still air, muted cool grey-green palette, visual-novel background art, medium shot from passenger seat
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：09:08。門禁關上。車消失了。
 
 **旁白**：澪的手已經在車門把上。
+
+```bgm
+tension-pulse
+```
 
 **朝倉澪**：攔它。
 
@@ -35,6 +43,10 @@ same public roadside parking area outside Tsukuba research support building, ove
 **朝倉澪**：⋯⋯
 
 **日下部悟**：回來。坐下。聽我說完。然後妳再決定要不要跑。
+
+```bgm
+sleepless-vigil
+```
 
 **旁白**：09:09。澪慢慢把腳收回車裡。關上車門。手還在發抖。但她坐下了。
 
@@ -119,6 +131,10 @@ same public roadside parking area outside Tsukuba research support building, ove
 **日下部悟**：空的。對。空的可以解釋為——今天沒有載人。今天載的是設備。空的固定架——是因為人還沒上車。或者——今天不需要。或者——這輛車本來就兼運。今天這一趟——載的是設備。公開業務寫的是搬送。車體有載人設備。兩者放在一起——多用途。合法。合理。夠用。
 
 **朝倉澪** [determined]：（內心）⋯⋯他說得對。多用途。合法。合理。每一項都能解釋升降板和固定架。普通解釋——不需要陰謀。不需要悠真。但普通解釋也不能排除悠真。多用途——可以載設備。也可以載人。今天載的是什麼——看不見。內部封閉艙——三層遮蔽。看得見的是設備。看不見的是裡面。普通解釋夠用。但不等於真相。
+
+```sfx
+notification-beep
+```
 
 **旁白**：09:18。日下部的手機震動。一條訊息。
 

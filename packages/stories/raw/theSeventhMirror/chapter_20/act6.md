@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, designated expert data terminal / temporary command room, deep night, cold fluorescent lighting, multiple monitors showing signal analysis data, folding tables with documents, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：01:10。臨時指揮室。不是檔案室。是走廊另一端那間被清出來的房間。
 
 **旁白**：摺疊桌。三台筆電。一台終端。指定專家的設備接著警方保全的資料碟。螢幕上跑的是函館舊觀測站的原始訊號分析。

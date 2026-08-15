@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:50。B2 外。筑波中央署。三浦的筆電上顯示內部轉送紀錄。逐欄。逐項。", background: Background.Chapter_19_Ch19_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:50。B2 外。筑波中央署。三浦的筆電上顯示內部轉送紀錄。逐欄。逐項。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act5_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "內部轉送紀錄。22:17。出發——B2。經路——內部服務電梯。接收——關聯法人。目的區——M。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "沒有外部車輛。沒有園區出口紀錄。夜間外部監看——確認無車輛帶人離開。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "責任欄——已更新為「已轉送」。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "扣押資料範圍。同意、轉送、給藥及刺激紀錄。直接相關紙本及電子資料。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "不包含——整個園區。全部 G07 名單。其他房間。與悠真安全無直接關係的核心系統。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部把草案逐頁核對。簽名。蓋章。三浦送往檢察方面。檢察聯絡法院值班程序。", background: Background.Chapter_19_Ch19_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:15。三浦的手機響了。筑波端傳來最新監控。", background: Background.Chapter_19_Ch19_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:15。三浦的手機響了。筑波端傳來最新監控。", sfx: "notification-beep", background: Background.Chapter_19_Ch19_Act5_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "控制方反應。門禁收緊。M 區責任欄——再次更新。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "G07／12 狀態碼——試圖被改寫。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "⋯⋯改寫。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
@@ -47,7 +47,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "收到。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "電話掛斷。千田的說明很短。他從未進入深層。他只看過圖。他知道的是建築結構——不是裡面有什麼。", background: Background.Chapter_19_Ch19_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯跨棟防火通道。不是秘密通道。是建築法規要求的逃生路徑。被用來連接兩個法人區域。服務電梯公開面板只到 B2。M 區需要授權。雙法人授權。單一法人打不開。——難怪高城說「不由本法人管理」。不是推卸。是真的。B2 的法人打不開 M 區的門。需要兩個法人一起授權。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:50。三浦的手機響了。檢察方面回覆。法院值班裁判官——核發限定搜索／扣押許可狀。", background: Background.Chapter_19_Ch19_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:50。三浦的手機響了。檢察方面回覆。法院值班裁判官——核發限定搜索／扣押許可狀。", sfx: "notification-beep", background: Background.Chapter_19_Ch19_Act5_S0 },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "許可狀——核發。限定範圍。B2 服務電梯連接通道。M 區 G07／12 指定房間。直接工作站。同意、轉送、給藥及刺激紀錄。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "什麼時候可以執行？", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.MiuraNaoko, character: "三浦奈緒子", dialogue: "令狀提示後即可。建議——15:30。配置搜索與醫療隊伍。", background: Background.Chapter_19_Ch19_Act5_S0, portrait: Portrait.MiuraNaoko_Base },

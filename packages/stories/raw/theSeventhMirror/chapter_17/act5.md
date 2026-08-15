@@ -4,6 +4,10 @@
 public roadside parking area outside Tsukuba research support building, overcast morning light, low grey institutional buildings behind chain-link fence and hedge, public walkway with legal sightline to rear service gate, muted cool grey-green palette, visual-novel background art, wide shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：08:50。筑波支援棟外圍。公共道路停車區。
 
 **旁白**：日下部從後座拿出一台有時間紀錄的公務相機。裝上長焦鏡頭。檢查電池。檢查記憶卡。把一張手寫觀察表夾在方向盤上。
@@ -49,6 +53,10 @@ public roadside parking area outside Tsukuba research support building, overcast
 **旁白**：09:00–09:01。訪客活動。數人。便服。資料夾。手推車。普通訪客。
 
 **朝倉澪** [determined]：（內心）⋯⋯基線建好了。通勤、配送、接駁、維護、訪客。六項。全部是星期一早上該有的東西。沒有一個需要攔查。接下來——找不一樣的。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：09:02。澪的筆停了一下。
 
@@ -116,6 +124,10 @@ public roadside parking area outside Tsukuba research support building, overcast
 
 **朝倉澪** [determined]：（內心）⋯⋯他記錄了。每一項。看得見的、看不見的，都寫了。升降板、固定架、搬送工具——寫了。乘員、人影、擔架、設備——寫了「未看見」。他沒有把空的寫成有人。他寫的是事實。不是推測。
 
+```sfx
+door-seal
+```
+
 **旁白**：09:06。車緩緩駛入第一道門禁與第二道門禁之間的緩衝區。第一道門在車身後關上。
 
 **旁白**：路線牌仍然在擋風玻璃內側。G07／12。B2。從公共位置仍然可見——但角度開始變了。車在轉向。
@@ -127,6 +139,10 @@ public roadside parking area outside Tsukuba research support building, overcast
 **旁白**：不是駛入地面建築。不是駛入訪客入口。是駛入一條地下服務坡道。坡道入口在兩道門禁之後。從公共位置只能看見坡道入口的邊緣。看不見坡道裡面。
 
 **朝倉澪** [determined]：（內心）⋯⋯地下。它往下走了。雙重門禁。然後地下。訪客地圖上有這條坡道嗎？上次記憶裡——沒有。地圖只到 B1。這條坡道不在地圖上。在空白的地方。
+
+```sfx
+door-seal
+```
 
 **旁白**：09:08。車完全消失在坡道入口。第二道門禁關上。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:25。筑波中央署。視訊室。牆上的螢幕亮著。長野那一端接通了。畫面裡是一個普通客廳。沙發。毛毯。背後的窗簾拉著。長野的母方阿姨坐在螢幕前。眼圈紅。但清醒。", background: Background.Chapter_19_Ch19_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:25。筑波中央署。視訊室。牆上的螢幕亮著。長野那一端接通了。畫面裡是一個普通客廳。沙發。毛毯。背後的窗簾拉著。長野的母方阿姨坐在螢幕前。眼圈紅。但清醒。", bgm: "institutional-drone", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "相原真帆坐在螢幕正對面。桌上攤著一個薄資料夾。三浦在側邊記錄。日下部靠牆站。澪坐在相原旁邊。", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.AharaMaho, character: "相原真帆", dialogue: "身分確認。未成年後見人。長野——母方阿姨。家庭裁判所選任。法定代理人。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.AharaMaho_Base },
     { characterId: CharacterId.NaganoAunt, character: "長野的母方阿姨", dialogue: "⋯⋯是。我是。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.NaganoAunt_Base },
@@ -55,6 +55,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "相原站起來。拿起資料夾。看了澪一眼。", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.AharaMaho, character: "相原真帆", dialogue: "08:50。公開研究棟。他們會拿出文件。我會問問題。妳——負責記住他是誰。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.AharaMaho_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯記住他是誰。不是 G07／12。不是反應評估協力者。不是青少年人員類。是朝倉悠真。十五歲。會把交通卡借給朋友。用遊戲邏輯理解世界。我的弟弟。", background: Background.Chapter_19_Ch19_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:35。視訊室。螢光燈嗡嗡地響。窗外天已經全亮了。", background: Background.Chapter_19_Ch19_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:35。視訊室。螢光燈嗡嗡地響。窗外天已經全亮了。", sfx: "fluorescent-hum", background: Background.Chapter_19_Ch19_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距下一次星期一 06:13——約五日二十一小時三十八分鐘。", background: Background.Chapter_19_Ch19_Act2_S0 },
 ];

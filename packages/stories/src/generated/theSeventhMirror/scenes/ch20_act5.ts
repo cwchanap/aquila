@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。同一間檔案室。鐵櫃的封條剛貼回去。法律顧問翻到目錄下一頁。凪原沒有離開。她站在原地。像從走進這間房間到現在，她的腳就沒有挪過位置。", background: Background.Chapter_20_Ch20_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。同一間檔案室。鐵櫃的封條剛貼回去。法律顧問翻到目錄下一頁。凪原沒有離開。她站在原地。像從走進這間房間到現在，她的腳就沒有挪過位置。", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "指定專家的終端還亮著。日下部靠在牆上。他換了一個姿勢——左肩抵著牆面。不是放鬆。是身體在告訴他已經坐太久了。", background: Background.Chapter_20_Ch20_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的水杯空了。她沒有去倒。她看著凪原。", background: Background.Chapter_20_Ch20_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯她要說媽媽為什麼特殊了。⋯⋯為什麼是媽媽。為什麼不是其他十六個人。為什麼只有她能拼出完整的海。⋯⋯聽。先聽。", background: Background.Chapter_20_Ch20_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },

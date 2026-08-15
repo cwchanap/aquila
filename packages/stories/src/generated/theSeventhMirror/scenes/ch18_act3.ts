@@ -6,11 +6,11 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:00。公益通報者支援機構。面談室。", background: Background.Chapter_18_Ch18_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:00。公益通報者支援機構。面談室。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "場地是千田選的。公共建築。有監視器。兩個出口。公益通報律師和支援人員在場。一名便衣刑警——日下部。不在警署。不讓 TKS 的人進來。", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在日下部旁邊。不是旁聽席。是桌子這一側。千田要求只見一名刑警——但日下部帶了澪。以失蹤未成年人家屬的身分。千田沒有拒絕。", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他沒有拒絕我。他要求一名刑警。日下部是那一名。我是家屬。他看見我的時候——沒有說不行。他只看了一眼。然後讓我坐下。", background: Background.Chapter_18_Ch18_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:03。千田浩介坐在桌子對面。", background: Background.Chapter_18_Ch18_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:03。千田浩介坐在桌子對面。", bgm: null, background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著他。", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她準備了兩輪的問題。寫在筆記本裡。第一輪——父親舊案、TKS 事故佇列、被刪除的故障票。第二輪——G07／12、小鏡子、家屬聯絡模板、離線載體。", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她張開嘴。", background: Background.Chapter_18_Ch18_Act3_S0 },
@@ -55,7 +55,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田沉默了幾秒。他的手仍然在膝蓋上。離肋下很遠。", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "⋯⋯對。", background: Background.Chapter_18_Ch18_Act3_S0, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他承認了。他排程了 18:42。他排程了那則訊息。訊息還沒到。現在是 15:15。訊息要到 18:42 才會到。但他已經排好了。他已經——在我不知道他排程的情況下——排好了和我的封存預測完全一樣的時間和內容。這不是下午才串通的。他早就排好了。", background: Background.Chapter_18_Ch18_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:22。千田把那張紙推回澪這一側。他的表情慢慢收回去了。不是恢復平靜。是重新把東西收好。像剛才那一瞬間的失控從未發生過。", background: Background.Chapter_18_Ch18_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:22。千田把那張紙推回澪這一側。他的表情慢慢收回去了。不是恢復平靜。是重新把東西收好。像剛才那一瞬間的失控從未發生過。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但澪看見了。她看見他第一次失去冷靜。在 18:42 和第七車上面。", background: Background.Chapter_18_Ch18_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他看見 18:42 的時候——不是看見一個時間。是看見一個他不該已經排好的東西，出現在別人手裡。他排程了。我知道他排程了。他不知道我知道。現在——他知道了。這就是他失控的原因。不是恐懼。是——被看見了。", background: Background.Chapter_18_Ch18_Act3_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:30。面談室很安靜。監視器的綠燈亮著。兩個出口的標誌發著柔和的光。律師在封存文件。支援人員在記錄程序。日下部沒有說話。他在聽。在記。", background: Background.Chapter_18_Ch18_Act3_S0 },

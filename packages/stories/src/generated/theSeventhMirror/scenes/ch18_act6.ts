@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:30。保護地點。夜已經完全暗了。", background: Background.Chapter_18_Ch18_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:30。保護地點。夜已經完全暗了。", bgm: "tension-pulse", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部坐在門邊。手機調成震動。耳機線從口袋延伸到一耳。便衣從灣岸施工通道周邊持續回報。日下部聽一句，在筆記本上寫一行。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在對面。能看見日下部的筆。能聽見他偶爾低聲回覆。聽不見便衣的聲音。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我在這裡。施工通道那邊——便衣在看。日下部在記。我聽不到便衣的聲音。只能看見日下部的筆。等他寫完一行——我就知道又多了一項。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -20,7 +20,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "為什麼不靠近？", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "太近——那個人不會出現。過多警力——他會轉身走。讓他進來。讓他做完。讓他離開。然後——順著鏈追。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯不攔截。不逮捕。讓他進來。讓他做完。讓他離開。然後追。前兩輪——千田在 21:04 被襲擊。這一次千田不在。那個人來了——等不到千田。他會怎麼做？他會查看。確認。然後——處理掉那件東西。然後離開。警方不攔他。只記。只追。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:38。日下部坐直了。手機震動。他接聽。聽了十秒。", background: Background.Chapter_18_Ch18_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:38。日下部坐直了。手機震動。他接聽。聽了十秒。", sfx: "notification-beep", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "20:40 窗口。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他寫——", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:40。一件薄而長的密封物被送入交接流程。外包裝——防靜電袋。安全封套。便衣只能看見輪廓與交接標籤一角。看不見內容。", background: Background.Chapter_18_Ch18_Act6_S0 },
@@ -58,7 +58,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "還有呢？", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "一項法人縮寫。代領臨時卡的承包商——與筑波搬送委託方相同的法人縮寫。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯筑波。同一個法人縮寫。代領臨時卡的承包商和筑波搬送委託方——有交叉。同一個法人。同一條鏈。筑波那邊的搬送——和今晚施工通道的臨時卡——連在一起了。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:20。日下部的手機響了。便衣傳來幾張照片。低解析。遠距離。從外部拍攝。", background: Background.Chapter_18_Ch18_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:20。日下部的手機響了。便衣傳來幾張照片。低解析。遠距離。從外部拍攝。", sfx: "notification-beep", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部把手機轉向澪。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一張——施工側門。一個人影。制服。口罩。帽子。工具箱。看不清臉。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二張——交接區附近。同一個人。側身。低頭。手在操作短訊裝置。", background: Background.Chapter_18_Ch18_Act6_S0 },
@@ -80,7 +80,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "幾秒。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "第二個時間點命中了。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯命中了。兩個。18:42。21:04。兩個時間點。兩項封存預測。全部命中。07:15 寫的。18:42 收到的。21:04 出現的。全部命中。", background: Background.Chapter_18_Ch18_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:35。房間裡安靜了。", background: Background.Chapter_18_Ch18_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:35。房間裡安靜了。", bgm: null, background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田坐在角落。聽見了「命中」兩個字。沒有表情變化。他點了一下頭。像在確認一項測試結果。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "律師在筆記上寫下時間。封存程序完成。兩項預測均命中。排程憑證早於封存時間。律師副本已封存。", background: Background.Chapter_18_Ch18_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "21:40。日下部合上筆記本。看著澪。", background: Background.Chapter_18_Ch18_Act6_S0 },

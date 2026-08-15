@@ -4,6 +4,10 @@
 M zone research room interior, late afternoon shifting to early evening, medical staff around bed, monitoring equipment, IV stand, police officer at doorway, child guidance worker with tablet, sterile clinical palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：17:45。澪轉向外部醫師。
 
 **朝倉澪** [determined]：把他帶走。現在。
@@ -59,6 +63,10 @@ M zone white soundproofed corridor exterior, early evening, empty hallway, close
 **旁白**：五個字。沒有解釋。沒有提上一輪。沒有提千田。沒有提令狀。沒有提循環。只有這五個字。
 
 **朝倉澪** [sad]：（內心）⋯⋯這一次。他活著。上一輪——悠真在哪裡，她不知道。上一輪她沒有走到這一步。這一次——她走到了。他在裡面。在呼吸。在睡。記得鏡子。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：走廊很安靜。監測儀的聲音從門縫裡漏出來，很輕。澪坐在地上。日下部靠著牆。兩個人都沒有再說話。
 

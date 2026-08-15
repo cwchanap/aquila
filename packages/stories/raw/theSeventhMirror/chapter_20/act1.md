@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, emergency observation corridor converted to temporary command room, evening, cold fluorescent lighting, folding tables with laptops and document boxes, reinforced glass observation window in background, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：19:45。M 區。緊急觀察走廊被臨時清空了一側。摺疊桌。筆電。文件箱。像一個倉促搭起來的指揮室。觀察窗的綠光還在背後。呼吸曲線還在跑。
 
 **旁白**：澪坐在摺疊椅上。三十分鐘的短睡沒有讓她清醒多少。食物還堵在胃裡。不是飽。是身體還不確定自己可以吃東西了。她看著觀察窗。窗後那個人的胸口還在起伏。很慢。

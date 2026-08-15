@@ -214,6 +214,18 @@
       "type": "sfx",
       "prompt": "Fluorescent tube hum, office and archive texture layer with ignition and off registers, seamless loop",
       "durationMs": 20000
+    },
+    {
+      "key": "radio-feed",
+      "type": "sfx",
+      "prompt": "Handheld radio and speaker voice with a persistent signal floor, multi-segment remote feed, seamless loop",
+      "durationMs": 20000
+    },
+    {
+      "key": "ventilator-cycle",
+      "type": "sfx",
+      "prompt": "Life-support breathing-loop rhythm, slow steady cycle with a thin speaking-valve voice variant, seamless loop",
+      "durationMs": 15000
     }
   ]
 }

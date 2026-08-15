@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:10。臨時指揮室。不是檔案室。是走廊另一端那間被清出來的房間。", background: Background.Chapter_20_Ch20_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:10。臨時指揮室。不是檔案室。是走廊另一端那間被清出來的房間。", bgm: "institutional-drone", background: Background.Chapter_20_Ch20_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "摺疊桌。三台筆電。一台終端。指定專家的設備接著警方保全的資料碟。螢幕上跑的是函館舊觀測站的原始訊號分析。", background: Background.Chapter_20_Ch20_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "技術資料由日下部、指定專家、外部醫師和檢察方閱覽。澪只看與母親直接相關的節錄及一般語言摘要。", background: Background.Chapter_20_Ch20_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "完整技術數據——她不看。她看不懂。也不需要看懂。", background: Background.Chapter_20_Ch20_Act6_S0 },

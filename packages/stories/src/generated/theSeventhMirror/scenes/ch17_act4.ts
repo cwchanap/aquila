@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:40。首都高速。", background: Background.Chapter_17_Ch17_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:40。首都高速。", bgm: "sleepless-vigil", background: Background.Chapter_17_Ch17_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部的車是一輛沒有標記的警用轎車。深灰色。沒有警燈。沒有警笛。車裡只有儀表板的冷光和窗外不斷流過的混凝土隔音牆。", background: Background.Chapter_17_Ch17_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第三輪。第三次走這條路。前兩輪沒有來過筑波。前兩輪在這個時間——還在查文件。還在等家屬。還不知道後方服務口的存在。今天不一樣。今天在車上。今天往筑波去。", background: Background.Chapter_17_Ch17_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部開車。澪坐在副駕。背包放在腳邊。筆記本在膝上。手機螢幕暗著。", background: Background.Chapter_17_Ch17_Act4_S0 },
@@ -60,7 +60,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "不去接待處。不找管理層。不表明身份。", background: Background.Chapter_17_Ch17_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "我知道。一問——他們就知道有人在查。今天能拍的東西就拍不到了。明天能查的東西就查不到了。不接觸。只看。", background: Background.Chapter_17_Ch17_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他懂。不是因為我解釋了。是因為他自己就是刑警。他知道接觸等於驚動。驚動等於路線改道。前兩輪——沒有人接觸過筑波。沒有人驚動過。所以這條路還在。今天——也不能驚動。讓路留著。", background: Background.Chapter_17_Ch17_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:36。常磐道。澪看了一眼手機。一條訊息。日下部的——他剛用車載藍牙發出去的。", background: Background.Chapter_17_Ch17_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:36。常磐道。澪看了一眼手機。一條訊息。日下部的——他剛用車載藍牙發出去的。", sfx: "notification-beep", background: Background.Chapter_17_Ch17_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "茨城縣警聯絡窗口。確認便衣聯絡人正在前往研究區外圍。預計 09:15 前後抵達。不進入園區。不表明身份。只在公共道路待命。", background: Background.Chapter_17_Ch17_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "茨城那邊的人——09:15 左右到。比我們晚。他不知道循環。不知道 G07。只知道警視廳有一宗失蹤少年公開研究關聯的補充查證，需要外圍程序見證。", background: Background.Chapter_17_Ch17_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "夠了。", background: Background.Chapter_17_Ch17_Act4_S0, portrait: Portrait.AsakuraMio_Base },

@@ -4,6 +4,10 @@
 unmarked police car interior, early Monday morning, grey dashboard, windshield showing convenience store parking lot and grey dawn sky, two figures in front seats, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：07:15。日下部的車。停在便利店旁的停車格。引擎沒熄。
 
 **旁白**：澪坐在副駕。筆記本攤在膝上。筆拿在手裡。日下部在駕駛座。側身朝著她。車窗外的天色又亮了一格。

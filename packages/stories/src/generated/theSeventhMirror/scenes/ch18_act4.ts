@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:45。同一間面談室。", background: Background.Chapter_18_Ch18_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:45。同一間面談室。", bgm: "institutional-drone", background: Background.Chapter_18_Ch18_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那張紙在澪這一側。千田的視線還停在上面。18:42。21:04。21:17。第七車。「那件東西」。", background: Background.Chapter_18_Ch18_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的手離開桌面。放回膝上。呼吸慢了一拍。再慢一拍。然後恢復了。", background: Background.Chapter_18_Ch18_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他冷靜下來了。剛才那一瞬間——千田第一次失去冷靜。看見那張紙的時候。前兩輪他從來沒有這樣過。第一次他在電車上瀕死。第二次他在施工通道被刺。都沒有像剛才那樣——像被什麼擊中。但現在他找回來了。工程師的節奏。", background: Background.Chapter_18_Ch18_Act4_S0, portrait: Portrait.AsakuraMio_Determined },

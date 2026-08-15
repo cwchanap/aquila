@@ -4,6 +4,10 @@
 public whistleblower support interview room, neutral institutional interior, fluorescent ceiling lighting, plain table and chairs, wall-mounted security camera with green indicator light, two visible exits, muted cool grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:45。同一間面談室。
 
 **旁白**：那張紙在澪這一側。千田的視線還停在上面。18:42。21:04。21:17。第七車。「那件東西」。

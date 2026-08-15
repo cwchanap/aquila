@@ -4,6 +4,10 @@
 Tsukuba research facility M-zone, temporary command room in emergency observation corridor, late evening, cold fluorescent lighting, folding tables with document boxes and laptops, reinforced glass observation window in background with dim green monitor glow, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：21:35。臨時指揮室。回到走廊這一側。摺疊桌。文件箱。觀察窗的綠光。呼吸曲線還在跑。凪原坐下了。第一次。她坐在桌對面的摺疊椅上。背挺直。手放在膝蓋上。法律顧問站在她身後。醫療協調人去了 M-00 工作站那側。
 
 **旁白**：日下部把一份文件放到桌上。不是凪原帶來的。是警方已經保全的。

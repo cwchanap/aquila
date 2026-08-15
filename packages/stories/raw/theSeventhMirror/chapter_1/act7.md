@@ -4,6 +4,10 @@
 Wangan New Transit elevated platform at night, cold blue lighting, glass partition walls reflecting Tokyo Bay lights in distance, sparse waiting passengers, electronic departure board glowing, automated driverless train approaching through elevated track, moody cinematic visual-novel background art, wide establishing shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：灣岸新交通的月台比澪想像中冷。
 
 **旁白**：不是那種開了冷氣的冷，是海風從軌道盡頭灌進來的那種。臨海線的車站架在半空，玻璃隔牆外面就是東京灣的方向，夜裡看過去，遠處的燈像撒在黑水面上的碎屑，亮一下、暗一下，沒有規律。
@@ -16,6 +20,10 @@ Wangan New Transit elevated platform at night, cold blue lighting, glass partiti
 
 **旁白**：她把手插進外套口袋，指尖碰到小鏡子的邊緣。涼的。她沒有拿出來，只是確認它還在。
 
+```sfx
+pa-announcement
+```
+
 **旁白**：月台廣播響了。
 
 **廣播**：現在進行防災警報測試。請乘客保持冷靜。
@@ -25,6 +33,10 @@ Wangan New Transit elevated platform at night, cold blue lighting, glass partiti
 **旁白**：廣播結束。
 
 **旁白**：安靜了幾秒。
+
+```sfx
+notification-beep
+```
 
 **旁白**：然後澪的手機才震了一下。
 
@@ -40,6 +52,10 @@ Wangan New Transit elevated platform at night, cold blue lighting, glass partiti
 
 **旁白**：21:16。
 
+```sfx
+train-hum
+```
+
 **旁白**：軌道盡頭傳來一陣低頻的嗡鳴，像某個巨大的東西正在慢慢醒過來。玻璃隔牆上映出一條光的帶子，從遠處往這邊移。
 
 **旁白**：車來了。
@@ -53,6 +69,10 @@ Wangan New Transit elevated platform at night, cold blue lighting, glass partiti
 **旁白**：第七車。
 
 **旁白**：就停在她面前。
+
+```sfx
+train-doors
+```
 
 **旁白**：車門打開。
 
@@ -73,6 +93,10 @@ Wangan New Transit elevated platform at night, cold blue lighting, glass partiti
 **朝倉澪** [determined]：(內心)⋯⋯
 
 **旁白**：她深吸了一口氣。海風的味道混著車廂裡那種金屬和塑膠的氣息，涼涼地灌進肺裡。
+
+```bgm
+carriage-drone
+```
 
 **旁白**：她踏進車廂。
 

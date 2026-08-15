@@ -4,6 +4,10 @@
 small Tokyo apartment room at night, desk lamp the only light, scattered sticky notes and notebooks, a small hand mirror on the desk near a missing-person timeline, cold blue light from window, visual-novel background art, medium shot
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：02:30。她進門之後沒有開大燈。她開了書桌上的那盞檯燈。燈光是暖黃色的，但房間太暗，暖黃色只夠照亮桌面一小圈。其他地方都是黑的。
 
 **旁白**：她做的第一件事不是脫外套。是拉開斜背包的拉鍊。

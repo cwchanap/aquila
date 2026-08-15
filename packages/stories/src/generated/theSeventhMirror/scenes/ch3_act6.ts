@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凌晨。她不確定幾點。手機在她接回來之後就沒有再亮過。她不想看時間。時間現在對她沒有用——她不在等什麼，也沒有什麼在等她。", background: Background.Chapter_3_Ch3_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凌晨。她不確定幾點。手機在她接回來之後就沒有再亮過。她不想看時間。時間現在對她沒有用——她不在等什麼，也沒有什麼在等她。", bgm: "institutional-drone", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部和年輕警員在問話結束後離開了房間。她被留在裡面坐了十分鐘左右。然後一個她沒見過的警員進來，遞給她一張紙。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "近期不要離開東京。需要離開，先通知我們。", background: Background.Chapter_3_Ch3_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她接過那張紙。上面印著幾行字。她沒有逐行讀。她看見了幾個關鍵詞——「重大參考人」「配合再次問話」「手機資料已備份不得刪除相關訊息」「染血外套暫時作為證物保全」「銀色外殼將送鑑定」「千田浩介死亡已確認死因仍待鑑定」。", background: Background.Chapter_3_Ch3_Act6_S0 },
@@ -55,7 +55,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不知道技術班會不會抽出完整的東西。她不知道原始檔裡有沒有中央流少掉的那一段。她不知道自己能不能碰到那份檔案。她只知道——如果那份檔案存在，如果它記得中央流忘記的事，那它就是唯一能證明她版本的地方。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有決定要闖進有明車輛基地。她還沒有。她只是把這個地名存進了腦子裡。和 T、和 7、和金色接點、和血痕起點、和「不要救東京」放在一起。放在同一個越來越滿的、她還沒有時間整理的清單裡。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她繼續走。", background: Background.Chapter_3_Ch3_Act6_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的門開著。外面是深夜的街道。冷風灌進來，帶著混凝土和瀝青的味道。她走出去的那一刻，冷空氣打在她臉上，像一盆水潑過來。", background: Background.Chapter_3_Ch3_Act6_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "走廊盡頭的門開著。外面是深夜的街道。冷風灌進來，帶著混凝土和瀝青的味道。她走出去的那一刻，冷空氣打在她臉上，像一盆水潑過來。", bgm: "night-street", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在警署外面的台階上。身上穿著站務給的那件灰色薄外套。斜背包掛在肩上。手機在外側口袋裡。小鏡子在內層的小布套裡。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她什麼都沒有。她只有記憶、一台被備份過的手機、和一面還沒有被任何人收走的鏡子。", background: Background.Chapter_3_Ch3_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "身後傳來腳步聲。她沒有回頭。她知道是誰。", background: Background.Chapter_3_Ch3_Act6_S1 },

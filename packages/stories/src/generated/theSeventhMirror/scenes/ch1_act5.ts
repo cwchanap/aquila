@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "研究中心的東京分部在一棟普通的商業大樓二樓。", background: Background.Chapter_1_Ch1_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "研究中心的東京分部在一棟普通的商業大樓二樓。", bgm: "institutional-drone", background: Background.Chapter_1_Ch1_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "玻璃門，自動開合。門上貼著一張淡藍色的標誌——像一彎月牙，又像一段拉平的睡眠波形，線條很細，不仔細看會以為只是裝飾。", background: Background.Chapter_1_Ch1_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)不像醫院。比醫院乾淨。比醫院安靜。比醫院更讓人不舒服。", background: Background.Chapter_1_Ch1_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進去。日下部說過別一個人來。但她沒有別的選擇——琴音下午有課，監護人在長野，警方不願意出公文。能來的只有她自己。", background: Background.Chapter_1_Ch1_Act5_S0 },

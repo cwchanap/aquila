@@ -4,6 +4,10 @@
 small Tokyo apartment room, morning light through curtains, desk covered with sticky notes and open laptop, phone propped against a cup, a young woman typing with one hand and scrolling with the other, visual-novel background art, medium shot
 ```
 
+```bgm
+dawn-apartment
+```
+
 **旁白**：星期三。她從早上開始搜千田浩介。
 
 **旁白**：搜尋引擎的結果很少。第一頁全是新聞——「灣岸新交通第七車死亡事件」「車內男性死亡」「系統工程相關男性倒臥車廂」。沒有維基百科。沒有公司頁面。沒有社群帳號。沒有演講影片。沒有論文。只有新聞。而新聞裡的千田浩介只有一個身分——「系統工程相關男性」。

@@ -4,6 +4,10 @@
 Tokyo Bay waterfront promenade at pre-dawn, concrete walkway overlooking dark water, distant artificial island silhouette, cold blue-grey light, empty sky, a young woman alone leaning on railing with crossbody bag, visual-novel background art, wide establishing shot
 ```
 
+```bgm
+bay-waterfront
+```
+
 **旁白**：星期一。清晨五點四十幾分。灣岸。
 
 **旁白**：她比六點早到了。計程車把她放在步道入口。她沿著欄杆走，走到能看見東京灣人工島方向的位置。風從海面吹上來，帶著金屬和鹹水的味道。很冷。她把外套拉鏈拉到最高。
@@ -20,15 +24,27 @@ Tokyo Bay waterfront promenade at pre-dawn, concrete walkway overlooking dark wa
 
 **旁白**：06:12。
 
+```sfx
+pa-announcement
+```
+
 **旁白**：街頭螢幕先動了。對面大樓外牆的公共顯示器從廣告畫面切換成藍底白字。同一秒，月台看板也切換了。車站廣播響起來——不是平常的進站提示，是那種平的、沒有起伏的防災測試語調。
 
 **廣播**：現在進行防災同步測試。請各位市民配合。
 
 **旁白**：澪看著對面大樓的螢幕。藍底白字。穩定。同步。所有公共螢幕同時切換，像被同一隻手按下去的。
 
+```bgm
+tension-pulse
+```
+
 **旁白**：然後她等自己的手機。
 
 **旁白**：一秒。兩秒。三秒。⋯⋯七秒。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機震了。
 
@@ -41,6 +57,10 @@ Tokyo Bay waterfront promenade at pre-dawn, concrete walkway overlooking dark wa
 **朝倉澪** [scared]：（內心）不是手機慢。是別的東西比它快。公共系統在同步，我的不在。
 
 **旁白**：她還沒想完。
+
+```bgm
+stop
+```
 
 **旁白**：遠處。東京灣人工島方向。白光。
 
@@ -68,6 +88,10 @@ Tokyo Bay waterfront promenade at pre-dawn, concrete walkway overlooking dark wa
 
 ```bg
 small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin curtains, unmade single bed, glowing phone screen on futon edge, cheap electronic wall clock, sparse furnishings, muted cold palette, moody cinematic visual-novel background art, wide establishing shot
+```
+
+```bgm
+dawn-apartment
 ```
 
 **旁白**：手機螢幕亮了。
@@ -115,6 +139,10 @@ small Tokyo apartment bedroom at dawn, dim grey-blue pre-dawn light through thin
 **旁白**：她站起來。赤腳。地板涼。她沒有去拿拖鞋。
 
 **旁白**：她走到書桌前。拿起手機。再確認一次日期。上週一。沒有變。她沒有看錯。
+
+```sfx
+door-open
+```
 
 **旁白**：她走出房間。推開悠真的房門。
 

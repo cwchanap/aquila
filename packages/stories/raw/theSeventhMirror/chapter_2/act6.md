@@ -4,11 +4,19 @@
 Wangan New Transit car 7 interior at night, cold white lighting, single passenger standing pressed against wall near emergency call button, a man slumped unconscious in seat, dark blood visible on seat and floor, monitor red dot glowing steadily, train beginning emergency deceleration, visual-novel background art, oppressive surveillance atmosphere
 ```
 
+```bgm
+carriage-drone
+```
+
 **旁白**：緊急通話鈕按下去之後，澪以為會先聽到一個人的聲音。控制中心的人。問她傷者狀態，問她車廂編號，問她需不需要急救指引。任何一個正常的、焦急的、屬於人類的聲音。
 
 **旁白**：她等了兩秒。
 
 **旁白**：先響起來的，不是人。
+
+```sfx
+pa-announcement
+```
 
 **廣播**：第七車乘客，請立即放下手中的尖銳物。
 
@@ -28,7 +36,15 @@ Wangan New Transit car 7 interior at night, cold white lighting, single passenge
 
 **旁白**：她想起來了。千田塞給她的。她一直沒有放開。她在急救、在按鈕、在喊叫的時候，左手一直握著它。她沒有放開，不是因為她選擇握著，是因為她根本忘了自己還握著。
 
+```sfx
+sync-glitch
+```
+
 **旁白**：列車開始減速。不是剎車的那種急減，是自動駕駛系統啟動緊急減速的那種——平穩的、不急不慢的、像早就排好的程式。窗外的燈開始往後退得越來越慢。車廂裡的燈又閃了一下，這次沒有跳色溫，只是閃了一下，像有人在確認什麼。
+
+```sfx
+pa-announcement
+```
 
 **廣播**：請放下手中的尖銳物。
 
@@ -41,6 +57,10 @@ Wangan New Transit car 7 interior at night, cold white lighting, single passenge
 **旁白**：它沒有看見千田上車前就受了傷。它沒有看見那塊金屬是被塞進她手裡的。它只看見現在這個畫面——一個女人，站在一個不再動的男人旁邊，手裡握著尖銳物，滿手是血。
 
 **旁白**：車停了。減速的過程很平穩，停下的那一刻幾乎沒有頓挫。窗外是一座月台——封閉的、燈亮的、空無一人的維修月台。車門沒有開。
+
+```sfx
+pa-announcement
+```
 
 **廣播**：第七車乘客，請放下尖銳物。
 

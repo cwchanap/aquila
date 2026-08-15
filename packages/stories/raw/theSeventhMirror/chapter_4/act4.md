@@ -4,6 +4,10 @@
 small Tokyo apartment room, late afternoon, desk lamp off, grey daylight through curtains, phone screen glowing on desk among sticky notes, a young woman sitting cross-legged on floor with laptop, visual-novel background art, medium shot
 ```
 
+```bgm
+night-street
+```
+
 **旁白**：星期二傍晚。她沒有睡很久。琴音走了之後她躺了兩個小時，醒來的時候窗外已經開始暗。她做的第一件事是打開手機，搜「有明車輛基地」。
 
 **旁白**：灣岸新交通的官方網站有一頁車輛基地介紹。有明基地。位於灣岸線南端。負責車輛維護、夜間停泊、事故車輛暫存。頁面很乾淨，幾張空拍照片，一段制式文字。沒有提到任何事故。沒有提到第七車。沒有提到她。

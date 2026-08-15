@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不知道自己什麼時候睡著的。她醒來的時候，手機在桌上震。不是防災測試提醒。是來電。螢幕上顯示的名字是「琴音」。", background: Background.Chapter_4_Ch4_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不知道自己什麼時候睡著的。她醒來的時候，手機在桌上震。不是防災測試提醒。是來電。螢幕上顯示的名字是「琴音」。", sfx: "notification-beep", bgm: "dawn-apartment", background: Background.Chapter_4_Ch4_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她接起來的時候，對面已經在說話了。", background: Background.Chapter_4_Ch4_Act3_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "澪——對不起。對不起，我昨晚……我太累了，手機靜音，一覺睡到天亮。我剛醒才看到訊息和新聞——妳現在在哪裡？妳還好嗎？", background: Background.Chapter_4_Ch4_Act3_S0, portrait: Portrait.ShiraishiKotone_Guilty },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音的聲音是慌的。不是那種禮貌性的慌，是真的在慌。語速比平常快，呼吸比平常淺，句子斷在奇怪的地方。澪把手機拿開耳朵看了一眼螢幕——沒有看時間。她把電話貼回去。", background: Background.Chapter_4_Ch4_Act3_S0 },
@@ -50,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有追問。她把飯糰吃完。把味噌湯喝了。琴音在旁邊看著她，偶爾幫她把紙巾遞過來。像以前一樣。像悠真還在的時候一樣。像什麼都沒有發生過一樣。", background: Background.Chapter_4_Ch4_Act3_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "妳先睡。律師的事我幫妳問。別上網查那些新聞，別看留言，別回陌生訊息。現在就躺下來，閉眼睛。", background: Background.Chapter_4_Ch4_Act3_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "……好。", background: Background.Chapter_4_Ch4_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音的手機在口袋裡震了一下。她拿出來看了一眼，沒有接，把螢幕按滅。", background: Background.Chapter_4_Ch4_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音的手機在口袋裡震了一下。她拿出來看了一眼，沒有接，把螢幕按滅。", sfx: "notification-beep", background: Background.Chapter_4_Ch4_Act3_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "我等下還要繞去一趟醫院。探視時間快到了。", background: Background.Chapter_4_Ch4_Act3_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "嗯。你去。", background: Background.Chapter_4_Ch4_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音走的時候，把深色外套留在桌上。她把空掉的塑膠袋折好帶走。她在門口回頭看了一眼澪。", background: Background.Chapter_4_Ch4_Act3_S0 },

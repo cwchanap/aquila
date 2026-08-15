@@ -4,6 +4,14 @@
 small Tokyo apartment living room, morning light through curtains, a table with convenience store food containers and a folded jacket, two young women sitting across from each other, visual-novel background art, medium shot
 ```
 
+```bgm
+dawn-apartment
+```
+
+```sfx
+notification-beep
+```
+
 **旁白**：她不知道自己什麼時候睡著的。她醒來的時候，手機在桌上震。不是防災測試提醒。是來電。螢幕上顯示的名字是「琴音」。
 
 **旁白**：她接起來的時候，對面已經在說話了。
@@ -91,6 +99,10 @@ small Tokyo apartment living room, morning light through curtains, a table with 
 **白石琴音** [base]：妳先睡。律師的事我幫妳問。別上網查那些新聞，別看留言，別回陌生訊息。現在就躺下來，閉眼睛。
 
 **朝倉澪** [exhausted]：……好。
+
+```sfx
+notification-beep
+```
 
 **旁白**：琴音的手機在口袋裡震了一下。她拿出來看了一眼，沒有接，把螢幕按滅。
 

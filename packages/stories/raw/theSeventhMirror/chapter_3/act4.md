@@ -4,6 +4,10 @@
 small station office or temporary police interview room at night, cold white fluorescent lighting, metal desk with scattered documents and evidence bags, monitor showing transit car schematic, paper cup of water, institutional claustrophobic atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：站務室的門被推開的時候，澪以為進來的會是另一個陌生面孔。
 
 **旁白**：從她被帶進這間房間到現在，已經換過兩個人了。第一個是站務主管，問她車廂編號和上車時間。第二個是一個年輕警員，把她的手機拿去拍照、記錄匿名訊息、備份對話紀錄。每一個人都很忙，每一個人都只負責自己那段流程，沒有人完整地聽她說過一次話。像一條輸送帶，每個人只接手她的一部分，沒有人看過完整的她。
@@ -164,6 +168,10 @@ small station office or temporary police interview room at night, cold white flu
 
 **朝倉澪** [base]：「不要救東京。」
 
+```bgm
+stop
+```
+
 **旁白**：四個字落在房間裡。年輕警員的手停在鍵盤上。他抬頭看了一眼日下部，又低下頭繼續打字。
 
 **旁白**：日下部的筆停了。
@@ -171,6 +179,10 @@ small station office or temporary police interview room at night, cold white flu
 **旁白**：不是放下。是停。像一條正在走的路突然斷了。他的筆尖懸在紙面上方，一公分，半秒。然後他的視線從資料夾移上來，移到澪的臉上。
 
 **旁白**：他看她的眼神變了。不是變軟，也不是變凶。是變深。像他聽到了一個他不預期會在這裡聽到的東西。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：然後他把視線收回去。筆落下。繼續寫。
 

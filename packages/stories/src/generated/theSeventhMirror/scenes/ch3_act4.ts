@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站務室的門被推開的時候，澪以為進來的會是另一個陌生面孔。", background: Background.Chapter_3_Ch3_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站務室的門被推開的時候，澪以為進來的會是另一個陌生面孔。", bgm: "institutional-drone", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "從她被帶進這間房間到現在，已經換過兩個人了。第一個是站務主管，問她車廂編號和上車時間。第二個是一個年輕警員，把她的手機拿去拍照、記錄匿名訊息、備份對話紀錄。每一個人都很忙，每一個人都只負責自己那段流程，沒有人完整地聽她說過一次話。像一條輸送帶，每個人只接手她的一部分，沒有人看過完整的她。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門開了。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看見皮鞋。黑色的、舊的、鞋底磨偏了的皮鞋。然後是深色西裝褲的褲腳。然後是一隻手推開門，把門撐住，讓後面的人跟進來。", background: Background.Chapter_3_Ch3_Act4_S0 },
@@ -86,11 +86,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "「他們會說是來救援的。」", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "最後一句。她說出來的時候，聲音比前幾句輕。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "「不要救東京。」", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個字落在房間裡。年輕警員的手停在鍵盤上。他抬頭看了一眼日下部，又低下頭繼續打字。", background: Background.Chapter_3_Ch3_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四個字落在房間裡。年輕警員的手停在鍵盤上。他抬頭看了一眼日下部，又低下頭繼續打字。", bgm: null, background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部的筆停了。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是放下。是停。像一條正在走的路突然斷了。他的筆尖懸在紙面上方，一公分，半秒。然後他的視線從資料夾移上來，移到澪的臉上。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看她的眼神變了。不是變軟，也不是變凶。是變深。像他聽到了一個他不預期會在這裡聽到的東西。", background: Background.Chapter_3_Ch3_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他把視線收回去。筆落下。繼續寫。", background: Background.Chapter_3_Ch3_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他把視線收回去。筆落下。繼續寫。", bgm: "institutional-drone", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部", dialogue: "⋯⋯「不要救東京」。", background: Background.Chapter_3_Ch3_Act4_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他重複了一遍。不是在問她。是在把這四個字寫進紀錄裡。他寫的時候，筆觸比前面重了一點。她看見「東」那一筆的墨水在紙上洇開了一點。", background: Background.Chapter_3_Ch3_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒有追問。他沒有問「東京是什麼」。他沒有問「他為什麼這樣說」。他只是寫下來了，然後翻到下一頁。", background: Background.Chapter_3_Ch3_Act4_S0 },

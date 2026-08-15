@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:30。她不知道確切的數字。是她走出警署之後，路過一家還沒關的便利店，透過玻璃看見牆上的鐘，才確認的。在那之前她一直沒看手機。手機在外側口袋裡，被備份過，被貼過取證標籤，現在又回到她身上。但它不完全是她的了。", background: Background.Chapter_4_Ch4_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:30。她不知道確切的數字。是她走出警署之後，路過一家還沒關的便利店，透過玻璃看見牆上的鐘，才確認的。在那之前她一直沒看手機。手機在外側口袋裡，被備份過，被貼過取證標籤，現在又回到她身上。但它不完全是她的了。", bgm: "night-street", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "灰色外套太大。肩線掉到上臂中間，袖子長出一截，她得把袖口捲兩圈才能露出手指。站務給的。她原來那件——染了血的那件——在證物袋裡。她不知道它現在在哪個房間、哪個櫃子、被寫上什麼編號。她只知道它不再屬於她了。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)連衣服都不是我的了。", background: Background.Chapter_4_Ch4_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "街道很空。深夜的江東區像被抽掉聲音的模型——路燈亮著，紅綠燈在替沒有車的路口計時，便利店的招牌在遠處嗡嗡地轉。她的腳步聲在騎樓底下回彈，一下一下，很規律，像在替她數什麼。", background: Background.Chapter_4_Ch4_Act1_S0 },
@@ -25,7 +25,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有繼續想。不是因為想通了。是因為她不想往那個方向想。琴音是她的朋友。琴音是她現在還能數出來的、沒有被這件事碰過的人之一。她不打算在凌晨一點半的橋上開始懷疑朋友。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把訊息列表往下滑。推播通知在更下面。", background: Background.Chapter_4_Ch4_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一則新聞推播。三分鐘前跳的。標題很短，像還沒寫完。", background: Background.Chapter_4_Ch4_Act1_S1 },
-    { characterId: CharacterId.Message, character: "訊息", dialogue: "灣岸新交通第七車男性乘客心肺停止後死亡確認，警方正向同車女性聽取情況。", background: Background.Chapter_4_Ch4_Act1_S1 },
+    { characterId: CharacterId.Message, character: "訊息", dialogue: "灣岸新交通第七車男性乘客心肺停止後死亡確認，警方正向同車女性聽取情況。", sfx: "notification-beep", background: Background.Chapter_4_Ch4_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)同車女性。", background: Background.Chapter_4_Ch4_Act1_S1, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把那四個字讀了兩遍。同車女性。不是「乘客」。不是「目擊者」。是「同車女性」。一個和死者待在同一節車廂裡的女人。新聞沒有寫她的名字。但「同車女性」這四個字已經是一個形狀了——一個站在死者旁邊的、被警方約談的、還沒有被排除的形狀。", background: Background.Chapter_4_Ch4_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她還沒有被逮捕。她還沒有被起訴。她甚至還沒有被正式稱為嫌疑人。但她的名字——還沒有被印出來的名字——已經被另一個版本抓住了。那個版本從控制中心的螢幕開始，流進問話紀錄，流進這則推播，流進明天早上會醒來的每一支手機。", background: Background.Chapter_4_Ch4_Act1_S1 },

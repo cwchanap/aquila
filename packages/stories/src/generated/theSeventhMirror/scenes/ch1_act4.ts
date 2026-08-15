@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "咖啡店在大學西門外那條商店街的盡頭，門面不大，招牌上的字掉了一半漆。二樓是調查媒體借來堆資料的小辦公室，一樓借給學生當自習空間，點一杯飲料就能坐一整個下午。", background: Background.Chapter_1_Ch1_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "咖啡店在大學西門外那條商店街的盡頭，門面不大，招牌上的字掉了一半漆。二樓是調查媒體借來堆資料的小辦公室，一樓借給學生當自習空間，點一杯飲料就能坐一整個下午。", bgm: "safe-harbor", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進去的時候，琴音已經坐在靠窗的位子。桌上擺了兩個便當盒、一壺熱茶，和一台開著文件的筆電。她身後那面白板貼滿了彩色便利貼，是上週某篇查核報告殘留下來的。", background: Background.Chapter_1_Ch1_Act4_S0 },
     { characterId: CharacterId.ShiraishiKotone, character: "白石琴音", dialogue: "坐。", background: Background.Chapter_1_Ch1_Act4_S0, portrait: Portrait.ShiraishiKotone_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音沒有多問。她把其中一個便當推到澪面前，掀開蓋子——炸雞、玉子燒、白飯，還有一小格醃蘿蔔。", background: Background.Chapter_1_Ch1_Act4_S0 },

@@ -4,6 +4,10 @@
 small station office converted to temporary control room at night, cold white fluorescent lighting, desk with paper cup of water, surveillance monitors showing frozen frames, transit car floor plan on wall, institutional clean atmosphere, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：站務室比澪想像的小。
 
 **旁白**：乾淨。冷白光。牆上貼著灣岸新交通的列車平面圖，第七車的位置被用紅色標了出來。桌上有一杯水，紙杯的，沒有人叫她喝。角落有一台監控螢幕，螢幕暗著，像在等什麼人把它打開。
@@ -27,6 +31,10 @@ small station office converted to temporary control room at night, cold white fl
 **旁白**：聊天畫面。對方帳號是一串沒有頭像的數字。最後一則訊息停在「不要報警」。時間戳：21:14。她試過回覆——輸入框還在，但送出鍵按下去沒有反應。帳號已經消失了。不是封鎖，是消失。像這個帳號從來沒有存在過。
 
 **朝倉澪**：在這裡。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她把手機遞過去。警員接過來，看了一眼螢幕，然後拿起自己的手機對著她的螢幕拍了一張。閃光燈沒開，快門聲很輕。
 

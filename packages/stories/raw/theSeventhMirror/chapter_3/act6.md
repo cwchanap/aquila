@@ -4,6 +4,10 @@
 police station corridor at night, long fluorescent-lit hallway, reflective floor, doors with small windows along both sides, cold institutional lighting, a young woman in a thin grey jacket walking alone with a crossbody bag, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：凌晨。她不確定幾點。手機在她接回來之後就沒有再亮過。她不想看時間。時間現在對她沒有用——她不在等什麼，也沒有什麼在等她。
 
 **旁白**：日下部和年輕警員在問話結束後離開了房間。她被留在裡面坐了十分鐘左右。然後一個她沒見過的警員進來，遞給她一張紙。
@@ -105,6 +109,10 @@ frozen surveillance camera frame on a wall-mounted monitor, transit car 7 interi
 **旁白**：她沒有決定要闖進有明車輛基地。她還沒有。她只是把這個地名存進了腦子裡。和 T、和 7、和金色接點、和血痕起點、和「不要救東京」放在一起。放在同一個越來越滿的、她還沒有時間整理的清單裡。
 
 **旁白**：她繼續走。
+
+```bgm
+night-street
+```
 
 **旁白**：走廊盡頭的門開著。外面是深夜的街道。冷風灌進來，帶著混凝土和瀝青的味道。她走出去的那一刻，冷空氣打在她臉上，像一盆水潑過來。
 

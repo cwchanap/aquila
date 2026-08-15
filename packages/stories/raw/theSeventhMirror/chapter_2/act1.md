@@ -4,6 +4,14 @@
 interior of driverless transit car 7 at night, stark white cold fluorescent lighting, rows of empty seats, polished floor reflecting light, Tokyo Bay lights streaking past dark windows, small red monitor dot glowing near ceiling, clinical sterile atmosphere, visual-novel background art, wide shot
 ```
 
+```bgm
+carriage-drone
+```
+
+```sfx
+train-doors
+```
+
 **旁白**：車門在身後合上的聲音比澪預期的輕。
 
 **旁白**：不是悶響，是一種被計算過的、剛剛好的扣合聲。她沒有回頭，但背脊感覺得到——門鎖了。
@@ -32,13 +40,25 @@ interior of driverless transit car 7 at night, stark white cold fluorescent ligh
 
 **旁白**：車頂角落的監視器亮著一個紅點。不大，像一粒不會熄的火星，穩穩地盯著整節車廂。
 
+```sfx
+pa-announcement
+```
+
 **旁白**：廣播響了。
 
 **廣播**：夜間防災同步測試進行中，請乘客留意後續公告。
 
 **旁白**：和月台上同一種合成女聲，平到沒有起伏。在這節空蕩蕩的車廂裡，那聲音被白色冷光襯得更薄，像一層均勻的、蓋在所有東西上面的膜。
 
+```sfx
+notification-beep
+```
+
 **旁白**：幾秒後，澪的手機才震了一下。通知欄跳出同一則防災測試訊息。
+
+```sfx
+sync-glitch
+```
 
 **朝倉澪**：(內心)又晚了。
 

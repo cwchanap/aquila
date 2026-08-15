@@ -4,6 +4,10 @@
 Japanese police station reception counter, morning, fluorescent lighting, institutional form racks, plastic chairs, muted cool palette, moody cinematic visual-novel background art
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：警局的冷氣太強了。
 
 **旁白**：澪坐在受理台前的塑膠椅上，包包放在膝上，手放在包包側袋的拉鏈上——那裡面裝著那面小鏡子。她不知道為什麼要帶著它出門，只是出門前最後一刻把它塞了進去。
@@ -81,6 +85,10 @@ Japanese police station reception counter, morning, fluorescent lighting, instit
 **旁白**：澪抬頭。一個穿深色西裝的男人站在那裡，領帶鬆著，臉上有很深的疲態。她沒見過這個人——不是前幾次接待她的那個。
 
 **旁白**：男人看了一眼受理台後的警員，又看了一眼澪，視線在她放在台面的手機上掃過，然後——停了一下。
+
+```sfx
+mirror-chime
+```
 
 **旁白**：他看的是她包包側袋露出來的那面小鏡子。半截塑膠邊緣從拉鏈縫裡露出來，褪色的卡通圖案朝上。
 

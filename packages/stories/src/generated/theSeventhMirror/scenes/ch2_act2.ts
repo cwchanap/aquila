@@ -6,11 +6,11 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)不要給我。他自己說的。", portrait: Portrait.AsakuraMio_Base },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)不要給我。他自己說的。", bgm: "carriage-drone", portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這句話不對勁的地方不在於他要看鏡子，而在於他比澪更小心。一個陌生人，在空車廂裡，主動要求她不要把東西交出去。像他知道這節車廂有眼睛，也知道「交出去」這個動作會被看見。" },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)⋯⋯他怕監視器。", portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的拇指離開緊急通話鈕一點點。不是放鬆，是換了一種警戒——從「隨時求救」換成「先看清楚他在怕什麼」。" },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從口袋裡抽出小鏡子。掌心已經把它捂得微溫。她沒有遞過去，只是把它翻過來，背面朝向男人那一側，手指仍扣著鏡緣。" },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從口袋裡抽出小鏡子。掌心已經把它捂得微溫。她沒有遞過去，只是把它翻過來，背面朝向男人那一側，手指仍扣著鏡緣。", sfx: "mirror-chime" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "鏡子背面有幾道刮痕。不是裝飾，是刻上去的——歪歪斜斜的數字，像用什麼尖物一筆一筆劃出來的。她看了七天，早就背得起來。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "男人沒有伸手。他只是把上身往前傾了一點，眼睛落在那幾道刮痕上。他看的時間不長，但那一眼很重，像在核對一組等了很久的密碼。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他靠回椅背。吸了一口氣——那口氣吸得很慢，像不是在呼吸，是在把什麼痛壓回肚子裡。他閉了一下眼。" },

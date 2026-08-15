@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站務室比澪想像的小。", background: Background.Chapter_3_Ch3_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "站務室比澪想像的小。", bgm: "institutional-drone", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "乾淨。冷白光。牆上貼著灣岸新交通的列車平面圖，第七車的位置被用紅色標了出來。桌上有一杯水，紙杯的，沒有人叫她喝。角落有一台監控螢幕，螢幕暗著，像在等什麼人把它打開。", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不像審訊室。像管理空間。這讓壓迫感更安靜——沒有鐵桌、沒有單面鏡、沒有那種告訴你「你正在被審問」的佈景。只有一台螢幕、一杯水、一張列車平面圖，和一個坐在她對面的警員。", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "朝倉澪小姐。先問幾個基本問題。", background: Background.Chapter_3_Ch3_Act3_S0 },
@@ -18,7 +18,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機拿出來。螢幕亮起來的時候，她看見通知欄裡還有那封匿名訊息的預覽。她點進去。", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聊天畫面。對方帳號是一串沒有頭像的數字。最後一則訊息停在「不要報警」。時間戳：21:14。她試過回覆——輸入框還在，但送出鍵按下去沒有反應。帳號已經消失了。不是封鎖，是消失。像這個帳號從來沒有存在過。", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "在這裡。", background: Background.Chapter_3_Ch3_Act3_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機遞過去。警員接過來，看了一眼螢幕，然後拿起自己的手機對著她的螢幕拍了一張。閃光燈沒開，快門聲很輕。", background: Background.Chapter_3_Ch3_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機遞過去。警員接過來，看了一眼螢幕，然後拿起自己的手機對著她的螢幕拍了一張。閃光燈沒開，快門聲很輕。", sfx: "camera-shutter", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "這個帳號現在還能回覆嗎？", background: Background.Chapter_3_Ch3_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "不能。我試過。帳號已經不在了。", background: Background.Chapter_3_Ch3_Act3_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.PoliceOfficer, character: "警員", dialogue: "截圖是什麼時候拍的？", background: Background.Chapter_3_Ch3_Act3_S0 },

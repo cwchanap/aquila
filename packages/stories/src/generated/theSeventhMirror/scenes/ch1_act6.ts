@@ -6,16 +6,16 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "研究中心的玻璃門在身後合上時，澪才發現自己一直在憋氣。", background: Background.Chapter_1_Ch1_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "研究中心的玻璃門在身後合上時，澪才發現自己一直在憋氣。", bgm: null, background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "傍晚的街道比想像中安靜。便利店的招牌亮著，那種永遠不會熄的、過分禮貌的白光，把人行道切成一半亮一半暗。她站在亮的那一半，手裡捏著那張被對方「順手」塞過來的宣傳單。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)一次問卷。兩次預約提醒。沒有夜間測試。最後定位在夜間接近中心。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在腦子裡把這幾行重新排了一遍，像在查核一篇寫得很乾淨、乾淨到不對勁的稿子。每一句都成立。每一句都避開了她問的那個洞。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)他們在說謊。不是慌張的那種說謊，是受過訓練的那種。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機在口袋裡震了一下。", background: Background.Chapter_1_Ch1_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機在口袋裡震了一下。", sfx: "notification-beep", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是預約提醒，不是琴音。是那種她從沒見過的推送——沒有應用名稱，沒有頭像，通知欄只露出一行字，後面被截斷。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)⋯⋯", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在便利店門口的暖光裡，把螢幕點開。", background: Background.Chapter_1_Ch1_Act6_S0 },
-    { characterId: CharacterId.Message, character: "訊息", dialogue: "想知道朝倉悠真在哪裡，今晚 21:17。灣岸新交通，新木場方向，第七車。帶上悠真留下的那件東西。不要報警。", background: Background.Chapter_1_Ch1_Act6_S0 },
+    { characterId: CharacterId.Message, character: "訊息", dialogue: "想知道朝倉悠真在哪裡，今晚 21:17。灣岸新交通，新木場方向，第七車。帶上悠真留下的那件東西。不要報警。", bgm: "tension-pulse", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "六行字。沒有署名。沒有開場。像一份只寫了結論的報告。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)朝倉悠真。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "對方用了全名。不是「你弟弟」，不是「悠真」，是連她自己都很少完整寫出來的三個字。", background: Background.Chapter_1_Ch1_Act6_S0 },
@@ -50,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她進手機設定，把定位服務整個打開。螢幕頂端跳出那個小小的箭頭標記，像一盞一直亮著的小燈。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)有人會知道我在哪。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不知道那個人是誰。但她需要「有人」這件事成立。", background: Background.Chapter_1_Ch1_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "最後，她從包包側袋拿出那面小鏡子，塞進外套口袋。鏡面涼涼的，邊緣那道刮痕在她指腹下刮了一下。", background: Background.Chapter_1_Ch1_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "最後，她從包包側袋拿出那面小鏡子，塞進外套口袋。鏡面涼涼的，邊緣那道刮痕在她指腹下刮了一下。", sfx: "mirror-chime", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "(內心)你叫我帶的。", background: Background.Chapter_1_Ch1_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把鏡子往口袋深處按了按，確認它不會在走動時掉出來。", background: Background.Chapter_1_Ch1_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "便利店的自動門開了又關，有人提著塑膠袋走出來，看了她一眼，又別過頭。街道上的人都在做自己的事，沒有人注意到一個站在暖光邊緣的女孩，剛剛把所有後路都安排好了。", background: Background.Chapter_1_Ch1_Act6_S0 },

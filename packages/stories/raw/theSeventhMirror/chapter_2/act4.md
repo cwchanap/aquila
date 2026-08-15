@@ -4,7 +4,15 @@
 Wangan New Transit car 7 interior at night, overly clean white cold lighting, empty seats, monitor red dot glowing, window showing blurred bridge maintenance zone lights streaking past, visual-novel background art, tense enclosed atmosphere
 ```
 
+```bgm
+carriage-drone
+```
+
 **旁白**：千田的聲音壓得很低，低到澪得把身體往前傾一個角度才聽得見。他正說到某個地方。嘴唇動了，氣音出來了，然後車廂頂部的喇叭突然活了過來。
+
+```sfx
+pa-announcement
+```
 
 **廣播**：現在進行防災警報同步測試。請乘客勿驚慌。
 
@@ -23,6 +31,10 @@ Wangan New Transit car 7 interior at night, overly clean white cold lighting, em
 **旁白**：她記得路線圖。下一個真正能開門的普通月台，大約在 21:31。現在出不去。
 
 **旁白**：車頂那顆監視器的紅點閃了一下。不是熄滅，只是閃，像眨了一下眼，又重新亮著。澪盯著它看了半秒。紅點還在。但它旁邊那塊小小的車廂資訊螢幕，上面顯示的時間，和廣播剛剛報出的時間，對不上。螢幕上的數字比廣播慢了一點。又或者快了一點。她分不清。她只知道它們不在一起了。
+
+```sfx
+sync-glitch
+```
 
 **朝倉澪**：(內心)時間碼不對。
 
@@ -52,6 +64,10 @@ Wangan New Transit car 7 interior at night, overly clean white cold lighting, em
 
 **旁白**：廣播還沒結束。那層合成女聲仍然蓋在所有聲音上面，均勻、平穩、沒有起伏。在這片聲音裡，千田往前傾的動作幾乎是無聲的。
 
+```sfx
+notification-beep
+```
+
 **旁白**：澪的手機在口袋裡震了一下。
 
 **旁白**：她沒有立刻掏出來。廣播還在播。又過了幾秒，廣播結束之後，她才把手機抽出來一角。通知欄跳出防災測試訊息，文字和剛剛車廂廣播的內容完全一致。
@@ -61,6 +77,10 @@ Wangan New Transit car 7 interior at night, overly clean white cold lighting, em
 **旁白**：和月台上那次一樣。廣播先，手機後。這次的間隔更明顯，廣播都結束了，手機才收到。她皺了一下眉，拇指劃過通知欄，想把它刪掉。
 
 **旁白**：劃掉的瞬間，通知欄上面那一行小小的已讀標記閃了一下。
+
+```sfx
+notification-beep
+```
 
 **訊息**：琴音：已讀。21:19。
 

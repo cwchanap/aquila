@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:40。KAGAMI BCP service monitor。法院安全連線。螢幕上的狀態欄一行一行展開。", background: Background.Chapter_26_Ch26_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:40。KAGAMI BCP service monitor。法院安全連線。螢幕上的狀態欄一行一行展開。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "SUBJECT LEDGER。NORMAL STATE——SEALED／LOCAL OFFLINE。BCP SERVICE MOUNT——AVAILABLE／LEASE LOADED。", background: Background.Chapter_26_Ch26_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）SEALED。LOCAL OFFLINE。可是——BCP SERVICE MOUNT——AVAILABLE。LEASE LOADED。兩行並排。一個說封緘離線。一個說租約已載入、服務可掛載。它們同時存在。因為——23:50 以前和以後，是兩個不同的狀態。", background: Background.Chapter_26_Ch26_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:42。日下部站在 BCP service monitor 前。他的手指著螢幕上的兩行欄位。他的聲音很平。", background: Background.Chapter_26_Ch26_Act2_S0 },

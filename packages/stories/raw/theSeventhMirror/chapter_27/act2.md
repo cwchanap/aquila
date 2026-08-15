@@ -4,6 +4,10 @@
 KAGAMI command room, eight patient node panels now showing SAMPLE stage with varying data streams, some panels displaying EEG waveforms and autonomic telemetry, others showing guardian console status, pre-dawn grey light growing at window edges, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：05:51:20。SAMPLE。八個窗格同時開始取樣。不是同時取同一種樣本。是——每個人採自己的。
 
 **旁白**：M-00 的窗格。三條數據流並排。外部醫療。local phase model。KAGAMI clinical return。三條線各自簽章。各自獨立。

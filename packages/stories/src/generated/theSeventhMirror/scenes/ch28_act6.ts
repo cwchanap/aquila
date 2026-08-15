@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三個月後。下午。家屬律師辦公室。", background: Background.Chapter_28_Ch28_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三個月後。下午。家屬律師辦公室。", bgm: "ordinary-time", background: Background.Chapter_28_Ch28_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗簾拉了一半。百葉窗把下午的光切成一條一條，落在桌上的文件夾上。桌上有一台筆電，螢幕亮著。螢幕上是 Public Witness Index。", background: Background.Chapter_28_Ch28_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）三個月了。", background: Background.Chapter_28_Ch28_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）循環沒有回來。時間還在走。可是——三個月走下來，世界沒有變成一個乾淨的答案。世界變成——這個。一個還在吵的頁面。一疊還沒解封的文件。一個律師坐在對面，手邊放著兩個牛皮紙信封。", background: Background.Chapter_28_Ch28_Act6_S0, portrait: Portrait.AsakuraMio_Base },
@@ -67,6 +67,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）三個月。世界沒有變成一個乾淨的答案。可是——世界也沒有回到原來的謊言。", background: Background.Chapter_28_Ch28_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）爸爸。我在看了。不是——因為有人替我寫好了結局。是——因為第一次，不知道只是還不知道。", background: Background.Chapter_28_Ch28_Act6_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把資料夾收進背包。站起來。律師沒有多說。只點了一下頭。", background: Background.Chapter_28_Ch28_Act6_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出辦公室。走廊很長。日光燈的白光打在地磚上。她的影子很清楚。", background: Background.Chapter_28_Ch28_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出辦公室。走廊很長。日光燈的白光打在地磚上。她的影子很清楚。", sfx: "fluorescent-hum", background: Background.Chapter_28_Ch28_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）後面仍然不知道。可是——不知道不再是——被寫好的那一頁。是——還沒翻到的下一頁。", background: Background.Chapter_28_Ch28_Act6_S0, portrait: Portrait.AsakuraMio_Base },
 ];

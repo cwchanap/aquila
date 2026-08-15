@@ -4,6 +4,10 @@
 Asakura apartment living room at night, dim warm lamp light, a wideband analog comparison receiver built into an old shortwave radio chassis sitting on a shelf, white frequency marking line visible on the dial, external antenna cable leading to window, a laptop on the low table showing Prior-Source Open Monitoring Network dashboard, quiet domestic interior, muted cool palette with warm lamp accent, visual-novel background art, wide shot
 ```
 
+```bgm
+ordinary-time
+```
+
 **旁白**：約半年後。某個普通夜晚。朝倉家。客廳。
 
 **旁白**：悠真已經睡了。他的房間門關著。裡面沒有聲音。有時候——夜驚。有時候——安靜。今晚——安靜。
@@ -26,9 +30,17 @@ Asakura apartment living room at night, dim warm lamp light, a wideband analog c
 
 **朝倉澪**：（內心）它不是——循環密鑰。不是——患者資料庫。不是——只對我有反應的東西。它只是一台——類比比較接收器。在 KAGAMI 的數位處理鏈以外。用來——確認 prior source band 是否還有訊號。
 
+```sfx
+receiver-static
+```
+
 **旁白**：機器的喇叭。平時——只有靜電。偶發的窄帶聲。像——遠處的收音機在找台。像——空氣在振動。
 
 **旁白**：今晚——不一樣。
+
+```sfx
+signal-tones
+```
 
 **旁白**：它發出了——一輪多音序列。
 
@@ -87,6 +99,10 @@ Asakura apartment living room at night, dim warm lamp light, a wideband analog c
 **朝倉澪**：（內心）公開的是——時間、頻率、設備配置、hash、多站計數、不可重建的預覽。不是——完整 RF／IQ。不是——可以播放的音訊。安全狀態——未評估。
 
 **朝倉澪**：（內心）原始資料——進 DISTRIBUTED SIGNAL SAFETY QUARANTINE。多國。民間。學術。加密分散保存。無單一刪除者。不自動播放。存取——需訊號及神經安全程序。各站——以自己直接觀測驗證。
+
+```sfx
+train-hum
+```
 
 **旁白**：她等著。客廳很安靜。機器的喇叭靜了。只有——筆電風扇在轉。只有——窗外遠處的電車。只有——普通的夜晚。
 

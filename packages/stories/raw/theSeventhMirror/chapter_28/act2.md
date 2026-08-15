@@ -4,6 +4,10 @@
 KAGAMI command room, multiple video panels now showing external medical team, judicial preservation officer, and patient rights representative in split-screen layout, center console displaying EMERGENCY EXISTING-PATIENT PRESERVATION framework draft, cold fluorescent lighting with grey dawn light from windows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+ordinary-time
+```
+
 **旁白**：06:20。lease 到期之後。控制室的螢幕——變了。不是——患者面板變了。是——多了新的面板。外部醫療。司法保全。患者權利代表。三個視訊窗口。同時上線。
 
 **朝倉澪** [exhausted]：（內心）三個窗口。外部醫療。司法保全。患者權利。他們——不是來慶祝的。是來——建立 preservation framework。五名 downstream patients。不能因為 lease 到期、程序重整——突然失去既有支援。
@@ -77,6 +81,10 @@ M-00 patient room, Sae in hospital bed with low-load communication board at beds
 ```
 
 **旁白**：08:00。紗英。溝通板。兩段普通語言確認。獨立患者權利代表在場。反向確認——完成。
+
+```sfx
+letter-confirm
+```
 
 **旁白**：她的手指。很慢。在溝通板上。一個一個。
 

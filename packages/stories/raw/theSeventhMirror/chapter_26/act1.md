@@ -4,6 +4,10 @@
 mirror island external security command post, prefab container room with rack monitors glowing cold blue, KAGAMI local verification booth visible through reinforced window, deep night black outside, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：00:05。星期一。鏡島外部安全指揮。
 
 **旁白**：十五分鐘前——23:50。租約形成了。螢幕上的 CUTOVER AUTH LEASE 還亮著。有效到清晨六點二十。
@@ -55,6 +59,10 @@ mirror island external security command post, prefab container room with rack mo
 **旁白**：00:20。系統安全人員看著她。他的手停在面板上。他沒有反駁。他把快速方案的視窗收起來了。
 
 **獨立系統安全人員**：不破壞。走 live-state path。讓 KAGAMI 本地接受鏈自己判定租約是否仍適用於當輪患者狀態。
+
+```sfx
+radio-feed
+```
 
 **旁白**：00:22。千田的音訊連線從喇叭傳出來。他的聲音很輕。像在讀一份他已經拆解過很多次的文件。
 

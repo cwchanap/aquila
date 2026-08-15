@@ -4,6 +4,14 @@
 continuity monitoring room, multiple screens showing regional HSM status feeds and sealed evidence vault custody map, laptops with redacted evidence logs, cold fluorescent lighting, deep evening shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
+```sfx
+radio-feed
+```
+
 **旁白**：18:10。continuity 監看室。不是昨晚的封緘稽核室。是一間更窄的房間。三面牆掛著螢幕。左邊是區域 HSM 狀態。中間是鏡島安全連線。右邊是法院緊急視訊。桌上只有筆電和封好的文件。
 
 **旁白**：澪坐在角落。她的第四杯咖啡涼了。她沒有喝。日下部在她對面。獨立系統安全人員站在螢幕前。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。
@@ -58,6 +66,10 @@ continuity monitoring room, center screen now showing old BCP document scan with
 
 ```bg
 continuity monitoring room, right screen showing Nagihara Yui on secure video feed re-signing emergency-priority revocation, left screen showing KAGAMI-01 bundle/token alert deployment status, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
+```
+
+```sfx
+radio-feed
 ```
 
 **旁白**：19:40。凪原唯出現在法院緊急視訊的分割畫面上。她的表情沒有波動。她的眼鏡反射著螢幕的光。
@@ -116,6 +128,10 @@ continuity monitoring room, all three screens active, left showing operations he
 
 **朝倉澪** [exhausted]：（內心）我們做了所有能做的事。證據包多點託管了。撤回 envelope 排進去了。emergency priority 簽了。bundle hash 驗證了。KAGAMI-01 告警部署了。區域節點監看部署了。營運方還在說不。法院送了暫停請求。可是——S7 不回答。它不需要回答。它只需要——等到 23:50。然後——按它的順序跑。
 
+```bgm
+tension-pulse
+```
+
 **旁白**：23:00。房間裡的人換了班。有人送了飯糰。澪咬了一口。嚥不下去。她把飯糰放回桌上。
 
 **旁白**：23:15。千田的音訊連線還在。他的聲音從喇叭傳出來。很輕。
@@ -125,6 +141,10 @@ continuity monitoring room, all three screens active, left showing operations he
 **朝倉澪** [exhausted]：（內心）被預告過的。白天就看見了。CUTOVER EPOCH SNAPSHOT。MAINTENANCE QUEUE APPLY。POST-SNAPSHOT。我們知道。我們做了所有能做的事。可是——知道最壞的分支會來——不等於能阻止它。
 
 **旁白**：23:30。日下部看著螢幕。S7。RECEIPT——NONE。他的下巴收緊了一下。他的手插在口袋裡。
+
+```bgm
+stop
+```
 
 **旁白**：23:35。他轉過頭。看著澪。他的聲音很平。像在陳述一個已經確定的事實。
 

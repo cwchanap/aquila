@@ -4,6 +4,10 @@
 KAGAMI command room, white light from windows beginning to thin and dissolve back into pre-dawn grey, wall of eight patient node panels still active, center console showing protective filter winding down, cold fluorescent lighting slowly reasserting over residual white glow, muted cool palette returning, visual-novel background art, wide shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：06:13:00.997。
 
 **旁白**：06:13:00.998。
@@ -49,6 +53,10 @@ KAGAMI command room, white light now fully dissolved into pre-dawn grey, patient
 **旁白**：06:14:00。
 
 **朝倉澪** [exhausted]：（內心）06:14。整分。過了。真的過了。
+
+```bgm
+ordinary-time
+```
 
 **旁白**：外部醫師從視訊面板那端開口。不是——對澪說。是——對整個控制室。
 
@@ -239,7 +247,7 @@ LEGACY CACHES                   INVENTORY PENDING
 
 **旁白**：她站在控制室。白光已經完全退去。窗外是——黎明。普通的。灰色的。東京灣的水面——不是黑色的。是——灰色的。普通的灰色。
 
-**朝倉澪** [exhausted]：（內心）普通的黎明。我——六次沒有看到這個。六次——06:13 之後是白光。然後——醒回星期一。這一次——06:13 之後是——06:13:01。然後——06:14。然後——06:20。然後——黎明。普通的。灰色的。不是——黑色海。不是——白光。是——黎明。
+**朝倉澪** [exhausted]：（內心）普通的黎明。我——第三次。前兩次——06:13 之後是白光。然後——醒回星期一。這一次——06:13 之後是——06:13:01。然後——06:14。然後——06:20。然後——黎明。普通的。灰色的。不是——黑色海。不是——白光。是——黎明。
 
 **旁白**：她沒有笑。她只是——站著。看著窗外。看著——一個她從未活過的星期一早上。
 

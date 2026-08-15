@@ -4,6 +4,10 @@
 Asakura apartment kitchen, late morning light through small window, ordinary domestic scene, cereal bowls and a carton of milk on the table, a phone charging cable hanging off the counter, muted warm palette with faint cool shadows, visual-novel background art, medium shot
 ```
 
+```bgm
+ordinary-time
+```
+
 **旁白**：約半年後。白天。朝倉家。江東區。
 
 **旁白**：廚房的窗戶開了一半。十月的光進來。不是——凌晨的灰。是——上午的黃。落在流理台上。落在牛奶盒上。
@@ -68,7 +72,15 @@ Asakura apartment kitchen, late morning light through small window, ordinary dom
 
 **朝倉澪**：（內心）他沒有立即回到學校。先——復健。心理。睡眠醫療。還有夜驚。還有混淆。有時候——失眠。不是——「獲救」了就什麼都好了。不是——從研究中心出來就變回原來的悠真。創傷——不會因為壞人被審判就消失。
 
+```sfx
+train-hum
+```
+
 **旁白**：窗外。電車的聲音。遠遠的。不是——那一天的。是——今天的。普通的。延誤了。
+
+```sfx
+notification-beep
+```
 
 **旁白**：手機螢幕亮了一下。電車延遲通知。十分鐘。
 
@@ -174,6 +186,10 @@ Asakura apartment living room, afternoon light shifting to early evening, the sm
 
 **旁白**：她笑了一下。很小。嘴角動了一下。不是——快樂。是——普通的。
 
+```sfx
+notification-beep
+```
+
 **旁白**：手機螢幕亮了。一通未接來電。未知號碼。她錯過了。
 
 **朝倉澪**：（內心）錯過了一通電話。不知道是誰。不是——緊急的。不是——循環的。只是——一通普通的電話。我錯過了。沒有——第二輪可以重來接。
@@ -181,6 +197,10 @@ Asakura apartment living room, afternoon light shifting to early evening, the sm
 **朝倉澪**：（內心）沒有上一輪了。
 
 **旁白**：她看著未接來電的通知。幾秒。然後——劃掉。不回撥。不是——重要的人。只是——一個普通的未知號碼。在一個普通的日子裡。
+
+```sfx
+notification-beep
+```
 
 **旁白**：窗外。天氣預報的推送。
 

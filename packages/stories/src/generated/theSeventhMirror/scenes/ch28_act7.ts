@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "約半年後。白天。朝倉家。江東區。", background: Background.Chapter_28_Ch28_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "約半年後。白天。朝倉家。江東區。", bgm: "ordinary-time", background: Background.Chapter_28_Ch28_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "廚房的窗戶開了一半。十月的光進來。不是——凌晨的灰。是——上午的黃。落在流理台上。落在牛奶盒上。", background: Background.Chapter_28_Ch28_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）牛奶過期了。", background: Background.Chapter_28_Ch28_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿著牛奶盒。背面印著日期。昨天。", background: Background.Chapter_28_Ch28_Act7_S0 },
@@ -38,8 +38,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "未來不是證物。至少現在不是。", background: Background.Chapter_28_Ch28_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真看著她。幾秒。然後——點了一下頭。很小的。像在確認什麼。不是——被說服了。是——收到了。", background: Background.Chapter_28_Ch28_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他沒有立即回到學校。先——復健。心理。睡眠醫療。還有夜驚。還有混淆。有時候——失眠。不是——「獲救」了就什麼都好了。不是——從研究中心出來就變回原來的悠真。創傷——不會因為壞人被審判就消失。", background: Background.Chapter_28_Ch28_Act7_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗外。電車的聲音。遠遠的。不是——那一天的。是——今天的。普通的。延誤了。", background: Background.Chapter_28_Ch28_Act7_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕亮了一下。電車延遲通知。十分鐘。", background: Background.Chapter_28_Ch28_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗外。電車的聲音。遠遠的。不是——那一天的。是——今天的。普通的。延誤了。", sfx: "train-hum", background: Background.Chapter_28_Ch28_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕亮了一下。電車延遲通知。十分鐘。", sfx: "notification-beep", background: Background.Chapter_28_Ch28_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）電車延誤。十分鐘。", background: Background.Chapter_28_Ch28_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）上一輪——不是這樣。", background: Background.Chapter_28_Ch28_Act7_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）沒有上一輪了。", background: Background.Chapter_28_Ch28_Act7_S0, portrait: Portrait.AsakuraMio_Base },
@@ -89,11 +89,11 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他忘了充電。手機沒電。普通的。不是——追蹤。不是——訊號。只是——忘了充電。", background: Background.Chapter_28_Ch28_Act7_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他忘了充電。", background: Background.Chapter_28_Ch28_Act7_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她笑了一下。很小。嘴角動了一下。不是——快樂。是——普通的。", background: Background.Chapter_28_Ch28_Act7_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕亮了。一通未接來電。未知號碼。她錯過了。", background: Background.Chapter_28_Ch28_Act7_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手機螢幕亮了。一通未接來電。未知號碼。她錯過了。", sfx: "notification-beep", background: Background.Chapter_28_Ch28_Act7_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）錯過了一通電話。不知道是誰。不是——緊急的。不是——循環的。只是——一通普通的電話。我錯過了。沒有——第二輪可以重來接。", background: Background.Chapter_28_Ch28_Act7_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）沒有上一輪了。", background: Background.Chapter_28_Ch28_Act7_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著未接來電的通知。幾秒。然後——劃掉。不回撥。不是——重要的人。只是——一個普通的未知號碼。在一個普通的日子裡。", background: Background.Chapter_28_Ch28_Act7_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗外。天氣預報的推送。", background: Background.Chapter_28_Ch28_Act7_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "窗外。天氣預報的推送。", sfx: "notification-beep", background: Background.Chapter_28_Ch28_Act7_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "明日天氣——晴轉多雲。原先預報——晴。", background: Background.Chapter_28_Ch28_Act7_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）天氣預報改了。原先說晴。現在——晴轉多雲。", background: Background.Chapter_28_Ch28_Act7_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）上一輪——不是這樣。", background: Background.Chapter_28_Ch28_Act7_S1, portrait: Portrait.AsakuraMio_Base },

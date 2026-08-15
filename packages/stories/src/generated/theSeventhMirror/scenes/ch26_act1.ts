@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。星期一。鏡島外部安全指揮。", background: Background.Chapter_26_Ch26_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:05。星期一。鏡島外部安全指揮。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "十五分鐘前——23:50。租約形成了。螢幕上的 CUTOVER AUTH LEASE 還亮著。有效到清晨六點二十。", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在指揮車改裝的驗證室角落。她的手很冷。咖啡早就涼了。她沒有碰。", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）00:05。租約。兩個 token。一份封套。有效到清晨。它不需要我們的同意。它已經在螢幕上了。六小時十五分。然後——05:50。auto-prep。然後——06:13。我們還有時間。可是——時間在往那邊走。", background: Background.Chapter_26_Ch26_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -32,7 +32,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不是破壞。是——讓鏡島讀取它本來應該讀取的東西。患者狀態。臨床端點。誰還接在這條線上。租約有效。可是——有效不等於適用。一份有效的授權——如果它要用在還沒安全切離的人身上——鏡島的本地接受鏈會擋住它。不是我們擋。是——它自己的安全閂擋。我們只需要——讓它看見。", background: Background.Chapter_26_Ch26_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:20。系統安全人員看著她。他的手停在面板上。他沒有反駁。他把快速方案的視窗收起來了。", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "不破壞。走 live-state path。讓 KAGAMI 本地接受鏈自己判定租約是否仍適用於當輪患者狀態。", background: Background.Chapter_26_Ch26_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:22。千田的音訊連線從喇叭傳出來。他的聲音很輕。像在讀一份他已經拆解過很多次的文件。", background: Background.Chapter_26_Ch26_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "00:22。千田的音訊連線從喇叭傳出來。他的聲音很輕。像在讀一份他已經拆解過很多次的文件。", sfx: "radio-feed", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "我從遠端拆解了租約的結構。", background: Background.Chapter_26_Ch26_Act1_S0, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕切換。租約的欄位一行一行展開。", background: Background.Chapter_26_Ch26_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "AUTH EPOCH——A17。SUBJECT SNAPSHOT EPOCH——S42。DEPENDENCY HASH——<OLD-HASH>。EXECUTION ANCHOR——KAGAMI-01。", background: Background.Chapter_26_Ch26_Act1_S0 },

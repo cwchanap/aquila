@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:15。KAGAMI 指揮。不是 commit-gate。是更大的房間。一面牆——八個 patient node 的平行畫面。每個窗格——一名患者的本地節點。有些在跑離線模擬。有些停在 HOLD。有些在等 medical go。中間的主控台——distributed switch clock package 的驗證畫面。背景團隊的報告——一個一個進來。", background: Background.Chapter_26_Ch26_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:15。KAGAMI 指揮。不是 commit-gate。是更大的房間。一面牆——八個 patient node 的平行畫面。每個窗格——一名患者的本地節點。有些在跑離線模擬。有些停在 HOLD。有些在等 medical go。中間的主控台——distributed switch clock package 的驗證畫面。背景團隊的報告——一個一個進來。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）05:15。距 05:50——三十五分。距 06:13——五十八分。Route A 失敗。Route B 失敗。舊租約——不適用。execution anchor——沒有簽。可是——05:50 還是會來。auto-prep 還是會啟動。protective filter 的高負荷準備。clinical phase 的準備。patient bridge 的 timing window。這些——不是 TOKYO-7 的。是——患者自己的。是——讓每個人能在同一個時間框架裡，用自己的狀態決定是否繼續的東西。", background: Background.Chapter_26_Ch26_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:18。背景 A 組的報告進來了。獨立系統安全人員站在面板前。他的聲音很平。", background: Background.Chapter_26_Ch26_Act8_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "分散式切換時脈套件。code hash VERIFIED。僅時序。沒有患者控制數據。七階段全部 VERIFIED。安全暫停已定義。部署已預置。啟動還在等 medical go。", background: Background.Chapter_26_Ch26_Act8_S0 },
@@ -29,7 +29,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:38。第五份報告。manual override。", background: Background.Chapter_26_Ch26_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上。軟體覆蓋——UNAVAILABLE。實體緊急操作——需要醫療、患者權利、營運三方。有效份額——NOT AVAILABLE。", background: Background.Chapter_26_Ch26_Act8_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）manual override。軟體——不適用。人類未解決時——fail closed。實體 break-glass——需要三把份額。醫療。患者權利。營運。三把。可是——醫療拒絕了。患者權利拒絕了。valid shares——不適用。所以——沒有 override。continuity custodian 不能遠端按下「忽略患者」。一名高官不能以 science 或 operations token 替代患者權利。如果接下來有人要 bypass——只能是可見的、可記錄的破壞性物理行動。不是隱藏的按鈕。不是普通的遠端後門。", background: Background.Chapter_26_Ch26_Act8_S2, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:42。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。像在讀一份他已經讀過很多次的文件。", background: Background.Chapter_26_Ch26_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:42。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。像在讀一份他已經讀過很多次的文件。", sfx: "radio-feed", background: Background.Chapter_26_Ch26_Act8_S2 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "兩條 fallback 都失敗了。formal rebind——denied。subject equivalence cert——denied。舊租約——有效，但不適用。KAGAMI 不簽 execution anchor。區域預置不能在 06:13 形成同一份同步 public fanout。", background: Background.Chapter_26_Ch26_Act8_S2, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_26_Ch26_Act8_S2 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "可是——05:50 的 auto-prep 仍會啟動。不是 TOKYO-7 的。是——患者側的。protective filter 高負荷準備。clinical phase 準備。patient bridge timing window。這些——不依賴 execution anchor。它們是——讓每名患者自己的根知道何時取樣、何時停止、何時才可嘗試下一步的共同時間框架。", background: Background.Chapter_26_Ch26_Act8_S2, portrait: Portrait.ChidaKosuke_Base },
@@ -47,5 +47,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:49。KAGAMI 指揮。螢幕上的八個 patient node 窗格——還在等。有些在跑離線模擬。有些停在 HOLD。有些在等 medical go。pre-dawn 的灰色光從窗邊滲進來。很淡。還不是早上。可是——不再是純粹的夜。", background: Background.Chapter_26_Ch26_Act8_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "distributed switch clock——PRE-STAGED。NOT ACTIVE。witness egress package——PRE-STAGED。NOT ACTIVE。official app cancel command——SIGNED。NOT ARMED。execution anchor——NOT ISSUED。", background: Background.Chapter_26_Ch26_Act8_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "租約裡沒有名字。", background: Background.Chapter_26_Ch26_Act8_S3 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:49。鏡島第一次停下來，等待那些名字自己的系統回答。", background: Background.Chapter_26_Ch26_Act8_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:49。鏡島第一次停下來，等待那些名字自己的系統回答。", bgm: null, background: Background.Chapter_26_Ch26_Act8_S3 },
 ];

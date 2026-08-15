@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "約半年後。某個普通夜晚。朝倉家。客廳。", background: Background.Chapter_28_Ch28_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "約半年後。某個普通夜晚。朝倉家。客廳。", bgm: "ordinary-time", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真已經睡了。他的房間門關著。裡面沒有聲音。有時候——夜驚。有時候——安靜。今晚——安靜。", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "母親仍在復健醫療區。不在這裡。她的房間——空著。床鋪整齊。沒有人睡。", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪獨自在客廳。", background: Background.Chapter_28_Ch28_Act8_S0 },
@@ -17,9 +17,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）媽媽留下的。", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她年輕的時候喜歡天文。喜歡短波。這台機器——是她改裝的。白色刻線——是她標的頻率。她標的那個位置——不是——隨便標的。是——prior source band。是——函館那一夜的方向。", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）它不是——循環密鑰。不是——患者資料庫。不是——只對我有反應的東西。它只是一台——類比比較接收器。在 KAGAMI 的數位處理鏈以外。用來——確認 prior source band 是否還有訊號。", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "機器的喇叭。平時——只有靜電。偶發的窄帶聲。像——遠處的收音機在找台。像——空氣在振動。", background: Background.Chapter_28_Ch28_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "機器的喇叭。平時——只有靜電。偶發的窄帶聲。像——遠處的收音機在找台。像——空氣在振動。", sfx: "receiver-static", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "今晚——不一樣。", background: Background.Chapter_28_Ch28_Act8_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "它發出了——一輪多音序列。", background: Background.Chapter_28_Ch28_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "它發出了——一輪多音序列。", sfx: "signal-tones", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是——語音。不是——單音。是——好幾個頻率同時出現。數學的。規律的。像——幾個音叉同時被敲響。像——座標在唱。", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）來了。", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "ACQUISITION TIME。FREQUENCY／SPECTRUM METADATA。RECEIVER CONFIGURATION。HASH／MERKLE COMMITMENT。MULTI-SITE DETECTION COUNT。NON-RECONSTRUCTABLE PREVIEW。SAFETY STATUS——UNASSESSED。", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）公開的是——時間、頻率、設備配置、hash、多站計數、不可重建的預覽。不是——完整 RF／IQ。不是——可以播放的音訊。安全狀態——未評估。", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）原始資料——進 DISTRIBUTED SIGNAL SAFETY QUARANTINE。多國。民間。學術。加密分散保存。無單一刪除者。不自動播放。存取——需訊號及神經安全程序。各站——以自己直接觀測驗證。", background: Background.Chapter_28_Ch28_Act8_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她等著。客廳很安靜。機器的喇叭靜了。只有——筆電風扇在轉。只有——窗外遠處的電車。只有——普通的夜晚。", background: Background.Chapter_28_Ch28_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她等著。客廳很安靜。機器的喇叭靜了。只有——筆電風扇在轉。只有——窗外遠處的電車。只有——普通的夜晚。", sfx: "train-hum", background: Background.Chapter_28_Ch28_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "其後數週。多點獨立接收。安全審查。逐步資料開放。", background: Background.Chapter_28_Ch28_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上。公開頁面更新了。", background: Background.Chapter_28_Ch28_Act8_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "SOURCE FAMILY——CONSISTENT WITH PRIOR HAKODATE BAND。POWER／COHERENCE——LOWER。HIGH-COHERENCE PHASE——NOT DETECTED。KAGAMI AMPLIFICATION——NONE。KNOWN NEURAL COUPLING——NONE OBSERVED。SAFETY——NOT PROVEN。", background: Background.Chapter_28_Ch28_Act8_S1 },

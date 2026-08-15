@@ -4,13 +4,17 @@
 KAGAMI command room, all screens simultaneously updating as echo peak hits, wall of patient node panels showing protective filter active status, center console displaying TOKYO-7 consensus output none and mobile follow-up cancelled, blinding white light beginning to bleed through reinforced window edges overwhelming cold fluorescent and dawn light, muted cool palette dissolving into white, visual-novel background art, wide shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：06:13:00。
 
 **旁白**：白光。
 
 **旁白**：不是——螢幕上的。是——窗外的。從人工島的方向。無聲。無熱。無衝擊波。只是——白。越過人工島。越過東京灣的水面。越過——強化玻璃窗。
 
-**朝倉澪** [exhausted]：（內心）白光。又來了。星期一 06:13。第六次。第六次——看見這個。可是——這一次不一樣。這一次——consensus 沒有形成。execution anchor 沒有簽。app follow-up——被攔住了。protective filter——在跑。這一次——白光裡沒有統一答案。
+**朝倉澪** [exhausted]：（內心）白光。又來了。星期一 06:13。第三次。第三次——看見這個。可是——這一次不一樣。這一次——consensus 沒有形成。execution anchor 沒有簽。app follow-up——被攔住了。protective filter——在跑。這一次——白光裡沒有統一答案。
 
 **旁白**：螢幕上。八個 patient node 窗格。protective filter——ACTIVE。每一個窗格的狀態欄。FILTER LOAD——WITHIN LIMIT。HIGH-COHERENCE COUPLING——SUPPRESSED。RAW SIGNAL TO PUBLIC CONSENSUS——BLOCKED。
 

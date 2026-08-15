@@ -4,6 +4,10 @@
 C2 medical facility perimeter at dawn, temporary command post van with monitors glowing, grey pre-dawn sky, cold fluorescent spill from facility windows, white transport vehicle parked at access road, security vehicles, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：05:40。星期日。悠真失蹤事件第十三日。第七日。
 
 **旁白**：澪睡了大概四個小時。不是在床上——是在 C2 外圍的行動指揮車裡，後排座椅放倒。有人塞了一條毯子給她。她不記得是誰。醒來的時候脖子很僵，毯子滑到腳邊。車外的天空還沒亮透。灰色的。
@@ -54,6 +58,10 @@ C2 medical facility perimeter at dawn, temporary command post van with monitors 
 
 **日下部悟**：車輛。出入口。設備。搬送工單。值班主管確認紀錄。全部保全。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：司法保全人員在門邊記錄。每一項。時間戳。搬送車被拍照。工單被封存。出入口的門禁紀錄被調出。值班主管的確認簽名被存證。
 
 **朝倉澪** [exhausted]：（內心）第七日的第一場衝突。不是誰先破門。是——誰有權把「保護」寫進工單。值班主管寫了「醫療保護」。外部醫師寫了「沒有獨立確認不能移動」。兩個人都說自己在保護患者。可是——一個人的保護，是把女孩留在原來的床上。另一個人的保護，是把女孩送走。
@@ -65,6 +73,10 @@ C2 medical facility perimeter at dawn, temporary command post van with monitors 
 **日下部悟**：車到了。人沒走。no-move 擋住了。下一步——進去。
 
 **朝倉澪** [exhausted]：（內心）進去。不是破門。是——外部醫療、兒少保護、司法保全，全部進場。在患者不移動的前提下。確認她還在那裡。確認她還活著。確認系統沒有在我們睡覺的時候，已經把她搬走了。
+
+```sfx
+evidence-bag-seal
+```
 
 **旁白**：06:40。C2 外圍。天空亮了一點。灰色的光。搬送車停在原地。工單封存在證物袋裡。
 

@@ -4,6 +4,10 @@
 KAGAMI-01 clinical service side corridor, reinforced door with SUBJECT CONTINUITY BAY placard, local technician at service panel, system security and judicial preservation officers flanking, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：02:35。KAGAMI-01。臨床服務側。Subject Continuity Bay 的門前。多方在場。系統安全。外部醫療。患者權利代表。司法保全。本地技師。全部到齊。
 
 **朝倉澪** [exhausted]：（內心）02:35。受試者區域。不是病房。不是研究中心。不是——有床的地方。是——一個患者側的安全區。一個 ledger。一個 queue。一個 heartbeat map。一堆記錄。它不是用來放人的。是——用來確認人還在線上、還沒有被當成已處理的。
@@ -121,6 +125,10 @@ SUBJECT CONTINUITY BAY interior service view, background team workstations on fa
 **旁白**：03:40。澪看著螢幕。SUBJECT LEDGER。BASE——S42。MERGE——MONOTONIC。RESULT——S43。背景團隊的螢幕還亮著。A 組的七階段 handshake 分析。B 組的 witness buffer 驗證。forensic clone 指向的 server-side delegation record。全部在跑。
 
 **朝倉澪** [exhausted]：（內心）開門不改變任何患者治療。這句話——是這一夜最重要的底線。我們沒有傷害任何人。我們沒有弄壞任何東西。我們——只讓它看見。看見——誰還接在線上。看見——誰還沒有安全切離。看見——它本來應該看見、卻用 MANAGED-EQUIVALENT 假裝看不見的東西。現在——它看見了。下一步——讓它說。讓它說——這份租約，有效，但不適用。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：03:45。Subject Continuity Bay。螢幕上的 S43 還亮著。heartbeat map 上的八個點還在跳。背景團隊還在工作。沒有患者被碰。沒有治療被改。只有——記錄。queue。heartbeat。holds。delegation。handshake。全部——被讀取了。
 

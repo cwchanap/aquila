@@ -4,6 +4,10 @@
 C2 ward exterior corridor, external clinical sidecar equipment setup, portable HSM hardware on mobile cart, sealed cables, laptop with attestation screen, cold fluorescent lighting, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：08:55。C2 病房外的走廊。外部臨床 sidecar 設備已經架好了。一台移動式 HSM。一台筆電。幾條封好的纜線。全部不連接 C2 的內部網路。
 
 **旁白**：患者權利代表站在 sidecar 旁邊。她的聲音溫和但精確。每一個字都像在測量過之後才放下的。

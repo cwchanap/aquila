@@ -4,6 +4,10 @@
 C2 hospital isolation ward, single bed with medical monitoring equipment, 14-year-old girl unconscious with closed eyes, IV lines and biometric sensors, soft clinical lighting, muted cool palette with faint warm afternoon light through blinds, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：13:25。C2 葵病房。星期日下午。
 
 **旁白**：門口的時候，佳乃停了一下。她的手放在門把上。沒有推。外部醫師站在她身後。患者權利代表在另一側。澪在走廊。她沒有進去。她站在門框外面。
@@ -14,9 +18,17 @@ C2 hospital isolation ward, single bed with medical monitoring equipment, 14-yea
 
 **外部醫師**：患者穩定。生命徵象在既有範圍。治療未改變。您可以進入。
 
+```sfx
+monitor-beep
+```
+
 **旁白**：佳乃推開門。病房的空調聲很輕。監測儀的規律嗶聲填在縫隙裡。葵躺在床上。十四歲。閉著眼。呼吸很淺。很穩。很慢。
 
 **旁白**：佳乃走到床邊。她的腳步沒有聲音。不是刻意放輕。是——走了太久的路，最後幾步自己變安靜了。
+
+```bgm
+stop
+```
 
 **旁白**：她站在床邊。她看著葵的臉。她沒有碰。她只是站著。然後——她叫了女兒的名字。
 
@@ -39,6 +51,10 @@ C2 hospital isolation ward, single bed with medical monitoring equipment, 14-yea
 **旁白**：她的聲音很平。不是冷漠。是——已經說過太多次了。在空的房間裡。在尋人頁的留言裡。在沒有人回覆的訊息裡。現在——女兒在面前。她說的話和四十一日裡一樣。可是這次——有空調的聲音。有監測儀的嗶聲。有呼吸。有女兒在。
 
 **朝倉澪**：（內心）我站在門口。我看著佳乃的背。她的肩膀沒有抖。她沒有哭。她只是站著。叫了一個名字。說了一句話。然後——站著。這不是團圓。這不是救出。這是——一個母親站在女兒床邊。女兒沒有醒。可是她在那裡。她們在同一個房間裡。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：13:40。外部醫師再次確認患者。他用自己的設備。不經 C2 系統。腦電。呼吸。自律。當輪生命體徵。他核對姓名、生日、既有醫療識別。
 

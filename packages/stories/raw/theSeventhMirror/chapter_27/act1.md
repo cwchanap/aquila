@@ -4,6 +4,10 @@
 KAGAMI command room, wall of eight patient node panels transitioning from HOLD to ANNOUNCE status, center console displaying distributed switch clock epoch announcement, pre-dawn grey light bleeding through reinforced window edges, cold fluorescent lighting mixing with faint grey, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：05:50:00。KAGAMI 指揮。螢幕中間。一行字。
 
 **旁白**：冷氣太強了。澪的肩膀從凌晨三點就沒放下來過，現在已經僵成兩塊石頭。螢幕的冷光打在她臉上，把眼底的青黑照得更深。
@@ -15,6 +19,10 @@ KAGAMI command room, wall of eight patient node panels transitioning from HOLD t
 **朝倉澪** [exhausted]：（內心）不是 anchor。不是 fanout。是——epoch。只是 epoch。
 
 **旁白**：八個 patient node 窗格同時變化。不是同時變成同一個畫面。是——每個窗格各自開始讀自己預載的 signed local schedule。各自的 monotonic clock。各自的 skew 檢查。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：螢幕上。一個一個。很慢。像八個人在各自的房間裡各自翻開各自的課表。
 

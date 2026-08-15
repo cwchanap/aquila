@@ -4,6 +4,10 @@
 continuity monitoring room, all three screens active, left showing operations heartbeat PRESENT/DENIED, center showing S7 cutover countdown, right showing court emergency video frozen on hold request, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+tension-pulse
+```
+
 **旁白**：23:35。continuity 監看室。十五分鐘。螢幕上的時鐘還在走。澪坐回角落。她的手很冷。咖啡早就涼了。她沒有碰。
 
 **朝倉澪** [exhausted]：（內心）十五分鐘。十五分鐘後——23:50。cutover。我們做了所有能做的事。剩下的——不是我們能控制的。
@@ -67,6 +71,10 @@ continuity monitoring room, center screen now displaying CUTOVER AUTH LEASE asse
 **旁白**：CUTOVER AUTH LEASE。BUNDLE HASH——TOKYO-7。SCIENCE TOKEN——一串編號。OPERATIONS TOKEN——另一串編號。ISSUED——SUN 23:50。VALID UNTIL——MON 06:20。EPOCH——N。EXECUTION——NOT YET。
 
 **朝倉澪** [exhausted]：（內心）租約。有效到清晨六點二十。六小時三十分。它不是啟動。不是 execution commit。不是 public fanout。是——一份授權租約。一份由兩個有效 token 組裝的、綁定 exact bundle 的、有效到清晨的租約。它不需要我們的同意。它只需要——兩個 token。一個來自 science HSM。一個來自 operational HSM。兩個都不認得我們的「不」。
+
+```bgm
+stop
+```
 
 **旁白**：23:50。房間裡沒有人說話。空調的聲音填進來。螢幕上的租約還亮著。
 

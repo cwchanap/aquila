@@ -4,6 +4,10 @@
 KAGAMI command room, five patient node panels showing COMPARE stage with envelope comparison data, three panels showing HOLD/SAFE PAUSE status, center console displaying Patient Safety Envelope and Network Transition Envelope comparison matrix, pre-dawn grey light growing stronger, cold fluorescent mixing with grey dawn, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：05:57:00。COMPARE。五個窗格同時開始比較。不是比較彼此。是——每個人比較自己。
 
 **旁白**：PATIENT SAFETY ENVELOPE。NETWORK TRANSITION ENVELOPE。LOCAL MODEL／ROOT STATUS。EXTERNAL MEDICAL OBSERVATION。四個欄位。每個人各自的數據。
@@ -58,6 +62,10 @@ KAGAMI command room, five patient node panels showing COMPARE stage with envelop
 
 ```bg
 KAGAMI command room, all eight patient node panels showing ACKNOWLEDGE stage results, each panel displaying its own legal answer — CONTINUE, SAFE PAUSE, HOLD — no shared YES visible, center console showing aggregate summary, pre-dawn grey light now clearly dawn, cold fluorescent mixing with warmer grey, muted cool palette warming slightly, visual-novel background art, wide shot
+```
+
+```sfx
+monitor-beep
 ```
 
 **旁白**：06:01:00。ACKNOWLEDGE。六個 patient node 的窗格同時更新。不是同時更新成同一個答案。是——各自回報各自的合法答案。

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:50。Subject Continuity Bay。S43 已經形成。S42 被封存。monotonic merge 把早已存在的 signed updates 匯進來了。沒有新的患者。沒有新的狀態。只是——把一直在外面發生的事，終於讓這台機器看見。", background: Background.Chapter_26_Ch26_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:50。Subject Continuity Bay。S43 已經形成。S42 被封存。monotonic merge 把早已存在的 signed updates 匯進來了。沒有新的患者。沒有新的狀態。只是——把一直在外面發生的事，終於讓這台機器看見。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "本地技師站在面板前。他的聲音很平。像在讀一份他已經讀過很多次的服務手冊。", background: Background.Chapter_26_Ch26_Act5_S0 },
     { characterId: CharacterId.LocalTechnician, character: "本地技師", dialogue: "實體端點核對。八個活動端點。八筆 ledger 紀錄。未對應心跳——零。", background: Background.Chapter_26_Ch26_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上展開。一行一行。", background: Background.Chapter_26_Ch26_Act5_S0 },
@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二個——PUBLIC DATA USE。", background: Background.Chapter_26_Ch26_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "DATA-SOURCE SUBJECTS——5。VALID PUBLIC-USE CONSENT——0／5。RESULT——HOLD。", background: Background.Chapter_26_Ch26_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）五個資料來源者。零個有效公共使用同意。HOLD。不是法院按的。不是醫療按的。是——五個人的同意從來不存在。租約用了他們的資料。可是——沒有一個人說過可以用。", background: Background.Chapter_26_Ch26_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:55。螢幕中間。授權人類畫面還原。不是全部。是四名紅區。一個一個。很慢。", background: Background.Chapter_26_Ch26_Act5_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:55。螢幕中間。授權人類畫面還原。不是全部。是四名紅區。一個一個。很慢。", bgm: null, background: Background.Chapter_26_Ch26_Act5_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一個——朝倉紗英。M-00。第一代穩定接收者。澪的母親。", background: Background.Chapter_26_Ch26_Act5_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）媽媽。名字出來了。不是編號。不是 M-00。是——朝倉紗英。她一直在那裡。在 ledger 裡。在 heartbeat 裡。在八條線裡的其中一條上。只是——沒有人把她的名字寫在租約上。", background: Background.Chapter_26_Ch26_Act5_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二個——藤川美空。G07／03。長期昏迷。13 歲。", background: Background.Chapter_26_Ch26_Act5_S1 },
@@ -45,7 +45,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音的手在膝蓋上握緊了一下。然後鬆開。她的嘴唇動了一下。像要說什麼。然後——沒有說。", background: Background.Chapter_26_Ch26_Act5_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她看見了。她看見——她為了讓美空醒來而做的事——那個制度從來沒有把美空的名字寫進去。她刺傷了千田。她協助了計畫。她相信——東京方案成功，美空就會醒來。可是——租約裡沒有美空。只有 TOKYO-7。只有 bundle hash。只有 science token 和 operational token。美空不在裡面。美空從來不在裡面。她只是——被那條線接著。被 ledger 記著。被 heartbeat 數著。可是——租約不知道她叫什麼。", background: Background.Chapter_26_Ch26_Act5_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:12。辯護人低聲對琴音說了一句話。琴音點了一下頭。很小的動作。", background: Background.Chapter_26_Ch26_Act5_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:15。千田的音訊連線還在。他的聲音從喇叭傳出來。很輕。像在讀一份他不想讀的文件。", background: Background.Chapter_26_Ch26_Act5_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:15。千田的音訊連線還在。他的聲音從喇叭傳出來。很輕。像在讀一份他不想讀的文件。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act5_S1 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "兩個 HOLD 是獨立的。Clinical Safety 擋的是——八個人的生命線還掛著。Public Data-Use 擋的是——五個人的資料被用了，可是沒有人同意。兩把鎖。兩個方向。同一個結論——這份租約不能對現在的人執行。", background: Background.Chapter_26_Ch26_Act5_S1, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）兩把鎖。不是我們加的。是——他們一直都在那裡。八個人一直接著。五個人的同意一直不存在。我們只是——打開了 Bay。讓機器看見。讓租約看見——它要執行的對象，從來不在它的文件裡。", background: Background.Chapter_26_Ch26_Act5_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:18。澪看著螢幕。四個名字。兩個 HOLD。八個心跳。零個同意。", background: Background.Chapter_26_Ch26_Act5_S1 },

@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一至三個月後。", background: Background.Chapter_28_Ch28_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一至三個月後。", bgm: "institutional-drone", background: Background.Chapter_28_Ch28_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪在旁聽席。不是——每一場都在。有些——她透過公開轉播看見。有些——是媒體畫面。有些——是法院公開文件。她不進入凪原的內心。不進入琴音的內心。不進入日下部的內心。她只看見——公開的。可聽見的。螢幕上的。紙上的。", background: Background.Chapter_28_Ch28_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）三個月了。聽證。法院。媒體。三條線。同時——在跑。我——在旁聽席。在螢幕前。在文件裡。不是——當事人。不是——律師。只是——看見的人。", background: Background.Chapter_28_Ch28_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一條線。千田。", background: Background.Chapter_28_Ch28_Act5_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第一條線。千田。", sfx: "camera-shutter", background: Background.Chapter_28_Ch28_Act5_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他以活人身分坐在證人席上。那個——前兩輪被預約死亡的人。這一次——活過了 06:13。活到——能拆解自己的當輪官方死亡版本。", background: Background.Chapter_28_Ch28_Act5_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13 之後。保護地點連線仍在。他只說過一句。", background: Background.Chapter_28_Ch28_Act5_S1 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "我還在。", background: Background.Chapter_28_Ch28_Act5_S1, portrait: Portrait.ChidaKosuke_Base },
@@ -54,7 +54,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "```text POLICE STATUS        TERMINATED ENFORCEMENT POWER    NONE BADGE／AUTHORITY     NONE CRIMINAL LIABILITY   DISPUTED／ONGOING REVIEW WITNESS STATUS       PROTECTED／CASE-SPECIFIC ```", background: Background.Chapter_28_Ch28_Act5_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）TERMINATED。正式——失去警察身分。不是——暫停。不是——停職。是——終止。他——不再是刑警了。沒有——徽章。沒有——調查權。沒有——再看一份檔案的權限。", background: Background.Chapter_28_Ch28_Act5_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "法院走廊。下午。澪站在那裡。日下部坐在長椅上。沒有穿西裝。沒有——警徽。只是——一個普通人。", background: Background.Chapter_28_Ch28_Act5_S3 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不為自己辯護。不說——自己是對的。不說——結果證明他做對了。他說——", background: Background.Chapter_28_Ch28_Act5_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不為自己辯護。不說——自己是對的。不說——結果證明他做對了。他說——", bgm: null, background: Background.Chapter_28_Ch28_Act5_S3 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "這次我沒有下一輪可以改。", background: Background.Chapter_28_Ch28_Act5_S3, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他——不是在辯護。他——是在承認。他也——必須在普通時間裡承擔選擇。沒有——下一輪。沒有——可以改的機會。他做了什麼——就是做了。粗暴。沒收。控制。越權。公開證據。違抗指揮鏈。這些——都是他做的。有些——保護了我。有些——傷害了我。可是——沒有下一輪了。他——也住在後果裡。", background: Background.Chapter_28_Ch28_Act5_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著他。他看起來——老了。比——她記得的更老。可是——不是被打敗的樣子。是——一個知道自己做了什麼的人。", background: Background.Chapter_28_Ch28_Act5_S3 },
@@ -69,5 +69,5 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪沒有去琴音的法庭。不是——這一次。也許——以後。也許——不會。她——不原諒。也不——永久宣告不可能原諒。那——留在普通時間裡。", background: Background.Chapter_28_Ch28_Act5_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三條線。三個月。聽證。法院。媒體。沒有——一條完成。沒有——一條被抹掉。全部——仍在走。在普通時間裡。沒有——下一輪可以改。", background: Background.Chapter_28_Ch28_Act5_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）活人。與——具體決定。千田——活著。拆解——自己的死亡版本。不替我——冒充前輪。凪原——在審理。仍不認為——核心恐懼是錯的。可是——她的決定——被列在公開記錄上。日下部——失去警察身分。也——失去下一輪。琴音——在審理。判決——未定。這些——都是活人。做的——具體決定。在普通時間裡。承擔。", background: Background.Chapter_28_Ch28_Act5_S3, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "法院走廊的窗外。下午的光。普通的。不是白光。不是——06:13。只是——三個月後的下午。光——在走。時間——在走。沒有——被拿走。", background: Background.Chapter_28_Ch28_Act5_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "法院走廊的窗外。下午的光。普通的。不是白光。不是——06:13。只是——三個月後的下午。光——在走。時間——在走。沒有——被拿走。", bgm: "grey-city", background: Background.Chapter_28_Ch28_Act5_S3 },
 ];

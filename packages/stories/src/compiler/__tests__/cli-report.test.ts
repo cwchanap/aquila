@@ -38,8 +38,11 @@ describe('cli --report', () => {
             'bgm:carriage-drone',
             'bgm:dawn-apartment',
             'bgm:grey-city',
+            'bgm:grief-piano',
             'bgm:institutional-drone',
+            'bgm:mirror-island',
             'bgm:night-street',
+            'bgm:ordinary-time',
             'bgm:passage-hum',
             'bgm:safe-harbor',
             'bgm:sleepless-vigil',
@@ -63,6 +66,7 @@ describe('cli --report', () => {
             'sfx:phone-vibrate',
             'sfx:radio-feed',
             'sfx:receiver-static',
+            'sfx:signal-tones',
             'sfx:sleep-talk-recording',
             'sfx:sync-glitch',
             'sfx:toolbox-roll',
@@ -72,7 +76,7 @@ describe('cli --report', () => {
             'sfx:vending-machine-hum',
             'sfx:ventilator-cycle',
         ]);
-        expect(report.bgmStops).toHaveLength(44);
+        expect(report.bgmStops).toHaveLength(61);
         expect(report.unused).toEqual([]);
     });
 

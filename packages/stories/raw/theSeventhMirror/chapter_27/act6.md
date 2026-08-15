@@ -4,6 +4,10 @@
 KAGAMI command room, center console displaying witness fragment release verification screen, final consent root and release cutoff fields pending, unified preface draft visible in side panel awaiting final go, pre-dawn grey light now clearly dawn light, cold fluorescent mixing with grey dawn, muted cool palette warming slightly, visual-novel background art, close shot on center console
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：06:11:30。急性窗口 settle 完成。螢幕中間的畫面變了。不是 patient node。是——witness fragment release 的最後核對。
 
 **旁白**：SOURCE STILL VALID?——YES。CONSENT STILL VALID?——YES。PATIENT／PROXY WITHDRAWAL?——NONE。MEDICAL RISK CHANGED?——NO。PUBLIC TIER UNCHANGED?——YES。
@@ -28,6 +32,10 @@ KAGAMI command room, center console displaying witness fragment release verifica
 
 **朝倉澪** [exhausted]：（內心）如果我替他們寫一份前言。如果我——解釋好每一個 fragment 的意義。如果我——排好順序。那——讀的人看到的是——我的解釋。不是——他們的聲音。我會變成——另一個凪原。用我的版本——替掉政府的版本。然後說——這是為了他們好。可是——只要是一份。只要是統一的。只要是——替所有人排好的。就——不是自由。是——另一種控制。
 
+```bgm
+stop
+```
+
 **旁白**：06:12:00。她把手從鍵盤上移開了。
 
 **朝倉澪** [exhausted]：不要。
@@ -45,6 +53,10 @@ KAGAMI command room, center console displaying witness fragment release verifica
 **朝倉澪** [exhausted]：經歷不需要被壓成一樣。
 
 **朝倉澪** [exhausted]：（內心）不是——拒絕共同事實。文件真相——Manifest——已經存在。bundle。hold。醫院轉移。患者存在。營運拒絕。這些——是事實。可以一起查。應該一起查。可是——經歷。每個人的經歷。每個人的 fragment。不需要——被排成同一個順序。不需要——被同一份前言解釋。不需要——被壓成一個答案。政府的統一版本——是強制單一解釋。我的統一版本——也是。我不能——用我的前言替掉他們的前言。然後說——這是自由的。不是。只要——是一份。是統一的。是——替所有人排好的。就——不是。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：06:12:15。螢幕上。系統接受了她的拒絕。統一前言——REMOVED。fragment 的標頭更新了。不是——一份前言。是——最低限度的安全與來源標頭。
 

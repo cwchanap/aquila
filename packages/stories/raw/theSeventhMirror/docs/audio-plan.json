@@ -232,6 +232,33 @@
       "type": "sfx",
       "prompt": "Eye-tracking letter-board cursor ticks, slow stop and confirm per letter, the patient's only voice, one-shot sequence",
       "durationMs": 8000
+    },
+    {
+      "key": "mirror-island",
+      "type": "bgm",
+      "prompt": "Artificial-island terminal-night register, low machinery hum and hushed terminal beeps, deliberately non-institutional, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "ordinary-time",
+      "type": "bgm",
+      "prompt": "Day-8 healed register, exhaustion and quiet hope, procedural calm and domestic ordinariness, seamless loop",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "grief-piano",
+      "type": "bgm",
+      "prompt": "Sparse solo piano in a near-death and grief register, cue-length pieces",
+      "durationMs": 90000,
+      "loop": true
+    },
+    {
+      "key": "signal-tones",
+      "type": "sfx",
+      "prompt": "Narrowband multi-tone sequence, mathematical tuning-fork-like tones, coordinates singing, non-voice and non-countdown, one-shot sequence",
+      "durationMs": 10000
     }
   ]
 }

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:51:30。螢幕中間。一個新的面板閃出來。紅色。不是 patient node。不是 medical alert。是——continuity。", background: Background.Chapter_27_Ch27_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:51:30。螢幕中間。一個新的面板閃出來。紅色。不是 patient node。不是 medical alert。是——continuity。", bgm: "institutional-drone", background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紅光打在澪的臉上，把疲勞照成一種警覺。她的背脊動了一下，像被針戳了一下。", background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "PHYSICAL BREAK-GLASS REQUEST。REASON NATIONAL CONTINUITY／PUBLIC SAFETY。TARGET CLINICAL DEPENDENCY LATCH。", background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）break-glass。continuity 在要求——開啟臨床依存鎖定。用國家持續性。用公共安全。", background: Background.Chapter_27_Ch27_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -19,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "PATIENT-RIGHTS SHARE — DENY。PUBLIC EXECUTION 不是普通警報及 PROTECTIVE FILTER 的必要條件。", background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）兩個拒絕了。醫療。患者權利。", background: Background.Chapter_27_Ch27_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）理由——八個人還在。臨床分支還在用。public execution 不是必要條件。不是——可以跳過患者的理由。", background: Background.Chapter_27_Ch27_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:52:00。第三個欄位。LOCAL OPERATIONS SHARE。", background: Background.Chapter_27_Ch27_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:52:00。第三個欄位。LOCAL OPERATIONS SHARE。", bgm: null, background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上。一條新的音訊連線亮了。不是遠端。是——本地。鏡島現場。本地營運責任者的聲音從喇叭傳出來。沉穩。簡短。像在讀一行值班日誌。", background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.LocalOperationsLead, character: "本地營運責任者", dialogue: "我還在線上。", background: Background.Chapter_27_Ch27_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_27_Ch27_Act3_S0 },
@@ -39,7 +39,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "BREAK-GLASS PANEL。OUTER ACTION ATTEMPTED。REQUIRED SHARES 0／3 APPROVED。INNER BYPASS NOT REACHED。AUDIT IMMUTABLE。", background: Background.Chapter_27_Ch27_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）外層——attempted。嘗試了。被記錄了。內層——沒有到達。沒有碰觸。", background: Background.Chapter_27_Ch27_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）沒有槍。沒有暴力。沒有——新反派。只有——一個程序。一個要求。三個拒絕。一個 audit。結束了。", background: Background.Chapter_27_Ch27_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:52:30。break-glass 面板從螢幕中間消失。不是關閉。是——歸檔。進入 immutable audit log。patient node 的窗格——還在跑 SAMPLE。臨床 latch——沒有變。protective filter——沒有受影響。", background: Background.Chapter_27_Ch27_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:52:30。break-glass 面板從螢幕中間消失。不是關閉。是——歸檔。進入 immutable audit log。patient node 的窗格——還在跑 SAMPLE。臨床 latch——沒有變。protective filter——沒有受影響。", bgm: "institutional-drone", background: Background.Chapter_27_Ch27_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）就這樣。沒有戰鬥。沒有戲劇。沒有——最後一刻的爆炸。", background: Background.Chapter_27_Ch27_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）只有——一個人說「我在這裡，我拒絕這個要求。」然後——系統記錄了。然後——繼續。患者還在取樣。時鐘還在走。這場——結束了。", background: Background.Chapter_27_Ch27_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:54:00。break-glass 程序完全關閉。螢幕上只剩 patient node 的窗格。八個。各自在跑。各自在採樣。各自——用自己的時間。紅光消失了。螢幕回到冷藍色。澪的肩膀鬆了一點點，然後又僵回去。", background: Background.Chapter_27_Ch27_Act3_S1 },

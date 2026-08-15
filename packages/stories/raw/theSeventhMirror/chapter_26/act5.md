@@ -4,6 +4,10 @@
 subject continuity bay interior, rack-mounted ledger displays glowing cold blue-white, sealed S42 snapshot frozen on left screen, monotonic merge queue scrolling on center screen, physical endpoint heartbeat map on right screen, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：03:50。Subject Continuity Bay。S43 已經形成。S42 被封存。monotonic merge 把早已存在的 signed updates 匯進來了。沒有新的患者。沒有新的狀態。只是——把一直在外面發生的事，終於讓這台機器看見。
 
 **旁白**：本地技師站在面板前。他的聲音很平。像在讀一份他已經讀過很多次的服務手冊。
@@ -32,6 +36,10 @@ subject continuity bay interior, rack-mounted ledger displays glowing cold blue-
 
 ```bg
 subject continuity bay interior, center screen now showing authorized human dependency restoration list, four red-zone names appearing one by one, other four entries showing system codes G07／05, LEGACY／04, ACTIVE／C, ACTIVE／D with consent and stage metadata but no names, cold blue-white glow, deep night shadows, muted cool palette, visual-novel background art, close shot on center screen
+```
+
+```bgm
+stop
 ```
 
 **旁白**：03:55。螢幕中間。授權人類畫面還原。不是全部。是四名紅區。一個一個。很慢。
@@ -85,6 +93,10 @@ subject continuity bay interior, center screen now showing authorized human depe
 **朝倉澪** [exhausted]：（內心）她看見了。她看見——她為了讓美空醒來而做的事——那個制度從來沒有把美空的名字寫進去。她刺傷了千田。她協助了計畫。她相信——東京方案成功，美空就會醒來。可是——租約裡沒有美空。只有 TOKYO-7。只有 bundle hash。只有 science token 和 operational token。美空不在裡面。美空從來不在裡面。她只是——被那條線接著。被 ledger 記著。被 heartbeat 數著。可是——租約不知道她叫什麼。
 
 **旁白**：04:12。辯護人低聲對琴音說了一句話。琴音點了一下頭。很小的動作。
+
+```bgm
+mirror-island
+```
 
 **旁白**：04:15。千田的音訊連線還在。他的聲音從喇叭傳出來。很輕。像在讀一份他不想讀的文件。
 

@@ -4,6 +4,10 @@
 judicial medical technical assistance room, partitioned space with service manual shelves on far wall, forensic clone workstation with isolated offline terminal, cold fluorescent lighting, deep night shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：01:15。司法／醫療技術協助室。鏡島服務手冊室在隔壁。
 
 **旁白**：琴音坐在桌前。辯護人坐在她右側。

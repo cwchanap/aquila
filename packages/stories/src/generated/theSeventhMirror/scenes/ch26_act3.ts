@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:15。司法／醫療技術協助室。鏡島服務手冊室在隔壁。", background: Background.Chapter_26_Ch26_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "01:15。司法／醫療技術協助室。鏡島服務手冊室在隔壁。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "琴音坐在桌前。辯護人坐在她右側。", background: Background.Chapter_26_Ch26_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪站在房間另一邊。她沒有坐到琴音旁邊。琴音是嫌疑人。澪是調查方。辯護人在場。", background: Background.Chapter_26_Ch26_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）01:15。琴音。她坐在那裡。她的手放在桌上。她沒有看澪。不是迴避。是——她知道自己的位置。她知道這不是朋友之間的對話。這是——程序。", background: Background.Chapter_26_Ch26_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },

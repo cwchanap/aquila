@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:25。KAGAMI commit-gate。不是 Bay。是另一個房間。更窄。一面牆是 KAGAMI 本地驗證面板。另一面牆——遠端 patient nodes 的平行畫面。八個小窗格。每個窗格——一名患者的本地節點狀態。有些亮著。有些暗著。都在等。", background: Background.Chapter_26_Ch26_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:25。KAGAMI commit-gate。不是 Bay。是另一個房間。更窄。一面牆是 KAGAMI 本地驗證面板。另一面牆——遠端 patient nodes 的平行畫面。八個小窗格。每個窗格——一名患者的本地節點狀態。有些亮著。有些暗著。都在等。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）04:25。距 05:50——一小時二十五分。距 06:13——一小時四十八分。租約還在。HOLD 還在。現在——要讓 KAGAMI 自己判斷。這份租約——能不能用在 S43 上面。", background: Background.Chapter_26_Ch26_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:27。獨立系統安全人員站在 KAGAMI 面板前。他的手指在鍵盤上。很慢。不是猶豫——是每一個動作都進 immutable audit。", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "KAGAMI 本地驗證。租約密碼學完整性。auth epoch——A17。簽章——VALID。token serial——匹配。bundle hash——匹配。", background: Background.Chapter_26_Ch26_Act6_S0 },
@@ -16,10 +16,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:29。螢幕繼續。兩個 HOLD 的結果也送進來了。", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "CLINICAL SAFETY——HOLD。PUBLIC DATA USE——HOLD。LOCAL EXECUTION——NO。", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）NO。不是 DENIED。不是 REJECTED。是——NO。不適用。租約有效。可是——它不能在這裡執行。因為——它綁定的人不在了。它綁定的是 S42。S42 已經被封存了。現在的人是 S43。S43 有自己的狀態。有自己的 HOLD。有自己的名字。", background: Background.Chapter_26_Ch26_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:30。KAGAMI 面板上出現一行字。很慢。", background: Background.Chapter_26_Ch26_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:30。KAGAMI 面板上出現一行字。很慢。", bgm: null, background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "EXECUTION ANCHOR——NOT ISSUED。", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）KAGAMI 不簽。它不簽 execution anchor。沒有 anchor——區域預置不能在 06:13 形成同一份同步 public fanout。租約還在。token 還在。可是——KAGAMI 說——這份租約不適用於現在的人。所以——它不簽。", background: Background.Chapter_26_Ch26_Act6_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:32。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。", background: Background.Chapter_26_Ch26_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "04:32。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。", sfx: "radio-feed", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "KAGAMI 不是在否決租約。它是在判定——租約綁定的 subject epoch 與當前 subject epoch 不匹配。S42 與 S43。密碼學有效。主體不匹配。所以——local execution 不適用。", background: Background.Chapter_26_Ch26_Act6_S0, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他頓了一下。", background: Background.Chapter_26_Ch26_Act6_S0 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "continuity 還有兩條 fallback。第一條——formal rebind。重新把租約綁定到 S43。", background: Background.Chapter_26_Ch26_Act6_S0, portrait: Portrait.ChidaKosuke_Base },

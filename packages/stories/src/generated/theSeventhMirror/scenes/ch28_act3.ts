@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:20。鏡島司法保全區。安全會談室。", background: Background.Chapter_28_Ch28_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:20。鏡島司法保全區。安全會談室。", bgm: "institutional-drone", background: Background.Chapter_28_Ch28_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）琴音。她——主動要求正式到案。不是——被逮捕。不是——被押來。是——自己提出來的。向辯護人提出。主動要求。提交完整當輪陳述。表示——不反對依法必要限制。", background: Background.Chapter_28_Ch28_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "會談室。兩張椅子。一張桌子。單面鏡。門口——司法保全人員。琴音旁邊——辯護人。澪——在另一側。不是——詢問人。是——被允許在場的人。", background: Background.Chapter_28_Ch28_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）她早已是調查對象。不是——「自首是否成立」的問題。是——她主動配合正式訊問。交付尚未掌握的角色代理資料。不逃避。不以美空作拖延理由。接受法院依法決定的限制。", background: Background.Chapter_28_Ch28_Act3_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -41,7 +41,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "辯護人確認陳述範圍。司法保全記錄。琴音——表示不反對檢察／法院依法採取的必要限制。是否拘束、交保或限制住居——由證據與司法程序決定。不由——琴音自己選擇刑罰。", background: Background.Chapter_28_Ch28_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:00。司法保全區。另一個房間。證據移交。", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）日下部。他——在交出證據。不是——交給我。不是——私留給自己。是——交由另一名具權限警員與法院共同簽收。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌上。封緘的證物。一項一項。", background: Background.Chapter_28_Ch28_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌上。封緘的證物。一項一項。", sfx: "evidence-bag-seal", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "break-glass audit——封存。由另一名具權限警員與法院共同簽收。", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "mobile follow-up 原 payload、cancel receipt、send nonce——列入證物。", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "KAGAMI S42／S43、lease、cache inventory——交叉封存。", background: Background.Chapter_28_Ch28_Act3_S1 },
@@ -58,7 +58,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他——交出了證件。交出了——現場權限。交出了——證據存取。交出了——以制度身分行動的能力。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他站在那裡。沒有穿外套。沒有——執法者的姿態。只是一個——剛交出最後一份文件的人。", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他——不是刑警了。從現在起。不是了。可是——也不——完全。正式警察身分——後續數週才由懲戒程序終止。現在——只是——停職。撤權。不能以刑警身分行動。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著他。他看著澪。", background: Background.Chapter_28_Ch28_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪看著他。他看著澪。", bgm: null, background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "現在還能叫你刑警嗎？", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部。沉默了一下。不是——猶豫。是——像在確認這句話的重量。", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "不能了。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.KusakubeSatoru_Sad },
@@ -69,7 +69,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他——不是英雄。他是一個——做了這些事的人。現在——承擔這些事的後果。不獲得——無代價的回報。不獲得——「正義刑警」的稱號。只是——不能了。然後——離開。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。會談室——空了。琴音——已被帶往依法決定的限制程序。日下部——已離開司法保全區。證據——全部封存。移交——完成。", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）這一輪能證明的事。琴音——會全部說。日下部——交出了全部證據。我——不會忘。也不會——替他們回答法庭。法庭的事——法庭自己決定。我的記憶——是我的。我記得的——不能成為證據。可是——也不需要——被當作沒有發生。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在司法保全區的走廊。窗外。鏡島的人工地面。灰色的黎明——已經變成了——上午。普通的上午。有光。有——風。有——時間在走。", background: Background.Chapter_28_Ch28_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在司法保全區的走廊。窗外。鏡島的人工地面。灰色的黎明——已經變成了——上午。普通的上午。有光。有——風。有——時間在走。", bgm: "grey-city", background: Background.Chapter_28_Ch28_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）這一輪能證明的——他們會自己說。我記得的——我自己帶著。不能成為證據的——不會成為證據。可是——也不會——消失。它們——在我的三欄記錄裡。在「我記得」那一欄。在那裡。不被公共程序拿走。也不——被要求否定。只是——在那裡。", background: Background.Chapter_28_Ch28_Act3_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向走廊的盡頭。門外——是普通的地面。普通的——星期一上午。第八天。還在。還在——繼續。", background: Background.Chapter_28_Ch28_Act3_S1 },
 ];

@@ -4,6 +4,10 @@
 Mirror Island judicial preservation zone, secure interview room with reinforced walls, two chairs facing each other across a metal table, one-way observation window, cold overhead lighting, judicial preservation officer at door, defense counsel seated beside one chair, muted cool palette with sterile institutional feel, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：08:20。鏡島司法保全區。安全會談室。
 
 **朝倉澪** [exhausted]：（內心）琴音。她——主動要求正式到案。不是——被逮捕。不是——被押來。是——自己提出來的。向辯護人提出。主動要求。提交完整當輪陳述。表示——不反對依法必要限制。
@@ -78,6 +82,10 @@ Mirror Island judicial preservation zone, evidence handoff room adjacent to inte
 
 **朝倉澪** [exhausted]：（內心）日下部。他——在交出證據。不是——交給我。不是——私留給自己。是——交由另一名具權限警員與法院共同簽收。
 
+```sfx
+evidence-bag-seal
+```
+
 **旁白**：桌上。封緘的證物。一項一項。
 
 **旁白**：break-glass audit——封存。由另一名具權限警員與法院共同簽收。
@@ -117,6 +125,10 @@ DISCIPLINE         PENDING
 
 **朝倉澪** [exhausted]：（內心）他——不是刑警了。從現在起。不是了。可是——也不——完全。正式警察身分——後續數週才由懲戒程序終止。現在——只是——停職。撤權。不能以刑警身分行動。
 
+```bgm
+stop
+```
+
 **旁白**：澪看著他。他看著澪。
 
 **朝倉澪** [exhausted]：現在還能叫你刑警嗎？
@@ -138,6 +150,10 @@ DISCIPLINE         PENDING
 **旁白**：11:30。會談室——空了。琴音——已被帶往依法決定的限制程序。日下部——已離開司法保全區。證據——全部封存。移交——完成。
 
 **朝倉澪** [exhausted]：（內心）這一輪能證明的事。琴音——會全部說。日下部——交出了全部證據。我——不會忘。也不會——替他們回答法庭。法庭的事——法庭自己決定。我的記憶——是我的。我記得的——不能成為證據。可是——也不需要——被當作沒有發生。
+
+```bgm
+grey-city
+```
 
 **旁白**：她站在司法保全區的走廊。窗外。鏡島的人工地面。灰色的黎明——已經變成了——上午。普通的上午。有光。有——風。有——時間在走。
 

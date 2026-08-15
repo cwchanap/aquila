@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:04:00。螢幕上八個窗格的狀態欄同時更新。六個停在既定位置。兩個——亮了。", background: Background.Chapter_27_Ch27_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:04:00。螢幕上八個窗格的狀態欄同時更新。六個停在既定位置。兩個——亮了。", bgm: null, background: Background.Chapter_27_Ch27_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／05——HANDOFF ELIGIBLE。LEGACY／04——HANDOFF ELIGIBLE。", background: Background.Chapter_27_Ch27_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）兩個。只有兩個。不是全部。不是——八個人一起衝過終點。是——兩個人的風險比較說：留在中央撐過 06:13 峰值的風險，比換手更高。所以——換手。不是因為他們準備好了。是因為——不換更危險。", background: Background.Chapter_27_Ch27_Act5_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕中間。風險比較畫面。兩條曲線。一條標著 CENTRAL PEAK EXPOSURE。一條標著 CONTROLLED HANDOFF。兩條線在 06:13 的位置交叉。交叉之後——中央那條爬得更快。", background: Background.Chapter_27_Ch27_Act5_S0 },
@@ -33,7 +33,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:08:15。LEGACY／04 的窗格。中央 active input——降至零。local control——PRIMARY。hot standby——RETAINED。", background: Background.Chapter_27_Ch27_Act5_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩個窗格並排。同樣的狀態欄。同樣的結果。", background: Background.Chapter_27_Ch27_Act5_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）兩個人。都過去了。本地接管。中央退到備用。hot standby 保留。可是——這只是急性窗口。三分鐘的 settle。不是——長期分離。不是——痊癒。是——急性窗口完成了。本地在這三分鐘裡撐住了。三分鐘以後呢？不知道。延遲風險——沒有排除。", background: Background.Chapter_27_Ch27_Act5_S2, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:08:30。SETTLE。螢幕中間。總覽畫面。一行一行。", background: Background.Chapter_27_Ch27_Act5_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:08:30。SETTLE。螢幕中間。總覽畫面。一行一行。", bgm: "institutional-drone", background: Background.Chapter_27_Ch27_Act5_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／05——LOCAL CONTROL PRIMARY。CENTRAL ACTIVE INPUT ZERO。CENTRAL HOT STANDBY RETAINED。ACUTE HANDOFF WINDOW COMPLETE。EXTERNAL MEDICAL WITHIN ENVELOPE。LONG-TERM SEPARATION NOT ESTABLISHED。POST-WINDOW REVIEW REQUIRED。", background: Background.Chapter_27_Ch27_Act5_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "LEGACY／04——LOCAL CONTROL PRIMARY。CENTRAL ACTIVE INPUT ZERO。CENTRAL HOT STANDBY RETAINED。ACUTE HANDOFF WINDOW COMPLETE。EXTERNAL MEDICAL WITHIN ENVELOPE。LONG-TERM SEPARATION NOT ESTABLISHED。POST-WINDOW REVIEW REQUIRED。", background: Background.Chapter_27_Ch27_Act5_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）long-term separation——NOT ESTABLISHED。post-window review——REQUIRED。系統沒有說「成功」。沒有說「完成」。只說——急性窗口完成了。長期分離——沒有建立。窗口後——還要複查。這不是——終點。是——一個急性窗口的結果。", background: Background.Chapter_27_Ch27_Act5_S3, portrait: Portrait.AsakuraMio_Exhausted },

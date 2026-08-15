@@ -4,6 +4,10 @@
 KAGAMI command room, wall of tiled patient node panels each showing different stage status, center console displaying distributed switch clock package verification, pre-dawn grey light beginning to bleed through reinforced window edges, cold fluorescent lighting mixing with faint grey, deep night shadows receding slightly, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：05:15。KAGAMI 指揮。不是 commit-gate。是更大的房間。一面牆——八個 patient node 的平行畫面。每個窗格——一名患者的本地節點。有些在跑離線模擬。有些停在 HOLD。有些在等 medical go。中間的主控台——distributed switch clock package 的驗證畫面。背景團隊的報告——一個一個進來。
 
 **朝倉澪** [exhausted]：（內心）05:15。距 05:50——三十五分。距 06:13——五十八分。Route A 失敗。Route B 失敗。舊租約——不適用。execution anchor——沒有簽。可是——05:50 還是會來。auto-prep 還是會啟動。protective filter 的高負荷準備。clinical phase 的準備。patient bridge 的 timing window。這些——不是 TOKYO-7 的。是——患者自己的。是——讓每個人能在同一個時間框架裡，用自己的狀態決定是否繼續的東西。
@@ -58,6 +62,10 @@ KAGAMI command room, right console showing official app cancel command status an
 
 **朝倉澪** [exhausted]：（內心）manual override。軟體——不適用。人類未解決時——fail closed。實體 break-glass——需要三把份額。醫療。患者權利。營運。三把。可是——醫療拒絕了。患者權利拒絕了。valid shares——不適用。所以——沒有 override。continuity custodian 不能遠端按下「忽略患者」。一名高官不能以 science 或 operations token 替代患者權利。如果接下來有人要 bypass——只能是可見的、可記錄的破壞性物理行動。不是隱藏的按鈕。不是普通的遠端後門。
 
+```sfx
+radio-feed
+```
+
 **旁白**：05:42。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。像在讀一份他已經讀過很多次的文件。
 
 **千田浩介**：兩條 fallback 都失敗了。formal rebind——denied。subject equivalence cert——denied。舊租約——有效，但不適用。KAGAMI 不簽 execution anchor。區域預置不能在 06:13 形成同一份同步 public fanout。
@@ -97,5 +105,9 @@ KAGAMI command room, center console now displaying AUTO-PREP 05:50 branch-specif
 **旁白**：distributed switch clock——PRE-STAGED。NOT ACTIVE。witness egress package——PRE-STAGED。NOT ACTIVE。official app cancel command——SIGNED。NOT ARMED。execution anchor——NOT ISSUED。
 
 **旁白**：租約裡沒有名字。
+
+```bgm
+stop
+```
 
 **旁白**：05:49。鏡島第一次停下來，等待那些名字自己的系統回答。

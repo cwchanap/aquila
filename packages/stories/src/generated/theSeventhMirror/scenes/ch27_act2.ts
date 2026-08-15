@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:51:20。SAMPLE。八個窗格同時開始取樣。不是同時取同一種樣本。是——每個人採自己的。", background: Background.Chapter_27_Ch27_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:51:20。SAMPLE。八個窗格同時開始取樣。不是同時取同一種樣本。是——每個人採自己的。", bgm: "institutional-drone", background: Background.Chapter_27_Ch27_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "M-00 的窗格。三條數據流並排。外部醫療。local phase model。KAGAMI clinical return。三條線各自簽章。各自獨立。", background: Background.Chapter_27_Ch27_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／03 的窗格。Domain-C passive model。外部醫療。現行 central fallback。同步取樣。數據在邊界內。還在邊界內。", background: Background.Chapter_27_Ch27_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／08 的窗格。AOI-LOCAL sidecar。外部腦電。呼吸。自律。C2 控制器只讀遙測。畫面上寫著——BUILDING CURRENT BASELINE。", background: Background.Chapter_27_Ch27_Act2_S0 },

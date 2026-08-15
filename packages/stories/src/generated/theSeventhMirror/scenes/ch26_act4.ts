@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:35。KAGAMI-01。臨床服務側。Subject Continuity Bay 的門前。多方在場。系統安全。外部醫療。患者權利代表。司法保全。本地技師。全部到齊。", background: Background.Chapter_26_Ch26_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:35。KAGAMI-01。臨床服務側。Subject Continuity Bay 的門前。多方在場。系統安全。外部醫療。患者權利代表。司法保全。本地技師。全部到齊。", bgm: "mirror-island", background: Background.Chapter_26_Ch26_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）02:35。受試者區域。不是病房。不是研究中心。不是——有床的地方。是——一個患者側的安全區。一個 ledger。一個 queue。一個 heartbeat map。一堆記錄。它不是用來放人的。是——用來確認人還在線上、還沒有被當成已處理的。", background: Background.Chapter_26_Ch26_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "02:38。本地技師站在服務面板前。他的手放在面板上。他的聲音很平。制式的。", background: Background.Chapter_26_Ch26_Act4_S0 },
     { characterId: CharacterId.LocalTechnician, character: "本地技師", dialogue: "多方共同控制領域確認在場。系統安全——在場。外部醫療——在場。患者權利代表——在場。司法保全——在場。本地技師——在場。開始受控掛載。", background: Background.Chapter_26_Ch26_Act4_S0 },
@@ -61,6 +61,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "對。Step 6 以後。subject snapshot。live merge——已經做了。接下來——physical clinical endpoint reconciliation。clinical safety hold。public data-use hold。commit-gate。", background: Background.Chapter_26_Ch26_Act4_S2, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:40。澪看著螢幕。SUBJECT LEDGER。BASE——S42。MERGE——MONOTONIC。RESULT——S43。背景團隊的螢幕還亮著。A 組的七階段 handshake 分析。B 組的 witness buffer 驗證。forensic clone 指向的 server-side delegation record。全部在跑。", background: Background.Chapter_26_Ch26_Act4_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）開門不改變任何患者治療。這句話——是這一夜最重要的底線。我們沒有傷害任何人。我們沒有弄壞任何東西。我們——只讓它看見。看見——誰還接在線上。看見——誰還沒有安全切離。看見——它本來應該看見、卻用 MANAGED-EQUIVALENT 假裝看不見的東西。現在——它看見了。下一步——讓它說。讓它說——這份租約，有效，但不適用。", background: Background.Chapter_26_Ch26_Act4_S2, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:45。Subject Continuity Bay。螢幕上的 S43 還亮著。heartbeat map 上的八個點還在跳。背景團隊還在工作。沒有患者被碰。沒有治療被改。只有——記錄。queue。heartbeat。holds。delegation。handshake。全部——被讀取了。", background: Background.Chapter_26_Ch26_Act4_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:45。Subject Continuity Bay。螢幕上的 S43 還亮著。heartbeat map 上的八個點還在跳。背景團隊還在工作。沒有患者被碰。沒有治療被改。只有——記錄。queue。heartbeat。holds。delegation。handshake。全部——被讀取了。", sfx: "monitor-beep", background: Background.Chapter_26_Ch26_Act4_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "03:50。KAGAMI-01。Subject Continuity Bay。開門完成。S43 形成。距 05:50——約兩小時。距 06:13——約兩小時二十三分。", background: Background.Chapter_26_Ch26_Act4_S2 },
 ];

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:40。星期日。悠真失蹤事件第十三日。第七日。", background: Background.Chapter_25_Ch25_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:40。星期日。悠真失蹤事件第十三日。第七日。", bgm: "sleepless-vigil", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪睡了大概四個小時。不是在床上——是在 C2 外圍的行動指揮車裡，後排座椅放倒。有人塞了一條毯子給她。她不記得是誰。醒來的時候脖子很僵，毯子滑到腳邊。車外的天空還沒亮透。灰色的。", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）05:40。第七日。不要救東京。距星期一 06:13——約二十四小時三十三分。", background: Background.Chapter_25_Ch25_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "指揮車裡的螢幕亮著。獨立系統安全人員坐在前排。他沒有睡。螢幕上跳出一條新的自動產生記錄。", background: Background.Chapter_25_Ch25_Act1_S0 },
@@ -31,12 +31,12 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "不進去。先保全。", background: Background.Chapter_25_Ch25_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音很平。命令式。不解釋理由。", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "車輛。出入口。設備。搬送工單。值班主管確認紀錄。全部保全。", background: Background.Chapter_25_Ch25_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "司法保全人員在門邊記錄。每一項。時間戳。搬送車被拍照。工單被封存。出入口的門禁紀錄被調出。值班主管的確認簽名被存證。", background: Background.Chapter_25_Ch25_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "司法保全人員在門邊記錄。每一項。時間戳。搬送車被拍照。工單被封存。出入口的門禁紀錄被調出。值班主管的確認簽名被存證。", sfx: "camera-shutter", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）第七日的第一場衝突。不是誰先破門。是——誰有權把「保護」寫進工單。值班主管寫了「醫療保護」。外部醫師寫了「沒有獨立確認不能移動」。兩個人都說自己在保護患者。可是——一個人的保護，是把女孩留在原來的床上。另一個人的保護，是把女孩送走。", background: Background.Chapter_25_Ch25_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:30。搬送車還停在通道上。引擎熄了。司機坐在駕駛座上，等指示。患者沒有離床。沒有被接上搬送設備。沒有被碰。", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:35。日下部走回指揮車。他把罐裝咖啡放在桌上。終於打開了。他喝了一口。然後看著澪。", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "車到了。人沒走。no-move 擋住了。下一步——進去。", background: Background.Chapter_25_Ch25_Act1_S0, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）進去。不是破門。是——外部醫療、兒少保護、司法保全，全部進場。在患者不移動的前提下。確認她還在那裡。確認她還活著。確認系統沒有在我們睡覺的時候，已經把她搬走了。", background: Background.Chapter_25_Ch25_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:40。C2 外圍。天空亮了一點。灰色的光。搬送車停在原地。工單封存在證物袋裡。", background: Background.Chapter_25_Ch25_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:40。C2 外圍。天空亮了一點。灰色的光。搬送車停在原地。工單封存在證物袋裡。", sfx: "evidence-bag-seal", background: Background.Chapter_25_Ch25_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第七日開始了。", background: Background.Chapter_25_Ch25_Act1_S0 },
 ];

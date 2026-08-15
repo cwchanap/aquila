@@ -4,6 +4,14 @@
 KAGAMI command room, center console displaying central sequencing gateway status, TOKYO-7 mobile follow-up send object sealed with nonce, HSM policy verification panel visible, countdown timer showing seven-second window, dawn light now clearly visible at window edges mixing with cold fluorescent, muted cool palette warming, visual-novel background art, close shot on center console
 ```
 
+```bgm
+tension-pulse
+```
+
+```sfx
+monitor-beep
+```
+
 **旁白**：06:12:53。螢幕中間的畫面變了。不是 patient node。不是 witness fragment。是——中央 sequencing gateway。
 
 **旁白**：唯一一條。正式官方 app 的推送供應商只接受中央 gateway 的 app-signing credential。區域 cluster 只能建立 send object。不能——直接向 provider fanout。沒有 gateway release——任何區域副本都進不了正式官方 app channel。

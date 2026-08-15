@@ -4,6 +4,10 @@
 public hearing room, wide rows of seats, media cameras at back, witness stand with microphone, large display screens showing evidence documents, fluorescent institutional lighting, muted neutral palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：一至三個月後。
 
 **旁白**：澪在旁聽席。不是——每一場都在。有些——她透過公開轉播看見。有些——是媒體畫面。有些——是法院公開文件。她不進入凪原的內心。不進入琴音的內心。不進入日下部的內心。她只看見——公開的。可聽見的。螢幕上的。紙上的。
@@ -12,6 +16,10 @@ public hearing room, wide rows of seats, media cameras at back, witness stand wi
 
 ```bg
 public hearing room, witness stand, large screen displaying silver shell material analysis and train footage frame interpolation diagram, Chida Kosuke at microphone wearing casual jacket, media cameras recording, fluorescent lighting, muted cool palette, visual-novel background art, medium shot on witness stand
+```
+
+```sfx
+camera-shutter
 ```
 
 **旁白**：第一條線。千田。
@@ -139,6 +147,10 @@ WITNESS STATUS       PROTECTED／CASE-SPECIFIC
 
 **旁白**：法院走廊。下午。澪站在那裡。日下部坐在長椅上。沒有穿西裝。沒有——警徽。只是——一個普通人。
 
+```bgm
+stop
+```
+
 **旁白**：他不為自己辯護。不說——自己是對的。不說——結果證明他做對了。他說——
 
 **日下部悟**：這次我沒有下一輪可以改。
@@ -171,5 +183,9 @@ WITNESS STATUS       PROTECTED／CASE-SPECIFIC
 **旁白**：三條線。三個月。聽證。法院。媒體。沒有——一條完成。沒有——一條被抹掉。全部——仍在走。在普通時間裡。沒有——下一輪可以改。
 
 **朝倉澪** [exhausted]：（內心）活人。與——具體決定。千田——活著。拆解——自己的死亡版本。不替我——冒充前輪。凪原——在審理。仍不認為——核心恐懼是錯的。可是——她的決定——被列在公開記錄上。日下部——失去警察身分。也——失去下一輪。琴音——在審理。判決——未定。這些——都是活人。做的——具體決定。在普通時間裡。承擔。
+
+```bgm
+grey-city
+```
 
 **旁白**：法院走廊的窗外。下午的光。普通的。不是白光。不是——06:13。只是——三個月後的下午。光——在走。時間——在走。沒有——被拿走。

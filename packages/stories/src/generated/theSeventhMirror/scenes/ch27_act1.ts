@@ -6,13 +6,13 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:50:00。KAGAMI 指揮。螢幕中間。一行字。", background: Background.Chapter_27_Ch27_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:50:00。KAGAMI 指揮。螢幕中間。一行字。", bgm: "institutional-drone", background: Background.Chapter_27_Ch27_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "冷氣太強了。澪的肩膀從凌晨三點就沒放下來過，現在已經僵成兩塊石頭。螢幕的冷光打在她臉上，把眼底的青黑照得更深。", background: Background.Chapter_27_Ch27_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "DISTRIBUTED SCHEDULE EPOCH — ANNOUNCED。LOCAL EXECUTION。", background: Background.Chapter_27_Ch27_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）05:50。來了。", background: Background.Chapter_27_Ch27_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）不是 anchor。不是 fanout。是——epoch。只是 epoch。", background: Background.Chapter_27_Ch27_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "八個 patient node 窗格同時變化。不是同時變成同一個畫面。是——每個窗格各自開始讀自己預載的 signed local schedule。各自的 monotonic clock。各自的 skew 檢查。", background: Background.Chapter_27_Ch27_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上。一個一個。很慢。像八個人在各自的房間裡各自翻開各自的課表。", background: Background.Chapter_27_Ch27_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上。一個一個。很慢。像八個人在各自的房間裡各自翻開各自的課表。", sfx: "monitor-beep", background: Background.Chapter_27_Ch27_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "M-00——SCHEDULE HASH MATCH。LOCAL CLOCK VERIFIED。CLOCK SKEW WITHIN LIMIT。STAGE CEILING VERIFIED。MEDICAL GO YES。ACK TYPE PATIENT-NODE。", background: Background.Chapter_27_Ch27_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／03——SCHEDULE HASH MATCH。LOCAL CLOCK VERIFIED。CLOCK SKEW WITHIN LIMIT。STAGE CEILING VERIFIED。MEDICAL GO LIMITED。ACK TYPE PATIENT-NODE。", background: Background.Chapter_27_Ch27_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／08——SCHEDULE HASH MATCH。LOCAL CLOCK VERIFIED。CLOCK SKEW WITHIN LIMIT。STAGE CEILING VERIFIED。MEDICAL GO YES。ACK TYPE PATIENT-NODE。", background: Background.Chapter_27_Ch27_Act1_S0 },

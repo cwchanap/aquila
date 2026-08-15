@@ -6,14 +6,14 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:25。C2 葵病房。星期日下午。", background: Background.Chapter_25_Ch25_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:25。C2 葵病房。星期日下午。", bgm: "institutional-drone", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "門口的時候，佳乃停了一下。她的手放在門把上。沒有推。外部醫師站在她身後。患者權利代表在另一側。澪在走廊。她沒有進去。她站在門框外面。", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）佳乃的手在門把上。她的指節發白。不是用力。是——停在那裡。四十一日。她上次看見葵是四十一日前。之後只有系統說她還活著。今天早上——視訊。現在——門。", background: Background.Chapter_25_Ch25_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:30。外部醫師輕聲確認。", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "患者穩定。生命徵象在既有範圍。治療未改變。您可以進入。", background: Background.Chapter_25_Ch25_Act5_S0, portrait: Portrait.ExternalDoctor_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佳乃推開門。病房的空調聲很輕。監測儀的規律嗶聲填在縫隙裡。葵躺在床上。十四歲。閉著眼。呼吸很淺。很穩。很慢。", background: Background.Chapter_25_Ch25_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佳乃推開門。病房的空調聲很輕。監測儀的規律嗶聲填在縫隙裡。葵躺在床上。十四歲。閉著眼。呼吸很淺。很穩。很慢。", sfx: "monitor-beep", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佳乃走到床邊。她的腳步沒有聲音。不是刻意放輕。是——走了太久的路，最後幾步自己變安靜了。", background: Background.Chapter_25_Ch25_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在床邊。她看著葵的臉。她沒有碰。她只是站著。然後——她叫了女兒的名字。", background: Background.Chapter_25_Ch25_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在床邊。她看著葵的臉。她沒有碰。她只是站著。然後——她叫了女兒的名字。", bgm: null, background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "葵。", background: Background.Chapter_25_Ch25_Act5_S0, portrait: Portrait.MinaseYoshino_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很輕。像怕吵醒她。又像怕她聽不見。", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "監測儀的嗶聲沒有變。然後——葵的呼吸節奏動了一下。很細。不是加速。是——節奏裡有一個很小的停頓。像水面被很遠的地方碰了一下。眼瞼動了。不是睜開。是——皮膚下面很淺的收縮。然後恢復了。", background: Background.Chapter_25_Ch25_Act5_S0 },
@@ -24,7 +24,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "我來了。妳不用現在回答。", background: Background.Chapter_25_Ch25_Act5_S0, portrait: Portrait.MinaseYoshino_Sad },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的聲音很平。不是冷漠。是——已經說過太多次了。在空的房間裡。在尋人頁的留言裡。在沒有人回覆的訊息裡。現在——女兒在面前。她說的話和四十一日裡一樣。可是這次——有空調的聲音。有監測儀的嗶聲。有呼吸。有女兒在。", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）我站在門口。我看著佳乃的背。她的肩膀沒有抖。她沒有哭。她只是站著。叫了一個名字。說了一句話。然後——站著。這不是團圓。這不是救出。這是——一個母親站在女兒床邊。女兒沒有醒。可是她在那裡。她們在同一個房間裡。", background: Background.Chapter_25_Ch25_Act5_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:40。外部醫師再次確認患者。他用自己的設備。不經 C2 系統。腦電。呼吸。自律。當輪生命體徵。他核對姓名、生日、既有醫療識別。", background: Background.Chapter_25_Ch25_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:40。外部醫師再次確認患者。他用自己的設備。不經 C2 系統。腦電。呼吸。自律。當輪生命體徵。他核對姓名、生日、既有醫療識別。", bgm: "institutional-drone", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "患者確認。水瀨葵。G07 之零八。本人與當輪生命狀態一致。", background: Background.Chapter_25_Ch25_Act5_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "患者權利代表重述用途與限制。她的聲音溫和但精確。", background: Background.Chapter_25_Ch25_Act5_S0 },
     { characterId: CharacterId.PatientRightsRep, character: "患者權利代表", dialogue: "外部臨床 sidecar 只作簽章與 baseline capture。不匯出模型。不主動切換。不寫入 C2 原控制器。不具有公共權限。患者資料只在本地。任何模糊均被解讀為不授權。", background: Background.Chapter_25_Ch25_Act5_S0 },

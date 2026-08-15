@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:55。C2 病房外的走廊。外部臨床 sidecar 設備已經架好了。一台移動式 HSM。一台筆電。幾條封好的纜線。全部不連接 C2 的內部網路。", background: Background.Chapter_25_Ch25_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:55。C2 病房外的走廊。外部臨床 sidecar 設備已經架好了。一台移動式 HSM。一台筆電。幾條封好的纜線。全部不連接 C2 的內部網路。", bgm: "institutional-drone", background: Background.Chapter_25_Ch25_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "患者權利代表站在 sidecar 旁邊。她的聲音溫和但精確。每一個字都像在測量過之後才放下的。", background: Background.Chapter_25_Ch25_Act3_S0 },
     { characterId: CharacterId.PatientRightsRep, character: "患者權利代表", dialogue: "確認。不改變治療。不寫入 C2 控制器。不匯出模型。不建立公共權限。", background: Background.Chapter_25_Ch25_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佳乃站在她旁邊。她的眼睛還是紅的。但她點頭了。", background: Background.Chapter_25_Ch25_Act3_S0 },

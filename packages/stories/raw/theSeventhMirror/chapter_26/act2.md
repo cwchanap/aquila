@@ -4,6 +4,10 @@
 KAGAMI BCP service monitor room, wall-mounted status screens showing SUBJECT LEDGER and BCP SERVICE MOUNT fields, court secure connection terminal on right side with encrypted channel indicator, cold blue-white screen glow, deep night shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：00:40。KAGAMI BCP service monitor。法院安全連線。螢幕上的狀態欄一行一行展開。
 
 **旁白**：SUBJECT LEDGER。NORMAL STATE——SEALED／LOCAL OFFLINE。BCP SERVICE MOUNT——AVAILABLE／LEASE LOADED。

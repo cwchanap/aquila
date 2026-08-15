@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:00.997。", background: Background.Chapter_28_Ch28_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:00.997。", bgm: null, background: Background.Chapter_28_Ch28_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:00.998。", background: Background.Chapter_28_Ch28_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:00.999。", background: Background.Chapter_28_Ch28_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:01.000。", background: Background.Chapter_28_Ch28_Act1_S0 },
@@ -27,7 +27,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）我不知道——循環是不是真的停了。我不知道——是不是永久停了。我不知道——為什麼停了。我只知道——我沒有在下一秒醒回那間房。我只知道——這一秒。這一秒——沒有被拿走。", background: Background.Chapter_28_Ch28_Act1_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:14:00。", background: Background.Chapter_28_Ch28_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）06:14。整分。過了。真的過了。", background: Background.Chapter_28_Ch28_Act1_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師從視訊面板那端開口。不是——對澪說。是——對整個控制室。", background: Background.Chapter_28_Ch28_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師從視訊面板那端開口。不是——對澪說。是——對整個控制室。", bgm: "ordinary-time", background: Background.Chapter_28_Ch28_Act1_S1 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "先看病人。", background: Background.Chapter_28_Ch28_Act1_S1, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）先看病人。不是——先慶祝。不是——先確認循環終止。是——先看病人。", background: Background.Chapter_28_Ch28_Act1_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕切換。八名 active humans。急性狀態總覽。", background: Background.Chapter_28_Ch28_Act1_S1 },
@@ -99,7 +99,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:20。lease 到期。caches 進司法保全。螢幕上的八名患者——仍在各自的狀態。東京的 preliminary report——仍在螢幕角落。千田——仍在線。", background: Background.Chapter_28_Ch28_Act1_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）第八天。不是——另一個世界。不是——所有問題解決了。不是——循環被證明終止了。只是——下一秒。下一秒——沒有被拿走。06:13:01。06:14。06:20。這些——都是下一秒。每一秒——都沒有被拿走。第八天——只是這樣。只是——下一秒沒有被拿走。", background: Background.Chapter_28_Ch28_Act1_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在控制室。白光已經完全退去。窗外是——黎明。普通的。灰色的。東京灣的水面——不是黑色的。是——灰色的。普通的灰色。", background: Background.Chapter_28_Ch28_Act1_S3 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）普通的黎明。我——六次沒有看到這個。六次——06:13 之後是白光。然後——醒回星期一。這一次——06:13 之後是——06:13:01。然後——06:14。然後——06:20。然後——黎明。普通的。灰色的。不是——黑色海。不是——白光。是——黎明。", background: Background.Chapter_28_Ch28_Act1_S3, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）普通的黎明。我——第三次。前兩次——06:13 之後是白光。然後——醒回星期一。這一次——06:13 之後是——06:13:01。然後——06:14。然後——06:20。然後——黎明。普通的。灰色的。不是——黑色海。不是——白光。是——黎明。", background: Background.Chapter_28_Ch28_Act1_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有笑。她只是——站著。看著窗外。看著——一個她從未活過的星期一早上。", background: Background.Chapter_28_Ch28_Act1_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）我不知道——以後會怎樣。我不知道——循環會不會再來。我不知道——五名 downstream patients 能不能全部轉橋。我不知道——媽媽能不能——真正醒來。我不知道——琴音會怎樣。我不知道——日下部會怎樣。我只知道——現在。現在——是 06:20。lease 到期了。患者——全部 accounted。東京——沒有群體災難。我——還在這裡。下一秒——沒有被拿走。", background: Background.Chapter_28_Ch28_Act1_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第八天只是下一秒沒有被拿走。", background: Background.Chapter_28_Ch28_Act1_S3 },

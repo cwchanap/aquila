@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:35。continuity 監看室。十五分鐘。螢幕上的時鐘還在走。澪坐回角落。她的手很冷。咖啡早就涼了。她沒有碰。", background: Background.Chapter_25_Ch25_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:35。continuity 監看室。十五分鐘。螢幕上的時鐘還在走。澪坐回角落。她的手很冷。咖啡早就涼了。她沒有碰。", bgm: "tension-pulse", background: Background.Chapter_25_Ch25_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）十五分鐘。十五分鐘後——23:50。cutover。我們做了所有能做的事。剩下的——不是我們能控制的。", background: Background.Chapter_25_Ch25_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:38。獨立系統安全人員在螢幕上確認最後一次人類世界狀態。左邊螢幕。公共營運方 heartbeat。還在發。每三十秒。一行一行。", background: Background.Chapter_25_Ch25_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "OPERATIONS STATUS——PRESENT。AUTHORIZATION——DENIED。COURT HOLD——ACTIVE。MEDICAL HOLD——ACTIVE。PATIENT-RIGHTS HOLD——ACTIVE。ORDINARY SERVICES——ACTIVE。PROTECTIVE FILTERING——ACTIVE。TOKYO-7——DENIED。PUBLIC ACTION REQUIRED——NONE。", background: Background.Chapter_25_Ch25_Act8_S0 },
@@ -34,7 +34,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:50。螢幕中間。兩個 token 被組裝。", background: Background.Chapter_25_Ch25_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "CUTOVER AUTH LEASE。BUNDLE HASH——TOKYO-7。SCIENCE TOKEN——一串編號。OPERATIONS TOKEN——另一串編號。ISSUED——SUN 23:50。VALID UNTIL——MON 06:20。EPOCH——N。EXECUTION——NOT YET。", background: Background.Chapter_25_Ch25_Act8_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）租約。有效到清晨六點二十。六小時三十分。它不是啟動。不是 execution commit。不是 public fanout。是——一份授權租約。一份由兩個有效 token 組裝的、綁定 exact bundle 的、有效到清晨的租約。它不需要我們的同意。它只需要——兩個 token。一個來自 science HSM。一個來自 operational HSM。兩個都不認得我們的「不」。", background: Background.Chapter_25_Ch25_Act8_S2, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:50。房間裡沒有人說話。空調的聲音填進來。螢幕上的租約還亮著。", background: Background.Chapter_25_Ch25_Act8_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:50。房間裡沒有人說話。空調的聲音填進來。螢幕上的租約還亮著。", bgm: null, background: Background.Chapter_25_Ch25_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:51。螢幕切換。S7 inbound maintenance queue 開始處理。snapshot 之後。queue 裡的第一項——emergency-priority 撤回 envelope。", background: Background.Chapter_25_Ch25_Act8_S2 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "S7 REVOCATION。APPLIED——EPOCH N+1。FUTURE RELEASE——DISABLED。CURRENT LEASE——UNAFFECTED。", background: Background.Chapter_25_Ch25_Act8_S2 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）撤回生效了。在 N+1。下一個 epoch。S7 不會再產生第二份 science token。未來的 release 被關掉了。可是——當輪的 lease。epoch N 的 lease。已經組裝好的。已經出去的。不受影響。撤回不是沒有用。撤回阻止了下一個 epoch。可是——它不能回溯。不能取消已經存在的。已經組裝的。已經有效到清晨的。", background: Background.Chapter_25_Ch25_Act8_S2, portrait: Portrait.AsakuraMio_Exhausted },

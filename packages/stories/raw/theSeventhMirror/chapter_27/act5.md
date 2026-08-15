@@ -4,6 +4,10 @@
 KAGAMI command room, two patient node panels highlighted — G07/05 and LEGACY/04 — showing Control Quiet Window opening sequence, center console displaying risk comparison graphs, other six panels dimmed to HOLD/SAFE PAUSE/COMPARE status, pre-dawn grey light now clearly visible at window edges, cold fluorescent mixing with grey dawn, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+stop
+```
+
 **旁白**：06:04:00。螢幕上八個窗格的狀態欄同時更新。六個停在既定位置。兩個——亮了。
 
 **旁白**：G07／05——HANDOFF ELIGIBLE。LEGACY／04——HANDOFF ELIGIBLE。
@@ -68,6 +72,10 @@ KAGAMI command room, LEGACY/04 patient node panel enlarged showing limited self-
 
 ```bg
 KAGAMI command room, center console displaying SETTLE stage summary for all eight active dependencies, two panels showing LOCAL CONTROL PRIMARY, six panels showing HOLD/SAFE PAUSE/COMPARE status, pre-dawn grey light now clearly dawn light at window edges, cold fluorescent mixing with grey dawn, muted cool palette warming slightly, visual-novel background art, wide shot
+```
+
+```bgm
+institutional-drone
 ```
 
 **旁白**：06:08:30。SETTLE。螢幕中間。總覽畫面。一行一行。

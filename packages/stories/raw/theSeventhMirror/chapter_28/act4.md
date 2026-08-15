@@ -4,6 +4,10 @@
 external neuro medical ward, quiet corridor with multiple patient room doors, soft daylight through frosted windows, update screen mounted on wall showing downstream dependency count, muted clinical palette, visual-novel background art, wide shot
 ```
 
+```bgm
+ordinary-time
+```
+
 **旁白**：第一週。
 
 **旁白**：澪不在每一張床邊。她不能。五名 downstream patients 分散在不同患者節點——有的在鏡島外部神經醫療區，有的在合作長期復健中心，有的在法院監督下的獨立醫療病房。她能看見的是更新。是螢幕。是外部醫師透過視訊回報的進度。是 Survivor Care Trust 每週寄到家屬端的摘要——不帶研究語言，只有患者安全狀態與下一個里程碑。
@@ -169,15 +173,27 @@ DELETION             PROHIBITED
 
 **朝倉澪** [exhausted]：（內心）退役。M-00——退役。不是——刪除。不是——抹掉她被用過的證據。是——不再用她了。operational registry——RETIRED。patient registry——朝倉紗英。historical audit——保留。永久。她曾被這樣使用——不能被改寫。也不能被抹除。她——現在。只是。患者。只是——朝倉紗英。
 
+```sfx
+ventilator-cycle
+```
+
 **旁白**：紗英的床邊。澪在那裡。悠真也在。他從外部醫療區過來——坐在床的另一側。
 
 **旁白**：沒有人預期她會醒。retirement 不直接造成清醒。醫師只能說——清醒窗口在 role retirement 之後出現。不能說——retirement 令她醒來。共用負荷停止。藥物調整。刺激下降。睡眠週期。自然神經波動。這些——都可能是原因。沒有——單一因果。
 
 **旁白**：可是她醒了。
 
+```bgm
+stop
+```
+
 **旁白**：不是——睜開眼就坐起來的那種醒。是——眼皮動了。然後——張開。很慢。像——很重的東西被推開。
 
 **朝倉澪** [shocked]：（內心）她——張開眼睛了。母親——張開眼睛了。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：紗英的視線。很短。很慢。她追視——先看見澪。然後——轉過去。看見悠真。
 
@@ -192,6 +208,10 @@ DELETION             PROHIBITED
 **旁白**：紗英閉了一下眼。又張開。
 
 **朝倉紗英**：那就別再數了。
+
+```bgm
+grief-piano
+```
 
 **旁白**：她轉向悠真。悠真坐在那裡。他沒有哭。也沒有笑。只是——看著她。
 

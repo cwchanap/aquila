@@ -4,6 +4,10 @@
 KAGAMI command room, center console flashing a new alert panel — PHYSICAL BREAK-GLASS REQUEST — while patient node panels continue SAMPLE stage in background, pre-dawn grey light at window edges, cold fluorescent lighting, muted cool palette with red alert indicator, visual-novel background art, close shot on center console
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：05:51:30。螢幕中間。一個新的面板閃出來。紅色。不是 patient node。不是 medical alert。是——continuity。
 
 **旁白**：紅光打在澪的臉上，把疲勞照成一種警覺。她的背脊動了一下，像被針戳了一下。
@@ -29,6 +33,10 @@ KAGAMI command room, center console flashing a new alert panel — PHYSICAL BREA
 **朝倉澪** [exhausted]：（內心）兩個拒絕了。醫療。患者權利。
 
 **朝倉澪** [exhausted]：（內心）理由——八個人還在。臨床分支還在用。public execution 不是必要條件。不是——可以跳過患者的理由。
+
+```bgm
+stop
+```
 
 **旁白**：05:52:00。第三個欄位。LOCAL OPERATIONS SHARE。
 
@@ -73,6 +81,10 @@ KAGAMI command room, center console showing break-glass panel with all three sha
 **朝倉澪** [exhausted]：（內心）外層——attempted。嘗試了。被記錄了。內層——沒有到達。沒有碰觸。
 
 **朝倉澪** [exhausted]：（內心）沒有槍。沒有暴力。沒有——新反派。只有——一個程序。一個要求。三個拒絕。一個 audit。結束了。
+
+```bgm
+institutional-drone
+```
 
 **旁白**：05:52:30。break-glass 面板從螢幕中間消失。不是關閉。是——歸檔。進入 immutable audit log。patient node 的窗格——還在跑 SAMPLE。臨床 latch——沒有變。protective filter——沒有受影響。
 

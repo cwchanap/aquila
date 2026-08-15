@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:12:53。螢幕中間的畫面變了。不是 patient node。不是 witness fragment。是——中央 sequencing gateway。", background: Background.Chapter_27_Ch27_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:12:53。螢幕中間的畫面變了。不是 patient node。不是 witness fragment。是——中央 sequencing gateway。", sfx: "monitor-beep", bgm: "tension-pulse", background: Background.Chapter_27_Ch27_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "唯一一條。正式官方 app 的推送供應商只接受中央 gateway 的 app-signing credential。區域 cluster 只能建立 send object。不能——直接向 provider fanout。沒有 gateway release——任何區域副本都進不了正式官方 app channel。", background: Background.Chapter_27_Ch27_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）唯一一條路。所有區域副本都要經過這裡。這裡——是 choke point。如果——在這裡攔住。就——全部攔住了。不是——對全國手機送反向命令。是——在送出去之前。在 fanout 之前。攔住那一則。", background: Background.Chapter_27_Ch27_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕角落。T0 metadata。", background: Background.Chapter_27_Ch27_Act7_S0 },

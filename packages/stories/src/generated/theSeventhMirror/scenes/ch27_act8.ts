@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:00。", background: Background.Chapter_27_Ch27_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:13:00。", bgm: null, background: Background.Chapter_27_Ch27_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "白光。", background: Background.Chapter_27_Ch27_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不是——螢幕上的。是——窗外的。從人工島的方向。無聲。無熱。無衝擊波。只是——白。越過人工島。越過東京灣的水面。越過——強化玻璃窗。", background: Background.Chapter_27_Ch27_Act8_S0 },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）白光。又來了。星期一 06:13。第六次。第六次——看見這個。可是——這一次不一樣。這一次——consensus 沒有形成。execution anchor 沒有簽。app follow-up——被攔住了。protective filter——在跑。這一次——白光裡沒有統一答案。", background: Background.Chapter_27_Ch27_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）白光。又來了。星期一 06:13。第三次。第三次——看見這個。可是——這一次不一樣。這一次——consensus 沒有形成。execution anchor 沒有簽。app follow-up——被攔住了。protective filter——在跑。這一次——白光裡沒有統一答案。", background: Background.Chapter_27_Ch27_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上。八個 patient node 窗格。protective filter——ACTIVE。每一個窗格的狀態欄。FILTER LOAD——WITHIN LIMIT。HIGH-COHERENCE COUPLING——SUPPRESSED。RAW SIGNAL TO PUBLIC CONSENSUS——BLOCKED。", background: Background.Chapter_27_Ch27_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）filter 在跑。降低訊號相干性。限制高幅度神經耦合。阻止 raw signal 進入 public consensus。可是——filter 不能消除白光。不能——關閉回聲窗。不能——完全阻止低強度殘響。白光——還是在這裡。黑色海——還是在視野邊緣。", background: Background.Chapter_27_Ch27_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕中間。KAGAMI 的輸出。", background: Background.Chapter_27_Ch27_Act8_S0 },

@@ -4,6 +4,10 @@
 KAGAMI commit-gate verification room, reinforced booth with local trust chain display, cold blue-white screen glow on operator console, remote patient node feeds visible as small tiled panels along the upper wall, deep night shadows, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+mirror-island
+```
+
 **旁白**：04:25。KAGAMI commit-gate。不是 Bay。是另一個房間。更窄。一面牆是 KAGAMI 本地驗證面板。另一面牆——遠端 patient nodes 的平行畫面。八個小窗格。每個窗格——一名患者的本地節點狀態。有些亮著。有些暗著。都在等。
 
 **朝倉澪** [exhausted]：（內心）04:25。距 05:50——一小時二十五分。距 06:13——一小時四十八分。租約還在。HOLD 還在。現在——要讓 KAGAMI 自己判斷。這份租約——能不能用在 S43 上面。
@@ -24,11 +28,23 @@ KAGAMI commit-gate verification room, reinforced booth with local trust chain di
 
 **朝倉澪** [exhausted]：（內心）NO。不是 DENIED。不是 REJECTED。是——NO。不適用。租約有效。可是——它不能在這裡執行。因為——它綁定的人不在了。它綁定的是 S42。S42 已經被封存了。現在的人是 S43。S43 有自己的狀態。有自己的 HOLD。有自己的名字。
 
+```bgm
+stop
+```
+
 **旁白**：04:30。KAGAMI 面板上出現一行字。很慢。
 
 **旁白**：EXECUTION ANCHOR——NOT ISSUED。
 
 **朝倉澪** [exhausted]：（內心）KAGAMI 不簽。它不簽 execution anchor。沒有 anchor——區域預置不能在 06:13 形成同一份同步 public fanout。租約還在。token 還在。可是——KAGAMI 說——這份租約不適用於現在的人。所以——它不簽。
+
+```bgm
+mirror-island
+```
+
+```sfx
+radio-feed
+```
 
 **旁白**：04:32。千田的音訊連線還在。他的聲音從喇叭傳出來。很平。
 

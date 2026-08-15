@@ -4,6 +4,10 @@
 public operations security room, multiple video terminals showing court, medical alliance and media safe-room feeds, wall monitor displaying Public Deny Manifest draft, laptops and sealed evidence binders, cold fluorescent lighting, late afternoon grey light through reinforced window, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:40。公共營運安全室。不是 C2。是另一棟樓的另一間房。牆上三個螢幕。法院。醫療聯盟。媒體安全編輯室。桌上筆電。封好的文件。Manifest 的草稿在主螢幕上。
 
 **旁白**：澪坐在桌邊。日下部在她對面。獨立系統安全人員站在螢幕前。佐伯達也坐在側邊——他負責家屬證據的驗證與遮蔽審查。藤川真理在另一側。她的手裡捏著一張紙。是美空的夢話錄音文字。
@@ -34,6 +38,10 @@ public operations security room, multiple video terminals showing court, medical
 
 **朝倉澪**：（內心）她看著我。她不是在提議。她是在——求。她的女兒還在昏迷。她保存著美空的夢話錄音。她比任何人都想讓世界聽見。她認為——如果我把記得的一切放進去——世界就會相信。可是——
 
+```bgm
+stop
+```
+
 **旁白**：16:05。澪看著藤川。然後她看著螢幕。Manifest 的草稿。operations status——present。authorization——denied。
 
 **朝倉澪** [determined]：那是我知道的，不是現在所有人能共同證明的。
@@ -54,6 +62,10 @@ public operations security room, multiple video terminals showing court, medical
 
 **佐伯達也**：公共證據只用當輪可共同驗證的資料。交通。門禁。工單。醫院轉移。患者依存。法院與醫療 hold。bundle hash。營運拒絕。
 
+```bgm
+institutional-drone
+```
+
 **旁白**：16:20。獨立系統安全人員完成核心頁。多方簽署範圍確認。公共營運方——operations present。bundle authorization denied。ordinary services active。法院——hold 有效。外部醫療——患者依存未解除。raw filter 仍需維持。患者權利代表——未完成個別安全切離。獨立系統安全——exact bundle hash。公開欄位與封緘附件一致。
 
 **旁白**：16:35。Manifest 上線。核心頁。公開。
@@ -67,6 +79,10 @@ public operations security room, multiple video terminals showing court, medical
 **旁白**：17:00。媒體反應分裂。部分媒體先只發布 Manifest 原文。部分要求核驗 bundle hash 後才報道。部分接受主管機關說法——暫稱文件「真偽未定」。授權安全編輯室可查驗封緘附件。不能公開患者位置及 HSM 路由。
 
 **朝倉澪**：（內心）分裂。不是勝利。不是失敗。是——分裂。有人相信。有人等。有人說「真偽未定」。這就是公開。公開不是按下一個輿論勝利按鈕。是——把事實放出去。然後——等它被核驗。等它被反駁。等它被分裂。等它自己站穩。
+
+```sfx
+radio-feed
+```
 
 **旁白**：17:20。第七曙光的視訊連線進來。家屬那端。不只佐伯和藤川。還有其他家屬。聲音交疊。
 

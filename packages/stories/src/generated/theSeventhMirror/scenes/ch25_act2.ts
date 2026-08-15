@@ -6,14 +6,14 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:45。C2 臨床隔離棟。走廊很長。兩側是密封門。螢光燈的白光照在白色的牆上。", background: Background.Chapter_25_Ch25_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:45。C2 臨床隔離棟。走廊很長。兩側是密封門。螢光燈的白光照在白色的牆上。", bgm: "institutional-drone", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外部醫師走在最前面。兒少專業人員在他旁邊。司法保全在後面。院內臨床保管方在角落——他們是 C2 自己的人。不阻擋。也不主動幫忙。只是站在那裡。", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "日下部在澪身後。澪走在中間。她的眼下有很深的陰影。四個小時的睡眠沒有夠。", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）06:45。我們進來了。不是破門。是——外部醫療、兒少保護、司法保全，全部有合法進場權限。C2 沒有擋。也沒有歡迎。", background: Background.Chapter_25_Ch25_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:50。外部醫師推開隔離棟的觀察窗。他看進去。然後他轉過頭。", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "患者在床上。生命體徵穩定。", background: Background.Chapter_25_Ch25_Act2_S0, portrait: Portrait.ExternalDoctor_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他走進病房。澪跟到門口。她沒有進去。她站在門框外。", background: Background.Chapter_25_Ch25_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "床上的女孩很小。十四歲。深色頭髮散在枕頭上。眼睛閉著。呼吸很淺。床邊的監測器顯示著心律、呼吸頻率、血氧。數字在跳。很慢。很規律。", background: Background.Chapter_25_Ch25_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "床上的女孩很小。十四歲。深色頭髮散在枕頭上。眼睛閉著。呼吸很淺。床邊的監測器顯示著心律、呼吸頻率、血氧。數字在跳。很慢。很規律。", sfx: "monitor-beep", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）葵。水瀨葵。G07／08。她還在這裡。她還活著。不是因為系統說她活著。是——我自己看見的。", background: Background.Chapter_25_Ch25_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:00。外部醫師用自己帶來的設備取得腦電、呼吸、自律訊號。不是 C2 的系統摘要。是獨立設備的讀數。他核對姓名、生日與既有醫療識別。", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.ExternalDoctor, character: "外部醫師", dialogue: "確認是本人。水瀨葵，十四歲。生命體徵穩定，還沒有建立自由溝通。", background: Background.Chapter_25_Ch25_Act2_S0, portrait: Portrait.ExternalDoctor_Base },
@@ -32,7 +32,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）患者保全。不是 continuity。不是營運。不是科學。是——一個十四歲的女孩，被留在一張床上四十一天。她的母親還沒有看過她。她的母親還不知道她是不是真的還在這裡。", background: Background.Chapter_25_Ch25_Act2_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:15。外部醫師在病房內架設獨立視訊設備。不是 C2 的系統。是他自己帶來的。加密。不經 C2 剪輯。鏡頭對著病床。畫面裡同時顯示——葵、外部醫師、當輪時間、外部生命監測讀數。", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:20。水瀨佳乃在 C2 外圍的臨時休息區。她坐在一把摺疊椅上。手裡握著一杯冷掉的茶。她的頭髮從髮夾裡鬆出來。她的眼下有很深的陰影。四十一天。", background: Background.Chapter_25_Ch25_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕亮了。佳乃看見畫面。", background: Background.Chapter_25_Ch25_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕亮了。佳乃看見畫面。", bgm: null, background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手停在杯子上。她的呼吸變了。很輕。像怕嚇到什麼。", background: Background.Chapter_25_Ch25_Act2_S0 },
     { characterId: CharacterId.MinaseYoshino, character: "水瀨佳乃", dialogue: "⋯⋯葵。", background: Background.Chapter_25_Ch25_Act2_S0, portrait: Portrait.MinaseYoshino_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "畫面裡的女孩沒有動。眼睛閉著。呼吸很淺。監測器的數字在跳。", background: Background.Chapter_25_Ch25_Act2_S0 },

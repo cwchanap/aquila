@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。continuity 監看室。不是昨晚的封緘稽核室。是一間更窄的房間。三面牆掛著螢幕。左邊是區域 HSM 狀態。中間是鏡島安全連線。右邊是法院緊急視訊。桌上只有筆電和封好的文件。", background: Background.Chapter_25_Ch25_Act7_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。continuity 監看室。不是昨晚的封緘稽核室。是一間更窄的房間。三面牆掛著螢幕。左邊是區域 HSM 狀態。中間是鏡島安全連線。右邊是法院緊急視訊。桌上只有筆電和封好的文件。", sfx: "radio-feed", bgm: "institutional-drone", background: Background.Chapter_25_Ch25_Act7_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在角落。她的第四杯咖啡涼了。她沒有喝。日下部在她對面。獨立系統安全人員站在螢幕前。千田透過遠端音訊連線。喇叭裡有很輕的電流聲。", background: Background.Chapter_25_Ch25_Act7_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）18:10。距 23:50。五小時四十分。距星期一 06:13。約十二小時三分。還在倒數。身體很重。眼皮很重。可是——不能停。", background: Background.Chapter_25_Ch25_Act7_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:15。獨立系統安全人員切換螢幕。預先遮蔽的證據包——從星期三起逐步分類、身分遮蔽、法律審查、技術密鑰刪除——現在進入多點託管。", background: Background.Chapter_25_Ch25_Act7_S0 },
@@ -30,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "法院。請求——要求 custodian 在 snapshot 前人工暫停。", background: Background.Chapter_25_Ch25_Act7_S1, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "視訊那端沉默了幾秒。然後——法院確認收到請求。但 custodian 身分封緘。法院只能透過 continuity governance 的正式管道送達。不能保證 custodian 會在 23:50 前看見。", background: Background.Chapter_25_Ch25_Act7_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）送了。可是——不保證。custodian 是封緘的。法院能送。不能強制。不能保證有人在那一端讀。", background: Background.Chapter_25_Ch25_Act7_S1, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:40。凪原唯出現在法院緊急視訊的分割畫面上。她的表情沒有波動。她的眼鏡反射著螢幕的光。", background: Background.Chapter_25_Ch25_Act7_S2 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:40。凪原唯出現在法院緊急視訊的分割畫面上。她的表情沒有波動。她的眼鏡反射著螢幕的光。", sfx: "radio-feed", background: Background.Chapter_25_Ch25_Act7_S2 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "凪原。重簽撤回。emergency priority。", background: Background.Chapter_25_Ch25_Act7_S2, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.NagiharaYui, character: "凪原唯", dialogue: "確認。SHARE-S 撤回。emergency priority。綁定 TOKYO-7 bundle hash。同一角色。同一簽署者。", background: Background.Chapter_25_Ch25_Act7_S2, portrait: Portrait.NagiharaYui_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她簽了。遠端。時間戳。她的手沒有猶豫。可是簽完之後——她的手指在桌面上停了兩秒。然後收回。", background: Background.Chapter_25_Ch25_Act7_S2 },
@@ -56,12 +56,12 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）沒有 receipt。五個小時了。沒有。離線的。封緘的。不回答。我們送了 envelope。送了 emergency priority。法院送了暫停請求。凪原重簽了。系統安全驗證了。KAGAMI-01 告警部署了。區域節點監看部署了。營運方還在發 heartbeat。可是——S7 不回答。它不說收到。不說拒絕。不說任何事。它只是——等。等 23:50。", background: Background.Chapter_25_Ch25_Act7_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:30。澪站起來。她的膝蓋很僵。她走到螢幕前。看著 S7 的狀態。OFFLINE。CUTOVER-BOUND。RECEIPT——NONE。", background: Background.Chapter_25_Ch25_Act7_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）我們做了所有能做的事。證據包多點託管了。撤回 envelope 排進去了。emergency priority 簽了。bundle hash 驗證了。KAGAMI-01 告警部署了。區域節點監看部署了。營運方還在說不。法院送了暫停請求。可是——S7 不回答。它不需要回答。它只需要——等到 23:50。然後——按它的順序跑。", background: Background.Chapter_25_Ch25_Act7_S3, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。房間裡的人換了班。有人送了飯糰。澪咬了一口。嚥不下去。她把飯糰放回桌上。", background: Background.Chapter_25_Ch25_Act7_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。房間裡的人換了班。有人送了飯糰。澪咬了一口。嚥不下去。她把飯糰放回桌上。", bgm: "tension-pulse", background: Background.Chapter_25_Ch25_Act7_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:15。千田的音訊連線還在。他的聲音從喇叭傳出來。很輕。", background: Background.Chapter_25_Ch25_Act7_S3 },
     { characterId: CharacterId.ChidaKosuke, character: "千田浩介", dialogue: "舊 BCP 文件是公平提示。不是最後一刻新增規則。如果 S7 沿用舊順序——snapshot 先於 queue——這是被預告過的最壞分支。不是意外。", background: Background.Chapter_25_Ch25_Act7_S3, portrait: Portrait.ChidaKosuke_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）被預告過的。白天就看見了。CUTOVER EPOCH SNAPSHOT。MAINTENANCE QUEUE APPLY。POST-SNAPSHOT。我們知道。我們做了所有能做的事。可是——知道最壞的分支會來——不等於能阻止它。", background: Background.Chapter_25_Ch25_Act7_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:30。日下部看著螢幕。S7。RECEIPT——NONE。他的下巴收緊了一下。他的手插在口袋裡。", background: Background.Chapter_25_Ch25_Act7_S3 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:35。他轉過頭。看著澪。他的聲音很平。像在陳述一個已經確定的事實。", background: Background.Chapter_25_Ch25_Act7_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:35。他轉過頭。看著澪。他的聲音很平。像在陳述一個已經確定的事實。", bgm: null, background: Background.Chapter_25_Ch25_Act7_S3 },
     { characterId: CharacterId.KusakubeSatoru, character: "日下部悟", dialogue: "之後它再寫失聯，就不是因為我們沒有回答。", background: Background.Chapter_25_Ch25_Act7_S3, portrait: Portrait.KusakubeSatoru_Base },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）他說的對。我們回答了。營運方回答了。法院回答了。醫療回答了。患者權利回答了。凪原回答了。系統安全回答了。千田回答了。所有人都回答了。PRESENT。DENIED。HOLD ACTIVE。EMERGENCY PRIORITY。每一個方向都送了。S7 不回答——不是因為我們沒有說。是因為——它不聽。", background: Background.Chapter_25_Ch25_Act7_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:35。螢幕上的時鐘還在走。距 23:50——十五分鐘。", background: Background.Chapter_25_Ch25_Act7_S3 },

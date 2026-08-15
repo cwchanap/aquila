@@ -4,6 +4,10 @@
 C2 clinical isolation ward interior, long corridor with sealed doors, medical monitoring equipment visible through observation window, cold fluorescent lighting, sterile white walls, muted cool palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：06:45。C2 臨床隔離棟。走廊很長。兩側是密封門。螢光燈的白光照在白色的牆上。
 
 **旁白**：外部醫師走在最前面。兒少專業人員在他旁邊。司法保全在後面。院內臨床保管方在角落——他們是 C2 自己的人。不阻擋。也不主動幫忙。只是站在那裡。
@@ -17,6 +21,10 @@ C2 clinical isolation ward interior, long corridor with sealed doors, medical mo
 **外部醫師**：患者在床上。生命體徵穩定。
 
 **旁白**：他走進病房。澪跟到門口。她沒有進去。她站在門框外。
+
+```sfx
+monitor-beep
+```
 
 **旁白**：床上的女孩很小。十四歲。深色頭髮散在枕頭上。眼睛閉著。呼吸很淺。床邊的監測器顯示著心律、呼吸頻率、血氧。數字在跳。很慢。很規律。
 
@@ -55,6 +63,10 @@ C2 clinical isolation ward interior, long corridor with sealed doors, medical mo
 **旁白**：08:15。外部醫師在病房內架設獨立視訊設備。不是 C2 的系統。是他自己帶來的。加密。不經 C2 剪輯。鏡頭對著病床。畫面裡同時顯示——葵、外部醫師、當輪時間、外部生命監測讀數。
 
 **旁白**：08:20。水瀨佳乃在 C2 外圍的臨時休息區。她坐在一把摺疊椅上。手裡握著一杯冷掉的茶。她的頭髮從髮夾裡鬆出來。她的眼下有很深的陰影。四十一天。
+
+```bgm
+stop
+```
 
 **旁白**：螢幕亮了。佳乃看見畫面。
 

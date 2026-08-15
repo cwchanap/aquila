@@ -4,11 +4,19 @@
 C2 security conference room, long table with laptops and sealed binders, wall monitor showing EAST-METRO parallel connection feed, cold fluorescent lighting, grey midday light through reinforced window, muted sterile palette, visual-novel background art, wide shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：11:30。C2 安全會議室。星期日。悠真失蹤事件第十三日。
 
 **旁白**：澪吃了一個飯糰。不記得味道。會議室角落有人放了便當盒。她拿了最上面那個。冷的。她沒有加熱。咀嚼的時候盯著螢幕。
 
 **朝倉澪**：（內心）11:30。距 23:50 cutover——約十二小時二十分。距星期一 06:13——約十八小時四十三分。
+
+```sfx
+radio-feed
+```
 
 **旁白**：EAST-METRO 平行連線的畫面在牆上。公共營運安全團隊那端的螢光燈和這裡一樣白。獨立系統安全人員站在螢幕旁邊。日下部坐在澪對面。千田的遠端音訊連線還在。喇叭裡有很輕的電流聲。
 

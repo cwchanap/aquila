@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:57:00。COMPARE。五個窗格同時開始比較。不是比較彼此。是——每個人比較自己。", background: Background.Chapter_27_Ch27_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "05:57:00。COMPARE。五個窗格同時開始比較。不是比較彼此。是——每個人比較自己。", bgm: "institutional-drone", background: Background.Chapter_27_Ch27_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "PATIENT SAFETY ENVELOPE。NETWORK TRANSITION ENVELOPE。LOCAL MODEL／ROOT STATUS。EXTERNAL MEDICAL OBSERVATION。四個欄位。每個人各自的數據。", background: Background.Chapter_27_Ch27_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "M-00 的窗格。local phase model 在大部分醫療回傳上相符。綠色。綠色。綠色。然後——黃色。", background: Background.Chapter_27_Ch27_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）紗英。大部分相符。可是——完整回聲窗未驗證。LEGACY／02、葵、ACTIVE／D 還在 central clinical support 上。active switch 沒有授權。她不能 handoff。她的公共功能——已經停了。她的臨床支援——保留。", background: Background.Chapter_27_Ch27_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
@@ -32,7 +32,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:00:00。ACTIVE／C 的窗格。模型大致相符。可是——Stage-0。缺少完整 settle history。patient／medical ceiling 只到 COMPARE。", background: Background.Chapter_27_Ch27_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "COMPARE WITHIN／INSUFFICIENT。HANDOFF NO。SAFE PAUSE REQUIRED。", background: Background.Chapter_27_Ch27_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）ACTIVE／C。數據在邊界內。可是——不夠。Stage-0。沒有完整 settle history。不能 handoff。不能——因為別人成功就被自動推進。SAFE PAUSE。安全地停。", background: Background.Chapter_27_Ch27_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:01:00。ACKNOWLEDGE。六個 patient node 的窗格同時更新。不是同時更新成同一個答案。是——各自回報各自的合法答案。", background: Background.Chapter_27_Ch27_Act4_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:01:00。ACKNOWLEDGE。六個 patient node 的窗格同時更新。不是同時更新成同一個答案。是——各自回報各自的合法答案。", sfx: "monitor-beep", background: Background.Chapter_27_Ch27_Act4_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "M-00——RETAIN CLINICAL SUPPORT。", background: Background.Chapter_27_Ch27_Act4_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／03——SAFE PAUSE。", background: Background.Chapter_27_Ch27_Act4_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "G07／08——HOLD。", background: Background.Chapter_27_Ch27_Act4_S1 },

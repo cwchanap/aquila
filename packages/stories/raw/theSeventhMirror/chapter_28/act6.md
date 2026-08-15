@@ -4,6 +4,10 @@
 small law office, afternoon light through venetian blinds, desk covered with document folders and a laptop showing Public Witness Index, muted warm-grey palette, visual-novel background art, medium shot
 ```
 
+```bgm
+ordinary-time
+```
+
 **旁白**：三個月後。下午。家屬律師辦公室。
 
 **旁白**：窗簾拉了一半。百葉窗把下午的光切成一條一條，落在桌上的文件夾上。桌上有一台筆電，螢幕亮著。螢幕上是 Public Witness Index。
@@ -125,6 +129,10 @@ small law office, afternoon light through venetian blinds, desk covered with doc
 **朝倉澪**：（內心）爸爸。我在看了。不是——因為有人替我寫好了結局。是——因為第一次，不知道只是還不知道。
 
 **旁白**：她把資料夾收進背包。站起來。律師沒有多說。只點了一下頭。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：她走出辦公室。走廊很長。日光燈的白光打在地磚上。她的影子很清楚。
 

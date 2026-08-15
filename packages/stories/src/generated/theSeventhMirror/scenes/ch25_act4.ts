@@ -6,10 +6,10 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。C2 安全會議室。星期日。悠真失蹤事件第十三日。", background: Background.Chapter_25_Ch25_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:30。C2 安全會議室。星期日。悠真失蹤事件第十三日。", bgm: "institutional-drone", background: Background.Chapter_25_Ch25_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪吃了一個飯糰。不記得味道。會議室角落有人放了便當盒。她拿了最上面那個。冷的。她沒有加熱。咀嚼的時候盯著螢幕。", background: Background.Chapter_25_Ch25_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）11:30。距 23:50 cutover——約十二小時二十分。距星期一 06:13——約十八小時四十三分。", background: Background.Chapter_25_Ch25_Act4_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "EAST-METRO 平行連線的畫面在牆上。公共營運安全團隊那端的螢光燈和這裡一樣白。獨立系統安全人員站在螢幕旁邊。日下部坐在澪對面。千田的遠端音訊連線還在。喇叭裡有很輕的電流聲。", background: Background.Chapter_25_Ch25_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "EAST-METRO 平行連線的畫面在牆上。公共營運安全團隊那端的螢光燈和這裡一樣白。獨立系統安全人員站在螢幕旁邊。日下部坐在澪對面。千田的遠端音訊連線還在。喇叭裡有很輕的電流聲。", sfx: "radio-feed", background: Background.Chapter_25_Ch25_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:35。EAST-METRO 那端傳回第二張新 receipt。獨立系統安全人員把結果投射到牆上。", background: Background.Chapter_25_Ch25_Act4_S0 },
     { characterId: CharacterId.SystemSecurity, character: "獨立系統安全人員", dialogue: "EAST-METRO BCP escrow——撤回已載入。revocation epoch 已增加。release handle 已銷毀。prior release count——零。token issued——no。receipt valid。", background: Background.Chapter_25_Ch25_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的內部狀態更新了。acknowledged——六之七。pending——S7。", background: Background.Chapter_25_Ch25_Act4_S0 },

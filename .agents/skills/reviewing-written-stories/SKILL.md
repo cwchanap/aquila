@@ -129,6 +129,19 @@ Check all acts for internal consistency and logic integrity:
 6. **Evidence chain integrity**: Are physical objects in consistent states across acts?
 7. **Orphaned hooks**: Are there plot points, mysterious objects, unusual settings, or striking details introduced that draw reader attention but are never explained or paid off by the end of the reviewed acts? Ask: "Would a reader remember this and expect it to matter?" If yes and it goes nowhere, flag it.
 
+### Optional audio continuity
+
+If `docs/audio-plan.json` exists or reviewed acts contain `sfx` / `bgm` blocks, also check:
+1. repeated objects, locations, and motifs reuse the same logical cue identities;
+2. BGM changes follow sustained story state rather than arbitrary act boundaries;
+3. cue timing does not spoil reveals or escalate mood prematurely;
+4. SFX density is selective rather than mechanical Foley;
+5. intentional silence / explicit `bgm stop` is preserved;
+6. provider names, URLs, filenames, prompts, and generation syntax do not leak into act Markdown;
+7. plot-essential information is not audio-only.
+
+Use the same HIGH / MEDIUM / LOW severity vocabulary and existing act-organized output. Do not create a separate audio ledger.
+
 ## Output Format
 
 For each issue found, organize BY ACT:
@@ -240,6 +253,19 @@ Check the act for internal consistency and logic integrity:
 5. **Character positioning**: Are characters where the story previously established them to be?
 6. **Evidence chain integrity**: Are physical objects in consistent states across acts?
 7. **Orphaned hooks**: Are there plot points, mysterious objects, unusual settings, or striking details introduced that draw reader attention but are never explained or paid off? Ask: "Would a reader remember this and expect it to matter?" If yes and it goes nowhere, flag it.
+
+### Optional audio continuity
+
+If `docs/audio-plan.json` exists or reviewed acts contain `sfx` / `bgm` blocks, also check:
+1. repeated objects, locations, and motifs reuse the same logical cue identities;
+2. BGM changes follow sustained story state rather than arbitrary act boundaries;
+3. cue timing does not spoil reveals or escalate mood prematurely;
+4. SFX density is selective rather than mechanical Foley;
+5. intentional silence / explicit `bgm stop` is preserved;
+6. provider names, URLs, filenames, prompts, and generation syntax do not leak into act Markdown;
+7. plot-essential information is not audio-only.
+
+Use the same HIGH / MEDIUM / LOW severity vocabulary and existing act-organized output. Do not create a separate audio ledger.
 
 ## Output Format
 

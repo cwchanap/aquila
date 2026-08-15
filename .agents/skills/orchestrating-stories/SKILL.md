@@ -17,6 +17,8 @@ You are the **orchestrator** (main agent). Your job is to plan the story structu
 
 You do NOT write act markdown dialogue yourself — that is delegated to writing subagents that load the `writing-story-acts` skill. You do NOT review acts yourself in detail — dispatch review subagents using the `reviewing-written-stories` skill when needed. The house prose style is defined in the `house-style` skill; reference it, don't restate it.
 
+When audio is in scope, the orchestrator owns `raw/<storyName>/docs/audio-plan.json`; writing subagents reuse approved keys and do not edit provider details.
+
 ## Prerequisites
 
 - `raw/<storyName>/docs/characters.md` MUST exist — compiler throws `compile.ts:28-32` if missing (this is fatal, not a warning)
@@ -162,7 +164,7 @@ Dispatch parallel subagents to write the actual markdown. Each subagent handles 
 
 **Each subagent prompt must include:**
 1. Which acts to write (filenames + full paths + brief scene descriptions)
-2. Reference files to read first (characters.md, chapter plan, previous act)
+2. Reference files to read first (characters.md, chapter plan, previous act; when audio is in scope, also the audio plan path `raw/<storyName>/docs/audio-plan.json` and its relevant approved cue palette)
 3. Key constraints (POV character, story-specific rules from the plan)
 4. Instructions to report back: files written, characters they needed added, deviations from plan
 
@@ -253,6 +255,14 @@ Two choice-related files exist:
 - **Unknown character** (`**name**` doesn't resolve): add the character or use `canonicalize`/`rolePatterns` in config.
 
 These warnings clear as you add the missing prompts and assets.
+
+**Audio cue usage report** — when a story has an audio plan, review coverage after compiling:
+
+```bash
+bun --filter @aquila/stories audio:report <storyName>
+```
+
+Prints a deterministic, read-only JSON usage report: each used cue with its scene/entry locations, every `bgm` stop, and plan entries that are `unused`. Review the unused entries and overall coverage; do not create a spreadsheet or second cue inventory.
 
 ### Step 6: Fill In Choice Text
 

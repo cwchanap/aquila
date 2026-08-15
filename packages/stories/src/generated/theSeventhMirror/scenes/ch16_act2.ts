@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:15。地方議會。都政資料閱覽室。", background: Background.Chapter_16_Ch16_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:15。地方議會。都政資料閱覽室。", bgm: "institutional-drone", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在閱覽室第三桌。面前是一份年度彙整文件——議會審查摘要（年度公開版）。", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她依正常程序調閱的。閱覽申請。身分證件。調閱目的——公開資料查證。職員確認後把文件送到指定座位。", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "文件很厚。封面寫著——公共安全系統設定檔監督審查摘要。年度公開版。", background: Background.Chapter_16_Ch16_Act2_S0 },
@@ -54,7 +54,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "分類翻轉。不是地域。是情境。", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "用途仍未知。", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯用途仍未知。分類知道了。但分類不等於功能。「情境／同步用途設定」是一個分類標籤。它告訴我 TOKYO-7 不是地域配置。它沒有告訴我這個情境是什麼。沒有告訴我同步的是什麼。沒有告訴我這個情境跟孩子、跟記憶、跟白光有沒有關係。只告訴我——它不是地域配置。這是今天的第一步。不是最後一步。", background: Background.Chapter_16_Ch16_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:45。她拍下整頁。頁碼。文件名。年度。議會章。收件戳。", background: Background.Chapter_16_Ch16_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:45。她拍下整頁。頁碼。文件名。年度。議會章。收件戳。", sfx: "camera-shutter", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她繼續翻。看分類表的其他頁面。確認沒有其他 TOKYO 開頭的設定檔。", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有。只有一個。TOKYO-7。", background: Background.Chapter_16_Ch16_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:15。她把文件交還給閱覽室職員。確認歸還。", background: Background.Chapter_16_Ch16_Act2_S0 },

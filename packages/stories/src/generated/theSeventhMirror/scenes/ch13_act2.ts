@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:02。灣岸署。物件確認室。", background: Background.Chapter_13_Ch13_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:02。灣岸署。物件確認室。", bgm: "institutional-drone", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一間不大的房間。灰牆。日光燈。一張桌子。兩把椅子。角落有一台相機腳架。", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "承辦刑警坐在對面。桌上放著一張表格和一支筆。", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "朝倉小姐。今天的程序是自願物件確認。不是扣押。不是搜索。", background: Background.Chapter_13_Ch13_Act2_S0 },
@@ -31,7 +31,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "可以拿出來嗎？", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "可以。請戴手套。", background: Background.Chapter_13_Ch13_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "刑警戴上棉手套。把鏡子從封袋裡取出來。放在桌上。正面朝上。", background: Background.Chapter_13_Ch13_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他拿起相機。拍正面。拍背面。拍側面。每一面兩張。閃光燈沒有開。", background: Background.Chapter_13_Ch13_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他拿起相機。拍正面。拍背面。拍側面。每一面兩張。閃光燈沒有開。", sfx: "camera-shutter", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後他拿出一把尺。量尺寸。寫在表格上。七點二公分。四點八公分。零點六公分。", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他拿出小型電子秤。量重量。三十八公克。", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯和我量的完全一樣。它沒有在路途中被碰過。", background: Background.Chapter_13_Ch13_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -57,7 +57,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "原件今日返還。拍照與記錄已完成。未留置。", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯它回來了。一個小時。拍照。測量。斜光。簽名。然後它回到我手裡。沒有被扣留。沒有被交給研究中心。沒有被交給 TKS。我帶它進來，我帶它出去。", background: Background.Chapter_13_Ch13_Act2_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把封袋放進背包。拉鏈拉好。", background: Background.Chapter_13_Ch13_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:35。門被敲了兩下。", background: Background.Chapter_13_Ch13_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:35。門被敲了兩下。", sfx: "door-knock", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "另一名刑警探頭進來。", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "供應商技術人員到了。在技術說明室。可以開始了嗎？", background: Background.Chapter_13_Ch13_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯小野寺。TKS。他到了。", background: Background.Chapter_13_Ch13_Act2_S0, portrait: Portrait.AsakuraMio_Determined },

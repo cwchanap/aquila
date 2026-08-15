@@ -4,6 +4,10 @@
 small Tokyo apartment interior, early morning grey light through a single window, cluttered desk with open notebook and scattered printouts, muted cold blue palette with faint warmth from desk lamp, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：06:45。星期五。朝倉家。
 
 **旁白**：澪坐在書桌前。桌燈亮著。窗外是灰色的。還沒有太陽。距星期一 06:13——大約還有兩天二十三個小時二十八分鐘。悠真失蹤第十一天。
@@ -165,6 +169,10 @@ small investigation media office, cramped room with two desks and a public data 
 **旁白**：她掛掉電話。
 
 **朝倉澪** [determined]：（內心）⋯⋯預約完成。十點。資料室。如果紙本附件裡有同步群欄沒被遮蔽的版本——或者有事前變更申請記錄了星期一的配置——我就能看到 TOKYO 接到哪裡。
+
+```sfx
+notification-beep
+```
 
 **旁白**：09:05。手機震動。
 

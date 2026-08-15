@@ -4,6 +4,10 @@
 small investigation media office, cramped room with two desks and a public data terminal, early afternoon light through a single window, fluorescent ceiling light mixing with warm desk lamp, documents and notebooks spread across desk, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：13:10。調查媒體辦公室。
 
 **旁白**：澪從家庭餐廳回來。背包裡有文件 A 和文件 B 的拍攝紀錄。筆記本裡有抄好的表格。腦裡有佐伯的提醒——事前文件不等於實際執行。

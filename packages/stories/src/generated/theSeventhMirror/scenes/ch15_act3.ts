@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:15。東京都防災學習館附設研修資料室。退役硬體閱覽區。", background: Background.Chapter_15_Ch15_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:15。東京都防災學習館附設研修資料室。退役硬體閱覽區。", bgm: "institutional-drone", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "研修資料室的後方有一個隔間。門上寫著——退役硬體閱覽區。裡面比前面小。三面牆沿著放展示櫃。櫃裡是退役通信設備——舊型手持終端、退役控制台面板、幾組拆解過的模組。中間有兩張閱覽桌。日光燈。沒有窗。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪從午餐回來。她在館外吃了便利店飯糰。十分鐘。沒有浪費時間。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走回第二桌。第二個牛皮紙盒還在那裡。館員保留了她的座位。", background: Background.Chapter_15_Ch15_Act3_S0 },
@@ -72,7 +72,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "館員走過來。翻看手冊。逐頁確認。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "結構圖和程序頁可以拍。載體照片可以拍。但標籤規則頁裡如果有實際序號或端點資訊的部分不行——這本看起來都是範例和退役資料，沒有現行端點。可以拍。整頁拍。包括頁碼和交付編號。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起手機。一頁一頁拍。", background: Background.Chapter_15_Ch15_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起手機。一頁一頁拍。", sfx: "camera-shutter", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "封面。交付編號。改訂日期。退役標記。目錄頁。第一章概要。第二章載體照片頁。結構詳圖。第三章正常拔出。第四章異常取出隔離處理。第五章標籤規則。第六章研修鏡像注意事項。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "每一頁都拍完整頁面。頁碼。交付編號。上下文。不只拍載體照片。不只拍標籤範例。拍每一頁的標題、正文和頁腳。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:15。拍完。她把手冊合上。放在桌上。", background: Background.Chapter_15_Ch15_Act3_S0 },
@@ -80,7 +80,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "TKS-SYNC 離線復舊程序手冊。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "離線設定載體。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯離線設定載體。這是手冊給它的名字。離線。設定。載體。三個詞。不是武器。不是刀片。不是尖銳物。是——載體。用來攜帶設定版本的東西。用來在網路中斷時把設定帶到現場的東西。用來讓控制台承認一個版本的東西。", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
-    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪。車廂裡。千田把它塞給我的時候。車廂的安全系統——", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
+    { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪。車廂裡。千田把它塞給我的時候。車廂的安全系統——", sfx: "pa-announcement", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她閉上眼睛。幾秒。然後張開。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一輪。車廂安全廣播。那個聲音。機械的。平的。沒有情緒的。它說——請立即放下手中的尖銳物。", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯尖銳物。車廂安全系統叫它——尖銳物。因為它有翹起的邊。因為護片被撕裂了。因為金色接點外露了。因為它被暴力撬出了。安全系統看到的是——一個有尖銳邊的金屬物。它不知道那是什麼。它只看到形狀。只看到危險的邊。所以它叫它——尖銳物。", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -110,7 +110,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:35。澪收好筆記本。收好手機。站起來。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出退役硬體閱覽區。穿過研修資料室。金屬架上的盒裝資料在日光燈下排列著。紙本目錄抽屜靜靜地沿牆排開。樓下還有學校團體的聲音。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走下樓梯。穿過大廳。防災模型展示區。地震體驗區。退役消防設備。小學生已經走了。大廳安靜了一些。", background: Background.Chapter_15_Ch15_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出防災學習館。外面的空氣比裡面暖。一點半的太陽。灰白色。不是很亮。", background: Background.Chapter_15_Ch15_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走出防災學習館。外面的空氣比裡面暖。一點半的太陽。灰白色。不是很亮。", bgm: "grey-city", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在門口。打開手機。找到佐伯的對話。", background: Background.Chapter_15_Ch15_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯傳給佐伯。只傳公開部分。退役手冊的裁切照片。載體照片頁。標籤規則頁。正常拔出和暴力撬出的程序頁。不提第一輪。不提草圖。不提比對。只傳手冊上印了什麼。", background: Background.Chapter_15_Ch15_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她從手機相簿裡選了幾張照片。裁掉閱覽申請資訊。保留頁碼、交付編號和改訂日期。", background: Background.Chapter_15_Ch15_Act3_S0 },

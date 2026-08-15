@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:00。星期日。調查媒體辦公室。", background: Background.Chapter_16_Ch16_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:00。星期日。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_16_Ch16_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進來。前輩已經到了。比平日更早。桌上的終端螢幕亮著。螢光燈管沒開。只有窗外的灰白光和螢幕的冷光。", background: Background.Chapter_16_Ch16_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距星期一 06:13——約二十三小時十三分鐘。悠真失蹤第十三日。", background: Background.Chapter_16_Ch16_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走到自己的桌子。放下背包。拿出筆記本。翻到昨晚最後一頁。", background: Background.Chapter_16_Ch16_Act1_S0 },
@@ -52,7 +52,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂裡人很少。星期日早晨。她坐在靠門的位置。背包帶勒在肩上。筆記本在背包裡。手機在口袋裡。", background: Background.Chapter_16_Ch16_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯連續多日睡眠不足。第二輪已經進入最後一個白天。身體很重。腦袋偶爾會空白一秒。但倒數壓力壓過疲憊——她能繼續工作，是因為白光再來就只剩這些時間。不是不累。是沒有資格累。", background: Background.Chapter_16_Ch16_Act1_S1, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯三個入口。議會審查摘要。舊驗收說明書。監督委員會引用目錄。三個獨立制度來源。今天要把它們全部調完。在白光前最後一個白天——把「東京」這個名字的用途分類追出來。", background: Background.Chapter_16_Ch16_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:50。她下了電車。走出車站。", background: Background.Chapter_16_Ch16_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:50。她下了電車。走出車站。", bgm: "grey-city", background: Background.Chapter_16_Ch16_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "地方議會建築在一條安靜的街上。灰色。門口有旗桿。星期日。幾乎沒有人。", background: Background.Chapter_16_Ch16_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在門口。看了一眼手機。08:55。", background: Background.Chapter_16_Ch16_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯還有三十五分鐘。九點半開放。先進去。先找資料閱覽室的位置。先確認預約。", background: Background.Chapter_16_Ch16_Act1_S1, portrait: Portrait.AsakuraMio_Determined },

@@ -4,6 +4,10 @@
 small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing procurement database search results, stacks of document folders, window showing dark residential street, muted cool palette with stronger monitor glow on face, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：20:40。同一間辦公室。同一台終端。
 
 **旁白**：澪在搜尋欄裡換了幾個字。
@@ -47,6 +51,10 @@ small investigation media office at night, cramped room with two desks and a pub
 **旁白**：第三份。防災同步測試概要。同樣。系統名稱有。設定檔沒有。同步群沒有。
 
 **朝倉澪** [determined]：（內心）⋯⋯三份現行公開文件。都沒有設定檔名稱。都沒有同步群。不是某一份漏了。是現行版本統一刪除。公開資料的格式被整理過——外面的人看不到實際配置。
+
+```sfx
+fluorescent-hum
+```
 
 **旁白**：她靠回椅背。螢光燈管又嗡了一聲。
 

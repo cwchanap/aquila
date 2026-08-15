@@ -4,6 +4,10 @@
 police station evidence confirmation room, cold white fluorescent lighting, metal desk cleared of most documents, evidence log forms stacked neatly, transparent evidence bag containing a small mirror, scale ruler, institutional claustrophobic atmosphere, evening light nearly gone through frosted window, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：18:42。小野寺離開之後，房間裡的空氣鬆了一層。不是溫暖。是那種壓力源消失後、牆壁還沒來得及變回原色的鬆。
 
 **旁白**：承辦人回到桌邊。他把紀錄板翻到新的一頁。開始整理今天的物件確認紀錄。
@@ -132,6 +136,10 @@ police station reception counter, evening, cold fluorescent lighting, low counte
 
 **朝倉澪** [determined]：（內心）⋯⋯這是測試的代價。我測試了 TKS 的第一反應。代價是——資訊會外流。我不一定能掌握它流向哪裡。
 
+```bgm
+night-street
+```
+
 **旁白**：她推開玻璃門。夜晚的空氣進來了。比署裡的空氣涼。比署裡的空氣有味道——街上的味道、排水溝的味道、遠處某家店的味道。
 
 **旁白**：她站在署門口的階梯上。打開私人筆記。翻到那一頁。
@@ -149,6 +157,10 @@ police station reception counter, evening, cold fluorescent lighting, low counte
 **朝倉澪** [determined]：（內心）⋯⋯個體 12。端點 12。兩套系統。兩個名字。一個是研究後台給他的。一個是警報產品語法給他的。都不是我給他的。我給他的名字在第三行。沒有問號。
 
 **旁白**：她合上筆記本。放進背包。
+
+```sfx
+notification-beep
+```
 
 **旁白**：19:17。她走下階梯。手機螢幕亮了一下。一則提醒。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:30。東京都防災學習館附設研修資料室。", background: Background.Chapter_15_Ch15_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "10:30。東京都防災學習館附設研修資料室。", bgm: "institutional-drone", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這裡不像祕密檔案館。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "樓下傳來小學生的聲音。防災模型展示區。地震體驗。有人在大廳裡排隊。二樓研修資料室的門隔開了那些聲音，但沒有完全擋住。日光燈嗡嗡地亮著。金屬架上整齊排列著盒裝資料——盒脊上貼著標籤。退役研修教材。舊版維護手冊。盒裝光碟。紙本目錄抽屜沿牆排開。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個館員坐在櫃台後面。旁邊有一台舊型錄影機和一疊退役設備清單。牆上貼著閱覽規則——館內閱覽。不帶離。不拆釘。可拍攝頁面需由館員確認。端點、帳號、金鑰與安全操作細節以替代頁處理。", background: Background.Chapter_15_Ch15_Act2_S0 },
@@ -52,7 +52,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "館員走過來。看了一下投影片。翻看了一下透明套。確認沒有被拆釘。確認頁面完整。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "這頁沒有端點或帳號資訊，可以拍。拍的時候要拍完整頁面，包括頁碼和交付編號。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。", background: Background.Chapter_15_Ch15_Act2_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起手機。拍。", background: Background.Chapter_15_Ch15_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起手機。拍。", sfx: "camera-shutter", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她不只拍 TOKYO-7 那一格。她拍整頁。投影片標題。完整表格。五行五欄。頁碼。交付編號。改訂日期。底部小字。館藏登錄卡。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "拍完之後，她在筆記本上逐欄抄錄。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "公開設定名——TOKYO。", background: Background.Chapter_15_Ch15_Act2_S0 },
@@ -78,7 +78,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "我看看。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "館員翻看紀錄表。確認沒有端點、帳號或金鑰資訊。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "可以。整頁拍。包括表頭和編號。", background: Background.Chapter_15_Ch15_Act2_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拍。整頁。表頭。交付編號。改訂日期。那一行——實際運用設定 TOKYO-7 已複製至研修鏡像，用於離線復舊程序訓練。頁碼。裝訂戳。", background: Background.Chapter_15_Ch15_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拍。整頁。表頭。交付編號。改訂日期。那一行——實際運用設定 TOKYO-7 已複製至研修鏡像，用於離線復舊程序訓練。頁碼。裝訂戳。", sfx: "camera-shutter", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "拍完之後，她在筆記本上抄下這行字。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "抄完。她放下筆。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:05。她靠回椅背。看著筆記本上抄的東西。", background: Background.Chapter_15_Ch15_Act2_S0 },
@@ -107,7 +107,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:58。澪站起來。收好筆記本。收好手機。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走到窗邊。看了一眼外面。樓下的廣場上有幾個小學生在吃便當。防災學習館的旗幟在風裡微微動著。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯悠真。失蹤第十二日。我不知道你在哪裡。我不知道 G07 裡面有沒有你。我只知道——有一個叫 TOKYO-7 的東西。它存在。它從實際運用環境匯出。它的用途寫在一份我還看不到的文件裡。千田說不要救東京。我不知道他說的東京是不是這個。但我現在知道——「東京」在這些文件裡不是城市。是一個有版本的名字。", background: Background.Chapter_15_Ch15_Act2_S0, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:05。她走出研修資料室。下樓。穿過大廳。小學生的聲音在背後漸漸變遠。", background: Background.Chapter_15_Ch15_Act2_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:05。她走出研修資料室。下樓。穿過大廳。小學生的聲音在背後漸漸變遠。", bgm: "grey-city", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走到館外的長椅上坐下。打開背包。拿出筆記本。翻到剛才寫的那一行。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "TOKYO-7：存在。用途未知。", background: Background.Chapter_15_Ch15_Act2_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著這行字。旁邊是防災學習館的灰色建築。裡面有防災模型。有退役設備。有學校團體。有盒裝光碟。有紙本目錄。有一頁投影片。上面印著一個沒有公開的名字。", background: Background.Chapter_15_Ch15_Act2_S0 },

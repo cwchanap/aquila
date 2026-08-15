@@ -4,6 +4,10 @@
 decommissioned equipment declassification reading area, same government building different floor, dimmer institutional lighting, rows of archived technical manuals in protective sleeves, reading desk with adjustable lamp, grey walls, small high windows, quiet and cold, muted desaturated palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：12:30。地方議會。退役設備解密閱覽區。
 
 **旁白**：同一棟建築。另一層。走廊盡頭。門上貼著——退役設備解密閱覽區。開放時間：週日 12:00–16:00。
@@ -43,6 +47,10 @@ decommissioned equipment declassification reading area, same government building
 **旁白**：第四條。
 
 **旁白**：本設定檔之「東京」為情境識別名，不指涉地理名稱。
+
+```bgm
+stop
+```
 
 **旁白**：她沒有翻頁。
 
@@ -112,6 +120,10 @@ decommissioned equipment declassification reading area, same government building
 
 **旁白**：同一章節列出其他命名規則。資產序號。內容標籤。版本編號。「東京」這條只是其中一條。不是功能描述。是命名規範。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：她拍下整頁。頁碼。文件名。退役標記。解密範圍章。收件戳。
 
 **旁白**：13:30。她繼續翻文件的其他章節。確認沒有其他與「東京」指涉相關的語句。
@@ -134,6 +146,10 @@ decommissioned equipment declassification reading area, same government building
 
 ```bg
 Tokyo street on Sunday afternoon, pale overcast light, quiet weekend pedestrian walkway between two institutional buildings, muted grey-blue and concrete palette, visual-novel background art, medium shot
+```
+
+```bgm
+grey-city
 ```
 
 **旁白**：14:35。她走在兩棟建築之間的步行道上。星期日。很安靜。幾乎沒有人。

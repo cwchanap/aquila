@@ -4,6 +4,10 @@
 small investigation media office at night, cramped room with two desks, fluorescent ceiling light off, desk lamp casting warm focused circle of light on sketch pages and printed manual photos and open notebook, dark street visible through window, deep evening palette with lamp glow dominant, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：18:00。調查媒體辦公室。
 
 **旁白**：澪推門進來。前輩已經走了。桌上留了一張便條——下午的拍攝確認沒問題，下週再整理。辦公室裡只有她一個人。
@@ -66,6 +70,10 @@ small investigation media office at night, cramped room with two desks, fluoresc
 
 **旁白**：她拿起手機。打開和佐伯的對話。把比對表格的去識別化版本打進去。沒有寫「第一輪」。沒有寫「千田」。只寫——未污染草圖 vs 退役載體手冊。六行結論。
 
+```sfx
+notification-beep
+```
+
 **旁白**：幾分鐘後，佐伯回了。
 
 **佐伯達也**：相容不是相同。同系列載體可以裝很多不同內容，外形一樣不代表載入同一設定。
@@ -79,6 +87,10 @@ small investigation media office at night, cramped room with two desks, fluoresc
 **旁白**：她回覆佐伯。
 
 **訊息**：知道。相容不是相同。沒有第一輪照片、重量和序號。不畫等號。
+
+```sfx
+notification-beep
+```
 
 **旁白**：佐伯回了最後一條。
 
@@ -105,6 +117,10 @@ small investigation media office at night, cramped room with two desks, fluoresc
 **旁白**：千田交給我的東西。
 
 **旁白**：四個名字。四行。同一件東西。四個系統給它的名字。
+
+```sfx
+pa-announcement
+```
 
 **朝倉澪** [determined]：（內心）⋯⋯第一個。尖銳物。車廂安全系統叫的。它看到金屬翹邊。它判斷有威脅。它廣播——請立即放下手中的尖銳物。它不知道那是什麼。它只知道形狀。形狀像刀。像威脅。所以叫尖銳物。
 

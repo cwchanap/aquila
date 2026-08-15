@@ -4,6 +4,10 @@
 public disaster prevention learning center archive room, shelves of boxed CD-ROMs and bound binders behind glass doors, paper catalog drawers along one wall, fluorescent ceiling light, school-group murmur audible from the floor below, neutral institutional beige and grey-green palette, reading table with two archival boxes and a notebook, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：10:30。東京都防災學習館附設研修資料室。
 
 **旁白**：這裡不像祕密檔案館。
@@ -96,6 +100,10 @@ public disaster prevention learning center archive room, shelves of boxed CD-ROM
 
 **朝倉澪**：好。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：她拿起手機。拍。
 
 **旁白**：她不只拍 TOKYO-7 那一格。她拍整頁。投影片標題。完整表格。五行五欄。頁碼。交付編號。改訂日期。底部小字。館藏登錄卡。
@@ -147,6 +155,10 @@ public disaster prevention learning center archive room, shelves of boxed CD-ROM
 **旁白**：館員翻看紀錄表。確認沒有端點、帳號或金鑰資訊。
 
 **資料室職員**：可以。整頁拍。包括表頭和編號。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：她拍。整頁。表頭。交付編號。改訂日期。那一行——實際運用設定 TOKYO-7 已複製至研修鏡像，用於離線復舊程序訓練。頁碼。裝訂戳。
 
@@ -205,6 +217,10 @@ public disaster prevention learning center archive room, shelves of boxed CD-ROM
 **旁白**：她走到窗邊。看了一眼外面。樓下的廣場上有幾個小學生在吃便當。防災學習館的旗幟在風裡微微動著。
 
 **朝倉澪** [sad]：（內心）⋯⋯悠真。失蹤第十二日。我不知道你在哪裡。我不知道 G07 裡面有沒有你。我只知道——有一個叫 TOKYO-7 的東西。它存在。它從實際運用環境匯出。它的用途寫在一份我還看不到的文件裡。千田說不要救東京。我不知道他說的東京是不是這個。但我現在知道——「東京」在這些文件裡不是城市。是一個有版本的名字。
+
+```bgm
+grey-city
+```
 
 **旁白**：12:05。她走出研修資料室。下樓。穿過大廳。小學生的聲音在背後漸漸變遠。
 

@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。地方議會。退役設備解密閱覽區。", background: Background.Chapter_16_Ch16_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "12:30。地方議會。退役設備解密閱覽區。", bgm: "institutional-drone", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "同一棟建築。另一層。走廊盡頭。門上貼著——退役設備解密閱覽區。開放時間：週日 12:00–16:00。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在閱覽區第二桌。面前是一份舊驗收說明書。封面寫著——退役設備驗收說明書。解密範圍。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這份文件因對應設備已退役、金鑰與端點表已刪除，而被列入解密範圍。她依正常程序調閱的。閱覽申請。身分證件。調閱目的——公開資料查證。", background: Background.Chapter_16_Ch16_Act3_S0 },
@@ -26,7 +26,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她停住了。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第四條。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "本設定檔之「東京」為情境識別名，不指涉地理名稱。", background: Background.Chapter_16_Ch16_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有翻頁。", background: Background.Chapter_16_Ch16_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有翻頁。", bgm: null, background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著這句話。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "看了很久。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯⋯⋯", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Shocked },
@@ -60,7 +60,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯第一次。高度吻合。不是證明。兩行。分開。不畫等號。千田遺言與這份文件的高度吻合——是事實。但高度吻合不是證明。不能把「高度吻合」變成「就是」。那條線不能跨。", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她繼續看第三章的其他條目。確認上下文。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "同一章節列出其他命名規則。資產序號。內容標籤。版本編號。「東京」這條只是其中一條。不是功能描述。是命名規範。", background: Background.Chapter_16_Ch16_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拍下整頁。頁碼。文件名。退役標記。解密範圍章。收件戳。", background: Background.Chapter_16_Ch16_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拍下整頁。頁碼。文件名。退役標記。解密範圍章。收件戳。", sfx: "camera-shutter", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:30。她繼續翻文件的其他章節。確認沒有其他與「東京」指涉相關的語句。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有。只有命名原則章節裡那一條。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:15。她把文件交還給職員。確認歸還。", background: Background.Chapter_16_Ch16_Act3_S0 },
@@ -70,7 +70,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看了一眼手機。14:22。", background: Background.Chapter_16_Ch16_Act3_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯還有時間。監督委員會引用目錄。查詢終端在另一棟。走路十分鐘。十五點以前到。第三份。最後一份。", background: Background.Chapter_16_Ch16_Act3_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走下樓梯。走出建築。", background: Background.Chapter_16_Ch16_Act3_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:35。她走在兩棟建築之間的步行道上。星期日。很安靜。幾乎沒有人。", background: Background.Chapter_16_Ch16_Act3_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:35。她走在兩棟建築之間的步行道上。星期日。很安靜。幾乎沒有人。", bgm: "grey-city", background: Background.Chapter_16_Ch16_Act3_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯「東京」不指涉地名。這句話還在腦裡。像印在眼睛上。閉眼也看得見。千田。不要救東京。從來不是一座城市。高度吻合。不是證明。不能跨。但——方向對了。方向是對的。", background: Background.Chapter_16_Ch16_Act3_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向監督委員會辦公大樓。", background: Background.Chapter_16_Ch16_Act3_S1 },
 ];

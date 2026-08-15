@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:10。調查媒體辦公室。", background: Background.Chapter_14_Ch14_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:10。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_14_Ch14_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪從家庭餐廳回來。背包裡有文件 A 和文件 B 的拍攝紀錄。筆記本裡有抄好的表格。腦裡有佐伯的提醒——事前文件不等於實際執行。", background: Background.Chapter_14_Ch14_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "前輩坐在終端前。螢幕上開著信箱。", background: Background.Chapter_14_Ch14_Act4_S0 },
     { characterId: CharacterId.MediaSenior, character: "調查媒體前輩", dialogue: "回了。", background: Background.Chapter_14_Ch14_Act4_S0 },

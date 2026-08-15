@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:50。防災學習館附設研修資料室。技術紀錄區。", background: Background.Chapter_15_Ch15_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "13:50。防災學習館附設研修資料室。技術紀錄區。", bgm: "institutional-drone", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪從退役硬體閱覽區走過來。走廊盡頭是另一個房間。門上貼著一張標示——公共安全技術紀錄。館內查詢終端。微縮膠片閱讀機。", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯剛才那本手冊。離線設定載體。掌心長。薄金屬殼。單側金色接點。暴力撬出時護片翹起。這些字——和第一輪車廂廣播裡的「尖銳物」——是同一類東西的兩個名字。我需要冷靜。不能讓這個發現把推論拉得太遠。先做下一件事。獨立來源。不能讓所有答案都從同一個交付包裡出來。", background: Background.Chapter_15_Ch15_Act4_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走進技術紀錄區。房間比剛才的閱覽室小。兩排金屬鐵架。架上放著退役設備的紙本手冊、裝訂成冊的採購紀錄、舊防災技術研討會論文集。角落有一台微縮膠片閱讀機。靠牆是一台館內查詢終端。螢幕是舊型的。鍵盤泛黃。", background: Background.Chapter_15_Ch15_Act4_S0 },
@@ -76,7 +76,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "登錄資訊在裝訂冊封面內頁。可以抄錄。不能整頁影印。", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。", background: Background.Chapter_15_Ch15_Act4_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她回到鐵架。翻開兩本裝訂冊的封面內頁。把館藏登錄編號、送存日期、主管單位全部抄進筆記本。", background: Background.Chapter_15_Ch15_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她拿起手機。對著採購驗收附件的簽署欄那一頁拍了一張。包含完整頁面。頁碼。裝訂冊編號。不只是簽署欄。", background: Background.Chapter_15_Ch15_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後她拿起手機。對著採購驗收附件的簽署欄那一頁拍了一張。包含完整頁面。頁碼。裝訂冊編號。不只是簽署欄。", sfx: "camera-shutter", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "又翻到研討會論文集的講者名單那一頁。拍了一張。同樣包含完整頁面。", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "拍完之後，她把兩本裝訂冊放回原位。回到查詢終端前。", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯兩個來源。兩張照片。兩段抄錄。館藏登錄資訊。這些都是公共紀錄。都是合法調閱。不是非法登入。不是私下取得。是館內閱覽。是規則允許的範圍內。", background: Background.Chapter_15_Ch15_Act4_S0, portrait: Portrait.AsakuraMio_Determined },
@@ -91,6 +91,6 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "千田有能力。", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不等於千田當晚做過。", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "界線。清楚。不能跨。", background: Background.Chapter_15_Ch15_Act4_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。她走出資料室大門。外面的空氣比館內冷。下午的光已經開始變弱。距星期一 06:13——大約一天十五小時四十三分鐘。", background: Background.Chapter_15_Ch15_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "15:10。她走出資料室大門。外面的空氣比館內冷。下午的光已經開始變弱。距星期一 06:13——大約一天十五小時四十三分鐘。", bgm: "grey-city", background: Background.Chapter_15_Ch15_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "悠真失蹤第十二日。", background: Background.Chapter_15_Ch15_Act4_S0 },
 ];

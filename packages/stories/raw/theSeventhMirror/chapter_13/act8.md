@@ -4,6 +4,10 @@
 small investigation media office at night, cramped room with two desks and a public data terminal, fluorescent ceiling light casting pale greenish glow, terminal screen now showing an archived attachment cache from a local council security committee meeting, older document format with different table structure, window showing dark residential street with fewer lights, deeper night palette with monitor glow dominant, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：21:25。同一間辦公室。終端螢幕上的光變了一點。從採購資料庫跳到了另一個頁面。
 
 **旁白**：澪從採購案號往回追。現行附件的文件編號指向一個更早的來源——地方議會安全委員會的會議附件。她找到了一個快取頁面。頁面標頭寫著會議日期。日期在灣岸測試批准之前。
@@ -27,6 +31,10 @@ small investigation media office at night, cramped room with two desks and a pub
 **旁白**：設定檔名稱——
 
 **旁白**：TOKYO。
+
+```bgm
+stop
+```
 
 **旁白**：她的手指停在觸控板上。沒有動。
 
@@ -106,7 +114,15 @@ small investigation media office at night, cramped room with two desks and a pub
 
 **旁白**：她把筆放下。靠回椅背。
 
+```sfx
+fluorescent-hum
+```
+
 **旁白**：21:55。螢光燈管又嗡了一聲。辦公室裡沒有別的聲音。窗外的高架軌道偶爾傳來一輛晚班車的聲音。很輕。像什麼東西劃過夜色。
+
+```sfx
+train-hum
+```
 
 **朝倉澪** [determined]：（內心）⋯⋯小野寺說——設定檔名稱和群組映射會隨版本更新。他說的是普通技術概念。但現在它變成了我的調查方向。舊版本保留了設定檔名稱。舊版本的同步群欄被遮蔽。更舊的版本——有沒有可能連同步群都還沒遮掉？
 
@@ -135,6 +151,10 @@ small investigation media office at night, cramped room with two desks and a pub
 **旁白**：地區欄已經寫著灣岸新交通，另一格卻又寫著 TOKYO。它可能仍然只是東京用設定；但從這一夜開始，「東京」對澪而言，不再只是地名。
 
 **旁白**：她合上筆記本。收進背包。
+
+```bgm
+night-street
+```
 
 **旁白**：22:15。她關燈。鎖門。
 

@@ -4,6 +4,10 @@
 supervisory committee public reference catalog terminal room, Sunday afternoon, small institutional room with a few query terminals against the wall, pale fluorescent light, grey walls, no windows, quiet and cold, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：15:00。監督委員會辦公大樓。公開引用目錄查詢終端室。
 
 **旁白**：房間很小。幾台查詢終端靠牆排列。沒有窗戶。螢光燈。很安靜。星期日。只有她一個人。
@@ -92,6 +96,10 @@ supervisory committee public reference catalog terminal room, Sunday afternoon, 
 
 **朝倉澪** [determined]：（內心）⋯⋯但「東京是什麼」——仍不知道。情境。同步用途。情境屬性。這些詞出現了。但它們的具體內容——不知道。情境是什麼情境。同步的是什麼。情境屬性是什麼屬性。三份文件都沒有回答。它們只回答了——東京不是什麼。不是城市。不是地名。不是地域配置。不是指涉。是什麼——仍不知道。
 
+```sfx
+camera-shutter
+```
+
 **旁白**：16:00。她拍下螢幕。條目。欄位。目錄名稱。查詢時間。
 
 **旁白**：16:15。她確認沒有其他 TOKYO 相關條目。
@@ -102,6 +110,10 @@ supervisory committee public reference catalog terminal room, Sunday afternoon, 
 
 ```bg
 Tokyo street on Sunday late afternoon, low overcast light starting to dim, quiet weekend pedestrian walkway, institutional buildings, muted grey-blue palette, visual-novel background art, medium shot
+```
+
+```bgm
+grey-city
 ```
 
 **旁白**：16:25。她走出監督委員會辦公大樓。外面是星期日下午。光線開始暗了。

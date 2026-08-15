@@ -4,6 +4,10 @@
 local government council archive reading room, Sunday morning, rows of metal shelving with bound documents, a few reading desks with desk lamps, fluorescent ceiling light, institutional grey walls, large windows with pale overcast light, quiet and nearly empty, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+institutional-drone
+```
+
 **旁白**：09:15。地方議會。都政資料閱覽室。
 
 **旁白**：澪坐在閱覽室第三桌。面前是一份年度彙整文件——議會審查摘要（年度公開版）。
@@ -99,6 +103,10 @@ local government council archive reading room, Sunday morning, rows of metal she
 **旁白**：用途仍未知。
 
 **朝倉澪** [determined]：（內心）⋯⋯用途仍未知。分類知道了。但分類不等於功能。「情境／同步用途設定」是一個分類標籤。它告訴我 TOKYO-7 不是地域配置。它沒有告訴我這個情境是什麼。沒有告訴我同步的是什麼。沒有告訴我這個情境跟孩子、跟記憶、跟白光有沒有關係。只告訴我——它不是地域配置。這是今天的第一步。不是最後一步。
+
+```sfx
+camera-shutter
+```
 
 **旁白**：10:45。她拍下整頁。頁碼。文件名。年度。議會章。收件戳。
 

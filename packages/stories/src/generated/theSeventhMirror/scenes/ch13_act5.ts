@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:42。小野寺離開之後，房間裡的空氣鬆了一層。不是溫暖。是那種壓力源消失後、牆壁還沒來得及變回原色的鬆。", background: Background.Chapter_13_Ch13_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:42。小野寺離開之後，房間裡的空氣鬆了一層。不是溫暖。是那種壓力源消失後、牆壁還沒來得及變回原色的鬆。", bgm: "institutional-drone", background: Background.Chapter_13_Ch13_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "承辦人回到桌邊。他把紀錄板翻到新的一頁。開始整理今天的物件確認紀錄。", background: Background.Chapter_13_Ch13_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他一邊核對，一邊把完成的項目念出來。像在讀清單。每一項之間停一下。", background: Background.Chapter_13_Ch13_Act5_S0 },
     { characterId: CharacterId.PoliceOfficer, character: "警察", dialogue: "正反面照片。完成。", background: Background.Chapter_13_Ch13_Act5_S0 },
@@ -68,7 +68,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走向署的出口。玻璃門外是夜晚的街道。路燈已經亮了。", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我成功把清晰代碼和鏡背物證放進官方程序。這是我要的。可是放進去之後，它就不只屬於我了。它屬於案件資料。屬於承辦人的紀錄。屬於那份我聽見但拿不到的內部補充報告。屬於任何將來有權調閱這個檔案的人。", background: Background.Chapter_13_Ch13_Act5_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯這是測試的代價。我測試了 TKS 的第一反應。代價是——資訊會外流。我不一定能掌握它流向哪裡。", background: Background.Chapter_13_Ch13_Act5_S1, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她推開玻璃門。夜晚的空氣進來了。比署裡的空氣涼。比署裡的空氣有味道——街上的味道、排水溝的味道、遠處某家店的味道。", background: Background.Chapter_13_Ch13_Act5_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她推開玻璃門。夜晚的空氣進來了。比署裡的空氣涼。比署裡的空氣有味道——街上的味道、排水溝的味道、遠處某家店的味道。", bgm: "night-street", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站在署門口的階梯上。打開私人筆記。翻到那一頁。", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三行字。她今天下午寫的。", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "個體 12？", background: Background.Chapter_13_Ch13_Act5_S1 },
@@ -77,7 +77,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看著這三行。前兩行後面有問號。第三行沒有。", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯個體 12。端點 12。兩套系統。兩個名字。一個是研究後台給他的。一個是警報產品語法給他的。都不是我給他的。我給他的名字在第三行。沒有問號。", background: Background.Chapter_13_Ch13_Act5_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她合上筆記本。放進背包。", background: Background.Chapter_13_Ch13_Act5_S1 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:17。她走下階梯。手機螢幕亮了一下。一則提醒。", background: Background.Chapter_13_Ch13_Act5_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:17。她走下階梯。手機螢幕亮了一下。一則提醒。", sfx: "notification-beep", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "20:00　兼職辦公室", background: Background.Chapter_13_Ch13_Act5_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯二十點。辦公室。第三份備份要放進鎖櫃。然後——公開手冊。採購附件。舊公共文件。TKS-SYNC 的群與端。灣岸測試用了哪套系統。還有⋯⋯", background: Background.Chapter_13_Ch13_Act5_S1, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她沒有把那個「還有」想完。她把它留在那裡。像一個還沒有被翻開的頁碼。", background: Background.Chapter_13_Ch13_Act5_S1 },

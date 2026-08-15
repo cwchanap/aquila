@@ -6,11 +6,11 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:20。都政資料閱覽室。", background: Background.Chapter_14_Ch14_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "14:20。都政資料閱覽室。", bgm: "institutional-drone", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪第二次走進來。上午的閱覽申請還在櫃台。她出示身分證件。填寫追加調閱單。報上同一個資料包編號。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "追加調閱——運用結果速報及復舊確認摘要。同一資料包內。請在閱覽室等候。閉館前三十分鐘為拍攝截止時間。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。", background: Background.Chapter_14_Ch14_Act5_S0, portrait: Portrait.AsakuraMio_Base },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐到上午同一個位置。綠罩燈。木桌。安靜。幾分鐘後，職員推著資料車過來。一個新的文件夾。比上午的厚。", background: Background.Chapter_14_Ch14_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她坐到上午同一個位置。綠罩燈。木桌。安靜。幾分鐘後，職員推著資料車過來。一個新的文件夾。比上午的厚。", sfx: "trolley-wheels", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她打開文件夾。翻到目錄頁。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "目錄上列著附件清單。她的目光逐條往下掃。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "事前運用變更申請——文件 A。上午已經看過。", background: Background.Chapter_14_Ch14_Act5_S0 },
@@ -48,7 +48,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "別紙 A——運用變更申請正本。文件 A。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "別紙 B——多通道測試參數附頁。文件 B。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "別紙 C——設定檔別名對照表。", background: Background.Chapter_14_Ch14_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指停在那一行。", background: Background.Chapter_14_Ch14_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她的手指停在那一行。", bgm: null, background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯別紙 C。設定檔別名對照表。", background: Background.Chapter_14_Ch14_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她往右看。別紙 C 那一行後面有幾個欄位。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "附件名稱——設定檔別名對照表。", background: Background.Chapter_14_Ch14_Act5_S0 },
@@ -77,7 +77,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "佐伯回了最後一條。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.SaekiTatsuya, character: "佐伯達也", dialogue: "可以記錄。不要解讀。", background: Background.Chapter_14_Ch14_Act5_S0, portrait: Portrait.SaekiTatsuya_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放回桌上。看了一眼時間。15:40。閉館前三十分鐘。拍攝截止時間快到了。", background: Background.Chapter_14_Ch14_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起手機。對著文件 C 逐頁拍攝。封面。目錄。正文。附件目錄。別紙 C 替代頁。每一頁都包含前後文。不只拍關鍵欄位。", background: Background.Chapter_14_Ch14_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起手機。對著文件 C 逐頁拍攝。封面。目錄。正文。附件目錄。別紙 C 替代頁。每一頁都包含前後文。不只拍關鍵欄位。", sfx: "camera-shutter", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "拍完之後，她把文件夾合上。放回資料車。通知職員歸還。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.ArchiveStaff, character: "資料室職員", dialogue: "歸還確認。今日閱覽結束。謝謝。", background: Background.Chapter_14_Ch14_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她收好筆記本。拉上背包。站起來。", background: Background.Chapter_14_Ch14_Act5_S0 },

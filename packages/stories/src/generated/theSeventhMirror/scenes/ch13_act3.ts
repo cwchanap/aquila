@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:36。灣岸署。技術說明室。", background: Background.Chapter_13_Ch13_Act3_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:36。灣岸署。技術說明室。", bgm: "institutional-drone", background: Background.Chapter_13_Ch13_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "比物件確認室大一點。一張長桌。桌上有一台筆電。幾份列印文件。牆上有一面投影螢幕，沒有開。", background: Background.Chapter_13_Ch13_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "桌邊坐著一個男人。三十多歲。短髮。眼鏡。深色外套。眼下有很深的陰影。像好幾天沒有睡好。", background: Background.Chapter_13_Ch13_Act3_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小野寺直樹。東都危機システム株式会社。公共安全系統部。技術協力人員。", background: Background.Chapter_13_Ch13_Act3_S0 },

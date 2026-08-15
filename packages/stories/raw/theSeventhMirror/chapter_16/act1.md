@@ -4,6 +4,10 @@
 small investigation media office, Sunday morning pale grey light through a single window, cramped room with two desks and a public data terminal, fluorescent ceiling light off, cool daylight mixing with screen glow, neat stacks of documents and a closed laptop, muted cool palette, visual-novel background art, medium shot
 ```
 
+```bgm
+sleepless-vigil
+```
+
 **旁白**：07:00。星期日。調查媒體辦公室。
 
 **旁白**：澪推門進來。前輩已經到了。比平日更早。桌上的終端螢幕亮著。螢光燈管沒開。只有窗外的灰白光和螢幕的冷光。
@@ -99,6 +103,10 @@ Tokyo street on Sunday morning, pale overcast light, quiet weekend pedestrian wa
 **朝倉澪** [exhausted]：（內心）⋯⋯連續多日睡眠不足。第二輪已經進入最後一個白天。身體很重。腦袋偶爾會空白一秒。但倒數壓力壓過疲憊——她能繼續工作，是因為白光再來就只剩這些時間。不是不累。是沒有資格累。
 
 **朝倉澪** [determined]：（內心）⋯⋯三個入口。議會審查摘要。舊驗收說明書。監督委員會引用目錄。三個獨立制度來源。今天要把它們全部調完。在白光前最後一個白天——把「東京」這個名字的用途分類追出來。
+
+```bgm
+grey-city
+```
 
 **旁白**：08:50。她下了電車。走出車站。
 

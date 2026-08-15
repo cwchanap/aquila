@@ -53,6 +53,7 @@ describe('cli --report', () => {
             'sfx:door-open',
             'sfx:door-seal',
             'sfx:evidence-bag-seal',
+            'sfx:fluorescent-hum',
             'sfx:impact',
             'sfx:mirror-chime',
             'sfx:monitor-beep',
@@ -68,7 +69,7 @@ describe('cli --report', () => {
             'sfx:trolley-wheels',
             'sfx:vending-machine-hum',
         ]);
-        expect(report.bgmStops).toHaveLength(12);
+        expect(report.bgmStops).toHaveLength(16);
         expect(report.unused).toEqual([]);
     });
 

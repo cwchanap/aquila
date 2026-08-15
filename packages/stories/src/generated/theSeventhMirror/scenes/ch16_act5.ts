@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:00。調查媒體辦公室。", background: Background.Chapter_16_Ch16_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:00。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進來。前輩在。桌燈亮著。螢光燈沒開。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走到自己的桌子。把背包放下。拿出筆記本。拿出手機。打開今天拍的照片。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把三份文件的裁切圖攤在桌上。去識別化。只保留欄位和分類。遮掉調閱者資訊。遮掉個人填寫欄。", background: Background.Chapter_16_Ch16_Act5_S0 },
@@ -15,7 +15,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯先傳給佐伯。只傳公開部分。去識別化裁切圖。讓他確認證據邊界。", background: Background.Chapter_16_Ch16_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她打開通訊軟體。找到佐伯的對話。傳送三張裁切圖。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "等。", background: Background.Chapter_16_Ch16_Act5_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:25。佐伯回覆了。", background: Background.Chapter_16_Ch16_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "17:25。佐伯回覆了。", sfx: "notification-beep", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "三張都收到了。我逐張說。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "第一張。議會審查摘要。分類表。TOKYO-7 歸入情境／同步用途設定。OSAKA、NAGOYA 歸入一般地域配置。有對照組。分類來自議會監督程序公開摘要。不是 TKS 自述。這條能確認——TOKYO-7 不是地域配置。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "第二張。舊驗收說明書。命名原則章節。「本設定檔之『東京』為情境識別名，不指涉地理名稱。」正式驗收文件。退役設備解密範圍。這條能確認——「東京」在正式文件中不指涉地名。", background: Background.Chapter_16_Ch16_Act5_S0 },
@@ -44,7 +44,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "什麼。", background: Background.Chapter_16_Ch16_Act5_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.MediaSenior, character: "調查媒體前輩", dialogue: "TKS 法務。昨天我追問了 Chapter 14 的後續——小野寺在警署的說法。他們說今天會回。應該快了。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯TKS 法務第二封回覆。小野寺 Chapter 13 的說法。他們要正式回覆了。昨天第一封是防禦性收窄——退役教材不代表現行配置。歷史名稱可能是維護用語。今天第二封——可能是針對小野寺的說法。他們會怎麼處理。", background: Background.Chapter_16_Ch16_Act5_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:00。前輩桌上的終端傳來一聲提示音。", background: Background.Chapter_16_Ch16_Act5_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "19:00。前輩桌上的終端傳來一聲提示音。", sfx: "notification-beep", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "前輩看了一眼。轉過螢幕。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.MediaSenior, character: "調查媒體前輩", dialogue: "來了。TKS 法務第二封。", background: Background.Chapter_16_Ch16_Act5_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走到前輩桌邊。看螢幕。", background: Background.Chapter_16_Ch16_Act5_S0 },

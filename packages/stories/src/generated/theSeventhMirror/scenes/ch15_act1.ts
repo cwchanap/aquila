@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:20。星期六。調查媒體辦公室。", background: Background.Chapter_15_Ch15_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "07:20。星期六。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪推門進來。前輩已經到了。比平日早。桌上的終端螢幕亮著。螢光燈管還沒開，只有窗外的灰白光和螢幕的冷光混在一起。", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "距星期一 06:13——大約一天二十二小時五十三分鐘。悠真失蹤第十二日。", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "前輩抬頭。指了指螢幕。", background: Background.Chapter_15_Ch15_Act1_S0 },
@@ -88,7 +88,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Message, character: "訊息", dialogue: "好。看到什麼傳給我。只傳公開部分。", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "好。", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放下。看著筆記本。", background: Background.Chapter_15_Ch15_Act1_S0 },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:30。前輩那邊的終端傳來一聲提示音。前輩看了一眼。", background: Background.Chapter_15_Ch15_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "08:30。前輩那邊的終端傳來一聲提示音。前輩看了一眼。", sfx: "notification-beep", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.MediaSenior, character: "調查媒體前輩", dialogue: "TKS 回覆已經存檔了。署名編輯看過。沒有需要追問的措辭問題。下週再討論後續——要不要發正式採訪申請。", background: Background.Chapter_15_Ch15_Act1_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。", background: Background.Chapter_15_Ch15_Act1_S0, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.MediaSenior, character: "調查媒體前輩", dialogue: "今天回來以後把研修資料的拍攝清單整理給我。我幫你確認引用鏈。", background: Background.Chapter_15_Ch15_Act1_S0 },

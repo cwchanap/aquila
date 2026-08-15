@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。物件確認室。", background: Background.Chapter_13_Ch13_Act4_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "18:10。物件確認室。", bgm: "institutional-drone", background: Background.Chapter_13_Ch13_Act4_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小野寺把預約頁裁切圖還給承辦人。他的手指在紙邊停了一下，像在確認自己沒有留下指紋，又像在確認自己沒有再多看一眼。然後他轉向承辦人。", background: Background.Chapter_13_Ch13_Act4_S0 },
     { characterId: CharacterId.OnoderaNaoki, character: "小野寺", dialogue: "我有個正式請求。", background: Background.Chapter_13_Ch13_Act4_S0, portrait: Portrait.OnoderaNaoki_Guarded },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的語氣變了。前面那段格式說明像在讀手冊，現在這句話像在填表單——每一個字都先在嘴裡排過隊才放出來。", background: Background.Chapter_13_Ch13_Act4_S0 },

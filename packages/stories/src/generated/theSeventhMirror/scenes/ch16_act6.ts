@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:30。調查媒體辦公室。", background: Background.Chapter_16_Ch16_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "20:30。調查媒體辦公室。", bgm: "sleepless-vigil", background: Background.Chapter_16_Ch16_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在桌前。桌燈的光比剛才暗了一格。她把燈臂壓低了一些。光圈縮小。只照到筆記本和手機。", background: Background.Chapter_16_Ch16_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她翻開筆記本。找到空白頁。拿起筆。", background: Background.Chapter_16_Ch16_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她在頁面頂端寫——", background: Background.Chapter_16_Ch16_Act6_S0 },
@@ -95,7 +95,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她站起來。把桌燈關掉。辦公室暗下來。只有窗外的路燈透進一點光。", background: Background.Chapter_16_Ch16_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她走到門口。停了一秒。", background: Background.Chapter_16_Ch16_Act6_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯七小時四十三分鐘。如果白光再來——就剩這麼多。第四日結束了。東京不是城市。從一開始就不是。千田叫我不要救的——可能從來不是一座城市。高度吻合。不是證明。但方向對了。", background: Background.Chapter_16_Ch16_Act6_S0, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她開門。走出去。鎖上。", background: Background.Chapter_16_Ch16_Act6_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她開門。走出去。鎖上。", bgm: "night-street", background: Background.Chapter_16_Ch16_Act6_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "外面是星期日的深夜。距星期一 06:13——約七小時四十三分鐘。", background: Background.Chapter_16_Ch16_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪走進夜裡。背包裡有筆記本。筆記本裡有六條可確認。五條合理推測。八條仍不能成立。有三份文件的記錄。有三個獨立來源的證據鏈分工。有一個被正式收窄的小野寺說法。有一個 TKS 對外口徑與議會監督分類的不一致。有三次「高度吻合，不是證明」。和一個第四日的主題——東京不是城市。", background: Background.Chapter_16_Ch16_Act6_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "東京不是城市。", background: Background.Chapter_16_Ch16_Act6_S1 },

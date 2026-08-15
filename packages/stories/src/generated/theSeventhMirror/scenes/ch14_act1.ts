@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:45。星期五。朝倉家。", background: Background.Chapter_14_Ch14_Act1_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "06:45。星期五。朝倉家。", bgm: "sleepless-vigil", background: Background.Chapter_14_Ch14_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪坐在書桌前。桌燈亮著。窗外是灰色的。還沒有太陽。距星期一 06:13——大約還有兩天二十三個小時二十八分鐘。悠真失蹤第十一天。", background: Background.Chapter_14_Ch14_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "筆記本翻開在昨晚最後一頁。那個表格。那五個字母。", background: Background.Chapter_14_Ch14_Act1_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "實施區域——灣岸新交通測試區間。", background: Background.Chapter_14_Ch14_Act1_S0 },
@@ -85,7 +85,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "好。十點我到。", background: Background.Chapter_14_Ch14_Act1_S1, portrait: Portrait.AsakuraMio_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她掛掉電話。", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯預約完成。十點。資料室。如果紙本附件裡有同步群欄沒被遮蔽的版本——或者有事前變更申請記錄了星期一的配置——我就能看到 TOKYO 接到哪裡。", background: Background.Chapter_14_Ch14_Act1_S1, portrait: Portrait.AsakuraMio_Determined },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:05。手機震動。", background: Background.Chapter_14_Ch14_Act1_S1 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "09:05。手機震動。", sfx: "notification-beep", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她拿起來。螢幕亮起。一則訊息。", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "早上有吃嗎？", background: Background.Chapter_14_Ch14_Act1_S1 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯琴音。", background: Background.Chapter_14_Ch14_Act1_S1, portrait: Portrait.AsakuraMio_Determined },

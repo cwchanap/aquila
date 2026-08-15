@@ -27,3 +27,12 @@ export {
     isBgmCueKey,
 } from './audio-cues';
 export type { SfxCueKey, BgmCueKey } from './audio-cues';
+export {
+    AUDIO_PLAN_SCHEMA_VERSION,
+    AudioAssetTypeSchema,
+    AudioPlanAssetSchema,
+    AudioPlanV1Schema,
+    loadAudioPlan,
+    parseAudioPlan,
+} from './audio-plan';
+export type { AudioAssetType, AudioPlanAsset, AudioPlanV1 } from './audio-plan';

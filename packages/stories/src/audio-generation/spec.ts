@@ -52,6 +52,32 @@ export interface AudioGenerationSpecSet {
     readonly issues: readonly AudioGenerationSpecIssue[];
 }
 
+export type AudioGenerationSpecForHash =
+    | {
+          readonly schemaVersion: 1;
+          readonly key: string;
+          readonly type: 'sfx';
+          readonly prompt: string;
+          readonly durationMs: number;
+          readonly provider: string;
+          readonly modelId: string;
+          readonly outputFormat: string;
+          readonly loop: boolean;
+          readonly promptInfluence: number;
+      }
+    | {
+          readonly schemaVersion: 1;
+          readonly key: string;
+          readonly type: 'bgm';
+          readonly prompt: string;
+          readonly durationMs: number;
+          readonly provider: string;
+          readonly modelId: string;
+          readonly outputFormat: string;
+          readonly loopIntent: boolean;
+          readonly forceInstrumental: boolean;
+      };
+
 function assertDurationInRange(
     asset: AudioPlanAsset,
     minimum: number,
@@ -140,7 +166,7 @@ export function buildAudioGenerationSpecSet(
 }
 
 export function audioGenerationSpecSha256(
-    spec: CurrentAudioGenerationSpec
+    spec: AudioGenerationSpecForHash
 ): string {
     return createHash('sha256')
         .update(canonicalJson(spec as unknown as JsonValue))

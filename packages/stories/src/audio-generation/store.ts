@@ -10,6 +10,7 @@ import {
 } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { z } from 'zod';
+import { AudioPlanKeySchema } from '../audio-plan';
 import { isSha256, isStoryId } from '../runtime-assets';
 import {
     audioGenerationSpecSha256,
@@ -199,6 +200,10 @@ function assertCandidateId(candidateId: string): void {
     CandidateIdSchema.parse(candidateId);
 }
 
+function isMalformedReceipt(error: unknown): boolean {
+    return error instanceof SyntaxError || error instanceof z.ZodError;
+}
+
 function assertSha256(value: string): void {
     if (!isSha256(value)) throw new Error('Expected lowercase SHA-256');
 }
@@ -257,8 +262,8 @@ export class LocalAudioGenerationStore {
                 if (candidate?.receipt.specSha256 === specSha256) {
                     matches.push(candidate);
                 }
-            } catch {
-                // A malformed receipt is not a successful candidate.
+            } catch (error) {
+                if (!isMalformedReceipt(error)) throw error;
             }
         }
         return matches;
@@ -279,6 +284,11 @@ export class LocalAudioGenerationStore {
             if (candidateNumber !== undefined) {
                 highest = Math.max(highest, Number(candidateNumber));
             }
+        }
+        if (highest >= 999) {
+            throw new Error(
+                'Candidate ordinal limit reached: cannot allocate beyond candidate-999'
+            );
         }
         return `candidate-${String(highest + 1).padStart(3, '0')}`;
     }
@@ -416,6 +426,10 @@ export class LocalAudioGenerationStore {
             return null;
         }
 
+        if (audioGenerationSpecSha256(receipt.spec) !== receipt.specSha256) {
+            return null;
+        }
+
         const audioPath = join(keyRoot, receipt.output.filename);
         let bytes: Buffer;
         try {
@@ -449,12 +463,14 @@ export class LocalAudioGenerationStore {
                     )
                 ).trim().length > 0
             );
-        } catch {
-            return false;
+        } catch (error) {
+            if (isNotFound(error)) return false;
+            throw error;
         }
     }
 
     private keyRoot(key: string): string {
+        AudioPlanKeySchema.parse(key);
         return join(this.root, key);
     }
 

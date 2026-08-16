@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { z } from 'zod';
-import type { AudioPlanV1 } from '../audio-plan';
+import { AudioPlanKeySchema, type AudioPlanV1 } from '../audio-plan';
 import { isSha256, isStoryId } from '../runtime-assets';
 import { audioGenerationSpecSha256, buildAudioGenerationSpec } from './spec';
 import type { LocalAudioGenerationStore } from './store';
@@ -19,7 +19,15 @@ export const AudioSelectionFileV1Schema = z
     .object({
         schemaVersion: z.literal(1),
         storyId: z.string().refine(isStoryId),
-        selections: z.record(SelectionSchema),
+        selections: z
+            .record(SelectionSchema)
+            .refine(
+                selections =>
+                    Object.keys(selections).every(
+                        key => AudioPlanKeySchema.safeParse(key).success
+                    ),
+                'Selection keys must be valid audio cue keys'
+            ),
     })
     .strict();
 

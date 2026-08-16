@@ -6,7 +6,7 @@ export const AUDIO_PLAN_SCHEMA_VERSION = 1 as const;
 export const AudioAssetTypeSchema = z.enum(['sfx', 'bgm']);
 export type AudioAssetType = z.infer<typeof AudioAssetTypeSchema>;
 
-const CueKeySchema = z
+export const AudioPlanKeySchema = z
     .string()
     .regex(
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
@@ -16,7 +16,7 @@ const CueKeySchema = z
     .refine(key => key !== 'stop', 'Audio cue key "stop" is reserved');
 
 const commonAssetShape = {
-    key: CueKeySchema,
+    key: AudioPlanKeySchema,
     prompt: z.string().trim().min(1),
     durationMs: z.number().int().positive(),
     notes: z.string().trim().min(1).optional(),

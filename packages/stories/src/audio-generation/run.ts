@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import type { AudioPlanAsset, AudioPlanV1 } from '../audio-plan';
-import { loadAudioPlan } from '../audio-plan-loader';
+import { AudioPlanInputError, loadAudioPlan } from '../audio-plan-loader';
 import { loadStoryCompilerConfig, STORIES_RAW_ROOT } from '../compiler/config';
-import { isStoryId } from '../runtime-assets';
+import { isSafeLogicalKey, isStoryId } from '../runtime-assets';
 import {
     audioGenerationSpecSha256,
     buildAudioGenerationSpecSet,
@@ -34,6 +34,16 @@ export class AudioGenerationConfigurationError extends Error {
     constructor(message: string) {
         super(message);
         this.name = 'AudioGenerationConfigurationError';
+    }
+}
+
+export class AudioGenerationInputError extends Error {
+    readonly code = 'input' as const;
+    readonly kind = 'input' as const;
+
+    constructor(message: string, cause?: unknown) {
+        super(message, cause === undefined ? undefined : { cause });
+        this.name = 'AudioGenerationInputError';
     }
 }
 
@@ -115,6 +125,15 @@ export interface RunDependencies {
 export async function loadAudioGenerationStoryContext(
     storyFolder: string
 ): Promise<AudioGenerationStoryContext> {
+    if (
+        !isSafeLogicalKey(storyFolder) ||
+        storyFolder.includes('/') ||
+        storyFolder.includes('\\')
+    ) {
+        throw new AudioGenerationConfigurationError(
+            'Story folder must be a single safe directory component'
+        );
+    }
     const rawDir = join(STORIES_RAW_ROOT, storyFolder);
     const config = await loadStoryCompilerConfig(rawDir);
     if (typeof config.storyId !== 'string' || !isStoryId(config.storyId)) {
@@ -123,7 +142,15 @@ export async function loadAudioGenerationStoryContext(
         );
     }
 
-    const plan = loadAudioPlan(rawDir);
+    let plan: AudioPlanV1 | undefined;
+    try {
+        plan = loadAudioPlan(rawDir);
+    } catch (error) {
+        if (error instanceof AudioPlanInputError) {
+            throw new AudioGenerationInputError(error.message, error);
+        }
+        throw error;
+    }
     if (plan === undefined) {
         throw new AudioGenerationConfigurationError(
             `Missing audio plan: ${join(rawDir, 'docs', 'audio-plan.json')}`

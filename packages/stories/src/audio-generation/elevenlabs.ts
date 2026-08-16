@@ -175,6 +175,14 @@ export function createElevenLabsAudioProvider(
                             `Reading ElevenLabs audio failed: ${errorMessage(error, apiKey)}`
                         );
                     }
+                    if (bytes.byteLength === 0) {
+                        throw new ElevenLabsProviderError(
+                            'invalid-response',
+                            `ElevenLabs returned HTTP ${response.status} with an empty audio body`,
+                            response.status,
+                            redact(rawContentType ?? '', apiKey) || null
+                        );
+                    }
 
                     return {
                         bytes,

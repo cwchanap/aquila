@@ -191,6 +191,24 @@ describe('ElevenLabs audio provider', () => {
         expect(sleep).not.toHaveBeenCalled();
     });
 
+    it('rejects an empty successful audio response without retrying', async () => {
+        const sleep = vi.fn(async () => undefined);
+        const { fetchMock, provider } = providerFor(
+            [audioResponse(new Uint8Array(), 200, 'audio/mpeg')],
+            sleep
+        );
+
+        await expect(
+            provider.generate(sfxSpec(), 'test-secret')
+        ).rejects.toMatchObject({
+            kind: 'invalid-response',
+            status: 200,
+            contentType: 'audio/mpeg',
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(sleep).not.toHaveBeenCalled();
+    });
+
     it('retries a 429 once with the injected one-second backoff', async () => {
         const sleep = vi.fn(async () => undefined);
         const { fetchMock, provider } = providerFor(

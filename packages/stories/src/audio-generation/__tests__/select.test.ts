@@ -128,6 +128,14 @@ describe('audio selection file contract', () => {
                 },
             })
         ).toThrow();
+        expect(() =>
+            AudioSelectionFileV1Schema.parse({
+                ...valid,
+                selections: {
+                    '../escape': valid.selections['door-open'],
+                },
+            })
+        ).toThrow(/key/i);
     });
 
     it('writes one verified current-spec selection entry', async () => {

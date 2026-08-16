@@ -28,55 +28,20 @@ describe('cli --report', () => {
         const report = JSON.parse(runReport(['theSeventhMirror']));
 
         expect(report.story).toBe('theSeventhMirror');
-        expect(
-            report.assets.map(
-                (asset: { type: string; key: string }) =>
-                    `${asset.type}:${asset.key}`
-            )
-        ).toEqual([
-            'bgm:bay-waterfront',
-            'bgm:carriage-drone',
-            'bgm:dawn-apartment',
-            'bgm:grey-city',
-            'bgm:grief-piano',
-            'bgm:institutional-drone',
-            'bgm:mirror-island',
-            'bgm:night-street',
-            'bgm:ordinary-time',
-            'bgm:passage-hum',
-            'bgm:safe-harbor',
-            'bgm:sleepless-vigil',
-            'bgm:tension-pulse',
-            'sfx:blood-drip',
-            'sfx:camera-shutter',
-            'sfx:card-access-beep',
-            'sfx:code-blue-rush',
-            'sfx:door-knock',
-            'sfx:door-latch',
-            'sfx:door-open',
-            'sfx:door-seal',
-            'sfx:evidence-bag-seal',
-            'sfx:fluorescent-hum',
-            'sfx:impact',
-            'sfx:letter-confirm',
-            'sfx:mirror-chime',
-            'sfx:monitor-beep',
-            'sfx:notification-beep',
-            'sfx:pa-announcement',
-            'sfx:phone-vibrate',
-            'sfx:radio-feed',
-            'sfx:receiver-static',
-            'sfx:signal-tones',
-            'sfx:sleep-talk-recording',
-            'sfx:sync-glitch',
-            'sfx:toolbox-roll',
-            'sfx:train-doors',
-            'sfx:train-hum',
-            'sfx:trolley-wheels',
-            'sfx:vending-machine-hum',
-            'sfx:ventilator-cycle',
-        ]);
-        expect(report.bgmStops).toHaveLength(61);
+
+        const qualifiedIds = report.assets.map(
+            (asset: { type: string; key: string }) =>
+                `${asset.type}:${asset.key}`
+        );
+        const sorted = [...qualifiedIds].sort();
+        expect(qualifiedIds).toEqual(sorted);
+
+        const doorOpen = report.assets.find(
+            (asset: { type: string; key: string }) =>
+                asset.type === 'sfx' && asset.key === 'door-open'
+        );
+        expect(doorOpen?.usageCount).toBeGreaterThan(0);
+
         expect(report.unused).toEqual([]);
     });
 

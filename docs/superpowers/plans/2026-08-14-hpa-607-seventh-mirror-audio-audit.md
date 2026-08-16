@@ -266,18 +266,21 @@ Adding a new plan-only key does not require this per-batch web run because catal
 
 ### 7. Stage canonical and generated output together
 
-Stage only the chapter directories edited in this batch (substitute your chapter range), this plan file, and the theSeventhMirror-scoped generated output. Do **not** stage the entire `raw/theSeventhMirror`, `src/generated`, or `src/stories` trees — that would sweep in other stories' output and chapters outside this batch.
+Stage the chapter directories edited in this batch (all four: substitute your chapter range), `docs/audio-plan.json` (it grows whenever a new identity is first placed), this plan file, and the theSeventhMirror-scoped generated output. Do **not** stage the entire `raw/theSeventhMirror`, `src/generated`, or `src/stories` trees — that would sweep in other stories' output and chapters outside this batch.
 
 ```bash
 git add \
   packages/stories/raw/theSeventhMirror/chapter_<N> \
   packages/stories/raw/theSeventhMirror/chapter_<N+1> \
+  packages/stories/raw/theSeventhMirror/chapter_<N+2> \
+  packages/stories/raw/theSeventhMirror/chapter_<N+3> \
+  packages/stories/raw/theSeventhMirror/docs/audio-plan.json \
   docs/superpowers/plans/2026-08-14-hpa-607-seventh-mirror-audio-audit.md \
   packages/stories/src/generated/theSeventhMirror \
   packages/stories/src/stories/theSeventhMirror
 ```
 
-`git add` on a directory only stages files with changes inside it, so the two theSeventhMirror-scoped paths pick up just what `bun compile:stories` produced this batch.
+`git add` on a directory only stages files with changes inside it, so the two theSeventhMirror-scoped paths pick up just what `bun compile:stories` produced this batch. `audio-plan.json` is staged unconditionally because any batch may mint a new identity on first placement; if it did not change, `git add` is a no-op.
 
 If local catalogs changed, also stage:
 
@@ -285,11 +288,13 @@ If local catalogs changed, also stage:
 git add apps/web/src/lib/audio
 ```
 
-Before committing, verify the staged file list contains only this batch's chapters, the plan file, theSeventhMirror generated output, and (if applicable) local catalogs — nothing from other stories or unrelated chapters:
+Before committing, verify the staged file list contains only this batch's four chapters, `audio-plan.json`, the plan file, theSeventhMirror generated output, and (if applicable) local catalogs — nothing from other stories or chapters outside this batch:
 
 ```bash
 git diff --cached --name-only
 ```
+
+Confirm that `packages/stories/raw/theSeventhMirror/docs/audio-plan.json` appears in the output whenever a new cue identity was placed in this batch.
 
 ### 8. Verify the staged generated output is reproducible
 

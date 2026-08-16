@@ -497,7 +497,7 @@ The operator records account/plan, check date, intended Aquila distribution, and
 ### Real-provider checks
 
 1. Early two-request contract probe before exhaustive HTTP/orchestration mocks.
-2. Final two-request assembled CLI smoke: one short SFX + one short instrumental BGM.
+2. Final two-request assembled CLI smoke: one SFX + one BGM generation.
 
 No production publish occurs in HPA-608.
 
@@ -528,7 +528,7 @@ No production publish occurs in HPA-608.
 - [ ] 429/5xx retry is bounded; thrown/network failures are not retried.
 - [ ] Exit codes are stable: 0 success, 1 configuration, 2 invalid input/plan, 3 provider/I/O failure.
 - [ ] Early real-provider contract probe is capped at one minimum SFX + one minimum BGM request.
-- [ ] Final assembled CLI smoke is capped at one short SFX + one short BGM request.
+- [ ] Final assembled CLI smoke is capped at one SFX + one BGM request.
 - [ ] Generated binaries/receipts/selections/terms notes remain ignored/private and no R2/runtime work is added.
 
 ## YAGNI boundary

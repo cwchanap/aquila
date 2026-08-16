@@ -1048,6 +1048,31 @@ Confirm no candidate bytes, receipts, selections, Music note, provider probe, or
 - **Failure history:** a final failure must create a `candidate-NNN.failure.json` marker so the ordinal is visibly consumed without parsing a log.
 - **Cost estimate:** if pricing changes, update the dated constants before relying on the amount; raw duration/request scope remains visible.
 
+## Review resolution
+
+Accepted:
+
+- F1: explicit Node-only `@aquila/stories/audio-generation` subpath for HPA-609.
+- F2: two-request real-provider probe before exhaustive HTTP/orchestration mocks.
+- F3: historical stored-spec parser does not pin current model/output/request constants; hash owns staleness.
+- F4: constructor-owned runtime `storyId`, with existing `isStoryId`/`isSha256` validation.
+- F5: normal test keeps the committed Seventh Mirror plan provider-compatible.
+- F6: compiler CLI and audio generation share one raw-root/config loader.
+- F7: stable `0/1/2/3` exit-code contract.
+- F8 cuts: remove `--force`; remove the strict parsed failure-receipt schema.
+
+Accepted with a smaller replacement:
+
+- Instead of `failures.jsonl`, use one unparsed `candidate-NNN.failure.json` marker. This preserves the audit trail and lets filename-only candidate-id allocation see that the ordinal is consumed.
+
+Intentionally retained:
+
+- The dated advisory USD estimate: HPA-608 explicitly requires a pre-spend calculable estimate; the implementation stays a two-rate calculation over the repeated scheduled spec list and exposes raw durations/request counts.
+- `schemaVersion: 1` on success receipt and selection: those files are now a supported cross-package HPA-609 handoff, so strict versioned parsing has a concrete second consumer.
+- The non-empty Music terms note as the deliberately small account/rights speed bump; no legal interpretation is added.
+
+---
+
 ## Final acceptance checklist
 
 - [ ] Provider-neutral plan schema is unchanged; `camera-shutter` is explicitly corrected to a legal provider duration.

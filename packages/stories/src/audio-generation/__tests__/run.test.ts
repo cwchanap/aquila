@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -529,6 +529,33 @@ describe('audio generation sequential runner', () => {
 
         expect(result.completedRequests).toBe(0);
         expect(provider.calls).toEqual([]);
+    });
+
+    it('does not invoke the provider when candidate verification fails', async () => {
+        const { root, store } = await makeRealStore();
+        const spec = buildAudioGenerationSpec(sfx('first'));
+        const receipt = await store.writeSuccess({
+            candidateId: 'candidate-001',
+            spec,
+            specSha256: audioGenerationSpecSha256(spec),
+            generated: candidate(),
+        });
+        const audioPath = join(root, spec.key, receipt.output.filename);
+        await chmod(audioPath, 0o000);
+        const provider = fakeProvider([candidate()]);
+
+        try {
+            await expect(
+                planFor([sfx('first')], store, {
+                    keys: ['first'],
+                    candidateCount: 1,
+                    maxRequests: 1,
+                })
+            ).rejects.toMatchObject({ code: 'EACCES' });
+            expect(provider.calls).toEqual([]);
+        } finally {
+            await chmod(audioPath, 0o644);
+        }
     });
 
     it('requires music terms before the first real BGM call', async () => {

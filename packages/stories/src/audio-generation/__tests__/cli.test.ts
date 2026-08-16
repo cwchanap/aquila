@@ -1,7 +1,8 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { STORIES_RAW_ROOT } from '../../compiler/config';
 import type { AudioGenerationProvider } from '../elevenlabs';
 import { ElevenLabsProviderError } from '../elevenlabs';
 import {
@@ -60,6 +61,18 @@ async function tempCwd(): Promise<string> {
     return root;
 }
 
+async function tempStoryFolder(plan: string): Promise<string> {
+    const root = await mkdtemp(join(STORIES_RAW_ROOT, 'audio-generation-cli-'));
+    roots.push(root);
+    await mkdir(join(root, 'docs'), { recursive: true });
+    await writeFile(
+        join(root, 'compiler.config.ts'),
+        "export default { storyId: 'the_seventh_mirror' };\n"
+    );
+    await writeFile(join(root, 'docs', 'audio-plan.json'), plan);
+    return basename(root);
+}
+
 function generatedCandidate() {
     return {
         bytes: Uint8Array.from([0x49, 0x44, 0x33]),
@@ -95,6 +108,16 @@ describe('audio generation CLI exit codes and argument validation', () => {
         [
             'unknown story',
             ['generate', '--story', 'not-a-story', '--missing', '--dry-run'],
+        ],
+        [
+            'story path traversal',
+            [
+                'generate',
+                '--story',
+                '../theSeventhMirror',
+                '--missing',
+                '--dry-run',
+            ],
         ],
         [
             'both target modes',
@@ -163,6 +186,68 @@ describe('audio generation CLI exit codes and argument validation', () => {
         expect(code).toBe(1);
         expect(io.exitCodes).toEqual([1]);
         expect(io.stderrText()).toMatch(/./);
+    });
+
+    it('rejects story paths that are not single safe directory components', async () => {
+        const { code, report } = await invoke([
+            'generate',
+            '--story',
+            '../theSeventhMirror',
+            '--missing',
+            '--dry-run',
+        ]);
+
+        expect(code).toBe(1);
+        expect(report.error.message).toMatch(/single safe directory component/);
+    });
+
+    it.each([
+        ['malformed JSON', '{ not json'],
+        [
+            'schema-invalid JSON',
+            JSON.stringify({ schemaVersion: 2, assets: [] }),
+        ],
+    ])('returns exit 2 for %s audio plans', async (_label, plan) => {
+        const storyFolder = await tempStoryFolder(plan);
+        const { code, io, report } = await invoke([
+            'generate',
+            '--story',
+            storyFolder,
+            '--missing',
+            '--dry-run',
+        ]);
+
+        expect(code).toBe(2);
+        expect(io.exitCodes).toEqual([2]);
+        expect(report.error.code).toBe('input');
+    });
+
+    it('returns exit 3 when the audio plan cannot be read', async () => {
+        const storyFolder = await tempStoryFolder(
+            JSON.stringify({ schemaVersion: 1, assets: [] })
+        );
+        const planPath = join(
+            STORIES_RAW_ROOT,
+            storyFolder,
+            'docs',
+            'audio-plan.json'
+        );
+        await chmod(planPath, 0o000);
+        try {
+            const { code, io, report } = await invoke([
+                'generate',
+                '--story',
+                storyFolder,
+                '--missing',
+                '--dry-run',
+            ]);
+
+            expect(code).toBe(3);
+            expect(io.exitCodes).toEqual([3]);
+            expect(report.error.code).toBe('provider');
+        } finally {
+            await chmod(planPath, 0o644);
+        }
     });
 
     it('accepts repeated explicit keys and keeps stdout to one JSON document', async () => {

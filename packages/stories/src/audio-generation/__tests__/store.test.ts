@@ -1,4 +1,5 @@
 import {
+    chmod,
     mkdir,
     mkdtemp,
     readFile,
@@ -183,6 +184,68 @@ describe('audio generation store contracts', () => {
         ).toBeNull();
     });
 
+    it('rejects a receipt whose stored spec no longer matches specSha256', async () => {
+        const { root, store } = await makeStore();
+        const spec = currentSpec();
+        const specSha256 = audioGenerationSpecSha256(spec);
+        const receipt = await store.writeSuccess({
+            candidateId: 'candidate-001',
+            spec,
+            specSha256,
+            generated: {
+                bytes: bytes(),
+                mediaType: 'audio/mpeg',
+                actualDurationMs: null,
+            },
+        });
+        const receiptPath = join(root, spec.key, 'candidate-001.receipt.json');
+        const tamperedReceipt = JSON.parse(
+            await readFile(receiptPath, 'utf8')
+        ) as { spec: { prompt: string }; specSha256: string };
+        tamperedReceipt.spec.prompt = 'Tampered prompt';
+        tamperedReceipt.specSha256 = receipt.specSha256;
+        await writeFile(
+            receiptPath,
+            `${JSON.stringify(tamperedReceipt, null, 2)}\n`
+        );
+
+        await expect(
+            store.readVerifiedCandidate(spec.key, 'candidate-001')
+        ).resolves.toBeNull();
+    });
+
+    it('propagates unreadable candidate bytes during verification', async () => {
+        const { root, store } = await makeStore();
+        const spec = currentSpec();
+        const receipt = await store.writeSuccess({
+            candidateId: 'candidate-001',
+            spec,
+            specSha256: audioGenerationSpecSha256(spec),
+            generated: {
+                bytes: bytes(),
+                mediaType: 'audio/mpeg',
+                actualDurationMs: null,
+            },
+        });
+        const audioPath = join(root, spec.key, receipt.output.filename);
+        await chmod(audioPath, 0o000);
+        try {
+            await expect(
+                store.matchingSuccessfulCandidates(spec.key, receipt.specSha256)
+            ).rejects.toMatchObject({ code: 'EACCES' });
+        } finally {
+            await chmod(audioPath, 0o644);
+        }
+    });
+
+    it('rejects unsafe keys before joining store paths', async () => {
+        const { store } = await makeStore();
+
+        await expect(store.nextCandidateId('../escape')).rejects.toThrow(
+            /Audio cue key/
+        );
+    });
+
     it('re-hashes actual bytes while finding matching successful candidates', async () => {
         const { root, store } = await makeStore();
         const spec = currentSpec();
@@ -257,6 +320,20 @@ describe('audio generation store contracts', () => {
         );
     });
 
+    it('refuses to allocate candidate ordinals above 999', async () => {
+        const { root, store } = await makeStore();
+        const keyRoot = join(root, 'door-open');
+        await mkdir(keyRoot, { recursive: true });
+        await writeFile(
+            join(keyRoot, 'candidate-999.failure.json'),
+            'audit marker'
+        );
+
+        await expect(store.nextCandidateId('door-open')).rejects.toThrow(
+            /candidate-999/
+        );
+    });
+
     it('resolves the Node subpath without adding generation APIs to the root', () => {
         expect(Object.keys(audioGenerationExports).sort()).toEqual([
             'AudioCandidateReceiptV1Schema',
@@ -279,5 +356,19 @@ describe('audio generation store contracts', () => {
             'Account checked.\n'
         );
         await expect(store.hasMusicTermsNote()).resolves.toBe(true);
+    });
+
+    it('propagates non-ENOENT music terms errors', async () => {
+        const { root, store } = await makeStore();
+        const notePath = join(root, 'music-terms-note.md');
+        await writeFile(notePath, 'Account checked.\n');
+        await chmod(notePath, 0o000);
+        try {
+            await expect(store.hasMusicTermsNote()).rejects.toMatchObject({
+                code: 'EACCES',
+            });
+        } finally {
+            await chmod(notePath, 0o644);
+        }
     });
 });

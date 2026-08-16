@@ -7,6 +7,7 @@ import {
 } from './elevenlabs';
 import {
     AudioGenerationConfigurationError,
+    AudioGenerationInputError,
     loadAudioGenerationStoryContext,
     planAudioGeneration,
     runAudioGeneration,
@@ -339,6 +340,15 @@ async function generate(
         )(args.story);
     } catch (error) {
         if (error instanceof AudioGenerationError) throw error;
+        if (error instanceof AudioGenerationConfigurationError) {
+            throw configurationError(error.message, error);
+        }
+        if (error instanceof AudioGenerationInputError) {
+            throw inputError(error.message, error);
+        }
+        if (isNodeIoError(error)) {
+            throw providerError(errorMessage(error), error);
+        }
         throw configurationError(errorMessage(error), error);
     }
 
@@ -411,6 +421,15 @@ async function select(
         )(args.story);
     } catch (error) {
         if (error instanceof AudioGenerationError) throw error;
+        if (error instanceof AudioGenerationConfigurationError) {
+            throw configurationError(error.message, error);
+        }
+        if (error instanceof AudioGenerationInputError) {
+            throw inputError(error.message, error);
+        }
+        if (isNodeIoError(error)) {
+            throw providerError(errorMessage(error), error);
+        }
         throw configurationError(errorMessage(error), error);
     }
 

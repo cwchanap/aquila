@@ -451,7 +451,7 @@ Dry-run reports:
 
 Keep the estimator because HPA-608 explicitly requires a pre-spend calculable estimate. It is deliberately tiny: two dated rates plus `duration * scheduled-candidate-count`; it is not a credit ledger. Always show `pricingAsOf` and the raw duration/request counts so the operator can compare current provider pricing before spending.
 
-As of **2026-08-16**, the implementation plan should use the then-current official API rates only after re-checking the provider pricing page; never treat the dated constants as a live price service.
+At implementation time, re-check the official provider pricing page and set the date/rates then; never treat the constants as a live price service.
 
 No implicit full-story generation exists; `--missing` is explicit.
 

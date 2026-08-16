@@ -4,7 +4,7 @@
 
 **Goal:** Build a local, resumable Bun/TypeScript workflow that turns validated Aquila `audio-plan.json` rows into bounded ElevenLabs SFX/Music candidates with strict private provenance and explicit verified human selection.
 
-**Architecture:** Keep generation Node/Bun-only under `packages/stories/src/audio-generation`. `--story` selects the existing raw story folder, while persisted receipt/selection JSON uses `compiler.config.ts`'s runtime `storyId`. Derive a strict deterministic provider spec/hash, call ElevenLabs through one injected direct-HTTP seam, persist immutable candidate history under `.tmp/`, define success as strict receipt + checksum-verified bytes, and leave normalization/R2 publication to HPA-609.
+**Architecture:** Keep generation Node/Bun-only under `packages/stories/src/audio-generation`. `--story` selects the existing raw story folder, while persisted receipt/selection JSON uses `compiler.config.ts`'s runtime `storyId`. Derive a strict deterministic provider spec/hash, call ElevenLabs through one injected direct-HTTP seam, construct the candidate store at the story-specific `.tmp/audio-generation/<storyFolder>/` root, define success as strict receipt + checksum-verified bytes, and leave normalization/R2 publication to HPA-609.
 
 **Tech Stack:** TypeScript, Bun, Node `fetch`, `node:util.parseArgs`, `node:crypto`, Node filesystem APIs, Zod, existing story compiler/audio-plan helpers, Vitest.
 
@@ -14,7 +14,7 @@
 
 - Reuse `AudioPlanV1` / `AudioPlanAsset`; do not add provider fields to `audio-plan.json`.
 - `--story` is the raw folder name; JSON `storyId` is `compiler.config.ts`'s snake_case runtime id.
-- Keep staging paths under `.tmp/audio-generation/<storyFolder>/`.
+- Construct the local store at `.tmp/audio-generation/<storyFolder>/`; store methods never infer a folder from runtime `storyId`.
 - Do not export `audio-generation` from `packages/stories/src/index.ts`.
 - Direct HTTP only; no ElevenLabs SDK dependency for v1.
 - SFX: `eleven_text_to_sound_v2`, `mp3_44100_128`, non-looping, prompt influence `0.3`, duration `500..30000ms`.
@@ -289,11 +289,13 @@ git commit -m "feat(stories): define audio generation specs"
   - `VerifiedStoredCandidate`
   - `LocalAudioGenerationStore`
 
+The store is constructed with a **story-specific root**, e.g. `.tmp/audio-generation/theSeventhMirror`. Runtime `storyId` is used only to validate/write JSON contracts; it is never converted back into a folder name.
+
 - [ ] **Step 1: Write failing temp-directory persistence/schema/integrity tests**
 
-Use `mkdtemp(join(tmpdir(), 'aquila-audio-'))` and test:
+Use `mkdtemp(join(tmpdir(), 'aquila-audio-story-'))` as the story root. Test:
 
-1. success writes bytes + strict receipt;
+1. success writes `<root>/door-open/candidate-001.mp3` + receipt;
 2. unknown receipt field/schema version is rejected;
 3. missing bytes are not successful;
 4. tampered bytes fail checksum verification;
@@ -305,6 +307,7 @@ Use `mkdtemp(join(tmpdir(), 'aquila-audio-'))` and test:
 Representative tamper test:
 
 ```ts
+const store = new LocalAudioGenerationStore(storyRoot);
 const stored = await store.writeSuccess({
     storyId: 'the_seventh_mirror',
     candidateId: 'candidate-001',
@@ -351,28 +354,30 @@ providerMetadata = only approved optional non-secret fields
 
 `AudioCandidateFailureReceiptV1Schema` is strict and stores only candidate/spec/hash/timestamp plus sanitized kind/status/message.
 
-- [ ] **Step 4: Implement the local store**
+- [ ] **Step 4: Implement the story-scoped local store**
 
-Constructor:
-
-```ts
-new LocalAudioGenerationStore(root, now?)
-```
-
-Required methods:
+Constructor and methods:
 
 ```ts
-matchingSuccessfulCandidates(storyId, key, specSha256)
-nextCandidateId(storyId, key)
-writeSuccess({ storyId, candidateId, spec, specSha256, generated })
-writeFailure({ storyId, candidateId, spec, specSha256, failure })
-readVerifiedCandidate(storyId, key, candidateId)
-hasMusicTermsNote(storyFolder)
+export class LocalAudioGenerationStore {
+    constructor(
+        readonly storyRoot: string,
+        private readonly now: () => Date = () => new Date()
+    ) {}
+
+    matchingSuccessfulCandidates(storyId, key, specSha256)
+    nextCandidateId(key)
+    writeSuccess({ storyId, candidateId, spec, specSha256, generated })
+    writeFailure({ storyId, candidateId, spec, specSha256, failure })
+    readVerifiedCandidate(storyId, key, candidateId)
+    hasMusicTermsNote()
+}
 ```
 
 Rules:
 
-- directories are `<root>/<storyFolder>/<key>/`; methods that persist JSON receive runtime `storyId` separately;
+- candidate paths are `<storyRoot>/<key>/...`;
+- the runtime `storyId` is written/read only inside strict JSON contracts;
 - bytes are written before success receipt;
 - receipt JSON is written to `<path>.tmp` then renamed;
 - parsing always goes through Zod;
@@ -536,14 +541,7 @@ git commit -m "feat(stories): add ElevenLabs audio adapter"
 
 - [ ] **Step 1: Write failing story-identity tests**
 
-Use a temp raw root fixture containing:
-
-```ts
-// compiler.config.ts equivalent loaded through injected config loader in tests
-{ storyId: 'the_seventh_mirror', defaultSpeakerId: 'narrator', rolePatterns: [] }
-```
-
-Assert:
+Use an injected config loader in tests and assert:
 
 ```ts
 expect(context.storyFolder).toBe('theSeventhMirror');
@@ -551,7 +549,7 @@ expect(context.storyId).toBe('the_seventh_mirror');
 expect(context.stagingRoot).toContain('audio-generation/theSeventhMirror');
 ```
 
-Also assert unknown folder/missing config/invalid `config.storyId` fail before provider planning.
+Also assert unknown folder, missing config, and invalid `config.storyId` fail before provider planning.
 
 - [ ] **Step 2: Write failing planner tests**
 
@@ -568,24 +566,13 @@ Cover:
 
 - [ ] **Step 3: Write failing execution/resume tests**
 
-Test sequential behavior:
+Test sequential behavior and failure id consumption:
 
 ```ts
 expect(maxObservedConcurrency).toBe(1);
-```
-
-Test stop-on-failure:
-
-```ts
 expect(provider.generate).toHaveBeenCalledTimes(2);
 expect(thirdKeyWasRequested).toBe(false);
-```
-
-Test failed id consumption:
-
-```text
-candidate-001.failure.json exists
-next resumed success is candidate-002
+expect(await store.nextCandidateId('failed-key')).toBe('candidate-002');
 ```
 
 - [ ] **Step 4: Verify failure**
@@ -596,7 +583,7 @@ bun --filter @aquila/stories test src/audio-generation/__tests__/run.test.ts
 
 - [ ] **Step 5: Implement story context**
 
-Resolve from repository root:
+Resolve:
 
 ```text
 packages/stories/raw/<storyFolder>/compiler.config.ts
@@ -604,9 +591,13 @@ packages/stories/raw/<storyFolder>/docs/audio-plan.json
 .tmp/audio-generation/<storyFolder>/
 ```
 
-Import the compiler config, validate `config.storyId` with existing `isStoryId`, and persist that runtime id into all store writes/reports.
+Import compiler config, validate `config.storyId` with `isStoryId`, then construct:
 
-Do not derive `storyId` from the folder name.
+```ts
+const store = new LocalAudioGenerationStore(context.stagingRoot);
+```
+
+Do not derive or recover a folder name from runtime `storyId`.
 
 - [ ] **Step 6: Implement planner/executor**
 
@@ -616,18 +607,18 @@ Planner flow:
 2. build all provider specs/issues;
 3. if issues exist: report every issue, zero execution, non-success status;
 4. filter explicit keys or `--missing`;
-5. call checksum-verified `matchingSuccessfulCandidates`;
+5. call checksum-verified `matchingSuccessfulCandidates(context.storyId, key, specHash)`;
 6. derive exact logical requests in plan order;
 7. apply request cap;
-8. estimate dated advisory cost from the scheduled specs.
+8. estimate dated advisory cost from scheduled specs.
 
 Execution flow:
 
 1. require API key only after a valid non-dry plan exists;
-2. before first scheduled BGM require non-empty terms note;
-3. allocate next immutable candidate id;
+2. before first scheduled BGM require `store.hasMusicTermsNote()`;
+3. allocate `store.nextCandidateId(key)`;
 4. call provider sequentially;
-5. write success or final failure receipt;
+5. write success or final failure with `context.storyId`;
 6. stop on first final failure;
 7. never overwrite a prior candidate id.
 
@@ -648,7 +639,7 @@ git commit -m "feat(stories): add resumable audio generation runner"
 - Create: `packages/stories/src/audio-generation/__tests__/select.test.ts`
 
 **Interfaces:**
-- Consumes: story context, Task 1 current spec/hash, Task 2 verified candidate.
+- Consumes: story context, Task 1 current spec/hash, story-scoped Task 2 store.
 - Produces:
   - `AudioSelectionFileV1Schema`
   - `AudioSelectionFileV1`
@@ -657,7 +648,7 @@ git commit -m "feat(stories): add resumable audio generation runner"
 
 - [ ] **Step 1: Write failing strict-schema tests**
 
-Schema shape:
+Schema example:
 
 ```ts
 {
@@ -700,12 +691,12 @@ bun --filter @aquila/stories test src/audio-generation/__tests__/select.test.ts
 Selection flow:
 
 1. load story context by raw folder;
-2. load current plan asset and current provider spec/hash;
-3. read candidate through `readVerifiedCandidate` (strict receipt + bytes SHA-256);
-4. require receipt runtime `storyId === context.storyId`;
-5. require current spec hash;
-6. load existing selection through `AudioSelectionFileV1Schema` if present;
-7. replace one key, sort, atomically write `selection.json`.
+2. construct `new LocalAudioGenerationStore(context.stagingRoot)`;
+3. load current plan asset and current provider spec/hash;
+4. read candidate through `readVerifiedCandidate(context.storyId, key, candidateId)`;
+5. require receipt runtime `storyId === context.storyId` and current spec hash;
+6. parse existing `selection.json` through `AudioSelectionFileV1Schema` if present;
+7. replace one key, sort, atomically rewrite `<context.stagingRoot>/selection.json`.
 
 Do not add rejection/deletion/auto-ranking state.
 
@@ -764,10 +755,10 @@ const proc = Bun.spawn([
 
 const stdout = await new Response(proc.stdout).text();
 expect(() => JSON.parse(stdout)).not.toThrow();
-expect((await proc.exited)).toBe(0);
+expect(await proc.exited).toBe(0);
 ```
 
-The expected current clean report after Task 1 includes:
+The expected clean report after Task 1 includes:
 
 ```text
 storyFolder = theSeventhMirror
@@ -777,8 +768,6 @@ sfx.count   = 28
 bgm.count   = 13
 providerIssues = []
 ```
-
-Do not assert a Bun `--filter` JSON path.
 
 - [ ] **Step 3: Verify failure**
 
@@ -793,13 +782,7 @@ Follow the publisher CLI's local `node:util.parseArgs` style without importing p
 Stdout: exactly one JSON report.  
 Stderr: human progress/errors only.
 
-Environment handling:
-
-```ts
-const apiKey = process.env.ELEVENLABS_API_KEY;
-```
-
-Read only when a valid non-dry execution will make provider calls. Never print it.
+Read `process.env.ELEVENLABS_API_KEY` only when a valid non-dry execution will make provider calls. Never print it.
 
 - [ ] **Step 5: Add convenience package scripts**
 
@@ -812,7 +795,7 @@ Read only when a valid non-dry execution will make provider calls. Never print i
 }
 ```
 
-These are convenience aliases, not the documented parseable-JSON invocation contract.
+These aliases are not the documented parseable-JSON invocation contract.
 
 - [ ] **Step 6: Verify the direct-path CLI and commit**
 
@@ -827,8 +810,6 @@ bun -e 'await Bun.file(".tmp/hpa-608-dry-run.json").json(); console.log("valid j
 git add packages/stories/src/audio-generation/cli.ts packages/stories/src/audio-generation/__tests__/cli.test.ts packages/stories/package.json
 git commit -m "feat(stories): add audio generation CLI"
 ```
-
-Expected: direct-path stdout parses as JSON with no package-script prefixes.
 
 ---
 
@@ -864,29 +845,11 @@ bun packages/stories/src/audio-generation/cli.ts generate \
 bun -e 'console.log(await Bun.file(".tmp/hpa-608-smoke-plan.json").json())'
 ```
 
-Verify manually:
+Verify manually: two logical requests, one SFX + one BGM, no provider issues, runtime story id `the_seventh_mirror`, dated advisory USD estimate present.
 
-- two logical requests needed;
-- one SFX + one BGM;
-- provider issues empty;
-- story id is `the_seventh_mirror`;
-- dated advisory USD estimate is present.
+- [ ] **Step 3: Create the required BGM terms note with actual operator facts**
 
-- [ ] **Step 3: Create the required BGM terms note**
-
-Create `.tmp/audio-generation/theSeventhMirror/music-terms-note.md` with real operator facts:
-
-```markdown
-# Eleven Music preflight
-
-- Account/plan: Pro
-- API pricing checked: 2026-08-16
-- Music Terms / Music API Terms / model-specific terms checked: 2026-08-16
-- Intended distribution: Aquila hobby visual-novel game distribution
-- Decision: current account/use permits this test generation and intended distribution after manual review
-```
-
-If the actual account plan is not `Pro`, write the actual plan instead. Do not commit this file.
+Create `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`. Record the exact ElevenLabs account/plan shown at execution time, the actual pricing/terms check dates, the intended Aquila distribution/use, and the operator's concise conclusion after that review. Do not proceed with BGM generation if those real values have not been recorded. Do not commit the note.
 
 - [ ] **Step 4: Run exactly two real logical requests**
 
@@ -903,7 +866,7 @@ Verify the report says exactly two logical generation requests were executed.
 
 - [ ] **Step 5: Inspect strict receipts and returned media**
 
-For each candidate:
+For each candidate verify:
 
 - receipt parses through `AudioCandidateReceiptV1Schema`;
 - receipt `storyId === 'the_seventh_mirror'`;
@@ -914,7 +877,7 @@ For each candidate:
 
 - [ ] **Step 6: Select both candidates explicitly**
 
-Use the actual candidate ids reported by the run:
+Use the actual candidate ids reported by the run. If this is a clean staging root they will normally be `candidate-001`; if prior failures/orphans consumed ids, use the reported ids rather than assuming them.
 
 ```bash
 bun packages/stories/src/audio-generation/cli.ts select \
@@ -928,11 +891,9 @@ bun packages/stories/src/audio-generation/cli.ts select \
   --candidate candidate-001
 ```
 
-If either key's actual id differs because prior local attempts consumed ids, use that reported id instead.
-
 - [ ] **Step 7: Prove HPA-609 handoff requires no provider access**
 
-Load `selection.json` through `AudioSelectionFileV1Schema`, then resolve/read both candidates through the strict receipt store with `ELEVENLABS_API_KEY` unset.
+Unset `ELEVENLABS_API_KEY`. Load `selection.json` through `AudioSelectionFileV1Schema`, construct the store at `.tmp/audio-generation/theSeventhMirror`, and resolve/read both selected candidates through the strict receipt store.
 
 Expected: selected source bytes verify with no network/provider call.
 
@@ -949,18 +910,20 @@ Only Task 1's intentional `audio-plan.json` correction plus the new `audio-gener
 
 ## Risk checkpoints during implementation
 
-- **Story identity:** if any receipt/selection writes `theSeventhMirror` into `storyId`, stop and fix before proceeding; path and contract identities are intentionally different.
-- **Provider duration:** if another plan key violates provider bounds, add it to the aggregated planner diagnostics and correct authoring intent explicitly; never introduce clamping.
-- **JSON stdout:** if any operator example uses `bun --filter @aquila/stories audio:generate` as captured JSON, replace it with direct file invocation.
+- **Story identity:** if any receipt/selection writes `theSeventhMirror` into `storyId`, stop; path identity and contract identity are intentionally different.
+- **Store root:** if store code tries to derive `theSeventhMirror` from `the_seventh_mirror`, stop; the runner must pass the story-specific staging root explicitly.
+- **Provider duration:** if another plan key violates provider bounds, report it with the full provider-issue set and correct authoring intent explicitly; never clamp.
+- **JSON stdout:** if any captured operator example uses `bun --filter @aquila/stories audio:generate`, replace it with direct file invocation.
 - **Stored success:** if a code path counts receipt + file existence without hashing actual bytes, it is incomplete.
 - **Provider response:** if 2xx non-audio bytes can reach `writeSuccess`, Task 3 is incomplete.
-- **Schema boundary:** if HPA-609 would need a second ad hoc `JSON.parse` shape for receipt/selection, expose/reuse the strict Zod schemas instead.
+- **Schema boundary:** if HPA-609 would need a second ad hoc receipt/selection parser, expose/reuse the strict Zod schemas instead.
 
 ## Final acceptance checklist
 
 - [ ] `camera-shutter` is explicitly corrected to at least `500ms`; no provider clamping exists.
 - [ ] All provider-illegal plan keys are listed together before any paid request.
 - [ ] Raw folder lookup and runtime `storyId` are distinct and tested.
+- [ ] Story-specific store root is passed explicitly; runtime `storyId` is never used as a folder mapping.
 - [ ] `--missing` skips only checksum-verified current-spec successes.
 - [ ] Success/failure/selection contracts are strict Zod schema v1.
 - [ ] Failed/orphan ids are consumed; resume uses a new candidate id.
@@ -968,7 +931,7 @@ Only Task 1's intentional `audio-plan.json` correction plus the new `audio-gener
 - [ ] 429/5xx retries are bounded; ambiguous network failures are not retried.
 - [ ] 2xx provider responses require `Content-Type: audio/*`.
 - [ ] Music `auto` output records returned media type/derived extension rather than assuming MP3.
-- [ ] BGM paid work requires a non-empty human terms note.
+- [ ] BGM paid work requires a non-empty human terms note with real execution-time facts.
 - [ ] Parseable JSON is proven through direct `bun packages/stories/src/audio-generation/cli.ts ...` invocation.
 - [ ] HPA-609 can parse selections/receipts and verify selected bytes with no ElevenLabs access.
 - [ ] Real API smoke executes no more than one SFX + one BGM logical request and publishes nothing.

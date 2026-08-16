@@ -85,7 +85,7 @@
       "key": "camera-shutter",
       "type": "sfx",
       "prompt": "Camera shutter and flash, evidence capture, one-shot",
-      "durationMs": 400
+      "durationMs": 500
     },
     {
       "key": "door-knock",

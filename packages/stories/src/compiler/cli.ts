@@ -2,27 +2,23 @@ import { readdirSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileStory } from './compile';
-import type { StoryCompilerConfig } from './config';
+import { loadStoryCompilerConfig, STORIES_RAW_ROOT } from './config';
 import type { StoryIR } from './ir';
 import { loadAudioPlan } from '../audio-plan-loader';
 import { buildAudioUsageReport, collectAudioUsage } from './audio-usage';
 
 const here = dirname(fileURLToPath(import.meta.url)); // .../src/compiler
 const srcDir = resolve(here, '..'); // .../src
-const pkgDir = resolve(srcDir, '..'); // .../stories
-const rawRoot = join(pkgDir, 'raw');
 
 async function compileNamedStory(
     name: string,
     writeOutputs: boolean
 ): Promise<StoryIR> {
-    const rawDir = join(rawRoot, name);
-    const configPath = join(rawDir, 'compiler.config.ts');
-    if (!existsSync(configPath)) {
+    const rawDir = join(STORIES_RAW_ROOT, name);
+    if (!existsSync(join(rawDir, 'compiler.config.ts'))) {
         throw new Error(`[story-compiler] unknown story "${name}"`);
     }
-    const configMod = await import(configPath);
-    const config: StoryCompilerConfig = configMod.default;
+    const config = await loadStoryCompilerConfig(rawDir);
     return compileStory({
         rawDir,
         name,
@@ -40,7 +36,7 @@ async function main(): Promise<void> {
             throw new Error('[story-compiler] usage: --report <storyName>');
         }
         const name = args[1];
-        const rawDir = join(rawRoot, name);
+        const rawDir = join(STORIES_RAW_ROOT, name);
         const story = await compileNamedStory(name, false);
         const report = buildAudioUsageReport(
             name,
@@ -56,10 +52,12 @@ async function main(): Promise<void> {
         );
     }
 
-    const names = readdirSync(rawRoot, { withFileTypes: true })
+    const names = readdirSync(STORIES_RAW_ROOT, { withFileTypes: true })
         .filter(d => d.isDirectory())
         .map(d => d.name)
-        .filter(name => existsSync(join(rawRoot, name, 'compiler.config.ts')));
+        .filter(name =>
+            existsSync(join(STORIES_RAW_ROOT, name, 'compiler.config.ts'))
+        );
 
     if (names.length === 0) {
         console.warn('[story-compiler] no stories found under raw/');

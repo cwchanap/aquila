@@ -260,6 +260,7 @@ describe('audio generation store contracts', () => {
     it('resolves the Node subpath without adding generation APIs to the root', () => {
         expect(Object.keys(audioGenerationExports).sort()).toEqual([
             'AudioCandidateReceiptV1Schema',
+            'AudioSelectionFileV1Schema',
             'LocalAudioGenerationStore',
             'StoredAudioGenerationSpecV1Schema',
         ]);

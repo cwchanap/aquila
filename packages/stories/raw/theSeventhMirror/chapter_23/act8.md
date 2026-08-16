@@ -113,7 +113,7 @@ door-seal
 **朝倉澪** [exhausted]：（內心）美空。十三歲。還在呼吸。卡匣在位。五方控制。Domain-C 存在。局部影子存在。PARTIAL。UNVALIDATED。還沒有完成。可是——它在那裡。它撐住過。它不需要永遠依賴同一個中央。
 
 ```sfx
-phone-vibrate
+notification-beep
 ```
 
 **旁白**：23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。

@@ -52,7 +52,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:50。澪走到病房外的觀察窗。她看著裡面。美空還在睡。呼吸器的節奏沒有變。控制器左側的面板被貼上封條。封條有編號。有五方簽章。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "螢幕上的監測數值還在跑。腦電。自律。呼吸。三條線。很平。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）美空。十三歲。還在呼吸。卡匣在位。五方控制。Domain-C 存在。局部影子存在。PARTIAL。UNVALIDATED。還沒有完成。可是——它在那裡。它撐住過。它不需要永遠依賴同一個中央。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。", sfx: "phone-vibrate", background: Background.Chapter_23_Ch23_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "23:00。澪的手機震動了一下。她低頭看。不是琴音。是日下部。一條簡訊。", sfx: "notification-beep", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Message, character: "訊息", dialogue: "星期一以前。Domain-P 撤銷。其他患者影子。高層 override。後續再談。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她把手機放回口袋。她看了一眼走廊盡頭。螢光燈。白色的。很亮。", background: Background.Chapter_23_Ch23_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）星期一。還有兩天多。卡匣被控制了。直接帶往鏡島的風險下降了。可是——Domain-P 還在。其他紅區患者還沒有自己的影子。高層的 emergency override 還在。另一枚制度級根——還不知道在誰手裡。", background: Background.Chapter_23_Ch23_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },

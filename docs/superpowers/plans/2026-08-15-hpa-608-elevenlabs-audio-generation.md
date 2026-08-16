@@ -936,7 +936,7 @@ git commit -m "feat(stories): add audio generation CLI"
 - [ ] **Step 1: Run focused/full repository checks**
 
 ```bash
-bun --filter @aquila/stories test
+bun run test
 bun --filter @aquila/stories typecheck
 bun --filter @aquila/stories lint
 bun run compile:check

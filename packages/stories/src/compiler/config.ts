@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const compilerDir = dirname(fileURLToPath(import.meta.url));
 export const STORIES_RAW_ROOT = resolve(compilerDir, '../..', 'raw');
@@ -39,6 +39,11 @@ export async function loadStoryCompilerConfig(
             `[story-compiler] missing compiler config: ${configPath}`
         );
     }
-    const configModule = await import(configPath);
+    const configModule = await import(pathToFileURL(configPath).href);
+    if (configModule.default === null || configModule.default === undefined) {
+        throw new Error(
+            `[story-compiler] compiler config does not provide a default export: ${configPath}`
+        );
+    }
     return configModule.default as StoryCompilerConfig;
 }

@@ -6,198 +6,265 @@
 
 ## Context
 
-HPA-606 established the authored audio-plan contract and HPA-607 has expanded The Seventh Mirror to its complete story-level direction. HPA-608 therefore does not need another inventory or authoring format:
+HPA-606 established one provider-neutral `audio-plan.json` per story and HPA-607 expanded The Seventh Mirror to its complete story-wide audio direction. HPA-608 should consume that existing contract without adding a second authored inventory or a service.
 
-- `packages/stories/raw/<story>/docs/audio-plan.json` owns provider-neutral key, kind, prompt, intended duration, and BGM loop intent.
-- `packages/stories/src/audio-plan.ts` validates that contract strictly.
-- `packages/stories/src/audio-plan-loader.ts` is already a Node-only loader kept out of browser exports.
-- `.tmp/` is already ignored for local scratch/output.
-- HPA-609 expects an explicitly selected source candidate and owns publication/R2 work.
+Relevant current seams:
 
-The current Seventh Mirror plan has 41 assets: 28 SFX totaling 148.8 seconds and 13 BGM tracks totaling 19.5 minutes. At ElevenAPI's listed 2026-08-15 rates ($0.12/minute Sound Effects, $0.15/minute Music), one candidate for every current key is roughly $3.22 before taxes or plan-specific effects. That scale does not justify a queue, database, worker, or service.
+- `packages/stories/src/audio-plan.ts` owns the strict `AudioPlanV1` / `AudioPlanAsset` contract.
+- `packages/stories/src/audio-plan-loader.ts` is the Node-only plan loader.
+- `packages/stories/src/runtime-assets/canonical.ts` owns the repository's strict canonical JSON helper.
+- `packages/stories/src/compiler/cli.ts` establishes that the CLI-facing story name is the raw folder name, e.g. `theSeventhMirror`.
+- `packages/stories/raw/theSeventhMirror/compiler.config.ts` establishes the runtime/publisher story id as `the_seventh_mirror`.
+- `.tmp/` is already ignored and is the correct local scratch root.
+- HPA-609 will consume a verified selected source candidate and owns encoding, duration probing, R2 publication, manifests, activation, and rollback.
 
-Current provider facts that affect the contract:
+The current Seventh Mirror plan contains 41 assets: 28 SFX and 13 BGM tracks. One current row, `camera-shutter`, has `durationMs: 400`, while the ElevenLabs Sound Effects API requires an explicit duration of at least 0.5 seconds. HPA-608 must not silently clamp provider-illegal plan data. The implementation therefore starts with one explicit authoring correction (`camera-shutter` to at least `500ms`) and keeps provider validation capable of reporting every offending key in a plan.
 
-- Sound Effects: `POST /v1/sound-generation`, one API effect per request, explicit duration 0.5–30 seconds, v2 sound model supports `loop`.
-- Music: `POST /v1/music`, `music_v2`, prompt duration 3,000–600,000 ms, `force_instrumental` supported.
-- Music v2 `output_format=auto` currently selects MP3 48 kHz / 192 kbps. Sound Effects exposes format selection, while the endpoint response contract documents MP3; HPA-608 preserves provider bytes and does not invent a WAV-transcoding stage.
-- ElevenAPI's current pricing page describes API billing in USD. Dry-run should estimate the current billing unit with an explicit pricing date, not synthesize a credits conversion.
-- Current Music terms have plan/use-case restrictions and define “Studio Games.” The workflow needs a manual recorded preflight, not legal logic in TypeScript.
+Current ElevenLabs facts used by this design:
 
-Provider references checked for this design:
-
-- https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert
-- https://elevenlabs.io/docs/api-reference/music/compose
-- https://elevenlabs.io/docs/changelog/2026/6/15
-- https://elevenlabs.io/pricing/api
-- https://elevenlabs.io/music-terms
-- https://elevenlabs.io/eleven-music-model-specific-terms
+- Sound Effects: `POST /v1/sound-generation`, model `eleven_text_to_sound_v2`, explicit duration `0.5..30` seconds, non-looping for Aquila SFX.
+- Music: `POST /v1/music`, model `music_v2`, prompt-based duration `3000..600000ms`, `force_instrumental: true` for The Seventh Mirror.
+- The simple endpoints return audio bytes. Successful responses must also advertise an `audio/*` content type before bytes are accepted as a candidate.
+- Music `output_format=auto` is intentionally retained; the receipt records the returned media type/derived extension instead of assuming the container forever remains MP3.
+- Current API pricing is represented as dated advisory USD. It is not a credit accounting system.
+- Music rights/plan eligibility remains a human preflight note, not TypeScript legal logic.
 
 ## Goals
 
-1. Turn validated `audio-plan.json` rows into reviewable local ElevenLabs candidates.
-2. Support SFX and instrumental BGM through one small Bun/TypeScript workflow.
-3. Skip unchanged successful candidates using a deterministic generation-spec hash.
-4. Preserve completed output across failure/Ctrl-C and make the next run continue only the remaining logical deficit.
-5. Bound paid work with explicit targeting, candidate-count bounds, dry-run, and a hard per-run request cap.
-6. Persist enough private provenance to audit each candidate without leaking credentials into logs, Git, or runtime manifests.
-7. Make human selection explicit and machine-verifiable for HPA-609.
-8. Keep provider-specific behavior behind exactly one narrow injected interface.
-9. Keep external pricing/rights assumptions visible and easy to refresh.
+1. Turn a validated story `audio-plan.json` into local reviewable ElevenLabs SFX/BGM candidates.
+2. Support one local operator with an explicit, sequential, resumable workflow.
+3. Bound paid work through explicit targeting, candidate count, dry-run, and `--max-requests`.
+4. Make unchanged successful candidates safely reusable by deterministic generation-spec hash.
+5. Define “successful candidate” strongly enough that `--missing`, selection, and HPA-609 agree: strict receipt + existing bytes + matching SHA-256.
+6. Keep raw folder identity and runtime/publisher identity distinct without adding a mapping layer later.
+7. Persist strict, versioned receipt and selection JSON that HPA-609 can parse directly.
+8. Keep provider-specific behavior behind one small test seam, not a provider platform.
+9. Keep credentials, prompts, receipts, and candidates out of browser/runtime/public manifests.
 
 ## Non-goals
 
-- Browser/runtime generation.
-- R2 upload, release manifests, activation, rollback, or runtime asset resolution.
-- Automatic ranking/approval or prompt rewriting.
-- Composition plans, references, finetunes, inpainting, stems, streaming, or C2PA workflows.
-- Dialogue TTS/voices.
-- Mastering, loudness normalization, trimming, or publication encoding.
-- Dashboard, queue, database, worker, provider registry, or generic media package.
+- Runtime/browser generation.
+- Cloudflare R2 upload, runtime manifests, pointers, activation, rollback, or release history.
+- Automatic candidate ranking or approval.
+- Prompt rewriting or optimization.
+- Composition plans, audio references, finetunes, inpainting, stems, streaming, or C2PA workflow machinery.
+- Narration/dialogue TTS.
+- Loudness normalization, mastering, trimming, transcoding, or duration probing.
+- Dashboard, queue, worker, database, generic provider registry, or reusable media-pipeline package.
 - Legal automation.
-- Backward-compatibility machinery for this local-only feature.
+- Backward-compatibility/migration code for local-only schema v1 files.
 
 ## Approaches considered
 
-### A. Direct HTTP + one injected provider interface — chosen
+### A. Direct HTTP behind one injected provider seam — chosen
 
-Use built-in `fetch` for the two generation endpoints. Keep request mapping, retries, binary response handling, and whitelisted response headers in one `elevenlabs.ts` module.
+Use built-in `fetch` for the two paid endpoints. Keep exact request mapping, retry classification, response validation, and returned metadata in one `elevenlabs.ts` module.
 
-**Pros:** no dependency; exact paid requests remain obvious; raw bytes/headers are easy to test; credential-redaction behavior is under local control.  
-**Cons:** a small amount of HTTP mapping is maintained locally.
+**Pros:** no new dependency; exact paid request is obvious; raw headers/content type stay available; credential redaction is straightforward; tests inject `fetch`.  
+**Cons:** a small amount of request mapping is maintained locally.
 
-### B. Official `@elevenlabs/elevenlabs-js` SDK
+### B. Official ElevenLabs SDK
 
-**Rejected for now:** two endpoints do not justify another dependency, and the SDK does not remove the real HPA-608 work: resumability, receipts, request caps, private storage, and selection. The provider interface keeps later migration cheap if the API surface grows.
+Rejected for v1. Two POST endpoints do not justify another dependency, and the SDK does not remove the filesystem/resume/selection work.
 
-### C. Generic provider/media pipeline
+### C. Generic media/provider platform
 
-**Rejected:** one local operator + one provider + two generation types is not a platform problem.
+Rejected. There is one provider, one local operator, two media kinds, and no runtime generation.
 
 ## Decision
 
-Create a Node/Bun-only module under:
+Create one Node/Bun-only module:
 
 ```text
 packages/stories/src/audio-generation/
-  spec.ts          # plan row -> exact generation spec/hash + cost estimate
-  store.ts         # private local candidate/receipt/selection persistence
-  elevenlabs.ts    # direct HTTP adapter + retry classification
-  run.ts           # deterministic batch planning/execution/resume
-  select.ts        # explicit selection validation
-  cli.ts           # parseArgs and dependency wiring only
+  spec.ts          # strict provider spec schema/hash + provider validation + cost estimate
+  store.ts         # strict receipt schemas + verified local persistence
+  elevenlabs.ts    # direct HTTP adapter + bounded retries + audio response validation
+  run.ts           # story context, planning, sequential generation, resume
+  select.ts        # strict selection schema + candidate verification
+  cli.ts           # parseArgs + command wiring only
 ```
 
 Tests live under `audio-generation/__tests__/`.
 
-Add package scripts:
+Do not export these modules from `packages/stories/src/index.ts`.
+
+## Story identity boundary
+
+`--story` continues to mean the **raw directory name**, matching the existing compiler CLI:
+
+```text
+--story theSeventhMirror
+```
+
+The CLI resolves:
+
+```text
+packages/stories/raw/theSeventhMirror/compiler.config.ts
+packages/stories/raw/theSeventhMirror/docs/audio-plan.json
+```
+
+It imports `compiler.config.ts`, reads `config.storyId`, and validates the runtime id with the existing `isStoryId` helper.
+
+For The Seventh Mirror:
+
+```text
+storyFolder = theSeventhMirror
+storyId     = the_seventh_mirror
+```
+
+Filesystem staging remains human-friendly and keyed by the raw folder:
+
+```text
+.tmp/audio-generation/theSeventhMirror/
+```
+
+Every persisted JSON contract stores `storyId: "the_seventh_mirror"`. It does **not** store the raw folder as `storyId`.
+
+This lets HPA-609 consume receipts/selection without a later camelCase-to-snake_case translation layer.
+
+## Provider legality and the existing 400ms cue
+
+`AudioPlanV1` correctly allows any positive `durationMs`; provider limits do not belong in the provider-neutral authoring schema.
+
+HPA-608 therefore validates provider compatibility when deriving generation specs:
+
+- SFX explicit duration: `500..30000ms`.
+- BGM duration: `3000..600000ms`.
+- No silent clamping.
+
+The implementation prerequisite is:
+
+```text
+camera-shutter: 400ms -> 500ms
+```
+
+That is an authoring correction in `audio-plan.json`, not a CLI workaround.
+
+Planner validation must aggregate all provider-illegal rows before returning. A dry-run for a bad plan should still identify the story/counts and return a deterministic `providerIssues[]` list such as:
 
 ```json
 {
-  "audio:generate": "bun src/audio-generation/cli.ts generate",
-  "audio:select": "bun src/audio-generation/cli.ts select"
+  "providerIssues": [
+    {
+      "key": "camera-shutter",
+      "type": "sfx",
+      "message": "SFX duration must be between 500 and 30000ms"
+    }
+  ]
 }
 ```
 
-Do not export these modules from `packages/stories/src/index.ts` or the package `exports` map.
+A plan with any provider issue exits non-zero and performs zero provider requests.
 
 ## CLI contract
 
-### Generation
+Operator-facing JSON commands are invoked directly by file path from the repository root:
 
 ```bash
-bun --filter @aquila/stories audio:generate \
+bun packages/stories/src/audio-generation/cli.ts generate \
   --story theSeventhMirror \
   --key door-open \
   --candidate-count 2 \
   --max-requests 2
 ```
 
-Options:
-
-- `--story <story>` required.
-- repeatable `--key <key>`: explicit target mode.
-- `--missing`: resume mode; target plan rows with fewer than `candidate-count` successful current-spec candidates.
-- `--candidate-count <n>`: default `1`, allowed `1..4`.
-- `--dry-run`: validate/plan only; no credentials, provider calls, or candidate writes.
-- `--force`: explicit-key-only; request `candidate-count` additional candidates even when enough current-spec successes already exist.
-- `--max-requests <n>`: required for non-dry generation, allowed `1..100`.
-
-Exactly one target mode is allowed: one or more `--key`, or `--missing`. There is deliberately no implicit “all keys” mode.
-
-Planning order is stable: `audio-plan.json` order, then candidate ordinal. If the logical deficit exceeds `--max-requests`, execute only the deterministic prefix and report the remaining count. A subsequent `--missing` run continues from persisted success receipts.
-
-`--max-requests` counts logical candidate generations; the provider adapter has its own fixed internal retry ceiling.
-
-### Dry-run report
-
-Dry-run returns structured JSON with selected/current counts, intended durations, logical candidate requests, capped execution count, deferred count, Music-preflight presence, and a dated provider estimate. For the current full plan with no candidates, one candidate per key is approximately:
-
-```json
-{
-  "storyId": "theSeventhMirror",
-  "sfx": { "keys": 28, "durationMs": 148800 },
-  "bgm": { "keys": 13, "durationMs": 1170000 },
-  "candidateCount": 1,
-  "logicalRequests": 41,
-  "estimatedCost": {
-    "currency": "USD",
-    "amount": 3.22,
-    "pricingAsOf": "2026-08-15"
-  }
-}
-```
-
-The estimate is advisory and explicitly dated. A future pricing change is one constant update, not a pricing subsystem.
-
-### Selection
+and:
 
 ```bash
-bun --filter @aquila/stories audio:select \
+bun packages/stories/src/audio-generation/cli.ts select \
   --story theSeventhMirror \
   --key door-open \
   --candidate candidate-001
 ```
 
-Selection verifies the current plan-derived spec hash, success receipt, byte length, and source SHA-256 before updating the private story `selection.json`. Non-selected candidates are retained; there is no deletion or auto-ranking command.
+Package scripts may remain as convenience aliases, but documentation/tests that assert parseable JSON stdout use the direct file path. The repository already records that recent Bun `--filter` execution prefixes stdout lines and corrupts JSON capture.
+
+### Generate options
+
+- `--story <raw-folder>` — required.
+- repeatable `--key <logical-key>` — explicit target mode.
+- `--missing` — resume mode.
+- `--candidate-count <n>` — desired successful candidates per key; default `1`, allowed `1..4`.
+- `--dry-run` — validates/plans only; no API key required, no local mutation, no provider calls.
+- `--force` — explicit-key-only; request `candidate-count` additional candidates without overwriting history.
+- `--max-requests <n>` — required on non-dry runs, allowed `1..100`.
+
+Exactly one target mode is allowed: explicit key(s), or `--missing`.
+
+There is no implicit “generate everything” mode.
+
+### Request-cap semantics
+
+`--max-requests` counts logical paid candidate generations, not internal HTTP retry attempts.
+
+Planning is deterministic in `audio-plan.json` order, then candidate ordinal. If more candidate generations are needed than the cap, execute only the deterministic prefix and report the remainder.
+
+### Dry-run report
+
+After the `camera-shutter` prerequisite, a full current `--missing --candidate-count 1 --dry-run` can report all 41 plan rows. The report contains:
+
+```ts
+interface AudioGenerationPlanReportV1 {
+    readonly schemaVersion: 1;
+    readonly storyFolder: string;
+    readonly storyId: string;
+    readonly assetCount: number;
+    readonly sfx: { readonly count: number; readonly durationMs: number };
+    readonly bgm: { readonly count: number; readonly durationMs: number };
+    readonly candidateCount: number;
+    readonly logicalRequestsNeeded: number;
+    readonly wouldExecute: number;
+    readonly deferredByRequestCap: number;
+    readonly estimatedCost: {
+        readonly currency: 'USD';
+        readonly amount: number;
+        readonly pricingAsOf: string;
+    };
+    readonly providerIssues: readonly AudioGenerationSpecIssue[];
+}
+```
+
+If `providerIssues` is non-empty, `wouldExecute` is `0` and the command exits non-zero.
 
 ## Deterministic generation spec
 
-`audio-plan.json` stays provider-neutral. `spec.ts` derives exactly what changes provider output:
+`spec.ts` defines a strict Zod schema plus inferred TypeScript type:
 
 ```ts
-export type AudioGenerationSpecV1 =
-    | {
-          readonly schemaVersion: 1;
-          readonly key: string;
-          readonly type: 'sfx';
-          readonly prompt: string;
-          readonly durationMs: number;
-          readonly provider: 'elevenlabs';
-          readonly modelId: 'eleven_text_to_sound_v2';
-          readonly outputFormat: 'mp3_44100_128';
-          readonly loop: false;
-          readonly promptInfluence: 0.3;
-      }
-    | {
-          readonly schemaVersion: 1;
-          readonly key: string;
-          readonly type: 'bgm';
-          readonly prompt: string;
-          readonly durationMs: number;
-          readonly provider: 'elevenlabs';
-          readonly modelId: 'music_v2';
-          readonly outputFormat: 'auto';
-          readonly loopIntent: true;
-          readonly forceInstrumental: true;
-      };
+export const AudioGenerationSpecV1Schema = z.discriminatedUnion('type', [
+    z.object({
+        schemaVersion: z.literal(1),
+        key: z.string(),
+        type: z.literal('sfx'),
+        prompt: z.string(),
+        durationMs: z.number().int(),
+        provider: z.literal('elevenlabs'),
+        modelId: z.literal('eleven_text_to_sound_v2'),
+        outputFormat: z.literal('mp3_44100_128'),
+        loop: z.literal(false),
+        promptInfluence: z.literal(0.3),
+    }).strict(),
+    z.object({
+        schemaVersion: z.literal(1),
+        key: z.string(),
+        type: z.literal('bgm'),
+        prompt: z.string(),
+        durationMs: z.number().int(),
+        provider: z.literal('elevenlabs'),
+        modelId: z.literal('music_v2'),
+        outputFormat: z.literal('auto'),
+        loopIntent: z.literal(true),
+        forceInstrumental: z.literal(true),
+    }).strict(),
+]);
 ```
 
-Hash SHA-256 over the existing `canonicalJson(spec)` helper. Reuse only that deterministic JSON primitive; do not reuse/widen visual runtime manifest schemas.
+The implementation may factor common fields, but the wire contract remains strict and `schemaVersion: 1` is not migrated.
 
-Any change to prompt, duration, kind, provider/model, output format, or provider-affecting settings changes the hash. Old files stay available for comparison but no longer satisfy `--missing` for the current spec.
+Hash `canonicalJson(spec)` with SHA-256 using the existing canonical helper. Do not widen/reuse visual runtime manifest schemas.
 
-`notes` are not hashed because they are not provider input.
+`notes` are not hashed because they are not provider request input.
 
 ## Provider mapping
 
@@ -209,15 +276,13 @@ POST /v1/sound-generation?output_format=mp3_44100_128
 
 ```json
 {
-  "text": "<plan prompt>",
+  "text": "<prompt>",
   "duration_seconds": 2.2,
   "loop": false,
   "prompt_influence": 0.3,
   "model_id": "eleven_text_to_sound_v2"
 }
 ```
-
-Reject durations outside 0.5–30 seconds; never clamp. Preserve returned bytes/MIME type/format/hash. Do not add a WAV wrapper/transcoder solely for HPA-608; HPA-609 owns publication normalization.
 
 ### BGM
 
@@ -227,7 +292,7 @@ POST /v1/music?output_format=auto
 
 ```json
 {
-  "prompt": "<plan prompt>",
+  "prompt": "<prompt>",
   "music_length_ms": 90000,
   "model_id": "music_v2",
   "force_instrumental": true,
@@ -236,31 +301,45 @@ POST /v1/music?output_format=auto
 }
 ```
 
-Reject durations outside 3,000–600,000 ms. `loopIntent: true` remains provenance/creative intent because the simple Music endpoint has no dedicated seamless-loop boolean. The authored prompt asks for loop-friendly material.
+Do not send a BGM `loop` field. `loopIntent` is local production intent; the prompt remains responsible for requesting loop-friendly material.
 
-Use the simple binary compose endpoint, not multipart detailed generation or composition-plan machinery.
+## Provider success and retry policy
 
-## Retry and failure policy
+A successful HTTP status is necessary but not sufficient.
 
-A logical candidate gets at most three HTTP attempts: initial + two retries.
+For a 2xx response:
 
-Retry only 429 and 5xx, with injected fixed backoff 1s then 2s. Deterministic 4xx failures and thrown/network failures are not retried; a network exception is intentionally conservative because it may be unclear whether a paid request reached the provider.
+1. read `Content-Type`;
+2. strip parameters and require the media type to start with `audio/`;
+3. reject missing/non-audio content type as an invalid provider response;
+4. only then read/persist the bytes;
+5. record the returned media type and derive the local extension from it instead of blindly naming Music `auto` output `.mp3`.
 
-On final failure:
+This prevents a 200 JSON error body or future `auto` container change from becoming a false successful candidate.
 
-1. write one sanitized immutable failure receipt for that candidate ID;
-2. stop the run;
-3. preserve earlier successes;
-4. the next run allocates the next candidate ID for the still-unsatisfied logical key.
+Retry at most three HTTP attempts total: initial + two retries.
 
-This is simpler and more auditable than reopening/overwriting a failed candidate slot.
+Retry only:
 
-## Private staging contract
+- `429`;
+- `5xx`.
 
-Use the existing ignored root:
+Use injected sleeps of 1 second then 2 seconds.
+
+Do not retry:
+
+- deterministic 4xx errors;
+- a 2xx non-audio response;
+- thrown/network errors where provider acceptance/billing may be ambiguous.
+
+Stop the run on the first final failure.
+
+## Local staging and strict receipts
+
+Staging:
 
 ```text
-.tmp/audio-generation/<story>/
+.tmp/audio-generation/<storyFolder>/
   music-terms-note.md
   selection.json
   <key>/
@@ -271,14 +350,16 @@ Use the existing ignored root:
     candidate-003.receipt.json
 ```
 
-Candidate IDs are monotonically increasing local ordinals per key. Success or failure consumes its ID permanently; no HPA-608 operation overwrites source audio or an existing receipt.
+Candidate ids are local ordinals and are immutable once observed. Success, failure, or orphan bytes consume an ordinal. Resume allocates the next unused id; it never rewrites a failed id.
 
-Success receipt:
+### Success receipt
+
+`store.ts` owns `AudioCandidateReceiptV1Schema` and its inferred type. It is strict and embeds `AudioGenerationSpecV1Schema`.
 
 ```ts
-export interface AudioCandidateReceiptV1 {
+interface AudioCandidateReceiptV1 {
     readonly schemaVersion: 1;
-    readonly storyId: string;
+    readonly storyId: string; // config.storyId, e.g. the_seventh_mirror
     readonly key: string;
     readonly type: 'sfx' | 'bgm';
     readonly candidateId: string;
@@ -305,92 +386,172 @@ export interface AudioCandidateReceiptV1 {
 }
 ```
 
-`actualDurationMs` stays `null` when the endpoint does not provide a measured duration. Do not copy intended duration into an “actual” field and do not add an audio-probing dependency. HPA-609 can measure the selected source during encoding.
+`actualDurationMs` remains `null` unless the provider supplies a measured duration. HPA-609 owns source probing/normalization.
 
-Failure receipts contain only candidate ID, exact spec/hash, timestamp, sanitized failure kind/status/message. Never persist request headers, environment dumps, or API credentials.
+### Failure receipt
 
-Write source bytes first, then success JSON via temp-file + rename. Resume trusts only a complete success receipt referencing an existing source. Orphan bytes from interruption never count as complete.
+`AudioCandidateFailureReceiptV1Schema` is also strict, with `schemaVersion: 1`, runtime `storyId`, candidate/spec/hash, timestamp, and only sanitized failure class/status/message.
+
+Unknown fields or unknown schema versions fail loudly. There is no migration layer.
+
+### Definition of a successful stored candidate
+
+A candidate counts toward `--missing` or `candidate-count` **only if all are true**:
+
+1. success receipt exists;
+2. receipt parses through `AudioCandidateReceiptV1Schema`;
+3. receipt `storyId`, key, candidate id, and current spec hash match;
+4. referenced candidate bytes exist;
+5. byte length matches;
+6. SHA-256 of the actual bytes matches the receipt.
+
+`matchingSuccessfulCandidates` uses this same verified definition for dry-run and paid runs. It does not skip hashing because these local candidate files are small and this verification directly prevents accidental paid-work suppression.
+
+Write candidate bytes first, then atomically replace the success receipt with temp-file + rename. Orphan bytes never count as success.
+
+## Sequential runner and interruption
+
+`run.ts` owns batch planning/execution.
+
+For each target key:
+
+1. derive current provider spec and hash;
+2. verify matching successful candidates from disk;
+3. calculate missing successful count;
+4. allocate the next unused candidate id;
+5. call the provider;
+6. persist bytes + strict receipt;
+7. continue until the target count or invocation request cap is reached.
+
+Execution is sequential. No concurrency pool is added.
+
+If the process is interrupted after bytes but before receipt rename, the bytes are orphaned, consume their candidate id, and do not count as success. The next invocation continues with a new id.
+
+## Strict human selection contract
+
+`select.ts` owns `AudioSelectionFileV1Schema` and inferred type. It is strict and versioned:
+
+```ts
+interface AudioSelectionFileV1 {
+    readonly schemaVersion: 1;
+    readonly storyId: string;
+    readonly selections: readonly {
+        readonly key: string;
+        readonly type: 'sfx' | 'bgm';
+        readonly candidateId: string;
+        readonly specSha256: string;
+        readonly sourceSha256: string;
+    }[];
+}
+```
+
+Selections are sorted by key for deterministic output.
+
+Selecting a candidate requires:
+
+1. load story folder context and `config.storyId`;
+2. load current audio plan and derive the current spec/hash;
+3. `readVerifiedCandidate` through the strict receipt schema and checksum verification;
+4. require receipt runtime `storyId` to match `config.storyId`;
+5. require receipt spec hash to equal current spec hash;
+6. replace only that key's selection and atomically rewrite `selection.json`.
+
+HPA-609 can parse `selection.json`, locate the candidate by key/id under the known staging folder, parse the success receipt through the same exported schema, and independently verify the selected bytes. It does not need ElevenLabs credentials.
 
 ## Music cost/rights preflight
 
-Before any real BGM request in a run, require a non-empty:
+Before the first real BGM request in a run, require a non-empty:
 
 ```text
-.tmp/audio-generation/<story>/music-terms-note.md
+.tmp/audio-generation/<storyFolder>/music-terms-note.md
 ```
 
 The operator records:
 
-- actual ElevenLabs account/plan;
+- ElevenLabs account/plan;
 - pricing check date;
-- Music Terms, Music API Terms, and model-specific-terms check date;
-- intended Aquila distribution/use case;
-- concise human decision that generation/distribution is permitted for that account/use.
+- Music/API/model terms check date;
+- intended Aquila distribution/use;
+- concise human conclusion that generation/distribution is permitted for that account/use.
 
-The CLI checks only existence/non-empty content. It does not infer plan eligibility, classify “Studio Games,” or issue legal conclusions. Dry-run is allowed without the note and reports gate presence. SFX-only real runs do not require it.
+The CLI checks file presence/non-empty only.
 
-## Credential/privacy boundary
+## Cost reporting
 
-`ELEVENLABS_API_KEY` is required only if a real provider call will execute.
+Keep two dated constants in `spec.ts`:
 
-- Dry-run does not read/require it.
-- The key exists only in memory/request headers.
-- Provider/CLI errors are sanitized before logging/persistence.
-- Prompts and provider provenance live only under `.tmp/`.
-- HPA-609 runtime/release artifacts must not contain prompts, provider receipts, or provider credentials.
-
-No extra secret manager is needed for this single local operator workflow.
-
-## Selection contract
-
-```ts
-export interface AudioSelectionFileV1 {
-    readonly schemaVersion: 1;
-    readonly storyId: string;
-    readonly selections: Readonly<
-        Record<
-            string,
-            {
-                readonly candidateId: string;
-                readonly specSha256: string;
-                readonly sourceSha256: string;
-                readonly selectedAt: string;
-            }
-        >
-    >;
-}
+```text
+Sound Effects: $0.12/min
+Music:         $0.15/min
+pricingAsOf:   2026-08-15
 ```
 
-`audio:select` re-derives the current spec/hash and re-hashes source bytes. It fails for unknown key, missing/failed candidate, stale spec hash, missing source, byte-length mismatch, or SHA mismatch. Updating one key preserves all other selections and every source/receipt.
+Estimate from intended generated duration and requested candidate count. Do not round inside the pure estimator; round only for report display.
 
-## HPA-609 handoff
+This is advisory scope information, not billing reconciliation.
 
-HPA-609 consumes only:
+## Risks and mitigations
 
-1. current `audio-plan.json`;
-2. selected entry in `.tmp/audio-generation/<story>/selection.json`;
-3. verified selected source + success receipt needed for spec/source integrity.
+### Raw story folder vs runtime `storyId`
 
-It then encodes/publishes immutable runtime audio. It never needs ElevenLabs credentials or another generation call.
+**Risk:** storing `theSeventhMirror` as `storyId` forces HPA-609 to invent a mapping later.  
+**Mitigation:** `--story` selects the raw folder; every JSON contract persists `compiler.config.ts`'s `the_seventh_mirror`.
 
-## Test strategy
+### Provider-neutral durations can be provider-illegal
 
-All automated tests mock provider/fetch and use temp directories. CI makes zero paid requests.
+**Risk:** a valid `AudioPlanV1` row can be outside ElevenLabs limits; the current `camera-shutter: 400ms` proves it.  
+**Mitigation:** no clamping; fix the known row to `500ms`; planner aggregates all provider issues and makes no paid calls until clean.
 
-Cover:
+### Bun `--filter` can corrupt JSON stdout
 
-- exact SFX/BGM spec mapping, provider duration bounds, deterministic hash;
-- dated USD cost estimation;
-- candidate-count/target/request-cap planning;
-- success/failure persistence, candidate ID monotonicity, orphan handling, staleness, checksum verification;
-- exact two endpoint request mappings;
-- bounded 429/5xx retries, deterministic 4xx/network no-retry behavior;
-- partial-failure resume with next candidate ID;
-- Music-note gate;
-- credential redaction;
-- explicit selection and stale spec/source mismatch failures.
+**Risk:** operator/report automation receives package-prefixed lines instead of JSON.  
+**Mitigation:** all parseable operator commands use direct file-path invocation; `--filter` remains only for tests/lint where stdout is not parsed as the contract.
 
-After mocked tests, allow one manual real SFX + one real instrumental BGM smoke, at most two logical generation requests total. Do not generate the full story catalog as implementation validation.
+### Provider returns 2xx non-audio or changes `auto` container
+
+**Risk:** arbitrary bytes get persisted as a valid candidate or mislabeled `.mp3`.  
+**Mitigation:** require `audio/*`, record returned media type, derive extension from media type, and keep real two-request smoke as the paid endpoint proof.
+
+### Network failure after provider acceptance
+
+**Risk:** automatic retry might double-charge.  
+**Mitigation:** thrown/network errors are not retried; the attempt is recorded as failure and the operator decides whether to retry later.
+
+## Testing strategy
+
+Mocked Vitest coverage owns:
+
+- provider spec mapping and all-duration validation aggregation;
+- spec hashing and cost estimation;
+- story folder -> runtime story id resolution;
+- strict receipt/failure parsing and unknown schema-version rejection;
+- checksum-verified successful-candidate lookup;
+- orphan/failure candidate-id consumption;
+- exact SFX/Music HTTP mapping;
+- 429/5xx bounded retries and non-retry classes;
+- rejection of 2xx missing/non-`audio/*` content type;
+- resume, force, request cap, sequential stop-on-failure;
+- strict selection parsing/current-spec verification;
+- clean JSON CLI output through direct file invocation.
+
+Manual API smoke owns only what mocks cannot prove: one real short SFX and one real short instrumental BGM, bounded by exactly two logical requests.
+
+## Acceptance criteria
+
+- [ ] Known `camera-shutter` provider-duration mismatch is corrected explicitly in the audio plan; no duration clamping exists.
+- [ ] Provider validation reports all offending keys in one planning result and performs zero paid work on invalid plans.
+- [ ] `--story` uses raw folder lookup while every receipt/selection persists `config.storyId`.
+- [ ] Dry-run performs no network/provider work and reports request/cost scope deterministically.
+- [ ] Non-dry generation requires `--max-requests` and runs sequentially.
+- [ ] Unchanged candidates are skipped only after strict receipt parsing and SHA-256 verification of actual bytes.
+- [ ] Failed/orphan candidate ids are consumed and never overwritten.
+- [ ] Receipt, failure, and selection files use strict Zod `schemaVersion: 1` contracts.
+- [ ] Provider responses are accepted only when successful and `Content-Type` is `audio/*`.
+- [ ] Credentials are environment-only and absent from errors/receipts/logs.
+- [ ] BGM generation requires a non-empty human terms note.
+- [ ] HPA-609 can consume one verified selection without provider calls or credentials.
+- [ ] Parseable JSON operator commands are documented/tested through direct `bun packages/stories/src/audio-generation/cli.ts ...` invocation.
+- [ ] One SFX + one BGM real smoke stays within a two-request cap and does not publish anything.
 
 ## Verification
 
@@ -399,3 +560,5 @@ bun --filter @aquila/stories test
 bun --filter @aquila/stories lint
 bun run compile:check
 ```
+
+Manual smoke first runs the direct-path dry-run and inspects its JSON before `ELEVENLABS_API_KEY` is used.

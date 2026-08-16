@@ -27,7 +27,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "compile": "bun src/compiler/cli.ts",
-    "audio:report": "bun src/compiler/cli.ts --report"
+    "audio:report": "bun src/compiler/cli.ts --report",
+    "audio:generate": "bun src/audio-generation/cli.ts generate",
+    "audio:select": "bun src/audio-generation/cli.ts select"
   },
   "dependencies": {
     "zod": "^3.24.2"

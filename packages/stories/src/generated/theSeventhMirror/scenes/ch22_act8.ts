@@ -100,7 +100,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）還沒有橋。兩個事實。中間是空的。attestation 在美空節點。琴音是美空的姊姊。", background: Background.Chapter_22_Ch22_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "22:30。會議室裡只剩下澪和日下部。螢幕暗了。螢光燈還亮著。", background: Background.Chapter_22_Ch22_Act8_S0 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）可是——誰帶來的。誰插入的。誰在 21:04 拿著共享臨時卡。不知道。還不知道。後續。", background: Background.Chapter_22_Ch22_Act8_S0, portrait: Portrait.AsakuraMio_Exhausted },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的手機震動了一下。", sfx: "phone-vibrate", background: Background.Chapter_22_Ch22_Act8_S0 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的手機震動了一下。", background: Background.Chapter_22_Ch22_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她低頭看。螢幕亮了。一條訊息。", sfx: "notification-beep", background: Background.Chapter_22_Ch22_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她看見發送者的名字。", background: Background.Chapter_22_Ch22_Act8_S0 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "白石琴音。", background: Background.Chapter_22_Ch22_Act8_S0 },

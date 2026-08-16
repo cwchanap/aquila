@@ -8,3 +8,5 @@ export type {
     StoredAudioGenerationSpecV1,
     VerifiedStoredCandidate,
 } from './store';
+export { AudioSelectionFileV1Schema } from './select';
+export type { AudioSelectionFileV1 } from './select';

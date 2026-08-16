@@ -266,7 +266,7 @@ Adding a new plan-only key does not require this per-batch web run because catal
 
 ### 7. Stage canonical and generated output together
 
-Stage the chapter directories edited in this batch (all four: substitute your chapter range), `docs/audio-plan.json` (it grows whenever a new identity is first placed), this plan file, and the theSeventhMirror-scoped generated output. Do **not** stage the entire `raw/theSeventhMirror`, `src/generated`, or `src/stories` trees — that would sweep in other stories' output and chapters outside this batch.
+Stage the chapter directories edited in this batch (all four: substitute your chapter range), `docs/audio-plan.json` (it grows whenever a new identity is first placed), this plan file, and generated output scoped to theSeventhMirror. Do **not** stage the entire `raw/theSeventhMirror`, `src/generated`, or `src/stories` trees — that would sweep in other stories' output and chapters outside this batch.
 
 ```bash
 git add \
@@ -282,13 +282,15 @@ git add \
 
 `git add` on a directory only stages files with changes inside it, so the two theSeventhMirror-scoped paths pick up just what `bun compile:stories` produced this batch. `audio-plan.json` is staged unconditionally because any batch may mint a new identity on first placement; if it did not change, `git add` is a no-op.
 
-If local catalogs changed, also stage:
+If local catalogs changed, also stage the two catalog files only — not the entire `apps/web/src/lib/audio` directory, which would sweep in players, transitions, and preferences unrelated to this batch:
 
 ```bash
-git add apps/web/src/lib/audio
+git add apps/web/src/lib/audio/sfx-catalog.ts apps/web/src/lib/audio/bgm-catalog.ts
 ```
 
-Before committing, verify the staged file list contains only this batch's four chapters, `audio-plan.json`, the plan file, theSeventhMirror generated output, and (if applicable) local catalogs — nothing from other stories or chapters outside this batch:
+If a catalog file has mixed changes (some belonging to this batch, some not), use `git add -p apps/web/src/lib/audio/sfx-catalog.ts` (or `bgm-catalog.ts`) to stage only the relevant hunks. As with `audio-plan.json` above, `git add` on an unchanged catalog file is a no-op, so staging both unconditionally is safe.
+
+Before committing, verify the staged file list contains only this batch's four chapters, `audio-plan.json`, the plan file, theSeventhMirror generated output, and (if applicable) the two catalog files `sfx-catalog.ts` / `bgm-catalog.ts` — nothing from other stories, chapters outside this batch, or other files in `apps/web/src/lib/audio`:
 
 ```bash
 git diff --cached --name-only

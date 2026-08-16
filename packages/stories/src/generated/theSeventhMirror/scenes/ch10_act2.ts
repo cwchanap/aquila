@@ -87,7 +87,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "發送。她看著簡訊送出去。然後把手機翻過來。螢幕朝下。壓在膝蓋上。", background: Background.Chapter_10_Ch10_Act2_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯我不是不需要朋友。我只是現在不敢把任何路線交給任何人。", background: Background.Chapter_10_Ch10_Act2_S3, portrait: Portrait.AsakuraMio_Sad },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯琴音也好。no_moon 也好。警察也好。每一條線我都只能自己走。", background: Background.Chapter_10_Ch10_Act2_S3, portrait: Portrait.AsakuraMio_Sad },
-    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂廣播響了。下一站。灣岸。她把筆記塞回背包。站起來。腿還是軟的。她扶了一下扶手。站穩。", sfx: "pa-announcement", background: Background.Chapter_10_Ch10_Act2_S3 },
+    { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂廣播響了。下一站。灣岸。她把筆記塞回背包。站起來。腿還是軟的。她扶了一下扶手。站穩。", background: Background.Chapter_10_Ch10_Act2_S3 },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "11:25。車門打開。她走出去。灣岸署在車站旁邊。走五分鐘。她看了一眼手機。11:26。還有四分鐘。", background: Background.Chapter_10_Ch10_Act2_S3 },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯四分鐘。夠了。走過去。進去。坐下。回答。分開回答。", background: Background.Chapter_10_Ch10_Act2_S3, portrait: Portrait.AsakuraMio_Exhausted },
     { characterId: CharacterId.AsakuraMio, character: "朝倉澪", dialogue: "（內心）⋯⋯他們問千田就答千田。他們問悠真就答悠真。他們要我把一件事拆成兩件。我就拆。至少今天。至少先活過今天。", background: Background.Chapter_10_Ch10_Act2_S3, portrait: Portrait.AsakuraMio_Exhausted },

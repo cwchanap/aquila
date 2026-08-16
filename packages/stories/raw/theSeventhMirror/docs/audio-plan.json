@@ -42,8 +42,8 @@
     {
       "key": "train-hum",
       "type": "sfx",
-      "prompt": "Low-frequency train bed, approach and interior and distant-pass mix registers, seamless loop",
-      "durationMs": 30000
+      "prompt": "Low-frequency train interior bed, approach and settle with a brief distant-pass register, finite one-shot",
+      "durationMs": 10000
     },
     {
       "key": "train-doors",
@@ -60,8 +60,8 @@
     {
       "key": "receiver-static",
       "type": "sfx",
-      "prompt": "Shortwave static hiss from a modified old receiver, distant stations, seamless loop",
-      "durationMs": 15000
+      "prompt": "Shortwave static hiss burst from a modified old receiver, distant stations surfacing and fading, finite one-shot",
+      "durationMs": 6000
     },
     {
       "key": "sync-glitch",
@@ -72,8 +72,8 @@
     {
       "key": "blood-drip",
       "type": "sfx",
-      "prompt": "Slow liquid drip on plastic seat and floor, close dry interior, seamless loop",
-      "durationMs": 8000
+      "prompt": "Slow liquid drip on plastic seat and floor, a few distinct drops, close dry interior, finite one-shot",
+      "durationMs": 6000
     },
     {
       "key": "evidence-bag-seal",
@@ -96,8 +96,8 @@
     {
       "key": "phone-vibrate",
       "type": "sfx",
-      "prompt": "Phone vibration, rhythmic heartbeat-like pulses, seamless loop",
-      "durationMs": 6000
+      "prompt": "Phone vibration, rhythmic heartbeat-like pulses, short burst, finite one-shot",
+      "durationMs": 4000
     },
     {
       "key": "institutional-drone",
@@ -157,8 +157,8 @@
     {
       "key": "toolbox-roll",
       "type": "sfx",
-      "prompt": "Heavy casters rolling on concrete, unhurried, the disguised worker's audio signature, identity-neutral, loop",
-      "durationMs": 10000
+      "prompt": "Heavy casters rolling on concrete, unhurried pass-by, the disguised worker's audio signature, identity-neutral, finite one-shot",
+      "durationMs": 8000
     },
     {
       "key": "door-seal",
@@ -175,20 +175,20 @@
     {
       "key": "vending-machine-hum",
       "type": "sfx",
-      "prompt": "Appliance hum of a vending machine or cooler, seamless loop",
-      "durationMs": 20000
+      "prompt": "Appliance hum of a vending machine or cooler, startup and steady register, finite one-shot",
+      "durationMs": 8000
     },
     {
       "key": "monitor-beep",
       "type": "sfx",
-      "prompt": "Regular electronic countdown beeps, counting down, seamless loop",
-      "durationMs": 12000
+      "prompt": "Regular electronic countdown beeps, a short counting-down sequence, finite one-shot",
+      "durationMs": 8000
     },
     {
       "key": "trolley-wheels",
       "type": "sfx",
-      "prompt": "Rubber wheels on linoleum, hospital carts and beds, seamless loop",
-      "durationMs": 12000
+      "prompt": "Rubber wheels on linoleum, hospital cart or bed pass-by, finite one-shot",
+      "durationMs": 8000
     },
     {
       "key": "code-blue-rush",
@@ -199,8 +199,8 @@
     {
       "key": "sleep-talk-recording",
       "type": "sfx",
-      "prompt": "Diegetic children's sleep-talk playback: room tone, slow breathing, muffled underwater voice, long irregular gaps, seamless loop",
-      "durationMs": 20000
+      "prompt": "Diegetic children's sleep-talk playback: room tone, slow breathing, muffled underwater voice, long irregular gaps, finite one-shot",
+      "durationMs": 12000
     },
     {
       "key": "grey-city",
@@ -212,20 +212,20 @@
     {
       "key": "fluorescent-hum",
       "type": "sfx",
-      "prompt": "Fluorescent tube hum, office and archive texture layer with ignition and off registers, seamless loop",
-      "durationMs": 20000
+      "prompt": "Fluorescent tube hum, ignition and steady register with an off tail, office and archive texture, finite one-shot",
+      "durationMs": 6000
     },
     {
       "key": "radio-feed",
       "type": "sfx",
-      "prompt": "Handheld radio and speaker voice with a persistent signal floor, multi-segment remote feed, seamless loop",
-      "durationMs": 20000
+      "prompt": "Handheld radio and speaker voice with a persistent signal floor, a short multi-segment remote feed, finite one-shot",
+      "durationMs": 12000
     },
     {
       "key": "ventilator-cycle",
       "type": "sfx",
-      "prompt": "Life-support breathing-loop rhythm, slow steady cycle with a thin speaking-valve voice variant, seamless loop",
-      "durationMs": 15000
+      "prompt": "Life-support breathing rhythm, a few slow steady cycles with a thin speaking-valve voice variant, finite one-shot",
+      "durationMs": 10000
     },
     {
       "key": "letter-confirm",

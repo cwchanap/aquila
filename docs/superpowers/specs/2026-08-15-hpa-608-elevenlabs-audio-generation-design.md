@@ -531,6 +531,28 @@ No production publish occurs in HPA-608.
 - [ ] Final assembled CLI smoke is capped at one SFX + one BGM request.
 - [ ] Generated binaries/receipts/selections/terms notes remain ignored/private and no R2/runtime work is added.
 
+## Review resolution
+
+Accepted from the second review pass:
+
+- supported `@aquila/stories/audio-generation` Node subpath for HPA-609;
+- early two-request real-provider probe before exhaustive mocks;
+- historical persisted-spec parser that does not pin current model/output/request constants;
+- constructor-owned runtime `storyId` plus existing `isStoryId` / `isSha256` validators;
+- committed Seventh Mirror provider-compatibility test;
+- shared raw-root/compiler-config loader;
+- explicit 0/1/2/3 exit-code taxonomy;
+- remove `--force`.
+
+Accepted in simplified form:
+
+- remove the strict/versioned failure-receipt schema, but keep one `candidate-NNN.failure.json` marker so the failed ordinal is consumed without parsing a global log.
+
+Intentionally retained:
+
+- dated advisory USD estimate, because it is an explicit HPA-608 pre-spend acceptance requirement and is only a tiny calculation over the scheduled spec list;
+- `schemaVersion: 1` on success receipt/selection, because those files are now a supported HPA-609 cross-package handoff rather than private implementation-only scratch.
+
 ## YAGNI boundary
 
 Do not add an SDK dependency, provider registry, queue, worker, database, dashboard, job scheduler, auto-ranking, failure database, price service, legal rules engine, audio probe/transcoder, generic media abstraction, browser export, runtime generation, or HPA-609 publication logic.

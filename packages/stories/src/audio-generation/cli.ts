@@ -247,6 +247,12 @@ function parseCommand(argv: readonly string[]): 'generate' | 'select' {
 }
 
 function isNodeIoError(error: unknown): boolean {
+    if (
+        error instanceof AudioGenerationConfigurationError ||
+        error instanceof AudioGenerationInputError
+    ) {
+        return false;
+    }
     return (
         typeof error === 'object' &&
         error !== null &&
@@ -300,13 +306,7 @@ function generateReport(
     return {
         ...assetSummary(context),
         ...plan,
-        ...(result === undefined
-            ? {}
-            : {
-                  ...result,
-                  execution: result,
-                  outcomes: result.generatedCandidates,
-              }),
+        ...(result === undefined ? {} : result),
     };
 }
 
@@ -314,19 +314,13 @@ function progressStore(
     store: LocalAudioGenerationStore,
     stderr: { write(chunk: string): void }
 ): LocalAudioGenerationStore {
-    return {
-        matchingSuccessfulCandidates:
-            store.matchingSuccessfulCandidates.bind(store),
-        nextCandidateId: async (key: string) => {
-            const candidateId = await store.nextCandidateId(key);
-            stderr.write(`generating ${candidateId} for ${key}\n`);
-            return candidateId;
-        },
-        writeSuccess: store.writeSuccess.bind(store),
-        writeFailureMarker: store.writeFailureMarker.bind(store),
-        readVerifiedCandidate: store.readVerifiedCandidate.bind(store),
-        hasMusicTermsNote: store.hasMusicTermsNote.bind(store),
-    } as unknown as LocalAudioGenerationStore;
+    const progress = Object.create(store) as LocalAudioGenerationStore;
+    progress.nextCandidateId = async (key: string) => {
+        const candidateId = await store.nextCandidateId(key);
+        stderr.write(`generating ${candidateId} for ${key}\n`);
+        return candidateId;
+    };
+    return progress;
 }
 
 async function generate(

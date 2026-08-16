@@ -5,6 +5,7 @@ const SFX_URL =
     'https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128';
 const BGM_URL = 'https://api.elevenlabs.io/v1/music?output_format=auto';
 const RETRY_DELAYS_MS = [1_000, 2_000] as const;
+const DEFAULT_REQUEST_TIMEOUT_MS = 300_000;
 const APPROVED_RESPONSE_HEADERS = [
     'content-type',
     'content-length',
@@ -41,6 +42,7 @@ export class ElevenLabsProviderError extends Error {
 export interface ElevenLabsAudioProviderOptions {
     readonly fetch?: typeof fetch;
     readonly sleep?: (milliseconds: number) => Promise<void>;
+    readonly requestTimeoutMs?: number;
 }
 
 function defaultSleep(milliseconds: number): Promise<void> {
@@ -128,6 +130,8 @@ export function createElevenLabsAudioProvider(
 ): AudioGenerationProvider {
     const fetchImpl = options.fetch ?? fetch;
     const sleep = options.sleep ?? defaultSleep;
+    const requestTimeoutMs =
+        options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
 
     return {
         async generate(spec, apiKey) {
@@ -135,6 +139,11 @@ export function createElevenLabsAudioProvider(
             const body = JSON.stringify(request.body);
 
             for (let attempt = 0; attempt < 3; attempt += 1) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(
+                    () => controller.abort(),
+                    requestTimeoutMs
+                );
                 let response: Response;
                 try {
                     response = await fetchImpl(request.url, {
@@ -144,12 +153,17 @@ export function createElevenLabsAudioProvider(
                             'xi-api-key': apiKey,
                         },
                         body,
+                        signal: controller.signal,
                     });
                 } catch (error) {
                     throw new ElevenLabsProviderError(
                         'network',
-                        `ElevenLabs request failed: ${errorMessage(error, apiKey)}`
+                        controller.signal.aborted
+                            ? `ElevenLabs request timed out after ${requestTimeoutMs}ms`
+                            : `ElevenLabs request failed: ${errorMessage(error, apiKey)}`
                     );
+                } finally {
+                    clearTimeout(timeoutId);
                 }
 
                 if (response.status >= 200 && response.status <= 299) {

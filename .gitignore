@@ -48,3 +48,6 @@ coverage/
 
 # local scratch / migration report output (e.g. .tmp/hpa-231-*.json)
 .tmp/
+
+# interrupted audio-generation CLI test fixtures created under packages/stories/raw/
+packages/stories/raw/audio-generation-cli-*/

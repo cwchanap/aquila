@@ -12,6 +12,7 @@ import {
     type AudioGenerationCliIO,
 } from '../cli';
 import type { AudioGenerationStoryContext } from '../run';
+import { cannotEnforceFilePermissions } from './permission-guard';
 
 const roots: string[] = [];
 
@@ -222,33 +223,36 @@ describe('audio generation CLI exit codes and argument validation', () => {
         expect(report.error.code).toBe('input');
     });
 
-    it('returns exit 3 when the audio plan cannot be read', async () => {
-        const storyFolder = await tempStoryFolder(
-            JSON.stringify({ schemaVersion: 1, assets: [] })
-        );
-        const planPath = join(
-            STORIES_RAW_ROOT,
-            storyFolder,
-            'docs',
-            'audio-plan.json'
-        );
-        await chmod(planPath, 0o000);
-        try {
-            const { code, io, report } = await invoke([
-                'generate',
-                '--story',
+    it.skipIf(cannotEnforceFilePermissions)(
+        'returns exit 3 when the audio plan cannot be read',
+        async () => {
+            const storyFolder = await tempStoryFolder(
+                JSON.stringify({ schemaVersion: 1, assets: [] })
+            );
+            const planPath = join(
+                STORIES_RAW_ROOT,
                 storyFolder,
-                '--missing',
-                '--dry-run',
-            ]);
+                'docs',
+                'audio-plan.json'
+            );
+            await chmod(planPath, 0o000);
+            try {
+                const { code, io, report } = await invoke([
+                    'generate',
+                    '--story',
+                    storyFolder,
+                    '--missing',
+                    '--dry-run',
+                ]);
 
-            expect(code).toBe(3);
-            expect(io.exitCodes).toEqual([3]);
-            expect(report.error.code).toBe('provider');
-        } finally {
-            await chmod(planPath, 0o644);
+                expect(code).toBe(3);
+                expect(io.exitCodes).toEqual([3]);
+                expect(report.error.code).toBe('provider');
+            } finally {
+                await chmod(planPath, 0o644);
+            }
         }
-    });
+    );
 
     it('accepts repeated explicit keys and keeps stdout to one JSON document', async () => {
         const cwd = await tempCwd();

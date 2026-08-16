@@ -25,6 +25,7 @@ import {
     type AudioGenerationStoryContext,
     type RunDependencies,
 } from '../run';
+import { cannotEnforceFilePermissions } from './permission-guard';
 
 const roots: string[] = [];
 
@@ -531,32 +532,35 @@ describe('audio generation sequential runner', () => {
         expect(provider.calls).toEqual([]);
     });
 
-    it('does not invoke the provider when candidate verification fails', async () => {
-        const { root, store } = await makeRealStore();
-        const spec = buildAudioGenerationSpec(sfx('first'));
-        const receipt = await store.writeSuccess({
-            candidateId: 'candidate-001',
-            spec,
-            specSha256: audioGenerationSpecSha256(spec),
-            generated: candidate(),
-        });
-        const audioPath = join(root, spec.key, receipt.output.filename);
-        await chmod(audioPath, 0o000);
-        const provider = fakeProvider([candidate()]);
+    it.skipIf(cannotEnforceFilePermissions)(
+        'does not invoke the provider when candidate verification fails',
+        async () => {
+            const { root, store } = await makeRealStore();
+            const spec = buildAudioGenerationSpec(sfx('first'));
+            const receipt = await store.writeSuccess({
+                candidateId: 'candidate-001',
+                spec,
+                specSha256: audioGenerationSpecSha256(spec),
+                generated: candidate(),
+            });
+            const audioPath = join(root, spec.key, receipt.output.filename);
+            await chmod(audioPath, 0o000);
+            const provider = fakeProvider([candidate()]);
 
-        try {
-            await expect(
-                planFor([sfx('first')], store, {
-                    keys: ['first'],
-                    candidateCount: 1,
-                    maxRequests: 1,
-                })
-            ).rejects.toMatchObject({ code: 'EACCES' });
-            expect(provider.calls).toEqual([]);
-        } finally {
-            await chmod(audioPath, 0o644);
+            try {
+                await expect(
+                    planFor([sfx('first')], store, {
+                        keys: ['first'],
+                        candidateCount: 1,
+                        maxRequests: 1,
+                    })
+                ).rejects.toMatchObject({ code: 'EACCES' });
+                expect(provider.calls).toEqual([]);
+            } finally {
+                await chmod(audioPath, 0o644);
+            }
         }
-    });
+    );
 
     it('requires music terms before the first real BGM call', async () => {
         const store = fakeRunStore({ hasMusicTermsNote: false });

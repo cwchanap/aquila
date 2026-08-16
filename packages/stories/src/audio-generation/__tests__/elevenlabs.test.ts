@@ -297,4 +297,37 @@ describe('ElevenLabs audio provider', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(sleep).not.toHaveBeenCalled();
     });
+
+    it('converts an aborted request timeout into a network error without retrying', async () => {
+        const fetchMock = vi.fn((_url, init) => {
+            const signal = (init as RequestInit & { signal?: AbortSignal })
+                .signal;
+            return new Promise<Response>((_resolve, reject) => {
+                signal?.addEventListener('abort', () => {
+                    reject(
+                        new DOMException(
+                            'the operation was aborted',
+                            'AbortError'
+                        )
+                    );
+                });
+            });
+        });
+        const sleep = vi.fn(async () => undefined);
+        const provider = createElevenLabsAudioProvider({
+            fetch: fetchMock,
+            sleep,
+            requestTimeoutMs: 5,
+        });
+
+        const error = await provider
+            .generate(sfxSpec(), 'test-secret')
+            .catch(cause => cause);
+
+        expect(error).toBeInstanceOf(ElevenLabsProviderError);
+        expect(error).toMatchObject({ kind: 'network', status: null });
+        expect(error.message).toContain('timed out');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(sleep).not.toHaveBeenCalled();
+    });
 });

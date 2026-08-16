@@ -30,6 +30,7 @@
 - Success receipt and selection remain strict `schemaVersion: 1` cross-package contracts. Failure markers are local audit files, not parsed contracts.
 - Parseable CLI JSON uses `bun packages/stories/src/audio-generation/cli.ts ...`, never Bun `--filter`.
 - Keep the dated advisory USD estimate required by HPA-608, but also print raw durations/request counts and make the scheduled repeated-per-candidate list explicit.
+- Re-check current provider pricing during implementation and set `pricingAsOf` to the actual check date; do not treat the constants as a live price service.
 - Real BGM requests require the existing small non-empty Music terms/account note; do not grow it into legal automation.
 - No queue, DB, worker, dashboard, provider registry, auto-ranking, runtime generation, mastering, audio probing, or R2 publication.
 
@@ -260,7 +261,7 @@ export function audioGenerationSpecSha256(
 
 `buildAudioGenerationSpecSet` catches every per-row provider-bound failure and returns issues in plan order. Paid execution later refuses to run while `issues.length > 0`.
 
-Keep the dated USD estimator tiny and run it over a scheduled list where one spec appears once per still-needed candidate; do not hide candidate-count multiplication inside the helper.
+Keep the dated USD estimator tiny and run it over a scheduled list where one spec appears once per still-needed candidate; do not hide candidate-count multiplication inside the helper. Set `ELEVENLABS_PRICING_AS_OF` to the actual implementation-time pricing check date after verifying the official provider page.
 
 - [ ] **Step 6: Verify Task 1 and commit**
 

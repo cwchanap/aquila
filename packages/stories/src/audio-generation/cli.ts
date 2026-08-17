@@ -374,15 +374,23 @@ async function generate(
         };
     }
 
+    // Provider configuration is only needed when paid work is actually
+    // scheduled. A resume run that finds every requested key already
+    // satisfied (zero scheduled requests) is an idempotent no-op and must
+    // succeed without ELEVENLABS_API_KEY.
+    const needsProvider = !args.dryRun && plan.scheduledRequests.length > 0;
+
     let apiKey = io.apiKey ?? (io.env ?? process.env).ELEVENLABS_API_KEY;
-    if (!args.dryRun && !apiKey?.trim()) {
+    if (needsProvider && !apiKey?.trim()) {
         throw configurationError('ELEVENLABS_API_KEY is required');
     }
     apiKey ??= '';
 
     const provider = args.dryRun
         ? NOOP_PROVIDER
-        : (io.providerFactory ?? (() => createElevenLabsAudioProvider()))();
+        : needsProvider
+          ? (io.providerFactory ?? (() => createElevenLabsAudioProvider()))()
+          : NOOP_PROVIDER;
     let result: AudioGenerationRunResult;
     try {
         result = await runAudioGeneration(plan, {

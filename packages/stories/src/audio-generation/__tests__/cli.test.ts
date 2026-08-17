@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { STORIES_RAW_ROOT } from '../../compiler/config';
 import type { AudioGenerationProvider } from '../elevenlabs';
 import { ElevenLabsProviderError } from '../elevenlabs';
+import { audioGenerationSpecSha256, buildAudioGenerationSpec } from '../spec';
+import { LocalAudioGenerationStore } from '../store';
 import {
     AudioGenerationError,
     audioGenerationExitCode,
@@ -424,6 +426,53 @@ describe('audio generation CLI exit codes and argument validation', () => {
         expect(io.stderrText()).toContain(
             'generating candidate-001 for door-open'
         );
+    });
+
+    it('succeeds without an API key when the planner schedules zero requests', async () => {
+        const cwd = await tempCwd();
+        // Pre-populate the store with a verified current-spec success for
+        // camera-shutter so the planner schedules zero new requests.
+        const store = new LocalAudioGenerationStore({
+            root: join(cwd, '.tmp', 'audio-generation', 'theSeventhMirror'),
+            storyId: 'the_seventh_mirror',
+        });
+        const spec = buildAudioGenerationSpec({
+            key: 'camera-shutter',
+            type: 'sfx',
+            prompt: 'Camera shutter and flash, evidence capture, one-shot',
+            durationMs: 500,
+        });
+        await store.writeSuccess({
+            candidateId: 'candidate-001',
+            spec,
+            specSha256: audioGenerationSpecSha256(spec),
+            generated: generatedCandidate(),
+        });
+
+        const { code, report } = await invoke(
+            [
+                'generate',
+                '--story',
+                'theSeventhMirror',
+                '--key',
+                'camera-shutter',
+                '--max-requests',
+                '1',
+            ],
+            // No ELEVENLABS_API_KEY and no providerFactory: a zero-work resume
+            // run must not require provider configuration.
+            { cwd, env: {} }
+        );
+
+        expect(code).toBe(0);
+        expect(report.scheduledRequestCount).toBe(0);
+        expect(report.skipped).toEqual([
+            {
+                key: 'camera-shutter',
+                desiredCount: 1,
+                verifiedSuccessCount: 1,
+            },
+        ]);
     });
 });
 

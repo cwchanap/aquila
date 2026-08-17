@@ -317,6 +317,46 @@ describe('audio generation story context and planner', () => {
         expect(plan.estimate.costUsd).toBe(0);
     });
 
+    it('schedules a valid selected key even when an unselected row is provider-invalid', async () => {
+        const assets: AudioPlanAsset[] = [
+            sfx('valid-key'),
+            { key: 'too-short', type: 'sfx', prompt: 'x', durationMs: 400 },
+        ];
+        const store = planningStore();
+
+        const plan = await planAudioGeneration({
+            context: contextFor(assets),
+            store,
+            keys: ['valid-key'],
+            candidateCount: 1,
+            maxRequests: 100,
+        });
+
+        // The unselected provider-invalid row must not block the selected
+        // valid key: only the requested asset set is validated.
+        expect(plan.providerIssues).toEqual([]);
+        expect(plan.scheduledRequests.map(request => request.key)).toEqual([
+            'valid-key',
+        ]);
+    });
+
+    it('keeps the committed Seventh Mirror plan fully provider-valid', async () => {
+        const context =
+            await loadAudioGenerationStoryContext('theSeventhMirror');
+
+        const plan = await planAudioGeneration({
+            context,
+            store: planningStore(),
+            missing: true,
+            candidateCount: 1,
+            maxRequests: 100,
+        });
+
+        // The whole committed story plan must stay provider-valid so a
+        // `--missing` run never surfaces provider issues for committed rows.
+        expect(plan.providerIssues).toEqual([]);
+    });
+
     it('takes a deterministic prefix under the logical request cap', async () => {
         const assets = [sfx('first'), sfx('second'), sfx('third')];
         const store = planningStore();

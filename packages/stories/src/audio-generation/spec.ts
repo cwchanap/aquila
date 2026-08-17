@@ -6,6 +6,7 @@ const SFX_MIN_DURATION_MS = 500;
 const SFX_MAX_DURATION_MS = 30_000;
 const BGM_MIN_DURATION_MS = 3_000;
 const BGM_MAX_DURATION_MS = 600_000;
+const BGM_MAX_PROMPT_LENGTH = 4_100;
 
 export const ELEVENLABS_PRICING_AS_OF = '2026-08-16';
 export const ELEVENLABS_SFX_USD_PER_MINUTE = 0.12;
@@ -91,6 +92,18 @@ function assertDurationInRange(
     }
 }
 
+function assertPromptWithinLimit(
+    asset: AudioPlanAsset,
+    maximum: number,
+    label: string
+): void {
+    if (asset.prompt.length > maximum) {
+        throw new Error(
+            `${label} prompt must be at most ${maximum} characters (received ${asset.prompt.length})`
+        );
+    }
+}
+
 export function buildAudioGenerationSpec(
     asset: Extract<AudioPlanAsset, { type: 'sfx' }>
 ): CurrentSfxAudioGenerationSpec;
@@ -130,6 +143,7 @@ export function buildAudioGenerationSpec(
         BGM_MAX_DURATION_MS,
         'BGM'
     );
+    assertPromptWithinLimit(asset, BGM_MAX_PROMPT_LENGTH, 'BGM');
     return {
         schemaVersion: 1,
         key: asset.key,

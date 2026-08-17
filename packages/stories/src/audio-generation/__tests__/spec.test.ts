@@ -65,12 +65,21 @@ describe('audio generation spec', () => {
                 durationMs: 2_999,
                 loop: true,
             },
+            {
+                key: 'verbose-music',
+                type: 'bgm',
+                prompt: 'x'.repeat(4_101),
+                durationMs: 90_000,
+                loop: true,
+            },
         ]);
         expect(result.issues.map(issue => issue.key)).toEqual([
             'too-short',
             'too-long',
             'tiny-music',
+            'verbose-music',
         ]);
+        expect(result.issues[3].message).toMatch(/prompt must be at most 4100/);
     });
 
     it('keeps the committed Seventh Mirror plan provider-compatible', () => {

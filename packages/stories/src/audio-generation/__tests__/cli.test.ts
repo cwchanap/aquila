@@ -2,7 +2,6 @@ import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { STORIES_RAW_ROOT } from '../../compiler/config';
 import type { AudioGenerationProvider } from '../elevenlabs';
 import { ElevenLabsProviderError } from '../elevenlabs';
 import { audioGenerationSpecSha256, buildAudioGenerationSpec } from '../spec';
@@ -13,7 +12,10 @@ import {
     runCli,
     type AudioGenerationCliIO,
 } from '../cli';
-import type { AudioGenerationStoryContext } from '../run';
+import {
+    loadAudioGenerationStoryContext,
+    type AudioGenerationStoryContext,
+} from '../run';
 import { cannotEnforceFilePermissions } from './permission-guard';
 
 const roots: string[] = [];
@@ -58,22 +60,26 @@ async function invoke(
     };
 }
 
-async function tempCwd(): Promise<string> {
+async function tempStoreRoot(): Promise<string> {
     const root = await mkdtemp(join(tmpdir(), 'audio-generation-cli-'));
     roots.push(root);
     return root;
 }
 
-async function tempStoryFolder(plan: string): Promise<string> {
-    const root = await mkdtemp(join(STORIES_RAW_ROOT, 'audio-generation-cli-'));
-    roots.push(root);
-    await mkdir(join(root, 'docs'), { recursive: true });
+async function tempStoryFolder(
+    plan: string
+): Promise<{ storyFolder: string; rawRoot: string }> {
+    const rawRoot = await mkdtemp(join(tmpdir(), 'audio-generation-cli-raw-'));
+    roots.push(rawRoot);
+    const storyFolder = basename(await mkdtemp(join(rawRoot, 'story-')));
+    const storyDir = join(rawRoot, storyFolder);
+    await mkdir(join(storyDir, 'docs'), { recursive: true });
     await writeFile(
-        join(root, 'compiler.config.ts'),
+        join(storyDir, 'compiler.config.ts'),
         "export default { storyId: 'the_seventh_mirror' };\n"
     );
-    await writeFile(join(root, 'docs', 'audio-plan.json'), plan);
-    return basename(root);
+    await writeFile(join(storyDir, 'docs', 'audio-plan.json'), plan);
+    return { storyFolder, rawRoot };
 }
 
 function generatedCandidate() {
@@ -211,14 +217,14 @@ describe('audio generation CLI exit codes and argument validation', () => {
             JSON.stringify({ schemaVersion: 2, assets: [] }),
         ],
     ])('returns exit 2 for %s audio plans', async (_label, plan) => {
-        const storyFolder = await tempStoryFolder(plan);
-        const { code, io, report } = await invoke([
-            'generate',
-            '--story',
-            storyFolder,
-            '--missing',
-            '--dry-run',
-        ]);
+        const { storyFolder, rawRoot } = await tempStoryFolder(plan);
+        const { code, io, report } = await invoke(
+            ['generate', '--story', storyFolder, '--missing', '--dry-run'],
+            {
+                loadStoryContext: folder =>
+                    loadAudioGenerationStoryContext(folder, rawRoot),
+            }
+        );
 
         expect(code).toBe(2);
         expect(io.exitCodes).toEqual([2]);
@@ -228,24 +234,30 @@ describe('audio generation CLI exit codes and argument validation', () => {
     it.skipIf(cannotEnforceFilePermissions)(
         'returns exit 3 when the audio plan cannot be read',
         async () => {
-            const storyFolder = await tempStoryFolder(
+            const { storyFolder, rawRoot } = await tempStoryFolder(
                 JSON.stringify({ schemaVersion: 1, assets: [] })
             );
             const planPath = join(
-                STORIES_RAW_ROOT,
+                rawRoot,
                 storyFolder,
                 'docs',
                 'audio-plan.json'
             );
             await chmod(planPath, 0o000);
             try {
-                const { code, io, report } = await invoke([
-                    'generate',
-                    '--story',
-                    storyFolder,
-                    '--missing',
-                    '--dry-run',
-                ]);
+                const { code, io, report } = await invoke(
+                    [
+                        'generate',
+                        '--story',
+                        storyFolder,
+                        '--missing',
+                        '--dry-run',
+                    ],
+                    {
+                        loadStoryContext: folder =>
+                            loadAudioGenerationStoryContext(folder, rawRoot),
+                    }
+                );
 
                 expect(code).toBe(3);
                 expect(io.exitCodes).toEqual([3]);
@@ -257,7 +269,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
     );
 
     it('accepts repeated explicit keys and keeps stdout to one JSON document', async () => {
-        const cwd = await tempCwd();
+        const cwd = await tempStoreRoot();
         const { code, io, report } = await invoke(
             [
                 'generate',
@@ -269,7 +281,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
                 'door-open',
                 '--dry-run',
             ],
-            { cwd }
+            { storeRoot: cwd }
         );
 
         expect(code).toBe(0);
@@ -279,7 +291,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
     });
 
     it('returns exit 2 for a provider-illegal plan before invoking the runner', async () => {
-        const cwd = await tempCwd();
+        const cwd = await tempStoreRoot();
         const context: AudioGenerationStoryContext = {
             storyFolder: 'fixture',
             storyId: 'the_seventh_mirror',
@@ -300,7 +312,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
         const { code, io, report } = await invoke(
             ['generate', '--story', 'fixture', '--missing', '--dry-run'],
             {
-                cwd,
+                storeRoot: cwd,
                 loadStoryContext: async () => context,
                 providerFactory: () => {
                     providerCreated = true;
@@ -316,7 +328,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
     });
 
     it('returns exit 2 for stale or invalid selection input', async () => {
-        const cwd = await tempCwd();
+        const cwd = await tempStoreRoot();
         const { code: missingCandidate } = await invoke(
             [
                 'select',
@@ -327,7 +339,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
                 '--candidate',
                 'candidate-001',
             ],
-            { cwd }
+            { storeRoot: cwd }
         );
         const { code: invalidCandidate } = await invoke(
             [
@@ -339,7 +351,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
                 '--candidate',
                 'candidate-01',
             ],
-            { cwd }
+            { storeRoot: cwd }
         );
 
         expect(missingCandidate).toBe(2);
@@ -347,7 +359,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
     });
 
     it('returns exit 3 for provider and local-store I/O failures', async () => {
-        const providerCwd = await tempCwd();
+        const providerStoreRoot = await tempStoreRoot();
         const providerFailure = await invoke(
             [
                 'generate',
@@ -359,7 +371,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
                 '1',
             ],
             {
-                cwd: providerCwd,
+                storeRoot: providerStoreRoot,
                 env: { ELEVENLABS_API_KEY: 'test-key' },
                 providerFactory: () => ({
                     generate: async () => {
@@ -372,14 +384,8 @@ describe('audio generation CLI exit codes and argument validation', () => {
             }
         );
 
-        const storeCwd = await tempCwd();
-        await mkdir(join(storeCwd, '.tmp', 'audio-generation'), {
-            recursive: true,
-        });
-        await writeFile(
-            join(storeCwd, '.tmp', 'audio-generation', 'theSeventhMirror'),
-            'not a directory'
-        );
+        const storeRoot = await tempStoreRoot();
+        await writeFile(join(storeRoot, 'theSeventhMirror'), 'not a directory');
         const storeFailure = await invoke(
             [
                 'generate',
@@ -389,7 +395,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
                 'camera-shutter',
                 '--dry-run',
             ],
-            { cwd: storeCwd }
+            { storeRoot }
         );
 
         expect(providerFailure.code).toBe(3);
@@ -397,7 +403,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
     });
 
     it('returns exit 0 for a capped successful run and reports the deferred remainder', async () => {
-        const cwd = await tempCwd();
+        const cwd = await tempStoreRoot();
         const { code, io, report } = await invoke(
             [
                 'generate',
@@ -411,7 +417,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
                 '1',
             ],
             {
-                cwd,
+                storeRoot: cwd,
                 env: { ELEVENLABS_API_KEY: 'test-key' },
                 providerFactory: () => ({
                     generate: async () => generatedCandidate(),
@@ -429,11 +435,11 @@ describe('audio generation CLI exit codes and argument validation', () => {
     });
 
     it('succeeds without an API key when the planner schedules zero requests', async () => {
-        const cwd = await tempCwd();
+        const cwd = await tempStoreRoot();
         // Pre-populate the store with a verified current-spec success for
         // camera-shutter so the planner schedules zero new requests.
         const store = new LocalAudioGenerationStore({
-            root: join(cwd, '.tmp', 'audio-generation', 'theSeventhMirror'),
+            root: join(cwd, 'theSeventhMirror'),
             storyId: 'the_seventh_mirror',
         });
         const spec = buildAudioGenerationSpec({
@@ -461,7 +467,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
             ],
             // No ELEVENLABS_API_KEY and no providerFactory: a zero-work resume
             // run must not require provider configuration.
-            { cwd, env: {} }
+            { storeRoot: cwd, env: {} }
         );
 
         expect(code).toBe(0);
@@ -478,7 +484,7 @@ describe('audio generation CLI exit codes and argument validation', () => {
 
 describe('audio generation CLI dry-run JSON contract', () => {
     it('reports the Seventh Mirror scope, provider issues, and raw estimate fields', async () => {
-        const cwd = await tempCwd();
+        const cwd = await tempStoreRoot();
         const { code, io, report } = await invoke(
             [
                 'generate',
@@ -487,7 +493,7 @@ describe('audio generation CLI dry-run JSON contract', () => {
                 '--missing',
                 '--dry-run',
             ],
-            { cwd }
+            { storeRoot: cwd }
         );
 
         expect(code).toBe(0);

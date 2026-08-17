@@ -17,6 +17,7 @@ import {
     LocalAudioGenerationStore,
 } from '../store';
 import { audioGenerationSpecSha256, buildAudioGenerationSpec } from '../spec';
+import { cannotEnforceFilePermissions } from './permission-guard';
 
 const roots: string[] = [];
 
@@ -214,29 +215,35 @@ describe('audio generation store contracts', () => {
         ).resolves.toBeNull();
     });
 
-    it('propagates unreadable candidate bytes during verification', async () => {
-        const { root, store } = await makeStore();
-        const spec = currentSpec();
-        const receipt = await store.writeSuccess({
-            candidateId: 'candidate-001',
-            spec,
-            specSha256: audioGenerationSpecSha256(spec),
-            generated: {
-                bytes: bytes(),
-                mediaType: 'audio/mpeg',
-                actualDurationMs: null,
-            },
-        });
-        const audioPath = join(root, spec.key, receipt.output.filename);
-        await chmod(audioPath, 0o000);
-        try {
-            await expect(
-                store.matchingSuccessfulCandidates(spec.key, receipt.specSha256)
-            ).rejects.toMatchObject({ code: 'EACCES' });
-        } finally {
-            await chmod(audioPath, 0o644);
+    it.skipIf(cannotEnforceFilePermissions)(
+        'propagates unreadable candidate bytes during verification',
+        async () => {
+            const { root, store } = await makeStore();
+            const spec = currentSpec();
+            const receipt = await store.writeSuccess({
+                candidateId: 'candidate-001',
+                spec,
+                specSha256: audioGenerationSpecSha256(spec),
+                generated: {
+                    bytes: bytes(),
+                    mediaType: 'audio/mpeg',
+                    actualDurationMs: null,
+                },
+            });
+            const audioPath = join(root, spec.key, receipt.output.filename);
+            await chmod(audioPath, 0o000);
+            try {
+                await expect(
+                    store.matchingSuccessfulCandidates(
+                        spec.key,
+                        receipt.specSha256
+                    )
+                ).rejects.toMatchObject({ code: 'EACCES' });
+            } finally {
+                await chmod(audioPath, 0o644);
+            }
         }
-    });
+    );
 
     it('rejects unsafe keys before joining store paths', async () => {
         const { store } = await makeStore();
@@ -358,17 +365,20 @@ describe('audio generation store contracts', () => {
         await expect(store.hasMusicTermsNote()).resolves.toBe(true);
     });
 
-    it('propagates non-ENOENT music terms errors', async () => {
-        const { root, store } = await makeStore();
-        const notePath = join(root, 'music-terms-note.md');
-        await writeFile(notePath, 'Account checked.\n');
-        await chmod(notePath, 0o000);
-        try {
-            await expect(store.hasMusicTermsNote()).rejects.toMatchObject({
-                code: 'EACCES',
-            });
-        } finally {
-            await chmod(notePath, 0o644);
+    it.skipIf(cannotEnforceFilePermissions)(
+        'propagates non-ENOENT music terms errors',
+        async () => {
+            const { root, store } = await makeStore();
+            const notePath = join(root, 'music-terms-note.md');
+            await writeFile(notePath, 'Account checked.\n');
+            await chmod(notePath, 0o000);
+            try {
+                await expect(store.hasMusicTermsNote()).rejects.toMatchObject({
+                    code: 'EACCES',
+                });
+            } finally {
+                await chmod(notePath, 0o644);
+            }
         }
-    });
+    );
 });

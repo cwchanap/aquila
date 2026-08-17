@@ -8,6 +8,7 @@
     "lint": "eslint src",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
     "seed": "bun --cwd=../.. packages/infra-cloudflare/src/seed.ts",
     "verify": "bun src/verify.ts"
   },

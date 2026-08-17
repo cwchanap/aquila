@@ -3,6 +3,7 @@ import { AudioPlanKeySchema } from '../audio-plan';
 import {
     assertKnownVersion,
     assertRuntimeInputSafe,
+    AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS,
     parseActiveReleasePointerWithManifestPath,
     parseRuntimeSchema,
     type RuntimeInputShape,
@@ -171,19 +172,6 @@ const AUDIO_MANIFEST_SHAPE: RuntimeInputShape = {
         },
     },
 };
-
-const AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS = [
-    'candidateid',
-    'candidateids',
-    'receipt',
-    'receipts',
-    'modelid',
-    'requestid',
-    'selectionnote',
-    'generationspec',
-    'model',
-    'compilerusagepath',
-] as const;
 
 export function parseRuntimeAudioManifest(
     input: unknown

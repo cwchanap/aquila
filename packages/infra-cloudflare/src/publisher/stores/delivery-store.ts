@@ -19,6 +19,8 @@ export type PointerSnapshot =
           bytes: Uint8Array;
           contentType: string;
           cacheControl: string;
+          /** Concrete stores include object custom metadata in pointer snapshots. */
+          customMetadata?: Readonly<Record<string, string>>;
       };
 
 export interface ImmutableCreateRequest {

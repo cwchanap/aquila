@@ -264,6 +264,33 @@ describe('audio candidate verifier', () => {
         );
     });
 
+    it('rejects a stored audio object with contaminated custom metadata', async () => {
+        const { prepared, store } = await fixture({ storeAudio: true });
+        const audioPath = prepared.assets[0]!.path;
+
+        await expect(
+            verifyStoredAudioRelease({
+                store: decorateStore(store, (key, object) =>
+                    key === audioPath
+                        ? {
+                              ...object,
+                              customMetadata: {
+                                  candidateId: 'private-candidate',
+                              },
+                          }
+                        : object
+                ),
+                storyId: prepared.storyId,
+                target: prepared.target,
+                releaseId: prepared.releaseId,
+                run: probeRunner({
+                    expectedBytes: prepared.assets[0]!.bytes,
+                    calls: [],
+                }),
+            })
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
+    });
+
     it.each([
         [
             'manifest MIME',

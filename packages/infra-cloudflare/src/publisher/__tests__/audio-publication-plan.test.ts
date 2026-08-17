@@ -14,6 +14,12 @@ import { buildPreparedAudioRelease } from '../audio-runtime-release';
 import { buildAudioPublicationPlan } from '../audio-publication-plan';
 import type { NormalizedAudioAsset } from '../audio-encoder';
 import type { AudioCoverageEntryV1 } from '../audio-source';
+import type {
+    DeliveryStore,
+    ImmutableCreateRequest,
+    PointerSnapshot,
+    PointerWriteRequest,
+} from '../stores/delivery-store';
 
 const target: PublicationTarget = { kind: 'preview', previewId: 'gate-1' };
 const storyId = 'example_story';
@@ -142,6 +148,23 @@ describe('buildAudioPublicationPlan', () => {
         ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
     });
 
+    it('rejects a contaminated reused audio object before planning a no-op', async () => {
+        const store = await storeFixture();
+        const preparedRelease = release();
+        const objectKey = getAudioObjectPath(preparedRelease.assets[0]!.sha256);
+        await store.createImmutable({
+            key: objectKey,
+            bytes: preparedRelease.assets[0]!.bytes,
+            contentType: 'audio/mpeg',
+            cacheControl: 'public, max-age=31536000, immutable',
+            customMetadata: { candidateId: 'private-candidate' },
+        });
+
+        await expect(
+            buildAudioPublicationPlan({ store, preparedRelease })
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
+    });
+
     it('advisory-reads an existing audio pointer without writing or activating it', async () => {
         const store = await storeFixture();
         const preparedRelease = release();
@@ -177,5 +200,58 @@ describe('buildAudioPublicationPlan', () => {
             beforeReleaseId: preparedRelease.releaseId,
         });
         expect((await store.inspectPointer(pointerKey)).exists).toBe(true);
+    });
+
+    it('rejects an active audio pointer with contaminated custom metadata', async () => {
+        const base = await storeFixture();
+        const preparedRelease = release();
+        const pointerKey = getAudioCurrentPointerPath(storyId, target);
+        await base.createImmutable({
+            key: pointerKey,
+            bytes: new TextEncoder().encode(
+                `${JSON.stringify({
+                    schemaVersion: 1,
+                    storyId,
+                    releaseId: preparedRelease.releaseId,
+                    publishedAt: '2026-08-17T00:00:00.000Z',
+                    manifestPath: getAudioReleaseManifestPath(
+                        storyId,
+                        preparedRelease.releaseId,
+                        target
+                    ),
+                    manifestSha256: preparedRelease.manifestSha256,
+                })}\n`
+            ),
+            contentType: 'application/json',
+            cacheControl: 'no-cache, max-age=0, must-revalidate',
+        });
+
+        const contaminated: DeliveryStore = {
+            stat: key => base.stat(key),
+            read: key => base.read(key),
+            createImmutable: (request: ImmutableCreateRequest) =>
+                base.createImmutable(request),
+            inspectPointer: async key => {
+                const snapshot = await base.inspectPointer(key);
+                if (key !== pointerKey || !snapshot.exists) return snapshot;
+                return {
+                    ...snapshot,
+                    customMetadata: { candidateId: 'private-candidate' },
+                } as PointerSnapshot;
+            },
+            readPointer: key => base.readPointer(key),
+            compareAndSwapPointer: (request: PointerWriteRequest) =>
+                base.compareAndSwapPointer(request),
+            listKeys: prefix => base.listKeys(prefix),
+            list: (prefix: string) => base.list(prefix),
+            close: () => base.close(),
+        };
+
+        await expect(
+            buildAudioPublicationPlan({
+                store: contaminated,
+                preparedRelease,
+            })
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'integrity' });
     });
 });

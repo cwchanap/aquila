@@ -69,6 +69,7 @@ export type {
 } from './audio';
 export {
     assertActivationAllowed,
+    isRuntimeForbiddenMetadataKey,
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
     parseStoryAssetReleasePlan,

@@ -42,6 +42,30 @@ const FORBIDDEN_RUNTIME_KEY_PARTS = [
     'apikeys',
 ] as const;
 
+// Audio generation and selection metadata is private input provenance. Keep
+// all audio-specific forms here so runtime parsing and the public verifier's
+// raw JSON scan share one boundary-aware rule. Visual documents continue to
+// use only the base list above.
+export const AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS = [
+    'candidateid',
+    'candidateids',
+    'candidatemetadata',
+    'receipt',
+    'receipts',
+    'modelid',
+    'modelids',
+    'requestid',
+    'requestids',
+    'selectionnote',
+    'selectionnotes',
+    'generationspec',
+    'generationspecs',
+    'model',
+    'compilerusagepath',
+    'compilerusagepaths',
+    'sourcesha256',
+] as const;
+
 // Recognize numbers and numeric strings so a stringified version like "2" is
 // reported as an unsupported version rather than a generic schema error.
 function toVersionNumber(version: unknown): number | undefined {
@@ -120,6 +144,23 @@ function keyContainsForbiddenPart(
         from = idx + 1;
     }
     return false;
+}
+
+export function isRuntimeForbiddenMetadataKey(
+    key: string,
+    scope: 'visual' | 'audio' = 'visual'
+): boolean {
+    const { normalized, wordStarts } = normalizeKeyWithBoundaries(key);
+    const forbiddenParts =
+        scope === 'audio'
+            ? [
+                  ...FORBIDDEN_RUNTIME_KEY_PARTS,
+                  ...AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS,
+              ]
+            : FORBIDDEN_RUNTIME_KEY_PARTS;
+    return forbiddenParts.some(part =>
+        keyContainsForbiddenPart(normalized, wordStarts, part)
+    );
 }
 
 function findForbiddenRuntimeFields(

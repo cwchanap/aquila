@@ -140,7 +140,7 @@ function parseOmissions(
         throw error('input', 'Audio omissions have an invalid schema');
     }
 
-    const omissions: Record<string, string> = {};
+    const omissions = Object.create(null) as Record<string, string>;
     for (const [key, reason] of Object.entries(value.omissions)) {
         if (!isSafeLogicalKey(key)) {
             throw error('input', 'Audio omissions contain an invalid cue key');
@@ -539,6 +539,7 @@ export function sourceArchiveCandidates(
             bytes: source.sourceBytes,
             contentType: source.sourceMediaType,
             cacheControl: AUDIO_ARCHIVE_CACHE_CONTROL,
+            customMetadata: {},
         });
         candidates.push({
             kind: 'source',
@@ -546,6 +547,7 @@ export function sourceArchiveCandidates(
             bytes: source.receiptBytes,
             contentType: 'application/json',
             cacheControl: AUDIO_ARCHIVE_CACHE_CONTROL,
+            customMetadata: {},
         });
     }
     return candidates;

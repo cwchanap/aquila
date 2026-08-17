@@ -11,6 +11,7 @@ export interface PlannedImmutableCandidate {
     readonly bytes: Uint8Array;
     readonly contentType: string;
     readonly cacheControl: string;
+    readonly customMetadata?: Readonly<Record<string, string>>;
     readonly status: 'create' | 'reuse';
     readonly identity?: string;
 }
@@ -22,6 +23,20 @@ function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
     return left.every((byte, index) => byte === right[index]);
 }
 
+function recordsEqual(
+    left: Readonly<Record<string, string>>,
+    right: Readonly<Record<string, string>>
+): boolean {
+    const leftKeys = Object.keys(left).sort();
+    const rightKeys = Object.keys(right).sort();
+    return (
+        leftKeys.length === rightKeys.length &&
+        leftKeys.every(
+            (key, index) => key === rightKeys[index] && left[key] === right[key]
+        )
+    );
+}
+
 function requiredMetadataMatches(
     actual: StoredObjectMetadata,
     candidate: CandidateInput | PlannedImmutableCandidate
@@ -30,7 +45,9 @@ function requiredMetadataMatches(
         actual.key === candidate.key &&
         actual.byteLength === candidate.bytes.byteLength &&
         actual.contentType === candidate.contentType &&
-        actual.cacheControl === candidate.cacheControl
+        actual.cacheControl === candidate.cacheControl &&
+        (candidate.customMetadata === undefined ||
+            recordsEqual(actual.customMetadata, candidate.customMetadata))
     );
 }
 
@@ -106,11 +123,8 @@ function assertReadBackMatches(
     candidate: PlannedImmutableCandidate
 ): void {
     if (
-        stored.key !== candidate.key ||
-        stored.byteLength !== candidate.bytes.byteLength ||
+        !requiredMetadataMatches(stored, candidate) ||
         stored.byteLength !== stored.bytes.byteLength ||
-        stored.contentType !== candidate.contentType ||
-        stored.cacheControl !== candidate.cacheControl ||
         !bytesEqual(stored.bytes, candidate.bytes)
     ) {
         throw publicationConflict(candidate);
@@ -173,6 +187,7 @@ export async function publishImmutableCandidate(
                 bytes: candidate.bytes,
                 contentType: candidate.contentType,
                 cacheControl: candidate.cacheControl,
+                customMetadata: candidate.customMetadata,
             });
         } catch (cause) {
             if (cause instanceof PublisherError) throw cause;

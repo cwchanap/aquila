@@ -176,6 +176,12 @@ describe('runtime audio manifest', () => {
             'apiKey',
             'model',
             'compilerUsagePath',
+            'requestIds',
+            'compilerUsagePaths',
+            'generationSpecs',
+            'selectionNotes',
+            'candidateMetadata',
+            'sourceSha256',
         ]) {
             const invalid = {
                 ...validManifestInput(),

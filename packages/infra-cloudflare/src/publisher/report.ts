@@ -17,6 +17,8 @@ import type {
     PublisherProgressEvent,
 } from './types';
 
+export type { PublisherDiagnosticV1 } from './types';
+
 export const MAX_REPORT_DIAGNOSTIC_SAMPLES = 5;
 
 export interface PublisherReportV1 {

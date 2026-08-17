@@ -181,6 +181,8 @@ const AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS = [
     'requestid',
     'selectionnote',
     'generationspec',
+    'model',
+    'compilerusagepath',
 ] as const;
 
 export function parseRuntimeAudioManifest(

@@ -174,6 +174,8 @@ describe('runtime audio manifest', () => {
             'credential',
             'token',
             'apiKey',
+            'model',
+            'compilerUsagePath',
         ]) {
             const invalid = {
                 ...validManifestInput(),

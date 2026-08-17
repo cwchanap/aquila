@@ -147,6 +147,13 @@ export function getObjectPath(
     return `vn/objects/${sha256}.${format}`;
 }
 
+export function getAudioObjectPath(sha256: ObjectContentSha256): string {
+    if (!isSha256(sha256)) {
+        throw new AssetResolverError('integrity', 'Invalid SHA-256 digest');
+    }
+    return `vn/objects/${sha256}.mp3`;
+}
+
 function publicationPrefix(target: PublicationTarget): string {
     return target.kind === 'production'
         ? 'vn'
@@ -192,6 +199,75 @@ export function getCurrentPointerPath(
 ): string {
     assertPublicationTarget(storyId, target);
     return `${publicationPrefix(target)}/stories/${storyId}/current.json`;
+}
+
+function audioPublicationPrefix(target: PublicationTarget): string {
+    return target.kind === 'production'
+        ? 'vn/audio'
+        : `vn/previews/${target.previewId}/audio`;
+}
+
+export function getAudioReleaseManifestPath(
+    storyId: string,
+    releaseId: string,
+    target: PublicationTarget
+): string {
+    assertPublicationTarget(storyId, target);
+    if (!isReleaseId(releaseId)) {
+        throw new AssetResolverError(
+            'unsafe-path',
+            `Invalid release id: ${releaseId}`
+        );
+    }
+    return `${audioPublicationPrefix(target)}/stories/${storyId}/releases/${releaseId}/runtime-manifest.json`;
+}
+
+export function getAudioCurrentPointerPath(
+    storyId: string,
+    target: PublicationTarget
+): string {
+    assertPublicationTarget(storyId, target);
+    return `${audioPublicationPrefix(target)}/stories/${storyId}/current.json`;
+}
+
+export function isRuntimePointerKey(key: string): boolean {
+    if (typeof key !== 'string') return false;
+    const segments = key.split('/');
+    if (segments.at(-1) !== 'current.json') return false;
+
+    if (
+        segments.length === 4 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'stories'
+    ) {
+        return isStoryId(segments[2]);
+    }
+    if (
+        segments.length === 6 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'previews' &&
+        segments[3] === 'stories'
+    ) {
+        return isPreviewId(segments[2]) && isStoryId(segments[4]);
+    }
+    if (
+        segments.length === 5 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'audio' &&
+        segments[2] === 'stories'
+    ) {
+        return isStoryId(segments[3]) && segments[4] === 'current.json';
+    }
+    if (
+        segments.length === 7 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'previews' &&
+        segments[3] === 'audio' &&
+        segments[4] === 'stories'
+    ) {
+        return isPreviewId(segments[2]) && isStoryId(segments[5]);
+    }
+    return false;
 }
 
 export function resolveAssetUrl(baseUrl: string, relativePath: string): URL {

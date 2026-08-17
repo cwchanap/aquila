@@ -34,9 +34,13 @@ export {
     assertSha256,
     encodeLogicalAssetIdentity,
     compareQualifiedAssetIds,
+    getAudioCurrentPointerPath,
+    getAudioObjectPath,
+    getAudioReleaseManifestPath,
     getCurrentPointerPath,
     getObjectPath,
     getReleaseManifestPath,
+    isRuntimePointerKey,
     isPreviewId,
     isReleaseId,
     isSafeLogicalKey,
@@ -53,6 +57,16 @@ export {
     releaseIdFromContentSha256,
 } from './canonical';
 export type { JsonValue } from './canonical';
+export {
+    canonicalAudioReleaseContent,
+    parseAudioActiveReleasePointer,
+    parseRuntimeAudioManifest,
+} from './audio';
+export type {
+    AudioAssetType,
+    RuntimeAudioAssetV1,
+    RuntimeAudioManifestV1,
+} from './audio';
 export {
     assertActivationAllowed,
     parseActiveReleasePointer,

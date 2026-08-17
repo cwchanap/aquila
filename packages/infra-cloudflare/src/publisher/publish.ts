@@ -7,18 +7,14 @@ import {
 import { activateStoredRelease, type ActivationResult } from './activation';
 import { verifyPreparedRelease } from './candidate-verifier';
 import { PublisherError } from './errors';
+import { publishImmutableCandidate } from './immutable-candidate';
 import {
     buildPublicationPlan,
     type BuildPublicationPlanOptions,
-    type PlannedImmutableCandidate,
     type PublicationPlan,
 } from './publication-plan';
 import type { PublisherReportV1 } from './report';
-import type {
-    DeliveryStore,
-    PointerSnapshot,
-    StoredObject,
-} from './stores/delivery-store';
+import type { DeliveryStore, PointerSnapshot } from './stores/delivery-store';
 import type { PublisherActionV1 } from './types';
 
 export interface PublishReleaseOptions extends BuildPublicationPlanOptions {
@@ -38,103 +34,13 @@ interface FreshPointerState {
 const JSON_CONTENT_TYPE = 'application/json';
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
 
-function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
-    if (left.byteLength !== right.byteLength) return false;
-    return left.every((byte, index) => byte === right[index]);
-}
-
-function immutableConflict(
-    candidate: PlannedImmutableCandidate
-): PublisherError {
-    return new PublisherError(
-        'integrity',
-        candidate.kind === 'manifest'
-            ? 'Stored immutable manifest conflicts with publication candidate'
-            : 'Stored immutable object conflicts with publication candidate',
-        {
-            context: {
-                stage: candidate.kind === 'manifest' ? 'manifest' : 'upload',
-                key: candidate.key,
-            },
-        }
-    );
-}
-
-async function readCandidate(
-    store: DeliveryStore,
-    candidate: PlannedImmutableCandidate
-): Promise<StoredObject> {
-    try {
-        return await store.read(candidate.key);
-    } catch (cause) {
-        if (cause instanceof PublisherError) throw cause;
-        throw new PublisherError(
-            'storage',
-            'Unable to read back immutable publication candidate',
-            {
-                cause: { classification: 'delivery-store-read-failure' },
-                context: { stage: 'upload', key: candidate.key },
-            }
-        );
-    }
-}
-
-async function verifyCandidate(
-    store: DeliveryStore,
-    candidate: PlannedImmutableCandidate
-): Promise<void> {
-    const stored = await readCandidate(store, candidate);
-    if (
-        stored.key !== candidate.key ||
-        stored.byteLength !== candidate.bytes.byteLength ||
-        stored.byteLength !== stored.bytes.byteLength ||
-        stored.contentType !== candidate.contentType ||
-        stored.cacheControl !== candidate.cacheControl ||
-        !bytesEqual(stored.bytes, candidate.bytes)
-    ) {
-        throw immutableConflict(candidate);
-    }
-}
-
-async function createCandidate(
-    store: DeliveryStore,
-    candidate: PlannedImmutableCandidate
-): Promise<ImmutableResult> {
-    if (candidate.status === 'reuse') return 'reused';
-    let result: Awaited<ReturnType<DeliveryStore['createImmutable']>>;
-    try {
-        result = await store.createImmutable({
-            key: candidate.key,
-            bytes: candidate.bytes,
-            contentType: candidate.contentType,
-            cacheControl: candidate.cacheControl,
-        });
-    } catch (cause) {
-        if (cause instanceof PublisherError) throw cause;
-        throw new PublisherError(
-            'storage',
-            'Unable to create immutable publication candidate',
-            {
-                cause: { classification: 'delivery-store-create-failure' },
-                context: { stage: 'upload', key: candidate.key },
-            }
-        );
-    }
-    return result.status === 'created' ? 'created' : 'reused';
-}
-
 async function publishObjects(
     plan: PublicationPlan,
     store: DeliveryStore
 ): Promise<ImmutableResult[]> {
     const results: ImmutableResult[] = [];
     for (const candidate of plan.objects) {
-        results.push(await createCandidate(store, candidate));
-    }
-    // Upload completion is not trusted. Every object is read back and checked
-    // before the manifest phase begins, including create races and planned reuse.
-    for (const candidate of plan.objects) {
-        await verifyCandidate(store, candidate);
+        results.push(await publishImmutableCandidate(store, candidate));
     }
     return results;
 }
@@ -143,9 +49,7 @@ async function publishManifest(
     plan: PublicationPlan,
     store: DeliveryStore
 ): Promise<ImmutableResult> {
-    const result = await createCandidate(store, plan.manifest);
-    await verifyCandidate(store, plan.manifest);
-    return result;
+    return publishImmutableCandidate(store, plan.manifest);
 }
 
 function pointerTargetError(key: string): PublisherError {

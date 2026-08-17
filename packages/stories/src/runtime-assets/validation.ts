@@ -52,7 +52,7 @@ function toVersionNumber(version: unknown): number | undefined {
     return undefined;
 }
 
-function assertKnownVersion(
+export function assertKnownVersion(
     input: unknown,
     expectedVersion: number,
     contractName: string
@@ -122,10 +122,18 @@ function keyContainsForbiddenPart(
     return false;
 }
 
-function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
+function findForbiddenRuntimeFields(
+    input: unknown,
+    path = '$',
+    forbiddenParts: readonly string[] = FORBIDDEN_RUNTIME_KEY_PARTS
+): string[] {
     if (Array.isArray(input)) {
         return input.flatMap((item, index) =>
-            findForbiddenRuntimeFields(item, `${path}[${index}]`)
+            findForbiddenRuntimeFields(
+                item,
+                `${path}[${index}]`,
+                forbiddenParts
+            )
         );
     }
     if (typeof input !== 'object' || input === null) return [];
@@ -134,13 +142,19 @@ function findForbiddenRuntimeFields(input: unknown, path = '$'): string[] {
     for (const [key, value] of Object.entries(input)) {
         const { normalized, wordStarts } = normalizeKeyWithBoundaries(key);
         if (
-            FORBIDDEN_RUNTIME_KEY_PARTS.some(part =>
+            forbiddenParts.some(part =>
                 keyContainsForbiddenPart(normalized, wordStarts, part)
             )
         ) {
             findings.push(`${path}.${key}`);
         }
-        findings.push(...findForbiddenRuntimeFields(value, `${path}.${key}`));
+        findings.push(
+            ...findForbiddenRuntimeFields(
+                value,
+                `${path}.${key}`,
+                forbiddenParts
+            )
+        );
     }
     return findings;
 }
@@ -278,20 +292,20 @@ function isEnvironmentSpecificValue(value: string): boolean {
 // detector is NOT used here because its URL component (`isAbsoluteUrlValue`)
 // matches any `scheme:` prefix and would falsely reject label-style values
 // like `chapter:night`.
-type KnownShape = {
+export type RuntimeInputShape = {
     readonly scalars: ReadonlySet<string>;
     readonly environmentStrictScalars?: ReadonlySet<string>;
-    readonly objects: Readonly<Record<string, KnownShape>>;
-    readonly arrays: Readonly<Record<string, KnownShape>>;
+    readonly objects: Readonly<Record<string, RuntimeInputShape>>;
+    readonly arrays: Readonly<Record<string, RuntimeInputShape>>;
 };
 
-const VARIANT_SHAPE: KnownShape = {
+const VARIANT_SHAPE: RuntimeInputShape = {
     scalars: new Set(['format', 'path', 'sha256', 'byteLength']),
     objects: {},
     arrays: {},
 };
 
-const MANIFEST_SHAPE: KnownShape = {
+const MANIFEST_SHAPE: RuntimeInputShape = {
     scalars: new Set(['schemaVersion', 'storyId', 'releaseId']),
     objects: {},
     arrays: {
@@ -329,7 +343,7 @@ const MANIFEST_SHAPE: KnownShape = {
     },
 };
 
-const POINTER_SHAPE: KnownShape = {
+const POINTER_SHAPE: RuntimeInputShape = {
     scalars: new Set([
         'schemaVersion',
         'storyId',
@@ -369,7 +383,7 @@ function scanAllStringsForUrls(input: unknown, path: string): string[] {
 // nested shape. Unknown keys are fully scanned for absolute URL values.
 function findAbsoluteUrlValues(
     input: unknown,
-    shape: KnownShape,
+    shape: RuntimeInputShape,
     path = '$'
 ): string[] {
     if (typeof input === 'string') {
@@ -446,6 +460,33 @@ function findAbsoluteUrlValues(
     return findings;
 }
 
+export function assertRuntimeInputSafe(
+    input: unknown,
+    shape: RuntimeInputShape,
+    contractName: string,
+    additionalForbiddenKeyParts: readonly string[] = []
+): void {
+    const forbiddenFields = findForbiddenRuntimeFields(input, '$', [
+        ...FORBIDDEN_RUNTIME_KEY_PARTS,
+        ...additionalForbiddenKeyParts,
+    ]);
+    if (forbiddenFields.length > 0) {
+        throw new AssetResolverError(
+            'validation',
+            `${contractName} must not expose authoring or provider metadata`,
+            { details: forbiddenFields }
+        );
+    }
+    const urlFields = findAbsoluteUrlValues(input, shape);
+    if (urlFields.length > 0) {
+        throw new AssetResolverError(
+            'unsafe-path',
+            `${contractName} must not contain absolute URL values`,
+            { details: urlFields }
+        );
+    }
+}
+
 function errorCodeForZod(error: z.ZodError): AssetResolverErrorCode {
     // Classify by a fixed precedence (unsafe-path > integrity > validation) so a
     // document with several issues always reports the same code regardless of
@@ -468,7 +509,7 @@ function formatZodIssue(issue: z.ZodIssue): string {
     return path ? `${path}: ${issue.message}` : issue.message;
 }
 
-function parseSchema<T>(
+export function parseRuntimeSchema<T>(
     schema: {
         safeParse: (input: unknown) => z.SafeParseReturnType<unknown, T>;
     },
@@ -509,20 +550,29 @@ export function parseRuntimeAssetManifest(
             { details: urlFields }
         );
     }
-    return parseSchema(
+    return parseRuntimeSchema(
         RuntimeAssetManifestV1Schema,
         input,
         'runtime asset manifest'
     );
 }
 
-export function parseActiveReleasePointer(
+export function parseActiveReleasePointerWithManifestPath(
     input: unknown,
-    target: PublicationTarget = { kind: 'production' },
-    expectedStoryId: string
+    target: PublicationTarget,
+    expectedStoryId: string,
+    manifestPathFor: (
+        storyId: string,
+        releaseId: string,
+        target: PublicationTarget
+    ) => string,
+    additionalForbiddenKeyParts: readonly string[] = []
 ): ActiveReleasePointerV1 {
     assertKnownVersion(input, 1, 'active-release pointer');
-    const forbiddenFields = findForbiddenRuntimeFields(input);
+    const forbiddenFields = findForbiddenRuntimeFields(input, '$', [
+        ...FORBIDDEN_RUNTIME_KEY_PARTS,
+        ...additionalForbiddenKeyParts,
+    ]);
     if (forbiddenFields.length > 0) {
         throw new AssetResolverError(
             'validation',
@@ -538,7 +588,7 @@ export function parseActiveReleasePointer(
             { details: urlFields }
         );
     }
-    const pointer = parseSchema(
+    const pointer = parseRuntimeSchema(
         ActiveReleasePointerV1Schema,
         input,
         'active-release pointer'
@@ -556,7 +606,7 @@ export function parseActiveReleasePointer(
             `Pointer story id ${pointer.storyId} does not match requested story ${expectedStoryId}`
         );
     }
-    const expectedPath = getReleaseManifestPath(
+    const expectedPath = manifestPathFor(
         pointer.storyId,
         pointer.releaseId,
         target
@@ -570,11 +620,24 @@ export function parseActiveReleasePointer(
     return pointer;
 }
 
+export function parseActiveReleasePointer(
+    input: unknown,
+    target: PublicationTarget = { kind: 'production' },
+    expectedStoryId: string
+): ActiveReleasePointerV1 {
+    return parseActiveReleasePointerWithManifestPath(
+        input,
+        target,
+        expectedStoryId,
+        getReleaseManifestPath
+    );
+}
+
 export function parseStoryAssetReleasePlan(
     input: unknown
 ): StoryAssetReleasePlanV1 {
     assertKnownVersion(input, 1, 'story asset release plan');
-    return parseSchema(
+    return parseRuntimeSchema(
         StoryAssetReleasePlanV1Schema,
         input,
         'story asset release plan'
@@ -583,7 +646,10 @@ export function parseStoryAssetReleasePlan(
 
 export function validatePointerManifestPair(
     pointer: ActiveReleasePointerV1,
-    manifest: RuntimeAssetManifestV1,
+    manifest: {
+        readonly storyId: string;
+        readonly releaseId: string;
+    },
     actualManifestSha256: ManifestByteSha256
 ): void {
     if (pointer.storyId !== manifest.storyId) {

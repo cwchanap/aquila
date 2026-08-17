@@ -4,7 +4,7 @@ import {
     isSha256,
     qualifyAssetIdentity,
 } from './paths';
-import type { RuntimeAssetManifestV1, ReleaseContentSha256 } from './schemas';
+import type { ReleaseContentSha256, RuntimeAssetManifestV1 } from './schemas';
 
 type JsonPrimitive = string | number | boolean | null;
 export type JsonValue =
@@ -96,7 +96,7 @@ export function releaseIdFromContentSha256(
  * `manifestSha256`) produces a meaningless verdict.
  */
 export function assertReleaseIdMatchesContentSha256(
-    manifest: RuntimeAssetManifestV1,
+    manifest: { readonly releaseId: string },
     contentSha256: ReleaseContentSha256
 ): void {
     const expectedReleaseId = releaseIdFromContentSha256(contentSha256);

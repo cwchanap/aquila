@@ -49,3 +49,53 @@ bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-runt
 ## Blockers/limitations
 
 No implementation blocker remains. The first in-sandbox commit attempt could not create the shared worktree `index.lock`; the required scoped git-write escalation succeeded and produced the commit above.
+
+## Fix round 1
+
+Status: DONE
+
+The review correction stayed within Task 6. Audio omission reasons now retain their public coverage row while replacing unsafe free-form text with the fixed public reason `[redacted]`. Safe reasons continue to render unchanged. The sanitizer rejects sensitive tokens and path/filename forms anywhere in the reason, so JSON serialization and human rendering cannot expose embedded provider, prompt, compiler, candidate, source, generation, receipt, model, request, or local-path details. The duplicate `normalizedAssets` input was removed from both audio release APIs; `assets` is the sole input spelling and deterministic release construction is unchanged.
+
+RED evidence:
+
+```text
+bunx vitest run src/publisher/__tests__/report.test.ts src/publisher/__tests__/audio-runtime-release.test.ts
+```
+
+Failed 1 report test: the embedded provider/prompt/compiler-path reason was serialized verbatim instead of becoming `[redacted]`.
+
+```text
+bun --filter @aquila/infra-cloudflare typecheck
+```
+
+Failed with `TS2322: Type 'true' is not assignable to type 'false'` from the type-level regression assertion while `normalizedAssets` was still present.
+
+GREEN evidence:
+
+```text
+bunx vitest run src/publisher/__tests__/report.test.ts src/publisher/__tests__/audio-runtime-release.test.ts src/publisher/__tests__/audio-publication-plan.test.ts
+```
+
+19 tests passed across the three affected files.
+
+```text
+bun --filter @aquila/infra-cloudflare typecheck
+bun --filter @aquila/infra-cloudflare lint
+bunx prettier --check packages/infra-cloudflare/src/publisher/audio-runtime-release.ts packages/infra-cloudflare/src/publisher/audio-publication-plan.ts packages/infra-cloudflare/src/publisher/report.ts packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts packages/infra-cloudflare/src/publisher/__tests__/report.test.ts
+git diff --check
+```
+
+All passed. The final infra suite passed with 35 files and 461 tests. No storage write, pointer activation, visual behavior, or later-task module was introduced.
+
+Files changed in this correction:
+
+- `packages/infra-cloudflare/src/publisher/report.ts`
+- `packages/infra-cloudflare/src/publisher/audio-runtime-release.ts`
+- `packages/infra-cloudflare/src/publisher/audio-publication-plan.ts`
+- `packages/infra-cloudflare/src/publisher/__tests__/report.test.ts`
+- `packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts`
+- this report
+
+Correction commit: `fix: redact audio omission reasons` (final branch `HEAD`)
+
+Blockers: none.

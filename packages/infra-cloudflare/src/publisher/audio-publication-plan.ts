@@ -35,7 +35,6 @@ export interface BuildAudioPublicationPlanFromAssets {
     readonly storyId: string;
     readonly target: PublicationTarget;
     readonly assets?: readonly NormalizedAudioAsset[];
-    readonly normalizedAssets?: readonly NormalizedAudioAsset[];
     readonly coverage: readonly AudioCoverageEntryV1[];
     readonly progress?: ProgressSink;
 }
@@ -92,10 +91,7 @@ function preparedReleaseFrom(
     return buildPreparedAudioRelease({
         storyId: options.storyId,
         target: options.target,
-        ...(options.assets === undefined ? {} : { assets: options.assets }),
-        ...(options.normalizedAssets === undefined
-            ? {}
-            : { normalizedAssets: options.normalizedAssets }),
+        assets: options.assets,
         coverage: options.coverage,
     });
 }

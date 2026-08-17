@@ -68,7 +68,7 @@ const SOURCE_PROBE_ARGS = (path: string): readonly string[] => [
     '-select_streams',
     'a:0',
     '-show_entries',
-    'stream=codec_type,duration',
+    'stream=codec_type,duration:format=duration',
     '-of',
     'json',
     path,
@@ -560,5 +560,3 @@ export async function normalizeAudioAsset(
         await rm(temporaryRoot, { recursive: true, force: true });
     }
 }
-
-export const normalizeAudioSource = normalizeAudioAsset;

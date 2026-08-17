@@ -141,6 +141,48 @@ describe('normalizeAudioAsset', () => {
         expect(fixture.calls[2]?.args).not.toContain('-nostdin');
     });
 
+    it('accepts a readable source whose duration is reported at container level', async () => {
+        const fixture = successfulRunner();
+        const run: AudioProcessRunner = async (executable, args) => {
+            if (executable !== 'ffprobe') return fixture.run(executable, args);
+            const probeCalls = fixture.calls.filter(
+                call => call.executable === 'ffprobe'
+            ).length;
+            fixture.calls.push({ executable, args: [...args] });
+            if (probeCalls === 0) {
+                const hasFormatDuration = args.includes(
+                    'stream=codec_type,duration:format=duration'
+                );
+                return {
+                    exitCode: 0,
+                    stdout: new TextEncoder().encode(
+                        hasFormatDuration
+                            ? JSON.stringify({
+                                  streams: [{ codec_type: 'audio' }],
+                                  format: { duration: '1.250' },
+                              })
+                            : JSON.stringify({
+                                  streams: [{ codec_type: 'audio' }],
+                              })
+                    ),
+                    stderr: '',
+                };
+            }
+            return {
+                exitCode: 0,
+                stdout: new TextEncoder().encode(runtimeProbe()),
+                stderr: '',
+            };
+        };
+
+        const result = await normalizeAudioAsset(source, run);
+
+        expect(result.durationMs).toBe(1_250);
+        expect(fixture.calls[0]?.args).toContain(
+            'stream=codec_type,duration:format=duration'
+        );
+    });
+
     it.each([
         ['process failure', { exitCode: 1, stdout: '', stderr: 'failed' }],
         [

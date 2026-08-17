@@ -57,6 +57,15 @@ const LOCK_RETRY_DELAYS_MS = [10, 20, 40, 80, 160, 320, 640] as const;
 const LOCK_RETRY_COUNT = 100;
 const LOCK_STALE_AGE_MS = 5 * 60 * 1000;
 
+interface LockEntry {
+    readonly pid: number;
+    readonly token: string;
+}
+
+function lockFileContent(pid: number, token: string): string {
+    return JSON.stringify({ pid, token });
+}
+
 function isProcessAlive(pid: number): boolean {
     try {
         process.kill(pid, 0);
@@ -70,52 +79,118 @@ function isProcessAlive(pid: number): boolean {
     }
 }
 
-async function isLockStale(lockPath: string): Promise<boolean> {
+/**
+ * Reads the lock file and parses its ownership entry. Returns null when the
+ * lock file does not exist. Tolerates a legacy plain-PID file (token is empty
+ * in that case) so locks written by an older process can still be reclaimed.
+ */
+async function readLockEntry(lockPath: string): Promise<LockEntry | null> {
     let content: string;
     try {
         content = await readFile(lockPath, 'utf8');
     } catch (error) {
-        if (isNotFound(error)) return false;
+        if (isNotFound(error)) return null;
         throw error;
     }
-    const pid = Number.parseInt(content.trim(), 10);
+    const trimmed = content.trim();
+    if (trimmed.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(trimmed) as unknown;
+            if (
+                parsed !== null &&
+                typeof parsed === 'object' &&
+                'pid' in parsed &&
+                'token' in parsed
+            ) {
+                const { pid, token } = parsed as {
+                    pid: unknown;
+                    token: unknown;
+                };
+                if (
+                    Number.isSafeInteger(pid) &&
+                    pid > 0 &&
+                    typeof token === 'string'
+                ) {
+                    return { pid, token };
+                }
+            }
+        } catch {
+            // Fall through to legacy plain-PID parse below.
+        }
+    }
+    const pid = Number.parseInt(trimmed, 10);
     if (Number.isSafeInteger(pid) && pid > 0) {
-        return !isProcessAlive(pid);
+        return { pid, token: '' };
     }
-    let info;
-    try {
-        info = await stat(lockPath);
-    } catch (error) {
-        if (isNotFound(error)) return false;
-        throw error;
+    return null;
+}
+
+/**
+ * Determines whether a parsed lock entry is stale: the owner PID is no longer
+ * alive, or (when the PID cannot be probed) the lock file is older than
+ * LOCK_STALE_AGE_MS. The lockPath is only touched for the mtime fallback.
+ */
+async function isLockEntryStale(
+    lockPath: string,
+    entry: LockEntry
+): Promise<boolean> {
+    if (isProcessAlive(entry.pid)) return false;
+    // PID is dead. For entries with no token (legacy), confirm via mtime so a
+    // recycled PID that happens to match is not falsely treated as stale.
+    if (entry.token === '') {
+        let info;
+        try {
+            info = await stat(lockPath);
+        } catch (error) {
+            if (isNotFound(error)) return false;
+            throw error;
+        }
+        return Date.now() - info.mtimeMs > LOCK_STALE_AGE_MS;
     }
-    return Date.now() - info.mtimeMs > LOCK_STALE_AGE_MS;
+    return true;
 }
 
 /**
  * Acquires a story-local, cross-process lock guarding the selection.json
- * read-modify-write. Returns a release function that removes the lock file.
- * Bounded retries ensure a held lock eventually surfaces as an error rather
- * than hanging forever. A lock left behind by a crashed process is reclaimed
- * when its owner PID is no longer alive (or, if the PID is unparseable, after
- * the lock file exceeds LOCK_STALE_AGE_MS in age).
+ * read-modify-write. Returns a release function that removes the lock file,
+ * but only if it still carries this owner's token. Bounded retries ensure a
+ * held lock eventually surfaces as an error rather than hanging forever. A
+ * lock left behind by a crashed process is reclaimed when its owner PID is no
+ * longer alive (or, for a legacy PID-only file, after the lock file exceeds
+ * LOCK_STALE_AGE_MS in age). Before reclaiming or releasing, the lock file is
+ * re-read and its token verified, so a lock that another owner has already
+ * replaced is never deleted.
  */
 async function acquireSelectionLock(
     lockPath: string
 ): Promise<() => Promise<void>> {
+    const token = randomUUID();
+    const ownerContent = lockFileContent(process.pid, token);
     for (let attempt = 0; attempt <= LOCK_RETRY_COUNT; attempt += 1) {
         try {
-            await writeFile(lockPath, String(process.pid), { flag: 'wx' });
+            await writeFile(lockPath, ownerContent, { flag: 'wx' });
             return async () => {
-                await rm(lockPath, { force: true });
+                const current = await readLockEntry(lockPath);
+                if (current !== null && current.token === token) {
+                    await rm(lockPath, { force: true });
+                }
             };
         } catch (error) {
             if (!isEexist(error)) {
                 throw error;
             }
         }
-        if (await isLockStale(lockPath)) {
-            await rm(lockPath, { force: true });
+        const staleEntry = await readLockEntry(lockPath);
+        if (
+            staleEntry !== null &&
+            (await isLockEntryStale(lockPath, staleEntry))
+        ) {
+            // Re-verify the lock still carries the same token before removing
+            // it, so we never delete a lock another owner has replaced.
+            const current = await readLockEntry(lockPath);
+            if (current !== null && current.token === staleEntry.token) {
+                await rm(lockPath, { force: true });
+            }
             continue;
         }
         if (attempt === LOCK_RETRY_COUNT) {

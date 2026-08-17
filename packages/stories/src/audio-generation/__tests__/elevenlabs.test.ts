@@ -330,4 +330,46 @@ describe('ElevenLabs audio provider', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(sleep).not.toHaveBeenCalled();
     });
+
+    it('converts an abort during response body consumption into a network timeout error', async () => {
+        const fetchMock = vi.fn((_url, init) => {
+            const signal = (init as RequestInit & { signal?: AbortSignal })
+                .signal;
+            const body = new ReadableStream({
+                start(controller) {
+                    signal?.addEventListener('abort', () => {
+                        controller.error(
+                            new DOMException(
+                                'the operation was aborted',
+                                'AbortError'
+                            )
+                        );
+                    });
+                },
+            });
+            return Promise.resolve(
+                new Response(body, {
+                    status: 200,
+                    headers: { 'content-type': 'audio/mpeg' },
+                })
+            );
+        });
+        const sleep = vi.fn(async () => undefined);
+        const provider = createElevenLabsAudioProvider({
+            fetch: fetchMock,
+            sleep,
+            requestTimeoutMs: 5,
+        });
+
+        const error = await provider
+            .generate(sfxSpec(), 'test-secret')
+            .catch(cause => cause);
+
+        expect(error).toBeInstanceOf(ElevenLabsProviderError);
+        expect(error).toMatchObject({ kind: 'network', status: null });
+        expect(error.message).toContain('timed out');
+        expect(error.message).toContain('audio body');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(sleep).not.toHaveBeenCalled();
+    });
 });

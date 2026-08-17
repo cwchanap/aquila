@@ -420,7 +420,10 @@ describe('audio selection file contract', () => {
         );
         // Plant a stale lock owned by a PID that is guaranteed not to exist.
         // 0x7FFFFFFF is the max signed 32-bit int; no real process has it.
-        await writeFile(join(root, 'selection.json.lock'), String(0x7fffffff));
+        await writeFile(
+            join(root, 'selection.json.lock'),
+            JSON.stringify({ pid: 0x7fffffff, token: 'stale-owner' })
+        );
 
         await expect(
             selectAudioCandidate(store, plan(asset), asset.key, 'candidate-001')

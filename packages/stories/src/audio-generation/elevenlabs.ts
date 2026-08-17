@@ -144,89 +144,96 @@ export function createElevenLabsAudioProvider(
                     () => controller.abort(),
                     requestTimeoutMs
                 );
-                let response: Response;
                 try {
-                    response = await fetchImpl(request.url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'xi-api-key': apiKey,
-                        },
-                        body,
-                        signal: controller.signal,
-                    });
-                } catch (error) {
+                    let response: Response;
+                    try {
+                        response = await fetchImpl(request.url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'xi-api-key': apiKey,
+                            },
+                            body,
+                            signal: controller.signal,
+                        });
+                    } catch (error) {
+                        throw new ElevenLabsProviderError(
+                            'network',
+                            controller.signal.aborted
+                                ? `ElevenLabs request timed out after ${requestTimeoutMs}ms`
+                                : `ElevenLabs request failed: ${errorMessage(error, apiKey)}`
+                        );
+                    }
+
+                    if (response.status >= 200 && response.status <= 299) {
+                        const rawContentType =
+                            response.headers.get('content-type');
+                        const audio = audioFormat(rawContentType);
+                        if (audio === null) {
+                            const displayedContentType =
+                                rawContentType ?? 'missing';
+                            throw new ElevenLabsProviderError(
+                                'invalid-response',
+                                `ElevenLabs returned HTTP ${response.status} with non-audio content-type ${redact(displayedContentType, apiKey)}`,
+                                response.status,
+                                redact(rawContentType ?? '', apiKey) || null
+                            );
+                        }
+
+                        let bytes: Uint8Array;
+                        try {
+                            bytes = new Uint8Array(
+                                await response.arrayBuffer()
+                            );
+                        } catch (error) {
+                            throw new ElevenLabsProviderError(
+                                'network',
+                                controller.signal.aborted
+                                    ? `ElevenLabs request timed out after ${requestTimeoutMs}ms while reading audio body`
+                                    : `Reading ElevenLabs audio failed: ${errorMessage(error, apiKey)}`
+                            );
+                        }
+                        if (bytes.byteLength === 0) {
+                            throw new ElevenLabsProviderError(
+                                'invalid-response',
+                                `ElevenLabs returned HTTP ${response.status} with an empty audio body`,
+                                response.status,
+                                redact(rawContentType ?? '', apiKey) || null
+                            );
+                        }
+
+                        return {
+                            bytes,
+                            mediaType: audio.mediaType,
+                            format: audio.format,
+                            providerMetadata: approvedResponseHeaders(
+                                response.headers,
+                                apiKey
+                            ),
+                            intendedDurationMs: spec.durationMs,
+                            actualDurationMs: null,
+                        };
+                    }
+
+                    const retryable = isRetryableStatus(response.status);
+                    if (retryable && attempt < RETRY_DELAYS_MS.length) {
+                        await sleep(RETRY_DELAYS_MS[attempt]);
+                        continue;
+                    }
+
+                    const rawContentType = response.headers.get('content-type');
+                    const displayedContentType = rawContentType
+                        ? ` (${redact(rawContentType, apiKey)})`
+                        : '';
                     throw new ElevenLabsProviderError(
-                        'network',
-                        controller.signal.aborted
-                            ? `ElevenLabs request timed out after ${requestTimeoutMs}ms`
-                            : `ElevenLabs request failed: ${errorMessage(error, apiKey)}`
+                        retryable ? 'retryable-status' : 'non-retryable-status',
+                        `ElevenLabs returned HTTP ${response.status}${displayedContentType}`,
+                        response.status,
+                        redact(rawContentType ?? '', apiKey) || null
                     );
                 } finally {
                     clearTimeout(timeoutId);
                 }
-
-                if (response.status >= 200 && response.status <= 299) {
-                    const rawContentType = response.headers.get('content-type');
-                    const audio = audioFormat(rawContentType);
-                    if (audio === null) {
-                        const displayedContentType =
-                            rawContentType ?? 'missing';
-                        throw new ElevenLabsProviderError(
-                            'invalid-response',
-                            `ElevenLabs returned HTTP ${response.status} with non-audio content-type ${redact(displayedContentType, apiKey)}`,
-                            response.status,
-                            redact(rawContentType ?? '', apiKey) || null
-                        );
-                    }
-
-                    let bytes: Uint8Array;
-                    try {
-                        bytes = new Uint8Array(await response.arrayBuffer());
-                    } catch (error) {
-                        throw new ElevenLabsProviderError(
-                            'network',
-                            `Reading ElevenLabs audio failed: ${errorMessage(error, apiKey)}`
-                        );
-                    }
-                    if (bytes.byteLength === 0) {
-                        throw new ElevenLabsProviderError(
-                            'invalid-response',
-                            `ElevenLabs returned HTTP ${response.status} with an empty audio body`,
-                            response.status,
-                            redact(rawContentType ?? '', apiKey) || null
-                        );
-                    }
-
-                    return {
-                        bytes,
-                        mediaType: audio.mediaType,
-                        format: audio.format,
-                        providerMetadata: approvedResponseHeaders(
-                            response.headers,
-                            apiKey
-                        ),
-                        intendedDurationMs: spec.durationMs,
-                        actualDurationMs: null,
-                    };
-                }
-
-                const retryable = isRetryableStatus(response.status);
-                if (retryable && attempt < RETRY_DELAYS_MS.length) {
-                    await sleep(RETRY_DELAYS_MS[attempt]);
-                    continue;
-                }
-
-                const rawContentType = response.headers.get('content-type');
-                const displayedContentType = rawContentType
-                    ? ` (${redact(rawContentType, apiKey)})`
-                    : '';
-                throw new ElevenLabsProviderError(
-                    retryable ? 'retryable-status' : 'non-retryable-status',
-                    `ElevenLabs returned HTTP ${response.status}${displayedContentType}`,
-                    response.status,
-                    redact(rawContentType ?? '', apiKey) || null
-                );
             }
 
             throw new Error('Unreachable ElevenLabs retry state');

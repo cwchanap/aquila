@@ -4,9 +4,12 @@ import type {
     ObjectContentSha256,
     PublicationTarget,
     ReleaseContentSha256,
+    RuntimeAudioManifestV1,
     RuntimeAssetManifestV1,
     StoryAssetCoverageReport,
 } from '@aquila/stories/runtime-assets';
+import type { NormalizedAudioAsset } from './audio-encoder';
+import type { AudioCoverageEntryV1 } from './audio-source';
 
 export type PublisherCommandName =
     | 'plan'
@@ -100,6 +103,18 @@ export interface PreparedRelease {
     manifestBytes: Uint8Array;
     encodedAssets: EncodedAsset[];
     coverage: StoryAssetCoverageReport;
+}
+
+export interface PreparedAudioRelease {
+    readonly storyId: string;
+    readonly target: PublicationTarget;
+    readonly releaseId: `sha256-${string}`;
+    readonly releaseContentSha256: ReleaseContentSha256;
+    readonly manifest: RuntimeAudioManifestV1;
+    readonly manifestSha256: ManifestByteSha256;
+    readonly manifestBytes: Uint8Array;
+    readonly assets: readonly NormalizedAudioAsset[];
+    readonly coverage: readonly AudioCoverageEntryV1[];
 }
 
 export interface PublisherProgressEvent {

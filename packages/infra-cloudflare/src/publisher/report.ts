@@ -1,6 +1,7 @@
 import {
     isPreviewId,
     isReleaseId,
+    isRuntimePointerKey,
     isSafeRelativePath,
     isSha256,
     isStoryId,
@@ -16,6 +17,7 @@ import type {
     PublisherDiagnosticV1,
     PublisherProgressEvent,
 } from './types';
+import type { AudioCoverageEntryV1 } from './audio-source';
 
 export type { PublisherDiagnosticV1 } from './types';
 
@@ -27,10 +29,12 @@ export interface PublisherReportV1 {
     status: 'success' | 'no-op' | 'failed' | 'conflict';
     storyId: string;
     target: PublicationTarget;
+    media?: 'audio';
     releaseId?: string;
     manifestSha256?: string;
     encoderFingerprint?: EncoderFingerprintV1;
     coverage?: StoryAssetCoverageReport;
+    audioCoverage?: readonly AudioCoverageEntryV1[];
     counts: PublisherCountsV1;
     actions: PublisherActionV1[];
     warnings: PublisherDiagnosticV1[];
@@ -178,7 +182,10 @@ function safeIdentity(value: string | undefined): string | undefined {
     if (separator <= 0) return undefined;
     const type = value.slice(0, separator);
     const key = value.slice(separator + 1);
-    return (type === 'background' || type === 'portrait') &&
+    return (type === 'background' ||
+        type === 'portrait' ||
+        type === 'sfx' ||
+        type === 'bgm') &&
         isSafeLogicalKey(key)
         ? `${type}:${key}`
         : undefined;
@@ -371,7 +378,7 @@ function isObjectPath(key: string): boolean {
     ) {
         return false;
     }
-    const match = /^([a-f0-9]{64})\.(webp|avif)$/.exec(segments[2]!);
+    const match = /^([a-f0-9]{64})\.(webp|avif|mp3)$/.exec(segments[2]!);
     return match !== null && isSha256(match[1]!);
 }
 
@@ -385,6 +392,32 @@ function isReleaseManifestPath(key: string): boolean {
         segments[3] === 'releases' &&
         isReleaseId(segments[4]!) &&
         segments[5] === 'runtime-manifest.json'
+    ) {
+        return true;
+    }
+    if (
+        segments.length === 7 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'audio' &&
+        segments[2] === 'stories' &&
+        isStoryId(segments[3]!) &&
+        segments[4] === 'releases' &&
+        isReleaseId(segments[5]!) &&
+        segments[6] === 'runtime-manifest.json'
+    ) {
+        return true;
+    }
+    if (
+        segments.length === 9 &&
+        segments[0] === 'vn' &&
+        segments[1] === 'previews' &&
+        isPreviewId(segments[2]!) &&
+        segments[3] === 'audio' &&
+        segments[4] === 'stories' &&
+        isStoryId(segments[5]!) &&
+        segments[6] === 'releases' &&
+        isReleaseId(segments[7]!) &&
+        segments[8] === 'runtime-manifest.json'
     ) {
         return true;
     }
@@ -402,25 +435,7 @@ function isReleaseManifestPath(key: string): boolean {
 }
 
 function isCurrentPointerPath(key: string): boolean {
-    const segments = key.split('/');
-    if (
-        segments.length === 4 &&
-        segments[0] === 'vn' &&
-        segments[1] === 'stories' &&
-        isStoryId(segments[2]!) &&
-        segments[3] === 'current.json'
-    ) {
-        return true;
-    }
-    return (
-        segments.length === 6 &&
-        segments[0] === 'vn' &&
-        segments[1] === 'previews' &&
-        isPreviewId(segments[2]!) &&
-        segments[3] === 'stories' &&
-        isStoryId(segments[4]!) &&
-        segments[5] === 'current.json'
-    );
+    return isRuntimePointerKey(key);
 }
 
 type CoverageCounts = StoryAssetCoverageReport['totals'];
@@ -488,6 +503,65 @@ function sanitizeCoverage(
     };
 }
 
+function isSafeAudioReason(reason: string): boolean {
+    const trimmed = reason.trim();
+    return (
+        trimmed.length > 0 &&
+        trimmed.length <= 500 &&
+        !ABSOLUTE_PATH_PREFIX_RE.test(trimmed) &&
+        !WINDOWS_DRIVE_PATH_RE.test(trimmed) &&
+        !URL_WITH_AUTHORITY_RE.test(trimmed) &&
+        !FILE_URL_RE.test(trimmed) &&
+        !/\b(?:candidateId|sourcePath|sourceFilename|generationRoot|receipt)\b/i.test(
+            trimmed
+        ) &&
+        !/\bcandidate[-_][a-z0-9]+\b/i.test(trimmed) &&
+        !/\b[^\s/]+\.(?:mp3|wav|ogg|flac)\b/i.test(trimmed)
+    );
+}
+
+function sanitizeAudioCoverage(
+    coverage: readonly AudioCoverageEntryV1[]
+): AudioCoverageEntryV1[] {
+    const sanitized: AudioCoverageEntryV1[] = [];
+    for (const entry of coverage) {
+        if (
+            (entry.type !== 'sfx' && entry.type !== 'bgm') ||
+            !isSafeLogicalKey(entry.key) ||
+            !Number.isSafeInteger(entry.usageCount) ||
+            entry.usageCount < 0
+        ) {
+            continue;
+        }
+        if (entry.disposition === 'included') {
+            sanitized.push({
+                type: entry.type,
+                key: entry.key,
+                usageCount: entry.usageCount,
+                disposition: 'included',
+            });
+            continue;
+        }
+        if (
+            entry.disposition !== 'omitted' ||
+            typeof entry.reason !== 'string' ||
+            !isSafeAudioReason(entry.reason)
+        ) {
+            continue;
+        }
+        sanitized.push({
+            type: entry.type,
+            key: entry.key,
+            usageCount: entry.usageCount,
+            disposition: 'omitted',
+            reason: entry.reason.trim(),
+        });
+    }
+    return sanitized.sort((left, right) =>
+        compareText(`${left.type}:${left.key}`, `${right.type}:${right.key}`)
+    );
+}
+
 function sanitizeTarget(target: PublicationTarget): PublicationTarget {
     return target.kind === 'production'
         ? { kind: 'production' }
@@ -549,6 +623,7 @@ function publicReport(report: PublisherReportV1): PublisherReportV1 {
             ? report.storyId
             : '[redacted-story]',
         target: sanitizeTarget(report.target),
+        ...(report.media === 'audio' ? { media: 'audio' as const } : {}),
         ...(report.releaseId === undefined || !isReleaseId(report.releaseId)
             ? {}
             : { releaseId: report.releaseId }),
@@ -566,6 +641,9 @@ function publicReport(report: PublisherReportV1): PublisherReportV1 {
         ...(report.coverage === undefined
             ? {}
             : { coverage: sanitizeCoverage(report.coverage) }),
+        ...(report.media === 'audio' && report.audioCoverage !== undefined
+            ? { audioCoverage: sanitizeAudioCoverage(report.audioCoverage) }
+            : {}),
         counts: {
             included: report.counts.included,
             omitted: report.counts.omitted,
@@ -612,6 +690,7 @@ export function renderHumanReport(report: PublisherReportV1): string {
         `status: ${safe.status}`,
         `story: ${safe.storyId}`,
     ];
+    if (safe.media === 'audio') lines.push('media: audio');
     if (safe.releaseId !== undefined) lines.push(`release: ${safe.releaseId}`);
     lines.push(
         `objects: ${safe.counts.objectsCreated} create, ${safe.counts.objectsReused} reuse`,

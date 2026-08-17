@@ -40,6 +40,81 @@ function report(
 }
 
 describe('publisher reports', () => {
+    it('serializes audio coverage without exposing internal generation metadata', () => {
+        const audio = report() as PublisherReportV1 & {
+            media: 'audio';
+            audioCoverage: unknown;
+            candidateId: string;
+            generationRoot: string;
+            sourceFilename: string;
+            sourcePath: string;
+        };
+        audio.media = 'audio';
+        audio.candidateId = 'candidate-999';
+        audio.generationRoot = '/tmp/SECRET-USAGE-PATH/generation';
+        audio.sourceFilename = 'candidate-999.mp3';
+        audio.sourcePath = '/tmp/SECRET-USAGE-PATH/raw/source.wav';
+        (audio as unknown as { audioCoverage: unknown }).audioCoverage = [
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 2,
+                disposition: 'included',
+                candidateId: 'candidate-999',
+                sourceFilename: 'candidate-999.mp3',
+                sourcePath: '/tmp/SECRET-USAGE-PATH/raw/source.wav',
+                receipt: 'receipt.json',
+            },
+            {
+                type: 'bgm',
+                key: 'dawn-apartment',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: 'Defer to the next audio pass',
+                generationRoot: '/tmp/SECRET-USAGE-PATH',
+            },
+        ];
+
+        const json = renderJsonReport(audio);
+        const human = renderHumanReport(audio);
+        const parsed = JSON.parse(json) as Record<string, unknown>;
+
+        expect(parsed.media).toBe('audio');
+        expect(parsed.audioCoverage).toEqual([
+            {
+                type: 'bgm',
+                key: 'dawn-apartment',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: 'Defer to the next audio pass',
+            },
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 2,
+                disposition: 'included',
+            },
+        ]);
+        for (const sentinel of [
+            'candidate-999',
+            '/tmp/SECRET-USAGE-PATH',
+            'sourceFilename',
+            'sourcePath',
+            'generationRoot',
+            'receipt',
+        ]) {
+            expect(`${json}${human}`).not.toContain(sentinel);
+        }
+
+        const visual = report();
+        (visual as unknown as { media: string }).media = 'visual';
+        (visual as unknown as { audioCoverage: unknown }).audioCoverage =
+            audio.audioCoverage;
+        const visualJson = renderJsonReport(visual);
+        expect(visualJson).not.toContain('"media":"visual"');
+        expect(visualJson).not.toContain('audioCoverage');
+    });
+
     it('supports every public publisher command and distinct final statuses', () => {
         const commands = [
             'plan',

@@ -3,15 +3,22 @@ import { parseArgs, type ParseArgsConfig } from 'node:util';
 import {
     assertReleaseIdMatchesContentSha256,
     assertSha256,
+    canonicalAudioReleaseContent,
     canonicalReleaseContent,
+    getAudioCurrentPointerPath,
+    getAudioObjectPath,
+    getAudioReleaseManifestPath,
     getCurrentPointerPath,
     getObjectPath,
     getReleaseManifestPath,
     isPreviewId,
     isReleaseId,
+    isSafeRelativePath,
     isSha256,
     isStoryId,
+    parseAudioActiveReleasePointer,
     parseActiveReleasePointer,
+    parseRuntimeAudioManifest,
     parseRuntimeAssetManifest,
     validatePointerManifestPair,
     type ActiveReleasePointerV1,
@@ -19,6 +26,7 @@ import {
     type ManifestByteSha256,
     type PublicationTarget,
     type ReleaseContentSha256,
+    type RuntimeAudioManifestV1,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
 import {
@@ -47,9 +55,10 @@ export const ORIGIN = 'https://aquila.cwchanap.dev';
 // R2 API, and is documented as a manual acceptance step in the runbook.
 const SOURCE_PROBE_KEY =
     'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png';
-const MIME_TYPES: Record<AssetFormat, string> = {
+const MIME_TYPES: Record<AssetFormat | 'mp3', string> = {
     webp: 'image/webp',
     avif: 'image/avif',
+    mp3: 'audio/mpeg',
 };
 const CACHE_HIT_ATTEMPTS = 4;
 const CACHE_HIT_DELAY_MS = 1000;
@@ -188,6 +197,8 @@ async function request(
 
 type JsonDocument = { response: Response; body: unknown; text: string };
 
+type PublicObjectFormat = AssetFormat | 'mp3';
+
 async function requireJsonDocument(
     url: string,
     check: string,
@@ -234,7 +245,7 @@ function named(
 async function checkObject(
     base: string,
     objectPath: string,
-    format: AssetFormat,
+    format: PublicObjectFormat,
     variant: ManifestVariant,
     label: string,
     origin: string,
@@ -347,14 +358,15 @@ async function checkCacheHit(
 
 async function checkSourceKeyAbsentFromDelivery(
     base: string,
+    key: string,
     fetchImpl: typeof fetch
 ): Promise<CheckResult> {
-    const outcome = await request(`${base}/${SOURCE_PROBE_KEY}`, fetchImpl);
+    const outcome = await request(`${base}/${key}`, fetchImpl);
     if (!outcome.ok) {
         return {
             name: 'source key absent from delivery bucket',
             ok: false,
-            detail: `GET ${SOURCE_PROBE_KEY} failed: ${outcome.detail}`,
+            detail: `GET ${key} failed: ${outcome.detail}`,
         };
     }
     const { status } = outcome.response;
@@ -364,7 +376,7 @@ async function checkSourceKeyAbsentFromDelivery(
     return {
         name: 'source key absent from delivery bucket',
         ok: status === 404,
-        detail: `HTTP ${status} for ${SOURCE_PROBE_KEY} on the delivery host (expected 404)`,
+        detail: `HTTP ${status} for ${key} on the delivery host (expected 404)`,
     };
 }
 
@@ -388,6 +400,9 @@ function checkForbiddenKeys(
  * pointed at. Without it the run is in active mode and derives release identity
  * from `current.json`, exactly as the no-argument CLI invocation always has.
  */
+type VerifyMedia = 'visual' | 'audio';
+type PublicManifest = RuntimeAssetManifestV1 | RuntimeAudioManifestV1;
+
 export type PublicVerifyInput = {
     storyId: string;
     target: PublicationTarget;
@@ -400,6 +415,8 @@ export type PublicVerifyInput = {
     browserOrigin?: URL;
     releaseId?: string; // candidate mode when present
     expectedManifestSha256?: ManifestByteSha256;
+    media?: VerifyMedia;
+    archiveProbeKeys?: readonly string[];
 };
 
 export type PublicVerifyOptions = {
@@ -427,6 +444,57 @@ function assertSafeAssetBaseUrl(url: URL): void {
     if (url.username !== '' || url.password !== '') {
         throw new Error('--asset-base-url must not carry credentials');
     }
+}
+
+function mediaFor(input: PublicVerifyInput): VerifyMedia {
+    return input.media ?? 'visual';
+}
+
+function currentPointerPathFor(
+    media: VerifyMedia,
+    storyId: string,
+    target: PublicationTarget
+): string {
+    return media === 'audio'
+        ? getAudioCurrentPointerPath(storyId, target)
+        : getCurrentPointerPath(storyId, target);
+}
+
+function manifestPathFor(
+    media: VerifyMedia,
+    storyId: string,
+    releaseId: string,
+    target: PublicationTarget
+): string {
+    return media === 'audio'
+        ? getAudioReleaseManifestPath(storyId, releaseId, target)
+        : getReleaseManifestPath(storyId, releaseId, target);
+}
+
+function parsePointerFor(
+    media: VerifyMedia,
+    input: unknown,
+    target: PublicationTarget,
+    storyId: string
+): ActiveReleasePointerV1 {
+    return media === 'audio'
+        ? parseAudioActiveReleasePointer(input, target, storyId)
+        : parseActiveReleasePointer(input, target, storyId);
+}
+
+function parseManifestFor(media: VerifyMedia, input: unknown): PublicManifest {
+    return media === 'audio'
+        ? parseRuntimeAudioManifest(input)
+        : parseRuntimeAssetManifest(input);
+}
+
+function canonicalReleaseContentFor(
+    media: VerifyMedia,
+    manifest: PublicManifest
+): string {
+    return media === 'audio'
+        ? canonicalAudioReleaseContent(manifest as RuntimeAudioManifestV1)
+        : canonicalReleaseContent(manifest as RuntimeAssetManifestV1);
 }
 
 /**
@@ -457,7 +525,7 @@ interface ResolvedManifestContext {
      * manifest declares the requested release.
      */
     integrityCheck: (
-        parsed: RuntimeAssetManifestV1,
+        parsed: PublicManifest,
         manifestByteDigest: ManifestByteSha256
     ) => void;
     /**
@@ -481,11 +549,13 @@ async function runChecksForInput(
     assertSafeAssetBaseUrl(input.assetBaseUrl);
     const base = input.assetBaseUrl.toString().replace(/\/+$/, '');
     const origin = (input.browserOrigin ?? new URL(ORIGIN)).toString();
+    const media = mediaFor(input);
     if (input.releaseId === undefined) {
-        await runActiveChecks(input, base, origin, results, fetchImpl);
+        await runActiveChecks(input, media, base, origin, results, fetchImpl);
     } else {
         await runCandidateChecks(
             input,
+            media,
             input.releaseId,
             base,
             origin,
@@ -502,13 +572,14 @@ async function runChecksForInput(
  */
 async function runActiveChecks(
     input: PublicVerifyInput,
+    media: VerifyMedia,
     base: string,
     origin: string,
     results: CheckResult[],
     fetchImpl: typeof fetch
 ): Promise<void> {
     const { storyId, target } = input;
-    const pointerPath = getCurrentPointerPath(storyId, target);
+    const pointerPath = currentPointerPathFor(media, storyId, target);
     const pointer = await requireJsonDocument(
         `${base}/${pointerPath}`,
         'pointer fetch',
@@ -572,11 +643,7 @@ async function runActiveChecks(
     // a tampered pointer carrying a valid first field could pass.
     let pointerParsed: ActiveReleasePointerV1;
     try {
-        pointerParsed = parseActiveReleasePointer(
-            pointer.body,
-            target,
-            storyId
-        );
+        pointerParsed = parsePointerFor(media, pointer.body, target, storyId);
         results.push({
             name: 'pointer contract',
             ok: true,
@@ -599,7 +666,8 @@ async function runActiveChecks(
     // agreement a runtime client depends on.
     let manifestPath: string;
     try {
-        manifestPath = getReleaseManifestPath(
+        manifestPath = manifestPathFor(
+            media,
             storyId,
             pointerParsed.releaseId,
             target
@@ -671,6 +739,7 @@ async function runActiveChecks(
  */
 async function runCandidateChecks(
     input: PublicVerifyInput,
+    media: VerifyMedia,
     releaseId: string,
     base: string,
     origin: string,
@@ -680,7 +749,7 @@ async function runCandidateChecks(
     const { storyId, target } = input;
     let manifestPath: string;
     try {
-        manifestPath = getReleaseManifestPath(storyId, releaseId, target);
+        manifestPath = manifestPathFor(media, storyId, releaseId, target);
     } catch (error) {
         throw new CheckAborted(
             'releaseId',
@@ -716,6 +785,163 @@ async function runCandidateChecks(
     );
 }
 
+async function checkAudioRange(
+    base: string,
+    objectPath: string,
+    fullLength: number,
+    label: string,
+    origin: string,
+    fetchImpl: typeof fetch,
+    results: CheckResult[]
+): Promise<void> {
+    const name = `mp3 ${label} range`;
+    const outcome = await request(`${base}/${objectPath}`, fetchImpl, {
+        origin,
+        Range: 'bytes=0-1023',
+    });
+    if (!outcome.ok) {
+        results.push({
+            name,
+            ok: false,
+            detail: `GET ${objectPath} with Range bytes=0-1023 failed: ${outcome.detail}`,
+        });
+        return;
+    }
+    if (outcome.response.status !== 206) {
+        results.push({
+            name,
+            ok: false,
+            detail: `Range response returned HTTP ${outcome.response.status} (expected 206)`,
+        });
+        return;
+    }
+
+    let bytes: ArrayBuffer;
+    try {
+        bytes = await outcome.response.arrayBuffer();
+    } catch (error) {
+        results.push({
+            name,
+            ok: false,
+            detail: `reading ${objectPath} Range body failed: ${describeError(error)}`,
+        });
+        return;
+    }
+    const expectedContentRange = `bytes 0-1023/${fullLength}`;
+    const actualContentRange =
+        outcome.response.headers.get('content-range') ?? '<missing>';
+    const bodyLengthOk = bytes.byteLength === 1024;
+    const contentRangeOk = actualContentRange === expectedContentRange;
+    results.push({
+        name,
+        ok: bodyLengthOk && contentRangeOk,
+        detail: `HTTP 206; body is ${bytes.byteLength} bytes (expected 1024); Content-Range: ${actualContentRange} (expected ${expectedContentRange})`,
+    });
+}
+
+async function runAudioObjectChecks(
+    manifest: RuntimeAudioManifestV1,
+    manifestPath: string,
+    base: string,
+    origin: string,
+    fetchImpl: typeof fetch,
+    results: CheckResult[]
+): Promise<string | null> {
+    const verifiedObjects = new Map<
+        string,
+        { byteLength: number; path: string }
+    >();
+    let cacheProbePath: string | null = null;
+    let rangeChecked = false;
+
+    for (const [index, asset] of manifest.assets.entries()) {
+        const label = asset.sha256.slice(0, 16);
+        let objectPath: string;
+        try {
+            objectPath = getAudioObjectPath(
+                assertSha256<'object-content'>(asset.sha256)
+            );
+        } catch (error) {
+            results.push({
+                name: `mp3 ${label} object`,
+                ok: false,
+                detail: `assets.${index} mp3 sha256 ${asset.sha256} is unusable: ${describeError(error)}`,
+            });
+            continue;
+        }
+
+        results.push({
+            name: `mp3 ${label} object path is content-addressed`,
+            ok: asset.path === objectPath,
+            detail: `path: ${asset.path} (expected ${objectPath})`,
+        });
+
+        const dedupeKey = `mp3:${asset.sha256}`;
+        const prior = verifiedObjects.get(dedupeKey);
+        if (prior !== undefined) {
+            const conflicts: string[] = [];
+            if (prior.byteLength !== asset.byteLength) {
+                conflicts.push(
+                    `byteLength ${asset.byteLength} (was ${prior.byteLength})`
+                );
+            }
+            if (prior.path !== asset.path) {
+                conflicts.push(`path ${asset.path} (was ${prior.path})`);
+            }
+            results.push({
+                name: `mp3 ${label} object reference consistent`,
+                ok: conflicts.length === 0,
+                detail:
+                    conflicts.length === 0
+                        ? `assets.${index} agrees with the first reference to ${asset.sha256}`
+                        : `assets.${index} disagrees with the first reference to ${asset.sha256}: ${conflicts.join(', ')}`,
+            });
+            continue;
+        }
+        verifiedObjects.set(dedupeKey, {
+            byteLength: asset.byteLength,
+            path: asset.path,
+        });
+        cacheProbePath ??= objectPath;
+
+        await checkObject(
+            base,
+            objectPath,
+            'mp3',
+            {
+                path: asset.path,
+                sha256: asset.sha256,
+                byteLength: asset.byteLength,
+            },
+            label,
+            origin,
+            fetchImpl,
+            results
+        );
+        if (!rangeChecked && asset.byteLength > 1024) {
+            rangeChecked = true;
+            await checkAudioRange(
+                base,
+                objectPath,
+                asset.byteLength,
+                label,
+                origin,
+                fetchImpl,
+                results
+            );
+        }
+    }
+
+    if (manifest.assets.length === 0) {
+        results.push({
+            name: 'mp3 object',
+            ok: false,
+            detail: `no MP3 references among 0 asset(s) in ${manifestPath}`,
+        });
+    }
+    return cacheProbePath;
+}
+
 /**
  * The checks shared by both modes, from the manifest fetch onward. The pointer
  * section (active mode only) resolves the context; everything after the
@@ -733,6 +959,7 @@ async function runChecksForManifest(
     fetchImpl: typeof fetch
 ): Promise<void> {
     const { manifestPath } = resolved;
+    const media = mediaFor(input);
     const manifest = await requireJsonDocument(
         `${base}/${manifestPath}`,
         'manifest fetch',
@@ -821,9 +1048,9 @@ async function runChecksForManifest(
     // canonical manifest content. These are the integrity checks that make the
     // verifier's verdict match the reader's: a release the reader rejects
     // cannot pass the verifier.
-    let manifestParsed: RuntimeAssetManifestV1;
+    let manifestParsed: PublicManifest;
     try {
-        manifestParsed = parseRuntimeAssetManifest(manifest.body);
+        manifestParsed = parseManifestFor(media, manifest.body);
         results.push({
             name: 'manifest contract',
             ok: true,
@@ -857,7 +1084,7 @@ async function runChecksForManifest(
             'releaseId matches canonical content',
             () => {
                 const canonicalDigest = assertSha256<'release-content'>(
-                    sha256Hex(canonicalReleaseContent(manifestParsed))
+                    sha256Hex(canonicalReleaseContentFor(media, manifestParsed))
                 ) as ReleaseContentSha256;
                 assertReleaseIdMatchesContentSha256(
                     manifestParsed,
@@ -897,130 +1124,166 @@ async function runChecksForManifest(
     // would skip the second reference entirely and let that pass the verifier;
     // a Map records the first reference's metadata and compares every later
     // reference against it, failing on disagreement.
-    const verifiedObjects = new Map<
-        string,
-        { byteLength: number; path: string; width: number; height: number }
-    >();
     let cacheProbePath: string | null = null;
-    let offeredWebp = false;
-    let offeredAvif = false;
-    for (const [index, asset] of manifestParsed.assets.entries()) {
-        for (const format of ['webp', 'avif'] as const) {
-            const variant = asset.variants[format];
-            if (!variant) continue;
-            if (format === 'webp') offeredWebp = true;
-            else offeredAvif = true;
+    if (media === 'audio') {
+        cacheProbePath = await runAudioObjectChecks(
+            manifestParsed as RuntimeAudioManifestV1,
+            manifestPath,
+            base,
+            origin,
+            fetchImpl,
+            results
+        );
+    } else {
+        const visualManifest = manifestParsed as RuntimeAssetManifestV1;
+        const verifiedObjects = new Map<
+            string,
+            { byteLength: number; path: string; width: number; height: number }
+        >();
+        let offeredWebp = false;
+        let offeredAvif = false;
+        for (const [index, asset] of visualManifest.assets.entries()) {
+            for (const format of ['webp', 'avif'] as const) {
+                const variant = asset.variants[format];
+                if (!variant) continue;
+                if (format === 'webp') offeredWebp = true;
+                else offeredAvif = true;
 
-            const dedupeKey = `${format}:${variant.sha256}`;
-            const label = variant.sha256.slice(0, 16);
-            const prior = verifiedObjects.get(dedupeKey);
-            if (prior !== undefined) {
-                // Same digest, same format — the object is fetched once, but
-                // every manifest reference must agree on the metadata the
-                // reader will check against the fetched bytes. byteLength and
-                // path are variant-level; width and height are asset-level
-                // but must also match, since identical bytes decode to
-                // identical dimensions.
-                const conflicts: string[] = [];
-                if (prior.byteLength !== variant.byteLength) {
-                    conflicts.push(
-                        `byteLength ${variant.byteLength} (was ${prior.byteLength})`
-                    );
+                const dedupeKey = `${format}:${variant.sha256}`;
+                const label = variant.sha256.slice(0, 16);
+                const prior = verifiedObjects.get(dedupeKey);
+                if (prior !== undefined) {
+                    // Same digest, same format — the object is fetched once, but
+                    // every manifest reference must agree on the metadata the
+                    // reader will check against the fetched bytes. byteLength and
+                    // path are variant-level; width and height are asset-level
+                    // but must also match, since identical bytes decode to
+                    // identical dimensions.
+                    const conflicts: string[] = [];
+                    if (prior.byteLength !== variant.byteLength) {
+                        conflicts.push(
+                            `byteLength ${variant.byteLength} (was ${prior.byteLength})`
+                        );
+                    }
+                    if (prior.path !== variant.path) {
+                        conflicts.push(
+                            `path ${variant.path} (was ${prior.path})`
+                        );
+                    }
+                    if (prior.width !== asset.width) {
+                        conflicts.push(
+                            `width ${asset.width} (was ${prior.width})`
+                        );
+                    }
+                    if (prior.height !== asset.height) {
+                        conflicts.push(
+                            `height ${asset.height} (was ${prior.height})`
+                        );
+                    }
+                    results.push({
+                        name: `${format} ${label} object reference consistent`,
+                        ok: conflicts.length === 0,
+                        detail:
+                            conflicts.length === 0
+                                ? `assets.${index} agrees with the first reference to ${variant.sha256}`
+                                : `assets.${index} disagrees with the first reference to ${variant.sha256}: ${conflicts.join(', ')}`,
+                    });
+                    continue;
                 }
-                if (prior.path !== variant.path) {
-                    conflicts.push(`path ${variant.path} (was ${prior.path})`);
-                }
-                if (prior.width !== asset.width) {
-                    conflicts.push(`width ${asset.width} (was ${prior.width})`);
-                }
-                if (prior.height !== asset.height) {
-                    conflicts.push(
-                        `height ${asset.height} (was ${prior.height})`
-                    );
-                }
-                results.push({
-                    name: `${format} ${label} object reference consistent`,
-                    ok: conflicts.length === 0,
-                    detail:
-                        conflicts.length === 0
-                            ? `assets.${index} agrees with the first reference to ${variant.sha256}`
-                            : `assets.${index} disagrees with the first reference to ${variant.sha256}: ${conflicts.join(', ')}`,
-                });
-                continue;
-            }
-            verifiedObjects.set(dedupeKey, {
-                byteLength: variant.byteLength,
-                path: variant.path,
-                width: asset.width,
-                height: asset.height,
-            });
-
-            let objectPath: string;
-            try {
-                objectPath = getObjectPath(
-                    assertSha256<'object-content'>(variant.sha256),
-                    format
-                );
-            } catch (error) {
-                results.push({
-                    name: `${format} ${label} object`,
-                    ok: false,
-                    detail: `assets.${index} ${format} sha256 ${variant.sha256} is unusable: ${describeError(error)}`,
-                });
-                continue;
-            }
-            results.push({
-                name: `${format} ${label} object path is content-addressed`,
-                ok: variant.path === objectPath,
-                detail: `path: ${variant.path} (expected ${objectPath})`,
-            });
-            cacheProbePath ??= objectPath;
-            await checkObject(
-                base,
-                objectPath,
-                format,
-                {
-                    path: variant.path,
-                    sha256: variant.sha256,
+                verifiedObjects.set(dedupeKey, {
                     byteLength: variant.byteLength,
-                },
-                label,
-                origin,
-                fetchImpl,
-                results
-            );
-        }
-    }
+                    path: variant.path,
+                    width: asset.width,
+                    height: asset.height,
+                });
 
-    // webp is required per asset in the contract, so an absent webp means the
-    // release published no assets at all. avif is optional per asset in the
-    // HPA-227 schema, but `image/avif` content-type is an enumerated
-    // acceptance criterion for HPA-229 (design check 3) and the only check
-    // that can prove a release serves a real AVIF object. A release that
-    // offers no avif therefore hard-fails — downgrading it to a warning would
-    // let the only evidence for that criterion disappear without anyone
-    // noticing (runbook §"The seeder must emit AVIF"). The runbook is
-    // authoritative here: the per-asset optionality in the schema does not
-    // override the release-level acceptance requirement.
-    if (!offeredWebp) {
-        results.push({
-            name: 'webp object',
-            ok: false,
-            detail: `no webp variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath}`,
-        });
-    }
-    if (!offeredAvif) {
-        results.push({
-            name: 'avif object',
-            ok: false,
-            detail: `no avif variant among ${manifestParsed.assets.length} asset(s) in ${manifestPath} — image/avif is an HPA-229 acceptance criterion`,
-        });
+                let objectPath: string;
+                try {
+                    objectPath = getObjectPath(
+                        assertSha256<'object-content'>(variant.sha256),
+                        format
+                    );
+                } catch (error) {
+                    results.push({
+                        name: `${format} ${label} object`,
+                        ok: false,
+                        detail: `assets.${index} ${format} sha256 ${variant.sha256} is unusable: ${describeError(error)}`,
+                    });
+                    continue;
+                }
+                results.push({
+                    name: `${format} ${label} object path is content-addressed`,
+                    ok: variant.path === objectPath,
+                    detail: `path: ${variant.path} (expected ${objectPath})`,
+                });
+                cacheProbePath ??= objectPath;
+                await checkObject(
+                    base,
+                    objectPath,
+                    format,
+                    {
+                        path: variant.path,
+                        sha256: variant.sha256,
+                        byteLength: variant.byteLength,
+                    },
+                    label,
+                    origin,
+                    fetchImpl,
+                    results
+                );
+            }
+        }
+
+        // webp is required per asset in the contract, so an absent webp means the
+        // release published no assets at all. avif is optional per asset in the
+        // HPA-227 schema, but `image/avif` content-type is an enumerated
+        // acceptance criterion for HPA-229 (design check 3) and the only check
+        // that can prove a release serves a real AVIF object. A release that
+        // offers no avif therefore hard-fails — downgrading it to a warning would
+        // let the only evidence for that criterion disappear without anyone
+        // noticing (runbook §"The seeder must emit AVIF"). The runbook is
+        // authoritative here: the per-asset optionality in the schema does not
+        // override the release-level acceptance requirement.
+        if (!offeredWebp) {
+            results.push({
+                name: 'webp object',
+                ok: false,
+                detail: `no webp variant among ${visualManifest.assets.length} asset(s) in ${manifestPath}`,
+            });
+        }
+        if (!offeredAvif) {
+            results.push({
+                name: 'avif object',
+                ok: false,
+                detail: `no avif variant among ${visualManifest.assets.length} asset(s) in ${manifestPath} — image/avif is an HPA-229 acceptance criterion`,
+            });
+        }
     }
 
     if (cacheProbePath !== null) {
         results.push(await checkCacheHit(base, cacheProbePath, fetchImpl));
     }
-    results.push(await checkSourceKeyAbsentFromDelivery(base, fetchImpl));
+    if (media === 'visual') {
+        results.push(
+            await checkSourceKeyAbsentFromDelivery(
+                base,
+                SOURCE_PROBE_KEY,
+                fetchImpl
+            )
+        );
+    } else {
+        for (const key of input.archiveProbeKeys ?? []) {
+            const sourceCheck = await checkSourceKeyAbsentFromDelivery(
+                base,
+                key,
+                fetchImpl
+            );
+            results.push({
+                ...sourceCheck,
+                name: `archive key absent from delivery bucket: ${key}`,
+            });
+        }
+    }
     results.push(
         checkForbiddenKeys([
             ...resolved.documents,
@@ -1089,6 +1352,8 @@ export async function verifyPublicRelease(
 export type VerifyCliArgs = {
     storyId: string;
     target: PublicationTarget;
+    media: VerifyMedia;
+    archiveProbeKeys?: readonly string[];
     releaseId?: string; // candidate mode when present
     expectedManifestSha256?: ManifestByteSha256;
     assetBaseUrl?: string;
@@ -1099,6 +1364,8 @@ const VERIFY_OPTIONS = {
     story: { type: 'string' },
     environment: { type: 'string' },
     'preview-id': { type: 'string' },
+    media: { type: 'string' },
+    'archive-probe-key': { type: 'string', multiple: true },
     release: { type: 'string' },
     'expect-manifest-sha256': { type: 'string' },
     'asset-base-url': { type: 'string' },
@@ -1114,6 +1381,23 @@ const VERIFY_OPTIONS = {
  */
 export function parseVerifyArgs(argv: string[]): VerifyCliArgs {
     const { values } = parseArgs({ args: argv, options: VERIFY_OPTIONS });
+    const mediaValue =
+        typeof values.media === 'string' ? values.media : 'visual';
+    if (mediaValue !== 'visual' && mediaValue !== 'audio') {
+        throw new Error('--media must be visual or audio');
+    }
+    const archiveProbeValues = values['archive-probe-key'];
+    const archiveProbeKeys =
+        archiveProbeValues === undefined
+            ? []
+            : Array.isArray(archiveProbeValues)
+              ? archiveProbeValues
+              : [archiveProbeValues];
+    for (const key of archiveProbeKeys) {
+        if (!isSafeRelativePath(key)) {
+            throw new Error(`Invalid archive probe key: ${key}`);
+        }
+    }
     const storyId = typeof values.story === 'string' ? values.story : STORY_ID;
     if (!isStoryId(storyId)) {
         throw new Error(`Invalid --story: ${storyId}`);
@@ -1165,6 +1449,8 @@ export function parseVerifyArgs(argv: string[]): VerifyCliArgs {
     return {
         storyId,
         target,
+        media: mediaValue,
+        ...(archiveProbeKeys.length > 0 ? { archiveProbeKeys } : {}),
         ...(releaseId !== undefined ? { releaseId } : {}),
         ...(expectedManifestSha256 !== undefined
             ? {
@@ -1265,6 +1551,10 @@ async function main(): Promise<void> {
             target: args.target,
             assetBaseUrl: new URL(base),
             browserOrigin: new URL(ORIGIN),
+            ...(args.media === 'audio' ? { media: 'audio' as const } : {}),
+            ...(args.media === 'audio' && args.archiveProbeKeys !== undefined
+                ? { archiveProbeKeys: args.archiveProbeKeys }
+                : {}),
             ...(args.releaseId !== undefined
                 ? { releaseId: args.releaseId }
                 : {}),
@@ -1297,6 +1587,7 @@ async function main(): Promise<void> {
                     baseUrl: base,
                     storyId: input.storyId,
                     target: input.target,
+                    ...(input.media === 'audio' ? { media: 'audio' } : {}),
                     releaseId: input.releaseId ?? null,
                     results: outcome.results,
                     failedChecks: failed,

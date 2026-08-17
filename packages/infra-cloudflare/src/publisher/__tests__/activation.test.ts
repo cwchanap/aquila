@@ -328,6 +328,7 @@ class ActivationStore implements DeliveryStore {
             bytes: Uint8Array.from(bytes),
             contentType: metadata.contentType,
             cacheControl: metadata.cacheControl,
+            customMetadata: {},
         };
         return etag;
     }
@@ -492,6 +493,7 @@ class MediaActivationStore implements DeliveryStore {
             bytes: Uint8Array.from(bytes),
             contentType: metadataValue.contentType,
             cacheControl: metadataValue.cacheControl,
+            customMetadata: {},
         });
         return etag;
     }

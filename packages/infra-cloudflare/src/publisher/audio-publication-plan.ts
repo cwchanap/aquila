@@ -123,7 +123,7 @@ async function advisoryPointerState(
     if (
         snapshot.contentType !== JSON_CONTENT_TYPE ||
         snapshot.cacheControl !== POINTER_CACHE_CONTROL ||
-        Object.keys(snapshot.customMetadata ?? {}).length > 0
+        Object.keys(snapshot.customMetadata).length > 0
     ) {
         throw new PublisherError(
             'integrity',

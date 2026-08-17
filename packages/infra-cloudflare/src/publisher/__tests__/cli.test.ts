@@ -398,6 +398,447 @@ describe('assets CLI destination selection and safety', () => {
 });
 
 describe('assets CLI command schemas and confirmation matrix', () => {
+    it('accepts audio plan and publish with an explicit raw story folder', async () => {
+        const runCommand = vi.fn(async parsed => report(parsed.command));
+        const test = harness(runCommand);
+
+        for (const command of ['plan', 'publish'] as const) {
+            const extra = command === 'publish' ? ['--no-activate'] : [];
+            const exit = await runAssetsCli(
+                [
+                    command,
+                    '--media',
+                    'audio',
+                    '--story',
+                    'example_story',
+                    '--story-folder',
+                    'example_story',
+                    '--environment',
+                    'preview',
+                    '--preview-id',
+                    'gate-123',
+                    '--destination-root',
+                    '/tmp/aquila-audio-delivery',
+                    ...extra,
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(0);
+        }
+
+        expect(runCommand).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                command: 'plan',
+                media: 'audio',
+                storyFolder: 'example_story',
+            })
+        );
+        expect(runCommand).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                command: 'publish',
+                media: 'audio',
+                storyFolder: 'example_story',
+            })
+        );
+    });
+
+    it.each(['activate', 'verify', 'releases', 'rollback'] as const)(
+        'accepts audio %s without a raw story folder',
+        async command => {
+            const runCommand = vi.fn(async parsed => report(parsed.command));
+            const test = harness(runCommand);
+            const releaseArgs =
+                command === 'releases'
+                    ? []
+                    : ['--release', `sha256-${'a'.repeat(64)}`];
+
+            const exit = await runAssetsCli(
+                [
+                    command,
+                    '--media',
+                    'audio',
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'production',
+                    ...(command === 'activate' || command === 'rollback'
+                        ? ['--confirm-production', 'example_story']
+                        : []),
+                    '--destination-root',
+                    '/tmp/aquila-audio-delivery',
+                    ...releaseArgs,
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(0);
+            expect(runCommand).toHaveBeenCalledWith(
+                expect.objectContaining({ media: 'audio' })
+            );
+        }
+    );
+
+    it('keeps visual as the default media and rejects unknown media', async () => {
+        const runCommand = vi.fn(async parsed => report(parsed.command));
+        const test = harness(runCommand);
+
+        await expect(
+            runAssetsCli(
+                [
+                    'releases',
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'production',
+                    '--destination-root',
+                    '/tmp/aquila-visual-delivery',
+                ],
+                test.dependencies
+            )
+        ).resolves.toBe(0);
+        expect(runCommand).toHaveBeenCalledWith(
+            expect.not.objectContaining({ media: 'audio' })
+        );
+
+        await expect(
+            runAssetsCli(
+                [
+                    'releases',
+                    '--media',
+                    'speech',
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'production',
+                    '--destination-root',
+                    '/tmp/aquila-visual-delivery',
+                ],
+                harness().dependencies
+            )
+        ).resolves.toBe(1);
+    });
+
+    it.each(['plan', 'publish'] as const)(
+        'requires --story-folder for audio %s',
+        async command => {
+            const runCommand = vi.fn(async parsed => report(parsed.command));
+            const test = harness(runCommand);
+
+            const exit = await runAssetsCli(
+                [
+                    command,
+                    '--media',
+                    'audio',
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'preview',
+                    '--preview-id',
+                    'gate-123',
+                    '--destination-root',
+                    '/tmp/aquila-audio-delivery',
+                    ...(command === 'publish' ? ['--no-activate'] : []),
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(1);
+            expect(runCommand).not.toHaveBeenCalled();
+        }
+    );
+
+    it('rejects a raw story folder on visual plan and publish', async () => {
+        for (const command of ['plan', 'publish'] as const) {
+            const runCommand = vi.fn(async parsed => report(parsed.command));
+            const test = harness(runCommand);
+            const exit = await runAssetsCli(
+                [
+                    command,
+                    '--story',
+                    'example_story',
+                    '--environment',
+                    'production',
+                    '--destination-root',
+                    '/tmp/aquila-visual-delivery',
+                    '--story-folder',
+                    'example_story',
+                    ...(command === 'publish' ? ['--no-activate'] : []),
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(1);
+            expect(runCommand).not.toHaveBeenCalled();
+        }
+    });
+
+    it('rejects audio mirror-preview and audio publish pointer mutation flags', async () => {
+        const cases = [
+            [
+                'mirror-preview',
+                [
+                    '--preview-id',
+                    'gate-123',
+                    '--release',
+                    `sha256-${'a'.repeat(64)}`,
+                ],
+            ],
+            [
+                'publish',
+                [
+                    '--environment',
+                    'production',
+                    '--story-folder',
+                    'example_story',
+                    '--reactivate',
+                ],
+            ],
+            [
+                'publish',
+                [
+                    '--environment',
+                    'production',
+                    '--story-folder',
+                    'example_story',
+                    '--override-concurrent-pointer',
+                ],
+            ],
+        ] as const;
+
+        for (const [command, extra] of cases) {
+            const runCommand = vi.fn(async parsed => report(parsed.command));
+            const test = harness(runCommand);
+            const targetArgs =
+                command === 'mirror-preview'
+                    ? []
+                    : ['--destination-root', '/tmp/aquila-audio-delivery'];
+            const exit = await runAssetsCli(
+                [
+                    command,
+                    '--media',
+                    'audio',
+                    '--story',
+                    'example_story',
+                    ...targetArgs,
+                    ...extra,
+                ],
+                test.dependencies
+            );
+
+            expect(exit).toBe(1);
+            expect(runCommand).not.toHaveBeenCalled();
+        }
+    });
+
+    it('keeps production audio publish immutable without requiring confirmation', async () => {
+        const runCommand = vi.fn(async parsed => report(parsed.command));
+        const test = harness(runCommand);
+
+        const exit = await runAssetsCli(
+            [
+                'publish',
+                '--media',
+                'audio',
+                '--story',
+                'example_story',
+                '--story-folder',
+                'example_story',
+                '--environment',
+                'production',
+                '--destination-root',
+                '/tmp/aquila-audio-delivery',
+            ],
+            test.dependencies
+        );
+
+        expect(exit).toBe(0);
+        expect(runCommand).toHaveBeenCalledWith(
+            expect.objectContaining({ media: 'audio' })
+        );
+    });
+
+    it('uses separate local delivery and source roots for audio publish', async () => {
+        const runCommand = vi.fn(async parsed => report(parsed.command));
+        const test = harness(runCommand);
+
+        const exit = await runAssetsCli(
+            [
+                'publish',
+                '--media',
+                'audio',
+                '--story',
+                'example_story',
+                '--story-folder',
+                'example_story',
+                '--environment',
+                'preview',
+                '--preview-id',
+                'gate-123',
+                '--destination-root',
+                '/tmp/aquila-audio-publish',
+            ],
+            test.dependencies
+        );
+
+        expect(exit).toBe(0);
+        expect(test.localFactory).toHaveBeenNthCalledWith(
+            1,
+            '/tmp/aquila-audio-publish/delivery'
+        );
+        expect(test.localFactory).toHaveBeenNthCalledWith(
+            2,
+            '/tmp/aquila-audio-publish/source'
+        );
+    });
+
+    it('uses delivery credentials for audio plan and both credential pairs for R2 publish', async () => {
+        const runCommand = vi.fn(async parsed => report(parsed.command));
+        const test = harness(runCommand);
+        test.dependencies.environment = {
+            R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
+            R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
+            R2_SOURCE_ARCHIVE_ACCESS_KEY_ID: 'source-access',
+            R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY: 'source-secret',
+        };
+
+        const planExit = await runAssetsCli(
+            [
+                'plan',
+                '--media',
+                'audio',
+                '--story',
+                'example_story',
+                '--story-folder',
+                'example_story',
+                '--environment',
+                'preview',
+                '--preview-id',
+                'gate-123',
+                '--destination',
+                'r2',
+            ],
+            test.dependencies
+        );
+        expect(planExit).toBe(0);
+        expect(test.r2Factory).toHaveBeenNthCalledWith(1, {
+            bucket: 'delivery',
+        });
+
+        const publishExit = await runAssetsCli(
+            [
+                'publish',
+                '--media',
+                'audio',
+                '--story',
+                'example_story',
+                '--story-folder',
+                'example_story',
+                '--environment',
+                'preview',
+                '--preview-id',
+                'gate-123',
+                '--destination',
+                'r2',
+            ],
+            test.dependencies
+        );
+        expect(publishExit).toBe(0);
+        expect(test.r2Factory).toHaveBeenNthCalledWith(2, {
+            bucket: 'delivery',
+        });
+        expect(test.r2Factory).toHaveBeenNthCalledWith(3, {
+            bucket: 'source',
+        });
+    });
+
+    it('rejects R2 audio publish without source credentials before constructing stores', async () => {
+        const test = harness();
+
+        const exit = await runAssetsCli(
+            [
+                'publish',
+                '--media',
+                'audio',
+                '--story',
+                'example_story',
+                '--story-folder',
+                'example_story',
+                '--environment',
+                'preview',
+                '--preview-id',
+                'gate-123',
+                '--destination',
+                'r2',
+            ],
+            test.dependencies
+        );
+
+        expect(exit).toBe(1);
+        expect(test.r2Factory).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ['generation-root-inside-destination', 'generation-under-destination'],
+        ['destination-inside-generation-root', 'destination-under-generation'],
+    ] as const)(
+        'rejects audio local destination overlap with HPA-608 generation root (%s) before writes',
+        async (_name, layout) => {
+            const root = await mkdtemp(
+                join(tmpdir(), 'aquila-audio-cli-safety-')
+            );
+            try {
+                const repositoryRoot = join(root, 'repo');
+                const destinationRoot =
+                    layout === 'generation-under-destination'
+                        ? join(root, 'destination')
+                        : join(root, 'generation');
+                const generationRoot =
+                    layout === 'generation-under-destination'
+                        ? join(destinationRoot, 'generation')
+                        : join(destinationRoot, 'destination');
+                await mkdir(repositoryRoot, { recursive: true });
+                await mkdir(destinationRoot, { recursive: true });
+                await mkdir(generationRoot, { recursive: true });
+
+                const runCommand = vi.fn(async parsed =>
+                    report(parsed.command)
+                );
+                const test = harness(runCommand);
+                test.dependencies.repositoryRoot = repositoryRoot;
+
+                const exit = await runAssetsCli(
+                    [
+                        'plan',
+                        '--media',
+                        'audio',
+                        '--story',
+                        'example_story',
+                        '--story-folder',
+                        'example_story',
+                        '--environment',
+                        'preview',
+                        '--preview-id',
+                        'gate-123',
+                        '--destination-root',
+                        destinationRoot,
+                        '--generation-root',
+                        generationRoot,
+                    ],
+                    test.dependencies
+                );
+
+                expect(exit).toBe(1);
+                expect(test.localFactory).not.toHaveBeenCalled();
+                expect(runCommand).not.toHaveBeenCalled();
+            } finally {
+                await rm(root, { recursive: true, force: true });
+            }
+        }
+    );
+
     it.each([
         ['plan', ['--plan', '/tmp/plan.json', '--source-root', '/tmp/source']],
         [

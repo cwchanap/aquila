@@ -18,10 +18,11 @@ import type {
     PointerSnapshot,
     PointerWriteRequest,
 } from './stores/delivery-store';
+import type { PublisherMedia } from './types';
 
 export const MAX_PUBLISHER_FUTURE_SKEW_MS = 300_000;
 
-export type PublisherMedia = 'visual' | 'audio';
+export type { PublisherMedia } from './types';
 
 interface ActivatableStoredRelease {
     readonly releaseId: string;

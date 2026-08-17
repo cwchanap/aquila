@@ -107,6 +107,7 @@ async function readLockEntry(lockPath: string): Promise<LockEntry | null> {
                     token: unknown;
                 };
                 if (
+                    typeof pid === 'number' &&
                     Number.isSafeInteger(pid) &&
                     pid > 0 &&
                     typeof token === 'string'

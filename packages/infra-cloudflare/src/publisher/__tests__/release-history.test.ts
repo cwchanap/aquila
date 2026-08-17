@@ -376,6 +376,7 @@ class HistoryStore implements DeliveryStore {
             bytes: Uint8Array.from(bytes),
             contentType: metadataValue.contentType,
             cacheControl: metadataValue.cacheControl,
+            customMetadata: {},
         };
         return etag;
     }
@@ -568,6 +569,7 @@ class MediaHistoryStore implements DeliveryStore {
             bytes: Uint8Array.from(bytes),
             contentType: metadataValue.contentType,
             cacheControl: metadataValue.cacheControl,
+            customMetadata: {},
         });
         return etag;
     }

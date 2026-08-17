@@ -4,13 +4,13 @@ Status: DONE_WITH_CONCERNS
 
 Base: `190cda81`
 
-Final implementation commit: `05cb7b53` (`fix: close final audio publisher review gaps`)
+Final implementation commits: `05cb7b53` (`fix: close final audio publisher review gaps`) and this follow-up changeset (`fix: require pointer metadata snapshots`)
 
 ## Scope completed
 
 - I1: moved audio forbidden metadata stems into the shared runtime validation rule, used that same boundary-aware rule for the verifier's audio raw-JSON scan, and covered request/compiler/generation/selection/candidate/source forms.
 - I2: active audio verification now checks manifest CORS; visual active verification and candidate behavior remain unchanged.
-- I3: audio publication candidates require empty custom metadata, immutable reuse/read-back and deep verification reject contaminated audio objects, and advisory/activation audio pointer paths reject contaminated metadata. Visual reuse remains conditional on its existing candidate contract.
+- I3: audio publication candidates require empty custom metadata, immutable reuse/read-back and deep verification reject contaminated audio objects, and advisory/activation audio pointer paths reject contaminated metadata. Existing-pointer snapshots require custom metadata from every store implementation, and visual reuse remains conditional on its existing candidate contract.
 - M1: audio omission accumulation uses a null-prototype record so an own `__proto__` key reaches unknown/unused validation.
 - M2: the audio integration ordering assertion now uses one total timeline covering process availability/probes, progress, source and receipt archive operations, delivery object/manifest operations, and deep verification.
 
@@ -67,7 +67,7 @@ Each review item had a focused regression before the corresponding implementatio
 
 `packages/infra-cloudflare/src/publisher/stores/{delivery-store.ts,local-delivery-store.ts,r2-delivery-store.ts}`
 
-Focused publisher tests under `packages/infra-cloudflare/src/publisher/__tests__/` for activation, candidate verification/planning, ordering, source omissions, and immutable candidates.
+Focused publisher tests under `packages/infra-cloudflare/src/publisher/__tests__/` for activation, candidate verification/planning, ordering, source omissions, immutable candidates, and widened pointer fixtures.
 
 ## Remaining concern
 

@@ -62,8 +62,21 @@ function sourcePlan(): AudioSourcePlan {
     };
 }
 
+function emptySourcePlan(): AudioSourcePlan {
+    return {
+        storyId: STORY_ID,
+        sources: [],
+        coverage: [],
+        unusedPlanKeys: [],
+        selectedUnusedKeys: [],
+    };
+}
+
 function audioProcessRunner(normalizedBytes: Uint8Array): AudioProcessRunner {
     return async (executable, args) => {
+        if (args.includes('-version')) {
+            return { exitCode: 0, stdout: new Uint8Array(), stderr: '' };
+        }
         if (executable === 'ffmpeg') {
             const outputPath = args.at(-1);
             if (outputPath === undefined)
@@ -192,6 +205,34 @@ async function stores(
 }
 
 describe('publishAudioRelease', () => {
+    it.each(['ffmpeg', 'ffprobe'] as const)(
+        'fails before writes when %s is unavailable',
+        async missingExecutable => {
+            const { source, delivery } = await stores();
+            const unavailable: AudioProcessRunner = async executable => ({
+                exitCode: executable === missingExecutable ? 127 : 0,
+                stdout: new Uint8Array(),
+                stderr:
+                    executable === missingExecutable ? 'command not found' : '',
+            });
+
+            await expect(
+                publishAudioRelease({
+                    store: delivery,
+                    sourceStore: source,
+                    storyId: STORY_ID,
+                    target: TARGET,
+                    sourcePlan: emptySourcePlan(),
+                    run: unavailable,
+                })
+            ).rejects.toMatchObject({ code: 'configuration' });
+
+            expect(source.immutableRequests).toEqual([]);
+            expect(delivery.immutableRequests).toEqual([]);
+            expect(delivery.pointerRequests).toEqual([]);
+        }
+    );
+
     it('archives every source candidate before creating public delivery objects', async () => {
         const timeline: string[] = [];
         const { source, delivery } = await stores({ timeline });

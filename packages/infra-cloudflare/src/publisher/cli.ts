@@ -1,17 +1,24 @@
-import { realpath } from 'node:fs/promises';
-import { basename, dirname, resolve, sep } from 'node:path';
+import { access, realpath } from 'node:fs/promises';
+import { basename, dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import {
     assertSha256,
     getCurrentPointerPath,
+    getAudioCurrentPointerPath,
     isPreviewId,
     isReleaseId,
+    isSafeRelativePath,
     isStoryId,
     type ManifestByteSha256,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
 import { activateStoredRelease, type ActivationResult } from './activation';
+import { normalizeAudioSourcePlan, publishAudioRelease } from './audio-publish';
+import { buildAudioPublicationPlan } from './audio-publication-plan';
+import type { AudioProcessRunner } from './audio-encoder';
+import { prepareAudioSources } from './audio-source';
+import { verifyStoredAudioRelease } from './audio-candidate-verifier';
 import { verifyStoredRelease } from './candidate-verifier';
 import { PublisherError, publisherExitCode } from './errors';
 import { mirrorProductionReleaseToPreview } from './mirror-preview';
@@ -35,7 +42,11 @@ import {
 import type { DeliveryStore } from './stores/delivery-store';
 import { LocalDeliveryStore } from './stores/local-delivery-store';
 import { R2DeliveryStore } from './stores/r2-delivery-store';
-import type { PublicationDestination, PublisherCommandName } from './types';
+import type {
+    PublicationDestination,
+    PublisherCommandName,
+    PublisherMedia,
+} from './types';
 
 interface WritableStream {
     write(chunk: string): unknown;
@@ -43,6 +54,7 @@ interface WritableStream {
 
 interface BaseParsedCommand {
     readonly command: PublisherCommandName;
+    readonly media: PublisherMedia;
     readonly storyId: string;
     readonly target: PublicationTarget;
     readonly destination: PublicationDestination;
@@ -54,6 +66,11 @@ interface BaseParsedCommand {
     readonly expectedManifestSha256?: ManifestByteSha256;
     readonly releasePlanPath?: string;
     readonly sourceRoot?: string;
+    readonly sourceStore?: DeliveryStore;
+    readonly storyFolder?: string;
+    readonly generationRoot?: string;
+    readonly omissionsPath?: string;
+    readonly audioProcessRunner?: AudioProcessRunner;
     readonly noActivate?: boolean;
     readonly reactivate?: boolean;
     readonly overrideConcurrentPointer?: boolean;
@@ -71,7 +88,10 @@ export interface AssetsCliDependencies {
     repositoryRoot: string;
     environment: Readonly<Record<string, string | undefined>>;
     createLocalStore: (root: string) => DeliveryStore | Promise<DeliveryStore>;
-    createR2Store: () => DeliveryStore | Promise<DeliveryStore>;
+    createR2Store: (options?: {
+        readonly bucket?: 'delivery' | 'source';
+    }) => DeliveryStore | Promise<DeliveryStore>;
+    audioProcessRunner?: AudioProcessRunner;
     runCommand: AssetsCommandRunner;
     stdout: WritableStream;
     stderr: WritableStream;
@@ -92,6 +112,7 @@ const COMMANDS = new Set<PublisherCommandName>([
 
 const commonOptions = {
     story: { type: 'string' },
+    media: { type: 'string' },
     destination: { type: 'string' },
     'destination-root': { type: 'string' },
     json: { type: 'boolean' },
@@ -108,6 +129,9 @@ const planOptions = {
     ...targetedOptions,
     plan: { type: 'string' },
     'source-root': { type: 'string' },
+    'story-folder': { type: 'string' },
+    'generation-root': { type: 'string' },
+    omissions: { type: 'string' },
 } as const satisfies OptionSchema;
 
 const publishOptions = {
@@ -212,6 +236,70 @@ function parseCommandName(value: string | undefined): PublisherCommandName {
     return value as PublisherCommandName;
 }
 
+function parseMedia(values: CliValues): PublisherMedia {
+    const value = values.media ?? 'visual';
+    if (value !== 'visual' && value !== 'audio') {
+        throw configurationError('--media must be visual or audio');
+    }
+    return value;
+}
+
+function parseStoryFolder(values: CliValues): string | undefined {
+    const value = values['story-folder'];
+    if (value === undefined) return undefined;
+    if (typeof value !== 'string' || !isSafeRelativePath(value)) {
+        throw configurationError('Invalid --story-folder');
+    }
+    return value;
+}
+
+function assertMediaMatrix(
+    values: CliValues,
+    command: PublisherCommandName,
+    media: PublisherMedia,
+    storyFolder: string | undefined
+): void {
+    if (media === 'audio' && command === 'mirror-preview') {
+        throw configurationError('mirror-preview does not support audio media');
+    }
+    if (media === 'audio' && (command === 'plan' || command === 'publish')) {
+        if (storyFolder === undefined) {
+            throw configurationError(
+                `Audio ${command} requires --story-folder`
+            );
+        }
+        if (
+            command === 'publish' &&
+            (values.reactivate === true ||
+                values['override-concurrent-pointer'] === true)
+        ) {
+            throw configurationError(
+                'Audio publish cannot mutate the active pointer'
+            );
+        }
+        if (values.plan !== undefined || values['source-root'] !== undefined) {
+            throw configurationError(
+                'Audio publication does not accept visual source or plan inputs'
+            );
+        }
+        return;
+    }
+    if (storyFolder !== undefined) {
+        throw configurationError(
+            '--story-folder is valid only for audio plan or publish'
+        );
+    }
+    if (
+        media === 'visual' &&
+        (values['generation-root'] !== undefined ||
+            values.omissions !== undefined)
+    ) {
+        throw configurationError(
+            'Audio generation inputs require --media audio'
+        );
+    }
+}
+
 function parseTarget(values: CliValues): PublicationTarget {
     const environment = requiredString(values, 'environment');
     const previewId = values['preview-id'];
@@ -311,7 +399,8 @@ async function assertDestinationPathSafety(
     repositoryRoot: string,
     destinationRoot: string,
     sourceRoot: string | undefined,
-    releasePlanPath: string | undefined
+    releasePlanPath: string | undefined,
+    additionalInputPaths: readonly string[] = []
 ): Promise<void> {
     const canonicalRepository = await canonicalPath(repositoryRoot);
     const canonicalDestination = await canonicalPath(destinationRoot);
@@ -343,6 +432,17 @@ async function assertDestinationPathSafety(
             );
         }
     }
+    for (const inputPath of additionalInputPaths) {
+        const canonicalInput = await canonicalPath(inputPath);
+        if (
+            pathContains(canonicalInput, canonicalDestination) ||
+            pathContains(canonicalDestination, canonicalInput)
+        ) {
+            throw configurationError(
+                'Local destination and audio input path must not overlap'
+            );
+        }
+    }
 }
 
 async function parseDestination(
@@ -350,7 +450,10 @@ async function parseDestination(
     repositoryRoot: string,
     sourceRoot: string | undefined,
     releasePlanPath: string | undefined,
-    environment: Readonly<Record<string, string | undefined>>
+    environment: Readonly<Record<string, string | undefined>>,
+    media: PublisherMedia,
+    command: PublisherCommandName,
+    additionalInputPaths: readonly string[] = []
 ): Promise<PublicationDestination> {
     const selected = values.destination ?? 'local';
     const root = values['destination-root'];
@@ -361,12 +464,33 @@ async function parseDestination(
             );
         }
         const resolvedRoot = resolve(repositoryRoot, root);
+        const deliveryRoot =
+            media === 'audio' ? join(resolvedRoot, 'delivery') : resolvedRoot;
+        if (media === 'audio') {
+            await assertDestinationPathSafety(
+                repositoryRoot,
+                resolvedRoot,
+                undefined,
+                undefined,
+                additionalInputPaths
+            );
+        }
         await assertDestinationPathSafety(
             repositoryRoot,
-            resolvedRoot,
-            sourceRoot,
-            releasePlanPath
+            deliveryRoot,
+            media === 'visual' ? sourceRoot : undefined,
+            media === 'visual' ? releasePlanPath : undefined,
+            additionalInputPaths
         );
+        if (media === 'audio' && command === 'publish') {
+            await assertDestinationPathSafety(
+                repositoryRoot,
+                join(resolvedRoot, 'source'),
+                undefined,
+                undefined,
+                additionalInputPaths
+            );
+        }
         return { kind: 'local', root: resolvedRoot };
     }
     if (selected !== 'r2') {
@@ -383,13 +507,24 @@ async function parseDestination(
             'R2 publisher credentials are not completely configured'
         );
     }
+    if (
+        media === 'audio' &&
+        command === 'publish' &&
+        (!environment.R2_SOURCE_ARCHIVE_ACCESS_KEY_ID ||
+            !environment.R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY)
+    ) {
+        throw configurationError(
+            'R2 source archive credentials are not completely configured'
+        );
+    }
     return { kind: 'r2' };
 }
 
 function assertPublishMatrix(
     values: CliValues,
     storyId: string,
-    target: PublicationTarget
+    target: PublicationTarget,
+    media: PublisherMedia
 ): void {
     if (
         values['no-activate'] === true &&
@@ -402,6 +537,7 @@ function assertPublishMatrix(
     }
     if (
         target.kind === 'production' &&
+        media === 'visual' &&
         values['no-activate'] !== true &&
         values['confirm-production'] !== storyId
     ) {
@@ -459,7 +595,10 @@ function baseCommand(
     values: CliValues,
     dependencies: AssetsCliDependencies
 ): Omit<BaseParsedCommand, 'destination' | 'store'> {
+    const media = parseMedia(values);
     const storyId = parseStoryId(values);
+    const storyFolder = parseStoryFolder(values);
+    assertMediaMatrix(values, command, media, storyFolder);
     const target =
         command === 'mirror-preview'
             ? {
@@ -474,7 +613,7 @@ function baseCommand(
               }
             : parseTarget(values);
     if (command === 'publish') {
-        assertPublishMatrix(values, storyId, target);
+        assertPublishMatrix(values, storyId, target, media);
     } else if (command === 'activate' || command === 'rollback') {
         assertProductionMutationConfirmation(values, storyId, target);
     }
@@ -515,14 +654,39 @@ function baseCommand(
             : envSourceRoot !== undefined
               ? resolve(dependencies.repositoryRoot, envSourceRoot)
               : undefined;
+    const explicitGenerationRoot =
+        values['generation-root'] === undefined
+            ? undefined
+            : String(values['generation-root']);
+    const generationRoot =
+        media === 'audio' && (command === 'plan' || command === 'publish')
+            ? resolve(
+                  dependencies.repositoryRoot,
+                  explicitGenerationRoot ??
+                      dependencies.environment.AQUILA_AUDIO_GENERATION_ROOT ??
+                      '.tmp/audio-generation'
+              )
+            : undefined;
+    const explicitOmissionsPath =
+        values.omissions === undefined ? undefined : String(values.omissions);
+    const omissionsPath =
+        media === 'audio' && (command === 'plan' || command === 'publish')
+            ? explicitOmissionsPath === undefined
+                ? undefined
+                : resolve(dependencies.repositoryRoot, explicitOmissionsPath)
+            : undefined;
     return {
         command,
+        media,
         storyId,
         target,
         repositoryRoot: dependencies.repositoryRoot,
         environment: dependencies.environment,
         ...(releasePlanPath === undefined ? {} : { releasePlanPath }),
         ...(sourceRoot === undefined ? {} : { sourceRoot }),
+        ...(storyFolder === undefined ? {} : { storyFolder }),
+        ...(generationRoot === undefined ? {} : { generationRoot }),
+        ...(omissionsPath === undefined ? {} : { omissionsPath }),
         ...(releaseId === undefined ? {} : { releaseId }),
         ...(expectedManifestSha256 === undefined
             ? {}
@@ -541,11 +705,29 @@ function baseCommand(
 
 async function createStore(
     destination: PublicationDestination,
+    dependencies: AssetsCliDependencies,
+    media: PublisherMedia
+): Promise<DeliveryStore> {
+    if (destination.kind === 'local') {
+        return dependencies.createLocalStore(
+            media === 'audio'
+                ? join(destination.root, 'delivery')
+                : destination.root
+        );
+    }
+    return media === 'audio'
+        ? dependencies.createR2Store({ bucket: 'delivery' })
+        : dependencies.createR2Store();
+}
+
+async function createAudioSourceStore(
+    destination: PublicationDestination,
     dependencies: AssetsCliDependencies
 ): Promise<DeliveryStore> {
-    return destination.kind === 'local'
-        ? dependencies.createLocalStore(destination.root)
-        : dependencies.createR2Store();
+    if (destination.kind === 'local') {
+        return dependencies.createLocalStore(join(destination.root, 'source'));
+    }
+    return dependencies.createR2Store({ bucket: 'source' });
 }
 
 function emptyCounts(pointerWritten = false): PublisherReportV1['counts'] {
@@ -571,6 +753,7 @@ function activationReport(
         status: activation.status,
         storyId: command.storyId,
         target: command.target,
+        ...(command.media === 'audio' ? { media: 'audio' as const } : {}),
         releaseId: activation.releaseId,
         manifestSha256: activation.manifestSha256,
         counts: emptyCounts(changed),
@@ -579,10 +762,16 @@ function activationReport(
                 ? {
                       stage: 'activation',
                       kind: 'write-pointer',
-                      key: getCurrentPointerPath(
-                          command.storyId,
-                          command.target
-                      ),
+                      key:
+                          command.media === 'audio'
+                              ? getAudioCurrentPointerPath(
+                                    command.storyId,
+                                    command.target
+                                )
+                              : getCurrentPointerPath(
+                                    command.storyId,
+                                    command.target
+                                ),
                   }
                 : { stage: 'activation', kind: 'no-op' },
         ],
@@ -603,7 +792,9 @@ function activationReport(
 }
 
 export function buildReleaseListReport(
-    command: Pick<ParsedAssetsCommand, 'storyId' | 'target'>,
+    command: Pick<ParsedAssetsCommand, 'storyId' | 'target'> & {
+        readonly media?: PublisherMedia;
+    },
     releases: readonly ReleaseSummary[],
     warnings: readonly PublisherDiagnosticV1[] = []
 ): PublisherReportV1 {
@@ -613,6 +804,7 @@ export function buildReleaseListReport(
         status: releases.length === 0 ? 'no-op' : 'success',
         storyId: command.storyId,
         target: command.target,
+        ...(command.media === 'audio' ? { media: 'audio' as const } : {}),
         counts: { ...emptyCounts(), included: releases.length },
         actions: [],
         warnings: [...warnings],
@@ -636,6 +828,31 @@ async function runCommandServices(
 ): Promise<PublisherReportV1> {
     switch (command.command) {
         case 'plan':
+            if (command.media === 'audio') {
+                const sourcePlan = await prepareAudioSources({
+                    storyFolder: command.storyFolder!,
+                    expectedStoryId: command.storyId,
+                    generationRoot: command.generationRoot!,
+                    ...(command.omissionsPath === undefined
+                        ? {}
+                        : { omissionsPath: command.omissionsPath }),
+                });
+                const assets = await normalizeAudioSourcePlan(sourcePlan, {
+                    ...(command.audioProcessRunner === undefined
+                        ? {}
+                        : { run: command.audioProcessRunner }),
+                });
+                return (
+                    await buildAudioPublicationPlan({
+                        store: command.store,
+                        storyId: command.storyId,
+                        target: command.target,
+                        assets,
+                        coverage: sourcePlan.coverage,
+                        progress: command.progress,
+                    })
+                ).report;
+            }
             return (
                 await buildPublicationPlan({
                     store: command.store,
@@ -653,6 +870,32 @@ async function runCommandServices(
                 })
             ).report;
         case 'publish': {
+            if (command.media === 'audio') {
+                if (command.sourceStore === undefined) {
+                    throw configurationError(
+                        'Audio publish requires a source archive store'
+                    );
+                }
+                const sourcePlan = await prepareAudioSources({
+                    storyFolder: command.storyFolder!,
+                    expectedStoryId: command.storyId,
+                    generationRoot: command.generationRoot!,
+                    ...(command.omissionsPath === undefined
+                        ? {}
+                        : { omissionsPath: command.omissionsPath }),
+                });
+                return publishAudioRelease({
+                    store: command.store,
+                    sourceStore: command.sourceStore,
+                    storyId: command.storyId,
+                    target: command.target,
+                    sourcePlan,
+                    ...(command.audioProcessRunner === undefined
+                        ? {}
+                        : { run: command.audioProcessRunner }),
+                    progress: command.progress,
+                });
+            }
             const publication = await publishRelease({
                 store: command.store,
                 repositoryRoot: command.repositoryRoot,
@@ -718,6 +961,12 @@ async function runCommandServices(
                     store: command.store,
                     storyId: command.storyId,
                     target: command.target,
+                    ...(command.media === 'audio'
+                        ? { media: 'audio' as const }
+                        : {}),
+                    ...(command.audioProcessRunner === undefined
+                        ? {}
+                        : { run: command.audioProcessRunner }),
                     releaseId: command.releaseId!,
                     expectedManifestSha256: command.expectedManifestSha256,
                     reactivate: command.reactivate,
@@ -727,6 +976,36 @@ async function runCommandServices(
                 })
             );
         case 'verify': {
+            if (command.media === 'audio') {
+                const audioVerified = await verifyStoredAudioRelease({
+                    store: command.store,
+                    storyId: command.storyId,
+                    target: command.target,
+                    releaseId: command.releaseId!,
+                    expectedManifestSha256: command.expectedManifestSha256,
+                    depth: command.deep === true ? 'deep' : 'shallow',
+                    ...(command.audioProcessRunner === undefined
+                        ? {}
+                        : { run: command.audioProcessRunner }),
+                });
+                return {
+                    schemaVersion: 1,
+                    command: 'verify',
+                    status: 'success',
+                    storyId: command.storyId,
+                    target: command.target,
+                    media: 'audio',
+                    releaseId: audioVerified.releaseId,
+                    manifestSha256: audioVerified.manifestSha256,
+                    counts: {
+                        ...emptyCounts(),
+                        included: audioVerified.manifest.assets.length,
+                    },
+                    actions: [],
+                    warnings: [],
+                    errors: [],
+                };
+            }
             const verified = await verifyStoredRelease({
                 store: command.store,
                 storyId: command.storyId,
@@ -758,6 +1037,12 @@ async function runCommandServices(
                 store: command.store,
                 storyId: command.storyId,
                 target: command.target,
+                ...(command.media === 'audio'
+                    ? { media: 'audio' as const }
+                    : {}),
+                ...(command.audioProcessRunner === undefined
+                    ? {}
+                    : { run: command.audioProcessRunner }),
                 deep: command.deep,
                 onProgress: command.progress,
                 onWarning: warning => warnings.push(warning),
@@ -770,6 +1055,12 @@ async function runCommandServices(
                 storyId: command.storyId,
                 target: command.target,
                 releaseId: command.releaseId!,
+                ...(command.media === 'audio'
+                    ? { media: 'audio' as const }
+                    : {}),
+                ...(command.audioProcessRunner === undefined
+                    ? {}
+                    : { run: command.audioProcessRunner }),
                 expectedManifestSha256: command.expectedManifestSha256,
                 overrideConcurrentPointer: command.overrideConcurrentPointer,
                 confirmProduction: command.confirmProduction,
@@ -802,7 +1093,8 @@ const defaultDependencies: AssetsCliDependencies = {
     repositoryRoot: defaultRepositoryRoot,
     environment: process.env,
     createLocalStore: root => new LocalDeliveryStore(root),
-    createR2Store: () => R2DeliveryStore.createFromEnvironment(),
+    createR2Store: options =>
+        R2DeliveryStore.createFromEnvironment({ bucket: options?.bucket }),
     runCommand: runCommandServices,
     stdout: process.stdout,
     stderr: process.stderr,
@@ -812,7 +1104,8 @@ function errorReport(
     error: unknown,
     command: PublisherCommandName,
     storyId: string,
-    target: PublicationTarget
+    target: PublicationTarget,
+    media: PublisherMedia = 'visual'
 ): PublisherReportV1 {
     const code = error instanceof PublisherError ? error.code : 'storage';
     // Services attach the failed phase to PublisherError.context.stage (e.g.
@@ -849,6 +1142,7 @@ function errorReport(
         status: code === 'concurrency' ? 'conflict' : 'failed',
         storyId,
         target,
+        ...(media === 'audio' ? { media: 'audio' as const } : {}),
         counts: emptyCounts(),
         actions: [],
         warnings: [],
@@ -872,6 +1166,31 @@ function emitReport(
     else dependencies.stderr.write(renderHumanReport(report));
 }
 
+async function optionalAudioOmissionsPath(
+    repositoryRoot: string,
+    storyFolder: string,
+    explicitPath: string | undefined
+): Promise<string | undefined> {
+    if (explicitPath !== undefined) return explicitPath;
+    const defaultPath = resolve(
+        repositoryRoot,
+        'packages/stories/raw',
+        storyFolder,
+        'docs/audio-omissions.json'
+    );
+    try {
+        await access(defaultPath);
+        return defaultPath;
+    } catch (error) {
+        const code =
+            typeof error === 'object' && error !== null && 'code' in error
+                ? (error as { code?: unknown }).code
+                : undefined;
+        if (code === 'ENOENT' || code === 'ENOTDIR') return undefined;
+        throw configurationError('Unable to inspect audio omissions path');
+    }
+}
+
 export async function runAssetsCli(
     argv: readonly string[],
     overrides: Partial<AssetsCliDependencies> = {}
@@ -893,7 +1212,9 @@ export async function runAssetsCli(
     let command: PublisherCommandName = 'plan';
     let storyId = 'cli_error';
     let target: PublicationTarget = { kind: 'production' };
+    let media: PublisherMedia = 'visual';
     let store: DeliveryStore | undefined;
+    const stores = new Set<DeliveryStore>();
     let finalReport: PublisherReportV1 | undefined;
     let finalError: unknown;
     try {
@@ -903,9 +1224,24 @@ export async function runAssetsCli(
             dependencies.stdout.write(HELP);
             return 0;
         }
+        if (values.media === 'audio' || values.media === 'visual') {
+            media = values.media;
+        }
         const parsed = baseCommand(command, values, dependencies);
         storyId = parsed.storyId;
         target = parsed.target;
+        media = parsed.media;
+        const parsedWithOmissions =
+            parsed.media === 'audio' && parsed.storyFolder !== undefined
+                ? {
+                      ...parsed,
+                      omissionsPath: await optionalAudioOmissionsPath(
+                          dependencies.repositoryRoot,
+                          parsed.storyFolder,
+                          parsed.omissionsPath
+                      ),
+                  }
+                : parsed;
         const hasPublicationInputs =
             command === 'plan' || command === 'publish';
         // parsed.sourceRoot already folds in the AQUILA_ASSET_SOURCE_ROOT env
@@ -915,34 +1251,59 @@ export async function runAssetsCli(
         // default. parsed.releasePlanPath is canonical when explicit; the
         // default plan path is resolved against repositoryRoot by both the
         // safety check and resolveReleasePlanPath.
-        const sourceRootForSafety = hasPublicationInputs
-            ? (parsed.sourceRoot ?? 'packages/assets/media')
-            : undefined;
-        const planPathForSafety = hasPublicationInputs
-            ? (parsed.releasePlanPath ??
-              `packages/stories/release-plans/${storyId}.json`)
-            : undefined;
+        const sourceRootForSafety =
+            hasPublicationInputs && media === 'visual'
+                ? (parsedWithOmissions.sourceRoot ?? 'packages/assets/media')
+                : undefined;
+        const planPathForSafety =
+            hasPublicationInputs && media === 'visual'
+                ? (parsedWithOmissions.releasePlanPath ??
+                  `packages/stories/release-plans/${storyId}.json`)
+                : undefined;
+        const additionalInputPaths =
+            media === 'audio' &&
+            parsedWithOmissions.generationRoot !== undefined
+                ? [
+                      parsedWithOmissions.generationRoot,
+                      ...(parsedWithOmissions.omissionsPath === undefined
+                          ? []
+                          : [parsedWithOmissions.omissionsPath]),
+                  ]
+                : [];
         const destination = await parseDestination(
             values,
             dependencies.repositoryRoot,
             sourceRootForSafety,
             planPathForSafety,
-            dependencies.environment
+            dependencies.environment,
+            media,
+            command,
+            additionalInputPaths
         );
-        store = await createStore(destination, dependencies);
+        store = await createStore(destination, dependencies, media);
+        stores.add(store);
+        const sourceStore =
+            media === 'audio' && command === 'publish'
+                ? await createAudioSourceStore(destination, dependencies)
+                : undefined;
+        if (sourceStore !== undefined) stores.add(sourceStore);
         const progress = createHumanProgressSink(dependencies.stderr);
         finalReport = await dependencies.runCommand({
-            ...parsed,
+            ...parsedWithOmissions,
             destination,
             store,
+            ...(sourceStore === undefined ? {} : { sourceStore }),
+            ...(dependencies.audioProcessRunner === undefined
+                ? {}
+                : { audioProcessRunner: dependencies.audioProcessRunner }),
             progress,
         });
     } catch (error) {
         finalError = error;
     } finally {
-        if (store !== undefined) {
+        for (const selectedStore of stores) {
             try {
-                await store.close();
+                await selectedStore.close();
             } catch {
                 finalError ??= new PublisherError(
                     'storage',
@@ -957,13 +1318,14 @@ export async function runAssetsCli(
         }
     }
     if (finalError !== undefined) {
-        finalReport = errorReport(finalError, command, storyId, target);
+        finalReport = errorReport(finalError, command, storyId, target, media);
     }
     finalReport ??= errorReport(
         new PublisherError('storage', 'Command did not produce a report'),
         command,
         storyId,
-        target
+        target,
+        media
     );
     emitReport(finalReport, json, dependencies);
     return finalError === undefined

@@ -197,6 +197,21 @@ async function runProcess(
     return result;
 }
 
+export async function assertAudioToolsAvailable(
+    run: AudioProcessRunner = systemAudioProcessRunner
+): Promise<void> {
+    for (const executable of ['ffmpeg', 'ffprobe'] as const) {
+        await runProcess(
+            run,
+            executable,
+            ['-hide_banner', '-version'],
+            'configuration',
+            `${executable} is not runnable`,
+            'input'
+        );
+    }
+}
+
 function parseJson(stdout: Uint8Array, stage: string): unknown {
     if (stdout.byteLength === 0) {
         throw new PublisherError(

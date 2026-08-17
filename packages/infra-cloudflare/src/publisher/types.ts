@@ -20,6 +20,8 @@ export type PublisherCommandName =
     | 'releases'
     | 'rollback';
 
+export type PublisherMedia = 'visual' | 'audio';
+
 export type PublicationDestination =
     | { kind: 'local'; root: string }
     | { kind: 'r2' };

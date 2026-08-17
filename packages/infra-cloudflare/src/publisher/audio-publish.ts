@@ -6,6 +6,7 @@ import {
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
 import {
+    assertAudioToolsAvailable,
     normalizeAudioAsset,
     type AudioDurationWarning,
     type AudioProcessRunner,
@@ -89,9 +90,9 @@ function validateSourcePlan(
     }
 }
 
-async function normalizeSources(
+export async function normalizeAudioSourcePlan(
     sourcePlan: AudioSourcePlan,
-    options: PublishAudioReleaseOptions
+    options: Pick<PublishAudioReleaseOptions, 'run' | 'onWarning'> = {}
 ): Promise<readonly NormalizedAudioAsset[]> {
     const sources = [...sourcePlan.sources].sort((left, right) =>
         compareQualifiedAssetIds(
@@ -202,6 +203,7 @@ export async function publishAudioRelease(
     options: PublishAudioReleaseOptions
 ): Promise<PublisherReportV1> {
     validateSourcePlan(options.storyId, options.sourcePlan);
+    await assertAudioToolsAvailable(options.run);
     progress(options.progress, {
         stage: 'input',
         completed: 1,
@@ -209,7 +211,7 @@ export async function publishAudioRelease(
         message: 'validated audio publish inputs',
     });
 
-    const normalizedAssets = await normalizeSources(
+    const normalizedAssets = await normalizeAudioSourcePlan(
         options.sourcePlan,
         options
     );

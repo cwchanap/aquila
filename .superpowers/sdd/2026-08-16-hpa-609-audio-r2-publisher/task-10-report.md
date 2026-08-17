@@ -114,3 +114,51 @@ None known within Task 10 scope. The explicit pre-write hook is limited to the
 required executable prerequisite and reuses the existing injected process
 runner; no generic CLI framework, public verifier, activation redesign, or
 additional storage subsystem was introduced.
+
+## Fix round 1: reject unused audio publish pointer-control flags
+
+### Finding
+
+The review identified that audio `publish` rejected `--reactivate` and
+`--override-concurrent-pointer`, but silently accepted and ignored
+`--no-activate` and `--confirm-production`.
+
+### RED
+
+Added both flags to the focused negative command matrix and removed
+`--no-activate` from the valid audio publish case. Before the production
+change:
+
+```text
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/cli.test.ts
+```
+
+Result: exit 1; 93 tests passed and the matrix test failed because the first
+new audio `--no-activate` case returned exit 0 instead of the required
+configuration failure. The `--confirm-production` case was included in the
+same RED matrix.
+
+### GREEN
+
+The audio publish matrix now rejects all four pointer-control flags:
+`--reactivate`, `--override-concurrent-pointer`, `--no-activate`, and
+`--confirm-production`. Visual publish behavior remains unchanged, including
+the existing production-safe `--no-activate` case.
+
+```text
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/cli.test.ts
+```
+
+Result: exit 0; 94 tests passed.
+
+### Fix-round verification
+
+- `bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/cli.test.ts src/publisher/__tests__/report.test.ts` — PASS; 107 tests.
+- `bun --filter @aquila/infra-cloudflare typecheck` — PASS.
+- `bun --filter @aquila/infra-cloudflare lint` — PASS.
+- `bunx prettier --check packages/infra-cloudflare/src/publisher/cli.ts packages/infra-cloudflare/src/publisher/__tests__/cli.test.ts` — PASS.
+- `git diff --check` — PASS.
+
+Fix-round files: `packages/infra-cloudflare/src/publisher/cli.ts`,
+`packages/infra-cloudflare/src/publisher/__tests__/cli.test.ts`, and this
+report.

@@ -55,6 +55,31 @@ export const AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS = [
     'generation',
     'receipt',
     'model',
+    'candidates',
+    'requests',
+    'compilers',
+    'sources',
+    'selections',
+    'generations',
+    'receipts',
+    'models',
+    // Lowercase JSON keys do not expose camel-case word boundaries. Keep the
+    // known compact provenance spellings explicit rather than broadening the
+    // matcher to arbitrary substrings.
+    'candidateid',
+    'candidateids',
+    'candidatemetadata',
+    'requestid',
+    'requestids',
+    'compilerusagepath',
+    'compilerusagepaths',
+    'selectionnote',
+    'selectionnotes',
+    'generationspec',
+    'generationspecs',
+    'modelid',
+    'modelids',
+    'sourcesha256',
 ] as const;
 
 // Recognize numbers and numeric strings so a stringified version like "2" is

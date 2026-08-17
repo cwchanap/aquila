@@ -47,23 +47,14 @@ const FORBIDDEN_RUNTIME_KEY_PARTS = [
 // raw JSON scan share one boundary-aware rule. Visual documents continue to
 // use only the base list above.
 export const AUDIO_FORBIDDEN_RUNTIME_KEY_PARTS = [
-    'candidateid',
-    'candidateids',
-    'candidatemetadata',
+    'candidate',
+    'request',
+    'compiler',
+    'source',
+    'selection',
+    'generation',
     'receipt',
-    'receipts',
-    'modelid',
-    'modelids',
-    'requestid',
-    'requestids',
-    'selectionnote',
-    'selectionnotes',
-    'generationspec',
-    'generationspecs',
     'model',
-    'compilerusagepath',
-    'compilerusagepaths',
-    'sourcesha256',
 ] as const;
 
 // Recognize numbers and numeric strings so a stringified version like "2" is

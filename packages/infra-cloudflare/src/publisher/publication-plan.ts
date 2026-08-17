@@ -13,6 +13,10 @@ import { validatePublisherCoverage } from './coverage';
 import { evaluateSourceDiagnostics } from './encoder-policy';
 import { PublisherError } from './errors';
 import { encodeAsset, getEncoderFingerprint } from './image-encoder';
+import {
+    inspectImmutableCandidate,
+    type PlannedImmutableCandidate,
+} from './immutable-candidate';
 import { loadReleasePlan, resolveReleasePlanPath } from './release-plan';
 import {
     normalizeReportDiagnostics,
@@ -21,12 +25,7 @@ import {
 } from './report';
 import { buildPreparedRelease } from './runtime-release';
 import { resolveIncludedSources, resolveSourceRoot } from './source-files';
-import type {
-    DeliveryStore,
-    PointerSnapshot,
-    StoredObject,
-    StoredObjectMetadata,
-} from './stores/delivery-store';
+import type { DeliveryStore, PointerSnapshot } from './stores/delivery-store';
 import type {
     EncodedAsset,
     EncodedVariant,
@@ -52,15 +51,7 @@ export interface BuildPublicationPlanOptions {
     readonly progress?: ProgressSink;
 }
 
-export interface PlannedImmutableCandidate {
-    readonly kind: 'object' | 'manifest';
-    readonly key: string;
-    readonly bytes: Uint8Array;
-    readonly contentType: string;
-    readonly cacheControl: string;
-    readonly status: 'create' | 'reuse';
-    readonly identity?: string;
-}
+export type { PlannedImmutableCandidate } from './immutable-candidate';
 
 export type AdvisoryPointerState =
     | {
@@ -93,94 +84,8 @@ export interface PublicationPlan {
     readonly report: PublisherReportV1;
 }
 
-interface CandidateInput {
-    readonly kind: PlannedImmutableCandidate['kind'];
-    readonly key: string;
-    readonly bytes: Uint8Array;
-    readonly contentType: string;
-    readonly cacheControl: string;
-    readonly identity?: string;
-}
-
 function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
-}
-
-function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
-    if (left.byteLength !== right.byteLength) return false;
-    return left.every((byte, index) => byte === right[index]);
-}
-
-function requiredMetadataMatches(
-    actual: StoredObjectMetadata,
-    candidate: CandidateInput
-): boolean {
-    return (
-        actual.key === candidate.key &&
-        actual.byteLength === candidate.bytes.byteLength &&
-        actual.contentType === candidate.contentType &&
-        actual.cacheControl === candidate.cacheControl
-    );
-}
-
-function immutableConflict(candidate: CandidateInput): PublisherError {
-    return new PublisherError(
-        'integrity',
-        candidate.kind === 'manifest'
-            ? 'Existing immutable manifest conflicts with candidate'
-            : 'Existing content-addressed object conflicts with candidate',
-        {
-            context: {
-                stage:
-                    candidate.kind === 'manifest'
-                        ? 'manifest'
-                        : 'object-inspection',
-                key: candidate.key,
-            },
-        }
-    );
-}
-
-async function inspectImmutableCandidate(
-    store: DeliveryStore,
-    candidate: CandidateInput
-): Promise<PlannedImmutableCandidate> {
-    let metadata: StoredObjectMetadata | null;
-    try {
-        metadata = await store.stat(candidate.key);
-    } catch (cause) {
-        if (cause instanceof PublisherError) throw cause;
-        throw new PublisherError('storage', 'Unable to inspect destination', {
-            cause: { classification: 'delivery-store-inspection-failure' },
-            context: { key: candidate.key },
-        });
-    }
-    if (metadata === null) return { ...candidate, status: 'create' };
-    if (!requiredMetadataMatches(metadata, candidate)) {
-        throw immutableConflict(candidate);
-    }
-
-    let stored: StoredObject;
-    try {
-        stored = await store.read(candidate.key);
-    } catch (cause) {
-        if (cause instanceof PublisherError) throw cause;
-        throw new PublisherError(
-            'storage',
-            'Unable to verify existing immutable destination object',
-            {
-                cause: { classification: 'delivery-store-read-failure' },
-                context: { key: candidate.key },
-            }
-        );
-    }
-    if (
-        !requiredMetadataMatches(stored, candidate) ||
-        !bytesEqual(stored.bytes, candidate.bytes)
-    ) {
-        throw immutableConflict(candidate);
-    }
-    return { ...candidate, status: 'reuse' };
 }
 
 function includedEntries(

@@ -143,6 +143,7 @@ describe('R2DeliveryStore', () => {
     it.each([
         'vn/objects/hash.webp',
         'vn/stories/example/releases/sha256-release/runtime-manifest.json',
+        'arbitrary-key',
     ])('rejects non-pointer CAS key %s before sending a put', async key => {
         const send = vi.fn(async () => ({ ETag: '"overwritten"' }));
         const store = fakeStore(send);
@@ -160,6 +161,27 @@ describe('R2DeliveryStore', () => {
             code: 'input',
         });
         expect(send).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        'vn/stories/example/current.json',
+        'vn/previews/gate-1/stories/example/current.json',
+        'vn/audio/stories/example/current.json',
+        'vn/previews/gate-1/audio/stories/example/current.json',
+    ])('accepts runtime pointer CAS key %s', async key => {
+        const send = vi.fn(async () => ({ ETag: '"written"' }));
+        const store = fakeStore(send);
+
+        await expect(
+            store.compareAndSwapPointer({
+                key,
+                expected: { exists: false },
+                bytes: new Uint8Array([1]),
+                contentType: 'application/json',
+                cacheControl: 'no-cache, max-age=0, must-revalidate',
+            })
+        ).resolves.toMatchObject({ status: 'written' });
+        expect(send).toHaveBeenCalledOnce();
     });
 
     it('maps only immutable and pointer precondition failures to result statuses', async () => {
@@ -274,6 +296,66 @@ describe('R2DeliveryStore', () => {
 
             await expect(
                 R2DeliveryStore.createFromEnvironment()
+            ).rejects.toMatchObject({
+                name: 'PublisherError',
+                code: 'configuration',
+            });
+        }
+    );
+
+    it('creates a delivery store with only delivery credentials', async () => {
+        const store = await R2DeliveryStore.createFromEnvironment({
+            environment: {
+                R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
+                R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
+            },
+            bucket: 'delivery',
+        });
+        try {
+            expect((store as unknown as { bucket: string }).bucket).toBe(
+                'aquila-vn-delivery'
+            );
+        } finally {
+            await store.close();
+        }
+    });
+
+    it('creates a source store with only source archive credentials', async () => {
+        const store = await R2DeliveryStore.createFromEnvironment({
+            environment: {
+                R2_SOURCE_ARCHIVE_ACCESS_KEY_ID: 'source-access',
+                R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY: 'source-secret',
+            },
+            bucket: 'source',
+        });
+        try {
+            expect((store as unknown as { bucket: string }).bucket).toBe(
+                'aquila-vn-source'
+            );
+        } finally {
+            await store.close();
+        }
+    });
+
+    it.each(['delivery', 'source'] as const)(
+        'rejects the %s factory when only the cross-bucket credential pair is present',
+        async bucket => {
+            const environment =
+                bucket === 'delivery'
+                    ? {
+                          R2_SOURCE_ARCHIVE_ACCESS_KEY_ID: 'source-access',
+                          R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY: 'source-secret',
+                      }
+                    : {
+                          R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
+                          R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
+                      };
+
+            await expect(
+                R2DeliveryStore.createFromEnvironment({
+                    environment,
+                    bucket,
+                })
             ).rejects.toMatchObject({
                 name: 'PublisherError',
                 code: 'configuration',

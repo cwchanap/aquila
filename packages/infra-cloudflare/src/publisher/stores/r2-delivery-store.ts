@@ -9,7 +9,7 @@ import {
     type ListObjectsV2CommandOutput,
     type PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
-import { isPreviewId, isStoryId } from '@aquila/stories/runtime-assets';
+import { isRuntimePointerKey } from '@aquila/stories/runtime-assets';
 import { loadR2DeliveryConfig } from '../../config';
 import { PublisherError } from '../errors';
 import type {
@@ -128,6 +128,7 @@ export class R2DeliveryStore implements DeliveryStore {
         options: {
             configPath?: string;
             environment?: Readonly<Record<string, string | undefined>>;
+            bucket?: 'delivery' | 'source';
         } = {}
     ): Promise<R2DeliveryStore> {
         let config: Awaited<ReturnType<typeof loadR2DeliveryConfig>>;
@@ -141,17 +142,28 @@ export class R2DeliveryStore implements DeliveryStore {
             );
         }
         const environment = options.environment ?? process.env;
-        const accessKeyId = environment.R2_PUBLISHER_ACCESS_KEY_ID;
-        const secretAccessKey = environment.R2_PUBLISHER_SECRET_ACCESS_KEY;
+        const bucket = options.bucket ?? 'delivery';
+        const credentialNames =
+            bucket === 'source'
+                ? {
+                      accessKeyId: 'R2_SOURCE_ARCHIVE_ACCESS_KEY_ID',
+                      secretAccessKey: 'R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY',
+                  }
+                : {
+                      accessKeyId: 'R2_PUBLISHER_ACCESS_KEY_ID',
+                      secretAccessKey: 'R2_PUBLISHER_SECRET_ACCESS_KEY',
+                  };
+        const accessKeyId = environment[credentialNames.accessKeyId];
+        const secretAccessKey = environment[credentialNames.secretAccessKey];
         if (!accessKeyId || !secretAccessKey) {
             throw new PublisherError(
                 'configuration',
-                'R2_PUBLISHER_ACCESS_KEY_ID and R2_PUBLISHER_SECRET_ACCESS_KEY must be set'
+                `${credentialNames.accessKeyId} and ${credentialNames.secretAccessKey} must be set`
             );
         }
 
         return new R2DeliveryStore({
-            bucket: config.buckets.delivery,
+            bucket: config.buckets[bucket],
             client: createSdkClient(
                 config.accountId,
                 accessKeyId,
@@ -320,22 +332,7 @@ export class R2DeliveryStore implements DeliveryStore {
     }
 
     private assertPointerKey(key: string): void {
-        const segments = key.split('/');
-        const productionPointer =
-            segments.length === 4 &&
-            segments[0] === 'vn' &&
-            segments[1] === 'stories' &&
-            isStoryId(segments[2]) &&
-            segments[3] === 'current.json';
-        const previewPointer =
-            segments.length === 6 &&
-            segments[0] === 'vn' &&
-            segments[1] === 'previews' &&
-            isPreviewId(segments[2]) &&
-            segments[3] === 'stories' &&
-            isStoryId(segments[4]) &&
-            segments[5] === 'current.json';
-        if (!productionPointer && !previewPointer) {
+        if (!isRuntimePointerKey(key)) {
             throw new PublisherError(
                 'input',
                 'Pointer key must identify a runtime current.json',

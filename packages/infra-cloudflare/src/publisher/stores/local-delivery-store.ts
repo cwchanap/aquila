@@ -18,7 +18,7 @@ import {
     resolve,
     sep,
 } from 'node:path';
-import { isPreviewId, isStoryId } from '@aquila/stories/runtime-assets';
+import { isRuntimePointerKey } from '@aquila/stories/runtime-assets';
 import { PublisherError } from '../errors';
 import { sha256Bytes } from '../hash';
 import type {
@@ -777,22 +777,7 @@ export class LocalDeliveryStore implements DeliveryStore {
 
     private assertPointerKey(key: string): void {
         this.assertSafeKey(key);
-        const segments = key.split('/');
-        const productionPointer =
-            segments.length === 4 &&
-            segments[0] === 'vn' &&
-            segments[1] === 'stories' &&
-            isStoryId(segments[2]) &&
-            segments[3] === 'current.json';
-        const previewPointer =
-            segments.length === 6 &&
-            segments[0] === 'vn' &&
-            segments[1] === 'previews' &&
-            isPreviewId(segments[2]) &&
-            segments[3] === 'stories' &&
-            isStoryId(segments[4]) &&
-            segments[5] === 'current.json';
-        if (!productionPointer && !previewPointer) {
+        if (!isRuntimePointerKey(key)) {
             throw new PublisherError(
                 'input',
                 'Pointer key must identify a runtime current.json',

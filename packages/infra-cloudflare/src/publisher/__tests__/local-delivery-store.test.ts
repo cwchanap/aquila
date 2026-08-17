@@ -890,6 +890,40 @@ describe('LocalDeliveryStore', () => {
         });
     });
 
+    it.each([
+        'vn/stories/example/current.json',
+        'vn/previews/gate-1/stories/example/current.json',
+        'vn/audio/stories/example/current.json',
+        'vn/previews/gate-1/audio/stories/example/current.json',
+    ])('accepts runtime pointer CAS key %s', async key => {
+        const store = new LocalDeliveryStore(
+            await mkdtemp(join(tmpdir(), 'local-pointer-runtime-'))
+        );
+
+        await expect(
+            store.compareAndSwapPointer({
+                ...pointerRequest(key, 'runtime-pointer'),
+                expected: { exists: false },
+            })
+        ).resolves.toMatchObject({ status: 'written' });
+    });
+
+    it('rejects arbitrary pointer-shaped keys', async () => {
+        const store = new LocalDeliveryStore(
+            await mkdtemp(join(tmpdir(), 'local-pointer-arbitrary-'))
+        );
+
+        await expect(
+            store.compareAndSwapPointer({
+                ...pointerRequest('arbitrary-key', 'replacement'),
+                expected: { exists: false },
+            })
+        ).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'input',
+        });
+    });
+
     it('recovers a lock owned by a terminated process', async () => {
         const root = await mkdtemp(join(tmpdir(), 'local-stale-lock-'));
         const token = '00000000-0000-4000-8000-000000000000';

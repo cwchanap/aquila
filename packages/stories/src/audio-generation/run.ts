@@ -123,7 +123,8 @@ export interface RunDependencies {
 }
 
 export async function loadAudioGenerationStoryContext(
-    storyFolder: string
+    storyFolder: string,
+    rawRoot?: string
 ): Promise<AudioGenerationStoryContext> {
     if (
         !isSafeLogicalKey(storyFolder) ||
@@ -134,7 +135,7 @@ export async function loadAudioGenerationStoryContext(
             'Story folder must be a single safe directory component'
         );
     }
-    const rawDir = join(STORIES_RAW_ROOT, storyFolder);
+    const rawDir = join(rawRoot ?? STORIES_RAW_ROOT, storyFolder);
     const config = await loadStoryCompilerConfig(rawDir);
     if (typeof config.storyId !== 'string' || !isStoryId(config.storyId)) {
         throw new AudioGenerationConfigurationError(

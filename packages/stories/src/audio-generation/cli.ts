@@ -1,4 +1,5 @@
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import {
     createElevenLabsAudioProvider,
@@ -42,7 +43,7 @@ export interface AudioGenerationCliIO {
     readonly stdout: { write(chunk: string): void };
     readonly stderr: { write(chunk: string): void };
     readonly exit?: (code: number) => void;
-    readonly cwd?: string;
+    readonly storeRoot?: string;
     readonly env?: NodeJS.ProcessEnv;
     readonly apiKey?: string;
     readonly providerFactory?: () => AudioGenerationProvider;
@@ -77,11 +78,17 @@ const NOOP_PROVIDER: AudioGenerationProvider = {
     },
 };
 
+const REPO_ROOT = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '../../../..'
+);
+const DEFAULT_STORE_ROOT = join(REPO_ROOT, '.tmp', 'audio-generation');
+
 function defaultIo(): AudioGenerationCliIO {
     return {
         stdout: process.stdout,
         stderr: process.stderr,
-        cwd: process.cwd(),
+        storeRoot: DEFAULT_STORE_ROOT,
         env: process.env,
     };
 }
@@ -266,12 +273,7 @@ function makeStore(
     io: AudioGenerationCliIO
 ): LocalAudioGenerationStore {
     return new LocalAudioGenerationStore({
-        root: join(
-            io.cwd ?? process.cwd(),
-            '.tmp',
-            'audio-generation',
-            context.storyFolder
-        ),
+        root: join(io.storeRoot ?? DEFAULT_STORE_ROOT, context.storyFolder),
         storyId: context.storyId,
     });
 }
@@ -512,7 +514,7 @@ if ((import.meta as ImportMeta & { main?: boolean }).main) {
     void runCli(process.argv.slice(2), {
         stdout: process.stdout,
         stderr: process.stderr,
-        cwd: process.cwd(),
+        storeRoot: DEFAULT_STORE_ROOT,
         env: process.env,
         exit: code => {
             process.exitCode = code;

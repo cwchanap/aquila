@@ -271,10 +271,12 @@ function assertMediaMatrix(
         if (
             command === 'publish' &&
             (values.reactivate === true ||
-                values['override-concurrent-pointer'] === true)
+                values['override-concurrent-pointer'] === true ||
+                values['no-activate'] === true ||
+                values['confirm-production'] !== undefined)
         ) {
             throw configurationError(
-                'Audio publish cannot mutate the active pointer'
+                'Audio publish does not accept pointer-control flags'
             );
         }
         if (values.plan !== undefined || values['source-root'] !== undefined) {

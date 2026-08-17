@@ -403,7 +403,6 @@ describe('assets CLI command schemas and confirmation matrix', () => {
         const test = harness(runCommand);
 
         for (const command of ['plan', 'publish'] as const) {
-            const extra = command === 'publish' ? ['--no-activate'] : [];
             const exit = await runAssetsCli(
                 [
                     command,
@@ -419,7 +418,6 @@ describe('assets CLI command schemas and confirmation matrix', () => {
                     'gate-123',
                     '--destination-root',
                     '/tmp/aquila-audio-delivery',
-                    ...extra,
                 ],
                 test.dependencies
             );
@@ -604,6 +602,27 @@ describe('assets CLI command schemas and confirmation matrix', () => {
                     '--story-folder',
                     'example_story',
                     '--override-concurrent-pointer',
+                ],
+            ],
+            [
+                'publish',
+                [
+                    '--environment',
+                    'production',
+                    '--story-folder',
+                    'example_story',
+                    '--no-activate',
+                ],
+            ],
+            [
+                'publish',
+                [
+                    '--environment',
+                    'production',
+                    '--story-folder',
+                    'example_story',
+                    '--confirm-production',
+                    'example_story',
                 ],
             ],
         ] as const;

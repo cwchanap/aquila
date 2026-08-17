@@ -161,13 +161,7 @@ const URL_WITH_AUTHORITY_RE = /^[A-Za-z][A-Za-z0-9+.-]*:\/\//;
 const FILE_URL_RE = /^file:\//i;
 const ABSOLUTE_PATH_PREFIX_RE = /^(?:\/|\\)/;
 const WINDOWS_DRIVE_PATH_RE = /^[A-Za-z]:[\\/]/;
-const AUDIO_REASON_PRIVATE_TOKEN_RE =
-    /\b(?:candidate(?:id|[-_][a-z0-9]+)?|source(?:path|filename)?|generation(?:root|spec)?|receipt|prompt|provider|model|request|compiler|credential|token|api(?:key)?)\b/i;
-const AUDIO_REASON_PATH_RE =
-    /(?:^|[\s("'=:])(?:\.{1,2}[\\/]|\/|\\|[A-Za-z]:[\\/]|[A-Za-z][A-Za-z0-9+.-]*:\/\/)/i;
-const AUDIO_REASON_FILENAME_RE =
-    /\b[^\s/]+\.(?:mp3|wav|ogg|flac|json|ts|md)\b/i;
-const REDACTED_AUDIO_OMISSION_REASON = '[redacted]';
+const PUBLIC_AUDIO_OMISSION_REASON = '[redacted]';
 const CANONICAL_ISO_TIMESTAMP_RE =
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -510,17 +504,6 @@ function sanitizeCoverage(
     };
 }
 
-function isSafeAudioReason(reason: string): boolean {
-    const trimmed = reason.trim();
-    return (
-        trimmed.length > 0 &&
-        trimmed.length <= 500 &&
-        !AUDIO_REASON_PRIVATE_TOKEN_RE.test(trimmed) &&
-        !AUDIO_REASON_PATH_RE.test(trimmed) &&
-        !AUDIO_REASON_FILENAME_RE.test(trimmed)
-    );
-}
-
 function sanitizeAudioCoverage(
     coverage: readonly AudioCoverageEntryV1[]
 ): AudioCoverageEntryV1[] {
@@ -555,9 +538,7 @@ function sanitizeAudioCoverage(
             key: entry.key,
             usageCount: entry.usageCount,
             disposition: 'omitted',
-            reason: isSafeAudioReason(entry.reason)
-                ? entry.reason.trim()
-                : REDACTED_AUDIO_OMISSION_REASON,
+            reason: PUBLIC_AUDIO_OMISSION_REASON,
         });
     }
     return sanitized.sort((left, right) =>

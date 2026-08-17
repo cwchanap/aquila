@@ -187,8 +187,16 @@ export async function planAudioGeneration(
     }
     if (maxRequests !== undefined) assertMaxRequests(maxRequests);
 
-    const specSet = buildAudioGenerationSpecSet(options.context.plan.assets);
     const selectedKeys = selectKeys(options.context.plan.assets, keys, missing);
+    // Validate provider compatibility only for the requested asset set, not
+    // the whole story. An unrelated provider-invalid cue must not block a
+    // `--key <valid-key>` run. `--missing` selects every plan row, so the
+    // full committed story is still validated end-to-end in that mode.
+    const selectedKeySet = new Set(selectedKeys);
+    const selectedAssets = options.context.plan.assets.filter(asset =>
+        selectedKeySet.has(asset.key)
+    );
+    const specSet = buildAudioGenerationSpecSet(selectedAssets);
     if (specSet.issues.length > 0) {
         return makePlan({
             context: options.context,

@@ -3,6 +3,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     canonicalJson,
+    getAudioCurrentPointerPath,
+    getAudioObjectPath,
+    getAudioReleaseManifestPath,
     getCurrentPointerPath,
     getObjectPath,
     getReleaseManifestPath,
@@ -21,6 +24,7 @@ import {
 import { PublisherError } from '../errors';
 import { sha256Bytes } from '../hash';
 import { buildPreparedRelease } from '../runtime-release';
+import { buildPreparedAudioRelease } from '../audio-runtime-release';
 import type {
     DeliveryStore,
     PointerSnapshot,
@@ -28,7 +32,13 @@ import type {
     StoredObject,
     StoredObjectMetadata,
 } from '../stores/delivery-store';
-import type { EncodedAsset, EncodedVariant, PreparedRelease } from '../types';
+import type { AudioProcessRunner } from '../audio-encoder';
+import type {
+    EncodedAsset,
+    EncodedVariant,
+    PreparedAudioRelease,
+    PreparedRelease,
+} from '../types';
 
 const STORY_ID = 'example_story';
 const PREVIEW_TARGET = { kind: 'preview', previewId: 'activation' } as const;
@@ -43,6 +53,64 @@ const textDecoder = new TextDecoder();
 let previewReleaseA: PreparedRelease;
 let previewReleaseB: PreparedRelease;
 let productionReleaseA: PreparedRelease;
+let previewAudioReleaseA: PreparedAudioRelease;
+let previewAudioReleaseB: PreparedAudioRelease;
+
+const AUDIO_POINTER_KEY = getAudioCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
+
+function preparedAudioRelease(
+    target: PublicationTarget,
+    bytes: number[]
+): PreparedAudioRelease {
+    const audioBytes = Uint8Array.from(bytes);
+    const sha256 = sha256Bytes(audioBytes);
+    return buildPreparedAudioRelease({
+        storyId: STORY_ID,
+        target,
+        assets: [
+            {
+                type: 'sfx',
+                key: 'door-open',
+                bytes: audioBytes,
+                sha256,
+                path: getAudioObjectPath(sha256),
+                byteLength: audioBytes.byteLength,
+                durationMs: 2_200,
+                loop: false,
+                contentType: 'audio/mpeg',
+            },
+        ],
+        coverage: [
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 1,
+                disposition: 'included',
+            },
+        ],
+    });
+}
+
+const audioProbeRunner: AudioProcessRunner = async executable => ({
+    exitCode: 0,
+    stdout: new TextEncoder().encode(
+        JSON.stringify({
+            streams:
+                executable === 'ffprobe'
+                    ? [
+                          {
+                              codec_type: 'audio',
+                              codec_name: 'mp3',
+                              sample_rate: 44_100,
+                              bit_rate: 128_000,
+                              duration: 2.2,
+                          },
+                      ]
+                    : [],
+        })
+    ),
+    stderr: '',
+});
 
 function coverage(): StoryAssetCoverageReport {
     return {
@@ -142,6 +210,8 @@ beforeAll(async () => {
         g: 20,
         b: 30,
     });
+    previewAudioReleaseA = preparedAudioRelease(PREVIEW_TARGET, [11, 22, 33]);
+    previewAudioReleaseB = preparedAudioRelease(PREVIEW_TARGET, [44, 55, 66]);
 });
 
 function cloneObject(object: StoredObject): StoredObject {
@@ -309,6 +379,195 @@ class ActivationStore implements DeliveryStore {
     }
 }
 
+class MediaActivationStore implements DeliveryStore {
+    readonly events: string[] = [];
+    readonly pointerWrites: PointerWriteRequest[] = [];
+    beforeCompareAndSwap?: (
+        store: MediaActivationStore,
+        request: PointerWriteRequest,
+        attempt: number
+    ) => void;
+
+    private readonly objects = new Map<string, StoredObject>();
+    private readonly pointers = new Map<
+        string,
+        Extract<PointerSnapshot, { exists: true }>
+    >();
+    private pointerVersion = 0;
+    private compareAndSwapAttempts = 0;
+
+    constructor(...releases: Array<PreparedRelease | PreparedAudioRelease>) {
+        for (const release of releases) this.seedRelease(release);
+    }
+
+    get authoringCatalog(): never {
+        throw new Error('activation touched authoring input');
+    }
+
+    get releasePlan(): never {
+        throw new Error('activation touched plan input');
+    }
+
+    get sourceRoot(): never {
+        throw new Error('activation touched source input');
+    }
+
+    get encoder(): never {
+        throw new Error('activation touched encoder input');
+    }
+
+    async stat(): Promise<StoredObjectMetadata | null> {
+        throw new Error('activation must not stat unrelated storage');
+    }
+
+    async read(key: string): Promise<StoredObject> {
+        this.events.push(`read:${key}`);
+        const object = this.objects.get(key);
+        if (object === undefined)
+            throw new Error(`missing test object: ${key}`);
+        return cloneObject(object);
+    }
+
+    createImmutable(): Promise<{ status: 'created' | 'already-exists' }> {
+        throw new Error('activation must not create immutable objects');
+    }
+
+    async readPointer(key: string): Promise<PointerSnapshot> {
+        this.events.push(`read-pointer:${key}`);
+        return this.pointerSnapshot(key);
+    }
+
+    async inspectPointer(key: string): Promise<PointerSnapshot> {
+        return this.readPointer(key);
+    }
+
+    async compareAndSwapPointer(request: PointerWriteRequest): Promise<{
+        status: 'written' | 'precondition-failed';
+        etag?: string;
+    }> {
+        this.compareAndSwapAttempts += 1;
+        this.events.push(`cas:${request.key}`);
+        this.pointerWrites.push({
+            ...request,
+            bytes: Uint8Array.from(request.bytes),
+        });
+        this.beforeCompareAndSwap?.(this, request, this.compareAndSwapAttempts);
+        const current = this.pointers.get(request.key);
+        const expectationMatches =
+            current === undefined
+                ? request.expected.exists === false
+                : request.expected.exists === true &&
+                  request.expected.etag === current.etag;
+        if (!expectationMatches) return { status: 'precondition-failed' };
+        const etag = this.forcePointer(request.key, request.bytes, {
+            contentType: request.contentType,
+            cacheControl: request.cacheControl,
+        });
+        return { status: 'written', etag };
+    }
+
+    listKeys(): AsyncIterable<string> {
+        throw new Error('activation must not list storage');
+    }
+
+    list(): AsyncIterable<StoredObjectMetadata> {
+        throw new Error('activation must not list storage');
+    }
+
+    async close(): Promise<void> {}
+
+    forcePointer(
+        key: string,
+        bytes: Uint8Array,
+        metadataValue: { contentType: string; cacheControl: string } = {
+            contentType: 'application/json',
+            cacheControl: POINTER_CACHE,
+        }
+    ): string {
+        this.pointerVersion += 1;
+        const etag = `W/"media-opaque-${this.pointerVersion}"`;
+        this.pointers.set(key, {
+            exists: true,
+            etag,
+            bytes: Uint8Array.from(bytes),
+            contentType: metadataValue.contentType,
+            cacheControl: metadataValue.cacheControl,
+        });
+        return etag;
+    }
+
+    currentPointerBytes(key: string): Uint8Array | null {
+        const pointer = this.pointers.get(key);
+        return pointer === undefined ? null : Uint8Array.from(pointer.bytes);
+    }
+
+    private pointerSnapshot(key: string): PointerSnapshot {
+        const pointer = this.pointers.get(key);
+        return pointer === undefined
+            ? { exists: false }
+            : { ...pointer, bytes: Uint8Array.from(pointer.bytes) };
+    }
+
+    private seedRelease(release: PreparedRelease | PreparedAudioRelease): void {
+        if ('encodedAssets' in release) {
+            for (const asset of release.encodedAssets) {
+                for (const variant of asset.variants) {
+                    this.objects.set(variant.path, {
+                        key: variant.path,
+                        etag: `immutable-${variant.sha256}`,
+                        bytes: Uint8Array.from(variant.bytes),
+                        byteLength: variant.bytes.byteLength,
+                        contentType: variant.contentType,
+                        cacheControl: IMMUTABLE_CACHE,
+                        customMetadata: {},
+                    });
+                }
+            }
+            const manifestPath = getReleaseManifestPath(
+                release.storyId,
+                release.releaseId,
+                release.target
+            );
+            this.objects.set(manifestPath, {
+                key: manifestPath,
+                etag: `manifest-${release.manifestSha256}`,
+                bytes: Uint8Array.from(release.manifestBytes),
+                byteLength: release.manifestBytes.byteLength,
+                contentType: 'application/json',
+                cacheControl: IMMUTABLE_CACHE,
+                customMetadata: {},
+            });
+            return;
+        }
+
+        for (const asset of release.assets) {
+            this.objects.set(asset.path, {
+                key: asset.path,
+                etag: `immutable-${asset.sha256}`,
+                bytes: Uint8Array.from(asset.bytes),
+                byteLength: asset.bytes.byteLength,
+                contentType: asset.contentType,
+                cacheControl: IMMUTABLE_CACHE,
+                customMetadata: {},
+            });
+        }
+        const manifestPath = getAudioReleaseManifestPath(
+            release.storyId,
+            release.releaseId,
+            release.target
+        );
+        this.objects.set(manifestPath, {
+            key: manifestPath,
+            etag: `manifest-${release.manifestSha256}`,
+            bytes: Uint8Array.from(release.manifestBytes),
+            byteLength: release.manifestBytes.byteLength,
+            contentType: 'application/json',
+            cacheControl: IMMUTABLE_CACHE,
+            customMetadata: {},
+        });
+    }
+}
+
 function pointerFor(
     release: PreparedRelease,
     publishedAt: string
@@ -318,6 +577,24 @@ function pointerFor(
         storyId: release.storyId,
         releaseId: release.releaseId,
         manifestPath: getReleaseManifestPath(
+            release.storyId,
+            release.releaseId,
+            release.target
+        ),
+        manifestSha256: release.manifestSha256,
+        publishedAt,
+    };
+}
+
+function audioPointerFor(
+    release: PreparedAudioRelease,
+    publishedAt: string
+): ActiveReleasePointerV1 {
+    return {
+        schemaVersion: 1,
+        storyId: release.storyId,
+        releaseId: release.releaseId,
+        manifestPath: getAudioReleaseManifestPath(
             release.storyId,
             release.releaseId,
             release.target
@@ -358,6 +635,29 @@ function activate(
         reactivate: options.reactivate,
         overrideConcurrentPointer: options.overrideConcurrentPointer,
         confirmProduction: options.confirmProduction,
+    });
+}
+
+function activateAudio(
+    store: DeliveryStore,
+    release: PreparedAudioRelease,
+    options: {
+        nowMs?: number;
+        reactivate?: boolean;
+        overrideConcurrentPointer?: boolean;
+    } = {}
+) {
+    return activateStoredRelease({
+        store,
+        storyId: release.storyId,
+        target: release.target,
+        releaseId: release.releaseId,
+        expectedManifestSha256: release.manifestSha256,
+        media: 'audio',
+        run: audioProbeRunner,
+        now: () => options.nowMs ?? Date.parse('2026-08-01T20:00:00.000Z'),
+        reactivate: options.reactivate,
+        overrideConcurrentPointer: options.overrideConcurrentPointer,
     });
 }
 
@@ -756,5 +1056,99 @@ describe('activateStoredRelease', () => {
             })
         ).resolves.toMatchObject({ status: 'success' });
         expect(confirmed.pointerWrites).toHaveLength(1);
+    });
+
+    it('uses the audio pointer for first activation, second-read no-op, and reactivation while preserving visual state', async () => {
+        const store = new MediaActivationStore(
+            previewReleaseA,
+            previewAudioReleaseA
+        );
+        const visualPointerKey = getCurrentPointerPath(
+            STORY_ID,
+            PREVIEW_TARGET
+        );
+        const visualBytes = pointerBytes(
+            pointerFor(previewReleaseA, '2026-08-01T19:00:00.000Z')
+        );
+        store.forcePointer(visualPointerKey, visualBytes);
+
+        const first = await activateAudio(store, previewAudioReleaseA);
+        expect(first).toMatchObject({
+            status: 'success',
+            releaseId: previewAudioReleaseA.releaseId,
+        });
+        expect(store.pointerWrites).toHaveLength(1);
+        expect(store.pointerWrites[0]!.key).toBe(AUDIO_POINTER_KEY);
+        expect(store.currentPointerBytes(visualPointerKey)).toEqual(
+            visualBytes
+        );
+
+        const second = await activateAudio(store, previewAudioReleaseA);
+        expect(second).toMatchObject({ status: 'no-op' });
+        expect(store.pointerWrites).toHaveLength(1);
+        expect(store.events).toContain(`read-pointer:${AUDIO_POINTER_KEY}`);
+
+        const reactivated = await activateAudio(store, previewAudioReleaseA, {
+            reactivate: true,
+            nowMs: Date.parse('2026-08-01T20:00:00.000Z'),
+        });
+        expect(reactivated).toMatchObject({ status: 'success' });
+        expect(store.pointerWrites).toHaveLength(2);
+        expect(
+            store.pointerWrites.every(write => write.key === AUDIO_POINTER_KEY)
+        ).toBe(true);
+        expect(store.currentPointerBytes(visualPointerKey)).toEqual(
+            visualBytes
+        );
+    });
+
+    it('uses the audio pointer for stale CAS override after an audio pointer already exists', async () => {
+        const store = new MediaActivationStore(
+            previewReleaseA,
+            previewAudioReleaseA,
+            previewAudioReleaseB
+        );
+        const visualPointerKey = getCurrentPointerPath(
+            STORY_ID,
+            PREVIEW_TARGET
+        );
+        const visualBytes = pointerBytes(
+            pointerFor(previewReleaseA, '2026-08-01T19:00:00.000Z')
+        );
+        store.forcePointer(visualPointerKey, visualBytes);
+        await activateAudio(store, previewAudioReleaseA);
+
+        store.beforeCompareAndSwap = (current, _request, attempt) => {
+            if (attempt === 2) {
+                current.forcePointer(
+                    AUDIO_POINTER_KEY,
+                    pointerBytes(
+                        audioPointerFor(
+                            previewAudioReleaseB,
+                            '2026-08-01T20:00:00.010Z'
+                        )
+                    )
+                );
+            }
+        };
+
+        const result = await activateAudio(store, previewAudioReleaseA, {
+            reactivate: true,
+            overrideConcurrentPointer: true,
+        });
+
+        expect(result).toMatchObject({
+            status: 'success',
+            overrideAttempted: true,
+            releaseId: previewAudioReleaseA.releaseId,
+        });
+        expect(
+            store.pointerWrites
+                .slice(1)
+                .every(write => write.key === AUDIO_POINTER_KEY)
+        ).toBe(true);
+        expect(store.currentPointerBytes(visualPointerKey)).toEqual(
+            visualBytes
+        );
     });
 });

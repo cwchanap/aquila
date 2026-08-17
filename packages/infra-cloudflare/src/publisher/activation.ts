@@ -1,16 +1,17 @@
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     canonicalJson,
+    getAudioCurrentPointerPath,
     getCurrentPointerPath,
+    parseAudioActiveReleasePointer,
     parseActiveReleasePointer,
     type ActiveReleasePointerV1,
     type ManifestByteSha256,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
-import {
-    verifyStoredRelease,
-    type VerifiedStoredRelease,
-} from './candidate-verifier';
+import { verifyStoredRelease } from './candidate-verifier';
+import { verifyStoredAudioRelease } from './audio-candidate-verifier';
+import type { AudioProcessRunner } from './audio-encoder';
 import { PublisherError } from './errors';
 import type {
     DeliveryStore,
@@ -19,6 +20,15 @@ import type {
 } from './stores/delivery-store';
 
 export const MAX_PUBLISHER_FUTURE_SKEW_MS = 300_000;
+
+export type PublisherMedia = 'visual' | 'audio';
+
+interface ActivatableStoredRelease {
+    readonly releaseId: string;
+    readonly manifestSha256: ManifestByteSha256;
+    readonly pointerCandidate: ActiveReleasePointerV1;
+    readonly validatePointer: (pointer: ActiveReleasePointerV1) => void;
+}
 
 export type ParsedPointerSnapshot =
     | { readonly exists: false }
@@ -38,7 +48,9 @@ export interface ActivateStoredReleaseOptions {
     readonly storyId: string;
     readonly target: PublicationTarget;
     readonly releaseId: string;
+    readonly media?: PublisherMedia;
     readonly expectedManifestSha256?: ManifestByteSha256;
+    readonly run?: AudioProcessRunner;
     readonly reactivate?: boolean;
     readonly overrideConcurrentPointer?: boolean;
     readonly confirmProduction?: string;
@@ -133,9 +145,31 @@ function activationTargetError(
     );
 }
 
+function currentPointerPathFor(
+    media: PublisherMedia,
+    storyId: string,
+    target: PublicationTarget
+): string {
+    return media === 'audio'
+        ? getAudioCurrentPointerPath(storyId, target)
+        : getCurrentPointerPath(storyId, target);
+}
+
+function parsePointerFor(
+    media: PublisherMedia,
+    input: unknown,
+    target: PublicationTarget,
+    storyId: string
+): ActiveReleasePointerV1 {
+    return media === 'audio'
+        ? parseAudioActiveReleasePointer(input, target, storyId)
+        : parseActiveReleasePointer(input, target, storyId);
+}
+
 async function readPointer(
     store: DeliveryStore,
     key: string,
+    media: PublisherMedia,
     target: PublicationTarget,
     storyId: string,
     intent: ActivateStoredReleaseOptions['intent']
@@ -170,7 +204,7 @@ async function readPointer(
 
     let pointer: ActiveReleasePointerV1;
     try {
-        pointer = parseActiveReleasePointer(value, target, storyId);
+        pointer = parsePointerFor(media, value, target, storyId);
     } catch {
         throw activationTargetError(key, intent);
     }
@@ -210,7 +244,7 @@ function assertProductionConfirmation(
 }
 
 function isAlreadyActive(
-    verified: VerifiedStoredRelease,
+    verified: ActivatableStoredRelease,
     snapshot: ActivationPointerSnapshot,
     key: string,
     intent: ActivateStoredReleaseOptions['intent']
@@ -226,7 +260,26 @@ function isAlreadyActive(
 
 async function verifyTarget(
     options: ActivateStoredReleaseOptions
-): Promise<VerifiedStoredRelease> {
+): Promise<ActivatableStoredRelease> {
+    const media = options.media ?? 'visual';
+    return verifyStoredFor(media, options);
+}
+
+async function verifyStoredFor(
+    media: PublisherMedia,
+    options: ActivateStoredReleaseOptions
+): Promise<ActivatableStoredRelease> {
+    if (media === 'audio') {
+        return verifyStoredAudioRelease({
+            store: options.store,
+            storyId: options.storyId,
+            target: options.target,
+            releaseId: options.releaseId,
+            expectedManifestSha256: options.expectedManifestSha256,
+            depth: 'deep',
+            run: options.run,
+        });
+    }
     return verifyStoredRelease({
         store: options.store,
         storyId: options.storyId,
@@ -238,7 +291,7 @@ async function verifyTarget(
 }
 
 function createPointer(
-    verified: VerifiedStoredRelease,
+    verified: ActivatableStoredRelease,
     snapshot: ActivationPointerSnapshot,
     nowMs: number
 ): ActiveReleasePointerV1 {
@@ -281,7 +334,7 @@ async function writePointer(
 
 function result(
     options: ActivateStoredReleaseOptions,
-    verified: VerifiedStoredRelease,
+    verified: ActivatableStoredRelease,
     status: ActivationResult['status'],
     snapshot: ActivationPointerSnapshot,
     overrideAttempted: boolean,
@@ -306,11 +359,13 @@ function result(
 export async function activateStoredRelease(
     options: ActivateStoredReleaseOptions
 ): Promise<ActivationResult> {
-    const key = getCurrentPointerPath(options.storyId, options.target);
+    const media = options.media ?? 'visual';
+    const key = currentPointerPathFor(media, options.storyId, options.target);
     let verified = await verifyTarget(options);
     let snapshot = await readPointer(
         options.store,
         key,
+        media,
         options.target,
         options.storyId,
         options.intent
@@ -349,6 +404,7 @@ export async function activateStoredRelease(
     snapshot = await readPointer(
         options.store,
         key,
+        media,
         options.target,
         options.storyId,
         options.intent

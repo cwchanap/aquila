@@ -1,22 +1,32 @@
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     assertReleaseIdMatchesContentSha256,
+    canonicalAudioReleaseContent,
     canonicalReleaseContent,
+    getAudioCurrentPointerPath,
+    getAudioReleaseManifestPath,
     getCurrentPointerPath,
     getReleaseManifestPath,
     isReleaseId,
+    parseAudioActiveReleasePointer,
     parseActiveReleasePointer,
+    parseRuntimeAudioManifest,
     parseRuntimeAssetManifest,
+    type ActiveReleasePointerV1,
     type ManifestByteSha256,
     type PublicationTarget,
+    type RuntimeAudioManifestV1,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
 import {
     activateStoredRelease,
+    type PublisherMedia,
     type ActivateStoredReleaseOptions,
     type ActivationResult,
 } from './activation';
 import { verifyStoredRelease } from './candidate-verifier';
+import { verifyStoredAudioRelease } from './audio-candidate-verifier';
+import type { AudioProcessRunner } from './audio-encoder';
 import { PublisherError } from './errors';
 import { sha256ReleaseContent } from './hash';
 import type {
@@ -34,7 +44,9 @@ export interface ListReleasesOptions {
     readonly store: DeliveryStore;
     readonly storyId: string;
     readonly target: PublicationTarget;
+    readonly media?: PublisherMedia;
     readonly deep?: boolean;
+    readonly run?: AudioProcessRunner;
     readonly onProgress?: ProgressSink;
     readonly onWarning?: (warning: PublisherDiagnosticV1) => void;
 }
@@ -60,6 +72,8 @@ interface ManifestClassification {
     readonly releaseIdentityValid: boolean;
 }
 
+type HistoryManifest = RuntimeAssetManifestV1 | RuntimeAudioManifestV1;
+
 const JSON_CONTENT_TYPE = 'application/json';
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
 const SANITIZED_LIST_CAUSE = Object.freeze({
@@ -76,9 +90,82 @@ function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function releasePrefix(storyId: string, target: PublicationTarget): string {
+function manifestPathFor(
+    media: PublisherMedia,
+    storyId: string,
+    releaseId: string,
+    target: PublicationTarget
+): string {
+    return media === 'audio'
+        ? getAudioReleaseManifestPath(storyId, releaseId, target)
+        : getReleaseManifestPath(storyId, releaseId, target);
+}
+
+function currentPointerPathFor(
+    media: PublisherMedia,
+    storyId: string,
+    target: PublicationTarget
+): string {
+    return media === 'audio'
+        ? getAudioCurrentPointerPath(storyId, target)
+        : getCurrentPointerPath(storyId, target);
+}
+
+function parsePointerFor(
+    media: PublisherMedia,
+    input: unknown,
+    target: PublicationTarget,
+    storyId: string
+): ActiveReleasePointerV1 {
+    return media === 'audio'
+        ? parseAudioActiveReleasePointer(input, target, storyId)
+        : parseActiveReleasePointer(input, target, storyId);
+}
+
+function parseManifestFor(
+    media: PublisherMedia,
+    bytes: Uint8Array
+): HistoryManifest {
+    const input = JSON.parse(textDecoder.decode(bytes));
+    return media === 'audio'
+        ? parseRuntimeAudioManifest(input)
+        : parseRuntimeAssetManifest(input);
+}
+
+function canonicalReleaseContentFor(
+    media: PublisherMedia,
+    manifest: HistoryManifest
+): string {
+    return media === 'audio'
+        ? canonicalAudioReleaseContent(manifest as RuntimeAudioManifestV1)
+        : canonicalReleaseContent(manifest as RuntimeAssetManifestV1);
+}
+
+function releaseIdentityValidFor(
+    media: PublisherMedia,
+    manifest: HistoryManifest,
+    releaseId: string
+): boolean {
+    if (manifest.releaseId !== releaseId) return false;
+    try {
+        assertReleaseIdMatchesContentSha256(
+            manifest,
+            sha256ReleaseContent(canonicalReleaseContentFor(media, manifest))
+        );
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function releasePrefix(
+    media: PublisherMedia,
+    storyId: string,
+    target: PublicationTarget
+): string {
     const exampleReleaseId = `sha256-${'0'.repeat(64)}`;
-    const manifestPath = getReleaseManifestPath(
+    const manifestPath = manifestPathFor(
+        media,
         storyId,
         exampleReleaseId,
         target
@@ -96,6 +183,7 @@ function releasePrefix(storyId: string, target: PublicationTarget): string {
 function releaseIdForKey(
     key: string,
     prefix: string,
+    media: PublisherMedia,
     storyId: string,
     target: PublicationTarget
 ): string | undefined {
@@ -106,7 +194,7 @@ function releaseIdForKey(
     const releaseId = match[1]!;
     if (!isReleaseId(releaseId)) return undefined;
     try {
-        return getReleaseManifestPath(storyId, releaseId, target) === key
+        return manifestPathFor(media, storyId, releaseId, target) === key
             ? releaseId
             : undefined;
     } catch {
@@ -118,12 +206,14 @@ async function listedReleaseIds(
     options: ListReleasesOptions,
     prefix: string
 ): Promise<string[]> {
+    const media = options.media ?? 'visual';
     const releaseIds = new Set<string>();
     try {
         for await (const key of options.store.listKeys(prefix)) {
             const releaseId = releaseIdForKey(
                 key,
                 prefix,
+                media,
                 options.storyId,
                 options.target
             );
@@ -138,11 +228,12 @@ async function listedReleaseIds(
     return [...releaseIds].sort(compareText);
 }
 
-function parseManifest(object: StoredObject): RuntimeAssetManifestV1 | null {
+function parseManifest(
+    media: PublisherMedia,
+    object: StoredObject
+): HistoryManifest | null {
     try {
-        return parseRuntimeAssetManifest(
-            JSON.parse(textDecoder.decode(object.bytes))
-        );
+        return parseManifestFor(media, object.bytes);
     } catch {
         return null;
     }
@@ -152,9 +243,10 @@ async function classifyManifest(
     store: DeliveryStore,
     storyId: string,
     target: PublicationTarget,
-    releaseId: string
+    releaseId: string,
+    media: PublisherMedia
 ): Promise<ManifestClassification> {
-    const manifestPath = getReleaseManifestPath(storyId, releaseId, target);
+    const manifestPath = manifestPathFor(media, storyId, releaseId, target);
     let object: StoredObject;
     try {
         object = await store.read(manifestPath);
@@ -168,23 +260,39 @@ async function classifyManifest(
             }
         );
     }
-    const manifest = parseManifest(object);
+    const manifest = parseManifest(media, object);
     if (manifest === null) {
         return { manifestValid: false, releaseIdentityValid: false };
     }
     let releaseIdentityValid = false;
-    if (manifest.storyId === storyId && manifest.releaseId === releaseId) {
-        try {
-            assertReleaseIdMatchesContentSha256(
-                manifest,
-                sha256ReleaseContent(canonicalReleaseContent(manifest))
-            );
-            releaseIdentityValid = true;
-        } catch {
-            releaseIdentityValid = false;
-        }
+    if (manifest.storyId === storyId) {
+        releaseIdentityValid = releaseIdentityValidFor(
+            media,
+            manifest,
+            releaseId
+        );
     }
     return { manifestValid: true, releaseIdentityValid };
+}
+
+interface HistoryVerificationOptions {
+    readonly store: DeliveryStore;
+    readonly storyId: string;
+    readonly target: PublicationTarget;
+    readonly releaseId: string;
+    readonly depth: 'shallow' | 'deep';
+    readonly expectedManifestSha256?: ManifestByteSha256;
+    readonly run?: AudioProcessRunner;
+}
+
+async function verifyStoredFor(
+    media: PublisherMedia,
+    options: HistoryVerificationOptions
+) {
+    if (media === 'audio') {
+        return verifyStoredAudioRelease(options);
+    }
+    return verifyStoredRelease(options);
 }
 
 function invalidVerification(error: unknown): boolean {
@@ -194,7 +302,8 @@ function invalidVerification(error: unknown): boolean {
 async function inspectActiveReleaseId(
     options: ListReleasesOptions
 ): Promise<string | undefined> {
-    const key = getCurrentPointerPath(options.storyId, options.target);
+    const media = options.media ?? 'visual';
+    const key = currentPointerPathFor(media, options.storyId, options.target);
     let snapshot: PointerSnapshot;
     try {
         snapshot = await options.store.inspectPointer(key);
@@ -221,7 +330,8 @@ async function inspectActiveReleaseId(
         );
     }
     try {
-        return parseActiveReleasePointer(
+        return parsePointerFor(
+            media,
             JSON.parse(textDecoder.decode(snapshot.bytes)),
             options.target,
             options.storyId
@@ -240,19 +350,22 @@ async function summarizeRelease(
     releaseId: string,
     activeReleaseId: string | undefined
 ): Promise<ReleaseSummary> {
-    const manifestPath = getReleaseManifestPath(
+    const media = options.media ?? 'visual';
+    const manifestPath = manifestPathFor(
+        media,
         options.storyId,
         releaseId,
         options.target
     );
     let shallow;
     try {
-        shallow = await verifyStoredRelease({
+        shallow = await verifyStoredFor(media, {
             store: options.store,
             storyId: options.storyId,
             target: options.target,
             releaseId,
             depth: 'shallow',
+            run: options.run,
         });
     } catch (error) {
         if (!invalidVerification(error)) throw error;
@@ -260,7 +373,8 @@ async function summarizeRelease(
             options.store,
             options.storyId,
             options.target,
-            releaseId
+            releaseId,
+            media
         );
         return {
             releaseId,
@@ -275,13 +389,14 @@ async function summarizeRelease(
     let deepVerified = false;
     if (options.deep === true) {
         try {
-            await verifyStoredRelease({
+            await verifyStoredFor(media, {
                 store: options.store,
                 storyId: options.storyId,
                 target: options.target,
                 releaseId,
                 depth: 'deep',
                 expectedManifestSha256: shallow.manifestSha256,
+                run: options.run,
             });
             deepVerified = true;
         } catch (error) {
@@ -303,7 +418,8 @@ async function summarizeRelease(
 export async function listReleases(
     options: ListReleasesOptions
 ): Promise<ReleaseSummary[]> {
-    const prefix = releasePrefix(options.storyId, options.target);
+    const media = options.media ?? 'visual';
+    const prefix = releasePrefix(media, options.storyId, options.target);
     const releaseIds = await listedReleaseIds(options, prefix);
     let activeReleaseId: string | undefined;
     try {
@@ -355,12 +471,14 @@ function rollbackReport(
     activation: ActivationResult
 ): PublisherReportV1 {
     const pointerWritten = activation.status === 'success';
+    const media = options.media ?? 'visual';
     return {
         schemaVersion: 1,
         command: 'rollback',
         status: activation.status,
         storyId: options.storyId,
         target: options.target,
+        ...(media === 'audio' ? { media: 'audio' as const } : {}),
         releaseId: activation.releaseId,
         manifestSha256: activation.manifestSha256,
         counts: emptyCounts(pointerWritten),
@@ -369,7 +487,8 @@ function rollbackReport(
                 ? {
                       stage: 'rollback',
                       kind: 'write-pointer',
-                      key: getCurrentPointerPath(
+                      key: currentPointerPathFor(
+                          media,
                           options.storyId,
                           options.target
                       ),
@@ -413,7 +532,8 @@ function invalidRollbackTarget(
 async function assertRollbackTargetExists(
     options: RollbackReleaseOptions
 ): Promise<void> {
-    const key = getReleaseManifestPath(
+    const key = manifestPathFor(
+        options.media ?? 'visual',
         options.storyId,
         options.releaseId,
         options.target
@@ -454,7 +574,8 @@ export async function rollbackRelease(
         if (error instanceof PublisherError && error.code === 'integrity') {
             throw invalidRollbackTarget(
                 options,
-                getReleaseManifestPath(
+                manifestPathFor(
+                    options.media ?? 'visual',
                     options.storyId,
                     options.releaseId,
                     options.target

@@ -16,12 +16,18 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import {
+    canonicalAudioReleaseContent,
     canonicalReleaseContent,
+    getAudioCurrentPointerPath,
+    getAudioObjectPath,
+    getAudioReleaseManifestPath,
     getCurrentPointerPath,
     getReleaseManifestPath,
     getObjectPath,
+    parseRuntimeAudioManifest,
     parseRuntimeAssetManifest,
     type ManifestByteSha256,
+    type RuntimeAudioManifestV1,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
 import {
@@ -496,6 +502,185 @@ function fixtureFetch(
             }
         }
         return new Response('not found', { status: 404 });
+    }) as typeof fetch;
+}
+
+const AUDIO_TARGET = { kind: 'preview', previewId: 'hpa-609-smoke' } as const;
+
+type AudioFixtureObject = {
+    identity: { type: 'sfx' | 'bgm'; key: string };
+    body: Uint8Array;
+    sha256: string;
+    path: string;
+    label: string;
+    byteLength: number;
+    durationMs: number;
+    loop: boolean;
+};
+
+type AudioReleaseFixture = {
+    pointerText: string;
+    manifestText: string;
+    manifestObj: RuntimeAudioManifestV1;
+    objects: AudioFixtureObject[];
+};
+
+function audioBytes(length: number, seed: number): Uint8Array {
+    return Uint8Array.from({ length }, (_, index) => (index + seed) % 251);
+}
+
+function buildAudioObject(
+    type: 'sfx' | 'bgm',
+    key: string,
+    body: Uint8Array,
+    durationMs: number
+): AudioFixtureObject {
+    const sha256 = createHash('sha256').update(body).digest('hex');
+    return {
+        identity: { type, key },
+        body,
+        sha256,
+        path: getAudioObjectPath(
+            sha256 as unknown as Parameters<typeof getAudioObjectPath>[0]
+        ),
+        label: sha256.slice(0, 16),
+        byteLength: body.byteLength,
+        durationMs,
+        loop: type === 'bgm',
+    };
+}
+
+function buildValidAudioRelease(): AudioReleaseFixture {
+    const objects = [
+        buildAudioObject('bgm', 'night-train', audioBytes(512, 31), 4_000),
+        buildAudioObject('sfx', 'door-open', audioBytes(2048, 7), 1_250),
+    ];
+    const manifestObj = {
+        schemaVersion: 1 as const,
+        storyId: STORY_ID,
+        releaseId: `sha256-${'0'.repeat(64)}`,
+        assets: objects.map(object => ({
+            identity: object.identity,
+            format: 'mp3' as const,
+            path: object.path,
+            sha256: object.sha256,
+            byteLength: object.byteLength,
+            durationMs: object.durationMs,
+            loop: object.loop,
+        })),
+    };
+    const parsed = parseRuntimeAudioManifest(manifestObj);
+    const releaseId = `sha256-${sha256Hex(
+        canonicalAudioReleaseContent(parsed)
+    )}`;
+    const finalManifest = { ...manifestObj, releaseId };
+    const manifestText = JSON.stringify(finalManifest);
+    const manifestSha256 = sha256Hex(manifestText);
+    const pointerText = JSON.stringify({
+        schemaVersion: 1 as const,
+        storyId: STORY_ID,
+        releaseId,
+        manifestPath: getAudioReleaseManifestPath(
+            STORY_ID,
+            releaseId,
+            AUDIO_TARGET
+        ),
+        manifestSha256,
+        publishedAt: '2026-08-01T00:00:00.000Z',
+    });
+    return {
+        pointerText,
+        manifestText,
+        manifestObj: finalManifest as unknown as RuntimeAudioManifestV1,
+        objects,
+    };
+}
+
+type AudioFetchOptions = {
+    pointerCacheStatus?: string;
+    pointerAge?: string;
+    pointerCors?: string;
+    manifestCacheStatus?: string;
+    manifestCors?: string;
+    manifestText?: string;
+    archiveStatuses?: Readonly<Record<string, number>>;
+    corruptObject?: { key: string; body: Uint8Array };
+    rangeStatus?: number;
+    rangeContentRange?: string;
+};
+
+function makeAudioFetch(
+    release: AudioReleaseFixture,
+    options: AudioFetchOptions = {},
+    requests: string[] = []
+): typeof fetch {
+    const pointerPath = getAudioCurrentPointerPath(STORY_ID, AUDIO_TARGET);
+    const pointerUrl = `${BASE}/${pointerPath}`;
+    const releaseId = JSON.parse(release.pointerText).releaseId as string;
+    const manifestPath = getAudioReleaseManifestPath(
+        STORY_ID,
+        releaseId,
+        AUDIO_TARGET
+    );
+    const manifestUrl = `${BASE}/${manifestPath}`;
+    return (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        requests.push(url);
+        if (url === pointerUrl) {
+            return jsonResponse(release.pointerText, {
+                'cache-control': POINTER_CACHE,
+                'access-control-allow-origin': options.pointerCors ?? '*',
+                'cf-cache-status': options.pointerCacheStatus ?? 'BYPASS',
+                ...(options.pointerAge === undefined
+                    ? {}
+                    : { age: options.pointerAge }),
+            });
+        }
+        if (url === manifestUrl) {
+            return jsonResponse(options.manifestText ?? release.manifestText, {
+                'cache-control': IMMUTABLE_CACHE,
+                'access-control-allow-origin': options.manifestCors ?? '*',
+                'cf-cache-status': options.manifestCacheStatus ?? 'HIT',
+            });
+        }
+        for (const object of release.objects) {
+            if (!url.endsWith(object.path)) continue;
+            const fullBody =
+                options.corruptObject?.key === object.path
+                    ? options.corruptObject.body
+                    : object.body;
+            const range = new Headers(init?.headers).get('range');
+            const isRange = range === 'bytes=0-1023';
+            if (isRange && fullBody.byteLength > 1024) {
+                const status = options.rangeStatus ?? 206;
+                const rangeBody =
+                    status === 206 ? fullBody.slice(0, 1024) : fullBody;
+                return new Response(rangeBody as unknown as BodyInit, {
+                    status,
+                    headers: {
+                        'content-type': 'audio/mpeg',
+                        'cache-control': IMMUTABLE_CACHE,
+                        'content-length': String(rangeBody.byteLength),
+                        'content-range':
+                            options.rangeContentRange ??
+                            `bytes 0-1023/${fullBody.byteLength}`,
+                    },
+                });
+            }
+            return new Response(fullBody as unknown as BodyInit, {
+                status: 200,
+                headers: {
+                    'content-type': 'audio/mpeg',
+                    'cache-control': IMMUTABLE_CACHE,
+                    'content-length': String(fullBody.byteLength),
+                    'cf-cache-status': 'HIT',
+                },
+            });
+        }
+        const archiveKey = url.slice(`${BASE}/`.length);
+        return new Response('not found', {
+            status: options.archiveStatuses?.[archiveKey] ?? 404,
+        });
     }) as typeof fetch;
 }
 
@@ -1418,6 +1603,247 @@ describe('verifyPublicRelease', () => {
     });
 });
 
+describe('verifyPublicRelease audio', () => {
+    function audioInput(
+        release: AudioReleaseFixture,
+        archiveProbeKeys: readonly string[] = []
+    ) {
+        const pointer = JSON.parse(release.pointerText) as {
+            releaseId: string;
+            manifestSha256: string;
+        };
+        return {
+            storyId: STORY_ID,
+            target: AUDIO_TARGET,
+            assetBaseUrl: new URL(BASE),
+            media: 'audio' as const,
+            archiveProbeKeys,
+            releaseId: undefined,
+            expectedManifestSha256:
+                pointer.manifestSha256 as ManifestByteSha256,
+        };
+    }
+
+    it('verifies active audio pointers, manifests, unique MP3s, and archive 404 probes', async () => {
+        const release = buildValidAudioRelease();
+        const requests: string[] = [];
+        const archiveKeys = [
+            'audio/approved/source.mp3',
+            'audio/approved/receipt.json',
+        ];
+        const input = audioInput(release, archiveKeys);
+        const result = await verifyPublicRelease(input, {
+            fetch: makeAudioFetch(release, {}, requests),
+        });
+
+        expect(result.status).toBe('passed');
+        const resultNames = result.results.map(check => check.name);
+        expect(names(result.results)['pointer contract']).toBe(true);
+        expect(names(result.results)['manifest contract']).toBe(true);
+        expect(names(result.results)['pointer edge bypass']).toBe(true);
+        expect(names(result.results)['manifest edge cache eligible']).toBe(
+            true
+        );
+        for (const object of release.objects) {
+            expect(
+                names(result.results)[`mp3 ${object.label} object byte length`]
+            ).toBe(true);
+            expect(
+                names(result.results)[`mp3 ${object.label} object checksum`]
+            ).toBe(true);
+        }
+        expect(
+            resultNames.filter(name => name.includes('archive key absent'))
+        ).toHaveLength(archiveKeys.length);
+        expect(
+            result.results.filter(check => !check.ok && !check.warning)
+        ).toEqual([]);
+        expect(
+            requests.filter(url => url.endsWith(release.objects[0].path))
+        ).toContain(`${BASE}/${release.objects[0].path}`);
+    });
+
+    it('verifies an audio candidate without reading its audio pointer', async () => {
+        const release = buildValidAudioRelease();
+        const pointer = JSON.parse(release.pointerText) as {
+            releaseId: string;
+            manifestSha256: string;
+        };
+        const requests: string[] = [];
+        const result = await verifyPublicRelease(
+            {
+                storyId: STORY_ID,
+                target: AUDIO_TARGET,
+                assetBaseUrl: new URL(BASE),
+                media: 'audio',
+                releaseId: pointer.releaseId,
+                expectedManifestSha256:
+                    pointer.manifestSha256 as ManifestByteSha256,
+                archiveProbeKeys: ['audio/approved/source.mp3'],
+            },
+            { fetch: makeAudioFetch(release, {}, requests) }
+        );
+
+        expect(result.status).toBe('passed');
+        expect(requests).not.toContainEqual(
+            expect.stringContaining('current.json')
+        );
+        expect(requests).toContain(
+            `${BASE}/${getAudioReleaseManifestPath(
+                STORY_ID,
+                pointer.releaseId,
+                AUDIO_TARGET
+            )}`
+        );
+    });
+
+    it.each([
+        ['HIT', undefined],
+        ['BYPASS', '2'],
+    ] as const)(
+        'rejects an audio pointer that is edge-cached (%s)',
+        async (cacheStatus, age) => {
+            const release = buildValidAudioRelease();
+            const result = await verifyPublicRelease(audioInput(release), {
+                fetch: makeAudioFetch(release, {
+                    pointerCacheStatus: cacheStatus,
+                    pointerAge: age,
+                }),
+            });
+
+            expect(result.status).toBe('failed');
+            expect(names(result.results)['pointer edge bypass']).toBe(false);
+        }
+    );
+
+    it('rejects a dynamic audio manifest cache response', async () => {
+        const release = buildValidAudioRelease();
+        const pointer = JSON.parse(release.pointerText) as {
+            releaseId: string;
+            manifestSha256: string;
+        };
+        const result = await verifyPublicRelease(
+            {
+                ...audioInput(release),
+                releaseId: pointer.releaseId,
+                expectedManifestSha256:
+                    pointer.manifestSha256 as ManifestByteSha256,
+            },
+            {
+                fetch: makeAudioFetch(release, {
+                    manifestCacheStatus: 'DYNAMIC',
+                }),
+            }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)['manifest edge cache eligible']).toBe(
+            false
+        );
+    });
+
+    it('rejects invalid audio manifest CORS', async () => {
+        const release = buildValidAudioRelease();
+        const pointer = JSON.parse(release.pointerText) as {
+            releaseId: string;
+            manifestSha256: string;
+        };
+        const result = await verifyPublicRelease(
+            {
+                ...audioInput(release),
+                releaseId: pointer.releaseId,
+                expectedManifestSha256:
+                    pointer.manifestSha256 as ManifestByteSha256,
+            },
+            {
+                fetch: makeAudioFetch(release, {
+                    manifestCors: 'https://wrong.example',
+                }),
+            }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)['manifest CORS']).toBe(false);
+    });
+
+    it('rejects forbidden JSON in an audio manifest', async () => {
+        const release = buildValidAudioRelease();
+        const edited = JSON.parse(release.manifestText) as Record<
+            string,
+            unknown
+        >;
+        edited.prompt = 'private prompt';
+        const manifestText = JSON.stringify(edited);
+        const pointer = JSON.parse(release.pointerText) as {
+            releaseId: string;
+            manifestSha256: string;
+        };
+        const result = await verifyPublicRelease(
+            {
+                ...audioInput(release),
+                releaseId: pointer.releaseId,
+                expectedManifestSha256: sha256Hex(
+                    manifestText
+                ) as ManifestByteSha256,
+            },
+            {
+                fetch: makeAudioFetch(release, { manifestText }),
+            }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)['manifest contract']).toBe(false);
+    });
+
+    it('rejects an audio object whose body has a bad SHA-256', async () => {
+        const release = buildValidAudioRelease();
+        const object = release.objects[0];
+        const corrupted = object.body.slice();
+        corrupted[0] = (corrupted[0] + 1) % 251;
+        const result = await verifyPublicRelease(audioInput(release), {
+            fetch: makeAudioFetch(release, {
+                corruptObject: { key: object.path, body: corrupted },
+            }),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(
+            names(result.results)[`mp3 ${object.label} object checksum`]
+        ).toBe(false);
+    });
+
+    it('hard-fails an audio Range response that returns 200 instead of 206', async () => {
+        const release = buildValidAudioRelease();
+        const object = release.objects.find(item => item.byteLength > 1024)!;
+        const result = await verifyPublicRelease(audioInput(release), {
+            fetch: makeAudioFetch(release, { rangeStatus: 200 }),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)[`mp3 ${object.label} range`]).toBe(false);
+    });
+
+    it('rejects a 403 archive probe response', async () => {
+        const release = buildValidAudioRelease();
+        const archiveKey = 'audio/approved/source.mp3';
+        const result = await verifyPublicRelease(
+            audioInput(release, [archiveKey]),
+            {
+                fetch: makeAudioFetch(release, {
+                    archiveStatuses: { [archiveKey]: 403 },
+                }),
+            }
+        );
+
+        expect(result.status).toBe('failed');
+        expect(
+            names(result.results)[
+                `archive key absent from delivery bucket: ${archiveKey}`
+            ]
+        ).toBe(false);
+    });
+});
+
 describe('parseVerifyArgs', () => {
     it('defaults to the smoke preview active-mode invocation with no arguments', () => {
         // The HPA-229 smoke invocation (`bun --filter @aquila/infra-cloudflare
@@ -1482,6 +1908,65 @@ describe('parseVerifyArgs', () => {
         expect(() =>
             parseVerifyArgs(['--asset-base-url', 'http://assets.example.dev'])
         ).toThrow(/must use https/);
+    });
+
+    it('parses audio media and repeatable archive probe keys', () => {
+        const args = parseVerifyArgs([
+            '--media',
+            'audio',
+            '--story',
+            STORY_ID,
+            '--environment',
+            'preview',
+            '--preview-id',
+            'hpa-609-smoke',
+            '--archive-probe-key',
+            'audio/approved/source.mp3',
+            '--archive-probe-key',
+            'audio/approved/receipt.json',
+        ]);
+
+        expect(args.media).toBe('audio');
+        expect(args.archiveProbeKeys).toEqual([
+            'audio/approved/source.mp3',
+            'audio/approved/receipt.json',
+        ]);
+    });
+
+    it('accepts audio production and candidate verification modes', () => {
+        expect(
+            parseVerifyArgs(['--media', 'audio', '--environment', 'production'])
+                .media
+        ).toBe('audio');
+        expect(
+            parseVerifyArgs([
+                '--media',
+                'audio',
+                '--environment',
+                'preview',
+                '--preview-id',
+                'hpa-609-smoke',
+                '--release',
+                `sha256-${'a'.repeat(64)}`,
+            ]).media
+        ).toBe('audio');
+    });
+
+    it('rejects an invalid media selector', () => {
+        expect(() => parseVerifyArgs(['--media', 'video'])).toThrow(
+            /--media must be visual or audio/
+        );
+    });
+
+    it.each([
+        '../source.mp3',
+        '/absolute/source.mp3',
+        'source\\private.mp3',
+        'audio//source.mp3',
+    ])('rejects an unsafe archive probe key: %s', key => {
+        expect(() =>
+            parseVerifyArgs(['--media', 'audio', '--archive-probe-key', key])
+        ).toThrow(/archive probe key/i);
     });
 });
 

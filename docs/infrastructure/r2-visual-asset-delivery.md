@@ -81,11 +81,19 @@ Never hand-build one.
 | Release manifest (production) | `vn/stories/<storyId>/releases/<releaseId>/runtime-manifest.json` |
 | Active release pointer (production) | `vn/stories/<storyId>/current.json` |
 | Preview manifest / pointer | the same two under `vn/previews/<previewId>/stories/…` |
+| Runtime MP3 object | `vn/objects/<sha256>.mp3` |
+| Audio release manifest (production) | `vn/audio/stories/<storyId>/releases/<releaseId>/runtime-manifest.json` |
+| Audio active pointer (production) | `vn/audio/stories/<storyId>/current.json` |
+| Audio preview manifest / pointer | the same two under `vn/previews/<previewId>/audio/stories/…` |
+| Private audio archive source | `audio/approved/<storyId>/<type>/<key>/<sourceSha256>/source.<ext>` in `aquila-vn-source` |
+| Private audio archive receipt | `audio/approved/<storyId>/<type>/<key>/<sourceSha256>/receipt.json` in `aquila-vn-source` |
 
 Objects are **not** namespaced per preview: `getObjectPath()` always returns
 `vn/objects/…`, and the `vn/previews/<previewId>/` prefix applies only to the
-manifest and the pointer. Objects are content-addressed, so production and every
-preview share one copy of identical bytes.
+manifest and the pointer. Audio MP3 objects use the same shared content-addressed
+namespace. Objects are content-addressed, so production and every preview share
+one copy of identical bytes. Audio source and receipt archives remain private and
+are never part of the public delivery layout.
 
 ---
 
@@ -311,15 +319,20 @@ permission level across all the buckets it selects**, so "read-write on delivery
 read-only on source" is not expressible in one token — which is why the design's
 version would have granted write access to `aquila-vn-source`.
 
-HPA-230 reads authoring originals from a local synchronized source root; it does
-not read `aquila-vn-source`. If a later, separately reviewed archival workflow
-needs that bucket, mint a second read-only token rather than widening this
-delivery credential.
-
 Copy the Access Key ID and Secret Access Key **once** — Cloudflare will not show
 the secret again — and store them in GitHub Actions **secrets** as
 `R2_PUBLISHER_ACCESS_KEY_ID` and `R2_PUBLISHER_SECRET_ACCESS_KEY`. Never in the
-repo, never in `.env`, never in a Vercel `PUBLIC_*` variable.
+repo, never in `.env`, never in a Vercel `PUBLIC_*` variable. These credentials
+are delivery-only: the public verifier never receives them.
+
+Audio publication uses a separate Object Read & Write token for
+**`aquila-vn-source` only**, stored as `R2_SOURCE_ARCHIVE_ACCESS_KEY_ID` and
+`R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY`. Do not add source permissions to the
+delivery token or reuse the delivery pair for private archival. The audio
+publisher archives the exact source and receipt bytes in `aquila-vn-source`
+before writing the public MP3 or manifest; the source pair must not be sent to
+the public verifier. HPA-230 reads authoring originals from a local synchronized
+source root; it does not read `aquila-vn-source`.
 
 The account id is stored as a GitHub Actions **variable**, not a secret:
 `R2_PUBLISHER_ACCOUNT_ID`. It is not sensitive — the same value is already
@@ -387,6 +400,43 @@ The general candidate, mirror, activation, list, and rollback procedures live in
 continues to own the delivery host, wildcard CORS, cache rules, public response
 verification, and source-key isolation. The publisher owns deterministic
 encoding, immutable R2 writes, stored-candidate verification, and pointer CAS.
+
+### Audio delivery verification
+
+Audio uses the existing immutable object rule and the existing public verifier;
+there is no audio-specific cache rule or second verifier. Runtime MP3s are
+served from `vn/objects/<sha256>.mp3` with `audio/mpeg` and immutable cache
+metadata. Audio manifests and pointers use the `vn/audio/` namespace shown in
+the layout table above. Source originals and receipts stay in the private
+`aquila-vn-source` bucket under `audio/approved/...`; they must never be
+reachable through the delivery hostname.
+
+Run the verifier with the exact generated source and receipt archive keys. The
+`--archive-probe-key` option is repeatable and each public probe must return
+**404**; a 403 is ambiguous and fails verification:
+
+```bash
+bun --filter @aquila/infra-cloudflare verify -- \
+  --media audio \
+  --story the_seventh_mirror \
+  --environment preview \
+  --preview-id <id> \
+  --archive-probe-key audio/approved/<story>/<type>/<key>/<sourceSha256>/source.<ext> \
+  --archive-probe-key audio/approved/<story>/<type>/<key>/<sourceSha256>/receipt.json
+```
+
+For a direct, sanitized archive-absence probe (do not include credentials or
+source-bucket endpoints), use:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' \
+  'https://assets.aquila.cwchanap.dev/audio/approved/<story>/<type>/<key>/<sourceSha256>/source.<ext>'
+```
+
+Run the same command for the receipt key and require `404` for both. The
+delivery credential (`R2_PUBLISHER_*`) and source-archive credential
+(`R2_SOURCE_ARCHIVE_*`) are separate; neither is needed by these public HTTP
+probes.
 
 The second command needs more than Cloudflare: Playwright starts `apps/web`'s
 dev server on **port 5090** and injects a `DATABASE_URL`, defaulting to

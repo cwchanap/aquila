@@ -87,3 +87,17 @@ The scoped re-review identified seven additional audio provenance forms that wer
 - GREEN: both package typechecks, root lint, scoped Prettier, and `git diff --check`.
 
 Follow-up implementation commit: this changeset (`fix: broaden audio provenance category stems`).
+
+## Follow-up I1 lowercase-variant correction
+
+The scoped re-review found that singular stems did not catch lowercase plurals or compact lowercase provenance names. Plural category stems and the known compact forms are now explicit entries, still evaluated by the existing boundary matcher; no arbitrary substring heuristic was added.
+
+- RED: `bun --filter @aquila/stories test -- src/runtime-assets/__tests__/audio.test.ts` — 1 failed, 11 passed after adding every listed lowercase form and compound boundary negatives.
+- RED: `bun --filter @aquila/infra-cloudflare test -- src/__tests__/verify.test.ts` — 1 failed, 59 passed; the raw scan returned no finding for `candidates`.
+- GREEN: stories focused test — 12/12 passed.
+- GREEN: infra assertions/verifier focused tests — 107/107 passed.
+- GREEN: full stories suite — 34 files, 355 tests passed.
+- GREEN: full infra suite — 37 files, 532 tests passed.
+- GREEN: both package typechecks, root lint, scoped Prettier, and `git diff --check`.
+
+Follow-up implementation commit: this changeset (`fix: cover lowercase audio provenance variants`).

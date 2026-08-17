@@ -11,6 +11,12 @@ import type { AudioCoverageEntryV1 } from '../audio-source';
 const target: PublicationTarget = { kind: 'production' };
 const storyId = 'example_story';
 
+type AudioReleaseInput = Parameters<typeof buildPreparedAudioRelease>[0];
+type HasNormalizedAssetsAlias =
+    'normalizedAssets' extends keyof AudioReleaseInput ? true : false;
+const hasNormalizedAssetsAlias: HasNormalizedAssetsAlias = false;
+void hasNormalizedAssetsAlias;
+
 function asset(
     type: NormalizedAudioAsset['type'],
     key: string,

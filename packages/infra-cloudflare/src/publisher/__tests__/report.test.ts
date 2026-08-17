@@ -115,6 +115,46 @@ describe('publisher reports', () => {
         expect(visualJson).not.toContain('audioCoverage');
     });
 
+    it('redacts embedded sensitive omission details while retaining coverage', () => {
+        const audio = report() as PublisherReportV1 & {
+            media: 'audio';
+            audioCoverage: unknown;
+        };
+        audio.media = 'audio';
+        audio.audioCoverage = [
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: 'Omitted after provider request; prompt: PRIVATE-PROMPT; compiler path /tmp/private',
+            },
+        ];
+
+        const json = renderJsonReport(audio);
+        const human = renderHumanReport(audio);
+        const parsed = JSON.parse(json) as Record<string, unknown>;
+
+        expect(parsed.audioCoverage).toEqual([
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: '[redacted]',
+            },
+        ]);
+        for (const sentinel of [
+            'provider request',
+            'PRIVATE-PROMPT',
+            'compiler path',
+            '/tmp/private',
+        ]) {
+            expect(json).not.toContain(sentinel);
+            expect(human).not.toContain(sentinel);
+        }
+    });
+
     it('supports every public publisher command and distinct final statuses', () => {
         const commands = [
             'plan',

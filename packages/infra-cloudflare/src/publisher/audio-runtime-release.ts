@@ -21,8 +21,6 @@ export interface BuildPreparedAudioReleaseInput {
     readonly target: PublicationTarget;
     /** The normalized assets to include in the runtime release. */
     readonly assets?: readonly NormalizedAudioAsset[];
-    /** Alias used by callers that keep the normalization stage explicit. */
-    readonly normalizedAssets?: readonly NormalizedAudioAsset[];
     readonly coverage: readonly AudioCoverageEntryV1[];
 }
 
@@ -34,18 +32,6 @@ function compareAudioIdentity(
         `${left.type}:${left.key}`,
         `${right.type}:${right.key}`
     );
-}
-
-function audioAssets(
-    input: BuildPreparedAudioReleaseInput
-): readonly NormalizedAudioAsset[] {
-    if (input.assets !== undefined && input.normalizedAssets !== undefined) {
-        throw new PublisherError(
-            'input',
-            'Audio release assets were supplied more than once'
-        );
-    }
-    return input.normalizedAssets ?? input.assets ?? [];
 }
 
 function assertReleaseId(
@@ -90,7 +76,7 @@ function coverageFor(
 export function buildPreparedAudioRelease(
     input: BuildPreparedAudioReleaseInput
 ): PreparedAudioRelease {
-    const assets = [...audioAssets(input)].sort(compareAudioIdentity);
+    const assets = [...(input.assets ?? [])].sort(compareAudioIdentity);
     const manifestAssets: RuntimeAudioAssetV1[] = assets.map(asset => ({
         identity: { type: asset.type, key: asset.key },
         format: 'mp3',

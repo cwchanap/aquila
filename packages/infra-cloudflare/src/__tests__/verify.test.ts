@@ -1606,6 +1606,13 @@ describe('verifyPublicRelease', () => {
 describe('verifyPublicRelease audio', () => {
     it('uses the runtime audio forbidden-key rule for raw JSON scans', () => {
         for (const key of [
+            'candidate',
+            'candidateDetails',
+            'requestMetadata',
+            'compilerMetadata',
+            'sourceDigest',
+            'sourceMediaType',
+            'selectionMetadata',
             'requestIds',
             'compilerUsagePaths',
             'generationSpecs',
@@ -1616,6 +1623,23 @@ describe('verifyPublicRelease audio', () => {
             expect(
                 findForbiddenKeys({ [key]: 'private' }, '', 'audio')
             ).toEqual([key]);
+        }
+    });
+
+    it('keeps unrelated audio metadata names outside provenance stems', () => {
+        for (const key of [
+            'candidateevidence',
+            'requester',
+            'compilerly',
+            'sourceless',
+            'selectionist',
+            'generationary',
+            'receiptive',
+            'modeling',
+        ]) {
+            expect(findForbiddenKeys({ [key]: 'safe' }, '', 'audio')).toEqual(
+                []
+            );
         }
     });
 

@@ -72,3 +72,18 @@ Focused publisher tests under `packages/infra-cloudflare/src/publisher/__tests__
 ## Remaining concern
 
 The inherited live R2 credential-separation and isolated preview smoke gate remains unrun: this checkout has no safe configured R2 credentials or fixture. All local source/runtime, verifier, store, publisher, typecheck, lint, formatting, and full stories/infra test evidence above is green.
+
+## Follow-up I1 category-stem correction
+
+The scoped re-review identified seven additional audio provenance forms that were not covered by the prior suffix list. The audio rule now uses boundary-aware `candidate`, `request`, `compiler`, `source`, `selection`, `generation`, `receipt`, and `model` category stems; visual matching remains unchanged.
+
+- RED: `bun --filter @aquila/stories test -- src/runtime-assets/__tests__/audio.test.ts` — 1 failed, 11 passed after adding the named forms and boundary negatives.
+- RED: `bun --filter @aquila/infra-cloudflare test -- src/__tests__/verify.test.ts` — 1 failed, 59 passed; the raw scan returned no finding for `candidate`.
+- GREEN: stories focused test — 12/12 passed.
+- GREEN: infra focused verifier test — 60/60 passed.
+- GREEN: `bun --filter @aquila/infra-cloudflare test -- src/__tests__/assertions.test.ts src/__tests__/verify.test.ts` — 107 tests passed.
+- GREEN: full stories suite — 34 files, 355 tests passed.
+- GREEN: full infra suite — 37 files, 532 tests passed.
+- GREEN: both package typechecks, root lint, scoped Prettier, and `git diff --check`.
+
+Follow-up implementation commit: this changeset (`fix: broaden audio provenance category stems`).

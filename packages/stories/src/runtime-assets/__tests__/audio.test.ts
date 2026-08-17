@@ -176,6 +176,13 @@ describe('runtime audio manifest', () => {
             'apiKey',
             'model',
             'compilerUsagePath',
+            'candidate',
+            'candidateDetails',
+            'requestMetadata',
+            'compilerMetadata',
+            'sourceDigest',
+            'sourceMediaType',
+            'selectionMetadata',
             'requestIds',
             'compilerUsagePaths',
             'generationSpecs',
@@ -188,6 +195,25 @@ describe('runtime audio manifest', () => {
                 [key]: 'must not reach runtime data',
             };
             expectRuntimeError(() => parseRuntimeAudioManifest(invalid));
+        }
+    });
+
+    it('allows unrelated keys whose names only contain audio provenance stems', () => {
+        for (const key of [
+            'candidateevidence',
+            'requester',
+            'compilerly',
+            'sourceless',
+            'selectionist',
+            'generationary',
+            'receiptive',
+            'modeling',
+        ]) {
+            const input = {
+                ...validManifestInput(),
+                [key]: 'safe additive field',
+            };
+            expect(() => parseRuntimeAudioManifest(input)).not.toThrow();
         }
     });
 

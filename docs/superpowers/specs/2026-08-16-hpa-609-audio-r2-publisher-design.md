@@ -6,72 +6,81 @@
 
 ## Context
 
-HPA-604/HPA-605 added SFX/BGM authoring and playback, HPA-606 added provider-neutral per-story `audio-plan.json`, HPA-607 completed The Seventh Mirror audio direction, and HPA-608 now owns local paid generation, candidate receipts, and explicit candidate selection.
+HPA-604/HPA-605 added SFX/BGM authoring and reader playback, HPA-606 added the provider-neutral per-story `audio-plan.json`, HPA-607 completed The Seventh Mirror audio direction, and HPA-608 now owns local paid generation, immutable candidate receipts, checksum verification, and explicit candidate selection.
 
-HPA-609 is the next release-boundary slice. It should make approved audio publishable without reopening the completed visual release architecture.
+HPA-609 is the next release-boundary slice. It publishes approved audio through the same Cloudflare R2 account/domain and the same release semantics as visual assets without weakening the image-specific runtime contract.
 
 Current seams to reuse:
 
-- `packages/stories/src/runtime-assets/*` already owns canonical JSON, content-addressed release ids, safe path/story/preview validation, pointer integrity, and cache policy.
-- `packages/infra-cloudflare/src/publisher/stores/delivery-store.ts` is already media-neutral bytes + metadata + immutable create + pointer compare-and-swap.
-- `R2DeliveryStore` already implements that interface using the existing publisher credentials.
-- visual `activation.ts` and `release-history.ts` already own monotonic pointer time, conflict handling, production confirmation, rollback, and reactivation behavior.
-- `@aquila/stories/audio-generation` already exposes HPA-608's strict receipt/selection parsers and checksum-verifying local store.
-- the story compiler already owns cue collection and the deterministic audio-usage report.
-- `aquila-vn-source`, `aquila-vn-delivery`, and `assets.aquila.cwchanap.dev` already exist.
+- `packages/stories/src/runtime-assets/*` — canonical JSON, safe path/story/release validation, SHA brands, active-pointer wire fields, and cache policy.
+- `packages/infra-cloudflare/src/publisher/stores/delivery-store.ts` — media-neutral immutable bytes + metadata + pointer compare-and-swap.
+- `LocalDeliveryStore` / `R2DeliveryStore` — existing storage implementations.
+- visual `activation.ts` / `release-history.ts` — deep verification before mutation, monotonic `publishedAt`, CAS conflict handling, rollback/reactivation, and production confirmation.
+- `@aquila/stories/audio-generation` — HPA-608 receipt/selection contracts and verified candidate bytes.
+- compiler `collectAudioUsage` / `buildAudioUsageReport` — assembled story usage truth.
+- `packages/infra-cloudflare/src/assertions.ts` — cache/content-type/pointer HTTP assertions.
+- `packages/infra-cloudflare/src/verify.ts` — public-host source-key absence check.
+- existing private `aquila-vn-source` and public `aquila-vn-delivery` buckets plus `assets.aquila.cwchanap.dev`.
 
-One infrastructure detail is load-bearing: the current immutable Cloudflare cache rule matches `/vn/objects/*` plus any `runtime-manifest.json`. Audio manifests therefore match it already, but `/vn/audio/objects/*.mp3` does not. HPA-609 extends that **same** rule; Aquila still uses exactly two cache rules.
+Two existing infrastructure constraints are load-bearing:
+
+1. `R2_PUBLISHER_*` is intentionally scoped to **`aquila-vn-delivery` only**. Audio source archival must not widen that credential.
+2. the current immutable cache rule already matches `/vn/objects/` and every `runtime-manifest.json`. Runtime MP3 objects can reuse the existing content-addressed object namespace and therefore do not require a live cache-rule edit.
 
 ## Goals
 
-1. Add a thin prompt-free runtime audio v1 contract without weakening the image contract.
-2. Turn HPA-608 selections into one normalized MP3 object per included compiler-used cue.
-3. Reuse the existing R2 stores, preview convention, immutable-object model, pointer CAS, release listing, rollback, and publisher credentials.
-4. Archive selected originals and their exact HPA-608 success receipts in the existing private source bucket before public publication.
-5. Produce deterministic coverage from compiler usage + plan + selections/omissions + manifest.
-6. Keep audio release identity independent from visual releases and Vercel deployment.
-7. Make activation explicit: audio `publish` writes immutable data only; only `activate --media audio` changes `current.json`.
+1. Add a thin prompt-free audio runtime contract without polymorphizing `RuntimeAssetManifestV1`.
+2. Turn HPA-608 selections into normalized runtime MP3 objects.
+3. Reuse `DeliveryStore`, immutable create/reuse, preview scoping, pointer CAS, release listing, rollback, and R2 credentials where their scope already fits.
+4. Archive the selected original and exact HPA-608 success receipt privately **before** public publication using a separate source-bucket credential.
+5. Produce deterministic complete coverage over compiler usage, the audio plan, selections, omissions, and the resulting manifest.
+6. Keep audio release identity independent from visual release identity and Vercel deployment.
+7. Keep production activation explicit: audio `publish` writes immutable data only; `activate --media audio` is the only pointer mutation.
 
 ## Non-goals
 
-- A generic media-release/plugin framework.
-- Polymorphizing `RuntimeAssetManifestV1` or changing visual background/portrait behavior.
-- New buckets, domains, cache rules, Workers, queues, databases, approval ledgers, or CMS infrastructure.
+- A generic media/plugin framework.
+- Changing the visual background/portrait manifest, encoder, or resolver contract.
+- New R2 buckets, domains, cache rules, Workers, queues, databases, approval ledgers, or CMS infrastructure.
 - Browser/runtime generation.
 - HLS, AAC, Opus, WAV runtime variants, stems, waveforms, adaptive bitrate, loudness mastering, or seamless-loop editing.
 - Automatic candidate ranking or automatic production activation.
-- Publishing The Seventh Mirror's real catalog; HPA-611 owns that operation.
+- Publishing the full Seventh Mirror catalog; HPA-611 owns the production pack.
 
-## Approaches considered
+## Chosen architecture
 
-### A. Thin audio contract + shared storage/release primitives — chosen
+Use an audio-specific runtime/source/MP3 path and reuse only the existing media-neutral release primitives.
 
-Keep audio schema, source preparation, MP3 normalization, and MP3 verification audio-specific. Reuse `DeliveryStore`, extract only the immutable-object operations that are already media-neutral, and add one small `visual | audio` selector inside the existing activation/history services so the pointer algorithm remains single-owned.
+Rejected alternatives:
 
-This is the smallest design that reuses HPA-230's valuable release semantics without turning the visual publisher into a framework.
+- **Generalize the visual publisher into a media adapter framework:** too much configuration and churn for two media shapes.
+- **Copy the visual publisher:** duplicates the highest-risk CAS, clock, verification, and rollback logic.
+- **Share the delivery publisher credential with the source archive:** conflicts with the already-reviewed least-privilege boundary and fails against the current live token scope.
 
-### B. Generalize the visual publisher into a media framework — rejected
+The justified shared extraction is small:
 
-An adapter layer for encoders, manifests, paths, coverage, reports, and verification would add more configuration than the second media shape needs. It would also make a mature image path harder to reason about.
+```text
+immutable-candidate.ts
+```
 
-### C. Copy the visual publisher into an audio publisher — rejected
+It owns immutable destination inspection, create/reuse, and exact read-back verification. Encoders, manifests, coverage, and media-specific deep verification remain separate.
 
-Copying is initially fast but duplicates exactly the difficult behavior HPA-609 is supposed to reuse: immutable conflict checks, pointer CAS, timestamp monotonicity, release history, rollback, and reactivation.
+Activation/history keep one algorithm and gain only an internal visual/audio selector for path/parser/verifier functions.
 
 ## Runtime audio contract
 
-Add audio-specific v1 symbols under the existing `@aquila/stories/runtime-assets` boundary. Keep `RuntimeAssetManifestV1` unchanged.
+Add audio-specific v1 types under `@aquila/stories/runtime-assets`. Keep `RuntimeAssetManifestV1` unchanged.
 
 ```ts
-interface RuntimeAudioAssetV1 {
+type RuntimeAudioAssetV1 = {
     identity: { type: 'sfx' | 'bgm'; key: string };
     format: 'mp3';
     path: string;
-    sha256: string;
+    sha256: ObjectContentSha256;
     byteLength: number;
     durationMs: number;
     loop: boolean;
-}
+};
 
 interface RuntimeAudioManifestV1 {
     schemaVersion: 1;
@@ -81,72 +90,97 @@ interface RuntimeAudioManifestV1 {
 }
 ```
 
-Contract rules:
+Rules:
 
-- key uses the existing safe logical-key predicate plus the audio-plan slug grammar;
-- entries are unique and sorted by `${type}:${key}`;
+- keys satisfy the existing audio-plan key grammar and safe logical-key predicate;
 - `sfx` requires `loop:false`; `bgm` requires `loop:true`;
-- `format` is exactly `mp3`;
-- `sha256` is a lowercase SHA-256 digest;
-- `path` must equal `getAudioObjectPath(sha256)`;
-- `byteLength` and measured `durationMs` are positive integers;
-- manifest and pointer schemas are strict, so unknown public fields are rejected rather than silently stripped;
-- public data carries no prompt, provider/model/request id, candidate id, receipt, generation spec, source path, selection note, credential, or absolute URL/path.
+- `durationMs` is the measured normalized runtime duration, rounded to a positive integer;
+- entries are unique and sorted by `${type}:${key}`;
+- digest is lowercase SHA-256;
+- `path === getAudioObjectPath(sha256)`;
+- no prompt, candidate id, receipt, provider/model/request id, source path, generation spec, or selection note may appear in public runtime data;
+- canonical release content excludes `releaseId` and reuses `canonicalJson` plus the existing SHA-purpose/release-id helpers.
 
-Audio release identity uses the same rule as visual release identity: canonical release content excludes `releaseId`; `releaseId` is `sha256-<canonical-content-digest>`. Reuse `canonicalJson`, SHA-purpose brands, and `releaseIdFromContentSha256`; do not duplicate hashing utilities.
+The active pointer keeps the existing wire fields:
 
-The pointer keeps the existing wire shape (`schemaVersion`, `storyId`, `releaseId`, `manifestPath`, `manifestSha256`, `publishedAt`). Add an audio parser/validator because its `manifestPath` grammar differs from the visual one; do not add a second pointer document shape.
+```ts
+interface ActiveReleasePointerV1 {
+    schemaVersion: 1;
+    storyId: string;
+    releaseId: string;
+    manifestPath: string;
+    manifestSha256: string;
+    publishedAt: string;
+}
+```
+
+Audio gets an audio-specific parser because `manifestPath` uses the audio release path grammar. Do not add another pointer schema shape.
 
 ## Path grammar
 
-Production:
+Runtime MP3s reuse the existing global content-addressed object namespace:
 
 ```text
-vn/audio/objects/<sha256>.mp3
+vn/objects/<sha256>.mp3
+```
+
+This is intentional:
+
+- the current immutable cache rule already matches `/vn/objects/`;
+- `.mp3` cannot collide with `.webp`/`.avif` keys even for identical digests;
+- objects are immutable content, not release identity;
+- audio release identity remains independent because manifests/pointers stay under the audio namespace.
+
+Production audio release state:
+
+```text
 vn/audio/stories/<storyId>/releases/<releaseId>/runtime-manifest.json
 vn/audio/stories/<storyId>/current.json
 ```
 
-Preview mirrors the existing visual convention: content-addressed objects are shared while manifest/pointer state is preview-scoped.
+Preview audio release state:
 
 ```text
-vn/audio/objects/<sha256>.mp3
 vn/previews/<previewId>/audio/stories/<storyId>/releases/<releaseId>/runtime-manifest.json
 vn/previews/<previewId>/audio/stories/<storyId>/current.json
 ```
 
-Add `getAudioObjectPath`, `getAudioReleaseManifestPath`, and `getAudioCurrentPointerPath` next to the visual helpers. Keep all existing visual path functions unchanged.
+Add:
 
-`R2DeliveryStore.assertPointerKey` gains only these production/preview audio `current.json` forms in addition to its existing visual allowlist.
+```ts
+getAudioObjectPath(sha256)
+getAudioReleaseManifestPath(storyId, releaseId, target)
+getAudioCurrentPointerPath(storyId, target)
+```
+
+Visual path helpers remain unchanged.
+
+Both `LocalDeliveryStore.assertPointerKey` and `R2DeliveryStore.assertPointerKey` must accept the two audio `current.json` forms while continuing to reject arbitrary pointer paths.
 
 ## HPA-608 selection handoff
 
-HPA-608 proves the saved receipt and candidate bytes are internally valid, but HPA-609 must also prove the selection still matches the **current** plan/generation policy. Its supported subpath currently does not expose the current spec builder/hash.
-
-Add only:
+HPA-609 must prove each selection still matches the **current** generation spec. Extend the existing Node-only supported subpath with only:
 
 ```ts
 export { buildAudioGenerationSpec, audioGenerationSpecSha256 } from './spec';
 ```
 
-to `@aquila/stories/audio-generation`.
+For each compiler-used included cue:
 
-For each included cue HPA-609:
+1. derive the current generation spec from the current plan row;
+2. compute its current spec hash;
+3. require `selection.specSha256` to equal it;
+4. load `LocalAudioGenerationStore.readVerifiedCandidate(key, candidateId)`;
+5. require receipt story/key/type/candidate/spec hash to agree;
+6. require `selection.sourceSha256` to equal the verified source bytes hash.
 
-1. derives the current generation spec from the current audio-plan row;
-2. hashes it with `audioGenerationSpecSha256`;
-3. requires `selection.specSha256` to equal that current hash;
-4. loads `LocalAudioGenerationStore.readVerifiedCandidate(key, candidateId)`;
-5. requires receipt story/key/type/candidate/spec hash agreement;
-6. requires `selection.sourceSha256` to equal the actual verified candidate-byte digest.
+Any mismatch fails before private archive upload, public object upload, manifest write, or pointer work.
 
-Any mismatch fails before source archival, delivery upload, or pointer work.
+## Compiler-owned publishing input
 
-## Compiler-owned publisher input seam
+Do not reparse Markdown in `infra-cloudflare` and do not shell out to `audio:report`.
 
-Do not reimplement story parsing in `infra-cloudflare` and do not shell out to `audio:report`.
-
-Add one Node-only `@aquila/stories/audio-publishing` subpath:
+Add a Node-only `@aquila/stories/audio-publishing` subpath:
 
 ```ts
 interface AudioPublishingContext {
@@ -161,15 +195,15 @@ async function loadAudioPublishingContext(
 ): Promise<AudioPublishingContext>;
 ```
 
-Its implementation reuses `STORIES_RAW_ROOT`, `loadStoryCompilerConfig`, `compileStory({ writeOutputs:false })`, `loadAudioPlan`, `collectAudioUsage`, and `buildAudioUsageReport`. The root/browser entry does not export it.
+It wraps `STORIES_RAW_ROOT`, `loadStoryCompilerConfig`, `compileStory({writeOutputs:false})`, `loadAudioPlan`, `collectAudioUsage`, and `buildAudioUsageReport`, then cross-checks the runtime `storyId`.
 
-This is one narrow bridge for publisher input, not a general compiler API.
+Nothing from this adapter is exported from the browser/root entry.
 
 ## Coverage and explicit omissions
 
-A selected candidate is included automatically. Do not add a second authored inclusion list.
+A selected candidate is included automatically; do not create a second included-assets list.
 
-The only extra publisher input is an optional omissions file for a compiler-used key intentionally left silent:
+The only extra input is an optional omissions file:
 
 ```json
 {
@@ -183,29 +217,48 @@ The only extra publisher input is an optional omissions file for a compiler-used
 
 Rules:
 
-- no file means no omissions;
-- reason is trimmed and non-empty;
-- unknown or compiler-unused omission is an error;
-- a key cannot be both selected and omitted;
-- every compiler-used cue is exactly selected or omitted;
-- plan entries unused by the compiler are warnings, not release obligations;
-- selected-but-unused candidates are not uploaded and produce a warning.
+- missing file means no omissions;
+- reasons are trimmed and non-empty;
+- unknown/compiler-unused omissions are errors;
+- selected + omitted is an error;
+- every compiler-used cue is exactly one of selected or omitted;
+- plan-unused rows are warnings, not release obligations;
+- selected-but-unused candidates are warnings and are not uploaded;
+- there is no `--allow-missing` escape hatch.
 
-`AudioPublisherCoverageV1` is sorted by `${type}:${key}` and records `usageCount` plus either `included` or `omitted` + reason. It carries no prompts/provider/source paths.
+Public/report coverage deliberately excludes candidate/receipt/source data:
 
-Preview and production use the same coverage rule. There is no `--allow-missing` escape hatch.
+```ts
+type AudioCoverageEntryV1 =
+    | {
+          type: 'sfx' | 'bgm';
+          key: string;
+          usageCount: number;
+          disposition: 'included';
+      }
+    | {
+          type: 'sfx' | 'bgm';
+          key: string;
+          usageCount: number;
+          disposition: 'omitted';
+          reason: string;
+      };
+```
+
+`candidateId`, source digest/path, receipt bytes, and provider metadata remain internal to `PreparedAudioSource` only.
 
 ## Runtime MP3 policy
 
-HPA-609 is an offline publisher. Use system `ffprobe`/`ffmpeg` through one injected process-runner seam rather than adding a large JS/WASM audio dependency or service.
+Use system `ffprobe`/`ffmpeg` behind one injected process-runner seam. No JS/WASM codec stack or service.
 
-V1 policy:
+V1 normalized policy:
 
 ```text
 container/codec: MP3 / MPEG Layer III
 sample rate:     44.1 kHz
-bitrate target:  128 kbit/s
-metadata/artwork: stripped
+bitrate:         128000 bit/s
+metadata:        stripped
+video/artwork:   removed
 runtime MIME:    audio/mpeg
 ```
 
@@ -218,51 +271,67 @@ ffmpeg -nostdin -hide_banner -loglevel error \
   -id3v2_version 0 -write_id3v1 0 <output.mp3>
 ```
 
-Pass argv + temporary file paths directly; never construct a shell command string.
+Arguments are passed directly, never through a shell.
 
-Probe source and normalized output. Hard failures:
+Use a generic source probe only to establish a readable audio stream and positive duration. Use one strict runtime-MP3 probe parser for both:
+
+- normalized output verification during encoding;
+- stored-object deep verification.
+
+The strict runtime parser requires all of:
+
+- codec `mp3`;
+- sample rate `44100`;
+- **present** bitrate exactly `128000`;
+- finite positive duration.
+
+Missing `bit_rate` is an integrity failure, not an optional pass.
+
+Other hard failures:
 
 - empty/unreadable/no audio stream;
-- non-positive/non-finite duration;
-- SFX longer than 30,000 ms after normalization;
-- BGM longer than 600,000 ms after normalization;
-- plan/receipt type or loop-intent mismatch;
-- normalized output is not MP3 at 44.1 kHz;
-- when `ffprobe` reports a stream bitrate, it is not 128,000 bit/s.
+- SFX longer than 30 seconds after normalization;
+- BGM longer than 600 seconds after normalization;
+- type/loop intent mismatch.
 
-The ffmpeg argv is the authoritative encoding-policy check; the deep stored verifier independently checks codec/sample rate/duration/hash and validates the reported bitrate when available.
+A material difference from authored target duration is a sanitized warning. Manifest duration always uses measured normalized duration.
 
-A material duration difference from the authored target is only a warning because generated audio can legitimately drift. The manifest records the measured normalized duration.
+Deep verification allows at most **25 ms** difference between the manifest duration and a fresh probe to cover integer rounding/probe precision; larger drift is integrity failure.
 
-Deep verification accepts a **25 ms** absolute difference between the manifest's rounded duration and a fresh probe. Larger differences fail integrity verification.
+## Private source archive and credentials
 
-Do not add loudness targets, channel-layout normalization, gapless-loop editing, or waveform analysis in v1.
+Archive the exact selected original and exact HPA-608 success receipt before any public immutable write.
 
-## Private source archive
-
-Archive the selected original and exact HPA-608 success-receipt bytes in `aquila-vn-source` **before** any public immutable upload.
+Keys:
 
 ```text
 audio/approved/<storyId>/<type>/<key>/<sourceSha256>/source.<ext>
 audio/approved/<storyId>/<type>/<key>/<sourceSha256>/receipt.json
 ```
 
-The verified source digest makes archive keys idempotent. Re-publishing the same approved source reuses the same archive objects.
+The archive prefix is content-addressed by the verified source digest. Re-publishing the same selected source reuses the same immutable archive objects.
 
-Reuse `R2DeliveryStore` with a factory option selecting `source` or `delivery`; do not add a second S3/R2 client implementation. Source archival only needs `stat/read/createImmutable`.
+Credential rule:
 
-Local mode creates sibling roots:
+- `R2_PUBLISHER_ACCESS_KEY_ID` / `R2_PUBLISHER_SECRET_ACCESS_KEY` remain scoped to **`aquila-vn-delivery` only**.
+- add `R2_SOURCE_ARCHIVE_ACCESS_KEY_ID` / `R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY` for a second **Object Read & Write** token scoped only to **`aquila-vn-source`**.
+- never widen `R2_PUBLISHER_*` to the source bucket.
+- never give the source archive credential access to the delivery bucket.
+
+Reuse the same `R2DeliveryStore` class/S3-client implementation. `createFromEnvironment({bucket:'source'})` selects the source bucket **and** the `R2_SOURCE_ARCHIVE_*` pair; `bucket:'delivery'` keeps the current `R2_PUBLISHER_*` behavior.
+
+For local mode use sibling roots:
 
 ```text
 <destination-root>/delivery/...
 <destination-root>/source/...
 ```
 
-Receipts never enter the delivery store. Delivery custom metadata stays empty for MP3/manifest/pointer objects.
+Receipts never enter the delivery store. Public custom metadata for MP3/manifest/pointer objects stays empty.
 
-## Publication modules
+## Publication preparation
 
-Keep media-specific work focused:
+Add focused audio modules:
 
 ```text
 packages/infra-cloudflare/src/publisher/
@@ -274,53 +343,69 @@ packages/infra-cloudflare/src/publisher/
   audio-publish.ts
 ```
 
-Extract exactly one media-neutral helper from the visual publisher:
+Extract only:
 
 ```text
 immutable-candidate.ts
 ```
 
-It owns planned immutable candidates, exact destination inspection, immutable create/reuse, and exact read-back verification. Visual publication imports it with no behavioral change. Do not extract encoders, manifests, coverage, reporting, or a generic media adapter registry.
+from the visual plan/publish code. Do not extract a general encoder/manifest/coverage adapter.
+
+Audio publication ordering is fixed:
+
+1. validate compiler context, plan, selection, omission coverage;
+2. verify source candidates against current spec and bytes;
+3. normalize runtime MP3s;
+4. compute deterministic manifest/release id;
+5. plan source + delivery immutable reuse/create;
+6. archive selected originals + exact receipts to the private source store;
+7. upload public MP3 objects + manifest;
+8. deep-verify the stored audio release;
+9. return with pointer unchanged.
+
+If source archival fails, no public write occurs.
 
 ## Stored audio verification
 
 Shallow verification checks:
 
-- exact manifest key, `application/json`, immutable cache metadata, canonical bytes;
-- schema/story/release identity;
+- exact manifest path, JSON MIME, immutable cache metadata, and canonical bytes;
+- schema/story/release id;
 - canonical release-content digest;
-- every entry's safe content-addressed path, digest, byte length, duration, and loop/type contract;
-- audio pointer candidate construction and pointer/manifest pairing.
+- every entry path/digest/byte length;
+- valid audio pointer candidate.
 
-Deep verification additionally reads each unique MP3 object once and requires:
+Deep verification additionally reads each unique MP3 object and requires:
 
-- exact key, `audio/mpeg`, immutable cache metadata, and byte length;
-- body digest equals manifest/path digest;
-- `ffprobe` reports MP3, 44.1 kHz, positive duration, and 128,000 bit/s when a bitrate is reported;
-- measured duration is within 25 ms of manifest `durationMs`.
+- key, `audio/mpeg`, immutable cache metadata, and byte length;
+- object SHA-256 equals its key/manifest digest;
+- strict runtime-MP3 probe passes codec/sample-rate/**required bitrate**/duration;
+- probed duration differs from manifest by at most 25 ms.
+
+Shared object digests are read/probed once.
 
 ## Activation and release history
 
-Keep pointer behavior single-owned in the existing services. Add only an internal selector:
+Keep the current CAS/clock/retry semantics single-owned.
+
+Add internal:
 
 ```ts
 type PublisherMedia = 'visual' | 'audio';
 ```
 
-`visual` remains the default. The selector chooses only:
+Visual remains the default. The selector chooses only:
 
-- current-pointer path function;
+- current-pointer path;
 - pointer parser;
 - deep stored-release verifier;
-- release-manifest path/parser/identity checker used by history listing.
+- manifest path/parser/release-identity verification for listing/history.
 
-`nextPublishedAt`, clock-skew checks, production confirmation, fresh-pointer read, compare-and-swap, conflict/override flow, rollback, and reactivation stay shared.
+Do not add a public adapter registry.
 
-Do not expose a plugin/adapter registry.
+Audio `publish` has no activation import and never calls `compareAndSwapPointer`. `activate --media audio` is the only normal audio pointer mutation. Rollback/reactivation rewrite only the audio pointer and reuse already verified immutables.
 
-Audio `publish` never calls activation. After immutable source archive + public objects + manifest are written and deep-verified, it returns with the pointer unchanged. `activate --media audio` is the only audio command that mutates a pointer.
-
-Rollback/reactivation rewrite only the audio pointer and reuse already verified immutable manifests/objects.
+`mirror-preview --media audio` remains unsupported; audio can publish directly to a preview namespace.
 
 ## CLI
 
@@ -330,78 +415,71 @@ Keep the command vocabulary and add:
 --media visual|audio
 ```
 
-`visual` is the default, preserving current invocations and report output.
+`visual` is the default, preserving existing CLI behavior.
 
-Audio `plan`/`publish` additionally accept:
+Audio plan/publish requires `--story-folder` because operator raw-folder identity can differ from runtime story id. Release operations need only runtime story id.
 
-- required `--story-folder` to resolve raw story config and cross-check runtime `--story`;
-- optional `--audio-generation-root` overriding `.tmp/audio-generation/<storyFolder>`;
-- optional `--omissions <path>`.
+For R2 audio `plan`, no source archive credential is required because planning performs no source-bucket write. Audio `publish` requires both credential pairs before beginning any write.
 
-Audio `activate`, `verify`, `releases`, and `rollback` need only the runtime story id plus existing target/release/destination inputs.
+Production audio `publish` is always immutable-only. `--confirm-production` is required only by explicit production activation/rollback, not by immutable publish.
 
-`mirror-preview --media audio` is intentionally unsupported. Direct preview publication already shares content-addressed MP3 objects and writes the preview-scoped manifest; a second mirror path is unnecessary.
+## HTTP delivery verification
 
-Audio `publish` rejects visual pointer-mutation flags such as `--reactivate` and never accepts an implicit activation mode.
+Do not re-derive cache/MIME policy in a parallel verifier.
 
-## R2/cache integration
+A focused audio HTTP smoke imports and reuses:
 
-No resource is added.
-
-`R2DeliveryStore.createFromEnvironment` gets an explicit `bucket: 'source' | 'delivery'` selector, with delivery remaining the default for visual callers. Its pointer-key allowlist gains only the two audio pointer grammars.
-
-Update existing immutable rule 1 from:
-
-```text
-/vn/objects/* OR */runtime-manifest.json
+```ts
+assertImmutable
+assertContentType
+assertPointerRevalidation
 ```
 
-to:
+from `packages/infra-cloudflare/src/assertions.ts`.
 
-```text
-/vn/objects/* OR /vn/audio/objects/* OR */runtime-manifest.json
+Extend the existing `verify.ts` source-absence helper so it accepts an explicit source key and can be reused by the audio smoke. For both the selected source archive key and receipt key, the public delivery host must return **exactly 404**. `403` is not accepted because it does not prove absence.
+
+The only new HTTP assertion is Range behavior:
+
+```http
+Range: bytes=0-1023
 ```
 
-Pointer rule 2 (`*/current.json` -> bypass edge cache) already covers audio. Existing CORS already permits the `Range` request header.
+For an MP3 larger than 1,024 bytes require `206`, exactly 1,024 body bytes, and a correct `Content-Range` total.
 
-The repository rule generator/tests/runbook must be updated, **and the same existing Cloudflare cache rule must be manually edited in the dashboard before the live cache smoke**. HPA-229 intentionally has no cache-rule provisioning/reconciliation command. Do not create a third rule or claim the code edit changes live Cloudflare state by itself.
+Because MP3 objects use `/vn/objects/`, the existing immutable cache rule already applies. No Cloudflare dashboard/cache-rule mutation is part of HPA-609.
 
-## Failure ordering
+## Risks and mitigations
 
-`plan` / `publish` resolve in this order:
+### Source-archive token availability
 
-1. story folder/config + runtime story id cross-check;
-2. compiler usage + audio plan;
-3. selection + optional omissions;
-4. complete coverage + current-spec/source checksum validation;
-5. probe/normalize included sources;
-6. deterministic manifest/release id;
-7. delivery-candidate/advisory-audio-pointer inspection;
-8. on `publish`, archive selected originals/receipts privately;
-9. create/reuse public MP3 objects and manifest;
-10. exact read-back + deep release verification;
-11. return without pointer mutation.
+The existing publisher token cannot write `aquila-vn-source`. The live smoke must provision/use a separate source-only Object Read & Write token. Mitigation: preflight both credential pairs and bucket access before the first release attempt; do not widen the delivery token.
 
-Therefore stale/missing selections fail before **any** R2 write, and an archive failure fails before delivery mutation. There is no cross-bucket transaction: immutable leftovers are safe to reuse after a later retry.
+### Local ffmpeg/ffprobe prerequisite
 
-## Testing
+Publisher execution depends on installed system binaries. Mitigation: fail configuration before writes when either executable is unavailable; unit tests inject the runner.
 
-Stories tests cover audio manifest/path/pointer schema invariants, deterministic release identity, public metadata redaction, current-spec helper exports, and the compiler-owned audio-publishing context.
+### CDN Range/cache behavior
 
-Infra tests cover ffprobe/ffmpeg argv and failures, selection/spec/source verification, coverage/omissions, deterministic manifest and content-addressed reuse, private archive reuse, shallow/deep MP3 verification, publish-without-pointer-write, audio activation conflict/no-op/reactivation/rollback, release history, R2 source-bucket selection, audio pointer allowlist, cache-rule predicate, CLI/report behavior, and unchanged visual tests.
+R2/custom-domain behavior must be proven against a real MP3. Mitigation: one isolated preview smoke verifies full GET, cache eligibility, 206 Range, source-key 404s, activation, rollback, and reactivation.
 
-Focused live smoke uses one tiny fixture MP3 **larger than 1,024 bytes**:
+## Acceptance criteria
 
-1. local plan/publish/deep verify;
-2. manually apply the generated immutable-rule predicate to the existing Cloudflare rule, keeping exactly two rules;
-3. isolated preview R2 publish/deep verify;
-4. full MP3 fetch through `assets.aquila.cwchanap.dev` with MIME/cache/digest checks;
-5. repeat full fetch and require a cache-eligible `cf-cache-status` (`MISS`, `HIT`, `EXPIRED`, or `REVALIDATED`);
-6. `Range: bytes=0-1023` and require `206` + valid `Content-Range`;
-7. explicit preview activation, second release, rollback, and reactivation;
-8. verify the production audio pointer bytes/ETag never changed during preview work.
+- Audio schema rejects duplicate/unsorted identities, unsafe paths, invalid digests, path/hash mismatch, invalid duration, and loop/type mismatch.
+- Runtime MP3 object path is `vn/objects/<sha256>.mp3`; audio manifest/pointer remain under the audio namespace.
+- Deterministic fixtures prove stable release ids/manifests and content-addressed reuse.
+- Stale/missing/tampered selection fails before any R2 write.
+- Coverage has no candidate/receipt/source data; every compiler-used cue is included or explicitly omitted.
+- Approved originals/receipts archive privately before public writes using `R2_SOURCE_ARCHIVE_*`, never `R2_PUBLISHER_*`.
+- Delivery-host GETs for archived source/receipt keys return exactly 404.
+- Runtime objects carry `audio/mpeg`, exact length, immutable cache policy, 44.1 kHz MP3, and required 128000 bit/s bitrate.
+- Full and Range GETs work through the existing custom domain and immutable rule without editing live cache rules.
+- Preview publish/deep verify leaves production unchanged.
+- Audio `publish` cannot mutate a pointer; explicit activate/rollback/reactivation affect only audio `current.json`.
+- Existing visual publisher/runtime tests and default CLI behavior pass unchanged.
+- Audio-only release does not rebuild Vercel or republish visual objects.
 
-## Verification commands
+## Verification
 
 ```bash
 bun --filter @aquila/stories test
@@ -412,8 +490,4 @@ bun run lint
 bun run build
 ```
 
-`@aquila/infra-cloudflare` currently has no `typecheck` script even though HPA-609 requires that command. Add `"typecheck": "tsc --noEmit"` in this ticket.
-
-## Resulting scope
-
-HPA-609 adds one audio wire contract, one offline MP3 preparation path, one private source-archive path, and the minimum release-operation dispatch necessary to make audio independently publishable. HPA-610 can consume only audio `current.json` + runtime manifest + MP3 object paths; it does not need ElevenLabs, candidate storage, compiler internals, or the visual manifest.
+Then run one local fixture release and one isolated preview R2 release through publish → deep verify → explicit activate → HTTP full/Range checks → second release → rollback → reactivation, while proving production pointer unchanged and private archive keys 404 on the delivery host.

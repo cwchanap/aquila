@@ -86,7 +86,7 @@ describe('publisher reports', () => {
                 key: 'dawn-apartment',
                 usageCount: 1,
                 disposition: 'omitted',
-                reason: 'Defer to the next audio pass',
+                reason: '[redacted]',
             },
             {
                 type: 'sfx',
@@ -149,6 +149,45 @@ describe('publisher reports', () => {
             'PRIVATE-PROMPT',
             'compiler path',
             '/tmp/private',
+        ]) {
+            expect(json).not.toContain(sentinel);
+            expect(human).not.toContain(sentinel);
+        }
+    });
+
+    it('canonicalizes camel-case and relative-path omission details', () => {
+        const audio = report() as PublisherReportV1 & {
+            media: 'audio';
+            audioCoverage: unknown;
+        };
+        audio.media = 'audio';
+        audio.audioCoverage = [
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: 'Omitted requestId=private-42 modelId=internal-v1 local path artifacts/private',
+            },
+        ];
+
+        const json = renderJsonReport(audio);
+        const human = renderHumanReport(audio);
+        const parsed = JSON.parse(json) as Record<string, unknown>;
+
+        expect(parsed.audioCoverage).toEqual([
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: '[redacted]',
+            },
+        ]);
+        for (const sentinel of [
+            'requestId=private-42',
+            'modelId=internal-v1',
+            'artifacts/private',
         ]) {
             expect(json).not.toContain(sentinel);
             expect(human).not.toContain(sentinel);

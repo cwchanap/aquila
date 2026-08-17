@@ -99,3 +99,45 @@ Files changed in this correction:
 Correction commit: `fix: redact audio omission reasons` (final branch `HEAD`)
 
 Blockers: none.
+
+## Fix round 2
+
+Status: DONE
+
+The remaining privacy finding is resolved with a fixed public-reason policy. Every omitted coverage entry that has the required non-empty internal reason now emits only the canonical public reason `[redacted]`; no user-controlled omission text is serialized or rendered, including otherwise plain text. The coverage entry and internal non-empty-reason validation remain unchanged. The incomplete token/path blacklist was removed.
+
+RED evidence:
+
+```text
+bunx vitest run src/publisher/__tests__/report.test.ts
+```
+
+Failed 1 report test: `Omitted requestId=private-42 modelId=internal-v1 local path artifacts/private` reached public JSON verbatim instead of becoming `[redacted]`. The existing report tests remained green before the policy change.
+
+GREEN evidence:
+
+```text
+bunx vitest run src/publisher/__tests__/report.test.ts src/publisher/__tests__/audio-runtime-release.test.ts src/publisher/__tests__/audio-publication-plan.test.ts
+```
+
+20 tests passed across the three affected files.
+
+```text
+bun --filter @aquila/infra-cloudflare typecheck
+bun --filter @aquila/infra-cloudflare lint
+bunx prettier --check packages/infra-cloudflare/src/publisher/report.ts packages/infra-cloudflare/src/publisher/__tests__/report.test.ts
+git diff --check
+bun --filter @aquila/infra-cloudflare test
+```
+
+All passed. The full infra suite passed with 35 files and 462 tests. No storage write, pointer activation, visual behavior, or later-task module was introduced.
+
+Files changed in this correction:
+
+- `packages/infra-cloudflare/src/publisher/report.ts`
+- `packages/infra-cloudflare/src/publisher/__tests__/report.test.ts`
+- this report
+
+Correction commit: `fix: canonicalize public audio omission reasons` (final branch `HEAD`)
+
+Blockers: none.

@@ -105,6 +105,7 @@ function assertStoredMetadata(
         readonly key: string;
         readonly contentType: string;
         readonly cacheControl: string;
+        readonly customMetadata: Readonly<Record<string, string>>;
     },
     objectClass: 'manifest' | 'audio'
 ): void {
@@ -134,6 +135,12 @@ function assertStoredMetadata(
     if (object.cacheControl !== expected.cacheControl) {
         throw integrityError(
             'Stored audio object cache control is invalid',
+            context
+        );
+    }
+    if (Object.keys(object.customMetadata).length > 0) {
+        throw integrityError(
+            'Stored audio object custom metadata is not empty',
             context
         );
     }
@@ -239,6 +246,7 @@ async function verifyAudioObjects(
                 key: expectedPath,
                 contentType: AUDIO_CONTENT_TYPE,
                 cacheControl: IMMUTABLE_CACHE_CONTROL,
+                customMetadata: {},
             },
             'audio'
         );
@@ -303,6 +311,7 @@ export async function verifyStoredAudioRelease(
             key: manifestPath,
             contentType: JSON_CONTENT_TYPE,
             cacheControl: IMMUTABLE_CACHE_CONTROL,
+            customMetadata: {},
         },
         'manifest'
     );

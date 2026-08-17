@@ -236,6 +236,21 @@ describe('prepareAudioSources', () => {
         });
     });
 
+    it('rejects an own __proto__ omission key instead of dropping it', async () => {
+        const fixture = await makeFixture();
+        await writeFile(
+            fixture.omissionsPath,
+            '{"schemaVersion":1,"storyId":"fixture_story","omissions":{"__proto__":"invalid cue"}}\n'
+        );
+
+        await expect(prepareAudioSources(input(fixture))).rejects.toMatchObject(
+            {
+                name: 'PublisherError',
+                code: 'coverage',
+            }
+        );
+    });
+
     it.each([
         [
             'selection story mismatch',

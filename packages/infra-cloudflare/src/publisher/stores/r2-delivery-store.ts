@@ -233,6 +233,7 @@ export class R2DeliveryStore implements DeliveryStore {
             bytes: object.bytes,
             contentType: object.contentType,
             cacheControl: object.cacheControl,
+            customMetadata: object.customMetadata,
         };
     }
 

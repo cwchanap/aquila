@@ -72,18 +72,29 @@ function emptySourcePlan(): AudioSourcePlan {
     };
 }
 
-function audioProcessRunner(normalizedBytes: Uint8Array): AudioProcessRunner {
+function audioProcessRunner(
+    normalizedBytes: Uint8Array,
+    timeline: string[] = []
+): AudioProcessRunner {
     return async (executable, args) => {
         if (args.includes('-version')) {
+            timeline.push(`process:${executable}:availability`);
             return { exitCode: 0, stdout: new Uint8Array(), stderr: '' };
         }
         if (executable === 'ffmpeg') {
+            timeline.push('process:ffmpeg:normalize');
             const outputPath = args.at(-1);
             if (outputPath === undefined)
                 throw new Error('missing output path');
             await writeFile(outputPath, normalizedBytes);
             return { exitCode: 0, stdout: new Uint8Array(), stderr: '' };
         }
+
+        timeline.push(
+            args.some(argument => argument.includes('codec_name'))
+                ? 'process:ffprobe:runtime'
+                : 'process:ffprobe:source'
+        );
 
         const runtimeProbe = args.some(argument =>
             argument.includes('codec_name')
@@ -245,8 +256,12 @@ describe('publishAudioRelease', () => {
             storyId: STORY_ID,
             target: TARGET,
             sourcePlan: sourcePlan(),
-            run: audioProcessRunner(normalizedBytes),
-            progress: event => events.push(`${event.stage}:${event.message}`),
+            run: audioProcessRunner(normalizedBytes, timeline),
+            progress: event => {
+                const marker = `${event.stage}:${event.message}`;
+                events.push(marker);
+                timeline.push(`progress:${marker}`);
+            },
         });
 
         const archiveReadback = timeline.findIndex(
@@ -289,6 +304,57 @@ describe('publishAudioRelease', () => {
         expect(archiveInspection).toBeGreaterThan(normalization);
         expect(archiveUpload).toBeGreaterThan(archiveInspection);
         expect(deepVerification).toBeGreaterThan(archiveUpload);
+
+        const sourceHash = sha256Bytes(Uint8Array.from([1, 2, 3, 4]));
+        const archivePrefix = `audio/approved/${STORY_ID}/sfx/door-open/${sourceHash}`;
+        const sourceKey = `${archivePrefix}/source.wav`;
+        const receiptKey = `${archivePrefix}/receipt.json`;
+        const objectKey = delivery.immutableRequests.find(request =>
+            request.key.startsWith('vn/objects/')
+        )!.key;
+        const manifestKey = delivery.immutableRequests.find(request =>
+            request.key.endsWith('/runtime-manifest.json')
+        )!.key;
+        const expectedSubsequence = [
+            'process:ffmpeg:availability',
+            'process:ffprobe:availability',
+            'progress:input:validated audio publish inputs',
+            'process:ffprobe:source',
+            'process:ffmpeg:normalize',
+            'process:ffprobe:runtime',
+            'progress:encode:normalized audio sources',
+            `source:stat:${sourceKey}`,
+            `source:stat:${receiptKey}`,
+            'progress:inspect:inspected audio archive candidates',
+            `source:create:${sourceKey}`,
+            `source:read:${sourceKey}`,
+            `source:create:${receiptKey}`,
+            `source:read:${receiptKey}`,
+            'progress:upload:archived audio sources',
+            'progress:input:prepared audio release inputs',
+            `delivery:stat:${objectKey}`,
+            `delivery:stat:${manifestKey}`,
+            `delivery:inspect-pointer:vn/audio/stories/${STORY_ID}/current.json`,
+            `delivery:create:${objectKey}`,
+            `delivery:read:${objectKey}`,
+            'progress:upload:published audio objects',
+            `delivery:create:${manifestKey}`,
+            `delivery:read:${manifestKey}`,
+            'progress:upload:published audio manifest',
+            `delivery:read:${manifestKey}`,
+            `delivery:read:${objectKey}`,
+            'process:ffprobe:runtime',
+            'progress:verify:deep-verified audio release',
+        ];
+        let cursor = 0;
+        for (const event of expectedSubsequence) {
+            const index = timeline.indexOf(event, cursor);
+            expect(
+                index,
+                `missing ${event} in total timeline: ${timeline.join(' | ')}`
+            ).toBeGreaterThanOrEqual(0);
+            cursor = index + 1;
+        }
         expect(source.immutableRequests).toHaveLength(2);
         expect(delivery.immutableRequests).toHaveLength(2);
         expect(delivery.pointerRequests).toEqual([]);

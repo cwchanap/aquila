@@ -1,4 +1,7 @@
-import { RUNTIME_ASSET_CACHE_POLICY } from '@aquila/stories/runtime-assets';
+import {
+    isRuntimeForbiddenMetadataKey,
+    RUNTIME_ASSET_CACHE_POLICY,
+} from '@aquila/stories/runtime-assets';
 
 export type CheckResult = {
     name: string;
@@ -225,10 +228,18 @@ const FORBIDDEN_KEYS = new Set([
     'token',
 ]);
 
-export function findForbiddenKeys(value: unknown, path = ''): string[] {
+export function findForbiddenKeys(
+    value: unknown,
+    path = '',
+    media: 'visual' | 'audio' = 'visual'
+): string[] {
     if (Array.isArray(value)) {
         return value.flatMap((item, index) =>
-            findForbiddenKeys(item, path ? `${path}.${index}` : String(index))
+            findForbiddenKeys(
+                item,
+                path ? `${path}.${index}` : String(index),
+                media
+            )
         );
     }
     if (value === null || typeof value !== 'object') return [];
@@ -236,8 +247,12 @@ export function findForbiddenKeys(value: unknown, path = ''): string[] {
     const found: string[] = [];
     for (const [key, nested] of Object.entries(value)) {
         const here = path ? `${path}.${key}` : key;
-        if (FORBIDDEN_KEYS.has(key.toLowerCase())) found.push(here);
-        found.push(...findForbiddenKeys(nested, here));
+        const forbidden =
+            media === 'audio'
+                ? isRuntimeForbiddenMetadataKey(key, 'audio')
+                : FORBIDDEN_KEYS.has(key.toLowerCase());
+        if (forbidden) found.push(here);
+        found.push(...findForbiddenKeys(nested, here, media));
     }
     return found;
 }

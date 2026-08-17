@@ -122,7 +122,8 @@ async function advisoryPointerState(
     if (!snapshot.exists) return { exists: false, activationNeeded: true };
     if (
         snapshot.contentType !== JSON_CONTENT_TYPE ||
-        snapshot.cacheControl !== POINTER_CACHE_CONTROL
+        snapshot.cacheControl !== POINTER_CACHE_CONTROL ||
+        Object.keys(snapshot.customMetadata ?? {}).length > 0
     ) {
         throw new PublisherError(
             'integrity',
@@ -217,6 +218,7 @@ export async function buildAudioPublicationPlan(
                 bytes: asset.bytes,
                 contentType: 'audio/mpeg',
                 cacheControl: IMMUTABLE_CACHE_CONTROL,
+                customMetadata: {},
                 identity: `${asset.type}:${asset.key}`,
             })
         );
@@ -238,6 +240,7 @@ export async function buildAudioPublicationPlan(
         bytes: preparedRelease.manifestBytes,
         contentType: JSON_CONTENT_TYPE,
         cacheControl: IMMUTABLE_CACHE_CONTROL,
+        customMetadata: {},
     });
     progress(options.progress, {
         stage: 'inspect',

@@ -1102,6 +1102,31 @@ describe('activateStoredRelease', () => {
         );
     });
 
+    it('rejects a contaminated active audio pointer before a no-op activation', async () => {
+        const store = new MediaActivationStore(
+            previewReleaseA,
+            previewAudioReleaseA
+        );
+        await activateAudio(store, previewAudioReleaseA);
+        const readPointer = store.readPointer.bind(store);
+        store.readPointer = async key => {
+            const snapshot = await readPointer(key);
+            if (!snapshot.exists) return snapshot;
+            return {
+                ...snapshot,
+                customMetadata: { candidateId: 'private-candidate' },
+            } as PointerSnapshot;
+        };
+
+        await expect(
+            activateAudio(store, previewAudioReleaseA)
+        ).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'activation-target',
+        });
+        expect(store.pointerWrites).toHaveLength(1);
+    });
+
     it('uses the audio pointer for stale CAS override after an audio pointer already exists', async () => {
         const store = new MediaActivationStore(
             previewReleaseA,

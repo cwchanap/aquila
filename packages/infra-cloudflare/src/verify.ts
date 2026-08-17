@@ -381,10 +381,11 @@ async function checkSourceKeyAbsentFromDelivery(
 }
 
 function checkForbiddenKeys(
-    documents: Array<{ label: string; body: unknown }>
+    documents: Array<{ label: string; body: unknown }>,
+    media: VerifyMedia
 ): CheckResult {
     const forbidden = documents.flatMap(({ label, body }) =>
-        findForbiddenKeys(body).map(path => `${label}.${path}`)
+        findForbiddenKeys(body, '', media).map(path => `${label}.${path}`)
     );
     return {
         name: 'no forbidden keys in public json',
@@ -719,7 +720,7 @@ async function runActiveChecks(
                 'pair validation failed (dependent checks skipped)',
             integrityCheck: (parsed, digest) =>
                 validatePointerManifestPair(pointerParsed, parsed, digest),
-            checkCors: false,
+            checkCors: media === 'audio',
             documents: [{ label: 'pointer', body: pointer.body }],
         },
         input,
@@ -1285,10 +1286,10 @@ async function runChecksForManifest(
         }
     }
     results.push(
-        checkForbiddenKeys([
-            ...resolved.documents,
-            { label: 'manifest', body: manifest.body },
-        ])
+        checkForbiddenKeys(
+            [...resolved.documents, { label: 'manifest', body: manifest.body }],
+            media
+        )
     );
 }
 

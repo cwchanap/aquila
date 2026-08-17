@@ -38,7 +38,7 @@ import {
     _setRequestTimeout,
     ORIGIN,
 } from '../verify';
-import type { CheckResult } from '../assertions';
+import { findForbiddenKeys, type CheckResult } from '../assertions';
 
 const STORY_ID = 'the_seventh_mirror';
 const TARGET = { kind: 'preview', previewId: 'smoke' } as const;
@@ -1604,6 +1604,21 @@ describe('verifyPublicRelease', () => {
 });
 
 describe('verifyPublicRelease audio', () => {
+    it('uses the runtime audio forbidden-key rule for raw JSON scans', () => {
+        for (const key of [
+            'requestIds',
+            'compilerUsagePaths',
+            'generationSpecs',
+            'selectionNotes',
+            'candidateMetadata',
+            'sourceSha256',
+        ]) {
+            expect(
+                findForbiddenKeys({ [key]: 'private' }, '', 'audio')
+            ).toEqual([key]);
+        }
+    });
+
     function audioInput(
         release: AudioReleaseFixture,
         archiveProbeKeys: readonly string[] = []
@@ -1763,6 +1778,19 @@ describe('verifyPublicRelease audio', () => {
         );
 
         expect(result.status).toBe('failed');
+        expect(names(result.results)['manifest CORS']).toBe(false);
+    });
+
+    it('requires CORS on an active audio manifest as well as its pointer', async () => {
+        const release = buildValidAudioRelease();
+        const result = await verifyPublicRelease(audioInput(release), {
+            fetch: makeAudioFetch(release, {
+                manifestCors: 'https://wrong.example',
+            }),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(names(result.results)['pointer CORS']).toBe(true);
         expect(names(result.results)['manifest CORS']).toBe(false);
     });
 

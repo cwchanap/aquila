@@ -186,6 +186,26 @@ describe('immutable candidate operations', () => {
         });
     });
 
+    it('rejects a reused audio candidate with contaminated custom metadata', async () => {
+        const store = new MemoryStore();
+        const input = {
+            ...candidate({ kind: 'object', key: 'vn/objects/audio.mp3' }),
+            customMetadata: {},
+        };
+        store.objects.set(input.key, {
+            ...stored(input),
+            customMetadata: { candidateId: 'private-candidate' },
+        });
+        stores.push(store);
+
+        await expect(
+            inspectImmutableCandidate(store, input)
+        ).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'integrity',
+        });
+    });
+
     it('creates or reuses after a create race and verifies exact read-back', async () => {
         const store = new MemoryStore();
         store.raceCreate = true;

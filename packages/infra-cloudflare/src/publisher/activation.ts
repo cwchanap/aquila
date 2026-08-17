@@ -191,7 +191,9 @@ async function readPointer(
     if (
         snapshot.contentType !== JSON_CONTENT_TYPE ||
         snapshot.cacheControl !==
-            RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl
+            RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl ||
+        (media === 'audio' &&
+            Object.keys(snapshot.customMetadata ?? {}).length > 0)
     ) {
         throw activationTargetError(key, intent);
     }

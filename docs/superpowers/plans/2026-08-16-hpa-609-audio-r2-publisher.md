@@ -2,27 +2,27 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Publish explicitly selected Aquila SFX/BGM as independently versioned, immutable MP3 releases through the existing R2 source/delivery infrastructure, with explicit activation, deep verification, rollback, and deterministic coverage.
+**Goal:** Publish explicitly selected Aquila SFX/BGM as independently versioned immutable MP3 releases through the existing R2 source/delivery infrastructure, with deterministic coverage, deep verification, explicit activation, rollback, and reactivation.
 
-**Architecture:** Keep the visual manifest/encoder unchanged. Add audio-specific runtime/source/MP3 modules, reuse `DeliveryStore`, extract only the already-generic immutable-candidate operations, and add a small visual/audio dispatch inside the existing activation/release-history services so pointer CAS and rollback semantics stay single-owned. Audio `publish` writes and verifies immutable data only; `activate` is always a separate command.
+**Architecture:** Keep the visual manifest/encoder unchanged. Add audio-specific runtime/source/MP3 modules, reuse `DeliveryStore`, extract only the already-generic immutable-candidate operations, and add a small visual/audio selector inside existing activation/release-history services so pointer CAS semantics stay single-owned. Audio `publish` archives/writes/verifies immutable data only; `activate --media audio` is always a separate command.
 
-**Tech Stack:** TypeScript, Bun, Vitest, Zod, Node `child_process`, system `ffmpeg`/`ffprobe`, AWS S3 client for Cloudflare R2, existing `@aquila/stories` runtime/compiler/audio-generation modules.
+**Tech Stack:** TypeScript, Bun, Vitest, Zod, Node child processes, system `ffmpeg`/`ffprobe`, AWS S3 client for Cloudflare R2, existing `@aquila/stories` runtime/compiler/audio-generation modules.
 
 ## Global Constraints
 
-- Keep `RuntimeAssetManifestV1` and all visual background/portrait wire behavior unchanged.
-- Runtime audio v1 is MP3 only: MPEG Layer III, 44.1 kHz, 128 kbit/s, `audio/mpeg`, stripped metadata/artwork.
-- Production audio publication never mutates `current.json`; only the explicit `activate --media audio` command may do so.
-- Reuse `aquila-vn-source`, `aquila-vn-delivery`, `assets.aquila.cwchanap.dev`, the existing R2 credentials, preview namespace, and the existing two Cloudflare cache rules.
-- Public audio manifests/object metadata contain no prompt, provider/model/request id, candidate id, receipt, source path, or local absolute path.
-- Compiler-used cues must be selected or explicitly omitted with a non-empty reason; there is no `--allow-missing` mode.
-- Do not add a generic media adapter/plugin framework, database, daemon, Worker, queue, second S3 client implementation, multiple codecs, loudness mastering, or loop editing.
-- System `ffmpeg` and `ffprobe` are publisher prerequisites; tests inject the process runner instead of requiring the binaries.
-- Visual CLI behavior remains the default when `--media` is absent.
+- Keep `RuntimeAssetManifestV1` and visual background/portrait behavior unchanged.
+- Audio v1 is MP3 only: MPEG Layer III, 44.1 kHz, 128 kbit/s target, `audio/mpeg`, metadata/artwork stripped.
+- Audio `publish` never mutates `current.json`; only explicit `activate --media audio` may do so.
+- Reuse `aquila-vn-source`, `aquila-vn-delivery`, `assets.aquila.cwchanap.dev`, existing R2 credentials, preview namespace, and exactly two Cloudflare cache rules.
+- Public audio manifest/object metadata/reporting contains no prompt, provider/model/request id, candidate id, receipt, source path, credential, or local absolute path.
+- Every compiler-used cue is selected or explicitly omitted with a non-empty reason; no `--allow-missing` escape hatch.
+- Do not add a generic media adapter/plugin framework, database, daemon, Worker, queue, second R2 client implementation, extra codec, loudness mastering, or loop editing.
+- `ffmpeg` and `ffprobe` are publisher prerequisites; unit tests inject the process runner instead of requiring those binaries.
+- Existing CLI behavior remains visual when `--media` is absent.
 
 ---
 
-### Task 1: Add the audio runtime contract and path grammar
+### Task 1: Add the runtime audio contract and path grammar
 
 **Files:**
 - Create: `packages/stories/src/runtime-assets/audio.ts`
@@ -31,26 +31,27 @@
 - Test: `packages/stories/src/runtime-assets/__tests__/audio.test.ts`
 
 **Interfaces:**
-- Consumes: `canonicalJson`, `releaseIdFromContentSha256`, `assertSha256`, `compareQualifiedAssetIds`, `isSafeLogicalKey`, `isStoryId`, `isReleaseId`, `PublicationTarget`, `ActiveReleasePointerV1Schema`, SHA-purpose types.
-- Produces:
 
 ```ts
 export type AudioAssetType = 'sfx' | 'bgm';
+
 export interface RuntimeAudioAssetV1 {
-    identity: { type: AudioAssetType; key: string };
-    format: 'mp3';
-    path: string;
-    sha256: ObjectContentSha256;
-    byteLength: number;
-    durationMs: number;
-    loop: boolean;
+    readonly identity: { readonly type: AudioAssetType; readonly key: string };
+    readonly format: 'mp3';
+    readonly path: string;
+    readonly sha256: ObjectContentSha256;
+    readonly byteLength: number;
+    readonly durationMs: number;
+    readonly loop: boolean;
 }
+
 export interface RuntimeAudioManifestV1 {
-    schemaVersion: 1;
-    storyId: string;
-    releaseId: string;
-    assets: RuntimeAudioAssetV1[];
+    readonly schemaVersion: 1;
+    readonly storyId: string;
+    readonly releaseId: string;
+    readonly assets: readonly RuntimeAudioAssetV1[];
 }
+
 export type AudioActiveReleasePointerV1 = ActiveReleasePointerV1;
 
 export function getAudioObjectPath(sha256: ObjectContentSha256): string;
@@ -83,37 +84,47 @@ export function validateAudioPointerManifestPair(
 ): void;
 ```
 
-- [ ] **Step 1: Write failing path and schema tests**
-
-Add tests that assert the exact production/preview keys and the schema invariants:
+- [ ] **Step 1: Write failing path tests**
 
 ```ts
 expect(getAudioObjectPath(digest)).toBe(`vn/audio/objects/${digest}.mp3`);
-expect(getAudioReleaseManifestPath('demo_story', releaseId, { kind: 'production' }))
-    .toBe(`vn/audio/stories/demo_story/releases/${releaseId}/runtime-manifest.json`);
-expect(getAudioCurrentPointerPath('demo_story', {
-    kind: 'preview', previewId: 'gate-1',
-})).toBe('vn/previews/gate-1/audio/stories/demo_story/current.json');
+expect(
+    getAudioReleaseManifestPath('demo_story', releaseId, {
+        kind: 'production',
+    })
+).toBe(
+    `vn/audio/stories/demo_story/releases/${releaseId}/runtime-manifest.json`
+);
+expect(
+    getAudioCurrentPointerPath('demo_story', {
+        kind: 'preview',
+        previewId: 'gate-1',
+    })
+).toBe('vn/previews/gate-1/audio/stories/demo_story/current.json');
 ```
 
-Use one valid SFX entry and one valid BGM entry, then separately assert failures for duplicate identity, reverse sort order, bad SHA, path/SHA mismatch, zero/negative duration, `sfx + loop:true`, and `bgm + loop:false`.
+Also reject invalid story/preview/release ids.
 
-- [ ] **Step 2: Run the focused test and confirm it fails**
+- [ ] **Step 2: Write failing schema tests**
 
-Run:
+Start from one valid SFX and BGM entry. Separately assert rejection for duplicate identity, reverse sort order, bad SHA, path/SHA mismatch, zero/negative byte length, zero/negative duration, `sfx + loop:true`, `bgm + loop:false`, unknown public fields, prompt/provider/source-path fields, and absolute URL/path values.
+
+- [ ] **Step 3: Run the focused test and verify failure**
 
 ```bash
 bun --filter @aquila/stories test -- src/runtime-assets/__tests__/audio.test.ts
 ```
 
-Expected: FAIL because the audio contract/path exports do not exist.
+Expected: FAIL because audio exports do not exist.
 
-- [ ] **Step 3: Add audio path helpers without changing visual paths**
+- [ ] **Step 4: Add audio path helpers next to the existing visual helpers**
 
-In `paths.ts`, reuse the existing target validation and publication prefix. Keep visual helpers unchanged and add:
+Reuse the private `assertPublicationTarget` in `paths.ts` and keep current visual functions unchanged:
 
 ```ts
-export function getAudioObjectPath(sha256: ObjectContentSha256): string {
+export function getAudioObjectPath(
+    sha256: ObjectContentSha256
+): string {
     if (!isSha256(sha256)) {
         throw new AssetResolverError('integrity', 'Invalid SHA-256 digest');
     }
@@ -127,11 +138,15 @@ export function getAudioReleaseManifestPath(
 ): string {
     assertPublicationTarget(storyId, target);
     if (!isReleaseId(releaseId)) {
-        throw new AssetResolverError('unsafe-path', `Invalid release id: ${releaseId}`);
+        throw new AssetResolverError(
+            'unsafe-path',
+            `Invalid release id: ${releaseId}`
+        );
     }
-    const prefix = target.kind === 'production'
-        ? 'vn/audio'
-        : `vn/previews/${target.previewId}/audio`;
+    const prefix =
+        target.kind === 'production'
+            ? 'vn/audio'
+            : `vn/previews/${target.previewId}/audio`;
     return `${prefix}/stories/${storyId}/releases/${releaseId}/runtime-manifest.json`;
 }
 
@@ -140,41 +155,46 @@ export function getAudioCurrentPointerPath(
     target: PublicationTarget
 ): string {
     assertPublicationTarget(storyId, target);
-    const prefix = target.kind === 'production'
-        ? 'vn/audio'
-        : `vn/previews/${target.previewId}/audio`;
+    const prefix =
+        target.kind === 'production'
+            ? 'vn/audio'
+            : `vn/previews/${target.previewId}/audio`;
     return `${prefix}/stories/${storyId}/current.json`;
 }
 ```
 
-- [ ] **Step 4: Implement the strict audio manifest and pointer validation**
+- [ ] **Step 5: Implement strict audio manifest/pointer schemas**
 
-In `audio.ts`, use Zod with the existing path/hash predicates. Require sorted unique `${type}:${key}` entries and enforce loop by type in `superRefine`. Reuse the existing forbidden-runtime-field scan pattern by keeping the audio parser strict and recursively rejecting keys containing `prompt`, `provider`, `sourcePath`, `credential`, `token`, or `apiKey`; do not weaken the visual parser.
+Use `.strict()` Zod objects. Require key to pass the current audio-plan slug regex and `isSafeLogicalKey`. In `superRefine`, walk assets in input order and reject duplicate or unsorted `${type}:${key}` values; enforce the loop invariant and exact `getAudioObjectPath(assertSha256(...))` match.
 
-Canonicalize exactly:
+Use a strict pointer schema with the existing six fields, then require:
 
 ```ts
-return canonicalJson({
-    schemaVersion: manifest.schemaVersion,
-    storyId: manifest.storyId,
-    assets: [...manifest.assets].sort((a, b) =>
-        compareQualifiedAssetIds(
-            `${a.identity.type}:${a.identity.key}`,
-            `${b.identity.type}:${b.identity.key}`
-        )
-    ),
-});
+pointer.storyId === expectedStoryId;
+pointer.manifestPath === getAudioReleaseManifestPath(
+    pointer.storyId,
+    pointer.releaseId,
+    target
+);
 ```
 
-`parseAudioActiveReleasePointer` parses with the existing pointer field schema, then requires `storyId === expectedStoryId` and `manifestPath === getAudioReleaseManifestPath(...)`.
+- [ ] **Step 6: Implement canonical release identity**
 
-- [ ] **Step 5: Export the audio contract**
+```ts
+export function canonicalAudioReleaseContent(
+    manifest: RuntimeAudioManifestV1
+): string {
+    return canonicalJson({
+        schemaVersion: manifest.schemaVersion,
+        storyId: manifest.storyId,
+        assets: manifest.assets,
+    });
+}
+```
 
-Add only the new audio symbols to `runtime-assets/index.ts`. Do not re-export Node-only publisher/compiler code here.
+Use the same release-id helper and SHA-purpose brands as the visual contract.
 
-- [ ] **Step 6: Run focused and package tests**
-
-Run:
+- [ ] **Step 7: Export and run the full stories checks**
 
 ```bash
 bun --filter @aquila/stories test -- src/runtime-assets/__tests__/audio.test.ts
@@ -182,9 +202,9 @@ bun --filter @aquila/stories test
 bun --filter @aquila/stories typecheck
 ```
 
-Expected: PASS, including all pre-existing visual runtime-asset tests.
+Expected: PASS, including all existing visual runtime-asset tests.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add packages/stories/src/runtime-assets
@@ -193,7 +213,7 @@ git commit -m "feat: add runtime audio release contract"
 
 ---
 
-### Task 2: Complete the HPA-608 handoff and expose compiler-owned audio publishing inputs
+### Task 2: Complete the HPA-608 handoff and expose compiler-owned publication inputs
 
 **Files:**
 - Modify: `packages/stories/src/audio-generation/index.ts`
@@ -203,8 +223,12 @@ git commit -m "feat: add runtime audio release contract"
 - Test: `packages/stories/src/compiler/__tests__/audio-publishing.test.ts`
 
 **Interfaces:**
-- Consumes: `buildAudioGenerationSpec`, `audioGenerationSpecSha256`, `STORIES_RAW_ROOT`, `loadStoryCompilerConfig`, `compileStory`, `loadAudioPlan`, `collectAudioUsage`, `buildAudioUsageReport`.
-- Produces:
+
+```ts
+export { buildAudioGenerationSpec, audioGenerationSpecSha256 } from './spec';
+```
+
+and:
 
 ```ts
 export interface AudioPublishingContext {
@@ -219,41 +243,39 @@ export async function loadAudioPublishingContext(
 ): Promise<AudioPublishingContext>;
 ```
 
-and supported HPA-608 exports:
+- [ ] **Step 1: Write failing supported-export tests**
 
-```ts
-export { buildAudioGenerationSpec, audioGenerationSpecSha256 } from './spec';
-```
+Import both spec helpers through `@aquila/stories/audio-generation`; prove the current spec hash changes when a plan row's paid request input changes.
 
-- [ ] **Step 1: Add failing export and context tests**
+- [ ] **Step 2: Write a failing temp-story context test**
 
-The generation index test imports both spec helpers through `@aquila/stories/audio-generation` and proves that changing an authored `durationMs` changes the current spec hash.
-
-The publishing-context test creates a temp raw-story fixture with `compiler.config.ts`, characters, one scene, and `docs/audio-plan.json`, then expects:
+Create a temp raw story with `compiler.config.ts`, characters, one scene, and `docs/audio-plan.json`, then assert:
 
 ```ts
 const context = await loadAudioPublishingContext(fixture.storyFolder);
 expect(context.storyId).toBe('fixture_story');
 expect(context.usage.assets).toEqual([
-    expect.objectContaining({ type: 'sfx', key: 'door-close', usageCount: 1 }),
+    expect.objectContaining({
+        type: 'sfx',
+        key: 'door-close',
+        usageCount: 1,
+    }),
 ]);
 ```
 
-- [ ] **Step 2: Run the tests and confirm missing-export failures**
+- [ ] **Step 3: Run and verify the missing-module/export failure**
 
 ```bash
 bun --filter @aquila/stories test -- src/audio-generation/__tests__/index.test.ts src/compiler/__tests__/audio-publishing.test.ts
 ```
 
-Expected: FAIL on missing exports/module.
+- [ ] **Step 4: Export only the two current-spec helpers**
 
-- [ ] **Step 3: Export only the two current-spec helpers from the existing Node-only subpath**
+Do not expose ElevenLabs HTTP clients, generation runner internals, or CLI functions.
 
-Update `audio-generation/index.ts`; do not expose provider HTTP clients or CLI internals.
+- [ ] **Step 5: Implement the Node-only compiler wrapper**
 
-- [ ] **Step 4: Implement `loadAudioPublishingContext` as a thin compiler wrapper**
-
-Resolve `<STORIES_RAW_ROOT>/<storyFolder>`, load the config, call `compileStory` with `writeOutputs: false`, load the plan, and build the report from the returned `StoryIR`:
+Reuse `STORIES_RAW_ROOT`, `loadStoryCompilerConfig`, `compileStory`, `loadAudioPlan`, `collectAudioUsage`, and `buildAudioUsageReport`:
 
 ```ts
 const story = compileStory({
@@ -265,47 +287,45 @@ const story = compileStory({
     writeOutputs: false,
 });
 const plan = loadAudioPlan(rawDir);
-if (plan === undefined) throw new Error(`Story ${storyFolder} has no docs/audio-plan.json`);
-const usage = buildAudioUsageReport(
+if (plan === undefined) {
+    throw new Error(`Story ${storyFolder} has no docs/audio-plan.json`);
+}
+return {
     storyFolder,
-    collectAudioUsage(story),
-    plan
-);
-return { storyFolder, storyId: config.storyId, plan, usage };
+    storyId: config.storyId,
+    plan,
+    usage: buildAudioUsageReport(
+        storyFolder,
+        collectAudioUsage(story),
+        plan
+    ),
+};
 ```
 
-No output path is written because `writeOutputs:false`.
-
-- [ ] **Step 5: Add the Node-only package subpath**
-
-In `packages/stories/package.json`:
+- [ ] **Step 6: Add the package subpath only**
 
 ```json
 "./audio-publishing": "./src/audio-publishing.ts"
 ```
 
-Do not add it to `src/index.ts`.
+Do not export it from `src/index.ts`.
 
-- [ ] **Step 6: Run package tests/typecheck**
+- [ ] **Step 7: Run package checks and commit**
 
 ```bash
 bun --filter @aquila/stories test
 bun --filter @aquila/stories typecheck
-```
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add packages/stories/src/audio-generation/index.ts packages/stories/src/audio-publishing.ts packages/stories/package.json packages/stories/src/audio-generation/__tests__ packages/stories/src/compiler/__tests__/audio-publishing.test.ts
+git add packages/stories/src/audio-generation/index.ts packages/stories/src/audio-publishing.ts packages/stories/package.json packages/stories/src/audio-generation/__tests__/index.test.ts packages/stories/src/compiler/__tests__/audio-publishing.test.ts
 git commit -m "feat: expose audio publishing inputs"
 ```
 
 ---
 
-### Task 3: Extract immutable-candidate operations and extend the existing R2/cache primitives
+### Task 3: Share immutable-object operations and extend existing R2/cache primitives
 
 **Files:**
 - Create: `packages/infra-cloudflare/src/publisher/immutable-candidate.ts`
+- Create: `packages/infra-cloudflare/src/publisher/__tests__/immutable-candidate.test.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/publication-plan.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/publish.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/stores/r2-delivery-store.ts`
@@ -315,11 +335,12 @@ git commit -m "feat: expose audio publishing inputs"
 - Modify: `packages/infra-cloudflare/package.json`
 
 **Interfaces:**
-- Produces:
 
 ```ts
+export type ImmutableCandidateKind = 'object' | 'manifest' | 'source';
+
 export interface PlannedImmutableCandidate {
-    readonly kind: 'object' | 'manifest' | 'source';
+    readonly kind: ImmutableCandidateKind;
     readonly key: string;
     readonly bytes: Uint8Array;
     readonly contentType: string;
@@ -339,97 +360,81 @@ export async function publishImmutableCandidate(
 ): Promise<'created' | 'reused'>;
 ```
 
-- `R2DeliveryStore.createFromEnvironment({ bucket?: 'delivery' | 'source', ... })` keeps `'delivery'` as the default.
+`R2DeliveryStore.createFromEnvironment` additionally accepts `bucket?: 'delivery' | 'source'`, default `delivery`.
 
-- [ ] **Step 1: Add tests for the shared immutable helper**
+- [ ] **Step 1: Write immutable-helper tests from existing visual behavior**
 
-Move the existing publication-plan/publish assertions for create/reuse metadata conflict and exact read-back conflict into a focused helper test. Require `source` candidates to use the same immutability behavior.
+Cover absent -> create, exact metadata+bytes -> reuse, metadata conflict -> integrity error, byte conflict -> integrity error, create race -> read-back exact match, and exact read-back failure. Run them against `object`, `manifest`, and one `source` candidate.
 
-- [ ] **Step 2: Extract the existing generic logic without changing behavior**
+- [ ] **Step 2: Extract only media-neutral candidate logic**
 
-Move `PlannedImmutableCandidate`, `inspectImmutableCandidate`, create/read-back verification, and byte equality to `immutable-candidate.ts`. Update visual `publication-plan.ts` and `publish.ts` to import them.
+Move the candidate interface, destination inspection, create/reuse, byte equality, and exact read-back verification out of visual `publication-plan.ts`/`publish.ts`. Keep visual encoder/coverage/pointer/report logic where it is.
 
-Do not move visual coverage, encoding, pointer, or report code.
-
-- [ ] **Step 3: Run the visual publisher tests before any audio-specific R2 changes**
+- [ ] **Step 3: Run visual plan/publish tests before R2 changes**
 
 ```bash
-bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/publication-plan.test.ts src/publisher/__tests__/publish.integration.test.ts
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/immutable-candidate.test.ts src/publisher/__tests__/publication-plan.test.ts src/publisher/__tests__/publish.integration.test.ts
 ```
 
-Expected: PASS with the same visual behavior.
+Expected: PASS with unchanged visual behavior.
 
-- [ ] **Step 4: Add source/delivery bucket selection to the existing R2 factory**
-
-Change the factory option to:
+- [ ] **Step 4: Add existing-store source/delivery bucket selection**
 
 ```ts
 static async createFromEnvironment(options: {
     configPath?: string;
     environment?: Readonly<Record<string, string | undefined>>;
     bucket?: 'delivery' | 'source';
-} = {}): Promise<R2DeliveryStore>
+} = {}): Promise<R2DeliveryStore> {
+    // ...load existing config/credentials...
+    return new R2DeliveryStore({
+        bucket: config.buckets[options.bucket ?? 'delivery'],
+        client,
+    });
+}
 ```
 
-Select:
+No second S3 client class.
 
-```ts
-bucket: config.buckets[options.bucket ?? 'delivery']
-```
+- [ ] **Step 5: Add only the two audio pointer grammars to the store allowlist**
 
-Keep one SDK-client implementation and the same credentials.
-
-- [ ] **Step 5: Extend only the pointer-key allowlist**
-
-Add production audio:
+Accept:
 
 ```text
 vn/audio/stories/<storyId>/current.json
-```
-
-and preview audio:
-
-```text
 vn/previews/<previewId>/audio/stories/<storyId>/current.json
 ```
 
-Keep every other arbitrary `current.json` path rejected.
+Continue rejecting arbitrary `current.json` paths.
 
-- [ ] **Step 6: Extend the existing immutable cache rule**
+- [ ] **Step 6: Extend existing immutable cache rule 1**
 
-Update its predicate to exactly:
+Change only its predicate:
 
 ```ts
 '(starts_with(http.request.uri.path, "/vn/objects/") or starts_with(http.request.uri.path, "/vn/audio/objects/") or ends_with(http.request.uri.path, "/runtime-manifest.json"))'
 ```
 
-Keep the rule count at two and the pointer bypass expression unchanged.
+Keep the rule count at two and pointer bypass rule unchanged.
 
 - [ ] **Step 7: Add the missing infra typecheck script**
-
-In `packages/infra-cloudflare/package.json` add:
 
 ```json
 "typecheck": "tsc --noEmit"
 ```
 
-- [ ] **Step 8: Run the focused store/rule tests plus typecheck**
+- [ ] **Step 8: Run focused/full checks and commit**
 
 ```bash
-bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/r2-delivery-store.test.ts src/__tests__/rules.test.ts
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/immutable-candidate.test.ts src/publisher/__tests__/r2-delivery-store.test.ts src/__tests__/rules.test.ts
 bun --filter @aquila/infra-cloudflare typecheck
-```
-
-- [ ] **Step 9: Commit**
-
-```bash
-git add packages/infra-cloudflare/src/publisher/immutable-candidate.ts packages/infra-cloudflare/src/publisher/publication-plan.ts packages/infra-cloudflare/src/publisher/publish.ts packages/infra-cloudflare/src/publisher/stores/r2-delivery-store.ts packages/infra-cloudflare/src/publisher/__tests__/r2-delivery-store.test.ts packages/infra-cloudflare/src/rules.ts packages/infra-cloudflare/src/__tests__/rules.test.ts packages/infra-cloudflare/package.json
+git add packages/infra-cloudflare/src/publisher/immutable-candidate.ts packages/infra-cloudflare/src/publisher/__tests__/immutable-candidate.test.ts packages/infra-cloudflare/src/publisher/publication-plan.ts packages/infra-cloudflare/src/publisher/publish.ts packages/infra-cloudflare/src/publisher/stores/r2-delivery-store.ts packages/infra-cloudflare/src/publisher/__tests__/r2-delivery-store.test.ts packages/infra-cloudflare/src/rules.ts packages/infra-cloudflare/src/__tests__/rules.test.ts packages/infra-cloudflare/package.json
 git commit -m "refactor: share immutable publication primitives"
 ```
 
 ---
 
-### Task 4: Validate selections, omissions, coverage, and private source archive inputs
+### Task 4: Validate selections, omissions, coverage, and source-archive candidates
 
 **Files:**
 - Create: `packages/infra-cloudflare/src/publisher/audio-source.ts`
@@ -488,48 +493,41 @@ export async function prepareAudioSources(input: {
     readonly omissionsPath?: string;
 }): Promise<AudioSourcePlan>;
 
-export async function archivePreparedAudioSources(input: {
-    readonly store: DeliveryStore;
-    readonly plan: AudioSourcePlan;
-}): Promise<void>;
+export function sourceArchiveCandidates(
+    plan: AudioSourcePlan
+): readonly Omit<PlannedImmutableCandidate, 'status'>[];
 ```
 
-- [ ] **Step 1: Write fixture tests for valid selection and all rejection paths**
+- [ ] **Step 1: Create a valid temp HPA-608 fixture test**
 
-Build a tiny temp HPA-608 store with one success receipt/candidate and a matching `selection.json`. Assert one included coverage entry.
+Write one verified candidate + receipt + matching `selection.json`, compile one use of the same key, and assert one included source/coverage row.
 
-Then mutate one thing per test and require failure before an injected archive store receives any create call:
+- [ ] **Step 2: Add rejection tests before implementation**
 
-- selection `storyId` mismatch;
-- stale `specSha256` after the audio-plan row changes;
-- wrong `sourceSha256`;
-- missing candidate/receipt bytes;
-- used key neither selected nor omitted;
-- selected and omitted same key;
-- omission for unknown or unused key;
+One mutation per test:
+
+- selection story mismatch;
+- stale selection `specSha256` after current plan/spec change;
+- bad `sourceSha256`;
+- missing/tampered candidate or receipt;
+- compiler-used key neither selected nor omitted;
+- same key selected and omitted;
+- omission for unknown or compiler-unused key;
 - empty omission reason.
 
-Also assert selected-but-unused and plan-unused keys appear only as warnings/report data and are not returned in `sources`.
+Also prove selected-but-unused and plan-unused keys are warnings/report data and never appear in `sources`.
 
-- [ ] **Step 2: Run the test and confirm it fails**
+- [ ] **Step 3: Run and verify failure**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-source.test.ts
 ```
 
-- [ ] **Step 3: Implement the strict omissions parser**
+- [ ] **Step 4: Implement strict omissions parsing**
 
-Use Zod `.strict()` and the current plan key schema. Normalize reasons with `.trim().min(1).max(500)`.
+Use `.strict()` and current audio key validation. Normalize each reason with `trim`, require `1..500` chars. Missing file means no omissions for the requested story.
 
-No file means:
-
-```ts
-{ schemaVersion: 1, storyId: expectedStoryId, omissions: {} }
-```
-
-- [ ] **Step 4: Load the compiler context and HPA-608 selection**
-
-Use only supported package subpaths:
+- [ ] **Step 5: Load only supported stories package subpaths**
 
 ```ts
 import { loadAudioPublishingContext } from '@aquila/stories/audio-publishing';
@@ -541,54 +539,55 @@ import {
 } from '@aquila/stories/audio-generation';
 ```
 
-Cross-check `context.storyId === expectedStoryId` before opening candidates.
+Require `context.storyId === expectedStoryId` before opening candidate bytes.
 
-- [ ] **Step 5: Verify current spec and selected bytes**
-
-For each compiler-used selected key:
+- [ ] **Step 6: Verify each compiler-used selection against current spec + actual bytes**
 
 ```ts
-const asset = context.plan.assets.find(item => item.key === key)!;
 const currentSpecSha256 = audioGenerationSpecSha256(
-    buildAudioGenerationSpec(asset)
+    buildAudioGenerationSpec(planAsset)
 );
-if (selected.specSha256 !== currentSpecSha256) throw sourceError(...);
-const candidate = await store.readVerifiedCandidate(key, selected.candidateId);
+if (selection.specSha256 !== currentSpecSha256) throw sourceError(...);
+const candidate = await generationStore.readVerifiedCandidate(
+    key,
+    selection.candidateId
+);
 if (candidate === null) throw sourceError(...);
 if (candidate.receipt.specSha256 !== currentSpecSha256) throw sourceError(...);
-if (sha256Bytes(candidate.bytes) !== selected.sourceSha256) throw sourceError(...);
+if (sha256Bytes(candidate.bytes) !== selection.sourceSha256) {
+    throw sourceError(...);
+}
 ```
 
-Read the exact receipt file bytes for private archival; do not reconstruct receipt JSON.
+Read the exact existing `candidate-NNN.receipt.json` bytes for archival; do not reconstruct receipt JSON.
 
-- [ ] **Step 6: Build sorted deterministic coverage**
+- [ ] **Step 7: Build deterministic coverage and archive candidates**
 
-Sort by `${type}:${key}` and classify only compiler-used keys. Set `loop` from the current plan (`bgm` true, SFX false). Do not expose prompts/source paths in the returned coverage.
-
-- [ ] **Step 7: Implement private archive keys and immutable reuse**
-
-For each included source create/reuse:
+Sort coverage by `${type}:${key}`. Archive keys:
 
 ```text
-audio/approved/<storyId>/<type>/<key>/<sourceSha256>/source.<safe-extension>
+audio/approved/<storyId>/<type>/<key>/<sourceSha256>/source.<safe-ext>
 audio/approved/<storyId>/<type>/<key>/<sourceSha256>/receipt.json
 ```
 
-Use `application/json` for receipts and the verified source media type for originals. Use `private, max-age=0, no-store` as archive object cache-control even though the source bucket is private.
+Archive candidate metadata:
 
-Call `inspectImmutableCandidate` followed by `publishImmutableCandidate` so a conflicting existing archive object fails closed.
+```ts
+{
+    kind: 'source',
+    contentType: sourceMediaType | 'application/json',
+    cacheControl: 'private, max-age=0, no-store',
+}
+```
 
-- [ ] **Step 8: Run the source tests**
+Do not publish here; Task 8 owns writes.
+
+- [ ] **Step 8: Run focused checks and commit**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-source.test.ts
-```
-
-- [ ] **Step 9: Commit**
-
-```bash
 git add packages/infra-cloudflare/src/publisher/audio-source.ts packages/infra-cloudflare/src/publisher/__tests__/audio-source.test.ts
-git commit -m "feat: validate selected audio publication sources"
+git commit -m "feat: validate selected audio sources"
 ```
 
 ---
@@ -602,6 +601,13 @@ git commit -m "feat: validate selected audio publication sources"
 **Interfaces:**
 
 ```ts
+export interface ProbedAudio {
+    readonly codecName: string;
+    readonly sampleRate: number;
+    readonly durationMs: number;
+    readonly bitRate?: number;
+}
+
 export interface AudioProcessResult {
     readonly exitCode: number;
     readonly stdout: Uint8Array;
@@ -625,92 +631,107 @@ export interface NormalizedAudioAsset {
     readonly contentType: 'audio/mpeg';
 }
 
+export async function probeAudioFile(
+    path: string,
+    run?: AudioProcessRunner
+): Promise<ProbedAudio>;
+
 export async function normalizeRuntimeAudio(
     source: PreparedAudioSource,
     options?: { readonly run?: AudioProcessRunner }
-): Promise<{ asset: NormalizedAudioAsset; warnings: PublisherDiagnosticV1[] }>;
+): Promise<{
+    readonly asset: NormalizedAudioAsset;
+    readonly warnings: readonly PublisherDiagnosticV1[];
+}>;
 ```
 
-- [ ] **Step 1: Write process-runner tests for the exact command policy**
+- [ ] **Step 1: Write exact process-argv tests**
 
-Fake `ffprobe` responses as JSON and capture the `ffmpeg` argv. Assert the normalization command includes, in order-independent groups:
+Capture the ffmpeg invocation and require:
 
 ```text
 -nostdin -hide_banner -loglevel error
+-i <input>
 -map 0:a:0 -vn -map_metadata -1
 -ar 44100 -c:a libmp3lame -b:a 128k
 -id3v2_version 0 -write_id3v1 0
+<output.mp3>
 ```
 
-Use temp input/output files so no shell interpolation is required.
+The implementation passes argv directly with no shell interpolation.
 
-- [ ] **Step 2: Add rejection tests**
+- [ ] **Step 2: Write probe/validation failure tests**
 
-Require a typed `PublisherError` for:
+Require `PublisherError` for missing executable/process failure, no audio stream, empty output, non-positive/non-finite duration, output codec not `mp3`, output sample rate not `44100`, reported output bitrate not `128000`, SFX over `30000ms`, and BGM over `600000ms`.
 
-- ffprobe/ffmpeg executable failure;
-- no audio stream;
-- empty output;
-- normalized codec not `mp3`;
-- normalized sample rate not `44100`;
-- non-positive duration;
-- SFX duration `> 30_000ms`;
-- BGM duration `> 600_000ms`.
+- [ ] **Step 3: Add duration-drift warning test**
 
-Add one warning test where measured duration differs from `plannedDurationMs` by more than `max(500ms, planned * 0.1)`; this must not fail publication.
+If measured duration differs from planned by more than `max(500ms, planned * 0.1)`, return a sanitized warning without failing. The warning must not contain a local path or prompt.
 
-- [ ] **Step 3: Run the test and confirm it fails**
+- [ ] **Step 4: Run and verify failure**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-encoder.test.ts
 ```
 
-- [ ] **Step 4: Implement the default child-process runner**
+- [ ] **Step 5: Implement the default child-process runner and `ffprobe` parser**
 
-Use `spawn`/`execFile`, never `shell:true`. Limit stderr retained in an error to a short sanitized suffix and never include local source paths in `PublisherDiagnosticV1`.
+Use `spawn` or `execFile`, never `shell:true`. Probe:
 
-- [ ] **Step 5: Probe the source, normalize, then probe output**
-
-Parse only the fields needed from `ffprobe -v error -show_entries stream=codec_name,sample_rate -show_entries format=duration -of json`.
-
-Write source bytes to a temp directory, invoke ffmpeg to a sibling `.mp3`, read bytes, then remove the temp directory in `finally`.
-
-- [ ] **Step 6: Hash the normalized bytes and derive the public object path**
-
-```ts
-const digest = assertSha256<'object-content'>(sha256Hex(outputBytes));
-const path = getAudioObjectPath(digest);
+```text
+ffprobe -v error -select_streams a:0 \
+  -show_entries stream=codec_name,sample_rate,bit_rate \
+  -show_entries format=duration \
+  -of json <path>
 ```
 
-Set `contentType: 'audio/mpeg'` and measured rounded `durationMs`.
+Keep only a short sanitized stderr suffix on process errors.
 
-- [ ] **Step 7: Run tests/typecheck**
+- [ ] **Step 6: Normalize via a temporary directory and re-probe output**
+
+Write verified source bytes to temp input, run ffmpeg to temp output, read output, then delete the temp directory in `finally`.
+
+- [ ] **Step 7: Hash normalized bytes and derive public path**
+
+```ts
+const sha256 = assertSha256<'object-content'>(sha256Hex(outputBytes));
+return {
+    asset: {
+        type: source.type,
+        key: source.key,
+        bytes: outputBytes,
+        sha256,
+        path: getAudioObjectPath(sha256),
+        byteLength: outputBytes.byteLength,
+        durationMs: Math.round(probe.durationMs),
+        loop: source.loop,
+        contentType: 'audio/mpeg',
+    },
+    warnings,
+};
+```
+
+- [ ] **Step 8: Run focused checks and commit**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-encoder.test.ts
 bun --filter @aquila/infra-cloudflare typecheck
-```
-
-- [ ] **Step 8: Commit**
-
-```bash
 git add packages/infra-cloudflare/src/publisher/audio-encoder.ts packages/infra-cloudflare/src/publisher/__tests__/audio-encoder.test.ts
 git commit -m "feat: normalize runtime MP3 audio"
 ```
 
 ---
 
-### Task 6: Build deterministic audio releases and publish immutable data without activation
+### Task 6: Build deterministic audio releases and publication plans
 
 **Files:**
 - Create: `packages/infra-cloudflare/src/publisher/audio-runtime-release.ts`
 - Create: `packages/infra-cloudflare/src/publisher/audio-publication-plan.ts`
-- Create: `packages/infra-cloudflare/src/publisher/audio-publish.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/types.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/report.ts`
 - Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts`
 - Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-publication-plan.test.ts`
-- Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-publish.integration.test.ts`
+- Modify: `packages/infra-cloudflare/src/publisher/__tests__/report.test.ts`
 
 **Interfaces:**
 
@@ -734,129 +755,107 @@ export function buildPreparedAudioRelease(input: {
     readonly coverage: readonly AudioCoverageEntryV1[];
 }): PreparedAudioRelease;
 
+export interface AudioPublicationPlan {
+    readonly sourcePlan: AudioSourcePlan;
+    readonly preparedRelease: PreparedAudioRelease;
+    readonly objects: readonly PlannedImmutableCandidate[];
+    readonly manifest: PlannedImmutableCandidate;
+    readonly advisoryPointer: AdvisoryPointerState;
+    readonly report: PublisherReportV1;
+}
+
 export async function buildAudioPublicationPlan(
     options: BuildAudioPublicationPlanOptions
 ): Promise<AudioPublicationPlan>;
-
-export async function publishAudioRelease(
-    options: PublishAudioReleaseOptions
-): Promise<PublisherReportV1>;
 ```
 
-- [ ] **Step 1: Add deterministic release tests**
+- [ ] **Step 1: Write deterministic release-id tests**
 
-Construct the same logical assets in different input orders and assert identical sorted manifests, canonical bytes, manifest SHA, and release id. Mutating one MP3 digest/duration/loop flag must change the release id.
+Feed identical logical assets in different input orders and assert identical sorted manifest, canonical bytes, manifest SHA, and release id. Changing normalized object digest, measured duration, or loop changes the release id.
 
 - [ ] **Step 2: Implement `buildPreparedAudioRelease`**
 
-Build entries from normalized assets, parse through `parseRuntimeAudioManifest`, compute:
-
 ```ts
+const draft = parseRuntimeAudioManifest({
+    schemaVersion: 1,
+    storyId: input.storyId,
+    releaseId: `sha256-${'0'.repeat(64)}`,
+    assets: sortedAssets,
+});
 const releaseContentSha256 = sha256ReleaseContent(
     canonicalAudioReleaseContent(draft)
 );
 const releaseId = releaseIdFromContentSha256(releaseContentSha256);
 const manifest = parseRuntimeAudioManifest({ ...draft, releaseId });
-const manifestBytes = new TextEncoder().encode(`${canonicalJson(manifest)}\n`);
+const manifestBytes = new TextEncoder().encode(
+    `${canonicalJson(manifest)}\n`
+);
 const manifestSha256 = sha256ManifestBytes(manifestBytes);
 ```
 
-Require every included coverage identity to exist in the manifest and every manifest identity to have included coverage.
+Require exact one-to-one agreement between manifest entries and included coverage rows. Omitted rows do not enter the manifest.
 
-- [ ] **Step 3: Add publication-plan tests**
+- [ ] **Step 3: Write publication-plan tests**
 
-Use an in-memory `DeliveryStore`. Assert:
+Using an in-memory `DeliveryStore`, assert:
 
-- normalized objects use `public, max-age=31536000, immutable` + `audio/mpeg`;
-- manifest uses the same immutable cache policy + `application/json`;
-- existing exact objects/manifests become `reuse`;
-- conflicting bytes/metadata fail;
-- production and preview use different manifest/pointer paths but the same `vn/audio/objects/<sha>.mp3`;
-- advisory pointer is audio-scoped and does not inspect the visual pointer.
+- MP3 candidate metadata is `audio/mpeg` + immutable cache policy;
+- manifest is `application/json` + immutable cache policy;
+- exact pre-existing objects/manifests become reuse;
+- conflicts fail closed;
+- production/preview manifest+pointer paths differ while MP3 object paths remain shared;
+- advisory read observes only the audio pointer;
+- no source/archive/delivery write occurs during `plan`.
 
 - [ ] **Step 4: Implement `buildAudioPublicationPlan`**
 
-Sequence:
+Exact order:
 
 ```text
 prepareAudioSources
 normalizeRuntimeAudio for included sources
 buildPreparedAudioRelease
-inspect unique MP3 candidates
+inspect each unique MP3 candidate
 inspect manifest candidate
-inspect audio advisory pointer
-render deterministic report/actions
+inspect/parse advisory audio pointer
+build deterministic report/actions
 ```
 
-`plan` must not archive or upload anything.
+Use `getAudioCurrentPointerPath` + `parseAudioActiveReleasePointer` for advisory state.
 
-- [ ] **Step 5: Add publish integration tests that prove no pointer write**
+- [ ] **Step 5: Extend report typing minimally**
 
-Instrument `compareAndSwapPointer` and assert call count is zero for both preview and production `publishAudioRelease`.
-
-Also assert source archival occurs before the first delivery `createImmutable`. Force archive failure and require zero delivery writes.
-
-- [ ] **Step 6: Implement `publishAudioRelease`**
-
-Order:
-
-```ts
-const plan = await buildAudioPublicationPlan(options);
-await archivePreparedAudioSources({ store: options.sourceStore, plan: plan.sourcePlan });
-for (const candidate of plan.objects) await publishImmutableCandidate(options.store, candidate);
-await publishImmutableCandidate(options.store, plan.manifest);
-await verifyPreparedAudioRelease({
-    store: options.store,
-    preparedRelease: plan.preparedRelease,
-    depth: 'deep',
-});
-return reportWithPointerChangedFalse(plan);
-```
-
-Do not call activation from this module.
-
-- [ ] **Step 7: Extend report typing minimally**
-
-Keep visual JSON unchanged. Add optional audio-only fields:
+Add only optional audio fields:
 
 ```ts
 media?: 'audio';
 audioCoverage?: readonly AudioCoverageEntryV1[];
 ```
 
-Update report sanitization so `sfx:<safe-key>` and `bgm:<safe-key>` identities are allowed only in audio diagnostics. Do not add prompts/source paths to report fields.
+Allow sanitized `sfx:<key>` / `bgm:<key>` identities for audio reports. Existing visual reports without `media` must serialize exactly as before.
 
-- [ ] **Step 8: Run focused tests**
-
-```bash
-bun --filter @aquila/infra-cloudflare test -- \
-  src/publisher/__tests__/audio-runtime-release.test.ts \
-  src/publisher/__tests__/audio-publication-plan.test.ts \
-  src/publisher/__tests__/audio-publish.integration.test.ts
-```
-
-- [ ] **Step 9: Commit**
+- [ ] **Step 6: Run focused/full tests and commit**
 
 ```bash
-git add packages/infra-cloudflare/src/publisher/audio-runtime-release.ts packages/infra-cloudflare/src/publisher/audio-publication-plan.ts packages/infra-cloudflare/src/publisher/audio-publish.ts packages/infra-cloudflare/src/publisher/types.ts packages/infra-cloudflare/src/publisher/report.ts packages/infra-cloudflare/src/publisher/__tests__/audio-*.test.ts
-git commit -m "feat: publish immutable audio releases"
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-runtime-release.test.ts src/publisher/__tests__/audio-publication-plan.test.ts src/publisher/__tests__/report.test.ts
+bun --filter @aquila/infra-cloudflare typecheck
+git add packages/infra-cloudflare/src/publisher/audio-runtime-release.ts packages/infra-cloudflare/src/publisher/audio-publication-plan.ts packages/infra-cloudflare/src/publisher/types.ts packages/infra-cloudflare/src/publisher/report.ts packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts packages/infra-cloudflare/src/publisher/__tests__/audio-publication-plan.test.ts packages/infra-cloudflare/src/publisher/__tests__/report.test.ts
+git commit -m "feat: plan immutable audio releases"
 ```
 
 ---
 
-### Task 7: Add stored MP3 verification and reuse the existing activation/history semantics
+### Task 7: Deep-verify stored audio releases
 
 **Files:**
 - Create: `packages/infra-cloudflare/src/publisher/audio-candidate-verifier.ts`
-- Modify: `packages/infra-cloudflare/src/publisher/activation.ts`
-- Modify: `packages/infra-cloudflare/src/publisher/release-history.ts`
 - Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-candidate-verifier.test.ts`
-- Modify: `packages/infra-cloudflare/src/publisher/__tests__/activation.test.ts`
-- Modify: `packages/infra-cloudflare/src/publisher/__tests__/release-history.test.ts`
 
 **Interfaces:**
 
 ```ts
+export type AudioVerificationDepth = 'shallow' | 'deep';
+
 export interface VerifiedStoredAudioRelease {
     readonly storyId: string;
     readonly target: PublicationTarget;
@@ -867,115 +866,261 @@ export interface VerifiedStoredAudioRelease {
     readonly manifestSha256: ManifestByteSha256;
     readonly releaseContentSha256: ReleaseContentSha256;
     readonly pointerCandidate: AudioActiveReleasePointerV1;
-    readonly validatePointer: (pointer: AudioActiveReleasePointerV1) => void;
+    readonly validatePointer: (
+        pointer: AudioActiveReleasePointerV1
+    ) => void;
 }
 
 export async function verifyStoredAudioRelease(
-    options: VerifyStoredAudioReleaseOptions
+    options: {
+        readonly store: DeliveryStore;
+        readonly storyId: string;
+        readonly target: PublicationTarget;
+        readonly releaseId: string;
+        readonly depth?: AudioVerificationDepth;
+        readonly expectedManifestSha256?: ManifestByteSha256;
+        readonly runAudioProcess?: AudioProcessRunner;
+    }
 ): Promise<VerifiedStoredAudioRelease>;
 
-export async function verifyPreparedAudioRelease(
-    options: VerifyPreparedAudioReleaseOptions
-): Promise<VerifiedStoredAudioRelease>;
+export async function verifyPreparedAudioRelease(input: {
+    readonly store: DeliveryStore;
+    readonly preparedRelease: PreparedAudioRelease;
+    readonly depth?: AudioVerificationDepth;
+    readonly runAudioProcess?: AudioProcessRunner;
+}): Promise<VerifiedStoredAudioRelease>;
 ```
 
-Extend release operations with:
+- [ ] **Step 1: Write shallow-verification tests**
+
+Reject wrong manifest key/content type/cache control/byte length, invalid JSON/schema, story/release mismatch, non-canonical bytes, wrong expected manifest SHA, release-content identity mismatch, unsafe object reference, and path/hash mismatch. Prove shallow mode never reads/probes MP3 objects.
+
+- [ ] **Step 2: Write deep-verification tests**
+
+Reject wrong MP3 MIME/cache/length/body hash, wrong codec, wrong sample rate, reported bitrate other than `128000`, non-positive duration, and measured duration more than **25 ms** away from manifest `durationMs`.
+
+When two entries reference the same digest/path, assert the object is read/probed only once.
+
+- [ ] **Step 3: Run and verify failure**
+
+```bash
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-candidate-verifier.test.ts
+```
+
+- [ ] **Step 4: Implement shallow manifest verification**
+
+Read exact `getAudioReleaseManifestPath(...)`, require JSON/immutable metadata, parse `RuntimeAudioManifestV1`, recompute canonical release-content digest, verify canonical bytes, and build an audio pointer candidate with the existing pointer wire fields.
+
+- [ ] **Step 5: Implement grouped deep MP3 verification**
+
+For each unique digest/path, read once, verify stored metadata/body digest, write bytes to a temp file, call shared `probeAudioFile`, compare MP3/44.1k/bitrate/duration, then remove temp file in `finally`.
+
+- [ ] **Step 6: Implement prepared-evidence agreement**
+
+`verifyPreparedAudioRelease` calls stored verification with expected manifest SHA, then additionally requires exact manifest bytes/release content SHA and exact agreement with each `NormalizedAudioAsset` carried by the prepared release.
+
+- [ ] **Step 7: Run focused checks and commit**
+
+```bash
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-candidate-verifier.test.ts
+bun --filter @aquila/infra-cloudflare typecheck
+git add packages/infra-cloudflare/src/publisher/audio-candidate-verifier.ts packages/infra-cloudflare/src/publisher/__tests__/audio-candidate-verifier.test.ts
+git commit -m "feat: verify stored audio releases"
+```
+
+---
+
+### Task 8: Publish private archive + public immutables without pointer mutation
+
+**Files:**
+- Create: `packages/infra-cloudflare/src/publisher/audio-publish.ts`
+- Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-publish.integration.test.ts`
+
+**Interfaces:**
+
+```ts
+export interface PublishAudioReleaseOptions
+    extends BuildAudioPublicationPlanOptions {
+    readonly sourceStore: DeliveryStore;
+    readonly runAudioProcess?: AudioProcessRunner;
+}
+
+export async function publishAudioRelease(
+    options: PublishAudioReleaseOptions
+): Promise<PublisherReportV1>;
+```
+
+- [ ] **Step 1: Write ordering tests first**
+
+Instrument source and delivery stores with a shared call log. Require:
+
+```text
+all validation/normalization/planning
+source archive create/reuse + read-back
+public MP3 create/reuse + read-back
+manifest create/reuse + read-back
+deep verify
+return
+```
+
+Force source archive failure and assert zero delivery writes.
+
+- [ ] **Step 2: Write the pointer-mutation regression test**
+
+Instrument `compareAndSwapPointer` and require **zero calls** for both preview and production `publishAudioRelease`, including when an advisory pointer points at an older release.
+
+- [ ] **Step 3: Run and verify failure**
+
+```bash
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-publish.integration.test.ts
+```
+
+- [ ] **Step 4: Implement source archive publication with exact reuse checks**
+
+For every `sourceArchiveCandidates(plan.sourcePlan)`:
+
+```ts
+const planned = await inspectImmutableCandidate(
+    options.sourceStore,
+    candidate
+);
+await publishImmutableCandidate(options.sourceStore, planned);
+```
+
+Read-back verification comes from the shared helper.
+
+- [ ] **Step 5: Publish public MP3s + manifest and deep-verify**
+
+```ts
+for (const candidate of plan.objects) {
+    await publishImmutableCandidate(options.store, candidate);
+}
+await publishImmutableCandidate(options.store, plan.manifest);
+await verifyPreparedAudioRelease({
+    store: options.store,
+    preparedRelease: plan.preparedRelease,
+    depth: 'deep',
+    runAudioProcess: options.runAudioProcess,
+});
+```
+
+There is no activation import/call in `audio-publish.ts`.
+
+- [ ] **Step 6: Return a report with unchanged pointer state**
+
+Report created/reused counts and:
+
+```ts
+pointer: {
+    ...(plan.advisoryPointer.beforeReleaseId === undefined
+        ? {}
+        : { beforeReleaseId: plan.advisoryPointer.beforeReleaseId }),
+    changed: false,
+}
+```
+
+Do not invent `afterReleaseId` for an unactivated release.
+
+- [ ] **Step 7: Run focused checks and commit**
+
+```bash
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-publish.integration.test.ts
+bun --filter @aquila/infra-cloudflare typecheck
+git add packages/infra-cloudflare/src/publisher/audio-publish.ts packages/infra-cloudflare/src/publisher/__tests__/audio-publish.integration.test.ts
+git commit -m "feat: publish immutable audio releases"
+```
+
+---
+
+### Task 9: Reuse activation, release listing, rollback, and reactivation for audio
+
+**Files:**
+- Modify: `packages/infra-cloudflare/src/publisher/activation.ts`
+- Modify: `packages/infra-cloudflare/src/publisher/release-history.ts`
+- Modify: `packages/infra-cloudflare/src/publisher/__tests__/activation.test.ts`
+- Modify: `packages/infra-cloudflare/src/publisher/__tests__/release-history.test.ts`
+
+**Interfaces:**
 
 ```ts
 export type PublisherMedia = 'visual' | 'audio';
 ```
 
-and optional `media?: PublisherMedia`, defaulting to visual.
+Add optional `media?: PublisherMedia` to activation/history option types; absence means `visual`.
 
-- [ ] **Step 1: Write shallow/deep audio verifier tests**
+- [ ] **Step 1: Add audio cases to existing activation tests before implementation**
 
-Shallow must reject bad manifest metadata, non-canonical bytes, story/release mismatch, release digest mismatch, object path mismatch, and wrong expected manifest hash without probing MP3 bodies.
+Using an audio stored-release fixture, prove:
 
-Deep must additionally reject wrong MIME/cache/length/body hash, non-MP3 codec, wrong sample rate, non-positive duration, and manifest duration outside a 25ms probe-rounding tolerance.
-
-- [ ] **Step 2: Implement the audio verifier without changing the image verifier**
-
-Group references by object SHA/path and read each unique MP3 once. Reuse the `audio-encoder.ts` probe parser/runner, not Sharp.
-
-Build the pointer candidate with `getAudioReleaseManifestPath` and validate it with `parseAudioActiveReleasePointer` + `validateAudioPointerManifestPair`.
-
-- [ ] **Step 3: Add audio activation tests before changing activation code**
-
-Copy the existing behavioral assertions using audio paths/verifier injection:
-
-- first activation writes audio pointer;
-- same release returns no-op unless `reactivate`;
+- first activation writes audio pointer only;
+- same release is no-op unless `reactivate:true`;
 - stale CAS returns conflict;
-- override performs one fresh re-verify/read attempt;
-- timestamp monotonically advances;
+- override performs the same single fresh verification/read behavior as visual;
+- `publishedAt` remains strictly monotonic;
 - production confirmation still requires exact story id;
-- visual pointer remains untouched.
+- visual pointer is never touched.
 
-- [ ] **Step 4: Add the minimum activation dispatch**
+- [ ] **Step 2: Add only verifier/path dispatch to activation**
 
-Inside `activation.ts`, define one internal shape used by the CAS logic:
+Keep the CAS algorithm unchanged. Define a common internal verified shape:
 
 ```ts
 interface ActivatableStoredRelease {
     readonly releaseId: string;
     readonly manifestSha256: ManifestByteSha256;
     readonly pointerCandidate: ActiveReleasePointerV1;
-    readonly validatePointer: (pointer: ActiveReleasePointerV1) => void;
+    readonly validatePointer: (
+        pointer: ActiveReleasePointerV1
+    ) => void;
 }
 ```
 
-Dispatch only verifier/path/parser by `options.media ?? 'visual'`. Keep `nextPublishedAt`, confirmation, CAS, conflict override, and report result logic shared.
+Select current-pointer path and deep verifier by `options.media ?? 'visual'`. Keep `nextPublishedAt`, confirmation, fresh reads, CAS, conflict override, and result logic shared.
 
-- [ ] **Step 5: Add audio release-history tests**
+- [ ] **Step 3: Add audio release-history tests**
 
-Under `vn/audio/...` and preview audio namespaces, assert release discovery, shallow/deep flags, invalid manifest classification, active release detection, rollback, and reactivation. Assert visual release listing ignores audio manifests and audio listing ignores visual manifests.
+Under production and preview audio namespaces, prove release discovery, shallow/deep status, invalid manifest classification, active release detection, rollback, and reactivation. Visual listing must ignore audio manifests; audio listing must ignore visual manifests.
 
-- [ ] **Step 6: Extend release history with media-specific path/parser/verifier selection**
+- [ ] **Step 4: Add minimal history dispatch**
 
-Keep one listing/rollback algorithm. Use small private functions:
+Keep one listing/rollback algorithm. Add private media-specific selectors:
 
 ```ts
 manifestPathFor(media, storyId, releaseId, target)
 currentPointerPathFor(media, storyId, target)
 parseManifestFor(media, bytes)
-classifyReleaseIdentityFor(media, manifest)
+releaseIdentityValidFor(media, manifest, releaseId)
 verifyStoredFor(media, options)
 ```
 
-Do not expose a generic adapter registry.
+Do not add a public adapter registry.
 
-- [ ] **Step 7: Run verifier/activation/history plus all existing visual tests**
+- [ ] **Step 5: Run audio + existing visual tests and commit**
 
 ```bash
-bun --filter @aquila/infra-cloudflare test -- \
-  src/publisher/__tests__/audio-candidate-verifier.test.ts \
-  src/publisher/__tests__/activation.test.ts \
-  src/publisher/__tests__/release-history.test.ts
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/activation.test.ts src/publisher/__tests__/release-history.test.ts
 bun --filter @aquila/infra-cloudflare test
-```
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add packages/infra-cloudflare/src/publisher/audio-candidate-verifier.ts packages/infra-cloudflare/src/publisher/activation.ts packages/infra-cloudflare/src/publisher/release-history.ts packages/infra-cloudflare/src/publisher/__tests__/audio-candidate-verifier.test.ts packages/infra-cloudflare/src/publisher/__tests__/activation.test.ts packages/infra-cloudflare/src/publisher/__tests__/release-history.test.ts
-git commit -m "feat: verify and activate audio releases"
+bun --filter @aquila/infra-cloudflare typecheck
+git add packages/infra-cloudflare/src/publisher/activation.ts packages/infra-cloudflare/src/publisher/release-history.ts packages/infra-cloudflare/src/publisher/__tests__/activation.test.ts packages/infra-cloudflare/src/publisher/__tests__/release-history.test.ts
+git commit -m "feat: activate and rollback audio releases"
 ```
 
 ---
 
-### Task 8: Add `--media audio` CLI dispatch and local source/delivery separation
+### Task 10: Add `--media audio` CLI dispatch and separate local source/delivery roots
 
 **Files:**
 - Modify: `packages/infra-cloudflare/src/publisher/cli.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/types.ts`
 - Modify: `packages/infra-cloudflare/src/publisher/__tests__/cli.test.ts`
+- Modify: `packages/infra-cloudflare/src/publisher/__tests__/report.test.ts`
 
 **Interfaces:**
 
 ```ts
 interface BaseParsedCommand {
-    readonly media: 'visual' | 'audio';
-    // existing fields unchanged
+    readonly media: PublisherMedia;
+    // existing fields remain
     readonly storyFolder?: string;
     readonly audioGenerationRoot?: string;
     readonly omissionsPath?: string;
@@ -983,93 +1128,90 @@ interface BaseParsedCommand {
 }
 ```
 
-- [ ] **Step 1: Add CLI parsing tests first**
+- [ ] **Step 1: Write visual-default and audio-matrix CLI tests**
 
-Assert existing input still parses as visual without a `--media` flag.
+Existing commands without `--media` must parse/run as visual.
 
-Add audio cases:
+Valid audio forms:
 
 ```text
-plan/publish --media audio --story demo_story --story-folder demoStory ...
-activate/verify/releases/rollback --media audio --story demo_story ...
+plan/publish --media audio --story <runtime-id> --story-folder <raw-folder> ...
+activate/verify/releases/rollback --media audio --story <runtime-id> ...
 ```
 
-Reject:
+Reject unknown media, audio plan/publish without story folder, story folder on visual, `mirror-preview --media audio`, audio `publish --reactivate`, audio pointer-mutation flags on publish, and audio-only source flags on release-operation commands.
 
-- unknown media;
-- audio plan/publish without `--story-folder`;
-- `--story-folder` on visual mode;
-- `mirror-preview --media audio`;
-- audio `publish --reactivate` or pointer-mutation flags;
-- audio-only input flags on activate/verify/releases/rollback.
-
-- [ ] **Step 2: Add `--media` to common option parsing with visual default**
+- [ ] **Step 2: Implement media parsing with visual default**
 
 ```ts
 function parseMedia(values: CliValues): PublisherMedia {
-    const media = values.media ?? 'visual';
-    if (media !== 'visual' && media !== 'audio') {
+    const value = values.media ?? 'visual';
+    if (value !== 'visual' && value !== 'audio') {
         throw configurationError('--media must be visual or audio');
     }
-    return media;
+    return value;
 }
 ```
 
-Keep current help/examples and append a short audio section rather than rewriting visual documentation.
+Append concise audio examples to help; do not rewrite existing visual examples.
 
-- [ ] **Step 3: Resolve audio local/R2 stores**
+- [ ] **Step 3: Resolve local audio roots**
 
-For visual, preserve current store construction.
-
-For local audio:
+For:
 
 ```text
---destination-root .tmp/hpa-609
-  -> delivery store root .tmp/hpa-609/delivery
-  -> source archive root .tmp/hpa-609/source
+--destination local --destination-root .tmp/hpa-609
 ```
 
-For R2 audio:
+create:
+
+```text
+.tmp/hpa-609/delivery
+.tmp/hpa-609/source
+```
+
+Run existing destination safety checks on both resolved roots and their inputs.
+
+- [ ] **Step 4: Resolve two R2 store instances with the existing implementation**
 
 ```ts
-const delivery = await R2DeliveryStore.createFromEnvironment({ bucket: 'delivery' });
-const source = await R2DeliveryStore.createFromEnvironment({ bucket: 'source' });
+const delivery = await R2DeliveryStore.createFromEnvironment({
+    bucket: 'delivery',
+});
+const source = await R2DeliveryStore.createFromEnvironment({
+    bucket: 'source',
+});
 ```
 
-Ensure both stores close in `finally`, and if the second close fails preserve the first command error.
+Close both in `finally`; preserve the first command error if close also fails.
 
-- [ ] **Step 4: Dispatch plan/publish to audio services**
+- [ ] **Step 5: Dispatch audio plan/publish**
 
-`plan --media audio` calls `buildAudioPublicationPlan` and never archives/writes.
+`plan` calls `buildAudioPublicationPlan` and creates no source archive store write.
 
-`publish --media audio` calls `publishAudioRelease` with both stores and never activates.
+`publish` calls `publishAudioRelease` with both stores and never activates.
 
-- [ ] **Step 5: Dispatch release operations by media**
+- [ ] **Step 6: Dispatch release operations by media**
 
-Pass `media` through `activateStoredRelease`, stored verifier, `listReleases`, and `rollbackRelease`. Keep visual default behavior identical.
+Pass `media` to activation, verifier, release listing, and rollback. Visual remains default.
 
-- [ ] **Step 6: Extend report rendering/sanitization tests**
+- [ ] **Step 7: Test report compatibility**
 
-Require JSON report output for audio to include `media: "audio"` and deterministic `audioCoverage`, while visual golden/report tests remain unchanged.
+Audio JSON includes `media:"audio"` + sorted `audioCoverage`. Existing visual snapshots/golden reports remain unchanged when `media` is absent.
 
-- [ ] **Step 7: Run CLI and package tests**
+- [ ] **Step 8: Run package checks and commit**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/cli.test.ts src/publisher/__tests__/report.test.ts
 bun --filter @aquila/infra-cloudflare test
 bun --filter @aquila/infra-cloudflare typecheck
-```
-
-- [ ] **Step 8: Commit**
-
-```bash
 git add packages/infra-cloudflare/src/publisher/cli.ts packages/infra-cloudflare/src/publisher/types.ts packages/infra-cloudflare/src/publisher/__tests__/cli.test.ts packages/infra-cloudflare/src/publisher/__tests__/report.test.ts
 git commit -m "feat: add audio publisher CLI dispatch"
 ```
 
 ---
 
-### Task 9: Document and prove the R2 audio delivery smoke
+### Task 11: Document and prove HTTP delivery, cache behavior, range requests, and preview rollback
 
 **Files:**
 - Create: `packages/infra-cloudflare/src/publisher/audio-http-smoke.ts`
@@ -1088,9 +1230,7 @@ export async function verifyAudioHttpDelivery(input: {
 }): Promise<void>;
 ```
 
-- [ ] **Step 1: Add mocked HTTP tests**
-
-Model pointer -> manifest -> MP3 full GET -> MP3 range GET.
+- [ ] **Step 1: Write mocked pointer -> manifest -> MP3 HTTP tests**
 
 Require:
 
@@ -1098,37 +1238,34 @@ Require:
 pointer: application/json + no-cache,max-age=0,must-revalidate
 manifest: application/json + public,max-age=31536000,immutable
 MP3: audio/mpeg + public,max-age=31536000,immutable + exact content-length
-Range: status 206 + Content-Range bytes 0-1023/<full-length>
+Range: 206 + Content-Range bytes 0-1023/<full-length>
 ```
 
-Verify manifest/object SHA-256 on returned bodies.
+The fixture MP3 must be **larger than 1,024 bytes**. Verify manifest and MP3 SHA-256 against response bodies.
 
-- [ ] **Step 2: Implement the focused smoke helper**
+- [ ] **Step 2: Implement the focused HTTP verifier**
 
-Use runtime audio parsers/path resolution and `Range: bytes=0-1023`. Do not turn this into a general web verifier; it exists only for the HPA-609 acceptance smoke.
+Parse audio pointer/manifest through the runtime contract, fetch one manifest asset, check body hash/length/MIME/cache headers, then request:
 
-- [ ] **Step 3: Add the package script**
+```http
+Range: bytes=0-1023
+```
+
+Require `206`, exactly 1,024 response bytes, and a matching `Content-Range` total length.
+
+- [ ] **Step 3: Add a package script**
 
 ```json
 "verify:audio": "bun src/publisher/audio-http-smoke.ts"
 ```
 
-The executable entry reads `AQUILA_ASSET_BASE_URL`, story/preview args, and exits non-zero on the first failed invariant.
+The executable reads base URL + story/preview args; no credentials or receipt data are printed.
 
-- [ ] **Step 4: Update the R2 runbook**
+- [ ] **Step 4: Update the existing R2 runbook**
 
-Document:
+Document audio production/preview paths, private archive paths, reuse of current source/delivery buckets/domain/CORS, and the immutable rule change. Explicitly state that code only generates/tests the intended rule; HPA-229 has no rule reconciler.
 
-- audio production/preview paths;
-- source archive paths are private;
-- immutable rule 1 now includes `/vn/audio/objects/`;
-- pointer rule remains unchanged;
-- existing CORS `range` allowance is reused;
-- MP3 live-smoke command.
-
-Do not rename the existing two cache rules.
-
-- [ ] **Step 5: Run mocked smoke tests and full static verification**
+- [ ] **Step 5: Run mocked smoke + all static verification**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-http-smoke.test.ts
@@ -1142,32 +1279,37 @@ bun run build
 
 - [ ] **Step 6: Run one local fixture release end-to-end**
 
-With a tiny checked-in test fixture source/candidate store, run:
+Use a tiny fixture candidate store and execute plan -> publish -> deep verify. Confirm no audio `current.json` exists until explicit local `activate --media audio`.
 
-```bash
-bun --filter @aquila/infra-cloudflare assets -- plan --media audio --story fixture_story --story-folder audioFixture --destination local --destination-root .tmp/hpa-609-local
-bun --filter @aquila/infra-cloudflare assets -- publish --media audio --story fixture_story --story-folder audioFixture --destination local --destination-root .tmp/hpa-609-local
-bun --filter @aquila/infra-cloudflare assets -- verify --media audio --story fixture_story --environment production --release <release-id-from-json-report> --destination local --destination-root .tmp/hpa-609-local/delivery --deep
+- [ ] **Step 7: Manually edit the existing live immutable cache rule before R2 cache smoke**
+
+In Cloudflare dashboard, edit **`aquila-vn: immutable objects and manifests`** so its expression matches the repository's generated expression including:
+
+```text
+starts_with(http.request.uri.path, "/vn/audio/objects/")
 ```
 
-Confirm no `current.json` exists until running the explicit local `activate --media audio` command.
+Keep the existing description, one-year edge TTL, browser TTL respect-origin, strong ETag setting, and pointer bypass rule. Verify there are still exactly **two** Aquila cache rules. Do not create a third rule.
 
-- [ ] **Step 7: Run the isolated preview R2 smoke**
+- [ ] **Step 8: Run isolated preview R2 publish + HTTP smoke**
 
 Use a unique preview id such as `hpa-609-smoke-<short-sha>`:
 
-1. `publish --media audio --environment preview --preview-id <id> --destination r2`;
-2. `verify --media audio ... --deep`;
-3. `activate --media audio ...`;
-4. `verify:audio` through `https://assets.aquila.cwchanap.dev`;
-5. publish/activate a second fixture release;
-6. rollback to the first;
-7. reactivate the second;
-8. fetch the production audio pointer before and after and assert its bytes/ETag did not change.
+1. record production audio pointer bytes/ETag or absence;
+2. `publish --media audio --environment preview --preview-id <id> --destination r2`;
+3. `verify --media audio ... --deep`;
+4. explicit `activate --media audio ...`;
+5. run `verify:audio` through `https://assets.aquila.cwchanap.dev`;
+6. repeat the full MP3 GET and require a cache-eligible `cf-cache-status`: `MISS`, `HIT`, `EXPIRED`, or `REVALIDATED`;
+7. run the 0-1023 range check;
+8. publish/activate a second fixture release;
+9. rollback to the first;
+10. reactivate the second;
+11. compare production audio pointer bytes/ETag to step 1 and require no change.
 
-Record the observed headers and command results in the PR description or a Linear comment; do not commit credentials or private receipt contents.
+Record only sanitized command results/headers in the PR or Linear comment; never paste credentials or private receipt contents.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add packages/infra-cloudflare/src/publisher/audio-http-smoke.ts packages/infra-cloudflare/src/publisher/__tests__/audio-http-smoke.test.ts packages/infra-cloudflare/package.json docs/infrastructure/r2-visual-asset-delivery.md
@@ -1176,9 +1318,9 @@ git commit -m "docs: add R2 audio delivery verification"
 
 ---
 
-## Final verification
+## Final Verification
 
-- [ ] Run the full required suite:
+- [ ] Run the complete required suite:
 
 ```bash
 bun --filter @aquila/stories test
@@ -1189,9 +1331,9 @@ bun run lint
 bun run build
 ```
 
-- [ ] Confirm the final diff has no provider prompt/model/source-path data in `RuntimeAudioManifestV1`, public object custom metadata, or audio publisher JSON reports.
-- [ ] Confirm existing visual publisher fixture paths and report snapshots are unchanged except for internal imports caused by `immutable-candidate.ts` extraction.
-- [ ] Confirm there are still exactly two Aquila Cloudflare cache rules.
-- [ ] Confirm audio `publish` has no call path to `compareAndSwapPointer`.
-- [ ] Confirm `activate/rollback/reactivate --media audio` can only write `vn/audio/.../current.json` or its preview equivalent.
-- [ ] Confirm HPA-610 can resolve the audio release using only the exported runtime contract: base URL + audio pointer + audio manifest + MP3 object paths.
+- [ ] Confirm no prompt/provider/model/source-path/candidate/receipt data appears in `RuntimeAudioManifestV1`, public custom metadata, or audio publisher JSON reports.
+- [ ] Confirm visual publisher paths, schemas, and default CLI behavior are unchanged except internal import movement caused by `immutable-candidate.ts`.
+- [ ] Confirm there are exactly two Aquila Cloudflare cache rules and live immutable rule 1 includes `/vn/audio/objects/`.
+- [ ] Confirm `audio-publish.ts` has no activation import and audio `publish` has zero `compareAndSwapPointer` call paths.
+- [ ] Confirm audio activation/rollback/reactivation can write only `vn/audio/.../current.json` or `vn/previews/<id>/audio/.../current.json`.
+- [ ] Confirm HPA-610 can resolve a release using only base URL + audio pointer + audio manifest + MP3 object paths.

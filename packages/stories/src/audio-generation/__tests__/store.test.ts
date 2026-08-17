@@ -347,6 +347,8 @@ describe('audio generation store contracts', () => {
             'AudioSelectionFileV1Schema',
             'LocalAudioGenerationStore',
             'StoredAudioGenerationSpecV1Schema',
+            'audioGenerationSpecSha256',
+            'buildAudioGenerationSpec',
         ]);
         expect(rootExports).not.toHaveProperty('LocalAudioGenerationStore');
         expect(rootExports).not.toHaveProperty('AudioCandidateReceiptV1Schema');

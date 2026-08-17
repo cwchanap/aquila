@@ -10,6 +10,7 @@
     "./async": "./src/async/index.ts",
     "./async/testing": "./src/async/testing.ts",
     "./audio-generation": "./src/audio-generation/index.ts",
+    "./audio-publishing": "./src/audio-publishing.ts",
     "./runtime-assets": "./src/runtime-assets/index.ts",
     "./generated/trainAdventure/characters": "./src/generated/trainAdventure/characters.ts",
     "./generated/dontSaveMeBeforeMidnight/characters": "./src/generated/dontSaveMeBeforeMidnight/characters.ts",

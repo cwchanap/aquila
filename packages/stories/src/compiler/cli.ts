@@ -1,33 +1,9 @@
 import { readdirSync, existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { compileStory } from './compile';
-import { loadStoryCompilerConfig, STORIES_RAW_ROOT } from './config';
-import type { StoryIR } from './ir';
+import { join } from 'node:path';
+import { compileNamedStory } from './compile-named-story';
+import { STORIES_RAW_ROOT } from './config';
 import { loadAudioPlan } from '../audio-plan-loader';
 import { buildAudioUsageReport, collectAudioUsage } from './audio-usage';
-
-const here = dirname(fileURLToPath(import.meta.url)); // .../src/compiler
-const srcDir = resolve(here, '..'); // .../src
-
-async function compileNamedStory(
-    name: string,
-    writeOutputs: boolean
-): Promise<StoryIR> {
-    const rawDir = join(STORIES_RAW_ROOT, name);
-    if (!existsSync(join(rawDir, 'compiler.config.ts'))) {
-        throw new Error(`[story-compiler] unknown story "${name}"`);
-    }
-    const config = await loadStoryCompilerConfig(rawDir);
-    return compileStory({
-        rawDir,
-        name,
-        outDir: join(srcDir, 'generated', name),
-        choicesPath: join(srcDir, 'stories', name, 'choices.zh.ts'),
-        config,
-        writeOutputs,
-    });
-}
 
 async function main(): Promise<void> {
     const args = process.argv.slice(2);

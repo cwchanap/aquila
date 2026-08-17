@@ -10,3 +10,4 @@ export type {
 } from './store';
 export { AudioSelectionFileV1Schema } from './select';
 export type { AudioSelectionFileV1 } from './select';
+export { audioGenerationSpecSha256, buildAudioGenerationSpec } from './spec';

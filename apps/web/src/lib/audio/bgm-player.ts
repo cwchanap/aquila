@@ -12,9 +12,11 @@ type AudioLike = Pick<
     'play' | 'pause' | 'currentTime' | 'loop'
 >;
 type CreateAudio = (src: string) => AudioLike;
+export type ResolveBgmUrl = (cueKey: string) => string | undefined;
 
 export function createBgmPlayer(
-    createAudio: CreateAudio = src => new Audio(src)
+    createAudio: CreateAudio = src => new Audio(src),
+    resolveUrl: ResolveBgmUrl = resolveLocalBgmUrl
 ): BgmPlayer {
     let current: AudioLike | null = null;
     let currentKey: string | null = null;
@@ -40,9 +42,9 @@ export function createBgmPlayer(
     return {
         play(cueKey: string): void {
             if (disposed) return;
-            const src = resolveLocalBgmUrl(cueKey);
+            const src = resolveUrl(cueKey);
             if (!src) {
-                logger.warn('Unknown visual-novel BGM cue', { cueKey });
+                logger.warn('Visual-novel BGM cue unavailable', { cueKey });
                 return;
             }
             if (current && currentKey === cueKey) return;

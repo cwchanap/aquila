@@ -99,6 +99,11 @@ const sfxDialogue: DialogueEntry[] = [
     },
 ];
 
+const sfxDialogueWithReturn: DialogueEntry[] = [
+    ...sfxDialogue,
+    { characterId: 'narrator', dialogue: 'Silent third line.' },
+];
+
 const bgmDialogue: DialogueEntry[] = [
     {
         characterId: 'narrator',
@@ -858,6 +863,38 @@ describe('ReaderShell', () => {
         expect(sfx.player.play).not.toHaveBeenCalled();
 
         readerState.dialogueIndex = 0;
+        await tick();
+        release.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('drops a delayed SFX after leaving and returning to its destination', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = sfxDialogueWithReturn;
+        const release = deferred<RuntimeReleaseIdentity | null>();
+        const audio = createAudioRuntimeHarness(release.promise);
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+
+        readerState.dialogueIndex = 2;
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+
+        readerState.dialogueIndex = 1;
         await tick();
         release.resolve(AUDIO_RELEASE_IDENTITY);
         await Promise.resolve();

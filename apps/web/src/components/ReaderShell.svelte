@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount, tick } from 'svelte';
   import type { DialogueEntry } from '@aquila/stories';
+  import type { AudioAssetType } from '@aquila/stories/runtime-assets';
   import { getTranslations } from '@aquila/stories/translations';
   import { readerState } from '@/lib/reader-state.svelte';
+  import { logger } from '@/lib/logger';
   import {
     readReaderMode,
     writeReaderMode,
@@ -10,26 +12,35 @@
   } from '@/lib/reader-mode';
   import {
     createSfxPlayer as createDefaultSfxPlayer,
-    type SfxPlayer,
   } from '@/lib/audio/sfx-player';
+  import {
+    createAudioRuntime as createDefaultAudioRuntime,
+    type AudioReaderRuntime,
+  } from '@/lib/audio/audio-runtime';
   import { readSfxEnabled, writeSfxEnabled } from '@/lib/audio/sfx-preference';
   import {
     createBgmPlayer as createDefaultBgmPlayer,
-    type BgmPlayer,
   } from '@/lib/audio/bgm-player';
   import { readBgmEnabled, writeBgmEnabled } from '@/lib/audio/bgm-preference';
-  import { nextBgmSelection } from '@/lib/audio/bgm-transition';
+  import {
+    bgmKeyOnInitialRelease,
+    nextBgmSelection,
+  } from '@/lib/audio/bgm-transition';
   import {
     isReaderInteractiveTarget,
     isReaderProgressionTarget,
   } from '@/lib/reader-interaction';
   import {
     nextSfxCommand,
+    pendingSfxAfterTransition,
     sameLinePosition,
+    sfxCommandOnInitialRelease,
     type LinePosition,
+    type PendingSfxPlayback,
   } from '@/lib/audio/sfx-transition';
   import {
     createVisualRuntime as createDefaultVisualRuntime,
+    type RuntimeReleaseIdentity,
     type VisualReleaseIdentity,
     type VisualSnapshot,
     type VisualReaderRuntime,
@@ -49,6 +60,7 @@
     createVisualRuntime = createDefaultVisualRuntime,
     createSfxPlayer = createDefaultSfxPlayer,
     createBgmPlayer = createDefaultBgmPlayer,
+    createAudioRuntime = createDefaultAudioRuntime,
     onRetry = () => {},
     showBookmarkButton = true,
     backUrl = '/',
@@ -63,8 +75,12 @@
       sceneId: string
     ) => readonly DialogueEntry[] | null;
     createVisualRuntime?: typeof createDefaultVisualRuntime;
-    createSfxPlayer?: () => SfxPlayer;
-    createBgmPlayer?: () => BgmPlayer;
+    createSfxPlayer?: typeof createDefaultSfxPlayer;
+    createBgmPlayer?: typeof createDefaultBgmPlayer;
+    createAudioRuntime?: (
+      storyId: string,
+      origin: string
+    ) => AudioReaderRuntime | null;
     onRetry?: () => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
@@ -89,10 +105,22 @@
   let t = $derived(getTranslations(locale));
   let readerReadyElement: HTMLElement | null = $state(null);
   let readerMode = $state(readReaderMode());
-  const sfxPlayer = createSfxPlayer();
+  let audioRuntime: AudioReaderRuntime | null = $state(null);
+  let audioReleaseIdentity: RuntimeReleaseIdentity | null = $state(null);
+  let audioRuntimeStoryId: string | null = $state(null);
+  let audioRuntimeAttempted = $state(false);
+  let audioInitialLoadPending = $state(false);
+  let pendingInitialSfx: PendingSfxPlayback | null = null;
   let sfxEnabled = $state(readSfxEnabled());
-  const bgmPlayer = createBgmPlayer();
   let bgmEnabled = $state(readBgmEnabled());
+  const sfxPlayer = createSfxPlayer(
+    undefined,
+    cueKey => resolveAudioPlayerUrl('sfx', cueKey)
+  );
+  const bgmPlayer = createBgmPlayer(
+    undefined,
+    cueKey => resolveAudioPlayerUrl('bgm', cueKey)
+  );
   let selectedBgmKey: string | null = null;
   let bgmActivated = false;
   let visualRuntime: VisualReaderRuntime | null = $state(null);
@@ -103,7 +131,7 @@
   let visualIdentity = $state<VisualReleaseIdentity | null>(null);
   let visualRuntimeStoryId: string | null = $state(null);
   let visualRuntimeAttempted = $state(false);
-  let visualRuntimeTransitioning = $state(false);
+  let runtimeTransitioning = $state(false);
   let runtimeGeneration = 0;
   let destroyed = false;
   let removeVisibilityListener = () => {};
@@ -125,15 +153,40 @@
       sfxPlayer.stop();
       bgmPlayer.stop();
       bgmActivated = false;
+      pendingInitialSfx = null;
     }
     const retainedRuntime =
       mode === 'visual' &&
       visualRuntimeStoryId === storyId
         ? visualRuntime
         : null;
+    const retainedAudioRuntime =
+      mode === 'visual' &&
+      audioRuntimeStoryId === storyId
+        ? audioRuntime
+        : null;
+    const retainedAudioStoryId = storyId;
+    const retainedAudioGeneration = runtimeGeneration;
     readerMode = mode;
     writeReaderMode(mode);
     if (retainedRuntime) void retainedRuntime.softRevalidate();
+    if (retainedAudioRuntime && !audioInitialLoadPending) {
+      void retainedAudioRuntime
+        .softRevalidate()
+        .then(identity => {
+          if (
+            !destroyed &&
+            runtimeGeneration === retainedAudioGeneration &&
+            audioRuntimeStoryId === retainedAudioStoryId &&
+            storyId === retainedAudioStoryId
+          ) {
+            audioReleaseIdentity = identity;
+          }
+        })
+        .catch(() => {
+          // Soft revalidation is best-effort; retain the accepted identity.
+        });
+    }
   }
 
   function runtimeOrigin(): string {
@@ -146,10 +199,35 @@
     visualStatus = status;
   }
 
+  function resolveAudioPlayerUrl(
+    type: AudioAssetType,
+    cueKey: string
+  ): string | undefined {
+    const runtime = audioRuntime;
+    if (!runtime) {
+      logger.warn('Visual-novel audio unavailable', {
+        type,
+        cueKey,
+        reason: 'runtime-unavailable',
+      });
+      return undefined;
+    }
+    const result = runtime.resolve(type, cueKey);
+    if (result.status === 'unavailable') {
+      logger.warn('Visual-novel audio cue unavailable', {
+        type,
+        cueKey,
+        reason: result.reason,
+      });
+      return undefined;
+    }
+    return result.url;
+  }
+
   function ensureVisualRuntime(activeStoryId: string): void {
     if (
       destroyed ||
-      visualRuntimeTransitioning ||
+      runtimeTransitioning ||
       (visualRuntimeAttempted &&
         visualRuntimeStoryId === activeStoryId)
     ) {
@@ -164,23 +242,155 @@
     );
   }
 
-  async function disposeRuntimeForStoryChange(
+  function currentLinePosition(): LinePosition {
+    return {
+      storyId,
+      sceneId: currentSceneId,
+      index: dialogueIndex,
+    };
+  }
+
+  function finishInitialAudioLoad(
+    runtime: AudioReaderRuntime,
+    activeStoryId: string,
+    generation: number,
+    identity: RuntimeReleaseIdentity | null
+  ): void {
+    if (
+      destroyed ||
+      generation !== runtimeGeneration ||
+      audioRuntimeStoryId !== activeStoryId
+    ) {
+      return;
+    }
+
+    audioReleaseIdentity = identity;
+    audioInitialLoadPending = false;
+
+    const pending = pendingInitialSfx;
+    const sfxCommand = sfxCommandOnInitialRelease(
+      pending,
+      currentLinePosition(),
+      {
+        mode: readerMode,
+        enabled: sfxEnabled,
+        cueResolvable:
+          pending !== null &&
+          runtime.resolve('sfx', pending.cueKey).status === 'resolved',
+      }
+    );
+    pendingInitialSfx = null;
+    if (sfxCommand.type === 'play') {
+      sfxPlayer.play(sfxCommand.cueKey);
+    }
+
+    const bgmKey = bgmKeyOnInitialRelease({
+      mode: readerMode,
+      enabled: bgmEnabled,
+      activated: bgmActivated,
+      selectedKey: selectedBgmKey,
+      cueResolvable:
+        selectedBgmKey !== null &&
+        runtime.resolve('bgm', selectedBgmKey).status === 'resolved',
+    });
+    if (bgmKey !== null) bgmPlayer.play(bgmKey);
+  }
+
+  function ensureAudioRuntime(activeStoryId: string): void {
+    if (
+      destroyed ||
+      runtimeTransitioning ||
+      (audioRuntimeAttempted && audioRuntimeStoryId === activeStoryId)
+    ) {
+      return;
+    }
+    audioRuntimeStoryId = activeStoryId;
+    audioRuntimeAttempted = true;
+    const runtime = createAudioRuntime(activeStoryId, runtimeOrigin());
+    audioRuntime = runtime;
+    audioReleaseIdentity = null;
+    if (!runtime) {
+      audioInitialLoadPending = false;
+      return;
+    }
+
+    audioInitialLoadPending = true;
+    const generation = runtimeGeneration;
+    void runtime
+      .loadActiveRelease()
+      .then(identity =>
+        finishInitialAudioLoad(
+          runtime,
+          activeStoryId,
+          generation,
+          identity
+        )
+      )
+      .catch(() => {
+        if (
+          !destroyed &&
+          generation === runtimeGeneration &&
+          audioRuntimeStoryId === activeStoryId
+        ) {
+          audioInitialLoadPending = false;
+          pendingInitialSfx = null;
+        }
+      });
+  }
+
+  function softRevalidateAudioRuntime(): void {
+    const runtime = audioRuntime;
+    if (!runtime) return;
+    const activeStoryId = audioRuntimeStoryId;
+    const generation = runtimeGeneration;
+    void runtime
+      .softRevalidate()
+      .then(identity => {
+        if (
+          !destroyed &&
+          generation === runtimeGeneration &&
+          activeStoryId !== null &&
+          audioRuntimeStoryId === activeStoryId &&
+          storyId === activeStoryId
+        ) {
+          audioReleaseIdentity = identity;
+        }
+      })
+      .catch(() => {
+        // Soft revalidation is best-effort; retain the accepted identity.
+      });
+  }
+
+  async function disposeRuntimesForStoryChange(
     nextStoryId: string
   ): Promise<void> {
     const generation = ++runtimeGeneration;
-    const runtime = visualRuntime;
+    const visual = visualRuntime;
+    const audio = audioRuntime;
     visualRuntime = null;
+    audioRuntime = null;
+    visualIdentity = null;
+    audioReleaseIdentity = null;
     visualRuntimeStoryId = nextStoryId;
+    audioRuntimeStoryId = nextStoryId;
     visualRuntimeAttempted = false;
-    visualRuntimeTransitioning = true;
+    audioRuntimeAttempted = false;
+    audioInitialLoadPending = false;
+    pendingInitialSfx = null;
+    runtimeTransitioning = true;
     try {
-      await runtime?.dispose();
+      audio?.dispose();
+    } catch {
+      // Swallow disposal errors — the runtime is being replaced regardless.
+    }
+    try {
+      await visual?.dispose();
     } catch {
       // Swallow disposal errors — fire-and-forget must not produce
       // unhandled rejections. The runtime is being replaced regardless.
     }
     if (destroyed || generation !== runtimeGeneration) return;
-    visualRuntimeTransitioning = false;
+    runtimeTransitioning = false;
   }
 
   $effect(() => {
@@ -189,15 +399,19 @@
       readerMode === 'visual' &&
       hasActivePayload &&
       activeFlow !== null;
-    if (visualRuntimeTransitioning) return;
+    const wantsAudioRuntime =
+      wantsVisualRuntime && (sfxEnabled || bgmEnabled);
+    if (runtimeTransitioning) return;
     if (
-      visualRuntimeStoryId !== null &&
-      visualRuntimeStoryId !== activeStoryId
+      (visualRuntimeStoryId !== null &&
+        visualRuntimeStoryId !== activeStoryId) ||
+      (audioRuntimeStoryId !== null && audioRuntimeStoryId !== activeStoryId)
     ) {
-      void disposeRuntimeForStoryChange(activeStoryId);
+      void disposeRuntimesForStoryChange(activeStoryId);
       return;
     }
     if (wantsVisualRuntime) ensureVisualRuntime(activeStoryId);
+    if (wantsAudioRuntime) ensureAudioRuntime(activeStoryId);
   });
 
   // Track the validated release identity on the shell itself: the visual leaf
@@ -217,11 +431,7 @@
 
   let lastActivePosition: LinePosition | null = $state(null);
   $effect(() => {
-    const nextPosition: LinePosition = {
-      storyId,
-      sceneId: currentSceneId,
-      index: dialogueIndex,
-    };
+    const nextPosition = currentLinePosition();
     const previous = lastActivePosition;
     if (sameLinePosition(previous, nextPosition)) return;
     lastActivePosition = nextPosition;
@@ -241,8 +451,19 @@
       dialogue[dialogueIndex]?.sfx,
       { mode: readerMode, enabled: sfxEnabled, flow: activeFlow }
     );
-    if (command.type === 'play') sfxPlayer.play(command.cueKey);
-    else if (command.type === 'stop') sfxPlayer.stop();
+    const delayed = pendingSfxAfterTransition(
+      command,
+      nextPosition,
+      audioInitialLoadPending
+    );
+    if (delayed) {
+      pendingInitialSfx = delayed;
+    } else if (command.type === 'play') {
+      sfxPlayer.play(command.cueKey);
+    } else if (command.type === 'stop') {
+      pendingInitialSfx = null;
+      sfxPlayer.stop();
+    }
 
     const storyChanged =
       previous !== null && previous.storyId !== nextPosition.storyId;
@@ -332,7 +553,10 @@
     if (sfxEnabled === enabled) return;
     sfxEnabled = enabled;
     writeSfxEnabled(enabled);
-    if (!enabled) sfxPlayer.stop();
+    if (!enabled) {
+      pendingInitialSfx = null;
+      sfxPlayer.stop();
+    }
   }
 
   function activateBgm(event?: PointerEvent | KeyboardEvent): void {
@@ -345,7 +569,7 @@
       return;
     }
     bgmActivated = true;
-    if (bgmEnabled && selectedBgmKey) {
+    if (bgmEnabled && selectedBgmKey && !audioInitialLoadPending) {
       bgmPlayer.play(selectedBgmKey);
     }
   }
@@ -379,7 +603,7 @@
 
     if (readerMode === 'visual' && selectedBgmKey) {
       bgmActivated = true;
-      bgmPlayer.play(selectedBgmKey);
+      if (!audioInitialLoadPending) bgmPlayer.play(selectedBgmKey);
     }
   }
 
@@ -437,6 +661,14 @@
       ) {
         void visualRuntime.softRevalidate();
       }
+      if (
+        document.visibilityState === 'visible' &&
+        readerMode === 'visual' &&
+        audioRuntime &&
+        audioRuntimeStoryId === storyId
+      ) {
+        softRevalidateAudioRuntime();
+      }
     };
     document.addEventListener('visibilitychange', handleVisibility);
     removeVisibilityListener = () =>
@@ -461,8 +693,20 @@
     destroyed = true;
     runtimeGeneration += 1;
     removeVisibilityListener();
+    const audio = audioRuntime;
+    audioRuntime = null;
+    audioReleaseIdentity = null;
+    audioRuntimeStoryId = null;
+    audioRuntimeAttempted = false;
+    audioInitialLoadPending = false;
+    pendingInitialSfx = null;
     sfxPlayer.dispose();
     bgmPlayer.dispose();
+    try {
+      audio?.dispose();
+    } catch {
+      // Swallow disposal errors on destroy — component is gone regardless.
+    }
     const runtime = visualRuntime;
     visualRuntime = null;
     void runtime?.dispose().catch(() => {
@@ -547,6 +791,10 @@
       data-asset-preview-id={visualIdentity?.previewId ?? undefined}
       data-asset-release-id={visualIdentity?.releaseId}
       data-asset-manifest-sha256={visualIdentity?.manifestSha256}
+      data-audio-environment={audioReleaseIdentity?.assetEnvironment}
+      data-audio-preview-id={audioReleaseIdentity?.previewId ?? undefined}
+      data-audio-release-id={audioReleaseIdentity?.releaseId}
+      data-audio-manifest-sha256={audioReleaseIdentity?.manifestSha256}
       aria-hidden={leafDisabled ? 'true' : undefined}
     >
       {#if readerMode === 'visual'}

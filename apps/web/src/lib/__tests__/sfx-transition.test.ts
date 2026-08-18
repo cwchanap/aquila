@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { StoryFlowConfig } from '@aquila/stories';
 import {
     nextSfxCommand,
+    pendingSfxAfterTransition,
     sameLinePosition,
+    sfxCommandOnInitialRelease,
     type LinePosition,
 } from '@/lib/audio/sfx-transition';
 
@@ -99,6 +101,78 @@ describe('nextSfxCommand', () => {
         // scene.next is a plain scene id that does not match the target.
         expect(
             nextSfxCommand(p('a', 2), p('c', 0), 'door-open', visual)
+        ).toEqual({ type: 'noop' });
+    });
+});
+
+describe('initial-load SFX timing', () => {
+    it('retains only an eligible play command while first load is pending', () => {
+        const position = { storyId: 's', sceneId: 'a', index: 1 };
+        expect(
+            pendingSfxAfterTransition(
+                { type: 'play', cueKey: 'door-open' },
+                position,
+                true
+            )
+        ).toEqual({ position, cueKey: 'door-open' });
+        expect(
+            pendingSfxAfterTransition({ type: 'noop' }, position, true)
+        ).toBeNull();
+    });
+
+    it('plays a pending SFX only on the same eligible destination after load', () => {
+        const position = { storyId: 's', sceneId: 'a', index: 1 };
+        expect(
+            sfxCommandOnInitialRelease(
+                { position, cueKey: 'door-open' },
+                position,
+                { mode: 'visual', enabled: true, cueResolvable: true }
+            )
+        ).toEqual({ type: 'play', cueKey: 'door-open' });
+    });
+
+    it.each([
+        ['different current line', { storyId: 's', sceneId: 'a', index: 2 }],
+        ['Text mode', { storyId: 's', sceneId: 'a', index: 1 }],
+    ] as const)('drops a pending SFX for %s', (_label, current) => {
+        const position = { storyId: 's', sceneId: 'a', index: 1 };
+        const mode = _label === 'Text mode' ? 'text' : 'visual';
+        expect(
+            sfxCommandOnInitialRelease(
+                { position, cueKey: 'door-open' },
+                current,
+                { mode, enabled: true, cueResolvable: true }
+            )
+        ).toEqual({ type: 'noop' });
+    });
+
+    it.each([
+        [
+            'disabled SFX',
+            { mode: 'visual' as const, enabled: false, cueResolvable: true },
+        ],
+        [
+            'unresolved cue',
+            { mode: 'visual' as const, enabled: true, cueResolvable: false },
+        ],
+    ] as const)('drops a pending SFX for %s', (_label, options) => {
+        const position = { storyId: 's', sceneId: 'a', index: 1 };
+        expect(
+            sfxCommandOnInitialRelease(
+                { position, cueKey: 'door-open' },
+                position,
+                options
+            )
+        ).toEqual({ type: 'noop' });
+    });
+
+    it('does not play when there is no pending SFX', () => {
+        expect(
+            sfxCommandOnInitialRelease(
+                null,
+                { storyId: 's', sceneId: 'a', index: 1 },
+                { mode: 'visual', enabled: true, cueResolvable: true }
+            )
         ).toEqual({ type: 'noop' });
     });
 });

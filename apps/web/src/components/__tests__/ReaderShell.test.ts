@@ -13,8 +13,15 @@ import {
 } from '@aquila/stories/runtime-assets';
 import {
     VisualStateController,
+    type RuntimeReleaseIdentity,
     type VisualReaderRuntime,
 } from '@/lib/visual-assets';
+import { createBgmPlayer as createDefaultBgmPlayer } from '@/lib/audio/bgm-player';
+import { createSfxPlayer as createDefaultSfxPlayer } from '@/lib/audio/sfx-player';
+import type {
+    AudioCueResolution,
+    AudioReaderRuntime,
+} from '@/lib/audio/audio-runtime';
 import { READER_MODE_KEY } from '@/lib/reader-mode';
 
 const { mockGetTranslations } = vi.hoisted(() => ({
@@ -234,6 +241,78 @@ function createBgmHarness() {
             stop: vi.fn(),
             dispose: vi.fn(),
         },
+    };
+}
+
+const AUDIO_RELEASE_IDENTITY: RuntimeReleaseIdentity = {
+    assetEnvironment: 'preview',
+    previewId: 'hpa-610',
+    releaseId: 'sha256-audio-release',
+    manifestSha256:
+        'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
+};
+
+function deferred<T>(): {
+    promise: Promise<T>;
+    resolve: (value: T) => void;
+} {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>(value => {
+        resolve = value;
+    });
+    return { promise, resolve };
+}
+
+function createAudioRuntimeHarness(
+    loadRelease: Promise<RuntimeReleaseIdentity | null> = Promise.resolve(
+        AUDIO_RELEASE_IDENTITY
+    )
+): {
+    runtime: AudioReaderRuntime;
+    loadActiveRelease: ReturnType<typeof vi.fn>;
+    softRevalidate: ReturnType<typeof vi.fn>;
+    resolve: ReturnType<typeof vi.fn>;
+    dispose: ReturnType<typeof vi.fn>;
+} {
+    const loadActiveRelease = vi.fn(() => loadRelease);
+    const softRevalidate = vi.fn(async () => AUDIO_RELEASE_IDENTITY);
+    const resolve = vi.fn(
+        (type: 'sfx' | 'bgm', key: string): AudioCueResolution => ({
+            status: 'resolved',
+            url: `https://audio.example/${type}/${key}.mp3`,
+            asset: null,
+        })
+    );
+    const dispose = vi.fn();
+    return {
+        runtime: {
+            loadActiveRelease,
+            softRevalidate,
+            resolve,
+            dispose,
+        },
+        loadActiveRelease,
+        softRevalidate,
+        resolve,
+        dispose,
+    };
+}
+
+type FakeAudio = {
+    src: string;
+    play: ReturnType<typeof vi.fn>;
+    pause: ReturnType<typeof vi.fn>;
+    currentTime: number;
+    loop: boolean;
+};
+
+function fakeAudio(src: string): FakeAudio {
+    return {
+        src,
+        play: vi.fn(() => Promise.resolve()),
+        pause: vi.fn(),
+        currentTime: 0,
+        loop: false,
     };
 }
 
@@ -634,6 +713,305 @@ describe('ReaderShell', () => {
         view.unmount();
 
         expect(sfx.player.dispose).toHaveBeenCalledOnce();
+    });
+
+    it('does not attempt an audio runtime when both channels are disabled', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        localStorage.setItem('aquila:sfx-enabled:v1', 'false');
+        localStorage.setItem('aquila:bgm-enabled:v1', 'false');
+        const audio = createAudioRuntimeHarness();
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: vi.fn(() => audio.runtime),
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+
+        expect(audio.loadActiveRelease).not.toHaveBeenCalled();
+    });
+
+    it('creates the local audio runtime before a user-driven playback transition', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = sfxDialogue;
+        const release = deferred<RuntimeReleaseIdentity | null>();
+        const audio = createAudioRuntimeHarness(release.promise);
+        const createAudioRuntime = vi.fn(() => audio.runtime);
+        const sfx = createSfxHarness();
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime,
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+
+        expect(createAudioRuntime).toHaveBeenCalledOnce();
+        expect(audio.loadActiveRelease).toHaveBeenCalledOnce();
+
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+
+        release.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+        expect(sfx.player.play).toHaveBeenCalledWith('door-open');
+    });
+
+    it('passes distinct resolved SFX and BGM URLs to the real players', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = [
+            {
+                characterId: 'narrator',
+                dialogue: 'Start',
+                bgm: 'dawn-apartment',
+            },
+            { characterId: 'narrator', dialogue: 'Cue', sfx: 'door-open' },
+        ];
+        const audio = createAudioRuntimeHarness();
+        const createAudio = vi.fn((src: string) => fakeAudio(src));
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createSfxPlayer: (_create, resolve) =>
+                    createDefaultSfxPlayer(createAudio, resolve),
+                createBgmPlayer: (_create, resolve) =>
+                    createDefaultBgmPlayer(createAudio, resolve),
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await waitFor(() => expect(audio.loadActiveRelease).toHaveBeenCalled());
+        await Promise.resolve();
+        await tick();
+
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        readerState.dialogueIndex = 1;
+        await tick();
+
+        expect(createAudio).toHaveBeenCalledWith(
+            'https://audio.example/bgm/dawn-apartment.mp3'
+        );
+        expect(createAudio).toHaveBeenCalledWith(
+            'https://audio.example/sfx/door-open.mp3'
+        );
+    });
+
+    it('renders the first accepted audio release identity on reader-ready', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const audio = createAudioRuntimeHarness();
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        const host = screen.getByTestId('reader-ready');
+        await waitFor(() =>
+            expect(host).toHaveAttribute(
+                'data-audio-release-id',
+                AUDIO_RELEASE_IDENTITY.releaseId
+            )
+        );
+        expect(host).toHaveAttribute(
+            'data-audio-environment',
+            AUDIO_RELEASE_IDENTITY.assetEnvironment
+        );
+        expect(host).toHaveAttribute(
+            'data-audio-preview-id',
+            AUDIO_RELEASE_IDENTITY.previewId as string
+        );
+        expect(host).toHaveAttribute(
+            'data-audio-manifest-sha256',
+            AUDIO_RELEASE_IDENTITY.manifestSha256
+        );
+    });
+
+    it('retains a forward SFX during first load and drops it after leaving the destination', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = sfxDialogue;
+        const release = deferred<RuntimeReleaseIdentity | null>();
+        const audio = createAudioRuntimeHarness(release.promise);
+        const sfx = createSfxHarness();
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+
+        readerState.dialogueIndex = 0;
+        await tick();
+        release.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('completes an activated BGM gesture after first load without autoplaying otherwise', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = bgmDialogue;
+        const release = deferred<RuntimeReleaseIdentity | null>();
+        const audio = createAudioRuntimeHarness(release.promise);
+        const bgm = createBgmHarness();
+        const firstView = render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createBgmPlayer: () => bgm.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        release.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+
+        firstView.unmount();
+        bgm.player.play.mockClear();
+        const noGestureRelease = deferred<RuntimeReleaseIdentity | null>();
+        const noGestureAudio = createAudioRuntimeHarness(
+            noGestureRelease.promise
+        );
+        const noGestureBgm = createBgmHarness();
+        const view = render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => noGestureAudio.runtime,
+                createBgmPlayer: () => noGestureBgm.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+        noGestureRelease.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+        expect(noGestureBgm.player.play).not.toHaveBeenCalled();
+        view.unmount();
+    });
+
+    it('soft-revalidates audio without replaying and leaves dialogue progression silent', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = bgmDialogue;
+        const audio = createAudioRuntimeHarness();
+        const bgm = createBgmHarness();
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createBgmPlayer: () => bgm.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await waitFor(() => expect(audio.loadActiveRelease).toHaveBeenCalled());
+        await Promise.resolve();
+        await tick();
+        audio.softRevalidate.mockClear();
+        bgm.player.play.mockClear();
+
+        document.dispatchEvent(new Event('visibilitychange'));
+        await tick();
+        expect(audio.softRevalidate).toHaveBeenCalledOnce();
+        expect(bgm.player.play).not.toHaveBeenCalled();
+
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(audio.softRevalidate).toHaveBeenCalledOnce();
+        expect(bgm.player.play).not.toHaveBeenCalled();
+    });
+
+    it('detaches and disposes both runtimes together during story replacement', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const visual = createRuntimeHarness();
+        const audio = createAudioRuntimeHarness();
+        const events: string[] = [];
+        visual.dispose.mockImplementation(async () => {
+            events.push('visual-dispose');
+        });
+        audio.dispose.mockImplementation(() => {
+            events.push('audio-dispose');
+        });
+        const nextVisual = createRuntimeHarness();
+        const nextAudio = createAudioRuntimeHarness();
+        const createVisualRuntime = vi
+            .fn()
+            .mockReturnValueOnce(visual.runtime)
+            .mockReturnValueOnce(nextVisual.runtime);
+        const createAudioRuntime = vi
+            .fn()
+            .mockReturnValueOnce(audio.runtime)
+            .mockReturnValueOnce(nextAudio.runtime);
+
+        render(ReaderShell, {
+            props: {
+                createVisualRuntime,
+                createAudioRuntime,
+            },
+        });
+        await tick();
+        readerState.storyId = 'replacement_story';
+        await tick();
+        await Promise.resolve();
+        await tick();
+
+        expect(audio.dispose).toHaveBeenCalledOnce();
+        expect(visual.dispose).toHaveBeenCalledOnce();
+        expect(events).toEqual(['audio-dispose', 'visual-dispose']);
+        expect(createVisualRuntime).toHaveBeenCalledTimes(2);
+        expect(createAudioRuntime).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps audio players and runtime across responsive remounts', async () => {
+        const mm = stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const audio = createAudioRuntimeHarness();
+        const createAudioRuntime = vi.fn(() => audio.runtime);
+        const sfx = createSfxHarness();
+        const bgm = createBgmHarness();
+        const createSfxPlayer = vi.fn(() => sfx.player);
+        const createBgmPlayer = vi.fn(() => bgm.player);
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime,
+                createSfxPlayer,
+                createBgmPlayer,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+        mm.setMatches(true);
+        await tick();
+        mm.setMatches(false);
+        await tick();
+
+        expect(createAudioRuntime).toHaveBeenCalledOnce();
+        expect(createSfxPlayer).toHaveBeenCalledOnce();
+        expect(createBgmPlayer).toHaveBeenCalledOnce();
+        expect(audio.loadActiveRelease).toHaveBeenCalledOnce();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+        expect(bgm.player.play).not.toHaveBeenCalled();
     });
 
     it('does not autoplay the restored BGM until the reader-ready host is activated', async () => {

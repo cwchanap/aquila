@@ -1,4 +1,10 @@
-import { expect, test, type Page, type Response } from '@playwright/test';
+import {
+    expect,
+    test,
+    type Page,
+    type Request,
+    type Response,
+} from '@playwright/test';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     getAudioReleaseManifestPath,
@@ -495,6 +501,10 @@ test.describe('Deployed visual-novel release gate', () => {
         expect(manifest.storyId).toBe(STORY_ID);
         expect(manifest.releaseId).toBe(RELEASE_ID);
 
+        let bgmUrl: string | null = null;
+        let bgmRequestCount = 0;
+        let bgmResponseCount = 0;
+
         if (AUDIO_GATE_ENABLED) {
             const audioManifestUrl = assetUrl(
                 assetBase,
@@ -535,40 +545,58 @@ test.describe('Deployed visual-novel release gate', () => {
                         'served audio manifest.'
                 );
             }
-            const bgmUrl = assetUrl(assetBase, bgmAsset.path);
+            const selectedBgmUrl = assetUrl(assetBase, bgmAsset.path);
+            bgmUrl = selectedBgmUrl;
             const landingMediaUrls: string[] = [];
             const recordLandingMedia = (response: Response): void => {
                 if (response.request().resourceType() === 'media') {
                     landingMediaUrls.push(response.url());
                 }
             };
+            const recordBgmRequest = (request: Request): void => {
+                if (
+                    request.resourceType() === 'media' &&
+                    request.url() === selectedBgmUrl
+                ) {
+                    bgmRequestCount += 1;
+                }
+            };
+            const recordBgmResponse = (response: Response): void => {
+                if (
+                    response.request().resourceType() === 'media' &&
+                    response.url() === selectedBgmUrl
+                ) {
+                    bgmResponseCount += 1;
+                }
+            };
+            page.on('request', recordBgmRequest);
             page.on('response', recordLandingMedia);
-            try {
-                await page.goto(
-                    readerUrl(
-                        STORY_ID,
-                        audioAnchors.bgm.sceneId,
-                        audioAnchors.bgm.page
-                    )
-                );
-                await expect(visual.root).toBeVisible();
-                await expectCanonicalVisualLine(page, audioAnchors.bgm.page);
-                await waitForVisualReady(page);
-                await waitForAudioIdentity(page);
-                expect(
-                    landingMediaUrls,
-                    'BGM must not load solely from the landing position'
-                ).toHaveLength(0);
+            page.on('response', recordBgmResponse);
+            await page.goto(
+                readerUrl(
+                    STORY_ID,
+                    audioAnchors.bgm.sceneId,
+                    audioAnchors.bgm.page
+                )
+            );
+            await expect(visual.root).toBeVisible();
+            await expectCanonicalVisualLine(page, audioAnchors.bgm.page);
+            await waitForVisualReady(page);
+            await waitForAudioIdentity(page);
+            expect(
+                landingMediaUrls,
+                'BGM must not load solely from the landing position'
+            ).toHaveLength(0);
+            expect(bgmRequestCount).toBe(0);
 
-                const bgmResponse = page.waitForResponse(
-                    response => response.url() === bgmUrl,
-                    { timeout: RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset }
-                );
-                await visual.root.click();
-                expectAudioResponse(await bgmResponse, bgmUrl);
-            } finally {
-                page.off('response', recordLandingMedia);
-            }
+            const bgmResponse = page.waitForResponse(
+                response => response.url() === selectedBgmUrl,
+                { timeout: RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset }
+            );
+            await visual.root.click();
+            expectAudioResponse(await bgmResponse, selectedBgmUrl);
+            expect(bgmRequestCount).toBe(1);
+            expect(bgmResponseCount).toBe(1);
 
             // SFX is eligible only on a forward adjacent transition. Start at
             // the pure helper's predecessor page and require the exact object
@@ -608,6 +636,39 @@ test.describe('Deployed visual-novel release gate', () => {
             );
             expectAudioResponse(await sfxResponse, sfxUrl);
             await expectCanonicalVisualLine(page, audioAnchors.sfx.toPage);
+        }
+
+        const expectNoDuplicateBgmRequest = async (
+            action: () => Promise<void>
+        ): Promise<void> => {
+            const url = bgmUrl;
+            if (!AUDIO_GATE_ENABLED || url === null) {
+                await action();
+                return;
+            }
+
+            const requestCountBefore = bgmRequestCount;
+            const responseCountBefore = bgmResponseCount;
+            const duplicateRequest = page.waitForRequest(
+                request =>
+                    request.resourceType() === 'media' && request.url() === url,
+                { timeout: 2_000 }
+            );
+            await action();
+            await expect(duplicateRequest).rejects.toThrow();
+            expect(bgmRequestCount).toBe(requestCountBefore);
+            expect(bgmResponseCount).toBe(responseCountBefore);
+        };
+
+        if (AUDIO_GATE_ENABLED) {
+            await page.goto(
+                readerUrl(STORY_ID, anchors.sceneId, anchors.startPage)
+            );
+            await expect(visual.root).toBeVisible();
+            await expectCanonicalVisualLine(page, anchors.startPage);
+            await waitForVisualReady(page);
+            await waitForAudioIdentity(page);
+            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
         }
 
         // -- Step 3: advance through a portrait change and a background change. --
@@ -668,31 +729,51 @@ test.describe('Deployed visual-novel release gate', () => {
 
         // -- Step 4: visual<->text — same line, same identity. --
         const line = anchors.backgroundPage;
-        await page
-            .getByRole('button', { name: t.textMode, exact: true })
-            .click();
-        // The visual leaf unmounts in text mode; the canonical line survives in
-        // the URL (the text reader renders its own progress widget).
-        await expect(
-            page.getByTestId('visual-novel-reader')
-        ).not.toBeAttached();
-        await expect(page).toHaveURL(dialogueUrl(line));
-        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        await expectNoDuplicateBgmRequest(async () => {
+            await page
+                .getByRole('button', { name: t.textMode, exact: true })
+                .click();
+            // The visual leaf unmounts in text mode; the canonical line survives in
+            // the URL (the text reader renders its own progress widget).
+            await expect(
+                page.getByTestId('visual-novel-reader')
+            ).not.toBeAttached();
+            await expect(page).toHaveURL(dialogueUrl(line));
+            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+            if (AUDIO_GATE_ENABLED) {
+                await waitForAudioIdentity(page);
+            }
+        });
 
-        await page
-            .getByRole('button', { name: t.visualNovelMode, exact: true })
-            .click();
-        await waitForVisualReady(page);
-        await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        await expectNoDuplicateBgmRequest(async () => {
+            await page
+                .getByRole('button', { name: t.visualNovelMode, exact: true })
+                .click();
+            await waitForVisualReady(page);
+            await expectCanonicalVisualLine(page, line);
+            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+            if (AUDIO_GATE_ENABLED) {
+                await waitForAudioIdentity(page);
+            }
+        });
 
         // -- Step 5: resize desktop<->mobile — same line, same identity. --
-        await page.setViewportSize({ width: 844, height: 390 });
-        await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-        await page.setViewportSize({ width: 1280, height: 800 });
-        await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        await expectNoDuplicateBgmRequest(async () => {
+            await page.setViewportSize({ width: 844, height: 390 });
+            await expectCanonicalVisualLine(page, line);
+            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+            if (AUDIO_GATE_ENABLED) {
+                await waitForAudioIdentity(page);
+            }
+        });
+        await expectNoDuplicateBgmRequest(async () => {
+            await page.setViewportSize({ width: 1280, height: 800 });
+            await expectCanonicalVisualLine(page, line);
+            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+            if (AUDIO_GATE_ENABLED) {
+                await waitForAudioIdentity(page);
+            }
+        });
 
         // -- Step 6: restore a bookmark, then take one choice. --
         await page

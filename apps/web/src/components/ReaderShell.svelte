@@ -495,7 +495,8 @@
       nextBgmKey !== null &&
       nextBgmKey !== previousBgmKey &&
       bgmActivated &&
-      bgmEnabled
+      bgmEnabled &&
+      !audioInitialLoadPending
     ) {
       bgmPlayer.play(nextBgmKey);
     }
@@ -665,7 +666,8 @@
         document.visibilityState === 'visible' &&
         readerMode === 'visual' &&
         audioRuntime &&
-        audioRuntimeStoryId === storyId
+        audioRuntimeStoryId === storyId &&
+        !audioInitialLoadPending
       ) {
         softRevalidateAudioRuntime();
       }

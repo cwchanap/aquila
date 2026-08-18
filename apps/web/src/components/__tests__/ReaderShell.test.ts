@@ -940,6 +940,88 @@ describe('ReaderShell', () => {
         expect(bgm.player.play).not.toHaveBeenCalled();
     });
 
+    it('does not cancel queued first-load SFX when visibility changes', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = sfxDialogue;
+        const release = deferred<RuntimeReleaseIdentity | null>();
+        const audio = createAudioRuntimeHarness(release.promise);
+        const sfx = createSfxHarness();
+        audio.softRevalidate.mockImplementation(async () => {
+            audio.resolve.mockImplementation(() => ({
+                status: 'unavailable',
+                reason: 'release-not-loaded',
+            }));
+            release.resolve(null);
+            return null;
+        });
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createSfxPlayer: () => sfx.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(sfx.player.play).not.toHaveBeenCalled();
+
+        document.dispatchEvent(new Event('visibilitychange'));
+        await Promise.resolve();
+        await tick();
+
+        audio.resolve.mockImplementation(() => ({
+            status: 'resolved',
+            url: 'https://audio.example/sfx/door-open.mp3',
+            asset: null,
+        }));
+        release.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+
+        expect(audio.softRevalidate).not.toHaveBeenCalled();
+        expect(sfx.player.play).toHaveBeenCalledWith('door-open');
+    });
+
+    it('defers a newly selected BGM cue until the initial load completes', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.dialogue = [
+            { characterId: 'narrator', dialogue: 'Cue-less start.' },
+            {
+                characterId: 'narrator',
+                dialogue: 'BGM begins here.',
+                bgm: 'dawn-apartment',
+            },
+        ];
+        const release = deferred<RuntimeReleaseIdentity | null>();
+        const audio = createAudioRuntimeHarness(release.promise);
+        const bgm = createBgmHarness();
+
+        render(ReaderShell, {
+            props: {
+                createAudioRuntime: () => audio.runtime,
+                createBgmPlayer: () => bgm.player,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(bgm.player.play).not.toHaveBeenCalled();
+
+        release.resolve(AUDIO_RELEASE_IDENTITY);
+        await Promise.resolve();
+        await tick();
+
+        expect(bgm.player.play).toHaveBeenCalledOnce();
+        expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+    });
+
     it('detaches and disposes both runtimes together during story replacement', async () => {
         stubMatchMedia(false);
         localStorage.setItem(READER_MODE_KEY, 'visual');

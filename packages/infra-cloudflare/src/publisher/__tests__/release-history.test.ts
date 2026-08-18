@@ -741,6 +741,36 @@ describe('audio release history', () => {
         ]);
     });
 
+    it('warns when an audio pointer carries non-empty custom metadata', async () => {
+        const store = new KeyedDeliveryStore([previewAudioReleaseA]);
+        const pointerKey = getAudioCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
+        store.forcePointer(
+            pointerKey,
+            pointerBytes(
+                audioPointerFor(
+                    previewAudioReleaseA,
+                    '2026-08-01T19:00:00.000Z'
+                )
+            ),
+            { customMetadata: { foreign: 'metadata' } }
+        );
+
+        const warnings: PublisherDiagnosticV1[] = [];
+        const result = await listReleases({
+            store,
+            storyId: STORY_ID,
+            target: PREVIEW_TARGET,
+            media: 'audio',
+            deep: false,
+            onWarning: warning => warnings.push(warning),
+        });
+
+        expect(result.every(summary => summary.active === false)).toBe(true);
+        expect(warnings).toEqual([
+            expect.objectContaining({ code: 'pointer-invalid' }),
+        ]);
+    });
+
     it('keeps visual and audio history namespaces independent', async () => {
         const store = new KeyedDeliveryStore([
             previewReleaseA,

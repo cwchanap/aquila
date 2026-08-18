@@ -410,6 +410,17 @@ export async function probeRuntimeMp3File(
     };
 }
 
+const PLAYLIST_EXTENSIONS = new Set([
+    '.m3u',
+    '.m3u8',
+    '.pls',
+    '.asx',
+    '.wpl',
+    '.xspf',
+    '.ram',
+    '.smil',
+]);
+
 function sourceExtension(filename: string): string {
     const safeFilename = basename(filename);
     if (safeFilename !== filename || filename.includes('\\')) {
@@ -422,6 +433,13 @@ function sourceExtension(filename: string): string {
         throw new PublisherError(
             'source',
             'Audio source filename must have a safe extension',
+            { context: { stage: 'source' } }
+        );
+    }
+    if (PLAYLIST_EXTENSIONS.has(extension)) {
+        throw new PublisherError(
+            'source',
+            'Audio source filename must not be a playlist',
             { context: { stage: 'source' } }
         );
     }

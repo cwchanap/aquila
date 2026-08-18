@@ -39,12 +39,14 @@ export type VisualPortraitLayer = VisualImageLayer & {
  * Absent (null) until a release validates, and cleared again when the release
  * becomes invalid, the runtime is disposed, or the story changes.
  */
-export type VisualReleaseIdentity = {
+export type RuntimeReleaseIdentity = {
     assetEnvironment: 'local' | 'preview' | 'production';
     previewId: string | null;
     releaseId: string;
     manifestSha256: string;
 };
+
+export type VisualReleaseIdentity = RuntimeReleaseIdentity;
 
 export type VisualSnapshot = {
     release: VisualReleaseState;

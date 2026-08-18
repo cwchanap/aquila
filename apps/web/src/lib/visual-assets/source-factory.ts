@@ -17,6 +17,8 @@ export type VisualReaderRuntime = {
     dispose: () => Promise<void>;
 };
 
+export const REMOTE_ASSET_STORY_ID = 'the_seventh_mirror';
+
 /**
  * Environment variables change *how* an allowed story resolves, never *which*
  * stories resolve — the allowlist below stays authoritative.
@@ -26,7 +28,7 @@ export function getAssetResolverSource(
     origin: string,
     config: AssetSourceConfig
 ): AssetResolverSource | null {
-    if (storyId !== 'the_seventh_mirror') return null;
+    if (storyId !== REMOTE_ASSET_STORY_ID) return null;
     return resolveAssetSource(storyId, origin, config);
 }
 

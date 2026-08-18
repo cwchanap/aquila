@@ -117,6 +117,9 @@ const DIAGNOSTIC_CODES = new Set([
     'coverage/story-mismatch',
     'coverage/validation-failed',
     'pointer-invalid',
+    'audio/plan-unused',
+    'audio/selected-unused',
+    'audio/duration-drift',
 ]);
 const ACTION_KINDS = new Set<PublisherActionV1['kind']>([
     'include',
@@ -214,6 +217,15 @@ function safeDiagnosticMessage(
     }
     if (code === 'pointer-invalid') {
         return 'Current active-release pointer is invalid; every release is reported as inactive';
+    }
+    if (code === 'audio/plan-unused') {
+        return 'Audio plan contains cues not used by the story';
+    }
+    if (code === 'audio/selected-unused') {
+        return 'Audio selection contains cues not used by the story';
+    }
+    if (code === 'audio/duration-drift') {
+        return 'Normalized audio duration differs materially from the planned duration';
     }
     return 'Publisher diagnostic';
 }

@@ -1938,6 +1938,60 @@ describe('verifyPublicRelease audio', () => {
             names(result.results)['archive key absent from delivery bucket']
         ).toBe(false);
     });
+
+    it('verifies an all-omitted audio release with zero assets and no archive probe keys', async () => {
+        // An all-omitted release (every compiler-used cue explicitly omitted)
+        // produces a manifest with zero assets. The omission contract permits
+        // this, and the verifier must accept it — no MP3/Range/cache checks
+        // and no archive probe key requirement.
+        const manifestObj = {
+            schemaVersion: 1 as const,
+            storyId: STORY_ID,
+            releaseId: `sha256-${'0'.repeat(64)}`,
+            assets: [],
+        };
+        const parsed = parseRuntimeAudioManifest(manifestObj);
+        const releaseId = `sha256-${sha256Hex(
+            canonicalAudioReleaseContent(parsed)
+        )}`;
+        const finalManifest = { ...manifestObj, releaseId };
+        const manifestText = JSON.stringify(finalManifest);
+        const manifestSha256 = sha256Hex(manifestText);
+        const pointerText = JSON.stringify({
+            schemaVersion: 1 as const,
+            storyId: STORY_ID,
+            releaseId,
+            manifestPath: getAudioReleaseManifestPath(
+                STORY_ID,
+                releaseId,
+                AUDIO_TARGET
+            ),
+            manifestSha256,
+            publishedAt: '2026-08-01T00:00:00.000Z',
+        });
+        const emptyRelease: AudioReleaseFixture = {
+            pointerText,
+            manifestText,
+            manifestObj: finalManifest as unknown as RuntimeAudioManifestV1,
+            objects: [],
+        };
+
+        const result = await verifyPublicRelease(
+            {
+                storyId: STORY_ID,
+                target: AUDIO_TARGET,
+                assetBaseUrl: new URL(BASE),
+                media: 'audio',
+                expectedManifestSha256: manifestSha256 as ManifestByteSha256,
+            },
+            { fetch: makeAudioFetch(emptyRelease, {}, []) }
+        );
+
+        expect(result.status).toBe('passed');
+        expect(
+            result.results.filter(check => !check.ok && !check.warning)
+        ).toEqual([]);
+    });
 });
 
 describe('parseVerifyArgs', () => {

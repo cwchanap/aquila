@@ -242,6 +242,20 @@ describe('prepareAudioSources', () => {
         expect(plan.coverage[0]).not.toHaveProperty('receiptBytes');
         expect(plan.selectedUnusedKeys).toEqual(['selected-unused']);
         expect(plan.unusedPlanKeys).toEqual(['plan-unused', 'selected-unused']);
+        expect(plan.diagnostics).toContainEqual({
+            code: 'audio/plan-unused',
+            stage: 'coverage',
+            message: 'Audio plan contains cues not used by the story',
+            count: 2,
+            sampleIdentities: ['sfx:plan-unused', 'sfx:selected-unused'],
+        });
+        expect(plan.diagnostics).toContainEqual({
+            code: 'audio/selected-unused',
+            stage: 'coverage',
+            message: 'Audio selection contains cues not used by the story',
+            count: 1,
+            sampleIdentities: ['sfx:selected-unused'],
+        });
     });
 
     it('uses explicit omissions and emits only the public omission fields', async () => {

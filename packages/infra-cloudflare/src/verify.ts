@@ -933,13 +933,11 @@ async function runAudioObjectChecks(
         }
     }
 
-    if (manifest.assets.length === 0) {
-        results.push({
-            name: 'mp3 object',
-            ok: false,
-            detail: `no MP3 references among 0 asset(s) in ${manifestPath}`,
-        });
-    }
+    // An all-omitted audio release (every compiler-used cue explicitly
+    // omitted) produces a manifest with zero assets. The omission contract
+    // permits this, and stored-release verification accepts it, so the public
+    // verifier must accept it too — skip the MP3/Range/cache-object checks
+    // rather than hard-failing an empty release that published successfully.
     return cacheProbePath;
 }
 
@@ -1274,7 +1272,14 @@ async function runChecksForManifest(
         );
     } else {
         const probeKeys = input.archiveProbeKeys ?? [];
-        if (probeKeys.length === 0) {
+        // An all-omitted release archives no private sources, so there are no
+        // archive keys to prove absent from the delivery bucket. cacheProbePath
+        // is null only when the audio manifest declared zero assets; in that
+        // case skip the probe-key requirement rather than hard-failing an empty
+        // release that the omission contract permits.
+        if (cacheProbePath === null) {
+            // No objects and no private sources — nothing to probe.
+        } else if (probeKeys.length === 0) {
             results.push({
                 name: 'archive key absent from delivery bucket',
                 ok: false,

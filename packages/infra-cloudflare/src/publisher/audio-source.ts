@@ -21,6 +21,7 @@ import {
 } from '@aquila/stories/runtime-assets';
 import { PublisherError } from './errors';
 import type { PlannedImmutableCandidate } from './immutable-candidate';
+import type { PublisherDiagnosticV1 } from './types';
 
 export interface AudioOmissionsV1 {
     readonly schemaVersion: 1;
@@ -62,6 +63,7 @@ export interface AudioSourcePlan {
     readonly coverage: readonly AudioCoverageEntryV1[];
     readonly unusedPlanKeys: readonly string[];
     readonly selectedUnusedKeys: readonly string[];
+    readonly diagnostics: readonly PublisherDiagnosticV1[];
 }
 
 const AUDIO_ARCHIVE_CACHE_CONTROL = 'private, max-age=0, no-store';
@@ -427,16 +429,40 @@ export async function prepareAudioSources(input: {
         }
     }
 
-    const selectedUnusedKeys = planAssets
+    const selectedUnusedAssets = planAssets
         .filter(
             asset => !usageByKey.has(asset.key) && selectionByKey.has(asset.key)
         )
-        .sort(compareAudioAssets)
-        .map(asset => asset.key);
-    const unusedPlanKeys = planAssets
+        .sort(compareAudioAssets);
+    const unusedPlanAssets = planAssets
         .filter(asset => !usageByKey.has(asset.key))
-        .sort(compareAudioAssets)
-        .map(asset => asset.key);
+        .sort(compareAudioAssets);
+    const selectedUnusedKeys = selectedUnusedAssets.map(asset => asset.key);
+    const unusedPlanKeys = unusedPlanAssets.map(asset => asset.key);
+
+    const diagnostics: PublisherDiagnosticV1[] = [];
+    if (unusedPlanAssets.length > 0) {
+        diagnostics.push({
+            code: 'audio/plan-unused',
+            stage: 'coverage',
+            message: 'Audio plan contains cues not used by the story',
+            count: unusedPlanAssets.length,
+            sampleIdentities: unusedPlanAssets
+                .map(asset => `${asset.type}:${asset.key}`)
+                .slice(0, 5),
+        });
+    }
+    if (selectedUnusedAssets.length > 0) {
+        diagnostics.push({
+            code: 'audio/selected-unused',
+            stage: 'coverage',
+            message: 'Audio selection contains cues not used by the story',
+            count: selectedUnusedAssets.length,
+            sampleIdentities: selectedUnusedAssets
+                .map(asset => `${asset.type}:${asset.key}`)
+                .slice(0, 5),
+        });
+    }
 
     const missingUsedKeys = usageAssets.filter(
         usage =>
@@ -505,6 +531,7 @@ export async function prepareAudioSources(input: {
         coverage,
         unusedPlanKeys,
         selectedUnusedKeys,
+        diagnostics,
     };
 }
 

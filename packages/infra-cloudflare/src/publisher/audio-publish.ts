@@ -239,6 +239,21 @@ export async function publishAudioRelease(
         total: archivePlans.length,
         message: 'inspected audio archive candidates',
     });
+
+    // Preflight the delivery destination before mutating the source bucket:
+    // buildAudioPublicationPlan inspects delivery objects/manifest and reads
+    // the advisory pointer, either of which can fail on a conflicting or
+    // malformed destination. Running this read-only inspection before the
+    // archive write ensures a destination already known to be unusable does
+    // not cause source-bucket mutations before the command fails. Write
+    // ordering is unchanged — source archives are still written before any
+    // delivery object.
+    const plan = await buildAudioPublicationPlan({
+        store: options.store,
+        preparedRelease,
+        progress: options.progress,
+    });
+
     await publishArchive(archivePlans, options.sourceStore);
     progress(options.progress, {
         stage: 'upload',
@@ -247,11 +262,6 @@ export async function publishAudioRelease(
         message: 'archived audio sources',
     });
 
-    const plan = await buildAudioPublicationPlan({
-        store: options.store,
-        preparedRelease,
-        progress: options.progress,
-    });
     const objectResults = await publishObjects(plan, options.store);
     progress(options.progress, {
         stage: 'upload',

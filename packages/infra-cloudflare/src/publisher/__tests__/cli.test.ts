@@ -810,14 +810,18 @@ describe('assets CLI command schemas and confirmation matrix', () => {
             );
             try {
                 const repositoryRoot = join(root, 'repo');
+                // generation-under-destination: destination at root/destination
+                // with the generation root nested beneath it.
+                // destination-under-generation: generation root at
+                // root/generation with the destination nested beneath it.
                 const destinationRoot =
                     layout === 'generation-under-destination'
                         ? join(root, 'destination')
-                        : join(root, 'generation');
+                        : join(root, 'generation', 'destination');
                 const generationRoot =
                     layout === 'generation-under-destination'
                         ? join(destinationRoot, 'generation')
-                        : join(destinationRoot, 'destination');
+                        : join(root, 'generation');
                 await mkdir(repositoryRoot, { recursive: true });
                 await mkdir(destinationRoot, { recursive: true });
                 await mkdir(generationRoot, { recursive: true });

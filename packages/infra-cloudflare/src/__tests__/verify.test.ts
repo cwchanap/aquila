@@ -1923,6 +1923,21 @@ describe('verifyPublicRelease audio', () => {
             ]
         ).toBe(false);
     });
+
+    it('fails an audio run that configures no archive probe key', async () => {
+        const release = buildValidAudioRelease();
+        const { archiveProbeKeys, ...input } = audioInput(release);
+        expect(archiveProbeKeys).toEqual([]);
+
+        const result = await verifyPublicRelease(input, {
+            fetch: makeAudioFetch(release, {}, []),
+        });
+
+        expect(result.status).toBe('failed');
+        expect(
+            names(result.results)['archive key absent from delivery bucket']
+        ).toBe(false);
+    });
 });
 
 describe('parseVerifyArgs', () => {
@@ -2031,6 +2046,17 @@ describe('parseVerifyArgs', () => {
                 `sha256-${'a'.repeat(64)}`,
             ]).media
         ).toBe('audio');
+    });
+
+    it('rejects archive probe keys for visual media', () => {
+        expect(() =>
+            parseVerifyArgs([
+                '--media',
+                'visual',
+                '--archive-probe-key',
+                'audio/approved/source.mp3',
+            ])
+        ).toThrow(/--archive-probe-key requires --media audio/);
     });
 
     it('rejects an invalid media selector', () => {

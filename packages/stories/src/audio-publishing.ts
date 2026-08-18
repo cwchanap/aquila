@@ -17,10 +17,11 @@ export interface AudioPublishingContext {
 }
 
 export async function loadAudioPublishingContext(
-    storyFolder: string
+    storyFolder: string,
+    rawRoot: string = STORIES_RAW_ROOT
 ): Promise<AudioPublishingContext> {
-    const rawDir = join(STORIES_RAW_ROOT, storyFolder);
-    const story = await compileNamedStory(storyFolder, false);
+    const rawDir = join(rawRoot, storyFolder);
+    const story = await compileNamedStory(storyFolder, false, rawRoot);
     const plan = loadAudioPlan(rawDir);
     if (plan === undefined) {
         throw new Error(

@@ -27,13 +27,8 @@ import { publisherReportExitCode } from '../report';
 import type { PublisherDiagnosticV1 } from '../report';
 import { buildPreparedRelease } from '../runtime-release';
 import { buildPreparedAudioRelease } from '../audio-runtime-release';
-import type {
-    DeliveryStore,
-    PointerSnapshot,
-    PointerWriteRequest,
-    StoredObject,
-    StoredObjectMetadata,
-} from '../stores/delivery-store';
+import type { DeliveryStore } from '../stores/delivery-store';
+import { KeyedDeliveryStore } from './keyed-delivery-store';
 import type { AudioProcessRunner } from '../audio-encoder';
 import type {
     EncodedAsset,
@@ -223,429 +218,6 @@ beforeAll(async () => {
     );
 });
 
-function cloneObject(object: StoredObject): StoredObject {
-    return { ...object, bytes: Uint8Array.from(object.bytes) };
-}
-
-function metadata(object: StoredObject): StoredObjectMetadata {
-    return {
-        key: object.key,
-        etag: object.etag,
-        byteLength: object.byteLength,
-        contentType: object.contentType,
-        cacheControl: object.cacheControl,
-        customMetadata: object.customMetadata,
-    };
-}
-
-class HistoryStore implements DeliveryStore {
-    readonly events: string[] = [];
-    readonly pointerWrites: PointerWriteRequest[] = [];
-    listedKeys: string[];
-    listFailure?: unknown;
-    listKeysFailure?: unknown;
-    statFailure?: unknown;
-    beforeCompareAndSwap?: (
-        store: HistoryStore,
-        request: PointerWriteRequest,
-        attempt: number
-    ) => void;
-
-    private readonly objects = new Map<string, StoredObject>();
-    private pointer: Extract<PointerSnapshot, { exists: true }> | null = null;
-    private pointerVersion = 0;
-    private compareAndSwapAttempts = 0;
-
-    constructor(...releases: PreparedRelease[]) {
-        for (const release of releases) this.seedRelease(release);
-        this.listedKeys = releases.map(release =>
-            getReleaseManifestPath(
-                release.storyId,
-                release.releaseId,
-                release.target
-            )
-        );
-    }
-
-    get authoringCatalog(): never {
-        throw new Error('release history touched authoring input');
-    }
-
-    get releasePlan(): never {
-        throw new Error('release history touched plan input');
-    }
-
-    get sourceRoot(): never {
-        throw new Error('release history touched source input');
-    }
-
-    get encoder(): never {
-        throw new Error('release history touched encoder input');
-    }
-
-    async stat(key: string): Promise<StoredObjectMetadata | null> {
-        this.events.push(`stat:${key}`);
-        if (this.statFailure !== undefined) throw this.statFailure;
-        const object = this.objects.get(key);
-        return object === undefined ? null : metadata(object);
-    }
-
-    async read(key: string): Promise<StoredObject> {
-        this.events.push(`read:${key}`);
-        const object = this.objects.get(key);
-        if (object === undefined) throw new Error('missing test object');
-        return cloneObject(object);
-    }
-
-    createImmutable(): Promise<{ status: 'created' | 'already-exists' }> {
-        throw new Error('release history must not create immutable objects');
-    }
-
-    async inspectPointer(key: string): Promise<PointerSnapshot> {
-        this.events.push(`inspect-pointer:${key}`);
-        return this.pointerSnapshot();
-    }
-
-    async readPointer(key: string): Promise<PointerSnapshot> {
-        this.events.push(`read-pointer:${key}`);
-        return this.pointerSnapshot();
-    }
-
-    async compareAndSwapPointer(request: PointerWriteRequest): Promise<{
-        status: 'written' | 'precondition-failed';
-        etag?: string;
-    }> {
-        this.compareAndSwapAttempts += 1;
-        this.events.push(`cas:${request.key}`);
-        this.pointerWrites.push({
-            ...request,
-            bytes: Uint8Array.from(request.bytes),
-        });
-        this.beforeCompareAndSwap?.(this, request, this.compareAndSwapAttempts);
-        const matches =
-            this.pointer === null
-                ? request.expected.exists === false
-                : request.expected.exists === true &&
-                  request.expected.etag === this.pointer.etag;
-        if (!matches) return { status: 'precondition-failed' };
-        const etag = this.forcePointer(request.bytes, {
-            contentType: request.contentType,
-            cacheControl: request.cacheControl,
-        });
-        return { status: 'written', etag };
-    }
-
-    async *list(prefix: string): AsyncIterable<StoredObjectMetadata> {
-        this.events.push(`list:${prefix}`);
-        if (this.listFailure !== undefined) throw this.listFailure;
-        for (const key of this.listedKeys) {
-            const object = this.objects.get(key);
-            yield object === undefined
-                ? {
-                      key,
-                      etag: `listed:${key}`,
-                      byteLength: 0,
-                      contentType: 'application/json',
-                      cacheControl: IMMUTABLE_CACHE,
-                      customMetadata: {},
-                  }
-                : metadata(object);
-        }
-    }
-
-    async *listKeys(prefix: string): AsyncIterable<string> {
-        this.events.push(`list-keys:${prefix}`);
-        if (this.listKeysFailure !== undefined) throw this.listKeysFailure;
-        yield* this.listedKeys;
-    }
-
-    async close(): Promise<void> {}
-
-    forcePointer(
-        bytes: Uint8Array,
-        metadataValue: { contentType: string; cacheControl: string } = {
-            contentType: 'application/json',
-            cacheControl: POINTER_CACHE,
-        }
-    ): string {
-        this.pointerVersion += 1;
-        const etag = `W/"opaque-${this.pointerVersion}"`;
-        this.pointer = {
-            exists: true,
-            etag,
-            bytes: Uint8Array.from(bytes),
-            contentType: metadataValue.contentType,
-            cacheControl: metadataValue.cacheControl,
-            customMetadata: {},
-        };
-        return etag;
-    }
-
-    remove(key: string): void {
-        this.objects.delete(key);
-    }
-
-    mutate(key: string, mutate: (object: StoredObject) => StoredObject): void {
-        const object = this.objects.get(key);
-        if (object === undefined) throw new Error('missing test object');
-        this.objects.set(key, mutate(cloneObject(object)));
-    }
-
-    currentPointerBytes(): Uint8Array | null {
-        return this.pointer === null
-            ? null
-            : Uint8Array.from(this.pointer.bytes);
-    }
-
-    private pointerSnapshot(): PointerSnapshot {
-        return this.pointer === null
-            ? { exists: false }
-            : { ...this.pointer, bytes: Uint8Array.from(this.pointer.bytes) };
-    }
-
-    private seedRelease(release: PreparedRelease): void {
-        for (const asset of release.encodedAssets) {
-            for (const variant of asset.variants) {
-                this.objects.set(variant.path, {
-                    key: variant.path,
-                    etag: `immutable-${variant.sha256}`,
-                    bytes: Uint8Array.from(variant.bytes),
-                    byteLength: variant.bytes.byteLength,
-                    contentType: variant.contentType,
-                    cacheControl: IMMUTABLE_CACHE,
-                    customMetadata: {},
-                });
-            }
-        }
-        const manifestPath = getReleaseManifestPath(
-            release.storyId,
-            release.releaseId,
-            release.target
-        );
-        this.objects.set(manifestPath, {
-            key: manifestPath,
-            etag: `manifest-${release.manifestSha256}`,
-            bytes: Uint8Array.from(release.manifestBytes),
-            byteLength: release.manifestBytes.byteLength,
-            contentType: 'application/json',
-            cacheControl: IMMUTABLE_CACHE,
-            customMetadata: {},
-        });
-    }
-}
-
-class MediaHistoryStore implements DeliveryStore {
-    readonly events: string[] = [];
-    readonly pointerWrites: PointerWriteRequest[] = [];
-    listedKeys: string[];
-    beforeCompareAndSwap?: (
-        store: MediaHistoryStore,
-        request: PointerWriteRequest,
-        attempt: number
-    ) => void;
-
-    private readonly objects = new Map<string, StoredObject>();
-    private readonly pointers = new Map<
-        string,
-        Extract<PointerSnapshot, { exists: true }>
-    >();
-    private pointerVersion = 0;
-    private compareAndSwapAttempts = 0;
-
-    constructor(...releases: Array<PreparedRelease | PreparedAudioRelease>) {
-        for (const release of releases) this.seedRelease(release);
-        this.listedKeys = releases.map(release =>
-            'encodedAssets' in release
-                ? getReleaseManifestPath(
-                      release.storyId,
-                      release.releaseId,
-                      release.target
-                  )
-                : getAudioReleaseManifestPath(
-                      release.storyId,
-                      release.releaseId,
-                      release.target
-                  )
-        );
-    }
-
-    get authoringCatalog(): never {
-        throw new Error('release history touched authoring input');
-    }
-
-    get releasePlan(): never {
-        throw new Error('release history touched plan input');
-    }
-
-    get sourceRoot(): never {
-        throw new Error('release history touched source input');
-    }
-
-    get encoder(): never {
-        throw new Error('release history touched encoder input');
-    }
-
-    async stat(key: string): Promise<StoredObjectMetadata | null> {
-        this.events.push(`stat:${key}`);
-        const object = this.objects.get(key);
-        return object === undefined ? null : metadata(object);
-    }
-
-    async read(key: string): Promise<StoredObject> {
-        this.events.push(`read:${key}`);
-        const object = this.objects.get(key);
-        if (object === undefined)
-            throw new Error(`missing test object: ${key}`);
-        return cloneObject(object);
-    }
-
-    createImmutable(): Promise<{ status: 'created' | 'already-exists' }> {
-        throw new Error('release history must not create immutable objects');
-    }
-
-    async inspectPointer(key: string): Promise<PointerSnapshot> {
-        this.events.push(`inspect-pointer:${key}`);
-        return this.pointerSnapshot(key);
-    }
-
-    async readPointer(key: string): Promise<PointerSnapshot> {
-        this.events.push(`read-pointer:${key}`);
-        return this.pointerSnapshot(key);
-    }
-
-    async compareAndSwapPointer(request: PointerWriteRequest): Promise<{
-        status: 'written' | 'precondition-failed';
-        etag?: string;
-    }> {
-        this.compareAndSwapAttempts += 1;
-        this.events.push(`cas:${request.key}`);
-        this.pointerWrites.push({
-            ...request,
-            bytes: Uint8Array.from(request.bytes),
-        });
-        this.beforeCompareAndSwap?.(this, request, this.compareAndSwapAttempts);
-        const current = this.pointers.get(request.key);
-        const expectationMatches =
-            current === undefined
-                ? request.expected.exists === false
-                : request.expected.exists === true &&
-                  request.expected.etag === current.etag;
-        if (!expectationMatches) return { status: 'precondition-failed' };
-        const etag = this.forcePointer(request.key, request.bytes, {
-            contentType: request.contentType,
-            cacheControl: request.cacheControl,
-        });
-        return { status: 'written', etag };
-    }
-
-    async *list(prefix: string): AsyncIterable<StoredObjectMetadata> {
-        this.events.push(`list:${prefix}`);
-        for (const key of this.listedKeys) {
-            const object = this.objects.get(key);
-            if (object !== undefined) yield metadata(object);
-        }
-    }
-
-    async *listKeys(prefix: string): AsyncIterable<string> {
-        this.events.push(`list-keys:${prefix}`);
-        yield* this.listedKeys;
-    }
-
-    async close(): Promise<void> {}
-
-    forcePointer(
-        key: string,
-        bytes: Uint8Array,
-        metadataValue: { contentType: string; cacheControl: string } = {
-            contentType: 'application/json',
-            cacheControl: POINTER_CACHE,
-        }
-    ): string {
-        this.pointerVersion += 1;
-        const etag = `W/"media-opaque-${this.pointerVersion}"`;
-        this.pointers.set(key, {
-            exists: true,
-            etag,
-            bytes: Uint8Array.from(bytes),
-            contentType: metadataValue.contentType,
-            cacheControl: metadataValue.cacheControl,
-            customMetadata: {},
-        });
-        return etag;
-    }
-
-    currentPointerBytes(key: string): Uint8Array | null {
-        const pointer = this.pointers.get(key);
-        return pointer === undefined ? null : Uint8Array.from(pointer.bytes);
-    }
-
-    private pointerSnapshot(key: string): PointerSnapshot {
-        const pointer = this.pointers.get(key);
-        return pointer === undefined
-            ? { exists: false }
-            : { ...pointer, bytes: Uint8Array.from(pointer.bytes) };
-    }
-
-    private seedRelease(release: PreparedRelease | PreparedAudioRelease): void {
-        if ('encodedAssets' in release) {
-            for (const asset of release.encodedAssets) {
-                for (const variant of asset.variants) {
-                    this.objects.set(variant.path, {
-                        key: variant.path,
-                        etag: `immutable-${variant.sha256}`,
-                        bytes: Uint8Array.from(variant.bytes),
-                        byteLength: variant.bytes.byteLength,
-                        contentType: variant.contentType,
-                        cacheControl: IMMUTABLE_CACHE,
-                        customMetadata: {},
-                    });
-                }
-            }
-            const manifestPath = getReleaseManifestPath(
-                release.storyId,
-                release.releaseId,
-                release.target
-            );
-            this.objects.set(manifestPath, {
-                key: manifestPath,
-                etag: `manifest-${release.manifestSha256}`,
-                bytes: Uint8Array.from(release.manifestBytes),
-                byteLength: release.manifestBytes.byteLength,
-                contentType: 'application/json',
-                cacheControl: IMMUTABLE_CACHE,
-                customMetadata: {},
-            });
-            return;
-        }
-
-        for (const asset of release.assets) {
-            this.objects.set(asset.path, {
-                key: asset.path,
-                etag: `immutable-${asset.sha256}`,
-                bytes: Uint8Array.from(asset.bytes),
-                byteLength: asset.bytes.byteLength,
-                contentType: asset.contentType,
-                cacheControl: IMMUTABLE_CACHE,
-                customMetadata: {},
-            });
-        }
-        const manifestPath = getAudioReleaseManifestPath(
-            release.storyId,
-            release.releaseId,
-            release.target
-        );
-        this.objects.set(manifestPath, {
-            key: manifestPath,
-            etag: `manifest-${release.manifestSha256}`,
-            bytes: Uint8Array.from(release.manifestBytes),
-            byteLength: release.manifestBytes.byteLength,
-            contentType: 'application/json',
-            cacheControl: IMMUTABLE_CACHE,
-            customMetadata: {},
-        });
-    }
-}
-
 function pointerFor(
     release: PreparedRelease,
     publishedAt: string
@@ -734,7 +306,7 @@ function rollbackAudio(
 
 describe('listReleases', () => {
     it('accepts only exact recomputed manifest keys and ignores lookalikes', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         const releaseId = previewReleaseA.releaseId;
         const prefix =
             'vn/previews/release-history/stories/example_story/releases/';
@@ -871,7 +443,7 @@ describe('listReleases', () => {
     });
 
     it('shallow-verifies manifest structure and metadata without reading referenced objects', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         const manifestPath = getReleaseManifestPath(
             STORY_ID,
             previewReleaseA.releaseId,
@@ -905,7 +477,7 @@ describe('listReleases', () => {
     });
 
     it('keeps shallow evidence but rejects deep verification when an object is corrupt', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         const objectPath = previewReleaseA.encodedAssets[0]!.variants[0]!.path;
         store.mutate(objectPath, object => ({
             ...object,
@@ -930,8 +502,12 @@ describe('listReleases', () => {
     });
 
     it('parses the observational current pointer and marks exactly one active release', async () => {
-        const store = new HistoryStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore([
+            previewReleaseA,
+            previewReleaseB,
+        ]);
         store.forcePointer(
+            getCurrentPointerPath(STORY_ID, PREVIEW_TARGET),
             pointerBytes(
                 pointerFor(previewReleaseB, '2026-08-01T19:00:00.000Z')
             )
@@ -961,7 +537,7 @@ describe('listReleases', () => {
     });
 
     it('reads each healthy manifest body once during shallow listing', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         const manifestPath = getReleaseManifestPath(
             STORY_ID,
             previewReleaseA.releaseId,
@@ -982,8 +558,14 @@ describe('listReleases', () => {
     });
 
     it('lists every release as inactive with a warning when the current pointer is corrupt', async () => {
-        const store = new HistoryStore(previewReleaseA, previewReleaseB);
-        store.forcePointer(textEncoder.encode('{ "broken": '));
+        const store = new KeyedDeliveryStore([
+            previewReleaseA,
+            previewReleaseB,
+        ]);
+        store.forcePointer(
+            getCurrentPointerPath(STORY_ID, PREVIEW_TARGET),
+            textEncoder.encode('{ "broken": ')
+        );
         const warnings: PublisherDiagnosticV1[] = [];
 
         const summaries = await listReleases({
@@ -1005,7 +587,10 @@ describe('listReleases', () => {
     });
 
     it('consumes the store iterable once, sorts opaque pages, and reports bounded progress', async () => {
-        const store = new HistoryStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore([
+            previewReleaseA,
+            previewReleaseB,
+        ]);
         store.listedKeys.reverse();
         const progress: Array<{ completed: number; total: number }> = [];
 
@@ -1034,7 +619,7 @@ describe('listReleases', () => {
     });
 
     it('sanitizes list and pointer transport failures', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         const secret = 'Bearer private-token /Users/operator/private';
         store.listKeysFailure = Object.assign(new Error(secret), {
             request: { authorization: secret },
@@ -1069,7 +654,7 @@ describe('audio release history', () => {
                 label === 'production'
                     ? productionAudioReleaseA
                     : previewAudioReleaseA;
-            const shallowStore = new MediaHistoryStore(release);
+            const shallowStore = new KeyedDeliveryStore([release]);
             const [shallow] = await listReleases({
                 store: shallowStore,
                 storyId: release.storyId,
@@ -1090,7 +675,7 @@ describe('audio release history', () => {
                 deepVerified: false,
             });
 
-            const deepStore = new MediaHistoryStore(release);
+            const deepStore = new KeyedDeliveryStore([release]);
             const [deep] = await listReleases({
                 store: deepStore,
                 storyId: release.storyId,
@@ -1108,10 +693,10 @@ describe('audio release history', () => {
     );
 
     it('marks the active audio release and warns when the audio pointer is invalid', async () => {
-        const store = new MediaHistoryStore(
+        const store = new KeyedDeliveryStore([
             previewAudioReleaseA,
-            previewAudioReleaseB
-        );
+            previewAudioReleaseB,
+        ]);
         const pointerKey = getAudioCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
         store.forcePointer(
             pointerKey,
@@ -1157,10 +742,10 @@ describe('audio release history', () => {
     });
 
     it('keeps visual and audio history namespaces independent', async () => {
-        const store = new MediaHistoryStore(
+        const store = new KeyedDeliveryStore([
             previewReleaseA,
-            previewAudioReleaseA
-        );
+            previewAudioReleaseA,
+        ]);
         const visual = await listReleases({
             store,
             storyId: STORY_ID,
@@ -1198,10 +783,10 @@ describe('audio release history', () => {
     });
 
     it('rolls back and reactivates only the audio pointer', async () => {
-        const store = new MediaHistoryStore(
+        const store = new KeyedDeliveryStore([
             previewAudioReleaseA,
-            previewAudioReleaseB
-        );
+            previewAudioReleaseB,
+        ]);
         const audioPointerKey = getAudioCurrentPointerPath(
             STORY_ID,
             PREVIEW_TARGET
@@ -1250,7 +835,7 @@ describe('audio release history', () => {
 
 describe('rollbackRelease', () => {
     it('deep-verifies first, then fresh-reads and mutates only exact current.json', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
 
         const report = await rollback(store, previewReleaseA);
 
@@ -1289,7 +874,7 @@ describe('rollbackRelease', () => {
 
     it('requires the exact production confirmation before pointer mutation', async () => {
         for (const confirmProduction of [undefined, `${STORY_ID}_wrong`]) {
-            const store = new HistoryStore(productionReleaseA);
+            const store = new KeyedDeliveryStore([productionReleaseA]);
             await expect(
                 rollback(store, productionReleaseA, { confirmProduction })
             ).rejects.toMatchObject({
@@ -1299,7 +884,7 @@ describe('rollbackRelease', () => {
             expect(store.pointerWrites).toEqual([]);
         }
 
-        const confirmed = new HistoryStore(productionReleaseA);
+        const confirmed = new KeyedDeliveryStore([productionReleaseA]);
         await expect(
             rollback(confirmed, productionReleaseA, {
                 confirmProduction: STORY_ID,
@@ -1308,7 +893,10 @@ describe('rollbackRelease', () => {
     });
 
     it('creates distinct bytes and strictly increasing timestamps for A to B to A', async () => {
-        const store = new HistoryStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore([
+            previewReleaseA,
+            previewReleaseB,
+        ]);
         const now = () => Date.parse('2026-08-01T20:00:00.000Z');
 
         await rollback(store, previewReleaseA, { now });
@@ -1334,9 +922,13 @@ describe('rollbackRelease', () => {
     });
 
     it('override deep-reverifies, fresh-rereads, and attempts one refreshed CAS', async () => {
-        const store = new HistoryStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore([
+            previewReleaseA,
+            previewReleaseB,
+        ]);
         store.beforeCompareAndSwap = (current, _request, attempt) => {
             current.forcePointer(
+                getCurrentPointerPath(STORY_ID, PREVIEW_TARGET),
                 pointerBytes(
                     pointerFor(
                         previewReleaseB,
@@ -1386,7 +978,7 @@ describe('rollbackRelease', () => {
     it.each(['missing', 'invalid'] as const)(
         '%s target maps to exit class 5 without reading or mutating the pointer',
         async condition => {
-            const store = new HistoryStore(previewReleaseA);
+            const store = new KeyedDeliveryStore([previewReleaseA]);
             const manifestPath = getReleaseManifestPath(
                 STORY_ID,
                 previewReleaseA.releaseId,
@@ -1419,7 +1011,7 @@ describe('rollbackRelease', () => {
     );
 
     it('rejects a malformed release ID as exit class 5 before store access', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
 
         let thrown: unknown;
         try {
@@ -1441,7 +1033,7 @@ describe('rollbackRelease', () => {
     });
 
     it('maps stat-time manifest integrity failure to exit class 5 without pointer access', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         store.statFailure = new PublisherError(
             'integrity',
             'Invalid R2 object metadata'
@@ -1464,7 +1056,7 @@ describe('rollbackRelease', () => {
     });
 
     it('keeps stat-time transport failure sanitized as storage exit class 3', async () => {
-        const store = new HistoryStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA]);
         const secret = 'Bearer private-token /Users/operator/private';
         store.statFailure = Object.assign(new Error(secret), {
             request: { authorization: secret },
@@ -1488,8 +1080,9 @@ describe('rollbackRelease', () => {
     });
 
     it('reports no-op and conflict distinctly from successful rollback', async () => {
-        const active = new HistoryStore(previewReleaseA);
+        const active = new KeyedDeliveryStore([previewReleaseA]);
         active.forcePointer(
+            getCurrentPointerPath(STORY_ID, PREVIEW_TARGET),
             pointerBytes(
                 pointerFor(previewReleaseA, '2026-08-01T19:00:00.000Z')
             )
@@ -1507,9 +1100,13 @@ describe('rollbackRelease', () => {
         });
         expect(publisherReportExitCode(noOp)).toBe(0);
 
-        const conflict = new HistoryStore(previewReleaseA, previewReleaseB);
+        const conflict = new KeyedDeliveryStore([
+            previewReleaseA,
+            previewReleaseB,
+        ]);
         conflict.beforeCompareAndSwap = current => {
             current.forcePointer(
+                getCurrentPointerPath(STORY_ID, PREVIEW_TARGET),
                 pointerBytes(
                     pointerFor(previewReleaseB, '2026-08-01T20:00:00.001Z')
                 )

@@ -1273,7 +1273,15 @@ async function runChecksForManifest(
             )
         );
     } else {
-        for (const key of input.archiveProbeKeys ?? []) {
+        const probeKeys = input.archiveProbeKeys ?? [];
+        if (probeKeys.length === 0) {
+            results.push({
+                name: 'archive key absent from delivery bucket',
+                ok: false,
+                detail: 'no archive probe key was configured; pass --archive-probe-key so private audio sources can be proven absent from the delivery bucket',
+            });
+        }
+        for (const key of probeKeys) {
             const sourceCheck = await checkSourceKeyAbsentFromDelivery(
                 base,
                 key,
@@ -1398,6 +1406,9 @@ export function parseVerifyArgs(argv: string[]): VerifyCliArgs {
         if (!isSafeRelativePath(key)) {
             throw new Error(`Invalid archive probe key: ${key}`);
         }
+    }
+    if (mediaValue === 'visual' && archiveProbeKeys.length > 0) {
+        throw new Error('--archive-probe-key requires --media audio');
     }
     const storyId = typeof values.story === 'string' ? values.story : STORY_ID;
     if (!isStoryId(storyId)) {

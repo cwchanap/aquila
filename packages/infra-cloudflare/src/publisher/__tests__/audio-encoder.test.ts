@@ -31,7 +31,12 @@ function sourceProbe(duration = '1.250') {
     });
 }
 
-function successfulRunner(options: { readonly duration?: string } = {}) {
+function successfulRunner(
+    options: {
+        readonly duration?: string;
+        readonly sourceDuration?: string;
+    } = {}
+) {
     const calls: Array<{
         executable: 'ffmpeg' | 'ffprobe';
         args: readonly string[];
@@ -54,7 +59,7 @@ function successfulRunner(options: { readonly duration?: string } = {}) {
             exitCode: 0,
             stdout: new TextEncoder().encode(
                 probeIndex === 1
-                    ? sourceProbe()
+                    ? sourceProbe(options.sourceDuration ?? '1.250')
                     : runtimeProbe(options.duration ?? '1.250')
             ),
             stderr: '',
@@ -80,20 +85,19 @@ describe('normalizeAudioAsset', () => {
 
         const ffmpeg = fixture.calls.find(call => call.executable === 'ffmpeg');
         expect(ffmpeg).toBeDefined();
-        expect(ffmpeg?.args).toHaveLength(22);
-        expect(ffmpeg?.args.slice(0, 4)).toEqual([
+        expect(ffmpeg?.args).toHaveLength(24);
+        expect(ffmpeg?.args.slice(0, 8)).toEqual([
             '-nostdin',
             '-hide_banner',
             '-loglevel',
             'error',
-        ]);
-        expect(ffmpeg?.args.slice(4, 8)).toEqual([
+            '-protocol_whitelist',
+            'file',
             '-i',
             expect.stringMatching(/source\.wav$/),
-            '-map',
-            '0:a:0',
         ]);
-        expect(ffmpeg?.args.slice(8)).toEqual([
+        expect(ffmpeg?.args.slice(8, 10)).toEqual(['-map', '0:a:0']);
+        expect(ffmpeg?.args.slice(10)).toEqual([
             '-vn',
             '-map_metadata',
             '-1',
@@ -135,11 +139,76 @@ describe('normalizeAudioAsset', () => {
         expect(fixture.calls[0]?.args).toContain('-select_streams');
         expect(fixture.calls[0]?.args).toContain('a:0');
         expect(fixture.calls[0]?.args).not.toContain('-nostdin');
+        expect(fixture.calls[0]?.args.slice(-3)).toEqual([
+            '-protocol_whitelist',
+            'file',
+            expect.stringMatching(/source\.wav$/),
+        ]);
         expect(fixture.calls[2]?.args).toContain(
             'stream=codec_type,codec_name,sample_rate,bit_rate,duration'
         );
         expect(fixture.calls[2]?.args).not.toContain('-nostdin');
     });
+
+    it.each(['.wav', '.mp3', '.ogg', '.m4a', '.flac', '.m3u8'] as const)(
+        'normalizes a local %s source with file-only protocol access',
+        async extension => {
+            const fixture = successfulRunner();
+
+            const result = await normalizeAudioAsset(
+                {
+                    ...source,
+                    sourceFilename: `candidate-001${extension}`,
+                },
+                fixture.run
+            );
+
+            expect(result.contentType).toBe('audio/mpeg');
+            const sourceProbeCall = fixture.calls[0];
+            expect(sourceProbeCall?.args.slice(-3)).toEqual([
+                '-protocol_whitelist',
+                'file',
+                expect.stringMatching(
+                    new RegExp(`source\\.${extension.slice(1)}$`)
+                ),
+            ]);
+            const ffmpeg = fixture.calls.find(
+                call => call.executable === 'ffmpeg'
+            );
+            const inputIndex = ffmpeg?.args.indexOf('-i');
+            expect(inputIndex).toBe(6);
+            expect(ffmpeg?.args[inputIndex! - 2]).toBe('-protocol_whitelist');
+            expect(ffmpeg?.args[inputIndex! - 1]).toBe('file');
+        }
+    );
+
+    it.each([
+        ['sfx', 30_001],
+        ['bgm', 600_001],
+    ] as const)(
+        'rejects a %s source longer than its ceiling before invoking ffmpeg',
+        async (type, durationMs) => {
+            const fixture = successfulRunner({
+                sourceDuration: `${durationMs / 1_000}`,
+            });
+            const input = {
+                ...source,
+                type,
+                loop: type === 'bgm',
+                plannedDurationMs: durationMs,
+            } as const;
+
+            await expect(
+                normalizeAudioAsset(input, fixture.run)
+            ).rejects.toMatchObject({
+                name: 'PublisherError',
+                code: 'source',
+            });
+            expect(
+                fixture.calls.some(call => call.executable === 'ffmpeg')
+            ).toBe(false);
+        }
+    );
 
     it('accepts a readable source whose duration is reported at container level', async () => {
         const fixture = successfulRunner();

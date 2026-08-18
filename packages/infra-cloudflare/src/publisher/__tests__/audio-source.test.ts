@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -26,7 +27,9 @@ function sha256(bytes: Uint8Array): string {
     return createHash('sha256').update(bytes).digest('hex');
 }
 
-async function makeFixture(): Promise<{
+async function makeFixture(
+    options: { readonly inheritedKeyCue?: boolean } = {}
+): Promise<{
     storyFolder: string;
     generationRoot: string;
     omissionsPath: string;
@@ -35,7 +38,9 @@ async function makeFixture(): Promise<{
     receiptPath: string;
 }> {
     const rawDir = await mkdtemp(join(storiesRawRoot, 'audio-source-'));
-    const generationRoot = await mkdtemp(join('/tmp', 'aquila-audio-source-'));
+    const generationRoot = await mkdtemp(
+        join(tmpdir(), 'aquila-audio-source-')
+    );
     roots.push(rawDir, generationRoot);
     const storyFolder = basename(rawDir);
     const storyId = 'fixture_story';
@@ -60,6 +65,16 @@ async function makeFixture(): Promise<{
                 prompt: 'A plan row not used by the story',
                 durationMs: 900,
             },
+            ...(options.inheritedKeyCue
+                ? [
+                      {
+                          key: 'constructor',
+                          type: 'sfx' as const,
+                          prompt: 'A used cue whose name collides with an inherited property',
+                          durationMs: 900,
+                      },
+                  ]
+                : []),
         ],
     };
     await mkdir(join(rawDir, 'docs'), { recursive: true });
@@ -85,15 +100,31 @@ async function makeFixture(): Promise<{
     );
     await writeFile(
         join(rawDir, 'act1.md'),
-        [
-            '# 第一幕：Fixture',
-            '',
-            '```sfx',
-            'door-open',
-            '```',
-            '',
-            '**旁白**：Door.',
-        ].join('\n')
+        options.inheritedKeyCue
+            ? [
+                  '# 第一幕：Fixture',
+                  '',
+                  '```sfx',
+                  'door-open',
+                  '```',
+                  '',
+                  '**旁白**：Door.',
+                  '',
+                  '```sfx',
+                  'constructor',
+                  '```',
+                  '',
+                  '**旁白**：More.',
+              ].join('\n')
+            : [
+                  '# 第一幕：Fixture',
+                  '',
+                  '```sfx',
+                  'door-open',
+                  '```',
+                  '',
+                  '**旁白**：Door.',
+              ].join('\n')
     );
 
     const storyGenerationRoot = join(generationRoot, storyFolder);
@@ -331,6 +362,17 @@ describe('prepareAudioSources', () => {
         };
         delete selection.selections['door-open'];
         await writeFile(fixture.selectionPath, JSON.stringify(selection));
+
+        await expect(prepareAudioSources(input(fixture))).rejects.toMatchObject(
+            {
+                name: 'PublisherError',
+                code: 'coverage',
+            }
+        );
+    });
+
+    it('treats a used cue named like an inherited property as unselected', async () => {
+        const fixture = await makeFixture({ inheritedKeyCue: true });
 
         await expect(prepareAudioSources(input(fixture))).rejects.toMatchObject(
             {

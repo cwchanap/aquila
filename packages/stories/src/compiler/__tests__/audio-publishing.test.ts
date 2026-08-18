@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { STORIES_RAW_ROOT } from '../config';
 import { loadAudioPublishingContext } from '../../audio-publishing';
 
 const fixtureRoots: string[] = [];
@@ -12,9 +12,10 @@ afterEach(() => {
     }
 });
 
-function makeFixture(): string {
-    const rawDir = mkdtempSync(join(STORIES_RAW_ROOT, 'audio-publishing-'));
-    fixtureRoots.push(rawDir);
+function makeFixture(): { rawRoot: string; storyFolder: string } {
+    const rawRoot = mkdtempSync(join(tmpdir(), 'aquila-audio-publishing-'));
+    fixtureRoots.push(rawRoot);
+    const rawDir = join(rawRoot, 'fixture_story');
     mkdirSync(join(rawDir, 'docs'), { recursive: true });
     writeFileSync(
         join(rawDir, 'compiler.config.ts'),
@@ -58,15 +59,14 @@ function makeFixture(): string {
             '**旁白**：Door.',
         ].join('\n')
     );
-    return rawDir;
+    return { rawRoot, storyFolder: 'fixture_story' };
 }
 
 describe('loadAudioPublishingContext', () => {
     it('returns the runtime story id and compiler-derived audio usage', async () => {
-        const rawDir = makeFixture();
-        const storyFolder = basename(rawDir);
+        const { rawRoot, storyFolder } = makeFixture();
 
-        const context = await loadAudioPublishingContext(storyFolder);
+        const context = await loadAudioPublishingContext(storyFolder, rawRoot);
 
         expect(context.storyFolder).toBe(storyFolder);
         expect(context.storyId).toBe('fixture_story');

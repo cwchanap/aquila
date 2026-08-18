@@ -206,6 +206,24 @@ describe('immutable candidate operations', () => {
         });
     });
 
+    it('does not reuse a candidate without customMetadata when the stored object has metadata', async () => {
+        const store = new MemoryStore();
+        const input = candidate();
+        store.objects.set(input.key, {
+            ...stored(input),
+            customMetadata: { provenance: 'stray' },
+        });
+        stores.push(store);
+
+        await expect(
+            inspectImmutableCandidate(store, input)
+        ).rejects.toMatchObject({
+            name: 'PublisherError',
+            code: 'integrity',
+        });
+        expect(store.reads).toEqual([]);
+    });
+
     it('creates or reuses after a create race and verifies exact read-back', async () => {
         const store = new MemoryStore();
         store.raceCreate = true;

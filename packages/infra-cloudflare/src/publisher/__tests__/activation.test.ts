@@ -25,13 +25,8 @@ import { PublisherError } from '../errors';
 import { sha256Bytes } from '../hash';
 import { buildPreparedRelease } from '../runtime-release';
 import { buildPreparedAudioRelease } from '../audio-runtime-release';
-import type {
-    DeliveryStore,
-    PointerSnapshot,
-    PointerWriteRequest,
-    StoredObject,
-    StoredObjectMetadata,
-} from '../stores/delivery-store';
+import type { DeliveryStore, PointerSnapshot } from '../stores/delivery-store';
+import { KeyedDeliveryStore } from './keyed-delivery-store';
 import type { AudioProcessRunner } from '../audio-encoder';
 import type {
     EncodedAsset,
@@ -43,8 +38,6 @@ import type {
 const STORY_ID = 'example_story';
 const PREVIEW_TARGET = { kind: 'preview', previewId: 'activation' } as const;
 const PRODUCTION_TARGET = { kind: 'production' } as const;
-const IMMUTABLE_CACHE =
-    RUNTIME_ASSET_CACHE_POLICY.immutableRelease.responseCacheControl;
 const POINTER_CACHE =
     RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl;
 const textEncoder = new TextEncoder();
@@ -57,6 +50,11 @@ let previewAudioReleaseA: PreparedAudioRelease;
 let previewAudioReleaseB: PreparedAudioRelease;
 
 const AUDIO_POINTER_KEY = getAudioCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
+const PREVIEW_POINTER_KEY = getCurrentPointerPath(STORY_ID, PREVIEW_TARGET);
+const PRODUCTION_POINTER_KEY = getCurrentPointerPath(
+    STORY_ID,
+    PRODUCTION_TARGET
+);
 
 function preparedAudioRelease(
     target: PublicationTarget,
@@ -213,362 +211,6 @@ beforeAll(async () => {
     previewAudioReleaseA = preparedAudioRelease(PREVIEW_TARGET, [11, 22, 33]);
     previewAudioReleaseB = preparedAudioRelease(PREVIEW_TARGET, [44, 55, 66]);
 });
-
-function cloneObject(object: StoredObject): StoredObject {
-    return { ...object, bytes: Uint8Array.from(object.bytes) };
-}
-
-class ActivationStore implements DeliveryStore {
-    readonly events: string[] = [];
-    readonly pointerWrites: PointerWriteRequest[] = [];
-    beforeCompareAndSwap?: (
-        store: ActivationStore,
-        request: PointerWriteRequest,
-        attempt: number
-    ) => void;
-
-    private readonly objects = new Map<string, StoredObject>();
-    private pointer: Extract<PointerSnapshot, { exists: true }> | null = null;
-    private pointerVersion = 0;
-    private compareAndSwapAttempts = 0;
-
-    constructor(...releases: PreparedRelease[]) {
-        for (const release of releases) this.seedRelease(release);
-    }
-
-    get authoringCatalog(): never {
-        throw new Error('activation touched authoring input');
-    }
-
-    get releasePlan(): never {
-        throw new Error('activation touched plan input');
-    }
-
-    get sourceRoot(): never {
-        throw new Error('activation touched source input');
-    }
-
-    get encoder(): never {
-        throw new Error('activation touched encoder input');
-    }
-
-    stat(): Promise<StoredObjectMetadata | null> {
-        throw new Error('activation must not stat unrelated storage');
-    }
-
-    async read(key: string): Promise<StoredObject> {
-        this.events.push(`read:${key}`);
-        const object = this.objects.get(key);
-        if (object === undefined) throw new Error('missing test object');
-        return cloneObject(object);
-    }
-
-    createImmutable(): Promise<{
-        status: 'created' | 'already-exists';
-    }> {
-        throw new Error('activation must not create immutable objects');
-    }
-
-    async readPointer(key: string): Promise<PointerSnapshot> {
-        this.events.push(`read-pointer:${key}`);
-        if (this.pointer === null) return { exists: false };
-        return { ...this.pointer, bytes: Uint8Array.from(this.pointer.bytes) };
-    }
-
-    async inspectPointer(key: string): Promise<PointerSnapshot> {
-        return this.readPointer(key);
-    }
-
-    async compareAndSwapPointer(request: PointerWriteRequest): Promise<{
-        status: 'written' | 'precondition-failed';
-        etag?: string;
-    }> {
-        this.compareAndSwapAttempts += 1;
-        this.events.push(`cas:${request.key}`);
-        this.pointerWrites.push({
-            ...request,
-            bytes: Uint8Array.from(request.bytes),
-        });
-        this.beforeCompareAndSwap?.(this, request, this.compareAndSwapAttempts);
-        const expectationMatches =
-            this.pointer === null
-                ? request.expected.exists === false
-                : request.expected.exists === true &&
-                  request.expected.etag === this.pointer.etag;
-        if (!expectationMatches) return { status: 'precondition-failed' };
-        const etag = this.forcePointer(request.bytes, {
-            contentType: request.contentType,
-            cacheControl: request.cacheControl,
-        });
-        return { status: 'written', etag };
-    }
-
-    listKeys(): AsyncIterable<string> {
-        throw new Error('activation must not list storage');
-    }
-
-    list(): AsyncIterable<StoredObjectMetadata> {
-        throw new Error('activation must not list storage');
-    }
-
-    async close(): Promise<void> {}
-
-    forcePointer(
-        bytes: Uint8Array,
-        metadata: { contentType: string; cacheControl: string } = {
-            contentType: 'application/json',
-            cacheControl: POINTER_CACHE,
-        }
-    ): string {
-        this.pointerVersion += 1;
-        const etag = `W/"opaque-${this.pointerVersion}"`;
-        this.pointer = {
-            exists: true,
-            etag,
-            bytes: Uint8Array.from(bytes),
-            contentType: metadata.contentType,
-            cacheControl: metadata.cacheControl,
-            customMetadata: {},
-        };
-        return etag;
-    }
-
-    currentPointerBytes(): Uint8Array | null {
-        return this.pointer === null
-            ? null
-            : Uint8Array.from(this.pointer.bytes);
-    }
-
-    corruptObject(key: string): void {
-        const object = this.objects.get(key);
-        if (object === undefined) throw new Error('missing test object');
-        this.objects.set(key, {
-            ...object,
-            bytes: textEncoder.encode('not-an-image'),
-            byteLength: textEncoder.encode('not-an-image').byteLength,
-        });
-    }
-
-    private seedRelease(release: PreparedRelease): void {
-        for (const asset of release.encodedAssets) {
-            for (const variant of asset.variants) {
-                this.objects.set(variant.path, {
-                    key: variant.path,
-                    etag: `immutable-${variant.sha256}`,
-                    bytes: Uint8Array.from(variant.bytes),
-                    byteLength: variant.bytes.byteLength,
-                    contentType: variant.contentType,
-                    cacheControl: IMMUTABLE_CACHE,
-                    customMetadata: {},
-                });
-            }
-        }
-        const manifestPath = getReleaseManifestPath(
-            release.storyId,
-            release.releaseId,
-            release.target
-        );
-        this.objects.set(manifestPath, {
-            key: manifestPath,
-            etag: `manifest-${release.manifestSha256}`,
-            bytes: Uint8Array.from(release.manifestBytes),
-            byteLength: release.manifestBytes.byteLength,
-            contentType: 'application/json',
-            cacheControl: IMMUTABLE_CACHE,
-            customMetadata: {},
-        });
-    }
-}
-
-class MediaActivationStore implements DeliveryStore {
-    readonly events: string[] = [];
-    readonly pointerWrites: PointerWriteRequest[] = [];
-    beforeCompareAndSwap?: (
-        store: MediaActivationStore,
-        request: PointerWriteRequest,
-        attempt: number
-    ) => void;
-
-    private readonly objects = new Map<string, StoredObject>();
-    private readonly pointers = new Map<
-        string,
-        Extract<PointerSnapshot, { exists: true }>
-    >();
-    private pointerVersion = 0;
-    private compareAndSwapAttempts = 0;
-
-    constructor(...releases: Array<PreparedRelease | PreparedAudioRelease>) {
-        for (const release of releases) this.seedRelease(release);
-    }
-
-    get authoringCatalog(): never {
-        throw new Error('activation touched authoring input');
-    }
-
-    get releasePlan(): never {
-        throw new Error('activation touched plan input');
-    }
-
-    get sourceRoot(): never {
-        throw new Error('activation touched source input');
-    }
-
-    get encoder(): never {
-        throw new Error('activation touched encoder input');
-    }
-
-    async stat(): Promise<StoredObjectMetadata | null> {
-        throw new Error('activation must not stat unrelated storage');
-    }
-
-    async read(key: string): Promise<StoredObject> {
-        this.events.push(`read:${key}`);
-        const object = this.objects.get(key);
-        if (object === undefined)
-            throw new Error(`missing test object: ${key}`);
-        return cloneObject(object);
-    }
-
-    createImmutable(): Promise<{ status: 'created' | 'already-exists' }> {
-        throw new Error('activation must not create immutable objects');
-    }
-
-    async readPointer(key: string): Promise<PointerSnapshot> {
-        this.events.push(`read-pointer:${key}`);
-        return this.pointerSnapshot(key);
-    }
-
-    async inspectPointer(key: string): Promise<PointerSnapshot> {
-        return this.readPointer(key);
-    }
-
-    async compareAndSwapPointer(request: PointerWriteRequest): Promise<{
-        status: 'written' | 'precondition-failed';
-        etag?: string;
-    }> {
-        this.compareAndSwapAttempts += 1;
-        this.events.push(`cas:${request.key}`);
-        this.pointerWrites.push({
-            ...request,
-            bytes: Uint8Array.from(request.bytes),
-        });
-        this.beforeCompareAndSwap?.(this, request, this.compareAndSwapAttempts);
-        const current = this.pointers.get(request.key);
-        const expectationMatches =
-            current === undefined
-                ? request.expected.exists === false
-                : request.expected.exists === true &&
-                  request.expected.etag === current.etag;
-        if (!expectationMatches) return { status: 'precondition-failed' };
-        const etag = this.forcePointer(request.key, request.bytes, {
-            contentType: request.contentType,
-            cacheControl: request.cacheControl,
-        });
-        return { status: 'written', etag };
-    }
-
-    listKeys(): AsyncIterable<string> {
-        throw new Error('activation must not list storage');
-    }
-
-    list(): AsyncIterable<StoredObjectMetadata> {
-        throw new Error('activation must not list storage');
-    }
-
-    async close(): Promise<void> {}
-
-    forcePointer(
-        key: string,
-        bytes: Uint8Array,
-        metadataValue: { contentType: string; cacheControl: string } = {
-            contentType: 'application/json',
-            cacheControl: POINTER_CACHE,
-        }
-    ): string {
-        this.pointerVersion += 1;
-        const etag = `W/"media-opaque-${this.pointerVersion}"`;
-        this.pointers.set(key, {
-            exists: true,
-            etag,
-            bytes: Uint8Array.from(bytes),
-            contentType: metadataValue.contentType,
-            cacheControl: metadataValue.cacheControl,
-            customMetadata: {},
-        });
-        return etag;
-    }
-
-    currentPointerBytes(key: string): Uint8Array | null {
-        const pointer = this.pointers.get(key);
-        return pointer === undefined ? null : Uint8Array.from(pointer.bytes);
-    }
-
-    private pointerSnapshot(key: string): PointerSnapshot {
-        const pointer = this.pointers.get(key);
-        return pointer === undefined
-            ? { exists: false }
-            : { ...pointer, bytes: Uint8Array.from(pointer.bytes) };
-    }
-
-    private seedRelease(release: PreparedRelease | PreparedAudioRelease): void {
-        if ('encodedAssets' in release) {
-            for (const asset of release.encodedAssets) {
-                for (const variant of asset.variants) {
-                    this.objects.set(variant.path, {
-                        key: variant.path,
-                        etag: `immutable-${variant.sha256}`,
-                        bytes: Uint8Array.from(variant.bytes),
-                        byteLength: variant.bytes.byteLength,
-                        contentType: variant.contentType,
-                        cacheControl: IMMUTABLE_CACHE,
-                        customMetadata: {},
-                    });
-                }
-            }
-            const manifestPath = getReleaseManifestPath(
-                release.storyId,
-                release.releaseId,
-                release.target
-            );
-            this.objects.set(manifestPath, {
-                key: manifestPath,
-                etag: `manifest-${release.manifestSha256}`,
-                bytes: Uint8Array.from(release.manifestBytes),
-                byteLength: release.manifestBytes.byteLength,
-                contentType: 'application/json',
-                cacheControl: IMMUTABLE_CACHE,
-                customMetadata: {},
-            });
-            return;
-        }
-
-        for (const asset of release.assets) {
-            this.objects.set(asset.path, {
-                key: asset.path,
-                etag: `immutable-${asset.sha256}`,
-                bytes: Uint8Array.from(asset.bytes),
-                byteLength: asset.bytes.byteLength,
-                contentType: asset.contentType,
-                cacheControl: IMMUTABLE_CACHE,
-                customMetadata: {},
-            });
-        }
-        const manifestPath = getAudioReleaseManifestPath(
-            release.storyId,
-            release.releaseId,
-            release.target
-        );
-        this.objects.set(manifestPath, {
-            key: manifestPath,
-            etag: `manifest-${release.manifestSha256}`,
-            bytes: Uint8Array.from(release.manifestBytes),
-            byteLength: release.manifestBytes.byteLength,
-            contentType: 'application/json',
-            cacheControl: IMMUTABLE_CACHE,
-            customMetadata: {},
-        });
-    }
-}
 
 function pointerFor(
     release: PreparedRelease,
@@ -744,7 +386,9 @@ describe('nextPublishedAt', () => {
 
 describe('activateStoredRelease', () => {
     it('deep-verifies the stored target, then fresh-reads and writes only current.json', async () => {
-        const store = new ActivationStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA], {
+            forbidStorageScans: true,
+        });
 
         const result = await activate(store, previewReleaseA);
 
@@ -795,9 +439,12 @@ describe('activateStoredRelease', () => {
     });
 
     it('rejects a corrupt stored object before reading or mutating the pointer', async () => {
-        const store = new ActivationStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA], {
+            forbidStorageScans: true,
+        });
         store.corruptObject(
-            previewReleaseA.encodedAssets[0]!.variants[0]!.path
+            previewReleaseA.encodedAssets[0]!.variants[0]!.path,
+            textEncoder.encode('not-an-image')
         );
 
         await expect(activate(store, previewReleaseA)).rejects.toMatchObject({
@@ -811,12 +458,14 @@ describe('activateStoredRelease', () => {
     });
 
     it('reports an already active release as a no-op without production confirmation', async () => {
-        const store = new ActivationStore(productionReleaseA);
+        const store = new KeyedDeliveryStore([productionReleaseA], {
+            forbidStorageScans: true,
+        });
         const active = pointerFor(
             productionReleaseA,
             '2026-08-01T19:59:00.000Z'
         );
-        store.forcePointer(pointerBytes(active));
+        store.forcePointer(PRODUCTION_POINTER_KEY, pointerBytes(active));
 
         const result = await activate(store, productionReleaseA);
 
@@ -826,14 +475,18 @@ describe('activateStoredRelease', () => {
             overrideAttempted: false,
         });
         expect(store.pointerWrites).toEqual([]);
-        expect(decodePointer(store.currentPointerBytes()!).publishedAt).toBe(
-            '2026-08-01T19:59:00.000Z'
-        );
+        expect(
+            decodePointer(store.currentPointerBytes(PRODUCTION_POINTER_KEY)!)
+                .publishedAt
+        ).toBe('2026-08-01T19:59:00.000Z');
     });
 
     it('rejects a same-release pointer whose manifest checksum does not match the verified target', async () => {
-        const store = new ActivationStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA], {
+            forbidStorageScans: true,
+        });
         store.forcePointer(
+            PREVIEW_POINTER_KEY,
             pointerBytes({
                 ...pointerFor(previewReleaseA, '2026-08-01T19:59:00.000Z'),
                 manifestSha256: '0'.repeat(
@@ -850,8 +503,11 @@ describe('activateStoredRelease', () => {
     });
 
     it('reactivates the same release with a strictly newer timestamp', async () => {
-        const store = new ActivationStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA], {
+            forbidStorageScans: true,
+        });
         store.forcePointer(
+            PREVIEW_POINTER_KEY,
             pointerBytes(
                 pointerFor(previewReleaseA, '2026-08-01T20:00:00.100Z')
             )
@@ -869,10 +525,14 @@ describe('activateStoredRelease', () => {
     });
 
     it('returns conflict when the fresh opaque ETag loses its conditional write', async () => {
-        const store = new ActivationStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewReleaseB],
+            { forbidStorageScans: true }
+        );
         store.beforeCompareAndSwap = (current, _request, attempt) => {
             if (attempt === 1) {
                 current.forcePointer(
+                    PREVIEW_POINTER_KEY,
                     pointerBytes(
                         pointerFor(previewReleaseB, '2026-08-01T20:00:00.010Z')
                     )
@@ -888,16 +548,21 @@ describe('activateStoredRelease', () => {
         });
         expect(store.pointerWrites).toHaveLength(1);
         expect(store.pointerWrites[0]!.expected).toEqual({ exists: false });
-        expect(decodePointer(store.currentPointerBytes()!).releaseId).toBe(
-            previewReleaseB.releaseId
-        );
+        expect(
+            decodePointer(store.currentPointerBytes(PREVIEW_POINTER_KEY)!)
+                .releaseId
+        ).toBe(previewReleaseB.releaseId);
     });
 
     it('deep-reverifies, then fresh-rereads and makes one refreshed CAS on override', async () => {
-        const store = new ActivationStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewReleaseB],
+            { forbidStorageScans: true }
+        );
         store.beforeCompareAndSwap = (current, _request, attempt) => {
             if (attempt === 1) {
                 current.forcePointer(
+                    PREVIEW_POINTER_KEY,
                     pointerBytes(
                         pointerFor(previewReleaseB, '2026-08-01T20:00:00.010Z')
                     )
@@ -932,7 +597,7 @@ describe('activateStoredRelease', () => {
         expect(store.pointerWrites).toHaveLength(2);
         expect(store.pointerWrites[1]!.expected).toEqual({
             exists: true,
-            etag: 'W/"opaque-1"',
+            etag: 'W/"media-opaque-1"',
         });
         const secondRead = store.events.lastIndexOf(
             `read-pointer:${pointerKey}`
@@ -956,10 +621,14 @@ describe('activateStoredRelease', () => {
     });
 
     it('bounds an override to one refreshed CAS', async () => {
-        const store = new ActivationStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewReleaseB],
+            { forbidStorageScans: true }
+        );
         store.beforeCompareAndSwap = (current, _request, attempt) => {
             const release = attempt === 1 ? previewReleaseB : previewReleaseA;
             current.forcePointer(
+                PREVIEW_POINTER_KEY,
                 pointerBytes(
                     pointerFor(release, `2026-08-01T20:00:00.0${attempt}0Z`)
                 )
@@ -978,7 +647,10 @@ describe('activateStoredRelease', () => {
     });
 
     it('creates distinct canonical bytes and increasing timestamps for A to B to A', async () => {
-        const store = new ActivationStore(previewReleaseA, previewReleaseB);
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewReleaseB],
+            { forbidStorageScans: true }
+        );
         const nowMs = Date.parse('2026-08-01T20:00:00.000Z');
 
         await activate(store, previewReleaseA, { nowMs });
@@ -1004,9 +676,14 @@ describe('activateStoredRelease', () => {
     });
 
     it('rejects malformed current pointers with a safe activation-target error', async () => {
-        const store = new ActivationStore(previewReleaseA);
+        const store = new KeyedDeliveryStore([previewReleaseA], {
+            forbidStorageScans: true,
+        });
         const secret = 'authoring-secret-do-not-report';
-        store.forcePointer(textEncoder.encode(`{"publishedAt":"${secret}"`));
+        store.forcePointer(
+            PREVIEW_POINTER_KEY,
+            textEncoder.encode(`{"publishedAt":"${secret}"`)
+        );
 
         let thrown: unknown;
         try {
@@ -1031,8 +708,13 @@ describe('activateStoredRelease', () => {
     });
 
     it('requires an exact story confirmation only for production mutation', async () => {
-        const missingConfirmation = new ActivationStore(productionReleaseA);
-        const wrongConfirmation = new ActivationStore(productionReleaseA);
+        const missingConfirmation = new KeyedDeliveryStore(
+            [productionReleaseA],
+            { forbidStorageScans: true }
+        );
+        const wrongConfirmation = new KeyedDeliveryStore([productionReleaseA], {
+            forbidStorageScans: true,
+        });
 
         await expect(
             activate(missingConfirmation, productionReleaseA)
@@ -1051,7 +733,9 @@ describe('activateStoredRelease', () => {
         expect(missingConfirmation.pointerWrites).toEqual([]);
         expect(wrongConfirmation.pointerWrites).toEqual([]);
 
-        const confirmed = new ActivationStore(productionReleaseA);
+        const confirmed = new KeyedDeliveryStore([productionReleaseA], {
+            forbidStorageScans: true,
+        });
         await expect(
             activate(confirmed, productionReleaseA, {
                 confirmProduction: STORY_ID,
@@ -1061,9 +745,9 @@ describe('activateStoredRelease', () => {
     });
 
     it('uses the audio pointer for first activation, second-read no-op, and reactivation while preserving visual state', async () => {
-        const store = new MediaActivationStore(
-            previewReleaseA,
-            previewAudioReleaseA
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewAudioReleaseA],
+            { forbidStorageScans: true }
         );
         const visualPointerKey = getCurrentPointerPath(
             STORY_ID,
@@ -1105,9 +789,9 @@ describe('activateStoredRelease', () => {
     });
 
     it('rejects a contaminated active audio pointer before a no-op activation', async () => {
-        const store = new MediaActivationStore(
-            previewReleaseA,
-            previewAudioReleaseA
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewAudioReleaseA],
+            { forbidStorageScans: true }
         );
         await activateAudio(store, previewAudioReleaseA);
         const readPointer = store.readPointer.bind(store);
@@ -1130,10 +814,9 @@ describe('activateStoredRelease', () => {
     });
 
     it('uses the audio pointer for stale CAS override after an audio pointer already exists', async () => {
-        const store = new MediaActivationStore(
-            previewReleaseA,
-            previewAudioReleaseA,
-            previewAudioReleaseB
+        const store = new KeyedDeliveryStore(
+            [previewReleaseA, previewAudioReleaseA, previewAudioReleaseB],
+            { forbidStorageScans: true }
         );
         const visualPointerKey = getCurrentPointerPath(
             STORY_ID,

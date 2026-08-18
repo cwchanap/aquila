@@ -4,6 +4,9 @@ const REMOTE_RELEASE_GATE_SPEC = /visual-novel-deployed\.spec\.ts/;
 
 export default defineConfig({
     testDir: './tests',
+    // Bun-only support tests run through test:release-gate-config, not under
+    // Playwright's Node loader. Keep the broad browser suite spec-only.
+    testMatch: /.*\.spec\.ts/,
     globalSetup: './tests/global-setup.ts',
     testIgnore: REMOTE_RELEASE_GATE_SPEC,
     webServer: {

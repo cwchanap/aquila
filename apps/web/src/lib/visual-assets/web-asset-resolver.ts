@@ -28,11 +28,22 @@ import {
     type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
 import { getBrowserStorage } from '@/lib/reader-mode';
+import {
+    loadValidatedRelease,
+    type RuntimeReleaseCodecs,
+} from '@/lib/runtime-assets/release-loader';
 import { sha256Hex, utf8Bytes } from './hash';
 import { ValidatedReleaseStore } from './validated-release-store';
 
 const VALIDATED_RELEASE_TTL_MS =
     RUNTIME_ASSET_CACHE_POLICY.currentPointer.staleIfErrorMs;
+
+const VISUAL_RELEASE_CODECS = {
+    getCurrentPointerPath,
+    parsePointer: parseActiveReleasePointer,
+    parseManifest: parseRuntimeAssetManifest,
+    canonicalReleaseContent,
+} satisfies RuntimeReleaseCodecs<RuntimeAssetManifestV1>;
 
 export type ValidatedReleaseRecord = {
     source: AssetResolverSource;
@@ -217,80 +228,6 @@ function asResolverError(error: unknown): AssetResolverError {
         : new AssetResolverError('network', 'Runtime asset request failed', {
               cause: error,
           });
-}
-
-async function fetchWithTimeout<T>(
-    fetchImpl: typeof fetch,
-    url: URL,
-    timeoutMs: number,
-    init: RequestInit,
-    parentSignal: AbortSignal | undefined,
-    callback: (response: Response) => Promise<T>
-): Promise<T> {
-    const controller = new AbortController();
-    let timedOut = false;
-    const timeout = globalThis.setTimeout(() => {
-        timedOut = true;
-        controller.abort();
-    }, timeoutMs);
-    const abort = () => controller.abort();
-    parentSignal?.addEventListener('abort', abort, { once: true });
-    try {
-        const response = await fetchImpl(url, {
-            ...init,
-            signal: controller.signal,
-        });
-        return await callback(response);
-    } catch (cause) {
-        if (timedOut) {
-            throw new AssetResolverError(
-                'timeout',
-                `Runtime asset request timed out after ${timeoutMs}ms`,
-                { cause }
-            );
-        }
-        throw cause;
-    } finally {
-        globalThis.clearTimeout(timeout);
-        parentSignal?.removeEventListener('abort', abort);
-    }
-}
-
-async function readResponseText(
-    fetchImpl: typeof fetch,
-    url: URL,
-    timeoutMs: number,
-    cache: RequestCache,
-    signal?: AbortSignal
-): Promise<string> {
-    try {
-        return await fetchWithTimeout(
-            fetchImpl,
-            url,
-            timeoutMs,
-            { cache },
-            signal,
-            async response => {
-                if (!response.ok) {
-                    throw new AssetResolverError(
-                        'unavailable',
-                        `Runtime asset request returned HTTP ${response.status}`
-                    );
-                }
-                try {
-                    return await response.text();
-                } catch (cause) {
-                    throw new AssetResolverError(
-                        'network',
-                        'Runtime asset response could not be read',
-                        { cause }
-                    );
-                }
-            }
-        );
-    } catch (error) {
-        throw asResolverError(error);
-    }
 }
 
 function parseJson(text: string, contractName: string): unknown {
@@ -489,51 +426,14 @@ export class WebAssetResolver implements AssetResolver {
         generation: number,
         loadContext: LoadContext
     ): Promise<ValidatedAssetRelease> {
-        const pointerUrl = resolveAssetUrl(
-            this.source.baseUrl,
-            getCurrentPointerPath(this.source.storyId, this.source.target)
-        );
-        const pointerText = await readResponseText(
-            this.fetchImpl,
-            pointerUrl,
-            RUNTIME_ASSET_CACHE_POLICY.timeoutMs.pointer,
-            'no-cache',
-            signal
-        );
-        const pointer = parseActiveReleasePointer(
-            parseJson(pointerText, 'active-release pointer'),
-            this.source.target,
-            this.source.storyId
-        );
-        this.assertNotOlder(pointer);
-        const manifestUrl = resolveAssetUrl(
-            this.source.baseUrl,
-            pointer.manifestPath
-        );
-        const manifestText = await readResponseText(
-            this.fetchImpl,
-            manifestUrl,
-            RUNTIME_ASSET_CACHE_POLICY.timeoutMs.manifest,
-            'force-cache',
-            signal
-        );
-        const manifestDigest = assertSha256<'manifest-bytes'>(
-            await sha256Utf8Text(manifestText)
-        );
-        if (manifestDigest !== pointer.manifestSha256) {
-            throw new AssetResolverError(
-                'integrity',
-                'Manifest checksum mismatch'
-            );
-        }
-        const manifest = parseRuntimeAssetManifest(
-            parseJson(manifestText, 'runtime asset manifest')
-        );
-        validatePointerManifestPair(pointer, manifest, manifestDigest);
-        const canonicalDigest = assertSha256<'release-content'>(
-            await sha256Utf8Text(canonicalReleaseContent(manifest))
-        );
-        assertReleaseIdMatchesContentSha256(manifest, canonicalDigest);
+        const loaded = await loadValidatedRelease({
+            fetchImpl: this.fetchImpl,
+            source: this.source,
+            codecs: VISUAL_RELEASE_CODECS,
+            signal,
+            assertPointerAcceptable: pointer => this.assertNotOlder(pointer),
+        });
+        const { pointer, manifest, pointerText, manifestText } = loaded;
 
         const now = this.now();
         const record: ValidatedReleaseRecord = {

@@ -71,6 +71,8 @@ const SOURCE_PROBE_ARGS = (path: string): readonly string[] => [
     'stream=codec_type,duration:format=duration',
     '-of',
     'json',
+    '-protocol_whitelist',
+    'file',
     path,
 ];
 
@@ -320,7 +322,7 @@ function durationMsFromProbe(
 async function probeSourceAudioFile(
     path: string,
     run: AudioProcessRunner
-): Promise<void> {
+): Promise<number> {
     const result = await runProcess(
         run,
         'ffprobe',
@@ -341,7 +343,7 @@ async function probeSourceAudioFile(
             );
         }
         const [stream] = probeStreams(document, 'source');
-        durationMsFromProbe(document, stream, 'source');
+        return durationMsFromProbe(document, stream, 'source');
     } catch (cause) {
         if (cause instanceof PublisherError && cause.code === 'integrity') {
             throw new PublisherError('source', cause.message, {
@@ -473,10 +475,19 @@ export async function normalizeAudioAsset(
     );
     const inputPath = join(temporaryRoot, `source${extension}`);
     const outputPath = join(temporaryRoot, 'runtime.mp3');
+    const maximumDurationMs =
+        source.type === 'sfx' ? SFX_MAX_DURATION_MS : BGM_MAX_DURATION_MS;
 
     try {
         await writeFile(inputPath, source.sourceBytes);
-        await probeSourceAudioFile(inputPath, run);
+        const sourceDurationMs = await probeSourceAudioFile(inputPath, run);
+        if (sourceDurationMs > maximumDurationMs) {
+            throw new PublisherError(
+                'source',
+                `Audio source exceeds the ${source.type.toUpperCase()} duration ceiling`,
+                { context: { stage: 'source' } }
+            );
+        }
 
         await runProcess(
             run,
@@ -486,6 +497,8 @@ export async function normalizeAudioAsset(
                 '-hide_banner',
                 '-loglevel',
                 'error',
+                '-protocol_whitelist',
+                'file',
                 '-i',
                 inputPath,
                 '-map',
@@ -534,8 +547,6 @@ export async function normalizeAudioAsset(
         }
 
         const probe = await probeRuntimeMp3File(outputPath, run);
-        const maximumDurationMs =
-            source.type === 'sfx' ? SFX_MAX_DURATION_MS : BGM_MAX_DURATION_MS;
         if (probe.durationMs > maximumDurationMs) {
             throw new PublisherError(
                 'integrity',

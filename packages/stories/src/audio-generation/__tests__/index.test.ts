@@ -5,7 +5,7 @@ import {
 } from '@aquila/stories/audio-generation';
 
 describe('@aquila/stories/audio-generation exports', () => {
-    it('exposes generation helpers whose hash changes with duration', () => {
+    it('hashes identical specs identically and changes the hash with duration', () => {
         const shorter = buildAudioGenerationSpec({
             key: 'door-open',
             type: 'sfx',
@@ -13,10 +13,15 @@ describe('@aquila/stories/audio-generation exports', () => {
             durationMs: 2200,
         });
         const longer = buildAudioGenerationSpec({
-            ...shorter,
+            key: 'door-open',
+            type: 'sfx',
+            prompt: 'Heavy apartment door opening',
             durationMs: 2201,
         });
 
+        expect(audioGenerationSpecSha256(shorter)).toBe(
+            audioGenerationSpecSha256(shorter)
+        );
         expect(audioGenerationSpecSha256(shorter)).not.toBe(
             audioGenerationSpecSha256(longer)
         );

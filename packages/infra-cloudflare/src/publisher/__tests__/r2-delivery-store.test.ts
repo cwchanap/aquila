@@ -350,6 +350,16 @@ describe('R2DeliveryStore', () => {
                           R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
                           R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
                       };
+            const credentialNames =
+                bucket === 'delivery'
+                    ? [
+                          'R2_PUBLISHER_ACCESS_KEY_ID',
+                          'R2_PUBLISHER_SECRET_ACCESS_KEY',
+                      ]
+                    : [
+                          'R2_SOURCE_ARCHIVE_ACCESS_KEY_ID',
+                          'R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY',
+                      ];
 
             await expect(
                 R2DeliveryStore.createFromEnvironment({
@@ -359,6 +369,7 @@ describe('R2DeliveryStore', () => {
             ).rejects.toMatchObject({
                 name: 'PublisherError',
                 code: 'configuration',
+                message: `${credentialNames[0]} and ${credentialNames[1]} must be set`,
             });
         }
     );

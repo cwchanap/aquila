@@ -170,27 +170,27 @@ async function readOmissions(
     expectedStoryId: string
 ): Promise<AudioOmissionsV1> {
     if (omissionsPath === undefined) {
-        return {
-            schemaVersion: AUDIO_OMISSIONS_SCHEMA_VERSION,
-            storyId: expectedStoryId,
-            omissions: {},
-        };
+        return emptyOmissions(expectedStoryId);
     }
 
     let text: string;
     try {
         text = await readFile(omissionsPath, 'utf8');
     } catch (cause) {
-        if (isNotFound(cause)) {
-            return {
-                schemaVersion: AUDIO_OMISSIONS_SCHEMA_VERSION,
-                storyId: expectedStoryId,
-                omissions: {},
-            };
-        }
+        if (isNotFound(cause)) return emptyOmissions(expectedStoryId);
         throw error('input', 'Unable to read audio omissions');
     }
     return parseOmissions(parseJson(text, 'audio omissions'), expectedStoryId);
+}
+
+function emptyOmissions(expectedStoryId: string): AudioOmissionsV1 {
+    return {
+        schemaVersion: AUDIO_OMISSIONS_SCHEMA_VERSION,
+        storyId: expectedStoryId,
+        // Null prototype so inherited keys (constructor, toString, ...) read
+        // as absent — mirroring parseOmissions.
+        omissions: Object.create(null) as Record<string, string>,
+    };
 }
 
 async function readSelection(
@@ -400,10 +400,14 @@ export async function prepareAudioSources(input: {
         input.storyFolder,
         'selection.json'
     );
-    const selections = await readSelection(selectionPath, context.storyId);
-    const selectedKeys = Object.keys(selections);
+    // Own-property-safe view: selections comes from JSON but retains
+    // Object.prototype, so inherited keys (constructor, toString, ...) must
+    // read as absent rather than as phantom selections.
+    const selectionByKey = new Map(
+        Object.entries(await readSelection(selectionPath, context.storyId))
+    );
 
-    for (const key of selectedKeys) {
+    for (const key of selectionByKey.keys()) {
         if (!planByKey.has(key)) {
             throw error(
                 'coverage',
@@ -418,16 +422,14 @@ export async function prepareAudioSources(input: {
                 'Audio omission must name a compiler-used plan cue'
             );
         }
-        if (selections[key] !== undefined) {
+        if (selectionByKey.has(key)) {
             throw error('coverage', 'Audio cue cannot be selected and omitted');
         }
     }
 
     const selectedUnusedKeys = planAssets
         .filter(
-            asset =>
-                !usageByKey.has(asset.key) &&
-                selections[asset.key] !== undefined
+            asset => !usageByKey.has(asset.key) && selectionByKey.has(asset.key)
         )
         .sort(compareAudioAssets)
         .map(asset => asset.key);
@@ -438,7 +440,7 @@ export async function prepareAudioSources(input: {
 
     const missingUsedKeys = usageAssets.filter(
         usage =>
-            selections[usage.key] === undefined &&
+            !selectionByKey.has(usage.key) &&
             omissions.omissions[usage.key] === undefined
     );
     if (missingUsedKeys.length > 0) {
@@ -474,7 +476,7 @@ export async function prepareAudioSources(input: {
             continue;
         }
 
-        const selection = selections[usage.key];
+        const selection = selectionByKey.get(usage.key);
         if (selection === undefined) {
             throw error(
                 'coverage',

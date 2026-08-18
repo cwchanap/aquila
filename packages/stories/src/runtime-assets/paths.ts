@@ -256,7 +256,7 @@ export function isRuntimePointerKey(key: string): boolean {
         segments[1] === 'audio' &&
         segments[2] === 'stories'
     ) {
-        return isStoryId(segments[3]) && segments[4] === 'current.json';
+        return isStoryId(segments[3]);
     }
     if (
         segments.length === 7 &&

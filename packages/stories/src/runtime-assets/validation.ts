@@ -591,22 +591,7 @@ export function parseRuntimeAssetManifest(
     input: unknown
 ): RuntimeAssetManifestV1 {
     assertKnownVersion(input, 1, 'runtime manifest');
-    const forbiddenFields = findForbiddenRuntimeFields(input);
-    if (forbiddenFields.length > 0) {
-        throw new AssetResolverError(
-            'validation',
-            'Runtime manifests must not expose authoring or provider metadata',
-            { details: forbiddenFields }
-        );
-    }
-    const urlFields = findAbsoluteUrlValues(input, MANIFEST_SHAPE);
-    if (urlFields.length > 0) {
-        throw new AssetResolverError(
-            'unsafe-path',
-            'Runtime manifests must not contain absolute URL values',
-            { details: urlFields }
-        );
-    }
+    assertRuntimeInputSafe(input, MANIFEST_SHAPE, 'Runtime manifests');
     return parseRuntimeSchema(
         RuntimeAssetManifestV1Schema,
         input,
@@ -626,25 +611,12 @@ export function parseActiveReleasePointerWithManifestPath(
     additionalForbiddenKeyParts: readonly string[] = []
 ): ActiveReleasePointerV1 {
     assertKnownVersion(input, 1, 'active-release pointer');
-    const forbiddenFields = findForbiddenRuntimeFields(input, '$', [
-        ...FORBIDDEN_RUNTIME_KEY_PARTS,
-        ...additionalForbiddenKeyParts,
-    ]);
-    if (forbiddenFields.length > 0) {
-        throw new AssetResolverError(
-            'validation',
-            'Active-release pointers must not expose authoring or provider metadata',
-            { details: forbiddenFields }
-        );
-    }
-    const urlFields = findAbsoluteUrlValues(input, POINTER_SHAPE);
-    if (urlFields.length > 0) {
-        throw new AssetResolverError(
-            'unsafe-path',
-            'Active-release pointers must not contain absolute URL values',
-            { details: urlFields }
-        );
-    }
+    assertRuntimeInputSafe(
+        input,
+        POINTER_SHAPE,
+        'Active-release pointers',
+        additionalForbiddenKeyParts
+    );
     const pointer = parseRuntimeSchema(
         ActiveReleasePointerV1Schema,
         input,

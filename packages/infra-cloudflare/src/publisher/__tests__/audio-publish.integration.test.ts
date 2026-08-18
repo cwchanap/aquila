@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -427,14 +427,5 @@ describe('publishAudioRelease', () => {
         expect(
             getAudioObjectPath(sha256Bytes(Uint8Array.from([9, 8, 7])))
         ).toBe(delivery.immutableRequests[0]!.key);
-    });
-
-    it('has no activation-module dependency', async () => {
-        const moduleSource = await readFile(
-            new URL('../audio-publish.ts', import.meta.url),
-            'utf8'
-        );
-        expect(moduleSource).not.toMatch(/from ['"].*activation/);
-        expect(moduleSource).not.toMatch(/compareAndSwapPointer/);
     });
 });

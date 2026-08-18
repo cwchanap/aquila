@@ -105,7 +105,6 @@ function assertStoredMetadata(
         readonly key: string;
         readonly contentType: string;
         readonly cacheControl: string;
-        readonly customMetadata: Readonly<Record<string, string>>;
     },
     objectClass: 'manifest' | 'audio'
 ): void {
@@ -219,7 +218,78 @@ async function probeStoredAudio(
             cause
         );
     } finally {
-        await rm(temporaryRoot, { recursive: true, force: true });
+        // Cleanup is best-effort: a failed rm must not mask the original
+        // probe or integrity error.
+        await rm(temporaryRoot, { recursive: true, force: true }).catch(
+            () => {}
+        );
+    }
+}
+
+// ponytail: fixed 4-way probe concurrency; a queue-based limiter is enough at
+// audio-release scale (tens of MP3 objects).
+const AUDIO_PROBE_CONCURRENCY = 4;
+
+async function verifyAudioObjectGroup(
+    store: DeliveryStore,
+    group: readonly AudioObjectReference[],
+    run: AudioProcessRunner | undefined
+): Promise<void> {
+    const first = group[0];
+    if (first === undefined) return;
+    const expectedPath = getAudioObjectPath(first.sha256);
+    const object = await readStoredObject(store, expectedPath);
+    assertStoredMetadata(
+        object,
+        {
+            key: expectedPath,
+            contentType: AUDIO_CONTENT_TYPE,
+            cacheControl: IMMUTABLE_CACHE_CONTROL,
+        },
+        'audio'
+    );
+    if (sha256Bytes(object.bytes) !== first.sha256) {
+        throw integrityError(
+            'Stored audio object body does not match its SHA-256',
+            { stage: 'verification', key: expectedPath }
+        );
+    }
+
+    const probe = await probeStoredAudio(object, first, run);
+    for (const reference of group) {
+        if (reference.path !== expectedPath) {
+            throw integrityError(
+                'Audio manifest object path does not match its digest',
+                {
+                    stage: 'verification',
+                    key: reference.path,
+                    identity: reference.identity,
+                }
+            );
+        }
+        if (reference.byteLength !== object.byteLength) {
+            throw integrityError(
+                'Audio manifest object byte length does not match stored metadata',
+                {
+                    stage: 'verification',
+                    key: expectedPath,
+                    identity: reference.identity,
+                }
+            );
+        }
+        if (
+            Math.abs(probe.durationMs - reference.durationMs) >
+            DURATION_TOLERANCE_MS
+        ) {
+            throw integrityError(
+                'Stored audio duration does not match the manifest',
+                {
+                    stage: 'verification',
+                    key: expectedPath,
+                    identity: reference.identity,
+                }
+            );
+        }
     }
 }
 
@@ -235,65 +305,20 @@ async function verifyAudioObjects(
         else group.push(reference);
     }
 
-    for (const group of groups.values()) {
-        const first = group[0];
-        if (first === undefined) continue;
-        const expectedPath = getAudioObjectPath(first.sha256);
-        const object = await readStoredObject(store, expectedPath);
-        assertStoredMetadata(
-            object,
-            {
-                key: expectedPath,
-                contentType: AUDIO_CONTENT_TYPE,
-                cacheControl: IMMUTABLE_CACHE_CONTROL,
-                customMetadata: {},
-            },
-            'audio'
-        );
-        if (sha256Bytes(object.bytes) !== first.sha256) {
-            throw integrityError(
-                'Stored audio object body does not match its SHA-256',
-                { stage: 'verification', key: expectedPath }
-            );
-        }
-
-        const probe = await probeStoredAudio(object, first, run);
-        for (const reference of group) {
-            if (reference.path !== expectedPath) {
-                throw integrityError(
-                    'Audio manifest object path does not match its digest',
-                    {
-                        stage: 'verification',
-                        key: reference.path,
-                        identity: reference.identity,
-                    }
-                );
-            }
-            if (reference.byteLength !== object.byteLength) {
-                throw integrityError(
-                    'Audio manifest object byte length does not match stored metadata',
-                    {
-                        stage: 'verification',
-                        key: expectedPath,
-                        identity: reference.identity,
-                    }
-                );
-            }
-            if (
-                Math.abs(probe.durationMs - reference.durationMs) >
-                DURATION_TOLERANCE_MS
+    const queue = [...groups.values()];
+    const workers = Array.from(
+        { length: Math.min(AUDIO_PROBE_CONCURRENCY, queue.length) },
+        async () => {
+            for (
+                let group = queue.shift();
+                group !== undefined;
+                group = queue.shift()
             ) {
-                throw integrityError(
-                    'Stored audio duration does not match the manifest',
-                    {
-                        stage: 'verification',
-                        key: expectedPath,
-                        identity: reference.identity,
-                    }
-                );
+                await verifyAudioObjectGroup(store, group, run);
             }
         }
-    }
+    );
+    await Promise.all(workers);
 }
 
 export async function verifyStoredAudioRelease(
@@ -311,7 +336,6 @@ export async function verifyStoredAudioRelease(
             key: manifestPath,
             contentType: JSON_CONTENT_TYPE,
             cacheControl: IMMUTABLE_CACHE_CONTROL,
-            customMetadata: {},
         },
         'manifest'
     );

@@ -1233,17 +1233,20 @@ export async function runAssetsCli(
         storyId = parsed.storyId;
         target = parsed.target;
         media = parsed.media;
-        const parsedWithOmissions =
+        const optionalOmissionsPath =
             parsed.media === 'audio' && parsed.storyFolder !== undefined
-                ? {
-                      ...parsed,
-                      omissionsPath: await optionalAudioOmissionsPath(
-                          dependencies.repositoryRoot,
-                          parsed.storyFolder,
-                          parsed.omissionsPath
-                      ),
-                  }
-                : parsed;
+                ? await optionalAudioOmissionsPath(
+                      dependencies.repositoryRoot,
+                      parsed.storyFolder,
+                      parsed.omissionsPath
+                  )
+                : parsed.omissionsPath;
+        // Only add an own omissionsPath when a defined path exists, so
+        // downstream spreads never observe omissionsPath: undefined.
+        const parsedWithOmissions =
+            optionalOmissionsPath === undefined
+                ? parsed
+                : { ...parsed, omissionsPath: optionalOmissionsPath };
         const hasPublicationInputs =
             command === 'plan' || command === 'publish';
         // parsed.sourceRoot already folds in the AQUILA_ASSET_SOURCE_ROOT env

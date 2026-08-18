@@ -10,9 +10,10 @@ const srcDir = resolve(here, '..'); // .../src
 
 export async function compileNamedStory(
     storyFolder: string,
-    writeOutputs: boolean
+    writeOutputs: boolean,
+    rawRoot: string = STORIES_RAW_ROOT
 ): Promise<StoryIR> {
-    const rawDir = join(STORIES_RAW_ROOT, storyFolder);
+    const rawDir = join(rawRoot, storyFolder);
     if (!existsSync(join(rawDir, 'compiler.config.ts'))) {
         throw new Error(`[story-compiler] unknown story "${storyFolder}"`);
     }

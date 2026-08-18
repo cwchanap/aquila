@@ -41,13 +41,15 @@ function requiredMetadataMatches(
     actual: StoredObjectMetadata,
     candidate: CandidateInput | PlannedImmutableCandidate
 ): boolean {
+    // An omitted candidate.customMetadata means "no metadata" — it must match
+    // an empty stored record exactly, never act as a wildcard.
+    const expectedMetadata = candidate.customMetadata ?? {};
     return (
         actual.key === candidate.key &&
         actual.byteLength === candidate.bytes.byteLength &&
         actual.contentType === candidate.contentType &&
         actual.cacheControl === candidate.cacheControl &&
-        (candidate.customMetadata === undefined ||
-            recordsEqual(actual.customMetadata, candidate.customMetadata))
+        recordsEqual(actual.customMetadata, expectedMetadata)
     );
 }
 

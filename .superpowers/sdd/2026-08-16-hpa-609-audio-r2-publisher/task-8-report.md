@@ -25,7 +25,7 @@ and omits `pointer.afterReleaseId`.
 Command:
 
 ```text
-rtk bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-publish.integration.test.ts
+bun --filter @aquila/infra-cloudflare test -- src/publisher/__tests__/audio-publish.integration.test.ts
 ```
 
 Result before `audio-publish.ts` existed: exit 1 with the expected missing
@@ -55,11 +55,11 @@ activation dependency.
 
 ## Verification
 
-- `rtk bun --filter @aquila/infra-cloudflare test` — PASS; 37 test files and 481 tests.
-- `rtk bun --filter @aquila/infra-cloudflare typecheck` — PASS; exit 0.
-- `rtk bun --filter @aquila/infra-cloudflare lint` — PASS; exit 0.
-- `rtk ./node_modules/.bin/prettier --check packages/infra-cloudflare/src/publisher/audio-publish.ts packages/infra-cloudflare/src/publisher/__tests__/audio-publish.integration.test.ts` — PASS.
-- `rtk git diff --check` — PASS.
+- `bun --filter @aquila/infra-cloudflare test` — PASS; 37 test files and 481 tests.
+- `bun --filter @aquila/infra-cloudflare typecheck` — PASS; exit 0.
+- `bun --filter @aquila/infra-cloudflare lint` — PASS; exit 0.
+- `./node_modules/.bin/prettier --check packages/infra-cloudflare/src/publisher/audio-publish.ts packages/infra-cloudflare/src/publisher/__tests__/audio-publish.integration.test.ts` — PASS.
+- `git diff --check` — PASS.
 
 ## Files
 

@@ -378,6 +378,8 @@ describe('prepareAudioSources', () => {
             {
                 name: 'PublisherError',
                 code: 'coverage',
+                message:
+                    'Every compiler-used audio cue must be selected or omitted',
             }
         );
     });

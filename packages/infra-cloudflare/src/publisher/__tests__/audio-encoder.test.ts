@@ -150,7 +150,7 @@ describe('normalizeAudioAsset', () => {
         expect(fixture.calls[2]?.args).not.toContain('-nostdin');
     });
 
-    it.each(['.wav', '.mp3', '.ogg', '.m4a', '.flac', '.m3u8'] as const)(
+    it.each(['.wav', '.mp3', '.ogg', '.m4a', '.flac'] as const)(
         'normalizes a local %s source with file-only protocol access',
         async extension => {
             const fixture = successfulRunner();
@@ -179,6 +179,28 @@ describe('normalizeAudioAsset', () => {
             expect(inputIndex).toBe(6);
             expect(ffmpeg?.args[inputIndex! - 2]).toBe('-protocol_whitelist');
             expect(ffmpeg?.args[inputIndex! - 1]).toBe('file');
+        }
+    );
+
+    it.each(['.m3u8', '.m3u', '.pls', '.xspf'] as const)(
+        'rejects a %s playlist source before invoking ffprobe or ffmpeg',
+        async extension => {
+            const fixture = successfulRunner();
+
+            await expect(
+                normalizeAudioAsset(
+                    {
+                        ...source,
+                        sourceFilename: `candidate-001${extension}`,
+                    },
+                    fixture.run
+                )
+            ).rejects.toMatchObject({
+                name: 'PublisherError',
+                code: 'source',
+                message: 'Audio source filename must not be a playlist',
+            });
+            expect(fixture.calls).toEqual([]);
         }
     );
 

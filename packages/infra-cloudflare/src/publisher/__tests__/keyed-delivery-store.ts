@@ -147,6 +147,7 @@ export class KeyedDeliveryStore implements DeliveryStore {
             throw new Error('activation must not list storage');
         if (this.listFailure !== undefined) throw this.listFailure;
         for (const key of this.listedKeys) {
+            if (!key.startsWith(prefix)) continue;
             const object = this.objects.get(key);
             yield object === undefined
                 ? {
@@ -166,7 +167,10 @@ export class KeyedDeliveryStore implements DeliveryStore {
         if (this.forbidStorageScans)
             throw new Error('activation must not list storage');
         if (this.listKeysFailure !== undefined) throw this.listKeysFailure;
-        yield* this.listedKeys;
+        for (const key of this.listedKeys) {
+            if (!key.startsWith(prefix)) continue;
+            yield key;
+        }
     }
 
     async close(): Promise<void> {}
@@ -174,10 +178,11 @@ export class KeyedDeliveryStore implements DeliveryStore {
     forcePointer(
         key: string,
         bytes: Uint8Array,
-        metadataValue: { contentType: string; cacheControl: string } = {
-            contentType: 'application/json',
-            cacheControl: POINTER_CACHE,
-        }
+        metadataValue: {
+            contentType?: string;
+            cacheControl?: string;
+            customMetadata?: Readonly<Record<string, string>>;
+        } = {}
     ): string {
         this.pointerVersion += 1;
         const etag = `W/"media-opaque-${this.pointerVersion}"`;
@@ -185,9 +190,9 @@ export class KeyedDeliveryStore implements DeliveryStore {
             exists: true,
             etag,
             bytes: Uint8Array.from(bytes),
-            contentType: metadataValue.contentType,
-            cacheControl: metadataValue.cacheControl,
-            customMetadata: {},
+            contentType: metadataValue.contentType ?? 'application/json',
+            cacheControl: metadataValue.cacheControl ?? POINTER_CACHE,
+            customMetadata: { ...(metadataValue.customMetadata ?? {}) },
         });
         return etag;
     }

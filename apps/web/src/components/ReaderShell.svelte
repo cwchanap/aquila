@@ -456,13 +456,13 @@
       nextPosition,
       audioInitialLoadPending
     );
-    if (delayed) {
-      pendingInitialSfx = delayed;
-    } else if (command.type === 'play') {
-      sfxPlayer.play(command.cueKey);
-    } else if (command.type === 'stop') {
-      pendingInitialSfx = null;
-      sfxPlayer.stop();
+    pendingInitialSfx = delayed;
+    if (!delayed) {
+      if (command.type === 'play') {
+        sfxPlayer.play(command.cueKey);
+      } else if (command.type === 'stop') {
+        sfxPlayer.stop();
+      }
     }
 
     const storyChanged =

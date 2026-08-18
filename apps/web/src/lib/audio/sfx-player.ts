@@ -9,9 +9,11 @@ export interface SfxPlayer {
 
 type AudioLike = Pick<HTMLAudioElement, 'play' | 'pause' | 'currentTime'>;
 type CreateAudio = (src: string) => AudioLike;
+export type ResolveSfxUrl = (cueKey: string) => string | undefined;
 
 export function createSfxPlayer(
-    createAudio: CreateAudio = src => new Audio(src)
+    createAudio: CreateAudio = src => new Audio(src),
+    resolveUrl: ResolveSfxUrl = resolveLocalSfxUrl
 ): SfxPlayer {
     let current: AudioLike | null = null;
     let disposed = false;
@@ -36,9 +38,9 @@ export function createSfxPlayer(
         play(cueKey: string): void {
             if (disposed) return;
             stopCurrent();
-            const src = resolveLocalSfxUrl(cueKey);
+            const src = resolveUrl(cueKey);
             if (!src) {
-                logger.warn('Unknown visual-novel SFX cue', { cueKey });
+                logger.warn('Visual-novel SFX cue unavailable', { cueKey });
                 return;
             }
             try {

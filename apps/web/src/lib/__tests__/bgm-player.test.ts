@@ -51,6 +51,21 @@ describe('createBgmPlayer', () => {
         expect(audio.play).toHaveBeenCalledTimes(1);
     });
 
+    it('passes an injected resolved URL to native audio', () => {
+        const audio = fakeAudio();
+        const createAudio = vi.fn(() => audio);
+        const resolveUrl = vi.fn(
+            () => 'https://assets.example/vn/audio/bgm/dawn-apartment.mp3'
+        );
+
+        createBgmPlayer(createAudio, resolveUrl).play('dawn-apartment');
+
+        expect(resolveUrl).toHaveBeenCalledWith('dawn-apartment');
+        expect(createAudio).toHaveBeenCalledWith(
+            'https://assets.example/vn/audio/bgm/dawn-apartment.mp3'
+        );
+    });
+
     it('does not restart the active cue when the key is unchanged', () => {
         const audio = fakeAudio();
         const createAudio = vi.fn(() => audio);
@@ -59,6 +74,27 @@ describe('createBgmPlayer', () => {
         player.play('dawn-apartment');
         player.play('dawn-apartment');
 
+        expect(createAudio).toHaveBeenCalledTimes(1);
+        expect(audio.play).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not restart when the resolved URL changes for the active key', () => {
+        const audio = fakeAudio();
+        const createAudio = vi.fn(() => audio);
+        const resolveUrl = vi
+            .fn<() => string | undefined>()
+            .mockReturnValueOnce(
+                'https://assets.example/vn/audio/bgm/dawn-apartment-v1.mp3'
+            )
+            .mockReturnValueOnce(
+                'https://assets.example/vn/audio/bgm/dawn-apartment-v2.mp3'
+            );
+        const player = createBgmPlayer(createAudio, resolveUrl);
+
+        player.play('dawn-apartment');
+        player.play('dawn-apartment');
+
+        expect(resolveUrl).toHaveBeenCalledTimes(2);
         expect(createAudio).toHaveBeenCalledTimes(1);
         expect(audio.play).toHaveBeenCalledTimes(1);
     });
@@ -89,7 +125,7 @@ describe('createBgmPlayer', () => {
 
         expect(createAudio).not.toHaveBeenCalled();
         expect(warn).toHaveBeenCalledTimes(1);
-        expect(warn).toHaveBeenCalledWith('Unknown visual-novel BGM cue', {
+        expect(warn).toHaveBeenCalledWith('Visual-novel BGM cue unavailable', {
             cueKey: 'unknown-runtime-cue',
         });
     });

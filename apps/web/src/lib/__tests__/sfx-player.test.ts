@@ -41,6 +41,21 @@ describe('createSfxPlayer', () => {
         expect(audio.play).toHaveBeenCalledTimes(1);
     });
 
+    it('passes an injected resolved URL to native audio', () => {
+        const audio = fakeAudio();
+        const createAudio = vi.fn(() => audio);
+        const resolveUrl = vi.fn(
+            () => 'https://assets.example/vn/objects/sfx.mp3'
+        );
+
+        createSfxPlayer(createAudio, resolveUrl).play('door-open');
+
+        expect(resolveUrl).toHaveBeenCalledWith('door-open');
+        expect(createAudio).toHaveBeenCalledWith(
+            'https://assets.example/vn/objects/sfx.mp3'
+        );
+    });
+
     it('replaces the current cue and rewinds it', () => {
         const first = fakeAudio(2);
         const second = fakeAudio();
@@ -66,7 +81,7 @@ describe('createSfxPlayer', () => {
 
         expect(createAudio).not.toHaveBeenCalled();
         expect(warn).toHaveBeenCalledTimes(1);
-        expect(warn).toHaveBeenCalledWith('Unknown visual-novel SFX cue', {
+        expect(warn).toHaveBeenCalledWith('Visual-novel SFX cue unavailable', {
             cueKey: 'unknown-runtime-cue',
         });
     });

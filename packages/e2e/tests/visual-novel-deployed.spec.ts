@@ -1,11 +1,13 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Response } from '@playwright/test';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
+    getAudioReleaseManifestPath,
     getReleaseManifestPath,
     isPreviewId,
     isReleaseId,
     isSha256,
     parseRuntimeAssetManifest,
+    parseRuntimeAudioManifest,
     type PublicationTarget,
     type RuntimeAssetManifestV1,
 } from '@aquila/stories/runtime-assets';
@@ -17,9 +19,11 @@ import {
 import type { DialogueMap } from '@aquila/stories/types';
 import {
     assetUrl,
+    directives,
     fetchJsonFromPage,
     type ProbeContext,
 } from './support/r2-browser-probe';
+import { findAudioGateAnchors } from './support/audio-gate-anchors';
 import { ReaderPage, VisualReaderPage } from './utils';
 
 /**
@@ -37,7 +41,9 @@ import { ReaderPage, VisualReaderPage } from './utils';
  * Env: BASE_URL, RELEASE_GATE_STORY_ID (default the_seventh_mirror),
  * RELEASE_GATE_RELEASE_ID, RELEASE_GATE_MANIFEST_SHA256 (required), and
  * RELEASE_GATE_PREVIEW_ID (preview run only — omit it for a production run).
- * VERCEL_AUTOMATION_BYPASS_SECRET authenticates protected Vercel previews.
+ * Set RELEASE_GATE_AUDIO_RELEASE_ID and RELEASE_GATE_AUDIO_MANIFEST_SHA256
+ * together to add the deployed BGM/SFX checks. VERCEL_AUTOMATION_BYPASS_SECRET
+ * authenticates protected Vercel previews.
  */
 
 const LOCALE = 'en';
@@ -47,6 +53,22 @@ const STORY_ID = (process.env.RELEASE_GATE_STORY_ID ?? DEFAULT_STORY_ID).trim();
 const RELEASE_ID = (process.env.RELEASE_GATE_RELEASE_ID ?? '').trim();
 const MANIFEST_SHA256 = (process.env.RELEASE_GATE_MANIFEST_SHA256 ?? '').trim();
 const PREVIEW_ID = (process.env.RELEASE_GATE_PREVIEW_ID ?? '').trim();
+const AUDIO_RELEASE_ID = (
+    process.env.RELEASE_GATE_AUDIO_RELEASE_ID ?? ''
+).trim();
+const AUDIO_MANIFEST_SHA256 = (
+    process.env.RELEASE_GATE_AUDIO_MANIFEST_SHA256 ?? ''
+).trim();
+
+const hasAudioReleaseId = AUDIO_RELEASE_ID !== '';
+const hasAudioManifestSha256 = AUDIO_MANIFEST_SHA256 !== '';
+if (hasAudioReleaseId !== hasAudioManifestSha256) {
+    throw new Error(
+        'visual-novel-deployed.spec.ts: RELEASE_GATE_AUDIO_RELEASE_ID and ' +
+            'RELEASE_GATE_AUDIO_MANIFEST_SHA256 must be set together.'
+    );
+}
+const AUDIO_GATE_ENABLED = hasAudioReleaseId && hasAudioManifestSha256;
 
 function requireGateEnv(value: string, name: string): string {
     if (value === '') {
@@ -79,19 +101,45 @@ if (PREVIEW_ID !== '' && !isPreviewId(PREVIEW_ID)) {
             'is not a valid preview id.'
     );
 }
+if (AUDIO_GATE_ENABLED && !isReleaseId(AUDIO_RELEASE_ID)) {
+    throw new Error(
+        `visual-novel-deployed.spec.ts: RELEASE_GATE_AUDIO_RELEASE_ID ` +
+            `"${AUDIO_RELEASE_ID}" must look like sha256-<64 hex chars>.`
+    );
+}
+if (AUDIO_GATE_ENABLED && !isSha256(AUDIO_MANIFEST_SHA256)) {
+    throw new Error(
+        `visual-novel-deployed.spec.ts: RELEASE_GATE_AUDIO_MANIFEST_SHA256 ` +
+            `"${AUDIO_MANIFEST_SHA256}" must be a 64-character lowercase ` +
+            'SHA-256 digest.'
+    );
+}
 
 const TARGET: PublicationTarget = PREVIEW_ID
     ? { kind: 'preview', previewId: PREVIEW_ID }
     : { kind: 'production' };
 
 /** Preview runs pin the preview id; production runs assert it is absent. */
-const EXPECTED_IDENTITY = {
-    environment: (PREVIEW_ID ? 'preview' : 'production') as
+type RuntimeReleaseIdentity = {
+    assetEnvironment: 'preview' | 'production';
+    previewId: string | null;
+    releaseId: string;
+    manifestSha256: string;
+};
+
+const EXPECTED_IDENTITY: RuntimeReleaseIdentity = {
+    assetEnvironment: (PREVIEW_ID ? 'preview' : 'production') as
         | 'preview'
         | 'production',
     previewId: PREVIEW_ID || null,
     releaseId: RELEASE_ID,
     manifestSha256: MANIFEST_SHA256,
+};
+
+const EXPECTED_AUDIO_IDENTITY: RuntimeReleaseIdentity = {
+    ...EXPECTED_IDENTITY,
+    releaseId: AUDIO_RELEASE_ID,
+    manifestSha256: AUDIO_MANIFEST_SHA256,
 };
 
 // English UI strings, kept in sync with
@@ -154,31 +202,41 @@ async function waitForVisualReady(page: Page): Promise<void> {
  */
 async function expectReleaseIdentity(
     page: Page,
-    expected: typeof EXPECTED_IDENTITY
+    prefix: 'asset' | 'audio',
+    expected: RuntimeReleaseIdentity
 ): Promise<void> {
     const host = new ReaderPage(page).ready;
     await expect(host).toHaveAttribute(
-        'data-asset-environment',
-        expected.environment
+        `data-${prefix}-environment`,
+        expected.assetEnvironment
     );
     if (expected.previewId !== null) {
         await expect(host).toHaveAttribute(
-            'data-asset-preview-id',
+            `data-${prefix}-preview-id`,
             expected.previewId
         );
     } else {
         // Production run: the attribute must be ABSENT (the value-less form —
         // `/.+/` would let an empty `data-asset-preview-id=""` through).
-        await expect(host).not.toHaveAttribute('data-asset-preview-id');
+        await expect(host).not.toHaveAttribute(`data-${prefix}-preview-id`);
     }
     await expect(host).toHaveAttribute(
-        'data-asset-release-id',
+        `data-${prefix}-release-id`,
         expected.releaseId
     );
     await expect(host).toHaveAttribute(
-        'data-asset-manifest-sha256',
+        `data-${prefix}-manifest-sha256`,
         expected.manifestSha256
     );
+}
+
+async function waitForAudioIdentity(page: Page): Promise<void> {
+    await expect(new ReaderPage(page).ready).toHaveAttribute(
+        'data-audio-release-id',
+        EXPECTED_AUDIO_IDENTITY.releaseId,
+        { timeout: 30_000 }
+    );
+    await expectReleaseIdentity(page, 'audio', EXPECTED_AUDIO_IDENTITY);
 }
 
 /**
@@ -334,6 +392,25 @@ function requireCovered(
     }
 }
 
+const IMMUTABLE_AUDIO_CACHE_DIRECTIVES = directives(
+    RUNTIME_ASSET_CACHE_POLICY.immutableRelease.responseCacheControl
+);
+
+function expectAudioResponse(response: Response, url: string): void {
+    expect(response.ok(), `${url} must return a successful response`).toBe(
+        true
+    );
+    const contentType = response.headers()['content-type'];
+    expect(
+        contentType?.split(';', 1)[0]?.trim().toLowerCase(),
+        `${url} must be served as audio/mpeg`
+    ).toBe('audio/mpeg');
+    expect(
+        [...directives(response.headers()['cache-control'])].sort(),
+        `cache-control on ${url} must be immutable`
+    ).toEqual([...IMMUTABLE_AUDIO_CACHE_DIRECTIVES].sort());
+}
+
 const content = getStoryContent(STORY_ID, LOCALE);
 const flow = getStoryFlow(STORY_ID);
 if (!flow) {
@@ -359,6 +436,8 @@ test.describe('Deployed visual-novel release gate', () => {
         // -- Step 1: open the story in visual mode at a non-zero position. --
         await page.addInitScript(() => {
             localStorage.setItem('aquila:reader-mode:v1', 'visual');
+            localStorage.setItem('aquila:sfx-enabled:v1', 'true');
+            localStorage.setItem('aquila:bgm-enabled:v1', 'true');
         });
         // Capture the release manifest the reader fetches on load so the
         // delivery base and every object URL are derived from the LIVE layout
@@ -390,7 +469,7 @@ test.describe('Deployed visual-novel release gate', () => {
 
         // -- Step 2: release ready, and the exact pinned identity on reader-ready. --
         await waitForVisualReady(page);
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
 
         // Derive the delivery base from the manifest URL the reader used and
         // probe the manifest from page script (cross-origin, CORS-enforced) —
@@ -415,6 +494,121 @@ test.describe('Deployed visual-novel release gate', () => {
         const manifest = parseRuntimeAssetManifest(body);
         expect(manifest.storyId).toBe(STORY_ID);
         expect(manifest.releaseId).toBe(RELEASE_ID);
+
+        if (AUDIO_GATE_ENABLED) {
+            const audioManifestUrl = assetUrl(
+                assetBase,
+                getAudioReleaseManifestPath(STORY_ID, AUDIO_RELEASE_ID, TARGET)
+            );
+            const audioManifestDocument = await fetchJsonFromPage(
+                page,
+                audioManifestUrl,
+                RUNTIME_ASSET_CACHE_POLICY.timeoutMs.manifest,
+                probeFor(assetBase)
+            );
+            expect(
+                [...directives(audioManifestDocument.cacheControl)].sort(),
+                `cache-control on ${audioManifestUrl} must be immutable`
+            ).toEqual([...IMMUTABLE_AUDIO_CACHE_DIRECTIVES].sort());
+            const audioManifest = parseRuntimeAudioManifest(
+                audioManifestDocument.body
+            );
+            expect(audioManifest.storyId).toBe(STORY_ID);
+            expect(audioManifest.releaseId).toBe(AUDIO_RELEASE_ID);
+            const audioAnchors = findAudioGateAnchors(
+                content.dialogue,
+                flow,
+                audioManifest
+            );
+
+            // BGM is selected by the authored landing line, but playback is
+            // gesture-gated. A media response before the gesture would prove
+            // the reader started audio merely by landing on the page.
+            const bgmAsset = audioManifest.assets.find(
+                asset =>
+                    asset.identity.type === 'bgm' &&
+                    asset.identity.key === audioAnchors.bgm.key
+            );
+            if (!bgmAsset) {
+                throw new Error(
+                    'Assertion bug: the selected BGM cue is absent from the ' +
+                        'served audio manifest.'
+                );
+            }
+            const bgmUrl = assetUrl(assetBase, bgmAsset.path);
+            const landingMediaUrls: string[] = [];
+            const recordLandingMedia = (response: Response): void => {
+                if (response.request().resourceType() === 'media') {
+                    landingMediaUrls.push(response.url());
+                }
+            };
+            page.on('response', recordLandingMedia);
+            try {
+                await page.goto(
+                    readerUrl(
+                        STORY_ID,
+                        audioAnchors.bgm.sceneId,
+                        audioAnchors.bgm.page
+                    )
+                );
+                await expect(visual.root).toBeVisible();
+                await expectCanonicalVisualLine(page, audioAnchors.bgm.page);
+                await waitForVisualReady(page);
+                await waitForAudioIdentity(page);
+                expect(
+                    landingMediaUrls,
+                    'BGM must not load solely from the landing position'
+                ).toHaveLength(0);
+
+                const bgmResponse = page.waitForResponse(
+                    response => response.url() === bgmUrl,
+                    { timeout: RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset }
+                );
+                await visual.root.click();
+                expectAudioResponse(await bgmResponse, bgmUrl);
+            } finally {
+                page.off('response', recordLandingMedia);
+            }
+
+            // SFX is eligible only on a forward adjacent transition. Start at
+            // the pure helper's predecessor page and require the exact object
+            // response while the normal reader click advances to its target.
+            const sfxAsset = audioManifest.assets.find(
+                asset =>
+                    asset.identity.type === 'sfx' &&
+                    asset.identity.key === audioAnchors.sfx.key
+            );
+            if (!sfxAsset) {
+                throw new Error(
+                    'Assertion bug: the selected SFX cue is absent from the ' +
+                        'served audio manifest.'
+                );
+            }
+            const sfxUrl = assetUrl(assetBase, sfxAsset.path);
+            await page.goto(
+                readerUrl(
+                    STORY_ID,
+                    audioAnchors.sfx.sceneId,
+                    audioAnchors.sfx.fromPage
+                )
+            );
+            await expect(visual.root).toBeVisible();
+            await expectCanonicalVisualLine(page, audioAnchors.sfx.fromPage);
+            await waitForVisualReady(page);
+            await waitForAudioIdentity(page);
+            const sfxResponse = page.waitForResponse(
+                response => response.url() === sfxUrl,
+                { timeout: RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset }
+            );
+            await advanceTo(
+                page,
+                visual,
+                audioAnchors.sfx.fromPage,
+                audioAnchors.sfx.toPage
+            );
+            expectAudioResponse(await sfxResponse, sfxUrl);
+            await expectCanonicalVisualLine(page, audioAnchors.sfx.toPage);
+        }
 
         // -- Step 3: advance through a portrait change and a background change. --
         // The change targets must be covered by the release (see
@@ -483,22 +677,22 @@ test.describe('Deployed visual-novel release gate', () => {
             page.getByTestId('visual-novel-reader')
         ).not.toBeAttached();
         await expect(page).toHaveURL(dialogueUrl(line));
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
 
         await page
             .getByRole('button', { name: t.visualNovelMode, exact: true })
             .click();
         await waitForVisualReady(page);
         await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
 
         // -- Step 5: resize desktop<->mobile — same line, same identity. --
         await page.setViewportSize({ width: 844, height: 390 });
         await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
         await page.setViewportSize({ width: 1280, height: 800 });
         await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
 
         // -- Step 6: restore a bookmark, then take one choice. --
         await page
@@ -524,7 +718,7 @@ test.describe('Deployed visual-novel release gate', () => {
         await expect(page).toHaveURL(dialogueUrl(line));
         await waitForVisualReady(page);
         await expectCanonicalVisualLine(page, line);
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
 
         // One choice, computed from the story content the app itself ships.
         await page.goto(
@@ -597,7 +791,7 @@ test.describe('Deployed visual-novel release gate', () => {
             readerUrl(STORY_ID, anchors.sceneId, anchors.backgroundPage - 1)
         );
         await waitForVisualReady(page);
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
 
         const fallbackSrcBefore =
             await visual.activeBackground.getAttribute('src');
@@ -628,6 +822,6 @@ test.describe('Deployed visual-novel release gate', () => {
         await expect(
             page.getByRole('button', { name: t.visualNovelMode, exact: true })
         ).toBeEnabled();
-        await expectReleaseIdentity(page, EXPECTED_IDENTITY);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
     });
 });

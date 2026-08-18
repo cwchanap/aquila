@@ -16,7 +16,7 @@ import {
 import { activateStoredRelease, type ActivationResult } from './activation';
 import { normalizeAudioSourcePlan, publishAudioRelease } from './audio-publish';
 import { buildAudioPublicationPlan } from './audio-publication-plan';
-import type { AudioProcessRunner } from './audio-encoder';
+import type { AudioDurationWarning, AudioProcessRunner } from './audio-encoder';
 import { prepareAudioSources } from './audio-source';
 import { verifyStoredAudioRelease } from './audio-candidate-verifier';
 import { verifyStoredRelease } from './candidate-verifier';
@@ -31,6 +31,7 @@ import {
 } from './release-history';
 import {
     createHumanProgressSink,
+    normalizeReportDiagnostics,
     publisherReportExitCode,
     renderHumanReport,
     renderJsonReport,
@@ -744,6 +745,31 @@ function emptyCounts(pointerWritten = false): PublisherReportV1['counts'] {
     };
 }
 
+function durationDriftDiagnostic(
+    warning: AudioDurationWarning
+): PublisherDiagnosticV1 {
+    return {
+        code: 'audio/duration-drift',
+        stage: 'encode',
+        message: warning.message,
+        identity: warning.identity,
+    };
+}
+
+function mergeAudioDiagnostics(
+    report: PublisherReportV1,
+    diagnostics: readonly PublisherDiagnosticV1[]
+): PublisherReportV1 {
+    if (diagnostics.length === 0) return report;
+    return {
+        ...report,
+        warnings: normalizeReportDiagnostics([
+            ...report.warnings,
+            ...diagnostics,
+        ]),
+    };
+}
+
 function activationReport(
     command: ParsedAssetsCommand,
     activation: ActivationResult
@@ -839,12 +865,14 @@ async function runCommandServices(
                         ? {}
                         : { omissionsPath: command.omissionsPath }),
                 });
+                const durationWarnings: AudioDurationWarning[] = [];
                 const assets = await normalizeAudioSourcePlan(sourcePlan, {
                     ...(command.audioProcessRunner === undefined
                         ? {}
                         : { run: command.audioProcessRunner }),
+                    onWarning: warning => durationWarnings.push(warning),
                 });
-                return (
+                const planReport = (
                     await buildAudioPublicationPlan({
                         store: command.store,
                         storyId: command.storyId,
@@ -854,6 +882,10 @@ async function runCommandServices(
                         progress: command.progress,
                     })
                 ).report;
+                return mergeAudioDiagnostics(planReport, [
+                    ...sourcePlan.diagnostics,
+                    ...durationWarnings.map(durationDriftDiagnostic),
+                ]);
             }
             return (
                 await buildPublicationPlan({
@@ -886,7 +918,8 @@ async function runCommandServices(
                         ? {}
                         : { omissionsPath: command.omissionsPath }),
                 });
-                return publishAudioRelease({
+                const durationWarnings: AudioDurationWarning[] = [];
+                const publishReport = await publishAudioRelease({
                     store: command.store,
                     sourceStore: command.sourceStore,
                     storyId: command.storyId,
@@ -895,8 +928,13 @@ async function runCommandServices(
                     ...(command.audioProcessRunner === undefined
                         ? {}
                         : { run: command.audioProcessRunner }),
+                    onWarning: warning => durationWarnings.push(warning),
                     progress: command.progress,
                 });
+                return mergeAudioDiagnostics(publishReport, [
+                    ...sourcePlan.diagnostics,
+                    ...durationWarnings.map(durationDriftDiagnostic),
+                ]);
             }
             const publication = await publishRelease({
                 store: command.store,

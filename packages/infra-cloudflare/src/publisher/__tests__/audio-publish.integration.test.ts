@@ -59,6 +59,7 @@ function sourcePlan(): AudioSourcePlan {
         ],
         unusedPlanKeys: [],
         selectedUnusedKeys: [],
+        diagnostics: [],
     };
 }
 
@@ -69,6 +70,7 @@ function emptySourcePlan(): AudioSourcePlan {
         coverage: [],
         unusedPlanKeys: [],
         selectedUnusedKeys: [],
+        diagnostics: [],
     };
 }
 
@@ -326,15 +328,15 @@ describe('publishAudioRelease', () => {
             `source:stat:${sourceKey}`,
             `source:stat:${receiptKey}`,
             'progress:inspect:inspected audio archive candidates',
+            'progress:input:prepared audio release inputs',
+            `delivery:stat:${objectKey}`,
+            `delivery:stat:${manifestKey}`,
+            `delivery:inspect-pointer:vn/audio/stories/${STORY_ID}/current.json`,
             `source:create:${sourceKey}`,
             `source:read:${sourceKey}`,
             `source:create:${receiptKey}`,
             `source:read:${receiptKey}`,
             'progress:upload:archived audio sources',
-            'progress:input:prepared audio release inputs',
-            `delivery:stat:${objectKey}`,
-            `delivery:stat:${manifestKey}`,
-            `delivery:inspect-pointer:vn/audio/stories/${STORY_ID}/current.json`,
             `delivery:create:${objectKey}`,
             `delivery:read:${objectKey}`,
             'progress:upload:published audio objects',
@@ -404,7 +406,17 @@ describe('publishAudioRelease', () => {
 
         expect(delivery.immutableRequests).toEqual([]);
         expect(delivery.pointerRequests).toEqual([]);
-        expect(delivery.events).toEqual([]);
+        // Delivery read-only inspection (stat, inspectPointer) is allowed —
+        // it happens before the archive write by design. But no delivery
+        // writes or pointer mutations may occur.
+        expect(
+            delivery.events.filter(event =>
+                event.startsWith('delivery:create:')
+            )
+        ).toEqual([]);
+        expect(
+            delivery.events.filter(event => event.startsWith('delivery:cas:'))
+        ).toEqual([]);
     });
 
     it('reads exact archived source and receipt bytes from the private store', async () => {
@@ -427,5 +439,52 @@ describe('publishAudioRelease', () => {
         expect(
             getAudioObjectPath(sha256Bytes(Uint8Array.from([9, 8, 7])))
         ).toBe(delivery.immutableRequests[0]!.key);
+    });
+
+    it('discovers a malformed advisory pointer before any source-bucket mutation', async () => {
+        const { source, delivery } = await stores();
+        // Poison the advisory pointer: it exists but carries a conflicting
+        // content type, so advisoryPointerState must reject it during the
+        // delivery preflight — before publishArchive writes anything.
+        const conflictingPointerDelivery: DeliveryStore = {
+            stat: (key: string) => delivery.stat(key),
+            read: (key: string) => delivery.read(key),
+            createImmutable: (req: ImmutableCreateRequest) =>
+                delivery.createImmutable(req),
+            inspectPointer: async (key: string) => {
+                await delivery.inspectPointer(key);
+                return {
+                    exists: true,
+                    etag: 'stale-etag',
+                    bytes: new TextEncoder().encode('{}'),
+                    contentType: 'text/plain',
+                    cacheControl: 'no-cache',
+                    customMetadata: {},
+                };
+            },
+            readPointer: (key: string) => delivery.readPointer(key),
+            compareAndSwapPointer: (req: PointerWriteRequest) =>
+                delivery.compareAndSwapPointer(req),
+            listKeys: (prefix: string) => delivery.listKeys(prefix),
+            list: (prefix: string) => delivery.list(prefix),
+            close: () => delivery.close(),
+        };
+
+        await expect(
+            publishAudioRelease({
+                store: conflictingPointerDelivery,
+                sourceStore: source,
+                storyId: STORY_ID,
+                target: TARGET,
+                sourcePlan: sourcePlan(),
+                run: audioProcessRunner(Uint8Array.from([9, 8, 7])),
+            })
+        ).rejects.toMatchObject({ code: 'integrity' });
+
+        // The destination was known to be unusable before any source write.
+        expect(source.immutableRequests).toEqual([]);
+        expect(
+            source.events.filter(event => event.startsWith('source:create:'))
+        ).toEqual([]);
     });
 });

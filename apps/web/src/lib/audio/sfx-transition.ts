@@ -12,6 +12,11 @@ export type SfxCommand =
     | { type: 'stop' }
     | { type: 'noop' };
 
+export type PendingSfxPlayback = {
+    position: LinePosition;
+    cueKey: string;
+};
+
 export function sameLinePosition(
     left: LinePosition | null,
     right: LinePosition
@@ -22,6 +27,37 @@ export function sameLinePosition(
         left.sceneId === right.sceneId &&
         left.index === right.index
     );
+}
+
+export function pendingSfxAfterTransition(
+    command: SfxCommand,
+    next: LinePosition,
+    initialLoadPending: boolean
+): PendingSfxPlayback | null {
+    return initialLoadPending && command.type === 'play'
+        ? { position: next, cueKey: command.cueKey }
+        : null;
+}
+
+export function sfxCommandOnInitialRelease(
+    pending: PendingSfxPlayback | null,
+    current: LinePosition,
+    options: {
+        mode: ReaderMode;
+        enabled: boolean;
+        cueResolvable: boolean;
+    }
+): SfxCommand {
+    if (
+        pending === null ||
+        !sameLinePosition(pending.position, current) ||
+        options.mode !== 'visual' ||
+        !options.enabled ||
+        !options.cueResolvable
+    ) {
+        return { type: 'noop' };
+    }
+    return { type: 'play', cueKey: pending.cueKey };
 }
 
 function isDirectFlowEdge(

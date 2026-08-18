@@ -1,5 +1,25 @@
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
+import type { ReaderMode } from '@/lib/reader-mode';
 import { isForwardAdjacent, type LinePosition } from './sfx-transition';
+
+export function bgmKeyOnInitialRelease(options: {
+    mode: ReaderMode;
+    enabled: boolean;
+    activated: boolean;
+    selectedKey: string | null;
+    cueResolvable: boolean;
+}): string | null {
+    if (
+        options.mode !== 'visual' ||
+        !options.enabled ||
+        !options.activated ||
+        options.selectedKey === null ||
+        !options.cueResolvable
+    ) {
+        return null;
+    }
+    return options.selectedKey;
+}
 
 export function activeBgmAt(
     entries: readonly DialogueEntry[],

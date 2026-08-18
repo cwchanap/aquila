@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
-import { activeBgmAt, nextBgmSelection } from '@/lib/audio/bgm-transition';
+import {
+    activeBgmAt,
+    bgmKeyOnInitialRelease,
+    nextBgmSelection,
+} from '@/lib/audio/bgm-transition';
 import type { LinePosition } from '@/lib/audio/sfx-transition';
 
 const entries: DialogueEntry[] = [
@@ -230,5 +234,76 @@ describe('nextBgmSelection', () => {
                 linearFlow
             )
         ).toBe('tension-pulse');
+    });
+});
+
+describe('initial-load BGM timing', () => {
+    it('completes an already-authorized BGM activation after first load', () => {
+        expect(
+            bgmKeyOnInitialRelease({
+                mode: 'visual',
+                enabled: true,
+                activated: true,
+                selectedKey: 'dawn-apartment',
+                cueResolvable: true,
+            })
+        ).toBe('dawn-apartment');
+    });
+
+    it('does not autoplay without an activation gesture', () => {
+        expect(
+            bgmKeyOnInitialRelease({
+                mode: 'visual',
+                enabled: true,
+                activated: false,
+                selectedKey: 'dawn-apartment',
+                cueResolvable: true,
+            })
+        ).toBeNull();
+    });
+
+    it.each([
+        [
+            'Text mode',
+            {
+                mode: 'text' as const,
+                enabled: true,
+                activated: true,
+                selectedKey: 'dawn-apartment',
+                cueResolvable: true,
+            },
+        ],
+        [
+            'disabled BGM',
+            {
+                mode: 'visual' as const,
+                enabled: false,
+                activated: true,
+                selectedKey: 'dawn-apartment',
+                cueResolvable: true,
+            },
+        ],
+        [
+            'null selection',
+            {
+                mode: 'visual' as const,
+                enabled: true,
+                activated: true,
+                selectedKey: null,
+                cueResolvable: true,
+            },
+        ],
+        [
+            'unresolved cue',
+            {
+                mode: 'visual' as const,
+                enabled: true,
+                activated: true,
+                selectedKey: 'dawn-apartment',
+                cueResolvable: false,
+            },
+        ],
+    ] as const)('does not release BGM for %s', (_label, options) => {
+        expect(bgmKeyOnInitialRelease(options)).toBeNull();
     });
 });

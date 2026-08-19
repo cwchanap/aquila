@@ -165,27 +165,11 @@
       audioRuntimeStoryId === storyId
         ? audioRuntime
         : null;
-    const retainedAudioStoryId = storyId;
-    const retainedAudioGeneration = runtimeGeneration;
     readerMode = mode;
     writeReaderMode(mode);
     if (retainedRuntime) void retainedRuntime.softRevalidate();
     if (retainedAudioRuntime && !audioInitialLoadPending) {
-      void retainedAudioRuntime
-        .softRevalidate()
-        .then(identity => {
-          if (
-            !destroyed &&
-            runtimeGeneration === retainedAudioGeneration &&
-            audioRuntimeStoryId === retainedAudioStoryId &&
-            storyId === retainedAudioStoryId
-          ) {
-            audioReleaseIdentity = identity;
-          }
-        })
-        .catch(() => {
-          // Soft revalidation is best-effort; retain the accepted identity.
-        });
+      softRevalidateAudioRuntime();
     }
   }
 

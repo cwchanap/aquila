@@ -726,15 +726,17 @@ describe('ReaderShell', () => {
         localStorage.setItem('aquila:sfx-enabled:v1', 'false');
         localStorage.setItem('aquila:bgm-enabled:v1', 'false');
         const audio = createAudioRuntimeHarness();
+        const createAudioRuntime = vi.fn(() => audio.runtime);
 
         render(ReaderShell, {
             props: {
-                createAudioRuntime: vi.fn(() => audio.runtime),
+                createAudioRuntime,
                 createVisualRuntime: () => createRuntimeHarness().runtime,
             },
         });
         await tick();
 
+        expect(createAudioRuntime).not.toHaveBeenCalled();
         expect(audio.loadActiveRelease).not.toHaveBeenCalled();
     });
 
@@ -984,6 +986,13 @@ describe('ReaderShell', () => {
         const release = deferred<RuntimeReleaseIdentity | null>();
         const audio = createAudioRuntimeHarness(release.promise);
         const sfx = createSfxHarness();
+        // This softRevalidate mock is intentionally unreachable: the
+        // !audioInitialLoadPending guard in setReaderMode prevents the
+        // visibility-change path from calling softRevalidate while the
+        // initial load is still pending. The mock is a tripwire — if the
+        // guard is removed, softRevalidate runs, the mock resolves the
+        // release with null, and the final assertions below fail. Do not
+        // remove this setup as dead code.
         audio.softRevalidate.mockImplementation(async () => {
             audio.resolve.mockImplementation(() => ({
                 status: 'unavailable',

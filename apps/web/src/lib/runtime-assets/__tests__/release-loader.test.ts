@@ -142,6 +142,30 @@ describe('loadValidatedRelease', () => {
         expect(requestSignal?.aborted).toBe(true);
     });
 
+    it('does not call fetchImpl when the parent signal is already aborted', async () => {
+        const fetchImpl = vi.fn(
+            async () => new Response('{"schemaVersion":1}')
+        ) as typeof fetch;
+        const controller = new AbortController();
+        controller.abort();
+
+        await expect(
+            loadValidatedRelease({
+                fetchImpl,
+                source: SOURCE,
+                signal: controller.signal,
+                codecs: {
+                    getCurrentPointerPath: () => 'current.json',
+                    parsePointer: vi.fn(),
+                    parseManifest: vi.fn(),
+                    canonicalReleaseContent: vi.fn(),
+                },
+            })
+        ).rejects.toThrow('aborted before start');
+
+        expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
     it('runs pointer acceptance after parsing and before the manifest request', async () => {
         const events: string[] = [];
         const fixture = makeLoaderFixture({

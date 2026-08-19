@@ -505,6 +505,42 @@ test.describe('Deployed visual-novel release gate', () => {
         let bgmRequestCount = 0;
         let bgmResponseCount = 0;
 
+        const expectNoDuplicateBgmRequest = async (
+            action: () => Promise<void>
+        ): Promise<void> => {
+            const url = bgmUrl;
+            if (!AUDIO_GATE_ENABLED || url === null) {
+                await action();
+                return;
+            }
+
+            const requestCountBefore = bgmRequestCount;
+            const responseCountBefore = bgmResponseCount;
+            const duplicateRequest = page.waitForRequest(
+                request =>
+                    request.resourceType() === 'media' && request.url() === url,
+                { timeout: 2_000 }
+            );
+            // Convert to a settled result immediately so the rejection
+            // handler is attached before action() can exceed the timeout,
+            // preventing an unhandled rejection if the action outlasts the
+            // 2s wait window.
+            const settled = duplicateRequest
+                .then(request => ({
+                    status: 'fulfilled' as const,
+                    value: request,
+                }))
+                .catch(reason => ({
+                    status: 'rejected' as const,
+                    reason,
+                }));
+            await action();
+            const result = await settled;
+            expect(result.status).toBe('rejected');
+            expect(bgmRequestCount).toBe(requestCountBefore);
+            expect(bgmResponseCount).toBe(responseCountBefore);
+        };
+
         if (AUDIO_GATE_ENABLED) {
             const audioManifestUrl = assetUrl(
                 assetBase,
@@ -624,6 +660,48 @@ test.describe('Deployed visual-novel release gate', () => {
             expect(bgmRequestCount).toBe(1);
             expect(bgmResponseCount).toBe(1);
 
+            // BGM is now proven active. Mode switches and responsive remounts
+            // must not re-request it — the duplicate-BGM lifecycle check is
+            // meaningful only while the tracked BGM is actually playing, so it
+            // runs here immediately after activation rather than after a later
+            // page.goto() that would leave nothing playing.
+            const bgmLine = audioAnchors.bgm.page;
+            await expectNoDuplicateBgmRequest(async () => {
+                await page
+                    .getByRole('button', { name: t.textMode, exact: true })
+                    .click();
+                await expect(
+                    page.getByTestId('visual-novel-reader')
+                ).not.toBeAttached();
+                await expect(page).toHaveURL(dialogueUrl(bgmLine));
+                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+                await waitForAudioIdentity(page);
+            });
+            await expectNoDuplicateBgmRequest(async () => {
+                await page
+                    .getByRole('button', {
+                        name: t.visualNovelMode,
+                        exact: true,
+                    })
+                    .click();
+                await waitForVisualReady(page);
+                await expectCanonicalVisualLine(page, bgmLine);
+                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+                await waitForAudioIdentity(page);
+            });
+            await expectNoDuplicateBgmRequest(async () => {
+                await page.setViewportSize({ width: 844, height: 390 });
+                await expectCanonicalVisualLine(page, bgmLine);
+                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+                await waitForAudioIdentity(page);
+            });
+            await expectNoDuplicateBgmRequest(async () => {
+                await page.setViewportSize({ width: 1280, height: 800 });
+                await expectCanonicalVisualLine(page, bgmLine);
+                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+                await waitForAudioIdentity(page);
+            });
+
             // SFX is eligible only on a forward adjacent transition. Start at
             // the pure helper's predecessor page and require the exact object
             // response while the normal reader click advances to its target.
@@ -663,42 +741,6 @@ test.describe('Deployed visual-novel release gate', () => {
             expectAudioResponse(await sfxResponse, sfxUrl);
             await expectCanonicalVisualLine(page, audioAnchors.sfx.toPage);
         }
-
-        const expectNoDuplicateBgmRequest = async (
-            action: () => Promise<void>
-        ): Promise<void> => {
-            const url = bgmUrl;
-            if (!AUDIO_GATE_ENABLED || url === null) {
-                await action();
-                return;
-            }
-
-            const requestCountBefore = bgmRequestCount;
-            const responseCountBefore = bgmResponseCount;
-            const duplicateRequest = page.waitForRequest(
-                request =>
-                    request.resourceType() === 'media' && request.url() === url,
-                { timeout: 2_000 }
-            );
-            // Convert to a settled result immediately so the rejection
-            // handler is attached before action() can exceed the timeout,
-            // preventing an unhandled rejection if the action outlasts the
-            // 2s wait window.
-            const settled = duplicateRequest
-                .then(request => ({
-                    status: 'fulfilled' as const,
-                    value: request,
-                }))
-                .catch(reason => ({
-                    status: 'rejected' as const,
-                    reason,
-                }));
-            await action();
-            const result = await settled;
-            expect(result.status).toBe('rejected');
-            expect(bgmRequestCount).toBe(requestCountBefore);
-            expect(bgmResponseCount).toBe(responseCountBefore);
-        };
 
         if (AUDIO_GATE_ENABLED) {
             await page.goto(
@@ -769,51 +811,43 @@ test.describe('Deployed visual-novel release gate', () => {
 
         // -- Step 4: visual<->text — same line, same identity. --
         const line = anchors.backgroundPage;
-        await expectNoDuplicateBgmRequest(async () => {
-            await page
-                .getByRole('button', { name: t.textMode, exact: true })
-                .click();
-            // The visual leaf unmounts in text mode; the canonical line survives in
-            // the URL (the text reader renders its own progress widget).
-            await expect(
-                page.getByTestId('visual-novel-reader')
-            ).not.toBeAttached();
-            await expect(page).toHaveURL(dialogueUrl(line));
-            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-            if (AUDIO_GATE_ENABLED) {
-                await waitForAudioIdentity(page);
-            }
-        });
+        await page
+            .getByRole('button', { name: t.textMode, exact: true })
+            .click();
+        // The visual leaf unmounts in text mode; the canonical line survives in
+        // the URL (the text reader renders its own progress widget).
+        await expect(
+            page.getByTestId('visual-novel-reader')
+        ).not.toBeAttached();
+        await expect(page).toHaveURL(dialogueUrl(line));
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        if (AUDIO_GATE_ENABLED) {
+            await waitForAudioIdentity(page);
+        }
 
-        await expectNoDuplicateBgmRequest(async () => {
-            await page
-                .getByRole('button', { name: t.visualNovelMode, exact: true })
-                .click();
-            await waitForVisualReady(page);
-            await expectCanonicalVisualLine(page, line);
-            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-            if (AUDIO_GATE_ENABLED) {
-                await waitForAudioIdentity(page);
-            }
-        });
+        await page
+            .getByRole('button', { name: t.visualNovelMode, exact: true })
+            .click();
+        await waitForVisualReady(page);
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        if (AUDIO_GATE_ENABLED) {
+            await waitForAudioIdentity(page);
+        }
 
         // -- Step 5: resize desktop<->mobile — same line, same identity. --
-        await expectNoDuplicateBgmRequest(async () => {
-            await page.setViewportSize({ width: 844, height: 390 });
-            await expectCanonicalVisualLine(page, line);
-            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-            if (AUDIO_GATE_ENABLED) {
-                await waitForAudioIdentity(page);
-            }
-        });
-        await expectNoDuplicateBgmRequest(async () => {
-            await page.setViewportSize({ width: 1280, height: 800 });
-            await expectCanonicalVisualLine(page, line);
-            await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-            if (AUDIO_GATE_ENABLED) {
-                await waitForAudioIdentity(page);
-            }
-        });
+        await page.setViewportSize({ width: 844, height: 390 });
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        if (AUDIO_GATE_ENABLED) {
+            await waitForAudioIdentity(page);
+        }
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await expectCanonicalVisualLine(page, line);
+        await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+        if (AUDIO_GATE_ENABLED) {
+            await waitForAudioIdentity(page);
+        }
 
         // -- Step 6: restore a bookmark, then take one choice. --
         await page

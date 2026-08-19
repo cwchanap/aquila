@@ -130,6 +130,28 @@ describe('createBgmPlayer', () => {
         });
     });
 
+    it('stops the previous cue when the replacement cannot resolve', () => {
+        const first = fakeAudio(2);
+        const createAudio = vi.fn().mockReturnValueOnce(first);
+        const resolveUrl = vi
+            .fn<() => string | undefined>()
+            .mockReturnValueOnce(
+                'https://assets.example/bgm/dawn-apartment.mp3'
+            )
+            .mockReturnValueOnce(undefined);
+        const player = createBgmPlayer(createAudio, resolveUrl);
+
+        player.play('dawn-apartment');
+        player.play('tension-pulse');
+
+        expect(first.pause).toHaveBeenCalledTimes(1);
+        expect(first.currentTime).toBe(0);
+        expect(createAudio).toHaveBeenCalledTimes(1);
+        expect(warn).toHaveBeenCalledWith('Visual-novel BGM cue unavailable', {
+            cueKey: 'tension-pulse',
+        });
+    });
+
     it('stops and rewinds the active cue', () => {
         const audio = fakeAudio(4);
         const player = createBgmPlayer(() => audio);

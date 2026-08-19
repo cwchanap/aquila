@@ -43,13 +43,16 @@ export function createBgmPlayer(
         play(cueKey: string): void {
             if (disposed) return;
             const src = resolveUrl(cueKey);
+            if (current && currentKey === cueKey) return;
+
+            // Stop the old track even when the replacement cue cannot resolve
+            // — a zero/partial-asset release is a normal runtime condition,
+            // and leaving the previous BGM looping would be wrong.
+            stopCurrent();
             if (!src) {
                 logger.warn('Visual-novel BGM cue unavailable', { cueKey });
                 return;
             }
-            if (current && currentKey === cueKey) return;
-
-            stopCurrent();
             try {
                 const audio = createAudio(src);
                 audio.loop = true;

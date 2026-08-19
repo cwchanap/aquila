@@ -287,7 +287,7 @@ describe('AudioReaderRuntime', () => {
         });
     });
 
-    it('does not reactivate state when a release completes after dispose', async () => {
+    it('does not fetch further or reactivate state when a fetch completes after dispose', async () => {
         const fixture = makeAudioReleaseFixture({
             assets: [audioAsset('sfx', 'door-open')],
         });
@@ -307,9 +307,8 @@ describe('AudioReaderRuntime', () => {
         const loading = runtime.loadActiveRelease();
         runtime.dispose();
         resolveFetch(new Response(fixture.pointerText));
-        await vi.waitFor(() => expect(fetchCalls).toBe(2));
-        resolveFetch(new Response(fixture.manifestText));
         await expect(loading).resolves.toBeNull();
+        expect(fetchCalls).toBe(1);
         expect(runtime.resolve('sfx', 'door-open')).toEqual({
             status: 'unavailable',
             reason: 'release-not-loaded',

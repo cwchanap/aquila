@@ -660,12 +660,30 @@ test.describe('Deployed visual-novel release gate', () => {
             expect(bgmRequestCount).toBe(1);
             expect(bgmResponseCount).toBe(1);
 
-            // BGM is now proven active. Mode switches and responsive remounts
-            // must not re-request it — the duplicate-BGM lifecycle check is
+            // BGM is now proven active. Responsive remounts (viewport swaps)
+            // must not re-request the track — this duplicate-BGM check is
             // meaningful only while the tracked BGM is actually playing, so it
-            // runs here immediately after activation rather than after a later
-            // page.goto() that would leave nothing playing.
+            // runs here immediately after activation, BEFORE any mode switch
+            // that would stop the track and leave nothing to duplicate.
             const bgmLine = audioAnchors.bgm.page;
+            await expectNoDuplicateBgmRequest(async () => {
+                await page.setViewportSize({ width: 844, height: 390 });
+                await expectCanonicalVisualLine(page, bgmLine);
+                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+                await waitForAudioIdentity(page);
+            });
+            await expectNoDuplicateBgmRequest(async () => {
+                await page.setViewportSize({ width: 1280, height: 800 });
+                await expectCanonicalVisualLine(page, bgmLine);
+                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
+                await waitForAudioIdentity(page);
+            });
+            // Mode switches are a separate lifecycle: Text mode stops the BGM
+            // and resets bgmActivated (ReaderShell.setReaderMode), and
+            // switching back to Visual does NOT autoplay (only a gesture
+            // activates BGM). The no-duplicate assertion here proves neither
+            // switch spurious re-requests the track; it does NOT claim a
+            // live track survives the round trip.
             await expectNoDuplicateBgmRequest(async () => {
                 await page
                     .getByRole('button', { name: t.textMode, exact: true })
@@ -685,18 +703,6 @@ test.describe('Deployed visual-novel release gate', () => {
                     })
                     .click();
                 await waitForVisualReady(page);
-                await expectCanonicalVisualLine(page, bgmLine);
-                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-                await waitForAudioIdentity(page);
-            });
-            await expectNoDuplicateBgmRequest(async () => {
-                await page.setViewportSize({ width: 844, height: 390 });
-                await expectCanonicalVisualLine(page, bgmLine);
-                await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
-                await waitForAudioIdentity(page);
-            });
-            await expectNoDuplicateBgmRequest(async () => {
-                await page.setViewportSize({ width: 1280, height: 800 });
                 await expectCanonicalVisualLine(page, bgmLine);
                 await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
                 await waitForAudioIdentity(page);

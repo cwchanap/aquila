@@ -768,7 +768,9 @@ describe('ReaderShell', () => {
         release.resolve(AUDIO_RELEASE_IDENTITY);
         await Promise.resolve();
         await tick();
-        expect(sfx.player.play).toHaveBeenCalledWith('door-open');
+        // The delayed SFX is dropped, not replayed from release completion —
+        // replaying would call play() outside the user gesture (P1 Safari fix).
+        expect(sfx.player.play).not.toHaveBeenCalled();
     });
 
     it('passes distinct resolved SFX and BGM URLs to the real players', async () => {
@@ -925,6 +927,11 @@ describe('ReaderShell', () => {
         release.resolve(AUDIO_RELEASE_IDENTITY);
         await Promise.resolve();
         await tick();
+        // BGM is not replayed from release completion — that would call play()
+        // outside the user gesture (P1 Safari fix). The next eligible reader
+        // interaction starts armed BGM now that the runtime is ready.
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
         expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
 
         firstView.unmount();
@@ -979,28 +986,13 @@ describe('ReaderShell', () => {
         expect(bgm.player.play).not.toHaveBeenCalled();
     });
 
-    it('does not cancel queued first-load SFX when visibility changes', async () => {
+    it('does not soft-revalidate audio on visibility change during initial load and drops the queued SFX', async () => {
         stubMatchMedia(false);
         localStorage.setItem(READER_MODE_KEY, 'visual');
         readerState.dialogue = sfxDialogue;
         const release = deferred<RuntimeReleaseIdentity | null>();
         const audio = createAudioRuntimeHarness(release.promise);
         const sfx = createSfxHarness();
-        // This softRevalidate mock is intentionally unreachable: the
-        // !audioInitialLoadPending guard in setReaderMode prevents the
-        // visibility-change path from calling softRevalidate while the
-        // initial load is still pending. The mock is a tripwire — if the
-        // guard is removed, softRevalidate runs, the mock resolves the
-        // release with null, and the final assertions below fail. Do not
-        // remove this setup as dead code.
-        audio.softRevalidate.mockImplementation(async () => {
-            audio.resolve.mockImplementation(() => ({
-                status: 'unavailable',
-                reason: 'release-not-loaded',
-            }));
-            release.resolve(null);
-            return null;
-        });
 
         render(ReaderShell, {
             props: {
@@ -1018,17 +1010,15 @@ describe('ReaderShell', () => {
         await Promise.resolve();
         await tick();
 
-        audio.resolve.mockImplementation(() => ({
-            status: 'resolved',
-            url: 'https://audio.example/sfx/door-open.mp3',
-            asset: null,
-        }));
         release.resolve(AUDIO_RELEASE_IDENTITY);
         await Promise.resolve();
         await tick();
 
+        // The !audioInitialLoadPending guard prevents softRevalidate during
+        // initial load. The queued SFX is dropped on release completion, not
+        // replayed (P1 Safari fix — play() must stay within the user gesture).
         expect(audio.softRevalidate).not.toHaveBeenCalled();
-        expect(sfx.player.play).toHaveBeenCalledWith('door-open');
+        expect(sfx.player.play).not.toHaveBeenCalled();
     });
 
     it('defers a newly selected BGM cue until the initial load completes', async () => {
@@ -1063,8 +1053,10 @@ describe('ReaderShell', () => {
         release.resolve(AUDIO_RELEASE_IDENTITY);
         await Promise.resolve();
         await tick();
-
-        expect(bgm.player.play).toHaveBeenCalledOnce();
+        // BGM is not replayed from release completion (P1 Safari fix). The
+        // next pointerdown starts armed BGM now that the runtime is ready.
+        expect(bgm.player.play).not.toHaveBeenCalled();
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
         expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
     });
 
@@ -1147,7 +1139,12 @@ describe('ReaderShell', () => {
         readerState.dialogue = bgmDialogue;
         readerState.dialogueIndex = 1;
         const bgm = createBgmHarness();
-        renderVisualWithBgm(bgm);
+        renderVisualWithBgm(bgm, {
+            createAudioRuntime: () => createAudioRuntimeHarness().runtime,
+        });
+        await tick();
+        await Promise.resolve();
+        await tick();
 
         expect(bgm.player.play).not.toHaveBeenCalled();
         await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
@@ -1161,7 +1158,12 @@ describe('ReaderShell', () => {
             readerState.dialogue = bgmDialogue;
             readerState.dialogueIndex = 1;
             const bgm = createBgmHarness();
-            renderVisualWithBgm(bgm);
+            renderVisualWithBgm(bgm, {
+                createAudioRuntime: () => createAudioRuntimeHarness().runtime,
+            });
+            await tick();
+            await Promise.resolve();
+            await tick();
 
             await fireEvent.keyDown(document.body, { key });
             expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
@@ -1403,11 +1405,15 @@ describe('ReaderShell', () => {
         const view = render(ReaderShell, {
             props: {
                 createBgmPlayer: () => bgm.player,
+                createAudioRuntime: () => createAudioRuntimeHarness().runtime,
                 createVisualRuntime: () => createRuntimeHarness().runtime,
             },
         });
 
         await chooseReaderMode('Visual Novel');
+        await tick();
+        await Promise.resolve();
+        await tick();
         expect(bgm.player.play).not.toHaveBeenCalled();
         await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
         expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
@@ -1518,7 +1524,13 @@ describe('ReaderShell', () => {
         readerState.dialogueIndex = 0;
         const bgm = createBgmHarness();
         const sfx = createSfxHarness();
-        renderVisualWithBgm(bgm, { createSfxPlayer: () => sfx.player });
+        renderVisualWithBgm(bgm, {
+            createSfxPlayer: () => sfx.player,
+            createAudioRuntime: () => createAudioRuntimeHarness().runtime,
+        });
+        await tick();
+        await Promise.resolve();
+        await tick();
         await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
 
         readerState.dialogueIndex = 1;

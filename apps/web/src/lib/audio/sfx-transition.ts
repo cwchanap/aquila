@@ -39,27 +39,6 @@ export function pendingSfxAfterTransition(
         : null;
 }
 
-export function sfxCommandOnInitialRelease(
-    pending: PendingSfxPlayback | null,
-    current: LinePosition,
-    options: {
-        mode: ReaderMode;
-        enabled: boolean;
-        cueResolvable: boolean;
-    }
-): SfxCommand {
-    if (
-        pending === null ||
-        !sameLinePosition(pending.position, current) ||
-        options.mode !== 'visual' ||
-        !options.enabled ||
-        !options.cueResolvable
-    ) {
-        return { type: 'noop' };
-    }
-    return { type: 'play', cueKey: pending.cueKey };
-}
-
 function isDirectFlowEdge(
     flow: StoryFlowConfig | null,
     fromSceneId: string,

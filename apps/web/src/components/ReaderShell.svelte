@@ -23,7 +23,6 @@
   } from '@/lib/audio/bgm-player';
   import { readBgmEnabled, writeBgmEnabled } from '@/lib/audio/bgm-preference';
   import {
-    bgmKeyOnInitialRelease,
     nextBgmSelection,
   } from '@/lib/audio/bgm-transition';
   import {
@@ -34,9 +33,7 @@
     nextSfxCommand,
     pendingSfxAfterTransition,
     sameLinePosition,
-    sfxCommandOnInitialRelease,
     type LinePosition,
-    type PendingSfxPlayback,
   } from '@/lib/audio/sfx-transition';
   import {
     createVisualRuntime as createDefaultVisualRuntime,
@@ -110,7 +107,6 @@
   let audioRuntimeStoryId: string | null = $state(null);
   let audioRuntimeAttempted = $state(false);
   let audioInitialLoadPending = $state(false);
-  let pendingInitialSfx: PendingSfxPlayback | null = null;
   let sfxEnabled = $state(readSfxEnabled());
   let bgmEnabled = $state(readBgmEnabled());
   const sfxPlayer = createSfxPlayer(
@@ -153,7 +149,6 @@
       sfxPlayer.stop();
       bgmPlayer.stop();
       bgmActivated = false;
-      pendingInitialSfx = null;
     }
     const retainedRuntime =
       mode === 'visual' &&
@@ -235,7 +230,6 @@
   }
 
   function finishInitialAudioLoad(
-    runtime: AudioReaderRuntime,
     activeStoryId: string,
     generation: number,
     identity: RuntimeReleaseIdentity | null
@@ -250,34 +244,12 @@
 
     audioReleaseIdentity = identity;
     audioInitialLoadPending = false;
-
-    const pending = pendingInitialSfx;
-    const sfxCommand = sfxCommandOnInitialRelease(
-      pending,
-      currentLinePosition(),
-      {
-        mode: readerMode,
-        enabled: sfxEnabled,
-        cueResolvable:
-          pending !== null &&
-          runtime.resolve('sfx', pending.cueKey).status === 'resolved',
-      }
-    );
-    pendingInitialSfx = null;
-    if (sfxCommand.type === 'play') {
-      sfxPlayer.play(sfxCommand.cueKey);
-    }
-
-    const bgmKey = bgmKeyOnInitialRelease({
-      mode: readerMode,
-      enabled: bgmEnabled,
-      activated: bgmActivated,
-      selectedKey: selectedBgmKey,
-      cueResolvable:
-        selectedBgmKey !== null &&
-        runtime.resolve('bgm', selectedBgmKey).status === 'resolved',
-    });
-    if (bgmKey !== null) bgmPlayer.play(bgmKey);
+    // Drop any SFX that was queued while the release was loading — replaying
+    // it here would call HTMLAudioElement.play() outside the user gesture that
+    // caused the transition, which WebKit rejects (and the players swallow the
+    // rejection). BGM is not replayed either; the next eligible reader
+    // interaction (pointerdown on the reader-ready host) calls activateBgm(),
+    // which starts armed BGM now that audioInitialLoadPending is false.
   }
 
   function ensureAudioRuntime(activeStoryId: string): void {
@@ -303,12 +275,7 @@
     void runtime
       .loadActiveRelease()
       .then(identity =>
-        finishInitialAudioLoad(
-          runtime,
-          activeStoryId,
-          generation,
-          identity
-        )
+        finishInitialAudioLoad(activeStoryId, generation, identity)
       )
       .catch(() => {
         if (
@@ -317,7 +284,6 @@
           audioRuntimeStoryId === activeStoryId
         ) {
           audioInitialLoadPending = false;
-          pendingInitialSfx = null;
         }
       });
   }
@@ -360,7 +326,6 @@
     visualRuntimeAttempted = false;
     audioRuntimeAttempted = false;
     audioInitialLoadPending = false;
-    pendingInitialSfx = null;
     runtimeTransitioning = true;
     try {
       audio?.dispose();
@@ -440,7 +405,6 @@
       nextPosition,
       audioInitialLoadPending
     );
-    pendingInitialSfx = delayed;
     if (!delayed) {
       if (command.type === 'play') {
         sfxPlayer.play(command.cueKey);
@@ -539,7 +503,6 @@
     sfxEnabled = enabled;
     writeSfxEnabled(enabled);
     if (!enabled) {
-      pendingInitialSfx = null;
       sfxPlayer.stop();
     }
   }
@@ -685,7 +648,6 @@
     audioRuntimeStoryId = null;
     audioRuntimeAttempted = false;
     audioInitialLoadPending = false;
-    pendingInitialSfx = null;
     sfxPlayer.dispose();
     bgmPlayer.dispose();
     try {

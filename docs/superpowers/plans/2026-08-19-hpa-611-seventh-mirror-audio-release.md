@@ -20,6 +20,7 @@
 - Initial generation uses one candidate per unresolved cue; additional candidates are generated only for rejected keys.
 - Paid generation must use the dry-run scheduled request count as the hard initial request cap.
 - Re-check the current ElevenLabs account plan and applicable Music/model terms before paid generation; record the dated source/result in Linear rather than automating legal interpretation.
+- After that check, create the non-empty untracked `.tmp/audio-generation/theSeventhMirror/music-terms-note.md` required by HPA-608 before any BGM provider call.
 - Audio `publish` never activates production. Production pointer mutation is an explicit `activate --media audio` command with exact story confirmation.
 - Preview and production publication of the frozen inputs must produce identical `releaseId` and `manifestSha256`; mismatch is a hard stop.
 - Reuse the deployed preview's existing asset preview namespace. Do not invent a new preview ID unless the visual release is deliberately seeded there with the existing visual publisher.
@@ -46,7 +47,7 @@
 
 ### Uncommitted run state
 
-- `.tmp/audio-generation/theSeventhMirror/**` — provider candidates, receipts, music terms note, and `selection.json`.
+- `.tmp/audio-generation/theSeventhMirror/**` — provider candidates, receipts, `music-terms-note.md`, and `selection.json`.
 - `.tmp/hpa-611/**` — frozen hashes, reports, silent-baseline inputs, publisher/verifier evidence.
 - R2 `aquila-vn-source` — approved selected originals + receipts.
 - R2 `aquila-vn-delivery` — immutable MP3 objects/manifests and mutable audio pointers.
@@ -62,6 +63,7 @@
 - Create untracked: `.tmp/hpa-611/audio-plan.sha256`
 - Create untracked: `.tmp/hpa-611/audio-report.json`
 - Create untracked: `.tmp/hpa-611/generation-dry-run.json`
+- Create untracked: `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`
 - Update: Linear HPA-611 evidence comment
 
 **Produces:** one immutable release-input evidence block and `INITIAL_REQUEST_CAP` for Task 3.
@@ -120,11 +122,12 @@ console.log(JSON.stringify({
   bgm: r.bgm,
   scheduledRequests: r.scheduledRequests.length,
   providerIssues: r.providerIssues?.length ?? 0,
+  estimate: r.estimate,
 }));
 ' .tmp/hpa-611/generation-dry-run.json
 ```
 
-Expected: zero provider issues. The scheduled request count may be lower than 41 if valid current-spec candidates already exist locally.
+Expected: zero provider issues. The scheduled request count may be lower than 41 if valid current-spec candidates already exist locally. Treat the CLI's dated `estimate` as advisory and re-check current provider pricing/account state separately.
 
 - [ ] **Step 4: Derive and retain the exact initial request cap**
 
@@ -140,7 +143,7 @@ printf '%s\n' "$INITIAL_REQUEST_CAP" | tee .tmp/hpa-611/initial-request-cap.txt
 
 Do not round this upward to 100. A zero value means there is no initial paid generation work to run.
 
-- [ ] **Step 5: Complete the human provider-plan/terms check before any paid call**
+- [ ] **Step 5: Complete the human provider-plan/terms check and create the HPA-608 note before any paid call**
 
 Confirm against the current ElevenLabs account/provider documentation or UI:
 
@@ -149,9 +152,19 @@ Confirm against the current ElevenLabs account/provider documentation or UI:
 - the applicable Music/model terms permit the intended game distribution;
 - the current provider estimate/credits are recorded when calculable.
 
-Write the check date, source, result, base commit, audio-plan SHA-256, compiler counts, dry-run counts, intended durations, and `INITIAL_REQUEST_CAP` into one Linear HPA-611 comment. Do not paste credentials or provider receipts.
+Set `MUSIC_TERMS_NOTE` to a short actual note containing the check date, source, and operator acknowledgement, then persist it in the HPA-608 store:
 
-**Gate:** no paid `generate` command before this Linear evidence exists.
+```bash
+test -n "${MUSIC_TERMS_NOTE:-}"
+mkdir -p .tmp/audio-generation/theSeventhMirror
+printf '%s\n' "$MUSIC_TERMS_NOTE" \
+  > .tmp/audio-generation/theSeventhMirror/music-terms-note.md
+test -s .tmp/audio-generation/theSeventhMirror/music-terms-note.md
+```
+
+Write the same check date/source/result, base commit, audio-plan SHA-256, compiler counts, dry-run counts, intended durations, and `INITIAL_REQUEST_CAP` into one Linear HPA-611 comment. Do not paste credentials or provider receipts.
+
+**Gate:** no paid `generate` command before both the Linear evidence and the non-empty local music terms note exist.
 
 ---
 
@@ -276,14 +289,15 @@ For an existing active baseline, populate the same two files from the deep-verif
 
 **Produces:** at least one current-spec valid candidate for every cue not intentionally deferred before curation.
 
-- [ ] **Step 1: Confirm the frozen inputs have not moved**
+- [ ] **Step 1: Confirm the frozen inputs and BGM prerequisite have not moved**
 
 ```bash
 test "$(git rev-parse HEAD)" = "$(cat .tmp/hpa-611/base-commit.txt)"
 shasum -a 256 -c .tmp/hpa-611/audio-plan.sha256
+test -s .tmp/audio-generation/theSeventhMirror/music-terms-note.md
 ```
 
-If either fails, return to Task 1 and re-freeze. Do not reuse stale request/cost evidence.
+If the commit or audio-plan check fails, return to Task 1 and re-freeze. Do not reuse stale request/cost evidence.
 
 - [ ] **Step 2: Run the paid pass only when the retained cap is non-zero**
 
@@ -344,7 +358,7 @@ Review SFX for transient clarity/tail/level/style continuity and BGM for loop co
 
 - [ ] **Step 2: Select each accepted candidate through the HPA-608 CLI**
 
-For each accepted key/candidate pair:
+For each accepted key/candidate pair, set `AUDIO_KEY` and `CANDIDATE_ID` to the actual reviewed values and run:
 
 ```bash
 bun packages/stories/src/audio-generation/cli.ts select \
@@ -353,11 +367,11 @@ bun packages/stories/src/audio-generation/cli.ts select \
   --candidate "$CANDIDATE_ID"
 ```
 
-The command validates the current generation spec and source checksum before updating `selection.json`.
+The command validates the current generation spec and source checksum before updating `selection.json`. Do not select a cue that the final release will omit.
 
 - [ ] **Step 3: Generate extra candidates only for rejected keys**
 
-For a key with one rejected current-spec candidate, request exactly one additional candidate by raising the desired total for that key from 1 to 2:
+For a key with one rejected current-spec candidate, set `AUDIO_KEY` to that actual key and request exactly one additional candidate by raising the desired total from 1 to 2:
 
 ```bash
 bun packages/stories/src/audio-generation/cli.ts generate \
@@ -374,23 +388,7 @@ If two candidates are rejected, repeat with `--candidate-count 3 --max-requests 
 
 If every used cue has an approved selection, do not create `audio-omissions.json`.
 
-If one or more used cues are deliberately omitted, create:
-
-`packages/stories/raw/theSeventhMirror/docs/audio-omissions.json`
-
-with exactly:
-
-```json
-{
-  "schemaVersion": 1,
-  "storyId": "the_seventh_mirror",
-  "omissions": {
-    "<actual-cue-key>": "<short human release reason>"
-  }
-}
-```
-
-Replace the example entry with only the real omitted keys/reasons. Do not copy the Task 2 all-omitted baseline into the repository.
+If one or more used cues are deliberately omitted, create `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` with HPA-609's exact v1 shape: `schemaVersion: 1`, `storyId: "the_seventh_mirror"`, and an `omissions` object mapping only the actual omitted cue keys to their actual short non-empty review reasons. Do not copy the Task 2 all-omitted baseline into the repository and do not leave a selected entry for a cue that is omitted.
 
 - [ ] **Step 5: Reconfirm compiler and publisher coverage before any R2 release write**
 
@@ -431,7 +429,7 @@ Do not edit cue placement, `audio-plan.json`, `selection.json`, or final omissio
 
 Set `PREVIEW_ID` to the exact preview namespace already configured for the deployed release-gate preview. It must be the same value the deployed reader uses and the same value passed as `RELEASE_GATE_PREVIEW_ID`.
 
-Do not make up `hpa-611-*` unless the visual release is intentionally seeded into that same namespace with the existing visual publisher.
+Do not make up an HPA-611-specific ID unless the visual release is intentionally seeded into that same namespace with the existing visual publisher.
 
 - [ ] **Step 2: Retain the active visual identity in that preview namespace**
 
@@ -563,7 +561,7 @@ VERCEL_AUTOMATION_BYPASS_SECRET="$VERCEL_AUTOMATION_BYPASS_SECRET" \
 bun --filter e2e test:release-gate
 ```
 
-If the preview is not protected, omit `VERCEL_AUTOMATION_BYPASS_SECRET`; do not invent a value.
+Set `DEPLOYED_PREVIEW_URL` to the actual preview deployment URL. If the preview is not protected, omit `VERCEL_AUTOMATION_BYPASS_SECRET`; do not invent a value.
 
 - [ ] **Step 9: Perform the bounded manual direction review**
 
@@ -689,7 +687,7 @@ RELEASE_GATE_AUDIO_MANIFEST_SHA256="$PRODUCTION_AUDIO_MANIFEST_SHA256" \
 bun --filter e2e test:release-gate
 ```
 
-Also perform a short production reader smoke for one SFX cue, BGM start/continue/stop, missing/omitted silence, navigation, and audio controls.
+Set `DEPLOYED_PRODUCTION_URL` to the actual production reader URL. Also perform a short production reader smoke for one SFX cue, BGM start/continue/stop, missing/omitted silence, navigation, and audio controls.
 
 ---
 
@@ -783,14 +781,15 @@ bun run build
 
 Expected: all commands pass. The credentialed deployed gate evidence is separate from the normal local E2E suite and was already run in Tasks 5-7.
 
-- [ ] **Step 2: Inspect tracked changes**
+- [ ] **Step 2: Inspect tracked changes and branch scope**
 
 ```bash
 git status --short
 git diff --check
+git diff --name-only main...HEAD
 ```
 
-Expected: only the HPA-611 design/plan docs and, if real final omissions exist, `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json`. No audio binary, receipt, selection, `.tmp` report, or provider metadata may be tracked.
+Expected: no generated audio, receipt, selection, `.tmp` report, or provider metadata is tracked. The branch diff contains the HPA-611 design/plan docs and, only when real final omissions exist, `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` plus any smallest blocker fix explicitly required by this release.
 
 - [ ] **Step 3: If final omissions exist, commit them on this same HPA-611 branch**
 
@@ -808,6 +807,7 @@ Record:
 - base commit + audio-plan SHA-256;
 - 28 SFX / 13 BGM plan sanity counts and final compiler coverage;
 - initial scheduled request cap, actual provider requests, and cost/credits where calculable;
+- terms/account check date/source and confirmation that the local music note existed before BGM generation;
 - selected vs omitted counts;
 - preview audio release ID/checksum;
 - production audio release ID/checksum and exact equality result;

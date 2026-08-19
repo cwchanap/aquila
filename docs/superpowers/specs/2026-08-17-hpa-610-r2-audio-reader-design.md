@@ -16,6 +16,7 @@ Replace the local production audio catalog seam with validated R2 audio releases
 - `nextBgmSelection` remains the only BGM selection authority;
 - initial/restored SFX remains silent;
 - restored/current BGM is armed but gesture-gated;
+- the first accepted release does not replay SFX queued during the load or start BGM — both wait for the next eligible user gesture (Safari/WebKit fix, since `HTMLAudioElement.play()` outside the gesture is rejected);
 - responsive remounts do not recreate players;
 - missing audio never blocks reader progression.
 
@@ -270,57 +271,36 @@ export function pendingSfxAfterTransition(
     next: LinePosition,
     initialLoadPending: boolean
 ): PendingSfxPlayback | null;
-
-export function sfxCommandOnInitialRelease(
-    pending: PendingSfxPlayback | null,
-    current: LinePosition,
-    options: {
-        mode: ReaderMode;
-        enabled: boolean;
-        cueResolvable: boolean;
-    }
-): SfxCommand;
 ```
 
 Rules:
 
 - initial/restored `nextSfxCommand` remains `noop` and never becomes pending;
-- only an already-eligible `{type:'play'}` transition may be retained while first load is pending;
-- release completion returns `play` only for the exact same line, Visual mode, enabled SFX, and a now-resolvable cue;
-- otherwise it returns `noop`.
+- while first load is pending, an already-eligible `{type:'play'}` transition returns a `PendingSfxPlayback` descriptor so the shell can suppress the immediate `sfxPlayer.play()` call;
+- the shell does **not** store the descriptor. There is no `pendingInitialSfx` state;
+- on release completion the queued SFX is **dropped, not replayed**. Replaying would call `HTMLAudioElement.play()` outside the user gesture that caused the transition, which WebKit rejects (and the players swallow the rejection). The reader simply proceeds; the next eligible forward transition plays its own SFX normally once `audioInitialLoadPending` is false.
 
-The shell clears the pending value after consuming the pure result and on lifecycle boundaries.
+This is the deliberate lean solution. An earlier draft retained the pending descriptor and replayed it on release completion via a `sfxCommandOnInitialRelease` helper; that machinery was removed because it reintroduced the WebKit gesture-rejection problem.
 
 ### BGM
 
-Extend `bgm-transition.ts` with one pure completion predicate:
+`bgm-transition.ts` is unchanged. There is no `bgmKeyOnInitialRelease` completion predicate.
 
-```ts
-export function bgmKeyOnInitialRelease(options: {
-    mode: ReaderMode;
-    enabled: boolean;
-    activated: boolean;
-    selectedKey: string | null;
-    cueResolvable: boolean;
-}): string | null;
-```
-
-It returns the current selected key only when an eligible gesture already activated BGM and the first accepted release can now resolve that key. No gesture means `null`.
+BGM is **not** started from release completion. The first accepted release only clears `audioInitialLoadPending`; the next eligible reader interaction (pointerdown on the reader-ready host) calls `activateBgm()`, which starts armed BGM now that `audioInitialLoadPending` is false. An earlier draft replayed armed BGM on release completion via `bgmKeyOnInitialRelease`; that was removed for the same WebKit gesture-rejection reason as the SFX replay.
 
 `nextBgmSelection` remains unchanged.
 
 ### Why this split
 
-The pure functions own the tricky timing semantics and get cheap deterministic unit tests. `ReaderShell` holds only the minimal coordination state:
+`pendingSfxAfterTransition` owns the one timing decision that benefits from a cheap deterministic unit test (suppress immediate playback while first load is pending). `ReaderShell` holds only the minimal coordination state:
 
 ```text
 audioRuntime
 audioReleaseIdentity
 audioInitialLoadPending
-pendingInitialSfx
 ```
 
-The shell calls the transition helpers, obeys their output, and performs lifecycle cleanup. It does not duplicate progression policy.
+The shell calls the transition helper, obeys its output, and performs lifecycle cleanup. It does not duplicate progression policy, and it does not retain any pending-playback state across the release-load boundary.
 
 ## ReaderShell lifecycle
 
@@ -371,10 +351,10 @@ This keeps playback silent without collapsing configuration, loading, and omissi
 
 ### Mode/settings/visibility
 
-- Visual → Text: stop both players, reset BGM activation, clear pending SFX;
+- Visual → Text: stop both players, reset BGM activation;
 - Text → Visual: soft-revalidate existing audio runtime once, or create one if needed;
 - enable first channel in Visual mode: create/load if needed;
-- SFX disable: stop + clear pending SFX;
+- SFX disable: stop;
 - BGM disable: stop + reset activation;
 - visible-tab return in Visual mode: one audio soft revalidation;
 - ordinary dialogue progression: no audio revalidation;
@@ -410,7 +390,7 @@ Add local tests for:
 - reasoned unavailable states;
 - stale/revalidation/disposal behavior;
 - player URL injection with unchanged existing constructor call sites;
-- pure delayed SFX/BGM first-load rules;
+- pure initial-load SFX suppression rule (`pendingSfxAfterTransition`);
 - ReaderShell real runtime-resolver → player → `createAudio(url)` wiring;
 - combined visual/audio story replacement;
 - no per-line audio revalidation;
@@ -516,9 +496,9 @@ The latest review was verified against merged `main`.
 
 - **F1 shared release chain:** accepted, with location adjustment. Share the entire validated browser release-load chain, but keep it in `apps/web`; `@aquila/stories/runtime-assets` remains contract/policy-only.
 - **F2 runnable Task 4 verification:** accepted. Add a pure audio-anchor helper/test to `test:release-gate-config`; normal `test:e2e` is explicitly documented as not covering the deployed spec.
-- **F3 pure first-load rules:** accepted. Timing eligibility moves into `sfx-transition.ts` / `bgm-transition.ts`; ReaderShell executes the result.
+- **F3 pure first-load rules:** accepted, then narrowed by the Safari fix. Only `pendingSfxAfterTransition` (suppress immediate playback while first load is pending) remains in `sfx-transition.ts`; `bgm-transition.ts` is unchanged. The originally proposed `sfxCommandOnInitialRelease` / `bgmKeyOnInitialRelease` completion helpers were removed because replaying on release completion calls `HTMLAudioElement.play()` outside the user gesture, which WebKit rejects. ReaderShell drops queued SFX and does not start BGM on release completion.
 - **F4 identity duplication:** accepted. One `RuntimeReleaseIdentity` backs visual and audio evidence while preserving separate DOM prefixes.
 - **F5 constructor order:** accepted. Append resolver after `createAudio` so existing player tests do not churn.
 - **F6 ambiguous warning:** accepted. Audio resolution carries an unavailable reason and the shell logs that reason while playback remains silent.
 
-The earlier correction still stands: initial/restored SFX is never replayed merely because the first remote manifest became available.
+The earlier correction still stands and has been widened: initial/restored SFX is never replayed merely because the first remote manifest became available, and the first accepted release no longer replays any SFX queued during the load or starts armed BGM. Both were dropped from the design after the Safari/WebKit fix — replaying on release completion calls `HTMLAudioElement.play()` outside the user gesture that caused the transition, which WebKit rejects. The reader proceeds silently; the next eligible user gesture plays SFX/BGM normally once `audioInitialLoadPending` is false.

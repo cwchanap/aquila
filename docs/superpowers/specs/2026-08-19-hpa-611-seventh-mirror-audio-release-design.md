@@ -48,7 +48,7 @@ when published into preview and production namespaces.
 Use that invariant as the exact-candidate proof:
 
 1. freeze generation selections and omissions;
-2. publish them into an isolated preview namespace;
+2. publish them into the preview namespace already used by the deployed release-gate reader;
 3. verify and approve that preview candidate;
 4. publish the same frozen inputs into the production namespace without activation;
 5. require production `releaseId` and `manifestSha256` to equal the retained preview values exactly;
@@ -76,6 +76,8 @@ Before any paid generation, record one release-input evidence block in HPA-611 c
 - the hard request cap for the initial paid pass;
 - an estimate of provider credits/cost when the current provider UI/API makes that calculable;
 - date and source used to confirm that the current ElevenLabs plan and applicable Music/model terms permit the intended generation/distribution workflow.
+
+After the dated account/terms check, write a small non-empty `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`. HPA-608 intentionally requires this local note before the first BGM provider request. Keep the note short: date, source, and the operator's acknowledgement are enough; it is not a legal attestation or a second policy document.
 
 The legal/plan check is a human release prerequisite, not a new automated policy engine. If the current terms or account plan are ambiguous, stop the paid run and resolve that separately.
 
@@ -132,18 +134,21 @@ Do not commit the all-omitted baseline file. It is run-scoped evidence under `.t
 
 ## Preview release gate
 
-Use one isolated preview ID, for example `hpa-611-audio`.
+Reuse the **existing deployed preview's asset preview namespace**. The reader resolves visual and audio pointers from one preview ID, and the deployed gate also receives that value as `RELEASE_GATE_PREVIEW_ID`.
+
+Do not invent a separate audio-only preview ID. If a new isolated preview namespace is deliberately required, seed its visual release first with the existing visual publisher; that is additional release setup, not a reason to add an audio mirror command. HPA-611 should normally reuse the already-working release-gate preview namespace and leave its visual release untouched.
 
 The preview sequence is:
 
-1. publish the frozen selected inputs into the preview namespace;
-2. retain `releaseId` and `manifestSha256` from publisher JSON stdout;
-3. deep-verify the stored candidate;
-4. run the public candidate verifier against `assets.aquila.cwchanap.dev`;
-5. activate only the preview audio pointer;
-6. run the public active verifier;
-7. run the deployed Playwright release gate with the already-deployed visual release identity plus the retained audio identity;
-8. perform the representative human listening pass.
+1. retain the active deep-verified visual release identity already present in that namespace;
+2. publish the frozen selected audio inputs into the same preview namespace;
+3. retain `releaseId` and `manifestSha256` from publisher JSON stdout;
+4. deep-verify the stored candidate;
+5. run the public candidate verifier against `assets.aquila.cwchanap.dev`;
+6. activate only the preview audio pointer;
+7. run the public active verifier;
+8. run the deployed Playwright release gate with the retained visual identity plus the retained audio identity;
+9. perform the representative human listening pass.
 
 For a non-empty release, the public verifier must receive at least one real private source/archive key as `--archive-probe-key`; both the selected source and receipt paths are valid probes. They must return exact 404 from the public delivery host.
 
@@ -242,6 +247,7 @@ HPA-611 is complete when:
 
 - every compiler-used cue is selected or explicitly omitted;
 - the paid generation boundary was recorded before generation;
+- the required local music terms note exists before any BGM provider call;
 - approved originals/specs/receipts are archived privately;
 - preview and production runtime release ID/checksum are identical;
 - stored and public verification pass;

@@ -2,271 +2,292 @@
 
 ## Status
 
-Proposed design for HPA-611, the final production-content/release task in the current Aquila audio chain.
+Revised design for HPA-611, the final production-content/release task in the current Aquila audio chain.
 
-HPA-607, HPA-608, HPA-609, and HPA-610 are complete on `main`. HPA-611 should therefore execute the shipped seams rather than add another audio subsystem.
+HPA-607, HPA-608, HPA-609, and HPA-610 are complete on `main`. HPA-611 executes those shipped seams rather than adding another audio subsystem.
 
 ## Goal
 
-Generate and curate the approved The Seventh Mirror audio palette, publish one immutable runtime audio release, verify the exact candidate in preview, activate it in production, and prove pointer-only rollback/reactivation with auditable evidence.
+Generate and curate the approved The Seventh Mirror audio palette, prove the selected sources encode locally, verify the exact runtime candidate in the deployed preview, publish the same frozen candidate to production, activate it, and prove pointer-only rollback/reactivation with auditable evidence.
 
 ## Current state on `main`
 
-The repository already provides every required product/runtime seam:
+The repository already provides the required product/runtime seams:
 
-- `packages/stories/src/compiler/cli.ts --report` produces deterministic cue coverage for `theSeventhMirror`; the regression test requires `unused: []`.
-- `packages/stories/src/audio-generation/cli.ts` provides resumable `generate` and checksum-linked `select` commands with a hard `--max-requests` gate for paid work.
-- `packages/infra-cloudflare/src/publisher/cli.ts` provides audio `plan`, `publish`, `activate`, `verify`, `releases`, and `rollback` through the existing R2 source/delivery stores.
-- Audio `publish` writes immutable source archives, MP3 objects, and a release manifest but does not mutate `current.json`.
-- `packages/infra-cloudflare/src/verify.ts` verifies public audio candidates or active releases, including MIME/cache/integrity, Range 206 for a real MP3, and private archive 404 probes.
-- `packages/e2e/tests/visual-novel-deployed.spec.ts` can pin both visual and audio release IDs/checksums against a deployed preview or production reader.
-- HPA-610 already owns the reader behavior for missing/omitted cues, SFX one-shot semantics, BGM continuation/change/stop, audio toggles, and Safari-safe first-load behavior.
+- `packages/stories/src/compiler/cli.ts --report` emits deterministic cue coverage with per-usage `sceneId`, `sourcePath`, and zero-based `entryIndex`, plus explicit `bgmStops`.
+- `packages/stories/src/audio-generation/cli.ts` provides resumable `generate` and checksum-linked `select` commands with bounded `--candidate-count` and `--max-requests`.
+- `packages/infra-cloudflare/src/publisher/cli.ts` provides audio `plan`, `publish`, `activate`, `verify`, `releases`, and `rollback` through the existing local/R2 stores.
+- Audio `publish` calls `assertAudioToolsAvailable()`, normalizes selected sources with `ffmpeg`/`ffprobe`, archives approved inputs, creates/reuses content-addressed MP3s, and writes an immutable manifest without mutating `current.json`.
+- R2 audio publish requires both delivery `R2_PUBLISHER_*` and private-source `R2_SOURCE_ARCHIVE_*` credentials.
+- `packages/infra-cloudflare/src/verify.ts` verifies public audio candidates/active releases, including MIME/cache/integrity, a real Range 206 check for a non-empty release, and private archive 404 probes. It explicitly accepts all-omitted zero-asset releases.
+- `packages/e2e/tests/visual-novel-deployed.spec.ts` pins visual and audio release IDs/checksums against a deployed preview or production reader. The ordinary local Playwright config intentionally excludes this deployed-only spec.
+- HPA-610 already owns missing/omitted cue fallback, SFX one-shot semantics, BGM continuation/change/stop, toggles, and Safari-safe first-load behavior.
 
-The checked-in audio plan currently contains 41 entries: 28 SFX and 13 BGM. The BGM rows total 1,170,000 ms (19.5 minutes) of intended generated duration; SFX rows total 148,900 ms. These numbers are useful as a sanity bound only. The HPA-608 dry-run output is authoritative for actual scheduled provider requests because resumable local candidates may reduce the work.
+The checked-in audio plan currently has 41 used entries: 28 SFX and 13 BGM. Those counts are a sanity bound only; HPA-608 dry-run output is authoritative for actual scheduled paid requests because existing current-spec candidates may make the run smaller.
 
 ## Design decision
 
-Treat HPA-611 as an **operational release run with no planned runtime/product code changes**.
+Treat HPA-611 as an **operational release run with no production/runtime feature work**.
 
-The implementation should use the existing CLIs and retain machine-readable JSON reports under `.tmp/hpa-611/` during the run. Production audio binaries, provider receipts, selections, and generated candidates remain outside git. Linear HPA-611 is the durable audit summary.
+One small test-only change is planned before any provider spend: add a regression case to the existing `audio-runtime-release.test.ts` proving preview and production targets produce identical audio `releaseId`, `manifestSha256`, and manifest bytes from the same normalized inputs. HPA-611 relies on this invariant as a hard deployment gate, so pinning it in the existing unit test is cheaper than discovering a contract regression after human review.
 
-If execution exposes a concrete repository defect, fix only the smallest owning module required to unblock the release. Do not use HPA-611 to redesign generation, publishing, runtime playback, or the release gate.
+Everything else uses existing CLIs and temporary evidence under `.tmp/hpa-611/`. Production audio binaries, provider receipts, selections, and generated candidates remain outside git. A real final `audio-omissions.json` is tracked only when final curation intentionally omits one or more used cues.
+
+If execution exposes a concrete repository defect, fix only the smallest owning module on this same HPA-611 PR. Do not redesign generation, publishing, playback, storage, or the release gate.
+
+## Pre-spend preflight
+
+Paid generation must not be the first time the run discovers that the machine cannot encode or the publisher cannot even be configured.
+
+Before any provider request:
+
+1. prove both executables are runnable using the same arguments the publisher uses: `ffmpeg -hide_banner -version` and `ffprobe -hide_banner -version`;
+2. fail closed if any of `R2_PUBLISHER_ACCESS_KEY_ID`, `R2_PUBLISHER_SECRET_ACCESS_KEY`, `R2_SOURCE_ARCHIVE_ACCESS_KEY_ID`, or `R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY` is absent in the environment intended to perform the R2 release;
+3. add and run the target-invariance regression test in `packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts`;
+4. only then freeze the commit, audio-plan SHA-256, compiler report, dry-run request cap, and provider terms/account evidence.
+
+Credential **presence** is the pre-spend configuration gate. Actual R2 behavior remains proven later by the preview publish/verify path; HPA-611 does not invent a new credential-probe command.
 
 ## Preview strategy: republish frozen inputs, do not add audio `mirror-preview`
 
-HPA-611's original checklist says to mirror the exact production candidate into preview. The merged HPA-609 CLI deliberately rejects `mirror-preview --media audio`, so copying the visual workflow literally would require new publisher code.
+The merged HPA-609 CLI deliberately rejects `mirror-preview --media audio`.
 
-That code is unnecessary.
+That feature is unnecessary. `canonicalAudioReleaseContent()` hashes only schema version, story ID, and audio assets. Runtime MP3 object paths are `vn/objects/<sha256>.mp3`, independent of target. `buildPreparedAudioRelease()` stores the publication target but does not feed it into release or manifest identity.
 
-`buildPreparedAudioRelease()` derives the audio release ID from canonical story/audio content and derives the manifest checksum from the resulting manifest bytes. The `PublicationTarget` controls where the manifest is stored but is not part of the canonical audio release content or manifest. Therefore the same selected sources, current audio plan, and omission decisions produce the same:
+Therefore the same selected sources, current plan, and omissions produce the same:
 
-- `releaseId`; and
-- `manifestSha256`
+- `releaseId`;
+- `manifestSha256`; and
+- manifest bytes
 
-when published into preview and production namespaces.
+in preview and production namespaces.
 
 Use that invariant as the exact-candidate proof:
 
-1. freeze generation selections and omissions;
-2. publish them into the preview namespace already used by the deployed release-gate reader;
-3. verify and approve that preview candidate;
-4. publish the same frozen inputs into the production namespace without activation;
+1. freeze final selections/omissions after local encode proof;
+2. publish them into the preview namespace already used by the deployed reader;
+3. verify and approve the preview candidate;
+4. publish the same frozen inputs into production without activation;
 5. require production `releaseId` and `manifestSha256` to equal the retained preview values exactly;
-6. stop before production activation if either value differs.
-
-This is smaller than adding audio mirroring, stays on the supported audio path, and still proves byte/content identity before production pointer mutation.
+6. stop before pointer mutation if either differs.
 
 ### Rejected alternatives
 
-**Add `mirror-preview --media audio`.** This matches the old checklist wording but adds command-matrix behavior and tests for no product benefit. The target-independent audio identity already gives a stronger equality gate.
+**Add `mirror-preview --media audio`.** Adds command-matrix behavior and tests for no product benefit.
 
-**Publish production first, then hand-copy R2 keys into preview.** This bypasses publisher verification and creates an ad-hoc release path. Reject it.
+**Publish production before preview, then copy keys.** Violates the release failure policy and creates production history before preview approval.
 
-**Trust matching source filenames or candidate IDs.** Those are authoring identities, not runtime release identity. The gate is the release ID plus manifest-byte checksum.
+**Trust filenames/candidate IDs.** Those are authoring identities, not runtime release identity.
 
-## Frozen release input
+## Frozen release input and listening worksheet
 
-Before any paid generation, record one release-input evidence block in HPA-611 containing:
+Before paid generation, retain:
 
-- exact git commit SHA;
+- exact git commit SHA after the target-invariance test commit;
 - SHA-256 of `packages/stories/raw/theSeventhMirror/docs/audio-plan.json`;
-- retained compiler `audio:report` JSON and counts;
-- unique SFX/BGM count and intended duration;
-- HPA-608 dry-run scheduled request count;
-- the hard request cap for the initial paid pass;
-- an estimate of provider credits/cost when the current provider UI/API makes that calculable;
-- date and source used to confirm that the current ElevenLabs plan and applicable Music/model terms permit the intended generation/distribution workflow.
+- compiler `audio:report` JSON;
+- unique SFX/BGM counts and intended duration;
+- HPA-608 dry-run scheduled request count and exact hard cap;
+- provider cost/credit estimate when calculable;
+- dated current ElevenLabs account/terms check;
+- non-empty `.tmp/audio-generation/theSeventhMirror/music-terms-note.md` required by HPA-608 before BGM generation.
 
-After the dated account/terms check, write a small non-empty `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`. HPA-608 intentionally requires this local note before the first BGM provider request. Keep the note short: date, source, and the operator's acknowledgement are enough; it is not a legal attestation or a second policy document.
+Derive one disposable listening worksheet directly from the frozen compiler report. It is **not** a second source of truth or a new review schema. It simply renders:
 
-The legal/plan check is a human release prerequisite, not a new automated policy engine. If the current terms or account plan are ambiguous, stop the paid run and resolve that separately.
+- one row per used `type:key`, with every report-provided usage location;
+- one row for every `bgmStops` location.
 
-After this freeze, any edit to cue placement or `audio-plan.json` invalidates the run. Recompute the hashes/report/dry-run rather than carrying forward selections generated against stale specs.
+Curation and preview direction review use this same worksheet to navigate story context, recurring cue reuse, and explicit silence. Re-generate it whenever the compiler report is re-frozen.
+
+Any edit to cue placement or `audio-plan.json` invalidates the freeze. Recompute report/hash/dry-run/worksheet rather than carrying stale evidence forward.
 
 ## Generation and curation
 
 Use one candidate per unresolved cue for the initial pass:
 
-- first run `audio:generate --missing --candidate-count 1 --dry-run`;
-- retain the JSON result;
-- set the paid `--max-requests` to the dry-run's scheduled request count, not an arbitrary larger ceiling;
+- run `generate --missing --candidate-count 1 --dry-run`;
+- set paid `--max-requests` to exactly the dry-run scheduled request count;
 - run the resumable paid pass;
-- manually listen to each candidate in story context;
-- select exactly one approved candidate per included key with `audio:select`;
-- generate additional candidates only for keys explicitly rejected in review.
+- use the frozen worksheet to understand each key's usage/reuse sites and all explicit BGM stops;
+- select exactly one approved candidate per included key;
+- request one extra candidate only for a specifically rejected key.
 
-Do not pre-generate two to four candidates for every cue. The review burden and provider spend are both larger, while HPA-608 already makes targeted retry cheap.
+Do not pre-generate multiple candidates for every cue.
 
-A failed/interrupted paid run resumes from its persisted receipts and candidate files. Do not delete `.tmp/audio-generation/theSeventhMirror` to "start clean" unless the operator intentionally wants to discard valid provider work.
-
-### Omissions
-
-Every compiler-used cue must end with exactly one disposition:
+Every compiler-used cue ends with exactly one disposition:
 
 - selected and included; or
 - explicitly omitted with a short non-empty reason.
 
-If final curation has no omissions, do not create a permanent omissions file just for ceremony. If one or more cues are intentionally omitted, store the canonical reasons in:
+When all used cues are selected, omit `audio-omissions.json`; the publisher already treats the absent default file as no omissions. When real omissions exist, commit only the canonical `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` after the release run.
 
-`packages/stories/raw/theSeventhMirror/docs/audio-omissions.json`
+### Local encode proof before R2
 
-using HPA-609's existing schema. That is the only expected git-tracked content change during execution, and only when real omissions exist.
+After final selection/omission decisions, run the existing audio **publish** command against a local destination, not merely `plan`.
 
-## First-release rollback baseline
+That local publish uses the real selected files, executes `ffmpeg`/`ffprobe`, normalizes every included source, validates coverage, creates local source/delivery state, and verifies the resulting immutable candidate without touching R2.
 
-The current `rollback` command points to an existing immutable release; it cannot delete an audio `current.json` pointer. Therefore a repository with no previous production audio release cannot prove "rollback to no audio" by pointer deletion.
+No R2 write happens until this local publish succeeds.
 
-Use a verified **silent audio release** as the explicit first-release baseline.
+## Preview namespace source of truth
 
-Before publishing the real production candidate:
+Do not choose the preview ID from memory.
 
-1. list production audio releases with deep verification;
-2. if a valid prior production audio release exists, retain its release ID/checksum as the rollback target;
-3. otherwise generate a temporary all-omitted omissions document from the retained compiler report;
-4. use a distinct empty generation root so final selections cannot conflict with the all-omitted coverage;
-5. publish the all-omitted release to the production namespace without activation;
-6. deep-verify the stored candidate and public candidate;
-7. retain its release ID/checksum as `ROLLBACK_*` evidence.
+The deployed reader's preview namespace comes from effective `PUBLIC_ASSET_PREVIEW_ID` (explicit or derived by `apps/web/scripts/asset-preview-id.ts`), and the deployed gate receives the same value as `RELEASE_GATE_PREVIEW_ID`.
 
-HPA-609 explicitly supports all-omitted audio manifests with zero runtime assets, and the public verifier skips MP3/archive probes for that valid empty release. The silent baseline is immutable and never needs provider calls or source archives.
+At execution time:
 
-Do not commit the all-omitted baseline file. It is run-scoped evidence under `.tmp/hpa-611/` and exists only to represent the pre-audio product state with existing pointer semantics.
+1. copy the effective preview ID from the deployed Vercel preview environment or deployment configuration;
+2. cross-check it against the deployed reader's stable `reader-ready` `data-asset-preview-id` attribute when available;
+3. use that exact value for visual release lookup, preview audio publication, and `RELEASE_GATE_PREVIEW_ID`.
+
+The subsequent deep-verified active visual release lookup remains a backstop, not the first discovery mechanism.
 
 ## Preview release gate
 
-Reuse the **existing deployed preview's asset preview namespace**. The reader resolves visual and audio pointers from one preview ID, and the deployed gate also receives that value as `RELEASE_GATE_PREVIEW_ID`.
+After local encode proof, and while production R2 remains untouched:
 
-Do not invent a separate audio-only preview ID. If a new isolated preview namespace is deliberately required, seed its visual release first with the existing visual publisher; that is additional release setup, not a reason to add an audio mirror command. HPA-611 should normally reuse the already-working release-gate preview namespace and leave its visual release untouched.
-
-The preview sequence is:
-
-1. retain the active deep-verified visual release identity already present in that namespace;
-2. publish the frozen selected audio inputs into the same preview namespace;
-3. retain `releaseId` and `manifestSha256` from publisher JSON stdout;
+1. resolve the deployed preview ID from the source of truth above;
+2. retain the active deep-verified visual release identity in that namespace;
+3. publish frozen audio inputs into the preview namespace;
 4. deep-verify the stored candidate;
-5. run the public candidate verifier against `assets.aquila.cwchanap.dev`;
+5. run the public candidate verifier with a real private archive probe for non-empty audio;
 6. activate only the preview audio pointer;
 7. run the public active verifier;
-8. run the deployed Playwright release gate with the retained visual identity plus the retained audio identity;
-9. perform the representative human listening pass.
+8. run `bun --filter e2e test:release-gate` pinned to visual + audio identities;
+9. perform the bounded human direction review using the frozen worksheet.
 
-For a non-empty release, the public verifier must receive at least one real private source/archive key as `--archive-probe-key`; both the selected source and receipt paths are valid probes. They must return exact 404 from the public delivery host.
+The human pass remains representative rather than replaying the whole story, but it is not ad hoc:
 
-The Playwright release gate must prove the audio identity on the stable reader-ready host and exercise representative SFX/BGM behavior without republishing visuals. If the deployed preview is protected, use the existing Vercel automation bypass secret; do not weaken preview protection.
+- every explicit `bgmStops` row is checked for the intended silence transition;
+- recurring cues use the worksheet to check at least the first placement and one later reuse site where applicable;
+- cover early/middle/late, quiet, supernatural, high-tension, BGM continuation/change, desktop/mobile, headphones/speakers, controls, and muted readability.
 
-### Human direction review
+If a cue fails, regenerate/reselect only that key, rerun local publish, and publish/approve a new preview candidate. Production still remains untouched.
 
-Keep this bounded to the checklist's representative states rather than replaying every line manually:
+## Production candidate
 
-- early, middle, late story;
-- quiet section;
-- recurring physical motif;
-- supernatural motif;
-- action/high-tension section;
-- BGM continuation;
-- BGM change;
-- explicit BGM stop/silence;
-- at least one available branch/choice path;
-- desktop and mobile viewport;
-- headphones and speakers;
-- SFX/BGM sliders/toggles and muted readability.
+Only after preview approval, publish the same frozen inputs to the production namespace without pointer mutation.
 
-Record only actionable findings. Regenerate/reselect the affected key; do not rewrite unrelated story content.
-
-## Production publication and activation
-
-After preview approval, rerun audio `publish` against the production namespace using the same frozen generation root and final omission file/absence.
-
-Production publication must be candidate-only and leave the production pointer untouched.
-
-Before activation, assert:
+Before activation require:
 
 - production `releaseId === preview releaseId`;
 - production `manifestSha256 === preview manifestSha256`;
 - stored production deep verification passes;
 - public production candidate verification passes.
 
-Only then run `activate --media audio --environment production` with exact story confirmation and the retained manifest checksum.
+This is the first HPA-611 production R2 write in the normal no-existing-baseline case.
 
-Activation changes only `vn/audio/stories/the_seventh_mirror/current.json`. It does not require a Vercel rebuild, visual release, story compilation output commit, or regeneration of MP3 objects.
+## Rollback target, created only when go-live is imminent
 
-Immediately run the public active verifier and deployed production smoke pinned to the same audio release identity.
+The current `rollback` command requires an existing immutable release manifest and cannot delete `current.json`.
 
-## Rollback and reactivation proof
+Immediately after the real production candidate is published/verified and immediately before activation:
 
-After the production smoke passes:
+1. list/deep-verify production audio release history;
+2. if the existing active audio pointer is invalid, stop;
+3. if a valid active prior audio release exists, retain it as the rollback target;
+4. otherwise create a temporary all-omitted document from the frozen compiler report, use an empty generation root, and publish a zero-asset silent production candidate without activation;
+5. deep/public verify that silent candidate and retain its identity.
 
-1. run `rollback --media audio` to the retained previous release or silent baseline;
-2. verify the production active pointer resolves to the rollback identity;
-3. smoke the deployed reader and prove the previous/no-audio state is usable;
-4. reactivate the approved HPA-611 release with `activate --media audio`;
-5. verify and smoke again;
-6. retain all three pointer mutation reports.
+This timing preserves pointer-only rollback while avoiding any production HPA-611 object before preview approval.
 
-No rollback step deletes MP3 objects, manifests, archives, or pointers. Rollback and reactivation are pointer-only CAS writes.
+The all-omitted release needs no provider call, source archive, MP3, or full deployed audio gate. The public verifier already accepts zero assets; `findAudioGateAnchors()` intentionally cannot construct BGM/SFX anchors for such a release. Rollback verification for the silent baseline is therefore public pointer/manifest verification plus a simple deployed-reader usability/silence smoke.
+
+## Activation, rollback, and reactivation
+
+After preview approval, production candidate verification, and rollback-target retention:
+
+1. activate the approved production audio pointer with exact story confirmation;
+2. run active public verification and the deployed production audio gate;
+3. smoke representative playback/navigation/controls;
+4. rollback to the retained prior/silent release;
+5. verify the rollback identity and deployed behavior;
+6. reactivate the approved HPA-611 release;
+7. rerun active verification/deployed audio gate.
+
+All mutations are pointer-only CAS writes. Never delete immutable objects, manifests, archives, or history.
 
 ## Failure policy
 
-Stop before the next irreversible/paid/mutating stage when any gate fails.
+Stop before the next paid/mutating stage when a gate fails.
 
-- Dry-run/provider-plan/terms problem: do not generate.
-- Candidate review rejection: regenerate only that key.
-- Selection/coverage/spec mismatch: do not publish; fix the selection or re-freeze changed plan inputs.
-- Preview publish/verify/gate failure: do not create/activate production candidate.
-- Preview/production identity mismatch: do not activate production; investigate changed inputs.
-- Production candidate verification failure: do not activate.
-- Production smoke failure: rollback immediately to the retained baseline, then investigate.
-- Rollback proof failure: leave the safer verified pointer active and do not claim HPA-611 complete.
+- Tool/credential-presence/terms/dry-run problem: do not generate.
+- Candidate rejection: regenerate only that key.
+- Coverage/spec/local-encode failure: do not write R2.
+- Preview publish/verify/gate/manual-review failure: do not write production R2.
+- Preview/production identity mismatch: do not activate.
+- Production candidate verification failure: do not create baseline or activate.
+- Invalid pre-existing production audio pointer: stop rather than treating it as no audio.
+- Production smoke failure: rollback immediately to the retained baseline.
+- Rollback proof failure: leave the safer verified pointer active and do not close HPA-611.
 
-Do not respond to a release failure by adding a framework, bypassing checks, widening credentials, manually overwriting immutable keys, or deleting history.
+Do not bypass checks, widen credentials, overwrite immutable keys, add a framework, or delete history to recover from a release failure.
+
+## Verification scope
+
+The deployed audio identity/playback path is proved by the credentialed `test:release-gate` runs during preview, activation, rollback where applicable, and reactivation. The ordinary `bun --filter e2e test:e2e` suite does **not** load `visual-novel-deployed.spec.ts`.
+
+If execution changes only:
+
+- the two HPA-611 planning docs;
+- the focused target-invariance unit test; and
+- optional `audio-omissions.json`;
+
+then final repository verification stays scoped to compiler drift plus stories/publisher tests. Do not add full web/local-E2E/lint/build ceremony that cannot exercise the release evidence.
+
+If a real blocker fix changes product/runtime code, run the affected focused tests plus the repository lint/build and any workspace/E2E suites relevant to the changed module. Keep that fix on the same HPA-611 PR.
 
 ## Evidence and cleanup
 
-The run keeps temporary machine reports under `.tmp/hpa-611/` and generated/provider work under `.tmp/audio-generation/theSeventhMirror/`. Neither directory is committed.
+Temporary machine reports stay under `.tmp/hpa-611/`; provider work stays under `.tmp/audio-generation/theSeventhMirror/`. Neither is committed.
 
-HPA-611 receives a concise final Linear summary containing:
+HPA-611's final Linear summary records:
 
-- frozen commit and audio-plan SHA-256;
-- compiler coverage counts;
-- dry-run request cap and actual provider requests/cost/credits where available;
-- selected and omitted cue counts;
-- preview release ID/manifest checksum;
-- production release ID/manifest checksum and equality result;
-- private archive confirmation;
-- stored/public/deployed verification results;
-- manual direction-review result;
+- frozen commit/audio-plan SHA;
+- compiler counts and worksheet provenance;
+- initial request cap and actual provider requests/cost/credits where available;
+- selected/omitted counts;
+- local encode proof;
+- effective preview ID source;
+- preview + production release IDs/checksums and exact equality;
+- private archive/public 404 evidence;
+- stored/public/deployed verification;
+- manual review result;
 - rollback baseline identity;
-- production activation, rollback, and reactivation pointer evidence;
-- deliberately deferred creative ideas.
+- activation/rollback/reactivation pointer evidence;
+- scoped final repository verification;
+- explicitly deferred creative ideas.
 
-Do not paste credentials, API keys, full provider receipts, private source paths from the local filesystem, or generated audio binaries into Linear.
+Never paste secrets, full private receipts, local private source paths, or generated binaries into Linear.
 
 ## Acceptance
 
 HPA-611 is complete when:
 
+- the pre-spend tool/credential/terms gates passed;
+- target-independent audio identity is pinned by the existing publisher unit-test suite;
 - every compiler-used cue is selected or explicitly omitted;
-- the paid generation boundary was recorded before generation;
-- the required local music terms note exists before any BGM provider call;
-- approved originals/specs/receipts are archived privately;
-- preview and production runtime release ID/checksum are identical;
-- stored and public verification pass;
-- the deployed reader passes the audio release gate and representative manual review;
+- the local publish proves every included source encodes;
+- preview is approved before any HPA-611 production R2 write;
+- preview and production release ID/checksum are identical;
+- stored/public/deployed verification and bounded human review pass;
 - production activation changes only the audio pointer;
-- pointer-only rollback to a prior release or silent baseline succeeds;
+- pointer-only rollback to a valid prior or silent baseline succeeds;
 - pointer-only reactivation succeeds;
-- final repository regressions pass;
-- production audio binaries and authoring receipts remain out of git.
+- scoped repository regression passes;
+- production binaries/authoring receipts remain out of git.
 
 ## Non-goals
 
-- New generation, publisher, media, storage, or playback frameworks
-- Audio support for visual `mirror-preview`
-- Automatic candidate ranking or approval
-- Voice acting/TTS/dialogue dubbing
-- Adaptive/procedural score systems
-- New codecs, loudness mastering, loop editing, or audio post-production pipeline
-- Reauthoring The Seventh Mirror plot/dialogue beyond a minimal correction required by a concrete audio defect
-- Republish or redesign of visual assets
+- New generation, publisher, storage, playback, or evidence frameworks
+- Audio support for `mirror-preview`
+- Pointer deletion
+- Automatic candidate ranking/approval
+- Voice acting/TTS
+- Adaptive/procedural scoring
+- New codecs, mastering, loop editing, or a post-production pipeline
+- Reauthoring plot/dialogue beyond a minimal concrete audio correction
+- Visual asset republishing/redesign
 - Deleting historical R2 objects/releases
 - Automated legal attestation

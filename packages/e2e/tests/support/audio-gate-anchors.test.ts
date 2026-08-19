@@ -95,25 +95,35 @@ describe('findAudioGateAnchors', () => {
     });
 
     test('fails when an authored cue key is absent from the manifest', () => {
-        const withoutAuthoredKeys = manifestWith(
-            manifest.assets.map(asset => ({
-                ...asset,
-                identity: {
-                    ...asset.identity,
-                    key: `${asset.identity.key}-other`,
-                },
-                path: asset.path,
-            }))
+        const withoutBgmKey = manifestWith(
+            manifest.assets.map(asset =>
+                asset.identity.type === 'bgm'
+                    ? {
+                          ...asset,
+                          identity: {
+                              ...asset.identity,
+                              key: `${asset.identity.key}-other`,
+                          },
+                          path: asset.path,
+                      }
+                    : asset
+            )
         );
 
         expect(() =>
-            findAudioGateAnchors(dialogue, flow, withoutAuthoredKeys)
+            findAudioGateAnchors(dialogue, flow, withoutBgmKey)
         ).toThrow(/BGM anchor/i);
     });
 
     test('fails when SFX exists only on page 1 with no forward predecessor', () => {
         const firstPageSfxDialogue: DialogueMap = {
-            act1: [{ dialogue: 'effect', sfx: 'door-open' }],
+            act1: [
+                {
+                    dialogue: 'effect',
+                    bgm: 'dawn-apartment',
+                    sfx: 'door-open',
+                },
+            ],
         };
 
         expect(() =>

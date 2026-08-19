@@ -61,6 +61,12 @@ async function fetchWithTimeout<T>(
     const abort = () => controller.abort();
     parentSignal?.addEventListener('abort', abort, { once: true });
     try {
+        if (parentSignal?.aborted) {
+            throw new AssetResolverError(
+                'network',
+                'Runtime asset request aborted before start'
+            );
+        }
         const response = await fetchImpl(url, {
             ...init,
             signal: controller.signal,

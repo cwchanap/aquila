@@ -583,11 +583,37 @@ test.describe('Deployed visual-novel release gate', () => {
             await expectCanonicalVisualLine(page, audioAnchors.bgm.page);
             await waitForVisualReady(page);
             await waitForAudioIdentity(page);
+            // Bounded negative-check: no BGM request occurs within a short
+            // settle window after landing, proving the gate holds before the
+            // user gesture. The rejection handler is attached immediately so
+            // the timeout rejection cannot surface as an unhandled rejection.
+            const noBgmBeforeGesture = page.waitForRequest(
+                request =>
+                    request.resourceType() === 'media' &&
+                    request.url() === selectedBgmUrl,
+                { timeout: 1_000 }
+            );
+            const noBgmSettled = noBgmBeforeGesture
+                .then(request => ({
+                    status: 'fulfilled' as const,
+                    value: request,
+                }))
+                .catch(reason => ({
+                    status: 'rejected' as const,
+                    reason,
+                }));
+            const noBgmResult = await noBgmSettled;
+            expect(noBgmResult.status).toBe('rejected');
             expect(
                 landingMediaUrls,
                 'BGM must not load solely from the landing position'
             ).toHaveLength(0);
             expect(bgmRequestCount).toBe(0);
+            // The landing-media listener has served its purpose; remove it so
+            // it does not remain attached and accumulate data for the rest of
+            // the test. The BGM request/response listeners stay for the
+            // duplicate-BGM checks below.
+            page.off('response', recordLandingMedia);
 
             const bgmResponse = page.waitForResponse(
                 response => response.url() === selectedBgmUrl,
@@ -654,8 +680,22 @@ test.describe('Deployed visual-novel release gate', () => {
                     request.resourceType() === 'media' && request.url() === url,
                 { timeout: 2_000 }
             );
+            // Convert to a settled result immediately so the rejection
+            // handler is attached before action() can exceed the timeout,
+            // preventing an unhandled rejection if the action outlasts the
+            // 2s wait window.
+            const settled = duplicateRequest
+                .then(request => ({
+                    status: 'fulfilled' as const,
+                    value: request,
+                }))
+                .catch(reason => ({
+                    status: 'rejected' as const,
+                    reason,
+                }));
             await action();
-            await expect(duplicateRequest).rejects.toThrow();
+            const result = await settled;
+            expect(result.status).toBe('rejected');
             expect(bgmRequestCount).toBe(requestCountBefore);
             expect(bgmResponseCount).toBe(responseCountBefore);
         };

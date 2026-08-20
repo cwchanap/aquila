@@ -81,6 +81,26 @@ describe('buildPreparedAudioRelease', () => {
         ).toEqual(['bgm:dawn-apartment', 'sfx:door-open']);
     });
 
+    it('keeps runtime release identity independent of publication target', () => {
+        const production = buildPreparedAudioRelease({
+            storyId,
+            target: { kind: 'production' },
+            assets: [sfx, bgm],
+            coverage,
+        });
+        const preview = buildPreparedAudioRelease({
+            storyId,
+            target: { kind: 'preview', previewId: 'hpa-611-test' },
+            assets: [sfx, bgm],
+            coverage,
+        });
+
+        expect(preview.releaseId).toBe(production.releaseId);
+        expect(preview.manifestSha256).toBe(production.manifestSha256);
+        expect(preview.manifestBytes).toEqual(production.manifestBytes);
+        expect(preview.target).not.toEqual(production.target);
+    });
+
     it.each([
         ['runtime bytes', asset('sfx', 'door-open', [1, 2, 4], 2_200, false)],
         ['duration', asset('sfx', 'door-open', [1, 2, 3], 2_201, false)],

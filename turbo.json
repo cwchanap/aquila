@@ -23,6 +23,7 @@
         "dist/**",
         ".astro/**",
         "build/**",
+        ".vercel/output/**",
         ".svelte-kit/**",
         "src-tauri/target/**",
         ".tsbuildinfo"

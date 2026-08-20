@@ -24,7 +24,7 @@ The current code already supplies the required workflow:
 
 - `packages/stories/src/compiler/cli.ts --report` emits each used cue with `sceneId`, `sourcePath`, zero-based `entryIndex`, and every explicit `bgmStops` location.
 - HPA-608 generation is resumable, checksum-linked, and bounded by `--candidate-count` and `--max-requests`.
-- Real BGM generation requires the non-empty local `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`.
+- Real BGM generation sends requests through the normal provider path without a local terms-file gate; provider configuration and paid-call authority remain release prerequisites.
 - HPA-609 audio `publish` calls the existing `ffmpeg`/`ffprobe` preflight, normalizes sources, archives approved originals/receipts privately, creates/reuses immutable MP3 objects/manifests, and never activates an audio pointer.
 - R2 delivery and audio publication commands use one shared `R2_RELEASE_ACCESS_KEY_ID` / `R2_RELEASE_SECRET_ACCESS_KEY` pair for both buckets; delivery remains public and the source archive remains private.
 - `assets releases --media audio ... --destination r2 --deep` is read-only and exercises the delivery credential path and R2 reachability while also reporting current release/pointer state.
@@ -59,7 +59,7 @@ Before any paid provider call:
 3. run read-only deep production audio release listing through the real R2 delivery store. This proves the delivery credential pair is usable and R2 is reachable, while also giving early visibility into whether a previous active audio baseline exists;
 4. retain the single `R2_RELEASE_*` credential contract used by both delivery and source stores; there is no separate source-archive credential pair;
 5. add and run the target-invariance unit test;
-6. freeze the post-test commit, audio-plan SHA-256, compiler report, dry-run request cap, provider account/terms evidence, and required local Music terms note.
+6. freeze the post-test commit, audio-plan SHA-256, compiler report, and dry-run request cap. Provider configuration and explicit paid-call authority remain required before Task 2; no local terms note or external account/distribution attestation is required.
 
 The Task 1 production release listing is **early knowledge only**. Immediately before go-live the workflow lists production audio history again and the fresh report wins, so concurrent pointer/release changes cannot be hidden by stale preflight evidence.
 
@@ -201,7 +201,7 @@ If a real blocker fix changes product/runtime code, run focused tests for that m
 
 Stop before the next paid or mutating stage:
 
-- tool/config/gate-config/delivery-R2/source-archive/terms problem → do not generate;
+- tool/config/gate-config/delivery-R2/source-archive/provider-configuration problem → do not generate;
 - coverage/spec/local encode problem → do not write R2;
 - preview failure → do not write production R2;
 - preview/production identity mismatch → do not activate;
@@ -222,7 +222,7 @@ The final Linear summary records the freeze, preflight results, request cap/actu
 
 HPA-611 is complete when:
 
-- pre-spend executable, gate-config, delivery-R2, source-archive-config, terms, and target-invariance gates pass;
+- pre-spend executable, gate-config, delivery-R2, source-archive-config, provider-configuration, and target-invariance gates pass;
 - every compiler-used cue is selected or explicitly omitted;
 - local publish proves every included source encodes;
 - preview is approved before any HPA-611 production write;

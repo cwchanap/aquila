@@ -295,22 +295,12 @@ export async function runAudioGeneration(
         };
     }
 
-    let musicTermsChecked = false;
     const generatedCandidates: Array<{
         readonly key: string;
         readonly candidateId: string;
     }> = [];
 
     for (const request of plan.scheduledRequests) {
-        if (request.spec.type === 'bgm' && !musicTermsChecked) {
-            musicTermsChecked = true;
-            if (!(await dependencies.store.hasMusicTermsNote())) {
-                throw new AudioGenerationConfigurationError(
-                    'A non-empty music-terms-note.md is required before BGM generation'
-                );
-            }
-        }
-
         const candidateId = await dependencies.store.nextCandidateId(
             request.key
         );

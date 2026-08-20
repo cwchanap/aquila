@@ -453,22 +453,6 @@ export class LocalAudioGenerationStore {
         };
     }
 
-    async hasMusicTermsNote(): Promise<boolean> {
-        try {
-            return (
-                (
-                    await readFile(
-                        join(this.root, 'music-terms-note.md'),
-                        'utf8'
-                    )
-                ).trim().length > 0
-            );
-        } catch (error) {
-            if (isNotFound(error)) return false;
-            throw error;
-        }
-    }
-
     private keyRoot(key: string): string {
         AudioPlanKeySchema.parse(key);
         return join(this.root, key);

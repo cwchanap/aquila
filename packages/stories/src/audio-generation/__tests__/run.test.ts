@@ -92,7 +92,6 @@ function candidate(): GeneratedAudioCandidate {
 
 function fakeRunStore(
     options: {
-        readonly hasMusicTermsNote?: boolean;
         readonly onEvent?: (event: string) => void;
     } = {}
 ): RunDependencies['store'] & {
@@ -131,10 +130,6 @@ function fakeRunStore(
             return `/tmp/${candidateId}.failure.json`;
         }),
         readVerifiedCandidate: vi.fn(async () => null),
-        hasMusicTermsNote: vi.fn(async () => {
-            emit('terms-check');
-            return options.hasMusicTermsNote ?? true;
-        }),
     } as unknown as RunDependencies['store'] & {
         readonly events: string[];
         readonly failureMarkers: Array<{
@@ -602,8 +597,8 @@ describe('audio generation sequential runner', () => {
         }
     );
 
-    it('requires music terms before the first real BGM call', async () => {
-        const store = fakeRunStore({ hasMusicTermsNote: false });
+    it('runs a BGM request without a music terms capability on the store', async () => {
+        const store = fakeRunStore();
         const provider = fakeProvider([candidate(), candidate()], store.events);
         const plan = await planAudioGeneration({
             context: contextFor([bgm('music'), bgm('music-two')]),
@@ -615,26 +610,8 @@ describe('audio generation sequential runner', () => {
 
         await expect(
             runAudioGeneration(plan, deps(store, provider))
-        ).rejects.toThrow('music-terms-note');
+        ).resolves.toMatchObject({ success: true, completedRequests: 2 });
 
-        expect(store.hasMusicTermsNote).toHaveBeenCalledTimes(1);
-        expect(provider.calls).toEqual([]);
-    });
-
-    it('checks music terms only once across multiple BGM requests', async () => {
-        const store = fakeRunStore();
-        const provider = fakeProvider([candidate(), candidate()], store.events);
-        const plan = await planAudioGeneration({
-            context: contextFor([bgm('music'), bgm('music-two')]),
-            store,
-            missing: true,
-            candidateCount: 1,
-            maxRequests: 2,
-        });
-
-        await runAudioGeneration(plan, deps(store, provider));
-
-        expect(store.hasMusicTermsNote).toHaveBeenCalledTimes(1);
         expect(provider.calls.map(spec => spec.key)).toEqual([
             'music',
             'music-two',

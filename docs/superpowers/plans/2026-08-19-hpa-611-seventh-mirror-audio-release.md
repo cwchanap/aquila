@@ -19,7 +19,7 @@
 - Every compiler-used cue ends selected or explicitly omitted with a non-empty reason.
 - Generate one current-spec candidate per unresolved cue first; generate one more only for a rejected key.
 - Initial paid `--max-requests` equals the retained dry-run scheduled request count exactly. A zero count skips the paid command.
-- Before paid work, prove ffmpeg/ffprobe, the credential-free release-gate config, the shared R2 release credential path, and provider/account/terms evidence. The human-supplied local Music terms note remains a non-empty gate immediately before BGM generation.
+- Before paid work, prove ffmpeg/ffprobe, the credential-free release-gate config, the shared R2 release credential path, and provider configuration. Paid generation remains separately authority-gated before Task 2.
 - Before R2 publication, final selections/omissions must pass the existing audio publisher against a local destination.
 - Do not add `mirror-preview --media audio`; preview/production equality is release ID + manifest SHA equality for the same frozen inputs.
 - Production R2 is untouched until preview approval.
@@ -40,7 +40,6 @@
 - Create untracked: `.tmp/hpa-611/listening-worksheet.md`
 - Create untracked: `.tmp/hpa-611/generation-dry-run.json`
 - Create untracked: `.tmp/hpa-611/initial-request-cap.txt`
-- Require existing non-empty untracked: `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`
 
 **Produces:** a committed target-invariance test, proven local/deployment prerequisites, frozen compiler/generation inputs, and no paid call or R2 write.
 
@@ -189,13 +188,11 @@ console.log(r.scheduledRequests.length);
 
 Never round the cap upward. Zero is valid evidence and skips Task 2's initial paid command.
 
-- [ ] **Step 10: Record current provider/account/terms evidence**
+- [ ] **Step 10: Confirm the paid-call boundary**
 
-Record the actual check date/source and distribution conclusion in Linear. The
-human-supplied untracked
-`.tmp/audio-generation/theSeventhMirror/music-terms-note.md` remains required
-and must be non-empty immediately before Task 2's BGM generation command; Task 1
-does not synthesize it from an environment variable.
+Confirm provider configuration without invoking the provider. Paid generation
+requires explicit authority before Task 2 begins; no local terms note or
+external account/distribution attestation is required.
 
 **Gate:** no paid generation until all Task 1 steps pass.
 
@@ -214,12 +211,11 @@ does not synthesize it from an environment variable.
 
 **Produces:** final selections/omissions and a deep-verified local immutable candidate; no R2 write.
 
-- [ ] **Step 1: Recheck frozen inputs and Music prerequisite**
+- [ ] **Step 1: Recheck frozen inputs**
 
 ```bash
 test "$(git rev-parse HEAD)" = "$(cat .tmp/hpa-611/base-commit.txt)"
 shasum -a 256 -c .tmp/hpa-611/audio-plan.sha256
-test -s .tmp/audio-generation/theSeventhMirror/music-terms-note.md
 ```
 
 - [ ] **Step 2: Run the bounded initial paid pass only if the retained cap is positive**
@@ -580,7 +576,7 @@ If final omissions exist, commit the canonical `audio-omissions.json` on this sa
 Record:
 
 - frozen commit/audio-plan SHA and compiler counts;
-- Task 1 ffmpeg/ffprobe, release-gate-config, delivery-R2, source-archive-config, and terms evidence;
+- Task 1 ffmpeg/ffprobe, release-gate-config, delivery-R2, source-archive-config, provider configuration, and paid-call authorization;
 - initial cap and actual provider spend/requests where available;
 - selected/omitted counts and local encode proof;
 - effective preview ID source;

@@ -143,22 +143,12 @@ export class R2DeliveryStore implements DeliveryStore {
         }
         const environment = options.environment ?? process.env;
         const bucket = options.bucket ?? 'delivery';
-        const credentialNames =
-            bucket === 'source'
-                ? {
-                      accessKeyId: 'R2_SOURCE_ARCHIVE_ACCESS_KEY_ID',
-                      secretAccessKey: 'R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY',
-                  }
-                : {
-                      accessKeyId: 'R2_PUBLISHER_ACCESS_KEY_ID',
-                      secretAccessKey: 'R2_PUBLISHER_SECRET_ACCESS_KEY',
-                  };
-        const accessKeyId = environment[credentialNames.accessKeyId];
-        const secretAccessKey = environment[credentialNames.secretAccessKey];
+        const accessKeyId = environment.R2_RELEASE_ACCESS_KEY_ID;
+        const secretAccessKey = environment.R2_RELEASE_SECRET_ACCESS_KEY;
         if (!accessKeyId || !secretAccessKey) {
             throw new PublisherError(
                 'configuration',
-                `${credentialNames.accessKeyId} and ${credentialNames.secretAccessKey} must be set`
+                'R2_RELEASE_ACCESS_KEY_ID and R2_RELEASE_SECRET_ACCESS_KEY must be set'
             );
         }
 

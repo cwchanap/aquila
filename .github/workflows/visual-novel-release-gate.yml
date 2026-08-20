@@ -70,12 +70,12 @@ jobs:
 
       - name: Require scoped publisher credentials
         env:
-          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
-          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
-          if [[ -z "$R2_PUBLISHER_ACCESS_KEY_ID" || -z "$R2_PUBLISHER_SECRET_ACCESS_KEY" ]]; then
-            echo 'Scoped R2 publisher secrets are not configured.' >&2
+          if [[ -z "$R2_RELEASE_ACCESS_KEY_ID" || -z "$R2_RELEASE_SECRET_ACCESS_KEY" ]]; then
+            echo 'Shared R2 release secrets are not configured.' >&2
             exit 1
           fi
 
@@ -97,8 +97,8 @@ jobs:
         # guarded by --confirm-production.
         shell: bash
         env:
-          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
-          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts verify \
             --story "$GATE_STORY" \
@@ -112,8 +112,8 @@ jobs:
       - name: Mirror release into preview namespace
         shell: bash
         env:
-          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
-          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts mirror-preview \
             --story "$GATE_STORY" \
@@ -129,8 +129,8 @@ jobs:
         # stays a manual `assets activate/rollback --confirm-production`.
         shell: bash
         env:
-          R2_PUBLISHER_ACCESS_KEY_ID: ${{ secrets.R2_PUBLISHER_ACCESS_KEY_ID }}
-          R2_PUBLISHER_SECRET_ACCESS_KEY: ${{ secrets.R2_PUBLISHER_SECRET_ACCESS_KEY }}
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
         run: |
           bun packages/infra-cloudflare/src/publisher/cli.ts activate \
             --story "$GATE_STORY" \

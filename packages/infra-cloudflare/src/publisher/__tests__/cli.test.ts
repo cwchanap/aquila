@@ -79,8 +79,8 @@ function harness(
         dependencies: {
             repositoryRoot: '/workspace/aquila',
             environment: {
-                R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
-                R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
+                R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+                R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
             },
             createLocalStore: localFactory,
             createR2Store: r2Factory,
@@ -191,7 +191,7 @@ describe('assets CLI destination selection and safety', () => {
     it('rejects incomplete R2 credentials without constructing a local store', async () => {
         const test = harness();
         test.dependencies.environment = {
-            R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
+            R2_RELEASE_ACCESS_KEY_ID: 'release-access',
         };
 
         await expect(
@@ -713,14 +713,12 @@ describe('assets CLI command schemas and confirmation matrix', () => {
         );
     });
 
-    it('uses delivery credentials for audio plan and both credential pairs for R2 publish', async () => {
+    it('uses the shared release credentials for both R2 audio stores', async () => {
         const runCommand = vi.fn(async parsed => report(parsed.command));
         const test = harness(runCommand);
         test.dependencies.environment = {
-            R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
-            R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
-            R2_SOURCE_ARCHIVE_ACCESS_KEY_ID: 'source-access',
-            R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY: 'source-secret',
+            R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+            R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
         };
 
         const planExit = await runAssetsCli(
@@ -773,8 +771,9 @@ describe('assets CLI command schemas and confirmation matrix', () => {
         });
     });
 
-    it('rejects R2 audio publish without source credentials before constructing stores', async () => {
+    it('rejects R2 audio publish without release credentials before constructing stores', async () => {
         const test = harness();
+        test.dependencies.environment = {};
 
         const exit = await runAssetsCli(
             [

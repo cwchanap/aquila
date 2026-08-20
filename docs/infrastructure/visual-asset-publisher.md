@@ -40,17 +40,19 @@ root precedence is `--source-root`, then `AQUILA_ASSET_SOURCE_ROOT`, then
 `packages/assets/media`.
 
 R2 uses the committed delivery configuration in
-`packages/infra-cloudflare/r2-delivery.config.json` and both scoped,
-delivery-bucket-only credentials:
+`packages/infra-cloudflare/r2-delivery.config.json` and one shared scoped
+release credential pair with Object Read & Write access to both buckets:
 
 ```text
-R2_PUBLISHER_ACCESS_KEY_ID
-R2_PUBLISHER_SECRET_ACCESS_KEY
+R2_RELEASE_ACCESS_KEY_ID
+R2_RELEASE_SECRET_ACCESS_KEY
 ```
 
 Missing either value is configuration exit `1`; the command does not fall back
-to local storage. Never expose these values in `PUBLIC_*` variables, shell
-tracing, reports, artifacts, or workflow summaries.
+to local storage. Delivery remains public and source remains a private archive;
+the bucket separation is preserved even though the credential pair is shared.
+Never expose these values in `PUBLIC_*` variables, shell tracing, reports,
+artifacts, or workflow summaries.
 
 ## Local no-write plan
 

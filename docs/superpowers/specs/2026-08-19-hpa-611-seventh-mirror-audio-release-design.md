@@ -26,7 +26,7 @@ The current code already supplies the required workflow:
 - HPA-608 generation is resumable, checksum-linked, and bounded by `--candidate-count` and `--max-requests`.
 - Real BGM generation requires the non-empty local `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`.
 - HPA-609 audio `publish` calls the existing `ffmpeg`/`ffprobe` preflight, normalizes sources, archives approved originals/receipts privately, creates/reuses immutable MP3 objects/manifests, and never activates an audio pointer.
-- R2 delivery commands use `R2_PUBLISHER_*`; audio publication additionally needs `R2_SOURCE_ARCHIVE_*` for the private source bucket.
+- R2 delivery and audio publication commands use one shared `R2_RELEASE_ACCESS_KEY_ID` / `R2_RELEASE_SECRET_ACCESS_KEY` pair for both buckets; delivery remains public and the source archive remains private.
 - `assets releases --media audio ... --destination r2 --deep` is read-only and exercises the delivery credential path and R2 reachability while also reporting current release/pointer state.
 - Public audio verification supports candidate and active modes, Range 206 for a non-empty release, repeatable `--archive-probe-key`, and all-omitted zero-asset releases.
 - The ordinary local Playwright config excludes `visual-novel-deployed.spec.ts`; `test:release-gate-config` is the credential-free config/anchor gate, and `test:release-gate` is the real deployed gate.
@@ -57,7 +57,7 @@ Before any paid provider call:
 1. prove `ffmpeg -hide_banner -version` and `ffprobe -hide_banner -version` succeed;
 2. run `bun --filter e2e test:release-gate-config` so gate/anchor assumptions fail before credentials, generation, or deployment are involved;
 3. run read-only deep production audio release listing through the real R2 delivery store. This proves the delivery credential pair is usable and R2 is reachable, while also giving early visibility into whether a previous active audio baseline exists;
-4. check only the two `R2_SOURCE_ARCHIVE_*` variables explicitly, because the read-only release listing cannot exercise the private source-archive credential path;
+4. retain the single `R2_RELEASE_*` credential contract used by both delivery and source stores; there is no separate source-archive credential pair;
 5. add and run the target-invariance unit test;
 6. freeze the post-test commit, audio-plan SHA-256, compiler report, dry-run request cap, provider account/terms evidence, and required local Music terms note.
 

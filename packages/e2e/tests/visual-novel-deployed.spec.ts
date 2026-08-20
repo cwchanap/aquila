@@ -689,9 +689,7 @@ test.describe('Deployed visual-novel release gate', () => {
             // switch spurious re-requests the track; it does NOT claim a
             // live track survives the round trip.
             await expectNoDuplicateBgmRequest(async () => {
-                await page
-                    .getByRole('button', { name: t.textMode, exact: true })
-                    .click();
+                await visual.chooseMode(t.textMode);
                 await expect(
                     page.getByTestId('visual-novel-reader')
                 ).not.toBeAttached();
@@ -700,12 +698,7 @@ test.describe('Deployed visual-novel release gate', () => {
                 await waitForAudioIdentity(page);
             });
             await expectNoDuplicateBgmRequest(async () => {
-                await page
-                    .getByRole('button', {
-                        name: t.visualNovelMode,
-                        exact: true,
-                    })
-                    .click();
+                await visual.chooseMode(t.visualNovelMode);
                 await waitForVisualReady(page);
                 await expectCanonicalVisualLine(page, bgmLine);
                 await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
@@ -821,9 +814,7 @@ test.describe('Deployed visual-novel release gate', () => {
 
         // -- Step 4: visual<->text — same line, same identity. --
         const line = anchors.backgroundPage;
-        await page
-            .getByRole('button', { name: t.textMode, exact: true })
-            .click();
+        await visual.chooseMode(t.textMode);
         // The visual leaf unmounts in text mode; the canonical line survives in
         // the URL (the text reader renders its own progress widget).
         await expect(
@@ -835,9 +826,7 @@ test.describe('Deployed visual-novel release gate', () => {
             await waitForAudioIdentity(page);
         }
 
-        await page
-            .getByRole('button', { name: t.visualNovelMode, exact: true })
-            .click();
+        await visual.chooseMode(t.visualNovelMode);
         await waitForVisualReady(page);
         await expectCanonicalVisualLine(page, line);
         await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
@@ -860,7 +849,8 @@ test.describe('Deployed visual-novel release gate', () => {
         }
 
         // -- Step 6: restore a bookmark, then take one choice. --
-        await page
+        await visual.openSettings();
+        await visual.settingsDialog
             .getByRole('button', { name: t.bookmark, exact: true })
             .click();
         const prompt = page.getByRole('dialog', { name: 'Prompt' });
@@ -984,9 +974,7 @@ test.describe('Deployed visual-novel release gate', () => {
         await expect(
             page.getByRole('button', { name: t.openHistory })
         ).toBeEnabled();
-        await expect(
-            page.getByRole('button', { name: t.visualNovelMode, exact: true })
-        ).toBeEnabled();
+        await expect(visual.settingsButton).toBeEnabled();
         await expectReleaseIdentity(page, 'asset', EXPECTED_IDENTITY);
     });
 });

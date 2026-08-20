@@ -84,8 +84,18 @@ private source-archive store solely for `media === 'audio' && command === 'publi
 Step 3, let the paid generation/curation work happen, and only fail at the
 first R2 audio publish when the source archive is opened. Both stores share the
 single `R2_RELEASE_ACCESS_KEY_ID` / `R2_RELEASE_SECRET_ACCESS_KEY` pair, so one
-read-only probe against the source bucket is sufficient; there is no second
-source-only credential. Never print or persist credential values.
+read-only probe against the source bucket proves that credential reaches the
+source archive; there is no second source-only credential. The probe proves
+reachability only, not write permission: audio publish writes immutable
+candidates to the source bucket via `publishArchive()` (see
+`packages/infra-cloudflare/src/publisher/audio-publish.ts`), so a token scoped
+read-only on the source bucket would pass this probe and fail at the first R2
+publish, after paid generation spend. **Source-bucket write access is a
+required precondition before Task 2** — verify the `R2_RELEASE_*` token has
+write scope on the source bucket (not just read) before proceeding. A
+write-then-delete probe is intentionally not used here because the Global
+Constraint forbids any production R2 writes before preview approval. Never
+print or persist credential values.
 
 ```bash
 bun -e '

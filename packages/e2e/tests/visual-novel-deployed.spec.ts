@@ -655,6 +655,9 @@ test.describe('Deployed visual-novel release gate', () => {
                 response => response.url() === selectedBgmUrl,
                 { timeout: RUNTIME_ASSET_CACHE_POLICY.timeoutMs.asset }
             );
+            await expect(
+                page.getByTestId('visual-typewriter-cursor')
+            ).toHaveCount(0);
             await visual.root.click();
             expectAudioResponse(await bgmResponse, selectedBgmUrl);
             expect(bgmRequestCount).toBe(1);
@@ -665,7 +668,8 @@ test.describe('Deployed visual-novel release gate', () => {
             // meaningful only while the tracked BGM is actually playing, so it
             // runs here immediately after activation, BEFORE any mode switch
             // that would stop the track and leave nothing to duplicate.
-            const bgmLine = audioAnchors.bgm.page;
+            const bgmLine = audioAnchors.bgm.page + 1;
+            await expectCanonicalVisualLine(page, bgmLine);
             await expectNoDuplicateBgmRequest(async () => {
                 await page.setViewportSize({ width: 844, height: 390 });
                 await expectCanonicalVisualLine(page, bgmLine);

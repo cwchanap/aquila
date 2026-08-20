@@ -2,67 +2,38 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Generate, curate, locally encode, preview-verify, publish, activate, rollback, and reactivate The Seventh Mirror's approved SFX/BGM pack using the already-merged Aquila audio toolchain.
+**Goal:** Generate, curate, locally encode, preview-approve, publish, activate, rollback, and reactivate The Seventh Mirror audio pack using the merged Aquila audio toolchain.
 
-**Architecture:** Keep HPA-611 as an operational release run. Prove local encoder/publisher prerequisites before provider spend, freeze one input set, derive one listening worksheet from the compiler report, prove final selections with a local publish, then approve the exact candidate in the deployed preview before any HPA-611 production R2 write. Republish the same frozen inputs to production and require identical audio `releaseId` + `manifestSha256`; only then retain/create the rollback target and mutate the production pointer.
+**Architecture:** Keep HPA-611 operational. Preflight the real local/deployment prerequisites before provider spend, freeze one input set, prove selected audio with a local publish, approve that candidate in preview, then republish the frozen inputs to production and compare retained identities. Persist every value needed across task boundaries under `.tmp/hpa-611/`; never depend on a shell variable surviving between agents/tasks.
 
-**Tech Stack:** Bun, TypeScript/Vitest, HPA-608 ElevenLabs generation store, HPA-609 local/R2 publisher and public verifier, HPA-610 reader, deployed Playwright release gate, Linear release evidence.
+**Tech Stack:** Bun, TypeScript/Vitest, HPA-608 ElevenLabs generation store, HPA-609 local/R2 publisher + public verifier, HPA-610 reader, Playwright release gate, Linear release evidence.
 
 **Spec:** `docs/superpowers/specs/2026-08-19-hpa-611-seventh-mirror-audio-release-design.md`
 
 ## Global Constraints
 
 - One HPA-611 branch/PR. Do not split the invariant test, omissions metadata, or a smallest blocker fix into another PR.
-- No planned production/runtime feature code. The only planned source-tree code change is one focused regression test for target-independent audio identity.
-- Production binaries, provider receipts, generated candidates, selections, and run reports stay out of git.
-- `packages/stories/raw/theSeventhMirror/docs/audio-plan.json` remains the only creative generation plan.
-- Every compiler-used cue must end selected or explicitly omitted with a non-empty reason.
-- Initial generation uses one candidate per unresolved cue; additional candidates are generated only for rejected keys.
-- Paid generation uses the exact dry-run scheduled request count as the initial hard request cap.
-- Before any paid request, prove `ffmpeg`/`ffprobe` are runnable, required R2 credential variables are present, current provider/account/terms evidence is recorded, and the HPA-608 music terms note exists.
-- Before any R2 write, the final selected sources must pass the existing audio publisher against a local destination.
-- Audio `publish` never activates production. Production pointer mutation is an explicit `activate --media audio` with exact story confirmation.
-- Preview and production publication of frozen inputs must produce identical `releaseId` and `manifestSha256`; mismatch is a hard stop.
-- Resolve the preview ID from the deployed preview/Vercel environment, never operator memory.
-- If no valid active production audio baseline exists, publish an immutable all-omitted silent candidate only after preview approval and after the real production candidate is published/verified.
-- Rollback/reactivation are pointer-only. Never delete immutable objects, manifests, archives, or historical releases.
-- If a real blocker requires product/runtime code, fix only the smallest owning module on this same HPA-611 PR and expand verification only for that changed code.
+- No planned production/runtime feature code. The only planned source-tree code change before the release is one target-invariance regression test.
+- Production binaries, provider receipts, generated candidates, selections, and `.tmp/hpa-611/` reports stay out of git.
+- `packages/stories/raw/theSeventhMirror/docs/audio-plan.json` is the creative generation plan.
+- Every compiler-used cue ends selected or explicitly omitted with a non-empty reason.
+- Generate one current-spec candidate per unresolved cue first; generate one more only for a rejected key.
+- Initial paid `--max-requests` equals the retained dry-run scheduled request count exactly. A zero count skips the paid command.
+- Before paid work, prove ffmpeg/ffprobe, the credential-free release-gate config, real delivery R2 access, source-archive credential presence, provider/account/terms evidence, and the local Music terms note.
+- Before R2 publication, final selections/omissions must pass the existing audio publisher against a local destination.
+- Do not add `mirror-preview --media audio`; preview/production equality is release ID + manifest SHA equality for the same frozen inputs.
+- Production R2 is untouched until preview approval.
+- The rollback target is resolved freshly immediately before activation; Task 1 history is early awareness only.
+- All cross-task release IDs, manifest hashes, preview ID, rollback identity, and archive probe keys are retained in `.tmp/hpa-611/*.txt` when produced.
+- Rollback/reactivation are pointer-only. Never delete immutable objects/manifests/archives/history.
 
 ---
 
-## File / state map
-
-### Planned tracked change before provider spend
-
-- Modify/Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts` — pin preview/production target-invariant `releaseId`, manifest SHA, and manifest bytes.
-
-### Read-only repository inputs
-
-- `packages/stories/raw/theSeventhMirror/docs/audio-plan.json` — frozen creative generation plan.
-- `packages/stories/src/compiler/cli.ts` — deterministic cue usage with all placements and BGM stops.
-- `packages/stories/src/audio-generation/cli.ts` — dry-run, paid generation, selection.
-- `packages/infra-cloudflare/src/publisher/cli.ts` — local/R2 publication and release lifecycle.
-- `packages/infra-cloudflare/src/verify.ts` — credential-free public candidate/active verification.
-- `packages/e2e/tests/visual-novel-deployed.spec.ts` — deployed visual + audio release gate.
-- `apps/web/scripts/asset-preview-id.ts` — effective preview-ID build contract.
-
-### Optional tracked execution output
-
-- `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` — create only for real final omissions.
-
-### Uncommitted run state
-
-- `.tmp/audio-generation/theSeventhMirror/**` — provider candidates, receipts, `music-terms-note.md`, selection.
-- `.tmp/hpa-611/**` — hashes, compiler report, derived listening worksheet, local publish, preview/production reports, run-scoped silent baseline inputs.
-- R2 `aquila-vn-source` — selected source/receipt archives.
-- R2 `aquila-vn-delivery` — immutable MP3/manifests and mutable pointers.
-
----
-
-## Task 1: Preflight the machine, pin the identity invariant, and freeze the paid boundary
+## Task 1: Preflight, pin the identity invariant, and freeze the paid boundary
 
 **Files / state:**
 - Modify/Test: `packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts`
+- Create untracked: `.tmp/hpa-611/production-audio-releases-preflight.json`
 - Create untracked: `.tmp/hpa-611/base-commit.txt`
 - Create untracked: `.tmp/hpa-611/audio-plan.sha256`
 - Create untracked: `.tmp/hpa-611/audio-report.json`
@@ -70,40 +41,60 @@
 - Create untracked: `.tmp/hpa-611/generation-dry-run.json`
 - Create untracked: `.tmp/hpa-611/initial-request-cap.txt`
 - Create untracked: `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`
-- Update: Linear HPA-611 freeze evidence
 
-**Produces:** a clean frozen commit, target-invariance regression, disposable story-location worksheet, and `INITIAL_REQUEST_CAP`. Performs no paid provider call and no R2 write.
+**Produces:** a committed target-invariance test, proven local/deployment prerequisites, frozen compiler/generation inputs, and no paid call or R2 write.
 
-- [ ] **Step 1: Prove the exact encoder executables the publisher needs are runnable**
+- [ ] **Step 1: Create the run directory and prove ffmpeg/ffprobe**
 
 ```bash
+mkdir -p .tmp/hpa-611
 ffmpeg -hide_banner -version >/dev/null
 ffprobe -hide_banner -version >/dev/null
 ```
 
-Expected: both exit `0`. These are the same executable/argument pairs used by `assertAudioToolsAvailable()`.
+Expected: both executable checks exit `0`; these match `assertAudioToolsAvailable()`.
 
-- [ ] **Step 2: Fail closed when required R2 credential configuration is absent**
+- [ ] **Step 2: Run the credential-free release-gate configuration tests**
+
+```bash
+bun --filter e2e test:release-gate-config
+```
+
+Expected: release-gate automation/config and audio-anchor support tests pass before any paid or credentialed operation.
+
+- [ ] **Step 3: Prove delivery credentials/R2 access and capture early production audio state read-only**
+
+```bash
+bun --filter @aquila/infra-cloudflare assets -- releases \
+  --media audio \
+  --story the_seventh_mirror \
+  --environment production \
+  --destination r2 \
+  --deep \
+  --json > .tmp/hpa-611/production-audio-releases-preflight.json
+```
+
+Inspect the report. Any command failure is a pre-spend stop. A `pointer-invalid` warning is also a stop. This command is read-only, proves the delivery credential path and R2 reachability, and records whether an active baseline appears to exist. Do not treat this report as the final rollback decision; Task 5 reruns it immediately before activation.
+
+- [ ] **Step 4: Check only the private source-archive credential pair not exercised by `releases`**
 
 ```bash
 bun -e '
 const names = [
-  "R2_PUBLISHER_ACCESS_KEY_ID",
-  "R2_PUBLISHER_SECRET_ACCESS_KEY",
   "R2_SOURCE_ARCHIVE_ACCESS_KEY_ID",
   "R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY",
 ];
 const missing = names.filter((name) => !process.env[name]?.trim());
-if (missing.length) throw new Error(`missing required release credentials: ${missing.join(", ")}`);
-console.log("required R2 credential variables are present");
+if (missing.length) throw new Error(`missing source archive credentials: ${missing.join(", ")}`);
+console.log("source archive credential variables are present");
 '
 ```
 
-This proves configuration presence without printing values. Actual R2 access is proved later by preview publication/verification; do not add a new credential-probe command.
+Do not duplicate the `R2_PUBLISHER_*` presence check; Step 3 already exercised those through the owning CLI.
 
-- [ ] **Step 3: Add the target-invariance regression to the existing publisher unit test**
+- [ ] **Step 5: Add the target-invariance regression to the existing publisher test**
 
-Add this case inside the existing `describe('buildPreparedAudioRelease', ...)` in `packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts`:
+Inside `describe('buildPreparedAudioRelease', ...)` add:
 
 ```ts
 it('keeps runtime release identity independent of publication target', () => {
@@ -127,9 +118,9 @@ it('keeps runtime release identity independent of publication target', () => {
 });
 ```
 
-Do not change `buildPreparedAudioRelease()` unless the test exposes a real regression; current `main` should already satisfy it by construction.
+Do not modify production publisher code unless this test exposes a real regression.
 
-- [ ] **Step 4: Run the focused invariant test and commit it on this HPA-611 branch**
+- [ ] **Step 6: Run and commit the focused invariant test**
 
 ```bash
 bun --filter @aquila/infra-cloudflare test -- \
@@ -139,22 +130,18 @@ git add packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.
 git commit -m "test(audio): pin release target invariance"
 ```
 
-Expected: focused test file passes. This is a test-only contract pin, not a publisher feature.
-
-- [ ] **Step 5: Freeze the post-test commit and audio plan**
+- [ ] **Step 7: Freeze the post-test commit and audio plan**
 
 ```bash
-mkdir -p .tmp/hpa-611
-
 git status --short
 git rev-parse HEAD | tee .tmp/hpa-611/base-commit.txt
 shasum -a 256 packages/stories/raw/theSeventhMirror/docs/audio-plan.json \
   | tee .tmp/hpa-611/audio-plan.sha256
 ```
 
-Expected: no unexplained tracked change. Freeze occurs **after** the target-invariance test commit so later HEAD checks stay meaningful.
+Expected: no unexplained tracked changes.
 
-- [ ] **Step 6: Retain deterministic compiler coverage**
+- [ ] **Step 8: Retain compiler authority and derive the disposable listening worksheet**
 
 ```bash
 bun packages/stories/src/compiler/cli.ts --report theSeventhMirror \
@@ -163,48 +150,33 @@ bun packages/stories/src/compiler/cli.ts --report theSeventhMirror \
 bun -e '
 const r = await Bun.file(process.argv[1]).json();
 if (r.story !== "theSeventhMirror") throw new Error("wrong story report");
-if (!Array.isArray(r.assets) || !Array.isArray(r.bgmStops) || !Array.isArray(r.unused)) {
-  throw new Error("malformed audio report");
-}
-if (r.unused.length !== 0) throw new Error(`unused audio-plan rows: ${r.unused.length}`);
-const sfx = r.assets.filter((x) => x.type === "sfx").length;
-const bgm = r.assets.filter((x) => x.type === "bgm").length;
-console.log(JSON.stringify({ assets: r.assets.length, sfx, bgm, bgmStops: r.bgmStops.length }));
-' .tmp/hpa-611/audio-report.json
-```
-
-Current sanity expectation: 41 used cues, 28 SFX, 13 BGM, zero unused plan rows. `bgmStops` count comes from the frozen report; do not hand-maintain it.
-
-- [ ] **Step 7: Derive one disposable listening worksheet from that report**
-
-```bash
-bun -e '
-const report = await Bun.file(process.argv[1]).json();
-const esc = (value) => String(value).replaceAll("|", "\\|");
+if (!Array.isArray(r.assets) || !Array.isArray(r.bgmStops) || !Array.isArray(r.unused)) throw new Error("malformed report");
+if (r.unused.length !== 0) throw new Error(`unused audio plan rows: ${r.unused.length}`);
 const rows = [
-  "# HPA-611 Listening Worksheet",
-  "",
-  "> Derived from the frozen compiler audio report. Disposable navigation view; not a second source of truth.",
-  "",
+  "# HPA-611 Listening Worksheet", "",
+  "> Derived from the frozen compiler report; not a second source of truth.", "",
   "| Kind | Cue/location | Count | Story locations |",
   "| --- | --- | ---: | --- |",
 ];
-for (const asset of report.assets) {
-  const locations = asset.usages
-    .map((u) => `${esc(u.sceneId)}#${u.entryIndex} — ${esc(u.sourcePath)}`)
-    .join("<br>");
-  rows.push(`| cue | \`${asset.type}:${asset.key}\` | ${asset.usageCount} | ${locations} |`);
+const esc = (v) => String(v).replaceAll("|", "\\|");
+for (const asset of r.assets) {
+  const loc = asset.usages.map((u) => `${esc(u.sceneId)}#${u.entryIndex} — ${esc(u.sourcePath)}`).join("<br>");
+  rows.push(`| cue | \`${asset.type}:${asset.key}\` | ${asset.usageCount} | ${loc} |`);
 }
-for (const stop of report.bgmStops) {
-  rows.push(`| bgm-stop | \`bgm:stop\` | 1 | ${esc(stop.sceneId)}#${stop.entryIndex} — ${esc(stop.sourcePath)} |`);
-}
+for (const stop of r.bgmStops) rows.push(`| bgm-stop | \`bgm:stop\` | 1 | ${esc(stop.sceneId)}#${stop.entryIndex} — ${esc(stop.sourcePath)} |`);
 await Bun.write(process.argv[2], rows.join("\n") + "\n");
+console.log(JSON.stringify({
+  assets: r.assets.length,
+  sfx: r.assets.filter((x) => x.type === "sfx").length,
+  bgm: r.assets.filter((x) => x.type === "bgm").length,
+  bgmStops: r.bgmStops.length,
+}));
 ' .tmp/hpa-611/audio-report.json .tmp/hpa-611/listening-worksheet.md
 ```
 
-Curation and preview review must use this file for cue reuse sites and explicit BGM stops. Recreate it whenever the report is re-frozen.
+Current sanity expectation: 41 used cues, 28 SFX, 13 BGM, zero unused rows.
 
-- [ ] **Step 8: Run the no-cost HPA-608 generation plan**
+- [ ] **Step 9: Run the no-cost generation dry-run and persist the exact cap**
 
 ```bash
 bun packages/stories/src/audio-generation/cli.ts generate \
@@ -219,31 +191,16 @@ const r = await Bun.file(process.argv[1]).json();
 if (r.error) throw new Error(JSON.stringify(r.error));
 if (!Array.isArray(r.scheduledRequests)) throw new Error("missing scheduledRequests");
 if ((r.providerIssues?.length ?? 0) !== 0) throw new Error("provider issues remain");
-console.log(JSON.stringify({
-  assetCount: r.assetCount,
-  scheduledRequests: r.scheduledRequests.length,
-  estimate: r.estimate,
-}));
-' .tmp/hpa-611/generation-dry-run.json
-```
-
-- [ ] **Step 9: Retain the exact initial paid request cap**
-
-```bash
-bun -e '
-const r = await Bun.file(process.argv[1]).json();
 console.log(r.scheduledRequests.length);
 ' .tmp/hpa-611/generation-dry-run.json \
   | tee .tmp/hpa-611/initial-request-cap.txt
 ```
 
-Never round the cap upward. Zero means the initial paid generation step is already satisfied by resumable current-spec candidates.
+Never round the cap upward. Zero is valid evidence and skips Task 2's initial paid command.
 
-- [ ] **Step 10: Complete the dated human terms/account check and HPA-608 note**
+- [ ] **Step 10: Record current provider/account/terms evidence and create the HPA-608 Music note**
 
-Record the current ElevenLabs account/model availability, applicable Music/model terms source/date, distribution conclusion, and current estimate/credits where calculable in Linear.
-
-Set `MUSIC_TERMS_NOTE` to the actual short note and write the HPA-608-required local file:
+Record the actual check date/source and distribution conclusion in Linear. Then:
 
 ```bash
 test -n "${MUSIC_TERMS_NOTE:-}"
@@ -253,27 +210,24 @@ printf '%s\n' "$MUSIC_TERMS_NOTE" \
 test -s .tmp/audio-generation/theSeventhMirror/music-terms-note.md
 ```
 
-Add one HPA-611 Linear freeze comment containing base commit, audio-plan SHA-256, compiler counts, worksheet provenance, dry-run count/cap, and terms/account check. Do not paste secrets or receipts.
-
-**Gate:** Task 2 cannot run a paid provider request until every Task 1 check is complete. No production R2 object has been written.
+**Gate:** no paid generation until all Task 1 steps pass.
 
 ---
 
-## Task 2: Generate, curate, omit if needed, and prove every final source through local publish
+## Task 2: Generate, curate, and prove final sources locally
 
 **Files / state:**
 - Modify untracked: `.tmp/audio-generation/theSeventhMirror/**`
-- Create untracked: `.tmp/hpa-611/generation-paid.json`
 - Conditionally create tracked: `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json`
 - Create untracked: `.tmp/hpa-611/final-audio-report.json`
 - Create untracked: `.tmp/hpa-611/local-audio-publish/**`
 - Create untracked: `.tmp/hpa-611/local-audio-publish-report.json`
 - Create untracked: `.tmp/hpa-611/frozen-selection.sha256`
-- Create untracked: `.tmp/hpa-611/frozen-omissions.sha256`
+- Create untracked: `.tmp/hpa-611/frozen-omissions-state.txt`
 
-**Produces:** final selection/omission decisions plus a locally encoded and verified immutable release candidate. Performs no R2 write.
+**Produces:** final selections/omissions and a deep-verified local immutable candidate; no R2 write.
 
-- [ ] **Step 1: Recheck the frozen commit/plan and music prerequisite**
+- [ ] **Step 1: Recheck frozen inputs and Music prerequisite**
 
 ```bash
 test "$(git rev-parse HEAD)" = "$(cat .tmp/hpa-611/base-commit.txt)"
@@ -281,11 +235,10 @@ shasum -a 256 -c .tmp/hpa-611/audio-plan.sha256
 test -s .tmp/audio-generation/theSeventhMirror/music-terms-note.md
 ```
 
-- [ ] **Step 2: Run the bounded paid pass only when the retained cap is non-zero**
+- [ ] **Step 2: Run the bounded initial paid pass only if the retained cap is positive**
 
 ```bash
 INITIAL_REQUEST_CAP=$(cat .tmp/hpa-611/initial-request-cap.txt)
-
 if [ "$INITIAL_REQUEST_CAP" -gt 0 ]; then
   bun packages/stories/src/audio-generation/cli.ts generate \
     --story theSeventhMirror \
@@ -293,14 +246,12 @@ if [ "$INITIAL_REQUEST_CAP" -gt 0 ]; then
     --candidate-count 1 \
     --max-requests "$INITIAL_REQUEST_CAP" \
     > .tmp/hpa-611/generation-paid.json
-else
-  cp .tmp/hpa-611/generation-dry-run.json .tmp/hpa-611/generation-paid.json
 fi
 ```
 
-Never put `ELEVENLABS_API_KEY` on the command line or in retained output.
+Do not expose `ELEVENLABS_API_KEY` in command text, logs, or Linear.
 
-- [ ] **Step 3: Prove the one-candidate target is satisfied**
+- [ ] **Step 3: Prove one current candidate exists for every unresolved key**
 
 ```bash
 bun packages/stories/src/audio-generation/cli.ts generate \
@@ -312,28 +263,13 @@ bun packages/stories/src/audio-generation/cli.ts generate \
 
 bun -e '
 const r = await Bun.file(process.argv[1]).json();
-if (r.scheduledRequests.length !== 0) throw new Error("initial candidate target is incomplete");
+if (r.scheduledRequests.length !== 0) throw new Error("candidate target incomplete");
 ' .tmp/hpa-611/generation-after-initial.json
 ```
 
-If provider failure left work unresolved, investigate that key and resume; do not increase the global cap speculatively.
+- [ ] **Step 4: Curate using the frozen worksheet; select accepted candidates**
 
-- [ ] **Step 4: Curate candidates using the frozen worksheet, not isolated filenames alone**
-
-Open `.tmp/hpa-611/listening-worksheet.md` beside the candidate files/receipts under:
-
-```text
-.tmp/audio-generation/theSeventhMirror/<key>/candidate-NNN.*
-.tmp/audio-generation/theSeventhMirror/<key>/candidate-NNN.receipt.json
-```
-
-For every used key, inspect the worksheet-provided story locations while reviewing the candidate. For recurring cues, inspect the first placement and at least one later reuse site. Explicit `bgm:stop` rows are reviewed as part of the intended surrounding BGM/silence transitions.
-
-Review SFX for onset/tail/recognizability/continuity/artifacts and BGM for mood/loop/continuity/spoilers/vocals/artifacts/relative level. Candidate selection remains human; do not add ranking automation.
-
-- [ ] **Step 5: Select accepted candidates through HPA-608**
-
-For each actual reviewed pair:
+For each actual accepted pair:
 
 ```bash
 bun packages/stories/src/audio-generation/cli.ts select \
@@ -342,177 +278,89 @@ bun packages/stories/src/audio-generation/cli.ts select \
   --candidate "$CANDIDATE_ID"
 ```
 
-The CLI verifies current spec/source hashes before updating `selection.json`.
+For a rejected key only, request one additional candidate by increasing its desired total by one and using `--max-requests 1`. Do not regenerate approved keys.
 
-- [ ] **Step 6: Generate one additional candidate only for a rejected key**
+- [ ] **Step 5: Record real omissions only when needed**
 
-For an actual rejected key:
+If every compiler-used cue is selected, leave `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` absent. Otherwise create it with HPA-609's exact v1 shape and actual review reasons only; remove any selection for an omitted cue.
 
-```bash
-bun packages/stories/src/audio-generation/cli.ts generate \
-  --story theSeventhMirror \
-  --key "$AUDIO_KEY" \
-  --candidate-count 2 \
-  --max-requests 1 \
-  > ".tmp/hpa-611/regenerate-${AUDIO_KEY}.json"
-```
-
-If a second candidate is rejected, repeat with `--candidate-count 3 --max-requests 1`. Do not touch approved keys.
-
-- [ ] **Step 7: Record only real final omissions**
-
-If every used cue is selected, keep `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` absent.
-
-If real omissions exist, create that file with HPA-609's existing v1 schema:
-
-```json
-{
-  "schemaVersion": 1,
-  "storyId": "the_seventh_mirror",
-  "omissions": {
-    "actual-used-cue-key": "actual short human review reason"
-  }
-}
-```
-
-Replace the example with only actual omitted used keys/reasons before continuing. An omitted key must not remain selected.
-
-- [ ] **Step 8: Re-run compiler authority and require it to match the freeze**
+- [ ] **Step 6: Re-run compiler coverage and real local audio publish**
 
 ```bash
 bun packages/stories/src/compiler/cli.ts --report theSeventhMirror \
   > .tmp/hpa-611/final-audio-report.json
-cmp .tmp/hpa-611/audio-report.json .tmp/hpa-611/final-audio-report.json
-```
 
-Any difference means cue placement/plan authority moved and requires Task 1 re-freeze before publication.
-
-- [ ] **Step 9: Local-publish the final selected sources so encoding fails before R2**
-
-```bash
 rm -rf .tmp/hpa-611/local-audio-publish
-
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --media audio \
   --story the_seventh_mirror \
   --story-folder theSeventhMirror \
   --environment preview \
-  --preview-id hpa-611-local-encode \
+  --preview-id hpa-611-local \
   --generation-root .tmp/audio-generation \
   --destination local \
   --destination-root .tmp/hpa-611/local-audio-publish \
   --json > .tmp/hpa-611/local-audio-publish-report.json
 ```
 
-This is deliberately `publish`, not `plan`: it runs the actual encoder/prober for every selected source and writes only `.tmp/hpa-611/local-audio-publish/{source,delivery}`.
+Extract the local release ID/checksum from that report and deep-verify the same local candidate with `assets verify --media audio ... --destination local --destination-root .tmp/hpa-611/local-audio-publish --deep`. This is the first real encode proof for every selected source.
 
-- [ ] **Step 10: Deep-verify the local immutable candidate**
-
-```bash
-LOCAL_RELEASE_ID=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.releaseId !== "string") throw new Error("missing releaseId");
-console.log(r.releaseId);
-' .tmp/hpa-611/local-audio-publish-report.json)
-
-LOCAL_MANIFEST_SHA256=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.manifestSha256 !== "string") throw new Error("missing manifestSha256");
-console.log(r.manifestSha256);
-' .tmp/hpa-611/local-audio-publish-report.json)
-
-bun --filter @aquila/infra-cloudflare assets -- verify \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment preview \
-  --preview-id hpa-611-local-encode \
-  --release "$LOCAL_RELEASE_ID" \
-  --expect-manifest-sha256 "$LOCAL_MANIFEST_SHA256" \
-  --destination local \
-  --destination-root .tmp/hpa-611/local-audio-publish \
-  --deep \
-  --json > .tmp/hpa-611/local-audio-deep-verify.json
-```
-
-**Gate:** no R2 write until local publish and deep verify pass.
-
-- [ ] **Step 11: Freeze selection/omission inputs for preview/production equality**
+- [ ] **Step 7: Freeze final selection/omission state**
 
 ```bash
 shasum -a 256 .tmp/audio-generation/theSeventhMirror/selection.json \
-  | tee .tmp/hpa-611/frozen-selection.sha256
+  > .tmp/hpa-611/frozen-selection.sha256
 
 if [ -f packages/stories/raw/theSeventhMirror/docs/audio-omissions.json ]; then
   shasum -a 256 packages/stories/raw/theSeventhMirror/docs/audio-omissions.json \
-    | tee .tmp/hpa-611/frozen-omissions.sha256
+    > .tmp/hpa-611/frozen-omissions-state.txt
 else
-  printf '%s\n' absent > .tmp/hpa-611/frozen-omissions.sha256
+  printf 'absent\n' > .tmp/hpa-611/frozen-omissions-state.txt
 fi
 ```
 
-Do not edit cue placement, audio plan, selection, or omissions after this point. A curation change returns to the relevant Task 1/2 step and repeats local publish before preview.
+Any subsequent curation change returns to this task and creates a new preview candidate.
 
 ---
 
-## Task 3: Publish and approve the exact deployed-preview candidate
+## Task 3: Publish and approve the deployed-preview candidate
 
-**Files / state:**
-- Read effective deployed preview ID and active visual release
-- Create preview audio immutable state in R2
-- Mutate preview audio pointer only after candidate verification
-- Create `.tmp/hpa-611/preview-*.json`
+**Produces persisted files:**
+- `.tmp/hpa-611/effective-preview-id.txt`
+- `.tmp/hpa-611/preview-visual-release-id.txt`
+- `.tmp/hpa-611/preview-visual-manifest-sha256.txt`
+- `.tmp/hpa-611/preview-audio-release-id.txt`
+- `.tmp/hpa-611/preview-audio-manifest-sha256.txt`
+- `.tmp/hpa-611/archive-receipt-probe-key.txt`
+- `.tmp/hpa-611/archive-source-probe-key.txt` (supplemental)
 
-**Produces:** retained preview audio identity and human/deployed approval. This is the first R2 write in HPA-611; production R2 remains untouched.
-
-- [ ] **Step 1: Copy the effective preview ID from the deployed preview, not memory**
-
-Open the actual deployed preview reader and read the stable `reader-ready` host's `data-asset-preview-id` value. If the Vercel preview has an explicit `PUBLIC_ASSET_PREVIEW_ID`, cross-check that it matches.
-
-Record the exact effective value:
+- [ ] **Step 1: Copy and persist the effective preview ID from the deployed Vercel preview configuration**
 
 ```bash
-printf '%s\n' "$PREVIEW_ID" > .tmp/hpa-611/effective-preview-id.txt
-
-bun -e '
-const value = (await Bun.file(process.argv[1]).text()).trim();
-if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(value)) throw new Error("invalid preview id");
-console.log(value);
-' .tmp/hpa-611/effective-preview-id.txt
+printf '%s\n' "$EFFECTIVE_PUBLIC_ASSET_PREVIEW_ID" \
+  > .tmp/hpa-611/effective-preview-id.txt
+test -s .tmp/hpa-611/effective-preview-id.txt
 ```
 
-`PREVIEW_ID` must be the copied deployed value used by both visual/audio preview pointers and later `RELEASE_GATE_PREVIEW_ID`. Do not derive or invent a different HPA-611 ID at the terminal.
+Cross-check this value against the deployed reader's stable `data-asset-preview-id`. Do not derive it from operator memory.
 
-- [ ] **Step 2: Retain the active visual identity in that exact namespace**
+- [ ] **Step 2: Deep-list the active preview visual release and persist its identity**
+
+Use `PREVIEW_ID=$(cat .tmp/hpa-611/effective-preview-id.txt)` only within this step, run visual `assets releases --environment preview --preview-id "$PREVIEW_ID" --destination r2 --deep --json`, and write the single valid `active: true` `releaseId` and `manifestSha256` directly to:
+
+```text
+.tmp/hpa-611/preview-visual-release-id.txt
+.tmp/hpa-611/preview-visual-manifest-sha256.txt
+```
+
+Fail if there is not exactly one deep-verified active visual release.
+
+- [ ] **Step 3: Recheck the frozen selection/omission state and publish preview audio**
+
+Verify `frozen-selection.sha256` and `frozen-omissions-state.txt`, then:
 
 ```bash
 PREVIEW_ID=$(cat .tmp/hpa-611/effective-preview-id.txt)
-
-bun --filter @aquila/infra-cloudflare assets -- releases \
-  --story the_seventh_mirror \
-  --environment preview \
-  --preview-id "$PREVIEW_ID" \
-  --destination r2 \
-  --deep \
-  --json > .tmp/hpa-611/preview-visual-releases.json
-```
-
-Require exactly one intended active visual release and require it to be deep-verified. Retain its `releaseId` and `manifestSha256` as `PREVIEW_VISUAL_RELEASE_ID` / `PREVIEW_VISUAL_MANIFEST_SHA256`. This is a backstop after the preview ID was copied from deployed configuration.
-
-- [ ] **Step 3: Recheck frozen selection/omissions before the first R2 write**
-
-```bash
-shasum -a 256 -c .tmp/hpa-611/frozen-selection.sha256
-
-if ! grep -qx absent .tmp/hpa-611/frozen-omissions.sha256; then
-  shasum -a 256 -c .tmp/hpa-611/frozen-omissions.sha256
-else
-  test ! -f packages/stories/raw/theSeventhMirror/docs/audio-omissions.json
-fi
-```
-
-- [ ] **Step 4: Publish frozen audio inputs into preview**
-
-```bash
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --media audio \
   --story the_seventh_mirror \
@@ -522,207 +370,131 @@ bun --filter @aquila/infra-cloudflare assets -- publish \
   --generation-root .tmp/audio-generation \
   --destination r2 \
   --json > .tmp/hpa-611/preview-audio-publish.json
-
-PREVIEW_AUDIO_RELEASE_ID=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.releaseId !== "string") throw new Error("missing releaseId");
-console.log(r.releaseId);
-' .tmp/hpa-611/preview-audio-publish.json)
-
-PREVIEW_AUDIO_MANIFEST_SHA256=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.manifestSha256 !== "string") throw new Error("missing manifestSha256");
-console.log(r.manifestSha256);
-' .tmp/hpa-611/preview-audio-publish.json)
 ```
 
-- [ ] **Step 5: Deep-verify the stored preview candidate**
+Parse the JSON once and persist its `releaseId` and `manifestSha256` immediately to:
 
-```bash
-bun --filter @aquila/infra-cloudflare assets -- verify \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment preview \
-  --preview-id "$PREVIEW_ID" \
-  --release "$PREVIEW_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PREVIEW_AUDIO_MANIFEST_SHA256" \
-  --destination r2 \
-  --deep \
-  --json > .tmp/hpa-611/preview-audio-stored-verify.json
+```text
+.tmp/hpa-611/preview-audio-release-id.txt
+.tmp/hpa-611/preview-audio-manifest-sha256.txt
 ```
 
-- [ ] **Step 6: Derive one real private archive probe for a non-empty release**
+Do not rely on shell variables outside this task.
 
-```bash
-ARCHIVE_PROBE_KEY=$(bun -e '
-const root = ".tmp/audio-generation/theSeventhMirror";
-const selection = await Bun.file(`${root}/selection.json`).json();
-const first = Object.entries(selection.selections)[0];
-if (!first) throw new Error("no selected source for archive probe");
-const [key, picked] = first;
-const receipt = await Bun.file(`${root}/${key}/${picked.candidateId}.receipt.json`).json();
-const dot = receipt.output.filename.lastIndexOf(".");
-if (dot < 0) throw new Error("candidate filename has no extension");
-const ext = receipt.output.filename.slice(dot + 1);
-console.log(`audio/approved/the_seventh_mirror/${receipt.type}/${key}/${picked.sourceSha256}/source.${ext}`);
-')
+- [ ] **Step 4: Deep-verify the stored preview candidate**
+
+Read `PREVIEW_ID`, `PREVIEW_AUDIO_RELEASE_ID`, and `PREVIEW_AUDIO_MANIFEST_SHA256` from the retained files, then run `assets verify --media audio --environment preview --preview-id ... --release ... --expect-manifest-sha256 ... --destination r2 --deep` and retain its JSON report.
+
+- [ ] **Step 5: Derive archive probe keys from one compiler-used + selected cue**
+
+Use the frozen compiler report to choose the first asset whose `key` has a final selection. Read that candidate's receipt and verify its `key`, `type`, and `sourceSha256` agree with the chosen report/selection row.
+
+Construct:
+
+```text
+audio/approved/the_seventh_mirror/<type>/<key>/<sourceSha256>/receipt.json
 ```
 
-The path is probed only through the public delivery hostname and must return exact 404.
+and write it to `.tmp/hpa-611/archive-receipt-probe-key.txt`.
 
-- [ ] **Step 7: Run the public preview candidate verifier**
+Also derive the supplemental source path from `receipt.output.filename` using a **lowercased** validated extension, and write:
+
+```text
+audio/approved/the_seventh_mirror/<type>/<key>/<sourceSha256>/source.<lowercase-ext>
+```
+
+to `.tmp/hpa-611/archive-source-probe-key.txt`.
+
+The fixed `receipt.json` path is the primary proof. Never choose an unused-but-selected cue via arbitrary `Object.entries(selection.selections)[0]`.
+
+- [ ] **Step 6: Run public candidate verification with both retained archive probes**
 
 ```bash
 bun --filter @aquila/infra-cloudflare verify -- \
   --media audio \
   --story the_seventh_mirror \
   --environment preview \
-  --preview-id "$PREVIEW_ID" \
-  --release "$PREVIEW_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PREVIEW_AUDIO_MANIFEST_SHA256" \
-  --archive-probe-key "$ARCHIVE_PROBE_KEY" \
+  --preview-id "$(cat .tmp/hpa-611/effective-preview-id.txt)" \
+  --release "$(cat .tmp/hpa-611/preview-audio-release-id.txt)" \
+  --expect-manifest-sha256 "$(cat .tmp/hpa-611/preview-audio-manifest-sha256.txt)" \
+  --archive-probe-key "$(cat .tmp/hpa-611/archive-receipt-probe-key.txt)" \
+  --archive-probe-key "$(cat .tmp/hpa-611/archive-source-probe-key.txt)" \
   --json > .tmp/hpa-611/preview-audio-public-candidate-verify.json
 ```
 
-Expected: manifest/object integrity, MIME/cache, one Range 206, and archive 404 all pass.
+Both known-real private archive paths must return exact 404 on the public delivery host.
 
-- [ ] **Step 8: Activate only the preview audio pointer and verify active public state**
+- [ ] **Step 7: Activate preview audio and run active public verification**
 
-```bash
-bun --filter @aquila/infra-cloudflare assets -- activate \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment preview \
-  --preview-id "$PREVIEW_ID" \
-  --release "$PREVIEW_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PREVIEW_AUDIO_MANIFEST_SHA256" \
-  --destination r2 \
-  --json > .tmp/hpa-611/preview-audio-activate.json
+Use only retained files for preview ID/release/checksum. Save activation and active-verifier JSON reports.
 
-bun --filter @aquila/infra-cloudflare verify -- \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment preview \
-  --preview-id "$PREVIEW_ID" \
-  --archive-probe-key "$ARCHIVE_PROBE_KEY" \
-  --json > .tmp/hpa-611/preview-audio-public-active-verify.json
-```
-
-- [ ] **Step 9: Run the deployed preview release gate pinned to visual + audio identities**
+- [ ] **Step 8: Run the deployed preview release gate from retained visual/audio identities**
 
 ```bash
 BASE_URL="$DEPLOYED_PREVIEW_URL" \
 RELEASE_GATE_STORY_ID=the_seventh_mirror \
-RELEASE_GATE_RELEASE_ID="$PREVIEW_VISUAL_RELEASE_ID" \
-RELEASE_GATE_MANIFEST_SHA256="$PREVIEW_VISUAL_MANIFEST_SHA256" \
-RELEASE_GATE_PREVIEW_ID="$PREVIEW_ID" \
-RELEASE_GATE_AUDIO_RELEASE_ID="$PREVIEW_AUDIO_RELEASE_ID" \
-RELEASE_GATE_AUDIO_MANIFEST_SHA256="$PREVIEW_AUDIO_MANIFEST_SHA256" \
-VERCEL_AUTOMATION_BYPASS_SECRET="$VERCEL_AUTOMATION_BYPASS_SECRET" \
+RELEASE_GATE_RELEASE_ID="$(cat .tmp/hpa-611/preview-visual-release-id.txt)" \
+RELEASE_GATE_MANIFEST_SHA256="$(cat .tmp/hpa-611/preview-visual-manifest-sha256.txt)" \
+RELEASE_GATE_PREVIEW_ID="$(cat .tmp/hpa-611/effective-preview-id.txt)" \
+RELEASE_GATE_AUDIO_RELEASE_ID="$(cat .tmp/hpa-611/preview-audio-release-id.txt)" \
+RELEASE_GATE_AUDIO_MANIFEST_SHA256="$(cat .tmp/hpa-611/preview-audio-manifest-sha256.txt)" \
 bun --filter e2e test:release-gate
 ```
 
-If the preview is not protected, omit the bypass variable rather than inventing one.
+Add `VERCEL_AUTOMATION_BYPASS_SECRET` only when the deployed preview requires it.
 
-- [ ] **Step 10: Perform the bounded in-story direction review using the same worksheet**
+- [ ] **Step 9: Perform the bounded worksheet-driven direction review**
 
-Use `.tmp/hpa-611/listening-worksheet.md` to navigate, not an ad-hoc stroll:
+Check every explicit `bgmStops` row, first + later reuse for recurring cues where applicable, and representative early/mid/late, quiet, supernatural, high-tension, BGM continue/change, desktop/mobile, headphones/speakers, controls, and muted readability.
 
-- check every explicit `bgm:stop` row for intended silence transition;
-- for recurring cues, check the first placement and at least one later reuse site;
-- cover early/middle/late, quiet, supernatural/reveal, high-tension, BGM continuation/change, available branch/choice, desktop/mobile, headphones/speakers, controls, and muted readability.
-
-If one cue fails, return to Task 2 for only that key, reselect, rerun local publish/deep verify, then republish/approve a new preview candidate. **Do not write production R2 while preview is unapproved.**
+Any rejected cue returns to Task 2; do not proceed to production with an obsolete retained preview identity.
 
 ---
 
-## Task 4: Publish the same frozen candidate to production and enforce identity equality
+## Task 4: Publish the frozen production candidate and enforce file-to-file equality
 
-**Files / state:**
-- Create production audio immutable candidate in R2; no pointer mutation
-- Create `.tmp/hpa-611/production-audio-*.json`
+**Produces persisted files:**
+- `.tmp/hpa-611/production-audio-release-id.txt`
+- `.tmp/hpa-611/production-audio-manifest-sha256.txt`
+- `.tmp/hpa-611/production-visual-release-id.txt`
+- `.tmp/hpa-611/production-visual-manifest-sha256.txt`
 
-**Produces:** verified production candidate whose identity is exactly equal to preview.
+- [ ] **Step 1: Recheck final selection/omission hashes and publish production audio without activation**
 
-- [ ] **Step 1: Recheck frozen selection/omission inputs after preview approval**
+Use the same frozen generation root and canonical omission-file presence/absence as preview. Save the publisher JSON report and immediately persist its release ID/checksum to the two production-audio files above.
 
-Repeat Task 3 Step 3. A changed hash sends the run back through local publish + preview approval.
-
-- [ ] **Step 2: Publish candidate-only to production from the same frozen inputs**
-
-```bash
-bun --filter @aquila/infra-cloudflare assets -- publish \
-  --media audio \
-  --story the_seventh_mirror \
-  --story-folder theSeventhMirror \
-  --environment production \
-  --generation-root .tmp/audio-generation \
-  --destination r2 \
-  --json > .tmp/hpa-611/production-audio-publish.json
-
-PRODUCTION_AUDIO_RELEASE_ID=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.releaseId !== "string") throw new Error("missing releaseId");
-console.log(r.releaseId);
-' .tmp/hpa-611/production-audio-publish.json)
-
-PRODUCTION_AUDIO_MANIFEST_SHA256=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.manifestSha256 !== "string") throw new Error("missing manifestSha256");
-console.log(r.manifestSha256);
-' .tmp/hpa-611/production-audio-publish.json)
-```
-
-Audio publish never writes `current.json`.
-
-- [ ] **Step 3: Enforce exact preview/production identity parity**
+- [ ] **Step 2: Enforce exact equality using retained files**
 
 ```bash
-test "$PRODUCTION_AUDIO_RELEASE_ID" = "$PREVIEW_AUDIO_RELEASE_ID"
-test "$PRODUCTION_AUDIO_MANIFEST_SHA256" = "$PREVIEW_AUDIO_MANIFEST_SHA256"
+cmp -s \
+  .tmp/hpa-611/preview-audio-release-id.txt \
+  .tmp/hpa-611/production-audio-release-id.txt
+
+cmp -s \
+  .tmp/hpa-611/preview-audio-manifest-sha256.txt \
+  .tmp/hpa-611/production-audio-manifest-sha256.txt
 ```
 
-Mismatch is a hard stop; do not approve by ear.
+Any mismatch is a hard stop. Do not republish preview merely to reconstruct values.
 
-- [ ] **Step 4: Deep-verify and publicly verify the production candidate**
+- [ ] **Step 3: Deep/public verify the production candidate from retained files**
 
-```bash
-bun --filter @aquila/infra-cloudflare assets -- verify \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$PRODUCTION_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PRODUCTION_AUDIO_MANIFEST_SHA256" \
-  --destination r2 \
-  --deep \
-  --json > .tmp/hpa-611/production-audio-stored-candidate-verify.json
+Run stored deep verification and public candidate verification. Reuse the retained archive probe-key files; the same selected source was archived under the same private content-addressed prefix.
 
-bun --filter @aquila/infra-cloudflare verify -- \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$PRODUCTION_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PRODUCTION_AUDIO_MANIFEST_SHA256" \
-  --archive-probe-key "$ARCHIVE_PROBE_KEY" \
-  --json > .tmp/hpa-611/production-audio-public-candidate-verify.json
-```
+- [ ] **Step 4: Deep-list the active production visual release and persist its identity**
 
-**Gate:** do not activate yet. Task 5 must retain a verified rollback target first.
+Persist exactly one deep-verified active visual release ID/checksum to the production-visual files. Do not republish visual assets.
 
 ---
 
-## Task 5: Retain or create the rollback target immediately before activation
+## Task 5: Resolve the fresh rollback target immediately before go-live
 
-**Files / state:**
-- Create untracked: `.tmp/hpa-611/production-audio-releases-before-activation.json`
-- Conditionally create untracked: `.tmp/hpa-611/no-audio-omissions.json`
-- Conditionally create untracked: `.tmp/hpa-611/silent-generation/`
-- Conditionally create one zero-asset production audio manifest; still no pointer mutation
-- Create untracked: rollback identity files
+**Produces:**
+- `.tmp/hpa-611/production-audio-releases-before-activation.json`
+- `.tmp/hpa-611/rollback-release-id.txt`
+- `.tmp/hpa-611/rollback-manifest-sha256.txt`
 
-**Produces:** `ROLLBACK_RELEASE_ID` + `ROLLBACK_MANIFEST_SHA256` without altering the active production pointer.
-
-- [ ] **Step 1: List/deep-verify production audio history and inspect pointer state now**
+- [ ] **Step 1: Rerun fresh deep production audio history**
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- releases \
@@ -734,294 +506,102 @@ bun --filter @aquila/infra-cloudflare assets -- releases \
   --json > .tmp/hpa-611/production-audio-releases-before-activation.json
 ```
 
-Inspect `warnings` and `releases`.
+Fresh state wins over Task 1 preflight. Stop on `pointer-invalid`.
 
-- If there is a pointer-invalid warning, stop; do not treat it as no audio.
-- If a valid prior `active: true` release exists, require `manifestValid`, `releaseIdentityValid`, `shallowVerified`, and `deepVerified`, then retain its ID/checksum.
-- If no active audio pointer exists, create the explicit silent baseline below.
-- The newly published HPA-611 production candidate must still be inactive.
+- [ ] **Step 2: If a valid active previous audio release exists, persist it as rollback target**
 
-- [ ] **Step 2: First production audio release only — derive all-omitted coverage from compiler authority**
+Require `manifestValid`, `releaseIdentityValid`, `shallowVerified`, and `deepVerified`. Persist its ID/checksum directly to the rollback files.
 
-```bash
-rm -rf .tmp/hpa-611/silent-generation
-mkdir -p .tmp/hpa-611/silent-generation
+- [ ] **Step 3: Otherwise publish an all-omitted silent candidate now**
 
-bun -e '
-const report = await Bun.file(process.argv[1]).json();
-const omissions = Object.fromEntries(
-  report.assets.map((asset) => [asset.key, "HPA-611 explicit no-audio rollback baseline"])
-);
-await Bun.write(
-  process.argv[2],
-  JSON.stringify({ schemaVersion: 1, storyId: "the_seventh_mirror", omissions }, null, 2) + "\n"
-);
-' .tmp/hpa-611/audio-report.json .tmp/hpa-611/no-audio-omissions.json
-```
+Generate `.tmp/hpa-611/no-audio-omissions.json` from every used asset in the frozen compiler report with a bounded HPA-611 baseline reason. Use an empty `.tmp/hpa-611/silent-generation` root and explicit `--omissions` to publish a zero-asset production audio candidate. Persist its ID/checksum to the rollback files.
 
-Use the dedicated empty generation root so final selections cannot conflict with all-omitted coverage.
+- [ ] **Step 4: Deep/public verify the silent baseline**
 
-- [ ] **Step 3: Publish the silent production candidate without activation**
-
-Run only when Task 5 Step 1 found no valid active baseline:
-
-```bash
-bun --filter @aquila/infra-cloudflare assets -- publish \
-  --media audio \
-  --story the_seventh_mirror \
-  --story-folder theSeventhMirror \
-  --environment production \
-  --generation-root .tmp/hpa-611/silent-generation \
-  --omissions .tmp/hpa-611/no-audio-omissions.json \
-  --destination r2 \
-  --json > .tmp/hpa-611/silent-baseline-publish.json
-
-ROLLBACK_RELEASE_ID=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.releaseId !== "string") throw new Error("missing releaseId");
-console.log(r.releaseId);
-' .tmp/hpa-611/silent-baseline-publish.json)
-
-ROLLBACK_MANIFEST_SHA256=$(bun -e '
-const r = await Bun.file(process.argv[1]).json();
-if (typeof r.manifestSha256 !== "string") throw new Error("missing manifestSha256");
-console.log(r.manifestSha256);
-' .tmp/hpa-611/silent-baseline-publish.json)
-```
-
-Expected: zero included MP3s, all compiler-used cues omitted, no pointer write.
-
-- [ ] **Step 4: Verify the silent baseline without the non-empty deployed audio gate**
-
-```bash
-bun --filter @aquila/infra-cloudflare assets -- verify \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$ROLLBACK_RELEASE_ID" \
-  --expect-manifest-sha256 "$ROLLBACK_MANIFEST_SHA256" \
-  --destination r2 \
-  --deep \
-  --json > .tmp/hpa-611/silent-baseline-stored-verify.json
-
-bun --filter @aquila/infra-cloudflare verify -- \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$ROLLBACK_RELEASE_ID" \
-  --expect-manifest-sha256 "$ROLLBACK_MANIFEST_SHA256" \
-  --json > .tmp/hpa-611/silent-baseline-public-verify.json
-```
-
-Do **not** run `test:release-gate` against this zero-asset baseline: `findAudioGateAnchors()` correctly has no included BGM/SFX anchors. Stored/public manifest verification plus the rollback reader silence/usability smoke in Task 6 is the correct proof.
-
-- [ ] **Step 5: Persist the rollback identity**
-
-For an existing active release, assign its retained deep-verified ID/checksum. For the silent case, use the values above. Then:
-
-```bash
-printf '%s\n' "$ROLLBACK_RELEASE_ID" > .tmp/hpa-611/rollback-release-id.txt
-printf '%s\n' "$ROLLBACK_MANIFEST_SHA256" > .tmp/hpa-611/rollback-manifest-sha256.txt
-```
+For a zero-asset baseline, run stored and public candidate verification without archive probes. Do **not** run the full deployed audio release gate: it requires included BGM/SFX anchors that intentionally do not exist.
 
 ---
 
-## Task 6: Activate, smoke, rollback, and reactivate
+## Task 6: Activate, smoke, rollback, and reactivate from retained state
 
-**Files / state:**
-- Mutate production audio pointer three times at most: activate, rollback, reactivate
-- Create `.tmp/hpa-611/production-*.json`
+At task start, load/read the production audio, production visual, rollback, and archive-probe files. No identity may be reconstructed by republishing.
 
-**Produces:** go-live plus pointer-only recovery proof.
+- [ ] **Step 1: Activate approved production audio**
 
-- [ ] **Step 1: Retain the currently active production visual identity**
+Use `activate --media audio --environment production --confirm-production the_seventh_mirror`, the retained production audio ID/checksum, and `--destination r2`. Save the activation JSON.
 
-```bash
-bun --filter @aquila/infra-cloudflare assets -- releases \
-  --story the_seventh_mirror \
-  --environment production \
-  --destination r2 \
-  --deep \
-  --json > .tmp/hpa-611/production-visual-releases.json
-```
+- [ ] **Step 2: Verify active production and run deployed production gate**
 
-Require the intended active visual release to deep-verify; retain its ID/checksum as `PRODUCTION_VISUAL_RELEASE_ID` / `PRODUCTION_VISUAL_MANIFEST_SHA256`. Do not republish visuals.
-
-- [ ] **Step 2: Activate the approved HPA-611 production audio pointer**
+Run active public verification with both retained archive probe keys. Then:
 
 ```bash
-bun --filter @aquila/infra-cloudflare assets -- activate \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$PRODUCTION_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PRODUCTION_AUDIO_MANIFEST_SHA256" \
-  --confirm-production the_seventh_mirror \
-  --destination r2 \
-  --json > .tmp/hpa-611/production-audio-activate.json
-```
-
-Expected: pointer-only write.
-
-- [ ] **Step 3: Verify active public state and the deployed production gate**
-
-```bash
-bun --filter @aquila/infra-cloudflare verify -- \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --archive-probe-key "$ARCHIVE_PROBE_KEY" \
-  --json > .tmp/hpa-611/production-audio-public-active-verify.json
-
 BASE_URL="$DEPLOYED_PRODUCTION_URL" \
 RELEASE_GATE_STORY_ID=the_seventh_mirror \
-RELEASE_GATE_RELEASE_ID="$PRODUCTION_VISUAL_RELEASE_ID" \
-RELEASE_GATE_MANIFEST_SHA256="$PRODUCTION_VISUAL_MANIFEST_SHA256" \
-RELEASE_GATE_AUDIO_RELEASE_ID="$PRODUCTION_AUDIO_RELEASE_ID" \
-RELEASE_GATE_AUDIO_MANIFEST_SHA256="$PRODUCTION_AUDIO_MANIFEST_SHA256" \
+RELEASE_GATE_RELEASE_ID="$(cat .tmp/hpa-611/production-visual-release-id.txt)" \
+RELEASE_GATE_MANIFEST_SHA256="$(cat .tmp/hpa-611/production-visual-manifest-sha256.txt)" \
+RELEASE_GATE_AUDIO_RELEASE_ID="$(cat .tmp/hpa-611/production-audio-release-id.txt)" \
+RELEASE_GATE_AUDIO_MANIFEST_SHA256="$(cat .tmp/hpa-611/production-audio-manifest-sha256.txt)" \
 bun --filter e2e test:release-gate
 ```
 
-Perform the short production reader smoke from the approved preview worksheet: one SFX, BGM start/continue/stop, navigation, controls, muted/Text mode.
+Perform a short production playback/navigation/control smoke.
 
-- [ ] **Step 4: Roll back to the retained prior/silent immutable release**
+- [ ] **Step 3: Roll back using the retained rollback files**
 
-```bash
-ROLLBACK_RELEASE_ID=$(cat .tmp/hpa-611/rollback-release-id.txt)
-ROLLBACK_MANIFEST_SHA256=$(cat .tmp/hpa-611/rollback-manifest-sha256.txt)
+Run `rollback --media audio --environment production --confirm-production the_seventh_mirror` with the retained rollback ID/checksum. Save the JSON report.
 
-bun --filter @aquila/infra-cloudflare assets -- rollback \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$ROLLBACK_RELEASE_ID" \
-  --expect-manifest-sha256 "$ROLLBACK_MANIFEST_SHA256" \
-  --confirm-production the_seventh_mirror \
-  --destination r2 \
-  --json > .tmp/hpa-611/production-rollback.json
-```
+- [ ] **Step 4: Verify rollback behavior appropriately**
 
-- [ ] **Step 5: Verify rollback behavior**
+Always run active public verification. If the rollback target is the zero-asset silent baseline, perform only a deployed reader usability/silence smoke. If it is a prior non-empty release, run the full deployed release gate pinned to that retained prior audio identity.
 
-Always run active public audio verification:
+- [ ] **Step 5: Reactivate the approved HPA-611 release and re-run active verification/gate**
 
-```bash
-bun --filter @aquila/infra-cloudflare verify -- \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --json > .tmp/hpa-611/production-rollback-public-verify.json
-```
-
-If the rollback target is the all-omitted silent baseline, do a simple deployed reader smoke proving dialogue/navigation remain usable and audio is silent. Skip the full audio release gate because the empty manifest has no BGM/SFX anchors.
-
-If the rollback target is a previous non-empty release, run the deployed audio release gate pinned to that retained release ID/checksum and a representative playback smoke.
-
-- [ ] **Step 6: Reactivate the approved HPA-611 release**
-
-```bash
-bun --filter @aquila/infra-cloudflare assets -- activate \
-  --media audio \
-  --story the_seventh_mirror \
-  --environment production \
-  --release "$PRODUCTION_AUDIO_RELEASE_ID" \
-  --expect-manifest-sha256 "$PRODUCTION_AUDIO_MANIFEST_SHA256" \
-  --confirm-production the_seventh_mirror \
-  --destination r2 \
-  --json > .tmp/hpa-611/production-reactivate.json
-```
-
-Repeat Task 6 Step 3. Production must again report the exact approved HPA-611 audio identity.
+Use the retained production audio files; save the reactivation report and rerun Step 2's active public/deployed checks.
 
 ---
 
-## Task 7: Run scoped repository checks, commit only real release metadata, and close Linear
+## Task 7: Scoped repository closeout and Linear evidence
 
-**Files / state:**
-- Already tracked by this PR: design/plan docs and target-invariance unit test
-- Conditionally tracked: `packages/stories/raw/theSeventhMirror/docs/audio-omissions.json`
-- Update: Linear HPA-611 final evidence
-
-**Produces:** final single-PR release/evidence closeout without redundant local suites.
-
-- [ ] **Step 1: Run the default scoped verification for an operational/test-only release branch**
-
-When the branch contains only the planning docs, target-invariance test, and optional omissions metadata:
+- [ ] **Step 1: Run the scoped repository regression**
 
 ```bash
-bun compile:stories
 bun run compile:check
 bun --filter @aquila/stories test
 bun --filter @aquila/infra-cloudflare test
-git diff --check
 ```
 
-These checks cover compiler drift, audio plan/omission contracts, and the publisher invariant. The credentialed deployed audio path was already exercised by `bun --filter e2e test:release-gate` in Tasks 3 and 6.
+Do not add a standalone `compile:stories`; `compile:check` already runs it. Do not run normal local `test:e2e` merely as release evidence; it excludes `visual-novel-deployed.spec.ts`.
 
-Do **not** run `bun --filter e2e test:e2e` merely for release ceremony: `playwright.config.ts` explicitly ignores `visual-novel-deployed.spec.ts`, so that local suite does not prove the release gate.
+If a real blocker fix changed product/runtime code, additionally run its focused tests plus `bun run lint`, `bun run build`, and only the web/E2E suites relevant to that changed behavior.
 
-- [ ] **Step 2: Expand verification only when a real blocker fix changed product/runtime code**
-
-If HPA-611 had to change implementation code beyond the planned unit test/omission metadata:
-
-1. run the affected workspace's focused/unit tests;
-2. run `bun run lint` and `bun run build`;
-3. run web/local E2E suites only when the blocker changed web/e2e behavior those suites actually exercise.
-
-Do not add unrelated repo-wide suites to a docs/test/metadata-only release branch.
-
-- [ ] **Step 3: Inspect tracked scope**
+- [ ] **Step 2: Inspect tracked scope**
 
 ```bash
 git status --short
+git diff --check
 git diff --name-only main...HEAD
 ```
 
-Expected default tracked scope:
+Expected normal scope: two HPA-611 planning docs + target-invariance test + optional real `audio-omissions.json`. No `.tmp`, generated audio, provider receipts, or selections are tracked.
 
-```text
-docs/superpowers/plans/2026-08-19-hpa-611-seventh-mirror-audio-release.md
-docs/superpowers/specs/2026-08-19-hpa-611-seventh-mirror-audio-release-design.md
-packages/infra-cloudflare/src/publisher/__tests__/audio-runtime-release.test.ts
-```
+- [ ] **Step 3: Commit real omissions only if they exist**
 
-`packages/stories/raw/theSeventhMirror/docs/audio-omissions.json` appears only when real final omissions exist. Any other source file must be the smallest explicitly justified blocker fix.
+If final omissions exist, commit the canonical `audio-omissions.json` on this same PR. Otherwise do not create an empty file.
 
-No `.tmp`, generated audio, provider receipt, selection, local absolute path, or binary is tracked.
-
-- [ ] **Step 4: Commit real final omissions only when present**
-
-```bash
-if [ -f packages/stories/raw/theSeventhMirror/docs/audio-omissions.json ]; then
-  git add packages/stories/raw/theSeventhMirror/docs/audio-omissions.json
-  git commit -m "chore(audio): record Seventh Mirror release omissions"
-fi
-```
-
-Do not create an empty omissions file for ceremony.
-
-- [ ] **Step 5: Add the final concise HPA-611 Linear evidence**
+- [ ] **Step 4: Add the final Linear evidence summary**
 
 Record:
 
-- frozen commit + audio-plan SHA-256;
-- compiler 28 SFX / 13 BGM sanity count, BGM-stop count, and worksheet provenance;
-- tool/credential-presence preflight result;
-- initial request cap, actual provider requests, current cost/credits where calculable;
-- terms/account check date/source and music note gate;
-- selected/omitted counts;
-- local encode/deep-verify result;
-- effective preview ID and how it was obtained;
-- preview audio release ID/checksum and stored/public/deployed/manual review results;
-- production release ID/checksum and exact preview equality result;
-- private archive/public 404 proof;
-- retained prior/silent rollback baseline ID/checksum;
-- activation, rollback, reactivation results;
-- scoped final repository checks;
-- deferred creative ideas outside HPA-611.
+- frozen commit/audio-plan SHA and compiler counts;
+- Task 1 ffmpeg/ffprobe, release-gate-config, delivery-R2, source-archive-config, and terms evidence;
+- initial cap and actual provider spend/requests where available;
+- selected/omitted counts and local encode proof;
+- effective preview ID source;
+- preview and production audio IDs/checksums plus `cmp` equality result;
+- receipt/source archive probe keys and public 404 evidence;
+- preview/production stored/public/deployed/manual review results;
+- rollback target and activation/rollback/reactivation pointer evidence;
+- scoped repository verification;
+- explicitly deferred creative ideas.
 
-Do not include secrets or full private provider receipts.
-
-- [ ] **Step 6: Final scope check**
-
-HPA-611 closes with no new CLIs, no audio mirror-preview, no pointer deletion, no second inventory/review schema, and no second PR. If a blocker fix was necessary, verify it remains the smallest owning-module change and is covered by the conditional verification from Step 2.
+Never paste credentials, full private receipts, local private paths, or generated audio binaries into Linear.

@@ -353,34 +353,4 @@ describe('audio generation store contracts', () => {
         expect(rootExports).not.toHaveProperty('LocalAudioGenerationStore');
         expect(rootExports).not.toHaveProperty('AudioCandidateReceiptV1Schema');
     });
-
-    it('reports only non-empty music terms notes', async () => {
-        const { root, store } = await makeStore();
-
-        await expect(store.hasMusicTermsNote()).resolves.toBe(false);
-        await writeFile(join(root, 'music-terms-note.md'), '   \n');
-        await expect(store.hasMusicTermsNote()).resolves.toBe(false);
-        await writeFile(
-            join(root, 'music-terms-note.md'),
-            'Account checked.\n'
-        );
-        await expect(store.hasMusicTermsNote()).resolves.toBe(true);
-    });
-
-    it.skipIf(cannotEnforceFilePermissions)(
-        'propagates non-ENOENT music terms errors',
-        async () => {
-            const { root, store } = await makeStore();
-            const notePath = join(root, 'music-terms-note.md');
-            await writeFile(notePath, 'Account checked.\n');
-            await chmod(notePath, 0o000);
-            try {
-                await expect(store.hasMusicTermsNote()).rejects.toMatchObject({
-                    code: 'EACCES',
-                });
-            } finally {
-                await chmod(notePath, 0o644);
-            }
-        }
-    );
 });

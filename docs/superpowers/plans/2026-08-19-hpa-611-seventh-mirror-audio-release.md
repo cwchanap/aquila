@@ -75,12 +75,36 @@ bun --filter @aquila/infra-cloudflare assets -- releases \
 
 Inspect the report. Any command failure is a pre-spend stop. A `pointer-invalid` warning is also a stop. This command is read-only, proves the delivery credential path and R2 reachability, and records whether an active baseline appears to exist. Do not treat this report as the final rollback decision; Task 5 reruns it immediately before activation.
 
-- [ ] **Step 4: Retain the shared R2 release credential contract**
+- [ ] **Step 4: Prove source-archive R2 access with a read-only probe**
 
-Step 3 exercises the single `R2_RELEASE_ACCESS_KEY_ID` /
-`R2_RELEASE_SECRET_ACCESS_KEY` pair through the owning CLI. Both the public
-delivery store and private source-archive store use that same pair; there is no
-second source-only credential check. Never print or persist credential values.
+Step 3 only exercises the delivery bucket: `runAssetsCli()` creates the
+private source-archive store solely for `media === 'audio' && command === 'publish'`
+(see `packages/infra-cloudflare/src/publisher/cli.ts`), and Step 3 runs the
+`releases` command. A token accidentally scoped to delivery-only would pass
+Step 3, let the paid generation/curation work happen, and only fail at the
+first R2 audio publish when the source archive is opened. Both stores share the
+single `R2_RELEASE_ACCESS_KEY_ID` / `R2_RELEASE_SECRET_ACCESS_KEY` pair, so one
+read-only probe against the source bucket is sufficient; there is no second
+source-only credential. Never print or persist credential values.
+
+```bash
+bun -e '
+import { R2DeliveryStore } from "./packages/infra-cloudflare/src/publisher/stores/r2-delivery-store.ts";
+const store = await R2DeliveryStore.createFromEnvironment({ bucket: "source" });
+try {
+  // A ListObjectsV2 call proves read access to the private source archive
+  // bucket. An empty result is valid; a delivery-only-scoped token throws
+  // here with an R2 access-denied error.
+  for await (const _ of store.listKeys("audio/approved/the_seventh_mirror/")) {
+    break;
+  }
+} finally {
+  await store.close();
+}
+'
+```
+
+Expected: exit `0`. Any failure is a pre-spend stop — do not proceed to Task 2.
 
 - [ ] **Step 5: Add the target-invariance regression to the existing publisher test**
 
@@ -195,7 +219,16 @@ command.
 
 - [ ] **Step 10: Confirm the paid-call boundary**
 
-Confirm provider configuration without invoking the provider. Paid generation
+Confirm provider configuration without invoking the provider. The Task 1
+dry-run cannot cover this: `audio-generation/cli.ts` sets
+`needsProvider = !args.dryRun && plan.scheduledRequests.length > 0`, so
+`--dry-run` never validates `ELEVENLABS_API_KEY`. Use a no-call presence check:
+
+```bash
+test -n "${ELEVENLABS_API_KEY:-}"
+```
+
+Expected: exit `0`. Do not print or persist the key value. Paid generation
 requires explicit authority before Task 2 begins; no local terms note or
 external account/distribution attestation is required.
 
@@ -345,7 +378,18 @@ Fail if there is not exactly one deep-verified active visual release.
 
 - [ ] **Step 3: Recheck the frozen selection/omission state and publish preview audio**
 
-Verify `frozen-selection.sha256` and `frozen-omissions-state.txt`, then:
+Verify `frozen-selection.sha256` and `frozen-omissions-state.txt` with
+executable checks, then:
+
+```bash
+set -euo pipefail
+shasum -a 256 -c .tmp/hpa-611/frozen-selection.sha256
+if [ "$(cat .tmp/hpa-611/frozen-omissions-state.txt)" = "absent" ]; then
+  test ! -f packages/stories/raw/theSeventhMirror/docs/audio-omissions.json
+else
+  shasum -a 256 -c .tmp/hpa-611/frozen-omissions-state.txt
+fi
+```
 
 ```bash
 PREVIEW_ID=$(cat .tmp/hpa-611/effective-preview-id.txt)
@@ -463,7 +507,11 @@ Any rejected cue returns to Task 2; do not proceed to production with an obsolet
 set -euo pipefail
 
 shasum -a 256 -c .tmp/hpa-611/frozen-selection.sha256
-cat .tmp/hpa-611/frozen-omissions-state.txt  # confirm 'absent' or match actual hash
+if [ "$(cat .tmp/hpa-611/frozen-omissions-state.txt)" = "absent" ]; then
+  test ! -f packages/stories/raw/theSeventhMirror/docs/audio-omissions.json
+else
+  shasum -a 256 -c .tmp/hpa-611/frozen-omissions-state.txt
+fi
 
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --media audio \

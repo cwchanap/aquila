@@ -169,6 +169,8 @@ Current sanity expectation: 41 used cues, 28 SFX, 13 BGM, zero unused rows.
 - [ ] **Step 9: Run the no-cost generation dry-run and persist the exact cap**
 
 ```bash
+set -euo pipefail
+
 bun packages/stories/src/audio-generation/cli.ts generate \
   --story theSeventhMirror \
   --missing \
@@ -186,7 +188,10 @@ console.log(r.scheduledRequests.length);
   | tee .tmp/hpa-611/initial-request-cap.txt
 ```
 
-Never round the cap upward. Zero is valid evidence and skips Task 2's initial paid command.
+`set -euo pipefail` ensures a generation or validation failure fails the step
+instead of producing a successful empty cap file via `tee`'s exit code. Never
+round the cap upward. Zero is valid evidence and skips Task 2's initial paid
+command.
 
 - [ ] **Step 10: Confirm the paid-call boundary**
 
@@ -380,19 +385,28 @@ audio/approved/the_seventh_mirror/<type>/<key>/<sourceSha256>/receipt.json
 
 and write it to `.tmp/hpa-611/archive-receipt-probe-key.txt`.
 
-Also derive the supplemental source path from `receipt.output.filename` using a **lowercased** validated extension, and write:
+Optionally derive the supplemental source path from `receipt.output.filename`
+using a **lowercased** validated extension. If the receipt yields a valid
+extension, write:
 
 ```text
 audio/approved/the_seventh_mirror/<type>/<key>/<sourceSha256>/source.<lowercase-ext>
 ```
 
-to `.tmp/hpa-611/archive-source-probe-key.txt`.
+to `.tmp/hpa-611/archive-source-probe-key.txt`. If no valid extension is
+available, skip the supplemental file; the primary `receipt.json` probe is
+sufficient and source-object retention is not a prerequisite.
 
 The fixed `receipt.json` path is the primary proof. Never choose an unused-but-selected cue via arbitrary `Object.entries(selection.selections)[0]`.
 
-- [ ] **Step 6: Run public candidate verification with both retained archive probes**
+- [ ] **Step 6: Run public candidate verification with retained archive probes**
 
 ```bash
+ARCHIVE_PROBE_ARGS=(--archive-probe-key "$(cat .tmp/hpa-611/archive-receipt-probe-key.txt)")
+if [ -f .tmp/hpa-611/archive-source-probe-key.txt ]; then
+  ARCHIVE_PROBE_ARGS+=(--archive-probe-key "$(cat .tmp/hpa-611/archive-source-probe-key.txt)")
+fi
+
 bun --filter @aquila/infra-cloudflare verify -- \
   --media audio \
   --story the_seventh_mirror \
@@ -400,12 +414,13 @@ bun --filter @aquila/infra-cloudflare verify -- \
   --preview-id "$(cat .tmp/hpa-611/effective-preview-id.txt)" \
   --release "$(cat .tmp/hpa-611/preview-audio-release-id.txt)" \
   --expect-manifest-sha256 "$(cat .tmp/hpa-611/preview-audio-manifest-sha256.txt)" \
-  --archive-probe-key "$(cat .tmp/hpa-611/archive-receipt-probe-key.txt)" \
-  --archive-probe-key "$(cat .tmp/hpa-611/archive-source-probe-key.txt)" \
+  "${ARCHIVE_PROBE_ARGS[@]}" \
   --json > .tmp/hpa-611/preview-audio-public-candidate-verify.json
 ```
 
-Both known-real private archive paths must return exact 404 on the public delivery host.
+The primary `receipt.json` probe path must always return exact 404 on the public
+delivery host. When the supplemental source path was retained, it must also
+return exact 404.
 
 - [ ] **Step 7: Activate preview audio and run active public verification**
 
@@ -444,7 +459,39 @@ Any rejected cue returns to Task 2; do not proceed to production with an obsolet
 
 - [ ] **Step 1: Recheck final selection/omission hashes and publish production audio without activation**
 
-Use the same frozen generation root and canonical omission-file presence/absence as preview. Save the publisher JSON report and immediately persist its release ID/checksum to the two production-audio files above.
+```bash
+set -euo pipefail
+
+shasum -a 256 -c .tmp/hpa-611/frozen-selection.sha256
+cat .tmp/hpa-611/frozen-omissions-state.txt  # confirm 'absent' or match actual hash
+
+bun --filter @aquila/infra-cloudflare assets -- publish \
+  --media audio \
+  --story the_seventh_mirror \
+  --story-folder theSeventhMirror \
+  --environment production \
+  --generation-root .tmp/audio-generation \
+  --destination r2 \
+  --json > .tmp/hpa-611/production-audio-publish.json
+
+bun -e '
+const r = await Bun.file(process.argv[1]).json();
+if (r.status !== "success" && r.status !== "no-op") throw new Error(JSON.stringify(r.errors ?? r));
+if (!r.releaseId || !r.manifestSha256) throw new Error("missing release identity");
+await Bun.write(process.argv[2], r.releaseId + "\n");
+await Bun.write(process.argv[3], r.manifestSha256 + "\n");
+' .tmp/hpa-611/production-audio-publish.json \
+  .tmp/hpa-611/production-audio-release-id.txt \
+  .tmp/hpa-611/production-audio-manifest-sha256.txt
+```
+
+Use the same frozen generation root and canonical omission-file presence/absence
+as preview; the publisher auto-discovers `audio-omissions.json` when present.
+Audio publish does not accept pointer-control flags (`--no-activate`,
+`--reactivate`, `--override-concurrent-pointer`, `--confirm-production`) and
+never activates an audio pointer, so none are passed. The release ID/checksum
+are parsed from the JSON report and persisted to the two production-audio files
+above before the equality gate in Step 2.
 
 - [ ] **Step 2: Enforce exact equality using retained files**
 
@@ -515,7 +562,7 @@ Use `activate --media audio --environment production --confirm-production the_se
 
 - [ ] **Step 2: Verify active production and run deployed production gate**
 
-Run active public verification with both retained archive probe keys. Then:
+Run active public verification with the retained archive probe keys (primary `receipt.json` always; supplemental source path when retained). Then:
 
 ```bash
 BASE_URL="$DEPLOYED_PRODUCTION_URL" \

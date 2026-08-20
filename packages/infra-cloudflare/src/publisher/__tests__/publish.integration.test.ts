@@ -599,8 +599,8 @@ describe('publishRelease', () => {
             cliOverrides: {
                 repositoryRoot: paths.repositoryRoot,
                 environment: {
-                    R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
-                    R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
+                    R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+                    R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
                 },
                 createLocalStore: async () => {
                     throw new Error('local store must not be selected');

@@ -305,34 +305,16 @@ Deleting or editing one of these rules later is a manual, deliberate act.
 R2 → API → Manage API tokens → Create API token:
 
 - Permission: **Object Read & Write**
-- Specify bucket: **`aquila-vn-delivery` only**. Not account-wide, and not
-  including `aquila-vn-source`.
-- Name: `aquila-vn-publisher`
-
-**Deliberate divergence from the design.** D6 of
-`docs/superpowers/specs/2026-07-28-hpa-229-r2-visual-asset-delivery-design.md`
-scopes this token to *both* buckets, and the cancelled minter built its resource
-map from `[config.buckets.source, config.buckets.delivery]`. Delivery-only was
-chosen instead, as least privilege: a leaked publisher key must not be able to
-touch the private authoring originals. An R2 API token carries a **single
-permission level across all the buckets it selects**, so "read-write on delivery,
-read-only on source" is not expressible in one token — which is why the design's
-version would have granted write access to `aquila-vn-source`.
+- Specify both buckets: **`aquila-vn-delivery` and `aquila-vn-source`**.
+- Name: `aquila-vn-release`
 
 Copy the Access Key ID and Secret Access Key **once** — Cloudflare will not show
 the secret again — and store them in GitHub Actions **secrets** as
-`R2_PUBLISHER_ACCESS_KEY_ID` and `R2_PUBLISHER_SECRET_ACCESS_KEY`. Never in the
-repo, never in `.env`, never in a Vercel `PUBLIC_*` variable. These credentials
-are delivery-only: the public verifier never receives them.
-
-Audio publication uses a separate Object Read & Write token for
-**`aquila-vn-source` only**, stored as `R2_SOURCE_ARCHIVE_ACCESS_KEY_ID` and
-`R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY`. Do not add source permissions to the
-delivery token or reuse the delivery pair for private archival. The audio
-publisher archives the exact source and receipt bytes in `aquila-vn-source`
-before writing the public MP3 or manifest; the source pair must not be sent to
-the public verifier. HPA-230 reads authoring originals from a local synchronized
-source root; it does not read `aquila-vn-source`.
+`R2_RELEASE_ACCESS_KEY_ID` and `R2_RELEASE_SECRET_ACCESS_KEY`. Never in the
+repo, never in `.env`, never in a Vercel `PUBLIC_*` variable. The human-approved
+tradeoff is one credential pair with Object Read & Write access to both buckets.
+Delivery remains the public bucket and source remains the private archive; the
+publisher never sends these values to the public verifier.
 
 The account id is stored as a GitHub Actions **variable**, not a secret:
 `R2_PUBLISHER_ACCOUNT_ID`. It is not sensitive — the same value is already
@@ -365,8 +347,8 @@ environment whose variables you changed.
 Publish the smoke release, then run the two verifiers:
 
 ```bash
-R2_PUBLISHER_ACCESS_KEY_ID=<access key id> \
-R2_PUBLISHER_SECRET_ACCESS_KEY=<secret access key> \
+R2_RELEASE_ACCESS_KEY_ID=<access key id> \
+R2_RELEASE_SECRET_ACCESS_KEY=<secret access key> \
   bun --filter @aquila/infra-cloudflare seed
 bun --filter @aquila/infra-cloudflare verify
 R2_LIVE_CHECK=1 bun --filter e2e test:e2e tests/r2-delivery.spec.ts
@@ -433,10 +415,8 @@ curl -sS -o /dev/null -w '%{http_code}\n' \
   'https://assets.aquila.cwchanap.dev/audio/approved/<story>/<type>/<key>/<sourceSha256>/source.<ext>'
 ```
 
-Run the same command for the receipt key and require `404` for both. The
-delivery credential (`R2_PUBLISHER_*`) and source-archive credential
-(`R2_SOURCE_ARCHIVE_*`) are separate; neither is needed by these public HTTP
-probes.
+Run the same command for the receipt key and require `404` for both. The shared
+release credential (`R2_RELEASE_*`) is not needed by these public HTTP probes.
 
 The second command needs more than Cloudflare: Playwright starts `apps/web`'s
 dev server on **port 5090** and injects a `DATABASE_URL`, defaulting to
@@ -560,10 +540,10 @@ cache-busted comparison in the trap above before suspecting the upload.
 # PUBLIC_ASSET_BASE_URL=https://assets.aquila.cwchanap.dev/
 # PUBLIC_ASSET_ENVIRONMENT=production
 
-# Scoped R2 publisher credentials (CI and manual publishing only).
+# Shared R2 release credentials (CI and manual publishing only).
 # Never expose these to the browser; the web app reads assets over public HTTP.
-# R2_PUBLISHER_ACCESS_KEY_ID=
-# R2_PUBLISHER_SECRET_ACCESS_KEY=
+# R2_RELEASE_ACCESS_KEY_ID=
+# R2_RELEASE_SECRET_ACCESS_KEY=
 ```
 
 ### Vercel project variables

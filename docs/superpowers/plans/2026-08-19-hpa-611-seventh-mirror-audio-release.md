@@ -19,7 +19,7 @@
 - Every compiler-used cue ends selected or explicitly omitted with a non-empty reason.
 - Generate one current-spec candidate per unresolved cue first; generate one more only for a rejected key.
 - Initial paid `--max-requests` equals the retained dry-run scheduled request count exactly. A zero count skips the paid command.
-- Before paid work, prove ffmpeg/ffprobe, the credential-free release-gate config, real delivery R2 access, source-archive credential presence, provider/account/terms evidence, and the local Music terms note.
+- Before paid work, prove ffmpeg/ffprobe, the credential-free release-gate config, the shared R2 release credential path, and provider/account/terms evidence. The human-supplied local Music terms note remains a non-empty gate immediately before BGM generation.
 - Before R2 publication, final selections/omissions must pass the existing audio publisher against a local destination.
 - Do not add `mirror-preview --media audio`; preview/production equality is release ID + manifest SHA equality for the same frozen inputs.
 - Production R2 is untouched until preview approval.
@@ -40,7 +40,7 @@
 - Create untracked: `.tmp/hpa-611/listening-worksheet.md`
 - Create untracked: `.tmp/hpa-611/generation-dry-run.json`
 - Create untracked: `.tmp/hpa-611/initial-request-cap.txt`
-- Create untracked: `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`
+- Require existing non-empty untracked: `.tmp/audio-generation/theSeventhMirror/music-terms-note.md`
 
 **Produces:** a committed target-invariance test, proven local/deployment prerequisites, frozen compiler/generation inputs, and no paid call or R2 write.
 
@@ -76,21 +76,12 @@ bun --filter @aquila/infra-cloudflare assets -- releases \
 
 Inspect the report. Any command failure is a pre-spend stop. A `pointer-invalid` warning is also a stop. This command is read-only, proves the delivery credential path and R2 reachability, and records whether an active baseline appears to exist. Do not treat this report as the final rollback decision; Task 5 reruns it immediately before activation.
 
-- [ ] **Step 4: Check only the private source-archive credential pair not exercised by `releases`**
+- [ ] **Step 4: Retain the shared R2 release credential contract**
 
-```bash
-bun -e '
-const names = [
-  "R2_SOURCE_ARCHIVE_ACCESS_KEY_ID",
-  "R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY",
-];
-const missing = names.filter((name) => !process.env[name]?.trim());
-if (missing.length) throw new Error(`missing source archive credentials: ${missing.join(", ")}`);
-console.log("source archive credential variables are present");
-'
-```
-
-Do not duplicate the `R2_PUBLISHER_*` presence check; Step 3 already exercised those through the owning CLI.
+Step 3 exercises the single `R2_RELEASE_ACCESS_KEY_ID` /
+`R2_RELEASE_SECRET_ACCESS_KEY` pair through the owning CLI. Both the public
+delivery store and private source-archive store use that same pair; there is no
+second source-only credential check. Never print or persist credential values.
 
 - [ ] **Step 5: Add the target-invariance regression to the existing publisher test**
 
@@ -198,17 +189,13 @@ console.log(r.scheduledRequests.length);
 
 Never round the cap upward. Zero is valid evidence and skips Task 2's initial paid command.
 
-- [ ] **Step 10: Record current provider/account/terms evidence and create the HPA-608 Music note**
+- [ ] **Step 10: Record current provider/account/terms evidence**
 
-Record the actual check date/source and distribution conclusion in Linear. Then:
-
-```bash
-test -n "${MUSIC_TERMS_NOTE:-}"
-mkdir -p .tmp/audio-generation/theSeventhMirror
-printf '%s\n' "$MUSIC_TERMS_NOTE" \
-  > .tmp/audio-generation/theSeventhMirror/music-terms-note.md
-test -s .tmp/audio-generation/theSeventhMirror/music-terms-note.md
-```
+Record the actual check date/source and distribution conclusion in Linear. The
+human-supplied untracked
+`.tmp/audio-generation/theSeventhMirror/music-terms-note.md` remains required
+and must be non-empty immediately before Task 2's BGM generation command; Task 1
+does not synthesize it from an environment variable.
 
 **Gate:** no paid generation until all Task 1 steps pass.
 

@@ -503,21 +503,11 @@ async function parseDestination(
         throw configurationError('R2 destination rejects --destination-root');
     }
     if (
-        !environment.R2_PUBLISHER_ACCESS_KEY_ID ||
-        !environment.R2_PUBLISHER_SECRET_ACCESS_KEY
+        !environment.R2_RELEASE_ACCESS_KEY_ID ||
+        !environment.R2_RELEASE_SECRET_ACCESS_KEY
     ) {
         throw configurationError(
-            'R2 publisher credentials are not completely configured'
-        );
-    }
-    if (
-        media === 'audio' &&
-        command === 'publish' &&
-        (!environment.R2_SOURCE_ARCHIVE_ACCESS_KEY_ID ||
-            !environment.R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY)
-    ) {
-        throw configurationError(
-            'R2 source archive credentials are not completely configured'
+            'R2_RELEASE_ACCESS_KEY_ID and R2_RELEASE_SECRET_ACCESS_KEY must be set'
         );
     }
     return { kind: 'r2' };

@@ -19,9 +19,9 @@ production pointer. The only pointer move in the entire workflow is the preview
 `activate`; `publish`/`activate`/`rollback` against production — the commands
 that can move the production pointer — never run in it.
 
-Prerequisites: the scoped R2 publisher secrets
-(`R2_PUBLISHER_ACCESS_KEY_ID`, `R2_PUBLISHER_SECRET_ACCESS_KEY`) configured on
-the repository, and a production candidate published with `--no-activate` (the
+Prerequisites: the shared R2 release secrets
+(`R2_RELEASE_ACCESS_KEY_ID`, `R2_RELEASE_SECRET_ACCESS_KEY`) configured on the
+repository, and a production candidate published with `--no-activate` (the
 HPA-231 production release plan for the story must exist). The publisher
 runbook — `docs/infrastructure/visual-asset-publisher.md` — owns candidate
 creation details.

@@ -286,91 +286,46 @@ describe('R2DeliveryStore', () => {
     });
 
     it.each([
-        ['', 'publisher-secret'],
-        ['publisher-access', ''],
+        ['', 'release-secret'],
+        ['release-access', ''],
     ])(
-        'rejects missing scoped credentials without a local fallback',
+        'rejects missing shared credentials without a local fallback',
         async (accessKeyId, secretAccessKey) => {
-            vi.stubEnv('R2_PUBLISHER_ACCESS_KEY_ID', accessKeyId);
-            vi.stubEnv('R2_PUBLISHER_SECRET_ACCESS_KEY', secretAccessKey);
-
-            await expect(
-                R2DeliveryStore.createFromEnvironment()
-            ).rejects.toMatchObject({
-                name: 'PublisherError',
-                code: 'configuration',
-            });
-        }
-    );
-
-    it('creates a delivery store with only delivery credentials', async () => {
-        const store = await R2DeliveryStore.createFromEnvironment({
-            environment: {
-                R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
-                R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
-            },
-            bucket: 'delivery',
-        });
-        try {
-            expect((store as unknown as { bucket: string }).bucket).toBe(
-                'aquila-vn-delivery'
-            );
-        } finally {
-            await store.close();
-        }
-    });
-
-    it('creates a source store with only source archive credentials', async () => {
-        const store = await R2DeliveryStore.createFromEnvironment({
-            environment: {
-                R2_SOURCE_ARCHIVE_ACCESS_KEY_ID: 'source-access',
-                R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY: 'source-secret',
-            },
-            bucket: 'source',
-        });
-        try {
-            expect((store as unknown as { bucket: string }).bucket).toBe(
-                'aquila-vn-source'
-            );
-        } finally {
-            await store.close();
-        }
-    });
-
-    it.each(['delivery', 'source'] as const)(
-        'rejects the %s factory when only the cross-bucket credential pair is present',
-        async bucket => {
-            const environment =
-                bucket === 'delivery'
-                    ? {
-                          R2_SOURCE_ARCHIVE_ACCESS_KEY_ID: 'source-access',
-                          R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY: 'source-secret',
-                      }
-                    : {
-                          R2_PUBLISHER_ACCESS_KEY_ID: 'publisher-access',
-                          R2_PUBLISHER_SECRET_ACCESS_KEY: 'publisher-secret',
-                      };
-            const credentialNames =
-                bucket === 'delivery'
-                    ? [
-                          'R2_PUBLISHER_ACCESS_KEY_ID',
-                          'R2_PUBLISHER_SECRET_ACCESS_KEY',
-                      ]
-                    : [
-                          'R2_SOURCE_ARCHIVE_ACCESS_KEY_ID',
-                          'R2_SOURCE_ARCHIVE_SECRET_ACCESS_KEY',
-                      ];
-
             await expect(
                 R2DeliveryStore.createFromEnvironment({
-                    environment,
-                    bucket,
+                    environment: {
+                        R2_RELEASE_ACCESS_KEY_ID: accessKeyId,
+                        R2_RELEASE_SECRET_ACCESS_KEY: secretAccessKey,
+                    },
                 })
             ).rejects.toMatchObject({
                 name: 'PublisherError',
                 code: 'configuration',
-                message: `${credentialNames[0]} and ${credentialNames[1]} must be set`,
+                message:
+                    'R2_RELEASE_ACCESS_KEY_ID and R2_RELEASE_SECRET_ACCESS_KEY must be set',
             });
+        }
+    );
+
+    it.each(['delivery', 'source'] as const)(
+        'creates a %s store with the shared release credentials',
+        async bucket => {
+            const store = await R2DeliveryStore.createFromEnvironment({
+                environment: {
+                    R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+                    R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
+                },
+                bucket,
+            });
+            try {
+                expect((store as unknown as { bucket: string }).bucket).toBe(
+                    bucket === 'delivery'
+                        ? 'aquila-vn-delivery'
+                        : 'aquila-vn-source'
+                );
+            } finally {
+                await store.close();
+            }
         }
     );
 
@@ -387,11 +342,8 @@ describe('R2DeliveryStore', () => {
                 if (contents !== undefined) {
                     await writeFile(configPath, contents);
                 }
-                vi.stubEnv('R2_PUBLISHER_ACCESS_KEY_ID', 'publisher-access');
-                vi.stubEnv(
-                    'R2_PUBLISHER_SECRET_ACCESS_KEY',
-                    'publisher-secret'
-                );
+                vi.stubEnv('R2_RELEASE_ACCESS_KEY_ID', 'release-access');
+                vi.stubEnv('R2_RELEASE_SECRET_ACCESS_KEY', 'release-secret');
 
                 let caught: unknown;
                 try {

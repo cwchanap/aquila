@@ -3,6 +3,7 @@ import {
     HeadObjectCommand,
     ListObjectsV2Command,
     PutObjectCommand,
+    S3Client,
 } from '@aws-sdk/client-s3';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -328,6 +329,169 @@ describe('R2DeliveryStore', () => {
             }
         }
     );
+
+    it('gives R2 SDK commands fresh clients with finite retryable deadlines', async () => {
+        const requestHandlerConfigs: unknown[] = [];
+        const clientInstances = new Set<S3Client>();
+        const send = vi
+            .spyOn(S3Client.prototype, 'send')
+            .mockImplementation(async function (this: S3Client) {
+                clientInstances.add(this);
+                const requestHandler = this.config
+                    .requestHandler as unknown as {
+                    configProvider: Promise<unknown>;
+                };
+                requestHandlerConfigs.push(await requestHandler.configProvider);
+                return {
+                    ETag: '"head-etag"',
+                    ContentLength: 1,
+                    ContentType: 'image/avif',
+                    CacheControl: 'public, max-age=31536000, immutable',
+                } as never;
+            });
+        const store = await R2DeliveryStore.createFromEnvironment({
+            environment: {
+                R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+                R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
+            },
+        });
+
+        try {
+            await store.stat('vn/objects/hash.avif');
+            await store.stat('vn/objects/hash-2.avif');
+        } finally {
+            await store.close();
+            send.mockRestore();
+        }
+
+        expect(clientInstances.size).toBe(2);
+        expect(requestHandlerConfigs).toEqual([
+            expect.objectContaining({
+                connectionTimeout: 10_000,
+                requestTimeout: 60_000,
+                throwOnRequestTimeout: true,
+                socketTimeout: 60_000,
+                httpsAgent: expect.objectContaining({ keepAlive: false }),
+            }),
+            expect.objectContaining({
+                connectionTimeout: 10_000,
+                requestTimeout: 60_000,
+                throwOnRequestTimeout: true,
+                socketTimeout: 60_000,
+                httpsAgent: expect.objectContaining({ keepAlive: false }),
+            }),
+        ]);
+    });
+
+    it('bounds a stuck SDK command', async () => {
+        vi.useFakeTimers();
+        const send = vi
+            .spyOn(S3Client.prototype, 'send')
+            .mockImplementation(() => new Promise<never>(() => undefined));
+        const store = await R2DeliveryStore.createFromEnvironment({
+            environment: {
+                R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+                R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
+            },
+        });
+        let result: 'pending' | 'rejected' = 'pending';
+        void store.stat('vn/objects/stuck.avif').then(
+            () => undefined,
+            () => {
+                result = 'rejected';
+            }
+        );
+
+        try {
+            await vi.advanceTimersByTimeAsync(120_000);
+            await Promise.resolve();
+            expect(result).toBe('rejected');
+        } finally {
+            await store.close();
+            send.mockRestore();
+            vi.useRealTimers();
+        }
+    });
+
+    it('retries one timed out SDK command', async () => {
+        vi.useFakeTimers();
+        let calls = 0;
+        const send = vi
+            .spyOn(S3Client.prototype, 'send')
+            .mockImplementation(() => {
+                calls += 1;
+                if (calls === 1) {
+                    return new Promise<never>(() => undefined);
+                }
+                return Promise.resolve({
+                    ETag: '"retried-etag"',
+                    ContentLength: 1,
+                    ContentType: 'image/avif',
+                    CacheControl: 'public, max-age=31536000, immutable',
+                } as never);
+            });
+        const store = await R2DeliveryStore.createFromEnvironment({
+            environment: {
+                R2_RELEASE_ACCESS_KEY_ID: 'release-access',
+                R2_RELEASE_SECRET_ACCESS_KEY: 'release-secret',
+            },
+        });
+        let result: 'pending' | 'resolved' | 'rejected' = 'pending';
+        void store.stat('vn/objects/retry.avif').then(
+            () => {
+                result = 'resolved';
+            },
+            () => {
+                result = 'rejected';
+            }
+        );
+
+        try {
+            await vi.advanceTimersByTimeAsync(60_000);
+            await Promise.resolve();
+            expect(result).toBe('resolved');
+            expect(calls).toBe(2);
+        } finally {
+            await store.close();
+            send.mockRestore();
+            vi.useRealTimers();
+        }
+    });
+
+    it('bounds and retries a stuck streamed read body', async () => {
+        vi.useFakeTimers();
+        const destroy = vi.fn();
+        const transformToByteArray = vi.fn(
+            () => new Promise<never>(() => undefined)
+        );
+        const store = fakeStore(async command => {
+            expect(command).toBeInstanceOf(GetObjectCommand);
+            return {
+                ETag: '"stuck-etag"',
+                ContentLength: 1,
+                ContentType: 'image/avif',
+                CacheControl: 'public, max-age=31536000, immutable',
+                Body: { transformToByteArray, destroy },
+            };
+        });
+        let result: 'pending' | 'rejected' = 'pending';
+        void store.read('vn/objects/stuck.avif').then(
+            () => undefined,
+            () => {
+                result = 'rejected';
+            }
+        );
+
+        try {
+            await vi.advanceTimersByTimeAsync(120_000);
+            await Promise.resolve();
+            expect(result).toBe('rejected');
+            expect(transformToByteArray).toHaveBeenCalledTimes(2);
+            expect(destroy).toHaveBeenCalledTimes(2);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
 
     it.each([
         ['missing', undefined],

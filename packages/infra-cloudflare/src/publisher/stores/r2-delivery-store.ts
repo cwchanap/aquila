@@ -42,12 +42,19 @@ type R2ObjectMetadata = Pick<
     'ETag' | 'ContentLength' | 'ContentType' | 'CacheControl' | 'Metadata'
 >;
 
+type DestroyableR2ResponseBody = {
+    destroy?: (error?: Error) => void;
+};
+
 const SANITIZED_R2_TRANSPORT_CAUSE = Object.freeze({
     classification: 'r2-transport-failure' as const,
 });
 const SANITIZED_R2_CONFIG_CAUSE = Object.freeze({
     classification: 'r2-config-load-failure' as const,
 });
+const R2_CONNECTION_TIMEOUT_MS = 10_000;
+const R2_REQUEST_TIMEOUT_MS = 60_000;
+const R2_MAX_COMMAND_ATTEMPTS = 2;
 
 function isServiceErrorWithStatus(error: unknown, status: number): boolean {
     if (typeof error !== 'object' || error === null) return false;
@@ -83,35 +90,131 @@ function isNotFound(error: unknown): boolean {
     );
 }
 
+async function sendWithDeadline<T>(
+    client: S3Client,
+    send: (abortSignal: AbortSignal) => Promise<T>
+): Promise<T> {
+    const controller = new AbortController();
+    let timeout!: ReturnType<typeof setTimeout>;
+    const deadline = new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+            controller.abort();
+            client.destroy();
+            reject(
+                Object.assign(new Error('R2 command timed out'), {
+                    name: 'TimeoutError',
+                    code: 'ETIMEDOUT',
+                })
+            );
+        }, R2_REQUEST_TIMEOUT_MS);
+    });
+    try {
+        return await Promise.race([send(controller.signal), deadline]);
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+function isTimeoutError(error: unknown): boolean {
+    if (typeof error !== 'object' || error === null) return false;
+    const candidate = error as { name?: unknown; code?: unknown };
+    return candidate.name === 'TimeoutError' || candidate.code === 'ETIMEDOUT';
+}
+
+function canRetry(command: R2Command): boolean {
+    return !(
+        command instanceof PutObjectCommand &&
+        command.input.IfMatch !== undefined
+    );
+}
+
+async function readBodyWithDeadline(
+    body: NonNullable<GetObjectCommandOutput['Body']>
+): Promise<Uint8Array> {
+    const timeoutError = Object.assign(
+        new Error('R2 response body timed out'),
+        {
+            name: 'TimeoutError',
+            code: 'ETIMEDOUT',
+        }
+    );
+    let timeout!: ReturnType<typeof setTimeout>;
+    const deadline = new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+            (body as unknown as DestroyableR2ResponseBody).destroy?.(
+                timeoutError
+            );
+            reject(timeoutError);
+        }, R2_REQUEST_TIMEOUT_MS);
+    });
+    try {
+        return await Promise.race([body.transformToByteArray(), deadline]);
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
 function createSdkClient(
     accountId: string,
     accessKeyId: string,
     secretAccessKey: string
 ): R2DeliveryClient {
-    const client = new S3Client({
+    const options = {
         region: 'auto',
         endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: {
             accessKeyId,
             secretAccessKey,
         },
-    });
+        requestHandler: {
+            connectionTimeout: R2_CONNECTION_TIMEOUT_MS,
+            requestTimeout: R2_REQUEST_TIMEOUT_MS,
+            throwOnRequestTimeout: true,
+            socketTimeout: R2_REQUEST_TIMEOUT_MS,
+            httpsAgent: { keepAlive: false },
+        },
+    };
     return {
-        send(command) {
-            if (command instanceof GetObjectCommand) {
-                return client.send(command);
+        async send(command) {
+            for (let attempt = 0; ; attempt += 1) {
+                const client = new S3Client(options);
+                const keepClient = command instanceof GetObjectCommand;
+                let completed = false;
+                try {
+                    let result: unknown;
+                    if (command instanceof GetObjectCommand) {
+                        result = await sendWithDeadline(client, abortSignal =>
+                            client.send(command, { abortSignal })
+                        );
+                    } else if (command instanceof HeadObjectCommand) {
+                        result = await sendWithDeadline(client, abortSignal =>
+                            client.send(command, { abortSignal })
+                        );
+                    } else if (command instanceof ListObjectsV2Command) {
+                        result = await sendWithDeadline(client, abortSignal =>
+                            client.send(command, { abortSignal })
+                        );
+                    } else {
+                        result = await sendWithDeadline(client, abortSignal =>
+                            client.send(command, { abortSignal })
+                        );
+                    }
+                    completed = true;
+                    return result;
+                } catch (error) {
+                    if (
+                        attempt + 1 >= R2_MAX_COMMAND_ATTEMPTS ||
+                        !canRetry(command) ||
+                        !isTimeoutError(error)
+                    ) {
+                        throw error;
+                    }
+                } finally {
+                    if (!keepClient || !completed) client.destroy();
+                }
             }
-            if (command instanceof HeadObjectCommand) {
-                return client.send(command);
-            }
-            if (command instanceof ListObjectsV2Command) {
-                return client.send(command);
-            }
-            return client.send(command);
         },
-        destroy() {
-            client.destroy();
-        },
+        destroy() {},
     };
 }
 
@@ -333,30 +436,39 @@ export class R2DeliveryStore implements DeliveryStore {
     }
 
     private async readIfPresent(key: string): Promise<StoredObject | null> {
-        try {
-            const output = (await this.client.send(
-                new GetObjectCommand({
-                    Bucket: this.bucket,
-                    Key: key,
-                })
-            )) as GetObjectCommandOutput;
-            if (output.Body === undefined) {
-                throw new PublisherError(
-                    'integrity',
-                    'R2 object response has no body',
-                    { context: { key } }
-                );
+        for (let attempt = 0; attempt < R2_MAX_COMMAND_ATTEMPTS; attempt += 1) {
+            try {
+                const output = (await this.client.send(
+                    new GetObjectCommand({
+                        Bucket: this.bucket,
+                        Key: key,
+                    })
+                )) as GetObjectCommandOutput;
+                if (output.Body === undefined) {
+                    throw new PublisherError(
+                        'integrity',
+                        'R2 object response has no body',
+                        { context: { key } }
+                    );
+                }
+                const bytes = await readBodyWithDeadline(output.Body);
+                return {
+                    ...this.normalizeMetadata(key, output),
+                    bytes,
+                };
+            } catch (error) {
+                if (
+                    isTimeoutError(error) &&
+                    attempt + 1 < R2_MAX_COMMAND_ATTEMPTS
+                ) {
+                    continue;
+                }
+                if (isNotFound(error)) return null;
+                if (error instanceof PublisherError) throw error;
+                throw this.storageError('Unable to read R2 object', key);
             }
-            const bytes = await output.Body.transformToByteArray();
-            return {
-                ...this.normalizeMetadata(key, output),
-                bytes,
-            };
-        } catch (error) {
-            if (isNotFound(error)) return null;
-            if (error instanceof PublisherError) throw error;
-            throw this.storageError('Unable to read R2 object', key);
         }
+        throw this.storageError('Unable to read R2 object', key);
     }
 
     private normalizeMetadata(

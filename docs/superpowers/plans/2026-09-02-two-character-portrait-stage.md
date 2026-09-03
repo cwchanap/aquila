@@ -1117,7 +1117,7 @@ Do not add a single-portrait alias to `VisualReaderPage` for this gate.
 The normal `playwright.config.ts` excludes `visual-novel-deployed.spec.ts`, but `packages/e2e/tsconfig.json` includes `tests/**/*.ts`. Run:
 
 ```bash
-rtk bunx tsc --noEmit -p packages/e2e/tsconfig.json
+rtk bun x tsc --noEmit -p packages/e2e/tsconfig.json
 ```
 
 Expected: PASS, proving the deployed spec compiles against the new page-object contract even without remote release-gate credentials.

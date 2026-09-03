@@ -7,24 +7,25 @@ Status: Approved
 
 Replace the visual novel reader's one-active-portrait presentation with a deterministic two-slot conversation stage.
 
-The first visible speaker in a scene occupies the left slot. When a different portrait-bearing character speaks, that character occupies the opposite slot and the previous visible speaker remains on screen. The current visible speaker renders at normal brightness while the other visible portrait is dimmed. Repeated lines and expression changes for the same character keep that character on the same side.
+The first character that actually has a portrait in a scene occupies the left slot. When a different portrait-bearing character speaks, that character occupies the opposite slot and the previous visible speaker remains on screen. The current visible speaker renders at normal brightness while the other visible portrait is dimmed. Repeated lines and expression changes for a character that is still visible keep that character on the same side.
 
 Stage composition is reconstructed from the current scene's dialogue prefix rather than stored as hidden mutable reader history. Direct URLs, restored dialogue indices, history/navigation jumps, and normal sequential play therefore produce the same composition.
 
-This remains a deliberately small two-character presentation model. It does not introduce general stage direction, arbitrary multi-character layouts, entrance/exit commands, or persisted stage state.
+This remains a deliberately small two-character presentation model. It does not introduce general stage direction, arbitrary multi-character layouts, entrance/exit commands, permanent character home sides, or persisted stage state.
 
 ## Goals
 
-- Alternate participating characters between left and right instead of falling back to left for most characters.
+- Alternate visible characters between left and right instead of falling back to left for most characters.
 - Keep the previous visible conversation partner on screen when the speaker changes.
 - Dim every visible portrait that is not the current visible speaker.
-- Keep a character on the same side while they continue speaking or change portrait expression.
+- Keep a character on the same side while that character remains staged, including repeated lines and expression changes.
 - Produce identical stage composition for sequential play and direct navigation to a dialogue index.
 - Keep the feature bounded to two visible portrait slots and one implementation PR.
 
 ## Non-goals
 
 - Three-or-more simultaneous portraits.
+- Permanent per-character left/right home sides.
 - Author-controlled entrance, exit, move, or z-order commands.
 - New story syntax for portrait staging.
 - Configurable dim strength per story or character.
@@ -90,6 +91,7 @@ For each entry:
    - Do not change either slot.
    - Set `activeSlot` to `null`.
    - Leave `lastSpeakerSlot` unchanged.
+   - This includes authored narrator lines such as `{ characterId: Narrator, ... }` that intentionally have no portrait.
 
 4. **New visible character, stage empty**
    - Place the character on the left.
@@ -106,17 +108,37 @@ For each entry:
 Example:
 
 ```text
-A -> left active
-B -> A left dim, B right active
-B -> A left dim, B right active
-A -> A left active, B right dim
-C -> A left dim, C right active
-D -> D left active, C right dim
+A(base) -> A left active
+B(base) -> A left dim, B right active
+B(angry) -> A left dim, B right active with angry expression
+A(no new portrait) -> A left active, B right dim
+C(base) -> A left dim, C right active
+D(base) -> D left active, C right dim
 ```
+
+### Re-entry after replacement
+
+A side is stable only while the character remains one of the two staged portraits. Once a character is replaced, the projector does not remember a permanent home side.
+
+Therefore this sequence is intentional and deterministic:
+
+```text
+A(base) -> A left
+B(base) -> A left, B right
+C(base) -> C left, B right
+A(base) -> C left, A right
+```
+
+A re-entering character is treated as a new visible character and may return on the opposite side from an earlier appearance. Adding permanent home-side metadata is explicitly out of scope.
 
 ### Narration and non-visible dialogue
 
-Narration or other lines that do not produce a visible current speaker:
+Narration or other lines that do not produce a visible current speaker include both:
+
+- lines without `characterId`; and
+- lines with a `characterId` that is not currently visible and no `portrait`, including the current generated narrator shape.
+
+For those lines:
 
 - keep both staged portraits unchanged;
 - set `activeSlot` to `null`;
@@ -136,15 +158,17 @@ Delete static portrait placement metadata instead of supporting both static and 
 - remove `PortraitSlot`;
 - remove `StoryPresentationMetadata`;
 - remove `portraitSlot` from parsed characters;
-- stop parsing `**Portrait Slot**` metadata;
+- stop interpreting `**Portrait Slot**` as valid metadata;
 - stop emitting generated `presentation.ts` files;
 - remove `presentation` from story loader results;
 - remove `readerState.presentation` and all reader/controller presentation props;
 - remove existing authored `Portrait Slot` bullets from raw character docs.
 
-After this change, `DialogueEntry.characterId` and `DialogueEntry.portrait` are the only story inputs needed for portrait-stage projection.
+The parser keeps one narrow validation sentinel for the removed syntax: if a character document still contains a `- **Portrait Slot**: ...` bullet, compilation fails with a clear error that portrait placement is automatic and the metadata must be removed. Silently accepting and ignoring the old directive is not allowed because it would make copied legacy authoring templates appear to work while doing nothing.
 
-There is no compatibility layer. The old contract has no production-user compatibility requirement and becomes dead machinery once conversational staging owns placement.
+This rejection is not a compatibility adapter and carries no placement behavior. After the authored bullets are removed, `DialogueEntry.characterId` and `DialogueEntry.portrait` are the only story inputs needed for portrait-stage projection.
+
+There is no migration or compatibility layer. The old placement contract has no production-user compatibility requirement and becomes dead machinery once conversational staging owns placement.
 
 ## Web Runtime Design
 
@@ -261,18 +285,21 @@ No new user-facing error UI is required.
 
 ### Pure projection
 
+Every fixture that is intended to enter the stage must include an explicit portrait key. Do not use shorthand such as `A, B, C` where an omitted portrait would mean "unseen character" under the real algorithm.
+
 Cover:
 
-1. empty/narration-only stage;
-2. first speaker left;
-3. second speaker right;
-4. repeated speaker remains in place;
+1. empty/no-character narration-only stage;
+2. first portrait-bearing character left;
+3. second portrait-bearing character right;
+4. repeated visible speaker remains in place;
 5. expression replacement in place;
-6. visible speaker reactivation when current line omits portrait;
+6. visible speaker reactivation when the current line omits portrait;
 7. third-character replacement opposite the last visible speaker;
-8. narration dims/preserves stage without losing alternation history;
+8. narrator-with-`characterId` and no portrait dims/preserves the stage without losing alternation history;
 9. unseen no-portrait character does not enter;
-10. direct prefix projection produces the same result as sequential history.
+10. `A(base), B(base), C(base), A(base)` produces `C left / A right`, explicitly pinning side change after replacement/re-entry;
+11. direct prefix projection produces the same result as sequential history.
 
 ### Visual controller
 
@@ -298,7 +325,10 @@ Prove:
 - narration dims both;
 - line 6/7/8 of Seventh Mirror produces Yuma-left -> Mio-right -> Yuma-left reactivation;
 - direct navigation reconstructs the same two portraits;
-- desktop/mobile/compact-landscape portrait geometry stays above the dialogue box and does not cover essential controls.
+- corrupting Mio on the line 6 -> 7 transition fails only the right/Mio slot while the ready left/Yuma slot remains visible;
+- desktop/mobile/compact-landscape portrait geometry stays above the dialogue box and does not cover essential controls;
+- every existing local `visual.portrait` assertion is rewritten to explicit left/right/ready-portrait semantics rather than leaving a single-node compatibility locator;
+- the deployed release gate is updated from single `visual.portrait` assertions to the two-slot page-object contract and still proves a newly covered portrait asset becomes ready after the portrait-change anchor.
 
 ## Delivery
 
@@ -307,10 +337,10 @@ Implement this as one PR (#64).
 The implementation contains:
 
 1. pure stage projection;
-2. deletion of obsolete static portrait-placement authoring/runtime metadata;
+2. deletion of obsolete static portrait-placement authoring/runtime metadata with a loud compiler error for leftover legacy directives;
 3. two-slot visual-controller reconciliation;
 4. two-image reader rendering with inactive-speaker dimming;
 5. responsive two-portrait sizing;
-6. focused unit/component/E2E coverage.
+6. focused unit/component/local E2E/deployed-gate coverage.
 
 No compatibility layer, stage engine, new dependency, asset-generation work, or persisted schema change is needed.

@@ -134,9 +134,9 @@ test.describe('Visual novel reader', () => {
         page,
     }) => {
         const viewports = [
-            { width: 1280, height: 800, expectedHeight: 288 },
-            { width: 390, height: 844, expectedHeight: 0.4 * 844 },
-            { width: 844, height: 390, expectedHeight: 152 },
+            { width: 1280, height: 800, expectedHeight: 0.8 * 288 },
+            { width: 390, height: 844, expectedHeight: 0.32 * 844 },
+            { width: 844, height: 390, expectedHeight: 0.8 * 152 },
         ] as const;
 
         for (const viewport of viewports) {
@@ -222,9 +222,17 @@ test.describe('Visual novel reader', () => {
             const portraitBox = await visual.portrait.boundingBox();
             expect(portraitBox, 'portrait is measurable').not.toBe(null);
             if (portraitBox) {
-                expect(portraitBox.y + portraitBox.height).toBeLessThanOrEqual(
-                    completeBox.y - 12 + 1
-                );
+                // The portrait stands behind the dialogue box, anchored at
+                // its bottom edge, and rises above the box top.
+                expect(portraitBox.y).toBeLessThanOrEqual(completeBox.y);
+                expect(
+                    Math.abs(
+                        portraitBox.y +
+                            portraitBox.height -
+                            (completeBox.y + completeBox.height)
+                    ),
+                    `portrait anchored to the dialogue box bottom at ${viewport.width}x${viewport.height}`
+                ).toBeLessThanOrEqual(1);
             }
         }
     });

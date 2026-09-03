@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Render a deterministic two-character visual-novel stage where speakers alternate left/right, the previous visible speaker remains on screen, and every visible non-speaker is dimmed.
+**Goal:** Render a deterministic two-character visual-novel stage where visible speakers alternate left/right, the previous visible speaker remains on screen, and every visible non-speaker is dimmed.
 
-**Architecture:** Add one pure scene-prefix projector that derives `{ left, right, activeSlot }` from the current scene's `DialogueEntry[]`. `VisualStateController` reconciles those two targets independently using the existing release resolver/cache/generation machinery. `VisualNovelReader.svelte` renders two stable portrait images and owns only active/inactive styling. Delete the old static `Portrait Slot` / `StoryPresentationMetadata` pipeline rather than keeping two competing placement systems.
+**Architecture:** Add one pure scene-prefix projector that derives `{ left, right, activeSlot }` from the current scene's `DialogueEntry[]`. `VisualStateController` reconciles those two targets independently using the existing release resolver/cache/generation machinery. `VisualNovelReader.svelte` renders two stable portrait images and owns only active/inactive styling. Delete the old static `Portrait Slot` / `StoryPresentationMetadata` pipeline instead of keeping two competing placement systems; retain only a compiler error sentinel so obsolete authoring syntax fails loudly.
 
 **Tech Stack:** Bun workspaces, TypeScript, Svelte 5, Astro 5, Vitest, Testing Library, Playwright, existing `@aquila/stories` compiler/runtime assets, existing `DecodedAssetCache` + `VisualStateController`.
 
@@ -15,18 +15,22 @@
 - Keep all design, plan, implementation, and verification in the existing single draft PR #64.
 - Stage state is scene-local and derived from `dialogue.slice(0, dialogueIndex + 1)`; never persist it to URL, bookmarks, local storage, or reader session state.
 - Exactly two visible slots: `left` and `right`. No 3+ character layout or stage-direction framework.
-- First visible character starts left. A second fills right. With both occupied, a new visible character replaces the slot opposite the most recent visible speaker.
-- A visible character stays in its slot. A new `portrait` updates only that slot's expression; a line without `portrait` keeps the staged expression.
-- An unseen character without `portrait` does not enter the stage and does not become active.
-- Narration/no `characterId` preserves visible portraits, sets `activeSlot: null`, and preserves the most recent visible speaker internally for later alternation.
+- First portrait-bearing character starts left. A second fills right. With both occupied, a new portrait-bearing character replaces the slot opposite the most recent visible speaker.
+- A character stays on its side only while still staged. Once replaced, re-entry is treated as a new visible character and may put that character on the opposite side from an earlier appearance.
+- A visible character that speaks again stays in its current slot. A new `portrait` updates only that slot's expression; a line without `portrait` keeps the staged expression.
+- An unseen character without `portrait` does not enter the stage and does not become active. This includes generated narrator lines with `characterId: Narrator` and no portrait.
+- A line without `characterId` likewise leaves the stage unchanged and sets `activeSlot: null`.
+- Non-visible dialogue preserves the most recent visible speaker internally for later alternation.
 - New scene = empty stage.
 - Delete `PortraitSlot`, `StoryPresentationMetadata`, `ParsedCharacter.portraitSlot`, generated `presentation.ts`, `readerState.presentation`, and all presentation props. No compatibility adapter.
+- Keep a narrow parser guard that rejects any remaining `- **Portrait Slot**: ...` bullet with a clear removed-metadata error. Do not silently ignore the old authoring directive.
 - Reuse existing resolver, release validation, decoded cache, object-URL lifecycle, prefetch queue, and generation guards. Do not create an asset/stage manager.
 - Background transition logic is out of scope and must remain behaviorally unchanged.
 - Inactive presentation is fixed for now: `brightness(0.55)` + `opacity: 0.82`; active is `brightness(1)` + `opacity: 1`.
 - Only filter/opacity transitions; no portrait movement/entrance/exit animation.
 - Responsive CSS may change portrait sizing, never placement rules.
 - Existing local visual fixtures already contain `asakura_yuma/base` and `asakura_mio/base`; do not add/regenerate source assets for this feature.
+- Rewrite existing single-portrait E2E assertions; do not leave a `visual.portrait` compatibility locator that hides which slot is being asserted.
 - Follow RED -> minimum implementation -> focused GREEN for each behavior slice.
 
 ## File Map
@@ -55,7 +59,7 @@
 - `packages/stories/src/generated/dontSaveMeBeforeMidnight/presentation.ts`
 - `packages/stories/src/generated/theSeventhMirror/presentation.ts`
 
-**Modify: web runtime**
+**Modify: web runtime/tests**
 - `apps/web/src/lib/reader-state.svelte.ts`
 - `apps/web/src/lib/reader-manager.ts`
 - `apps/web/src/lib/__tests__/reader-intent.test.ts`
@@ -65,12 +69,14 @@
 - `apps/web/src/lib/visual-assets/types.ts`
 - `apps/web/src/lib/visual-assets/visual-state-controller.ts`
 - `apps/web/src/lib/visual-assets/__tests__/visual-state-controller.test.ts`
+- `apps/web/src/lib/visual-assets/__tests__/source-factory.test.ts`
 - `apps/web/src/components/VisualNovelReader.svelte`
 - `apps/web/src/components/__tests__/VisualNovelReader.test.ts`
 
-**Modify: browser contract**
+**Modify: browser/release-gate contract**
 - `packages/e2e/tests/utils.ts`
 - `packages/e2e/tests/reader-visual.spec.ts`
+- `packages/e2e/tests/visual-novel-deployed.spec.ts`
 
 No dependency, DB, infrastructure, audio, or asset-source changes are expected.
 
@@ -104,30 +110,123 @@ export function projectPortraitStage(
 ): PortraitStage;
 ```
 
-- [ ] **1.1 Write RED projector tests**
+- [ ] **1.1 Write RED projector tests with production-shaped entries**
 
-Create test helpers:
+Use helpers that make portrait presence explicit:
 
 ```ts
-const line = (characterId?: string, portrait?: string): DialogueEntry => ({
-    dialogue: characterId ?? 'narration',
-    ...(characterId ? { characterId } : {}),
-    ...(portrait ? { portrait } : {}),
+const portraitLine = (
+    characterId: string,
+    expression = 'base'
+): DialogueEntry => ({
+    characterId,
+    dialogue: characterId,
+    portrait: `${characterId}/${expression}`,
 });
+
+const spokenLine = (characterId: string): DialogueEntry => ({
+    characterId,
+    dialogue: characterId,
+});
+
+const narratorLine: DialogueEntry = {
+    characterId: 'narrator',
+    dialogue: 'Narration',
+};
+
+const systemLine: DialogueEntry = { dialogue: 'System text' };
 ```
 
 Cover these exact cases:
 
-1. `[]` / narration-only -> both slots null, `activeSlot: null`.
-2. `A(base)` -> A left active.
-3. `A(base), B(base)` -> A left + B right, right active.
-4. `A, B(base), B(angry)` -> B remains right and only expression changes.
-5. `A(base), B(base), A(no portrait)` -> A left reactivated with base retained.
-6. `A, B, C` -> C replaces A on left because B was the most recent visible speaker.
-7. `A, B, A(no portrait), C` -> C replaces B on right.
-8. `A, B, narration` -> A/B preserved, `activeSlot: null`; then C replaces A because B remains the last visible speaker.
-9. unseen C without portrait -> no stage mutation, `activeSlot: null`.
-10. direct `projectPortraitStage(dialogue, N)` equals projection of the same prefix copied into a fresh array.
+```ts
+expect(projectPortraitStage([], 0)).toEqual({
+    left: null,
+    right: null,
+    activeSlot: null,
+});
+
+expect(projectPortraitStage([narratorLine], 0)).toEqual({
+    left: null,
+    right: null,
+    activeSlot: null,
+});
+
+expect(projectPortraitStage([portraitLine('a')], 0)).toEqual({
+    left: { characterId: 'a', portrait: 'a/base' },
+    right: null,
+    activeSlot: 'left',
+});
+
+expect(
+    projectPortraitStage([portraitLine('a'), portraitLine('b')], 1)
+).toEqual({
+    left: { characterId: 'a', portrait: 'a/base' },
+    right: { characterId: 'b', portrait: 'b/base' },
+    activeSlot: 'right',
+});
+
+expect(
+    projectPortraitStage(
+        [portraitLine('a'), portraitLine('b'), portraitLine('b', 'angry')],
+        2
+    )
+).toEqual({
+    left: { characterId: 'a', portrait: 'a/base' },
+    right: { characterId: 'b', portrait: 'b/angry' },
+    activeSlot: 'right',
+});
+
+expect(
+    projectPortraitStage(
+        [portraitLine('a'), portraitLine('b'), spokenLine('a')],
+        2
+    )
+).toEqual({
+    left: { characterId: 'a', portrait: 'a/base' },
+    right: { characterId: 'b', portrait: 'b/base' },
+    activeSlot: 'left',
+});
+```
+
+Pin replacement and re-entry explicitly:
+
+```ts
+const abc = [portraitLine('a'), portraitLine('b'), portraitLine('c')];
+expect(projectPortraitStage(abc, 2)).toEqual({
+    left: { characterId: 'c', portrait: 'c/base' },
+    right: { characterId: 'b', portrait: 'b/base' },
+    activeSlot: 'left',
+});
+
+expect(projectPortraitStage([...abc, portraitLine('a')], 3)).toEqual({
+    left: { characterId: 'c', portrait: 'c/base' },
+    right: { characterId: 'a', portrait: 'a/base' },
+    activeSlot: 'right',
+});
+```
+
+Pin production-shaped narration after two staged speakers:
+
+```ts
+const narrated = [portraitLine('a'), portraitLine('b'), narratorLine];
+expect(projectPortraitStage(narrated, 2)).toEqual({
+    left: { characterId: 'a', portrait: 'a/base' },
+    right: { characterId: 'b', portrait: 'b/base' },
+    activeSlot: null,
+});
+expect(projectPortraitStage([...narrated, portraitLine('c')], 3)).toEqual({
+    left: { characterId: 'c', portrait: 'c/base' },
+    right: { characterId: 'b', portrait: 'b/base' },
+    activeSlot: 'left',
+});
+```
+
+Also assert:
+
+- `systemLine` preserves staged portraits and clears `activeSlot`;
+- an unseen `spokenLine('c')` without portrait does not enter or become active;
+- direct `projectPortraitStage(dialogue, N)` equals projecting a fresh copy of `dialogue.slice(0, N + 1)`.
 
 Run:
 
@@ -150,15 +249,13 @@ let lastSpeakerSlot: PortraitStageSlot | null = null;
 
 Replay indices `0..Math.min(dialogueIndex, dialogue.length - 1)`.
 
-Rules inside the loop:
-
 ```ts
 if (!entry?.characterId) {
     activeSlot = null;
     continue;
 }
 
-const visibleSlot =
+const visibleSlot: PortraitStageSlot | null =
     left?.characterId === entry.characterId
         ? 'left'
         : right?.characterId === entry.characterId
@@ -166,8 +263,12 @@ const visibleSlot =
           : null;
 
 if (visibleSlot) {
-    // retain expression when entry.portrait is absent
-    // update only this slot when entry.portrait exists
+    const existing = visibleSlot === 'left' ? left! : right!;
+    const next = entry.portrait
+        ? { characterId: entry.characterId, portrait: entry.portrait }
+        : existing;
+    if (visibleSlot === 'left') left = next;
+    else right = next;
     activeSlot = visibleSlot;
     lastSpeakerSlot = visibleSlot;
     continue;
@@ -178,7 +279,7 @@ if (!entry.portrait) {
     continue;
 }
 
-const target =
+const target: PortraitStageSlot =
     left === null
         ? 'left'
         : right === null
@@ -186,6 +287,12 @@ const target =
           : lastSpeakerSlot === 'left'
             ? 'right'
             : 'left';
+
+const next = { characterId: entry.characterId, portrait: entry.portrait };
+if (target === 'left') left = next;
+else right = next;
+activeSlot = target;
+lastSpeakerSlot = target;
 ```
 
 Return only `{ left, right, activeSlot }`; `lastSpeakerSlot` must not leak into runtime/persisted state.
@@ -204,14 +311,17 @@ Expected: projector tests + web lint pass.
 
 ---
 
-## Task 2: Delete the Static Portrait-Slot / Presentation Pipeline
+## Task 2: Delete Static Placement Metadata and Make Legacy Syntax Fail Loudly
 
-**Files:** all story/compiler and reader-payload files listed in the File Map; keep the visual snapshot single-portrait until Task 3.
+**Files**
+- All story/compiler and reader-payload files listed in the File Map
+- `apps/web/src/lib/visual-assets/__tests__/source-factory.test.ts`
 
-**Final interfaces after this task**
+Keep the visual snapshot single-portrait until Task 3; this task removes only the obsolete author/runtime placement contract.
+
+**Final story interface**
 
 ```ts
-// packages/stories/src/types.ts
 export type DialogueEntry = {
     character?: string;
     characterId?: string;
@@ -222,12 +332,6 @@ export type DialogueEntry = {
     portrait?: string;
 };
 
-export type DialogueMap = { [sectionKey: string]: DialogueEntry[] };
-// no PortraitSlot / StoryPresentationMetadata
-```
-
-```ts
-// packages/stories/src/stories/index.ts
 export type StoryLoaderResult = {
     dialogue: DialogueMap;
     choices: ChoiceMap;
@@ -236,21 +340,33 @@ export type StoryLoaderResult = {
 
 - [ ] **2.1 Rewrite metadata-specific tests to RED**
 
-`parse-characters.test.ts`: remove slot validation/acceptance tests and add:
+Replace slot acceptance tests with a removed-directive rejection:
 
 ```ts
-it('does not expose obsolete Portrait Slot metadata', () => {
-    const dir = parseCharacters(`## 1. 甲（A）
+it('rejects removed Portrait Slot metadata instead of ignoring it', () => {
+    const markdown = `## 1. 甲（A）
 
 - **ID**: \`a\`
 - **Portrait Slot**: right
-`);
-    expect(dir.getById('a')).toEqual({
-        id: 'a',
-        name: '甲',
-        aliases: [],
-        portraits: {},
-    });
+`;
+
+    expect(() => parseCharacters(markdown)).toThrow(
+        /Portrait Slot.*removed.*automatic/i
+    );
+});
+```
+
+Keep normal parsing coverage without the bullet:
+
+```ts
+expect(parseCharacters(`## 1. 甲（A）
+
+- **ID**: \`a\`
+`).getById('a')).toEqual({
+    id: 'a',
+    name: '甲',
+    aliases: [],
+    portraits: {},
 });
 ```
 
@@ -261,7 +377,7 @@ emitStory(story, dir, mockCharDir);
 expect(existsSync(join(dir, 'presentation.ts'))).toBe(false);
 ```
 
-Remove `portraitSlot` from emitter test fixtures, but retain reserved `Object.prototype` ID rejection; its `characterTable[id]` safety rationale still applies.
+Remove `portraitSlot` from emitter fixtures but retain reserved `Object.prototype` ID rejection because `characterTable[id]` remains an ordinary-object lookup.
 
 `stories.test.ts`:
 
@@ -272,7 +388,7 @@ expect(getStoryContent('train_adventure', 'en')).not.toHaveProperty(
 );
 ```
 
-`async/__tests__/loader.test.ts`: while the current fixture still contains presentation for the RED run:
+`async/__tests__/loader.test.ts`:
 
 ```ts
 expect(await loader.load('train_adventure', 'en')).not.toHaveProperty(
@@ -290,24 +406,38 @@ Run:
 
 ```bash
 rtk bun --filter @aquila/stories test src/compiler/__tests__/parse-characters.test.ts src/compiler/__tests__/emit.test.ts src/__tests__/stories.test.ts src/async/__tests__/loader.test.ts
-rtk bun --filter web test src/lib/__tests__/reader-intent.test.ts src/lib/__tests__/reader-manager.test.ts src/lib/__tests__/reader-manager-coverage.test.ts src/components/__tests__/VisualNovelReader.test.ts src/lib/visual-assets/__tests__/visual-state-controller.test.ts
+rtk bun --filter web test src/lib/__tests__/reader-intent.test.ts src/lib/__tests__/reader-manager.test.ts src/lib/__tests__/reader-manager-coverage.test.ts src/lib/visual-assets/__tests__/source-factory.test.ts src/components/__tests__/VisualNovelReader.test.ts src/lib/visual-assets/__tests__/visual-state-controller.test.ts
 ```
 
-Expected: RED on parsed/emitted/story/async/reader presentation behavior.
+Expected: RED on removed-directive, emitted presentation, story/async payload, reader state, and `VisualControllerInput` fixture behavior.
 
-- [ ] **2.2 Remove compiler authoring support**
+- [ ] **2.2 Remove placement data while retaining one rejection sentinel**
 
 In `parse-characters.ts` remove:
 
 - `PortraitSlot` import;
 - `ParsedCharacter.portraitSlot`;
-- `PORTRAIT_SLOT_RE`;
 - `parsePortraitSlot()`;
 - `currentPortraitSlot` state/reset;
-- slot parsing in the main loop;
 - slot field from `flushCharacter()`.
 
-Keep reserved Object.prototype name validation for `characterTable`; simplify comments to stop mentioning `slotsByCharacterId`.
+Keep a regex only for rejection:
+
+```ts
+const REMOVED_PORTRAIT_SLOT_RE = /^-\s+\*\*Portrait Slot\*\*:\s*.*$/;
+```
+
+In the character parse loop, before generic ignored prose can swallow the line:
+
+```ts
+if (REMOVED_PORTRAIT_SLOT_RE.test(line)) {
+    throw new Error(
+        `[story-compiler] character "${currentName}" uses removed Portrait Slot metadata; portrait placement is automatic — remove the **Portrait Slot** bullet`
+    );
+}
+```
+
+This sentinel has no placement semantics.
 
 In `emit.ts` delete `emitPresentation()` and the `writeFileSync(...presentation.ts...)` call. Do not modify character/portrait/background/dialogue/flow/image-asset emission.
 
@@ -332,28 +462,29 @@ For all three story modules:
 - remove generated `storyPresentation` import;
 - return only `dialogue` and `choices`.
 
-Update `stories.test.ts` and `async/__tests__/loader.test.ts` fixtures accordingly. `AsyncStoryLoaderResult` remains `StoryLoaderResult + flow + locale`; no new loader branch/type is needed.
+Update `stories.test.ts` and `async/__tests__/loader.test.ts` fixtures accordingly. `AsyncStoryLoaderResult` remains `StoryLoaderResult + flow + locale`; no loader branch is needed.
 
-- [ ] **2.4 Remove presentation from web reader plumbing**
+- [ ] **2.4 Remove presentation from web reader/controller fixtures**
 
 `reader-state.svelte.ts`: remove type import, `presentation` field, and reset assignment.
 
-`reader-manager.ts`: remove both the constructor/reset clearing and `payload.presentation` assignment.
+`reader-manager.ts`: remove constructor clearing and `payload.presentation` assignment.
 
 `ReaderShell.svelte`: remove the derived `presentation` value and stop passing it to `VisualNovelReader`.
 
 `VisualNovelReader.svelte`: remove presentation type/prop/destructure and remove it from `controller.update(...)`.
 
-`visual-state-controller.ts`: remove presentation type/input and delete `portraitSlot()`. Until Task 3 replaces the single portrait layer, pass `'left'` at the existing single-portrait helper sites so the code remains compile-safe without preserving any author contract.
+`visual-state-controller.ts`: remove presentation type/input and delete `portraitSlot()`. Until Task 3 replaces the single portrait layer, pass `'left'` at the existing single-portrait helper sites so compilation stays green without an authoring contract.
 
-Remove presentation fields from:
+Remove `presentation` fields from:
 
 - `reader-intent.test.ts` `StoryPayload` fixture;
 - both reader-manager test fixtures;
 - `VisualNovelReader.test.ts` props;
-- `visual-state-controller.test.ts` input fixtures.
+- `visual-state-controller.test.ts` input fixtures;
+- `source-factory.test.ts` `VisualControllerInput` fixture (`presentation: null` currently exists there).
 
-Replace the old manager test “assigns presentation…” with a payload test that asserts `readerState.activeFlow` is assigned and the existing guarded `getSceneDialogue()` checks still hold.
+Replace the old manager “assigns presentation” test with one that asserts `activeFlow` assignment plus the existing guarded `getSceneDialogue()` behavior.
 
 - [ ] **2.5 Regenerate and prove the deletion is bounded**
 
@@ -370,22 +501,35 @@ D packages/stories/src/generated/dontSaveMeBeforeMidnight/presentation.ts
 D packages/stories/src/generated/theSeventhMirror/presentation.ts
 ```
 
-Expected loader edits: three `packages/stories/src/stories/*/index.ts` modules drop presentation import/return only. Dialogue/flow/portrait/background generated content must not churn from this contract deletion.
+Expected loader edits: the three story loader modules drop presentation import/return only. Dialogue/flow/portrait/background generated content must not churn from this contract deletion.
 
-- [ ] **2.6 Run GREEN, dead-contract scan, drift check, commit**
+- [ ] **2.6 Run GREEN, dead-contract scans, drift check, commit**
 
 ```bash
 rtk bun --filter @aquila/stories test src/compiler/__tests__/parse-characters.test.ts src/compiler/__tests__/emit.test.ts src/__tests__/stories.test.ts src/async/__tests__/loader.test.ts
 rtk bun --filter @aquila/stories typecheck
-rtk bun --filter web test src/lib/__tests__/reader-intent.test.ts src/lib/__tests__/reader-manager.test.ts src/lib/__tests__/reader-manager-coverage.test.ts src/components/__tests__/VisualNovelReader.test.ts src/lib/visual-assets/__tests__/visual-state-controller.test.ts
-rtk rg -n "StoryPresentationMetadata|PortraitSlot|portraitSlot|slotsByCharacterId|defaultSlot" packages/stories/src packages/stories/raw apps/web/src
+rtk bun --filter web test src/lib/__tests__/reader-intent.test.ts src/lib/__tests__/reader-manager.test.ts src/lib/__tests__/reader-manager-coverage.test.ts src/lib/visual-assets/__tests__/source-factory.test.ts src/components/__tests__/VisualNovelReader.test.ts src/lib/visual-assets/__tests__/visual-state-controller.test.ts
+rtk rg -n "StoryPresentationMetadata|PortraitSlot|portraitSlot|slotsByCharacterId|defaultSlot" packages/stories/src apps/web/src
+rtk rg -n "\*\*Portrait Slot\*\*" packages/stories/raw
 rtk git diff --check
-rtk git add packages/stories/src packages/stories/raw/theSeventhMirror/docs/characters.md apps/web/src/lib/reader-state.svelte.ts apps/web/src/lib/reader-manager.ts apps/web/src/lib/__tests__/reader-intent.test.ts apps/web/src/lib/__tests__/reader-manager.test.ts apps/web/src/lib/__tests__/reader-manager-coverage.test.ts apps/web/src/components/ReaderShell.svelte apps/web/src/components/VisualNovelReader.svelte apps/web/src/components/__tests__/VisualNovelReader.test.ts apps/web/src/lib/visual-assets/visual-state-controller.ts apps/web/src/lib/visual-assets/__tests__/visual-state-controller.test.ts
+```
+
+Expected:
+
+- tests/typecheck pass;
+- the first scan returns no dead type/runtime contract matches;
+- the raw-authoring scan returns no legacy bullets (exit status `1` is success for this negative scan);
+- `parse-characters.ts` still contains the explicit removed-directive error text, which is intentionally not part of either negative scan.
+
+Then:
+
+```bash
+rtk git add packages/stories/src packages/stories/raw/theSeventhMirror/docs/characters.md apps/web/src/lib/reader-state.svelte.ts apps/web/src/lib/reader-manager.ts apps/web/src/lib/__tests__/reader-intent.test.ts apps/web/src/lib/__tests__/reader-manager.test.ts apps/web/src/lib/__tests__/reader-manager-coverage.test.ts apps/web/src/components/ReaderShell.svelte apps/web/src/components/VisualNovelReader.svelte apps/web/src/components/__tests__/VisualNovelReader.test.ts apps/web/src/lib/visual-assets/visual-state-controller.ts apps/web/src/lib/visual-assets/__tests__/visual-state-controller.test.ts apps/web/src/lib/visual-assets/__tests__/source-factory.test.ts
 rtk bun compile:check
 rtk git commit -m "refactor(reader): remove static portrait slots"
 ```
 
-Expected: tests/typecheck pass; dead-contract scan returns no active source/raw matches; `compile:check` creates no unstaged drift. Historical design docs are intentionally excluded from the scan.
+Expected: `compile:check` creates no unstaged generated/story-loader drift.
 
 ---
 
@@ -421,9 +565,9 @@ export type VisualSnapshot = {
 
 - [ ] **3.1 Add controller RED cases**
 
-Convert initial snapshot assertion to two omitted portraits + null active slot.
+Convert the initial snapshot assertion to two omitted portraits + null active slot.
 
-Add these tests:
+Direct jump:
 
 ```ts
 it('loads both projected slots for a direct jump', async () => {
@@ -438,6 +582,8 @@ it('loads both projected slots for a direct jump', async () => {
     expect(latest().activePortraitSlot).toBe('right');
 });
 ```
+
+Retained expression/reactivation:
 
 ```ts
 it('reactivates a staged speaker when the current line omits portrait', async () => {
@@ -454,10 +600,27 @@ it('reactivates a staged speaker when the current line omits portrait', async ()
 });
 ```
 
+Production-shaped narrator:
+
+```ts
+it('retains both slots and clears active speaker on narrator lines', async () => {
+    const dialogue = [
+        { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+        { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+        { dialogue: 'Narration', characterId: 'narrator' },
+    ];
+    controller.update(input(dialogue, { dialogueIndex: 2 }));
+    await flushAsyncWork();
+    expect(latest().portraits.left.identity).toBe('portrait:a/base');
+    expect(latest().portraits.right.identity).toBe('portrait:b/base');
+    expect(latest().activePortraitSlot).toBeNull();
+});
+```
+
 Also pin:
 
-- narration keeps both ready layers and sets `activePortraitSlot: null`;
 - third character replaces only the projected slot;
+- A -> B -> C -> A re-entry produces C-left/A-right and loads only the projected replacement slot;
 - expression change reloads only that character's slot;
 - while one replacement is `loading`, the opposite ready portrait remains mounted;
 - both ready portrait cache keys are protected;
@@ -530,7 +693,7 @@ Publish `activePortraitSlot: stage.activeSlot` with the two reconciled layers. L
 
 - [ ] **3.4 Load/fail stage targets, not only `entry.portrait`**
 
-In `prepareCurrentInput()` derive the same stage. A resolver-less direct jump to narration may still require retained staged portraits, so compute keyed visuals from current background + both projected portrait keys.
+In `prepareCurrentInput()` derive the same stage. A resolver-less direct jump to narrator/system text may still require retained staged portraits, so compute keyed visuals from current background + both projected portrait keys.
 
 Use:
 
@@ -589,7 +752,7 @@ Do not reuse the old `entry?.portrait === identity.key` check for retained/inact
 
 - [ ] **3.6 Extend lifecycle/status bookkeeping**
 
-`detachObjectUrl()` checks active background, staging background, left portrait, right portrait; clear every matching slot's cache/release tracking.
+`detachObjectUrl()` checks active background, staging background, left portrait, and right portrait; clear every matching slot's cache/release tracking.
 
 `publish()` protects both `portraitCacheKeys.left` and `.right` in addition to background keys.
 
@@ -597,11 +760,9 @@ Do not reuse the old `entry?.portrait === identity.key` check for retained/inact
 
 Keep `warmWithinScene()` and edge prefetch line-based; do not project future stage layouts.
 
-- [ ] **3.7 Render two stable portrait elements so the new snapshot is consumable**
+- [ ] **3.7 Render two stable portrait elements so the snapshot is consumable**
 
 `VisualNovelReader.emptySnapshot` becomes two omitted layers + null active slot.
-
-Replace the old image with exactly:
 
 ```svelte
 <img
@@ -624,7 +785,7 @@ Replace the old image with exactly:
 />
 ```
 
-Keep the existing left/right anchors for this task. Update component fixtures/assertions so there are four images total: two backgrounds + two portraits.
+Keep existing left/right anchors for this task. Update component fixtures/assertions so there are four images total: two backgrounds + two portraits.
 
 - [ ] **3.8 Run GREEN and commit**
 
@@ -641,7 +802,7 @@ Expected: tests/lint pass; single-portrait snapshot/test selector scan returns n
 
 ---
 
-## Task 4: Add Inactive-Speaker Dimming and Two-Portrait Responsive Sizing
+## Task 4: Rewrite Local Browser Contract, Then Add Dimming and Responsive Sizing
 
 **Files**
 - `apps/web/src/components/VisualNovelReader.svelte`
@@ -649,9 +810,11 @@ Expected: tests/lint pass; single-portrait snapshot/test selector scan returns n
 - `packages/e2e/tests/utils.ts`
 - `packages/e2e/tests/reader-visual.spec.ts`
 
+The point of this task is to replace existing one-portrait assertions, not add new tests beside stale ones.
+
 - [ ] **4.1 Pin active-slot DOM behavior in component tests**
 
-Use a snapshot with Yuma left, Mio right, `activePortraitSlot: 'right'` and assert:
+Use a snapshot with Yuma left, Mio right, `activePortraitSlot: 'right'`:
 
 ```ts
 expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
@@ -664,11 +827,19 @@ expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
 );
 ```
 
-Emit the same portrait layers with `activePortraitSlot: null`; assert both become false **without changing either `src`**.
+Emit the same portrait layers with `activePortraitSlot: null`; assert both become false without changing either `src`.
 
-- [ ] **4.2 Add Playwright accessors and a computed-style RED test**
+- [ ] **4.2 Replace the shared page-object single portrait getter**
 
-Replace the old page-object getter with:
+Delete:
+
+```ts
+get portrait() {
+    return this.root.getByTestId('visual-portrait');
+}
+```
+
+Add only explicit semantics:
 
 ```ts
 get leftPortrait() {
@@ -684,141 +855,11 @@ get readyPortraits() {
 }
 ```
 
-Add a focused Chromium test using direct dialogue 7 (projection contains Yuma left + Mio right, Mio active):
+Do not add an `anyPortrait`/`portrait` alias.
 
-```ts
-test('dims the inactive portrait and emphasizes the active portrait', async ({
-    page,
-}) => {
-    const visual = new VisualReaderPage(page);
-    await visual.goto(7);
+- [ ] **4.3 Rewrite the existing Seventh Mirror local E2E tests before adding CSS**
 
-    await expect(visual.leftPortrait).toHaveAttribute(
-        'data-portrait-active',
-        'false'
-    );
-    await expect(visual.rightPortrait).toHaveAttribute(
-        'data-portrait-active',
-        'true'
-    );
-
-    expect(
-        await visual.leftPortrait.evaluate(el => getComputedStyle(el).filter)
-    ).toContain('brightness(0.55)');
-    expect(
-        await visual.rightPortrait.evaluate(el => getComputedStyle(el).filter)
-    ).toContain('brightness(1)');
-    await expect(visual.leftPortrait).toHaveCSS('opacity', '0.82');
-    await expect(visual.rightPortrait).toHaveCSS('opacity', '1');
-});
-```
-
-Run before CSS changes:
-
-```bash
-rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts --project=chromium -g "dims the inactive portrait"
-```
-
-Expected: RED because Task 3 renders the active attribute but both images still have the old single-portrait filter/opacity.
-
-- [ ] **4.3 Implement exact active/inactive styling**
-
-Change base portrait CSS to:
-
-```css
-.visual-portrait {
-  position: absolute;
-  bottom: calc(
-    var(--dialogue-box-height) +
-    max(1rem, env(safe-area-inset-bottom)) +
-    0.75rem
-  );
-  z-index: -1;
-  display: block;
-  width: auto;
-  max-width: min(42vw, 36rem);
-  height: auto;
-  max-height: calc(
-    100dvh - var(--dialogue-box-height) - 3.5rem -
-      env(safe-area-inset-top) - env(safe-area-inset-bottom)
-  );
-  object-fit: contain;
-  object-position: bottom;
-  opacity: 0.82;
-  filter: brightness(0.55) drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
-  transition: filter 180ms ease, opacity 180ms ease;
-}
-
-.visual-portrait[data-portrait-active='true'] {
-  z-index: 0;
-  opacity: 1;
-  filter: brightness(1) drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
-}
-```
-
-Keep left/right anchors unchanged.
-
-Mobile portrait breakpoint becomes:
-
-```css
-.visual-portrait {
-  max-width: 54vw;
-}
-```
-
-instead of `82vw`. Keep compact landscape at `42vw`.
-
-Extend reduced motion:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  .typewriter-cursor {
-    animation: none;
-  }
-
-  .visual-portrait {
-    transition: none;
-  }
-}
-```
-
-No transforms or movement animations.
-
-- [ ] **4.4 Run styling GREEN and commit**
-
-```bash
-rtk bun --filter web test src/components/__tests__/VisualNovelReader.test.ts
-rtk bun --filter web lint
-rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts --project=chromium -g "dims the inactive portrait"
-rtk git diff --check
-rtk git add apps/web/src/components/VisualNovelReader.svelte apps/web/src/components/__tests__/VisualNovelReader.test.ts packages/e2e/tests/utils.ts packages/e2e/tests/reader-visual.spec.ts
-rtk git commit -m "feat(reader): dim inactive portrait speakers"
-```
-
-Expected: component tests/lint and computed-style browser test pass.
-
----
-
-## Task 5: Prove Alternation, Direct Reconstruction, Responsive Geometry, and Full Regression Gate
-
-**Files**
-- `packages/e2e/tests/reader-visual.spec.ts`
-- Verify all files from Tasks 1-4
-
-The existing Seventh Mirror `ch1_act2` sequence is the production fixture:
-
-```text
-dialogue=6 -> Yuma base
-dialogue=7 -> Mio base
-dialogue=8 -> Yuma base
-dialogue=9 -> narration
-```
-
-No production story line should be added solely for testing.
-
-- [ ] **5.1 Add the flagship Yuma -> Mio -> Yuma browser regression**
-
-Use line 6 to prove first-visible-left, then sequentially line 7 and 8:
+Replace the current test named `renders Yuma right, advances to Mio left, and preserves the URL line` with the new flagship sequence:
 
 ```ts
 test('alternates Yuma and Mio while retaining the inactive speaker', async ({
@@ -865,7 +906,6 @@ test('alternates Yuma and Mio while retaining the inactive speaker', async ({
     }
     await visual.root.click();
     await expectCanonicalVisualLine(page, 8);
-
     await expect(visual.leftPortrait).toHaveAttribute(
         'data-portrait-active',
         'true'
@@ -878,41 +918,223 @@ test('alternates Yuma and Mio while retaining the inactive speaker', async ({
 });
 ```
 
-This is a regression gate on behavior already driven RED/GREEN by Tasks 1, 3, and 4; it should pass immediately if those slices are correct.
-
-- [ ] **5.2 Pin direct reconstruction and narration**
-
-Add a focused direct `goto(7)` assertion that both portraits are immediately ready with Yuma-left inactive and Mio-right active without first visiting line 6.
-
-Then direct `goto(9)` and assert both portraits stay ready while both `data-portrait-active` values are false. This proves narration is reconstructed from the prefix rather than from mutable prior navigation history.
-
-- [ ] **5.3 Update responsive/control geometry checks for both ready portraits**
-
-Rename the helper to `expectEssentialControlsNotToOverlapPortraits` and iterate `visual.readyPortraits`.
-
-For every ready portrait:
+Rewrite the existing invalid-Mio test so failure is slot-local:
 
 ```ts
-const portraitBox = await visual.readyPortraits.nth(index).boundingBox();
-expect(portraitBox).not.toBeNull();
-if (portraitBox) {
-    expect(portraitBox.y + portraitBox.height).toBeLessThanOrEqual(
-        dialogueBox.y - 12 + 1
-    );
+await visual.goto(6);
+await expect(visual.leftPortrait).toHaveAttribute(
+    'data-portrait-state',
+    'ready'
+);
+const yumaSrc = await visual.leftPortrait.getAttribute('src');
+
+await visual.root.click();
+await expectCanonicalVisualLine(page, 7);
+await expect(visual.rightPortrait).toHaveAttribute(
+    'data-portrait-state',
+    'failed'
+);
+await expect(visual.leftPortrait).toHaveAttribute(
+    'data-portrait-state',
+    'ready'
+);
+expect(await visual.leftPortrait.getAttribute('src')).toBe(yumaSrc);
+```
+
+Preserve the existing background/status/dialogue/control assertions in that test.
+
+Rewrite the existing responsive helper from one `visual.portrait` box to every `visual.readyPortraits.nth(index)` and assert essential settings/history/continue controls do not overlap any ready portrait.
+
+Add direct reconstruction assertions:
+
+- `goto(7)` immediately yields Yuma-left inactive + Mio-right active without visiting line 6;
+- `goto(9)` immediately yields both portraits ready with both `data-portrait-active="false"` because line 9 is generated narrator dialogue with `characterId` and no portrait.
+
+Run the updated behavioral subset before CSS dimming:
+
+```bash
+rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts --project=chromium -g "alternates Yuma|portrait bytes are invalid|direct portrait stage"
+```
+
+Expected: stage/slot assertions pass after Task 3; no old static-slot expectation remains.
+
+- [ ] **4.4 Add a computed-style RED test**
+
+At direct dialogue 7, Yuma is left/inactive and Mio is right/active:
+
+```ts
+test('dims the inactive portrait and emphasizes the active portrait', async ({
+    page,
+}) => {
+    const visual = new VisualReaderPage(page);
+    await visual.goto(7);
+
+    expect(
+        await visual.leftPortrait.evaluate(el => getComputedStyle(el).filter)
+    ).toContain('brightness(0.55)');
+    expect(
+        await visual.rightPortrait.evaluate(el => getComputedStyle(el).filter)
+    ).toContain('brightness(1)');
+    await expect(visual.leftPortrait).toHaveCSS('opacity', '0.82');
+    await expect(visual.rightPortrait).toHaveCSS('opacity', '1');
+});
+```
+
+Run:
+
+```bash
+rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts --project=chromium -g "dims the inactive portrait"
+```
+
+Expected: RED because both images still use the old undimmed single-portrait styling.
+
+- [ ] **4.5 Implement exact active/inactive and responsive styling**
+
+```css
+.visual-portrait {
+  position: absolute;
+  bottom: calc(
+    var(--dialogue-box-height) +
+    max(1rem, env(safe-area-inset-bottom)) +
+    0.75rem
+  );
+  z-index: -1;
+  display: block;
+  width: auto;
+  max-width: min(42vw, 36rem);
+  height: auto;
+  max-height: calc(
+    100dvh - var(--dialogue-box-height) - 3.5rem -
+      env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  );
+  object-fit: contain;
+  object-position: bottom;
+  opacity: 0.82;
+  filter: brightness(0.55) drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
+  transition: filter 180ms ease, opacity 180ms ease;
+}
+
+.visual-portrait[data-portrait-active='true'] {
+  z-index: 0;
+  opacity: 1;
+  filter: brightness(1) drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
 }
 ```
 
-Run the existing desktop `1280x800`, mobile portrait `390x844`, and compact landscape `844x390` geometry cases. Essential settings/history/continue controls must not overlap either ready portrait.
+Keep left/right anchors unchanged.
 
-- [ ] **5.4 Run the complete visual-reader spec across all configured projects**
+Mobile portrait breakpoint:
 
-```bash
-rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts
+```css
+.visual-portrait {
+  max-width: 54vw;
+}
 ```
 
-Expected: Chromium, mobile Chrome, and mobile Safari visual-reader cases pass, including existing background crossfade, mode swaps, history, release/fallback, and responsive tests.
+Keep compact landscape at `42vw`.
 
-- [ ] **5.5 Run focused story/web gates and dead-contract scans**
+Reduced motion:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-cursor {
+    animation: none;
+  }
+
+  .visual-portrait {
+    transition: none;
+  }
+}
+```
+
+No transforms or movement animations.
+
+- [ ] **4.6 Run complete local visual-reader GREEN and commit**
+
+```bash
+rtk bun --filter web test src/components/__tests__/VisualNovelReader.test.ts
+rtk bun --filter web lint
+rtk bun --filter e2e test:e2e tests/reader-visual.spec.ts
+rtk rg -n "visual\.portrait\b|getByTestId\(['\"]visual-portrait['\"]\)|data-testid=\"visual-portrait\"" packages/e2e/tests/reader-visual.spec.ts packages/e2e/tests/utils.ts apps/web/src
+rtk git diff --check
+```
+
+Expected: component tests/lint and Chromium/mobile Chrome/mobile Safari visual-reader cases pass; old single-portrait selectors return no matches.
+
+Commit:
+
+```bash
+rtk git add apps/web/src/components/VisualNovelReader.svelte apps/web/src/components/__tests__/VisualNovelReader.test.ts packages/e2e/tests/utils.ts packages/e2e/tests/reader-visual.spec.ts
+rtk git commit -m "feat(reader): dim alternating portrait speakers"
+```
+
+---
+
+## Task 5: Update the Deployed Release Gate and Run Full Verification
+
+**Files**
+- `packages/e2e/tests/visual-novel-deployed.spec.ts`
+- Verify all files from Tasks 1-4
+
+The deployed gate currently uses the shared single `visual.portrait` locator. It must adopt the same two-slot page-object contract rather than preserve a special compatibility path.
+
+- [ ] **5.1 Rewrite deployed portrait-change verification to accept either slot**
+
+Keep `findSceneAnchors()` and `requireCovered(manifest, 'portrait', portraitAfter, ...)`: the gate should still prove the release covers the portrait key on the change line.
+
+Replace same-node `portraitSrcBefore` logic with a set of ready portrait sources:
+
+```ts
+const portraitSrcsBefore = await visual.readyPortraits.evaluateAll(nodes =>
+    nodes
+        .map(node => node.getAttribute('src'))
+        .filter((src): src is string => src !== null)
+);
+
+await advanceTo(page, visual, anchors.startPage, anchors.portraitPage);
+
+await expect
+    .poll(async () => {
+        const current = await visual.readyPortraits.evaluateAll(nodes =>
+            nodes
+                .map(node => node.getAttribute('src'))
+                .filter((src): src is string => src !== null)
+        );
+        return current.some(src => !portraitSrcsBefore.includes(src));
+    })
+    .toBe(true);
+```
+
+This works for both cases the release gate may discover:
+
+- a new character enters the opposite slot while the prior portrait remains;
+- the same visible character changes expression and its slot's source changes.
+
+Do not add a single-portrait alias to `VisualReaderPage` for this gate.
+
+- [ ] **5.2 Typecheck the complete E2E tree, including the normally ignored deployed spec**
+
+The normal `playwright.config.ts` excludes `visual-novel-deployed.spec.ts`, but `packages/e2e/tsconfig.json` includes `tests/**/*.ts`. Run:
+
+```bash
+rtk bunx tsc --noEmit -p packages/e2e/tsconfig.json
+```
+
+Expected: PASS, proving the deployed spec compiles against the new page-object contract even without remote release-gate credentials.
+
+- [ ] **5.3 Run the deployed release gate when its required environment is available**
+
+If `BASE_URL`, `RELEASE_GATE_RELEASE_ID`, and `RELEASE_GATE_MANIFEST_SHA256` are configured for an HTTPS deployed target (plus preview/audio variables when applicable), run:
+
+```bash
+rtk bun --filter e2e test:release-gate
+```
+
+Expected: the deployed gate still validates release identity, newly loaded portrait/background assets, mode swaps, bookmark/choice flow, and failure fallbacks.
+
+If those deployment credentials are unavailable in the implementation environment, record that the remote-only gate was not executable; do not weaken or delete its assertions. The mandatory local compile gate remains Step 5.2.
+
+- [ ] **5.4 Run focused story/web gates and legacy-contract scans**
 
 ```bash
 rtk bun --filter @aquila/stories test
@@ -920,14 +1142,21 @@ rtk bun --filter @aquila/stories typecheck
 rtk bun --filter web test
 rtk bun --filter web lint
 rtk bun compile:check
-rtk rg -n "StoryPresentationMetadata|PortraitSlot|portraitSlot|slotsByCharacterId|defaultSlot" packages/stories/src packages/stories/raw apps/web/src
-rtk rg -n "getByTestId\(['\"]visual-portrait['\"]\)|data-testid=\"visual-portrait\"" apps/web/src packages/e2e/tests
+rtk rg -n "StoryPresentationMetadata|PortraitSlot|portraitSlot|slotsByCharacterId|defaultSlot" packages/stories/src apps/web/src
+rtk rg -n "\*\*Portrait Slot\*\*" packages/stories/raw
+rtk rg -n "visual\.portrait\b|getByTestId\(['\"]visual-portrait['\"]\)|data-testid=\"visual-portrait\"" apps/web/src packages/e2e/tests
 rtk git diff --check
 ```
 
-Expected: test/typecheck/lint/compile/diff checks pass; both `rg` scans intentionally return no matches (ripgrep exit status `1` means the negative scan succeeded).
+Expected:
 
-- [ ] **5.6 Run repository-wide verification**
+- tests/typecheck/lint/compile/diff checks pass;
+- dead placement-type scan returns no matches;
+- raw legacy directive scan returns no matches;
+- single-portrait browser/source scan returns no matches, including `visual-novel-deployed.spec.ts`;
+- the parser's removed-directive validation remains intentional and is not targeted by the raw-source scan.
+
+- [ ] **5.5 Run repository-wide verification**
 
 ```bash
 rtk bun lint
@@ -937,40 +1166,44 @@ rtk bun run test
 
 Expected: Turbo lint/build/test gates pass. If a browser/environment-only command is blocked, record the exact command and failure; do not remove or weaken the assertion.
 
-- [ ] **5.7 Review final diff for scope creep**
+- [ ] **5.6 Review final diff for scope creep**
 
 ```bash
 rtk git status --short
 rtk git diff main...HEAD --stat
-rtk git diff main...HEAD -- packages/stories/src/types.ts packages/stories/src/compiler/parse-characters.ts packages/stories/src/compiler/emit.ts apps/web/src/lib/visual-assets/portrait-stage.ts apps/web/src/lib/visual-assets/types.ts apps/web/src/lib/visual-assets/visual-state-controller.ts apps/web/src/components/VisualNovelReader.svelte packages/e2e/tests/reader-visual.spec.ts
+rtk git diff main...HEAD -- packages/stories/src/types.ts packages/stories/src/compiler/parse-characters.ts packages/stories/src/compiler/emit.ts apps/web/src/lib/visual-assets/portrait-stage.ts apps/web/src/lib/visual-assets/types.ts apps/web/src/lib/visual-assets/visual-state-controller.ts apps/web/src/components/VisualNovelReader.svelte packages/e2e/tests/utils.ts packages/e2e/tests/reader-visual.spec.ts packages/e2e/tests/visual-novel-deployed.spec.ts
 ```
 
 Final implementation must contain only:
 
 1. approved design + this plan;
 2. pure two-slot projection;
-3. deletion of static portrait placement metadata/plumbing;
+3. deletion of static portrait placement metadata/plumbing plus the legacy-directive compiler error;
 4. two-slot controller/cache/release reconciliation;
 5. two portrait DOM layers with dim/active/responsive styling;
-6. focused unit/component/E2E updates.
+6. updated local and deployed browser contracts.
 
-Reject accidental stage directives, 3+ portraits, persisted stage state, new dependencies, asset generation, or unrelated reader refactors.
+Reject accidental permanent home sides, stage directives, 3+ portraits, persisted stage state, new dependencies, asset generation, or unrelated reader refactors.
 
-- [ ] **5.8 Commit final E2E regression coverage**
+- [ ] **5.7 Commit release-gate/regression updates**
 
 ```bash
-rtk git add packages/e2e/tests/reader-visual.spec.ts
-rtk git commit -m "test(reader): cover alternating portrait stage"
+rtk git add packages/e2e/tests/visual-novel-deployed.spec.ts
+rtk git commit -m "test(reader): update deployed portrait stage gate"
 ```
 
 Keep PR #64 as the only PR for this task. Keep it draft until the implementation diff and CI have been reviewed.
 
 ## Plan Self-Review
 
-- No `TODO`, `TBD`, or placeholder implementation decisions remain.
-- Every approved design behavior maps to a concrete RED/GREEN or regression step.
-- The old static slot contract is deleted before two-slot runtime work; there is no long-lived dual-placement system.
-- Portrait async guards are explicitly slot/projector-based, which covers retained portraits on narration/direct jumps.
-- Browser dimming is driven RED using computed CSS before the styling implementation.
-- All commands use scripts already present in the repository; no undeclared `astro check` dependency is assumed.
+- Projector fixtures use explicit portrait-bearing entries whenever a character is supposed to enter the stage; generated narrator shape is covered separately.
+- A -> B -> C -> A explicitly proves that re-entry may change a character's side after replacement.
+- Legacy `Portrait Slot` authoring fails loudly rather than being silently ignored.
+- `source-factory.test.ts` is included in the presentation-contract deletion slice.
+- Every current `visual.portrait` consumer is accounted for: local reader spec, responsive/failure assertions, shared page object, and deployed release gate.
+- Existing local single-portrait tests are rewritten in place rather than duplicated with contradictory new tests.
+- Portrait async guards are slot/projector-based, covering retained portraits on narrator/direct jumps.
+- Browser dimming is driven RED using computed CSS before styling implementation.
+- The deployed spec gets a mandatory TypeScript gate even when remote release credentials are unavailable.
+- All commands use scripts or configs already present in the repository; no undeclared Astro check dependency is assumed.
 - The task remains one PR (#64) with small reviewable commits inside that PR.

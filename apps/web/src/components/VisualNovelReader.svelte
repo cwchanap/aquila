@@ -525,7 +525,7 @@
 
 <style>
   .visual-novel-reader {
-    --dialogue-box-height: 18rem;
+    --dialogue-box-height: 14.4rem;
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -554,19 +554,14 @@
 
   .visual-portrait {
     position: absolute;
-    bottom: calc(
-      var(--dialogue-box-height) +
-      max(1rem, env(safe-area-inset-bottom)) +
-      0.75rem
-    );
+    bottom: max(1rem, env(safe-area-inset-bottom));
     z-index: -1;
     display: block;
     width: auto;
     max-width: min(48vw, 42rem);
-    height: auto;
-    max-height: calc(
-      100dvh - var(--dialogue-box-height) - 3.5rem -
-        env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    height: calc(
+      100dvh - max(1rem, env(safe-area-inset-bottom)) -
+      env(safe-area-inset-top)
     );
     object-fit: contain;
     object-position: bottom;
@@ -585,6 +580,7 @@
     position: relative;
     display: grid;
     grid-template-columns: auto 1fr;
+    grid-template-rows: minmax(0, 1fr);
     width: 100%;
     height: 100%;
     padding-top: max(1rem, env(safe-area-inset-top));
@@ -597,6 +593,7 @@
   .act-panel {
     z-index: 20;
     min-width: 3rem;
+    min-height: 0;
     margin: -1rem 0 -1rem -1rem;
   }
 
@@ -693,17 +690,17 @@
 
   @media (max-width: 47.99rem) and (orientation: portrait) {
     .visual-novel-reader {
-      --dialogue-box-height: 40dvh;
+      --dialogue-box-height: 32dvh;
     }
 
     .visual-portrait {
-      max-width: 82vw;
+      max-width: 94vw;
     }
   }
 
   @media (max-height: 31rem) and (orientation: landscape) {
     .visual-novel-reader {
-      --dialogue-box-height: 9.5rem;
+      --dialogue-box-height: 7.6rem;
     }
 
     .visual-portrait {

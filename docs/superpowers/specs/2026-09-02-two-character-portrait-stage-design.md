@@ -1,7 +1,7 @@
 # Two-Character Portrait Stage Design
 
 Date: 2026-09-02
-Status: Proposed
+Status: Approved
 
 ## Summary
 
@@ -82,88 +82,81 @@ For each entry:
 
 2. **Character is already visible**
    - Keep the character in the same slot.
-   - If the entry has `portrait`, replace that slot's portrait key with the new key; otherwise preserve the existing portrait/expression.
-   - Set both `activeSlot` and `lastSpeakerSlot` to that character's slot.
+   - If the entry has a `portrait`, replace that slot's portrait key with the new value.
+   - If the entry omits `portrait`, retain the currently staged portrait/expression.
+   - Set that slot as both `activeSlot` and `lastSpeakerSlot`.
 
 3. **Character is not visible and the entry has no `portrait`**
-   - Do not add a portrait or change either slot.
-   - Set `activeSlot` to `null` because the speaking character has no visible stage representation.
+   - Do not change either slot.
+   - Set `activeSlot` to `null`.
    - Leave `lastSpeakerSlot` unchanged.
 
-4. **New portrait-bearing character, stage empty**
+4. **New visible character, stage empty**
    - Place the character on the left.
-   - Set `activeSlot` and `lastSpeakerSlot` to left.
+   - Set left as `activeSlot` and `lastSpeakerSlot`.
 
-5. **New portrait-bearing character, exactly one slot occupied**
-   - Place the character in the empty slot.
-   - Set `activeSlot` and `lastSpeakerSlot` to the new slot.
+5. **New visible character, exactly one slot occupied**
+   - Place the character in the empty opposite slot.
+   - Set the new slot as `activeSlot` and `lastSpeakerSlot`.
 
-6. **New portrait-bearing character, both slots occupied**
-   - Replace the slot opposite `lastSpeakerSlot` so the immediately previous visible speaker remains as the dimmed conversation partner.
-   - Set `activeSlot` and `lastSpeakerSlot` to the replacement slot.
-
-Because a two-occupied-slot state can only be produced by prior visible speakers, `lastSpeakerSlot` is non-null for rule 6 when projection starts from an empty scene. The implementation may assert that invariant rather than adding a fallback branch.
+6. **New visible character, both slots occupied**
+   - Replace the slot opposite `lastSpeakerSlot`.
+   - Set the replacement slot as `activeSlot` and `lastSpeakerSlot`.
 
 Example:
 
 ```text
-A(portrait) -> A left active
-B(portrait) -> A left dim, B right active
-B(no new portrait key) -> A left dim, B right active with existing expression
-narration -> A left dim, B right dim; last visible speaker remains B/right
-C(portrait) -> C left active, B right dim
-B(portrait) -> C left dim, B right active
-D(portrait) -> D left active, B right dim
+A -> left active
+B -> A left dim, B right active
+B -> A left dim, B right active
+A -> A left active, B right dim
+C -> A left dim, C right active
+D -> D left active, C right dim
 ```
 
-This is an O(dialogueIndex) projection on each reader update. Scene dialogue is small enough that memoization or a second mutable stage store would add complexity without useful benefit; do not add either in this PR.
+### Narration and non-visible dialogue
 
-### Dimming
+Narration or other lines that do not produce a visible current speaker:
 
-- The portrait in `activeSlot` renders at full brightness.
-- Every other ready portrait renders with `brightness(0.55)`.
-- When `activeSlot === null`, every ready portrait is dimmed.
-- Keep the existing portrait drop shadow in both states.
-- Use a short CSS `filter` transition; do not add movement or opacity animation.
-
-The dim factor is a reader presentation constant, not story metadata.
+- keep both staged portraits unchanged;
+- set `activeSlot` to `null`;
+- dim every visible portrait;
+- retain `lastSpeakerSlot` internally so the next new visible character alternates relative to the last visible speaker rather than relative to narration.
 
 ### Scene changes
 
-A new scene projects from an empty stage. Portraits do not carry across scene boundaries.
+A new scene starts from an empty stage. Portraits do not carry across scene boundaries.
 
-This keeps the algorithm scene-local and avoids cross-scene stage persistence.
+This keeps reconstruction local to the scene's dialogue array and avoids cross-scene stage persistence.
 
-## Remove Static Presentation Metadata
+## Story Contract Simplification
 
-Delete the static portrait-placement contract rather than keeping a compatibility shell:
+Delete static portrait placement metadata instead of supporting both static and dynamic placement:
 
 - remove `PortraitSlot`;
 - remove `StoryPresentationMetadata`;
-- remove `portraitSlot` from parsed character data;
-- remove `Portrait Slot` parsing and validation;
-- remove `emitPresentation()` and generated `presentation.ts` files;
-- remove the two active `Portrait Slot` lines from Seventh Mirror `characters.md`;
-- remove `presentation` from `StoryLoaderResult` and each story loader result;
-- remove `readerState.presentation`;
-- remove presentation plumbing through `ReaderManager`, `ReaderShell`, `VisualNovelReader`, and `VisualStateController`;
-- remove/update tests whose only purpose was proving presentation payload propagation or static slot selection.
+- remove `portraitSlot` from parsed characters;
+- stop parsing `**Portrait Slot**` metadata;
+- stop emitting generated `presentation.ts` files;
+- remove `presentation` from story loader results;
+- remove `readerState.presentation` and all reader/controller presentation props;
+- remove existing authored `Portrait Slot` bullets from raw character docs.
 
-Historical design/plan documents describing the old contract remain historical records and do not need rewriting.
+After this change, `DialogueEntry.characterId` and `DialogueEntry.portrait` are the only story inputs needed for portrait-stage projection.
 
-The reader now owns conversational placement entirely from `DialogueEntry.characterId` and `DialogueEntry.portrait`.
+There is no compatibility layer. The old contract has no production-user compatibility requirement and becomes dead machinery once conversational staging owns placement.
 
 ## Web Runtime Design
 
 ### Pure stage projection
 
-Add a small pure helper under the existing visual-assets boundary:
+Add a small pure helper under the visual-assets area:
 
 ```text
 apps/web/src/lib/visual-assets/portrait-stage.ts
 ```
 
-Expose one primary function equivalent to:
+It exposes:
 
 ```ts
 projectPortraitStage(
@@ -172,11 +165,11 @@ projectPortraitStage(
 ): PortraitStage
 ```
 
-The helper owns only stage composition. It does not load assets, mutate caches, know about release identities, or talk to Svelte.
+The helper owns only stage composition. It does not load assets, mutate caches, know about releases, or talk to Svelte.
 
 ### Snapshot shape
 
-Replace the single portrait layer with explicit left and right layers plus current-line activity:
+Replace the single portrait layer with explicit left and right layers plus active-slot state:
 
 ```ts
 type VisualSnapshot = {
@@ -193,174 +186,131 @@ type VisualSnapshot = {
 };
 ```
 
-The separate `VisualPortraitLayer` type can be deleted if it has no remaining distinction from `VisualImageLayer` after `slot` is removed.
-
-Both empty portrait layers use the existing image-layer states: `omitted | loading | ready | missing | failed`.
+The slot is represented by the object key, so portrait layers no longer need an internal `slot` field.
 
 ### Controller responsibilities
 
-`VisualStateController.update()` derives the desired `PortraitStage` for the current scene/index and reconciles each desired slot independently.
+`VisualStateController.update()` projects the stage for the current input and reconciles each desired slot independently.
 
 For each slot:
 
 - desired empty -> publish `omitted` and clear that slot's protected cache/release identity;
-- same logical portrait under the active release -> preserve the ready layer;
+- same logical portrait under the active release -> keep the ready layer;
 - changed portrait -> publish `loading`, resolve/load it, then publish `ready`, `missing`, or `failed` using the existing generation/release guards.
 
-The controller moves from one portrait cache key/release ID to two explicit slot-local pairs. Reuse the existing asset loading, failure, generation, object-URL detachment, release validation, and prefetch machinery; do not introduce another asset manager.
+The controller therefore moves from one portrait cache key/release ID to two slot-local pairs. It reuses existing image loading, fallback, generation, object-URL detachment, release validation, and prefetch machinery.
 
-Cache protection must include both ready portrait slots.
+Portrait async freshness must compare a completed load against the currently projected target for that slot. It cannot compare only against the current dialogue entry's `portrait`, because retained inactive portraits may come from earlier lines.
 
-Within-scene lookahead may continue prefetching portrait asset identities from future dialogue entries as it does today. It does not need to project future stage layouts.
+Cache protection includes both ready portrait slots.
+
+Within-scene lookahead continues prefetching portrait identities from future dialogue entries as it does today. It does not need to project future stage layouts.
 
 ### Reader rendering
 
-`VisualNovelReader.svelte` renders two portrait images, one for each slot.
+`VisualNovelReader.svelte` renders two stable portrait images, one per slot.
 
-Expose stable test attributes:
+Each exposes:
 
 ```text
-data-testid="visual-portrait-left"
-data-testid="visual-portrait-right"
-data-portrait-state="..."
+data-testid="visual-portrait-left|visual-portrait-right"
+data-portrait-state="omitted|loading|ready|missing|failed"
+data-portrait-slot="left|right"
 data-portrait-active="true|false"
 ```
 
-The existing left/right anchors remain the positioning mechanism. The active ready portrait receives normal brightness and higher z-order when portraits overlap; the inactive ready portrait receives the dim filter.
+Active portrait:
+
+- full brightness/opacity;
+- above the inactive portrait when overlap occurs.
+
+Inactive portrait:
+
+- `brightness(0.55)`;
+- `opacity: 0.82`;
+- short filter/opacity transition;
+- no movement animation.
+
+When `activePortraitSlot === null`, both visible portraits use inactive styling.
 
 ## Responsive Layout
 
-The current mobile portrait width was tuned for one portrait and is too large for two simultaneous characters.
+The current mobile `82vw` portrait cap was tuned for one portrait and is too large for a two-character stage.
 
-Adjust CSS sizing so two slots can coexist without obscuring the dialogue box or each other excessively:
+Use the same stage model at every breakpoint and reduce per-portrait width only:
 
-- desktop/regular landscape: retain the existing height-first composition while capping each portrait for a two-character stage;
-- mobile portrait: reduce per-portrait maximum width from the current single-character value;
-- compact landscape: preserve the current compact-height treatment while capping each portrait independently.
+- desktop/regular landscape: cap each portrait at `min(42vw, 36rem)`;
+- mobile portrait: cap each portrait at `54vw`;
+- compact landscape: retain the existing `42vw` cap.
 
-Use the same stage algorithm at every breakpoint. Do not create mobile-specific placement rules.
-
-The implementation should verify the resulting composition at the existing desktop, mobile portrait, and compact-landscape test/view sizes and make the smallest CSS adjustment that keeps both characters readable.
+These constants may be adjusted only if the browser geometry tests demonstrate a concrete overlap problem. Do not introduce breakpoint-specific stage logic.
 
 ## Error and Loading Semantics
 
 Each slot fails independently.
 
-- If one portrait asset is missing or fails, the other slot remains visible and can still be active/dimmed normally.
-- A failed current-speaker portrait does not remove the other successfully loaded portrait.
-- Release-level invalid/unavailable behavior remains governed by the existing controller semantics.
-- Generation checks must prevent an older load from overwriting a newer stage projection after rapid navigation.
-- Object URL detachment and protected-cache-key calculation must inspect both portrait slots.
+- If one portrait asset is missing or fails, the other slot remains visible.
+- A failed current-speaker portrait does not remove a previously successful opposite portrait.
+- Release-level invalid/unavailable behavior remains governed by existing controller semantics.
+- Generation checks prevent old loads from overwriting newer projected targets.
+- Object-URL detachment and protected-cache bookkeeping cover both portrait layers.
 
 No new user-facing error UI is required.
 
 ## Testing
 
-### Pure stage projection tests
+### Pure projection
 
-Cover at minimum:
+Cover:
 
-1. empty dialogue -> both slots empty, no active slot;
-2. A with portrait -> A left active;
-3. A -> B -> A left dim/B right active;
-4. visible B speaks without a new portrait key -> B stays right, remains active, existing expression preserved;
-5. A -> B -> A -> A reactivates left;
-6. A -> B -> C -> C replaces A on left;
-7. A -> B -> A -> C -> C replaces B on right;
-8. narration after A/B -> both portraits preserved and dimmed while last visible speaker side is retained internally;
-9. A -> B -> narration -> C -> C replaces A, proving narration does not erase the B/right alternation anchor;
-10. unseen character without portrait -> no new portrait and no active slot;
-11. direct projection to index N equals the composition reached by applying the same prefix sequentially;
-12. projecting a different scene's dialogue starts from an empty stage.
+1. empty/narration-only stage;
+2. first speaker left;
+3. second speaker right;
+4. repeated speaker remains in place;
+5. expression replacement in place;
+6. visible speaker reactivation when current line omits portrait;
+7. third-character replacement opposite the last visible speaker;
+8. narration dims/preserves stage without losing alternation history;
+9. unseen no-portrait character does not enter;
+10. direct prefix projection produces the same result as sequential history.
 
-### Story/compiler tests
+### Visual controller
 
-Update compiler and story-loader coverage to prove:
+Prove:
 
-- character parsing no longer recognizes or emits portrait-slot metadata;
-- active raw story source contains no `Portrait Slot` metadata;
-- generated stories no longer contain `presentation.ts` artifacts;
-- `StoryLoaderResult`/async story payloads no longer carry `presentation`;
-- old presentation-propagation tests are removed rather than replaced with no-op equivalents.
-
-### Visual controller tests
-
-Update the existing controller suite to prove:
-
-- both slot loads are independently reconciled;
+- both projected slots load independently;
 - expression changes reload only the affected slot;
-- reactivating an existing character does not reload an unchanged portrait;
-- third-character replacement protects/releases the correct cache keys;
-- stale async loads cannot overwrite a newer slot;
-- object URL detachment checks both portrait layers;
-- soft release revalidation refreshes both portrait slots when necessary;
-- missing/fallback behavior remains slot-local.
+- reactivation does not reload an unchanged portrait;
+- replacement preserves the other slot;
+- both cache keys are protected;
+- stale async loads cannot overwrite newer targets;
+- detachment checks both layers;
+- soft release revalidation refreshes both desired slots;
+- missing/fallback is slot-local.
 
-### Component tests
+### Component/browser
 
-Update `VisualNovelReader.test.ts` to assert:
+Prove:
 
 - two stable portrait elements exist;
-- left/right ready layers render the expected object URLs;
-- only the active slot is undimmed;
-- narration/no-visible-speaker state dims both;
-- the reader no longer accepts presentation metadata;
-- mobile/compact CSS hooks preserve a two-side layout.
-
-### E2E
-
-Update the existing visual-reader page object away from a single `portrait` getter and add one focused flow that proves:
-
-- first portrait-bearing character appears left;
-- second portrait-bearing character appears right while the first remains visible/dimmed;
-- returning to the first character reactivates the existing left slot;
-- the dialogue URL/index behavior remains unchanged.
-
-Use existing story content when it already provides a suitable A/B/A sequence. Do not add production story dialogue solely for E2E.
-
-## Expected File Areas
-
-Likely implementation touch points:
-
-```text
-packages/stories/src/types.ts
-packages/stories/src/index.ts
-packages/stories/src/stories/index.ts
-packages/stories/src/stories/*/index.ts
-packages/stories/src/compiler/parse-characters.ts
-packages/stories/src/compiler/emit.ts
-packages/stories/src/compiler/__tests__/*
-packages/stories/src/generated/*/presentation.ts (delete)
-packages/stories/raw/theSeventhMirror/docs/characters.md
-packages/stories/src/async/* tests/fixtures as required by StoryLoaderResult changes
-apps/web/src/lib/reader-state.svelte.ts
-apps/web/src/lib/reader-manager.ts
-apps/web/src/lib/__tests__/reader-manager*.test.ts
-apps/web/src/components/ReaderShell.svelte
-apps/web/src/lib/visual-assets/types.ts
-apps/web/src/lib/visual-assets/portrait-stage.ts (new)
-apps/web/src/lib/visual-assets/visual-state-controller.ts
-apps/web/src/lib/visual-assets/__tests__/*
-apps/web/src/components/VisualNovelReader.svelte
-apps/web/src/components/__tests__/VisualNovelReader.test.ts
-packages/e2e/tests/utils.ts
-packages/e2e/tests/reader-visual.spec.ts
-```
-
-The implementation should not expand into unrelated reader, story, or asset-runtime refactors.
+- active/inactive attributes switch without clearing retained image URLs;
+- browser-computed inactive filter contains `brightness(0.55)` and opacity is `0.82`;
+- narration dims both;
+- line 6/7/8 of Seventh Mirror produces Yuma-left -> Mio-right -> Yuma-left reactivation;
+- direct navigation reconstructs the same two portraits;
+- desktop/mobile/compact-landscape portrait geometry stays above the dialogue box and does not cover essential controls.
 
 ## Delivery
 
-Implement this as one PR: the existing design PR becomes the implementation PR rather than opening another PR.
+Implement this as one PR (#64).
 
-The PR should contain:
+The implementation contains:
 
-1. pure deterministic two-slot stage projection;
-2. deletion of obsolete static presentation/portrait-slot plumbing;
-3. two-slot visual-controller state and loading;
+1. pure stage projection;
+2. deletion of obsolete static portrait-placement authoring/runtime metadata;
+3. two-slot visual-controller reconciliation;
 4. two-image reader rendering with inactive-speaker dimming;
-5. responsive portrait sizing adjustments;
-6. focused compiler/unit/component/E2E coverage;
-7. deletion/regeneration of generated story artifacts as required by the removed presentation emitter.
+5. responsive two-portrait sizing;
+6. focused unit/component/E2E coverage.
 
-No compatibility layer or migration path is needed.
+No compatibility layer, stage engine, new dependency, asset-generation work, or persisted schema change is needed.

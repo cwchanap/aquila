@@ -925,7 +925,7 @@ rtk rg -n "getByTestId\(['\"]visual-portrait['\"]\)|data-testid=\"visual-portrai
 rtk git diff --check
 ```
 
-Expected: all commands pass; both legacy scans return no active source matches.
+Expected: test/typecheck/lint/compile/diff checks pass; both `rg` scans intentionally return no matches (ripgrep exit status `1` means the negative scan succeeded).
 
 - [ ] **5.6 Run repository-wide verification**
 
@@ -964,3 +964,13 @@ rtk git commit -m "test(reader): cover alternating portrait stage"
 ```
 
 Keep PR #64 as the only PR for this task. Keep it draft until the implementation diff and CI have been reviewed.
+
+## Plan Self-Review
+
+- No `TODO`, `TBD`, or placeholder implementation decisions remain.
+- Every approved design behavior maps to a concrete RED/GREEN or regression step.
+- The old static slot contract is deleted before two-slot runtime work; there is no long-lived dual-placement system.
+- Portrait async guards are explicitly slot/projector-based, which covers retained portraits on narration/direct jumps.
+- Browser dimming is driven RED using computed CSS before the styling implementation.
+- All commands use scripts already present in the repository; no undeclared `astro check` dependency is assumed.
+- The task remains one PR (#64) with small reviewable commits inside that PR.

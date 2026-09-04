@@ -447,6 +447,19 @@ export class VisualStateController {
         );
     }
 
+    // A portrait key may occupy either slot. The warm path does not know which
+    // slot a future line will project into, so it must skip prefetch whenever
+    // the key matches a current failure memo on either slot. The slot/key/
+    // release invalidation in reconcilePortraitSlot already clears the memo on
+    // a release generation change, so legitimate retries under a new release
+    // are still permitted.
+    private hasCurrentPortraitFailureForKey(portraitKey: string): boolean {
+        return (
+            this.hasCurrentPortraitFailure('left', portraitKey) ||
+            this.hasCurrentPortraitFailure('right', portraitKey)
+        );
+    }
+
     private async prepareCurrentInput(
         input: VisualControllerInput,
         generation: number
@@ -823,10 +836,26 @@ export class VisualStateController {
         if (!next) return;
         for (const identity of identitiesForLine(next)) {
             if (!this.isInputCurrent(input, generation)) return;
+            // Skip warm prefetch for a portrait whose key matches a current
+            // slot failure memo. DecodedAssetCache.prefetch retries failed
+            // loads, so without this gate the warm path would re-fetch a
+            // broken portrait that is still staged under the same release.
+            if (
+                identity.type === 'portrait' &&
+                this.hasCurrentPortraitFailureForKey(identity.key)
+            ) {
+                continue;
+            }
             void this.queue
                 .run(async () => {
                     if (
                         !this.isWarmPrefetchCurrent(input, generation, identity)
+                    ) {
+                        return;
+                    }
+                    if (
+                        identity.type === 'portrait' &&
+                        this.hasCurrentPortraitFailureForKey(identity.key)
                     ) {
                         return;
                     }

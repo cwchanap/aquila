@@ -1913,6 +1913,42 @@ describe('VisualStateController', () => {
         expect(latestSnap.portraits.left.state).toBe('failed');
     });
 
+    it('fails retained portraits when a narrator jump has no resolver', async () => {
+        const cache = {
+            load: vi.fn(),
+            prefetch: vi.fn(),
+            setProtectedKeys: vi.fn(),
+        };
+        const controller = new VisualStateController({
+            resolver: null,
+            source: null,
+            cache,
+            getSceneDialogue: vi.fn(() => null),
+        });
+        const snapshots: VisualSnapshot[] = [];
+        controller.subscribe(s => snapshots.push(s));
+        const latest = () => snapshots.at(-1)!;
+
+        // A direct jump to a narrator line whose projected stage retains both
+        // portraits must not leave the slots stuck at loading.
+        controller.update(
+            input(
+                [
+                    { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+                    { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+                    { dialogue: 'Narration' },
+                ],
+                { dialogueIndex: 2 }
+            )
+        );
+        await flushAsyncWork();
+
+        expect(latest().release).toBe('unavailable');
+        expect(latest().portraits.left.state).toBe('failed');
+        expect(latest().portraits.right.state).toBe('failed');
+        expect(latest().status).toBe('unavailable');
+    });
+
     it('marks portrait as failed when cache.load rejects', async () => {
         const { controller, latest } = createHarness({
             loadAsset: async () => {

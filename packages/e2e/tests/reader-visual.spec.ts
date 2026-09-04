@@ -195,12 +195,12 @@ test.describe('Visual novel reader', () => {
         );
         expect(
             await visual.leftPortrait.evaluate(
-                el => getComputedStyle(el).filter
+                el => el.ownerDocument.defaultView!.getComputedStyle(el).filter
             )
         ).toContain('brightness(0.55)');
         expect(
             await visual.rightPortrait.evaluate(
-                el => getComputedStyle(el).filter
+                el => el.ownerDocument.defaultView!.getComputedStyle(el).filter
             )
         ).toContain('brightness(1)');
         await expect(visual.leftPortrait).toHaveCSS('opacity', '0.82');

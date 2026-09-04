@@ -114,13 +114,6 @@ function storyPayload(
             act2: [{ dialogue: 'three' }],
         },
         choices: {},
-        presentation: {
-            portrait: {
-                activeLimit: 1,
-                defaultSlot: 'left',
-                slotsByCharacterId: {},
-            },
-        },
         locale: 'en',
         ...overrides,
     };
@@ -223,33 +216,16 @@ describe('ReaderManager', () => {
         readerState.reset();
     });
 
-    it('assigns presentation with the active payload and guards dialogue lookup', async () => {
+    it('guards dialogue lookup against prototype keys and foreign stories', async () => {
         const payload = storyPayload();
         mockLoadStoryContent.mockResolvedValue(payload);
         manager = new ReaderManager('en');
         await manager.initialize();
 
-        expect(readerState.presentation).toEqual(payload.presentation);
         expect(
             manager.getSceneDialogue('the_seventh_mirror', 'constructor')
         ).toBeNull();
         expect(manager.getSceneDialogue('wrong_story', 'act1')).toBeNull();
-    });
-
-    it('clears stale presentation in a new manager constructor', () => {
-        readerState.presentation = storyPayload().presentation;
-
-        manager = new ReaderManager('en');
-
-        expect(readerState.presentation).toBeNull();
-    });
-
-    it('clears presentation when the reader state resets', () => {
-        readerState.presentation = storyPayload().presentation;
-
-        readerState.reset();
-
-        expect(readerState.presentation).toBeNull();
     });
 
     describe('getSceneData', () => {
@@ -1238,7 +1214,7 @@ describe('ReaderManager', () => {
             });
             await manager.initialize();
             const activeDialogue = readerState.dialogue;
-            const activePresentation = readerState.presentation;
+            const activeFlow = readerState.activeFlow;
             replaceState.mockClear();
             mockStorage.setItem.mockClear();
 
@@ -1257,7 +1233,7 @@ describe('ReaderManager', () => {
                 loadError,
             });
             expect(readerState.dialogue).toBe(activeDialogue);
-            expect(readerState.presentation).toBe(activePresentation);
+            expect(readerState.activeFlow).toBe(activeFlow);
             expect((manager as any).pendingIntent).toMatchObject({
                 storyId: 'dont_save_me_before_midnight',
                 requestedSceneId: 'midnight_act',

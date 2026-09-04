@@ -21,13 +21,6 @@ const payload: StoryPayload = {
         act2: [{ dialogue: 'c' }],
     },
     choices: {},
-    presentation: {
-        portrait: {
-            activeLimit: 1,
-            defaultSlot: 'left',
-            slotsByCharacterId: {},
-        },
-    },
 };
 
 const deps = { defaultStoryId: 'train_adventure' };

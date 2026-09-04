@@ -11,7 +11,6 @@ import type {
     ChoiceDefinition,
     DialogueEntry,
     StoryFlowConfig,
-    StoryPresentationMetadata,
 } from '@aquila/stories';
 import type {
     VisualSnapshot,
@@ -80,14 +79,6 @@ const flow = {
     ],
 } as unknown as StoryFlowConfig;
 
-const presentation: StoryPresentationMetadata = {
-    portrait: {
-        activeLimit: 1,
-        defaultSlot: 'left',
-        slotsByCharacterId: { narrator: 'right' },
-    },
-};
-
 const dialogue: DialogueEntry[] = [
     {
         characterId: 'narrator',
@@ -130,14 +121,23 @@ const readySnapshot: VisualSnapshot = {
         width: 1600,
         height: 900,
     },
-    portrait: {
-        state: 'ready',
-        identity: 'portrait:narrator-neutral',
-        objectUrl: 'blob:portrait',
-        width: 800,
-        height: 1200,
-        slot: 'right',
+    portraits: {
+        left: {
+            state: 'ready',
+            identity: 'portrait:narrator-neutral',
+            objectUrl: 'blob:portrait',
+            width: 800,
+            height: 1200,
+        },
+        right: {
+            state: 'omitted',
+            identity: null,
+            objectUrl: null,
+            width: null,
+            height: null,
+        },
     },
+    activePortraitSlot: 'left',
     releaseIdentity: null,
     status: null,
 };
@@ -194,7 +194,6 @@ function renderReader(overrides: Record<string, unknown> = {}) {
         canGoNext: false,
         choice: null,
         locale: 'en',
-        presentation,
         onChoice: vi.fn(),
         onBookmark: vi.fn(),
         onNext: vi.fn(),
@@ -250,13 +249,25 @@ describe('VisualNovelReader', () => {
             'data-reader-mode',
             'visual'
         );
-        expect(screen.getByTestId('visual-portrait')).toHaveAttribute(
-            'data-portrait-slot',
-            'right'
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
         );
-        expect(screen.getByTestId('visual-portrait')).toHaveAttribute(
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
             'src',
             'blob:portrait'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'data-portrait-state',
+            'omitted'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'data-portrait-active',
+            'false'
         );
         expect(
             document.querySelector('[data-bg-layer="active"]')
@@ -266,15 +277,22 @@ describe('VisualNovelReader', () => {
         ).toHaveAttribute('src', 'blob:staging');
     });
 
-    it('uses the left empty portrait snapshot when no controller is supplied', () => {
+    it('uses empty portrait snapshots when no controller is supplied', () => {
         setReducedMotion(false);
         renderReader({ controller: null, isInitialMount: false });
 
-        expect(screen.getByTestId('visual-portrait')).toHaveAttribute(
-            'data-portrait-slot',
-            'left'
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
+            'data-portrait-state',
+            'omitted'
         );
-        expect(screen.getByTestId('visual-portrait')).not.toHaveAttribute(
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'data-portrait-state',
+            'omitted'
+        );
+        expect(screen.getByTestId('visual-portrait-left')).not.toHaveAttribute(
+            'src'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).not.toHaveAttribute(
             'src'
         );
     });
@@ -399,7 +417,8 @@ describe('VisualNovelReader', () => {
             release: 'ready',
             activeBackground: omittedLayer,
             stagingBackground: omittedLayer,
-            portrait: { ...omittedLayer, slot: 'left' },
+            portraits: { left: omittedLayer, right: omittedLayer },
+            activePortraitSlot: null,
             releaseIdentity: null,
             status: null,
         });
@@ -408,14 +427,17 @@ describe('VisualNovelReader', () => {
             isInitialMount: false,
         });
 
-        expect(document.querySelectorAll('img')).toHaveLength(3);
+        expect(document.querySelectorAll('img')).toHaveLength(4);
         expect(
             document.querySelector('[data-bg-layer="active"]')
         ).not.toHaveAttribute('src');
         expect(
             document.querySelector('[data-bg-layer="staging"]')
         ).not.toHaveAttribute('src');
-        expect(screen.getByTestId('visual-portrait')).not.toHaveAttribute(
+        expect(screen.getByTestId('visual-portrait-left')).not.toHaveAttribute(
+            'src'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).not.toHaveAttribute(
             'src'
         );
     });
@@ -432,7 +454,6 @@ describe('VisualNovelReader', () => {
                 dialogueIndex: 1,
                 dialogue,
                 flow,
-                presentation,
             })
         );
 
@@ -572,12 +593,15 @@ describe('VisualNovelReader', () => {
                 state: 'failed',
                 identity: 'background:room',
             },
-            portrait: {
-                ...omittedLayer,
-                state: 'failed',
-                identity: 'portrait:narrator-neutral',
-                slot: 'right',
+            portraits: {
+                left: omittedLayer,
+                right: {
+                    ...omittedLayer,
+                    state: 'failed',
+                    identity: 'portrait:narrator-neutral',
+                },
             },
+            activePortraitSlot: 'right',
             releaseIdentity: null,
             status: 'unavailable',
         });

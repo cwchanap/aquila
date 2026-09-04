@@ -1,21 +1,17 @@
-import type { PortraitSlot } from '../types';
-
 export interface ParsedCharacter {
     id: string;
     name: string;
     aliases: string[];
     portraits: Record<string, string>;
-    portraitSlot?: PortraitSlot;
 }
 
 // Character IDs become object-literal keys in the generated `characterTable`
-// and `slotsByCharacterId` (both `Record<string, ...>` keyed by raw ID). A
-// lookup like `characterTable[id]` or `slotsByCharacterId[id]` on a normal
-// object returns the inherited Object.prototype value for names like
-// `constructor`, `toString`, or `__proto__` when no own property is emitted
-// (e.g. a character with no `portraitSlot`). That breaks the `T | undefined`
-// contract — the lookup returns a truthy non-T value (the `Object` function,
-// `Object.prototype`, etc.) instead of `undefined`, so `?? defaultSlot` and
+// (a `Record<string, ...>` keyed by raw ID). A lookup like
+// `characterTable[id]` on a normal object returns the inherited
+// Object.prototype value for names like `constructor`, `toString`, or
+// `__proto__` when no own property is emitted. That breaks the
+// `T | undefined` contract — the lookup returns a truthy non-T value (the
+// `Object` function, `Object.prototype`, etc.) instead of `undefined`, so
 // `if (entry)` guards misbehave. The emitter uses computed keys for explicit
 // assignments, but that only fixes the present-key case; absent-key lookups
 // still hit the prototype. Rejecting these IDs at parse time catches the
@@ -42,7 +38,7 @@ interface HeadingMatch {
 const HEADING_RE = /^##\s+\d+(?:\.\d+)?\.\s+(.+?)（.*?）\s*$/;
 const ID_RE = /^-\s+\*\*ID\*\*:\s*`([^`]+)`\s*$/;
 const ALIASES_RE = /^-\s+\*\*Aliases\*\*:\s*(.+)$/;
-const PORTRAIT_SLOT_RE = /^-\s+\*\*Portrait Slot\*\*:\s*(.*)$/;
+const REMOVED_PORTRAIT_SLOT_RE = /^-\s+\*\*Portrait Slot\*\*:/;
 const PROMPT_SECTION_RE = /^###\s+Portrait Prompts\s*$/;
 const PROMPT_ITEM_RE = /^-\s+\*\*(.+?)\*\*:\s*(.+)$/;
 
@@ -66,19 +62,6 @@ function parseAliases(line: string): string[] | null {
         .filter(s => s.length > 0);
 }
 
-function parsePortraitSlot(line: string): PortraitSlot | null | undefined {
-    const match = line.match(PORTRAIT_SLOT_RE);
-    if (!match) return undefined;
-    // Any content after the label counts as an attempted slot assignment, so an
-    // empty or multi-token value is a hard error rather than a silently ignored
-    // line that would fall back to the default slot.
-    const value = match[1].trim().toLowerCase();
-    if (value === 'left' || value === 'right') {
-        return value;
-    }
-    return null;
-}
-
 export function parseCharacters(markdown: string): ParsedCharacterDirectory {
     const lines = markdown.replace(/\r\n/g, '\n').split('\n');
 
@@ -90,7 +73,6 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
     let currentId: string | null = null;
     let currentAliases: string[] = [];
     let currentPortraits: Record<string, string> = {};
-    let currentPortraitSlot: PortraitSlot | undefined;
     let inPortraitSection = false;
 
     function flushCharacter(): void {
@@ -107,7 +89,7 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
             }
             if (RESERVED_OBJECT_PROPERTY_NAMES.has(currentId)) {
                 throw new Error(
-                    `[story-compiler] character ID "${currentId}" is reserved (inherited from Object.prototype); using it as an object key breaks lookup contracts in the generated characterTable and slotsByCharacterId`
+                    `[story-compiler] character ID "${currentId}" is reserved (inherited from Object.prototype); using it as an object key breaks lookup contracts in the generated characterTable`
                 );
             }
             if (nameToId.has(currentName)) {
@@ -120,7 +102,6 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
                 name: currentName,
                 aliases: currentAliases,
                 portraits: currentPortraits,
-                portraitSlot: currentPortraitSlot,
             };
             characters.push(char);
             byId.set(char.id, char);
@@ -141,7 +122,6 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
         currentId = null;
         currentAliases = [];
         currentPortraits = {};
-        currentPortraitSlot = undefined;
         inPortraitSection = false;
     }
 
@@ -175,15 +155,10 @@ export function parseCharacters(markdown: string): ParsedCharacterDirectory {
             continue;
         }
 
-        const portraitSlotMatch = parsePortraitSlot(line);
-        if (portraitSlotMatch === null) {
+        if (REMOVED_PORTRAIT_SLOT_RE.test(line)) {
             throw new Error(
-                `[story-compiler] character "${currentName}" has invalid Portrait Slot; expected left or right`
+                '[story-compiler] **Portrait Slot** metadata was removed; portrait placement is automatic, so delete this bullet'
             );
-        }
-        if (portraitSlotMatch !== undefined) {
-            currentPortraitSlot = portraitSlotMatch;
-            continue;
         }
 
         if (PROMPT_SECTION_RE.test(line)) {

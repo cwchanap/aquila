@@ -17,7 +17,6 @@ function keyedLineInput(): VisualControllerInput {
         dialogue: [{ dialogue: 'Authored visuals', background: 'room' }],
         dialogueIndex: 0,
         flow: linearFlow,
-        presentation: null,
     };
 }
 

@@ -1,8 +1,4 @@
-import type {
-    ChoiceMap,
-    DialogueMap,
-    StoryPresentationMetadata,
-} from '../../types';
+import type { ChoiceMap, DialogueMap } from '../../types';
 import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
 import { theSeventhMirrorZhDialogue } from '../../generated/theSeventhMirror/dialogue.zh';
@@ -11,7 +7,6 @@ import {
     type TheSeventhMirrorSceneId,
 } from '../../generated/theSeventhMirror/flow';
 import { theSeventhMirrorChoiceText } from './choices.zh';
-import { storyPresentation } from '../../generated/theSeventhMirror/presentation';
 
 export { theSeventhMirrorFlow };
 export type { TheSeventhMirrorSceneId };
@@ -36,7 +31,6 @@ const choices: ChoiceMap = buildChoiceMap(
 export function getTheSeventhMirrorStory(locale: string): {
     dialogue: DialogueMap;
     choices: ChoiceMap;
-    presentation: StoryPresentationMetadata;
 } {
     const normalized: TheSeventhMirrorLocale = locale.startsWith('zh')
         ? 'zh'
@@ -44,6 +38,5 @@ export function getTheSeventhMirrorStory(locale: string): {
     return {
         dialogue: dialogueByLocale[normalized],
         choices,
-        presentation: storyPresentation,
     };
 }

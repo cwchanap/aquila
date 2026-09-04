@@ -63,38 +63,26 @@ function boxesOverlap(
     );
 }
 
-async function expectEssentialControlsNotToOverlapPortrait(
-    page: Page
-): Promise<void> {
+async function expectReadyPortraitsInsideViewport(page: Page): Promise<void> {
     const visual = new VisualReaderPage(page);
-    const portraitBox = await visual.portrait.boundingBox();
-    expect(portraitBox, 'the flagship portrait has layout dimensions').not.toBe(
-        null
-    );
-    if (!portraitBox) return;
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+    if (!viewport) return;
 
-    const controls = [
-        ['reader settings', visual.settingsButton],
-        ['history', page.getByRole('button', { name: 'Open history' })],
-        ['continue', page.getByRole('button', { name: 'Continue' })],
-    ] as const;
-
-    for (const [name, locator] of controls) {
-        await expect(locator).toBeVisible();
-        await expect(locator).toBeEnabled();
-        const controlBox = await locator.boundingBox();
-        expect(controlBox, `${name} has layout dimensions`).not.toBe(null);
-        if (controlBox) {
-            expect(
-                boxesOverlap(controlBox, portraitBox),
-                `${name} overlaps the portrait`
-            ).toBe(false);
-        }
+    const count = await visual.readyPortraits.count();
+    for (let index = 0; index < count; index += 1) {
+        const box = await visual.readyPortraits.nth(index).boundingBox();
+        expect(box).not.toBeNull();
+        if (!box) continue;
+        expect(box.x).toBeGreaterThanOrEqual(-1);
+        expect(box.y).toBeGreaterThanOrEqual(-1);
+        expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+        expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);
     }
 }
 
 test.describe('Visual novel reader', () => {
-    test('renders Yuma right, advances to Mio left, and preserves the URL line', async ({
+    test('renders Yuma left, swaps Mio in right, and returns Yuma left through line 8', async ({
         page,
     }) => {
         const visual = new VisualReaderPage(page);
@@ -108,35 +96,101 @@ test.describe('Visual novel reader', () => {
             'data-bg-state',
             'ready'
         );
-        await expect(visual.portrait).toHaveAttribute(
+        await expect(visual.leftPortrait).toHaveAttribute(
             'data-portrait-state',
             'ready'
         );
-        await expect(visual.portrait).toHaveAttribute(
-            'data-portrait-slot',
-            'right'
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'omitted'
         );
 
         await visual.root.click();
 
         await expectCanonicalVisualLine(page, 7);
-        await expect(visual.portrait).toHaveAttribute(
+        await expect(visual.leftPortrait).toHaveAttribute(
             'data-portrait-state',
             'ready'
         );
-        await expect(visual.portrait).toHaveAttribute(
-            'data-portrait-slot',
-            'left'
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
         );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+
+        // Let line 7 finish typing so the next click advances instead of
+        // skipping the typewriter.
+        const cursor = page.getByTestId('visual-typewriter-cursor');
+        await expect(cursor).not.toBeAttached();
+
+        await visual.root.click();
+
+        await expectCanonicalVisualLine(page, 8);
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'false'
+        );
+    });
+
+    test('reconstructs both slots on direct jumps to mid-scene lines', async ({
+        page,
+    }) => {
+        const visual = new VisualReaderPage(page);
+
+        await visual.goto(7);
+        await expectCanonicalVisualLine(page, 7);
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+
+        await visual.goto(9);
+        await expectCanonicalVisualLine(page, 9);
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.activePortrait).toHaveCount(0);
     });
 
     test('keeps the dialogue panel geometry stable across responsive viewports', async ({
         page,
     }) => {
         const viewports = [
-            { width: 1280, height: 800, expectedHeight: 0.8 * 288 },
+            { width: 1280, height: 800, expectedHeight: 14.4 * 16 },
             { width: 390, height: 844, expectedHeight: 0.32 * 844 },
-            { width: 844, height: 390, expectedHeight: 0.8 * 152 },
+            { width: 844, height: 390, expectedHeight: 7.6 * 16 },
         ] as const;
 
         for (const viewport of viewports) {
@@ -215,25 +269,17 @@ test.describe('Visual novel reader', () => {
                 completeBox.y + completeBox.height / 2
             );
 
-            await expect(visual.portrait).toHaveAttribute(
-                'data-portrait-state',
-                'ready'
-            );
-            const portraitBox = await visual.portrait.boundingBox();
-            expect(portraitBox, 'portrait is measurable').not.toBe(null);
-            if (portraitBox) {
-                // The portrait stands behind the dialogue box, anchored at
-                // its bottom edge, and rises above the box top.
-                expect(portraitBox.y).toBeLessThanOrEqual(completeBox.y);
-                expect(
-                    Math.abs(
-                        portraitBox.y +
-                            portraitBox.height -
-                            (completeBox.y + completeBox.height)
-                    ),
-                    `portrait anchored to the dialogue box bottom at ${viewport.width}x${viewport.height}`
-                ).toBeLessThanOrEqual(1);
-            }
+            // Overlap behind the dialogue box is allowed; the portraits just
+            // have to stay inside the viewport.
+            await expect(visual.settingsButton).toBeVisible();
+            await expect(visual.settingsButton).toBeEnabled();
+            await expect(
+                page.getByRole('button', { name: 'Continue' })
+            ).toBeVisible();
+            await expect(
+                page.getByRole('button', { name: 'Continue' })
+            ).toBeEnabled();
+            await expectReadyPortraitsInsideViewport(page);
         }
     });
 
@@ -396,13 +442,15 @@ test.describe('Visual novel reader', () => {
     test('keeps the prior background and dialogue when portrait bytes are invalid', async ({
         page,
     }) => {
-        await page.route(MIO_OBJECT, route =>
-            route.fulfill({
+        let mioRequests = 0;
+        await page.route(MIO_OBJECT, route => {
+            mioRequests += 1;
+            return route.fulfill({
                 status: 200,
                 contentType: 'image/webp',
                 body: 'not-a-valid-webp',
-            })
-        );
+            });
+        });
         const visual = new VisualReaderPage(page);
         await visual.goto(6);
         await expect(visual.activeBackground).toHaveAttribute(
@@ -411,27 +459,62 @@ test.describe('Visual novel reader', () => {
         );
         const previousUrl = await visual.activeBackground.getAttribute('src');
         expect(previousUrl).not.toBeNull();
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        const yumaUrl = await visual.leftPortrait.getAttribute('src');
+        expect(yumaUrl).not.toBeNull();
+
+        // Line 6's within-scene warm prefetch may already have probed Mio's
+        // object. Reset the counter so the pin below covers only the reader's
+        // own foreground request for the active line.
+        mioRequests = 0;
 
         await visual.root.click();
 
         await expectCanonicalVisualLine(page, 7);
-        await expect(visual.portrait).toHaveAttribute(
+        await expect(visual.rightPortrait).toHaveAttribute(
             'data-portrait-state',
             'failed'
         );
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        await expect(visual.leftPortrait).toHaveAttribute('src', yumaUrl!);
+        expect(mioRequests).toBe(1);
+        const status = page.getByRole('status');
+        await expect(status).toHaveText('Some visuals are unavailable');
+        await expect(status).toHaveAttribute('aria-live', 'polite');
         await expect(visual.activeBackground).toHaveAttribute(
             'src',
             previousUrl!
         );
-        const status = page.getByRole('status');
-        await expect(status).toHaveText('Some visuals are unavailable');
-        await expect(status).toHaveAttribute('aria-live', 'polite');
         await expect(
             page.getByText('⋯⋯這是什麼？', { exact: true })
         ).toBeVisible();
         await expect(
             page.getByRole('button', { name: 'Open history' })
         ).toBeEnabled();
+
+        // Let line 7 finish typing so the next click advances instead of
+        // skipping the typewriter.
+        const cursor = page.getByTestId('visual-typewriter-cursor');
+        await expect(cursor).not.toBeAttached();
+
+        await visual.root.click();
+
+        await expectCanonicalVisualLine(page, 8);
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-state',
+            'failed'
+        );
+        await expect(visual.leftPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+        expect(mioRequests).toBe(1);
     });
 
     test('opens the backlog and restores focus when it closes', async ({
@@ -461,7 +544,8 @@ test.describe('Visual novel reader', () => {
         );
         await expect(visual.activeBackground).not.toHaveAttribute('src');
         await expect(visual.stagingBackground).not.toHaveAttribute('src');
-        await expect(visual.portrait).not.toHaveAttribute('src');
+        await expect(visual.leftPortrait).not.toHaveAttribute('src');
+        await expect(visual.rightPortrait).not.toHaveAttribute('src');
 
         await expect(
             page.getByText('TODO: prompt for choice_act3')
@@ -641,7 +725,13 @@ test.describe('Visual novel reader', () => {
         await expect(visual.settingsButton).toBeEnabled();
         await visual.root.click();
         await openAndCloseVisualBacklog(page);
-        await expectEssentialControlsNotToOverlapPortrait(page);
+        await expect(
+            page.getByRole('button', { name: 'Open history' })
+        ).toBeEnabled();
+        await expect(
+            page.getByRole('button', { name: 'Continue' })
+        ).toBeEnabled();
+        await expectReadyPortraitsInsideViewport(page);
     });
 
     test('does not advance the dialogue when the scrollable dialogue box is scrolled', async ({

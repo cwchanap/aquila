@@ -8,11 +8,7 @@ import {
     type ResolvedAsset,
     type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
-import type {
-    DialogueEntry,
-    StoryFlowConfig,
-    StoryPresentationMetadata,
-} from '@aquila/stories';
+import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DecodedAsset, VisualSnapshot } from '../types';
 import {
@@ -21,16 +17,6 @@ import {
 } from '../visual-state-controller';
 
 const storyId = 'the_seventh_mirror';
-const presentation: StoryPresentationMetadata = {
-    portrait: {
-        activeLimit: 1,
-        defaultSlot: 'right',
-        slotsByCharacterId: {
-            mio: 'left',
-            yuma: 'right',
-        },
-    },
-};
 const linearFlow = {
     start: 'scene',
     nodes: [
@@ -210,7 +196,6 @@ function input(
         dialogue,
         dialogueIndex: 0,
         flow: linearFlow,
-        presentation,
         ...overrides,
     };
 }
@@ -245,19 +230,29 @@ describe('VisualStateController', () => {
                 width: null,
                 height: null,
             },
-            portrait: {
-                state: 'omitted',
-                identity: null,
-                objectUrl: null,
-                width: null,
-                height: null,
-                slot: 'left',
+            portraits: {
+                left: {
+                    state: 'omitted',
+                    identity: null,
+                    objectUrl: null,
+                    width: null,
+                    height: null,
+                },
+                right: {
+                    state: 'omitted',
+                    identity: null,
+                    objectUrl: null,
+                    width: null,
+                    height: null,
+                },
             },
+            activePortraitSlot: null,
             releaseIdentity: null,
             status: null,
         });
         expect(Object.isFrozen(latest())).toBe(true);
         expect(Object.isFrozen(latest().activeBackground)).toBe(true);
+        expect(Object.isFrozen(latest().portraits)).toBe(true);
     });
 
     it('publishes validated identity when the release becomes ready', async () => {
@@ -375,7 +370,8 @@ describe('VisualStateController', () => {
         controller.update(input([{ dialogue: 'No visuals' }]));
         await flushAsyncWork();
         expect(latest().stagingBackground.state).toBe('omitted');
-        expect(latest().portrait.state).toBe('omitted');
+        expect(latest().portraits.left.state).toBe('omitted');
+        expect(latest().portraits.right.state).toBe('omitted');
         expect(latest().status).toBeNull();
 
         controller.update(
@@ -387,11 +383,17 @@ describe('VisualStateController', () => {
         expect(latest().status).toBe('fallback');
 
         controller.update(
-            input([{ dialogue: 'Unavailable', portrait: 'unavailable' }])
+            input([
+                {
+                    dialogue: 'Unavailable',
+                    characterId: 'a',
+                    portrait: 'unavailable',
+                },
+            ])
         );
         await flushAsyncWork();
         expect(latest().release).toBe('unavailable');
-        expect(latest().portrait.state).toBe('failed');
+        expect(latest().portraits.left.state).toBe('failed');
         expect(latest().status).toBe('unavailable');
     });
 
@@ -415,13 +417,14 @@ describe('VisualStateController', () => {
         await flushAsyncWork();
         expect(latest().release).toBe('idle');
         expect(latest().stagingBackground.state).toBe('omitted');
-        expect(latest().portrait.state).toBe('omitted');
+        expect(latest().portraits.left.state).toBe('omitted');
         expect(latest().status).toBeNull();
 
         controller.update(
             input([
                 {
                     dialogue: 'Authored visuals without a source',
+                    characterId: 'speaker',
                     background: 'room',
                     portrait: 'speaker/base',
                 },
@@ -430,7 +433,7 @@ describe('VisualStateController', () => {
         await flushAsyncWork();
         expect(latest().release).toBe('unavailable');
         expect(latest().stagingBackground.state).toBe('failed');
-        expect(latest().portrait.state).toBe('failed');
+        expect(latest().portraits.left.state).toBe('failed');
         expect(latest().status).toBe('unavailable');
 
         controller.update(input([{ dialogue: 'Omitted again' }]));
@@ -594,7 +597,7 @@ describe('VisualStateController', () => {
         expect(latest().stagingBackground.identity).not.toBe('background:slow');
     });
 
-    it('removes the prior portrait before a replacement finishes decoding', async () => {
+    it('keeps the opposite slot ready while a slow replacement loads', async () => {
         const slow = deferred<DecodedAsset>();
         const { controller, latest } = createHarness({
             loadAsset: asset =>
@@ -612,43 +615,369 @@ describe('VisualStateController', () => {
         ];
         controller.update(input(dialogue));
         await flushAsyncWork();
-        expect(latest().portrait.objectUrl).toBe('blob:mio-base');
+        expect(latest().portraits.left.objectUrl).toBe('blob:mio-base');
+        expect(latest().activePortraitSlot).toBe('left');
 
         controller.update(input(dialogue, { dialogueIndex: 1 }));
         await flushAsyncWork();
 
-        expect(latest().portrait.state).toBe('loading');
-        expect(latest().portrait.objectUrl).toBeNull();
-        expect(latest().portrait.slot).toBe('right');
+        expect(latest().portraits.right.state).toBe('loading');
+        expect(latest().portraits.right.objectUrl).toBeNull();
+        expect(latest().portraits.left).toEqual(
+            expect.objectContaining({
+                state: 'ready',
+                identity: 'portrait:mio-base',
+                objectUrl: 'blob:mio-base',
+            })
+        );
+        expect(latest().activePortraitSlot).toBe('right');
+
+        slow.resolve(decoded('slow'));
+        await flushAsyncWork();
+        expect(latest().portraits.right.state).toBe('ready');
+        expect(latest().portraits.left.state).toBe('ready');
     });
 
-    it.each([
-        ['mio', presentation, 'left'],
-        ['yuma', presentation, 'right'],
-        ['unassigned', presentation, 'right'],
-        ['unassigned', null, 'left'],
-    ] as const)(
-        'places character %s in its deterministic portrait slot',
-        async (characterId, metadata, expectedSlot) => {
-            const { controller, latest } = createHarness();
-            controller.update(
-                input(
-                    [
-                        {
-                            dialogue: 'Portrait',
-                            characterId,
-                            portrait: 'portrait',
-                        },
-                    ],
-                    { presentation: metadata }
-                )
-            );
-            await flushAsyncWork();
+    it('places the second speaker in the right slot on a direct jump', async () => {
+        const { controller, latest } = createHarness();
 
-            expect(latest().portrait.state).toBe('ready');
-            expect(latest().portrait.slot).toBe(expectedSlot);
-        }
-    );
+        controller.update(
+            input(
+                [
+                    { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+                    { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+                ],
+                { dialogueIndex: 1 }
+            )
+        );
+        await flushAsyncWork();
+
+        expect(latest().portraits.left.identity).toBe('portrait:a/base');
+        expect(latest().portraits.right.identity).toBe('portrait:b/base');
+        expect(latest().portraits.left.state).toBe('ready');
+        expect(latest().portraits.right.state).toBe('ready');
+        expect(latest().activePortraitSlot).toBe('right');
+    });
+
+    it('retains both slots through narrator lines without reloading', async () => {
+        const { cache, controller, latest } = createHarness();
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+            { dialogue: 'Narration', characterId: 'narrator' },
+        ];
+
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        const loadsAfterBoth = (cache.load as ReturnType<typeof vi.fn>).mock
+            .calls.length;
+
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.left).toEqual(
+            expect.objectContaining({
+                state: 'ready',
+                identity: 'portrait:a/base',
+            })
+        );
+        expect(latest().portraits.right).toEqual(
+            expect.objectContaining({
+                state: 'ready',
+                identity: 'portrait:b/base',
+            })
+        );
+        expect(latest().activePortraitSlot).toBeNull();
+        expect((cache.load as ReturnType<typeof vi.fn>).mock.calls.length).toBe(
+            loadsAfterBoth
+        );
+    });
+
+    it('updates an expression in place within its slot', async () => {
+        const { controller, latest } = createHarness();
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'A again', characterId: 'a', portrait: 'a/happy' },
+        ];
+
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        expect(latest().portraits.left.identity).toBe('portrait:a/base');
+
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.left).toEqual(
+            expect.objectContaining({
+                state: 'ready',
+                identity: 'portrait:a/happy',
+            })
+        );
+        expect(latest().portraits.right.state).toBe('omitted');
+        expect(latest().activePortraitSlot).toBe('left');
+    });
+
+    it('reactivates a speaker without a new portrait request', async () => {
+        const { cache, controller, latest } = createHarness();
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'Narration', characterId: 'narrator' },
+            { dialogue: 'A again', characterId: 'a' },
+        ];
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+        const readyUrl = latest().portraits.left.objectUrl;
+        expect(readyUrl).toBe('blob:a/base');
+
+        controller.update(input(dialogue, { dialogueIndex: 0 }));
+        await flushAsyncWork();
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.left).toEqual(
+            expect.objectContaining({
+                state: 'ready',
+                identity: 'portrait:a/base',
+                objectUrl: readyUrl,
+            })
+        );
+        expect(latest().activePortraitSlot).toBe('left');
+        const aLoads = (
+            cache.load as ReturnType<typeof vi.fn>
+        ).mock.calls.filter(
+            ([asset]: [{ asset: { identity: { key: string } } }]) =>
+                asset.asset.identity.key === 'a/base'
+        );
+        expect(aLoads).toHaveLength(1);
+    });
+
+    it('replaces the oldest slot when a third character enters', async () => {
+        const { controller, latest } = createHarness();
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+            { dialogue: 'C', characterId: 'c', portrait: 'c/base' },
+        ];
+
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().portraits.left.identity).toBe('portrait:a/base');
+        expect(latest().portraits.right.identity).toBe('portrait:b/base');
+
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.left.identity).toBe('portrait:c/base');
+        expect(latest().portraits.right.identity).toBe('portrait:b/base');
+        expect(latest().portraits.right.state).toBe('ready');
+        expect(latest().activePortraitSlot).toBe('left');
+    });
+
+    it('protects both portrait cache keys while both slots are ready', async () => {
+        const { cache, controller, latest } = createHarness();
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+        ];
+
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.left.state).toBe('ready');
+        expect(latest().portraits.right.state).toBe('ready');
+        expect(cache.setProtectedKeys).toHaveBeenLastCalledWith(
+            new Set(['webp:sha-a/base', 'webp:sha-b/base'])
+        );
+    });
+
+    it('detaches an object URL from both portrait slots', async () => {
+        let frameCallback: FrameRequestCallback | undefined;
+        vi.stubGlobal(
+            'requestAnimationFrame',
+            vi.fn((callback: FrameRequestCallback) => {
+                frameCallback = callback;
+                return 1;
+            })
+        );
+        const { controller, latest } = createHarness({
+            loadAsset: async () => ({
+                ...decoded('shared'),
+                objectUrl: 'blob:shared',
+            }),
+        });
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+        ];
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().portraits.left.objectUrl).toBe('blob:shared');
+        expect(latest().portraits.right.objectUrl).toBe('blob:shared');
+
+        const pending = controller.detachObjectUrl('blob:shared');
+
+        expect(latest().portraits.left.objectUrl).toBeNull();
+        expect(latest().portraits.right.objectUrl).toBeNull();
+        frameCallback?.(0);
+        await pending;
+    });
+
+    it('reports fallback status while one slot fails and the other stays ready', async () => {
+        const { controller, latest } = createHarness({
+            resolveAsset: identity => {
+                if (identity.key === 'b/missing') {
+                    return fallback(identity, 'not-found');
+                }
+                return resolved(identity);
+            },
+        });
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/missing' },
+        ];
+
+        controller.update(input(dialogue));
+        await flushAsyncWork();
+        expect(latest().status).toBeNull();
+
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.left.state).toBe('ready');
+        expect(latest().portraits.right.state).toBe('missing');
+        expect(latest().status).toBe('fallback');
+    });
+
+    it('does not re-request a retained failed portrait on the next line', async () => {
+        const loadAsset = vi.fn(async (asset: ResolvedAsset) => {
+            if (asset.asset.identity.key === 'b/base') {
+                throw new Error('broken portrait');
+            }
+            return decoded(asset.asset.identity.key);
+        });
+        const { controller, latest } = createHarness({ loadAsset });
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+            { dialogue: 'Narration', characterId: 'narrator' },
+        ];
+
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().portraits.right.state).toBe('failed');
+
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+        expect(latest().portraits.right.state).toBe('failed');
+        expect(
+            loadAsset.mock.calls.filter(
+                ([asset]) => asset.asset.identity.key === 'b/base'
+            )
+        ).toHaveLength(1);
+    });
+
+    it('requests a failed portrait again when the desired key changes', async () => {
+        const loadAsset = vi.fn(async (asset: ResolvedAsset) => {
+            if (asset.asset.identity.key === 'b/base') {
+                throw new Error('broken portrait');
+            }
+            return decoded(asset.asset.identity.key);
+        });
+        const { controller, latest } = createHarness({ loadAsset });
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+            { dialogue: 'B happy', characterId: 'b', portrait: 'b/happy' },
+        ];
+
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().portraits.right.state).toBe('failed');
+
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+
+        expect(latest().portraits.right).toEqual(
+            expect.objectContaining({
+                state: 'ready',
+                identity: 'portrait:b/happy',
+            })
+        );
+        expect(
+            loadAsset.mock.calls.filter(
+                ([asset]) => asset.asset.identity.key === 'b/base'
+            )
+        ).toHaveLength(1);
+    });
+
+    it('permits one portrait retry under a new release generation', async () => {
+        let now = 0;
+        let firstLoad = true;
+        const loadRelease = vi.fn(async () => {
+            const releaseId = firstLoad ? 'sha256-v1' : 'sha256-v2';
+            firstLoad = false;
+            return {
+                pointer: { releaseId },
+                manifest: {},
+                validatedAt: '2026-07-26T00:00:00.000Z',
+                source: 'network',
+            } as ValidatedAssetRelease;
+        });
+        const loadAsset = vi.fn(async (asset: ResolvedAsset) => {
+            if (asset.asset.identity.key === 'b/base') {
+                throw new Error('broken portrait');
+            }
+            return decoded(asset.asset.identity.key);
+        });
+        const { controller, latest } = createHarness({
+            loadRelease,
+            loadAsset,
+            now: () => now,
+        });
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+            { dialogue: 'Narration', characterId: 'narrator' },
+        ];
+
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().portraits.right.state).toBe('failed');
+        expect(
+            loadAsset.mock.calls.filter(
+                ([asset]) => asset.asset.identity.key === 'b/base'
+            )
+        ).toHaveLength(1);
+
+        // Narrator line: the failure memo suppresses any retry.
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+        expect(
+            loadAsset.mock.calls.filter(
+                ([asset]) => asset.asset.identity.key === 'b/base'
+            )
+        ).toHaveLength(1);
+
+        // A soft revalidation activating a new release invalidates the memo
+        // and permits exactly one retry.
+        now = 70_000;
+        await controller.softRevalidate();
+        await flushAsyncWork();
+        expect(
+            loadAsset.mock.calls.filter(
+                ([asset]) => asset.asset.identity.key === 'b/base'
+            )
+        ).toHaveLength(2);
+        expect(latest().portraits.right.state).toBe('failed');
+    });
 
     it('detaches a URL from every layer and resolves after the next animation frame', async () => {
         let frameCallback: FrameRequestCallback | undefined;
@@ -668,10 +997,16 @@ describe('VisualStateController', () => {
         const dialogue = [
             {
                 dialogue: 'First',
+                characterId: 'a',
                 background: 'first',
                 portrait: 'portrait',
             },
-            { dialogue: 'Second', background: 'second' },
+            {
+                dialogue: 'Second',
+                characterId: 'a',
+                background: 'second',
+                portrait: 'portrait',
+            },
         ];
         controller.update(input(dialogue));
         await flushAsyncWork();
@@ -679,6 +1014,7 @@ describe('VisualStateController', () => {
         await flushAsyncWork();
         expect(latest().activeBackground.objectUrl).toBe('blob:shared');
         expect(latest().stagingBackground.objectUrl).toBe('blob:shared');
+        expect(latest().portraits.left.objectUrl).toBe('blob:shared');
 
         let detached = false;
         const pending = controller
@@ -687,7 +1023,7 @@ describe('VisualStateController', () => {
 
         expect(latest().activeBackground.objectUrl).toBeNull();
         expect(latest().stagingBackground.objectUrl).toBeNull();
-        expect(latest().portrait.objectUrl).toBeNull();
+        expect(latest().portraits.left.objectUrl).toBeNull();
         await Promise.resolve();
         expect(detached).toBe(false);
         frameCallback?.(0);
@@ -827,7 +1163,7 @@ describe('VisualStateController', () => {
         );
         await flushAsyncWork();
         expect(latest().activeBackground.state).toBe('ready');
-        expect(latest().portrait.state).toBe('ready');
+        expect(latest().portraits.left.state).toBe('ready');
         const initialLoadCalls = (cache.load as ReturnType<typeof vi.fn>).mock
             .calls.length;
 
@@ -1389,10 +1725,10 @@ describe('VisualStateController', () => {
             input([{ dialogue: 'x', portrait: 'mio/base', characterId: 'mio' }])
         );
         await flushAsyncWork();
-        const url = latest().portrait.objectUrl;
+        const url = latest().portraits.left.objectUrl;
         expect(url).not.toBeNull();
         const pending = controller.detachObjectUrl(url!);
-        expect(latest().portrait.objectUrl).toBeNull();
+        expect(latest().portraits.left.objectUrl).toBeNull();
         await Promise.resolve();
         frameCallback?.(0);
         await pending;
@@ -1561,13 +1897,20 @@ describe('VisualStateController', () => {
         const snapshots: VisualSnapshot[] = [];
         controller.subscribe(s => snapshots.push(s));
         controller.update(
-            input([{ dialogue: 'x', background: 'room', portrait: 'mio/base' }])
+            input([
+                {
+                    dialogue: 'x',
+                    characterId: 'mio',
+                    background: 'room',
+                    portrait: 'mio/base',
+                },
+            ])
         );
         await flushAsyncWork();
         const latestSnap = snapshots.at(-1)!;
         expect(latestSnap.release).toBe('unavailable');
         expect(latestSnap.stagingBackground.state).toBe('failed');
-        expect(latestSnap.portrait.state).toBe('failed');
+        expect(latestSnap.portraits.left.state).toBe('failed');
     });
 
     it('marks portrait as failed when cache.load rejects', async () => {
@@ -1580,7 +1923,7 @@ describe('VisualStateController', () => {
             input([{ dialogue: 'x', portrait: 'mio/base', characterId: 'mio' }])
         );
         await flushAsyncWork();
-        expect(latest().portrait.state).toBe('failed');
+        expect(latest().portraits.left.state).toBe('failed');
     });
 
     it('marks release as invalid for an invalid-release fallback reason', async () => {

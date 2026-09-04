@@ -105,7 +105,6 @@ export class ReaderManager {
         readerState.loadError = null;
         readerState.hasActivePayload = false;
         readerState.activeFlow = null;
-        readerState.presentation = null;
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
@@ -180,7 +179,6 @@ export class ReaderManager {
     ): void {
         this.activeStory = payload;
         readerState.activeFlow = payload.flow;
-        readerState.presentation = payload.presentation;
         readerState.storyId = state.storyId;
         readerState.currentSceneId = state.sceneId;
         readerState.locale = state.locale;

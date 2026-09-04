@@ -1,8 +1,4 @@
-import type {
-    ChoiceMap,
-    DialogueMap,
-    StoryPresentationMetadata,
-} from '../../types';
+import type { ChoiceMap, DialogueMap } from '../../types';
 import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
 import { dontSaveMeBeforeMidnightZhDialogue } from '../../generated/dontSaveMeBeforeMidnight/dialogue.zh';
@@ -11,7 +7,6 @@ import {
     type DontSaveMeBeforeMidnightSceneId,
 } from '../../generated/dontSaveMeBeforeMidnight/flow';
 import { dontSaveMeBeforeMidnightChoiceText } from './choices.zh';
-import { storyPresentation } from '../../generated/dontSaveMeBeforeMidnight/presentation';
 
 export { dontSaveMeBeforeMidnightFlow };
 export type { DontSaveMeBeforeMidnightSceneId };
@@ -37,7 +32,6 @@ const choices: ChoiceMap = buildChoiceMap(
 export function getDontSaveMeBeforeMidnightStory(locale: string): {
     dialogue: DialogueMap;
     choices: ChoiceMap;
-    presentation: StoryPresentationMetadata;
 } {
     const normalized: DontSaveMeBeforeMidnightLocale = locale.startsWith('zh')
         ? 'zh'
@@ -45,6 +39,5 @@ export function getDontSaveMeBeforeMidnightStory(locale: string): {
     return {
         dialogue: dialogueByLocale[normalized],
         choices,
-        presentation: storyPresentation,
     };
 }

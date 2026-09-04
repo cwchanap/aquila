@@ -565,14 +565,22 @@
     z-index: -1;
     display: block;
     width: auto;
-    max-width: min(48vw, 42rem);
+    max-width: min(42vw, 36rem);
     height: calc(
       100dvh - max(1rem, env(safe-area-inset-bottom)) -
       env(safe-area-inset-top)
     );
     object-fit: contain;
     object-position: bottom;
-    filter: drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
+    opacity: 0.82;
+    filter: brightness(0.55) drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
+    transition: filter 180ms ease, opacity 180ms ease;
+  }
+
+  .visual-portrait[data-portrait-active='true'] {
+    z-index: 0;
+    opacity: 1;
+    filter: brightness(1) drop-shadow(0 1rem 2rem rgb(0 0 0 / 0.45));
   }
 
   .visual-portrait[data-portrait-slot='left'] {
@@ -701,7 +709,7 @@
     }
 
     .visual-portrait {
-      max-width: 94vw;
+      max-width: 54vw;
     }
   }
 
@@ -728,6 +736,10 @@
   @media (prefers-reduced-motion: reduce) {
     .typewriter-cursor {
       animation: none;
+    }
+
+    .visual-portrait {
+      transition: none;
     }
   }
 </style>

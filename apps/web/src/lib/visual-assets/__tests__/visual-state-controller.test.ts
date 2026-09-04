@@ -979,6 +979,83 @@ describe('VisualStateController', () => {
         expect(latest().portraits.right.state).toBe('failed');
     });
 
+    it('skips warm prefetch for a portrait whose key matches a current slot failure memo', async () => {
+        let now = 0;
+        let firstLoad = true;
+        let bBroken = true;
+        const loadRelease = vi.fn(async () => {
+            const releaseId = firstLoad ? 'sha256-v1' : 'sha256-v2';
+            firstLoad = false;
+            return {
+                pointer: { releaseId },
+                manifest: {},
+                validatedAt: '2026-07-26T00:00:00.000Z',
+                source: 'network',
+            } as ValidatedAssetRelease;
+        });
+        const loadAsset = vi.fn(async (asset: ResolvedAsset) => {
+            if (asset.asset.identity.key === 'b/base' && bBroken) {
+                throw new Error('broken portrait');
+            }
+            return decoded(asset.asset.identity.key);
+        });
+        const { cache, controller, latest, resolver } = createHarness({
+            loadRelease,
+            loadAsset,
+            now: () => now,
+        });
+        // A(base) -> B(broken) -> narrator -> B(same key). The narrator line
+        // retains B in the right stage slot, so the failure memo for b/base
+        // survives into the narrator update, where the warm path would
+        // otherwise re-fetch B for the upcoming B line.
+        const dialogue = [
+            { dialogue: 'A', characterId: 'a', portrait: 'a/base' },
+            { dialogue: 'B', characterId: 'b', portrait: 'b/base' },
+            { dialogue: 'Narration', characterId: 'narrator' },
+            { dialogue: 'B again', characterId: 'b', portrait: 'b/base' },
+        ];
+
+        controller.update(input(dialogue, { dialogueIndex: 1 }));
+        await flushAsyncWork();
+        expect(latest().portraits.right.state).toBe('failed');
+
+        // The narrator update must not warm-prefetch the broken b/base
+        // portrait, even though it is the next distinct visual line.
+        resolver.resolve.mockClear();
+        cache.prefetch.mockClear();
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+        expect(resolver.resolve).not.toHaveBeenCalledWith({
+            type: 'portrait',
+            key: 'b/base',
+        });
+        expect(cache.prefetch).not.toHaveBeenCalledWith(
+            expect.objectContaining({
+                asset: expect.objectContaining({
+                    identity: { type: 'portrait', key: 'b/base' },
+                }),
+            })
+        );
+
+        // A new release generation clears the failure memo, so the warm path
+        // may prefetch b/base again (legitimate retry under a new release).
+        bBroken = false;
+        now = 70_000;
+        await controller.softRevalidate();
+        await flushAsyncWork();
+        resolver.resolve.mockClear();
+        cache.prefetch.mockClear();
+        controller.update(input(dialogue, { dialogueIndex: 2 }));
+        await flushAsyncWork();
+        expect(cache.prefetch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                asset: expect.objectContaining({
+                    identity: { type: 'portrait', key: 'b/base' },
+                }),
+            })
+        );
+    });
+
     it('detaches a URL from every layer and resolves after the next animation frame', async () => {
         let frameCallback: FrameRequestCallback | undefined;
         vi.stubGlobal(

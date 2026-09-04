@@ -124,20 +124,20 @@ const readySnapshot: VisualSnapshot = {
     portraits: {
         left: {
             state: 'ready',
-            identity: 'portrait:narrator-neutral',
-            objectUrl: 'blob:portrait',
+            identity: 'portrait:yuma',
+            objectUrl: 'blob:portrait-yuma',
             width: 800,
             height: 1200,
         },
         right: {
-            state: 'omitted',
-            identity: null,
-            objectUrl: null,
-            width: null,
-            height: null,
+            state: 'ready',
+            identity: 'portrait:mio',
+            objectUrl: 'blob:portrait-mio',
+            width: 800,
+            height: 1200,
         },
     },
-    activePortraitSlot: 'left',
+    activePortraitSlot: 'right',
     releaseIdentity: null,
     status: null,
 };
@@ -255,19 +255,23 @@ describe('VisualNovelReader', () => {
         );
         expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
             'data-portrait-active',
-            'true'
+            'false'
         );
         expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
             'src',
-            'blob:portrait'
+            'blob:portrait-yuma'
         );
         expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
             'data-portrait-state',
-            'omitted'
+            'ready'
         );
         expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
             'data-portrait-active',
-            'false'
+            'true'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'src',
+            'blob:portrait-mio'
         );
         expect(
             document.querySelector('[data-bg-layer="active"]')
@@ -275,6 +279,41 @@ describe('VisualNovelReader', () => {
         expect(
             document.querySelector('[data-bg-layer="staging"]')
         ).toHaveAttribute('src', 'blob:staging');
+    });
+
+    it('pins active portrait attributes without churning portrait sources', async () => {
+        setReducedMotion(false);
+        const runtime = makeController();
+        renderReader({ controller: runtime.controller, isInitialMount: false });
+
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
+            'data-portrait-active',
+            'false'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+
+        runtime.emit({ ...readySnapshot, activePortraitSlot: null });
+        await Promise.resolve();
+
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
+            'data-portrait-active',
+            'false'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'data-portrait-active',
+            'false'
+        );
+        expect(screen.getByTestId('visual-portrait-left')).toHaveAttribute(
+            'src',
+            'blob:portrait-yuma'
+        );
+        expect(screen.getByTestId('visual-portrait-right')).toHaveAttribute(
+            'src',
+            'blob:portrait-mio'
+        );
     });
 
     it('uses empty portrait snapshots when no controller is supplied', () => {

@@ -184,6 +184,29 @@ test.describe('Visual novel reader', () => {
         await expect(visual.activePortrait).toHaveCount(0);
     });
 
+    test('dims the inactive portrait and keeps the active speaker emphasized', async ({
+        page,
+    }) => {
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+        await expect(visual.rightPortrait).toHaveAttribute(
+            'data-portrait-active',
+            'true'
+        );
+        expect(
+            await visual.leftPortrait.evaluate(
+                el => getComputedStyle(el).filter
+            )
+        ).toContain('brightness(0.55)');
+        expect(
+            await visual.rightPortrait.evaluate(
+                el => getComputedStyle(el).filter
+            )
+        ).toContain('brightness(1)');
+        await expect(visual.leftPortrait).toHaveCSS('opacity', '0.82');
+        await expect(visual.rightPortrait).toHaveCSS('opacity', '1');
+    });
+
     test('keeps the dialogue panel geometry stable across responsive viewports', async ({
         page,
     }) => {

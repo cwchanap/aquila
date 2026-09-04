@@ -40,7 +40,7 @@ export function projectPortraitStage(
 
         if (visibleSlot) {
             const existing = visibleSlot === 'left' ? left! : right!;
-            const next = entry.portrait
+            const next: StagePortrait = entry.portrait
                 ? { characterId: entry.characterId, portrait: entry.portrait }
                 : existing;
             if (visibleSlot === 'left') left = next;

@@ -454,7 +454,16 @@ export class VisualStateController {
         const entry = input.dialogue[input.dialogueIndex];
         if (this.resolver === null) {
             if (!this.isInputCurrent(input, generation)) return;
-            const hasKeyedVisual = identitiesForLine(entry).length > 0;
+            // A narrator line can retain both stage slots; the keyed-visual
+            // check must consider the projected stage, not just this line.
+            const stage = projectPortraitStage(
+                input.dialogue,
+                input.dialogueIndex
+            );
+            const hasKeyedVisual =
+                identitiesForLine(entry).length > 0 ||
+                stage.left !== null ||
+                stage.right !== null;
             this.publish({ release: hasKeyedVisual ? 'unavailable' : 'idle' });
             if (hasKeyedVisual) this.failKeyedLayers(input, entry);
             return;

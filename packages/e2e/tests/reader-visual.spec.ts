@@ -70,10 +70,22 @@ async function expectReadyPortraitsInsideViewport(page: Page): Promise<void> {
     if (!viewport) return;
 
     const count = await visual.readyPortraits.count();
+    expect(
+        count,
+        'at least one ready portrait is rendered'
+    ).toBeGreaterThanOrEqual(1);
     for (let index = 0; index < count; index += 1) {
         const box = await visual.readyPortraits.nth(index).boundingBox();
         expect(box).not.toBeNull();
         if (!box) continue;
+        expect(
+            box.width,
+            `portrait ${index} has measurable width`
+        ).toBeGreaterThan(0);
+        expect(
+            box.height,
+            `portrait ${index} has measurable height`
+        ).toBeGreaterThan(0);
         expect(box.x).toBeGreaterThanOrEqual(-1);
         expect(box.y).toBeGreaterThanOrEqual(-1);
         expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
@@ -124,6 +136,25 @@ test.describe('Visual novel reader', () => {
             'data-portrait-active',
             'true'
         );
+
+        // Physical side anchoring at line 7 (both portraits ready): the left
+        // slot's center sits in the left half of the viewport, the right
+        // slot's in the right half (±2px tolerance).
+        const viewportWidth = page.viewportSize()!.width;
+        const leftBox = await visual.leftPortrait.boundingBox();
+        const rightBox = await visual.rightPortrait.boundingBox();
+        expect(leftBox, 'left portrait is measurable at line 7').not.toBe(null);
+        expect(rightBox, 'right portrait is measurable at line 7').not.toBe(
+            null
+        );
+        if (leftBox && rightBox) {
+            expect(leftBox.x + leftBox.width / 2).toBeLessThanOrEqual(
+                viewportWidth / 2 + 2
+            );
+            expect(rightBox.x + rightBox.width / 2).toBeGreaterThanOrEqual(
+                viewportWidth / 2 - 2
+            );
+        }
 
         // Let line 7 finish typing so the next click advances instead of
         // skipping the typewriter.

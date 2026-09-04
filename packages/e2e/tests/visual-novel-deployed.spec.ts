@@ -780,18 +780,25 @@ test.describe('Deployed visual-novel release gate', () => {
             'on the background change'
         );
 
-        const portraitSrcBefore = await visual.portrait.getAttribute('src');
-        await advanceTo(page, visual, anchors.startPage, anchors.portraitPage);
-        await expect(visual.portrait).toHaveAttribute(
+        await expect(visual.activePortrait).toHaveCount(1);
+        await expect(visual.activePortrait).toHaveAttribute(
             'data-portrait-state',
             'ready'
         );
-        if (portraitSrcBefore !== null) {
-            await expect(visual.portrait).not.toHaveAttribute(
-                'src',
-                portraitSrcBefore
-            );
-        }
+        const portraitSrcBefore =
+            await visual.activePortrait.getAttribute('src');
+        expect(portraitSrcBefore).not.toBeNull();
+
+        await advanceTo(page, visual, anchors.startPage, anchors.portraitPage);
+        await expect(visual.activePortrait).toHaveCount(1);
+        await expect(visual.activePortrait).toHaveAttribute(
+            'data-portrait-state',
+            'ready'
+        );
+        const portraitSrcAfter =
+            await visual.activePortrait.getAttribute('src');
+        expect(portraitSrcAfter).not.toBeNull();
+        expect(portraitSrcAfter).not.toBe(portraitSrcBefore);
 
         const backgroundSrcBefore =
             await visual.activeBackground.getAttribute('src');

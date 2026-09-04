@@ -8,7 +8,6 @@ describe('parseCharacters', () => {
 
 - **ID**: \`gu_yan\`
 - **Aliases**: 小顧, 顧言同學
-- **Portrait Slot**: left
 
 Some bio prose.
 
@@ -66,71 +65,33 @@ Some bio prose.
         expect(dir.getById('narrator')?.portraits).toEqual({});
     });
 
-    it('parses optional portrait slots', () => {
-        const dir = parseCharacters(sample);
-        expect(dir.getById('gu_yan')?.portraitSlot).toBe('left');
-        expect(dir.getById('narrator')?.portraitSlot).toBeUndefined();
+    it('rejects removed Portrait Slot metadata', () => {
+        expect(() =>
+            parseCharacters(`## 1. 甲（A）
+
+- **ID**: \`a\`
+- **Portrait Slot**: right
+`)
+        ).toThrow(/Portrait Slot.*removed.*automatic/i);
     });
 
-    it('rejects invalid portrait slots', () => {
-        const invalid = `## 1. 顧言（Gu Yan）
-
-- **ID**: \`gu_yan\`
-- **Portrait Slot**: foreground
-`;
-        expect(() => parseCharacters(invalid)).toThrow(
-            /Portrait Slot.*left or right/
-        );
-    });
-
-    it('rejects empty or multi-token portrait slots instead of ignoring them', () => {
-        const empty = `## 1. 顧言（Gu Yan）
-
-- **ID**: \`gu_yan\`
-- **Portrait Slot**:
-`;
-        expect(() => parseCharacters(empty)).toThrow(
-            /Portrait Slot.*left or right/
-        );
-
-        const rejectedValue = ['cent', 'er'].join('');
-        const multi = `## 1. 顧言（Gu Yan）
-
-- **ID**: \`gu_yan\`
-- **Portrait Slot**: left ${rejectedValue}
-`;
-        expect(() => parseCharacters(multi)).toThrow(
-            /Portrait Slot.*left or right/
-        );
-    });
-
-    it('accepts case-insensitive left and right slots', () => {
+    it('parses normal characters to only id, name, aliases, and portraits', () => {
         const md = `## 1. 甲（A）
 
 - **ID**: \`a\`
-- **Portrait Slot**: LEFT
+- **Aliases**: 乙
 
-## 2. 乙（B）
+### Portrait Prompts
 
-- **ID**: \`b\`
-- **Portrait Slot**: Right
-        `;
-        const dir = parseCharacters(md);
-        expect(dir.getById('a')?.portraitSlot).toBe('left');
-        expect(dir.getById('b')?.portraitSlot).toBe('right');
-    });
-
-    it('rejects center portrait slots', () => {
-        const rejectedValue = ['cent', 'er'].join('');
-        const centerMarkdown = `## 1. 甲（A）
-
-- **ID**: \`a\`
-- **Portrait Slot**: ${rejectedValue}
+- **base**: anime portrait
 `;
-
-        expect(() => parseCharacters(centerMarkdown)).toThrow(
-            /Portrait Slot.*left or right/
-        );
+        const dir = parseCharacters(md);
+        expect(dir.getById('a')).toStrictEqual({
+            id: 'a',
+            name: '甲',
+            aliases: ['乙'],
+            portraits: { base: 'anime portrait' },
+        });
     });
 
     it('throws on missing ID', () => {
@@ -152,16 +113,14 @@ Some bio prose.
 
     it('rejects reserved Object.prototype names as character IDs', () => {
         // Character IDs become raw-string keys in the generated
-        // `characterTable` and `slotsByCharacterId` (ordinary objects). A
-        // lookup for a reserved name returns the inherited Object.prototype
-        // value instead of `undefined` when no own property is emitted,
-        // breaking the `T | undefined` contract. Reject at parse time so the
-        // whole class is caught at the source. Covers both the explicit-slot
-        // and absent-slot cases.
+        // `characterTable` (an ordinary object). A lookup for a reserved name
+        // returns the inherited Object.prototype value instead of `undefined`
+        // when no own property is emitted, breaking the `T | undefined`
+        // contract. Reject at parse time so the whole class is caught at the
+        // source.
         const protoId = `## 1. 原型（Proto）
 
 - **ID**: \`__proto__\`
-- **Portrait Slot**: Left
 `;
         expect(() => parseCharacters(protoId)).toThrow(
             /__proto__[\s\S]*reserved/s

@@ -145,8 +145,24 @@ export class VisualReaderPage {
         return this.root.locator('[data-bg-layer="staging"]');
     }
 
-    get portrait() {
-        return this.root.getByTestId('visual-portrait');
+    get leftPortrait() {
+        return this.root.getByTestId('visual-portrait-left');
+    }
+
+    get rightPortrait() {
+        return this.root.getByTestId('visual-portrait-right');
+    }
+
+    get readyPortraits() {
+        return this.root.locator(
+            '.visual-portrait[data-portrait-state="ready"]'
+        );
+    }
+
+    get activePortrait() {
+        return this.root.locator(
+            '.visual-portrait[data-portrait-active="true"]'
+        );
     }
 
     get dialogueBox() {

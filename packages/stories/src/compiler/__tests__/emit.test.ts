@@ -14,7 +14,6 @@ const mockCharDir: ParsedCharacterDirectory = {
             name: '李杰',
             aliases: [],
             portraits: {},
-            portraitSlot: 'left',
         },
     ],
     getById: (id: string) => mockCharDir.characters.find(c => c.id === id),
@@ -92,7 +91,7 @@ describe('emitStory', () => {
         expect(existsSync(join(dir, 'dialogue.zh.ts'))).toBe(true);
         expect(existsSync(join(dir, 'flow.ts'))).toBe(true);
         expect(existsSync(join(dir, 'choices.todo.zh.ts'))).toBe(true);
-        expect(existsSync(join(dir, 'presentation.ts'))).toBe(true);
+        expect(existsSync(join(dir, 'presentation.ts'))).toBe(false);
 
         const scene = readFileSync(join(dir, 'scenes', 'act1.ts'), 'utf8');
         expect(scene).toContain('../characters');
@@ -319,25 +318,21 @@ describe('emitStory', () => {
         expect(charFile).toContain('export class CharacterDirectory');
     });
 
-    it('generates story presentation metadata with a left fallback', () => {
+    it('does not emit presentation metadata', () => {
         emitStory(story, dir, mockCharDir);
-        const presentation = readFileSync(join(dir, 'presentation.ts'), 'utf8');
-        expect(presentation).toContain('defaultSlot: "left"');
-        expect(presentation).toContain('["li_jie"]: "left"');
-        expect(presentation).toContain('activeLimit: 1');
+        expect(existsSync(join(dir, 'presentation.ts'))).toBe(false);
     });
 
     it('rejects reserved Object.prototype names as character IDs at emit time', () => {
         // Character IDs become raw-string keys in the generated
-        // `characterTable` and `slotsByCharacterId` (ordinary objects). A
-        // lookup for a reserved name (`__proto__`, `constructor`, `toString`,
-        // ...) returns the inherited Object.prototype value instead of
-        // `undefined` when no own property is emitted, breaking the
-        // `T | undefined` contract. Computed keys only fix the explicit-
-        // assignment case; absent-key lookups still hit the prototype. The
-        // emitter now rejects reserved IDs at emit time (defense in depth
-        // alongside parse-characters) so neither the explicit-slot nor the
-        // absent-slot path can produce a poisoned lookup.
+        // `characterTable` (an ordinary object). A lookup for a reserved name
+        // (`__proto__`, `constructor`, `toString`, ...) returns the inherited
+        // Object.prototype value instead of `undefined` when no own property
+        // is emitted, breaking the `T | undefined` contract. Computed keys
+        // only fix the explicit-assignment case; absent-key lookups still hit
+        // the prototype. The emitter rejects reserved IDs at emit time
+        // (defense in depth alongside parse-characters) so no lookup in the
+        // characterTable can be poisoned.
         const protoDir: ParsedCharacterDirectory = {
             characters: [
                 {
@@ -345,7 +340,6 @@ describe('emitStory', () => {
                     name: '原型',
                     aliases: [],
                     portraits: {},
-                    portraitSlot: 'left',
                 },
             ],
             getById: (id: string) => protoDir.characters.find(c => c.id === id),
@@ -356,11 +350,6 @@ describe('emitStory', () => {
             /reserved.*__proto__/s
         );
 
-        // A reserved ID WITHOUT a portraitSlot (the absent-key fallback case
-        // the reviewer flagged) is also rejected — previously this would have
-        // emitted a `slotsByCharacterId` with no own `__proto__` entry, so a
-        // runtime `slotsByCharacterId['__proto__'] ?? defaultSlot` returned
-        // Object.prototype (truthy) and skipped the fallback.
         const constructorDir: ParsedCharacterDirectory = {
             characters: [
                 {

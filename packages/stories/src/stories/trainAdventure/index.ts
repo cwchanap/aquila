@@ -1,8 +1,4 @@
-import type {
-    ChoiceMap,
-    DialogueMap,
-    StoryPresentationMetadata,
-} from '../../types';
+import type { ChoiceMap, DialogueMap } from '../../types';
 import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
 import { trainAdventureZhDialogue } from '../../generated/trainAdventure/dialogue.zh';
@@ -11,7 +7,6 @@ import {
     type TrainAdventureSceneId,
 } from '../../generated/trainAdventure/flow';
 import { trainAdventureChoiceText } from './choices.zh';
-import { storyPresentation } from '../../generated/trainAdventure/presentation';
 
 export { trainAdventureFlow };
 export type { TrainAdventureSceneId };
@@ -39,7 +34,6 @@ const choices: ChoiceMap = buildChoiceMap(
 export function getTrainAdventureStory(locale: string): {
     dialogue: DialogueMap;
     choices: ChoiceMap;
-    presentation: StoryPresentationMetadata;
 } {
     const normalized: TrainAdventureLocale = locale.startsWith('zh')
         ? 'zh'
@@ -47,6 +41,5 @@ export function getTrainAdventureStory(locale: string): {
     return {
         dialogue: dialogueByLocale[normalized],
         choices,
-        presentation: storyPresentation,
     };
 }

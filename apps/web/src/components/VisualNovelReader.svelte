@@ -4,7 +4,6 @@
     DialogueEntry,
     Locale,
     StoryFlowConfig,
-    StoryPresentationMetadata,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import ActPanel from '@/components/ActPanel.svelte';
@@ -32,7 +31,6 @@
     canGoNext: boolean;
     choice: ChoiceDefinition | null;
     locale: Locale;
-    presentation: StoryPresentationMetadata | null;
     onChoice: (nextScene: string) => void;
     onNext: () => void;
     onNavigate: (sceneId: string) => void;
@@ -55,7 +53,8 @@
     release: 'idle',
     activeBackground: emptyLayer,
     stagingBackground: emptyLayer,
-    portrait: { ...emptyLayer, slot: 'left' },
+    portraits: { left: emptyLayer, right: emptyLayer },
+    activePortraitSlot: null,
     releaseIdentity: null,
     status: null,
   };
@@ -70,7 +69,6 @@
     canGoNext,
     choice,
     locale,
-    presentation,
     onChoice,
     onNext,
     onNavigate,
@@ -162,7 +160,6 @@
       dialogue,
       dialogueIndex,
       flow,
-      presentation,
     });
   });
 
@@ -397,11 +394,21 @@
     alt=""
   />
   <img
-    data-testid="visual-portrait"
+    data-testid="visual-portrait-left"
     class="visual-portrait"
-    data-portrait-state={snapshot.portrait.state}
-    data-portrait-slot={snapshot.portrait.slot}
-    src={snapshot.portrait.objectUrl ?? undefined}
+    data-portrait-state={snapshot.portraits.left.state}
+    data-portrait-slot="left"
+    data-portrait-active={snapshot.activePortraitSlot === 'left'}
+    src={snapshot.portraits.left.objectUrl ?? undefined}
+    alt=""
+  />
+  <img
+    data-testid="visual-portrait-right"
+    class="visual-portrait"
+    data-portrait-state={snapshot.portraits.right.state}
+    data-portrait-slot="right"
+    data-portrait-active={snapshot.activePortraitSlot === 'right'}
+    src={snapshot.portraits.right.objectUrl ?? undefined}
     alt=""
   />
 

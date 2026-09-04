@@ -7,24 +7,31 @@ import {
     type AssetResolverSource,
     type LogicalAssetIdentity,
 } from '@aquila/stories/runtime-assets';
-import type {
-    DialogueEntry,
-    StoryFlowConfig,
-    StoryPresentationMetadata,
-} from '@aquila/stories';
+import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
+import {
+    projectPortraitStage,
+    type PortraitStage,
+    type PortraitStageSlot,
+} from './portrait-stage';
 import type { DecodedAssetCache } from './decoded-asset-cache';
 import { PrefetchQueue } from './prefetch-queue';
 import type {
     DecodedAsset,
     VisualImageLayer,
     VisualLayerState,
-    VisualPortraitLayer,
     VisualReleaseIdentity,
     VisualReleaseState,
     VisualSnapshot,
 } from './types';
 
 const SOFT_REVALIDATE_AGE_MS = 60_000;
+
+const PORTRAIT_SLOTS = ['left', 'right'] as const;
+
+type PortraitFailureMemo = {
+    releaseGeneration: number;
+    portraitKey: string;
+} | null;
 
 type GetSceneDialogue = (
     storyId: string,
@@ -42,7 +49,6 @@ export type VisualControllerInput = {
     dialogue: readonly DialogueEntry[];
     dialogueIndex: number;
     flow: StoryFlowConfig;
-    presentation: StoryPresentationMetadata | null;
 };
 
 export type VisualStateControllerOptions = {
@@ -95,34 +101,16 @@ function readyImageLayer(
     });
 }
 
-function portraitLayer(
-    state: VisualLayerState,
-    slot: VisualPortraitLayer['slot'],
-    identity: string | null = null
-): VisualPortraitLayer {
-    return Object.freeze({
-        ...imageLayer(state, identity),
-        slot,
-    });
-}
-
-function readyPortraitLayer(
-    identity: string,
-    decoded: DecodedAsset,
-    slot: VisualPortraitLayer['slot']
-): VisualPortraitLayer {
-    return Object.freeze({
-        ...readyImageLayer(identity, decoded),
-        slot,
-    });
-}
-
 function initialSnapshot(): VisualSnapshot {
     return Object.freeze({
         release: 'idle' as const,
         activeBackground: imageLayer('omitted'),
         stagingBackground: imageLayer('omitted'),
-        portrait: portraitLayer('omitted', 'left'),
+        portraits: Object.freeze({
+            left: imageLayer('omitted'),
+            right: imageLayer('omitted'),
+        }),
+        activePortraitSlot: null,
         releaseIdentity: null,
         status: null,
     });
@@ -188,12 +176,31 @@ export class VisualStateController {
     private lastReleaseCheckAt: number | null = null;
     private activeBackgroundCacheKey: string | null = null;
     private stagingBackgroundCacheKey: string | null = null;
-    private portraitCacheKey: string | null = null;
+    private readonly portraitCacheKeys: Record<
+        PortraitStageSlot,
+        string | null
+    > = {
+        left: null,
+        right: null,
+    };
     private activeReleaseId: string | null = null;
     private releaseGeneration = 0;
     private activeBackgroundReleaseId: string | null = null;
     private stagingBackgroundReleaseId: string | null = null;
-    private portraitReleaseId: string | null = null;
+    private readonly portraitReleaseIds: Record<
+        PortraitStageSlot,
+        string | null
+    > = {
+        left: null,
+        right: null,
+    };
+    private readonly portraitFailures: Record<
+        PortraitStageSlot,
+        PortraitFailureMemo
+    > = {
+        left: null,
+        right: null,
+    };
     private readonly loadFailures: string[] = [];
 
     constructor(options: VisualStateControllerOptions) {
@@ -256,11 +263,15 @@ export class VisualStateController {
         };
         const activeBackground = detach(this.snapshot.activeBackground);
         const stagingBackground = detach(this.snapshot.stagingBackground);
-        const portrait = detach(this.snapshot.portrait);
+        const portraits = {
+            left: detach(this.snapshot.portraits.left),
+            right: detach(this.snapshot.portraits.right),
+        };
         const layerChanged =
             activeBackground !== this.snapshot.activeBackground ||
             stagingBackground !== this.snapshot.stagingBackground ||
-            portrait !== this.snapshot.portrait;
+            portraits.left !== this.snapshot.portraits.left ||
+            portraits.right !== this.snapshot.portraits.right;
         if (layerChanged) {
             if (this.snapshot.activeBackground.objectUrl === objectUrl) {
                 this.activeBackgroundCacheKey = null;
@@ -270,11 +281,13 @@ export class VisualStateController {
                 this.stagingBackgroundCacheKey = null;
                 this.stagingBackgroundReleaseId = null;
             }
-            if (this.snapshot.portrait.objectUrl === objectUrl) {
-                this.portraitCacheKey = null;
-                this.portraitReleaseId = null;
+            for (const slot of PORTRAIT_SLOTS) {
+                if (this.snapshot.portraits[slot].objectUrl === objectUrl) {
+                    this.portraitCacheKeys[slot] = null;
+                    this.portraitReleaseIds[slot] = null;
+                }
             }
-            this.publish({ activeBackground, stagingBackground, portrait });
+            this.publish({ activeBackground, stagingBackground, portraits });
             // Wait one render barrier so the browser paints the detached
             // layers before the object URL is revoked. A timeout fallback
             // prevents indefinite suspension when the tab is hidden and
@@ -325,32 +338,32 @@ export class VisualStateController {
         this.currentInput = null;
         this.activeBackgroundCacheKey = null;
         this.stagingBackgroundCacheKey = null;
-        this.portraitCacheKey = null;
+        this.portraitCacheKeys.left = null;
+        this.portraitCacheKeys.right = null;
         this.activeReleaseId = null;
         this.activeBackgroundReleaseId = null;
         this.stagingBackgroundReleaseId = null;
-        this.portraitReleaseId = null;
+        this.portraitReleaseIds.left = null;
+        this.portraitReleaseIds.right = null;
+        this.portraitFailures.left = null;
+        this.portraitFailures.right = null;
         this.snapshot = initialSnapshot();
         this.cache.setProtectedKeys(new Set());
         for (const listener of this.listeners) listener(this.snapshot);
         this.listeners.clear();
     }
 
+    // A ready layer is only current when its identity matches AND it was
+    // loaded under the active release. A soft revalidation that activated
+    // a new release makes every previously ready layer stale, even when
+    // the logical identity is unchanged — the same key may point to
+    // different immutable bytes in the new release.
     private prepareLoadingLayers(input: VisualControllerInput): void {
         const entry = input.dialogue[input.dialogueIndex];
         const backgroundIdentity = identityFor('background', entry?.background);
-        const portraitIdentity = identityFor('portrait', entry?.portrait);
         const backgroundKey = backgroundIdentity
             ? qualifyAssetIdentity(backgroundIdentity)
             : null;
-        const portraitKey = portraitIdentity
-            ? qualifyAssetIdentity(portraitIdentity)
-            : null;
-        // A ready layer is only current when its identity matches AND it was
-        // loaded under the active release. A soft revalidation that activated
-        // a new release makes every previously ready layer stale, even when
-        // the logical identity is unchanged — the same key may point to
-        // different immutable bytes in the new release.
         const sameActiveBackground =
             backgroundKey !== null &&
             this.isLayerCurrentForRelease(
@@ -358,33 +371,80 @@ export class VisualStateController {
                 backgroundIdentity!,
                 this.activeBackgroundReleaseId
             );
-        const slot = this.portraitSlot(input, entry?.characterId);
-        const samePortrait =
-            portraitKey !== null &&
-            this.isLayerCurrentForRelease(
-                this.snapshot.portrait,
-                portraitIdentity!,
-                this.portraitReleaseId
-            );
+
+        const stage = projectPortraitStage(input.dialogue, input.dialogueIndex);
+        const portraits = {
+            left: this.snapshot.portraits.left,
+            right: this.snapshot.portraits.right,
+        };
+        for (const slot of PORTRAIT_SLOTS) {
+            portraits[slot] = this.reconcilePortraitSlot(stage, slot);
+        }
 
         this.stagingBackgroundCacheKey = null;
         this.stagingBackgroundReleaseId = null;
-        if (!samePortrait) {
-            this.portraitCacheKey = null;
-            this.portraitReleaseId = null;
-        }
         this.publish({
             stagingBackground:
                 backgroundKey === null || sameActiveBackground
                     ? imageLayer('omitted')
                     : imageLayer('loading', backgroundKey),
-            portrait:
-                portraitKey === null
-                    ? portraitLayer('omitted', slot)
-                    : samePortrait
-                      ? Object.freeze({ ...this.snapshot.portrait, slot })
-                      : portraitLayer('loading', slot, portraitKey),
+            portraits: Object.freeze(portraits),
+            activePortraitSlot: stage.activeSlot,
         });
+    }
+
+    private reconcilePortraitSlot(
+        stage: PortraitStage,
+        slot: PortraitStageSlot
+    ): VisualImageLayer {
+        const desired = stage[slot];
+        const current = this.snapshot.portraits[slot];
+        if (!desired) {
+            this.portraitCacheKeys[slot] = null;
+            this.portraitReleaseIds[slot] = null;
+            this.portraitFailures[slot] = null;
+            return imageLayer('omitted');
+        }
+        const identity: LogicalAssetIdentity = {
+            type: 'portrait',
+            key: desired.portrait,
+        };
+        const identityKey = qualifyAssetIdentity(identity);
+        if (
+            this.isLayerCurrentForRelease(
+                current,
+                identity,
+                this.portraitReleaseIds[slot]
+            )
+        ) {
+            return current;
+        }
+        if (
+            this.hasCurrentPortraitFailure(slot, desired.portrait) &&
+            (current.state === 'missing' || current.state === 'failed') &&
+            current.identity === identityKey
+        ) {
+            return current;
+        }
+        this.portraitCacheKeys[slot] = null;
+        this.portraitReleaseIds[slot] = null;
+        this.portraitFailures[slot] = null;
+        if (current.state === 'loading' && current.identity === identityKey) {
+            return current;
+        }
+        return imageLayer('loading', identityKey);
+    }
+
+    private hasCurrentPortraitFailure(
+        slot: PortraitStageSlot,
+        portraitKey: string
+    ): boolean {
+        const failure = this.portraitFailures[slot];
+        return (
+            failure !== null &&
+            failure.releaseGeneration === this.releaseGeneration &&
+            failure.portraitKey === portraitKey
+        );
     }
 
     private async prepareCurrentInput(
@@ -421,24 +481,21 @@ export class VisualStateController {
                 })
             );
         }
-        if (
-            entry?.portrait &&
-            !this.isLayerCurrentForRelease(
-                this.snapshot.portrait,
-                { type: 'portrait', key: entry.portrait },
-                this.portraitReleaseId
-            )
-        ) {
-            work.push(
-                this.loadPortrait(
-                    input,
-                    generation,
-                    {
-                        type: 'portrait',
-                        key: entry.portrait,
-                    },
-                    this.portraitSlot(input, entry.characterId)
+        const stage = projectPortraitStage(input.dialogue, input.dialogueIndex);
+        for (const slot of PORTRAIT_SLOTS) {
+            const desired = stage[slot];
+            if (!desired) continue;
+            if (
+                this.isLayerCurrentForRelease(
+                    this.snapshot.portraits[slot],
+                    { type: 'portrait', key: desired.portrait },
+                    this.portraitReleaseIds[slot]
                 )
+            ) {
+                continue;
+            }
+            work.push(
+                this.loadPortrait(input, generation, slot, desired.portrait)
             );
         }
         this.warmWithinScene(input, generation);
@@ -545,7 +602,14 @@ export class VisualStateController {
         const identityKey = qualifyAssetIdentity(identity);
         const releaseGeneration = this.releaseGeneration;
         const result = await this.loadIdentity(identity);
-        if (!this.isCurrent(input, generation, releaseGeneration, identity))
+        if (
+            !this.isBackgroundLoadCurrent(
+                input,
+                generation,
+                releaseGeneration,
+                identity.key
+            )
+        )
             return;
         if (result.status === 'ready') {
             const ready = readyImageLayer(identityKey, result.decoded);
@@ -587,38 +651,61 @@ export class VisualStateController {
     private async loadPortrait(
         input: VisualControllerInput,
         generation: number,
-        identity: LogicalAssetIdentity,
-        slot: VisualPortraitLayer['slot']
+        slot: PortraitStageSlot,
+        portraitKey: string
     ): Promise<void> {
+        if (this.hasCurrentPortraitFailure(slot, portraitKey)) return;
+        const identity: LogicalAssetIdentity = {
+            type: 'portrait',
+            key: portraitKey,
+        };
         const identityKey = qualifyAssetIdentity(identity);
         const releaseGeneration = this.releaseGeneration;
         const result = await this.loadIdentity(identity);
-        if (!this.isCurrent(input, generation, releaseGeneration, identity))
+        if (
+            !this.isPortraitLoadCurrent(
+                input,
+                generation,
+                releaseGeneration,
+                slot,
+                portraitKey
+            )
+        )
             return;
         if (result.status === 'ready') {
-            this.portraitCacheKey = result.decoded.cacheKey;
-            this.portraitReleaseId = this.activeReleaseId;
+            this.portraitCacheKeys[slot] = result.decoded.cacheKey;
+            this.portraitReleaseIds[slot] = this.activeReleaseId;
+            this.portraitFailures[slot] = null;
             this.publish({
-                portrait: readyPortraitLayer(identityKey, result.decoded, slot),
+                portraits: {
+                    ...this.snapshot.portraits,
+                    [slot]: readyImageLayer(identityKey, result.decoded),
+                },
             });
             return;
         }
-        this.portraitCacheKey = null;
-        this.portraitReleaseId = null;
+        this.portraitCacheKeys[slot] = null;
+        this.portraitReleaseIds[slot] = null;
+        this.portraitFailures[slot] = { releaseGeneration, portraitKey };
         if (result.status === 'fallback') {
             this.applyFallbackReleaseState(result.fallback);
             this.publish({
-                portrait: portraitLayer(
-                    result.fallback.reason === 'not-found'
-                        ? 'missing'
-                        : 'failed',
-                    slot,
-                    identityKey
-                ),
+                portraits: {
+                    ...this.snapshot.portraits,
+                    [slot]: imageLayer(
+                        result.fallback.reason === 'not-found'
+                            ? 'missing'
+                            : 'failed',
+                        identityKey
+                    ),
+                },
             });
         } else {
             this.publish({
-                portrait: portraitLayer('failed', slot, identityKey),
+                portraits: {
+                    ...this.snapshot.portraits,
+                    [slot]: imageLayer('failed', identityKey),
+                },
             });
         }
     }
@@ -692,16 +779,23 @@ export class VisualStateController {
                 })
             );
         }
-        if (entry?.portrait) {
-            changes.portrait = portraitLayer(
+        const stage = projectPortraitStage(input.dialogue, input.dialogueIndex);
+        const portraits = {
+            left: this.snapshot.portraits.left,
+            right: this.snapshot.portraits.right,
+        };
+        for (const slot of PORTRAIT_SLOTS) {
+            const desired = stage[slot];
+            if (!desired) continue;
+            portraits[slot] = imageLayer(
                 'failed',
-                this.portraitSlot(input, entry.characterId),
                 qualifyAssetIdentity({
                     type: 'portrait',
-                    key: entry.portrait,
+                    key: desired.portrait,
                 })
             );
         }
+        changes.portraits = Object.freeze(portraits);
         if (Object.keys(changes).length > 0) this.publish(changes);
     }
 
@@ -903,19 +997,6 @@ export class VisualStateController {
         );
     }
 
-    private portraitSlot(
-        input: VisualControllerInput,
-        characterId: string | undefined
-    ): VisualPortraitLayer['slot'] {
-        return (
-            (characterId
-                ? input.presentation?.portrait.slotsByCharacterId[characterId]
-                : undefined) ??
-            input.presentation?.portrait.defaultSlot ??
-            'left'
-        );
-    }
-
     private isInputCurrent(
         input: VisualControllerInput,
         generation: number
@@ -930,19 +1011,31 @@ export class VisualStateController {
         );
     }
 
-    private isCurrent(
+    private isBackgroundLoadCurrent(
         input: VisualControllerInput,
         generation: number,
         releaseGeneration: number,
-        identity: LogicalAssetIdentity
+        key: string
+    ): boolean {
+        return (
+            this.isInputCurrent(input, generation) &&
+            releaseGeneration === this.releaseGeneration &&
+            input.dialogue[input.dialogueIndex]?.background === key
+        );
+    }
+
+    private isPortraitLoadCurrent(
+        input: VisualControllerInput,
+        generation: number,
+        releaseGeneration: number,
+        slot: PortraitStageSlot,
+        key: string
     ): boolean {
         if (!this.isInputCurrent(input, generation)) return false;
         if (releaseGeneration !== this.releaseGeneration) return false;
-        const entry = input.dialogue[input.dialogueIndex];
         return (
-            (identity.type === 'background'
-                ? entry?.background
-                : entry?.portrait) === identity.key
+            projectPortraitStage(input.dialogue, input.dialogueIndex)[slot]
+                ?.portrait === key
         );
     }
 
@@ -973,7 +1066,8 @@ export class VisualStateController {
                 [
                     this.activeBackgroundCacheKey,
                     this.stagingBackgroundCacheKey,
-                    this.portraitCacheKey,
+                    this.portraitCacheKeys.left,
+                    this.portraitCacheKeys.right,
                 ].filter((key): key is string => key !== null)
             )
         );
@@ -992,8 +1086,10 @@ export class VisualStateController {
         if (
             snapshot.stagingBackground.state === 'missing' ||
             snapshot.stagingBackground.state === 'failed' ||
-            snapshot.portrait.state === 'missing' ||
-            snapshot.portrait.state === 'failed'
+            snapshot.portraits.left.state === 'missing' ||
+            snapshot.portraits.left.state === 'failed' ||
+            snapshot.portraits.right.state === 'missing' ||
+            snapshot.portraits.right.state === 'failed'
         ) {
             return 'fallback';
         }

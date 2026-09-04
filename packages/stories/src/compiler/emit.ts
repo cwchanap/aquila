@@ -50,17 +50,17 @@ function assertNoCharEnumKeyCollisions(ids: string[]): void {
     }
 }
 
-// Character IDs become raw-string keys in the generated `characterTable` and
-// `slotsByCharacterId` (both ordinary objects). A lookup for a reserved
-// Object.prototype name (`__proto__`, `constructor`, `toString`, ...) returns
-// the inherited value instead of `undefined` when no own property is emitted,
-// breaking the `T | undefined` contract. Computed keys only fix the explicit-
-// assignment case; absent-key lookups still hit the prototype. Rejecting
-// reserved IDs at emit time catches the whole class regardless of how the
-// `ParsedCharacterDirectory` was built (parse-characters also checks, but
-// direct callers like tests can bypass it). Mirrors the
-// `assertNoCharEnumKeyCollisions` defense-in-depth pattern. The reserved-name
-// set itself is imported from parse-characters so both sites cannot drift.
+// Character IDs become raw-string keys in the generated `characterTable` (an
+// ordinary object). A lookup for a reserved Object.prototype name (`__proto__`,
+// `constructor`, `toString`, ...) returns the inherited value instead of
+// `undefined` when no own property is emitted, breaking the `T | undefined`
+// contract. Computed keys only fix the explicit-assignment case; absent-key
+// lookups still hit the prototype. Rejecting reserved IDs at emit time catches
+// the whole class regardless of how the `ParsedCharacterDirectory` was built
+// (parse-characters also checks, but direct callers like tests can bypass it).
+// Mirrors the `assertNoCharEnumKeyCollisions` defense-in-depth pattern. The
+// reserved-name set itself is imported from parse-characters so both sites
+// cannot drift.
 function assertNoReservedCharacterIds(ids: string[]): void {
     const reserved = ids.filter(id => RESERVED_OBJECT_PROPERTY_NAMES.has(id));
     if (reserved.length > 0) {
@@ -296,42 +296,6 @@ function emitCharacters(dir: ParsedCharacterDirectory): string {
     );
 }
 
-function emitPresentation(dir: ParsedCharacterDirectory): string {
-    // Computed-property keys (`["id"]: "left"`) create own data properties
-    // unconditionally, even for names like `__proto__` that have special
-    // object-literal prototype-setter semantics as bare keys. Reserved
-    // Object.prototype names are rejected upstream in `emitCharacters` and
-    // `parseCharacters`, so this path is defense-in-depth — computed keys
-    // ensure any ID that slips through still becomes an own property rather
-    // than silently setting the prototype. The character table emitter uses
-    // computed keys for the same reason.
-    const slotEntries = dir.characters
-        .filter(character => character.portraitSlot !== undefined)
-        .map(
-            character =>
-                `            [${q(character.id)}]: ${q(character.portraitSlot!)},`
-        )
-        .join('\n');
-    // Emit `{}` inline when there are no slots so the block does not contain a
-    // stray blank line between the braces.
-    const slotsBlock =
-        slotEntries.length > 0
-            ? `        slotsByCharacterId: {\n${slotEntries}\n        },\n`
-            : `        slotsByCharacterId: {},\n`;
-
-    return (
-        HEADER +
-        `import type { StoryPresentationMetadata } from "../../types";\n\n` +
-        `export const storyPresentation = {\n` +
-        `    portrait: {\n` +
-        `        activeLimit: 1,\n` +
-        `        defaultSlot: "left",\n` +
-        slotsBlock +
-        `    },\n` +
-        `} as const satisfies StoryPresentationMetadata;\n`
-    );
-}
-
 export function emitStory(
     story: StoryIR,
     outDir: string,
@@ -342,10 +306,6 @@ export function emitStory(
 
     // Generate characters.ts
     writeFileSync(join(outDir, 'characters.ts'), emitCharacters(characterDir));
-    writeFileSync(
-        join(outDir, 'presentation.ts'),
-        emitPresentation(characterDir)
-    );
 
     const portraitEnum = buildPortraitEnum(story);
     const portraitsCode = emitPortraits(portraitEnum);

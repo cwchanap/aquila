@@ -92,7 +92,6 @@
   let locale = $derived(readerState.locale);
   let dialogueIndex = $derived(readerState.dialogueIndex);
   let activeFlow = $derived(readerState.activeFlow);
-  let presentation = $derived(readerState.presentation);
   let loadStatus = $derived(readerState.loadStatus);
   let loadError = $derived(readerState.loadError);
   let hasActivePayload = $derived(readerState.hasActivePayload);
@@ -759,7 +758,6 @@
           {currentSceneId}
           {canGoNext}
           {locale}
-          {presentation}
           {onChoice}
           {onNext}
           {onNavigate}

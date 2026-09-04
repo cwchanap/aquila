@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { StoryFlowConfig, StoryLoaderResult } from '../../stories';
+import {
+    getStoryContent,
+    type StoryFlowConfig,
+    type StoryLoaderResult,
+} from '../../stories';
 import { StoryLoadError } from '../errors';
 import { createStoryContentLoader, type StoryPayload } from '../loader';
 import {
@@ -12,13 +16,6 @@ const flow = { start: 'act1', nodes: [] } as StoryFlowConfig;
 const payload: StoryLoaderResult = {
     dialogue: { act1: [{ dialogue: 'line' }] },
     choices: {},
-    presentation: {
-        portrait: {
-            activeLimit: 1,
-            defaultSlot: 'left',
-            slotsByCharacterId: {},
-        },
-    },
 };
 const importer = vi.fn(async () => ({ ...payload, flow }));
 
@@ -200,6 +197,19 @@ describe('createStoryContentLoader', () => {
             freshResult
         );
         expect(racingImporter).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not expose presentation metadata on loaded story payloads', async () => {
+        const loader = createStoryContentLoader({
+            train_adventure: async locale => ({
+                ...getStoryContent('train_adventure', locale),
+                flow,
+            }),
+        });
+
+        expect(await loader.load('train_adventure', 'en')).not.toHaveProperty(
+            'presentation'
+        );
     });
 
     it('rejects unknown stories and unsupported locales explicitly', async () => {

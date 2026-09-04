@@ -1,3 +1,5 @@
+import type { PortraitStageSlot } from './portrait-stage';
+
 export type VisualReleaseState =
     | 'idle'
     | 'loading'
@@ -30,9 +32,10 @@ export type VisualImageLayer = {
     height: number | null;
 };
 
-export type VisualPortraitLayer = VisualImageLayer & {
-    slot: 'left' | 'right';
-};
+export type VisualPortraitLayer = VisualImageLayer;
+export type VisualPortraitLayers = Readonly<
+    Record<PortraitStageSlot, VisualPortraitLayer>
+>;
 
 /**
  * Identity of the validated runtime asset release currently serving visuals.
@@ -52,7 +55,8 @@ export type VisualSnapshot = {
     release: VisualReleaseState;
     activeBackground: VisualImageLayer;
     stagingBackground: VisualImageLayer;
-    portrait: VisualPortraitLayer;
+    portraits: VisualPortraitLayers;
+    activePortraitSlot: PortraitStageSlot | null;
     releaseIdentity: VisualReleaseIdentity | null;
     status: 'stale' | 'fallback' | 'unavailable' | null;
 };

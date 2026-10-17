@@ -331,8 +331,7 @@ export class ReaderManager {
         if (!node) return;
         const atEnding =
             node.next === null &&
-            dialogue.length > 0 &&
-            dialogueIndex >= dialogue.length - 1;
+            dialogueIndex >= Math.max(dialogue.length - 1, 0);
         this.storyProgress.record({
             storyId,
             sceneId: currentSceneId,

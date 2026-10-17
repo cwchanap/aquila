@@ -37,6 +37,7 @@
     onNext = () => {},
     onNavigate = () => {},
     onModeChange = () => {},
+    visualModeAvailable = true,
     backUrl = '/',
     showBookmarkButton = true,
     isInitialMount = true,
@@ -56,6 +57,7 @@
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
     onModeChange?: (mode: ReaderMode) => void | Promise<void>;
+    visualModeAvailable?: boolean;
     backUrl?: string;
     showBookmarkButton?: boolean;
     isInitialMount?: boolean;
@@ -381,18 +383,20 @@
         >
           <History size={20} aria-hidden="true" />
         </button>
-        <button
-          type="button"
-          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
-          aria-label={t.reader.visualNovelMode}
-          onclick={() => void enterVisualMode()}
-          use:longpress={{
-            onLongPress: (node) => showTooltip(node, t.reader.visualNovelMode),
-            onRelease: hideTooltip,
-          }}
-        >
-          <Film size={20} aria-hidden="true" />
-        </button>
+        {#if visualModeAvailable}
+          <button
+            type="button"
+            class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+            aria-label={t.reader.visualNovelMode}
+            onclick={() => void enterVisualMode()}
+            use:longpress={{
+              onLongPress: (node) => showTooltip(node, t.reader.visualNovelMode),
+              onRelease: hideTooltip,
+            }}
+          >
+            <Film size={20} aria-hidden="true" />
+          </button>
+        {/if}
         {#if showBookmarkButton}
           <button
             type="button"

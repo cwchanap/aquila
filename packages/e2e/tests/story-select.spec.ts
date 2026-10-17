@@ -38,6 +38,31 @@ test.describe('Story select shelves', () => {
         await expect(reader.ready).not.toContainText(/[一-鿿]{4}/);
     });
 
+    test('opens a quick read as text when Visual Novel mode was last used', async ({
+        page,
+    }) => {
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'visual');
+        });
+        const stories = new StoriesPage(page);
+        const reader = new ReaderPage(page);
+        await stories.goto();
+        await stories.quickReads
+            .getByRole('link', { name: 'Day 4,012' })
+            .click();
+
+        await expect(
+            reader.ready.locator('[data-story-id="day_4012"]')
+        ).toBeVisible();
+        await expect(page.getByTestId('visual-novel-reader')).toHaveCount(0);
+        await expect(page.getByTestId('visual-status')).toHaveCount(0);
+        expect(
+            await page.evaluate(() =>
+                localStorage.getItem('aquila:reader-mode:v1')
+            )
+        ).toBe('visual');
+    });
+
     test('keeps a saga bookmark after reading a short story', async ({
         page,
     }) => {

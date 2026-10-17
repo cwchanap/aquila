@@ -87,7 +87,7 @@ describe('lengthLabel', () => {
     });
 
     it('shows endings and an hour range for a branching saga', () => {
-        expect(lengthLabel(branchingSaga, en)).toBe('30 endings · 1–9 h');
+        expect(lengthLabel(branchingSaga, en)).toBe('30 endings · ~1–9 h');
     });
 });
 

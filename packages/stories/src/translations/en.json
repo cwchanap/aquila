@@ -94,7 +94,7 @@
     "readAgain": "Read again",
     "minutes": "{n} min",
     "hours": "~{n} h",
-    "hoursRange": "{min}–{max} h",
+    "hoursRange": "~{min}–{max} h",
     "chapters": "{n} chapters",
     "endings": "{n} endings",
     "endingsFound": "{found} of {total} endings",

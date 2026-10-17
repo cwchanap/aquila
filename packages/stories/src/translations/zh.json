@@ -94,7 +94,7 @@
     "readAgain": "再讀一次",
     "minutes": "{n} 分鐘",
     "hours": "約 {n} 小時",
-    "hoursRange": "{min}–{max} 小時",
+    "hoursRange": "約 {min}–{max} 小時",
     "chapters": "{n} 章",
     "endings": "{n} 個結局",
     "endingsFound": "已解鎖 {found}／{total} 個結局",

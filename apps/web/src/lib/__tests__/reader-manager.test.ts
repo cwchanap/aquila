@@ -1425,6 +1425,49 @@ describe('ReaderManager', () => {
             );
         });
 
+        it('keeps a per-story place and records the ending reached', async () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [
+                        { characterId: 'narrator', dialogue: 'One' },
+                        { characterId: 'narrator', dialogue: 'Two' },
+                    ],
+                    act2: [{ characterId: 'narrator', dialogue: 'Last' }],
+                },
+                choices: {},
+            });
+
+            manager = new ReaderManager('en');
+            await manager.initialize();
+
+            const progressWrites = () =>
+                mockStorage.setItem.mock.calls
+                    .filter(
+                        ([key]: [string, string]) =>
+                            key === 'aquila:storyProgress:v1'
+                    )
+                    .map(([, value]: [string, string]) => JSON.parse(value));
+
+            expect(progressWrites().at(-1)).toEqual({
+                the_seventh_mirror: expect.objectContaining({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    finished: false,
+                    endings: [],
+                }),
+            });
+
+            await manager.handleNext();
+
+            expect(progressWrites().at(-1)).toEqual({
+                the_seventh_mirror: expect.objectContaining({
+                    sceneId: 'act2',
+                    finished: true,
+                    endings: ['act2'],
+                }),
+            });
+        });
+
         it('handleNext shows end-of-story alert at a terminal scene', async () => {
             mockGetStoryFlow.mockReturnValue({
                 start: 'act2',

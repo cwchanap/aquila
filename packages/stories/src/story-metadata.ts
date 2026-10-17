@@ -4,6 +4,11 @@ export const REGISTERED_STORY_IDS = [
     'train_adventure',
     'dont_save_me_before_midnight',
     'the_seventh_mirror',
+    'elevator_game',
+    'demon_lord_is_hiring',
+    'three_am_laundromat',
+    'day_4012',
+    'one_pot_before_dawn',
 ] as const;
 
 export type RegisteredStoryId = (typeof REGISTERED_STORY_IDS)[number];

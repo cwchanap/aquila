@@ -2,6 +2,11 @@ export const ALLOWED_STORIES = [
     'train_adventure',
     'dont_save_me_before_midnight',
     'the_seventh_mirror',
+    'elevator_game',
+    'demon_lord_is_hiring',
+    'three_am_laundromat',
+    'day_4012',
+    'one_pot_before_dawn',
 ] as const;
 export type AllowedStoryId = (typeof ALLOWED_STORIES)[number];
 

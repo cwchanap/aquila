@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./async": "./src/async/index.ts",
     "./async/testing": "./src/async/testing.ts",
+    "./catalog": "./src/catalog.ts",
     "./audio-generation": "./src/audio-generation/index.ts",
     "./audio-publishing": "./src/audio-publishing.ts",
     "./runtime-assets": "./src/runtime-assets/index.ts",

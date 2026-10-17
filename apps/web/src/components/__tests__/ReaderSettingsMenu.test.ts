@@ -61,6 +61,17 @@ describe('ReaderSettingsMenu', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('hides the mode choice when the story has no visuals', () => {
+        renderSettings({ mode: 'text', visualModeAvailable: false });
+
+        expect(
+            screen.queryByRole('button', { name: 'Visual Novel' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Text' })
+        ).not.toBeInTheDocument();
+    });
+
     it('closes through the close action', async () => {
         renderSettings();
 

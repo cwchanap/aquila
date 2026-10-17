@@ -1,5 +1,8 @@
 import type { StoryCatalogEntry } from '@aquila/stories/catalog';
-import { ZH_CHARS_PER_MINUTE } from '@aquila/stories/catalog';
+import {
+    ZH_CHARS_PER_MINUTE,
+    estimateReadingMinutes,
+} from '@aquila/stories/catalog';
 import type { Translations } from '@aquila/stories';
 import type { StoryProgress, StoryProgressMap } from './story-progress-store';
 
@@ -46,11 +49,9 @@ function hours(chars: number): number {
 export function lengthLabel(entry: StoryCatalogEntry, t: StoriesText): string {
     const { stats } = entry;
     if (entry.format === 'short') {
-        const minutes = Math.max(
-            1,
-            Math.round(stats.maxPathChars / ZH_CHARS_PER_MINUTE)
-        );
-        return fill(t.minutes, { n: minutes });
+        return fill(t.minutes, {
+            n: estimateReadingMinutes(stats.maxPathChars),
+        });
     }
     const lo = hours(stats.minPathChars);
     const hi = hours(stats.maxPathChars);

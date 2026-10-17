@@ -11,6 +11,7 @@
     open = $bindable(false),
     locale,
     mode,
+    visualModeAvailable = true,
     onModeChange,
     sfxEnabled,
     onSfxEnabledChange,
@@ -25,6 +26,7 @@
     open?: boolean;
     locale: Locale;
     mode: ReaderMode;
+    visualModeAvailable?: boolean;
     onModeChange: (mode: ReaderMode) => void | Promise<void>;
     sfxEnabled: boolean;
     onSfxEnabledChange: (enabled: boolean) => void;
@@ -118,24 +120,26 @@
         </button>
       </div>
 
-      <div class="flex flex-col gap-2" aria-label={t.reader.readerMode}>
-        <button
-          type="button"
-          class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
-          aria-pressed={mode === 'text'}
-          onclick={() => void chooseMode('text')}
-        >
-          {t.reader.textMode}
-        </button>
-        <button
-          type="button"
-          class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
-          aria-pressed={mode === 'visual'}
-          onclick={() => void chooseMode('visual')}
-        >
-          {t.reader.visualNovelMode}
-        </button>
-      </div>
+      {#if visualModeAvailable}
+        <div class="flex flex-col gap-2" aria-label={t.reader.readerMode}>
+          <button
+            type="button"
+            class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+            aria-pressed={mode === 'text'}
+            onclick={() => void chooseMode('text')}
+          >
+            {t.reader.textMode}
+          </button>
+          <button
+            type="button"
+            class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+            aria-pressed={mode === 'visual'}
+            onclick={() => void chooseMode('visual')}
+          >
+            {t.reader.visualNovelMode}
+          </button>
+        </div>
+      {/if}
 
       {#if mode === 'visual'}
         <button

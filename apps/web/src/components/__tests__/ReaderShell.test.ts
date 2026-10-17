@@ -391,6 +391,29 @@ describe('ReaderShell', () => {
     });
     afterEach(() => vi.clearAllMocks());
 
+    it('opens a text-only story as text while keeping the saved Visual Novel choice', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.storyId = 'elevator_game';
+        const factory = vi.fn(() => createRuntimeHarness().runtime);
+        render(ReaderShell, { props: { createVisualRuntime: factory } });
+        await tick();
+
+        expect(
+            screen.queryByTestId('visual-novel-reader')
+        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId('visual-status')).not.toBeInTheDocument();
+        expect(factory).not.toHaveBeenCalled();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Visual Novel' })
+        ).not.toBeInTheDocument();
+        expect(localStorage.getItem(READER_MODE_KEY)).toBe('visual');
+    });
+
     it('owns a settings modal outside the reader-ready subtree while it is open', async () => {
         stubMatchMedia(false);
         const onIndexChange = vi.fn();

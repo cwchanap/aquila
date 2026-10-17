@@ -3,6 +3,7 @@
   import type { DialogueEntry } from '@aquila/stories';
   import type { AudioAssetType } from '@aquila/stories/runtime-assets';
   import { getTranslations } from '@aquila/stories/translations';
+  import { supportsVisualMode } from '@aquila/stories/async';
   import { readerState } from '@/lib/reader-state.svelte';
   import { logger } from '@/lib/logger';
   import {
@@ -100,7 +101,13 @@
   );
   let t = $derived(getTranslations(locale));
   let readerReadyElement: HTMLElement | null = $state(null);
-  let readerMode = $state(readReaderMode());
+  // The saved choice applies to every story that has visuals; a text-only
+  // story reads as text without overwriting it.
+  let preferredMode = $state(readReaderMode());
+  let visualModeAvailable = $derived(supportsVisualMode(storyId));
+  let readerMode: ReaderMode = $derived(
+    visualModeAvailable ? preferredMode : 'text'
+  );
   let audioRuntime: AudioReaderRuntime | null = $state(null);
   let audioReleaseIdentity: RuntimeReleaseIdentity | null = $state(null);
   let audioRuntimeStoryId: string | null = $state(null);
@@ -144,6 +151,7 @@
 
   function setReaderMode(mode: ReaderMode): void {
     if (readerMode === mode) return;
+    if (mode === 'visual' && !visualModeAvailable) return;
     if (mode === 'text') {
       sfxPlayer.stop();
       bgmPlayer.stop();
@@ -159,7 +167,7 @@
       audioRuntimeStoryId === storyId
         ? audioRuntime
         : null;
-    readerMode = mode;
+    preferredMode = mode;
     writeReaderMode(mode);
     if (retainedRuntime) void retainedRuntime.softRevalidate();
     if (retainedAudioRuntime && !audioInitialLoadPending) {
@@ -703,6 +711,7 @@
     bind:open={settingsOpen}
     {locale}
     mode={readerMode}
+    {visualModeAvailable}
     onModeChange={changeReaderMode}
     {sfxEnabled}
     onSfxEnabledChange={setSfxEnabled}
@@ -784,6 +793,7 @@
           {backUrl}
           {showBookmarkButton}
           onModeChange={changeReaderMode}
+          {visualModeAvailable}
           {isInitialMount}
           interactionDisabled={leafDisabled}
         />

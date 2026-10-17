@@ -135,6 +135,14 @@ describe('MobileNovelReader', () => {
         expect(onModeChange).toHaveBeenCalledWith('visual');
     });
 
+    it('leaves Visual Novel out of the mobile menu for a text-only story', async () => {
+        renderReader({ visualModeAvailable: false });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
+        expect(screen.queryByLabelText('Visual Novel')).not.toBeInTheDocument();
+    });
+
     describe('controlled contract', () => {
         it('renders the active line at the dialogueIndex prop', async () => {
             renderReader({ dialogueIndex: 0 });

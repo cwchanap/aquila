@@ -8,6 +8,8 @@ import { getTranslations } from '@aquila/stories/translations';
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 import { LocalBookmarksStore } from './local-bookmarks-store';
+import { StoryProgressStore } from './story-progress-store';
+import { getBrowserStorage } from './reader-mode';
 import { readerState } from './reader-state.svelte';
 import {
     migratePersisted,
@@ -45,6 +47,7 @@ export class ReaderManager {
         defaultStoryId: string;
     };
     private readonly localBookmarks: LocalBookmarksStore;
+    private readonly storyProgress: StoryProgressStore;
     private activeStory: AsyncStoryLoaderResult | null = null;
     private pendingIntent: ReaderIntent | null = null;
     private loadGeneration = 0;
@@ -108,6 +111,7 @@ export class ReaderManager {
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
+        this.storyProgress = new StoryProgressStore(getBrowserStorage());
     }
 
     private get storageKey(): string {
@@ -313,6 +317,28 @@ export class ReaderManager {
         } catch (e) {
             console.error('Failed to persist reader state', e);
         }
+        this.recordStoryProgress();
+    }
+
+    /** Keep a per-story copy of the position (the session above holds only
+     *  the most recent story) and note when the reader has reached an ending:
+     *  the last line of a scene with no next scene and no choice. */
+    private recordStoryProgress(): void {
+        const { storyId, currentSceneId, dialogueIndex, dialogue } =
+            readerState;
+        if (!storyId || !currentSceneId || !this.activeStory) return;
+        const node = this.getSceneNode(storyId, currentSceneId);
+        if (!node) return;
+        const atEnding =
+            node.next === null &&
+            dialogue.length > 0 &&
+            dialogueIndex >= dialogue.length - 1;
+        this.storyProgress.record({
+            storyId,
+            sceneId: currentSceneId,
+            dialogueIndex,
+            atEnding,
+        });
     }
 
     /** Sync the URL query to the current progression. First restore uses

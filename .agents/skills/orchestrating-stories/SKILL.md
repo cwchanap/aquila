@@ -381,52 +381,24 @@ export const ALLOWED_STORIES = [
 ] as const;
 ```
 
-**7e. Add the story card (stories index)**
+**7e. Add the story to the catalog (story select page)**
 
-Edit `apps/web/src/pages/[locale]/stories/index.astro` — add a new `<a class="story-card ...">` block inside the `Story Cards Grid` `<div>` (mirroring the existing `Train Adventure` / `Don't Save Me Before Midnight` cards). Without this, the story is unreachable from the UI.
+Edit `packages/stories/src/catalog.ts` — import the generated `<story>Stats` from `./generated/<story>/stats` and add an entry to `STORY_CATALOG`. The story select page (`apps/web/src/components/StorySelect.svelte`) renders every catalog entry, so without this the story is unreachable from the UI:
 
-The page uses anchor-based cards (NOT a `<Button>` component) — each card is an `<a>` with a `story-card` class, a glassmorphism inner `<div>`, an emblem, a title, and an aria-hidden descriptor. Copy an existing card block and adapt the accent color, emblem SVG, and translation keys:
-
-```astro
-<!-- My Story Card -->
-<a
-  href={`/${locale}/reader?story=${StoryId.MY_STORY}`}
-  class="story-card group block rounded-2xl overflow-hidden motion-safe:animate-[fadeSlideUp_0.6s_0.4s_ease_both]"
->
-  <div class="relative h-full p-8 bg-white/[0.08] hover:bg-white/[0.14] backdrop-blur-xl border border-white/15 hover:border-emerald-300/40 rounded-2xl transition-all duration-500 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-[0_20px_60px_rgba(110,231,183,0.12)]">
-    <!-- Chapter emblem -->
-    <div class="mb-5 flex items-start justify-between">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/30 to-teal-500/30 border border-emerald-300/30 flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-300/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <!-- replace with a story-appropriate icon path -->
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.121 4.5 7.203 4.5 5.203 6.253m6.797 0C13.879 4.5 16.797 4.5 18.797 6.253M12 6.253C10.121 8.006 7.203 8.006 5.203 6.253m6.797 0C13.879 8.006 16.797 8.006 18.797 6.253M5.203 6.253C4.222 7.13 3.708 8.252 3.708 9.5v8a2 2 0 002 2h12.584a2 2 0 002-2v-8c0-1.248-.514-2.37-1.495-3.247" />
-        </svg>
-      </div>
-      <!-- Arrow hint -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/20 motion-safe:transition-all motion-safe:duration-300 motion-safe:group-hover:text-emerald-300/70 motion-safe:group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
-    </div>
-
-    <!-- Story title -->
-    <h2 class="text-xl font-serif font-semibold text-white/90 mb-2 leading-snug group-hover:text-white transition-colors duration-300">
-      {t("stories.myStory")}
-    </h2>
-
-    <!-- Descriptor — aria-hidden so accessible name stays as the title -->
-    <p class="text-white/45 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors duration-300" aria-hidden="true">
-      {t("stories.myStoryDesc")}
-    </p>
-
-    <!-- Bottom shimmer line -->
-    <div class="mt-6 h-px bg-gradient-to-r from-emerald-400/0 via-emerald-400/30 to-emerald-400/0 motion-safe:scale-x-0 motion-safe:group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-  </div>
-</a>
+```typescript
+{
+    id: 'my_story',
+    format: 'short', // 'short' (under 10 minutes, "Quick reads" shelf) or 'saga'
+    genre: 'mystery', // key under stories.genres.* in translations
+    accent: 'emerald', // card colour family (see StoryAccent)
+    translationKey: 'myStory', // stories.myStory (title) + stories.myStoryDesc (teaser)
+    stats: myStoryStats,
+},
 ```
 
-Notes:
-- Stagger the `fadeSlideUp` animation delay (the existing cards use `0.1s` and `0.25s`; pick the next slot, e.g. `0.4s`).
-- Add the descriptor translation key (`stories.myStoryDesc`) alongside the title key in Step 7f — the card grid expects both.
+Reading time, chapter count and endings on the card come from the compiler-emitted stats, never typed by hand. Optionally add a card icon for the story id in the `ICONS` map in `StorySelect.svelte`. Also add the story directory to `storyDirectories` in `apps/web/scripts/assert-story-chunks.ts` (the build fails otherwise).
+
+**English text (optional mirror tree).** To ship real English instead of the zh placeholder, add `raw/<story>/en/` with the same act files at the same relative paths. Each en file holds exactly one entry per zh entry, in the same order and with the same speaker (English display names registered as aliases in `characters.md`), and no `bg`/`sfx`/`bgm` blocks or `[expression]` tags — visuals and audio are copied from the zh entry. The compiler then emits `dialogue.en.ts`; load it in the story's `index.ts` and add a hand-written `choices.en.ts` (see `stories/elevatorGame/index.ts`).
 
 **7f. Add story label to translations**
 
@@ -518,7 +490,8 @@ The manifest is a source of truth for both the prompts and where each rendered P
 | `src/stories/index.ts` | Add import, `StoryFlowConfig` union member, entries in `storyLoaders` + `storyFlows` |
 | `apps/web/src/lib/story-types.ts` | Add to `StoryId` enum + `STORY_NAMES` |
 | `apps/web/src/lib/local-characters.ts` | Add to `ALLOWED_STORIES` array (else character creation rejects the ID) |
-| `apps/web/src/pages/[locale]/stories/index.astro` | Add `<a class="story-card">` card (else story is unreachable from UI) |
+| `packages/stories/src/catalog.ts` | Add a `STORY_CATALOG` entry (else story is unreachable from UI) |
+| `apps/web/scripts/assert-story-chunks.ts` | Add the story directory to `storyDirectories` |
 | `packages/stories/src/translations/{en,zh}.json` | Add `stories.<storyName>` label key (referenced by the button) |
 | `packages/assets/{package.json,types.d.ts}` | **(Optional)** Export asset paths if shipping images |
 
@@ -529,5 +502,5 @@ The manifest is a source of truth for both the prompts and where each rendered P
 - **Treating `characters.md` as optional**: It is **required** — the compiler throws if missing. Not a warning.
 - **Putting a chapter after branches**: Compiler limitation — branch terminals are hard-terminal, so any following chapter is unreachable. See Step 1 limitation. Either duplicate content into both branches or drop the chapter.
 - **Wrong act numbering**: Branches CONTINUE the parent's act numbering; chapters RESTART at `act1`. Reversed, this is the most common authoring mistake.
-- **Forgetting to register**: After compiling, the story won't appear until you register in **all 5 required places** (`stories/index.ts`, `story-types.ts`, `local-characters.ts`, `stories/index.astro`, `translations/{en,zh}.json`). See Quick Reference.
+- **Forgetting to register**: After compiling, the story won't appear until you register in **all required places** (`story-metadata.ts`, `stories/index.ts`, `async/registry.ts`, `story-types.ts`, `local-characters.ts`, `catalog.ts`, `assert-story-chunks.ts`, `translations/{en,zh}.json`). See Quick Reference.
 - **Editing generated files**: Everything under `src/generated/` is compiler-owned. Re-run `bun compile:stories` after any markdown change.

@@ -64,6 +64,11 @@ const storyDirectories = {
     train_adventure: 'trainAdventure',
     dont_save_me_before_midnight: 'dontSaveMeBeforeMidnight',
     the_seventh_mirror: 'theSeventhMirror',
+    elevator_game: 'elevatorGame',
+    demon_lord_is_hiring: 'demonLordIsHiring',
+    three_am_laundromat: 'threeAmLaundromat',
+    day_4012: 'day4012',
+    one_pot_before_dawn: 'onePotBeforeDawn',
 } satisfies Record<RegisteredStoryId, string>;
 
 const stories: StoryBoundary[] = REGISTERED_STORY_IDS.map(storyId => {

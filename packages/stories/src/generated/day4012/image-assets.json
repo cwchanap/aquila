@@ -1,0 +1,72 @@
+{
+  "storyId": "day_4012",
+  "backgrounds": [
+    {
+      "key": "_root/act1_s0",
+      "path": "day_4012/backgrounds/_root/act1_s0.png",
+      "prompt": "colony ship cryogenic bay interior, long rows of frosted sleeper pods fading into darkness, faint blue status lights, breath fog in cold air, condensation on metal floor grating, single open pod in foreground, muted cold blue and steel grey palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act2_s0",
+      "path": "day_4012/backgrounds/_root/act2_s0.png",
+      "prompt": "colony ship cryogenic bay interior, long rows of frosted sleeper pods fading into darkness, faint blue status lights, breath fog in cold air, condensation on metal floor grating, single open pod in foreground, muted cold blue and steel grey palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act3_s0",
+      "path": "day_4012/backgrounds/_root/act3_s0.png",
+      "prompt": "colony ship AI core chamber, tall cylindrical column of dark glass server stacks, warm amber light pulsing unevenly inside, several dead black sections, thin frost on cooling pipes, narrow catwalk ring, deep shadows, amber and charcoal palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s0",
+      "path": "day_4012/backgrounds/branch_1a/b1a_act4_s0.png",
+      "prompt": "colony ship AI core chamber, tall cylindrical column of dark glass server stacks, warm amber light pulsing unevenly inside, several dead black sections, thin frost on cooling pipes, narrow catwalk ring, deep shadows, amber and charcoal palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s1",
+      "path": "day_4012/backgrounds/branch_1a/b1a_act4_s1.png",
+      "prompt": "colony ship cryogenic bay interior, long rows of frosted sleeper pods fading into darkness, faint blue status lights, breath fog in cold air, condensation on metal floor grating, single open pod in foreground, muted cold blue and steel grey palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s0",
+      "path": "day_4012/backgrounds/branch_1b/b1b_act4_s0.png",
+      "prompt": "colony ship AI core chamber, tall cylindrical column of dark glass server stacks, warm amber light pulsing unevenly inside, several dead black sections, thin frost on cooling pipes, narrow catwalk ring, deep shadows, amber and charcoal palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s1",
+      "path": "day_4012/backgrounds/branch_1b/b1b_act4_s1.png",
+      "prompt": "colony ship observation deck, wide curved window onto deep space, dense field of stars, one star brighter than the rest near center, two worn chairs facing the glass, small potted plant under grow light, quiet dim cabin light, deep navy and silver palette, moody cinematic visual-novel background art, wide establishing shot"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "cheng_yining/base",
+      "path": "day_4012/characters/cheng_yining/base.png",
+      "prompt": "anime visual-novel portrait, 28-year-old Taiwanese woman, short black hair damp and slightly frosted, tired sharp eyes, pale skin with faint cold flush, grey thermal jumpsuit with engineer patch, thin silver blanket over shoulders, calm guarded expression, cold blue side light, muted steel palette, upper-body shot, clean dark background"
+    },
+    {
+      "key": "vigil/base",
+      "path": "day_4012/characters/vigil/base.png",
+      "prompt": "abstract ship-interface portrait, no human features, a soft circular waveform ring of warm amber light on a dark glass console panel, thin concentric lines like tree rings, faint scan lines, a single slow pulse at the center, minimal glyphs around the edge, visual-novel character portrait framing, clean dark background"
+    },
+    {
+      "key": "captain_chou/base",
+      "path": "day_4012/characters/captain_chou/base.png",
+      "prompt": "recorded hologram portrait, East Asian man in his late fifties, short grey hair, tired kind eyes, plain dark colony-ship captain's jacket with a small egret insignia, translucent blue hologram tint, horizontal scan-line glitches, faint timestamp overlay in the corner, upper-body shot, dark background"
+    },
+    {
+      "key": "vigil/dim",
+      "path": "day_4012/characters/vigil/dim.png",
+      "prompt": "abstract ship-interface portrait, no human features, the same amber waveform ring on dark glass now broken into segments, several arcs gone black, remaining light low and flickering unevenly, frost creeping at the panel edge, visual-novel character portrait framing, clean dark background"
+    },
+    {
+      "key": "cheng_yining/tearful",
+      "path": "day_4012/characters/cheng_yining/tearful.png",
+      "prompt": "anime visual-novel portrait, 28-year-old Taiwanese woman, short black hair, eyes wet but steady, jaw tight, holding back tears without looking away, grey thermal jumpsuit, warm amber light from below, upper-body shot, clean dark background"
+    },
+    {
+      "key": "cheng_yining/older",
+      "path": "day_4012/characters/cheng_yining/older.png",
+      "prompt": "anime visual-novel portrait, Taiwanese woman in her late sixties, short grey-white hair, deep laugh lines and tired kind eyes, same faded grey jumpsuit patched at the elbows, knitted shawl over shoulders, quiet peaceful expression, soft starlight from a window, deep navy palette, upper-body shot, clean dark background"
+    }
+  ]
+}

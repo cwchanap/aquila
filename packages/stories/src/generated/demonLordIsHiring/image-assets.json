@@ -1,0 +1,57 @@
+{
+  "storyId": "demon_lord_is_hiring",
+  "backgrounds": [
+    {
+      "key": "_root/act1_s0",
+      "path": "demon_lord_is_hiring/backgrounds/_root/act1_s0.png",
+      "prompt": "vast gothic throne room of a demon lord's castle at dusk, towering black stone pillars, tall narrow arched windows letting in long slanted amber sunset light, a single high-backed obsidian throne on a raised dais, long pillar shadows striping the empty flagstone floor, faded red banners, dust motes in the air, quiet and cavernous, muted black, deep red and amber palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act2_s0",
+      "path": "demon_lord_is_hiring/backgrounds/_root/act2_s0.png",
+      "prompt": "the same vast gothic demon lord's throne room rearranged as a job interview room in bright morning light, the obsidian throne pushed back against the far wall under a white dust sheet, a long plain wooden table in the center with two glasses of water, a neat stack of papers, a pen and a small folded paper placard, a single lonely wooden chair facing the table across a wide stretch of flagstone, pale cool sunlight through tall arched windows, towering black pillars, absurdly formal and empty, muted black, grey and soft gold palette, moody cinematic visual-novel background art, wide establishing shot"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "demon_lord/base",
+      "path": "demon_lord_is_hiring/characters/demon_lord/base.png",
+      "prompt": "anime visual-novel portrait, tall ageless demon lord with pale grey skin, long straight black hair, two curved obsidian horns, tired crimson eyes with faint shadows beneath, high-collared black cape with a small mended patch on the left shoulder, composed formal posture, dim warm candlelight from the side, muted black and deep red palette, upper-body shot, clean background"
+    },
+    {
+      "key": "serin/base",
+      "path": "demon_lord_is_hiring/characters/serin/base.png",
+      "prompt": "anime visual-novel portrait, composed woman who looks about thirty, sleek black hair in a tight low bun, small dark horns barely visible above her ears, calm violet eyes, neat dark grey high-necked secretary uniform with silver buttons, holding a leather folder against her chest, unreadable neutral expression, cool soft window light, muted charcoal and violet palette, upper-body shot, clean background"
+    },
+    {
+      "key": "demon_lord/weary",
+      "path": "demon_lord_is_hiring/characters/demon_lord/weary.png",
+      "prompt": "anime visual-novel portrait, demon lord with long black hair and curved obsidian horns, slumped slightly against a stone throne back, eyes half-lidded and unfocused, one hand pressed to his temple, black high-collared cape, low amber dusk light, desaturated deep red palette, upper-body shot"
+    },
+    {
+      "key": "serin/smile",
+      "path": "demon_lord_is_hiring/characters/serin/smile.png",
+      "prompt": "anime visual-novel portrait, composed secretary with sleek black hair in a low bun and small dark horns, the barest closed-mouth smile, violet eyes calm and knowing, dark grey high-necked uniform, leather folder tucked under one arm, soft warm light, upper-body shot"
+    },
+    {
+      "key": "aldric/base",
+      "path": "demon_lord_is_hiring/characters/aldric/base.png",
+      "prompt": "anime visual-novel portrait, broad-shouldered man in his late thirties, short neatly combed sandy hair, square jaw, steady pale blue eyes, polished silver-white full plate armor with a small gold sun emblem, a tiny notebook in one gauntleted hand, perfectly upright posture, bright clean daylight, cool silver and white palette, upper-body shot, clean background"
+    },
+    {
+      "key": "toby/base",
+      "path": "demon_lord_is_hiring/characters/toby/base.png",
+      "prompt": "anime visual-novel portrait, nine-year-old boy, round face, messy chestnut hair poking out from under an oversized dented steel helmet tilted over one eyebrow, wide earnest brown eyes, plain linen tunic, wooden toy sword strapped to his back with crayon writing on the blade, small canvas backpack, serious determined expression, warm afternoon light, soft earthy palette, upper-body shot, clean background"
+    },
+    {
+      "key": "mysterious_applicant/base",
+      "path": "demon_lord_is_hiring/characters/mysterious_applicant/base.png",
+      "prompt": "anime visual-novel portrait, woman who looks about thirty wearing an obviously voluminous curly blonde wig with a strand of sleek black hair escaping at the temple, small dark horns poking through the curls, large round wire-rimmed glasses, calm violet eyes, old-fashioned lavender day dress with a lace collar, hands folded neatly, perfectly composed polite expression, soft window light, muted lavender and gold palette, upper-body shot, clean background"
+    },
+    {
+      "key": "demon_lord/touched",
+      "path": "demon_lord_is_hiring/characters/demon_lord/touched.png",
+      "prompt": "anime visual-novel portrait, demon lord with long black hair and curved obsidian horns, gaze lowered toward something in his hands, the faintest softening at the corners of his mouth, crimson eyes glassy but composed, black cape, warm soft afternoon light, upper-body shot"
+    }
+  ]
+}

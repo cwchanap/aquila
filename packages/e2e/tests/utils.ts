@@ -67,7 +67,27 @@ export class StoriesPage {
     }
 
     get trainAdventureLink() {
-        return this.page.getByRole('link', { name: this.trainAdventureText });
+        return this.sagas.getByRole('link', { name: this.trainAdventureText });
+    }
+
+    get quickReads() {
+        return this.page.getByTestId('quick-reads');
+    }
+
+    get sagas() {
+        return this.page.getByTestId('sagas');
+    }
+
+    get quickReadLinks() {
+        return this.quickReads.locator('a.story-card');
+    }
+
+    get sagaLinks() {
+        return this.sagas.locator('a.story-card');
+    }
+
+    get continueReading() {
+        return this.page.getByTestId('continue-reading');
     }
 
     async goto() {

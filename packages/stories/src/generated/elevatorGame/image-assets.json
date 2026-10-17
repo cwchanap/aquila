@@ -1,0 +1,62 @@
+{
+  "storyId": "elevator_game",
+  "backgrounds": [
+    {
+      "key": "_root/act1_s0",
+      "path": "elevator_game/backgrounds/_root/act1_s0.png",
+      "prompt": "ground-floor lobby of an aging Taipei apartment block at 2 a.m., empty security desk with a faded jacket hanging on the chair, small radio on the counter, wall of dented metal mailboxes covered in layered repair-service stickers, one buzzing fluorescent tube half-lit, worn terrazzo floor, glass entrance door showing a dark empty arcade sidewalk, narrow old elevator doors with a red digital floor display, sickly greenish-white light, muted cold palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act2_s0",
+      "path": "elevator_game/backgrounds/_root/act2_s0.png",
+      "prompt": "cramped interior of an old apartment elevator, scuffed beige metal walls, scratched mirror on the back wall, worn button panel numbered 1 to 12 with faded digits, framed inspection certificate, dull white fluorescent ceiling panel, doors closed, claustrophobic narrow space, muted beige-grey palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act2_s1",
+      "path": "elevator_game/backgrounds/_root/act2_s1.png",
+      "prompt": "the same cramped old apartment elevator interior, fluorescent ceiling panel stuttering mid-flicker, half the cabin plunged into shadow, harsh strobing white light catching the scratched mirror, button panel glowing faintly orange, dust in the air, cold sickly contrast, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act3_s0",
+      "path": "elevator_game/backgrounds/_root/act3_s0.png",
+      "prompt": "interior of a cramped old apartment elevator bathed entirely in deep red light, doors standing open onto a silent dark corridor, scratched mirror reflecting only red, button panel unlit and dead except one worn faded button, water droplets on the floor, oppressive stillness, monochrome crimson palette with black shadows, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s0",
+      "path": "elevator_game/backgrounds/branch_1a/b1a_act4_s0.png",
+      "prompt": "cramped interior of an old apartment elevator, scuffed beige metal walls, scratched mirror on the back wall, worn button panel numbered 1 to 12 with faded digits, framed inspection certificate, dull white fluorescent ceiling panel, doors closed, claustrophobic narrow space, muted beige-grey palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s1",
+      "path": "elevator_game/backgrounds/branch_1a/b1a_act4_s1.png",
+      "prompt": "ground-floor lobby of an aging Taipei apartment block at 2 a.m., empty security desk with a faded jacket hanging on the chair, small radio on the counter, wall of dented metal mailboxes covered in layered repair-service stickers, one buzzing fluorescent tube half-lit, worn terrazzo floor, glass entrance door showing a dark empty arcade sidewalk, narrow old elevator doors with a red digital floor display, sickly greenish-white light, muted cold palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s0",
+      "path": "elevator_game/backgrounds/branch_1b/b1b_act4_s0.png",
+      "prompt": "long silent apartment corridor on the tenth floor of an old Taipei block, flooded with uniform deep red light, worn terrazzo floor, rows of identical closed iron security doors with blank unreadable door numbers, shoe cabinets outside each door, a window at the far end showing nothing but flat red, no visible light source, utterly still, monochrome crimson palette with black shadows, moody cinematic visual-novel background art, wide establishing shot"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "xu_nian/base",
+      "path": "elevator_game/characters/xu_nian/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old East Asian college woman, shoulder-length messy black hair tucked behind one ear, oversized grey hoodie, tired half-lidded eyes with faint dark circles, dry unimpressed expression, phone held near her ear, dim fluorescent light from above, muted cold beige-grey palette, upper-body shot, clean background"
+    },
+    {
+      "key": "fang_rui/base",
+      "path": "elevator_game/characters/fang_rui/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old East Asian college woman, long wavy brown hair in a loose low ponytail, oversized cardigan over pajamas, hugging a cushion, phone pressed to her ear, wide anxious eyes lit by the glow of the phone screen, biting her lower lip, dark living room behind her, soft cold blue light, upper-body shot, clean background"
+    },
+    {
+      "key": "xu_nian/scared",
+      "path": "elevator_game/characters/xu_nian/scared.png",
+      "prompt": "anime visual-novel portrait, 20-year-old East Asian college woman, shoulder-length messy black hair, oversized grey hoodie, eyes fixed downward and wide, lips pressed hard together, shoulders drawn up rigid, phone clutched against her chest, harsh red-tinted light from above, deep shadows, upper-body shot"
+    },
+    {
+      "key": "fifth_floor_woman/base",
+      "path": "elevator_game/characters/fifth_floor_woman/base.png",
+      "prompt": "anime visual-novel portrait, tall slender woman in a plain dark dress, very long wet black hair falling straight over her face and hiding it completely, head tilted slightly down, water dripping from hair ends, pale hands hanging still at her sides, faint red light from behind, heavy shadow, no visible facial features, unsettling stillness, upper-body shot, dark background"
+    }
+  ]
+}

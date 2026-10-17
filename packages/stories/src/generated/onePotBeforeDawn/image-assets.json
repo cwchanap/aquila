@@ -1,0 +1,77 @@
+{
+  "storyId": "one_pot_before_dawn",
+  "backgrounds": [
+    {
+      "key": "_root/act1_s0",
+      "path": "one_pot_before_dawn/backgrounds/_root/act1_s0.png",
+      "prompt": "small mountain teahouse interior at night in heavy rain, single oil lamp on a low wooden counter, red clay charcoal stove glowing with a clay kettle steaming on it, low wooden tables and stools, bamboo blinds rattling against rain-dark windows, wooden doorframe with three carved height marks, warm amber lamplight against blue-black rain outside, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act2_s0",
+      "path": "one_pot_before_dawn/backgrounds/_root/act2_s0.png",
+      "prompt": "small mountain teahouse interior at night in heavy rain, single oil lamp on a low wooden counter, red clay charcoal stove glowing with a clay kettle steaming on it, low wooden tables and stools, bamboo blinds rattling against rain-dark windows, wooden doorframe with three carved height marks, warm amber lamplight against blue-black rain outside, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "_root/act3_s0",
+      "path": "one_pot_before_dawn/backgrounds/_root/act3_s0.png",
+      "prompt": "same small mountain teahouse interior just before dawn, rain stopped, cold blue-grey light seeping through bamboo blinds, oil lamp burned down to a small flame, embers glowing low in the red clay stove, thin steam rising from a purple clay teapot on a tea tray, a black-sheathed sword lying across a low wooden table, door left ajar onto mist, cold blue and faded amber palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s0",
+      "path": "one_pot_before_dawn/backgrounds/branch_1a/b1a_act4_s0.png",
+      "prompt": "same small mountain teahouse interior just before dawn, rain stopped, cold blue-grey light seeping through bamboo blinds, oil lamp burned down to a small flame, embers glowing low in the red clay stove, thin steam rising from a purple clay teapot on a tea tray, a black-sheathed sword lying across a low wooden table, door left ajar onto mist, cold blue and faded amber palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s0",
+      "path": "one_pot_before_dawn/backgrounds/branch_1b/b1b_act4_s0.png",
+      "prompt": "same small mountain teahouse interior just before dawn, rain stopped, cold blue-grey light seeping through bamboo blinds, oil lamp burned down to a small flame, embers glowing low in the red clay stove, thin steam rising from a purple clay teapot on a tea tray, a black-sheathed sword lying across a low wooden table, door left ajar onto mist, cold blue and faded amber palette, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s1",
+      "path": "one_pot_before_dawn/backgrounds/branch_1b/b1b_act4_s1.png",
+      "prompt": "narrow mountain pass at dawn between two sheer grey cliff walls, only a thin line of sky visible overhead, wet stone path with steps, twisted pines clinging to the rock, a sea of clouds and mist flowing below, first pale gold sunlight breaking through the gap, cold blue and pale gold palette, moody cinematic visual-novel background art, wide establishing shot"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "wen_bo/base",
+      "path": "one_pot_before_dawn/characters/wen_bo/base.png",
+      "prompt": "anime visual-novel portrait, elderly East Asian tea master around 70, thin white topknot, deeply lined calm face, half-lowered eyes, faded indigo cotton robe, polishing an old purple-clay teapot with a cloth, warm oil-lamp light, muted amber and indigo palette, upper-body shot, clean background"
+    },
+    {
+      "key": "xiao_man/base",
+      "path": "one_pot_before_dawn/characters/xiao_man/base.png",
+      "prompt": "anime visual-novel portrait, 17-year-old East Asian girl, tea-house apprentice, plain undyed hemp robe with sleeves tied back by a cord, dark hair in a simple low bun with loose strands, faint soot smudge on one cheek, watchful quiet eyes, holding a small clay teapot in both hands, warm oil-lamp light from below, muted amber and brown palette, upper-body shot, clean background"
+    },
+    {
+      "key": "shen_yan/base",
+      "path": "one_pot_before_dawn/characters/shen_yan/base.png",
+      "prompt": "anime visual-novel portrait, 30-year-old East Asian swordsman, high brow bones, tightly pressed lips, rain-damp black hair tied back, dark grey travel robe under a straw rain cape, a black-sheathed sword wrapped in oilcloth across his back, cold restrained gaze, warm lamp light against blue rain shadow, upper-body shot, clean background"
+    },
+    {
+      "key": "lu_chi/base",
+      "path": "one_pot_before_dawn/characters/lu_chi/base.png",
+      "prompt": "anime visual-novel portrait, 27-year-old East Asian swordsman, soaked black hair carelessly raked back, faint polite half-smile, worn dark blue robe, an old but immaculately clean sword sheath at his waist, tired amused eyes, warm oil-lamp light, upper-body shot, clean background"
+    },
+    {
+      "key": "xiao_man/worried",
+      "path": "one_pot_before_dawn/characters/xiao_man/worried.png",
+      "prompt": "anime visual-novel portrait, 17-year-old girl tea apprentice, plain hemp robe, low bun with loose strands, brows drawn together, lips pressed tight, eyes lowered to the teapot in her hands, cold blue pre-dawn light, upper-body shot"
+    },
+    {
+      "key": "shen_yan/pained",
+      "path": "one_pot_before_dawn/characters/shen_yan/pained.png",
+      "prompt": "anime visual-novel portrait, 30-year-old swordsman, dark grey robe, black hair tied back, jaw clenched, eyes wide and unfocused with held-back grief, knuckles white on a sword hilt, cold pale dawn light, upper-body shot"
+    },
+    {
+      "key": "lu_chi/smile",
+      "path": "one_pot_before_dawn/characters/lu_chi/smile.png",
+      "prompt": "anime visual-novel portrait, 27-year-old swordsman, black hair raked back, easy crooked smile that does not reach his eyes, worn dark blue robe, sword at his waist, pale gold dawn light and mist, upper-body shot"
+    },
+    {
+      "key": "lu_chi/hurt",
+      "path": "one_pot_before_dawn/characters/lu_chi/hurt.png",
+      "prompt": "anime visual-novel portrait, 27-year-old swordsman, black hair raked back, sitting against grey stone, pale face, quiet tired smile, one hand pressed to his chest over dark blue robe, no visible blood, pale gold dawn light, upper-body shot"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "storyId": "three_am_laundromat",
+  "backgrounds": [
+    {
+      "key": "_root/act1_s0",
+      "path": "three_am_laundromat/backgrounds/_root/act1_s0.png",
+      "prompt": "24-hour self-service laundromat interior at 3 a.m. in a narrow Taiwanese side street, harsh white fluorescent tube lights with one tube flickering, a row of front-loading washing machines and stacked dryers, one dryer window glowing warm amber, row of orange plastic chairs along the wall, a laminated folding table, rain streaking down the large front glass, across the wet street the white glow of a convenience store blurred by rain, scooters parked under a covered arcade, cold teal and fluorescent white palette with a single warm amber accent, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s0",
+      "path": "three_am_laundromat/backgrounds/branch_1a/b1a_act4_s0.png",
+      "prompt": "24-hour self-service laundromat interior at 3 a.m. in a narrow Taiwanese side street, harsh white fluorescent tube lights with one tube flickering, a row of front-loading washing machines and stacked dryers, one dryer window glowing warm amber, row of orange plastic chairs along the wall, a laminated folding table, rain streaking down the large front glass, across the wet street the white glow of a convenience store blurred by rain, scooters parked under a covered arcade, cold teal and fluorescent white palette with a single warm amber accent, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s1",
+      "path": "three_am_laundromat/backgrounds/branch_1a/b1a_act4_s1.png",
+      "prompt": "the same small self-service laundromat interior at dawn, fluorescent tubes now pale against grey-blue morning light, water droplets still beading on the large front glass, rain stopped, across the street the convenience store light looking faint and tired in daylight, orange plastic chairs, a folding table with neatly folded laundry and a folded paper note, soft washed grey-blue and pale peach palette, quiet hopeful atmosphere, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1a/b1a_act4_s2",
+      "path": "three_am_laundromat/backgrounds/branch_1a/b1a_act4_s2.png",
+      "prompt": "narrow Taiwanese street outside a small laundromat at dawn, wet asphalt reflecting a pale grey-blue sky, covered arcade walkway with tiled pillars, a few scooters parked under the arcade with raincoats draped over the seats, closed metal shutters, a breakfast shop's warm light and rising steam down the block, convenience store sign glowing faintly across the street, soft grey-blue and pale gold palette, quiet melancholic stillness, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s0",
+      "path": "three_am_laundromat/backgrounds/branch_1b/b1b_act4_s0.png",
+      "prompt": "24-hour self-service laundromat interior at 3 a.m. in a narrow Taiwanese side street, harsh white fluorescent tube lights with one tube flickering, a row of front-loading washing machines and stacked dryers, one dryer window glowing warm amber, row of orange plastic chairs along the wall, a laminated folding table, rain streaking down the large front glass, across the wet street the white glow of a convenience store blurred by rain, scooters parked under a covered arcade, cold teal and fluorescent white palette with a single warm amber accent, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s1",
+      "path": "three_am_laundromat/backgrounds/branch_1b/b1b_act4_s1.png",
+      "prompt": "narrow Taiwanese street outside a small laundromat at dawn, wet asphalt reflecting a pale grey-blue sky, covered arcade walkway with tiled pillars, a few scooters parked under the arcade with raincoats draped over the seats, closed metal shutters, a breakfast shop's warm light and rising steam down the block, convenience store sign glowing faintly across the street, soft grey-blue and pale gold palette, quiet melancholic stillness, moody cinematic visual-novel background art, wide establishing shot"
+    },
+    {
+      "key": "branch_1b/b1b_act4_s2",
+      "path": "three_am_laundromat/backgrounds/branch_1b/b1b_act4_s2.png",
+      "prompt": "24-hour self-service laundromat interior at 3 a.m. in a narrow Taiwanese side street, harsh white fluorescent tube lights with one tube flickering, a row of front-loading washing machines and stacked dryers, one dryer window glowing warm amber, row of orange plastic chairs along the wall, a laminated folding table, rain streaking down the large front glass, across the wet street the white glow of a convenience store blurred by rain, scooters parked under a covered arcade, cold teal and fluorescent white palette with a single warm amber accent, moody cinematic visual-novel background art, wide establishing shot"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "zhou_yining/base",
+      "path": "three_am_laundromat/characters/zhou_yining/base.png",
+      "prompt": "anime visual-novel portrait, 27-year-old Taiwanese woman, shoulder-length black hair loosely tied with stray strands, tired but alert dark eyes, faint shadows under eyes, oversized dark navy hoodie over light blue nurse scrubs, a pen clipped at the hoodie pocket, calm guarded neutral expression, cold white fluorescent light from above, muted teal and grey palette, upper-body shot, clean background"
+    },
+    {
+      "key": "red_pen/base",
+      "path": "three_am_laundromat/characters/red_pen/base.png",
+      "prompt": "anime visual-novel portrait, 28-year-old Taiwanese man, slightly messy black hair, thin-framed glasses, deep dark circles under gentle tired eyes, worn grey cardigan with a small pen-hole near the cuff over a white t-shirt, red pen in hand, polite reserved expression, cold white fluorescent light, muted grey and teal palette, upper-body shot, clean background"
+    },
+    {
+      "key": "zhou_yining/smile",
+      "path": "three_am_laundromat/characters/zhou_yining/smile.png",
+      "prompt": "anime visual-novel portrait, 27-year-old Taiwanese woman, shoulder-length black hair loosely tied, small reluctant smile she is trying to hide, eyes softened and slightly lowered, dark navy hoodie over light blue scrubs, warm amber light on one side of the face, upper-body shot, clean background"
+    },
+    {
+      "key": "zhou_yining/flustered",
+      "path": "three_am_laundromat/characters/zhou_yining/flustered.png",
+      "prompt": "anime visual-novel portrait, 27-year-old Taiwanese woman, shoulder-length black hair loosely tied, eyebrows slightly raised, lips pressed together holding back a reaction, holding a small folded note close to her chest, dark navy hoodie over light blue scrubs, cold fluorescent light, upper-body shot, clean background"
+    },
+    {
+      "key": "red_pen/smile",
+      "path": "three_am_laundromat/characters/red_pen/smile.png",
+      "prompt": "anime visual-novel portrait, 28-year-old Taiwanese man, slightly messy black hair, thin-framed glasses, shy lopsided smile, ears tinged red, worn grey cardigan over white t-shirt, holding a folded note, soft grey-blue dawn light, upper-body shot, clean background"
+    }
+  ]
+}

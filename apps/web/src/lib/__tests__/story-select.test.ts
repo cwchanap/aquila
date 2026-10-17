@@ -144,6 +144,21 @@ describe('buildCard', () => {
         expect(card.href).toBe('/en/reader?story=the_seventh_mirror');
     });
 
+    it('counts the endings found on a finished branching saga', () => {
+        const card = buildCard(
+            branchingSaga,
+            progress({
+                sceneId: 'b1a_act9',
+                finished: true,
+                endings: ['b1a_act9'],
+            }),
+            'en',
+            en
+        );
+        expect(card.status).toBe('Finished · 1 of 30 endings');
+        expect(card.action).toBe('readAgain');
+    });
+
     it('counts endings found on a short story', () => {
         expect(buildCard(short, null, 'en', en).status).toBe('New');
         const one = buildCard(

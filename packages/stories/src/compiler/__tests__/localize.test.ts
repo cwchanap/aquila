@@ -119,6 +119,19 @@ describe('en mirror tree', () => {
         expect(story.en!.map(s => s.id)).toEqual(['act1', 'act2']);
     });
 
+    it('keeps the zh title when a translation has no heading', () => {
+        const story = compile(
+            makeFixture({
+                'en/act1.md': enAct1,
+                'en/act2.md': '**Narrator**: Morning came.',
+            })
+        );
+        expect(story.en!.map(s => s.title)).toEqual([
+            'Act 1: Rain',
+            '第二幕：結局',
+        ]);
+    });
+
     it('emits dialogue.en.ts and scenes/en/*.ts that import from the story root', () => {
         const rawDir = makeFixture({
             'en/act1.md': enAct1,

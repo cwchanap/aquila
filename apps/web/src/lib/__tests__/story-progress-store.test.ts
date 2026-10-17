@@ -90,6 +90,15 @@ describe('StoryProgressStore', () => {
         expect(new StoryProgressStore(storage).getAll()).toEqual({});
     });
 
+    it('ignores a stored value that is not a map of stories', () => {
+        for (const raw of ['[]', 'null', '42']) {
+            const store = new StoryProgressStore(
+                memoryStorage({ [STORY_PROGRESS_KEY]: raw })
+            );
+            expect(store.getAll()).toEqual({});
+        }
+    });
+
     it('does not inherit Object.prototype names as stories', () => {
         const store = new StoryProgressStore(memoryStorage());
         expect(store.get('toString')).toBeNull();

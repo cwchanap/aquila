@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { StoryIR } from './ir';
+import type { DialogueEntryIR, StoryIR } from './ir';
 import {
     RESERVED_OBJECT_PROPERTY_NAMES,
     type ParsedCharacterDirectory,
@@ -72,18 +72,19 @@ function assertNoReservedCharacterIds(ids: string[]): void {
     }
 }
 
+/** `up` is the relative path from the scene file back to the story's
+ *  generated directory: `../` for zh scenes, `../../` for mirror locales. */
 function emitSceneFile(
-    story: StoryIR,
-    sceneId: string,
+    entries: DialogueEntryIR[],
     assetEnums: {
         portraits?: Map<string, string>;
         backgrounds?: Map<string, string>;
-    }
+    },
+    up = '../'
 ): string {
-    const scene = story.scenes.find(s => s.id === sceneId)!;
     const hasPortraits = !!assetEnums.portraits?.size;
     const hasBackgrounds = !!assetEnums.backgrounds?.size;
-    const lines = scene.entries
+    const lines = entries
         .map(e => {
             const parts = [
                 `characterId: CharacterId.${charKey(e.characterId)}`,
@@ -121,12 +122,13 @@ function emitSceneFile(
         })
         .join('\n');
     const imports = [
-        `import type { DialogueEntry } from '../../../types';`,
-        `import { CharacterId } from '../characters';`,
+        `import type { DialogueEntry } from '${up}../../types';`,
+        `import { CharacterId } from '${up}characters';`,
     ];
-    if (hasPortraits) imports.push(`import { Portrait } from '../portraits';`);
+    if (hasPortraits)
+        imports.push(`import { Portrait } from '${up}portraits';`);
     if (hasBackgrounds)
-        imports.push(`import { Background } from '../backgrounds';`);
+        imports.push(`import { Background } from '${up}backgrounds';`);
     return (
         HEADER +
         imports.join('\n') +
@@ -138,9 +140,10 @@ function charKey(value: string): string {
     return charEnumKey(value);
 }
 
-function emitDialogueIndex(story: StoryIR): string {
+function emitDialogueIndex(story: StoryIR, locale: 'zh' | 'en' = 'zh'): string {
+    const dir = locale === 'zh' ? './scenes' : `./scenes/${locale}`;
     const imports = story.scenes
-        .map(s => `import { scene as s_${s.id} } from './scenes/${s.id}';`)
+        .map(s => `import { scene as s_${s.id} } from '${dir}/${s.id}';`)
         .join('\n');
     const entries = story.scenes
         .map(s => `    ${q(s.id)}: s_${s.id},`)
@@ -148,7 +151,22 @@ function emitDialogueIndex(story: StoryIR): string {
     return (
         HEADER +
         `import type { DialogueMap } from '../../types';\n${imports}\n\n` +
-        `export const ${story.name}ZhDialogue: DialogueMap = {\n${entries}\n};\n`
+        `export const ${story.name}${cap(locale)}Dialogue: DialogueMap = {\n${entries}\n};\n`
+    );
+}
+
+function emitStats(story: StoryIR): string {
+    const s = story.stats!;
+    return (
+        HEADER +
+        `import type { StoryStats } from '../../story-stats';\n\n` +
+        `export const ${story.name}Stats: StoryStats = {\n` +
+        `    scenes: ${s.scenes},\n` +
+        `    chapters: ${s.chapters},\n` +
+        `    endings: ${s.endings},\n` +
+        `    minPathChars: ${s.minPathChars},\n` +
+        `    maxPathChars: ${s.maxPathChars},\n` +
+        `};\n`
     );
 }
 
@@ -327,10 +345,26 @@ export function emitStory(
     for (const scene of story.scenes) {
         writeFileSync(
             join(outDir, 'scenes', `${scene.id}.ts`),
-            emitSceneFile(story, scene.id, assetEnums)
+            emitSceneFile(scene.entries, assetEnums)
         );
     }
     writeFileSync(join(outDir, 'dialogue.zh.ts'), emitDialogueIndex(story));
+    if (story.en) {
+        mkdirSync(join(outDir, 'scenes', 'en'), { recursive: true });
+        for (const scene of story.en) {
+            writeFileSync(
+                join(outDir, 'scenes', 'en', `${scene.id}.ts`),
+                emitSceneFile(scene.entries, assetEnums, '../../')
+            );
+        }
+        writeFileSync(
+            join(outDir, 'dialogue.en.ts'),
+            emitDialogueIndex(story, 'en')
+        );
+    }
+    if (story.stats) {
+        writeFileSync(join(outDir, 'stats.ts'), emitStats(story));
+    }
     writeFileSync(join(outDir, 'flow.ts'), emitFlow(story));
     writeFileSync(join(outDir, 'choices.todo.zh.ts'), emitChoiceTodo(story));
     if (story.assetManifest) {

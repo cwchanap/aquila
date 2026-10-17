@@ -1,4 +1,5 @@
 import type { AssetManifest } from './resolve-assets';
+import type { StoryStats } from '../story-stats';
 
 export interface DialogueEntryIR {
     // Always concrete: the parser resolves every "**name**：" line to a character id
@@ -43,4 +44,7 @@ export interface StoryIR {
     scenes: SceneIR[];
     choices: ChoiceIR[];
     assetManifest?: AssetManifest;
+    /** English scenes from the `en/` mirror tree, aligned 1:1 with `scenes`. */
+    en?: SceneIR[];
+    stats?: StoryStats;
 }

@@ -15,6 +15,8 @@ import { resolveSceneAssets, buildAssetManifest } from './resolve-assets';
 import type { SceneAssets } from './resolve-assets';
 import { loadAudioPlan } from '../audio-plan-loader';
 import { collectAudioUsage, validateAudioUsage } from './audio-usage';
+import { buildMirrorScenes } from './localize';
+import { computeStoryStats } from './stats';
 
 export interface CompileOptions {
     rawDir: string;
@@ -52,7 +54,8 @@ export function compileStory(opts: CompileOptions): StoryIR {
         defaultSpeaker = { id: info.id, displayName: info.name };
     }
 
-    const graph = buildStoryGraph(scanStory(opts.rawDir));
+    const tree = scanStory(opts.rawDir);
+    const graph = buildStoryGraph(tree);
     const allSceneAssets: SceneAssets[] = [];
 
     const portraitMap: Partial<Record<string, Record<string, string>>> = {};
@@ -102,6 +105,14 @@ export function compileStory(opts: CompileOptions): StoryIR {
         choices: graph.choices,
         assetManifest,
     };
+    story.stats = computeStoryStats(story, tree.chapters.length);
+    story.en = buildMirrorScenes(
+        opts.rawDir,
+        'en',
+        scenes,
+        resolveCharacter,
+        defaultSpeaker
+    );
 
     const audioPlan = loadAudioPlan(opts.rawDir);
     const audioUsage = collectAudioUsage(story);

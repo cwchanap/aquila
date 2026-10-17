@@ -16,6 +16,7 @@ import {
     serializeSessionParams,
     clampIndex,
     STORAGE_VERSION,
+    READER_SESSION_KEY_PREFIX,
     type ReaderSessionState,
     type PersistedSession,
 } from './reader-session';
@@ -74,7 +75,6 @@ export class ReaderManager {
     // the listeners do not.
     private initialized = false;
 
-    private static readonly STORAGE_KEY_PREFIX = 'aquila:readerState';
     private static readonly LEGACY_KEYS = [
         'aquila:currentScene',
         'aquila:currentScene:en',
@@ -115,7 +115,7 @@ export class ReaderManager {
     }
 
     private get storageKey(): string {
-        return `${ReaderManager.STORAGE_KEY_PREFIX}:${this.initialLocale}`;
+        return `${READER_SESSION_KEY_PREFIX}:${this.initialLocale}`;
     }
 
     private purgeLegacyState(): void {

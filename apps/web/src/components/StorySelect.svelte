@@ -14,7 +14,11 @@
   import { getTranslations } from '@aquila/stories/translations';
   import { STORY_CATALOG, type StoryAccent } from '@aquila/stories/catalog';
   import { getBrowserStorage } from '@/lib/reader-mode';
-  import { StoryProgressStore, type StoryProgressMap } from '@/lib/story-progress-store';
+  import {
+    StoryProgressStore,
+    importSavedSessions,
+    type StoryProgressMap,
+  } from '@/lib/story-progress-store';
   import { buildCards, pickContinueCard } from '@/lib/story-select';
 
   let { locale }: { locale: Locale } = $props();
@@ -58,7 +62,13 @@
   }
 
   function refresh(): void {
-    progress = new StoryProgressStore(getBrowserStorage()).getAll();
+    const storage = getBrowserStorage();
+    const store = new StoryProgressStore(storage);
+    // Places saved before per-story progress existed live only in the
+    // reader's per-locale session; carry them over once so an existing
+    // reader still sees Continue.
+    importSavedSessions(store, storage, locale === 'zh' ? ['zh', 'en'] : ['en', 'zh']);
+    progress = store.getAll();
   }
 
   onMount(() => {

@@ -6,6 +6,10 @@
  * Scene ids and dialogue indexes are locale-independent (translations mirror
  * the zh entry layout), so one record per story serves both languages.
  */
+import type { Locale } from '@aquila/stories';
+import { isRegisteredStoryId } from '@aquila/stories/async';
+import { migratePersisted, READER_SESSION_KEY_PREFIX } from './reader-session';
+
 export const STORY_PROGRESS_KEY = 'aquila:storyProgress:v1';
 
 export interface StoryProgress {
@@ -79,6 +83,31 @@ export class StoryProgressStore {
         return Object.hasOwn(all, storyId) ? all[storyId] : null;
     }
 
+    /** Adds a record for a story that has none yet, from a place saved before
+     *  per-story progress existed. Never replaces an existing record; the
+     *  seeded record sorts as older than anything recorded since. */
+    seed(position: {
+        storyId: string;
+        sceneId: string;
+        dialogueIndex: number;
+    }): boolean {
+        if (!this.storage || this.get(position.storyId)) return false;
+        const all = this.getAll();
+        all[position.storyId] = {
+            sceneId: position.sceneId,
+            dialogueIndex: Math.trunc(position.dialogueIndex),
+            updatedAt: 0,
+            finished: false,
+            endings: [],
+        };
+        try {
+            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(all));
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     /** Records the reader's position. Returns false when storage is unavailable. */
     record(position: ProgressPosition): boolean {
         if (!this.storage) return false;
@@ -105,5 +134,42 @@ export class StoryProgressStore {
         } catch {
             return false;
         }
+    }
+}
+
+/** Carries each locale's last reader session (`aquila:readerState:<locale>`,
+ *  the only place saved before this store existed) into the store, for
+ *  stories that have no record yet. Earlier locales win when two sessions
+ *  name the same story. */
+export function importSavedSessions(
+    store: StoryProgressStore,
+    storage: Storage | null,
+    locales: readonly Locale[]
+): void {
+    for (const locale of locales) {
+        let raw: string | null = null;
+        try {
+            raw =
+                storage?.getItem(`${READER_SESSION_KEY_PREFIX}:${locale}`) ??
+                null;
+        } catch {
+            continue;
+        }
+        if (!raw) continue;
+        let session: ReturnType<typeof migratePersisted> = null;
+        try {
+            session = migratePersisted(JSON.parse(raw), locale);
+        } catch {
+            continue;
+        }
+        if (
+            !session ||
+            !isRegisteredStoryId(session.storyId) ||
+            !Number.isFinite(session.dialogueIndex) ||
+            session.dialogueIndex < 0
+        ) {
+            continue;
+        }
+        store.seed(session);
     }
 }

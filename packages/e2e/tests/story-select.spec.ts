@@ -63,6 +63,41 @@ test.describe('Story select shelves', () => {
         ).toBe('visual');
     });
 
+    test('continues a saga saved before per-story progress existed', async ({
+        page,
+    }) => {
+        await page.addInitScript(() => {
+            if (localStorage.getItem('aquila:storyProgress:v1')) return;
+            localStorage.setItem(
+                'aquila:readerState:en',
+                JSON.stringify({
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch1_act2',
+                    dialogueIndex: 2,
+                    locale: 'en',
+                    version: 2,
+                })
+            );
+        });
+        const stories = new StoriesPage(page);
+        const reader = new ReaderPage(page);
+        await stories.goto();
+
+        const resume =
+            '/en/reader?story=the_seventh_mirror&scene=ch1_act2&dialogue=3';
+        await expect(stories.continueReading).toHaveAttribute('href', resume);
+        await expect(
+            stories.sagas.getByRole('link', {
+                name: 'The Seventh Mirror',
+                exact: true,
+            })
+        ).toHaveAttribute('href', resume);
+
+        await stories.continueReading.click();
+        await expect(page).toHaveURL(/scene=ch1_act2&dialogue=3/);
+        await expect(reader.ready).toBeVisible();
+    });
+
     test('keeps a saga bookmark after reading a short story', async ({
         page,
     }) => {

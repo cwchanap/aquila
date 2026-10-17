@@ -91,6 +91,28 @@ describe('StorySelect', () => {
         );
     });
 
+    it('offers Continue for a place saved before per-story progress existed', () => {
+        localStorage.setItem(
+            'aquila:readerState:en',
+            JSON.stringify({
+                storyId: 'the_seventh_mirror',
+                sceneId: 'ch4_act2',
+                dialogueIndex: 6,
+                locale: 'en',
+                version: 2,
+            })
+        );
+        render(StorySelect, { props: { locale: 'en' } });
+
+        const resume =
+            '/en/reader?story=the_seventh_mirror&scene=ch4_act2&dialogue=7';
+        expect(screen.getByTestId('continue-reading')).toHaveAttribute(
+            'href',
+            resume
+        );
+        expect(cardLink('the_seventh_mirror')).toHaveAttribute('href', resume);
+    });
+
     it('re-reads progress when the page returns from the back/forward cache', async () => {
         render(StorySelect, { props: { locale: 'en' } });
         expect(screen.queryByTestId('continue-reading')).toBeNull();

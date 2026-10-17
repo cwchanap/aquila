@@ -2,7 +2,23 @@ import { describe, expect, it } from 'vitest';
 import {
     STORY_PROGRESS_KEY,
     StoryProgressStore,
+    importSavedSessions,
 } from '../story-progress-store';
+
+function session(
+    storyId: string,
+    sceneId: string,
+    dialogueIndex: number,
+    locale = 'en'
+): string {
+    return JSON.stringify({
+        storyId,
+        sceneId,
+        dialogueIndex,
+        locale,
+        version: 2,
+    });
+}
 
 function memoryStorage(initial: Record<string, string> = {}): Storage {
     const data = new Map(Object.entries(initial));
@@ -97,6 +113,87 @@ describe('StoryProgressStore', () => {
             );
             expect(store.getAll()).toEqual({});
         }
+    });
+
+    it('carries over a place saved before per-story progress, once', () => {
+        const storage = memoryStorage({
+            'aquila:readerState:en': session(
+                'the_seventh_mirror',
+                'ch9_act3',
+                4
+            ),
+            'aquila:readerState:zh': session(
+                'train_adventure',
+                'act2',
+                7,
+                'zh'
+            ),
+        });
+        const store = new StoryProgressStore(storage, () => 50);
+        importSavedSessions(store, storage, ['en', 'zh']);
+
+        expect(store.getAll()).toEqual({
+            the_seventh_mirror: {
+                sceneId: 'ch9_act3',
+                dialogueIndex: 4,
+                updatedAt: 0,
+                finished: false,
+                endings: [],
+            },
+            train_adventure: {
+                sceneId: 'act2',
+                dialogueIndex: 7,
+                updatedAt: 0,
+                finished: false,
+                endings: [],
+            },
+        });
+
+        // Newer progress is never replaced by the old session.
+        store.record({
+            storyId: 'the_seventh_mirror',
+            sceneId: 'ch10_act1',
+            dialogueIndex: 0,
+            atEnding: false,
+        });
+        importSavedSessions(store, storage, ['en', 'zh']);
+        expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch10_act1');
+    });
+
+    it('prefers the first locale and skips sessions it cannot trust', () => {
+        const storage = memoryStorage({
+            'aquila:readerState:zh': session(
+                'the_seventh_mirror',
+                'ch2_act1',
+                1,
+                'zh'
+            ),
+            'aquila:readerState:en': session(
+                'the_seventh_mirror',
+                'ch5_act1',
+                3
+            ),
+        });
+        const store = new StoryProgressStore(storage);
+        importSavedSessions(store, storage, ['zh', 'en']);
+        expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch2_act1');
+
+        for (const raw of [
+            '{not json',
+            session('not_a_story', 'act1', 0),
+            session('the_seventh_mirror', 'ch1_act1', -1),
+            session('the_seventh_mirror', 'ch1_act1', 0, 'zh'),
+        ]) {
+            const other = memoryStorage({ 'aquila:readerState:en': raw });
+            const fresh = new StoryProgressStore(other);
+            importSavedSessions(fresh, other, ['en']);
+            expect(fresh.getAll()).toEqual({});
+        }
+        const empty = new StoryProgressStore(null);
+        importSavedSessions(empty, null, ['en']);
+        expect(
+            empty.seed({ storyId: 's', sceneId: 'act1', dialogueIndex: 0 })
+        ).toBe(false);
     });
 
     it('does not inherit Object.prototype names as stories', () => {

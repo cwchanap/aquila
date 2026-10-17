@@ -17,6 +17,10 @@ export interface PersistedSession {
 
 export const STORAGE_VERSION = 2;
 
+/** localStorage key prefix for the latest session, one key per locale
+ *  (`aquila:readerState:en`, `aquila:readerState:zh`). */
+export const READER_SESSION_KEY_PREFIX = 'aquila:readerState';
+
 /** Fallback scene id when a loaded flow has no `start` field. */
 export const DEFAULT_SCENE_ID = 'act1';
 

@@ -46,6 +46,10 @@ function hours(chars: number): number {
     return Math.max(1, Math.round(chars / ZH_CHARS_PER_MINUTE / 60));
 }
 
+/** Lengths come from the zh source in every locale. Sagas exist only in zh,
+ *  and the English shorts were written to about the same reading time
+ *  (1,900–2,200 words a path), so one figure serves both; showing a separate
+ *  English length would need stats.ts to measure the en tree as well. */
 export function lengthLabel(entry: StoryCatalogEntry, t: StoriesText): string {
     const { stats } = entry;
     if (entry.format === 'short') {
@@ -117,7 +121,15 @@ export function buildCard(
     } else if (!progress) {
         status = t.notStarted;
     } else if (progress.finished) {
-        status = t.finished;
+        // A branching saga is "finished" at any one ending, so say how many
+        // of its endings have been found.
+        status =
+            endingsTotal > 1
+                ? `${t.finished} · ${fill(t.endingsFound, {
+                      found: endingsFound,
+                      total: endingsTotal,
+                  })}`
+                : t.finished;
         fraction = 1;
     } else {
         const chapter = chapterOf(progress.sceneId);

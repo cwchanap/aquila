@@ -91,6 +91,11 @@ export function buildMirrorScenes(
                 dialogue: tr.dialogue,
             };
         });
-        return { ...scene, title: parsed.title, entries, sourcePath };
+        return {
+            ...scene,
+            title: parsed.title ?? scene.title,
+            entries,
+            sourcePath,
+        };
     });
 }

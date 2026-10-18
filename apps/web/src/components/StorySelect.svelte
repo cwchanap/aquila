@@ -67,7 +67,7 @@
     // Places saved before per-story progress existed live only in the
     // reader's per-locale session; carry them over once so an existing
     // reader still sees Continue.
-    importSavedSessions(store, storage, locale === 'zh' ? ['zh', 'en'] : ['en', 'zh']);
+    importSavedSessions(store, storage, locale);
     progress = store.getAll();
   }
 

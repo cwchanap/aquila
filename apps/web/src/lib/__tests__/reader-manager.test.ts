@@ -88,6 +88,18 @@ function makeMockStorage() {
     };
 }
 
+/** Serves `raw` as the saved en reader session on every read of that key.
+ *  The constructor reads it too (to carry it into per-story progress), so a
+ *  one-shot stub would be used up before initialize() restores from it. */
+function stubSavedSession(
+    storage: ReturnType<typeof makeMockStorage>,
+    raw: string
+) {
+    storage.getItem.mockImplementation((key: string) =>
+        key === 'aquila:readerState:en' ? raw : null
+    );
+}
+
 function deferred<T>() {
     let resolve!: (value: T) => void;
     let reject!: (reason: unknown) => void;
@@ -623,7 +635,8 @@ describe('ReaderManager', () => {
 
         it('ignores stale persisted unknown IDs and loads only the default story', async () => {
             const loadStoryContent = vi.fn().mockResolvedValue(storyPayload());
-            mockStorage.getItem.mockReturnValueOnce(
+            stubSavedSession(
+                mockStorage,
                 JSON.stringify({
                     storyId: 'removed_story',
                     sceneId: 'old_scene',
@@ -652,7 +665,8 @@ describe('ReaderManager', () => {
                 async (): Promise<AsyncStoryLoaderResult> =>
                     storyPayload({ locale: 'en' })
             );
-            mockStorage.getItem.mockReturnValueOnce(
+            stubSavedSession(
+                mockStorage,
                 JSON.stringify({
                     storyId: 'dont_save_me_before_midnight',
                     sceneId: 'removed_scene',
@@ -908,7 +922,8 @@ describe('ReaderManager', () => {
         });
 
         it('restores from localStorage when no URL story is present', async () => {
-            mockStorage.getItem.mockReturnValueOnce(
+            stubSavedSession(
+                mockStorage,
                 JSON.stringify({
                     storyId: 'train_adventure',
                     sceneId: 'act2',
@@ -929,7 +944,8 @@ describe('ReaderManager', () => {
         });
 
         it('falls back to default when saved sceneId is not in flow', async () => {
-            mockStorage.getItem.mockReturnValueOnce(
+            stubSavedSession(
+                mockStorage,
                 JSON.stringify({
                     storyId: 'train_adventure',
                     sceneId: 'scene_7',
@@ -944,7 +960,8 @@ describe('ReaderManager', () => {
         });
 
         it('ignores localStorage with a mismatched locale', async () => {
-            mockStorage.getItem.mockReturnValueOnce(
+            stubSavedSession(
+                mockStorage,
                 JSON.stringify({
                     storyId: 'train_adventure',
                     sceneId: 'act1',
@@ -962,7 +979,7 @@ describe('ReaderManager', () => {
             const errorSpy = vi
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
-            mockStorage.getItem.mockReturnValueOnce('{invalid json}');
+            stubSavedSession(mockStorage, '{invalid json}');
 
             manager = new ReaderManager('en');
             await manager.initialize();
@@ -1423,6 +1440,44 @@ describe('ReaderManager', () => {
                 'aquila:readerState:en',
                 expect.stringContaining('act2')
             );
+        });
+
+        it('keeps an older saved place when a link opens another story', async () => {
+            const saved = new Map<string, string>([
+                [
+                    'aquila:readerState:en',
+                    JSON.stringify({
+                        storyId: 'the_seventh_mirror',
+                        sceneId: 'ch9_act3',
+                        dialogueIndex: 4,
+                        locale: 'en',
+                        version: 2,
+                    }),
+                ],
+            ]);
+            mockStorage.getItem.mockImplementation(
+                (key: string) => saved.get(key) ?? null
+            );
+            mockStorage.setItem.mockImplementation(
+                (key: string, value: string) => void saved.set(key, value)
+            );
+            setLocation('?story=train_adventure&scene=act1');
+
+            manager = new ReaderManager('en');
+            await manager.initialize();
+
+            expect(
+                JSON.parse(saved.get('aquila:readerState:en') ?? '{}').storyId
+            ).toBe('train_adventure');
+            expect(
+                JSON.parse(saved.get('aquila:storyProgress:v1') ?? '{}')
+            ).toEqual({
+                the_seventh_mirror: expect.objectContaining({
+                    sceneId: 'ch9_act3',
+                    dialogueIndex: 4,
+                }),
+                train_adventure: expect.objectContaining({ sceneId: 'act1' }),
+            });
         });
 
         it('keeps a per-story place and records the ending reached', async () => {

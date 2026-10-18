@@ -8,7 +8,10 @@ import { getTranslations } from '@aquila/stories/translations';
 import { mount, unmount } from 'svelte';
 import { showAlert, showPrompt } from './ui-dialogs';
 import { LocalBookmarksStore } from './local-bookmarks-store';
-import { StoryProgressStore } from './story-progress-store';
+import {
+    StoryProgressStore,
+    importSavedSessions,
+} from './story-progress-store';
 import { getBrowserStorage } from './reader-mode';
 import { readerState } from './reader-state.svelte';
 import {
@@ -112,6 +115,14 @@ export class ReaderManager {
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
         this.storyProgress = new StoryProgressStore(getBrowserStorage());
+        // The first persist() replaces this locale's session, which may be
+        // the only copy of a place saved before per-story progress existed
+        // (for example when a direct link opens a different story).
+        importSavedSessions(
+            this.storyProgress,
+            getBrowserStorage(),
+            this.initialLocale
+        );
     }
 
     private get storageKey(): string {

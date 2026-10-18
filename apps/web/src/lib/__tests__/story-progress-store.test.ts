@@ -130,7 +130,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage, () => 50);
-        importSavedSessions(store, storage, ['en', 'zh']);
+        importSavedSessions(store, storage, 'en');
 
         expect(store.getAll()).toEqual({
             the_seventh_mirror: {
@@ -156,7 +156,7 @@ describe('StoryProgressStore', () => {
             dialogueIndex: 0,
             atEnding: false,
         });
-        importSavedSessions(store, storage, ['en', 'zh']);
+        importSavedSessions(store, storage, 'en');
         expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch10_act1');
     });
 
@@ -175,7 +175,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage);
-        importSavedSessions(store, storage, ['zh', 'en']);
+        importSavedSessions(store, storage, 'zh');
         expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch2_act1');
 
         for (const raw of [
@@ -186,11 +186,11 @@ describe('StoryProgressStore', () => {
         ]) {
             const other = memoryStorage({ 'aquila:readerState:en': raw });
             const fresh = new StoryProgressStore(other);
-            importSavedSessions(fresh, other, ['en']);
+            importSavedSessions(fresh, other, 'en');
             expect(fresh.getAll()).toEqual({});
         }
         const empty = new StoryProgressStore(null);
-        importSavedSessions(empty, null, ['en']);
+        importSavedSessions(empty, null, 'en');
         expect(
             empty.seed({ storyId: 's', sceneId: 'act1', dialogueIndex: 0 })
         ).toBe(false);

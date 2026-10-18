@@ -137,15 +137,21 @@ export class StoryProgressStore {
     }
 }
 
+const SESSION_LOCALES: readonly Locale[] = ['en', 'zh'];
+
 /** Carries each locale's last reader session (`aquila:readerState:<locale>`,
  *  the only place saved before this store existed) into the store, for
- *  stories that have no record yet. Earlier locales win when two sessions
- *  name the same story. */
+ *  stories that have no record yet. The `preferred` locale's session wins
+ *  when two sessions name the same story. */
 export function importSavedSessions(
     store: StoryProgressStore,
     storage: Storage | null,
-    locales: readonly Locale[]
+    preferred: Locale
 ): void {
+    const locales = [
+        preferred,
+        ...SESSION_LOCALES.filter(locale => locale !== preferred),
+    ];
     for (const locale of locales) {
         let raw: string | null = null;
         try {

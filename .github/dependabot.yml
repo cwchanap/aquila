@@ -1,0 +1,59 @@
+version: 2
+
+updates:
+  # JavaScript / TypeScript dependencies (Bun workspaces, root bun.lock)
+  - package-ecosystem: 'bun'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'America/Vancouver'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      include: 'scope'
+    groups:
+      js-minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  # Rust dependencies for the Tauri desktop app
+  - package-ecosystem: 'cargo'
+    directory: '/apps/desktop/src-tauri'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:30'
+      timezone: 'America/Vancouver'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      include: 'scope'
+    groups:
+      rust-minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  # GitHub Actions versions in .github/workflows
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '10:00'
+      timezone: 'America/Vancouver'
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'chore(deps)'
+      include: 'scope'
+    groups:
+      github-actions:
+        patterns:
+          - '*'

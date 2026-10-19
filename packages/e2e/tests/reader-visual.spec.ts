@@ -896,3 +896,26 @@ test.describe('Visual novel reader — prefers-reduced-motion', () => {
         await expectCanonicalVisualLine(page, 11);
     });
 });
+
+// Keep generated upper-body portraits visible above the mobile dialogue panel.
+test('keeps short-story portraits above the dialogue on a phone', async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+        localStorage.setItem('aquila:reader-mode:v1', 'visual');
+    });
+    await page.goto('/en/reader?story=elevator_game&scene=act1&dialogue=4');
+    const portrait = page.locator('[data-portrait-active="true"]');
+    await expect(portrait).toHaveAttribute('data-portrait-state', 'ready');
+    const portraitBox = await portrait.boundingBox();
+    const dialogueBox = await page
+        .getByTestId('visual-dialogue-box')
+        .boundingBox();
+    expect(portraitBox).not.toBeNull();
+    expect(dialogueBox).not.toBeNull();
+    expect(portraitBox!.y).toBeGreaterThanOrEqual(0);
+    expect(portraitBox!.y + portraitBox!.height).toBeLessThanOrEqual(
+        dialogueBox!.y + 1
+    );
+});

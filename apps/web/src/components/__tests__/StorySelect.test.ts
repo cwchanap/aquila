@@ -46,6 +46,23 @@ describe('StorySelect', () => {
         ).toBeNull();
     });
 
+    it('shows the generated cover for every short story while keeping its accessible title', () => {
+        render(StorySelect, { props: { locale: 'en' } });
+        for (const id of [
+            'elevator_game',
+            'demon_lord_is_hiring',
+            'three_am_laundromat',
+            'day_4012',
+            'one_pot_before_dawn',
+        ]) {
+            const card = cardLink(id);
+            const cover = card.querySelector('img');
+            expect(cover).toHaveAttribute('src', `/assets/covers/${id}.webp`);
+            expect(cover).toHaveAttribute('alt', '');
+            expect(card).toHaveAccessibleName();
+        }
+    });
+
     it('renders in Chinese', () => {
         render(StorySelect, { props: { locale: 'zh' } });
         expect(cardLink('elevator_game').getAttribute('href')).toBe(

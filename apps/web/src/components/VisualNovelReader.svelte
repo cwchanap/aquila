@@ -771,6 +771,12 @@
     }
 
     .visual-portrait {
+      bottom: calc(var(--dialogue-box-height) + max(1rem, env(safe-area-inset-bottom)));
+      height: calc(
+        100dvh - var(--dialogue-box-height) -
+        max(1rem, env(safe-area-inset-bottom)) -
+        max(1rem, env(safe-area-inset-top))
+      );
       max-width: 54vw;
     }
   }

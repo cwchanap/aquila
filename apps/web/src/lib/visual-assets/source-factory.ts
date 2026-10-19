@@ -1,4 +1,5 @@
 import type { DialogueEntry } from '@aquila/stories';
+import { BUNDLED_VISUAL_STORY_IDS } from '@aquila/stories/async';
 import type { AssetResolverSource } from '@aquila/stories/runtime-assets';
 import { getBrowserStorage } from '@/lib/reader-mode';
 import {
@@ -28,6 +29,16 @@ export function getAssetResolverSource(
     origin: string,
     config: AssetSourceConfig
 ): AssetResolverSource | null {
+    // Bundled releases travel with this deployment, including previews. Remote
+    // configuration continues to apply only to the remotely published story.
+    if ((BUNDLED_VISUAL_STORY_IDS as readonly string[]).includes(storyId)) {
+        return {
+            environment: 'local',
+            storyId,
+            baseUrl: new URL('/assets/', origin).href,
+            target: { kind: 'production' },
+        };
+    }
     if (storyId !== REMOTE_ASSET_STORY_ID) return null;
     return resolveAssetSource(storyId, origin, config);
 }

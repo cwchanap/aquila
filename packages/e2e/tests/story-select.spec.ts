@@ -38,7 +38,7 @@ test.describe('Story select shelves', () => {
         await expect(reader.ready).not.toContainText(/[一-鿿]{4}/);
     });
 
-    test('opens a quick read as text when Visual Novel mode was last used', async ({
+    test('opens a quick read with its artwork when Visual Novel mode was last used', async ({
         page,
     }) => {
         await page.addInitScript(() => {
@@ -54,8 +54,15 @@ test.describe('Story select shelves', () => {
         await expect(
             reader.ready.locator('[data-story-id="day_4012"]')
         ).toBeVisible();
-        await expect(page.getByTestId('visual-novel-reader')).toHaveCount(0);
-        await expect(page.getByTestId('visual-status')).toHaveCount(0);
+        await expect(page.getByTestId('visual-novel-reader')).toBeVisible();
+        await expect(page.getByTestId('visual-novel-reader')).toHaveAttribute(
+            'data-visual-release-state',
+            'ready'
+        );
+        await expect(page.locator('[data-bg-layer="active"]')).toHaveAttribute(
+            'data-bg-state',
+            'ready'
+        );
         expect(
             await page.evaluate(() =>
                 localStorage.getItem('aquila:reader-mode:v1')

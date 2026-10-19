@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "storyId": "three_am_laundromat",
+  "channel": "production",
+  "entries": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act1_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/_root/act1_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1a/b1a_act4_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/branch_1a/b1a_act4_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1a/b1a_act4_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/branch_1a/b1a_act4_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1a/b1a_act4_s2"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/branch_1a/b1a_act4_s2.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1b/b1b_act4_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/branch_1b/b1b_act4_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1b/b1b_act4_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/branch_1b/b1b_act4_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1b/b1b_act4_s2"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/backgrounds/branch_1b/b1b_act4_s2.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "zhou_yining/base"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/characters/zhou_yining/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "red_pen/base"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/characters/red_pen/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "zhou_yining/smile"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/characters/zhou_yining/smile.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "zhou_yining/flustered"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/characters/zhou_yining/flustered.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "red_pen/smile"
+      },
+      "disposition": "included",
+      "sourcePath": "three_am_laundromat/characters/red_pen/smile.png"
+    }
+  ]
+}

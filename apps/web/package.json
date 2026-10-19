@@ -24,7 +24,9 @@
     "build:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts",
     "verify:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts --verify",
     "build:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts",
-    "verify:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts --verify"
+    "verify:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts --verify",
+    "build:short-story-assets": "bun scripts/build-short-story-assets.ts",
+    "verify:short-story-assets": "bun scripts/build-short-story-assets.ts --verify"
   },
   "dependencies": {
     "@aquila/stories": "workspace:*",

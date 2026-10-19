@@ -13,16 +13,17 @@ export const REGISTERED_STORY_IDS = [
 
 export type RegisteredStoryId = (typeof REGISTERED_STORY_IDS)[number];
 
-/** Stories whose acts name backgrounds and portraits but have no published
- *  visual release yet. The reader opens them in text mode whatever mode the
- *  reader last chose, until their artwork ships. */
-export const TEXT_ONLY_STORY_IDS: readonly RegisteredStoryId[] = [
+/** Complete visual releases shipped in the app's public asset directory. */
+export const BUNDLED_VISUAL_STORY_IDS: readonly RegisteredStoryId[] = [
     'elevator_game',
     'demon_lord_is_hiring',
     'three_am_laundromat',
     'day_4012',
     'one_pot_before_dawn',
 ];
+
+/** Stories awaiting their first visual release. */
+export const TEXT_ONLY_STORY_IDS: readonly RegisteredStoryId[] = [];
 
 /** The source language every story is written in. */
 export const SOURCE_LOCALE: Locale = 'zh';

@@ -46,12 +46,15 @@ export interface StoryCatalogEntry {
      *  `stories.<key>Desc` the one-line teaser. */
     translationKey: string;
     stats: StoryStats;
+    /** Optional text-free cover, served by the app alongside its visual release. */
+    coverImage?: string;
 }
 
 /** Every story in select-page order (the page groups them by format). */
 export const STORY_CATALOG: readonly StoryCatalogEntry[] = [
     {
         id: 'elevator_game',
+        coverImage: '/assets/covers/elevator_game.webp',
         format: 'short',
         genre: 'horror',
         accent: 'red',
@@ -60,6 +63,7 @@ export const STORY_CATALOG: readonly StoryCatalogEntry[] = [
     },
     {
         id: 'demon_lord_is_hiring',
+        coverImage: '/assets/covers/demon_lord_is_hiring.webp',
         format: 'short',
         genre: 'comedy',
         accent: 'amber',
@@ -68,6 +72,7 @@ export const STORY_CATALOG: readonly StoryCatalogEntry[] = [
     },
     {
         id: 'three_am_laundromat',
+        coverImage: '/assets/covers/three_am_laundromat.webp',
         format: 'short',
         genre: 'romance',
         accent: 'pink',
@@ -76,6 +81,7 @@ export const STORY_CATALOG: readonly StoryCatalogEntry[] = [
     },
     {
         id: 'day_4012',
+        coverImage: '/assets/covers/day_4012.webp',
         format: 'short',
         genre: 'scifi',
         accent: 'violet',
@@ -84,6 +90,7 @@ export const STORY_CATALOG: readonly StoryCatalogEntry[] = [
     },
     {
         id: 'one_pot_before_dawn',
+        coverImage: '/assets/covers/one_pot_before_dawn.webp',
         format: 'short',
         genre: 'wuxia',
         accent: 'emerald',

@@ -401,26 +401,23 @@ describe('ReaderShell', () => {
     });
     afterEach(() => vi.clearAllMocks());
 
-    it('opens a text-only story as text while keeping the saved Visual Novel choice', async () => {
+    it.each([
+        'elevator_game',
+        'demon_lord_is_hiring',
+        'three_am_laundromat',
+        'day_4012',
+        'one_pot_before_dawn',
+    ])('opens %s in the saved Visual Novel mode', async storyId => {
         stubMatchMedia(false);
         localStorage.setItem(READER_MODE_KEY, 'visual');
-        readerState.storyId = 'elevator_game';
-        const factory = vi.fn(() => createRuntimeHarness().runtime);
-        render(ReaderShell, { props: { createVisualRuntime: factory } });
+        readerState.storyId = storyId;
+        render(ReaderShell, {
+            props: {
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
         await tick();
-
-        expect(
-            screen.queryByTestId('visual-novel-reader')
-        ).not.toBeInTheDocument();
-        expect(screen.queryByTestId('visual-status')).not.toBeInTheDocument();
-        expect(factory).not.toHaveBeenCalled();
-
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Open reader settings' })
-        );
-        expect(
-            screen.queryByRole('button', { name: 'Visual Novel' })
-        ).not.toBeInTheDocument();
+        expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
         expect(localStorage.getItem(READER_MODE_KEY)).toBe('visual');
     });
 

@@ -131,8 +131,19 @@
             aria-describedby="story-{card.entry.id}-meta story-{card.entry.id}-desc"
             class="story-card group flex h-full flex-col overflow-hidden rounded-2xl border border-white/15 bg-slate-950/35 backdrop-blur-xl transition-all duration-300 motion-safe:hover:-translate-y-1 {accent.ring}"
           >
-            <span class="relative flex h-24 items-center justify-center bg-linear-to-br {accent.cover}">
-              <Icon class="h-8 w-8 text-white/90" aria-hidden="true" />
+            <span class="relative flex aspect-2/3 items-center justify-center overflow-hidden bg-linear-to-br {accent.cover}">
+              {#if card.entry.coverImage}
+                <img
+                  src={card.entry.coverImage}
+                  alt=""
+                  width="480"
+                  height="720"
+                  class="absolute inset-0 h-full w-full object-cover"
+                  decoding="async"
+                />
+              {:else}
+                <Icon class="h-8 w-8 text-white/90" aria-hidden="true" />
+              {/if}
               <span class="absolute bottom-2 right-2 rounded-full bg-black/45 px-2 py-0.5 text-[0.7rem] font-semibold tabular-nums text-white">
                 {card.length}
               </span>

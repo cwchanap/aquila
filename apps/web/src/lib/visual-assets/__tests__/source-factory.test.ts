@@ -46,6 +46,33 @@ describe('getAssetResolverSource', () => {
         });
     });
 
+    it.each([
+        'elevator_game',
+        'demon_lord_is_hiring',
+        'three_am_laundromat',
+        'day_4012',
+        'one_pot_before_dawn',
+    ])(
+        'loads bundled artwork for %s even when remote delivery is configured',
+        storyId => {
+            expect(
+                getAssetResolverSource(
+                    storyId,
+                    'https://aquila.example/en/reader',
+                    {
+                        baseUrl: 'https://assets.example/',
+                        environment: 'production',
+                    }
+                )
+            ).toEqual({
+                environment: 'local',
+                storyId,
+                baseUrl: 'https://aquila.example/assets/',
+                target: { kind: 'production' },
+            });
+        }
+    );
+
     it('returns null for stories without a visual source', () => {
         expect(
             getAssetResolverSource(

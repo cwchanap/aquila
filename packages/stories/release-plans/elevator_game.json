@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "storyId": "elevator_game",
+  "channel": "production",
+  "entries": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act1_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/_root/act1_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/_root/act2_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/_root/act2_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act3_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/_root/act3_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1a/b1a_act4_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/branch_1a/b1a_act4_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1a/b1a_act4_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/branch_1a/b1a_act4_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "branch_1b/b1b_act4_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/backgrounds/branch_1b/b1b_act4_s0.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "xu_nian/base"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/characters/xu_nian/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fang_rui/base"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/characters/fang_rui/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "xu_nian/scared"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/characters/xu_nian/scared.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "fifth_floor_woman/base"
+      },
+      "disposition": "included",
+      "sourcePath": "elevator_game/characters/fifth_floor_woman/base.png"
+    }
+  ]
+}

@@ -49,15 +49,19 @@ export function hasStoryText(storyId: string, locale: string): boolean {
 }
 
 /** The language a story's text is actually shown in for a reader locale:
- *  that locale when the story has it, otherwise the zh source. */
+ *  that locale when the story has it, otherwise the zh source. A locale the
+ *  site does not support at all gets English where the story has it, as the
+ *  synchronous loaders always did. */
 export function resolveStoryTextLocale(
     storyId: RegisteredStoryId,
     locale: string
 ): Locale {
+    const available = STORY_TEXT_LOCALES[storyId];
     const normalized = normalizeStoryLocale(locale);
-    return normalized && STORY_TEXT_LOCALES[storyId].includes(normalized)
-        ? normalized
-        : SOURCE_LOCALE;
+    if (!normalized) {
+        return available.includes('en') ? 'en' : SOURCE_LOCALE;
+    }
+    return available.includes(normalized) ? normalized : SOURCE_LOCALE;
 }
 
 export const supportsVisualMode = (storyId: string): boolean =>

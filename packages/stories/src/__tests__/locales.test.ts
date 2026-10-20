@@ -104,7 +104,8 @@ describe('story text locales', () => {
         expect(resolveStoryTextLocale('elevator_game', 'en')).toBe('en');
         expect(resolveStoryTextLocale('the_seventh_mirror', 'ja')).toBe('zh');
         expect(resolveStoryTextLocale('the_seventh_mirror', 'en')).toBe('zh');
-        expect(resolveStoryTextLocale('elevator_game', 'fr')).toBe('zh');
+        expect(resolveStoryTextLocale('elevator_game', 'fr')).toBe('en');
+        expect(resolveStoryTextLocale('the_seventh_mirror', 'fr')).toBe('zh');
     });
 
     it('reports which stories have text in a language', () => {

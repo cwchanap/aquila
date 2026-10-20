@@ -150,3 +150,31 @@ test.describe('Story select shelves', () => {
         ).toHaveAttribute('href', '/en/reader?story=the_seventh_mirror');
     });
 });
+
+test.describe('Story select in Japanese', () => {
+    test('reads a short story in Japanese and tags sagas as Chinese only', async ({
+        page,
+    }) => {
+        const stories = new StoriesPage(page, 'ja');
+        const reader = new ReaderPage(page);
+        await stories.goto();
+        await stories.expectToBeVisible();
+
+        await expect(
+            stories.sagas.getByRole('link', { name: '神鏡七日' })
+        ).toBeVisible();
+        await expect(
+            page.getByTestId('language-note-the_seventh_mirror')
+        ).toHaveText('中国語のみ');
+        await expect(
+            page.getByTestId('language-note-elevator_game')
+        ).toHaveCount(0);
+
+        await stories.quickReads
+            .getByRole('link', { name: 'エレベーターゲーム' })
+            .click();
+        await expect(page).toHaveURL(/\/ja\/reader\?story=elevator_game/);
+        await expect(reader.ready).toBeVisible();
+        await expect(reader.ready).toContainText(/[ぁ-ん]/);
+    });
+});

@@ -43,7 +43,7 @@ if (isAuthed && user?.id) {
 <MainLayout title={t("setup.title")}>
   {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
   <!-- Ocean Background with animated waves -->
-  <div id="setup-root" data-authed={isAuthed} data-story={storyId} data-locale={locale} class="min-h-screen relative overflow-hidden">
+  <div id="setup-root" data-authed={isAuthed} data-story={storyId} data-locale={locale} data-saving-label={t("setup.saving")} data-start-label={t("setup.startAdventure")} class="min-h-screen relative overflow-hidden">
     <!-- Gradient Ocean Background -->
     <div class="absolute inset-0 bg-linear-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
@@ -221,7 +221,7 @@ if (isAuthed && user?.id) {
         // Disable form during submission
         const originalText = submitButton.textContent;
         submitButton.disabled = true;
-        submitButton.textContent = pageLocale === 'zh' ? '儲存中...' : 'Saving...';
+        submitButton.textContent = root?.getAttribute('data-saving-label') || 'Saving...';
 
         try {
           if (isAuthed) {
@@ -267,7 +267,7 @@ if (isAuthed && user?.id) {
 
           // Re-enable form
           submitButton.disabled = false;
-          submitButton.textContent = originalText || (pageLocale === 'zh' ? '開始冒險' : 'Start Adventure');
+          submitButton.textContent = originalText || root?.getAttribute('data-start-label') || 'Start Adventure';
         }
       });
     }

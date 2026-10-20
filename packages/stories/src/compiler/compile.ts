@@ -15,7 +15,7 @@ import { resolveSceneAssets, buildAssetManifest } from './resolve-assets';
 import type { SceneAssets } from './resolve-assets';
 import { loadAudioPlan } from '../audio-plan-loader';
 import { collectAudioUsage, validateAudioUsage } from './audio-usage';
-import { buildMirrorScenes } from './localize';
+import { buildMirrorScenes, MIRROR_LOCALES } from './localize';
 import { computeStoryStats } from './stats';
 
 export interface CompileOptions {
@@ -106,13 +106,16 @@ export function compileStory(opts: CompileOptions): StoryIR {
         assetManifest,
     };
     story.stats = computeStoryStats(story, tree.chapters.length);
-    story.en = buildMirrorScenes(
-        opts.rawDir,
-        'en',
-        scenes,
-        resolveCharacter,
-        defaultSpeaker
-    );
+    for (const locale of MIRROR_LOCALES) {
+        const mirror = buildMirrorScenes(
+            opts.rawDir,
+            locale,
+            scenes,
+            resolveCharacter,
+            defaultSpeaker
+        );
+        if (mirror) (story.mirrors ??= {})[locale] = mirror;
+    }
 
     const audioPlan = loadAudioPlan(opts.rawDir);
     const audioUsage = collectAudioUsage(story);

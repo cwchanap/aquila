@@ -16,7 +16,7 @@ const charactersMd = [
     '## 1. 旁白（Narrator）',
     '',
     '- **ID**: `narrator`',
-    '- **Aliases**: Narrator',
+    '- **Aliases**: Narrator, ナレーション',
     '',
     '## 2. 林雨（Lin Yu）',
     '',
@@ -52,6 +52,18 @@ const enAct1 = [
 ].join('\n');
 
 const enAct2 = ['# Act 2: Ending', '', '**Narrator**: Morning came.'].join(
+    '\n'
+);
+
+const jaAct1 = [
+    '# 第一幕：雨',
+    '',
+    '**ナレーション**：雨が降っていた。',
+    '',
+    '**林雨**：（心の声）また木曜日だ。',
+].join('\n');
+
+const jaAct2 = ['# 第二幕：結末', '', '**ナレーション**：朝が来た。'].join(
     '\n'
 );
 
@@ -98,9 +110,9 @@ afterAll(() => {
 });
 
 describe('en mirror tree', () => {
-    it('leaves story.en undefined when there is no en/ directory', () => {
+    it('leaves story.mirrors undefined when there is no mirror directory', () => {
         const story = compile(makeFixture({}));
-        expect(story.en).toBeUndefined();
+        expect(story.mirrors).toBeUndefined();
     });
 
     it('takes text from en/ and visuals from the zh entry at the same index', () => {
@@ -108,7 +120,7 @@ describe('en mirror tree', () => {
             makeFixture({ 'en/act1.md': enAct1, 'en/act2.md': enAct2 })
         );
         const zh = story.scenes[0].entries;
-        const en = story.en![0].entries;
+        const en = story.mirrors!.en![0].entries;
         expect(en.map(e => e.dialogue)).toEqual([
             'It was raining.',
             '(thinking) Thursday again.',
@@ -116,7 +128,7 @@ describe('en mirror tree', () => {
         expect(en.map(e => e.displayName)).toEqual(['Narrator', 'Lin Yu']);
         expect(en[0].background).toBe(zh[0].background);
         expect(en[1].portrait).toBe('lin_yu/sad');
-        expect(story.en!.map(s => s.id)).toEqual(['act1', 'act2']);
+        expect(story.mirrors!.en!.map(s => s.id)).toEqual(['act1', 'act2']);
     });
 
     it('keeps the zh title when a translation has no heading', () => {
@@ -126,7 +138,7 @@ describe('en mirror tree', () => {
                 'en/act2.md': '**Narrator**: Morning came.',
             })
         );
-        expect(story.en!.map(s => s.title)).toEqual([
+        expect(story.mirrors!.en!.map(s => s.title)).toEqual([
             'Act 1: Rain',
             '第二幕：結局',
         ]);
@@ -202,5 +214,57 @@ describe('en mirror tree', () => {
         });
         expect(() => compile(withTag)).toThrow(/\[expression\] tags/);
         expect(existsSync(join(withTag, 'out'))).toBe(false);
+    });
+});
+
+describe('ja mirror tree', () => {
+    it('builds ja scenes next to en, each aligned with zh', () => {
+        const story = compile(
+            makeFixture({
+                'en/act1.md': enAct1,
+                'en/act2.md': enAct2,
+                'ja/act1.md': jaAct1,
+                'ja/act2.md': jaAct2,
+            })
+        );
+        const ja = story.mirrors!.ja![0].entries;
+        expect(ja.map(e => e.dialogue)).toEqual([
+            '雨が降っていた。',
+            '（心の声）また木曜日だ。',
+        ]);
+        expect(ja.map(e => e.displayName)).toEqual(['ナレーション', '林雨']);
+        expect(ja[1].portrait).toBe('lin_yu/sad');
+        expect(story.mirrors!.en).toHaveLength(2);
+    });
+
+    it('compiles a ja tree without an en tree', () => {
+        const story = compile(
+            makeFixture({ 'ja/act1.md': jaAct1, 'ja/act2.md': jaAct2 })
+        );
+        expect(story.mirrors!.en).toBeUndefined();
+        expect(story.mirrors!.ja!.map(s => s.id)).toEqual(['act1', 'act2']);
+    });
+
+    it('emits dialogue.ja.ts and scenes/ja/*.ts', () => {
+        const rawDir = makeFixture({
+            'ja/act1.md': jaAct1,
+            'ja/act2.md': jaAct2,
+        });
+        compile(rawDir, true);
+        const out = join(rawDir, 'out');
+        const index = readFileSync(join(out, 'dialogue.ja.ts'), 'utf8');
+        expect(index).toContain("from './scenes/ja/act1'");
+        expect(index).toContain('export const mirrorStoryJaDialogue');
+        expect(existsSync(join(out, 'dialogue.en.ts'))).toBe(false);
+    });
+
+    it('rejects a ja translation with a different number of entries', () => {
+        const rawDir = makeFixture({
+            'ja/act1.md': jaAct1 + '\n\n**ナレーション**：余分な行。',
+            'ja/act2.md': jaAct2,
+        });
+        expect(() => compile(rawDir)).toThrow(
+            /ja\/act1.md: 3 entries but act1.md has 2/
+        );
     });
 });

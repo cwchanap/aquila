@@ -53,7 +53,7 @@ export default defineConfig({
   output: 'server',
   adapter: vercel({}),
   i18n: {
-    locales: ['en', 'zh'],
+    locales: ['en', 'zh', 'ja'],
     defaultLocale: 'en',
     routing: 'manual',
   },

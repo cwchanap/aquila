@@ -7,7 +7,7 @@
 ## 1. 旁白（Narrator）
 
 - **ID**: `narrator`
-- **Aliases**: Narrator
+- **Aliases**: Narrator, ナレーション
 
 第三人稱近距離敘事，鎖定在許念的感官之內。擅長聲音、溫度和細小的不對勁；不解釋，不說破。
 
@@ -43,7 +43,7 @@
 ## 4. 五樓的女人（The Fifth-Floor Woman）
 
 - **ID**: `fifth_floor_woman`
-- **Aliases**: The Fifth-Floor Woman, 女人
+- **Aliases**: The Fifth-Floor Woman, 女人, 五階の女
 
 在五樓走進電梯的女人。許念始終沒有看見她的臉，只看見一雙濕透的黑色平底鞋、一縷滴水的長髮。整個故事只開口一次——用的是許念的聲音。
 

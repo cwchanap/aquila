@@ -6,6 +6,12 @@ import {
     type LocalBookmark,
 } from './local-bookmarks-store';
 
+const DATE_LOCALES: Record<Locale, string> = {
+    en: 'en-US',
+    zh: 'zh-CN',
+    ja: 'ja-JP',
+};
+
 export interface Bookmark {
     id: string;
     storyId: string;
@@ -216,7 +222,7 @@ export class BookmarksManager {
 
     private formatDate(value: string | number | Date): string {
         return new Date(value).toLocaleDateString(
-            this.locale === 'zh' ? 'zh-CN' : 'en-US',
+            DATE_LOCALES[this.locale] ?? 'en-US',
             {
                 year: 'numeric',
                 month: 'short',
@@ -309,7 +315,9 @@ export class BookmarksManager {
         const languageText =
             bookmark.locale === 'zh'
                 ? this.t.bookmarks.chinese
-                : this.t.bookmarks.english;
+                : bookmark.locale === 'ja'
+                  ? this.t.bookmarks.japanese
+                  : this.t.bookmarks.english;
 
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = this.t.bookmarks.delete;

@@ -92,9 +92,16 @@
       </button>
       <button
         onclick={() => switchLanguage('zh')}
-        class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 block w-full text-left {currentLocale === 'zh' ? 'bg-white/60' : ''}"
+        class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 block mb-1 w-full text-left {currentLocale === 'zh' ? 'bg-white/60' : ''}"
       >
         中文
+      </button>
+      <button
+        onclick={() => switchLanguage('ja')}
+        lang="ja"
+        class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 hover:bg-white/60 block w-full text-left {currentLocale === 'ja' ? 'bg-white/60' : ''}"
+      >
+        日本語
       </button>
     </div>
   </div>

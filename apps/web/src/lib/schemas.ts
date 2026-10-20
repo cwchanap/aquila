@@ -3,6 +3,9 @@
  * Provides type-safe validation with automatic TypeScript type inference.
  */
 import { z } from 'zod';
+import { SUPPORTED_LOCALES, type Locale } from '@aquila/stories/translations';
+
+const LOCALE_ENUM = SUPPORTED_LOCALES as [Locale, ...Locale[]];
 
 // Story schemas
 export const StoryCreateSchema = z.object({
@@ -39,13 +42,13 @@ export const BookmarkCreateSchema = z.object({
         .string()
         .min(1, 'Bookmark name is required')
         .max(100, 'Bookmark name too long'),
-    locale: z.enum(['en', 'zh']).default('en'),
+    locale: z.enum(LOCALE_ENUM).default('en'),
 });
 
 export const BookmarkUpdateSchema = z.object({
     sceneId: z.string().min(1).optional(),
     bookmarkName: z.string().min(1).max(100).optional(),
-    locale: z.enum(['en', 'zh']).optional(),
+    locale: z.enum(LOCALE_ENUM).optional(),
 });
 
 export type BookmarkCreate = z.infer<typeof BookmarkCreateSchema>;
@@ -124,7 +127,7 @@ export type ChapterCreate = z.infer<typeof ChapterCreateSchema>;
 export const CharacterSetupSchema = z.object({
     characterName: z.string().min(1, 'Character name is required').max(50),
     storyId: z.string().min(1, 'Story ID is required'),
-    locale: z.enum(['en', 'zh']).default('en'),
+    locale: z.enum(LOCALE_ENUM).default('en'),
 });
 
 export type CharacterSetup = z.infer<typeof CharacterSetupSchema>;

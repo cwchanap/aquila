@@ -5,6 +5,7 @@ import UserStatus from '../../../components/UserStatus.svelte';
 import AuthDegradedBanner from '../../../components/AuthDegradedBanner.astro';
 import StorySelect from '../../../components/StorySelect.svelte';
 import type { Locale } from '@aquila/stories';
+import { isLocale } from '@aquila/stories/translations';
 import { getSessionUser } from '../../../lib/auth-utils.js';
 import { t as translate } from '../../../lib/utils';
 
@@ -13,7 +14,7 @@ interface Props {
 }
 
 const rawLocale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
-const locale: Locale = rawLocale === 'zh' ? 'zh' : 'en';
+const locale: Locale = isLocale(rawLocale) ? rawLocale : 'en';
 const t = (key: string) => translate(locale, key);
 
 const sessionResult = await getSessionUser(Astro.request);

@@ -1,5 +1,6 @@
 import type { AssetManifest } from './resolve-assets';
 import type { StoryStats } from '../story-stats';
+import type { MirrorLocale } from './localize';
 
 export interface DialogueEntryIR {
     // Always concrete: the parser resolves every "**name**：" line to a character id
@@ -44,7 +45,8 @@ export interface StoryIR {
     scenes: SceneIR[];
     choices: ChoiceIR[];
     assetManifest?: AssetManifest;
-    /** English scenes from the `en/` mirror tree, aligned 1:1 with `scenes`. */
-    en?: SceneIR[];
+    /** Translated scenes from each `<locale>/` mirror tree, aligned 1:1 with
+     *  `scenes`. A locale with no mirror tree is absent. */
+    mirrors?: Partial<Record<MirrorLocale, SceneIR[]>>;
     stats?: StoryStats;
 }

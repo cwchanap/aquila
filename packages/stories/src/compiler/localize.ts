@@ -5,7 +5,7 @@ import type { SceneIR } from './ir';
 import { parseScene } from './parse-scene';
 
 /** Locales that can be authored as a mirror tree next to the zh source. */
-export const MIRROR_LOCALES = ['en'] as const;
+export const MIRROR_LOCALES = ['en', 'ja'] as const;
 export type MirrorLocale = (typeof MIRROR_LOCALES)[number];
 
 function listMarkdown(dir: string): string[] {

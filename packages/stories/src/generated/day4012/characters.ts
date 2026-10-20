@@ -14,9 +14,9 @@ export interface CharacterInfo {
 }
 
 export const characterTable: Record<string, CharacterInfo> = {
-    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator"] },
+    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator", "ナレーション"] },
     [CharacterId.ChengYining]: { id: "cheng_yining", name: "鄭以寧", aliases: ["以寧", "Yi-ning", "Cheng Yi-ning"] },
-    [CharacterId.Vigil]: { id: "vigil", name: "守望", aliases: ["Vigil"] },
+    [CharacterId.Vigil]: { id: "vigil", name: "守望", aliases: ["Vigil", "ヴィジル"] },
     [CharacterId.CaptainChou]: { id: "captain_chou", name: "周船長", aliases: ["船長", "周文彥", "Captain Chou"] },
 };
 

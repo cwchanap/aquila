@@ -15,6 +15,7 @@
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
   import { typeText } from '@/lib/typewriter';
+  import type { SecondChoiceLabels } from '@/lib/reader-second-language';
   import type {
     VisualSnapshot,
     VisualStateController,
@@ -39,6 +40,11 @@
     onOverlayChange?: (open: boolean) => void;
     isInitialMount: boolean;
     interactionDisabled: boolean;
+    /** Second-language lines aligned 1:1 with `dialogue`, or null when off. */
+    secondDialogue?: DialogueEntry[] | null;
+    secondChoice?: SecondChoiceLabels | null;
+    textLang?: string;
+    secondLang?: string;
   };
 
   const emptyLayer = {
@@ -77,6 +83,10 @@
     onOverlayChange = () => {},
     isInitialMount,
     interactionDisabled,
+    secondDialogue = null,
+    secondChoice = null,
+    textLang = undefined,
+    secondLang = undefined,
   }: Props = $props();
 
   let snapshot = $state<VisualSnapshot>(emptySnapshot);
@@ -370,6 +380,7 @@
   data-reader-mode="visual"
   data-visual-release-state={snapshot.release}
   class="visual-novel-reader"
+  class:has-second-line={secondDialogue !== null}
   style="height: 100dvh; min-height: 0;"
   onpointerdown={handlePointerDown}
   onpointermove={handlePointerMove}
@@ -461,7 +472,7 @@
         {/if}
 
         {#if currentDialogue}
-          <p class="dialogue-text">
+          <p class="dialogue-text" lang={textLang}>
             {#if isTyping}
               {typingText}<span
                 data-testid="visual-typewriter-cursor"
@@ -472,11 +483,21 @@
               {currentDialogue.dialogue}
             {/if}
           </p>
+          {#if !isTyping && secondDialogue?.[dialogueIndex]}
+            <p class="second-text" lang={secondLang} data-testid="second-line">
+              {secondDialogue[dialogueIndex].dialogue}
+            </p>
+          {/if}
         {/if}
 
         {#if showChoices}
           <div class="choices">
-            <p>{choice?.prompt}</p>
+            <p lang={textLang}>{choice?.prompt}</p>
+            {#if secondChoice}
+              <p class="second-text" lang={secondLang} data-testid="second-line">
+                {secondChoice.prompt}
+              </p>
+            {/if}
             {#each choice?.options ?? [] as option (option.id)}
               <Button
                 variant="menu"
@@ -485,7 +506,16 @@
                 data-reader-progression
                 onclick={() => onChoice(option.nextScene)}
               >
-                {option.label}
+                <span lang={textLang}>{option.label}</span>
+                {#if secondChoice?.labels[option.id]}
+                  <span
+                    class="second-choice-label"
+                    lang={secondLang}
+                    data-testid="second-line"
+                  >
+                    {secondChoice.labels[option.id]}
+                  </span>
+                {/if}
               </Button>
             {/each}
           </div>
@@ -522,6 +552,9 @@
   {#if backlogOpen}
     <VisualBacklog
       {dialogue}
+      {secondDialogue}
+      {textLang}
+      {secondLang}
       {dialogueIndex}
       {locale}
       trigger={historyButton}
@@ -605,6 +638,11 @@
     box-sizing: border-box;
   }
 
+  /* Room for the second-language line under the main one. */
+  .visual-novel-reader.has-second-line {
+    --dialogue-box-height: 18rem;
+  }
+
   .act-panel {
     z-index: 20;
     min-width: 3rem;
@@ -673,6 +711,21 @@
     line-height: 1.7;
   }
 
+  .second-text {
+    margin: 0.35rem 0 0;
+    color: rgb(226 232 240 / 0.78);
+    font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+    line-height: 1.6;
+  }
+
+  .second-choice-label {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
   .typewriter-cursor {
     display: inline-block;
     width: 0.45rem;
@@ -708,13 +761,18 @@
       --dialogue-box-height: 32dvh;
     }
 
+    .visual-novel-reader.has-second-line {
+      --dialogue-box-height: 40dvh;
+    }
+
     .visual-portrait {
       max-width: 54vw;
     }
   }
 
   @media (max-height: 31rem) and (orientation: landscape) {
-    .visual-novel-reader {
+    .visual-novel-reader,
+    .visual-novel-reader.has-second-line {
       --dialogue-box-height: 7.6rem;
     }
 

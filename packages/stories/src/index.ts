@@ -16,7 +16,14 @@ export type {
 } from './flow-types';
 export { getStoryContent, getStoryFlow } from './stories';
 export type { StoryLoaderResult, StoryFlowConfig } from './stories';
-export { translations, getTranslations } from './translations';
+export {
+    translations,
+    getTranslations,
+    SUPPORTED_LOCALES,
+    DEFAULT_LOCALE,
+    isLocale,
+    localeLangTag,
+} from './translations';
 export type { Locale, Translations } from './translations';
 export {
     AUDIO_PLAN_SCHEMA_VERSION,

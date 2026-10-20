@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DialogueEntryIR, StoryIR } from './ir';
+import { MIRROR_LOCALES, type MirrorLocale } from './localize';
 import {
     RESERVED_OBJECT_PROPERTY_NAMES,
     type ParsedCharacterDirectory,
@@ -140,7 +141,10 @@ function charKey(value: string): string {
     return charEnumKey(value);
 }
 
-function emitDialogueIndex(story: StoryIR, locale: 'zh' | 'en' = 'zh'): string {
+function emitDialogueIndex(
+    story: StoryIR,
+    locale: 'zh' | MirrorLocale = 'zh'
+): string {
     const dir = locale === 'zh' ? './scenes' : `./scenes/${locale}`;
     const imports = story.scenes
         .map(s => `import { scene as s_${s.id} } from '${dir}/${s.id}';`)
@@ -349,17 +353,19 @@ export function emitStory(
         );
     }
     writeFileSync(join(outDir, 'dialogue.zh.ts'), emitDialogueIndex(story));
-    if (story.en) {
-        mkdirSync(join(outDir, 'scenes', 'en'), { recursive: true });
-        for (const scene of story.en) {
+    for (const locale of MIRROR_LOCALES) {
+        const mirror = story.mirrors?.[locale];
+        if (!mirror) continue;
+        mkdirSync(join(outDir, 'scenes', locale), { recursive: true });
+        for (const scene of mirror) {
             writeFileSync(
-                join(outDir, 'scenes', 'en', `${scene.id}.ts`),
+                join(outDir, 'scenes', locale, `${scene.id}.ts`),
                 emitSceneFile(scene.entries, assetEnums, '../../')
             );
         }
         writeFileSync(
-            join(outDir, 'dialogue.en.ts'),
-            emitDialogueIndex(story, 'en')
+            join(outDir, `dialogue.${locale}.ts`),
+            emitDialogueIndex(story, locale)
         );
     }
     if (story.stats) {

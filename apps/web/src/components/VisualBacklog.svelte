@@ -7,12 +7,18 @@
   let {
     dialogue = [],
     dialogueIndex = 0,
+    secondDialogue = null,
+    textLang = undefined,
+    secondLang = undefined,
     locale = 'en',
     onClose = () => {},
     trigger = null,
   }: {
     dialogue?: DialogueEntry[];
     dialogueIndex?: number;
+    secondDialogue?: DialogueEntry[] | null;
+    textLang?: string;
+    secondLang?: string;
     locale?: Locale;
     onClose?: () => void;
     trigger?: HTMLElement | null;
@@ -63,7 +69,12 @@
         {#if characterName}
           <p class="speaker">{characterName}</p>
         {/if}
-        <p>{entry.dialogue}</p>
+        <p lang={textLang}>{entry.dialogue}</p>
+        {#if secondDialogue?.[index]}
+          <p class="second-text" lang={secondLang}>
+            {secondDialogue[index].dialogue}
+          </p>
+        {/if}
       </li>
     {/each}
   </ol>
@@ -144,5 +155,11 @@
     margin-bottom: 0.25rem;
     color: #7dd3fc;
     font-weight: 700;
+  }
+
+  .second-text {
+    margin-top: 0.25rem;
+    color: rgb(226 232 240 / 0.72);
+    font-size: 0.9rem;
   }
 </style>

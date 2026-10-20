@@ -8,6 +8,7 @@
  */
 import type { Locale } from '@aquila/stories';
 import { isRegisteredStoryId } from '@aquila/stories/async';
+import { SUPPORTED_LOCALES } from '@aquila/stories/translations';
 import { migratePersisted, READER_SESSION_KEY_PREFIX } from './reader-session';
 
 export const STORY_PROGRESS_KEY = 'aquila:storyProgress:v1';
@@ -137,7 +138,7 @@ export class StoryProgressStore {
     }
 }
 
-const SESSION_LOCALES: readonly Locale[] = ['en', 'zh'];
+const SESSION_LOCALES: readonly Locale[] = SUPPORTED_LOCALES;
 
 /** Carries each locale's last reader session (`aquila:readerState:<locale>`,
  *  the only place saved before this store existed) into the store, for

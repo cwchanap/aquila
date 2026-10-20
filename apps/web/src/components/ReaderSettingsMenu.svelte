@@ -4,6 +4,8 @@
   import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import type { ReaderMode } from '@/lib/reader-mode';
+  import type { SecondLanguage } from '@/lib/reader-second-language';
+  import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
   import { focusTrap } from '@/lib/focus-trap';
   import Button from '@/components/ui/Button.svelte';
 
@@ -17,6 +19,9 @@
     onSfxEnabledChange,
     bgmEnabled,
     onBgmEnabledChange,
+    secondLanguage = 'off',
+    secondLanguageOptions = [],
+    onSecondLanguageChange = () => {},
     onBookmark,
     showBookmarkButton,
     backUrl,
@@ -32,6 +37,9 @@
     onSfxEnabledChange: (enabled: boolean) => void;
     bgmEnabled: boolean;
     onBgmEnabledChange: (enabled: boolean) => void;
+    secondLanguage?: SecondLanguage;
+    secondLanguageOptions?: { locale: Locale; available: boolean }[];
+    onSecondLanguageChange?: (value: SecondLanguage) => void;
     onBookmark: () => void;
     showBookmarkButton: boolean;
     backUrl: string;
@@ -103,7 +111,7 @@
       aria-modal="true"
       aria-labelledby="reader-settings-title"
       data-reader-settings-dialog
-      class="pointer-events-auto fixed left-1/2 top-1/2 flex w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 rounded-3xl bg-white/95 p-6 text-slate-800 shadow-2xl backdrop-blur-xl"
+      class="pointer-events-auto fixed left-1/2 top-1/2 flex max-h-[calc(100dvh-2rem)] w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-3xl bg-white/95 p-6 text-slate-800 shadow-2xl backdrop-blur-xl"
       use:focusTrap={{ enabled: true, restoreFocus: trigger }}
     >
       <div class="flex items-center justify-between gap-4">
@@ -166,6 +174,15 @@
             {bgmEnabled ? t.reader.backgroundMusicOn : t.reader.backgroundMusicOff}
           </span>
         </button>
+      {/if}
+
+      {#if secondLanguageOptions.length > 0}
+        <SecondLanguagePicker
+          {locale}
+          value={secondLanguage}
+          options={secondLanguageOptions}
+          onChange={onSecondLanguageChange}
+        />
       {/if}
 
       {#if showBookmarkButton}

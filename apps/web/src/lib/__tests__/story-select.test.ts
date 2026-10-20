@@ -181,6 +181,21 @@ describe('buildCard', () => {
         );
         expect(all.status).toBe('All endings found');
     });
+
+    it('tags a story that has no text in the page language', () => {
+        const ja = getTranslations('ja').stories;
+        expect(buildCard(saga, null, 'en', en).languageNote).toBe(
+            'Chinese only'
+        );
+        expect(buildCard(saga, null, 'ja', ja).languageNote).toBe(
+            ja.originalLanguageOnly
+        );
+        expect(buildCard(saga, null, 'zh', zh).languageNote).toBeNull();
+        const translatedShort = { ...short, id: 'elevator_game' as const };
+        expect(
+            buildCard(translatedShort, null, 'ja', ja).languageNote
+        ).toBeNull();
+    });
 });
 
 describe('pickContinueCard', () => {

@@ -17,7 +17,8 @@ import type {
     VisualStateController,
 } from '@/lib/visual-assets';
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn((locale: string) => ({
         reader: {
             unknown: 'Unknown',
@@ -994,5 +995,91 @@ describe('VisualNovelReader', () => {
         });
 
         expect(onIndexChange).not.toHaveBeenCalled();
+    });
+});
+
+describe('VisualNovelReader second language', () => {
+    const secondDialogue: DialogueEntry[] = [
+        { characterId: 'narrator', dialogue: '一行目。' },
+        { characterId: 'narrator', dialogue: '二行目。' },
+        { dialogue: '三行目。' },
+    ];
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('shows the current line in the second language and makes room for it', async () => {
+        setReducedMotion(true);
+        const { container } = renderReader({
+            dialogueIndex: 1,
+            secondDialogue,
+            textLang: 'en',
+            secondLang: 'ja',
+        });
+        await vi.runAllTimersAsync();
+
+        const line = screen.getByTestId('second-line');
+        expect(line).toHaveTextContent('二行目。');
+        expect(line).toHaveAttribute('lang', 'ja');
+        expect(container.querySelector('.dialogue-text')).toHaveAttribute(
+            'lang',
+            'en'
+        );
+        expect(container.querySelector('.visual-novel-reader')).toHaveClass(
+            'has-second-line'
+        );
+    });
+
+    it('keeps the default layout when the setting is off', async () => {
+        setReducedMotion(true);
+        const { container } = renderReader({ dialogueIndex: 1 });
+        await vi.runAllTimersAsync();
+
+        expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
+        expect(container.querySelector('.visual-novel-reader')).not.toHaveClass(
+            'has-second-line'
+        );
+    });
+
+    it('shows the choice prompt and labels in the second language', async () => {
+        setReducedMotion(true);
+        renderReader({
+            dialogue: [dialogue[0]],
+            dialogueIndex: 0,
+            choice,
+            secondDialogue: [secondDialogue[0]],
+            secondChoice: {
+                prompt: '道を選んで',
+                labels: { left: '左の道を行く' },
+            },
+            secondLang: 'ja',
+        });
+        await vi.runAllTimersAsync();
+
+        expect(screen.getByText('道を選んで')).toHaveAttribute('lang', 'ja');
+        expect(screen.getByText('左の道を行く')).toHaveAttribute('lang', 'ja');
+    });
+
+    it('shows second-language lines in the History panel', async () => {
+        setReducedMotion(true);
+        renderReader({
+            dialogueIndex: 1,
+            secondDialogue,
+            secondLang: 'ja',
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+
+        const history = screen.getByRole('dialog');
+        expect(within(history).getByText('一行目。')).toHaveAttribute(
+            'lang',
+            'ja'
+        );
+        expect(within(history).getByText('二行目。')).toBeInTheDocument();
+        expect(within(history).queryByText('三行目。')).not.toBeInTheDocument();
     });
 });

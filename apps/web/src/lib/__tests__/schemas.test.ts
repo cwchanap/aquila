@@ -186,6 +186,15 @@ describe('BookmarkCreateSchema', () => {
         if (result.success) expect(result.data.locale).toBe('en');
     });
 
+    it('accepts explicit ja locale', () => {
+        const result = BookmarkCreateSchema.safeParse({
+            ...validBase,
+            locale: 'ja',
+        });
+        expect(result.success).toBe(true);
+        if (result.success) expect(result.data.locale).toBe('ja');
+    });
+
     it('accepts explicit zh locale', () => {
         const result = BookmarkCreateSchema.safeParse({
             ...validBase,

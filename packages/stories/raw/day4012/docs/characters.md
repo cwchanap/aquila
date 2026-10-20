@@ -7,7 +7,7 @@
 ## 1. 旁白（Narrator）
 
 - **ID**: `narrator`
-- **Aliases**: Narrator
+- **Aliases**: Narrator, ナレーション
 
 第三人稱貼身視角，鎖定鄭以寧。可以用感官比喻，但每一段只做一件事；不知道的事不說，看不見的東西不寫。
 
@@ -42,7 +42,7 @@
 ## 3. 守望（Vigil）
 
 - **ID**: `vigil`
-- **Aliases**: Vigil
+- **Aliases**: Vigil, ヴィジル
 
 ### 基本資料
 

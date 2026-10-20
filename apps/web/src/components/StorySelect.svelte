@@ -193,6 +193,9 @@
                 </span>
               {/if}
               <span class="text-xs font-semibold text-white">{card.status}</span>
+              {#if card.languageNote}
+                <span class="self-start rounded-full border border-white/25 px-2 py-0.5 text-[0.7rem] text-white/80" data-testid="language-note-{card.entry.id}">{card.languageNote}</span>
+              {/if}
             </span>
           </a>
           {#if card.startOverHref}

@@ -5,7 +5,8 @@ import MainMenu from '../MainMenu.svelte';
 import UserStatus from '../UserStatus.svelte';
 
 // Mock the lightweight translations boundary used by MainMenu.
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn(() => ({
         menu: {
             heading: 'AQUILA',
@@ -21,6 +22,7 @@ vi.mock('@aquila/stories/translations', () => ({
         languages: {
             english: 'English',
             chinese: '中文',
+            japanese: '日本語',
         },
         common: {
             logout: 'Logout',
@@ -150,6 +152,16 @@ describe('MainMenu', () => {
             const zhLink = screen.getByText('中文').closest('a');
             expect(zhLink).toHaveAttribute('href', '/zh/');
         });
+
+        it('renders Japanese language link pointing to /ja/', () => {
+            render(MainMenu, {
+                props: { user: null, locale: 'en' },
+            });
+
+            const jaLink = screen.getByText('日本語').closest('a');
+            expect(jaLink).toHaveAttribute('href', '/ja/');
+            expect(jaLink).toHaveAttribute('lang', 'ja');
+        });
     });
 
     describe('language click handler', () => {
@@ -164,6 +176,19 @@ describe('MainMenu', () => {
             expect(mockLocalStorageSetItem).toHaveBeenCalledWith(
                 'aquila:language',
                 'en'
+            );
+        });
+
+        it('saves language preference to localStorage on Japanese click', async () => {
+            render(MainMenu, {
+                props: { user: null, locale: 'en' },
+            });
+
+            await fireEvent.click(screen.getByText('日本語'));
+
+            expect(mockLocalStorageSetItem).toHaveBeenCalledWith(
+                'aquila:language',
+                'ja'
             );
         });
 
@@ -252,6 +277,21 @@ describe('MainMenu', () => {
             await fireEvent.click(bookmarksBtn!);
 
             expect(window.location.href).toBe('/zh/bookmarks');
+        });
+
+        it('navigates to Japanese bookmarks on click from Japanese path', async () => {
+            window.location.pathname = '/ja/';
+
+            render(MainMenu, {
+                props: { user: null, locale: 'ja' },
+            });
+
+            const bookmarksBtn = screen
+                .getByText('Bookmarks')
+                .closest('button');
+            await fireEvent.click(bookmarksBtn!);
+
+            expect(window.location.href).toBe('/ja/bookmarks');
         });
     });
 

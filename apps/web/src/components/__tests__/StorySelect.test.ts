@@ -54,6 +54,24 @@ describe('StorySelect', () => {
         expect(cardLink('elevator_game')).toHaveTextContent(/\d+ 分鐘/);
     });
 
+    it('renders in Japanese and tags the stories read in Chinese', () => {
+        render(StorySelect, { props: { locale: 'ja' } });
+        expect(cardLink('elevator_game').getAttribute('href')).toBe(
+            '/ja/reader?story=elevator_game'
+        );
+        expect(
+            screen.getByTestId('language-note-the_seventh_mirror')
+        ).toHaveTextContent('中国語のみ');
+        expect(screen.queryByTestId('language-note-elevator_game')).toBeNull();
+    });
+
+    it('shows no language tag when reading in Chinese', () => {
+        render(StorySelect, { props: { locale: 'zh' } });
+        expect(
+            screen.queryByTestId('language-note-the_seventh_mirror')
+        ).toBeNull();
+    });
+
     it('offers to continue a saga and keeps short story endings', () => {
         saveProgress({
             the_seventh_mirror: {

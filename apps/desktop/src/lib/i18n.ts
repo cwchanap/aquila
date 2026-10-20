@@ -1,14 +1,15 @@
 import en from '@aquila/stories/translations/en.json';
 import zh from '@aquila/stories/translations/zh.json';
+import ja from '@aquila/stories/translations/ja.json';
 
-export type Locale = 'en' | 'zh';
+export type Locale = 'en' | 'zh' | 'ja';
 
-const translations = { en, zh };
+const translations = { en, zh, ja };
 
 export function getLocale(): Locale {
     if (typeof window !== 'undefined') {
         const stored = localStorage.getItem('aquila:language');
-        if (stored === 'en' || stored === 'zh') {
+        if (stored === 'en' || stored === 'zh' || stored === 'ja') {
             return stored;
         }
     }

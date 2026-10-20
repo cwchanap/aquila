@@ -19,6 +19,11 @@ vi.mock('better-auth', () => ({
     })),
 }));
 
+// Vitest clears mock.calls before every test (clearMocks defaults to true), so
+// capture the config betterAuth received at import time up front.
+const initialAuthConfig = vi.mocked(betterAuth).mock.calls[0]?.[0] as
+    Record<string, unknown> | undefined;
+
 describe('Auth Configuration', () => {
     describe('auth object', () => {
         it('should be defined', () => {
@@ -87,13 +92,10 @@ describe('Auth Configuration', () => {
         });
 
         it('omits the Google social provider when credentials are not set', () => {
-            const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
-                | Record<string, unknown>
-                | undefined;
+            const config = initialAuthConfig;
             expect(config).toBeDefined();
             const social = config?.socialProviders as
-                | { google?: unknown }
-                | undefined;
+                { google?: unknown } | undefined;
             // Without GOOGLE_CLIENT_ID/SECRET (test env), the provider is
             // omitted to avoid registering a broken sign-in path.
             expect(social?.google).toBeUndefined();
@@ -109,8 +111,7 @@ describe('Auth Configuration', () => {
             await import('../auth');
 
             const config = vi.mocked(betterAuth).mock.calls[0]?.[0] as
-                | Record<string, unknown>
-                | undefined;
+                Record<string, unknown> | undefined;
             expect(config).toBeDefined();
             const social = config?.socialProviders as
                 | { google?: { clientId?: string; clientSecret?: string } }

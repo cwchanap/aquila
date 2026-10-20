@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock the lightweight translations boundary used by BookmarksManager.
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn(() => ({
         bookmarks: {
             title: 'My Bookmarks',

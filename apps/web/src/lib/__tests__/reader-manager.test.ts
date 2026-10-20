@@ -6,7 +6,8 @@ import {
     type AsyncStoryLoaderResult,
 } from '@aquila/stories/async';
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn(() => ({
         reader: {
             bookmarkPrompt: 'Save bookmark as:',

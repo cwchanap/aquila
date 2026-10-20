@@ -53,6 +53,13 @@ describe('middleware', () => {
             expect(next).toHaveBeenCalledOnce();
         });
 
+        it('sets currentLocale to "ja" for /ja/ paths', async () => {
+            const ctx = makeContext('/ja/reader');
+            await onRequest(ctx as any, next);
+            expect(ctx.locals.currentLocale).toBe('ja');
+            expect(next).toHaveBeenCalledOnce();
+        });
+
         it('sets currentLocale to "zh" for /zh/ paths', async () => {
             const ctx = makeContext('/zh/stories');
             await onRequest(ctx as any, next);

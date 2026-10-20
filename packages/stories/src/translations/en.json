@@ -105,6 +105,7 @@
     "finished": "Finished",
     "chapterOf": "Chapter {n} of {total}",
     "close": "Close",
+    "originalLanguageOnly": "Chinese only",
     "genres": {
       "mystery": "Mystery",
       "fantasy": "Fantasy",
@@ -187,6 +188,7 @@
     "deleteFailed": "Failed to delete bookmark",
     "english": "English",
     "chinese": "Chinese",
+    "japanese": "Japanese",
     "localBookmarks": "Local Bookmarks",
     "cloudBookmarks": "Cloud Bookmarks",
     "noLocalBookmarks": "No local bookmarks.",
@@ -219,6 +221,9 @@
     "backgroundMusic": "Background Music",
     "backgroundMusicOn": "On",
     "backgroundMusicOff": "Off",
+    "secondLanguage": "Second language",
+    "secondLanguageOff": "Off",
+    "secondLanguageUnavailable": "Not available for this story",
     "openSettings": "Open reader settings",
     "settingsTitle": "Reader settings",
     "closeSettings": "Close reader settings",
@@ -274,6 +279,7 @@
   },
   "languages": {
     "english": "English",
-    "chinese": "中文"
+    "chinese": "中文",
+    "japanese": "日本語"
   }
 }

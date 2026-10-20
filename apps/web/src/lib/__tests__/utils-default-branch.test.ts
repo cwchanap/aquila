@@ -10,7 +10,8 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     translations: {
         en: {
             default: {

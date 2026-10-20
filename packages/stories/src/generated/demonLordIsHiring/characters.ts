@@ -16,12 +16,12 @@ export interface CharacterInfo {
 }
 
 export const characterTable: Record<string, CharacterInfo> = {
-    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator"] },
+    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator", "ナレーション"] },
     [CharacterId.DemonLord]: { id: "demon_lord", name: "魔王", aliases: ["Demon Lord"] },
-    [CharacterId.Serin]: { id: "serin", name: "瑟琳", aliases: ["Serin", "祕書", "Secretary"] },
-    [CharacterId.Aldric]: { id: "aldric", name: "奧德里克", aliases: ["Aldric", "聖騎士", "Paladin"] },
-    [CharacterId.Toby]: { id: "toby", name: "托比", aliases: ["Toby"] },
-    [CharacterId.MysteriousApplicant]: { id: "mysterious_applicant", name: "神祕應徵者", aliases: ["Mysterious Applicant"] },
+    [CharacterId.Serin]: { id: "serin", name: "瑟琳", aliases: ["Serin", "祕書", "Secretary", "セリン"] },
+    [CharacterId.Aldric]: { id: "aldric", name: "奧德里克", aliases: ["Aldric", "聖騎士", "Paladin", "オルドリック"] },
+    [CharacterId.Toby]: { id: "toby", name: "托比", aliases: ["Toby", "トビー"] },
+    [CharacterId.MysteriousApplicant]: { id: "mysterious_applicant", name: "神祕應徵者", aliases: ["Mysterious Applicant", "謎の応募者"] },
 };
 
 const nameToId = new Map<string, string>();

@@ -2,9 +2,13 @@ export { StoryLoadError } from './errors';
 export type { StoryLoadErrorCode } from './errors';
 export {
     REGISTERED_STORY_IDS,
+    SOURCE_LOCALE,
+    STORY_TEXT_LOCALES,
     TEXT_ONLY_STORY_IDS,
+    hasStoryText,
     isRegisteredStoryId,
     normalizeStoryLocale,
+    resolveStoryTextLocale,
     supportsVisualMode,
 } from '../story-metadata';
 export type { RegisteredStoryId, StoryLocaleInput } from '../story-metadata';

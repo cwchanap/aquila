@@ -105,6 +105,7 @@
     "finished": "已讀完",
     "chapterOf": "第 {n} 章，共 {total} 章",
     "close": "關閉",
+    "originalLanguageOnly": "僅中文",
     "genres": {
       "mystery": "懸疑",
       "fantasy": "奇幻",
@@ -187,6 +188,7 @@
     "deleteFailed": "刪除書籤失敗",
     "english": "English",
     "chinese": "中文",
+    "japanese": "日文",
     "localBookmarks": "本機書籤",
     "cloudBookmarks": "雲端書籤",
     "noLocalBookmarks": "沒有本機書籤。",
@@ -219,6 +221,9 @@
     "backgroundMusic": "背景音樂",
     "backgroundMusicOn": "開啟",
     "backgroundMusicOff": "關閉",
+    "secondLanguage": "第二語言",
+    "secondLanguageOff": "關閉",
+    "secondLanguageUnavailable": "此故事尚未提供",
     "openSettings": "開啟閱讀設定",
     "settingsTitle": "閱讀設定",
     "closeSettings": "關閉閱讀設定",
@@ -274,6 +279,7 @@
   },
   "languages": {
     "english": "English",
-    "chinese": "中文"
+    "chinese": "中文",
+    "japanese": "日本語"
   }
 }

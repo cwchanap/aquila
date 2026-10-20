@@ -2,6 +2,7 @@ import type { StoryCatalogEntry } from '@aquila/stories/catalog';
 import {
     ZH_CHARS_PER_MINUTE,
     estimateReadingMinutes,
+    hasStoryText,
 } from '@aquila/stories/catalog';
 import type { Translations } from '@aquila/stories';
 import type { StoryProgress, StoryProgressMap } from './story-progress-store';
@@ -30,6 +31,9 @@ export interface StoryCardModel {
     /** 0–1 when the chapter can be read from the scene id, else null. */
     fraction: number | null;
     progress: StoryProgress | null;
+    /** "Chinese only" when the story has no text in the page's language and
+     *  the reader will show the Chinese original, else null. */
+    languageNote: string | null;
 }
 
 /** Fills `{name}` placeholders in a translation string. */
@@ -168,6 +172,9 @@ export function buildCard(
         endingsTotal,
         fraction,
         progress,
+        languageNote: hasStoryText(entry.id, locale)
+            ? null
+            : t.originalLanguageOnly,
     };
 }
 

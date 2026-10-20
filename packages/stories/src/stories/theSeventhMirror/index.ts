@@ -1,6 +1,7 @@
 import type { ChoiceMap, DialogueMap } from '../../types';
 import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
+import { pickLocalized, type LocalizedContent } from '../localized';
 import { theSeventhMirrorZhDialogue } from '../../generated/theSeventhMirror/dialogue.zh';
 import {
     theSeventhMirrorFlow,
@@ -13,14 +14,10 @@ export type { TheSeventhMirrorSceneId };
 
 export type TheSeventhMirrorFlowConfig = FlowConfig<TheSeventhMirrorSceneId>;
 
-type TheSeventhMirrorLocale = 'en' | 'zh';
-
-// English is not yet authored; fall back to the generated zh content as a
-// visible placeholder so the default-locale ('en') reader stays functional.
-// TODO: author/compile real en source.
-const dialogueByLocale: Record<TheSeventhMirrorLocale, DialogueMap> = {
+// Only the zh source is authored so far; every locale reads it until a
+// mirror tree is added (see STORY_TEXT_LOCALES).
+const dialogueByLocale: LocalizedContent<DialogueMap> = {
     zh: theSeventhMirrorZhDialogue,
-    en: theSeventhMirrorZhDialogue,
 };
 
 const choices: ChoiceMap = buildChoiceMap(
@@ -32,11 +29,8 @@ export function getTheSeventhMirrorStory(locale: string): {
     dialogue: DialogueMap;
     choices: ChoiceMap;
 } {
-    const normalized: TheSeventhMirrorLocale = locale.startsWith('zh')
-        ? 'zh'
-        : 'en';
     return {
-        dialogue: dialogueByLocale[normalized],
+        dialogue: pickLocalized('the_seventh_mirror', dialogueByLocale, locale),
         choices,
     };
 }

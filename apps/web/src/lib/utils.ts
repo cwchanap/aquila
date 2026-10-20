@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { translations } from '@aquila/stories/translations';
+import { isLocale, translations } from '@aquila/stories/translations';
 import type { Locale } from '@aquila/stories';
 
 export type { Locale };
@@ -13,7 +13,7 @@ export function cn(...inputs: ClassValue[]) {
  * Retrieves a translated string by key for the given locale.
  * Supports nested keys using dot notation (e.g., 'menu.title').
  *
- * @param locale - The locale to use ('en' or 'zh')
+ * @param locale - The locale to use ('en', 'zh' or 'ja')
  * @param key - Dot-notation key path (e.g., 'menu.title')
  * @returns The translated string, or the key if not found
  */
@@ -21,10 +21,10 @@ export function t(locale: Locale | string, key: string): string {
     if (!key) return '';
 
     const keys = key.split('.');
-    const validLocale: Locale = locale === 'zh' ? 'zh' : 'en';
+    const validLocale: Locale = isLocale(locale) ? locale : 'en';
 
     // Log warning for invalid locale
-    if (locale !== 'en' && locale !== 'zh') {
+    if (!isLocale(locale)) {
         if (typeof locale === 'string') {
             console.warn(
                 `[i18n] Invalid locale "${locale}" provided to t(); falling back to "en".`

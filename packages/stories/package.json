@@ -19,7 +19,8 @@
     "./stories": "./src/stories/index.ts",
     "./translations": "./src/translations/index.ts",
     "./translations/en.json": "./src/translations/en.json",
-    "./translations/zh.json": "./src/translations/zh.json"
+    "./translations/zh.json": "./src/translations/zh.json",
+    "./translations/ja.json": "./src/translations/ja.json"
   },
   "scripts": {
     "dev": "tsc --watch",

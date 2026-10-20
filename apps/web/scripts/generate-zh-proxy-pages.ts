@@ -1,17 +1,22 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+    DEFAULT_LOCALE,
+    SUPPORTED_LOCALES,
+} from '@aquila/stories/translations';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const pagesDir = path.resolve(__dirname, '../src/pages');
 const localePagesDir = path.resolve(pagesDir, '[locale]');
-const zhPagesDir = path.resolve(pagesDir, 'zh');
 
-if (!fs.existsSync(zhPagesDir)) {
-    fs.mkdirSync(zhPagesDir, { recursive: true });
-}
+// Every locale except the default gets a generated proxy tree
+// (src/pages/zh/, src/pages/ja/), each page rendering its [locale] original.
+const proxyLocales = SUPPORTED_LOCALES.filter(
+    locale => locale !== DEFAULT_LOCALE
+);
 
 const findAstroFiles = (dir: string, baseDir = ''): string[] => {
     const files: string[] = [];
@@ -32,7 +37,7 @@ const findAstroFiles = (dir: string, baseDir = ''): string[] => {
 };
 
 /**
- * Remove stale zh proxy files that no longer have corresponding locale files.
+ * Remove stale proxy files that no longer have corresponding locale files.
  * This prevents build errors when locale pages are deleted but their proxies remain.
  */
 const cleanupStaleProxies = (
@@ -64,7 +69,7 @@ const cleanupStaleProxies = (
                 }
             }
         } else if (entry.name.endsWith('.astro')) {
-            // Get relative path from the base path (root zh directory)
+            // Get relative path from the base path (root proxy directory)
             const relativePath = path.relative(basePath, fullPath);
             const normalizedPath = relativePath.replace(/\\/g, '/');
 
@@ -93,37 +98,47 @@ const validLocaleFiles = new Set(
     localeAstroFiles.map(f => f.replace(/\\/g, '/'))
 );
 
-// Clean up stale proxies before generating new ones
-console.log('Cleaning up stale zh proxies...');
-const removedCount = cleanupStaleProxies(zhPagesDir, validLocaleFiles);
-if (removedCount > 0) {
-    console.log(`Removed ${removedCount} stale proxy file(s)`);
-} else {
-    console.log('No stale proxies found');
-}
+for (const proxyLocale of proxyLocales) {
+    const proxyPagesDir = path.resolve(pagesDir, proxyLocale);
 
-for (const filePath of localeAstroFiles) {
-    const zhFilePath = path.join(zhPagesDir, filePath);
-    const localeFilePath = path.join(localePagesDir, filePath);
-
-    const zhDir = path.dirname(zhFilePath);
-    if (!fs.existsSync(zhDir)) {
-        fs.mkdirSync(zhDir, { recursive: true });
+    if (!fs.existsSync(proxyPagesDir)) {
+        fs.mkdirSync(proxyPagesDir, { recursive: true });
     }
 
-    // Calculate relative path from zh file to locale file
-    // Normalize to forward slashes for cross-platform import compatibility
-    const relativePath = path
-        .relative(zhDir, localeFilePath)
-        .replace(/\\/g, '/');
+    // Clean up stale proxies before generating new ones
+    console.log(`Cleaning up stale ${proxyLocale} proxies...`);
+    const removedCount = cleanupStaleProxies(proxyPagesDir, validLocaleFiles);
+    if (removedCount > 0) {
+        console.log(`Removed ${removedCount} stale proxy file(s)`);
+    } else {
+        console.log('No stale proxies found');
+    }
 
-    const proxyContent = `---
+    for (const filePath of localeAstroFiles) {
+        const proxyFilePath = path.join(proxyPagesDir, filePath);
+        const localeFilePath = path.join(localePagesDir, filePath);
+
+        const proxyDir = path.dirname(proxyFilePath);
+        if (!fs.existsSync(proxyDir)) {
+            fs.mkdirSync(proxyDir, { recursive: true });
+        }
+
+        // Calculate relative path from the proxy file to the locale file
+        // Normalize to forward slashes for cross-platform import compatibility
+        const relativePath = path
+            .relative(proxyDir, localeFilePath)
+            .replace(/\\/g, '/');
+
+        const proxyContent = `---
 import LocalePage from '${relativePath}';
 ---
-<LocalePage {...Astro.props} locale="zh" />
+<LocalePage {...Astro.props} locale="${proxyLocale}" />
 `;
 
-    fs.writeFileSync(zhFilePath, proxyContent);
-}
+        fs.writeFileSync(proxyFilePath, proxyContent);
+    }
 
-console.log(`Created ${localeAstroFiles.length} proxy pages for zh`);
+    console.log(
+        `Created ${localeAstroFiles.length} proxy pages for ${proxyLocale}`
+    );
+}

@@ -1,4 +1,5 @@
 import type { Locale, FlowConfig } from '@aquila/stories';
+import { isLocale } from '@aquila/stories/translations';
 
 export interface ReaderSessionState {
     storyId: string;
@@ -23,10 +24,6 @@ export const READER_SESSION_KEY_PREFIX = 'aquila:readerState';
 
 /** Fallback scene id when a loaded flow has no `start` field. */
 export const DEFAULT_SCENE_ID = 'act1';
-
-function isLocale(v: unknown): v is Locale {
-    return v === 'en' || v === 'zh';
-}
 
 /** Clamp a 0-based dialogue index into `[0, length-1]`. Empty dialogue
  *  (`length <= 0`) -> index 0 is valid (the UI shows its empty/end state).

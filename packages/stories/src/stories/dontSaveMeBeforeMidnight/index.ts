@@ -1,6 +1,7 @@
 import type { ChoiceMap, DialogueMap } from '../../types';
 import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
+import { pickLocalized, type LocalizedContent } from '../localized';
 import { dontSaveMeBeforeMidnightZhDialogue } from '../../generated/dontSaveMeBeforeMidnight/dialogue.zh';
 import {
     dontSaveMeBeforeMidnightFlow,
@@ -14,14 +15,10 @@ export type { DontSaveMeBeforeMidnightSceneId };
 export type DontSaveMeBeforeMidnightFlowConfig =
     FlowConfig<DontSaveMeBeforeMidnightSceneId>;
 
-type DontSaveMeBeforeMidnightLocale = 'en' | 'zh';
-
-// English is not yet authored; fall back to the generated zh content as a
-// visible placeholder so the default-locale ('en') reader stays functional.
-// TODO: author/compile real en source.
-const dialogueByLocale: Record<DontSaveMeBeforeMidnightLocale, DialogueMap> = {
+// Only the zh source is authored so far; every locale reads it until a
+// mirror tree is added (see STORY_TEXT_LOCALES).
+const dialogueByLocale: LocalizedContent<DialogueMap> = {
     zh: dontSaveMeBeforeMidnightZhDialogue,
-    en: dontSaveMeBeforeMidnightZhDialogue,
 };
 
 const choices: ChoiceMap = buildChoiceMap(
@@ -33,11 +30,12 @@ export function getDontSaveMeBeforeMidnightStory(locale: string): {
     dialogue: DialogueMap;
     choices: ChoiceMap;
 } {
-    const normalized: DontSaveMeBeforeMidnightLocale = locale.startsWith('zh')
-        ? 'zh'
-        : 'en';
     return {
-        dialogue: dialogueByLocale[normalized],
+        dialogue: pickLocalized(
+            'dont_save_me_before_midnight',
+            dialogueByLocale,
+            locale
+        ),
         choices,
     };
 }

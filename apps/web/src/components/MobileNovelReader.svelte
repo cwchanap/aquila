@@ -7,6 +7,11 @@
     StoryFlowConfig,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
+  import type {
+    SecondChoiceLabels,
+    SecondLanguage,
+  } from '@/lib/reader-second-language';
+  import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
@@ -17,7 +22,15 @@
   } from '@/lib/reader-interaction';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
   import MobileBacklogSheet from '@/components/MobileBacklogSheet.svelte';
-  import { House, Layers, ChevronLeft, History, Bookmark, Film } from 'lucide-svelte';
+  import {
+    House,
+    Layers,
+    ChevronLeft,
+    History,
+    Bookmark,
+    Film,
+    Languages,
+  } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
 
   // Pure controlled reader. All session state arrives via props; the only
@@ -42,6 +55,13 @@
     showBookmarkButton = true,
     isInitialMount = true,
     interactionDisabled = false,
+    secondDialogue = null,
+    secondChoice = null,
+    textLang = undefined,
+    secondLang = undefined,
+    secondLanguage = 'off',
+    secondLanguageChoices = [],
+    onSecondLanguageChange = () => {},
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -62,6 +82,14 @@
     showBookmarkButton?: boolean;
     isInitialMount?: boolean;
     interactionDisabled?: boolean;
+    /** Second-language lines aligned 1:1 with `dialogue`, or null when off. */
+    secondDialogue?: DialogueEntry[] | null;
+    secondChoice?: SecondChoiceLabels | null;
+    textLang?: string;
+    secondLang?: string;
+    secondLanguage?: SecondLanguage;
+    secondLanguageChoices?: { locale: Locale; available: boolean }[];
+    onSecondLanguageChange?: (value: SecondLanguage) => void;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -78,6 +106,7 @@
   let chromeVisible = $state(false);
   let drawerOpen = $state(false);
   let backlogOpen = $state(false);
+  let languagePickerOpen = $state(false);
   let activeTooltip = $state<string | null>(null);
   // Viewport-space anchor (horizontal center + bottom edge of the held control)
   // so the tooltip bubble renders next to the icon that was long-pressed,
@@ -295,9 +324,10 @@
   let backlogLines = $derived(
     dialogue
       .slice(0, dialogueIndex + 1)
-      .map(entry => ({
+      .map((entry, index) => ({
         characterName: resolveCharacterName(entry, t),
         text: entry.dialogue,
+        secondText: secondDialogue?.[index]?.dialogue,
       }))
   );
 </script>
@@ -383,6 +413,21 @@
         >
           <History size={20} aria-hidden="true" />
         </button>
+        {#if secondLanguageChoices.length > 0}
+          <button
+            type="button"
+            class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+            aria-label={t.reader.secondLanguage}
+            aria-expanded={languagePickerOpen}
+            onclick={() => (languagePickerOpen = !languagePickerOpen)}
+            use:longpress={{
+              onLongPress: (node) => showTooltip(node, t.reader.secondLanguage),
+              onRelease: hideTooltip,
+            }}
+          >
+            <Languages size={20} aria-hidden="true" />
+          </button>
+        {/if}
         {#if visualModeAvailable}
           <button
             type="button"
@@ -415,6 +460,17 @@
           <span class="ml-auto pr-2 text-xs font-medium text-slate-600">{progressText}</span>
         {/if}
       </div>
+      {#if languagePickerOpen && secondLanguageChoices.length > 0}
+        <div class="px-4 pb-3">
+          <SecondLanguagePicker
+            {locale}
+            value={secondLanguage}
+            options={secondLanguageChoices}
+            onChange={onSecondLanguageChange}
+            compact
+          />
+        </div>
+      {/if}
       <div class="h-1 w-full bg-slate-200/70" aria-hidden="true">
         <div
           class="h-full bg-blue-500 motion-safe:transition-[width] motion-safe:duration-200"
@@ -435,14 +491,34 @@
   >
     {#if showChoices}
       <div class="space-y-3 rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
-        <p class="text-base font-semibold text-slate-700">{choice?.prompt}</p>
+        <p class="text-base font-semibold text-slate-700">
+          <span lang={textLang}>{choice?.prompt}</span>
+          {#if secondChoice}
+            <span
+              class="mt-1 block text-sm font-normal text-slate-500"
+              lang={secondLang}
+              data-testid="second-line"
+            >
+              {secondChoice.prompt}
+            </span>
+          {/if}
+        </p>
         {#each choice?.options ?? [] as option (option.id)}
           <button
             type="button"
             class="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-left text-base font-semibold text-slate-800 hover:border-blue-300 hover:text-blue-600"
             onclick={() => onChoice(option.nextScene)}
           >
-            {option.label}
+            <span lang={textLang}>{option.label}</span>
+            {#if secondChoice?.labels[option.id]}
+              <span
+                class="mt-1 block text-sm font-normal text-slate-500"
+                lang={secondLang}
+                data-testid="second-line"
+              >
+                {secondChoice.labels[option.id]}
+              </span>
+            {/if}
           </button>
         {/each}
       </div>
@@ -472,7 +548,12 @@
            still advances — scroll gestures don't fire click, so scrolling is
            unaffected. The local keydown mirrors the global <svelte:window>
            handler and calls preventDefault() so advance isn't triggered twice. -->
-      <div class="flex h-52 flex-col rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
+      <div
+        class={cn(
+          'flex flex-col rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md',
+          secondDialogue ? 'h-64' : 'h-52'
+        )}
+      >
         {#if currentName}
           <span
             class="mb-2 inline-block self-start rounded-xl bg-blue-100/80 px-3 py-1 text-base font-bold text-blue-600"
@@ -491,9 +572,13 @@
             advance();
           }}
         >
-          {#if isTyping}{typingText}<span
+          {#if isTyping}<span lang={textLang}>{typingText}</span><span
             class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
-          ></span>{:else}{currentDialogue?.dialogue}{/if}
+          ></span>{:else}<span lang={textLang}>{currentDialogue?.dialogue}</span>{#if secondDialogue?.[dialogueIndex]}<span
+              class="mt-2 block text-base text-slate-500"
+              lang={secondLang}
+              data-testid="second-line"
+            >{secondDialogue[dialogueIndex].dialogue}</span>{/if}{/if}
         </p>
         {#if !isTyping}
           <div class="mt-2 text-right text-blue-500">
@@ -547,6 +632,8 @@
 
   <MobileBacklogSheet
     lines={backlogLines}
+    {textLang}
+    {secondLang}
     open={backlogOpen}
     {locale}
     restoreFocusTarget={menuToggleButton ?? null}

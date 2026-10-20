@@ -9,8 +9,12 @@
     onClose,
     locale = 'en',
     restoreFocusTarget = null,
+    textLang = undefined,
+    secondLang = undefined,
   }: {
-    lines: { characterName: string; text: string }[];
+    lines: { characterName: string; text: string; secondText?: string }[];
+    textLang?: string;
+    secondLang?: string;
     open?: boolean;
     onClose: () => void;
     locale?: Locale;
@@ -60,7 +64,10 @@
           {#if line.characterName}
             <p class="text-sm font-bold text-blue-600">{line.characterName}</p>
           {/if}
-          <p class="text-base leading-relaxed text-slate-800">{line.text}</p>
+          <p class="text-base leading-relaxed text-slate-800" lang={textLang}>{line.text}</p>
+          {#if line.secondText}
+            <p class="text-sm leading-relaxed text-slate-500" lang={secondLang}>{line.secondText}</p>
+          {/if}
         </li>
       {/each}
     </ul>

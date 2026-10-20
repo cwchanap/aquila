@@ -23,6 +23,7 @@ import type {
     AudioReaderRuntime,
 } from '@/lib/audio/audio-runtime';
 import { READER_MODE_KEY } from '@/lib/reader-mode';
+import { READER_SECOND_LANGUAGE_KEY } from '@/lib/reader-second-language';
 
 const { mockGetTranslations } = vi.hoisted(() => ({
     mockGetTranslations: vi.fn((locale: string) => ({
@@ -70,14 +71,19 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
+            secondLanguage: 'Second language',
+            secondLanguageOff: 'Off',
+            secondLanguageUnavailable: 'Not available for this story',
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
+        languages: { english: 'English', chinese: '中文', japanese: '日本語' },
         locale,
     })),
 }));
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: mockGetTranslations,
 }));
 
@@ -2234,5 +2240,187 @@ describe('ReaderShell', () => {
         ).toBeInTheDocument();
         // The visual runtime factory must not have been called.
         expect(defaultFactory).not.toHaveBeenCalled();
+    });
+});
+
+describe('ReaderShell second language', () => {
+    const jaDialogue: DialogueEntry[] = [
+        { characterId: 'narrator', dialogue: '一行目。' },
+        { characterId: 'narrator', dialogue: '二行目。' },
+        { characterId: 'narrator', dialogue: '三行目。' },
+    ];
+    const choiceFlow = {
+        start: 'act1',
+        nodes: [
+            {
+                kind: 'scene',
+                id: 'act1',
+                sceneId: 'act1',
+                next: 'choice:choice_act1',
+            },
+        ],
+    } as unknown as StoryFlowConfig;
+
+    function secondPayload(dialogue: DialogueEntry[] = jaDialogue) {
+        return {
+            dialogue: { act1: dialogue },
+            choices: {
+                choice_act1: {
+                    prompt: 'どうする？',
+                    options: [
+                        { id: 'b1a', nextScene: 'b1a_act2', label: '進む' },
+                        { id: 'b1b', nextScene: 'b1b_act2', label: '戻る' },
+                    ],
+                },
+            },
+            flow: choiceFlow,
+            locale: 'ja' as const,
+            textLocale: 'ja' as const,
+        };
+    }
+
+    beforeEach(() => {
+        localStorage.clear();
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        readerState.storyId = 'elevator_game';
+        readerState.currentSceneId = 'act1';
+        readerState.locale = 'en';
+        readerState.dialogueIndex = 1;
+        readerState.activeFlow = flow;
+        readerState.hasActivePayload = true;
+        readerState.loadStatus = 'ready';
+    });
+
+    afterEach(() => vi.clearAllMocks());
+
+    async function openSettings(): Promise<void> {
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+    }
+
+    it('offers every other language the story has, with Off first', async () => {
+        render(ReaderShell, {
+            props: { loadSecondLanguageContent: vi.fn() },
+        });
+        await openSettings();
+
+        const picker = screen.getByRole('group', { name: 'Second language' });
+        const buttons = Array.from(picker.querySelectorAll('button'));
+        expect(buttons.map(b => b.textContent?.trim())).toEqual([
+            'Off',
+            '中文',
+            '日本語',
+        ]);
+        expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+        expect(buttons[2]).toHaveAttribute('lang', 'ja');
+        expect(buttons[1]).toHaveAttribute('lang', 'zh-Hant');
+    });
+
+    it('hides the picker for a story with no other language', async () => {
+        readerState.storyId = 'the_seventh_mirror';
+        render(ReaderShell, {
+            props: { loadSecondLanguageContent: vi.fn() },
+        });
+        await openSettings();
+
+        expect(
+            screen.queryByRole('group', { name: 'Second language' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('loads the chosen language, saves it and shows each translated line under its line', async () => {
+        const load = vi.fn(async () => secondPayload());
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+        await openSettings();
+
+        await fireEvent.click(screen.getByRole('button', { name: '日本語' }));
+
+        expect(load).toHaveBeenCalledWith('elevator_game', 'ja');
+        expect(localStorage.getItem(READER_SECOND_LANGUAGE_KEY)).toBe('ja');
+        await waitFor(() =>
+            expect(screen.getByText('一行目。')).toBeInTheDocument()
+        );
+        const line = screen.getByText('一行目。');
+        expect(line).toHaveAttribute('lang', 'ja');
+        expect(line).toHaveAttribute('data-testid', 'second-line');
+        expect(screen.getByText('First dialogue line.')).toHaveAttribute(
+            'lang',
+            'en'
+        );
+    });
+
+    it('restores the saved language and turns it off again', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        const load = vi.fn(async () => secondPayload());
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+
+        await waitFor(() =>
+            expect(screen.getByText('一行目。')).toBeInTheDocument()
+        );
+
+        await openSettings();
+        await fireEvent.click(screen.getByRole('button', { name: 'Off' }));
+        await tick();
+
+        expect(screen.queryByText('一行目。')).not.toBeInTheDocument();
+        expect(localStorage.getItem(READER_SECOND_LANGUAGE_KEY)).toBeNull();
+    });
+
+    it('shows no translation when the scene does not line up', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        const load = vi.fn(async () => secondPayload(jaDialogue.slice(0, 2)));
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+        await waitFor(() => expect(load).toHaveBeenCalled());
+        await tick();
+
+        expect(screen.queryAllByTestId('second-line')).toHaveLength(0);
+    });
+
+    it('ignores a saved language the story lacks', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        readerState.storyId = 'the_seventh_mirror';
+        const load = vi.fn();
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+        await tick();
+
+        expect(load).not.toHaveBeenCalled();
+    });
+
+    it('keeps reading when the translation fails to load', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const load = vi.fn(async () => {
+            throw new Error('offline');
+        });
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+        await waitFor(() => expect(load).toHaveBeenCalled());
+        await tick();
+
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(screen.queryAllByTestId('second-line')).toHaveLength(0);
+        warn.mockRestore();
+    });
+
+    it('shows the translated choice prompt and labels', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        readerState.activeFlow = choiceFlow;
+        readerState.dialogueIndex = 2;
+        readerState.choice = {
+            prompt: 'What now?',
+            options: [
+                { id: 'b1a', nextScene: 'b1a_act2', label: 'Go on' },
+                { id: 'b1b', nextScene: 'b1b_act2', label: 'Go back' },
+            ],
+        };
+        const load = vi.fn(async () => secondPayload());
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+
+        await waitFor(() =>
+            expect(screen.getByText('どうする？')).toBeInTheDocument()
+        );
+        expect(screen.getByText('進む')).toHaveAttribute('lang', 'ja');
+        expect(screen.getByText('戻る')).toBeInTheDocument();
     });
 });

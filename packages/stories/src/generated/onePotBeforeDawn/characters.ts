@@ -15,11 +15,11 @@ export interface CharacterInfo {
 }
 
 export const characterTable: Record<string, CharacterInfo> = {
-    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator"] },
-    [CharacterId.XiaoMan]: { id: "xiao_man", name: "小滿", aliases: ["Xiao Man"] },
-    [CharacterId.WenBo]: { id: "wen_bo", name: "溫伯", aliases: ["師父", "Uncle Wen"] },
+    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator", "ナレーション"] },
+    [CharacterId.XiaoMan]: { id: "xiao_man", name: "小滿", aliases: ["Xiao Man", "小満"] },
+    [CharacterId.WenBo]: { id: "wen_bo", name: "溫伯", aliases: ["師父", "Uncle Wen", "温伯"] },
     [CharacterId.ShenYan]: { id: "shen_yan", name: "沈硯", aliases: ["師兄", "Shen Yan"] },
-    [CharacterId.LuChi]: { id: "lu_chi", name: "陸遲", aliases: ["阿遲", "Lu Chi"] },
+    [CharacterId.LuChi]: { id: "lu_chi", name: "陸遲", aliases: ["阿遲", "Lu Chi", "陸遅"] },
 };
 
 const nameToId = new Map<string, string>();

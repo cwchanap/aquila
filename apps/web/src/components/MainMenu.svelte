@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import UserStatus from './UserStatus.svelte';
-  import { getTranslations } from '@aquila/stories/translations';
+  import { getTranslations, isLocale } from '@aquila/stories/translations';
   import type { Locale } from '@aquila/stories';
   import type { User } from '../lib/drizzle/schema.js';
 
@@ -12,11 +12,6 @@
 
   // Use centralized translations
   $: translations = getTranslations(currentLocale as Locale);
-
-  // Helper to check if current path is Chinese
-  const isChinesePath = (): boolean => {
-    return window.location.pathname.startsWith('/zh');
-  };
 
   // Update locale on client side if different from prop
   onMount(() => {
@@ -40,8 +35,8 @@
 
   // Button click handlers
   const handleBookmarksClick = () => {
-    const isChinese = isChinesePath();
-    window.location.href = isChinese ? '/zh/bookmarks' : '/en/bookmarks';
+    const pathLocale = window.location.pathname.split('/')[1];
+    window.location.href = `/${isLocale(pathLocale) ? pathLocale : 'en'}/bookmarks`;
   };
 
   const handleSettingsClick = () => {
@@ -111,6 +106,15 @@
         on:click={() => handleLanguageClick('zh')}
       >
         {translations.languages.chinese}
+      </a>
+      <a
+        href="/ja/"
+        lang="ja"
+        class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
+        style="font-family: 'Exo 2', sans-serif;"
+        on:click={() => handleLanguageClick('ja')}
+      >
+        {translations.languages.japanese}
       </a>
     </div>
   </div>

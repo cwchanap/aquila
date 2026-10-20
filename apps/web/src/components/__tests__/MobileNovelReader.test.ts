@@ -58,14 +58,19 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
+            secondLanguage: 'Second language',
+            secondLanguageOff: 'Off',
+            secondLanguageUnavailable: 'Not available for this story',
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
+        languages: { english: 'English', chinese: '中文', japanese: '日本語' },
         locale,
     })),
 }));
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: mockGetTranslations,
 }));
 
@@ -880,5 +885,106 @@ describe('MobileNovelReader', () => {
             await fireEvent.click(act2);
             expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
         });
+    });
+});
+
+describe('MobileNovelReader second language', () => {
+    const jaDialogue: DialogueEntry[] = [
+        { characterId: 'narrator', dialogue: '一行目。' },
+        { characterId: 'narrator', dialogue: '二行目。' },
+        { characterId: 'narrator', dialogue: '三行目。' },
+    ];
+
+    afterEach(() => vi.clearAllMocks());
+
+    it('shows the translation under the current line once it is revealed', async () => {
+        renderReader({
+            dialogueIndex: 1,
+            secondDialogue: jaDialogue,
+            textLang: 'en',
+            secondLang: 'ja',
+        });
+
+        await waitFor(() =>
+            expect(screen.getByText('二行目。')).toBeInTheDocument()
+        );
+        expect(screen.getByText('二行目。')).toHaveAttribute('lang', 'ja');
+        expect(screen.getByText('Second line.')).toHaveAttribute('lang', 'en');
+    });
+
+    it('shows translated choice prompt and labels', async () => {
+        renderReader({
+            dialogueIndex: 2,
+            choice: mockChoice,
+            secondChoice: {
+                prompt: 'どれにする？',
+                labels: { o1: '選択肢A', o2: '選択肢B' },
+            },
+            secondLang: 'ja',
+        });
+
+        await waitFor(() =>
+            expect(screen.getByText('どれにする？')).toBeInTheDocument()
+        );
+        expect(screen.getByText('選択肢A')).toHaveAttribute('lang', 'ja');
+        expect(screen.getByText('選択肢B')).toBeInTheDocument();
+    });
+
+    it('lists translations in the history sheet', async () => {
+        renderReader({
+            dialogueIndex: 1,
+            secondDialogue: jaDialogue,
+            secondLang: 'ja',
+        });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open history'));
+
+        const sheet = screen.getByRole('dialog');
+        expect(within(sheet).getByText('一行目。')).toHaveAttribute(
+            'lang',
+            'ja'
+        );
+        expect(within(sheet).getByText('二行目。')).toBeInTheDocument();
+        expect(within(sheet).queryByText('三行目。')).not.toBeInTheDocument();
+    });
+
+    it('opens the language picker from the menu and reports the choice', async () => {
+        const onSecondLanguageChange = vi.fn();
+        renderReader({
+            secondLanguage: 'off',
+            secondLanguageChoices: [
+                { locale: 'zh', available: true },
+                { locale: 'ja', available: false },
+            ],
+            onSecondLanguageChange,
+        });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        const toggle = screen.getByLabelText('Second language');
+        expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        await fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+        const picker = screen.getByRole('group', { name: 'Second language' });
+        expect(
+            within(picker).getByRole('button', { name: 'Off' })
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            within(picker).getByRole('button', { name: '日本語' })
+        ).toBeDisabled();
+        await fireEvent.click(
+            within(picker).getByRole('button', { name: '中文' })
+        );
+        expect(onSecondLanguageChange).toHaveBeenCalledWith('zh');
+    });
+
+    it('hides the language control when no other language is offered', async () => {
+        renderReader();
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        expect(
+            screen.queryByLabelText('Second language')
+        ).not.toBeInTheDocument();
     });
 });

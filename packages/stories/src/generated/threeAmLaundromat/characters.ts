@@ -13,9 +13,9 @@ export interface CharacterInfo {
 }
 
 export const characterTable: Record<string, CharacterInfo> = {
-    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator"] },
+    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator", "ナレーション"] },
     [CharacterId.ZhouYining]: { id: "zhou_yining", name: "周以寧", aliases: ["以寧", "Yining", "Zhou Yining"] },
-    [CharacterId.RedPen]: { id: "red_pen", name: "紅筆", aliases: ["Red Pen", "江遠", "Jiang Yuan"] },
+    [CharacterId.RedPen]: { id: "red_pen", name: "紅筆", aliases: ["Red Pen", "江遠", "Jiang Yuan", "赤ペン"] },
 };
 
 const nameToId = new Map<string, string>();

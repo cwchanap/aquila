@@ -11,6 +11,7 @@ import { onePotBeforeDawnStats } from './generated/onePotBeforeDawn/stats';
 
 export type { StoryStats } from './story-stats';
 export { ZH_CHARS_PER_MINUTE, estimateReadingMinutes } from './story-stats';
+export { hasStoryText } from './story-metadata';
 
 /** Short stories are read in one sitting; sagas run across many chapters. */
 export type StoryFormat = 'short' | 'saga';

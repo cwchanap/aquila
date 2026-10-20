@@ -2,6 +2,7 @@ import type { Locale } from '../translations';
 import {
     isRegisteredStoryId,
     normalizeStoryLocale,
+    resolveStoryTextLocale,
     type RegisteredStoryId,
     type StoryLocaleInput,
 } from '../story-metadata';
@@ -11,6 +12,9 @@ import { StoryLoadError } from './errors';
 export type AsyncStoryLoaderResult = StoryLoaderResult & {
     flow: StoryFlowConfig;
     locale: Locale;
+    /** The language the text is actually in: `locale` when the story has
+     *  it, otherwise the zh source it falls back to. */
+    textLocale: Locale;
 };
 
 export type StoryPayload = StoryLoaderResult & {
@@ -80,6 +84,10 @@ export function createStoryContentLoader(
                 const result: AsyncStoryLoaderResult = {
                     ...payload,
                     locale: normalizedLocale,
+                    textLocale: resolveStoryTextLocale(
+                        storyId,
+                        normalizedLocale
+                    ),
                 };
 
                 if (generation === cacheGeneration) {

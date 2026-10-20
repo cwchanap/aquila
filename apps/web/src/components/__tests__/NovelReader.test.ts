@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import {
+    render,
+    screen,
+    waitFor,
+    fireEvent,
+    within,
+} from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import NovelReader from '../NovelReader.svelte';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
@@ -74,7 +80,8 @@ const { mockGetTranslations } = vi.hoisted(() => ({
     })),
 }));
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: mockGetTranslations,
 }));
 
@@ -798,5 +805,69 @@ describe('NovelReader — edge cases', () => {
         await vi.runAllTimersAsync();
         expect(screen.getByText('Unknown')).toBeInTheDocument();
         expect(screen.getByText('Missing names line.')).toBeInTheDocument();
+    });
+});
+
+describe('NovelReader — second language', () => {
+    const secondDialogue: DialogueEntry[] = [
+        { characterId: 'narrator' as any, dialogue: '最初の行。' },
+        { characterId: 'narrator' as any, dialogue: '二番目の行。' },
+        { characterId: 'narrator' as any, dialogue: '三番目の行。' },
+    ];
+
+    it('shows the second-language line under each shown line', async () => {
+        renderReader({
+            dialogueIndex: 1,
+            secondDialogue,
+            textLang: 'en',
+            secondLang: 'ja',
+        });
+        await vi.runAllTimersAsync();
+
+        const lines = screen.getAllByTestId('second-line');
+        expect(lines.map(line => line.textContent?.trim())).toEqual([
+            '最初の行。',
+            '二番目の行。',
+        ]);
+        for (const line of lines) {
+            expect(line).toHaveAttribute('lang', 'ja');
+        }
+        expect(screen.getByText('First dialogue line.')).toHaveAttribute(
+            'lang',
+            'en'
+        );
+        expect(screen.queryByText('三番目の行。')).not.toBeInTheDocument();
+    });
+
+    it('shows no second line when the setting is off', async () => {
+        renderReader({ dialogueIndex: 1 });
+        await vi.runAllTimersAsync();
+
+        expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
+    });
+
+    it('shows the choice prompt and labels in the second language', async () => {
+        renderReader({
+            dialogueIndex: 2,
+            choice: mockChoice,
+            secondDialogue,
+            secondChoice: {
+                prompt: 'どうしますか？',
+                labels: { option1: '選択肢1' },
+            },
+            secondLang: 'ja',
+        });
+        await vi.runAllTimersAsync();
+
+        expect(screen.getByText('どうしますか？')).toHaveAttribute(
+            'lang',
+            'ja'
+        );
+        const option1 = screen.getByText('Option 1').closest('button');
+        expect(option1).toHaveTextContent('選択肢1');
+        const option2 = screen.getByText('Option 2').closest('button');
+        expect(
+            within(option2!).queryByTestId('second-line')
+        ).not.toBeInTheDocument();
     });
 });

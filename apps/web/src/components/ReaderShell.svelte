@@ -2,8 +2,16 @@
   import { onDestroy, onMount, tick } from 'svelte';
   import type { DialogueEntry } from '@aquila/stories';
   import type { AudioAssetType } from '@aquila/stories/runtime-assets';
-  import { getTranslations } from '@aquila/stories/translations';
-  import { supportsVisualMode } from '@aquila/stories/async';
+  import type { Locale } from '@aquila/stories';
+  import { getTranslations, localeLangTag } from '@aquila/stories/translations';
+  import {
+    hasStoryText,
+    isRegisteredStoryId,
+    loadStoryContent,
+    resolveStoryTextLocale,
+    supportsVisualMode,
+    type AsyncStoryLoaderResult,
+  } from '@aquila/stories/async';
   import { readerState } from '@/lib/reader-state.svelte';
   import { logger } from '@/lib/logger';
   import {
@@ -11,6 +19,14 @@
     writeReaderMode,
     type ReaderMode,
   } from '@/lib/reader-mode';
+  import {
+    alignSecondDialogue,
+    readSecondLanguage,
+    secondChoiceLabels,
+    secondLanguageOptions,
+    writeSecondLanguage,
+    type SecondLanguage,
+  } from '@/lib/reader-second-language';
   import {
     createSfxPlayer as createDefaultSfxPlayer,
   } from '@/lib/audio/sfx-player';
@@ -62,6 +78,7 @@
     onRetry = () => {},
     showBookmarkButton = true,
     backUrl = '/',
+    loadSecondLanguageContent = loadStoryContent,
   }: {
     onChoice?: (nextScene: string) => void;
     onBookmark?: (dialogueNumber: number) => void;
@@ -82,6 +99,10 @@
     onRetry?: () => void;
     showBookmarkButton?: boolean;
     backUrl?: string;
+    loadSecondLanguageContent?: (
+      storyId: string,
+      locale: Locale
+    ) => Promise<AsyncStoryLoaderResult>;
   } = $props();
 
   // Full reactive store->props bridge: every progressive field is derived here.
@@ -108,6 +129,93 @@
   let readerMode: ReaderMode = $derived(
     visualModeAvailable ? preferredMode : 'text'
   );
+  // Second language for learners: a translation line under every story line.
+  // The text is read in the page locale when the story has it, otherwise in
+  // its zh source; the second language is any other language the story has.
+  let secondLanguage = $state<SecondLanguage>(readSecondLanguage());
+  let textLocale: Locale = $derived(
+    isRegisteredStoryId(storyId)
+      ? resolveStoryTextLocale(storyId, locale)
+      : locale
+  );
+  // Offered only when the story has text in at least one other language.
+  let secondLanguageChoices = $derived.by(() => {
+    const choices = secondLanguageOptions(textLocale).map(option => ({
+      locale: option,
+      available: hasStoryText(storyId, option),
+    }));
+    return choices.some(option => option.available) ? choices : [];
+  });
+  let activeSecondLocale: Locale | null = $derived(
+    secondLanguage !== 'off' &&
+      secondLanguage !== textLocale &&
+      hasStoryText(storyId, secondLanguage)
+      ? secondLanguage
+      : null
+  );
+  let secondStory = $state<{
+    key: string;
+    content: AsyncStoryLoaderResult;
+  } | null>(null);
+  let secondStoryKey = $derived(
+    activeSecondLocale ? `${storyId}:${activeSecondLocale}` : null
+  );
+  let secondContent = $derived(
+    secondStory && secondStory.key === secondStoryKey
+      ? secondStory.content
+      : null
+  );
+  let secondDialogue = $derived(
+    secondContent
+      ? alignSecondDialogue(
+          dialogue,
+          secondContent.dialogue[currentSceneId]
+        )
+      : null
+  );
+  let secondChoice = $derived.by(() => {
+    if (!secondContent || !choice || !activeFlow) return null;
+    const next = activeFlow.nodes.find(
+      node => node.kind === 'scene' && node.sceneId === currentSceneId
+    )?.next;
+    if (!next?.startsWith('choice:')) return null;
+    return secondChoiceLabels(
+      choice,
+      secondContent.choices[next.slice('choice:'.length)]
+    );
+  });
+  let textLang = $derived(localeLangTag(textLocale));
+  let secondLang = $derived(
+    activeSecondLocale ? localeLangTag(activeSecondLocale) : undefined
+  );
+
+  $effect(() => {
+    const key = secondStoryKey;
+    const second = activeSecondLocale;
+    const activeStoryId = storyId;
+    if (!key || !second || secondStory?.key === key) return;
+    void loadSecondLanguageContent(activeStoryId, second)
+      .then(content => {
+        if (!destroyed && secondStoryKey === key) {
+          secondStory = { key, content };
+        }
+      })
+      .catch(error => {
+        // The main text stays readable; only the translation line is missing.
+        logger.warn('Second-language text unavailable', {
+          storyId: activeStoryId,
+          locale: second,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+  });
+
+  function setSecondLanguage(value: SecondLanguage): void {
+    if (secondLanguage === value) return;
+    secondLanguage = value;
+    writeSecondLanguage(value);
+  }
+
   let audioRuntime: AudioReaderRuntime | null = $state(null);
   let audioReleaseIdentity: RuntimeReleaseIdentity | null = $state(null);
   let audioRuntimeStoryId: string | null = $state(null);
@@ -717,6 +825,9 @@
     onSfxEnabledChange={setSfxEnabled}
     {bgmEnabled}
     onBgmEnabledChange={setBgmEnabled}
+    {secondLanguage}
+    secondLanguageOptions={secondLanguageChoices}
+    onSecondLanguageChange={setSecondLanguage}
     onBookmark={() => onBookmark(dialogueIndex + 1)}
     {showBookmarkButton}
     {backUrl}
@@ -755,6 +866,10 @@
     >
       {#if readerMode === 'visual'}
         <VisualNovelReader
+          {secondDialogue}
+          {secondChoice}
+          {textLang}
+          {secondLang}
           controller={visualRuntimeStoryId === storyId
             ? visualRuntime?.controller ?? null
             : null}
@@ -777,6 +892,10 @@
         />
       {:else if isMobile}
         <MobileNovelReader
+          {secondDialogue}
+          {secondChoice}
+          {textLang}
+          {secondLang}
           flow={activeFlow}
           {dialogueIndex}
           {onIndexChange}
@@ -794,11 +913,18 @@
           {showBookmarkButton}
           onModeChange={changeReaderMode}
           {visualModeAvailable}
+          {secondLanguage}
+          {secondLanguageChoices}
+          onSecondLanguageChange={setSecondLanguage}
           {isInitialMount}
           interactionDisabled={leafDisabled}
         />
       {:else}
         <NovelReader
+          {secondDialogue}
+          {secondChoice}
+          {textLang}
+          {secondLang}
           flow={activeFlow}
           {dialogueIndex}
           {onIndexChange}

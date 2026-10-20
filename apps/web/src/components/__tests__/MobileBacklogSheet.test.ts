@@ -2,7 +2,8 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn(() => ({
         reader: {
             historyTitle: 'History',
@@ -60,5 +61,22 @@ describe('MobileBacklogSheet', () => {
         });
         await fireEvent.keyDown(window, { key: 'Escape' });
         expect(onClose).toHaveBeenCalled();
+    });
+});
+
+describe('MobileBacklogSheet second language', () => {
+    it('shows the second-language text under a line that has one', () => {
+        render(MobileBacklogSheet, {
+            props: {
+                lines: [{ ...lines[0], secondText: '一行目。' }, lines[1]],
+                open: true,
+                onClose: vi.fn(),
+                textLang: 'en',
+                secondLang: 'ja',
+            },
+        });
+
+        expect(screen.getByText('Line one.')).toHaveAttribute('lang', 'en');
+        expect(screen.getByText('一行目。')).toHaveAttribute('lang', 'ja');
     });
 });

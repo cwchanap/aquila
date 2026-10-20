@@ -14,10 +14,10 @@ export interface CharacterInfo {
 }
 
 export const characterTable: Record<string, CharacterInfo> = {
-    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator"] },
+    [CharacterId.Narrator]: { id: "narrator", name: "旁白", aliases: ["Narrator", "ナレーション"] },
     [CharacterId.XuNian]: { id: "xu_nian", name: "許念", aliases: ["Xu Nian", "念念"] },
     [CharacterId.FangRui]: { id: "fang_rui", name: "方芮", aliases: ["Fang Rui", "芮芮"] },
-    [CharacterId.FifthFloorWoman]: { id: "fifth_floor_woman", name: "五樓的女人", aliases: ["The Fifth-Floor Woman", "女人"] },
+    [CharacterId.FifthFloorWoman]: { id: "fifth_floor_woman", name: "五樓的女人", aliases: ["The Fifth-Floor Woman", "女人", "五階の女"] },
 };
 
 const nameToId = new Map<string, string>();

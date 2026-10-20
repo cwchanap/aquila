@@ -7,7 +7,7 @@ export const uniqueEmail = (prefix: string) =>
 export class MainMenuPage {
     constructor(
         private page: Page,
-        private locale: 'en' | 'zh' = 'en'
+        private locale: 'en' | 'zh' | 'ja' = 'en'
     ) {}
 
     private get menuHeading() {
@@ -43,7 +43,7 @@ export class MainMenuPage {
 export class StoriesPage {
     constructor(
         private page: Page,
-        private locale: 'en' | 'zh' = 'en'
+        private locale: 'en' | 'zh' | 'ja' = 'en'
     ) {}
 
     private get trainAdventureText() {
@@ -211,7 +211,7 @@ export class VisualReaderPage {
 export class MobileReaderPage {
     constructor(
         private page: Page,
-        private locale: 'en' | 'zh' = 'en'
+        private locale: 'en' | 'zh' | 'ja' = 'en'
     ) {}
 
     private get actsHeading() {
@@ -388,7 +388,7 @@ export class MobileReaderPage {
 export class BookmarksPage {
     constructor(
         private page: Page,
-        private locale: 'en' | 'zh' = 'en'
+        private locale: 'en' | 'zh' | 'ja' = 'en'
     ) {}
 
     private get titleText() {

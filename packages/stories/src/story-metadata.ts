@@ -1,4 +1,4 @@
-import type { Locale } from './translations';
+import { SUPPORTED_LOCALES, type Locale } from './translations';
 
 export const REGISTERED_STORY_IDS = [
     'train_adventure',
@@ -24,6 +24,42 @@ export const TEXT_ONLY_STORY_IDS: readonly RegisteredStoryId[] = [
     'one_pot_before_dawn',
 ];
 
+/** The source language every story is written in. */
+export const SOURCE_LOCALE: Locale = 'zh';
+
+/** Languages each story's text exists in. Translations are mirror trees
+ *  (`raw/<story>/<locale>/`) that line up entry for entry with the zh source;
+ *  a story read in a language it lacks shows the zh source instead. */
+export const STORY_TEXT_LOCALES: Record<RegisteredStoryId, readonly Locale[]> =
+    {
+        train_adventure: ['zh'],
+        dont_save_me_before_midnight: ['zh'],
+        the_seventh_mirror: ['zh'],
+        elevator_game: ['zh', 'en', 'ja'],
+        demon_lord_is_hiring: ['zh', 'en', 'ja'],
+        three_am_laundromat: ['zh', 'en', 'ja'],
+        day_4012: ['zh', 'en', 'ja'],
+        one_pot_before_dawn: ['zh', 'en', 'ja'],
+    };
+
+export function hasStoryText(storyId: string, locale: string): boolean {
+    return isRegisteredStoryId(storyId)
+        ? (STORY_TEXT_LOCALES[storyId] as readonly string[]).includes(locale)
+        : false;
+}
+
+/** The language a story's text is actually shown in for a reader locale:
+ *  that locale when the story has it, otherwise the zh source. */
+export function resolveStoryTextLocale(
+    storyId: RegisteredStoryId,
+    locale: string
+): Locale {
+    const normalized = normalizeStoryLocale(locale);
+    return normalized && STORY_TEXT_LOCALES[storyId].includes(normalized)
+        ? normalized
+        : SOURCE_LOCALE;
+}
+
 export const supportsVisualMode = (storyId: string): boolean =>
     !(TEXT_ONLY_STORY_IDS as readonly string[]).includes(storyId);
 
@@ -37,13 +73,10 @@ export const isRegisteredStoryId = (
 export function normalizeStoryLocale(value: StoryLocaleInput): Locale | null {
     const normalized = value.toLowerCase();
 
-    if (normalized === 'zh' || normalized.startsWith('zh-')) {
-        return 'zh';
-    }
-
-    if (normalized === 'en' || normalized.startsWith('en-')) {
-        return 'en';
-    }
-
-    return null;
+    return (
+        SUPPORTED_LOCALES.find(
+            locale =>
+                normalized === locale || normalized.startsWith(`${locale}-`)
+        ) ?? null
+    );
 }

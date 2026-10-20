@@ -30,6 +30,7 @@ test-results/
 playwright-report/
 
 apps/web/src/pages/zh/
+apps/web/src/pages/ja/
 .turbo/
 apps/*/.turbo/
 packages/*/.turbo/

@@ -3,7 +3,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry } from '@aquila/stories';
 
-vi.mock('@aquila/stories/translations', () => ({
+vi.mock('@aquila/stories/translations', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn(() => ({
         reader: {
             historyTitle: 'History',
@@ -130,4 +131,32 @@ describe('VisualBacklog', () => {
             expect(close).toHaveFocus();
         }
     );
+});
+
+describe('VisualBacklog second language', () => {
+    afterEach(() => {
+        document.body.replaceChildren();
+        vi.clearAllMocks();
+    });
+
+    it('shows each line with its second-language text', () => {
+        render(VisualBacklog, {
+            props: {
+                dialogue: threeLines,
+                dialogueIndex: 1,
+                secondDialogue: [
+                    { dialogue: '一' },
+                    { dialogue: '二' },
+                    { dialogue: '三' },
+                ],
+                textLang: 'en',
+                secondLang: 'ja',
+                onClose: vi.fn(),
+            },
+        });
+
+        expect(screen.getByText('一')).toHaveAttribute('lang', 'ja');
+        expect(screen.getByText('二')).toHaveAttribute('lang', 'ja');
+        expect(screen.queryByText('三')).not.toBeInTheDocument();
+    });
 });

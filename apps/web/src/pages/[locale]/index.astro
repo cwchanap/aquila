@@ -26,7 +26,11 @@ const authFailed = sessionResult.status === 'error';
 	<MainMenu client:load locale={locale} user={user} />
 
 	<script>
-		// Handle language preference persistence
+		import { isLocale } from '@aquila/stories/translations';
+
+		// Handle language preference persistence: the main menu's language
+		// switcher saves the choice, and opening another locale's menu
+		// redirects to it.
 		document.addEventListener('DOMContentLoaded', () => {
 			let savedLanguage: string | null = null;
 			try {
@@ -35,21 +39,11 @@ const authFailed = sessionResult.status === 'error';
 				// localStorage may be unavailable (e.g. private browsing)
 			}
 
-			if (!savedLanguage) return;
+			if (!isLocale(savedLanguage)) return;
 
-			const isOnZh = window.location.pathname.startsWith('/zh');
-			const isOnEn = window.location.pathname.startsWith('/en');
-
-			// If user prefers Chinese but is on English, redirect
-			if (savedLanguage === 'zh' && isOnEn) {
-				window.location.href = '/zh';
-				return;
-			}
-
-			// If user prefers English but is on Chinese, redirect
-			if (savedLanguage === 'en' && isOnZh) {
-				window.location.href = '/en';
-				return;
+			const currentLocale = window.location.pathname.split('/')[1];
+			if (isLocale(currentLocale) && currentLocale !== savedLanguage) {
+				window.location.href = `/${savedLanguage}`;
 			}
 		});
 	</script>

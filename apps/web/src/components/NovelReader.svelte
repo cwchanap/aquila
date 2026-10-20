@@ -6,6 +6,7 @@
     StoryFlowConfig,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
+  import type { SecondChoiceLabels } from '@/lib/reader-second-language';
   import ActPanel from '@/components/ActPanel.svelte';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { resolveCharacterName } from '@/lib/character-name';
@@ -32,6 +33,10 @@
     onNavigate = () => {},
     isInitialMount = true,
     interactionDisabled = false,
+    secondDialogue = null,
+    secondChoice = null,
+    textLang = undefined,
+    secondLang = undefined,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -47,6 +52,11 @@
     onNavigate?: (sceneId: string) => void;
     isInitialMount?: boolean;
     interactionDisabled?: boolean;
+    /** Second-language lines aligned 1:1 with `dialogue`, or null when off. */
+    secondDialogue?: DialogueEntry[] | null;
+    secondChoice?: SecondChoiceLabels | null;
+    textLang?: string;
+    secondLang?: string;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -292,7 +302,16 @@
               {/if}
             </div>
             <div class="flex-1 text-lg text-slate-800 leading-relaxed">
-              {entry.dialogue}
+              <span lang={textLang}>{entry.dialogue}</span>
+              {#if secondDialogue?.[index]}
+                <span
+                  class="second-line mt-1 block text-base text-slate-500"
+                  lang={secondLang}
+                  data-testid="second-line"
+                >
+                  {secondDialogue[index].dialogue}
+                </span>
+              {/if}
             </div>
           </div>
         </div>
@@ -315,11 +334,20 @@
               class="flex-1 text-lg text-slate-800 leading-relaxed min-h-[60px]"
             >
               {#if isTyping}
-                {typingText}
+                <span lang={textLang}>{typingText}</span>
                 <span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
                 ></span>
               {:else}
-                {currentDialogue.dialogue}
+                <span lang={textLang}>{currentDialogue.dialogue}</span>
+                {#if secondDialogue?.[dialogueIndex]}
+                  <span
+                    class="second-line mt-1 block text-base text-slate-500"
+                    lang={secondLang}
+                    data-testid="second-line"
+                  >
+                    {secondDialogue[dialogueIndex].dialogue}
+                  </span>
+                {/if}
               {/if}
             </div>
           </div>
@@ -348,14 +376,32 @@
       {#if choice && !isTyping && isLastDialogue}
         <div class="mt-6 space-y-4">
           <p class="text-lg font-semibold text-slate-700 mb-4">
-            {choice.prompt}
+            <span lang={textLang}>{choice.prompt}</span>
+            {#if secondChoice}
+              <span
+                class="second-line mt-1 block text-base font-normal text-slate-500"
+                lang={secondLang}
+                data-testid="second-line"
+              >
+                {secondChoice.prompt}
+              </span>
+            {/if}
           </p>
           {#each choice.options as option (option.id)}
             <button
               onclick={() => handleChoice(option.nextScene)}
               class="w-full p-4 bg-linear-to-r from-slate-100 to-white hover:from-blue-100 hover:to-cyan-50 text-slate-800 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] border-2 border-slate-200 hover:border-blue-300 text-left"
             >
-              {option.label}
+              <span lang={textLang}>{option.label}</span>
+              {#if secondChoice?.labels[option.id]}
+                <span
+                  class="second-line mt-1 block text-sm font-normal text-slate-500"
+                  lang={secondLang}
+                  data-testid="second-line"
+                >
+                  {secondChoice.labels[option.id]}
+                </span>
+              {/if}
             </button>
           {/each}
         </div>

@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { isLocale } from '@aquila/stories/translations';
 
 export const onRequest = defineMiddleware(async (context, next) => {
     const { url } = context;
@@ -16,7 +17,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const pathParts = pathname.split('/').filter(Boolean);
     const locale = pathParts[0];
 
-    if (locale && ['en', 'zh'].includes(locale)) {
+    if (isLocale(locale)) {
         context.locals.currentLocale = locale;
     } else {
         // No locale or invalid, redirect to default locale

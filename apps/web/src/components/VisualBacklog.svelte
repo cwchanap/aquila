@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RubyText from '@/components/RubyText.svelte';
   import type { DialogueEntry, Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import { resolveCharacterName } from '@/lib/character-name';
@@ -10,6 +11,7 @@
     secondDialogue = null,
     textLang = undefined,
     secondLang = undefined,
+    furigana = true,
     locale = 'en',
     onClose = () => {},
     trigger = null,
@@ -19,6 +21,8 @@
     secondDialogue?: DialogueEntry[] | null;
     textLang?: string;
     secondLang?: string;
+    /** Show furigana over Japanese text that has it. */
+    furigana?: boolean;
     locale?: Locale;
     onClose?: () => void;
     trigger?: HTMLElement | null;
@@ -69,10 +73,10 @@
         {#if characterName}
           <p class="speaker">{characterName}</p>
         {/if}
-        <p lang={textLang}>{entry.dialogue}</p>
+        <p lang={textLang}><RubyText text={entry.dialogue} ruby={entry.ruby} show={furigana} /></p>
         {#if secondDialogue?.[index]}
           <p class="second-text" lang={secondLang}>
-            {secondDialogue[index].dialogue}
+            <RubyText text={secondDialogue[index].dialogue} ruby={secondDialogue[index].ruby} show={furigana} />
           </p>
         {/if}
       </li>

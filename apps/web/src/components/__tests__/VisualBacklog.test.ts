@@ -160,3 +160,25 @@ describe('VisualBacklog second language', () => {
         expect(screen.queryByText('三')).not.toBeInTheDocument();
     });
 });
+
+describe('VisualBacklog furigana', () => {
+    afterEach(() => {
+        document.body.replaceChildren();
+    });
+
+    it('shows readings over Japanese lines', () => {
+        render(VisualBacklog, {
+            props: {
+                dialogue: [
+                    {
+                        dialogue: '今日は雨。',
+                        ruby: [{ start: 0, end: 2, reading: 'きょう' }],
+                    },
+                ],
+                dialogueIndex: 0,
+                onClose: vi.fn(),
+            },
+        });
+        expect(document.querySelector('rt')).toHaveTextContent('きょう');
+    });
+});

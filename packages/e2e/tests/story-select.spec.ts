@@ -176,5 +176,7 @@ test.describe('Story select in Japanese', () => {
         await expect(page).toHaveURL(/\/ja\/reader\?story=elevator_game/);
         await expect(reader.ready).toBeVisible();
         await expect(reader.ready).toContainText(/[ぁ-ん]/);
+        // Japanese text carries furigana by default.
+        await expect(reader.ready.locator('ruby rt').first()).toBeAttached();
     });
 });

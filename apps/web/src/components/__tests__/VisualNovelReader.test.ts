@@ -1083,3 +1083,31 @@ describe('VisualNovelReader second language', () => {
         expect(within(history).queryByText('三行目。')).not.toBeInTheDocument();
     });
 });
+
+describe('VisualNovelReader furigana', () => {
+    it('shows readings over the line and in the History panel', async () => {
+        setReducedMotion(true);
+        const { container } = renderReader({
+            dialogue: [
+                {
+                    characterId: 'narrator',
+                    dialogue: '今日は雨。',
+                    ruby: [{ start: 0, end: 2, reading: 'きょう' }],
+                },
+            ],
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+
+        expect(container.querySelector('.dialogue-text rt')).toHaveTextContent(
+            'きょう'
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        expect(
+            screen.getByRole('dialog').querySelector('rt')
+        ).toHaveTextContent('きょう');
+    });
+});

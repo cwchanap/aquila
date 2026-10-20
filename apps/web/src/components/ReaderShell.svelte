@@ -27,6 +27,7 @@
     writeSecondLanguage,
     type SecondLanguage,
   } from '@/lib/reader-second-language';
+  import { readFurigana, writeFurigana } from '@/lib/reader-furigana';
   import {
     createSfxPlayer as createDefaultSfxPlayer,
   } from '@/lib/audio/sfx-player';
@@ -214,6 +215,18 @@
     if (secondLanguage === value) return;
     secondLanguage = value;
     writeSecondLanguage(value);
+  }
+
+  // Furigana over Japanese text, whether it is the story text or the
+  // second language.
+  let furigana = $state(readFurigana());
+  let furiganaAvailable = $derived(
+    textLocale === 'ja' || activeSecondLocale === 'ja'
+  );
+
+  function setFurigana(on: boolean): void {
+    furigana = on;
+    writeFurigana(on);
   }
 
   let audioRuntime: AudioReaderRuntime | null = $state(null);
@@ -828,6 +841,9 @@
     {secondLanguage}
     secondLanguageOptions={secondLanguageChoices}
     onSecondLanguageChange={setSecondLanguage}
+    {furigana}
+    {furiganaAvailable}
+    onFuriganaChange={setFurigana}
     onBookmark={() => onBookmark(dialogueIndex + 1)}
     {showBookmarkButton}
     {backUrl}
@@ -870,6 +886,7 @@
           {secondChoice}
           {textLang}
           {secondLang}
+          {furigana}
           controller={visualRuntimeStoryId === storyId
             ? visualRuntime?.controller ?? null
             : null}
@@ -896,6 +913,7 @@
           {secondChoice}
           {textLang}
           {secondLang}
+          {furigana}
           flow={activeFlow}
           {dialogueIndex}
           {onIndexChange}
@@ -916,6 +934,8 @@
           {secondLanguage}
           {secondLanguageChoices}
           onSecondLanguageChange={setSecondLanguage}
+          {furiganaAvailable}
+          onFuriganaChange={setFurigana}
           {isInitialMount}
           interactionDisabled={leafDisabled}
         />
@@ -925,6 +945,7 @@
           {secondChoice}
           {textLang}
           {secondLang}
+          {furigana}
           flow={activeFlow}
           {dialogueIndex}
           {onIndexChange}

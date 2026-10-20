@@ -6,6 +6,7 @@
   import type { ReaderMode } from '@/lib/reader-mode';
   import type { SecondLanguage } from '@/lib/reader-second-language';
   import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
+  import FuriganaToggle from '@/components/FuriganaToggle.svelte';
   import { focusTrap } from '@/lib/focus-trap';
   import Button from '@/components/ui/Button.svelte';
 
@@ -22,6 +23,9 @@
     secondLanguage = 'off',
     secondLanguageOptions = [],
     onSecondLanguageChange = () => {},
+    furigana = true,
+    furiganaAvailable = false,
+    onFuriganaChange = () => {},
     onBookmark,
     showBookmarkButton,
     backUrl,
@@ -40,6 +44,10 @@
     secondLanguage?: SecondLanguage;
     secondLanguageOptions?: { locale: Locale; available: boolean }[];
     onSecondLanguageChange?: (value: SecondLanguage) => void;
+    furigana?: boolean;
+    /** Japanese text is on screen, so the furigana switch applies. */
+    furiganaAvailable?: boolean;
+    onFuriganaChange?: (on: boolean) => void;
     onBookmark: () => void;
     showBookmarkButton: boolean;
     backUrl: string;
@@ -183,6 +191,10 @@
           options={secondLanguageOptions}
           onChange={onSecondLanguageChange}
         />
+      {/if}
+
+      {#if furiganaAvailable}
+        <FuriganaToggle {locale} on={furigana} onChange={onFuriganaChange} />
       {/if}
 
       {#if showBookmarkButton}

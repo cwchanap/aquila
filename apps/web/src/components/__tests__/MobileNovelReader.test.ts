@@ -1000,6 +1000,24 @@ describe('MobileNovelReader second language', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('offers the furigana switch next to the language picker for Japanese', async () => {
+        const onFuriganaChange = vi.fn();
+        renderReader({
+            secondLanguage: 'ja',
+            secondLanguageChoices: [{ locale: 'ja', available: true }],
+            furiganaAvailable: true,
+            furigana: true,
+            onFuriganaChange,
+        });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Second language'));
+        const toggle = screen.getByTestId('furigana-toggle');
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        await fireEvent.click(toggle);
+        expect(onFuriganaChange).toHaveBeenCalledWith(false);
+    });
+
     it('hides the language control when no other language is offered', async () => {
         renderReader();
 

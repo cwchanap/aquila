@@ -24,6 +24,7 @@ import type {
 } from '@/lib/audio/audio-runtime';
 import { READER_MODE_KEY } from '@/lib/reader-mode';
 import { READER_SECOND_LANGUAGE_KEY } from '@/lib/reader-second-language';
+import { READER_FURIGANA_KEY } from '@/lib/reader-furigana';
 
 const { mockGetTranslations } = vi.hoisted(() => ({
     mockGetTranslations: vi.fn((locale: string) => ({
@@ -74,6 +75,9 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             secondLanguage: 'Second language',
             secondLanguageOff: 'Off',
             secondLanguageUnavailable: 'Not available for this story',
+            furigana: 'Furigana',
+            furiganaOn: 'On',
+            furiganaOff: 'Off',
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
@@ -2422,5 +2426,91 @@ describe('ReaderShell second language', () => {
         );
         expect(screen.getByText('進む')).toHaveAttribute('lang', 'ja');
         expect(screen.getByText('戻る')).toBeInTheDocument();
+    });
+});
+
+describe('ReaderShell furigana', () => {
+    const rubyPayload = {
+        dialogue: {
+            act1: [
+                {
+                    characterId: 'narrator',
+                    dialogue: '一行目。',
+                    ruby: [{ start: 0, end: 3, reading: 'いちぎょうめ' }],
+                },
+                { characterId: 'narrator', dialogue: '二行目。' },
+                { characterId: 'narrator', dialogue: '三行目。' },
+            ],
+        },
+        choices: {},
+        flow,
+        locale: 'ja' as const,
+        textLocale: 'ja' as const,
+    };
+
+    beforeEach(() => {
+        localStorage.clear();
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        readerState.storyId = 'elevator_game';
+        readerState.currentSceneId = 'act1';
+        readerState.locale = 'en';
+        readerState.dialogueIndex = 1;
+        readerState.activeFlow = flow;
+        readerState.choice = null;
+        readerState.hasActivePayload = true;
+        readerState.loadStatus = 'ready';
+    });
+
+    afterEach(() => vi.clearAllMocks());
+
+    it('shows furigana over Japanese text and turns it off from settings', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        const load = vi.fn(async () => rubyPayload);
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+
+        await waitFor(() =>
+            expect(document.querySelector('rt')).toHaveTextContent(
+                'いちぎょうめ'
+            )
+        );
+        expect(document.querySelector('ruby')).toHaveTextContent('一行目');
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        const toggle = screen.getByRole('button', { name: 'Furigana' });
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        await fireEvent.click(toggle);
+
+        expect(toggle).toHaveAttribute('aria-pressed', 'false');
+        expect(document.querySelector('rt')).toBeNull();
+        expect(screen.getByText('一行目。')).toBeInTheDocument();
+        expect(localStorage.getItem(READER_FURIGANA_KEY)).toBe('off');
+    });
+
+    it('remembers furigana turned off', async () => {
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        localStorage.setItem(READER_FURIGANA_KEY, 'off');
+        const load = vi.fn(async () => rubyPayload);
+        render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+
+        await waitFor(() =>
+            expect(screen.getByText('一行目。')).toBeInTheDocument()
+        );
+        expect(document.querySelector('rt')).toBeNull();
+    });
+
+    it('offers no furigana switch when no Japanese is on screen', async () => {
+        render(ReaderShell, {
+            props: { loadSecondLanguageContent: vi.fn() },
+        });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Furigana' })
+        ).not.toBeInTheDocument();
     });
 });

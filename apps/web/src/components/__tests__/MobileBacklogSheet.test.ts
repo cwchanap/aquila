@@ -80,3 +80,37 @@ describe('MobileBacklogSheet second language', () => {
         expect(screen.getByText('一行目。')).toHaveAttribute('lang', 'ja');
     });
 });
+
+describe('MobileBacklogSheet furigana', () => {
+    const rubyLines = [
+        {
+            characterName: '',
+            text: '今日は雨。',
+            ruby: [{ start: 0, end: 2, reading: 'きょう' }],
+            secondText: '明日',
+            secondRuby: [{ start: 0, end: 2, reading: 'あした' }],
+        },
+    ];
+
+    it('shows readings on both lines, or none when off', () => {
+        const on = render(MobileBacklogSheet, {
+            props: { lines: rubyLines, open: true, onClose: vi.fn() },
+        });
+        expect(
+            Array.from(on.container.ownerDocument.querySelectorAll('rt')).map(
+                rt => rt.textContent
+            )
+        ).toEqual(['きょう', 'あした']);
+        on.unmount();
+
+        render(MobileBacklogSheet, {
+            props: {
+                lines: rubyLines,
+                open: true,
+                onClose: vi.fn(),
+                furigana: false,
+            },
+        });
+        expect(document.querySelector('rt')).toBeNull();
+    });
+});

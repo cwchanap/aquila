@@ -13,6 +13,10 @@ export default defineConfig({
             provider: 'v8',
             reporter: ['text', 'lcov', 'json'],
             reportsDirectory: './coverage',
+            // Vitest 4+ dropped coverage.all, so list sources explicitly to
+            // keep untested files in the report (lcov would be empty otherwise).
+            // .svelte is left out: vitest can't parse uncovered Svelte files.
+            include: ['src/**/*.ts'],
             exclude: [
                 'svelte.config.js',
                 'vite.config.js',

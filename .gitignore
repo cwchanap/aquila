@@ -59,3 +59,7 @@ packages/assets/generation/
 # generated story media (backgrounds, portraits, covers) — not committed;
 # already-tracked files (e.g. the_seventh_mirror) remain tracked
 packages/assets/media/
+
+# asset publisher local-store sidecars and transaction markers
+.publisher-metadata/
+.publisher-transactions/

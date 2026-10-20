@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DialogueEntryIR, StoryIR } from './ir';
 import { MIRROR_LOCALES, type MirrorLocale } from './localize';
+import { parseRuby } from '../ruby';
 import {
     RESERVED_OBJECT_PROPERTY_NAMES,
     type ParsedCharacterDirectory,
@@ -87,11 +88,15 @@ function emitSceneFile(
     const hasBackgrounds = !!assetEnums.backgrounds?.size;
     const lines = entries
         .map(e => {
+            const { text, ruby } = parseRuby(e.dialogue);
             const parts = [
                 `characterId: CharacterId.${charKey(e.characterId)}`,
                 `character: ${q(e.displayName)}`,
-                `dialogue: ${q(e.dialogue)}`,
+                `dialogue: ${q(text)}`,
             ];
+            if (ruby.length > 0) {
+                parts.push(`ruby: ${JSON.stringify(ruby)}`);
+            }
             if (e.sfx) {
                 parts.push(`sfx: ${q(e.sfx)}`);
             }

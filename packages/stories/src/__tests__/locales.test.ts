@@ -15,6 +15,7 @@ import {
     resolveStoryTextLocale,
 } from '../story-metadata';
 import { getStoryContent } from '../stories';
+import type { RubySpan } from '../types';
 import {
     loadStoryContent,
     resetStoryContentCacheForTests,
@@ -179,5 +180,50 @@ describe('async story loader text locale', () => {
         const saga = await loadStoryContent('the_seventh_mirror', 'ja');
         expect(saga.locale).toBe('ja');
         expect(saga.textLocale).toBe('zh');
+    });
+});
+
+describe('Japanese furigana', () => {
+    const japanese = REGISTERED_STORY_IDS.filter(id => hasStoryText(id, 'ja'));
+
+    it.each(japanese)('%s has valid readings over its kanji', storyId => {
+        const { dialogue, choices } = getStoryContent(storyId, 'ja');
+        const lines = Object.values(dialogue).flat();
+        const texts: { text: string; ruby?: RubySpan[] }[] = [
+            ...lines.map(e => ({ text: e.dialogue, ruby: e.ruby })),
+            ...Object.values(choices).flatMap(c => [
+                { text: c.prompt, ruby: c.promptRuby },
+                ...c.options.map(o => ({ text: o.label, ruby: o.labelRuby })),
+            ]),
+        ];
+        expect(lines.filter(e => e.ruby?.length).length).toBeGreaterThan(
+            lines.length / 2
+        );
+        for (const { text, ruby = [] } of texts) {
+            let cursor = 0;
+            for (const span of ruby) {
+                expect(span.start).toBeGreaterThanOrEqual(cursor);
+                expect(span.end).toBeGreaterThan(span.start);
+                expect(span.end).toBeLessThanOrEqual(text.length);
+                expect(text.slice(span.start, span.end)).toMatch(
+                    /[\p{Script=Han}々]/u
+                );
+                expect(span.reading).toMatch(/^[ぁ-ゖー]+$/);
+                cursor = span.end;
+            }
+            expect(text).not.toMatch(/｜[^｜《》]+《[^｜《》]+》/);
+        }
+    });
+
+    it('is only on Japanese text', () => {
+        for (const storyId of REGISTERED_STORY_IDS) {
+            for (const locale of ['zh', 'en'] as const) {
+                const { dialogue } = getStoryContent(storyId, locale);
+                const withRuby = Object.values(dialogue)
+                    .flat()
+                    .filter(e => e.ruby);
+                expect(withRuby).toEqual([]);
+            }
+        }
     });
 });

@@ -1,4 +1,9 @@
-import type { ChoiceDefinition, DialogueEntry, Locale } from '@aquila/stories';
+import type {
+    ChoiceDefinition,
+    DialogueEntry,
+    Locale,
+    RubySpan,
+} from '@aquila/stories';
 import { isLocale, SUPPORTED_LOCALES } from '@aquila/stories/translations';
 import { getBrowserStorage } from './reader-mode';
 
@@ -51,8 +56,11 @@ export function alignSecondDialogue(
 
 export type SecondChoiceLabels = {
     prompt: string;
+    promptRuby?: RubySpan[];
     /** Second-language option labels keyed by option id. */
     labels: Record<string, string>;
+    /** Furigana for the labels that have it, keyed by option id. */
+    labelRuby?: Record<string, RubySpan[]>;
 };
 
 /** Second-language prompt and labels for the choice being shown. */
@@ -62,6 +70,15 @@ export function secondChoiceLabels(
 ): SecondChoiceLabels | null {
     if (!choice || !second) return null;
     const labels: Record<string, string> = {};
-    for (const option of second.options) labels[option.id] = option.label;
-    return { prompt: second.prompt, labels };
+    const labelRuby: Record<string, RubySpan[]> = {};
+    for (const option of second.options) {
+        labels[option.id] = option.label;
+        if (option.labelRuby) labelRuby[option.id] = option.labelRuby;
+    }
+    return {
+        prompt: second.prompt,
+        ...(second.promptRuby && { promptRuby: second.promptRuby }),
+        labels,
+        ...(Object.keys(labelRuby).length > 0 && { labelRuby }),
+    };
 }

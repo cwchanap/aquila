@@ -1,6 +1,7 @@
 <script lang="ts">
+  import RubyText from '@/components/RubyText.svelte';
   import { getTranslations } from '@aquila/stories/translations';
-  import type { Locale } from '@aquila/stories';
+  import type { Locale, RubySpan } from '@aquila/stories';
   import { focusTrap } from '@/lib/focus-trap';
 
   let {
@@ -11,10 +12,19 @@
     restoreFocusTarget = null,
     textLang = undefined,
     secondLang = undefined,
+    furigana = true,
   }: {
-    lines: { characterName: string; text: string; secondText?: string }[];
+    lines: {
+      characterName: string;
+      text: string;
+      ruby?: RubySpan[];
+      secondText?: string;
+      secondRuby?: RubySpan[];
+    }[];
     textLang?: string;
     secondLang?: string;
+    /** Show furigana over Japanese text that has it. */
+    furigana?: boolean;
     open?: boolean;
     onClose: () => void;
     locale?: Locale;
@@ -64,9 +74,9 @@
           {#if line.characterName}
             <p class="text-sm font-bold text-blue-600">{line.characterName}</p>
           {/if}
-          <p class="text-base leading-relaxed text-slate-800" lang={textLang}>{line.text}</p>
+          <p class="text-base leading-relaxed text-slate-800" lang={textLang}><RubyText text={line.text} ruby={line.ruby} show={furigana} /></p>
           {#if line.secondText}
-            <p class="text-sm leading-relaxed text-slate-500" lang={secondLang}>{line.secondText}</p>
+            <p class="text-sm leading-relaxed text-slate-500" lang={secondLang}><RubyText text={line.secondText} ruby={line.secondRuby} show={furigana} /></p>
           {/if}
         </li>
       {/each}

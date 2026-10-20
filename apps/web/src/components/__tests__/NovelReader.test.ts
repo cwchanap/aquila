@@ -871,3 +871,50 @@ describe('NovelReader — second language', () => {
         ).not.toBeInTheDocument();
     });
 });
+
+describe('NovelReader — furigana', () => {
+    const jaDialogue: DialogueEntry[] = [
+        {
+            characterId: 'narrator' as any,
+            dialogue: '今日は雨。',
+            ruby: [{ start: 0, end: 2, reading: 'きょう' }],
+        },
+    ];
+
+    it('shows readings over the finished line and choices', async () => {
+        const { container } = renderReader({
+            dialogue: jaDialogue,
+            dialogueIndex: 0,
+            choice: {
+                prompt: '道を選ぶ',
+                promptRuby: [{ start: 0, end: 1, reading: 'みち' }],
+                options: [
+                    {
+                        id: 'option1',
+                        label: '左へ',
+                        labelRuby: [{ start: 0, end: 1, reading: 'ひだり' }],
+                        nextScene: 'scene_2',
+                    },
+                ],
+            },
+        });
+        await vi.runAllTimersAsync();
+
+        const readings = Array.from(container.querySelectorAll('rt')).map(
+            rt => rt.textContent
+        );
+        expect(readings).toEqual(['きょう', 'みち', 'ひだり']);
+    });
+
+    it('shows plain text when furigana is off', async () => {
+        const { container } = renderReader({
+            dialogue: jaDialogue,
+            dialogueIndex: 0,
+            furigana: false,
+        });
+        await vi.runAllTimersAsync();
+
+        expect(container.querySelector('rt')).toBeNull();
+        expect(screen.getByText('今日は雨。')).toBeInTheDocument();
+    });
+});

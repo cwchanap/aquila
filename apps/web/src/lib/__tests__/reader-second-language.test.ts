@@ -102,3 +102,34 @@ describe('secondChoiceLabels', () => {
         expect(secondChoiceLabels(choice, undefined)).toBeNull();
     });
 });
+
+describe('secondChoiceLabels furigana', () => {
+    it('carries readings for the prompt and the labels that have them', () => {
+        const choice = {
+            prompt: 'Pick',
+            options: [
+                { id: 'a', nextScene: 'x', label: 'Left' },
+                { id: 'b', nextScene: 'y', label: 'Right' },
+            ],
+        };
+        const second = {
+            prompt: '道を選ぶ',
+            promptRuby: [{ start: 0, end: 1, reading: 'みち' }],
+            options: [
+                {
+                    id: 'a',
+                    nextScene: 'x',
+                    label: '左へ',
+                    labelRuby: [{ start: 0, end: 1, reading: 'ひだり' }],
+                },
+                { id: 'b', nextScene: 'y', label: 'みぎへ' },
+            ],
+        };
+        expect(secondChoiceLabels(choice, second)).toEqual({
+            prompt: '道を選ぶ',
+            promptRuby: [{ start: 0, end: 1, reading: 'みち' }],
+            labels: { a: '左へ', b: 'みぎへ' },
+            labelRuby: { a: [{ start: 0, end: 1, reading: 'ひだり' }] },
+        });
+    });
+});

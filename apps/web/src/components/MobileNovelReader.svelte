@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RubyText from '@/components/RubyText.svelte';
   import { onDestroy, tick } from 'svelte';
   import type {
     DialogueEntry,
@@ -12,6 +13,7 @@
     SecondLanguage,
   } from '@/lib/reader-second-language';
   import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
+  import FuriganaToggle from '@/components/FuriganaToggle.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
@@ -59,9 +61,12 @@
     secondChoice = null,
     textLang = undefined,
     secondLang = undefined,
+    furigana = true,
     secondLanguage = 'off',
     secondLanguageChoices = [],
     onSecondLanguageChange = () => {},
+    furiganaAvailable = false,
+    onFuriganaChange = () => {},
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -87,9 +92,13 @@
     secondChoice?: SecondChoiceLabels | null;
     textLang?: string;
     secondLang?: string;
+    /** Show furigana over Japanese text that has it. */
+    furigana?: boolean;
     secondLanguage?: SecondLanguage;
     secondLanguageChoices?: { locale: Locale; available: boolean }[];
     onSecondLanguageChange?: (value: SecondLanguage) => void;
+    furiganaAvailable?: boolean;
+    onFuriganaChange?: (on: boolean) => void;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -328,7 +337,9 @@
       .map((entry, index) => ({
         characterName: resolveCharacterName(entry, t),
         text: entry.dialogue,
+        ruby: entry.ruby,
         secondText: secondDialogue?.[index]?.dialogue,
+        secondRuby: secondDialogue?.[index]?.ruby,
       }))
   );
 </script>
@@ -462,7 +473,7 @@
         {/if}
       </div>
       {#if languagePickerOpen && secondLanguageChoices.length > 0}
-        <div class="px-4 pb-3">
+        <div class="flex flex-col gap-2 px-4 pb-3">
           <SecondLanguagePicker
             {locale}
             value={secondLanguage}
@@ -470,6 +481,14 @@
             onChange={onSecondLanguageChange}
             compact
           />
+          {#if furiganaAvailable}
+            <FuriganaToggle
+              {locale}
+              on={furigana}
+              onChange={onFuriganaChange}
+              compact
+            />
+          {/if}
         </div>
       {/if}
       <div class="h-1 w-full bg-slate-200/70" aria-hidden="true">
@@ -493,14 +512,14 @@
     {#if showChoices}
       <div class="space-y-3 rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
         <p class="text-base font-semibold text-slate-700">
-          <span lang={textLang}>{choice?.prompt}</span>
+          <span lang={textLang}><RubyText text={choice?.prompt ?? ''} ruby={choice?.promptRuby} show={furigana} /></span>
           {#if secondChoice}
             <span
               class="mt-1 block text-sm font-normal text-slate-500"
               lang={secondLang}
               data-testid="second-line"
             >
-              {secondChoice.prompt}
+              <RubyText text={secondChoice.prompt} ruby={secondChoice.promptRuby} show={furigana} />
             </span>
           {/if}
         </p>
@@ -510,14 +529,14 @@
             class="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-left text-base font-semibold text-slate-800 hover:border-blue-300 hover:text-blue-600"
             onclick={() => onChoice(option.nextScene)}
           >
-            <span lang={textLang}>{option.label}</span>
+            <span lang={textLang}><RubyText text={option.label} ruby={option.labelRuby} show={furigana} /></span>
             {#if secondChoice?.labels[option.id]}
               <span
                 class="mt-1 block text-sm font-normal text-slate-500"
                 lang={secondLang}
                 data-testid="second-line"
               >
-                {secondChoice.labels[option.id]}
+                <RubyText text={secondChoice.labels[option.id]} ruby={secondChoice.labelRuby?.[option.id]} show={furigana} />
               </span>
             {/if}
           </button>
@@ -575,11 +594,11 @@
         >
           {#if isTyping}<span lang={textLang}>{typingText}</span><span
             class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
-          ></span>{:else}<span lang={textLang}>{currentDialogue?.dialogue}</span>{#if secondDialogue?.[dialogueIndex]}<span
+          ></span>{:else}<span lang={textLang}><RubyText text={currentDialogue?.dialogue ?? ''} ruby={currentDialogue?.ruby} show={furigana} /></span>{#if secondDialogue?.[dialogueIndex]}<span
               class="mt-2 block text-base text-slate-500"
               lang={secondLang}
               data-testid="second-line"
-            >{secondDialogue[dialogueIndex].dialogue}</span>{/if}{/if}
+            ><RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} /></span>{/if}{/if}
         </p>
         {#if !isTyping}
           <div class="mt-2 text-right text-blue-500">
@@ -635,6 +654,7 @@
     lines={backlogLines}
     {textLang}
     {secondLang}
+    {furigana}
     open={backlogOpen}
     {locale}
     restoreFocusTarget={menuToggleButton ?? null}

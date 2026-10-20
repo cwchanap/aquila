@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RubyText from '@/components/RubyText.svelte';
   import type {
     DialogueEntry,
     ChoiceDefinition,
@@ -37,6 +38,7 @@
     secondChoice = null,
     textLang = undefined,
     secondLang = undefined,
+    furigana = true,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -57,6 +59,8 @@
     secondChoice?: SecondChoiceLabels | null;
     textLang?: string;
     secondLang?: string;
+    /** Show furigana over Japanese text that has it. */
+    furigana?: boolean;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -302,14 +306,14 @@
               {/if}
             </div>
             <div class="flex-1 text-lg text-slate-800 leading-relaxed">
-              <span lang={textLang}>{entry.dialogue}</span>
+              <span lang={textLang}><RubyText text={entry.dialogue} ruby={entry.ruby} show={furigana} /></span>
               {#if secondDialogue?.[index]}
                 <span
                   class="second-line mt-1 block text-base text-slate-500"
                   lang={secondLang}
                   data-testid="second-line"
                 >
-                  {secondDialogue[index].dialogue}
+                  <RubyText text={secondDialogue[index].dialogue} ruby={secondDialogue[index].ruby} show={furigana} />
                 </span>
               {/if}
             </div>
@@ -338,14 +342,14 @@
                 <span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
                 ></span>
               {:else}
-                <span lang={textLang}>{currentDialogue.dialogue}</span>
+                <span lang={textLang}><RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} /></span>
                 {#if secondDialogue?.[dialogueIndex]}
                   <span
                     class="second-line mt-1 block text-base text-slate-500"
                     lang={secondLang}
                     data-testid="second-line"
                   >
-                    {secondDialogue[dialogueIndex].dialogue}
+                    <RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} />
                   </span>
                 {/if}
               {/if}
@@ -376,14 +380,14 @@
       {#if choice && !isTyping && isLastDialogue}
         <div class="mt-6 space-y-4">
           <p class="text-lg font-semibold text-slate-700 mb-4">
-            <span lang={textLang}>{choice.prompt}</span>
+            <span lang={textLang}><RubyText text={choice.prompt} ruby={choice.promptRuby} show={furigana} /></span>
             {#if secondChoice}
               <span
                 class="second-line mt-1 block text-base font-normal text-slate-500"
                 lang={secondLang}
                 data-testid="second-line"
               >
-                {secondChoice.prompt}
+                <RubyText text={secondChoice.prompt} ruby={secondChoice.promptRuby} show={furigana} />
               </span>
             {/if}
           </p>
@@ -392,14 +396,14 @@
               onclick={() => handleChoice(option.nextScene)}
               class="w-full p-4 bg-linear-to-r from-slate-100 to-white hover:from-blue-100 hover:to-cyan-50 text-slate-800 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] border-2 border-slate-200 hover:border-blue-300 text-left"
             >
-              <span lang={textLang}>{option.label}</span>
+              <span lang={textLang}><RubyText text={option.label} ruby={option.labelRuby} show={furigana} /></span>
               {#if secondChoice?.labels[option.id]}
                 <span
                   class="second-line mt-1 block text-sm font-normal text-slate-500"
                   lang={secondLang}
                   data-testid="second-line"
                 >
-                  {secondChoice.labels[option.id]}
+                  <RubyText text={secondChoice.labels[option.id]} ruby={secondChoice.labelRuby?.[option.id]} show={furigana} />
                 </span>
               {/if}
             </button>

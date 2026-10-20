@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RubyText from '@/components/RubyText.svelte';
   import type {
     ChoiceDefinition,
     DialogueEntry,
@@ -45,6 +46,8 @@
     secondChoice?: SecondChoiceLabels | null;
     textLang?: string;
     secondLang?: string;
+    /** Show furigana over Japanese text that has it. */
+    furigana?: boolean;
   };
 
   const emptyLayer = {
@@ -87,6 +90,7 @@
     secondChoice = null,
     textLang = undefined,
     secondLang = undefined,
+    furigana = true,
   }: Props = $props();
 
   let snapshot = $state<VisualSnapshot>(emptySnapshot);
@@ -480,22 +484,22 @@
                 aria-hidden="true"
               ></span>
             {:else}
-              {currentDialogue.dialogue}
+              <RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} />
             {/if}
           </p>
           {#if !isTyping && secondDialogue?.[dialogueIndex]}
             <p class="second-text" lang={secondLang} data-testid="second-line">
-              {secondDialogue[dialogueIndex].dialogue}
+              <RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} />
             </p>
           {/if}
         {/if}
 
         {#if showChoices}
           <div class="choices">
-            <p lang={textLang}>{choice?.prompt}</p>
+            <p lang={textLang}><RubyText text={choice?.prompt ?? ''} ruby={choice?.promptRuby} show={furigana} /></p>
             {#if secondChoice}
               <p class="second-text" lang={secondLang} data-testid="second-line">
-                {secondChoice.prompt}
+                <RubyText text={secondChoice.prompt} ruby={secondChoice.promptRuby} show={furigana} />
               </p>
             {/if}
             {#each choice?.options ?? [] as option (option.id)}
@@ -506,14 +510,14 @@
                 data-reader-progression
                 onclick={() => onChoice(option.nextScene)}
               >
-                <span lang={textLang}>{option.label}</span>
+                <span lang={textLang}><RubyText text={option.label} ruby={option.labelRuby} show={furigana} /></span>
                 {#if secondChoice?.labels[option.id]}
                   <span
                     class="second-choice-label"
                     lang={secondLang}
                     data-testid="second-line"
                   >
-                    {secondChoice.labels[option.id]}
+                    <RubyText text={secondChoice.labels[option.id]} ruby={secondChoice.labelRuby?.[option.id]} show={furigana} />
                   </span>
                 {/if}
               </Button>
@@ -555,6 +559,7 @@
       {secondDialogue}
       {textLang}
       {secondLang}
+      {furigana}
       {dialogueIndex}
       {locale}
       trigger={historyButton}

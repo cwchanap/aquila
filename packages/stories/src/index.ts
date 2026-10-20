@@ -4,6 +4,7 @@ export type {
     ChoiceDefinition,
     ChoiceOptionDefinition,
     ChoiceMap,
+    RubySpan,
 } from './types';
 export type {
     FlowConfig,

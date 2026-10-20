@@ -2,10 +2,10 @@ import type { ChoiceText } from '../choice-utils';
 
 export const onePotBeforeDawnChoiceTextJa: ChoiceText = {
     choice_act3: {
-        prompt: '一煎目は、まだ急須の中にある。',
+        prompt: '｜一煎目《いっせんめ》は、まだ｜急須《きゅうす》の｜中《なか》にある。',
         labels: {
-            b1a: '沈硯に真実を告げる',
-            b1b: '黙って茶を注ぐ',
+            b1a: '｜沈硯《ちんけん》に｜真実《しんじつ》を｜告《つ》げる',
+            b1b: '｜黙《だま》って｜茶《ちゃ》を｜注《そそ》ぐ',
         },
     },
 };

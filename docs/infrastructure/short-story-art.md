@@ -28,9 +28,11 @@ The build command runs the existing publisher against the local public asset
 directory, retaining immutable object and release filenames and updating only the
 five local pointers. It also makes 480 by 720 WebP covers. The verify command
 checks release integrity and decodes every image, then checks all cover formats
-and dimensions. Run the build on a fresh checkout — and in any CI or deploy
-pipeline that serves the artwork — before the web app build; it needs only the
-committed source PNGs, never generation credentials. The publisher's
+and dimensions. The web `build` script runs the asset build automatically, so
+deploys need no extra configuration. `bun dev` and e2e runs skip `build`, so
+run the asset build once on a fresh checkout; the output persists on disk
+afterwards. It needs only the committed source PNGs, never generation
+credentials. The publisher's
 `.publisher-metadata/` sidecars and `.publisher-transactions/` markers are
 gitignored local-store bookkeeping.
 

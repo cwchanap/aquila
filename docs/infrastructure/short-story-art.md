@@ -11,8 +11,8 @@ on preview deployments. The Seventh Mirror continues to use its existing remote
 asset configuration. A reader's saved Text or Visual Novel preference is preserved.
 
 Source PNGs live in `packages/assets/media/<story_id>/`. The original prompts,
-checksums, and generation provenance are in
-`packages/assets/generation/short-stories-2026-10-18/`. Each story has a complete
+checksums, and generation provenance stay out of git under the gitignored
+`packages/assets/generation/` directory. Each story has a complete
 production release plan in `packages/stories/release-plans/`; the plan covers
 every authored background and portrait, including shared scenes and endings.
 

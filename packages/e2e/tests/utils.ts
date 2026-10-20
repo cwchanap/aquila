@@ -14,6 +14,7 @@ export class MainMenuPage {
         const headings = {
             en: 'Main Menu',
             zh: '主選單',
+            ja: 'メインメニュー',
         };
         return headings[this.locale];
     }
@@ -50,6 +51,7 @@ export class StoriesPage {
         const storyNames = {
             en: 'Train Adventure',
             zh: '火車冒險',
+            ja: '列車の冒険',
         };
         return storyNames[this.locale];
     }
@@ -58,6 +60,7 @@ export class StoriesPage {
         const headings = {
             en: 'Select Your Story',
             zh: '選擇您的故事',
+            ja: '物語を選んでください',
         };
         return headings[this.locale];
     }
@@ -211,7 +214,7 @@ export class VisualReaderPage {
 export class MobileReaderPage {
     constructor(
         private page: Page,
-        private locale: 'en' | 'zh' | 'ja' = 'en'
+        private locale: 'en' | 'zh' = 'en'
     ) {}
 
     private get actsHeading() {
@@ -388,7 +391,7 @@ export class MobileReaderPage {
 export class BookmarksPage {
     constructor(
         private page: Page,
-        private locale: 'en' | 'zh' | 'ja' = 'en'
+        private locale: 'en' | 'zh' = 'en'
     ) {}
 
     private get titleText() {

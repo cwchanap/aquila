@@ -979,6 +979,27 @@ describe('MobileNovelReader second language', () => {
         expect(onSecondLanguageChange).toHaveBeenCalledWith('zh');
     });
 
+    it('closes the language picker when a new scene loads', async () => {
+        const { rerenderAt } = renderReader({
+            secondLanguage: 'off',
+            secondLanguageChoices: [{ locale: 'zh', available: true }],
+        });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Second language'));
+        expect(
+            screen.getByRole('group', { name: 'Second language' })
+        ).toBeInTheDocument();
+
+        await rerenderAt({
+            dialogue: [{ characterId: 'narrator', dialogue: 'Next scene.' }],
+            dialogueIndex: 0,
+        });
+        expect(
+            screen.queryByRole('group', { name: 'Second language' })
+        ).not.toBeInTheDocument();
+    });
+
     it('hides the language control when no other language is offered', async () => {
         renderReader();
 

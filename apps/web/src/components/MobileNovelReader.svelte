@@ -201,6 +201,7 @@
       // longer apply).
       drawerOpen = false;
       backlogOpen = false;
+      languagePickerOpen = false;
       // Sync lastIndex so Signal 2 does not also fire for this same tick.
       lastIndex = dialogueIndex;
       if (dialogue.length > 0 && !(isRestoreAtNonzero || isBreakpointRemount)) {

@@ -16,7 +16,8 @@ checksums, and generation provenance stay out of git under the gitignored
 production release plan in `packages/stories/release-plans/`; the plan covers
 every authored background and portrait, including shared scenes and endings.
 
-Regenerate the checked-in web delivery assets after changing source artwork:
+The delivery assets are gitignored build output, regenerated from source
+artwork rather than committed:
 
 ```sh
 bun --filter web build:short-story-assets
@@ -27,10 +28,11 @@ The build command runs the existing publisher against the local public asset
 directory, retaining immutable object and release filenames and updating only the
 five local pointers. It also makes 480 by 720 WebP covers. The verify command
 checks release integrity and decodes every image, then checks all cover formats
-and dimensions. The publisher's `.publisher-metadata/` sidecars are gitignored
-local-store bookkeeping, so run the build once on a fresh checkout before
-verifying. Normal application builds serve the committed optimized files;
-they do not re-encode artwork or require generation credentials.
+and dimensions. Run the build on a fresh checkout — and in any CI or deploy
+pipeline that serves the artwork — before the web app build; it needs only the
+committed source PNGs, never generation credentials. The publisher's
+`.publisher-metadata/` sidecars and `.publisher-transactions/` markers are
+gitignored local-store bookkeeping.
 
 To see the artwork, open a short story, open reader settings, and choose Visual
 Novel (the mobile Text reader offers this in its menu). Text remains available.

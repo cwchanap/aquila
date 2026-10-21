@@ -20,6 +20,8 @@
     onSfxEnabledChange,
     bgmEnabled,
     onBgmEnabledChange,
+    voiceEnabled = true,
+    onVoiceEnabledChange = () => {},
     secondLanguage = 'off',
     secondLanguageOptions = [],
     onSecondLanguageChange = () => {},
@@ -41,6 +43,8 @@
     onSfxEnabledChange: (enabled: boolean) => void;
     bgmEnabled: boolean;
     onBgmEnabledChange: (enabled: boolean) => void;
+    voiceEnabled?: boolean;
+    onVoiceEnabledChange?: (enabled: boolean) => void;
     secondLanguage?: SecondLanguage;
     secondLanguageOptions?: { locale: Locale; available: boolean }[];
     onSecondLanguageChange?: (value: SecondLanguage) => void;
@@ -181,6 +185,16 @@
           <span>
             {bgmEnabled ? t.reader.backgroundMusicOn : t.reader.backgroundMusicOff}
           </span>
+        </button>
+        <button
+          type="button"
+          class="flex items-center justify-between rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+          aria-pressed={voiceEnabled}
+          aria-label={t.reader.voice}
+          onclick={() => onVoiceEnabledChange(!voiceEnabled)}
+        >
+          <span>{t.reader.voice}</span>
+          <span>{voiceEnabled ? t.reader.voiceOn : t.reader.voiceOff}</span>
         </button>
       {/if}
 

@@ -20,7 +20,8 @@
     "./translations": "./src/translations/index.ts",
     "./translations/en.json": "./src/translations/en.json",
     "./translations/zh.json": "./src/translations/zh.json",
-    "./translations/ja.json": "./src/translations/ja.json"
+    "./translations/ja.json": "./src/translations/ja.json",
+    "./voice": "./src/voice/index.ts"
   },
   "scripts": {
     "dev": "tsc --watch",
@@ -32,7 +33,8 @@
     "compile": "bun src/compiler/cli.ts",
     "audio:report": "bun src/compiler/cli.ts --report",
     "audio:generate": "bun src/audio-generation/cli.ts generate",
-    "audio:select": "bun src/audio-generation/cli.ts select"
+    "audio:select": "bun src/audio-generation/cli.ts select",
+    "voice:generate": "bun src/voice/cli.ts generate"
   },
   "dependencies": {
     "zod": "^3.24.2"

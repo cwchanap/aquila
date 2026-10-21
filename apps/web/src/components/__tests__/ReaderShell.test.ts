@@ -70,6 +70,9 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             backgroundMusic: 'Background Music',
             backgroundMusicOn: 'On',
             backgroundMusicOff: 'Off',
+            voice: 'Voice',
+            voiceOn: 'On',
+            voiceOff: 'Off',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -707,6 +710,36 @@ describe('ReaderShell', () => {
         await tick();
 
         expect(sfx.player.play).not.toHaveBeenCalled();
+    });
+
+    it('speaks each new visual line and stays quiet in Text mode', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        const voice = {
+            load: vi.fn(() => Promise.resolve()),
+            play: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        render(ReaderShell, {
+            props: {
+                createVoicePlayer: () => voice,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(voice.play).not.toHaveBeenCalled();
+
+        await chooseReaderMode('Visual Novel');
+        expect(voice.load).toHaveBeenCalledWith('the_seventh_mirror', 'zh');
+        readerState.dialogueIndex = 2;
+        await tick();
+        expect(voice.play).toHaveBeenCalledWith(mockDialogue[2]);
+
+        await chooseReaderMode('Text');
+        expect(voice.stop).toHaveBeenCalled();
     });
 
     it('stops SFX when switching from Visual to Text', async () => {

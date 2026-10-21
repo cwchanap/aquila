@@ -41,6 +41,13 @@
   } from '@/lib/audio/bgm-player';
   import { readBgmEnabled, writeBgmEnabled } from '@/lib/audio/bgm-preference';
   import {
+    createVoicePlayer as createDefaultVoicePlayer,
+  } from '@/lib/audio/voice-player';
+  import {
+    readVoiceEnabled,
+    writeVoiceEnabled,
+  } from '@/lib/audio/voice-preference';
+  import {
     nextBgmSelection,
   } from '@/lib/audio/bgm-transition';
   import {
@@ -75,6 +82,7 @@
     createVisualRuntime = createDefaultVisualRuntime,
     createSfxPlayer = createDefaultSfxPlayer,
     createBgmPlayer = createDefaultBgmPlayer,
+    createVoicePlayer = createDefaultVoicePlayer,
     createAudioRuntime = createDefaultAudioRuntime,
     onRetry = () => {},
     showBookmarkButton = true,
@@ -93,6 +101,7 @@
     createVisualRuntime?: typeof createDefaultVisualRuntime;
     createSfxPlayer?: typeof createDefaultSfxPlayer;
     createBgmPlayer?: typeof createDefaultBgmPlayer;
+    createVoicePlayer?: typeof createDefaultVoicePlayer;
     createAudioRuntime?: (
       storyId: string,
       origin: string
@@ -244,6 +253,8 @@
     undefined,
     cueKey => resolveAudioPlayerUrl('bgm', cueKey)
   );
+  let voiceEnabled = $state(readVoiceEnabled());
+  const voicePlayer = createVoicePlayer();
   let selectedBgmKey: string | null = null;
   let bgmActivated = false;
   let visualRuntime: VisualReaderRuntime | null = $state(null);
@@ -275,6 +286,7 @@
     if (mode === 'visual' && !visualModeAvailable) return;
     if (mode === 'text') {
       sfxPlayer.stop();
+      voicePlayer.stop();
       bgmPlayer.stop();
       bgmActivated = false;
     }
@@ -541,6 +553,13 @@
       }
     }
 
+    // Voice follows the line on screen, in the language being read.
+    if (readerMode === 'visual' && voiceEnabled) {
+      voicePlayer.play(dialogue[dialogueIndex]);
+    } else {
+      voicePlayer.stop();
+    }
+
     const storyChanged =
       previous !== null && previous.storyId !== nextPosition.storyId;
 
@@ -575,6 +594,12 @@
       !audioInitialLoadPending
     ) {
       bgmPlayer.play(nextBgmKey);
+    }
+  });
+
+  $effect(() => {
+    if (readerMode === 'visual' && voiceEnabled && storyId) {
+      void voicePlayer.load(storyId, textLocale);
     }
   });
 
@@ -632,6 +657,15 @@
     writeSfxEnabled(enabled);
     if (!enabled) {
       sfxPlayer.stop();
+    }
+  }
+
+  function setVoiceEnabled(enabled: boolean): void {
+    if (voiceEnabled === enabled) return;
+    voiceEnabled = enabled;
+    writeVoiceEnabled(enabled);
+    if (!enabled) {
+      voicePlayer.stop();
     }
   }
 
@@ -777,6 +811,7 @@
     audioRuntimeAttempted = false;
     audioInitialLoadPending = false;
     sfxPlayer.dispose();
+    voicePlayer.dispose();
     bgmPlayer.dispose();
     try {
       audio?.dispose();
@@ -838,6 +873,8 @@
     onSfxEnabledChange={setSfxEnabled}
     {bgmEnabled}
     onBgmEnabledChange={setBgmEnabled}
+    {voiceEnabled}
+    onVoiceEnabledChange={setVoiceEnabled}
     {secondLanguage}
     secondLanguageOptions={secondLanguageChoices}
     onSecondLanguageChange={setSecondLanguage}

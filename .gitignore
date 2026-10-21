@@ -68,3 +68,5 @@ packages/assets/media/
 apps/web/public/assets/covers/
 apps/web/public/assets/vn/objects/
 apps/web/public/assets/vn/stories/
+# freshness stamps for `build-short-story-assets --ensure` (runs under bun dev)
+apps/web/.short-story-assets.stamps.json

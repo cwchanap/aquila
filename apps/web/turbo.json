@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/assets/media/**",
+        "$TURBO_ROOT$/packages/infra-cloudflare/package.json",
+        "$TURBO_ROOT$/packages/infra-cloudflare/src/**",
+        "$TURBO_ROOT$/packages/stories/release-plans/**",
+        "$TURBO_ROOT$/packages/stories/src/**"
+      ]
+    }
+  }
+}

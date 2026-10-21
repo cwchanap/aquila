@@ -10,6 +10,7 @@
  * and validators exercise the actual contract logic.
  */
 import { createHash } from 'node:crypto';
+import { promisify } from 'node:util';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
     assertSha256,
@@ -42,6 +43,14 @@ vi.mock('node:fs/promises', () => ({
         stat: mockStat,
         lstat: mockLstat,
     },
+}));
+
+const mockExecFile = vi.fn();
+const NUL = String.fromCharCode(0);
+
+vi.mock('node:child_process', () => ({
+    execFile: mockExecFile,
+    default: { execFile: mockExecFile },
 }));
 
 const sharpMock = vi.fn();
@@ -230,8 +239,25 @@ function wireHappyPath(overrides?: {
     mediaRootSuffix?: string;
     symlinkName?: string;
     symlinkRoot?: boolean;
+    untrackedPath?: string;
+    gitFailure?: boolean;
 }) {
     const release = buildConsistentRelease();
+    // The verifier asks git which release files are tracked. Echo every
+    // requested pathspec back as tracked; an untrackedPath override drops it.
+    mockExecFile[promisify.custom] = async (
+        _cmd: string,
+        args: string[]
+    ) => {
+        if (overrides?.gitFailure) {
+            throw new Error('git not available');
+        }
+        const requested = args.slice(args.indexOf('--') + 1);
+        const tracked = requested.filter(
+            path => !path.includes(overrides?.untrackedPath ?? ' ')
+        );
+        return { stdout: tracked.join(NUL), stderr: '' };
+    };
     const imageAssets = overrides?.imageAssets ?? imageAssetsJson();
     const releasePlan = overrides?.releasePlan ?? releasePlanJson();
     const pointerText = overrides?.pointerText ?? release.pointerText;
@@ -480,6 +506,22 @@ describe('verify-visual-fixtures', () => {
         const { verifyVisualFixtures } = await importVerify();
         await expect(verifyVisualFixtures()).rejects.toThrow(
             /stale Seventh Mirror fixture release document/i
+        );
+    });
+
+    it('rejects a fixture object git cannot see', async () => {
+        wireHappyPath({ untrackedPath: 'vn/objects/' });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /fixture file is not git-tracked/i
+        );
+    });
+
+    it('reports a problem when git cannot answer the tracking check', async () => {
+        wireHappyPath({ gitFailure: true });
+        const { verifyVisualFixtures } = await importVerify();
+        await expect(verifyVisualFixtures()).rejects.toThrow(
+            /git ls-files failed/i
         );
     });
 

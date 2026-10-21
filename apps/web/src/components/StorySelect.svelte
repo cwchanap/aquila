@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import {
     Building2,
     Crown,
@@ -27,6 +28,9 @@
   // Server render (and the first client frame) shows every story as unread;
   // saved progress lives in this browser only and is applied on mount.
   let progress: StoryProgressMap = $state({});
+  // Covers are generated build output — an <img> that 404s removes itself so
+  // the accent-gradient + icon fallback underneath shows through.
+  let failedCovers = new SvelteSet<string>();
   let cards = $derived(buildCards(STORY_CATALOG, progress, locale, t));
   let shorts = $derived(cards.filter(c => c.entry.format === 'short'));
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
@@ -132,7 +136,8 @@
             class="story-card group flex h-full flex-col overflow-hidden rounded-2xl border border-white/15 bg-slate-950/35 backdrop-blur-xl transition-all duration-300 motion-safe:hover:-translate-y-1 {accent.ring}"
           >
             <span class="relative flex aspect-2/3 items-center justify-center overflow-hidden bg-linear-to-br {accent.cover}">
-              {#if card.entry.coverImage}
+              <Icon class="h-8 w-8 text-white/90" aria-hidden="true" />
+              {#if card.entry.coverImage && !failedCovers.has(card.entry.id)}
                 <img
                   src={card.entry.coverImage}
                   alt=""
@@ -140,9 +145,8 @@
                   height="720"
                   class="absolute inset-0 h-full w-full object-cover"
                   decoding="async"
+                  onerror={() => failedCovers.add(card.entry.id)}
                 />
-              {:else}
-                <Icon class="h-8 w-8 text-white/90" aria-hidden="true" />
               {/if}
               <span class="absolute bottom-2 right-2 rounded-full bg-black/45 px-2 py-0.5 text-[0.7rem] font-semibold tabular-nums text-white">
                 {card.length}

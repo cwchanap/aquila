@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import StorySelect from '../StorySelect.svelte';
 import { STORY_PROGRESS_KEY } from '../../lib/story-progress-store';
@@ -61,6 +61,19 @@ describe('StorySelect', () => {
             expect(cover).toHaveAttribute('alt', '');
             expect(card).toHaveAccessibleName();
         }
+    });
+
+    it('drops a cover that fails to load so the icon fallback shows through', async () => {
+        // Covers are uncommitted build output; a missing or stale file must
+        // not leave a broken-image frame on the card.
+        render(StorySelect, { props: { locale: 'en' } });
+        const card = cardLink('elevator_game');
+        const cover = card.querySelector('img');
+        expect(cover).not.toBeNull();
+        await fireEvent.error(cover!);
+        expect(card.querySelector('img')).toBeNull();
+        // Siblings keep their covers: the failure is tracked per story.
+        expect(cardLink('day_4012').querySelector('img')).not.toBeNull();
     });
 
     it('renders in Chinese', () => {

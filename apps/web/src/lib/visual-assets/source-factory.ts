@@ -72,7 +72,15 @@ export function createVisualRuntime(
     try {
         source = getAssetResolverSource(storyId, origin, config);
         if (source) {
-            const store = new ValidatedReleaseStore(getBrowserStorage());
+            // Bundled (`local`) releases ship inside this deployment — the
+            // bundled pointer is authoritative, and stored releases only
+            // exist for remote environments. A storage-less store keeps the
+            // resolver's localStorage record list for remote sources alone,
+            // so the bundled stories can't evict each other's (or remote)
+            // records and never validate against another deployment's tree.
+            const store = new ValidatedReleaseStore(
+                source.environment === 'local' ? null : getBrowserStorage()
+            );
             resolver = new WebAssetResolver(source, { store });
         }
     } catch (error) {

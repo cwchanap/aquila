@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "modelId": "eleven_v4",
+  "locales": {
+    "zh": {
+      "languageCode": "zh",
+      "roles": {
+        "narrator": {
+          "voiceId": "DA2aDl5DPFqDvHqbzlkZ",
+          "voiceName": "Andrew - gentle & Friendly",
+          "notes": "Calm young Taiwanese Mandarin male; steady close-third narration that stays distinct from Mio."
+        },
+        "asakura_mio": {
+          "voiceId": "cXGZGSG0udxZ0hTfyBnC",
+          "voiceName": "Chloe - 溫柔、細膩、安心、真誠、親近",
+          "innerDirection": "[softly]",
+          "notes": "19, precise and restrained, worn down by the loop. Inner monologue is softer than speech."
+        },
+        "voice": {
+          "voiceId": "s2LjOZIlsH2Yu4p6MtAK",
+          "voiceName": "Bobo - Warm, Friendly, Neutral",
+          "direction": "[whispers]",
+          "notes": "Generic role for every \"…聲音\" speaker. In chapter 1 it is the dream voice that sounds neither male nor female."
+        }
+      }
+    }
+  }
+}

@@ -165,6 +165,22 @@ describe('ReaderSettingsMenu', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('shows and toggles Voice in Visual mode', async () => {
+        const onVoiceEnabledChange = vi.fn();
+        const view = renderSettings({ onVoiceEnabledChange, mode: 'visual' });
+
+        const toggle = screen.getByRole('button', { name: 'Voice' });
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        await fireEvent.click(toggle);
+        expect(onVoiceEnabledChange).toHaveBeenCalledWith(false);
+
+        view.unmount();
+        renderSettings({ mode: 'text' });
+        expect(
+            screen.queryByRole('button', { name: 'Voice' })
+        ).not.toBeInTheDocument();
+    });
+
     it('shows and toggles Background Music independently in Visual mode', async () => {
         const onBgmEnabledChange = vi.fn();
         const onSfxEnabledChange = vi.fn();

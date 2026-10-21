@@ -99,4 +99,17 @@ describe('createVoicePlayer', () => {
 
         expect(createAudio).toHaveBeenCalledOnce();
     });
+
+    it('stays silent when the browser cannot create audio', async () => {
+        const player = createVoicePlayer({
+            createAudio: () => {
+                throw new Error('no Audio');
+            },
+            fetchImpl: async () => indexResponse([voiceLineId(line)]),
+        });
+        await player.load('the_seventh_mirror', 'zh');
+
+        expect(() => player.play(line)).not.toThrow();
+        expect(() => player.stop()).not.toThrow();
+    });
 });

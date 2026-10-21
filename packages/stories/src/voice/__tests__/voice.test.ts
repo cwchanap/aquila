@@ -1,4 +1,6 @@
+import { spawnSync } from 'node:child_process';
 import {
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
@@ -10,8 +12,10 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getStoryContent } from '../../stories';
 import { parseVoiceCast, planVoiceLines, spokenText } from '../cast';
-import { runVoiceCli } from '../cli';
+import { ffmpegTranscode, runVoiceCli } from '../cli';
 import { hasStoryVoice, voiceLineId } from '../index';
+
+vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
 
 const role = { voiceId: 'v1', voiceName: 'Test' };
 
@@ -208,5 +212,139 @@ describe('runVoiceCli', () => {
                 log: () => {},
             })
         ).rejects.toThrow('ELEVENLABS_API_KEY');
+    });
+
+    it('reports a failed ElevenLabs request without retrying it', async () => {
+        const fetchImpl = vi.fn(
+            async () => new Response('bad key', { status: 401 })
+        );
+        await expect(
+            runVoiceCli([...base, '--out', tempDir()], {
+                fetch: fetchImpl as unknown as typeof fetch,
+                env: { ELEVENLABS_API_KEY: 'key' },
+                log: () => {},
+            })
+        ).rejects.toThrow(/ElevenLabs HTTP 401 .*bad key/);
+        expect(fetchImpl).toHaveBeenCalledOnce();
+    });
+
+    it('rejects a missing cast, locale, text, or scene', async () => {
+        const rawRoot = tempDir();
+        const story = (storyId: string, locales: object) => {
+            const dir = join(rawRoot, storyId);
+            mkdirSync(join(dir, 'docs'), { recursive: true });
+            writeFileSync(
+                join(dir, 'compiler.config.ts'),
+                `export default { storyId: '${storyId}' };\n`
+            );
+            writeFileSync(
+                join(dir, 'docs', 'voice-cast.json'),
+                JSON.stringify({ schemaVersion: 1, modelId: 'm', locales })
+            );
+        };
+        story('the_seventh_mirror', {
+            en: { languageCode: 'en', roles: {} },
+        });
+        const run = (args: string[]) =>
+            runVoiceCli(args, { rawRoot, log: () => {} });
+
+        await expect(
+            run([
+                'generate',
+                '--story',
+                'nope',
+                '--locale',
+                'zh',
+                '--scene',
+                'x',
+            ])
+        ).rejects.toThrow('No voice cast');
+        const seventh = ['generate', '--story', 'the_seventh_mirror'];
+        await expect(
+            run([...seventh, '--locale', 'ja', '--scene', 'x'])
+        ).rejects.toThrow('has no "ja" cast');
+        await expect(
+            run([...seventh, '--locale', 'en', '--scene', 'x'])
+        ).rejects.toThrow('has no en text');
+        await expect(
+            runVoiceCli([...base, '--scene', 'nope', '--dry-run'], {
+                log: () => {},
+            })
+        ).rejects.toThrow('has no scene nope');
+    });
+
+    it('reminds you to register a story the reader does not voice yet', async () => {
+        const rawRoot = tempDir();
+        const dir = join(rawRoot, 'train');
+        mkdirSync(join(dir, 'docs'), { recursive: true });
+        writeFileSync(
+            join(dir, 'compiler.config.ts'),
+            "export default { storyId: 'train_adventure' };\n"
+        );
+        writeFileSync(
+            join(dir, 'docs', 'voice-cast.json'),
+            JSON.stringify({
+                schemaVersion: 1,
+                modelId: 'm',
+                locales: { zh: { languageCode: 'zh', roles: {} } },
+            })
+        );
+        const log = vi.fn();
+
+        await runVoiceCli(
+            [
+                'generate',
+                '--story',
+                'train',
+                '--locale',
+                'zh',
+                '--scene',
+                'act1',
+                '--out',
+                tempDir(),
+            ],
+            { rawRoot, log }
+        );
+
+        expect(log.mock.calls.at(-1)?.[0]).toContain('STORY_VOICE_LOCALES');
+    });
+
+    it('logs to the console by default', async () => {
+        const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        expect(await runVoiceCli([])).toBe(2);
+        expect(spy.mock.calls[0][0]).toContain('Usage');
+        spy.mockRestore();
+    });
+});
+
+describe('ffmpegTranscode', () => {
+    const run = vi.mocked(spawnSync);
+
+    it('pipes the take through ffmpeg as mono 48 kbps', () => {
+        run.mockReturnValueOnce({ status: 0 } as ReturnType<typeof spawnSync>);
+        const input = new Uint8Array([1]);
+        ffmpegTranscode(input, '/out.mp3');
+        const [command, args, options] = run.mock.calls[0];
+        expect(command).toBe('ffmpeg');
+        expect(args).toEqual(
+            expect.arrayContaining(['-ac', '1', '-b:a', '48k', '/out.mp3'])
+        );
+        expect(options).toEqual({ input });
+    });
+
+    it('throws when ffmpeg is missing or fails', () => {
+        run.mockReturnValueOnce({
+            error: new Error('spawn ffmpeg ENOENT'),
+        } as ReturnType<typeof spawnSync>);
+        expect(() => ffmpegTranscode(new Uint8Array(), '/a.mp3')).toThrow(
+            'ENOENT'
+        );
+        run.mockReturnValueOnce({
+            status: 1,
+            stderr: Buffer.from('bad input\n'),
+        } as unknown as ReturnType<typeof spawnSync>);
+        expect(() => ffmpegTranscode(new Uint8Array(), '/a.mp3')).toThrow(
+            'ffmpeg failed: bad input'
+        );
     });
 });

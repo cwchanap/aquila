@@ -1,6 +1,8 @@
+import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { access, lstat, readdir, readFile, stat } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
+import { promisify } from 'node:util';
 import {
     assertReleaseIdMatchesContentSha256,
     assertSha256,
@@ -79,6 +81,34 @@ async function walkFiles(root: string): Promise<string[]> {
     }
     await walk(root);
     return files;
+}
+
+const execFileAsync = promisify(execFile);
+
+// Returns the subset of `paths` git currently tracks, or null when git
+// cannot answer (not installed, not a work tree).
+async function trackedFixtureFiles(paths: string[]): Promise<Set<string> | null> {
+    try {
+        const { stdout } = await execFileAsync(
+            'git',
+            [
+                '-C',
+                repositoryRoot,
+                'ls-files',
+                '-z',
+                '--',
+                ...paths.map(path => relative(repositoryRoot, path)),
+            ]
+        );
+        return new Set(
+            stdout
+                .split('\0')
+                .filter(entry => entry !== '')
+                .map(entry => resolve(repositoryRoot, entry))
+        );
+    } catch {
+        return null;
+    }
 }
 
 export async function verifyVisualFixtures(
@@ -280,6 +310,36 @@ export async function verifyVisualFixtures(
                 problems.push(
                     `stale Seventh Mirror fixture release document: ${relative(publicRoot, path)}`
                 );
+            }
+        }
+
+        // Fixture objects share vn/objects/ with gitignored bundled build
+        // output, so a regenerated (and therefore renamed, since objects are
+        // content-addressed) fixture silently disappears from `git status`.
+        // Assert every file the release references is git-tracked.
+        const expectedFiles = [
+            resolve(publicRoot, getCurrentPointerPath(STORY_ID, PREVIEW_TARGET)),
+            resolve(publicRoot, pointer.manifestPath),
+            ...manifest.assets.flatMap(asset => [
+                resolve(publicRoot, asset.variants.webp.path),
+                ...(asset.variants.avif === undefined
+                    ? []
+                    : [resolve(publicRoot, asset.variants.avif.path)]),
+                ...(asset.placeholder === undefined
+                    ? []
+                    : [resolve(publicRoot, asset.placeholder.path)]),
+            ]),
+        ];
+        const tracked = await trackedFixtureFiles(expectedFiles);
+        if (tracked === null) {
+            problems.push('git ls-files failed — cannot check fixture tracking');
+        } else {
+            for (const path of expectedFiles) {
+                if (!tracked.has(path)) {
+                    problems.push(
+                        `fixture file is not git-tracked: ${relative(repositoryRoot, path)}`
+                    );
+                }
             }
         }
     }

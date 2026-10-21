@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import {
     parseActiveReleasePointer,
     parseRuntimeAssetManifest,
@@ -7,6 +8,7 @@ import {
 } from '@aquila/stories/runtime-assets';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { discoverAuthoringCatalog } from '../../../packages/infra-cloudflare/src/publisher/authoring-catalog';
 import { BUNDLED_VISUAL_STORY_IDS } from '../../../packages/stories/src/story-metadata';
 import sharp from 'sharp';
 
@@ -14,17 +16,23 @@ const webRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = resolve(webRoot, '../..');
 const publicRoot = resolve(webRoot, 'public/assets');
 const mediaRoot = resolve(repositoryRoot, 'packages/assets/media');
-const generatedRoot = resolve(repositoryRoot, 'packages/stories/src/generated');
+const publisherRoot = resolve(repositoryRoot, 'packages/infra-cloudflare');
+// The publisher's local delivery store keeps `.publisher-metadata` and
+// `.publisher-transactions` sidecars beside the delivered tree. Pointing it
+// at public/ would ship those internals in the deployed site, so the store
+// lives here and only the deliverable `vn/` tree is mirrored into
+// public/assets after each publish.
+const storeRoot = resolve(webRoot, '.asset-store');
 const scriptPath = fileURLToPath(import.meta.url);
 const stampPath = resolve(webRoot, '.short-story-assets.stamps.json');
 const verifyOnly = process.argv.includes('--verify');
 const ensureOnly = process.argv.includes('--ensure') && !verifyOnly;
 
 // The `--ensure` freshness stamp maps each publish input to the SHA-256 of its
-// bytes at the last completed publish. Output mtimes cannot serve this role:
-// a no-op republish leaves pointer/manifest/objects untouched, so they would
-// look stale forever. Content hashes also stay correct across branch switches
-// and identical-mtime rewrites that an mtime comparison would miss.
+// bytes at the moment the publish started. Output mtimes cannot serve this
+// role: a no-op republish leaves pointer/manifest/objects untouched, so they
+// would look stale forever. Content hashes also stay correct across branch
+// switches and identical-mtime rewrites that an mtime comparison would miss.
 interface StoryStamp {
     inputs: Record<string, string>;
 }
@@ -39,29 +47,44 @@ async function sha256File(path: string): Promise<string> {
         .digest('hex');
 }
 
-// The generated directory is named after the raw story folder (camelCase),
-// not the snake_case story id, so the matching image-assets manifest is found
-// by its embedded storyId — the same rule discoverAuthoringCatalog uses.
-async function findImageAssetsPath(storyId: string): Promise<string | null> {
-    const dirs = await readdir(generatedRoot, { withFileTypes: true });
-    for (const dir of dirs) {
-        if (!dir.isDirectory()) continue;
-        const candidate = join(generatedRoot, dir.name, 'image-assets.json');
-        try {
-            const parsed = JSON.parse(await readFile(candidate, 'utf8')) as {
-                storyId?: unknown;
-            };
-            if (parsed.storyId === storyId) return candidate;
-        } catch {
-            continue;
-        }
-    }
-    return null;
+function releasePlanPath(storyId: string): string {
+    return resolve(
+        repositoryRoot,
+        'packages/stories/release-plans',
+        `${storyId}.json`
+    );
+}
+
+// Every publisher source file can change encoded output bytes, so all of
+// src/publisher feeds the stamp — not just this script or the data files.
+// The resolved sharp/package.json files carry the actually installed encoder
+// versions for both this process and the spawned publisher.
+async function publisherInputPaths(): Promise<string[]> {
+    const entries = await readdir(join(publisherRoot, 'src/publisher'), {
+        recursive: true,
+    });
+    const webRequire = createRequire(import.meta.url);
+    const publisherRequire = createRequire(
+        join(publisherRoot, 'package.json')
+    );
+    return [
+        join(publisherRoot, 'package.json'),
+        webRequire.resolve('sharp/package.json'),
+        publisherRequire.resolve('sharp/package.json'),
+        ...entries
+            .filter(
+                entry =>
+                    entry.endsWith('.ts') &&
+                    !entry.split(/[\\/]/).includes('__tests__')
+            )
+            .map(entry => join(publisherRoot, 'src/publisher', entry)),
+    ];
 }
 
 // Hashes every file the story's published output derives from: the release
-// plan, its generated image-assets manifest, the cover source, every included
-// source image, and this script itself (the cover transform lives here).
+// plan, the generated image manifest (as the publisher's authoring catalog),
+// the cover source, every included source image, this script (the cover
+// transform lives here), and the publisher sources/encoder versions.
 // Returns null when any input is unreadable; the subsequent publish then
 // reports the real error (missing source, bad manifest) instead of a generic
 // freshness failure.
@@ -69,24 +92,22 @@ async function storyInputHashes(
     storyId: string
 ): Promise<Record<string, string> | null> {
     try {
-        const planPath = resolve(
-            repositoryRoot,
-            'packages/stories/release-plans',
-            `${storyId}.json`
-        );
+        const planPath = releasePlanPath(storyId);
         const plan = parseStoryAssetReleasePlan(
             JSON.parse(await readFile(planPath, 'utf8'))
         );
-        const imageAssetsPath = await findImageAssetsPath(storyId);
-        if (imageAssetsPath === null) return null;
+        const catalog = await discoverAuthoringCatalog(
+            repositoryRoot,
+            storyId
+        );
         const paths = [
             planPath,
-            imageAssetsPath,
             resolve(mediaRoot, storyId, 'covers/cover.png'),
             scriptPath,
             ...plan.entries
                 .filter(entry => entry.disposition === 'included')
                 .map(entry => resolve(mediaRoot, entry.sourcePath)),
+            ...(await publisherInputPaths()),
         ];
         const entries = await Promise.all(
             paths.map(
@@ -97,10 +118,28 @@ async function storyInputHashes(
                     ] as const
             )
         );
-        return Object.fromEntries(entries);
+        return {
+            'derived:authoring-catalog': createHash('sha256')
+                .update(JSON.stringify(catalog))
+                .digest('hex'),
+            ...Object.fromEntries(entries),
+        };
     } catch {
         return null;
     }
+}
+
+async function readBundledPointer(root: string, storyId: string) {
+    return parseActiveReleasePointer(
+        JSON.parse(
+            await readFile(
+                resolve(root, 'vn/stories', storyId, 'current.json'),
+                'utf8'
+            )
+        ),
+        { kind: 'production' },
+        storyId
+    );
 }
 
 // True when the release the dev server will actually serve is on disk: a
@@ -110,16 +149,7 @@ async function storyInputHashes(
 // objects since everything is content-addressed.
 async function bundledOutputsExist(storyId: string): Promise<boolean> {
     try {
-        const pointer = parseActiveReleasePointer(
-            JSON.parse(
-                await readFile(
-                    resolve(publicRoot, 'vn/stories', storyId, 'current.json'),
-                    'utf8'
-                )
-            ),
-            { kind: 'production' },
-            storyId
-        );
+        const pointer = await readBundledPointer(publicRoot, storyId);
         const manifest = parseRuntimeAssetManifest(
             JSON.parse(
                 await readFile(
@@ -165,6 +195,10 @@ async function loadStamps(): Promise<StampFile> {
     return { version: 1, stories: {} };
 }
 
+async function writeStamps(stamps: StampFile): Promise<void> {
+    await writeFile(stampPath, `${JSON.stringify(stamps, null, 2)}\n`, 'utf8');
+}
+
 function inputsMatch(
     stamped: Record<string, string> | undefined,
     current: Record<string, string>
@@ -178,38 +212,32 @@ function inputsMatch(
 }
 
 // Use the existing publisher for canonical manifests, coverage, encoding,
-// integrity, and activation. These writes are confined to the app's public tree;
-// this script never publishes to R2 or activates a remote release.
+// integrity, and activation. These writes are confined to the app's local
+// store; this script never publishes to R2 or activates a remote release.
+await mkdir(storeRoot, { recursive: true });
+if (!verifyOnly) {
+    console.log('Checking bundled short-story assets…');
+}
 const stamps = await loadStamps();
-let stampsDirty = false;
 for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
-    if (ensureOnly) {
-        const inputs = await storyInputHashes(storyId);
-        if (
-            inputs !== null &&
-            inputsMatch(stamps.stories[storyId]?.inputs, inputs) &&
-            (await bundledOutputsExist(storyId))
-        ) {
-            console.log(`${storyId}: bundled assets up to date; skipped`);
-            continue;
-        }
+    // Hash once, before publishing: the output derives from the bytes read at
+    // publish start, so the stamp must record those — not whatever the inputs
+    // became by the time the minutes-long encode finished.
+    const inputs = verifyOnly ? null : await storyInputHashes(storyId);
+    if (
+        ensureOnly &&
+        inputs !== null &&
+        inputsMatch(stamps.stories[storyId]?.inputs, inputs) &&
+        (await bundledOutputsExist(storyId))
+    ) {
+        console.log(`${storyId}: bundled assets up to date; skipped`);
+        continue;
+    }
+    if (!verifyOnly) {
+        console.log(`${storyId}: publishing bundled assets…`);
     }
     const pointer = verifyOnly
-        ? parseActiveReleasePointer(
-              JSON.parse(
-                  await readFile(
-                      resolve(
-                          publicRoot,
-                          'vn/stories',
-                          storyId,
-                          'current.json'
-                      ),
-                      'utf8'
-                  )
-              ),
-              { kind: 'production' },
-              storyId
-          )
+        ? await readBundledPointer(storeRoot, storyId)
         : null;
     const args = pointer
         ? [
@@ -223,23 +251,16 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
         : [
               'publish',
               '--plan',
-              resolve(
-                  repositoryRoot,
-                  'packages/stories/release-plans',
-                  `${storyId}.json`
-              ),
+              releasePlanPath(storyId),
               '--source-root',
-              resolve(repositoryRoot, 'packages/assets/media'),
+              mediaRoot,
               '--confirm-production',
               storyId,
           ];
     const child = Bun.spawn(
         [
             process.execPath,
-            resolve(
-                repositoryRoot,
-                'packages/infra-cloudflare/src/publisher/cli.ts'
-            ),
+            resolve(publisherRoot, 'src/publisher/cli.ts'),
             ...args,
             '--story',
             storyId,
@@ -248,7 +269,7 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
             '--destination',
             'local',
             '--destination-root',
-            publicRoot,
+            storeRoot,
             '--json',
         ],
         { cwd: repositoryRoot, stdout: 'pipe', stderr: 'pipe' }
@@ -264,22 +285,31 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
         );
     }
     const report = JSON.parse(stdout) as { status: string };
+    if (!verifyOnly) {
+        // Mirror the deliverable tree into public/ — the store root also
+        // holds the `.publisher-*` sidecars that must never ship.
+        await cp(join(storeRoot, 'vn'), join(publicRoot, 'vn'), {
+            recursive: true,
+        });
+        if (!(await bundledOutputsExist(storyId))) {
+            throw new Error(
+                `${storyId}: published release missing from public/assets`
+            );
+        }
+    }
     const coverPath = resolve(publicRoot, 'covers', `${storyId}.webp`);
     if (!verifyOnly) {
         await mkdir(dirname(coverPath), { recursive: true });
-        await sharp(
-            resolve(
-                repositoryRoot,
-                'packages/assets/media',
-                storyId,
-                'covers/cover.png'
-            )
-        )
+        await sharp(resolve(mediaRoot, storyId, 'covers/cover.png'))
+            // Crop to the card's 2:3 box centred on the salient region —
+            // `inside` would only ever emit 480x720 for sources that are
+            // already exactly 2:3 and large enough, failing the whole build
+            // on any other aspect.
             .resize({
                 width: 480,
                 height: 720,
-                fit: 'inside',
-                withoutEnlargement: true,
+                fit: 'cover',
+                position: 'attention',
             })
             .webp({ quality: 85, effort: 6 })
             .toFile(coverPath);
@@ -292,15 +322,11 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
     ) {
         throw new Error(`Invalid cover dimensions or format: ${storyId}`);
     }
-    if (!verifyOnly) {
-        const inputs = await storyInputHashes(storyId);
-        if (inputs !== null) {
-            stamps.stories[storyId] = { inputs };
-            stampsDirty = true;
-        }
+    if (!verifyOnly && inputs !== null) {
+        stamps.stories[storyId] = { inputs };
+        // Persist per story: a later story's failure must not discard the
+        // stamps of stories already published.
+        await writeStamps(stamps);
     }
     console.log(`${storyId}: ${report.status}; cover verified`);
-}
-if (stampsDirty) {
-    await writeFile(stampPath, `${JSON.stringify(stamps, null, 2)}\n`, 'utf8');
 }

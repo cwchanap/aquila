@@ -456,6 +456,12 @@ export class WebAssetResolver implements AssetResolver {
     }
 
     private assertNotOlder(pointer: ActiveReleasePointerV1): void {
+        // A `local` source is bundled inside this deployment: its pointer is
+        // deployment-truth, not one generation in a remote sequence. After a
+        // rollback the bundled pointer is *supposed* to be older — rejecting
+        // it as stale would send the reader to a stored release whose objects
+        // this deployment doesn't have.
+        if (this.source.environment === 'local') return;
         const publishedAt = Date.parse(pointer.publishedAt);
         if (publishedAt < this.newestPublishedAt) {
             throw new AssetResolverError(
@@ -586,7 +592,15 @@ export class WebAssetResolver implements AssetResolver {
         const validRecords = (
             await this.loadValidStoredReleases(now, loadContext)
         ).map(release => release.record);
-        const nextRecords = upsertByReleaseId(validRecords, acceptedRecord)
+        // `local` records are never persisted: their objects live and die
+        // with the deployment, so a stored manifest can only describe a
+        // different deployment's tree. Writing the revalidated remainder
+        // back also purges any legacy local records from storage.
+        const nextRecords = (
+            acceptedRecord.source.environment === 'local'
+                ? validRecords
+                : upsertByReleaseId(validRecords, acceptedRecord)
+        )
             .sort((left, right) => right.lastUsedAt - left.lastUsedAt)
             .slice(
                 0,
@@ -667,7 +681,8 @@ export class WebAssetResolver implements AssetResolver {
                 !Number.isFinite(value.validatedAt) ||
                 typeof value.lastUsedAt !== 'number' ||
                 !Number.isFinite(value.lastUsedAt) ||
-                source === null
+                source === null ||
+                source.environment === 'local'
             ) {
                 return null;
             }

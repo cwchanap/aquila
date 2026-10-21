@@ -23,7 +23,7 @@ const releaseManifests = import.meta.glob(
 ) as Record<string, string>;
 
 const SOURCE: AssetResolverSource = {
-    environment: 'local',
+    environment: 'preview',
     storyId: 'the_seventh_mirror',
     baseUrl: 'http://localhost:5090/assets/',
     target: { kind: 'preview', previewId: 'hpa-228-local' },
@@ -161,7 +161,7 @@ function storedRecord(
     } = {}
 ): ValidatedReleaseRecord {
     const recordSource: AssetResolverSource = source ?? {
-        environment: 'local',
+        environment: 'preview',
         storyId: documents.pointer.storyId,
         baseUrl: SOURCE.baseUrl,
         target,
@@ -301,7 +301,7 @@ describe('WebAssetResolver', () => {
                 baseUrl: SOURCE.baseUrl,
                 target: {
                     kind: 'preview',
-                    previewId: 'hpa-228-local',
+                    previewId: 'another-preview',
                 },
             },
         ];
@@ -1287,6 +1287,88 @@ describe('WebAssetResolver', () => {
             source: 'last-validated-release',
             manifest: { releaseId: documents.pointer.releaseId },
         });
+    });
+
+    it('accepts an older bundled pointer for a local source despite a newer stored record', async () => {
+        // A rolled-back deployment serves its bundled (older) pointer; stored
+        // records must never outrank deployment-truth, otherwise the reader
+        // would resolve objects this deployment doesn't have.
+        const productionTarget = { kind: 'production' } as const;
+        const localSource: AssetResolverSource = {
+            environment: 'local',
+            storyId: SOURCE.storyId,
+            baseUrl: SOURCE.baseUrl,
+            target: productionTarget,
+        };
+        const older = createDocuments({
+            key: 'bundled/older',
+            publishedAt: '2026-07-20T00:00:00.000Z',
+            target: productionTarget,
+        });
+        const newer = createDocuments({
+            key: 'stored/newer',
+            publishedAt: '2026-07-27T00:00:00.000Z',
+            target: productionTarget,
+        });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([
+                storedRecord(newer, { source: localSource }),
+            ])
+        );
+        const resolver = new WebAssetResolver(localSource, {
+            fetchImpl: createFetch(older),
+            store,
+            now: () => NOW,
+        });
+        await expect(resolver.loadActiveRelease()).resolves.toMatchObject({
+            source: 'network',
+            manifest: { releaseId: older.pointer.releaseId },
+        });
+    });
+
+    it('does not fall back to a stored record for a local source when loading fails', async () => {
+        const productionTarget = { kind: 'production' } as const;
+        const localSource: AssetResolverSource = {
+            environment: 'local',
+            storyId: SOURCE.storyId,
+            baseUrl: SOURCE.baseUrl,
+            target: productionTarget,
+        };
+        const documents = createDocuments({ target: productionTarget });
+        const store = new ValidatedReleaseStore(
+            createMemoryStorage([
+                storedRecord(documents, { source: localSource }),
+            ])
+        );
+        const resolver = new WebAssetResolver(localSource, {
+            fetchImpl: vi
+                .fn()
+                .mockRejectedValue(new TypeError('offline')) as typeof fetch,
+            store,
+            now: () => NOW,
+        });
+        await expect(resolver.loadActiveRelease()).rejects.toMatchObject({
+            code: 'network',
+        });
+    });
+
+    it('does not persist an accepted release for a local source', async () => {
+        const productionTarget = { kind: 'production' } as const;
+        const localSource: AssetResolverSource = {
+            environment: 'local',
+            storyId: SOURCE.storyId,
+            baseUrl: SOURCE.baseUrl,
+            target: productionTarget,
+        };
+        const documents = createDocuments({ target: productionTarget });
+        const store = new ValidatedReleaseStore(createMemoryStorage());
+        const resolver = new WebAssetResolver(localSource, {
+            fetchImpl: createFetch(documents),
+            store,
+            now: () => NOW,
+        });
+        await resolver.loadActiveRelease();
+        expect(store.loadRaw()).toEqual([]);
     });
 
     it('rejects a stored record whose environment does not match its target kind', async () => {

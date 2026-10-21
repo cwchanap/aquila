@@ -26,7 +26,8 @@ import { READER_MODE_KEY } from '@/lib/reader-mode';
 import { READER_SECOND_LANGUAGE_KEY } from '@/lib/reader-second-language';
 import { READER_FURIGANA_KEY } from '@/lib/reader-furigana';
 
-const { mockGetTranslations } = vi.hoisted(() => ({
+const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
+    mockSupportsVisualMode: vi.fn(() => true),
     mockGetTranslations: vi.fn((locale: string) => ({
         reader: {
             unknown: 'Unknown',
@@ -89,6 +90,11 @@ const { mockGetTranslations } = vi.hoisted(() => ({
 vi.mock('@aquila/stories/translations', async importOriginal => ({
     ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: mockGetTranslations,
+}));
+
+vi.mock('@aquila/stories/async', async importOriginal => ({
+    ...(await importOriginal<typeof import('@aquila/stories/async')>()),
+    supportsVisualMode: mockSupportsVisualMode,
 }));
 
 import ReaderShell from '../ReaderShell.svelte';
@@ -419,6 +425,34 @@ describe('ReaderShell', () => {
         await tick();
         expect(screen.getByTestId('visual-novel-reader')).toBeInTheDocument();
         expect(localStorage.getItem(READER_MODE_KEY)).toBe('visual');
+    });
+
+    it('opens a text-only story as text while keeping the saved Visual Novel choice', async () => {
+        // TEXT_ONLY_STORY_IDS is currently empty, so supportsVisualMode is
+        // mocked rather than relying on catalog data: the lock is what
+        // ReaderShell guarantees when a story declares no visual support.
+        mockSupportsVisualMode.mockReturnValue(false);
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.storyId = 'elevator_game';
+        const factory = vi.fn(() => createRuntimeHarness().runtime);
+        render(ReaderShell, { props: { createVisualRuntime: factory } });
+        await tick();
+
+        expect(
+            screen.queryByTestId('visual-novel-reader')
+        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId('visual-status')).not.toBeInTheDocument();
+        expect(factory).not.toHaveBeenCalled();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Visual Novel' })
+        ).not.toBeInTheDocument();
+        expect(localStorage.getItem(READER_MODE_KEY)).toBe('visual');
+        mockSupportsVisualMode.mockReturnValue(true);
     });
 
     it('owns a settings modal outside the reader-ready subtree while it is open', async () => {

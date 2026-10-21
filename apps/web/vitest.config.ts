@@ -30,6 +30,7 @@ export default defineConfig({
                 '**/test-setup.ts',
                 'scripts/assert-story-chunks.ts',
                 'scripts/measure-reader-bundles.ts',
+                'scripts/build-short-story-assets.ts',
             ],
         },
     },

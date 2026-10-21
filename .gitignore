@@ -52,3 +52,10 @@ coverage/
 
 # interrupted audio-generation CLI test fixtures created under packages/stories/raw/
 packages/stories/raw/audio-generation-cli-*/
+
+# asset generation job output (jobs.json, validation.json, gallery.html)
+packages/assets/generation/
+
+# generated story media (backgrounds, portraits, covers) — not committed;
+# already-tracked files (e.g. the_seventh_mirror) remain tracked
+packages/assets/media/

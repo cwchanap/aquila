@@ -742,6 +742,39 @@ describe('ReaderShell', () => {
         expect(voice.stop).toHaveBeenCalled();
     });
 
+    it('turns Voice off and back on from reader settings', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const voice = {
+            load: vi.fn(() => Promise.resolve()),
+            play: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        render(ReaderShell, {
+            props: {
+                createVoicePlayer: () => voice,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        const toggle = screen.getByRole('button', { name: 'Voice' });
+        voice.stop.mockClear();
+        await fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute('aria-pressed', 'false');
+        expect(toggle).toHaveTextContent('Off');
+        expect(voice.stop).toHaveBeenCalled();
+        expect(localStorage.getItem('aquila:voice-enabled:v1')).toBe('false');
+
+        await fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        expect(localStorage.getItem('aquila:voice-enabled:v1')).toBe('true');
+    });
+
     it('stops SFX when switching from Visual to Text', async () => {
         stubMatchMedia(false);
         localStorage.setItem(READER_MODE_KEY, 'visual');

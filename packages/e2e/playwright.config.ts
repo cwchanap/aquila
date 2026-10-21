@@ -13,7 +13,9 @@ export default defineConfig({
         command: 'cd ../../apps/web && bun run dev',
         url: 'http://localhost:5090',
         reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
+        // `bun run dev` bootstraps bundled story assets on a clean checkout;
+        // that first publish can take several minutes before Astro binds.
+        timeout: 480_000,
         env: {
             DATABASE_URL:
                 process.env.DATABASE_URL ??

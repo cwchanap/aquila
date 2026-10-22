@@ -43,7 +43,7 @@ describe('createVoicePlayer', () => {
         const fetchImpl = vi.fn(async () => indexResponse([FIRST, null]));
         const player = createVoicePlayer({ createAudio, fetchImpl });
         await player.load('the_seventh_mirror');
-        await expect(player.load('the_seventh_mirror')).resolves.toBe(false);
+        await expect(player.load('the_seventh_mirror')).resolves.toBe(true);
 
         player.play('ch1_act1', 0);
         player.play('ch1_act1', 1);
@@ -65,6 +65,52 @@ describe('createVoicePlayer', () => {
 
         expect(fetchImpl).not.toHaveBeenCalled();
         expect(createAudio).not.toHaveBeenCalled();
+    });
+
+    it('retries a failed index fetch and shares one in flight', async () => {
+        const createAudio = vi.fn(fakeAudio);
+        const fetchImpl = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('offline'))
+            .mockResolvedValue(indexResponse([FIRST]));
+        const player = createVoicePlayer({ createAudio, fetchImpl });
+
+        await expect(player.load('the_seventh_mirror')).resolves.toBe(false);
+        const first = player.load('the_seventh_mirror');
+        const second = player.load('the_seventh_mirror');
+        expect(second).toBe(first);
+        await expect(first).resolves.toBe(true);
+        player.play('ch1_act1', 0);
+
+        expect(fetchImpl).toHaveBeenCalledTimes(2);
+        expect(createAudio).toHaveBeenCalledOnce();
+    });
+
+    it('retries a take the browser blocked once resumed', async () => {
+        const blocked = Object.assign(new Error('blocked'), {
+            name: 'NotAllowedError',
+        });
+        const audio = {
+            play: vi
+                .fn()
+                .mockRejectedValueOnce(blocked)
+                .mockResolvedValue(undefined),
+            pause: vi.fn(),
+        };
+        const player = createVoicePlayer({
+            createAudio: () => audio,
+            fetchImpl: async () => indexResponse([FIRST]),
+        });
+        await player.load('the_seventh_mirror');
+
+        player.resume();
+        player.play('ch1_act1', 0);
+        await Promise.resolve();
+        await Promise.resolve();
+        player.resume();
+        player.resume();
+
+        expect(audio.play).toHaveBeenCalledTimes(2);
     });
 
     it('treats a missing or malformed index as no voice', async () => {

@@ -600,10 +600,11 @@
   $effect(() => {
     if (readerMode === 'visual' && voiceEnabled && storyId) {
       const loadingStoryId = storyId;
-      void voicePlayer.load(loadingStoryId).then(loaded => {
-        // The line on screen tried to play before its index arrived.
+      void voicePlayer.load(loadingStoryId).then(ready => {
+        // Speak the line on screen: it may have tried before the index
+        // arrived, or Voice / Visual mode was just turned back on.
         if (
-          loaded &&
+          ready &&
           !destroyed &&
           storyId === loadingStoryId &&
           readerMode === 'visual' &&
@@ -691,6 +692,7 @@
       return;
     }
     bgmActivated = true;
+    voicePlayer.resume();
     if (bgmEnabled && selectedBgmKey && !audioInitialLoadPending) {
       bgmPlayer.play(selectedBgmKey);
     }

@@ -718,6 +718,7 @@ describe('ReaderShell', () => {
         const voice = {
             load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
+            resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
         };
@@ -753,8 +754,9 @@ describe('ReaderShell', () => {
         readerState.dialogue = mockDialogue;
         localStorage.setItem(READER_MODE_KEY, 'visual');
         const voice = {
-            load: vi.fn(() => Promise.resolve(false)),
+            load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
+            resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
         };
@@ -776,9 +778,38 @@ describe('ReaderShell', () => {
         expect(voice.stop).toHaveBeenCalled();
         expect(localStorage.getItem('aquila:voice-enabled:v1')).toBe('false');
 
+        voice.play.mockClear();
         await fireEvent.click(toggle);
         expect(toggle).toHaveAttribute('aria-pressed', 'true');
         expect(localStorage.getItem('aquila:voice-enabled:v1')).toBe('true');
+        await tick();
+        // Turning Voice back on speaks the line still on screen.
+        expect(voice.play).toHaveBeenCalledWith(
+            readerState.currentSceneId,
+            readerState.dialogueIndex
+        );
+    });
+
+    it('retries a blocked voice line on the first reader gesture', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const voice = {
+            load: vi.fn(() => Promise.resolve(true)),
+            play: vi.fn(),
+            resume: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        render(ReaderShell, {
+            props: {
+                createVoicePlayer: () => voice,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        await fireEvent.pointerDown(screen.getByTestId('reader-ready'));
+        expect(voice.resume).toHaveBeenCalledOnce();
     });
 
     it('stops SFX when switching from Visual to Text', async () => {

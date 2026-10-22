@@ -509,6 +509,13 @@ describe('WebAssetResolver', () => {
         // concurrently. A starts first so its pointer fetch is the first
         // request (returns 404 and reveals the other-source record).
         const failingLoad = resolver.loadActiveRelease();
+        // Subscribe to A's rejection immediately: it settles while the test
+        // is still awaiting B, so attaching `.rejects` only at the end
+        // leaves it unhandled across the gap and the runner reports an
+        // unhandled rejection.
+        const failingLoadRejected = expect(failingLoad).rejects.toMatchObject({
+            code: 'unavailable',
+        });
         const succeedingLoad = resolver.loadActiveRelease();
 
         // B succeeds while A is gated in fallback validation.
@@ -520,9 +527,7 @@ describe('WebAssetResolver', () => {
         otherManifestGate.resolve();
 
         // A fails, but must NOT deactivate B's accepted release.
-        await expect(failingLoad).rejects.toMatchObject({
-            code: 'unavailable',
-        });
+        await failingLoadRejected;
         expect(
             resolver.resolve({ type: 'background', key: 'release/newer' })
         ).toMatchObject({ status: 'resolved' });
@@ -1311,9 +1316,7 @@ describe('WebAssetResolver', () => {
             target: productionTarget,
         });
         const store = new ValidatedReleaseStore(
-            createMemoryStorage([
-                storedRecord(newer, { source: localSource }),
-            ])
+            createMemoryStorage([storedRecord(newer, { source: localSource })])
         );
         const resolver = new WebAssetResolver(localSource, {
             fetchImpl: createFetch(older),

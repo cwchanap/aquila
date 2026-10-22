@@ -59,6 +59,14 @@ export default defineConfig({
   },
   vite: {
     build: { manifest: true },
+    ssr: {
+      // better-auth 1.7+ requires zod v4 while the app pins zod v3. Bundling
+      // better-auth into the SSR chunk rewrites its `import 'zod'` to resolve
+      // against the hoisted root zod v3 (z.looseObject undefined -> auth init
+      // TypeError -> 503). Externalizing keeps node_modules resolution so the
+      // nested zod@4 under better-auth is used.
+      external: ['better-auth'],
+    },
     plugins: [tailwindcss(), storyChunkModulesPlugin()],
     resolve: {
       alias: {

@@ -13,6 +13,7 @@
   "include": [
     "src",
     "scripts",
+    "astro.config.mjs",
     ".astro/types.d.ts"
   ],
   "exclude": [

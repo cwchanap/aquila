@@ -285,20 +285,13 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
         );
     }
     const report = JSON.parse(stdout) as { status: string };
+    const coverPath = resolve(publicRoot, 'covers', `${storyId}.webp`);
     if (!verifyOnly) {
         // Mirror the deliverable tree into public/ — the store root also
         // holds the `.publisher-*` sidecars that must never ship.
         await cp(join(storeRoot, 'vn'), join(publicRoot, 'vn'), {
             recursive: true,
         });
-        if (!(await bundledOutputsExist(storyId))) {
-            throw new Error(
-                `${storyId}: published release missing from public/assets`
-            );
-        }
-    }
-    const coverPath = resolve(publicRoot, 'covers', `${storyId}.webp`);
-    if (!verifyOnly) {
         await mkdir(dirname(coverPath), { recursive: true });
         await sharp(resolve(mediaRoot, storyId, 'covers/cover.png'))
             // Crop to the card's 2:3 box centred on the salient region —
@@ -313,6 +306,11 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
             })
             .webp({ quality: 85, effort: 6 })
             .toFile(coverPath);
+        if (!(await bundledOutputsExist(storyId))) {
+            throw new Error(
+                `${storyId}: published release missing from public/assets`
+            );
+        }
     }
     const cover = await sharp(coverPath).metadata();
     if (

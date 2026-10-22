@@ -10,8 +10,9 @@ import {
 export const VOICE_BASE_URL = '/assets/vn/voice';
 
 export interface VoicePlayer {
-    /** Fetch which lines of this story have voice. */
-    load(storyId: string): Promise<void>;
+    /** Fetch which lines of this story have voice. Resolves true when a new
+     *  index arrived, so the caller can speak the line already on screen. */
+    load(storyId: string): Promise<boolean>;
     /** Stop the current line and speak this one, if it has voice. Voice is
      *  keyed by position, so it plays whatever language the text is in. */
     play(sceneId: string, dialogueIndex: number): void;
@@ -50,20 +51,23 @@ export function createVoicePlayer(
 
     return {
         async load(nextStoryId) {
-            if (disposed || nextStoryId === storyId) return;
+            if (disposed || nextStoryId === storyId) return false;
             storyId = nextStoryId;
             scenes = {};
-            if (!hasStoryVoice(nextStoryId)) return;
+            if (!hasStoryVoice(nextStoryId)) return false;
             try {
                 const response = await fetchImpl(
                     `${baseUrl}/${voiceIndexPath(nextStoryId)}`
                 );
-                if (!response.ok) return;
+                if (!response.ok) return false;
                 const index = VoiceIndexSchema.parse(await response.json());
                 // A newer load replaced this story while we waited.
-                if (storyId === nextStoryId) scenes = index.scenes;
+                if (disposed || storyId !== nextStoryId) return false;
+                scenes = index.scenes;
+                return true;
             } catch {
                 // No voice for this story; reading stays silent.
+                return false;
             }
         },
         play(sceneId, dialogueIndex) {

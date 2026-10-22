@@ -599,7 +599,19 @@
 
   $effect(() => {
     if (readerMode === 'visual' && voiceEnabled && storyId) {
-      void voicePlayer.load(storyId);
+      const loadingStoryId = storyId;
+      void voicePlayer.load(loadingStoryId).then(loaded => {
+        // The line on screen tried to play before its index arrived.
+        if (
+          loaded &&
+          !destroyed &&
+          storyId === loadingStoryId &&
+          readerMode === 'visual' &&
+          voiceEnabled
+        ) {
+          voicePlayer.play(currentSceneId, dialogueIndex);
+        }
+      });
     }
   });
 

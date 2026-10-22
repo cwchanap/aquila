@@ -1,33 +1,38 @@
 import { describe, expect, it, vi } from 'vitest';
-import { voiceLineId } from '@aquila/stories/voice';
 import { createVoicePlayer } from '@/lib/audio/voice-player';
 
-const line = { characterId: 'narrator', dialogue: '手機螢幕亮了。' };
-const other = { characterId: 'narrator', dialogue: '什麼都沒有。' };
+const FIRST = '01fa4da79b470a';
+const SECOND = '1607a6b16ad510';
 
 function fakeAudio() {
     return { play: vi.fn(() => Promise.resolve()), pause: vi.fn() };
 }
 
-function indexResponse(lines: string[]): Response {
-    return new Response(JSON.stringify({ schemaVersion: 1, lines }));
+function indexResponse(lines: (string | null)[]): Response {
+    return new Response(
+        JSON.stringify({
+            schemaVersion: 2,
+            language: 'ja',
+            scenes: { ch1_act1: lines },
+        })
+    );
 }
 
 describe('createVoicePlayer', () => {
-    it('plays a voiced line from the story and locale it loaded', async () => {
+    it('plays the take for a scene position', async () => {
         const audio = fakeAudio();
         const createAudio = vi.fn(() => audio);
-        const fetchImpl = vi.fn(async () => indexResponse([voiceLineId(line)]));
+        const fetchImpl = vi.fn(async () => indexResponse([FIRST, SECOND]));
         const player = createVoicePlayer({ createAudio, fetchImpl });
 
-        await player.load('the_seventh_mirror', 'zh');
-        player.play(line);
+        await player.load('the_seventh_mirror');
+        player.play('ch1_act1', 1);
 
         expect(fetchImpl).toHaveBeenCalledWith(
-            '/assets/vn/voice/the_seventh_mirror/zh/index.json'
+            '/assets/vn/voice/the_seventh_mirror/index.json'
         );
         expect(createAudio).toHaveBeenCalledWith(
-            `/assets/vn/voice/the_seventh_mirror/zh/${voiceLineId(line)}.mp3`
+            `/assets/vn/voice/the_seventh_mirror/${SECOND}.mp3`
         );
         expect(audio.play).toHaveBeenCalledOnce();
     });
@@ -35,27 +40,28 @@ describe('createVoicePlayer', () => {
     it('stays silent for lines without audio and stops the previous line', async () => {
         const audio = fakeAudio();
         const createAudio = vi.fn(() => audio);
-        const player = createVoicePlayer({
-            createAudio,
-            fetchImpl: async () => indexResponse([voiceLineId(line)]),
-        });
-        await player.load('the_seventh_mirror', 'zh');
+        const fetchImpl = vi.fn(async () => indexResponse([FIRST, null]));
+        const player = createVoicePlayer({ createAudio, fetchImpl });
+        await player.load('the_seventh_mirror');
+        await player.load('the_seventh_mirror');
 
-        player.play(line);
-        player.play(other);
+        player.play('ch1_act1', 0);
+        player.play('ch1_act1', 1);
+        player.play('ch1_act2', 0);
 
+        expect(fetchImpl).toHaveBeenCalledOnce();
         expect(createAudio).toHaveBeenCalledOnce();
         expect(audio.pause).toHaveBeenCalledOnce();
     });
 
-    it('never fetches for a story or language without voice', async () => {
+    it('never fetches for a story without voice', async () => {
         const fetchImpl = vi.fn();
         const createAudio = vi.fn();
         const player = createVoicePlayer({ createAudio, fetchImpl });
 
-        await player.load('the_seventh_mirror', 'en');
-        await player.load('train_adventure', 'zh');
-        player.play(line);
+        player.play('ch1_act1', 0);
+        await player.load('train_adventure');
+        player.play('act1', 0);
 
         expect(fetchImpl).not.toHaveBeenCalled();
         expect(createAudio).not.toHaveBeenCalled();
@@ -67,15 +73,32 @@ describe('createVoicePlayer', () => {
             createAudio,
             fetchImpl: async () => new Response('', { status: 404 }),
         });
-        await missing.load('the_seventh_mirror', 'zh');
-        missing.play(line);
+        await missing.load('the_seventh_mirror');
+        missing.play('ch1_act1', 0);
 
         const malformed = createVoicePlayer({
             createAudio,
             fetchImpl: async () => new Response('{"lines":"nope"}'),
         });
-        await malformed.load('the_seventh_mirror', 'zh');
-        malformed.play(line);
+        await malformed.load('the_seventh_mirror');
+        malformed.play('ch1_act1', 0);
+
+        expect(createAudio).not.toHaveBeenCalled();
+    });
+
+    it('drops an index that arrives after another story replaced it', async () => {
+        const createAudio = vi.fn(fakeAudio);
+        let release: (response: Response) => void = () => {};
+        const player = createVoicePlayer({
+            createAudio,
+            fetchImpl: () => new Promise(done => (release = done)),
+        });
+
+        const slow = player.load('the_seventh_mirror');
+        await player.load('train_adventure');
+        release(indexResponse([FIRST]));
+        await slow;
+        player.play('ch1_act1', 0);
 
         expect(createAudio).not.toHaveBeenCalled();
     });
@@ -88,14 +111,15 @@ describe('createVoicePlayer', () => {
         const createAudio = vi.fn(() => audio);
         const player = createVoicePlayer({
             createAudio,
-            fetchImpl: async () => indexResponse([voiceLineId(line)]),
+            fetchImpl: async () => indexResponse([FIRST]),
         });
-        await player.load('the_seventh_mirror', 'zh');
+        await player.load('the_seventh_mirror');
 
-        player.play(line);
+        player.play('ch1_act1', 0);
         await Promise.resolve();
         player.dispose();
-        player.play(line);
+        player.play('ch1_act1', 0);
+        await player.load('train_adventure');
 
         expect(createAudio).toHaveBeenCalledOnce();
     });
@@ -105,11 +129,11 @@ describe('createVoicePlayer', () => {
             createAudio: () => {
                 throw new Error('no Audio');
             },
-            fetchImpl: async () => indexResponse([voiceLineId(line)]),
+            fetchImpl: async () => indexResponse([FIRST]),
         });
-        await player.load('the_seventh_mirror', 'zh');
+        await player.load('the_seventh_mirror');
 
-        expect(() => player.play(line)).not.toThrow();
+        expect(() => player.play('ch1_act1', 0)).not.toThrow();
         expect(() => player.stop()).not.toThrow();
     });
 });

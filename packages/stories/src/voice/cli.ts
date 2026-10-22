@@ -12,11 +12,13 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { getStoryContent } from '../stories';
 import { hasStoryText } from '../story-metadata';
+import type { DialogueEntry } from '../types';
 import {
+    VoiceScriptSchema,
     parseVoiceCast,
-    planVoiceLines,
+    planVoiceScene,
+    type VoiceCast,
     type VoiceLineJob,
-    type VoiceLocaleCast,
 } from './cast';
 import {
     VOICE_INDEX_SCHEMA_VERSION,
@@ -35,16 +37,19 @@ export const DEFAULT_VOICE_ROOT = join(
 const TTS_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 const RETRY_DELAYS_MS = [2_000, 5_000] as const;
 
-const USAGE = `Usage: bun src/voice/cli.ts generate --story <rawDir> --locale <code> --scene <sceneId> [--scene ...]
-  [--dry-run] [--force] [--prune] [--from-dir <dir>] [--out <voiceRoot>]
+const USAGE = `Usage:
+  bun src/voice/cli.ts generate --story <rawDir> --scene <sceneId> [--scene ...]
+    [--dry-run] [--prune] [--from-dir <dir>] [--out <voiceRoot>]
+  bun src/voice/cli.ts check [--out <voiceRoot>]
 
+  generate     voice the scenes in the cast's language
+  check        fail if a committed index.json no longer matches the story
   --dry-run    print the lines that would be generated as JSON; no API calls
-  --force      regenerate lines that already have audio
   --prune      delete audio no current line of the story uses
   --from-dir   take <lineId>.mp3 files from a folder instead of calling ElevenLabs
   --out        voice root (default apps/web/public/assets/vn/voice)
 
-Needs ELEVENLABS_API_KEY unless --dry-run or --from-dir is given.`;
+generate needs ELEVENLABS_API_KEY unless --dry-run or --from-dir is given.`;
 
 export type Transcode = (input: Uint8Array, outPath: string) => void;
 
@@ -86,8 +91,7 @@ export const ffmpegTranscode: Transcode = (input, outPath) => {
 
 async function elevenLabsTts(
     job: VoiceLineJob,
-    modelId: string,
-    cast: VoiceLocaleCast,
+    cast: VoiceCast,
     apiKey: string,
     io: Required<Pick<VoiceCliIo, 'fetch' | 'sleep'>>
 ): Promise<Uint8Array> {
@@ -102,8 +106,8 @@ async function elevenLabsTts(
                 },
                 body: JSON.stringify({
                     text: job.text,
-                    model_id: modelId,
-                    language_code: cast.languageCode,
+                    model_id: cast.modelId,
+                    language_code: cast.language,
                 }),
             }
         );
@@ -120,79 +124,143 @@ async function elevenLabsTts(
     }
 }
 
-async function loadStoryId(rawDir: string): Promise<string> {
-    const config = (await import(join(rawDir, 'compiler.config.ts'))) as {
-        default: { storyId: string };
-    };
-    return config.default.storyId;
-}
+type VoiceStory = {
+    storyId: string;
+    cast: VoiceCast;
+    /** zh source dialogue, which fixes every line's position. */
+    dialogue: Record<string, DialogueEntry[]>;
+    /** Spoken text per voiceable scene, aligned with `dialogue`. */
+    spoken: Record<string, string[]>;
+};
 
-function writeIndex(path: string, lines: string[]): void {
-    const index: VoiceIndex = {
-        schemaVersion: VOICE_INDEX_SCHEMA_VERSION,
-        lines: [...lines].sort(),
-    };
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, `${JSON.stringify(index, null, 2)}\n`);
-}
-
-export async function runVoiceCli(
-    argv: string[],
-    io: VoiceCliIo = {}
-): Promise<number> {
-    const log = io.log ?? (line => console.log(line));
-    const { positionals, values } = parseArgs({
-        args: argv,
-        allowPositionals: true,
-        options: {
-            story: { type: 'string' },
-            locale: { type: 'string' },
-            scene: { type: 'string', multiple: true },
-            'dry-run': { type: 'boolean', default: false },
-            force: { type: 'boolean', default: false },
-            prune: { type: 'boolean', default: false },
-            'from-dir': { type: 'string' },
-            out: { type: 'string' },
-        },
-    });
-    const scenes = values.scene ?? [];
-    if (
-        positionals[0] !== 'generate' ||
-        !values.story ||
-        !values.locale ||
-        scenes.length === 0
-    ) {
-        log(USAGE);
-        return 2;
-    }
-
-    const rawDir = join(io.rawRoot ?? RAW_ROOT, values.story);
+async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
     const castPath = join(rawDir, 'docs', 'voice-cast.json');
     if (!existsSync(castPath)) throw new Error(`No voice cast at ${castPath}`);
     const cast = parseVoiceCast(JSON.parse(readFileSync(castPath, 'utf8')));
-    const locale = values.locale;
-    const localeCast = cast.locales[locale];
-    if (!localeCast) throw new Error(`${castPath} has no "${locale}" cast`);
+    const config = (await import(join(rawDir, 'compiler.config.ts'))) as {
+        default: { storyId: string };
+    };
+    const storyId = config.default.storyId;
+    const dialogue = getStoryContent(storyId, 'zh').dialogue;
+    const spoken: Record<string, string[]> = {};
 
-    const storyId = await loadStoryId(rawDir);
-    if (!hasStoryText(storyId, locale)) {
-        throw new Error(`${storyId} has no ${locale} text to voice`);
-    }
-    const dialogue = getStoryContent(storyId, locale).dialogue;
-    for (const scene of scenes) {
-        if (!dialogue[scene])
-            throw new Error(`${storyId} has no scene ${scene}`);
+    if (hasStoryText(storyId, cast.language)) {
+        const translated = getStoryContent(storyId, cast.language).dialogue;
+        for (const [scene, entries] of Object.entries(translated)) {
+            spoken[scene] = entries.map(entry => entry.dialogue);
+        }
+        return { storyId, cast, dialogue, spoken };
     }
 
-    const voiceRoot = values.out ?? DEFAULT_VOICE_ROOT;
-    const audioPath = (lineId: string) =>
-        join(voiceRoot, voiceLinePath(storyId, locale, lineId));
-    const plan = planVoiceLines(
-        scenes.flatMap(scene => dialogue[scene]),
-        localeCast
+    const scriptPath = join(
+        rawDir,
+        'docs',
+        `voice-script.${cast.language}.json`
     );
-    const pending = plan.jobs.filter(
-        job => values.force || !existsSync(audioPath(job.lineId))
+    if (!existsSync(scriptPath)) return { storyId, cast, dialogue, spoken };
+    const script = VoiceScriptSchema.parse(
+        JSON.parse(readFileSync(scriptPath, 'utf8'))
+    );
+    for (const [scene, lines] of Object.entries(script.scenes)) {
+        const source = dialogue[scene];
+        if (!source)
+            throw new Error(`${scriptPath}: ${storyId} has no scene ${scene}`);
+        const stale = source.findIndex(
+            (entry, i) => lines[i]?.zh !== entry.dialogue
+        );
+        if (stale !== -1 || lines.length !== source.length) {
+            throw new Error(
+                `${scriptPath}: ${scene} no longer matches the zh text` +
+                    (stale === -1 ? '' : ` at line ${stale}`)
+            );
+        }
+        spoken[scene] = lines.map(line => line[cast.language] ?? '');
+    }
+    return { storyId, cast, dialogue, spoken };
+}
+
+function planScenes(
+    story: VoiceStory,
+    scenes: readonly string[]
+): { slots: Record<string, (VoiceLineJob | null)[]>; uncast: string[] } {
+    const slots: Record<string, (VoiceLineJob | null)[]> = {};
+    const uncast = new Set<string>();
+    for (const scene of scenes) {
+        const plan = planVoiceScene(
+            story.dialogue[scene],
+            story.spoken[scene],
+            story.cast
+        );
+        slots[scene] = plan.slots;
+        plan.uncast.forEach(id => uncast.add(id));
+    }
+    return { slots, uncast: [...uncast].sort() };
+}
+
+/** The index for the files on disk: every voiceable scene with any audio. */
+function buildIndex(
+    story: VoiceStory,
+    hasAudio: (lineId: string) => boolean
+): { index: VoiceIndex; used: Set<string> } {
+    const { slots } = planScenes(story, Object.keys(story.spoken).sort());
+    const scenes: VoiceIndex['scenes'] = {};
+    const used = new Set<string>();
+    for (const [scene, jobs] of Object.entries(slots)) {
+        jobs.forEach(job => job && used.add(job.lineId));
+        const ids = jobs.map(job =>
+            job && hasAudio(job.lineId) ? job.lineId : null
+        );
+        if (ids.some(id => id !== null)) scenes[scene] = ids;
+    }
+    return {
+        index: {
+            schemaVersion: VOICE_INDEX_SCHEMA_VERSION,
+            language: story.cast.language,
+            scenes,
+        },
+        used,
+    };
+}
+
+function serializeIndex(index: VoiceIndex): string {
+    return `${JSON.stringify(index, null, 2)}\n`;
+}
+
+async function generate(
+    values: Record<string, string | boolean | string[] | undefined>,
+    io: VoiceCliIo,
+    log: (line: string) => void
+): Promise<number> {
+    const scenes = (values.scene as string[] | undefined) ?? [];
+    if (typeof values.story !== 'string' || scenes.length === 0) {
+        log(USAGE);
+        return 2;
+    }
+    const story = await loadVoiceStory(
+        join(io.rawRoot ?? RAW_ROOT, values.story)
+    );
+    const { storyId, cast } = story;
+    for (const scene of scenes) {
+        if (!story.dialogue[scene]) {
+            throw new Error(`${storyId} has no scene ${scene}`);
+        }
+        if (!story.spoken[scene]) {
+            throw new Error(
+                `${storyId} has no ${cast.language} text for ${scene}; add it to docs/voice-script.${cast.language}.json`
+            );
+        }
+    }
+
+    const voiceRoot = (values.out as string | undefined) ?? DEFAULT_VOICE_ROOT;
+    const audioPath = (lineId: string) =>
+        join(voiceRoot, voiceLinePath(storyId, lineId));
+    const planned = planScenes(story, scenes);
+    const jobs = new Map<string, VoiceLineJob>();
+    for (const job of Object.values(planned.slots).flat()) {
+        if (job) jobs.set(job.lineId, job);
+    }
+    const pending = [...jobs.values()].filter(
+        job => !existsSync(audioPath(job.lineId))
     );
     const characters = pending.reduce((sum, job) => sum + job.text.length, 0);
 
@@ -201,12 +269,11 @@ export async function runVoiceCli(
             JSON.stringify(
                 {
                     storyId,
-                    locale,
+                    language: cast.language,
                     modelId: cast.modelId,
-                    languageCode: localeCast.languageCode,
-                    lines: plan.jobs.length,
+                    lines: jobs.size,
                     pendingCharacters: characters,
-                    uncast: plan.uncast,
+                    uncast: planned.uncast,
                     pending,
                 },
                 null,
@@ -216,7 +283,7 @@ export async function runVoiceCli(
         return 0;
     }
 
-    const fromDir = values['from-dir'];
+    const fromDir = values['from-dir'] as string | undefined;
     const apiKey = (io.env ?? process.env).ELEVENLABS_API_KEY;
     if (!fromDir && pending.length > 0 && !apiKey) {
         throw new Error('ELEVENLABS_API_KEY is required (or pass --from-dir)');
@@ -240,13 +307,7 @@ export async function runVoiceCli(
             }
             bytes = readFileSync(source);
         } else {
-            bytes = await elevenLabsTts(
-                job,
-                cast.modelId,
-                localeCast,
-                apiKey as string,
-                http
-            );
+            bytes = await elevenLabsTts(job, cast, apiKey as string, http);
         }
         const out = audioPath(job.lineId);
         mkdirSync(dirname(out), { recursive: true });
@@ -255,16 +316,12 @@ export async function runVoiceCli(
         log(`wrote ${job.lineId} (${job.characterId}) ${job.text}`);
     }
 
-    // The index lists every line of the story (not only these scenes) that
-    // has audio, so generating one scene never drops another from it.
-    const used = new Set(
-        planVoiceLines(Object.values(dialogue).flat(), localeCast).jobs.map(
-            job => job.lineId
-        )
+    const storyDir = join(voiceRoot, storyId);
+    const { index, used } = buildIndex(story, lineId =>
+        existsSync(audioPath(lineId))
     );
-    const localeDir = dirname(join(voiceRoot, voiceIndexPath(storyId, locale)));
-    const present = existsSync(localeDir)
-        ? readdirSync(localeDir)
+    const present = existsSync(storyDir)
+        ? readdirSync(storyDir)
               .filter(name => name.endsWith('.mp3'))
               .map(name => name.slice(0, -'.mp3'.length))
         : [];
@@ -272,22 +329,76 @@ export async function runVoiceCli(
     if (values.prune) {
         for (const lineId of orphans) rmSync(audioPath(lineId));
     }
-    writeIndex(
-        join(voiceRoot, voiceIndexPath(storyId, locale)),
-        present.filter(lineId => used.has(lineId))
+    mkdirSync(storyDir, { recursive: true });
+    writeFileSync(
+        join(voiceRoot, voiceIndexPath(storyId)),
+        serializeIndex(index)
     );
 
     log(
-        `${written} written, ${plan.jobs.length - pending.length} already voiced, ` +
+        `${written} written, ${jobs.size - pending.length} already voiced, ` +
             `${orphans.length} orphaned${values.prune ? ' (pruned)' : ''}` +
-            (plan.uncast.length ? `; uncast: ${plan.uncast.join(', ')}` : '')
+            (planned.uncast.length
+                ? `; uncast: ${planned.uncast.join(', ')}`
+                : '')
     );
-    if (!hasStoryVoice(storyId, locale)) {
+    if (!hasStoryVoice(storyId)) {
         log(
-            `note: add ${locale} for ${storyId} to STORY_VOICE_LOCALES in src/voice/index.ts or the reader will not play it`
+            `note: add ${storyId} to STORY_VOICE_LANGUAGE in src/voice/index.ts or the reader will not play it`
         );
     }
     return 0;
+}
+
+/** Every committed index must match the story as it reads today. */
+async function check(
+    values: Record<string, string | boolean | string[] | undefined>,
+    io: VoiceCliIo,
+    log: (line: string) => void
+): Promise<number> {
+    const rawRoot = io.rawRoot ?? RAW_ROOT;
+    const voiceRoot = (values.out as string | undefined) ?? DEFAULT_VOICE_ROOT;
+    let stale = 0;
+    for (const dir of readdirSync(rawRoot).sort()) {
+        if (!existsSync(join(rawRoot, dir, 'docs', 'voice-cast.json')))
+            continue;
+        const story = await loadVoiceStory(join(rawRoot, dir));
+        const indexPath = join(voiceRoot, voiceIndexPath(story.storyId));
+        if (!existsSync(indexPath)) continue;
+        const { index } = buildIndex(story, lineId =>
+            existsSync(join(voiceRoot, voiceLinePath(story.storyId, lineId)))
+        );
+        if (readFileSync(indexPath, 'utf8') !== serializeIndex(index)) {
+            stale += 1;
+            log(
+                `${indexPath} is out of date: re-run voice:generate for ${dir}`
+            );
+        }
+    }
+    return stale === 0 ? 0 : 1;
+}
+
+export async function runVoiceCli(
+    argv: string[],
+    io: VoiceCliIo = {}
+): Promise<number> {
+    const log = io.log ?? (line => console.log(line));
+    const { positionals, values } = parseArgs({
+        args: argv,
+        allowPositionals: true,
+        options: {
+            story: { type: 'string' },
+            scene: { type: 'string', multiple: true },
+            'dry-run': { type: 'boolean', default: false },
+            prune: { type: 'boolean', default: false },
+            'from-dir': { type: 'string' },
+            out: { type: 'string' },
+        },
+    });
+    if (positionals[0] === 'generate') return generate(values, io, log);
+    if (positionals[0] === 'check') return check(values, io, log);
+    log(USAGE);
+    return 2;
 }
 
 if ((import.meta as ImportMeta & { main?: boolean }).main) {

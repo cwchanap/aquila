@@ -10,88 +10,93 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getStoryContent } from '../../stories';
-import { parseVoiceCast, planVoiceLines, spokenText } from '../cast';
+import {
+    parseVoiceCast,
+    planVoiceScene,
+    spokenText,
+    voiceLineId,
+} from '../cast';
 import { ffmpegTranscode, runVoiceCli } from '../cli';
-import { hasStoryVoice, voiceLineId } from '../index';
+import { hasStoryVoice } from '../index';
 
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
 
 const role = { voiceId: 'v1', voiceName: 'Test' };
+const cast = (roles = {}) => ({
+    schemaVersion: 2 as const,
+    modelId: 'eleven_v4',
+    language: 'ja',
+    roles,
+});
 
 describe('voiceLineId', () => {
-    it('is stable for the same speaker and text, and changes with either', () => {
-        const line = { characterId: 'narrator', dialogue: '手機螢幕亮了。' };
-        expect(voiceLineId(line)).toBe(voiceLineId({ ...line }));
-        expect(voiceLineId(line)).toMatch(/^[0-9a-f]{14}$/);
-        expect(voiceLineId({ ...line, characterId: 'asakura_mio' })).not.toBe(
-            voiceLineId(line)
-        );
-        expect(voiceLineId({ ...line, dialogue: '手機螢幕亮了' })).not.toBe(
-            voiceLineId(line)
-        );
+    it('is stable for the same voice and prompt, and changes with either', () => {
+        const id = voiceLineId('v1', 'スマホの画面が光った。');
+        expect(id).toBe(voiceLineId('v1', 'スマホの画面が光った。'));
+        expect(id).toMatch(/^[0-9a-f]{14}$/);
+        expect(voiceLineId('v2', 'スマホの画面が光った。')).not.toBe(id);
+        expect(voiceLineId('v1', 'スマホの画面が光った')).not.toBe(id);
     });
 
-    it('lists the stories and languages that have voice', () => {
-        expect(hasStoryVoice('the_seventh_mirror', 'zh')).toBe(true);
-        expect(hasStoryVoice('the_seventh_mirror', 'en')).toBe(false);
-        expect(hasStoryVoice('train_adventure', 'zh')).toBe(false);
+    it('lists the stories that have voice', () => {
+        expect(hasStoryVoice('the_seventh_mirror')).toBe(true);
+        expect(hasStoryVoice('train_adventure')).toBe(false);
     });
 });
 
 describe('spokenText', () => {
-    it('strips the inner-monologue marker and uses the inner direction', () => {
+    it('takes inner monologue from the zh source line', () => {
+        const inner = {
+            ...role,
+            direction: '[calm]',
+            innerDirection: '[softly]',
+        };
         expect(
-            spokenText(
-                { dialogue: '（內心）第七天了。' },
-                { ...role, direction: '[calm]', innerDirection: '[softly]' }
-            )
-        ).toBe('[softly] 第七天了。');
+            spokenText({ dialogue: '（內心）第七天了。' }, '七日目。', inner)
+        ).toBe('[softly] 七日目。');
         expect(
-            spokenText(
-                { dialogue: '(内心) 起來吧。' },
-                { ...role, direction: '[calm]' }
-            )
-        ).toBe('[calm] 起來吧。');
+            spokenText({ dialogue: '(内心) 起來吧。' }, '起きよう。', role)
+        ).toBe('起きよう。');
+        expect(spokenText({ dialogue: '手機。' }, 'スマホ。', inner)).toBe(
+            '[calm] スマホ。'
+        );
     });
 
     it('normalizes ellipses and skips lines with nothing to say', () => {
-        expect(spokenText({ dialogue: '不要⋯⋯回頭。' }, role)).toBe(
-            '不要……回頭。'
-        );
-        expect(spokenText({ dialogue: '⋯⋯' }, role)).toBeNull();
-        expect(spokenText({ dialogue: '（內心）！？' }, role)).toBeNull();
+        expect(spokenText({ dialogue: '' }, 'だめ⋯⋯', role)).toBe('だめ……');
+        expect(spokenText({ dialogue: '' }, '⋯⋯', role)).toBeNull();
+        expect(spokenText({ dialogue: '' }, '', role)).toBeNull();
     });
 });
 
-describe('planVoiceLines', () => {
-    it('dedupes repeated lines and reports uncast speakers', () => {
-        const plan = planVoiceLines(
+describe('planVoiceScene', () => {
+    it('keeps one slot per line and reports uncast speakers', () => {
+        const plan = planVoiceScene(
             [
-                { characterId: 'narrator', dialogue: '什麼都沒有。' },
                 { characterId: 'narrator', dialogue: '什麼都沒有。' },
                 { characterId: 'message', dialogue: '簡訊' },
                 { dialogue: 'no speaker' },
+                { characterId: 'narrator', dialogue: '⋯⋯' },
             ],
-            { languageCode: 'zh', roles: { narrator: role } }
+            ['何もない。', 'メッセージ', 'x', '……'],
+            cast({ narrator: role })
         );
-        expect(plan.jobs).toHaveLength(1);
-        expect(plan.jobs[0]).toMatchObject({
+        expect(plan.slots.map(slot => slot?.text ?? null)).toEqual([
+            '何もない。',
+            null,
+            null,
+            null,
+        ]);
+        expect(plan.slots[0]).toMatchObject({
             characterId: 'narrator',
             voiceId: 'v1',
+            lineId: voiceLineId('v1', '何もない。'),
         });
         expect(plan.uncast).toEqual(['message']);
     });
 
     it('rejects a cast file with unknown fields', () => {
-        expect(() =>
-            parseVoiceCast({
-                schemaVersion: 1,
-                modelId: 'm',
-                locales: {},
-                extra: 1,
-            })
-        ).toThrow();
+        expect(() => parseVoiceCast({ ...cast(), extra: 1 })).toThrow();
     });
 });
 
@@ -110,21 +115,56 @@ describe('runVoiceCli', () => {
         'generate',
         '--story',
         'theSeventhMirror',
-        '--locale',
-        'zh',
         '--scene',
         'ch1_act1',
     ];
     const copyTranscode = (input: Uint8Array, out: string) =>
         writeFileSync(out, input);
+    const readIndex = (out: string) =>
+        JSON.parse(
+            readFileSync(join(out, 'the_seventh_mirror/index.json'), 'utf8')
+        );
+    /** A raw story folder with its own config, cast and optional script. */
+    const rawStory = (
+        rawRoot: string,
+        dir: string,
+        storyId: string,
+        script?: object
+    ) => {
+        mkdirSync(join(rawRoot, dir, 'docs'), { recursive: true });
+        writeFileSync(
+            join(rawRoot, dir, 'compiler.config.ts'),
+            `export default { storyId: '${storyId}' };\n`
+        );
+        writeFileSync(
+            join(rawRoot, dir, 'docs', 'voice-cast.json'),
+            JSON.stringify(cast())
+        );
+        if (script) {
+            writeFileSync(
+                join(rawRoot, dir, 'docs', 'voice-script.ja.json'),
+                JSON.stringify(script)
+            );
+        }
+    };
 
-    it('prints usage for missing arguments', async () => {
+    it('prints usage for a missing command or arguments', async () => {
         const log = vi.fn();
+        expect(await runVoiceCli([], { log })).toBe(2);
         expect(await runVoiceCli(['generate'], { log })).toBe(2);
-        expect(log.mock.calls[0][0]).toContain('Usage');
+        expect(log.mock.calls.every(([line]) => line.includes('Usage'))).toBe(
+            true
+        );
     });
 
-    it('dry-runs the Seventh Mirror cast against chapter 1 act 1', async () => {
+    it('logs to the console by default', async () => {
+        const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        expect(await runVoiceCli([])).toBe(2);
+        expect(spy.mock.calls[0][0]).toContain('Usage');
+        spy.mockRestore();
+    });
+
+    it('dry-runs the Japanese cast against chapter 1 act 1', async () => {
         const log = vi.fn();
         const out = tempDir();
         expect(
@@ -133,10 +173,12 @@ describe('runVoiceCli', () => {
         const plan = JSON.parse(log.mock.calls[0][0]);
         expect(plan).toMatchObject({
             storyId: 'the_seventh_mirror',
+            language: 'ja',
             modelId: 'eleven_v4',
+            lines: 46,
             uncast: [],
         });
-        expect(plan.pending.length).toBeGreaterThan(0);
+        expect(plan.pending[0].text).toBe('スマホの画面が光った。');
         expect(readdirSync(out)).toEqual([]);
     });
 
@@ -148,9 +190,6 @@ describe('runVoiceCli', () => {
             .mockImplementation(
                 async () => new Response(new Uint8Array([1, 2, 3]))
             );
-        const scene = getStoryContent('the_seventh_mirror', 'zh').dialogue
-            .ch1_act1;
-        const lines = new Set(scene.map(entry => voiceLineId(entry)));
 
         await runVoiceCli([...base, '--out', out], {
             fetch: fetchImpl as unknown as typeof fetch,
@@ -166,42 +205,47 @@ describe('runVoiceCli', () => {
         );
         expect(JSON.parse(init.body)).toMatchObject({
             model_id: 'eleven_v4',
-            language_code: 'zh',
+            language_code: 'ja',
         });
-        const index = JSON.parse(
-            readFileSync(join(out, 'the_seventh_mirror/zh/index.json'), 'utf8')
-        );
-        expect(index.lines.length).toBe(lines.size);
-        expect(fetchImpl).toHaveBeenCalledTimes(lines.size + 1);
+        const index = readIndex(out);
+        expect(index.language).toBe('ja');
+        expect(index.scenes.ch1_act1).toHaveLength(46);
+        expect(index.scenes.ch1_act1.every(Boolean)).toBe(true);
+        expect(fetchImpl).toHaveBeenCalledTimes(47);
+        expect(
+            await runVoiceCli(['check', '--out', out], { log: () => {} })
+        ).toBe(0);
     });
 
-    it('imports takes from a folder, keeps existing audio, and prunes orphans', async () => {
+    it('imports takes from a folder, keeps positions, and prunes orphans', async () => {
         const out = tempDir();
         const takes = tempDir();
-        const scene = getStoryContent('the_seventh_mirror', 'zh').dialogue
-            .ch1_act1;
-        const first = voiceLineId(scene[0]);
+        const log = vi.fn();
+        await runVoiceCli([...base, '--dry-run', '--out', out], { log });
+        const first = JSON.parse(log.mock.calls[0][0]).pending[0].lineId;
         writeFileSync(join(takes, `${first}.mp3`), 'take');
-        const localeDir = join(out, 'the_seventh_mirror/zh');
+        const storyDir = join(out, 'the_seventh_mirror');
         await runVoiceCli([...base, '--out', out, '--from-dir', takes], {
             transcode: copyTranscode,
             log: () => {},
         });
-        writeFileSync(join(localeDir, '00000000000000.mp3'), 'stale');
+        writeFileSync(join(storyDir, '00000000000000.mp3'), 'stale');
 
-        const log = vi.fn();
+        log.mockClear();
         await runVoiceCli(
             [...base, '--out', out, '--from-dir', takes, '--prune'],
-            {
-                transcode: copyTranscode,
-                log,
-            }
+            { transcode: copyTranscode, log }
         );
 
-        expect(readdirSync(localeDir).sort()).toEqual([
+        expect(readdirSync(storyDir).sort()).toEqual([
             `${first}.mp3`,
             'index.json',
         ]);
+        const slots = readIndex(out).scenes.ch1_act1;
+        expect(slots[0]).toBe(first);
+        expect(slots.slice(1).every((id: string | null) => id === null)).toBe(
+            true
+        );
         expect(log.mock.calls.at(-1)?.[0]).toContain('1 orphaned (pruned)');
     });
 
@@ -228,76 +272,61 @@ describe('runVoiceCli', () => {
         expect(fetchImpl).toHaveBeenCalledOnce();
     });
 
-    it('rejects a missing cast, locale, text, or scene', async () => {
-        const rawRoot = tempDir();
-        const story = (storyId: string, locales: object) => {
-            const dir = join(rawRoot, storyId);
-            mkdirSync(join(dir, 'docs'), { recursive: true });
-            writeFileSync(
-                join(dir, 'compiler.config.ts'),
-                `export default { storyId: '${storyId}' };\n`
-            );
-            writeFileSync(
-                join(dir, 'docs', 'voice-cast.json'),
-                JSON.stringify({ schemaVersion: 1, modelId: 'm', locales })
-            );
-        };
-        story('the_seventh_mirror', {
-            en: { languageCode: 'en', roles: {} },
-        });
+    it('rejects a missing cast, an unknown scene, or a scene with no script', async () => {
         const run = (args: string[]) =>
-            runVoiceCli(args, { rawRoot, log: () => {} });
-
+            runVoiceCli(['generate', ...args, '--dry-run'], { log: () => {} });
         await expect(
-            run([
-                'generate',
-                '--story',
-                'nope',
-                '--locale',
-                'zh',
-                '--scene',
-                'x',
-            ])
-        ).rejects.toThrow('No voice cast');
-        const seventh = ['generate', '--story', 'the_seventh_mirror'];
-        await expect(
-            run([...seventh, '--locale', 'ja', '--scene', 'x'])
-        ).rejects.toThrow('has no "ja" cast');
-        await expect(
-            run([...seventh, '--locale', 'en', '--scene', 'x'])
-        ).rejects.toThrow('has no en text');
-        await expect(
-            runVoiceCli([...base, '--scene', 'nope', '--dry-run'], {
-                log: () => {},
+            runVoiceCli(['generate', '--story', 'nope', '--scene', 'x'], {
+                rawRoot: tempDir(),
             })
+        ).rejects.toThrow('No voice cast');
+        await expect(
+            run(['--story', 'theSeventhMirror', '--scene', 'nope'])
         ).rejects.toThrow('has no scene nope');
+        await expect(
+            run(['--story', 'theSeventhMirror', '--scene', 'ch1_act2'])
+        ).rejects.toThrow('no ja text for ch1_act2');
     });
 
-    it('reminds you to register a story the reader does not voice yet', async () => {
+    it('rejects a voice script that no longer matches the zh text', async () => {
         const rawRoot = tempDir();
-        const dir = join(rawRoot, 'train');
-        mkdirSync(join(dir, 'docs'), { recursive: true });
-        writeFileSync(
-            join(dir, 'compiler.config.ts'),
-            "export default { storyId: 'train_adventure' };\n"
+        const run = () =>
+            runVoiceCli(
+                [
+                    'generate',
+                    '--story',
+                    'mirror',
+                    '--scene',
+                    'ch1_act1',
+                    '--dry-run',
+                ],
+                { rawRoot, log: () => {} }
+            );
+        rawStory(rawRoot, 'mirror', 'the_seventh_mirror', {
+            schemaVersion: 1,
+            scenes: { ch1_act1: [{ zh: '不是這句。', ja: '違う。' }] },
+        });
+        await expect(run()).rejects.toThrow(
+            'no longer matches the zh text at line 0'
         );
-        writeFileSync(
-            join(dir, 'docs', 'voice-cast.json'),
-            JSON.stringify({
-                schemaVersion: 1,
-                modelId: 'm',
-                locales: { zh: { languageCode: 'zh', roles: {} } },
-            })
-        );
+
+        rawStory(rawRoot, 'mirror', 'the_seventh_mirror', {
+            schemaVersion: 1,
+            scenes: { nope: [] },
+        });
+        await expect(run()).rejects.toThrow('has no scene nope');
+    });
+
+    it('voices from the reader text when the story has that language, and reminds you to register it', async () => {
+        const rawRoot = tempDir();
+        rawStory(rawRoot, 'elevator', 'elevator_game');
         const log = vi.fn();
 
         await runVoiceCli(
             [
                 'generate',
                 '--story',
-                'train',
-                '--locale',
-                'zh',
+                'elevator',
                 '--scene',
                 'act1',
                 '--out',
@@ -306,14 +335,22 @@ describe('runVoiceCli', () => {
             { rawRoot, log }
         );
 
-        expect(log.mock.calls.at(-1)?.[0]).toContain('STORY_VOICE_LOCALES');
+        const lines = log.mock.calls.map(([line]) => line as string);
+        expect(lines.at(-2)).toMatch(
+            /0 written, 0 already voiced, 0 orphaned; uncast: /
+        );
+        expect(lines.at(-1)).toContain('STORY_VOICE_LANGUAGE');
     });
 
-    it('logs to the console by default', async () => {
-        const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
-        expect(await runVoiceCli([])).toBe(2);
-        expect(spy.mock.calls[0][0]).toContain('Usage');
-        spy.mockRestore();
+    it('checks committed indexes against the story', async () => {
+        expect(await runVoiceCli(['check'], { log: () => {} })).toBe(0);
+
+        const out = tempDir();
+        mkdirSync(join(out, 'the_seventh_mirror'));
+        writeFileSync(join(out, 'the_seventh_mirror/index.json'), '{}\n');
+        const log = vi.fn();
+        expect(await runVoiceCli(['check', '--out', out], { log })).toBe(1);
+        expect(log.mock.calls[0][0]).toContain('out of date');
     });
 });
 

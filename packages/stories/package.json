@@ -34,7 +34,8 @@
     "audio:report": "bun src/compiler/cli.ts --report",
     "audio:generate": "bun src/audio-generation/cli.ts generate",
     "audio:select": "bun src/audio-generation/cli.ts select",
-    "voice:generate": "bun src/voice/cli.ts generate"
+    "voice:generate": "bun src/voice/cli.ts generate",
+    "voice:check": "bun src/voice/cli.ts check"
   },
   "dependencies": {
     "zod": "^3.24.2"

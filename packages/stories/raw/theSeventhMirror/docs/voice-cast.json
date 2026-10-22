@@ -1,28 +1,24 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "modelId": "eleven_v4",
-  "locales": {
-    "zh": {
-      "languageCode": "zh",
-      "roles": {
-        "narrator": {
-          "voiceId": "DA2aDl5DPFqDvHqbzlkZ",
-          "voiceName": "Andrew - gentle & Friendly",
-          "notes": "Calm young Taiwanese Mandarin male; steady close-third narration that stays distinct from Mio."
-        },
-        "asakura_mio": {
-          "voiceId": "cXGZGSG0udxZ0hTfyBnC",
-          "voiceName": "Chloe - 溫柔、細膩、安心、真誠、親近",
-          "innerDirection": "[softly]",
-          "notes": "19, precise and restrained, worn down by the loop. Inner monologue is softer than speech."
-        },
-        "voice": {
-          "voiceId": "s2LjOZIlsH2Yu4p6MtAK",
-          "voiceName": "Bobo - Warm, Friendly, Neutral",
-          "direction": "[whispers]",
-          "notes": "Generic role for every \"…聲音\" speaker. In chapter 1 it is the dream voice that sounds neither male nor female."
-        }
-      }
+  "language": "ja",
+  "roles": {
+    "narrator": {
+      "voiceId": "3VouIDzZzPEjDgmtbXBJ",
+      "voiceName": "Hadou v3 – Calm Japanese Male Voice",
+      "notes": "Calm, soft-spoken young male; steady close-third narration that stays clearly apart from Mio."
+    },
+    "asakura_mio": {
+      "voiceId": "b02kNc4YmZR6NvjjXr2a",
+      "voiceName": "Haruno - Calm & Low",
+      "innerDirection": "[softly]",
+      "notes": "19, precise and restrained, worn down by the loop: a calm, low young woman rather than a bright anime heroine. Inner monologue is softer than speech."
+    },
+    "voice": {
+      "voiceId": "XKJWAGK4dewYkzr1hsNs",
+      "voiceName": "Kei - Light, androgynous, anime style",
+      "direction": "[whispers]",
+      "notes": "Generic role for every \"…聲音\" speaker. In chapter 1 it is the dream voice that sounds neither male nor female."
     }
   }
 }

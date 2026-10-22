@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import type { DialogueEntry } from '../types';
-import { voiceLineId } from './index';
 
-export const VOICE_CAST_SCHEMA_VERSION = 1 as const;
+export const VOICE_CAST_SCHEMA_VERSION = 2 as const;
 
 const VoiceRoleSchema = z
     .object({
@@ -19,21 +18,14 @@ const VoiceRoleSchema = z
     .strict();
 export type VoiceRole = z.infer<typeof VoiceRoleSchema>;
 
-const VoiceLocaleCastSchema = z
-    .object({
-        /** ISO 639-1 code sent to ElevenLabs as `language_code`. */
-        languageCode: z.string().min(2),
-        /** Keyed by compiled characterId; uncast characters stay silent. */
-        roles: z.record(z.string(), VoiceRoleSchema),
-    })
-    .strict();
-export type VoiceLocaleCast = z.infer<typeof VoiceLocaleCastSchema>;
-
 export const VoiceCastSchema = z
     .object({
         schemaVersion: z.literal(VOICE_CAST_SCHEMA_VERSION),
         modelId: z.string().min(1),
-        locales: z.record(z.string(), VoiceLocaleCastSchema),
+        /** ISO 639-1 code of the spoken language, sent as `language_code`. */
+        language: z.string().min(2),
+        /** Keyed by compiled characterId; uncast characters stay silent. */
+        roles: z.record(z.string(), VoiceRoleSchema),
     })
     .strict();
 export type VoiceCast = z.infer<typeof VoiceCastSchema>;
@@ -42,19 +34,56 @@ export function parseVoiceCast(value: unknown): VoiceCast {
     return VoiceCastSchema.parse(value);
 }
 
+/**
+ * Spoken text for stories with no reader text in the voice language:
+ * `docs/voice-script.<language>.json`, one `{ zh, <language> }` pair per zh line
+ * of each voiced scene. The zh half pins each translation to its source line.
+ */
+export const VoiceScriptSchema = z
+    .object({
+        schemaVersion: z.literal(1),
+        scenes: z.record(
+            z.string(),
+            z.array(z.object({ zh: z.string() }).catchall(z.string()))
+        ),
+    })
+    .strict();
+export type VoiceScript = z.infer<typeof VoiceScriptSchema>;
+
+// cyrb53: a small, fast 53-bit string hash; plenty for a story's lines.
+function cyrb53(text: string): number {
+    let h1 = 0xdeadbeef;
+    let h2 = 0x41c6ce57;
+    for (let i = 0; i < text.length; i += 1) {
+        const ch = text.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+
+/** A take is named by the voice and the exact prompt it was made from, so a
+ *  recast, a retranslation or a new direction tag all ask for a new take. */
+export function voiceLineId(voiceId: string, text: string): string {
+    return cyrb53(`${voiceId}\u0000${text}`).toString(16).padStart(14, '0');
+}
+
 const INNER_MARKER = /^\s*[（(]\s*[內内]心\s*[）)]\s*/;
 const SPEAKABLE = /[\p{L}\p{N}]/u;
 
-/** The text sent to the TTS model for one line, or null if nothing to say. */
+/** The prompt sent to the TTS model for one line, or null if nothing to say.
+ *  Inner monologue is marked on the zh source line. */
 export function spokenText(
-    entry: Pick<DialogueEntry, 'dialogue'>,
+    source: Pick<DialogueEntry, 'dialogue'>,
+    spoken: string,
     role: VoiceRole
 ): string | null {
-    const inner = INNER_MARKER.test(entry.dialogue);
-    const text = entry.dialogue
-        .replace(INNER_MARKER, '')
-        .replace(/⋯/g, '…')
-        .trim();
+    const inner = INNER_MARKER.test(source.dialogue);
+    const text = spoken.replace(INNER_MARKER, '').replace(/⋯/g, '…').trim();
     if (!SPEAKABLE.test(text)) return null;
     const direction = inner
         ? (role.innerDirection ?? role.direction)
@@ -70,37 +99,34 @@ export type VoiceLineJob = {
 };
 
 export type VoiceScenePlan = {
-    jobs: VoiceLineJob[];
+    /** One per dialogue line, aligned with the scene; null means silent. */
+    slots: (VoiceLineJob | null)[];
     /** characterIds that speak in the scene but have no role in the cast. */
     uncast: string[];
 };
 
-/** One job per distinct spoken line; repeated lines share one file. */
-export function planVoiceLines(
-    entries: readonly DialogueEntry[],
-    cast: VoiceLocaleCast
+export function planVoiceScene(
+    source: readonly DialogueEntry[],
+    spoken: readonly string[],
+    cast: VoiceCast
 ): VoiceScenePlan {
-    const jobs = new Map<string, VoiceLineJob>();
     const uncast = new Set<string>();
-    for (const entry of entries) {
+    const slots = source.map((entry, index) => {
         const characterId = entry.characterId;
-        if (!characterId) continue;
+        if (!characterId) return null;
         const role = cast.roles[characterId];
         if (!role) {
             uncast.add(characterId);
-            continue;
+            return null;
         }
-        const text = spokenText(entry, role);
-        if (text === null) continue;
-        const lineId = voiceLineId(entry);
-        if (!jobs.has(lineId)) {
-            jobs.set(lineId, {
-                lineId,
-                characterId,
-                voiceId: role.voiceId,
-                text,
-            });
-        }
-    }
-    return { jobs: [...jobs.values()], uncast: [...uncast].sort() };
+        const text = spokenText(entry, spoken[index], role);
+        if (text === null) return null;
+        return {
+            lineId: voiceLineId(role.voiceId, text),
+            characterId,
+            voiceId: role.voiceId,
+            text,
+        };
+    });
+    return { slots, uncast: [...uncast].sort() };
 }

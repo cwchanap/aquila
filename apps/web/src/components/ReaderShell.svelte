@@ -553,9 +553,9 @@
       }
     }
 
-    // Voice follows the line on screen, in the language being read.
+    // Voice follows the line on screen; one dub plays for every language.
     if (readerMode === 'visual' && voiceEnabled) {
-      voicePlayer.play(dialogue[dialogueIndex]);
+      voicePlayer.play(nextPosition.sceneId, dialogueIndex);
     } else {
       voicePlayer.stop();
     }
@@ -599,7 +599,7 @@
 
   $effect(() => {
     if (readerMode === 'visual' && voiceEnabled && storyId) {
-      void voicePlayer.load(storyId, textLocale);
+      void voicePlayer.load(storyId);
     }
   });
 

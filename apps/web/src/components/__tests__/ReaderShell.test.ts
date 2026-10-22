@@ -712,7 +712,7 @@ describe('ReaderShell', () => {
         expect(sfx.player.play).not.toHaveBeenCalled();
     });
 
-    it('speaks each new visual line and stays quiet in Text mode', async () => {
+    it('speaks each new visual line by position and stays quiet in Text mode', async () => {
         stubMatchMedia(false);
         readerState.dialogue = mockDialogue;
         const voice = {
@@ -733,10 +733,10 @@ describe('ReaderShell', () => {
         expect(voice.play).not.toHaveBeenCalled();
 
         await chooseReaderMode('Visual Novel');
-        expect(voice.load).toHaveBeenCalledWith('the_seventh_mirror', 'zh');
+        expect(voice.load).toHaveBeenCalledWith('the_seventh_mirror');
         readerState.dialogueIndex = 2;
         await tick();
-        expect(voice.play).toHaveBeenCalledWith(mockDialogue[2]);
+        expect(voice.play).toHaveBeenCalledWith(readerState.currentSceneId, 2);
 
         await chooseReaderMode('Text');
         expect(voice.stop).toHaveBeenCalled();

@@ -1,5 +1,12 @@
 import { createHash } from 'node:crypto';
-import { cp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import {
+    cp,
+    mkdir,
+    readFile,
+    readdir,
+    stat,
+    writeFile,
+} from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import {
     parseActiveReleasePointer,
@@ -64,9 +71,7 @@ async function publisherInputPaths(): Promise<string[]> {
         recursive: true,
     });
     const webRequire = createRequire(import.meta.url);
-    const publisherRequire = createRequire(
-        join(publisherRoot, 'package.json')
-    );
+    const publisherRequire = createRequire(join(publisherRoot, 'package.json'));
     return [
         join(publisherRoot, 'package.json'),
         webRequire.resolve('sharp/package.json'),
@@ -96,10 +101,7 @@ async function storyInputHashes(
         const plan = parseStoryAssetReleasePlan(
             JSON.parse(await readFile(planPath, 'utf8'))
         );
-        const catalog = await discoverAuthoringCatalog(
-            repositoryRoot,
-            storyId
-        );
+        const catalog = await discoverAuthoringCatalog(repositoryRoot, storyId);
         const paths = [
             planPath,
             resolve(mediaRoot, storyId, 'covers/cover.png'),
@@ -172,6 +174,44 @@ async function bundledOutputsExist(storyId: string): Promise<boolean> {
         return true;
     } catch {
         return false;
+    }
+}
+
+// Publish/ensure mirror the deliverable tree into public/, and the dev
+// server serves that copy — not the staging store. A torn mirror (partial
+// clean, interrupted cp, deleted object) breaks readers while the store is
+// still intact, so --verify also requires every verified store byte to exist
+// under public/assets with identical content. Byte-equality against the
+// deep-verified store transitively covers decode/dimension/encoding checks
+// the public tree cannot express (it holds no `.publisher-*` sidecars, so
+// the publisher's own verify cannot run against it). Extra public files are
+// tolerated: `cp` merges without cleaning, and the runtime only reads
+// manifest-referenced paths.
+async function assertPublicMirror(): Promise<void> {
+    const storeVn = join(storeRoot, 'vn');
+    const queue: string[] = [storeVn];
+    while (queue.length > 0) {
+        const dir = queue.pop()!;
+        for (const entry of await readdir(dir, { withFileTypes: true })) {
+            const storePath = join(dir, entry.name);
+            if (entry.isDirectory()) {
+                queue.push(storePath);
+                continue;
+            }
+            if (!entry.isFile()) continue;
+            const rel = relative(storeVn, storePath);
+            let publicHash: string | null = null;
+            try {
+                publicHash = await sha256File(join(publicRoot, 'vn', rel));
+            } catch {
+                // Missing or unreadable public file — reported below.
+            }
+            if (publicHash !== (await sha256File(storePath))) {
+                throw new Error(
+                    `public/assets/vn/${rel} is missing or differs from the verified store`
+                );
+            }
+        }
     }
 }
 
@@ -327,4 +367,8 @@ for (const storyId of BUNDLED_VISUAL_STORY_IDS) {
         await writeStamps(stamps);
     }
     console.log(`${storyId}: ${report.status}; cover verified`);
+}
+if (verifyOnly) {
+    await assertPublicMirror();
+    console.log('public/assets delivery tree verified');
 }

@@ -27,8 +27,9 @@ bun --filter web verify:short-story-assets
 The build command runs the existing publisher against the local public asset
 directory, retaining immutable object and release filenames and updating only the
 five local pointers. It also makes 480 by 720 WebP covers. The verify command
-checks release integrity and decodes every image, then checks all cover formats
-and dimensions. The web `build` script runs the asset build automatically, so
+checks release integrity and decodes every image, requires the public/assets
+delivery tree to mirror those verified bytes exactly, then checks all cover
+formats and dimensions. The web `build` script runs the asset build automatically, so
 deploys need no extra configuration. `bun dev` runs the build script in
 `--ensure` mode first: it republishes only a story whose pointer, manifest,
 objects, or cover are missing or whose inputs (release plan, generated

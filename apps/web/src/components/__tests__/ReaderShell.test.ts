@@ -716,7 +716,7 @@ describe('ReaderShell', () => {
         stubMatchMedia(false);
         readerState.dialogue = mockDialogue;
         const voice = {
-            load: vi.fn(() => Promise.resolve()),
+            load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
@@ -734,6 +734,12 @@ describe('ReaderShell', () => {
 
         await chooseReaderMode('Visual Novel');
         expect(voice.load).toHaveBeenCalledWith('the_seventh_mirror');
+        await tick();
+        // The line already on screen speaks once its index has loaded.
+        expect(voice.play).toHaveBeenLastCalledWith(
+            readerState.currentSceneId,
+            1
+        );
         readerState.dialogueIndex = 2;
         await tick();
         expect(voice.play).toHaveBeenCalledWith(readerState.currentSceneId, 2);
@@ -747,7 +753,7 @@ describe('ReaderShell', () => {
         readerState.dialogue = mockDialogue;
         localStorage.setItem(READER_MODE_KEY, 'visual');
         const voice = {
-            load: vi.fn(() => Promise.resolve()),
+            load: vi.fn(() => Promise.resolve(false)),
             play: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),

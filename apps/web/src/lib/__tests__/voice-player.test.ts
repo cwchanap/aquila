@@ -25,7 +25,7 @@ describe('createVoicePlayer', () => {
         const fetchImpl = vi.fn(async () => indexResponse([FIRST, SECOND]));
         const player = createVoicePlayer({ createAudio, fetchImpl });
 
-        await player.load('the_seventh_mirror');
+        await expect(player.load('the_seventh_mirror')).resolves.toBe(true);
         player.play('ch1_act1', 1);
 
         expect(fetchImpl).toHaveBeenCalledWith(
@@ -43,7 +43,7 @@ describe('createVoicePlayer', () => {
         const fetchImpl = vi.fn(async () => indexResponse([FIRST, null]));
         const player = createVoicePlayer({ createAudio, fetchImpl });
         await player.load('the_seventh_mirror');
-        await player.load('the_seventh_mirror');
+        await expect(player.load('the_seventh_mirror')).resolves.toBe(false);
 
         player.play('ch1_act1', 0);
         player.play('ch1_act1', 1);
@@ -97,7 +97,7 @@ describe('createVoicePlayer', () => {
         const slow = player.load('the_seventh_mirror');
         await player.load('train_adventure');
         release(indexResponse([FIRST]));
-        await slow;
+        await expect(slow).resolves.toBe(false);
         player.play('ch1_act1', 0);
 
         expect(createAudio).not.toHaveBeenCalled();

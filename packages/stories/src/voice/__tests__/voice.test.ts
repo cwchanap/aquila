@@ -62,6 +62,17 @@ describe('spokenText', () => {
         );
     });
 
+    it('never speaks the ja inner monologue marker', () => {
+        const inner = { ...role, innerDirection: '[softly]' };
+        expect(
+            spokenText(
+                { dialogue: '（內心）蕪菁。' },
+                '（心の声）かぶ。',
+                inner
+            )
+        ).toBe('[softly] かぶ。');
+    });
+
     it('normalizes ellipses and skips lines with nothing to say', () => {
         expect(spokenText({ dialogue: '' }, 'だめ⋯⋯', role)).toBe('だめ……');
         expect(spokenText({ dialogue: '' }, '⋯⋯', role)).toBeNull();

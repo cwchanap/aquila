@@ -73,6 +73,8 @@ export function voiceLineId(voiceId: string, text: string): string {
 }
 
 const INNER_MARKER = /^\s*[（(]\s*[內内]心\s*[）)]\s*/;
+// The ja reader text marks inner monologue as （心の声）; never speak either marker.
+const SPOKEN_MARKER = /^\s*[（(]\s*(?:[內内]心|心の声)\s*[）)]\s*/;
 const SPEAKABLE = /[\p{L}\p{N}]/u;
 
 /** The prompt sent to the TTS model for one line, or null if nothing to say.
@@ -83,7 +85,7 @@ export function spokenText(
     role: VoiceRole
 ): string | null {
     const inner = INNER_MARKER.test(source.dialogue);
-    const text = spoken.replace(INNER_MARKER, '').replace(/⋯/g, '…').trim();
+    const text = spoken.replace(SPOKEN_MARKER, '').replace(/⋯/g, '…').trim();
     if (!SPEAKABLE.test(text)) return null;
     const direction = inner
         ? (role.innerDirection ?? role.direction)

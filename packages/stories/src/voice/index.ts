@@ -15,6 +15,7 @@ export const VOICE_INDEX_SCHEMA_VERSION = 2 as const;
  *  voice files for these, so add a story here when its first scene is voiced. */
 export const STORY_VOICE_LANGUAGE: Readonly<Record<string, string>> = {
     the_seventh_mirror: 'ja',
+    demon_lord_is_hiring: 'ja',
 };
 
 export function hasStoryVoice(storyId: string): boolean {

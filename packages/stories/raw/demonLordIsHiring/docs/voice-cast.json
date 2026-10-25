@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "modelId": "eleven_v4",
+  "language": "ja",
+  "roles": {
+    "demon_lord": {
+      "voiceId": "UUpoAQhpz37lNIWNVLoF",
+      "voiceName": "Kuro — Mature Anime Gentleman",
+      "innerDirection": "[softly]",
+      "notes": "Three centuries on the throne, tired and never joking: a calm, low, mature voice that plays every absurd line straight. Inner monologue is softer than speech. Narration stays silent."
+    },
+    "serin": {
+      "voiceId": "vsOHlw2syHreLeo0GXA1",
+      "voiceName": "Chihiro - Elegant Female Narrator",
+      "notes": "110 years as his secretary, never flustered: calm, elegant and businesslike."
+    },
+    "aldric": {
+      "voiceId": "MvMFbhzZT2zcr5QsG1xY",
+      "voiceName": "Masa-Warm Japanese Radio Host",
+      "notes": "Late-30s paladin, extremely polite and capable; asks about severance pay as earnestly as tactics. Warm, clear and upright."
+    },
+    "toby": {
+      "voiceId": "wGSNAQwhUbFf1J43d5Tw",
+      "voiceName": "Toru-Neutral boy",
+      "notes": "Nine and a half, earnest and blunt. The library has almost no child voices; this boy-to-young-man voice was the closest."
+    },
+    "mysterious_applicant": {
+      "voiceId": "vsOHlw2syHreLeo0GXA1",
+      "voiceName": "Chihiro - Elegant Female Narrator",
+      "direction": "[cheerfully]",
+      "notes": "Serin in a blonde wig, so the same voice as Serin with a brighter put-on tone: the listener should hear it is her."
+    }
+  }
+}

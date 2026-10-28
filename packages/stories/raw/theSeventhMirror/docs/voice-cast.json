@@ -19,6 +19,11 @@
       "voiceName": "Kei - Light, androgynous, anime style",
       "direction": "[whispers]",
       "notes": "Generic role for every \"…聲音\" speaker. In chapter 1 it is the dream voice that sounds neither male nor female."
+    },
+    "asakura_yuma": {
+      "voiceId": "lfG6BR3yQRoBrnUm4Z8N",
+      "voiceName": "Minto - Bright & Expressive Japanese Male Voice",
+      "notes": "15, quiet and sharp, speaks in very short sentences: a light, youthful boy's voice, clearly higher and brighter than the calm male narrator. Chosen from the library without an audition; recast if it sounds too cheerful for Yuma."
     }
   }
 }

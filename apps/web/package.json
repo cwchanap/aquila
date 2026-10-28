@@ -35,7 +35,7 @@
     "@astrojs/vercel": "^8.2.6",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^5.13.3",
-    "better-auth": "^1.7.10",
+    "better-auth": "^1.7.12",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

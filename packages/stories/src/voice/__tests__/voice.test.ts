@@ -295,8 +295,8 @@ describe('runVoiceCli', () => {
             run(['--story', 'theSeventhMirror', '--scene', 'nope'])
         ).rejects.toThrow('has no scene nope');
         await expect(
-            run(['--story', 'theSeventhMirror', '--scene', 'ch1_act2'])
-        ).rejects.toThrow('no ja text for ch1_act2');
+            run(['--story', 'theSeventhMirror', '--scene', 'ch28_act8'])
+        ).rejects.toThrow('no ja text for ch28_act8');
     });
 
     it('rejects a voice script that no longer matches the zh text', async () => {

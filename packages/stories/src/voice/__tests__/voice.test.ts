@@ -186,10 +186,10 @@ describe('runVoiceCli', () => {
             storyId: 'the_seventh_mirror',
             language: 'ja',
             modelId: 'eleven_v4',
-            lines: 46,
-            uncast: [],
+            lines: 8,
+            uncast: ['narrator'],
         });
-        expect(plan.pending[0].text).toBe('スマホの画面が光った。');
+        expect(plan.pending[0].text).toBe('[whispers] だめ……振り返らないで。');
         expect(readdirSync(out)).toEqual([]);
     });
 
@@ -221,8 +221,8 @@ describe('runVoiceCli', () => {
         const index = readIndex(out);
         expect(index.language).toBe('ja');
         expect(index.scenes.ch1_act1).toHaveLength(46);
-        expect(index.scenes.ch1_act1.every(Boolean)).toBe(true);
-        expect(fetchImpl).toHaveBeenCalledTimes(47);
+        expect(index.scenes.ch1_act1.filter(Boolean)).toHaveLength(8);
+        expect(fetchImpl).toHaveBeenCalledTimes(9);
         expect(
             await runVoiceCli(['check', '--out', out], { log: () => {} })
         ).toBe(0);
@@ -253,10 +253,7 @@ describe('runVoiceCli', () => {
             'index.json',
         ]);
         const slots = readIndex(out).scenes.ch1_act1;
-        expect(slots[0]).toBe(first);
-        expect(slots.slice(1).every((id: string | null) => id === null)).toBe(
-            true
-        );
+        expect(slots.filter(Boolean)).toEqual([first]);
         expect(log.mock.calls.at(-1)?.[0]).toContain('1 orphaned (pruned)');
     });
 

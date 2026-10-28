@@ -49,7 +49,7 @@ The JSON output lists `uncast` characterIds and every `pending` line with its ex
 
 Casting rules:
 - One voice per character for the whole story. Recasting gives every one of that character's lines a new id, so they all need new takes.
-- The narrator must sound clearly different from the protagonist. For example, The Seventh Mirror pairs a male narrator with a female lead.
+- Narration stays silent: don't cast a `narrator` role. Voice is for characters and inner monologue only (Hapadona's call, 2026-10-28).
 - `direction` is an audio tag put before every line, e.g. `[whispers]`. `innerDirection` is the tag for `（內心）` inner monologue, e.g. `[softly]`. Tags describe *how a line is spoken*, never stage actions. Keep them to one or two plain words.
 - Role ids come from `compiler.config.ts` `rolePatterns`. `voice` catches every `…聲音` speaker. If a chapter has a different "voice" speaker that needs its own sound, add a dedicated role pattern first and recompile.
 - Leave `message` (texts on phone screens, notes) uncast unless the scene really reads them aloud.

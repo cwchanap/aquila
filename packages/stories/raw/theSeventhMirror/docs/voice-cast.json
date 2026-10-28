@@ -3,11 +3,6 @@
   "modelId": "eleven_v4",
   "language": "ja",
   "roles": {
-    "narrator": {
-      "voiceId": "3VouIDzZzPEjDgmtbXBJ",
-      "voiceName": "Hadou v3 – Calm Japanese Male Voice",
-      "notes": "Calm, soft-spoken young male; steady close-third narration that stays clearly apart from Mio."
-    },
     "asakura_mio": {
       "voiceId": "b02kNc4YmZR6NvjjXr2a",
       "voiceName": "Haruno - Calm & Low",

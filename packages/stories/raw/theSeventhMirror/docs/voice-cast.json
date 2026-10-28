@@ -19,6 +19,16 @@
       "voiceId": "lfG6BR3yQRoBrnUm4Z8N",
       "voiceName": "Minto - Bright & Expressive Japanese Male Voice",
       "notes": "15, quiet and sharp, speaks in very short sentences: a light, youthful boy's voice, clearly higher and brighter than the calm male narrator. Chosen from the library without an audition; recast if it sounds too cheerful for Yuma."
+    },
+    "police_officer": {
+      "voiceId": "qrxCoXetZMROJh88P461",
+      "voiceName": "Jiro - Polite, Clear Business Presenter",
+      "notes": "Generic role for every unnamed police officer. Polite keigo and a flat, procedural tone: the desk officer who is courteous and closes every door."
+    },
+    "kusakube_satoru": {
+      "voiceId": "AzXhp77fg6sHrgy2EtLn",
+      "voiceName": "谷口 - 落ち着いたハスキーな低音",
+      "notes": "About 45, Mio's late father's old partner: a low, husky, tired voice with few words. Gruff protector who cannot explain himself."
     }
   }
 }

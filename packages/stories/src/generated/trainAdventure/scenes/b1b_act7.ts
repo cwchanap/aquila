@@ -13,7 +13,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ItoMakoto, character: "煩躁丈夫", dialogue: "(憤怒地大吼)都是你這種膽小鬼!剛才在「寂海」站屁都不敢放一個!現在就知道鬼吼鬼叫!", portrait: Portrait.ItoMakoto_Base },
     { characterId: CharacterId.NakamuraHayato, character: "自私中年男", dialogue: "(尖聲反駁)關我什麼事?有本事你下去啊!我看那個自己跑下去的傢伙也是個傻子,一個人跑下去送死!", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.ItoMakoto, character: "煩躁丈夫", dialogue: "(轉向另一邊)還有你!管好你的小孩!哭哭哭,哭得人心煩!", portrait: Portrait.ItoMakoto_Base },
-    { characterId: CharacterId.KobayashiYudai, character: "沉穩父親", dialogue: "(將家人護在身後,憤怒地回擊)你吼什麼!孩子害怕哭一下怎麼了?你有時間在這裡亂罵人,不如想想怎麼離開這裡!" },
+    { characterId: CharacterId.KobayashiYudai, character: "沉穩父親", dialogue: "(將家人護在身後,憤怒地回擊)你吼什麼!孩子害怕哭一下怎麼了?你有時間在這裡亂罵人,不如想想怎麼離開這裡!", portrait: Portrait.KobayashiYudai_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂內的爭執愈演愈烈。恐懼和絕望讓這些人互相傷害,試圖找一個發洩的出口。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰對那些無意義的爭執充耳不聞。他轉過身,開始仔細打量眼前的月台。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "月台很寬闊,但空無一人。古老的石柱支撐著高聳的屋頂,牆面上刻滿了看不懂的符號。地面上積滿了厚厚的灰塵,沒有任何腳印——除了他自己剛剛留下的。" },

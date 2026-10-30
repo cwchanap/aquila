@@ -108,6 +108,10 @@
 - **ID**: `kobayashi_yudai`
 - **Aliases**: 沉穩父親, 雄大, 雄大的聲音
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 35-year-old Japanese father, short neat black hair, calm dependable face with a protective alert gaze, light zip-up jacket over a plain polo shirt, smartphone held in one hand, steady responsible posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 14. 小林陽菜（Kobayashi Hina）
 
 - **ID**: `kobayashi_hina`

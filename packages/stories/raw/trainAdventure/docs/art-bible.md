@@ -17,11 +17,13 @@ That is 16. Anyone shown standing in a scene stands next to their own seat.
 
 ## Camera angles
 
-Every train scene uses one of three fixed angles, each with its own empty reference image under `packages/assets/media/train_adventure/backgrounds/_reference/`. Pass the matching reference first when generating a scene.
+Every Act 1-3 train scene uses one of three fixed angles, each with its own empty reference image under `packages/assets/media/train_adventure/backgrounds/_reference/`. Pass the matching reference first when generating a scene.
 
-- **A, down the length** (`carriage_master.png`): camera at the door end looking toward the connecting door. Used for ensemble beats: act1_s1, act2_s2, act2_s3.
+- **A, down the length** (`carriage_master.png`): camera at the door end looking toward the connecting door. Used for act1_s1 and act2_s2.
 - **C, across the aisle** (`carriage_side.png`): camera in the aisle facing one bench straight on, windows above it. Facing the left bench, the seat order reads left to right Li Jie, Emi, Yamamoto, Ito Makoto, Ito Nana, Ling Mo. Facing the right bench, it reads Shota, Hina, Tomoko, Yudai, Nakamura, Takumi, Misaki, Asuka, Kenta, Saito. Used for act2_s0, act2_s1, act3_s0, act3_s1.
-- **D, outside on the platform** (`carriage_exterior.png`): the same car's side at the Jishui platform. Silver stainless body, one thin navy stripe below the windows, doors with yellow edging. Used for act3_s2.
+- **B, reverse wide** (`carriage_reverse.png`): camera at the far end by the connecting door, looking back toward the door end. The right bench is on the left of the frame, near to far: Shota, Hina, Tomoko, Yudai, Nakamura, Takumi, Misaki, Asuka, Kenta, Saito. The left bench is on the right of the frame, near to far: Ling Mo, Ito Nana, Ito Makoto, Yamamoto, Emi, Li Jie. Used for act2_s3 and act3_s2. At Jishui station the sea-side windows and the open door are on the left of this frame.
+
+There is no exterior shot: an outside view of the train never matched the interior, so scenes stay inside the carriage.
 
 ## Window views
 

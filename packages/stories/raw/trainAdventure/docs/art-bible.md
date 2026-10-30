@@ -14,3 +14,7 @@ Camera stands at the door end looking down the carriage.
 - **Right bench, near to far:** Saito Ren alone, the four students in a row (Kenta, Asuka, Misaki, Takumi), Nakamura alone, the Kobayashi family in a row (Yudai, Tomoko, Hina, Shota).
 
 That is 16. Anyone shown standing in a scene stands next to their own seat.
+
+## Portraits
+
+Portraits are generated on a plain backdrop and then cut out to a transparent PNG (1024x1536 RGBA) with `rembg` using the `birefnet-general` model. `isnet-anime` left dark clothing and grey cardigans semi-transparent, so don't use it.

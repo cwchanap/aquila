@@ -2,6 +2,7 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "辦公室裡已經來了不少人。一個戴眼鏡的男同事坐在靠窗的位置，盯著螢幕上的程式碼。一個短髮女同事在整理桌上的文件。還有一個年輕男同事拿著咖啡杯，站在茶水間門口。" },
@@ -65,15 +66,15 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "繪里花想再說些什麼，但最終只是輕輕點了點頭，轉身回到自己的座位。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "其他三個同事也默默地散開，各自回到工作崗位。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看著海斗，猶豫了一下，開口問道。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "海斗...你還好嗎？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "海斗...你還好嗎？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "海斗看向李杰。他沉默了幾秒，然後點點頭。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "我還好。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音很平穩。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "大輔的事..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "大輔的事...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "我知道。我看到新聞了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "海斗嘆了口氣，靠在椅背上。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "其實...我早就有心理準備了。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "心理準備？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "心理準備？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "嗯。從他失蹤開始，我就想過最壞的情況。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "海斗看向窗外，聲音有些低沉。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "一個人突然消失，連續幾天不接電話、不回訊息..." },

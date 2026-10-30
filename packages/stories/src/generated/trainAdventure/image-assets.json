@@ -1,5 +1,81 @@
 {
   "storyId": "train_adventure",
   "backgrounds": [],
-  "portraits": []
+  "portraits": [
+    {
+      "key": "li_jie/base",
+      "path": "train_adventure/characters/li_jie/base.png",
+      "prompt": "anime visual-novel portrait, 28-year-old East Asian office worker, short slightly tousled black hair, tired but gentle observant eyes, faint stubble, dark suit jacket over white dress shirt with loosened tie and open collar, weary guarded expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "tanaka_kenta/base",
+      "path": "train_adventure/characters/tanaka_kenta/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university student, short dyed light-brown hair, big talkative grin mid-sentence, animated expressive eyebrows, casual zip-up jacket over graphic tee, flushed cheeks from drinking, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "suzuki_asuka/base",
+      "path": "train_adventure/characters/suzuki_asuka/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university girl, high ponytail, bright laughing eyes, cheerful open smile, denim jacket over white top, slightly flushed cheeks from a night out, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "takahashi_misaki/base",
+      "path": "train_adventure/characters/takahashi_misaki/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university girl, chin-length bob with bangs, wide eager eyes, mouth open mid-chatter, pastel cardigan over blouse, small shoulder bag strap, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "sato_takumi/base",
+      "path": "train_adventure/characters/sato_takumi/base.png",
+      "prompt": "anime visual-novel portrait, 21-year-old Japanese university student, short neat black hair, calm composed level gaze, faint reserved smile, plain dark knit sweater, quiet dependable presence, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "saito_ren/base",
+      "path": "train_adventure/characters/saito_ren/base.png",
+      "prompt": "anime visual-novel portrait, 25-year-old Japanese young man, rimless glasses, neatly styled hair, trying-too-hard smart-casual blazer over plain tee, stiff forced smile, faint beads of nervous sweat on forehead, flushed ears, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "yamamoto_koji/base",
+      "path": "train_adventure/characters/yamamoto_koji/base.png",
+      "prompt": "anime visual-novel portrait, mid-50s Japanese salaryman, short graying hair, broad sturdy build, deep laugh lines, warm weathered kind eyes, rumpled grey suit jacket with loosened tie, steady reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ito_nana/base",
+      "path": "train_adventure/characters/ito_nana/base.png",
+      "prompt": "anime visual-novel portrait, early-30s Japanese woman, shoulder-length dark hair, anxious worried eyes, hand clutching her collar, light cardigan over blouse, pale uneasy expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ito_makoto/base",
+      "path": "train_adventure/characters/ito_makoto/base.png",
+      "prompt": "anime visual-novel portrait, early-30s Japanese man, short black hair, irritable scowl, creased brows, white dress shirt with sleeves rolled up and loosened tie, tense impatient posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_shota/base",
+      "path": "train_adventure/characters/kobayashi_shota/base.png",
+      "prompt": "anime visual-novel portrait, 6-year-old Japanese boy, soft round face, short mop of black hair, big teary frightened eyes, small casual t-shirt, clutching the hem of his shirt, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_tomoko/base",
+      "path": "train_adventure/characters/kobayashi_tomoko/base.png",
+      "prompt": "anime visual-novel portrait, mid-30s Japanese mother, long dark hair tied low over one shoulder, gentle tired eyes, soft reassuring worried smile, light knit cardigan, protective maternal presence, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "nakamura_hayato/base",
+      "path": "train_adventure/characters/nakamura_hayato/base.png",
+      "prompt": "anime visual-novel portrait, mid-40s Japanese salaryman, slightly heavy build, thinning combed-back hair, sweaty forehead, shifty self-interested eyes, crumpled business suit with crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "shimizu_emi/base",
+      "path": "train_adventure/characters/shimizu_emi/base.png",
+      "prompt": "anime visual-novel portrait, 19-year-old Japanese girl, long soft chestnut hair over her shoulders, small delicate face, long lashes, quiet serene detached expression, light beige cotton dress, vintage white wired earphones, holding a worn sketchbook and a thin pencil, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ling_mo/base",
+      "path": "train_adventure/characters/ling_mo/base.png",
+      "prompt": "anime visual-novel portrait, early-20s East Asian young man, black hooded sweatshirt with the hood pulled low shadowing most of his face, pale sharp jawline, hands in pockets, motionless unreadable presence, only a glint of eyes visible, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_hina/base",
+      "path": "train_adventure/characters/kobayashi_hina/base.png",
+      "prompt": "anime visual-novel portrait, 10-year-old Japanese girl, hair in two low pigtails, composed brave expression despite wary eyes, simple sleeveless dress with a light cardigan, mature beyond her years, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    }
+  ]
 }

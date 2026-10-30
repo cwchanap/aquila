@@ -100,4 +100,4 @@ Add the story to `STORY_VOICE_LANGUAGE` in `src/voice/index.ts`. The CLI prints 
 
 ## Scaling note
 
-Voice ships from `apps/web/public` (served by Vercel), which is fine for a few chapters. A whole saga runs to hundreds of MB. Before committed voice passes about 50 MB, move it to R2 in its own PR: upload the same folder layout and point `VOICE_BASE_URL` in `apps/web/src/lib/audio/voice-player.ts` at the asset host.
+Project policy (see "Generated Asset Delivery" in `CLAUDE.md`) is that generated audio is served from the R2 CDN, not the Vercel bundle. Voice is still the legacy exception: it ships from `apps/web/public` (served by Vercel) until it moves, which is tolerable for a few chapters but a whole saga runs to hundreds of MB. The move is its own PR: upload the same folder layout to R2 and point `VOICE_BASE_URL` in `apps/web/src/lib/audio/voice-player.ts` at the asset host. Until it ships, keep committing new acts under `apps/web/public`.

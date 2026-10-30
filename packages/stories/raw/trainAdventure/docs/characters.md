@@ -124,7 +124,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, mid-40s Japanese salaryman, thin gaunt build, narrow sharp face with sunken cheeks, receding thinning combed-back hair, sweaty forehead, shifty cowardly self-interested eyes, ill-fitting crumpled business suit hanging loose on his thin frame, crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, mid-40s Japanese salaryman, lean slim build, narrow face with slightly hollow cheeks, looks about 45, receding thinning combed-back hair, sweaty forehead, shifty cowardly self-interested eyes, crumpled business suit a bit too big for him, crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 16. 清水恵美（Shimizu Emi）
 

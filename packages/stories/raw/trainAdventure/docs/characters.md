@@ -9,55 +9,99 @@
 - **ID**: `li_jie`
 - **Aliases**: 男主角
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 28-year-old East Asian office worker, short slightly tousled black hair, tired but gentle observant eyes, faint stubble, dark suit jacket over white dress shirt with loosened tie and open collar, weary guarded expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 3. 田中健太（Tanaka Kenta）
 
 - **ID**: `tanaka_kenta`
 - **Aliases**: 健談男大生, 健談男生, 田中, 健太, 健太的聲音, 田中健太？
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 20-year-old Japanese university student, short dyed light-brown hair, big talkative grin mid-sentence, animated expressive eyebrows, casual zip-up jacket over graphic tee, flushed cheeks from drinking, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 4. 鈴木明日香（Suzuki Asuka）
 
 - **ID**: `suzuki_asuka`
 - **Aliases**: 活潑女大生, 活潑女生, 明日香, 明日香的聲音
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 20-year-old Japanese university girl, high ponytail, bright laughing eyes, cheerful open smile, denim jacket over white top, slightly flushed cheeks from a night out, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 5. 佐藤拓海（Sato Takumi）
 
 - **ID**: `sato_takumi`
 - **Aliases**: 沉穩男大生, 沉穩男生, 沉穩的男生, 拓海, 拓海的聲音
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 21-year-old Japanese university student, short neat black hair, calm composed level gaze, faint reserved smile, plain dark knit sweater, quiet dependable presence, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 6. 高橋美咲（Takahashi Misaki）
 
 - **ID**: `takahashi_misaki`
 - **Aliases**: 多話女大生, 多話女生, 美咲
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 20-year-old Japanese university girl, chin-length bob with bangs, wide eager eyes, mouth open mid-chatter, pastel cardigan over blouse, small shoulder bag strap, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 7. 斎藤蓮（Saito Ren）
 
 - **ID**: `saito_ren`
 - **Aliases**: 膽小眼鏡男, 眼鏡男
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 25-year-old Japanese young man, rimless glasses, neatly styled hair, trying-too-hard smart-casual blazer over plain tee, stiff forced smile, faint beads of nervous sweat on forehead, flushed ears, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 8. 山本浩二（Yamamoto Koji）
 
 - **ID**: `yamamoto_koji`
 - **Aliases**: 慷慨大叔
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, mid-50s Japanese salaryman, short graying hair, broad sturdy build, deep laugh lines, warm weathered kind eyes, rumpled grey suit jacket with loosened tie, steady reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 9. 伊藤奈々（Ito Nana）
 
 - **ID**: `ito_nana`
 - **Aliases**: 焦慮妻子
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, early-30s Japanese woman, shoulder-length dark hair, anxious worried eyes, hand clutching her collar, light cardigan over blouse, pale uneasy expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 10. 伊藤誠（Ito Makoto）
 
 - **ID**: `ito_makoto`
 - **Aliases**: 煩躁丈夫
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, early-30s Japanese man, short black hair, irritable scowl, creased brows, white dress shirt with sleeves rolled up and loosened tie, tense impatient posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 11. 小林翔太（Kobayashi Shota）
 
 - **ID**: `kobayashi_shota`
 - **Aliases**: 天真弟弟
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 6-year-old Japanese boy, soft round face, short mop of black hair, big teary frightened eyes, small casual t-shirt, clutching the hem of his shirt, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 12. 小林智子（Kobayashi Tomoko）
 
 - **ID**: `kobayashi_tomoko`
 - **Aliases**: 溫柔母親, 智子, 智子的聲音
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, mid-30s Japanese mother, long dark hair tied low over one shoulder, gentle tired eyes, soft reassuring worried smile, light knit cardigan, protective maternal presence, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 13. 小林雄大（Kobayashi Yudai）
 
@@ -69,20 +113,36 @@
 - **ID**: `kobayashi_hina`
 - **Aliases**: 懂事姐姐
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 10-year-old Japanese girl, hair in two low pigtails, composed brave expression despite wary eyes, simple sleeveless dress with a light cardigan, mature beyond her years, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 15. 中村隼人（Nakamura Hayato）
 
 - **ID**: `nakamura_hayato`
 - **Aliases**: 自私中年男
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, mid-40s Japanese salaryman, slightly heavy build, thinning combed-back hair, sweaty forehead, shifty self-interested eyes, crumpled business suit with crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 16. 清水恵美（Shimizu Emi）
 
 - **ID**: `shimizu_emi`
 - **Aliases**: 文靜少女, 恵美, 恵美的聲音
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, 19-year-old Japanese girl, long soft chestnut hair over her shoulders, small delicate face, long lashes, quiet serene detached expression, light beige cotton dress, vintage white wired earphones, holding a worn sketchbook and a thin pencil, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+
 ## 17. 凌墨（Ling Mo）
 
 - **ID**: `ling_mo`
 - **Aliases**: 神秘黑衣男
+
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, early-20s East Asian young man, black hooded sweatshirt with the hood pulled low shadowing most of his face, pale sharp jawline, hands in pockets, motionless unreadable presence, only a glint of eyes visible, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 18. 長谷川澪（Hasegawa Mio）
 

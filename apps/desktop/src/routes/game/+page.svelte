@@ -1,7 +1,7 @@
 <script lang="ts">
   /* eslint-disable no-undef */
   import { onMount } from 'svelte';
-  import { getLocale } from '$lib/i18n';
+  import { getLocale, t } from '$lib/i18n';
   import Phaser from 'phaser';
   import { PreloadScene, StoryScene } from '@aquila/game';
 
@@ -53,7 +53,7 @@
 </script>
 
 <svelte:head>
-  <title>世界盡頭的月台</title>
+  <title>{t('adventure.title')}</title>
 </svelte:head>
 
 <div bind:this={gameContainer} class="game-container"></div>

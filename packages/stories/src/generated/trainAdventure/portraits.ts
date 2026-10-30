@@ -6,6 +6,7 @@ export enum Portrait {
     KobayashiHina_Base = "kobayashi_hina/base",
     KobayashiShota_Base = "kobayashi_shota/base",
     KobayashiTomoko_Base = "kobayashi_tomoko/base",
+    KobayashiYudai_Base = "kobayashi_yudai/base",
     LiJie_Base = "li_jie/base",
     LingMo_Base = "ling_mo/base",
     NakamuraHayato_Base = "nakamura_hayato/base",

@@ -67,7 +67,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SuzukiAsuka, character: "鈴木明日香", dialogue: "你們...你們在幹什麼？！", portrait: Portrait.SuzukiAsuka_Base },
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "(站起身,指著山本)你拿著那把劍想做什麼？！", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂內瞬間充滿了緊張和恐慌。" },
-    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(站起身,擋在家人面前)大家冷靜！" },
+    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(站起身,擋在家人面前)大家冷靜！", portrait: Portrait.KobayashiYudai_Base },
     { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "請聽我說——", portrait: Portrait.YamamotoKoji_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但就在這時,一個聲音從車廂後方傳來。" },
     { characterId: CharacterId.ShimizuEmi, character: "清水恵美", dialogue: "那個人...怎麼了...？", portrait: Portrait.ShimizuEmi_Base },

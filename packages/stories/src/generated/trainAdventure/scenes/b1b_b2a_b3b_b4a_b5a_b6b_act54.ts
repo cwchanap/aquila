@@ -6,7 +6,7 @@ import { Portrait } from '../portraits';
 import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(舉起雙手)大家冷靜！請聽我說！這位小兄弟和山本大叔剛才是去——" },
+    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(舉起雙手)大家冷靜！請聽我說！這位小兄弟和山本大叔剛才是去——", portrait: Portrait.KobayashiYudai_Base },
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "冷靜？！他們拿著劍,背著一個昏迷的人,你要我們怎麼冷靜？！", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "中村的聲音充滿憤怒和恐懼,他指著李杰和山本。" },
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "你們看！他們肯定做了什麼！那個人明明好好的,現在卻昏迷不醒！", portrait: Portrait.NakamuraHayato_Base },
@@ -54,10 +54,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "山本浩二看著李杰的眼神,沉默了幾秒,然後點了點頭。" },
     { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "(看向小林雄大)小林先生...能請你幫忙嗎？", portrait: Portrait.YamamotoKoji_Base },
     { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "留在這裡,和李杰一起...別讓中村得逞。", portrait: Portrait.YamamotoKoji_Base },
-    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(疑惑地)咦？你要去哪裡？" },
+    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(疑惑地)咦？你要去哪裡？", portrait: Portrait.KobayashiYudai_Base },
     { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "相信我。我去做該做的事。你們留在這裡拖住中村。", portrait: Portrait.YamamotoKoji_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小林雄大看了看李杰,又看了看山本。雖然不明白發生了什麼,但他看得出事態緊急。" },
-    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(堅定地點頭)我明白了。" },
+    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(堅定地點頭)我明白了。", portrait: Portrait.KobayashiYudai_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "山本浩二握緊手中的劍,快步走向車門。" },
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "(指著他)欸！你要去哪裡？！", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但山本沒有回答,直接走下了列車,消失在紫色的月光中。" },
@@ -65,7 +65,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "(轉向李杰,憤怒地)你對他說了什麼？！", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "(指著李杰和小林)而且你們！我剛才是叫你們三個可疑的人下車！不是叫他一個人下車！", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "你們兩個應該跟他一起離開車廂！為什麼還留在這裡？！", portrait: Portrait.NakamuraHayato_Base },
-    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(站起身,擋在李杰旁邊)這位先生,請你冷靜一點。" },
+    { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(站起身,擋在李杰旁邊)這位先生,請你冷靜一點。", portrait: Portrait.KobayashiYudai_Base },
     { characterId: CharacterId.SaitoRen, character: "斎藤蓮", dialogue: "對啊！你們肯定在密謀什麼！太可疑了！", portrait: Portrait.SaitoRen_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂內所有人的目光都集中在李杰和小林身上。懷疑、恐懼、憤怒...各種情緒交織在一起。" },
     { characterId: CharacterId.TanakaKenta, character: "田中健太", dialogue: "(小聲)這...這到底是怎麼回事啊...", portrait: Portrait.TanakaKenta_Base },

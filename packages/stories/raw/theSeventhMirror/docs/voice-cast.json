@@ -39,6 +39,11 @@
       "voiceId": "HEteSZ3YGHkHosuAQYMF",
       "voiceName": "Rinko- Friendly Customer Support",
       "notes": "Generic role for every research-center front-desk staff member. Twenties to thirties, polite keigo, brisk but soft and warm: the receptionist whose smile never changes temperature. Picked from the library without audition."
+    },
+    "announcement": {
+      "voiceId": "7yHoNSfldb5Ih1SQ8son",
+      "voiceName": "桜こはる",
+      "notes": "Generic role for every public-address or system announcement spoken in a scene (station PA, disaster-alert tests). A calm, level announcer-style woman, the flat synthetic-sounding voice that never changes pitch. Picked from the library without audition."
     }
   }
 }

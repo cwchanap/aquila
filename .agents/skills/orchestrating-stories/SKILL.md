@@ -364,7 +364,7 @@ export enum StoryId {
 }
 
 export const STORY_NAMES: Record<StoryId, string> = {
-    [StoryId.TRAIN_ADVENTURE]: 'Train Adventure',
+    [StoryId.TRAIN_ADVENTURE]: 'The Platform at the End of the World',
     [StoryId.MY_STORY]: 'My Story',
 };
 ```

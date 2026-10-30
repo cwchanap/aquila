@@ -70,14 +70,14 @@
     "saveFailed": "儲存角色設定失敗。請重試。"
   },
   "adventure": {
-    "title": "火車冒險",
+    "title": "世界盡頭的月台",
     "desktop_only_notice": "此冒險目前僅支援桌面裝置，請在電腦上遊玩以獲得最佳體驗。"
   },
   "stories": {
     "title": "選擇故事",
     "heading": "選擇您的故事",
-    "trainAdventure": "火車冒險",
-    "trainAdventureDesc": "跨越邊境的旅程，陌生人之間萌生的情感。",
+    "trainAdventure": "世界盡頭的月台",
+    "trainAdventureDesc": "從新宿開出的末班車，停靠在雙紫月下的寂海站。時刻表上寫著：下一班，二十年後。",
     "dontSaveMeBeforeMidnight": "午夜前別救我",
     "dontSaveMeBeforeMidnightDesc": "在黑夜邊緣輕聲訴說的悄悄話。",
     "theSeventhMirror": "神鏡七日",

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import StorySelect from '../StorySelect.svelte';
@@ -19,10 +19,12 @@ function cardLink(id: string): HTMLAnchorElement {
 describe('StorySelect', () => {
     beforeEach(() => {
         localStorage.clear();
+        vi.stubEnv('PUBLIC_ASSET_BASE_URL', 'https://assets.example/');
     });
 
     afterEach(() => {
         localStorage.clear();
+        vi.unstubAllEnvs();
     });
 
     it('puts short stories and sagas on separate shelves', () => {
@@ -57,14 +59,23 @@ describe('StorySelect', () => {
         ]) {
             const card = cardLink(id);
             const cover = card.querySelector('img');
-            expect(cover).toHaveAttribute('src', `/assets/covers/${id}.webp`);
+            expect(cover).toHaveAttribute(
+                'src',
+                `https://assets.example/vn/covers/${id}.webp`
+            );
             expect(cover).toHaveAttribute('alt', '');
             expect(card).toHaveAccessibleName();
         }
     });
 
+    it('shows the icon fallback instead of covers when no asset host is configured', () => {
+        vi.stubEnv('PUBLIC_ASSET_BASE_URL', '');
+        render(StorySelect, { props: { locale: 'en' } });
+        expect(cardLink('elevator_game').querySelector('img')).toBeNull();
+    });
+
     it('drops a cover that fails to load so the icon fallback shows through', async () => {
-        // Covers are uncommitted build output; a missing or stale file must
+        // Covers live on the asset host; a missing or stale file must
         // not leave a broken-image frame on the card.
         render(StorySelect, { props: { locale: 'en' } });
         const card = cardLink('elevator_game');

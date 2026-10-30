@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "assets": "bun src/publisher/cli.ts",
+    "media:sync": "bun src/media-sync.ts",
     "lint": "eslint src",
     "test": "vitest run",
     "test:watch": "vitest",

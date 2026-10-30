@@ -4,7 +4,7 @@ export {
     REGISTERED_STORY_IDS,
     SOURCE_LOCALE,
     STORY_TEXT_LOCALES,
-    BUNDLED_VISUAL_STORY_IDS,
+    PRODUCTION_VISUAL_STORY_IDS,
     TEXT_ONLY_STORY_IDS,
     hasStoryText,
     isRegisteredStoryId,

@@ -13,8 +13,10 @@ export const REGISTERED_STORY_IDS = [
 
 export type RegisteredStoryId = (typeof REGISTERED_STORY_IDS)[number];
 
-/** Complete visual releases shipped in the app's public asset directory. */
-export const BUNDLED_VISUAL_STORY_IDS: readonly RegisteredStoryId[] = [
+/** Complete visual releases read from the production R2 namespace in every
+ *  environment, previews included (unlike The Seventh Mirror, which follows
+ *  the per-environment preview pointers). */
+export const PRODUCTION_VISUAL_STORY_IDS: readonly RegisteredStoryId[] = [
     'elevator_game',
     'demon_lord_is_hiring',
     'three_am_laundromat',

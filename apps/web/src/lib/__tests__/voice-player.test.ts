@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createVoicePlayer } from '@/lib/audio/voice-player';
 
 const FIRST = '01fa4da79b470a';
@@ -19,6 +19,25 @@ function indexResponse(lines: (string | null)[]): Response {
 }
 
 describe('createVoicePlayer', () => {
+    beforeEach(() => {
+        vi.stubEnv('PUBLIC_ASSET_BASE_URL', 'https://assets.example/');
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('stays silent without an asset host', async () => {
+        vi.stubEnv('PUBLIC_ASSET_BASE_URL', '');
+        const fetchImpl = vi.fn(async () => indexResponse([FIRST]));
+        const player = createVoicePlayer({ fetchImpl });
+
+        await expect(player.load('the_seventh_mirror')).resolves.toBe(false);
+        player.play('ch1_act1', 0);
+
+        expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
     it('plays the take for a scene position', async () => {
         const audio = fakeAudio();
         const createAudio = vi.fn(() => audio);
@@ -29,10 +48,10 @@ describe('createVoicePlayer', () => {
         player.play('ch1_act1', 1);
 
         expect(fetchImpl).toHaveBeenCalledWith(
-            '/assets/vn/voice/the_seventh_mirror/index.json'
+            'https://assets.example/vn/voice/the_seventh_mirror/index.json'
         );
         expect(createAudio).toHaveBeenCalledWith(
-            `/assets/vn/voice/the_seventh_mirror/${SECOND}.mp3`
+            `https://assets.example/vn/voice/the_seventh_mirror/${SECOND}.mp3`
         );
         expect(audio.play).toHaveBeenCalledOnce();
     });

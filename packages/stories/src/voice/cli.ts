@@ -30,10 +30,9 @@ import {
 
 const STORIES_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const RAW_ROOT = join(STORIES_ROOT, 'raw');
-export const DEFAULT_VOICE_ROOT = join(
-    STORIES_ROOT,
-    '../../apps/web/public/assets/vn/voice'
-);
+// Committed source of truth. It is published to R2 (`vn/voice/`), never served
+// from the app bundle.
+export const DEFAULT_VOICE_ROOT = join(STORIES_ROOT, '../assets/voice');
 const TTS_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 const RETRY_DELAYS_MS = [2_000, 5_000] as const;
 
@@ -47,7 +46,7 @@ const USAGE = `Usage:
   --dry-run    print the lines that would be generated as JSON; no API calls
   --prune      delete audio no current line of the story uses
   --from-dir   take <lineId>.mp3 files from a folder instead of calling ElevenLabs
-  --out        voice root (default apps/web/public/assets/vn/voice)
+  --out        voice root (default packages/assets/voice)
 
 generate needs ELEVENLABS_API_KEY unless --dry-run or --from-dir is given.`;
 

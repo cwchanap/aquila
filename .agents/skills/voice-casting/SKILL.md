@@ -1,6 +1,6 @@
 ---
 name: voice-casting
-description: Use when adding or extending voice acting (spoken dialogue/narration audio) for a story, scene or chapter, casting ElevenLabs voices for characters, writing a Japanese voice script, re-recording voice lines after a text or translation edit, or touching `docs/voice-cast.json`, `docs/voice-script.*.json`, `packages/stories/src/voice/` or `apps/web/public/assets/vn/voice/`.
+description: Use when adding or extending voice acting (spoken dialogue/narration audio) for a story, scene or chapter, casting ElevenLabs voices for characters, writing a Japanese voice script, re-recording voice lines after a text or translation edit, or touching `docs/voice-cast.json`, `docs/voice-script.*.json`, `packages/stories/src/voice/` or `packages/assets/voice/`.
 ---
 
 # Voice Casting
@@ -12,7 +12,7 @@ Voice is a **Japanese dub**: each story is spoken in one language (`ja`), and th
 - **Cast**: `packages/stories/raw/<rawDir>/docs/voice-cast.json` sets `language` and maps each compiled `characterId` to an ElevenLabs voice. Characters that aren't cast stay silent.
 - **Spoken text**: if the story has Japanese reader text (`STORY_TEXT_LOCALES` in `src/story-metadata.ts`), the CLI speaks that. Otherwise it reads `docs/voice-script.ja.json`: for each voiced scene, one `{ "zh": …, "ja": … }` pair per zh line, in order. The `zh` half must equal the current zh line, so a zh edit fails `voice:check` until the script is updated.
 - **Line id** = hash of voice id + exact prompt (`voiceLineId()` in `src/voice/cast.ts`). A recast, a retranslation or a new direction tag asks for a new take; nothing stale is ever reused.
-- **Files**: `apps/web/public/assets/vn/voice/<storyId>/<lineId>.mp3` plus `index.json`, which maps every voiced scene to one entry per dialogue line (a line id, or `null` for silence). Translations mirror the zh source line for line, so the same position works in every language. All of it is committed.
+- **Files**: `packages/assets/voice/<storyId>/<lineId>.mp3` plus `index.json`, which maps every voiced scene to one entry per dialogue line (a line id, or `null` for silence). Translations mirror the zh source line for line, so the same position works in every language. All of it is committed, but the app never bundles it: the `Media Sync` workflow uploads it to R2 (`vn/voice/<storyId>/`) when a PR touching it merges to `main`, and the reader fetches it from `PUBLIC_ASSET_BASE_URL`.
 - **Reader**: in visual mode it plays the index entry for the current scene and line. There is a Voice on/off toggle in reader settings. The reader only fetches an index for stories in `STORY_VOICE_LANGUAGE` (`src/voice/index.ts`).
 
 Cost: 1 credit per character sent (tags included). For scale, The Seventh Mirror ch1 act1 is 46 lines and about 2,450 credits (about $0.50), which comes to about 7 minutes of audio. After transcoding to mono 48 kbps that is about 2.6 MB (roughly 0.4 MB per minute).
@@ -98,6 +98,6 @@ Add the story to `STORY_VOICE_LANGUAGE` in `src/voice/index.ts`. The CLI prints 
 - **zh edit in a voiced scene**: `voice:check` fails. Update the matching `zh`/`ja` pair in the voice script, then re-run step 4 for that scene (only changed lines are pending) with `--prune`.
 - **Japanese reader text edit**: the prompt changes, so the line id changes. Re-run step 4 with `--prune`.
 
-## Scaling note
+## Delivery
 
-Project policy (see "Generated Asset Delivery" in `CLAUDE.md`) is that generated audio is served from the R2 CDN, not the Vercel bundle. Voice is still the legacy exception: it ships from `apps/web/public` (served by Vercel) until it moves, which is tolerable for a few chapters but a whole saga runs to hundreds of MB. The move is its own PR: upload the same folder layout to R2 and point `VOICE_BASE_URL` in `apps/web/src/lib/audio/voice-player.ts` at the asset host. Until it ships, keep committing new acts under `apps/web/public`.
+Voice is generated media, so it is served from the R2 CDN and never from `apps/web/public` (see "Generated Asset Delivery" in `CLAUDE.md`). Commit new takes under `packages/assets/voice/`; after the PR merges, `.github/workflows/media-sync.yml` runs `bun --filter @aquila/infra-cloudflare media:sync`, which uploads new `.mp3`s (create-only, one-year immutable cache) and replaces each story's `index.json` (revalidated on every load). To publish by hand, run the same command with `R2_RELEASE_ACCESS_KEY_ID` and `R2_RELEASE_SECRET_ACCESS_KEY` set (`--dry-run` lists what would change). Locally the dub is silent unless `PUBLIC_ASSET_BASE_URL` points at the asset host.

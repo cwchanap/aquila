@@ -11,7 +11,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 28-year-old East Asian office worker, short slightly tousled black hair, tired but gentle observant eyes, faint stubble, dark suit jacket over white dress shirt with loosened tie and open collar, weary guarded expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 28-year-old Chinese software engineer living in Tokyo, youthful boyish face that reads closer to mid-20s, short black hair with a little lively volume, bright alert curious eyes, energetic confident half-smile, slim build, dark suit jacket over white dress shirt with loosened tie and open collar, backpack strap over one shoulder, upright lively posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 3. 田中健太（Tanaka Kenta）
 
@@ -56,7 +56,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 25-year-old Japanese young man, rimless glasses, neatly styled hair, trying-too-hard smart-casual blazer over plain tee, stiff forced smile, faint beads of nervous sweat on forehead, flushed ears, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 20-year-old Japanese young man, rimless glasses, neatly styled hair, trying-too-hard smart-casual blazer over plain tee, smug forced half-smile with chin slightly raised, faint beads of nervous sweat on forehead, flushed ears, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 8. 山本浩二（Yamamoto Koji）
 
@@ -65,7 +65,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, mid-50s Japanese salaryman, short graying hair, broad sturdy build, deep laugh lines, warm weathered kind eyes, rumpled grey suit jacket with loosened tie, steady reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, late-40s Japanese man, short dark hair with grey at the temples, sturdy dependable build, warm gentle patient eyes, small laugh lines, rumpled grey suit jacket with loosened tie, calm reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 9. 伊藤奈々（Ito Nana）
 
@@ -74,7 +74,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, early-30s Japanese woman, shoulder-length dark hair, anxious worried eyes, hand clutching her collar, light cardigan over blouse, pale uneasy expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 40-year-old Japanese woman, shoulder-length dark hair with a few grey strands, fine lines around anxious worried eyes, hand clutching her collar, light cardigan over blouse, pale uneasy expression, looks worn down, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 10. 伊藤誠（Ito Makoto）
 
@@ -83,7 +83,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, early-30s Japanese man, short black hair, irritable scowl, creased brows, white dress shirt with sleeves rolled up and loosened tie, tense impatient posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 40-year-old Japanese man, short black hair with a few grey strands at the temples, visible lines between the brows and beside the mouth, irritable scowl, slightly heavier tired build, white dress shirt with sleeves rolled up and loosened tie, tense impatient posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 11. 小林翔太（Kobayashi Shota）
 
@@ -92,7 +92,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 6-year-old Japanese boy, soft round face, short mop of black hair, big teary frightened eyes, small casual t-shirt, clutching the hem of his shirt, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 10-year-old Japanese boy, soft round face, short mop of black hair, big teary frightened eyes, small casual t-shirt, clutching the hem of his shirt, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 12. 小林智子（Kobayashi Tomoko）
 
@@ -115,7 +115,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 10-year-old Japanese girl, hair in two low pigtails, composed brave expression despite wary eyes, simple sleeveless dress with a light cardigan, mature beyond her years, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 12-year-old Japanese girl, hair in two low pigtails, composed brave expression despite wary eyes, simple sleeveless dress with a light cardigan, mature beyond her years, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 15. 中村隼人（Nakamura Hayato）
 
@@ -124,7 +124,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, mid-40s Japanese salaryman, slightly heavy build, thinning combed-back hair, sweaty forehead, shifty self-interested eyes, crumpled business suit with crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, mid-40s Japanese salaryman, thin gaunt build, narrow sharp face with sunken cheeks, receding thinning combed-back hair, sweaty forehead, shifty cowardly self-interested eyes, ill-fitting crumpled business suit hanging loose on his thin frame, crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 16. 清水恵美（Shimizu Emi）
 

@@ -4,9 +4,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "bun --cwd . scripts/generate-zh-proxy-pages.ts && { bun scripts/build-short-story-assets.ts --ensure || echo 'WARN: bundled short-story asset publish failed — continuing without them'; } && astro dev --port 5090",
+    "dev": "bun --cwd . scripts/generate-zh-proxy-pages.ts && astro dev --port 5090",
     "dev:db": "echo 'Prisma Postgres is managed remotely — no local DB to start. Set DATABASE_URL to your Prisma Postgres connection string (Vercel → Storage).'",
-    "build": "bun --cwd . scripts/generate-zh-proxy-pages.ts && bun scripts/build-short-story-assets.ts --ensure && sh -c 'set -e; id=$(bun scripts/asset-preview-id.ts); PUBLIC_ASSET_PREVIEW_ID=\"$id\" astro build' && bun scripts/vercel-asset-cache-headers.ts && bun scripts/assert-story-chunks.ts",
+    "build": "bun --cwd . scripts/generate-zh-proxy-pages.ts && sh -c 'set -e; id=$(bun scripts/asset-preview-id.ts); PUBLIC_ASSET_PREVIEW_ID=\"$id\" astro build' && bun scripts/vercel-asset-cache-headers.ts && bun scripts/assert-story-chunks.ts",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint src",
@@ -24,9 +24,7 @@
     "build:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts",
     "verify:sfx-fixtures": "bun scripts/build-sfx-fixtures.ts --verify",
     "build:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts",
-    "verify:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts --verify",
-    "build:short-story-assets": "bun scripts/build-short-story-assets.ts",
-    "verify:short-story-assets": "bun scripts/build-short-story-assets.ts --verify"
+    "verify:bgm-fixtures": "bun scripts/build-bgm-fixtures.ts --verify"
   },
   "dependencies": {
     "@aquila/stories": "workspace:*",

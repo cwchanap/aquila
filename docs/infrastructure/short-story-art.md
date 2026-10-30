@@ -1,45 +1,47 @@
-# Bundled short-story artwork
+# Short-story artwork
 
-The five short stories ship complete visual releases with the web app. Their
-backgrounds and portraits use the existing content-addressed runtime format and
-WebAssetResolver; covers are optimized WebP images on the story cards. No R2
-upload or remote pointer activation is needed for these bundled releases.
+The five short stories (`elevator_game`, `three_am_laundromat`, `day_4012`,
+`demon_lord_is_hiring`, `one_pot_before_dawn`) have complete visual releases.
+Like every other generated asset they live on the R2 CDN and are never part of
+the Vercel bundle (see "Generated Asset Delivery" in `CLAUDE.md`).
 
-`BUNDLED_VISUAL_STORY_IDS` is the delivery allowlist. These stories always load
-`/assets/vn/stories/<story_id>/current.json` from the app's own origin, including
-on preview deployments. The Seventh Mirror continues to use its existing remote
-asset configuration. A reader's saved Text or Visual Novel preference is preserved.
+| Asset                     | Source in git                                                                    | Published to                                                              |
+| ------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Backgrounds and portraits | `packages/assets/media/<story>/` + `packages/stories/release-plans/<story>.json` | `vn/stories/<story>/current.json` and the content-addressed `vn/objects/` |
+| Cover                     | `packages/assets/media/<story>/covers/cover.png`                                 | `vn/covers/<story>.webp` (480 by 720)                                     |
+| Voice                     | `packages/assets/voice/<story>/`                                                 | `vn/voice/<story>/`                                                       |
 
-Source PNGs live in `packages/assets/media/<story_id>/`. The original prompts,
-checksums, and generation provenance stay out of git under the gitignored
-`packages/assets/generation/` directory. Each story has a complete
-production release plan in `packages/stories/release-plans/`; the plan covers
-every authored background and portrait, including shared scenes and endings.
+## Reader behaviour
 
-The delivery assets are gitignored build output, regenerated from source
-artwork rather than committed:
+`PRODUCTION_VISUAL_STORY_IDS` (in `packages/stories/src/story-metadata.ts`) is
+the allowlist of stories that always read the **production** release, including
+on preview deployments. The Seventh Mirror follows the per-environment preview
+pointers instead. A reader's saved Text or Visual Novel preference is
+preserved.
+
+The reader needs `PUBLIC_ASSET_BASE_URL` and `PUBLIC_ASSET_ENVIRONMENT`. Without
+them (a bare local checkout) the shorts have no art, covers or voice and the
+reader falls back to text and gradient covers; set both to the production host
+in `apps/web/.env` to see everything locally.
+
+## Publishing
+
+Visual releases go through the publisher (needs `R2_RELEASE_ACCESS_KEY_ID` and
+`R2_RELEASE_SECRET_ACCESS_KEY`):
 
 ```sh
-bun --filter web build:short-story-assets
-bun --filter web verify:short-story-assets
+bun --filter @aquila/infra-cloudflare assets -- publish \
+  --story <story> --environment production \
+  --plan packages/stories/release-plans/<story>.json \
+  --source-root packages/assets/media \
+  --destination r2 --confirm-production <story> --json
 ```
 
-The build command runs the existing publisher against the local public asset
-directory, retaining immutable object and release filenames and updating only the
-five local pointers. It also makes 480 by 720 WebP covers. The verify command
-checks release integrity and decodes every image, requires the public/assets
-delivery tree to mirror those verified bytes exactly, then checks all cover
-formats and dimensions. The web `build` script runs the asset build automatically, so
-deploys need no extra configuration. `bun dev` runs the build script in
-`--ensure` mode first: it republishes only a story whose pointer, manifest,
-objects, or cover are missing or whose inputs (release plan, generated
-image-assets manifest, included source artwork) changed since the last
-publish, so restarts after the first are effectively free. E2E CI still runs
-the full asset build explicitly before Playwright starts the dev server.
-The build needs only the committed source PNGs, never generation
-credentials. The publisher's
-`.publisher-metadata/` sidecars and `.publisher-transactions/` markers are
-gitignored local-store bookkeeping.
+Covers and voice go through `bun --filter @aquila/infra-cloudflare media:sync`
+(`--dry-run` lists changes). The `Media Sync` workflow runs it when a PR
+touching `packages/assets/voice/` or a cover merges to `main`, so those two need
+no manual step.
 
-To see the artwork, open a short story, open reader settings, and choose Visual
-Novel (the mobile Text reader offers this in its menu). Text remains available.
+Each story's release plan covers every authored background and portrait,
+including shared scenes and endings. Original prompts, checksums and generation
+provenance stay out of git under the gitignored `packages/assets/generation/`.

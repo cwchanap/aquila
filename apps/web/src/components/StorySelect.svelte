@@ -14,6 +14,7 @@
   import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import { STORY_CATALOG, type StoryAccent } from '@aquila/stories/catalog';
+  import { assetHostUrl } from '@/lib/asset-host';
   import { getBrowserStorage } from '@/lib/reader-mode';
   import {
     StoryProgressStore,
@@ -28,9 +29,10 @@
   // Server render (and the first client frame) shows every story as unread;
   // saved progress lives in this browser only and is applied on mount.
   let progress: StoryProgressMap = $state({});
-  // Covers are generated build output — an <img> that 404s removes itself so
+  // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
+  const coverSrc = (path?: string) => (path ? assetHostUrl(path) : undefined);
   let cards = $derived(buildCards(STORY_CATALOG, progress, locale, t));
   let shorts = $derived(cards.filter(c => c.entry.format === 'short'));
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
@@ -137,9 +139,9 @@
           >
             <span class="relative flex aspect-2/3 items-center justify-center overflow-hidden bg-linear-to-br {accent.cover}">
               <Icon class="h-8 w-8 text-white/90" aria-hidden="true" />
-              {#if card.entry.coverImage && !failedCovers.has(card.entry.id)}
+              {#if coverSrc(card.entry.coverImage) && !failedCovers.has(card.entry.id)}
                 <img
-                  src={card.entry.coverImage}
+                  src={coverSrc(card.entry.coverImage)}
                   alt=""
                   width="480"
                   height="720"

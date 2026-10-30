@@ -1,5 +1,5 @@
 import type { DialogueEntry } from '@aquila/stories';
-import { BUNDLED_VISUAL_STORY_IDS } from '@aquila/stories/async';
+import { PRODUCTION_VISUAL_STORY_IDS } from '@aquila/stories/async';
 import type { AssetResolverSource } from '@aquila/stories/runtime-assets';
 import { getBrowserStorage } from '@/lib/reader-mode';
 import {
@@ -29,15 +29,15 @@ export function getAssetResolverSource(
     origin: string,
     config: AssetSourceConfig
 ): AssetResolverSource | null {
-    // Bundled releases travel with this deployment, including previews. Remote
-    // configuration continues to apply only to the remotely published story.
-    if ((BUNDLED_VISUAL_STORY_IDS as readonly string[]).includes(storyId)) {
-        return {
-            environment: 'local',
-            storyId,
-            baseUrl: new URL('/assets/', origin).href,
-            target: { kind: 'production' },
-        };
+    // Short-story releases are published once to the production R2 namespace
+    // and read from it in every environment, previews included. Without a
+    // configured asset host there is nothing to read, so they run text-only.
+    if ((PRODUCTION_VISUAL_STORY_IDS as readonly string[]).includes(storyId)) {
+        if (!config.baseUrl) return null;
+        return resolveAssetSource(storyId, origin, {
+            baseUrl: config.baseUrl,
+            environment: 'production',
+        });
     }
     if (storyId !== REMOTE_ASSET_STORY_ID) return null;
     return resolveAssetSource(storyId, origin, config);

@@ -87,6 +87,9 @@ Never hand-build one.
 | Audio preview manifest / pointer | the same two under `vn/previews/<previewId>/audio/stories/…` |
 | Private audio archive source | `audio/approved/<storyId>/<type>/<key>/<sourceSha256>/source.<ext>` in `aquila-vn-source` |
 | Private audio archive receipt | `audio/approved/<storyId>/<type>/<key>/<sourceSha256>/receipt.json` in `aquila-vn-source` |
+| Story cover (`media:sync`) | `vn/covers/<storyId>.webp` |
+| Voice take (`media:sync`) | `vn/voice/<storyId>/<lineId>.mp3` |
+| Voice index (`media:sync`) | `vn/voice/<storyId>/index.json` |
 
 Objects are **not** namespaced per preview: `getObjectPath()` always returns
 `vn/objects/…`, and the `vn/previews/<previewId>/` prefix applies only to the

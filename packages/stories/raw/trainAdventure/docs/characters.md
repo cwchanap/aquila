@@ -133,7 +133,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, 19-year-old Japanese girl, long soft chestnut hair over her shoulders, small delicate face, long lashes, quiet serene detached expression, light beige cotton dress, vintage white wired earphones, holding a worn sketchbook and a thin pencil, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, 20-year-old Japanese university student, long soft chestnut hair over her shoulders, small delicate face, big bright sweet eyes, gentle sunny smile that looks a little shy and tentative, cute approachable air with a hint of timid uncertainty, light beige cotton dress, vintage white wired earphones, holding a worn sketchbook and a thin pencil, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 17. 凌墨（Ling Mo）
 

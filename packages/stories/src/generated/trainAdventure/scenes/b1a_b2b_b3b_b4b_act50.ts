@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "露營之後，李杰和朋友們的關係變得更加親密。九月，新學期開始了。李杰每天去上課，和如月颯真、氷室陸斗他們一起吃午餐，討論作業，偶爾一起去居酒屋喝酒。" },

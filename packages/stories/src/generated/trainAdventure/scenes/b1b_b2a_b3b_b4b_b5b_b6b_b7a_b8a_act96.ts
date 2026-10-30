@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "(冷靜地看著黑澤)你想做什麼,渡邊?" },

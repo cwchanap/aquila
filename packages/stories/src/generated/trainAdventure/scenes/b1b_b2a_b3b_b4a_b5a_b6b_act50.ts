@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰跪在凌墨身邊,看著他蒼白的臉龐。凌墨緊緊握著那把黑劍,劍身散發著詭異的黑色光芒。他的呼吸很微弱,雙眼緊閉。" },

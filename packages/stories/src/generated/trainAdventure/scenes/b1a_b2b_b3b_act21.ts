@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "當李杰再次睜開眼睛時，屋內依然是那片昏暗的光線。窗外的紫月依舊懸掛在天空中，彷彿時間在這個世界裡失去了意義。" },

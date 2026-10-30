@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰站在十字路口，目光在前方的黑暗和左側的岔路之間游移。斎藤蓮的身影早已消失，恵美則靜靜地站在一旁，等待著他的決定。" },

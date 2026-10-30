@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二天早上，李杰和美咲來到了艾莉希雅的住處。艾莉希雅坐在書桌前，正在閱讀一本厚重的書籍。" },

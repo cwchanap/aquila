@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "明日香跪在健太身邊,伸手想要扶起他。但當她的手觸碰到健太的肩膀時——一股無形的力量猛地將她的手彈開!" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "逃難的隊伍在崎嶇的山路上蜿蜒前行。夜色依然濃重，只有精靈們手中的發光石照亮著前路。隊伍拉得很長，有的精靈攙扶著老人，有的抱著孩子，還有的背著一些搶救出來的物品。" },

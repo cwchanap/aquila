@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他們沿著昨天走過的路，穿過森林，穿過那條通往神樹的小徑。這一次沒有人說話，大家都沉默著，腳步聲是唯一的聲響。" },

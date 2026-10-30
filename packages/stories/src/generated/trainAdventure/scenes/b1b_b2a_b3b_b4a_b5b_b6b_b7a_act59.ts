@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "從那個跨年夜至今，又過了四個月。東京的櫻花已經盛開又凋謝，現在是四月下旬，即將迎來黃金週的連續假期。" },

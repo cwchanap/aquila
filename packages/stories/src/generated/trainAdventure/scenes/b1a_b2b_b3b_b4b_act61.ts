@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰在附近找了一家小餐館。他點了一碗牛肉麵，坐在靠窗的位子。從這裡，他可以清楚地看到「藏珍閣」的店門口。" },

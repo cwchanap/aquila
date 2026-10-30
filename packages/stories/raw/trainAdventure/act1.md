@@ -1,5 +1,9 @@
 # 第一幕：喧囂的月台 
 
+```bg
+late-night Shinjuku Chuo Line platform at 23:50, cold white fluorescent light, blinking electronic departure board, yellow tactile line, dark tunnel mouth at the far end, scattered late-night crowd; in the foreground Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap seen from behind standing behind the yellow line; mid-ground four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) laughing in a group while Saito Ren, a young man with rimless glasses in a navy blazer over a white tee stands stiffly at the edge of their circle pretending to scroll his phone; on a bench in the far corner Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook sketching alone; in the shadow of a pillar a motionless figure in a black hooded sweatshirt with the hood pulled low over the face, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
+
 **旁白**：深夜，新宿車站的中央線月台。電子顯示板在黑夜中閃爍著冷白色的光芒，數字跳動間透出一種機械式的冷漠。午夜十一點五十分——最後一班往高尾方向的列車，即將進站。
 
 **旁白**：月台上的空氣厚重而黏膩，混雜著居酒屋飄散出的酒精味、便利店炸雞的油膩香氣。週末的狂歡正在落幕，人群三三兩兩地散落在長椅與立柱之間。
@@ -97,6 +101,10 @@
 **旁白**：列車平穩地停下，車門發出「嘶」的一聲打開。冷氣從車廂內湧出，帶來一股混合著消毒水與陳舊座椅味道的氣息。等待的人群開始緩緩移動，一個接一個地走進車廂。
 
 **李杰**：(內心)終於來了⋯⋯回家吧。
+
+```bg
+interior of a Chuo Line train carriage at midnight, silver seats and handrails, cool white ceiling lights, dark window reflecting the carriage; Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap sitting by a window in the foreground, Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook seated diagonally ahead of him looking down at her sketchbook, four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) sitting noisily mid-carriage, Saito Ren, a young man with rimless glasses in a navy blazer over a white tee sitting alone near the doors glancing at the students, a few sleepy commuters, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
 
 **旁白**：李杰隨著人流走進車廂，選了一個靠窗的空位坐下。他放下背包，靠在椅背上，疲憊地閉上眼睛。幾秒後，他睜開眼，不經意地一瞥——那個安靜的女孩也上了同一節車廂，就坐在斜前方不遠處。
 

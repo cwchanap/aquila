@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "寂海車站的月台上，李杰剛踏上冰冷的水泥地面，身後就傳來了急促的腳步聲。他轉過身，驚訝地看著那個在月台上畫畫的文靜少女，正站在他面前。" },

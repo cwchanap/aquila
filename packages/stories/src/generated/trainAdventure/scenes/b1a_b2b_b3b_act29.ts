@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰和斎藤沿著南方的道路前進。濃霧在他們身邊流動,紫月的光芒為這片寂靜的世界塗上詭異的色彩。" },

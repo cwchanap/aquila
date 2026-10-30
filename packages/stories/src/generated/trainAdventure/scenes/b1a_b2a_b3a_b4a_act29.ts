@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SaitoRen, character: "斎藤蓮", dialogue: "（深吸一口氣）這件事...要從我們還在火車上的時候說起...", portrait: Portrait.SaitoRen_Base },

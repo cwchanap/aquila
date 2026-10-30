@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KobayashiTomoko, character: "溫柔母親", dialogue: "（看向李杰）你⋯⋯要跟我們一起走嗎？", portrait: Portrait.KobayashiTomoko_Base },

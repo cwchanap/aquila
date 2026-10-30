@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車廂內的空氣凝固了。敞開的車門外，是深邃如墨的夜色，以及從「寂海」車站湧入的冰冷而陌生的氣息。所有乘客都呆若木雞，無法做出任何反應。" },

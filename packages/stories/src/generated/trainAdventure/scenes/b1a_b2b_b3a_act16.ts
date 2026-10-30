@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "我也想去救他們，但火太大了，我根本靠近不了。", portrait: Portrait.YamamotoKoji_Base },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "霧氣依然濃厚，將兩人籠罩在一片白茫茫之中。李杰靠著樹幹閉目休息，斎藤蓮則縮在一旁，不時發出痛苦的低吟。" },

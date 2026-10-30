@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "莉拉看到李杰，眼神閃過一絲複雜的情緒。她張了張嘴，似乎想說什麼，但最終只是咬緊嘴唇，低下了頭。" },

@@ -1,5 +1,9 @@
 # 第三幕：寂海車站 
 
+```bg
+carriage interior with panicked passengers; through the left windows a dark dense towering forest, through the right windows a vast mirror-still black sea, two large violet crescent moons in the sky with strange rotating stars; four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) terrified and clutching each other, the Ito couple (a scowling man in a white shirt with rolled sleeves and loosened navy tie, and an anxious woman in a grey cardigan over a cream blouse) shouting, Nakamura, a thin balding salaryman in a crumpled navy suit shouting at the front, the Kobayashi family (a mother in a cream cable-knit cardigan with a low side ponytail holding her crying ten-year-old son in a navy t-shirt, and a composed twelve-year-old girl in low pigtails, white cardigan and pale-blue dress), Saito Ren, a young man with rimless glasses in a navy blazer over a white tee pale and stammering, Yamamoto, a sturdy man in his late 40s with grey at the temples in a grey suit jacket and striped tie trying to calm people, passengers kneeling and praying, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
+
 **旁白**：列車穿過了那片詭異的藍黑色光幕。瞬間，一切都變了。車廂內的震動忽然變得極其輕微，列車彷彿漂浮在看不見的軌道上。
 
 **旁白**：刺眼的光芒褪去。一個絕對不應存在的，卻又無比真實的世界，展現在所有乘客眼前。
@@ -42,6 +46,10 @@
 
 **旁白**：尖叫聲、哭泣聲、祈禱聲，在車廂內交織成一片混亂。有人跪在地上雙手合十，有人抱頭蜷縮在座位上，有人發瘋般地敲打車窗。
 
+```bg
+close view inside the carriage in cold violet moonlight from the window; Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook curled into the corner of her seat trembling, face deathly pale, eyes wide staring at the black sea, her sketchbook dropped on the floor; Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap in the foreground half turned toward her with a worried look, chaos blurred behind, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
+
 **旁白**：李杰環顧四周，看到了各種扭曲的表情。然後，他的目光落在了那個女孩身上。
 
 **旁白**：那個在月台上安靜畫畫的女孩，此刻縮在座位角落，身體劇烈顫抖。她手中的素描本已經滑落在地。雙手緊緊抓著自己的手臂。
@@ -51,6 +59,10 @@
 **李杰**：(內心)她看起來⋯⋯比任何人都還要害怕。那種眼神⋯⋯更像是認識這個地方？
 
 **旁白**：就在眾人陷入極度恐慌之際，列車的速度開始放緩。輪軌的聲音越來越慢，越來越輕，最後幾乎聽不見。
+
+```bg
+a tiny lonely seaside station on a black shore under two violet moons, a bare concrete platform, a shabby waiting shelter, a weathered sign with illegible faded characters, the train stopped with its doors wide open spilling warm light onto the platform; Yamamoto, a sturdy man in his late 40s with grey at the temples in a grey suit jacket and striped tie standing at the open door looking out, the Ito couple (a scowling man in a white shirt with rolled sleeves and loosened navy tie, and an anxious woman in a grey cardigan over a cream blouse), Nakamura, a thin balding salaryman in a crumpled navy suit, four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) and Saito Ren, a young man with rimless glasses in a navy blazer over a white tee hesitating inside, Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap behind them, deep black ocean and silent forest beyond, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
 
 **旁白**：在前方海岸線上，黑暗中，出現了一座孤零零的車站。
 

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰環顧屋內，看著縮在角落裡的陽菜和翔太，以及坐在椅子上喘氣的斎藤蓮。他的身體已經疲憊到了極點，但心中卻無法平靜下來。" },

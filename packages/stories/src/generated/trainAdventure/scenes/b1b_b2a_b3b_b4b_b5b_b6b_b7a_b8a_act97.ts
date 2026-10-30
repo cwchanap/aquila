@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "貨車在崎嶇的山路上顛簸了很久,最終停在一棟灰色的建築前。這是一座廢棄的軍事設施,四周空無一人,只有荒涼的山林。" },

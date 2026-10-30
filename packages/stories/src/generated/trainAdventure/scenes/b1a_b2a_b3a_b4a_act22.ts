@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰、恵美和艾拉如三人離開了銀月湖畔的村落，朝著北方前進。艾拉如走在前頭，帶領著他們穿過一片發光的草地和低矮的灌木叢。" },

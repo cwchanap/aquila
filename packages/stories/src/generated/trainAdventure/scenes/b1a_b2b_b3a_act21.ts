@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.SatoTakumi, character: "佐藤拓海", dialogue: "（大喊）放開她！", portrait: Portrait.SatoTakumi_Base },

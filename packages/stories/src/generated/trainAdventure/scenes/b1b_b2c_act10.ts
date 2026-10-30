@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "木屋內，明日香的情緒終於稍微平復下來。她用手背擦了擦臉上的淚痕，深吸一口氣，努力讓自己冷靜。" },

@@ -53,7 +53,7 @@
 </script>
 
 <svelte:head>
-  <title>Train Adventure</title>
+  <title>世界盡頭的月台</title>
 </svelte:head>
 
 <div bind:this={gameContainer} class="game-container"></div>

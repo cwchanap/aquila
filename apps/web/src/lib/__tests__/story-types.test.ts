@@ -33,7 +33,7 @@ describe('Story Types', () => {
     describe('STORY_NAMES constant', () => {
         it('should map TRAIN_ADVENTURE to correct name', () => {
             expect(STORY_NAMES[StoryId.TRAIN_ADVENTURE]).toBe(
-                'Train Adventure'
+                'The Platform at the End of the World'
             );
         });
 

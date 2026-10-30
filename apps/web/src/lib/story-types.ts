@@ -12,7 +12,7 @@ export enum StoryId {
 }
 
 export const STORY_NAMES: Record<StoryId, string> = {
-    [StoryId.TRAIN_ADVENTURE]: 'Train Adventure',
+    [StoryId.TRAIN_ADVENTURE]: 'The Platform at the End of the World',
     [StoryId.DONT_SAVE_ME_BEFORE_MIDNIGHT]: "Don't Save Me Before Midnight",
     [StoryId.THE_SEVENTH_MIRROR]: 'The Seventh Mirror',
     [StoryId.ELEVATOR_GAME]: 'The Elevator Game',

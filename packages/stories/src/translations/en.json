@@ -70,14 +70,14 @@
     "saveFailed": "Failed to save character setup. Please try again."
   },
   "adventure": {
-    "title": "Train Adventure",
-    "desktop_only_notice": "Train Adventure is currently only playable in the desktop app. Download the desktop build to continue your journey."
+    "title": "The Platform at the End of the World",
+    "desktop_only_notice": "The Platform at the End of the World is currently only playable in the desktop app. Download the desktop build to continue your journey."
   },
   "stories": {
     "title": "Select Story",
     "heading": "Select Your Story",
-    "trainAdventure": "Train Adventure",
-    "trainAdventureDesc": "A journey across borders, strangers becoming something more.",
+    "trainAdventure": "The Platform at the End of the World",
+    "trainAdventureDesc": "The last train out of Shinjuku stops at a station under two purple moons. The next one is due in twenty years.",
     "dontSaveMeBeforeMidnight": "Don't Save Me Before Midnight",
     "dontSaveMeBeforeMidnightDesc": "A quiet confession whispered at the edge of night.",
     "theSeventhMirror": "The Seventh Mirror",

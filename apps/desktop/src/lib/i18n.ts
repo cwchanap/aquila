@@ -13,7 +13,7 @@ export function getLocale(): Locale {
             return stored;
         }
     }
-    return 'zh'; // Default to Chinese for Train Adventure
+    return 'zh'; // Default to Chinese for The Platform at the End of the World
 }
 
 export function setLocale(locale: Locale): void {

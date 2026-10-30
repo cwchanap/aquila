@@ -70,14 +70,14 @@
     "saveFailed": "キャラクター設定を保存できませんでした。もう一度お試しください。"
   },
   "adventure": {
-    "title": "列車の冒険",
-    "desktop_only_notice": "列車の冒険は現在デスクトップアプリでのみ遊べます。デスクトップ版をダウンロードして旅を続けてください。"
+    "title": "世界の果てのホーム",
+    "desktop_only_notice": "世界の果てのホームは現在デスクトップアプリでのみ遊べます。デスクトップ版をダウンロードして旅を続けてください。"
   },
   "stories": {
     "title": "物語を選ぶ",
     "heading": "物語を選んでください",
-    "trainAdventure": "列車の冒険",
-    "trainAdventureDesc": "国境を越える旅。見知らぬ二人が、少しずつ近づいていく。",
+    "trainAdventure": "世界の果てのホーム",
+    "trainAdventureDesc": "新宿発の終電が停まったのは、二つの紫の月が浮かぶ寂海駅。時刻表には「次の列車は二十年後」とあった。",
     "dontSaveMeBeforeMidnight": "真夜中まで救わないで",
     "dontSaveMeBeforeMidnightDesc": "夜の果てで、そっと打ち明けられる告白。",
     "theSeventhMirror": "神鏡七日",

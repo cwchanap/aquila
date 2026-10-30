@@ -2,6 +2,7 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列車抵達佐久市時,已經是深夜十一點。李杰走出車站,在附近找了一家便宜的商務旅館。" },
@@ -36,12 +37,12 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在東京工作時,這類店是他的愛好之一。他喜歡這裡誇張的熱情和不真實的溫暖。" },
     { characterId: CharacterId.Maid, character: "女僕", dialogue: "歡迎回家,主人!今天想喝點什麼呢?" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "穿著蕾絲洋裝的女僕熱情地招呼他。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "...紅茶就好。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "...紅茶就好。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他機械性地回答,坐在角落的位置。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰坐在角落的位置,看著窗外的街道。天色漸暗,路燈一盞盞亮起。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "女僕端來紅茶,在杯子上畫了個愛心形狀的拉花。" },
     { characterId: CharacterId.Maid, character: "女僕", dialogue: "主人看起來很累呢。要不要吃點甜點?我們的蛋糕很好吃喔!" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不用了,謝謝。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不用了,謝謝。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "女僕笑著離開了。李杰端起茶杯,喝了一口。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "紅茶的味道很普通,但至少是溫暖的。他想起澪泡的紅茶。她總是能掌握完美的溫度和濃度。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "還有繪里花做的料理。她的廚藝很好,每一道菜都色香味俱全。" },
@@ -53,7 +54,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這些聲音曾經是他生活的一部分。但現在,它們都離他好遠。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "晚上十點,李杰走進一家網咖。這是他這幾天的固定行程。" },
     { characterId: CharacterId.Clerk, character: "店員", dialogue: "您好,請問要住宿方案嗎?" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "對,十二小時。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "對,十二小時。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "店員遞給他一張會員卡和一個小隔間的鑰匙。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰走進隔間。空間很狹小,只有一台電腦、一張椅子和一個可以斜躺的座位。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但這裡很安全。沒有人會問他是誰,也沒有人會在意他為什麼每天都來。" },
@@ -70,7 +71,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看著這則簡訊,眉頭皺了起來。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪...只有澪。簡訊裡沒有提到繪里花。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的手指顫抖著,快速打字回覆。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花呢?她怎麼樣了?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花呢?她怎麼樣了?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他按下發送,盯著螢幕等待回覆。一分鐘過去了,兩分鐘過去了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "終於,手機再次震動。" },
     { characterId: CharacterId.Message, character: "簡訊內容", dialogue: "見到澪,你就會知道。" },

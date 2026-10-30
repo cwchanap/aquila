@@ -2,6 +2,7 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男B離開後，房間陷入令人窒息的沉默。" },
@@ -19,7 +20,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "時間一秒一秒地流逝。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰知道，等電腦被帶回來，他的謊言就會被揭穿。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他必須趁現在多了解一些情況。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你們...到底在找什麼？中村隼人...他到底是什麼人？為什麼你們要這麼大費周章地調查他？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你們...到底在找什麼？中村隼人...他到底是什麼人？為什麼你們要這麼大費周章地調查他？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的聲音打破了沉默，努力讓聲音聽起來困惑而好奇。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A抬起頭，冷冷地看著他，然後發出一聲冷笑。" },
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "你真的想知道？" },
@@ -29,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "你只需要知道，中村是個麻煩。我們知道他在9月23日晚上搭上了那班列車，然後就像其他人一樣，消失了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的心臟跳得更快了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他們知道列車的秘密嗎？知道那些人去了哪裡？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你們...知道那些人去了哪裡？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你們...知道那些人去了哪裡？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "這不是你該問的問題。我們在調查中村的真實目的——他為什麼要搭那班車？他想要做什麼？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他向前傾身，逼近李杰。" },
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "而你的照片出現在他的辦公室，這絕不是巧合。" },
@@ -50,7 +51,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A停頓了一下，似乎在觀察李杰的反應。" },
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "20年前，2005年9月23日，渡邊陸就是當時失蹤列車的乘客之一。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰感到腦中一片空白。20年前...那就是恵美和凌墨失蹤的那一次。渡邊陸...和他們在同一班車上？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "但...但那不可能...如果他20年前就失蹤了，怎麼可能又出現在這次的列車上？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "但...但那不可能...如果他20年前就失蹤了，怎麼可能又出現在這次的列車上？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的聲音顫抖著，腦中充滿了困惑。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "如果渡邊陸從異世界回來了，就像李杰自己一樣，為什麼李杰在列車上沒見過他？為什麼完全沒有任何痕跡？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A似乎看穿了李杰的困惑，嘴角勾起一個冷笑。" },
@@ -58,7 +59,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他抬起頭，眼神變得更加銳利，像刀子一樣刺向李杰。" },
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "渡邊陸...和你的父親有聯繫。你的父親，李明遠。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那個名字像一顆炸彈在李杰腦中爆炸。他父親的名字，一個他已經很多年沒有聽到的名字。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "什麼...你在說什麼..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "什麼...你在說什麼...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的聲音顫抖著，臉色變得蒼白。黑西裝男A盯著李杰震驚的表情，眼中閃過一絲滿意。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間裡只剩下那個低沉的嗡嗡聲，還有李杰劇烈的心跳聲。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "時間彷彿凝固了。" },

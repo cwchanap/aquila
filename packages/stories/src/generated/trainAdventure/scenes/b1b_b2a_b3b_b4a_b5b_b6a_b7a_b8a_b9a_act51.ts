@@ -2,6 +2,7 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰一瘸一拐地走在前往銀月湖的道路上。" },
@@ -14,17 +15,17 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "屋內依然整潔，床鋪、桌子、椅子，一切都和離開時一樣。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他關上門，脫下背包，重重地坐在床邊。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "雙手撫著臉，深深地嘆了口氣。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）我...到底做錯了什麼..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）我...到底做錯了什麼...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "恵美的眼神、明日香的質問、陽菜的哭泣..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那些畫面在腦海中不斷迴盪，揮之不去。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）如果我再穿越一次...能改變這一切嗎？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）如果我再穿越一次...能改變這一切嗎？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他抬起頭，看著窗外的雙月。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）但...我真的能再救回所有人嗎？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）但...我真的能再救回所有人嗎？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但其他人...山本大叔、田中、佐藤、凌墨..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "還有那些精靈..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他們全部都死了。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）如果我再試一次...會不會有不同的結果？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）還是...會變得更糟？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）如果我再試一次...會不會有不同的結果？", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）還是...會變得更糟？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的腦海中閃過各種可能性，各種選擇，各種後果。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但越想越亂，越想越迷茫。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "疲憊如潮水般襲來，眼皮變得越來越重。" },
@@ -42,10 +43,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他坐起身，環顧四周。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "小屋依然安靜，窗外的霧氣似乎淡了一些。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他深吸了一口氣，慢慢平復心情。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）我...必須再試一次。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）我...必須再試一次。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的眼神變得堅定。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）即使不確定結果...我也要試。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）這是我唯一能做的事了。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）即使不確定結果...我也要試。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）這是我唯一能做的事了。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他站起身，走到櫃子前，拿出一些乾糧和水。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "快速吃完後，檢查了背包裡的物資。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "手電筒、折疊刀、精靈藥膏、能量棒...都還在。" },
@@ -77,7 +78,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "巨大的拱門入口，上方刻著複雜的紋路，整座建築如同陵墓。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這就是終焉祭壇。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但讓李杰驚訝的是，前方還有另一個熟悉的輪廓。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（停下腳步，瞪大了眼睛）那是...火車？！" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（停下腳步，瞪大了眼睛）那是...火車？！", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在前方不遠處，軌道旁邊停著一列火車。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "正是他們乘坐的那列午夜列車。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車身依然漆黑，窗戶透出微弱的光芒。" },

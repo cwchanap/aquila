@@ -34,6 +34,11 @@
       "voiceId": "EVmK7c3z026INySFvQLP",
       "voiceName": "Mio - Casual and Friendly",
       "notes": "19, Mio's best friend since freshman year: a mid-range, slightly husky, warm and approachable voice, the relatable best friend. Short, practical lines that mix care with a little bossiness. Picked by Hapadona from three auditions (Casual & Friendly, Konomi, Momoka) on 2026-10-30."
+    },
+    "clinic_staff": {
+      "voiceId": "HEteSZ3YGHkHosuAQYMF",
+      "voiceName": "Rinko- Friendly Customer Support",
+      "notes": "Generic role for every research-center front-desk staff member. Twenties to thirties, polite keigo, brisk but soft and warm: the receptionist whose smile never changes temperature. Picked from the library without audition."
     }
   }
 }

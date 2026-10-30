@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "敞開的車門外是深不見底的寂靜,彷彿一張等待獵物的巨口。冰冷的空氣持續從外面灌進來,帶著濃郁的鹹味和陌生草木的氣息。" },

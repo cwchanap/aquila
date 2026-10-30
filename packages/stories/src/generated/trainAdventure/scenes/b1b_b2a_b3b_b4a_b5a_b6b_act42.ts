@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰和凌墨立刻轉身，朝著森林的方向狂奔！他們的腳步聲在夜色中迴響，心跳如擂鼓。" },

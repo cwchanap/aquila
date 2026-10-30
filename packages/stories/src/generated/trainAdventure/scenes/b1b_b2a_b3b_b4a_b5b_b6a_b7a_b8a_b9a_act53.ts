@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "美咲的哭泣聲漸漸變小,但身體依然在顫抖。李杰靜靜地坐在她身邊,等待著她情緒穩定。" },

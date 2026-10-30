@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "房間裡一片寂靜。只有夜風吹動窗外樹葉的沙沙聲。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "回到家後李杰躺在床上盯著天花板，窗外偶爾傳來汽車駛過的聲音和遠處的狗吠聲，一切都那麼平靜而真實。" },

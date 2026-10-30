@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰呆立在衣櫃前,雙手顫抖著垂在身側。手中的劍尖觸碰地板,發出輕微的金屬聲響。" },

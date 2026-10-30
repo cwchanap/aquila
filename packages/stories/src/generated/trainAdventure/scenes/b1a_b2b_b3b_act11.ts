@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰扶著斎藤蓮在霧中緩慢前進。斎藤受傷的腳讓他們的速度慢得令人絕望，每走幾步就要停下來休息。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "濃霧逐漸散去，眼前的視野慢慢開闊。最先映入眼簾的，是一片柔和的光芒——不是刺眼的陽光，而是一種介於月光與螢火之間的銀藍色輝光，彷彿整個世界都浸潤在夢境之中。" },

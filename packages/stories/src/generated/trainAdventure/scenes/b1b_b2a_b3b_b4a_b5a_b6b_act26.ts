@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "車門打開後,眾人都愣住了。窗外是一片灰暗的景色,月台空蕩蕩的,看不到任何人影。遠處隱約可見森林的輪廓。" },

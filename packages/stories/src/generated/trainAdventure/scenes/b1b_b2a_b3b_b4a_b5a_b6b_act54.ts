@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.KobayashiYudai, character: "小林雄大", dialogue: "(舉起雙手)大家冷靜！請聽我說！這位小兄弟和山本大叔剛才是去——" },

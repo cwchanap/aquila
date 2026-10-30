@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "(嚴肅地)從現在開始,我會增派守衛和巡邏隊。" },

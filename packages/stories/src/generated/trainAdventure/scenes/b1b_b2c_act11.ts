@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "晚餐後，兩人坐在桌邊，氣氛漸漸放鬆下來。屋外的森林依然籠罩在詭異的紫色月光下，但屋內的溫暖讓人暫時忘卻了外面的危險。" },

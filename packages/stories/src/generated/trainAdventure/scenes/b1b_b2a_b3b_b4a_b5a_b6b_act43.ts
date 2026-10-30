@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.LingMo, character: "凌墨", dialogue: "李杰...我們能不能去其他車廂談一談？", portrait: Portrait.LingMo_Base },

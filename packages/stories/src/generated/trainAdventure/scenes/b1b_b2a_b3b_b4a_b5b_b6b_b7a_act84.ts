@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的腦中飛快地運轉。他必須做點什麼。但他能做什麼？雙手被綁著，沒有工具，沒有武器。中村就坐在旁邊，隨時盯著他。" },

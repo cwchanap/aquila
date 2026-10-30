@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看著恵美期待的眼神,又看向三條被濃霧吞沒的路徑。他回想起她在森林裡異常的平靜,以及她能聽懂地圖上文字的短暫異樣。" },

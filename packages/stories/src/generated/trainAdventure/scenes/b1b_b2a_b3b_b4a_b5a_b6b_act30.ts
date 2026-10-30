@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列車繼續在黑暗中行駛。車廂內,李杰靠在座位旁,盯著倒在地上的健太。健太依然一動不動,呼吸平穩,像是陷入了沉睡。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShimizuEmi, character: "清水恵美", dialogue: "（看著斎藤，眼中閃過一絲希望）艾拉如先生...我們可以試試看讓斎藤先生...", portrait: Portrait.ShimizuEmi_Base },

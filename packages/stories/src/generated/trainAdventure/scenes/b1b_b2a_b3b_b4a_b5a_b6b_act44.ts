@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不知道過了多久。列車緩緩減速，發出一聲長長的汽笛聲。「嗚——」「咔嚓——」車門打開了。車廂裡的氣氛變得緊張起來。" },

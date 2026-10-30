@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰站在月台與大廳的交界處,看著兩個截然不同的方向。沿著鐵軌前進的路,消失在翠綠湖面與銀光交織的遠方,而通往建築核心的幽暗長廊,則在大廳盡頭靜靜等待。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（看到美咲，眼中閃過驚喜）妳是...那個受傷的女孩！太好了！看起來完全康復了！", portrait: Portrait.YamamotoKoji_Base },

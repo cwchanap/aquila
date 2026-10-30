@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(立刻回應)大叔,我跟你一起去!那些學生太衝動了,萬一在森林裡出事就糟了。我們不能讓他們就這樣亂跑。", portrait: Portrait.LiJie_Base },

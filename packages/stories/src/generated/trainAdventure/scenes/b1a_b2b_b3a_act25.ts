@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "大屋內部寬敞明亮。牆上掛著發光的植物，散發著柔和的銀藍色光芒。空氣中飄散著淡淡的草藥香氣，讓人感到安心。" },

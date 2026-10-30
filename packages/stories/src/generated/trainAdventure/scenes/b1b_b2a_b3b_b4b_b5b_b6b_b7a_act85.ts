@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二天早上七點半,李杰和澪一起出門。他們搭電車前往品川,車廂裡擠滿了上班族,每個人都面無表情地盯著手機。" },

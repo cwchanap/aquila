@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "下午六點，李杰換上旅館提供的浴衣，準備去一樓的宴會廳吃晚餐。他走出房間，沿著二樓的走廊往樓梯方向走去。" },

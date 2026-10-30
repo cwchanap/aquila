@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列車到達新宿站，車門緩緩打開。李杰下了車走向出口。新宿站是東京最繁忙的車站之一，即使是晚上十點，站內依然人來人往。" },

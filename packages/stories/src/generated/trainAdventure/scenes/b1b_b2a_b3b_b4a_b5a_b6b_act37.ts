@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ItoMakoto, character: "伊藤誠", dialogue: "殺光你們...！全部都給我死——！", portrait: Portrait.ItoMakoto_Base },

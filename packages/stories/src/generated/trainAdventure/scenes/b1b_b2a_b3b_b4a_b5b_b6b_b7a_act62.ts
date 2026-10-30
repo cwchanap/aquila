@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "四月三十日，上午十點。林婉如提著購物袋出門去菜市場。她說中午要做糖醋小排，得去買新鮮的豬肋排。" },

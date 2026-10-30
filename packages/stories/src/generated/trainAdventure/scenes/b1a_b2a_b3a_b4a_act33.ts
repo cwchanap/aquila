@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShimizuEmi, character: "清水恵美", dialogue: "(突然想起什麼)對了!李杰先生,你看那邊!", portrait: Portrait.ShimizuEmi_Base },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "三人在濃霧中緩慢前行。李杰背著恵美，山本大叔走在旁邊。走了約十分鐘後，恵美突然開口，聲音虛弱但清晰。" },

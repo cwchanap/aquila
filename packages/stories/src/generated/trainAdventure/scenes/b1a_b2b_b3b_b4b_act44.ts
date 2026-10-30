@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰坐在牆邊,看著窗戶那邊的殭屍在原本的房間裡遊蕩。他們搖搖晃晃地撞來撞去,像是沒有目標的機器。" },

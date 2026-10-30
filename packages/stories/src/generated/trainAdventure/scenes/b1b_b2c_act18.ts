@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清晨——雖然這個世界沒有真正的清晨，但李杰和明日香還是習慣用這個詞來標記他們休息後的醒來時刻。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "第二天早上，陽光透過窗簾照進房間。李杰被海鷗的叫聲喚醒。他走到窗邊，看到一片蔚藍的大海。海浪輕輕拍打著沙灘。遠處有幾艘漁船在海上作業。" },

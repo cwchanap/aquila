@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.TakahashiMisaki, character: "高橋美咲", dialogue: "（聽到拓海的聲音，眼睛瞬間亮起）拓海？拓海！", portrait: Portrait.TakahashiMisaki_Base },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "凌墨...你和姐姐回來之後,為什麼...不來找我?" },

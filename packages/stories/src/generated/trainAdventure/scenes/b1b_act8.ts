@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰握著劍,跟著焦急的姐弟倆衝出車站大廳。他的腳步聲在空蕩的月台上迴響,心中湧起一股不祥的預感。" },

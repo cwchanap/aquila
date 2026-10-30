@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰快步穿過一節又一節空蕩的車廂,腳步聲在寂靜中格外清晰。他必須盡快回去告訴其他人——所有的門都鎖死了,有人離開了列車。" },

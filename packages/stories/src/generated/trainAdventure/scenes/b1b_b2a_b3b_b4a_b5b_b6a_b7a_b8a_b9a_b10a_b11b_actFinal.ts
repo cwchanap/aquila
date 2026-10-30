@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "接下來的一週,他們被安排在軍事設施的一個小區域內。每人有一個獨立的房間,雖然簡陋,但足夠居住。白色的牆壁,簡單的床鋪,一張桌子,一把椅子,除此之外什麼都沒有。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "夜幕降臨。李杰坐在酒店房間的書桌前，看著桌上的兩個盒子。藍色和紅色，在燈光下安靜地躺著。" },

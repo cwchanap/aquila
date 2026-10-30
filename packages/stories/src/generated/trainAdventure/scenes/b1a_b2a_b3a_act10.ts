@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰推開木屋的門，一股乾燥而帶著淡淡木頭清香的溫暖空氣撲面而來，與屋外濕冷的濃霧形成了鮮明對比。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "(緩緩開口,聲音帶著凝重)你...你不是一個普通的人類。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列車在黑暗中行駛,車輪與鐵軌的摩擦聲在寂靜的車廂內迴盪。田中健太和佐藤拓海扶著李杰坐在座位上,幫他簡單地處理了腿上的傷口。山本浩二則守在昏迷的中村隼人身旁,確保他不會有任何動作。" },

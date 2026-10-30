@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰扶著小林智子走進屋內。母子三人的重逢讓整個小屋充滿了溫暖，但李杰的注意力很快被另一個景象吸引。" },

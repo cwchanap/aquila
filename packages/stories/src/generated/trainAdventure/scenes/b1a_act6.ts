@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列車的轟鳴聲徹底消失在黑暗中，月台上陷入了死一般的寂靜。只剩下冰冷的海風吹過眾人臉頰的聲音，以及頭頂兩輪紫色殘月投下的詭異光芒。" },

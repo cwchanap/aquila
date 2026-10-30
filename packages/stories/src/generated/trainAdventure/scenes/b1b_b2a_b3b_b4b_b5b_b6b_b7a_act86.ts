@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "五個人一起離開辦公室。品川的街道很熱鬧,到處是吃午餐的上班族。清水帶他們走進一家小定食屋,店裡瀰漫著味噌湯和烤魚的香味。" },

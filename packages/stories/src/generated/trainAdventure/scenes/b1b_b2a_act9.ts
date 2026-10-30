@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看著眼前緊緊相依的母子三人,又望向那條通往未知黑暗的鐵軌。紫月的光芒灑在他們身上,將他們的影子拉得很長。" },

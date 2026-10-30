@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰吃完便當，扔掉便當盒，站起身來。夜色已深，他該回家了。他坐上電車，回到三軒茶屋。從車站走回家，只需要十分鐘。" },

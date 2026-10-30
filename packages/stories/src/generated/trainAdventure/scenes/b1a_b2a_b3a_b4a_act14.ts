@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShimizuEmi, character: "清水恵美", dialogue: "(輕聲說,望著遠方的濃霧) 能和家人在一起...真好呢...", portrait: Portrait.ShimizuEmi_Base },

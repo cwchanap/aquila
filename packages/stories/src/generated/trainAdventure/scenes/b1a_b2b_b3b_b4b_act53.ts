@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "隔天早上，李杰頂著黑眼圈來到學校。他一夜沒睡，腦子裡全是那張照片。上午的課，李杰根本聽不進去。好不容易撐到午休時間。" },

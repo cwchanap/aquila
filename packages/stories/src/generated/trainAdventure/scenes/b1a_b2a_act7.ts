@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.LiJie, character: "李杰", dialogue: "大叔，我想在這裡再找找線索，說不定能發現什麼有用的東西。你們先走，我隨後就跟上。", portrait: Portrait.LiJie_Base },

@@ -1,5 +1,9 @@
 # 第二幕：漫長的隧道
 
+```bg
+Chuo Line carriage moving through the Tokyo night, blurred neon signs and apartment window lights streaming past the windows as streaks of light, relaxed sleepy atmosphere; four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) chatting and yawning mid-carriage, Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap sitting by the window with eyes closed, Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook drawing quietly, other commuters dozing, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
+
 **旁白**：列車平穩地行駛著，車輪與軌道的撞擊聲形成催眠般的韻律——咔噠、咔噠、咔噠。窗外的城市燈火匯成流動的光河，霓虹招牌、路燈、公寓窗戶的暖光，全都化作模糊的光點。
 
 **旁白**：車廂內，除了那四個大學生偶爾的笑鬧聲，大部分乘客都在閉目養神或滑著手機。有人戴著耳機，頭輕輕搖晃；有人靠著窗戶，半夢半醒。一切都是如此平凡，如此令人安心。
@@ -13,6 +17,10 @@
 **沉穩男大生**：明天再說吧。先回家再說。
 
 **李杰**：(內心)總算能安靜一下了⋯⋯這週末也真夠累的。派對、應酬、假笑⋯⋯有時候真想就這樣一個人待著，什麼都不用想。
+
+```bg
+same carriage after entering a tunnel, windows turned pitch black and acting as mirrors reflecting tired faces, cold white ceiling lights, unease beginning; Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap awake by the window checking his phone, passengers looking up uneasily, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
 
 **旁白**：就在這時，列車前方出現了隧道的入口——一個巨大的、漆黑的洞口，像一張沉默的巨口。列車毫不遲疑地駛了進去。
 
@@ -45,6 +53,10 @@
 **旁白**：他的目光移向螢幕頂端——「沒有服務」四個字，清晰地顯示在狀態欄裡。信號格全空。
 
 **李杰**：(內心)二十分鐘⋯⋯這絕對不正常。這條隧道我走過無數次，最多五分鐘就能通過。現在卻⋯⋯不只是我⋯⋯
+
+```bg
+tense carriage in a long tunnel, black mirror-like windows, passengers rising from their seats in alarm; Saito Ren, a young man with rimless glasses in a navy blazer over a white tee standing and pushing up his glasses with sweat on his forehead, Yamamoto, a sturdy man in his late 40s with grey at the temples in a grey suit jacket and striped tie standing calmly facing Nakamura, a thin balding salaryman in a crumpled navy suit who is shouting, the Ito couple (a scowling man in a white shirt with rolled sleeves and loosened navy tie, and an anxious woman in a grey cardigan over a cream blouse) arguing, the Kobayashi family (a mother in a cream cable-knit cardigan with a low side ponytail holding her crying ten-year-old son in a navy t-shirt, and a composed twelve-year-old girl in low pigtails, white cardigan and pale-blue dress), four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) huddled together looking at their phones, Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook in the far corner calmly drawing spiral symbols, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
 
 **旁白**：與此同時，車廂另一頭的寧靜被徹底打破了。
 
@@ -111,6 +123,10 @@
 **旁白**：她的手沒有停下，彷彿那些圖案早已刻在她的腦海深處，只是通過她的手被複製到紙上。
 
 **李杰**：(內心)在這種時候⋯⋯她還在畫畫？而且畫的是⋯⋯那是什麼東西？那些符號⋯⋯為什麼看起來這麼詭異？她好像⋯⋯完全不屬於這裡，彷彿她早就知道會發生什麼⋯⋯
+
+```bg
+carriage interior, a growing cold blue-black glow from the front of the train washing over everyone's faces, passengers crowding to the windows and standing in silent dread, Yamamoto, a sturdy man in his late 40s with grey at the temples in a grey suit jacket and striped tie and four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) and Saito Ren, a young man with rimless glasses in a navy blazer over a white tee staring ahead, Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap in the foreground looking toward the light, Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook still seated, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo
+```
 
 **旁白**：就在車廂內的氣氛越來越凝重，爭吵聲、哭泣聲、質疑聲混雜在一起時——列車前方，黑暗的盡頭，終於滲出了一絲光亮。
 

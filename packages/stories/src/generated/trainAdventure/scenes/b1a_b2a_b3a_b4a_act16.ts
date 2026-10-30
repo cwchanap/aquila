@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "聽到能回到自己世界的希望，李杰的心情激動不已。他深吸了一口氣，努力讓自己的聲音聽起來不那麼顫抖。" },

@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰坐在湖邊的草地上，膝蓋上攤開著那本精靈冊子。明日香坐在他旁邊，靜靜地等待著他的翻譯。銀月湖的水面映照著紫色的月光，微風輕輕吹拂。" },

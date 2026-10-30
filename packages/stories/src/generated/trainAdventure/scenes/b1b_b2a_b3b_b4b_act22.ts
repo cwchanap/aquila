@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰握緊手中的白劍,沿著寬闊的主要道路繼續前進。濃霧依然籠罩著森林,但白劍的光芒為他照亮了前方的道路。" },

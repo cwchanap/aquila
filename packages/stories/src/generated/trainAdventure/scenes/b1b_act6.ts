@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "列車沿著海岸線緩慢而平穩地行駛著。窗外依舊是那片詭異的風景——左側幽深的森林,右側平靜的黑海,天空中兩輪紫色殘月靜靜懸掛。" },

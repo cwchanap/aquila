@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "搭好帳篷後，兩人都累得癱坐在草地上。但經歷了這麼多事情，李杰反而睡不著。他看著眼前平靜的湖面，心中五味雜陳。" },

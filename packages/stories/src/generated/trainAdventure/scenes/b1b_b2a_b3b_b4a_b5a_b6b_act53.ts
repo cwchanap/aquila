@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(看著痛苦的凌墨)大叔,我們得先去第十節車廂。凌墨現在這樣...我們也幫不了他。", portrait: Portrait.LiJie_Base },

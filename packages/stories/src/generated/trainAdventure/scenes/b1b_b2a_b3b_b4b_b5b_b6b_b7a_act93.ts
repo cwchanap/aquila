@@ -3,6 +3,7 @@
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
 import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰走進廚房,這是一個典型的日式小廚房。電鍋、冰箱、瓦斯爐、調味料架——看起來像是普通的家用廚房。" },

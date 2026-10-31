@@ -15,32 +15,33 @@ It is a near-empty last train, so the passengers sit group by group with empty s
 
 Anyone shown standing stands near their own seat, unless the beat needs them elsewhere (Yamamoto at the window in act3_s3).
 
-## Camera angles
+## Camera angles and framing
 
-Each angle has an empty reference image under `packages/assets/media/train_adventure/backgrounds/_reference/`. Pass the matching reference first, then the portraits of the people in the shot.
+Vary both the camera position and the distance from scene to scene; never run the same framing twice in a row. The empty reference images under `packages/assets/media/train_adventure/backgrounds/_reference/` fix the carriage design: pass the closest one first, then the portraits of the people in the shot.
 
-- **A, down the length** (`carriage_master.png`): camera at the door end looking toward the far end. Wide shots that show the whole carriage.
-- **B, reverse wide** (`carriage_reverse.png`): camera at the far end looking back. The right bench is on the left of the frame, near to far: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito. The left bench is on the right of the frame, near to far: Ling Mo; Ito Nana, Ito Makoto; Yamamoto; Li Jie, Emi.
-- **C, across the aisle** (`carriage_side.png`): camera in the aisle facing one bench straight on, framed on one or two groups. Facing the left bench, left to right: Emi, Li Jie; Yamamoto; Ito Makoto, Ito Nana; Ling Mo. Facing the right bench, left to right: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito.
+- **A, down the length** (`carriage_master.png`): camera at the door end looking toward the far end.
+- **B, reverse** (`carriage_reverse.png`): camera at the far end looking back. The right bench is on the left of the frame, near to far: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito. The left bench is on the right of the frame, near to far: Ling Mo; Ito Nana, Ito Makoto; Yamamoto; Li Jie, Emi.
+- **C, across the aisle** (`carriage_side.png`): camera facing one bench straight on. Facing the left bench, left to right: Emi, Li Jie; Yamamoto; Ito Makoto, Ito Nana; Ling Mo. Facing the right bench, left to right: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito.
+- **Free framings** (use `carriage_master.png` for the design): three-quarter diagonal along a bench, low angle from seat height, high angle from the ceiling, over-the-shoulder, close-up and detail insert. Seat positions still follow the plan above.
 
 ## Shot list
 
-| Background | Beat | Angle | Who is in view |
+| Background | Beat | Framing | Who is in view |
 | --- | --- | --- | --- |
-| act1_s0 | Shinjuku platform | platform | Li Jie, students, Saito, Emi, Ling Mo |
-| act1_s1 | Boarding, doors close | A | everyone, spread out in their groups |
-| act2_s0 | City lights, quiet ride | C left, near | Emi, Li Jie |
-| act2_s1 | Into the tunnel | A | everyone, dozing in their groups |
-| act2_s2 | No signal, Saito explains | C right, middle | students, Saito standing |
-| act2_s3 | Ito couple argue | C left, far | Ito couple, Ling Mo in the corner |
-| act2_s4 | Boy cries, Nakamura agitated | C right, far | Kobayashi family, Nakamura |
-| act2_s5 | Emi's spiral drawing | C left, close | Emi, Li Jie |
-| act2_s6 | Blue-black glow ahead | B | everyone, in their groups |
-| act3_s0 | Sea and two moons | C right, middle | students |
-| act3_s1 | Panic | A | everyone, in their groups |
-| act3_s2 | Emi terrified | C left, close | Emi, Li Jie |
-| act3_s3 | Jishui station through the window | C right, near | Saito, Yamamoto at the window |
-| act3_s4 | The door opens, nobody moves | C, facing the open door | Saito, Yamamoto |
+| act1_s0 | Shinjuku platform | wide, platform | Li Jie, students, Saito, Emi, Ling Mo |
+| act1_s1 | Boarding, doors close | A, wide, eye level | everyone, spread out in their groups |
+| act2_s0 | City lights, quiet ride | three-quarter diagonal, medium | Emi, Li Jie (Yamamoto far off) |
+| act2_s1 | Into the tunnel | close-up, side view against the black window | Li Jie (Emi at the edge) |
+| act2_s2 | No signal, Saito explains | low angle, medium | Saito standing, students seated |
+| act2_s3 | Ito couple argue | C, medium, straight on | Ito couple, Ling Mo in the corner |
+| act2_s4 | Boy cries, Nakamura agitated | three-quarter close-up | mother, boy, girl (father, Nakamura blurred) |
+| act2_s5 | Emi's spiral drawing | over-the-shoulder insert | Emi's sketchbook and hand |
+| act2_s6 | Blue-black glow ahead | B, extreme wide | everyone, in their groups |
+| act3_s0 | Sea and two moons | from behind, medium-wide | students at the windows |
+| act3_s1 | Panic | high angle, tilted wide | everyone, in their groups |
+| act3_s2 | Emi terrified | close-up | Emi (Li Jie blurred in front) |
+| act3_s3 | Jishui station | over Yamamoto's shoulder | Yamamoto, the station through the window |
+| act3_s4 | The door opens, nobody moves | straight on at the open door | Saito, Yamamoto |
 
 There is no exterior shot: an outside view of the train never matched the interior, so the station is seen through the windows and the open door.
 

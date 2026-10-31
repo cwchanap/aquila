@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "五年過去了。" },
@@ -28,25 +30,25 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "就在他準備離開時,中野海斗走了過來。他是李杰在這家公司最好的朋友,也是當年幫助他最多的人。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "杰君,今天要不要一起去吃拉麵?我知道車站旁邊新開了一家店,聽說味道很不錯。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看著海斗,笑了笑。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "好啊,我請客。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "好啊,我請客。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "(驚訝地)誒?你今天怎麼這麼大方?是不是升職加薪了?" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(搖頭)沒有,只是想謝謝你這些年來的照顧。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(搖頭)沒有,只是想謝謝你這些年來的照顧。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "海斗愣了一下,然後拍了拍李杰的肩膀。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "說什麼傻話,我們是朋友啊。走吧,趁店裡還沒擠滿人。對了,聽說那家店的叉燒特別好吃,我要加兩片!" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(微笑)你永遠都是這樣,一提到吃的就興奮。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(微笑)你永遠都是這樣,一提到吃的就興奮。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "(哈哈大笑)這叫懂得享受生活!你也該學學,別總是那麼嚴肅。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩人一起走出辦公室,搭電梯下樓。電梯門打開,東京的夜晚展現在眼前——霓虹燈閃爍,人群熙攘,充滿生機。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "(邊走邊說)對了杰君,下個月公司要辦員工旅遊,去箱根泡溫泉。你一定要參加啊,別又說工作忙推辭。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我會考慮的。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我會考慮的。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "什麼叫考慮?就是要去!難得放鬆的機會,而且聽說那邊的溫泉旅館很不錯,晚上還有BBQ派對。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(無奈地笑)好,我去。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(無奈地笑)好,我去。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "這才對嘛!生活嘛,就是要多出去走走,多認識新朋友。說不定還能遇到命中註定的那個人呢!" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰沒有回答,只是靜靜地跟著海斗走在東京的街道上。周圍是下班的人潮,大家都趕著去自己想去的地方——回家、聚餐、約會、購物。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這就是普通的生活。平凡而真實,忙碌卻充實。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有神秘的列車,沒有未知的世界,沒有生死的危機。只有日復一日的工作,和朋友的閒聊,還有偶爾回家看望母親的溫暖。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰抬頭看向天空。東京的夜空看不到星星,只有高樓大廈的燈光和飛機劃過的軌跡。但這就是真實的世界,這就是他選擇的生活。" },
     { characterId: CharacterId.NakanoKaito, character: "中野海斗", dialogue: "(突然回頭)杰君,你在發什麼呆?拉麵店到了,快點快點!" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(回過神)來了。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "(回過神)來了。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰跟著海斗走進拉麵店。溫暖的燈光、熱騰騰的湯汁、談笑的客人...一切都是那麼平凡,那麼美好。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而在這個平凡的夜晚,李杰決定不再回頭。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "過去的就讓它過去。" },

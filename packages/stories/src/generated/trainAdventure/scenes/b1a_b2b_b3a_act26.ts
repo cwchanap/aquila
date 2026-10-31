@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰、山本大叔、艾拉如和那個年輕精靈衝出大屋。恵美也勉強從床上爬起來，跟著走到門口。" },
@@ -27,18 +29,18 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "往北走！前往神樹的方向！帶上孩子和老人，能帶多少東西就帶多少！快！" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "精靈們開始慌亂地行動起來。有的抱起孩子，有的攙扶著老人，年輕力壯的精靈背著年長者。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "整個湖邊陷入一片混亂，但每個精靈都在盡力保持秩序，沒有人發出尖叫或哭喊。他們只是默默地往北方移動，速度盡可能地快。" },
-    { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（握緊拳頭，聲音低沉）我們...我們該怎麼辦..." },
+    { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（握緊拳頭，聲音低沉）我們...我們該怎麼辦...", portrait: Portrait.YamamotoKoji_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "山本大叔的拳頭握得指節發白。他盯著遠處的凌墨，眼中充滿了憤怒和無力感。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "上次在木屋裡，他們三個男人聯手都無法制服這個人。現在又要面對他，該怎麼辦..." },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（看向艾拉如）艾拉如大人...有沒有什麼方法可以阻止他？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（看向艾拉如）艾拉如大人...有沒有什麼方法可以阻止他？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "（表情凝重）那把黑劍...是一把被詛咒的武器。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "它會賦予持有者強大的邪惡力量，讓他們變得幾乎無法被打敗。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "超乎常人的體力、感受不到疼痛、還有那種可怕的戰鬥本能...這些都是黑劍帶來的。" },
-    { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（咬牙）所以根本沒辦法阻止他？" },
+    { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（咬牙）所以根本沒辦法阻止他？", portrait: Portrait.YamamotoKoji_Base },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "（停頓了一下）有一個地方..." },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "北方的神樹。那是我們精靈族最神聖的地方，也是自然之力最強大的地方。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "神樹散發的力量可以壓制附近的邪惡力量。我想...那個人應該不會靠近那個區域。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "那我們躲到那裡應該就安全了？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "那我們躲到那裡應該就安全了？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "（點頭）理論上是這樣。但是..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "艾拉如的目光掃過湖邊慌亂撤離的精靈們。老人動作緩慢，孩子們需要被抱著，年輕的精靈攙扶著年長者。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "疏散需要時間。尤其是孩子和老人，他們走得很慢。" },
@@ -56,14 +58,14 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "（深吸一口氣，轉向李杰等人）我也會留下。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "我會試著吸引他的注意力，把他引向另一個方向。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "在所有族人到達安全區域之前，我們必須阻止他追上撤離的隊伍。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（急切地）但是艾拉如大人，您..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（急切地）但是艾拉如大人，您...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "（打斷他，語氣溫和但堅定）你們跟著族人一起走。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "恵美的傷還沒好，她需要有人照顧。還有..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "艾拉如看著李杰和山本大叔，眼神中帶著懇求。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "如果我們失敗了...請你們保護好我的族人。" },
     { characterId: CharacterId.Ailaru, character: "艾拉如", dialogue: "尤其是孩子們...拜託了。" },
-    { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（握緊拳頭，沉默）..." },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心掙扎）我們...我們真的要逃跑嗎..." },
+    { characterId: CharacterId.YamamotoKoji, character: "山本浩二", dialogue: "（握緊拳頭，沉默）...", portrait: Portrait.YamamotoKoji_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心掙扎）我們...我們真的要逃跑嗎...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "遠處，凌墨還在緩慢地前進。每一步都帶著沉重的壓迫感。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "五個精靈劍士拔出劍，擺好戰鬥姿勢。艾拉如也握緊拳頭，準備迎戰。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而在他們身後，精靈們正拖家帶口地往北方撤離。老人、孩子、婦女...所有人的生命都寄託在這幾個留下的人身上。" },

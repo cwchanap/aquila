@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "宇佐美聽到繪里花的尖叫聲,猛地轉過身。" },
@@ -24,24 +26,24 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪咬緊牙關,轉向李杰。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "主人!快去看繪里花!" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰這才回過神。他衝向倒在地上的繪里花。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花!" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花!", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "繪里花躺在血泊中,臉色蒼白,額頭滿是冷汗。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰蹲下身,查看她的傷勢。子彈擊中了她的腹部右側,鮮血不斷湧出,染紅了她的衣服。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花！妳撐住！" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花！妳撐住！", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "繪里花的嘴唇在顫抖,眼淚從眼角滑落。" },
     { characterId: CharacterId.HaradaErika, character: "原田繪里花", dialogue: "主...主人...好...好痛..." },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "別說話！妳會沒事的！" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "別說話！妳會沒事的！", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰脫下外套,壓在繪里花的傷口上,試圖止血。但血還是不斷滲出。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪艱難地爬到他們身邊。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "主人...你必須馬上離開。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "什麼?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "什麼?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "宇佐美會帶史特林先生的人過來。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "我們兩個都受傷了，無法逃走。但你可以，趁現在快逃。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不！我不能丟下妳們！" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不！我不能丟下妳們！", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "主人，聽我說！史特林先生需要我們活著。他不會殺我們的。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "他會給繪里花治療。至少...我們的命應該能保住。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "但如果你留下來，就會再次被抓住！" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "可是繪里花她...她需要立刻治療!" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "可是繪里花她...她需要立刻治療!", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "史特林先生會給她治療的。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "主人,這是你唯一的機會。快走!" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的眼神堅定。" },
@@ -50,7 +52,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.HaradaErika, character: "原田繪里花", dialogue: "主...主人..." },
     { characterId: CharacterId.HaradaErika, character: "原田繪里花", dialogue: "逃...逃吧..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "繪里花用盡力氣說出這幾個字。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "繪里花...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的手在顫抖。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這是一個不可能的選擇。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "如果他留下來,他會再次被史特林囚禁,失去自由,成為他們的工具。" },

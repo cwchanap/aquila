@@ -2,11 +2,13 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰跟在史特林身後,兩人在森林中穿行了一段時間。史特林突然停下腳步,轉過身。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "你為什麼要跟著我?" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...我怕被警察抓到。史特林先生,你能保護我嗎?或者...幫我回中國?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...我怕被警察抓到。史特林先生,你能保護我嗎?或者...幫我回中國?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "我沒有理由這麼做。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林的語氣平淡,沒有任何情緒波動。但他沒有趕走李杰,只是轉身繼續往前走。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰猶豫了一下,還是跟了上去。他們又走了大約二十分鐘,森林逐漸稀疏,前方出現了開闊地。" },
@@ -17,20 +19,20 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "沒有錢,沒有證件,沒有任何聯絡方式。他現在身無分文,什麼都做不了。如果史特林不幫他...他根本無法生存。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林注意到李杰的表情,停下腳步看著他。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "你身上什麼都沒有,對吧?" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "...是的。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "...是的。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林沉默了幾秒,然後從口袋裡掏出一張卡片和一份文件。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "這是一張借記卡和一張身份證明。都是...非正式管道弄來的。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他把卡片和文件遞給李杰。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "卡裡有些錢,夠你生活幾天。身份證明可以用來住宿,但不要用太久。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "為什麼...你要幫我?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "為什麼...你要幫我?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "我只是不想看到一個人在街頭餓死而已。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林轉向一旁的士兵。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "帶他去最近的火車站。" },
     { characterId: CharacterId.Soldier, character: "士兵", dialogue: "是,長官!" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個年輕的士兵走上前,示意李杰跟他走。李杰看著手中的卡片和證件,再看向史特林。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "謝謝你,史特林先生。還有...請幫我照顧好澪和繪里花。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "謝謝你,史特林先生。還有...請幫我照顧好澪和繪里花。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰猶豫了一下。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "對了,你知道我父親被轉移到哪裡了嗎?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "對了,你知道我父親被轉移到哪裡了嗎?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "不知道。那不在我的管轄範圍內。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林搖了搖頭。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "等澪和繪里花康復後,我會聯絡你。" },
@@ -48,7 +50,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那麼...該去哪裡?李杰的父親被轉移到某個未知的地點囚禁。他在日本沒有任何親戚。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "唯一能想到的,只有他的朋友—中野海斗。但是...他能去找海斗嗎?" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "海斗是個普通的上班族,過著平凡的生活。如果自己去找他,只會把他捲入這場危險的漩渦。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不行...我不能連累他。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不行...我不能連累他。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰搖了搖頭。他必須自己想辦法。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰走進車站,看了看時刻表。最近一班列車開往佐久市,要等一個小時。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他在候車室的長椅上坐下,開始思考接下來的計劃。" },

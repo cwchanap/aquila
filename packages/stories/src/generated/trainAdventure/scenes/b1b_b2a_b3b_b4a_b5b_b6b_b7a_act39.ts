@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A繼續盯著李杰震驚的臉，似乎在享受這種掌控感。" },
@@ -18,18 +20,18 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不對，時間流速不同，那邊的兩年等於這裡的20年..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那渡邊陸在異世界待了多久？他是怎麼回來的？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而且，他回來後為什麼又要搭上那班車？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你...你為什麼要告訴我這些？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你...你為什麼要告訴我這些？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰終於找回自己的聲音，但聲音沙啞而顫抖。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A突然露出一個詭異的笑容。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那不是友善的笑，而是一種冰冷的、帶著嘲諷的弧度。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但他沒有回答，只是靜靜地看著李杰，像在看一個有趣的實驗品。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰盯著那張冷漠的臉，突然明白了什麼。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個可怕的念頭在腦中浮現。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我懂了。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我懂了。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的嘴角也勾起一個笑容，但那是一個苦澀而諷刺的笑。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你們打算在拿到筆電裡的資訊後，殺掉我們兩個，對吧？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你們打算在拿到筆電裡的資訊後，殺掉我們兩個，對吧？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音變得冷靜，甚至帶著一絲嘲諷。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "反正我們都要死了，所以你說多少都無所謂。死人不會洩密，對吧？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "反正我們都要死了，所以你說多少都無所謂。死人不會洩密，對吧？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A的臉色瞬間變了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那種冷漠的表情出現了一絲裂痕，眼神變得更加銳利，帶著一種被看穿的憤怒。" },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "不...不要..." },
@@ -65,9 +67,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "依然沒有回應。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A的眉頭皺了起來，那是他第一次露出明顯的情緒波動。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看到了這一切，嘴角勾起一個微弱的笑容。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "看來...你的同伴出事了？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "看來...你的同伴出事了？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音充滿了嘲諷。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "去了這麼久還沒回來，電話也不接...該不會遇到什麼麻煩了吧？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "去了這麼久還沒回來，電話也不接...該不會遇到什麼麻煩了吧？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A猛地抬頭，銳利的目光刺向李杰。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但他沒有說話，臉色變得更加陰沉。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他再次撥打電話，這次等待的時間更長。" },
@@ -86,9 +88,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不管是什麼原因，這可能是他們唯一的機會。" },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "李先生...我們...我們會死嗎？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "浩介的聲音顫抖著，充滿了絕望。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不會的。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不會的。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的聲音出乎意料地堅定。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我們會活著離開這裡。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我們會活著離開這裡。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他不知道自己哪來的自信說出這句話。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但此刻，他必須相信這一點。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "因為如果放棄希望，那才是真正的死亡。" },

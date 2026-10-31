@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩個女服務生牽著李杰的手，帶他離開那個房間。" },
@@ -19,8 +21,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但剛才發生的事情，讓他完全沒有食慾。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "大輔倒地的聲音還在耳邊迴響。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那溫熱的血液濺在臉上的感覺，還清晰地殘留著。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（低聲）食物...暫時不需要。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "給我一些酒。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（低聲）食物...暫時不需要。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "給我一些酒。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Waiter, character: "馬尾女服務生", dialogue: "（點頭，笑著）好的，主人。" },
     { characterId: CharacterId.Waiter, character: "馬尾女服務生", dialogue: "請稍等片刻。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她鬆開李杰的手，轉身離開房間。" },
@@ -37,7 +39,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "只想忘記剛才發生的事。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "忘記自己親手殺了一個人。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "忘記那雙充滿恐懼和絕望的眼睛。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（放下空杯）再倒。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（放下空杯）再倒。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Waiter, character: "馬尾女服務生", dialogue: "（溫柔地）好的，主人。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "她再次為李杰倒酒。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰繼續喝，一杯接著一杯。" },
@@ -58,8 +60,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰閉上眼睛，靠在柔軟的肩膀上。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "心中湧起一陣複雜的情緒。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "內疚、無奈、還有一絲疲憊。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）為了活下去...為了救海斗..." },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）我沒有選擇。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）為了活下去...為了救海斗...", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（內心）我沒有選擇。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他知道這是事實。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在那個房間裡，他沒有第二條路可走。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不殺大輔，自己和海斗都會死。" },
@@ -72,13 +74,13 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "酒精讓他的頭有些暈。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "思緒變得緩慢而混沌。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他緩緩睜開眼睛，抬起頭。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（聲音有些沙啞）我...有點餓了。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "能幫我拿些食物嗎？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（聲音有些沙啞）我...有點餓了。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "能幫我拿些食物嗎？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Waiter, character: "長髮女服務生", dialogue: "（溫柔地笑）當然，主人。" },
     { characterId: CharacterId.Waiter, character: "馬尾女服務生", dialogue: "我們會請主廚準備餐廳最好的菜餚。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（抬起手）等等。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "準備三份餐點。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我想...和你們一起吃。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（抬起手）等等。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "準備三份餐點。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我想...和你們一起吃。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩個女服務生愣了一下。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後臉上露出驚喜的笑容。" },
     { characterId: CharacterId.Waiter, character: "長髮女服務生", dialogue: "（鞠躬）謝謝主人。" },

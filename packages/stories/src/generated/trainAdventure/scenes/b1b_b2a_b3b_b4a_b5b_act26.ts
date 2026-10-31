@@ -2,22 +2,24 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰走到那個男人面前。對方也注意到了他，視線從人群中移向他。" },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "你好，請問是...李先生嗎？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "是的，我就是@LJ_2025。你是清水先生吧？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "是的，我就是@LJ_2025。你是清水先生吧？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "是的，你好，我叫清水浩介。目前在千葉的一家通訊公司上班。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清水浩介明顯鬆了口氣，伸出手來。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰握住了他的手。對方的手掌溫暖而有力，但能感覺到一絲緊張的顫抖。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我叫李杰。是一名軟體工程師，從上海來東京工作的。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我叫李杰。是一名軟體工程師，從上海來東京工作的。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "讓你特地跑一趟真不好意思。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "沒關係。我住在三鷹，過來也方便。倒是清水先生你，從千葉過來要很久吧？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "沒關係。我住在三鷹，過來也方便。倒是清水先生你，從千葉過來要很久吧？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "我家在船橋，搭總武線直達，其實還好。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "是嗎？我也是搭總武線過來的。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "是嗎？我也是搭總武線過來的。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這條共同的通勤線路，無形中拉近了兩人之間的距離。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "原本陌生的兩個人，因為一條鐵路線，因為一個二十年前的謎團，站在了這裡。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我們找個地方坐下聊吧。這裡人太多了。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我們找個地方坐下聊吧。這裡人太多了。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "好的。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰環顧四周，在附近找了一家掛著紅燈籠的居酒屋。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "透過玻璃窗能看見裡面溫暖的燈光和忙碌的店員。這是那種充滿昭和風情的老式居酒屋，木製的桌椅、泛黃的海報、還有掛在牆上的書法。" },
@@ -29,7 +31,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他們在吧台找到了兩個空位坐下。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "吧台後面是開放式的廚房，師傅正在熟練地翻烤著串燒，火焰不時竄起，發出「呼」的聲響。" },
     { characterId: CharacterId.Clerk, character: "店員", dialogue: "兩位客人喝點什麼？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "兩杯生啤酒，謝謝。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "兩杯生啤酒，謝謝。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "再來一盤枝豆和綜合串燒。" },
     { characterId: CharacterId.Clerk, character: "店員", dialogue: "好的，請稍等！" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "很快，店員將兩杯冒著綿密白色泡沫的生啤酒放在他們面前。" },
@@ -39,9 +41,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "再次感謝你願意聯繫我。我的姐姐，名叫清水恵美...二十年前，她和朋友聚會後，就消失了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清水浩介的聲音帶著壓抑已久的痛苦。" },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "而當時和我一起在便利商店打工的一個同事，叫凌墨，那天也和姐姐在一起...之後也同樣失蹤了。警方什麼都查不到，但我一直覺得，事情沒有那麼簡單。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "凌墨...這個名字聽起來是中國人？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "凌墨...這個名字聽起來是中國人？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰沒有聽過這個名字，但確實聽起來像是中國人的姓名。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "請問，你這位叫凌墨的同事...是中國人嗎？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "請問，你這位叫凌墨的同事...是中國人嗎？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "嗯，他是中國來的留學生，為了賺大學學費，晚上在我打工的便利商店兼職。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清水浩介喝了一口啤酒，繼續說道。" },
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "他那個人很獨立，聽說在日本也沒什麼親戚。所以他失蹤之後...老實說，除了我因為姐姐的事一直記著他，店裡的其他同事，大概也只是以為他找到新工作或回國了，抱怨了幾天就沒再提起了。" },

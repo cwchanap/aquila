@@ -1,5 +1,9 @@
 # 第三幕：寂海車站 
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Medium-wide shot from behind: the camera stands in the aisle behind the four university students, who have scrambled onto their knees on the RIGHT bench and press close to the windows with their backs to the camera, from left to right the boy in a black knit sweater, the bob-haired girl in a lavender cardigan, the ponytailed girl in a denim jacket and the light-brown-haired boy in a black-and-grey track jacket, the track-jacket boy pointing up. Their silhouettes are dark against the huge windows, which show a vast mirror-still black sea under two violet crescent moons, one large and one small, with strange stars between them in an odd slowly rotating pattern; cold violet light spills into the carriage. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：列車穿過了那片詭異的藍黑色光幕。瞬間，一切都變了。車廂內的震動忽然變得極其輕微，列車彷彿漂浮在看不見的軌道上。
 
 **旁白**：刺眼的光芒褪去。一個絕對不應存在的，卻又無比真實的世界，展現在所有乘客眼前。
@@ -32,6 +36,10 @@
 
 **旁白**：「失聯」這兩個字像一把重錘，敲碎了所有人最後的僥倖。
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. High-angle wide shot, tilted: the camera is up near the ceiling at the door end, looking down the length of the carriage at a slanted Dutch angle. Cold violet moonlight; through the windows on the LEFT a towering dark dense forest, through the windows on the RIGHT the black sea and two violet crescent moons. Panic among the groups, still with empty seats between them: on the right bench, Saito Ren (rimless glasses, navy blazer over a white tee) hunched in his end seat nearest the camera clutching his head, the four students huddled together mid-carriage, Nakamura (thin balding man in a crumpled navy suit) on his feet pounding a window with his fist, and at the far end the Kobayashi family, the mother hugging her crying son; on the left bench, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat nearest the camera with Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) beside her, Yamamoto (late-40s man, grey hair, grey suit, striped tie) standing in the aisle looking around, Ito Nana (wife, grey cardigan) on her knees on the floor with her hands pressed together in prayer while Ito Makoto (husband, white shirt with rolled sleeves, navy tie) jabs at his phone, and in the far corner Ling Mo (black hooded sweatshirt, hood pulled low over his face) sitting perfectly still. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **天真弟弟**：媽媽！我害怕！我要回家！我要回家！
 
 **溫柔母親**：寶寶乖⋯⋯不怕不怕⋯⋯我們會回家的⋯⋯
@@ -42,6 +50,10 @@
 
 **旁白**：尖叫聲、哭泣聲、祈禱聲，在車廂內交織成一片混亂。有人跪在地上雙手合十，有人抱頭蜷縮在座位上，有人發瘋般地敲打車窗。
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Close-up on Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook), curled up in the corner seat against the partition, knees drawn up, arms wrapped around herself, trembling, face deathly pale, eyes wide and wet, staring past the camera toward the black sea; in the near foreground at the right edge, slightly out of focus, Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) leans toward her with a worried look; the window behind her shows a towering dark forest; cold violet moonlight on her face. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：李杰環顧四周，看到了各種扭曲的表情。然後，他的目光落在了那個女孩身上。
 
 **旁白**：那個在月台上安靜畫畫的女孩，此刻縮在座位角落，身體劇烈顫抖。她手中的素描本已經滑落在地。雙手緊緊抓著自己的手臂。
@@ -51,6 +63,10 @@
 **李杰**：(內心)她看起來⋯⋯比任何人都還要害怕。那種眼神⋯⋯更像是認識這個地方？
 
 **旁白**：就在眾人陷入極度恐慌之際，列車的速度開始放緩。輪軌的聲音越來越慢，越來越輕，最後幾乎聽不見。
+
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Over-the-shoulder medium shot from just behind Yamamoto (late-40s man, grey hair, grey suit, striped tie), who stands at a RIGHT-side window with one hand on the glass; the window fills most of the frame, and through it the train has stopped beside a tiny lonely seaside station: a bare wet concrete platform, a shabby rusted waiting shelter, a weathered wooden station sign eroded by sea wind bearing the two characters 寂海 in an old-fashioned font, the mirror-still black sea beyond under two violet crescent moons, one large and one small; no lights and nobody on the platform. His grey hair and shoulder frame the left edge; faint reflections of the lit carriage on the glass. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text except the two characters 寂海 on the station sign, no logo
+```
 
 **旁白**：在前方海岸線上，黑暗中，出現了一座孤零零的車站。
 
@@ -67,6 +83,10 @@
 **旁白**：車廂內，所有人都屏住了呼吸，等待著廣播。但是——只有死一樣的寂靜。
 
 **旁白**：在令人窒息的沉默中，車門發出「嘶」的一聲輕響。車門緩緩向兩側滑開。
+
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera in the aisle facing a sea-side sliding door straight on, the door centred in the frame and slid fully open. Through the opening, right outside: a tiny lonely seaside station: a bare wet concrete platform, a shabby rusted waiting shelter, a weathered wooden station sign eroded by sea wind bearing the two characters 寂海 in an old-fashioned font, the mirror-still black sea beyond under two violet crescent moons, one large and one small; no lights and nobody on the platform. Cold sea wind blows in and stirs the hanging straps. Inside, on the end seat just left of the door, Saito Ren (rimless glasses, navy blazer over a white tee) sits frozen, gripping his knees; at the right of the door Yamamoto (late-40s man, grey hair, grey suit, striped tie) stands a step back, hesitant. Both stare at the open door and nobody moves. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text except the two characters 寂海 on the station sign, no logo
+```
 
 **旁白**：一股冰冷的空氣從外面灌了進來——帶著濃郁的鹹味和陌生草木的氣息。月台外，是一片深不見底的黑暗。沒有燈光。沒有人影。
 

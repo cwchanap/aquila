@@ -1,5 +1,157 @@
 {
   "storyId": "train_adventure",
-  "backgrounds": [],
-  "portraits": []
+  "backgrounds": [
+    {
+      "key": "_root/act1_s0",
+      "path": "train_adventure/backgrounds/_root/act1_s0.png",
+      "prompt": "late-night Shinjuku Chuo Line platform at 23:50, cold white fluorescent light, blinking electronic departure board, yellow tactile line, dark tunnel mouth at the far end, scattered late-night crowd; in the foreground Li Jie, a 28-year-old man in a dark suit jacket with a loosened tie and a backpack strap seen from behind standing behind the yellow line; mid-ground four university students (a talkative boy with light-brown hair in a black-and-grey track jacket and graphic tee, a girl with a high ponytail in a denim jacket, a bob-haired girl in a lavender cardigan with a cream shoulder bag, a calm boy in a black knit sweater) laughing in a group while Saito Ren, a young man with rimless glasses in a navy blazer over a white tee stands stiffly at the edge of their circle pretending to scroll his phone; on a bench in the far corner Emi, a young woman with long chestnut hair in a beige cotton dress with white wired earphones and a worn sketchbook sketching alone; in the shadow of a pillar a motionless figure in a black hooded sweatshirt with the hood pulled low over the face, muted cold palette, moody cinematic visual-novel background art, wide establishing shot, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act1_s1",
+      "path": "train_adventure/backgrounds/_root/act1_s1.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera angle A, matching the reference image: standing at the door end looking down the whole length of the carriage toward the connecting door at the far end. Wide shot at standing eye level. Late-night departure just after the doors closed; the windows show the Tokyo night city. The passengers sit group by group with empty seats between the groups, like a near-empty last train. Left bench, near to far: Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat against the partition and Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) beside her; a few empty seats; Yamamoto (late-40s man, grey hair, grey suit, striped tie) alone; a few empty seats; Ito Makoto (husband, white shirt with rolled sleeves, navy tie) and Ito Nana (wife, grey cardigan) side by side; several empty seats; Ling Mo (black hooded sweatshirt, hood pulled low over his face) alone in the far corner. Right bench, near to far: Saito Ren (rimless glasses, navy blazer over a white tee) alone in the end seat by the door; a couple of empty seats; the four university students side by side (the light-brown-haired boy in a black-and-grey track jacket, the ponytailed girl in a denim jacket, the bob-haired girl in a lavender cardigan, the boy in a black knit sweater); a few empty seats; Nakamura (thin balding man in a crumpled navy suit) alone; a few empty seats; the Kobayashi family side by side (the father in a light jacket and polo, the twelve-year-old girl in pigtails, the mother in a cream cardigan with a low side ponytail, the ten-year-old boy in a navy t-shirt). People further down the carriage are small in the distance. Li Jie glances at Emi, who looks down at her sketchbook; the students laugh together; Saito holds his phone but glances at the students. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s0",
+      "path": "train_adventure/backgrounds/_root/act2_s0.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Three-quarter diagonal view, medium shot: the camera stands in the aisle near the door end and looks diagonally down the LEFT bench, which recedes into depth. In the foreground Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) sits in the end seat against the partition, drawing quietly with her earphones in; beside her Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) has his head tipped back against the window, eyes closed, worn out. Beyond them the bench runs away empty for several seats, and Yamamoto (late-40s man, grey hair, grey suit, striped tie) is small and slightly out of focus further down. Through the windows above, blurred neon signs and apartment lights stream past as streaks of light. Calm, sleepy late-night ride. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s1",
+      "path": "train_adventure/backgrounds/_root/act2_s1.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Close-up, side view: Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) sits with his head resting back against the window, eyes closed, face tired and slack. The window behind him has turned pitch black because the train is in a tunnel, and the glass acts as a dark mirror faintly reflecting his face and the lit carriage. At the left edge of the frame, Emi's chestnut hair and beige sleeve are just visible beside him. Shallow depth of field, cold white carriage light. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s2",
+      "path": "train_adventure/backgrounds/_root/act2_s2.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Low-angle medium shot from near seat height in front of the RIGHT bench, looking up: Saito Ren (rimless glasses, navy blazer over a white tee) stands in the aisle at the right, tall in the frame against the ceiling lights and hand straps, pushing up his glasses with a forced confident look and sweat on his forehead. In the lower left foreground the four university students sit side by side looking up at him from their phones, doubtful, from left to right the boy in a black knit sweater, the bob-haired girl in a lavender cardigan, the ponytailed girl in a denim jacket and the light-brown-haired boy in a black-and-grey track jacket. Behind them the windows are pitch black mirrors. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s3",
+      "path": "train_adventure/backgrounds/_root/act2_s3.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera angle C, matching the reference image: standing in the aisle facing the LEFT bench straight on, the bench running across the frame with the windows above it. Framed on the far part of the bench: from left to right Ito Makoto (husband, white shirt with rolled sleeves, navy tie) and Ito Nana (wife, grey cardigan) side by side, the wife anxiously clutching her husband's sleeve, the husband snapping at her irritably; empty seats on both sides of them; at the right end of the bench, in the corner, Ling Mo (black hooded sweatshirt, hood pulled low over his face) sits alone and perfectly still. Behind them the windows are pitch black mirrors. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s4",
+      "path": "train_adventure/backgrounds/_root/act2_s4.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Close-up from a three-quarter angle across the aisle, on the far end of the RIGHT bench: the mother in a cream cardigan with a low side ponytail holds the crying face of the ten-year-old boy in a navy t-shirt against her chest with one arm, staring pale at the phone in her other hand, whose screen is a blank grey loading screen; the twelve-year-old girl in pigtails presses close against her mother's other side, trying to look brave. Further along the bench, out of focus: the father in a light jacket and polo looking around uneasily, and beyond an empty gap Nakamura (thin balding man in a crumpled navy suit) leaning forward and glaring. Behind them the windows are pitch black mirrors. Shallow depth of field. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s5",
+      "path": "train_adventure/backgrounds/_root/act2_s5.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Over-the-shoulder insert from Li Jie's seat, looking down at the sketchbook open on Emi's lap: the page fills the lower half of the frame and clearly shows a strange intricate totem of complex spirals, sharp angles and twisted interlocking lines in an unsettling symmetry; Emi's slender hand holds the pencil mid-stroke; above the page her face, long chestnut hair and white earphones are in soft focus, calm and absorbed; Li Jie's dark suit shoulder blurs the near edge of the frame; the black window behind her. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act2_s6",
+      "path": "train_adventure/backgrounds/_root/act2_s6.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera angle B, matching the reference image: standing at the far end of the carriage by the connecting door, looking back down the whole length toward the door end, whose end wall has a plain grey connecting door with a small window. Extreme wide shot. A cold, deep blue-black glow floods in through every window and washes over the faces. The passengers sit group by group with empty seats between the groups. Bench on the LEFT of the frame, near to far: the Kobayashi family (the ten-year-old boy in a navy t-shirt, the mother in a cream cardigan with a low side ponytail, the twelve-year-old girl in pigtails, the father in a light jacket and polo); empty seats; Nakamura (thin balding man in a crumpled navy suit); empty seats; the four students (the boy in a black knit sweater, the bob-haired girl in a lavender cardigan, the ponytailed girl in a denim jacket, the light-brown-haired boy in a black-and-grey track jacket); empty seats; Saito Ren (rimless glasses, navy blazer over a white tee). Bench on the RIGHT of the frame, near to far: Ling Mo (black hooded sweatshirt, hood pulled low over his face) alone in the corner nearest the camera; empty seats; Ito Nana (wife, grey cardigan) and Ito Makoto (husband, white shirt with rolled sleeves, navy tie); empty seats; Yamamoto (late-40s man, grey hair, grey suit, striped tie); empty seats; Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) and then Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat at the far end. Everyone has turned toward the light in silent dread, a few half-rising from their seats. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act3_s0",
+      "path": "train_adventure/backgrounds/_root/act3_s0.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Medium-wide shot from behind: the camera stands in the aisle behind the four university students, who have scrambled onto their knees on the RIGHT bench and press close to the windows with their backs to the camera, from left to right the boy in a black knit sweater, the bob-haired girl in a lavender cardigan, the ponytailed girl in a denim jacket and the light-brown-haired boy in a black-and-grey track jacket, the track-jacket boy pointing up. Their silhouettes are dark against the huge windows, which show a vast mirror-still black sea under two violet crescent moons, one large and one small, with strange stars between them in an odd slowly rotating pattern; cold violet light spills into the carriage. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act3_s1",
+      "path": "train_adventure/backgrounds/_root/act3_s1.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. High-angle wide shot, tilted: the camera is up near the ceiling at the door end, looking down the length of the carriage at a slanted Dutch angle. Cold violet moonlight; through the windows on the LEFT a towering dark dense forest, through the windows on the RIGHT the black sea and two violet crescent moons. Panic among the groups, still with empty seats between them: on the right bench, Saito Ren (rimless glasses, navy blazer over a white tee) hunched in his end seat nearest the camera clutching his head, the four students huddled together mid-carriage, Nakamura (thin balding man in a crumpled navy suit) on his feet pounding a window with his fist, and at the far end the Kobayashi family, the mother hugging her crying son; on the left bench, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat nearest the camera with Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) beside her, Yamamoto (late-40s man, grey hair, grey suit, striped tie) standing in the aisle looking around, Ito Nana (wife, grey cardigan) on her knees on the floor with her hands pressed together in prayer while Ito Makoto (husband, white shirt with rolled sleeves, navy tie) jabs at his phone, and in the far corner Ling Mo (black hooded sweatshirt, hood pulled low over his face) sitting perfectly still. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act3_s2",
+      "path": "train_adventure/backgrounds/_root/act3_s2.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Close-up on Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook), curled up in the corner seat against the partition, knees drawn up, arms wrapped around herself, trembling, face deathly pale, eyes wide and wet, staring past the camera toward the black sea; in the near foreground at the right edge, slightly out of focus, Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) leans toward her with a worried look; the window behind her shows a towering dark forest; cold violet moonlight on her face. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo"
+    },
+    {
+      "key": "_root/act3_s3",
+      "path": "train_adventure/backgrounds/_root/act3_s3.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Over-the-shoulder medium shot from just behind Yamamoto (late-40s man, grey hair, grey suit, striped tie), who stands at a RIGHT-side window with one hand on the glass; the window fills most of the frame, and through it the train has stopped beside a tiny lonely seaside station: a bare wet concrete platform, a shabby rusted waiting shelter, a weathered wooden station sign eroded by sea wind bearing the two characters 寂海 in an old-fashioned font, the mirror-still black sea beyond under two violet crescent moons, one large and one small; no lights and nobody on the platform. His grey hair and shoulder frame the left edge; faint reflections of the lit carriage on the glass. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text except the two characters 寂海 on the station sign, no logo"
+    },
+    {
+      "key": "_root/act3_s4",
+      "path": "train_adventure/backgrounds/_root/act3_s4.png",
+      "prompt": "the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera in the aisle facing a sea-side sliding door straight on, the door centred in the frame and slid fully open. Through the opening, right outside: a tiny lonely seaside station: a bare wet concrete platform, a shabby rusted waiting shelter, a weathered wooden station sign eroded by sea wind bearing the two characters 寂海 in an old-fashioned font, the mirror-still black sea beyond under two violet crescent moons, one large and one small; no lights and nobody on the platform. Cold sea wind blows in and stirs the hanging straps. Inside, on the end seat just left of the door, Saito Ren (rimless glasses, navy blazer over a white tee) sits frozen, gripping his knees; at the right of the door Yamamoto (late-40s man, grey hair, grey suit, striped tie) stands a step back, hesitant. Both stare at the open door and nobody moves. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text except the two characters 寂海 on the station sign, no logo"
+    }
+  ],
+  "portraits": [
+    {
+      "key": "li_jie/base",
+      "path": "train_adventure/characters/li_jie/base.png",
+      "prompt": "anime visual-novel portrait, 28-year-old Chinese software engineer living in Tokyo, youthful boyish face that reads closer to mid-20s, short black hair with a little lively volume, bright alert curious eyes, energetic confident half-smile, slim build, dark suit jacket over white dress shirt with loosened tie and open collar, backpack strap over one shoulder, upright lively posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "tanaka_kenta/base",
+      "path": "train_adventure/characters/tanaka_kenta/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university student, short dyed light-brown hair, big talkative grin mid-sentence, animated expressive eyebrows, casual zip-up jacket over graphic tee, flushed cheeks from drinking, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "suzuki_asuka/base",
+      "path": "train_adventure/characters/suzuki_asuka/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university girl, high ponytail, bright laughing eyes, cheerful open smile, denim jacket over white top, slightly flushed cheeks from a night out, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "takahashi_misaki/base",
+      "path": "train_adventure/characters/takahashi_misaki/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university girl, chin-length bob with bangs, wide eager eyes, mouth open mid-chatter, pastel cardigan over blouse, small shoulder bag strap, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "sato_takumi/base",
+      "path": "train_adventure/characters/sato_takumi/base.png",
+      "prompt": "anime visual-novel portrait, 21-year-old Japanese university student, short neat black hair, calm composed level gaze, faint reserved smile, plain dark knit sweater, quiet dependable presence, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "saito_ren/base",
+      "path": "train_adventure/characters/saito_ren/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese young man, rimless glasses, neatly styled hair, trying-too-hard smart-casual blazer over plain tee, smug forced half-smile with chin slightly raised, faint beads of nervous sweat on forehead, flushed ears, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "yamamoto_koji/base",
+      "path": "train_adventure/characters/yamamoto_koji/base.png",
+      "prompt": "anime visual-novel portrait, late-40s Japanese man, short dark hair with grey at the temples, sturdy dependable build, warm gentle patient eyes, small laugh lines, rumpled grey suit jacket with loosened tie, calm reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ito_nana/base",
+      "path": "train_adventure/characters/ito_nana/base.png",
+      "prompt": "anime visual-novel portrait, 40-year-old Japanese woman, shoulder-length dark hair with a few grey strands, fine lines around anxious worried eyes, hand clutching her collar, light cardigan over blouse, pale uneasy expression, looks worn down, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ito_makoto/base",
+      "path": "train_adventure/characters/ito_makoto/base.png",
+      "prompt": "anime visual-novel portrait, 40-year-old Japanese man, short black hair with a few grey strands at the temples, visible lines between the brows and beside the mouth, irritable scowl, slightly heavier tired build, white dress shirt with sleeves rolled up and loosened tie, tense impatient posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_shota/base",
+      "path": "train_adventure/characters/kobayashi_shota/base.png",
+      "prompt": "anime visual-novel portrait, 10-year-old Japanese boy, soft round face, short mop of black hair, big teary frightened eyes, small casual t-shirt, clutching the hem of his shirt, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_tomoko/base",
+      "path": "train_adventure/characters/kobayashi_tomoko/base.png",
+      "prompt": "anime visual-novel portrait, mid-30s Japanese mother, long dark hair tied low over one shoulder, gentle tired eyes, soft reassuring worried smile, light knit cardigan, protective maternal presence, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "nakamura_hayato/base",
+      "path": "train_adventure/characters/nakamura_hayato/base.png",
+      "prompt": "anime visual-novel portrait, mid-40s Japanese salaryman, lean slim build, narrow face with slightly hollow cheeks, looks about 45, receding thinning combed-back hair, sweaty forehead, shifty cowardly self-interested eyes, crumpled business suit a bit too big for him, crooked loosened tie, agitated expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "shimizu_emi/base",
+      "path": "train_adventure/characters/shimizu_emi/base.png",
+      "prompt": "anime visual-novel portrait, 20-year-old Japanese university student, long soft chestnut hair over her shoulders, small delicate face, big bright sweet eyes, gentle sunny smile that looks a little shy and tentative, cute approachable air with a hint of timid uncertainty, light beige cotton dress, vintage white wired earphones, holding a worn sketchbook and a thin pencil, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "ling_mo/base",
+      "path": "train_adventure/characters/ling_mo/base.png",
+      "prompt": "anime visual-novel portrait, early-20s East Asian young man, black hooded sweatshirt with the hood pulled low shadowing most of his face, pale sharp jawline, hands in pockets, motionless unreadable presence, only a glint of eyes visible, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_hina/base",
+      "path": "train_adventure/characters/kobayashi_hina/base.png",
+      "prompt": "anime visual-novel portrait, 12-year-old Japanese girl, hair in two low pigtails, composed brave expression despite wary eyes, simple sleeveless dress with a light cardigan, mature beyond her years, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    },
+    {
+      "key": "kobayashi_yudai/base",
+      "path": "train_adventure/characters/kobayashi_yudai/base.png",
+      "prompt": "anime visual-novel portrait, 35-year-old Japanese father, short neat black hair, calm dependable face with a protective alert gaze, light zip-up jacket over a plain polo shirt, smartphone held in one hand, steady responsible posture, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background"
+    }
+  ]
 }

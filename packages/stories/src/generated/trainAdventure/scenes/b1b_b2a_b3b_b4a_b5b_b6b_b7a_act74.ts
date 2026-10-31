@@ -2,11 +2,13 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰撐著身體坐起來，頭痛欲裂。太陽穴一陣一陣地抽痛，像是有人在用針刺。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他揉著額頭，看向床頭櫃上的鬧鐘——下午一點。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "下午一點...？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "下午一點...？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰愣了一下。他睡了這麼久？從昨晚到現在...已經過了十幾個小時。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "不過，幸好今天是週日。不用上班，睡到下午也沒關係。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰坐在床邊，試圖整理思緒。昨晚發生了什麼？" },
@@ -14,7 +16,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "電擊槍。藍白色的電光。劇烈的疼痛。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "然後，他失去意識了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但為什麼他現在在家裡？在自己的床上？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "這不合理..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "這不合理...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰喃喃自語。如果那些黑西裝男人想抓他，為什麼要把他送回家？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這完全說不通。他們用電擊槍擊倒他，然後...把他送回家？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這太荒謬了。" },
@@ -37,7 +39,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的腦中閃過一個念頭——那個黑髮女孩。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "在電車上看到的那個女孩，在三鷹站也下車的那個女孩。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "會不會是她救了他？會不會是她把他送回家的？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不...這太荒謬了..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "不...這太荒謬了...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰搖搖頭。這個想法聽起來太不切實際了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一個年輕女孩，怎麼可能打敗那些訓練有素的黑西裝男人？怎麼可能把一個成年男人搬回家？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而且，如果真的是她救了他，為什麼不叫救護車？為什麼不報警？" },

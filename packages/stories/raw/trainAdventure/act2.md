@@ -1,5 +1,9 @@
 # 第二幕：漫長的隧道
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Three-quarter diagonal view, medium shot: the camera stands in the aisle near the door end and looks diagonally down the LEFT bench, which recedes into depth. In the foreground Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) sits in the end seat against the partition, drawing quietly with her earphones in; beside her Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) has his head tipped back against the window, eyes closed, worn out. Beyond them the bench runs away empty for several seats, and Yamamoto (late-40s man, grey hair, grey suit, striped tie) is small and slightly out of focus further down. Through the windows above, blurred neon signs and apartment lights stream past as streaks of light. Calm, sleepy late-night ride. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：列車平穩地行駛著，車輪與軌道的撞擊聲形成催眠般的韻律——咔噠、咔噠、咔噠。窗外的城市燈火匯成流動的光河，霓虹招牌、路燈、公寓窗戶的暖光，全都化作模糊的光點。
 
 **旁白**：車廂內，除了那四個大學生偶爾的笑鬧聲，大部分乘客都在閉目養神或滑著手機。有人戴著耳機，頭輕輕搖晃；有人靠著窗戶，半夢半醒。一切都是如此平凡，如此令人安心。
@@ -13,6 +17,10 @@
 **沉穩男大生**：明天再說吧。先回家再說。
 
 **李杰**：(內心)總算能安靜一下了⋯⋯這週末也真夠累的。派對、應酬、假笑⋯⋯有時候真想就這樣一個人待著，什麼都不用想。
+
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Close-up, side view: Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) sits with his head resting back against the window, eyes closed, face tired and slack. The window behind him has turned pitch black because the train is in a tunnel, and the glass acts as a dark mirror faintly reflecting his face and the lit carriage. At the left edge of the frame, Emi's chestnut hair and beige sleeve are just visible beside him. Shallow depth of field, cold white carriage light. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：就在這時，列車前方出現了隧道的入口——一個巨大的、漆黑的洞口，像一張沉默的巨口。列車毫不遲疑地駛了進去。
 
@@ -46,6 +54,10 @@
 
 **李杰**：(內心)二十分鐘⋯⋯這絕對不正常。這條隧道我走過無數次，最多五分鐘就能通過。現在卻⋯⋯不只是我⋯⋯
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Low-angle medium shot from near seat height in front of the RIGHT bench, looking up: Saito Ren (rimless glasses, navy blazer over a white tee) stands in the aisle at the right, tall in the frame against the ceiling lights and hand straps, pushing up his glasses with a forced confident look and sweat on his forehead. In the lower left foreground the four university students sit side by side looking up at him from their phones, doubtful, from left to right the boy in a black knit sweater, the bob-haired girl in a lavender cardigan, the ponytailed girl in a denim jacket and the light-brown-haired boy in a black-and-grey track jacket. Behind them the windows are pitch black mirrors. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：與此同時，車廂另一頭的寧靜被徹底打破了。
 
 **活潑女大生**：欸⋯⋯不是吧？我的手機完全沒訊號！連「圈外」都不是，是「沒有服務」耶！這底下是多深啊？我從來沒見過這種狀況⋯⋯
@@ -72,11 +84,19 @@
 
 **旁白**：這位大叔的話像一顆石子投入水中，激起了層層漣漪。原本還抱有僥倖心理的乘客們，臉上最後一絲輕鬆也消失了。
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera angle C, matching the reference image: standing in the aisle facing the LEFT bench straight on, the bench running across the frame with the windows above it. Framed on the far part of the bench: from left to right Ito Makoto (husband, white shirt with rolled sleeves, navy tie) and Ito Nana (wife, grey cardigan) side by side, the wife anxiously clutching her husband's sleeve, the husband snapping at her irritably; empty seats on both sides of them; at the right end of the bench, in the corner, Ling Mo (black hooded sweatshirt, hood pulled low over his face) sits alone and perfectly still. Behind them the windows are pitch black mirrors. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **焦慮妻子**：老公⋯⋯我有點不安⋯⋯你不是說這條路你很熟嗎？這、這是怎麼回事？我們會不會出事了？
 
 **煩躁丈夫**：我怎麼會知道！我又不是司機！妳問我有什麼用！煩死了，一直問一直問！
 
 **焦慮妻子**：你、你幹嘛這樣兇我⋯⋯
+
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Close-up from a three-quarter angle across the aisle, on the far end of the RIGHT bench: the mother in a cream cardigan with a low side ponytail holds the crying face of the ten-year-old boy in a navy t-shirt against her chest with one arm, staring pale at the phone in her other hand, whose screen is a blank grey loading screen; the twelve-year-old girl in pigtails presses close against her mother's other side, trying to look brave. Further along the bench, out of focus: the father in a light jacket and polo looking around uneasily, and beyond an empty gap Nakamura (thin balding man in a crumpled navy suit) leaning forward and glaring. Behind them the windows are pitch black mirrors. Shallow depth of field. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：不遠處，一個小男孩的聲音響起，稚嫩而充滿恐懼。
 
@@ -100,6 +120,10 @@
 
 **旁白**：兩人的爭吵讓車廂內的氣氛更加凝重。有人開始小聲抽泣，有人緊緊抱著包包，還有人呆滯地望著窗外那無盡的黑暗。
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Over-the-shoulder insert from Li Jie's seat, looking down at the sketchbook open on Emi's lap: the page fills the lower half of the frame and clearly shows a strange intricate totem of complex spirals, sharp angles and twisted interlocking lines in an unsettling symmetry; Emi's slender hand holds the pencil mid-stroke; above the page her face, long chestnut hair and white earphones are in soft focus, calm and absorbed; Li Jie's dark suit shoulder blurs the near edge of the frame; the black window behind her. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：一片混亂中，李杰的目光下意識地再次轉向那個安靜的女孩。她像是身處另一個次元。周圍的騷動絲毫沒有影響到她。
 
 **旁白**：她沒有看手機，也沒有望向窗外，更沒有表現出任何恐慌或不安。她只是安靜地坐在那裡，專注於腿上的素描本，手中的鉛筆在紙上流暢地移動。
@@ -111,6 +135,10 @@
 **旁白**：她的手沒有停下，彷彿那些圖案早已刻在她的腦海深處，只是通過她的手被複製到紙上。
 
 **李杰**：(內心)在這種時候⋯⋯她還在畫畫？而且畫的是⋯⋯那是什麼東西？那些符號⋯⋯為什麼看起來這麼詭異？她好像⋯⋯完全不屬於這裡，彷彿她早就知道會發生什麼⋯⋯
+
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera angle B, matching the reference image: standing at the far end of the carriage by the connecting door, looking back down the whole length toward the door end, whose end wall has a plain grey connecting door with a small window. Extreme wide shot. A cold, deep blue-black glow floods in through every window and washes over the faces. The passengers sit group by group with empty seats between the groups. Bench on the LEFT of the frame, near to far: the Kobayashi family (the ten-year-old boy in a navy t-shirt, the mother in a cream cardigan with a low side ponytail, the twelve-year-old girl in pigtails, the father in a light jacket and polo); empty seats; Nakamura (thin balding man in a crumpled navy suit); empty seats; the four students (the boy in a black knit sweater, the bob-haired girl in a lavender cardigan, the ponytailed girl in a denim jacket, the light-brown-haired boy in a black-and-grey track jacket); empty seats; Saito Ren (rimless glasses, navy blazer over a white tee). Bench on the RIGHT of the frame, near to far: Ling Mo (black hooded sweatshirt, hood pulled low over his face) alone in the corner nearest the camera; empty seats; Ito Nana (wife, grey cardigan) and Ito Makoto (husband, white shirt with rolled sleeves, navy tie); empty seats; Yamamoto (late-40s man, grey hair, grey suit, striped tie); empty seats; Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) and then Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat at the far end. Everyone has turned toward the light in silent dread, a few half-rising from their seats. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：就在車廂內的氣氛越來越凝重，爭吵聲、哭泣聲、質疑聲混雜在一起時——列車前方，黑暗的盡頭，終於滲出了一絲光亮。
 

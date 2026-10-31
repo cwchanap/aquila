@@ -2,10 +2,12 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰深吸一口氣。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "對不起...我不能丟下妳們。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "對不起...我不能丟下妳們。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他脫下襯衫,繼續壓在繪里花的傷口上,試圖止血。" },
     { characterId: CharacterId.HasegawaMio, character: "長谷川澪", dialogue: "主人..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "澪的眼中閃過複雜的情緒,有感激,有不捨,也有自責。" },
@@ -24,9 +26,9 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林聽完,眉頭緊鎖。他低聲喃喃自語。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "他們終於開始行動了...沒想到宇佐美也是\"他們\"的人..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林的聲音充滿憤怒和不甘。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "什麼?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "什麼?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰抬起頭,看著史特林。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你說誰開始行動了?" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你說誰開始行動了?", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林沒有回答。這時,幾個穿著軍用制服的醫護人員跑了過來,背著醫療包,推著擔架。" },
     { characterId: CharacterId.Doctor, character: "軍醫", dialogue: "傷者在哪裡?" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "這裡!快!" },

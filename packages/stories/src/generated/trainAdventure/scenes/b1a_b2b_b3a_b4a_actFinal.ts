@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰站在終焉祭壇的入口前。" },
@@ -15,7 +17,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "湖水呈現出澄澈的翠綠色，散發著柔和的光芒。在建築穹頂的最高處，懸掛著一團聖潔的銀白色魔法火焰。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "整個空間莊嚴而神聖，美得不真實。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "月台上空無一人。沒有列車，沒有乘客，什麼都沒有。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（聲音空洞）..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "（聲音空洞）...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看著空蕩蕩的月台，眼神沒有任何波動。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他已經沒有精力去思考為什麼沒有人在這裡，為什麼列車消失了。這些問題已經不重要了。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沿著月台邊緣緩緩前行，腳步機械而沉重。" },

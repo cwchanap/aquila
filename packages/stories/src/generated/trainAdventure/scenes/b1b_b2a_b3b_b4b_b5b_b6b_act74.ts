@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "中村和他的黑衣人們被從兩側包圍。" },
@@ -10,7 +12,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這些士兵訓練有素,步槍對準著中村一行人。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "就在這時,一個穿著西裝的男人從士兵群中走了出來。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看清那張臉,整個人僵住了。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "史特林..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "史特林...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾·史特林。那個在拘留所審問他的美國人。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他臉上帶著自信的笑容,緩緩走向中村。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "中村先生,你沒聽到我的士兵說什麼嗎?" },
@@ -18,14 +20,14 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "中村的臉色陰沉,牙齒咬得咯咯作響。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但他很快就平復下來,恢復了那副狡猾商人的表情。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他環顧四周。上百把槍對著他們。完全沒有勝算。" },
-    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "...放下武器。" },
+    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "...放下武器。", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "中村的聲音平靜,帶著一絲冷笑。" },
-    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "都給我放下武器,不要反抗。" },
+    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "都給我放下武器,不要反抗。", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑衣人們猶豫了一下,但還是服從了命令。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他們緩緩將手槍放在地上,舉起雙手。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "士兵們保持警戒,用槍口對準著這些黑衣人。" },
-    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "我沒想到你們能找到這裡。" },
-    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "我的人應該已經把你們引到另一個方向了..." },
+    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "我沒想到你們能找到這裡。", portrait: Portrait.NakamuraHayato_Base },
+    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "我的人應該已經把你們引到另一個方向了...", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "（大笑）中村先生,你太天真了。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "這種程度的誤導和反間諜工作,在我眼裡就像小孩子過家家。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "史特林走近幾步,眼神銳利。" },
@@ -52,8 +54,8 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "兩側的黑衣人已經放開了他,只是冷冷地看著他。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "中村看著史特林,臉上竟然露出一絲笑容。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "即使在這種劣勢下,他也很快恢復了那副陰險商人的嘴臉。" },
-    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "史特林先生,你這麼大費周章...真是讓我受寵若驚啊。" },
-    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "我只是個合法的商人。我沒有做任何違法的事。" },
+    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "史特林先生,你這麼大費周章...真是讓我受寵若驚啊。", portrait: Portrait.NakamuraHayato_Base },
+    { characterId: CharacterId.NakamuraHayato, character: "中村隼人", dialogue: "我只是個合法的商人。我沒有做任何違法的事。", portrait: Portrait.NakamuraHayato_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "（微笑）中村先生,別裝了。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "我對你的生意不感興趣。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "我感興趣的...是你掌握的情報。" },

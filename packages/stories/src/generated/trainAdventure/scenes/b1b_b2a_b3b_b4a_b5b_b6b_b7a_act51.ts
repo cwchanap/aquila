@@ -2,9 +2,11 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你好，史特林先生。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "你好，史特林先生。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰握住對方的手，能感受到那股堅定的力道。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "請叫我納撒尼爾就好。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾微笑著說，鬆開手。" },
@@ -17,7 +19,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾坐直身子，語氣變得認真。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "我是一名商人，在東京經營一家貿易公司。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "公司的辦公室在霞關，主要做日美之間的商品進出口。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "原來如此。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "原來如此。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰點點頭。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "我雇用了大約二十名日本員工。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾停頓了一下，眼神變得黯淡。" },
@@ -28,7 +30,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的心跳瞬間加速。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "一家四口...八個月前..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "那不就是...9月23日那天嗎？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "他們是...在9月23日失蹤的嗎？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "他們是...在9月23日失蹤的嗎？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "對。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾看向李杰，眼神銳利。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "就是你搭上那班列車的同一天。" },
@@ -54,7 +56,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他可能...還活著？" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "李先生？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾的聲音把李杰拉回現實。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "抱歉，我在回想。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "抱歉，我在回想。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰深吸一口氣。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "宇佐美警部說，你在那班列車上。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾從西裝內袋掏出一個信封。" },
@@ -73,10 +75,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "原來...他叫雄大。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "你...見過他嗎？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾緊盯著李杰，語氣充滿期待。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...有印象。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...有印象。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰緩緩說道。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "那天晚上，車上確實有一家四口。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "父親、母親，還有兩個孩子。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "那天晚上，車上確實有一家四口。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "父親、母親，還有兩個孩子。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "對！就是他們！" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "納撒尼爾向前傾身。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "你知道他們現在在哪裡嗎？他們還好嗎？" },
@@ -86,10 +88,10 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "但那是時間旅行之前的事..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "現在的時間線裡，他可能還活著..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "而且，他根本不能告訴別人自己時間旅行的事。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...不確定。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...不確定。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰選擇了含糊的回答。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "到達那個世界後，大家很快就分散了。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我後來沒有再見過他們。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "到達那個世界後，大家很快就分散了。", portrait: Portrait.LiJie_Base },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我後來沒有再見過他們。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這不算說謊。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "至少在這個時間線裡，他確實不知道那家人的狀況。" },
     { characterId: CharacterId.NathanielSterling, character: "納撒尼爾·史特林", dialogue: "這樣啊..." },

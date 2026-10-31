@@ -2,6 +2,8 @@
 
 import type { DialogueEntry } from '../../../types';
 import { CharacterId } from '../characters';
+import { Portrait } from '../portraits';
+import { Background } from '../backgrounds';
 
 export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男沒有回應李杰關於渡邊陸的疑問，只是把照片收起來，轉身走向門口。" },
@@ -17,13 +19,13 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "LJ_2025,這是你吧？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰感到一股寒意從脊椎竄上。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他沒想到這些人連網路上的蛛絲馬跡都挖了出來。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...我不知道你在說什麼。" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...我不知道你在說什麼。", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他努力讓聲音聽起來困惑,但心臟已經狂跳不止。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "LJ_2025可以是任何人,怎麼就一定是我？" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "LJ_2025可以是任何人,怎麼就一定是我？", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男冷笑一聲,沒有回答。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他把平板收起來,然後毫無預警地——" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "又是一記重拳砸在李杰臉上！" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "啊——！" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "啊——！", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰的頭被打得偏向另一側,耳朵嗡嗡作響,眼前一片白光。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "嘴角的傷口裂開,鮮血順著下巴滴落在衣領上。" },
     { characterId: CharacterId.ManInBlack, character: "黑西裝男A", dialogue: "我最後說一次。" },
@@ -41,7 +43,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "另一個黑西裝男走了進來,他的手裡拖著一個人。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "更準確地說,是拽著那個人的衣領,像拖一個破布袋一樣把他拖進房間。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰看清了那個被拖進來的人,瞳孔瞬間放大。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "清水...先生？！" },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "清水...先生？！", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "清水浩介！" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的臉上有明顯的瘀青,眼鏡不知去向,頭髮凌亂,衣服也皺巴巴的。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男B把他粗暴地扔在地上,浩介發出一聲痛苦的呻吟。" },
@@ -59,7 +61,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "恵美——那個文靜少女。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "凌墨——那個神秘的黑衣男。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "這些人...連他們都盯上了？" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "清水先生..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "清水先生...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰想說什麼,但話語卡在喉嚨裡。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "黑西裝男A慢慢走向浩介,從腰後掏出一把黑色的手槍。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "槍身在冷白色的燈光下泛著金屬光澤,沉默而致命。" },
@@ -79,7 +81,7 @@ export const scene: DialogueEntry[] = [
     { characterId: CharacterId.ShimizuKosuke, character: "清水浩介", dialogue: "告訴他們真相...拜託...我不想死..." },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "李杰感到胸口像被巨石壓住,幾乎無法呼吸。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他看著浩介驚恐的臉,看著那把冰冷的槍,看著黑西裝男毫無情感的眼神。" },
-    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我..." },
+    { characterId: CharacterId.LiJie, character: "李杰", dialogue: "我...", portrait: Portrait.LiJie_Base },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "他的聲音卡住了,腦中一片混亂。" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "該說嗎？說了真相之後,他們會放過浩介嗎？會放過他嗎？" },
     { characterId: CharacterId.Narrator, character: "旁白", dialogue: "還是說,他們會變本加厲,用更殘酷的方式逼問更多細節？" },

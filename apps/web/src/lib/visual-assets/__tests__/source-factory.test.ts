@@ -53,8 +53,14 @@ describe('getAssetResolverSource', () => {
         'day_4012',
         'one_pot_before_dawn',
     ])(
-        'loads bundled artwork for %s even when remote delivery is configured',
+        'reads %s from the production namespace in every environment',
         storyId => {
+            const expected = {
+                environment: 'production',
+                storyId,
+                baseUrl: 'https://assets.example/',
+                target: { kind: 'production' },
+            };
             expect(
                 getAssetResolverSource(
                     storyId,
@@ -64,14 +70,27 @@ describe('getAssetResolverSource', () => {
                         environment: 'production',
                     }
                 )
-            ).toEqual({
-                environment: 'local',
-                storyId,
-                baseUrl: 'https://aquila.example/assets/',
-                target: { kind: 'production' },
-            });
+            ).toEqual(expected);
+            // A preview deployment still reads the production release.
+            expect(
+                getAssetResolverSource(
+                    storyId,
+                    'https://aquila.example/en/reader',
+                    {
+                        baseUrl: 'https://assets.example/',
+                        environment: 'preview',
+                        previewId: 'feature-abc',
+                    }
+                )
+            ).toEqual(expected);
         }
     );
+
+    it('has no short-story artwork source without an asset host', () => {
+        expect(
+            getAssetResolverSource('elevator_game', 'http://localhost:5090', {})
+        ).toBeNull();
+    });
 
     it('returns null for stories without a visual source', () => {
         expect(

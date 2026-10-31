@@ -1,3 +1,4 @@
+import { assetHostUrl } from '@/lib/asset-host';
 import {
     VoiceIndexSchema,
     hasStoryVoice,
@@ -6,8 +7,9 @@ import {
     type VoiceIndex,
 } from '@aquila/stories/voice';
 
-/** Voice files ship with the web app; see the voice-casting skill. */
-export const VOICE_BASE_URL = '/assets/vn/voice';
+/** Voice lives on the R2 asset host, not in the app bundle; see the
+ *  voice-casting skill. */
+export const VOICE_PATH = 'vn/voice';
 
 export interface VoicePlayer {
     /** Fetch which lines of this story have voice. Resolves true once the
@@ -36,7 +38,8 @@ export function createVoicePlayer(
 ): VoicePlayer {
     const createAudio = options.createAudio ?? (src => new Audio(src));
     const fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
-    const baseUrl = options.baseUrl ?? VOICE_BASE_URL;
+    // Without an asset host (a bare local checkout) the dub stays silent.
+    const baseUrl = options.baseUrl ?? assetHostUrl(VOICE_PATH);
     let storyId: string | null = null;
     let scenes: VoiceIndex['scenes'] = {};
     let loading: Promise<boolean> | null = null;
@@ -68,7 +71,7 @@ export function createVoicePlayer(
     }
 
     async function fetchIndex(id: string): Promise<boolean> {
-        if (!hasStoryVoice(id)) return false;
+        if (!baseUrl || !hasStoryVoice(id)) return false;
         try {
             const response = await fetchImpl(
                 `${baseUrl}/${voiceIndexPath(id)}`

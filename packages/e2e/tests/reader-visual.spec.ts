@@ -897,15 +897,15 @@ test.describe('Visual novel reader — prefers-reduced-motion', () => {
     });
 });
 
-// Keep generated upper-body portraits visible above the mobile dialogue panel.
-test('keeps short-story portraits above the dialogue on a phone', async ({
-    page,
-}) => {
+// Keep upper-body portraits visible above the mobile dialogue panel. The
+// short-story art that motivated this lives on the CDN, so the local Mio
+// fixture stands in: both are tall portraits in the same stage slot.
+test('keeps portraits above the dialogue on a phone', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.addInitScript(() => {
         localStorage.setItem('aquila:reader-mode:v1', 'visual');
     });
-    await page.goto('/en/reader?story=elevator_game&scene=act1&dialogue=4');
+    await page.goto(`${READER_PATH}7`);
     const portrait = page.locator('[data-portrait-active="true"]');
     await expect(portrait).toHaveAttribute('data-portrait-state', 'ready');
     const portraitBox = await portrait.boundingBox();

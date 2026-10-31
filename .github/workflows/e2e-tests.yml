@@ -53,13 +53,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build bundled short-story assets
-        # Bundled visual releases are gitignored build output. The reader e2e
-        # tests exercise them, so regenerate from the committed source PNGs
-        # before Playwright starts the dev server.
-        working-directory: apps/web
-        run: bun run build:short-story-assets
-
       - name: Run release-gate automation unit tests
         # Focused regression for the Vercel bypass credential not leaking to
         # cross-origin R2 requests. Runs before Playwright since it needs no

@@ -1,6 +1,6 @@
 ---
 name: arranging-story-backgrounds
-description: Use when planning or generating visual-novel backgrounds that contain characters (a shared set such as a train carriage, with several named passengers), when a story's backgrounds look inconsistent or repetitive, when writing or editing an `art-bible.md`, the `bg`/`portrait` prompts in raw story markdown or `image-assets.json`, or when generating background PNGs with Codex or another image agent using reference images.
+description: Use when planning or generating visual-novel backgrounds that contain characters (a shared set such as a train carriage, with several named passengers), when a story's backgrounds look inconsistent or repetitive, when writing or editing an `art-bible.md`, ` ```bg ` blocks or portrait prompts in raw story files, or `image-assets.json`, or when generating background PNGs with Codex or another image agent using reference images.
 ---
 
 # Arranging Story Backgrounds
@@ -13,7 +13,7 @@ It was worked out on the train carriage in `train_adventure` (16 passengers, 14 
 
 ## Where things live
 
-- **Prompts**: authored in the raw story markdown as `bg` and `portrait` blocks. `bun compile:stories` extracts them into `packages/stories/src/generated/<rawDir>/image-assets.json` (`portraits[]` and `backgrounds[]`, each with a `key`, a `path` and a `prompt`). Edit the raw source and recompile. Don't edit only the generated JSON: the next compile overwrites it. See the `orchestrating-stories` skill.
+- **Prompts**: ` ```bg ` blocks in the act markdown and `### Portrait Prompts` in `docs/characters.md`. Put each `bg` block right before the first line of the beat it shows; keys are numbered `actN_sK` by block order within the act, so inserting a block renumbers the ones after it. `bun compile:stories` extracts them into `packages/stories/src/generated/<rawDir>/image-assets.json` (`portraits[]` and `backgrounds[]`, each with a `key`, a `path` and a `prompt`). Edit the raw source and recompile. Don't edit only the generated JSON: the next compile overwrites it. See the `orchestrating-stories` skill.
 - **Art bible**: `packages/stories/raw/<rawDir>/docs/art-bible.md`. One file that is the single source of truth for the set, the seating plan, the camera angles, the window views and the shot list. Every prompt must agree with it.
 - **Files**: `packages/assets/media/<storyId>/backgrounds/_root/<name>.png`, `.../characters/<id>/base.png` (transparent portraits), and `.../backgrounds/_reference/` for the empty set reference images.
 - **Delivery**: media under `packages/assets/media/` is gitignored, so commit it with `git add -f`. Publishing to R2 and wiring it into the reader is separate work (see Generated Asset Delivery in `CLAUDE.md`).
@@ -41,7 +41,7 @@ A table of beat, framing, and who is in view, for each background.
 - **Vary the camera and the distance on purpose.** Never run the same framing twice in a row. Repeating one wide eye-level view down the carriage made every scene feel like the same picture. Use a ladder of distance (extreme wide, wide, medium, close-up, detail insert) and of angle (down the length, reverse, across the aisle, three-quarter diagonal, low, high or tilted, over-the-shoulder, window-level).
 - **Show only the people the beat needs.** Not every scene needs the whole cast. Use the full cast only for establishing and group-panic shots. Keep a character who belongs in one spot (such as a loner in a corner) out of shots where that spot isn't in frame.
 - **Don't draw the outside of the set** if it never matched the interior. Show the outside through windows and open doors.
-- **Match the story**: Act and beat order, who is awake, what the player has just learned.
+- **Match the story**: read the act text around each block before staging it: who is present, awake, standing or moving, and what the windows show at that moment. The first station shot had passengers at the open door before the story moves anyone.
 
 ### 4. Seat people in groups, with empty seats between
 
@@ -56,7 +56,7 @@ Same skeleton every time, in this order: the set sentence from the art bible, th
 
 ### 6. Generate
 
-Use the `generating-images-with-cli` skill for the mechanics (`codex exec`, built-in image tool, no Python or PIL placeholders). For backgrounds:
+Generate with Codex (`codex exec` and its built-in image tool) on the machine that has it, never with Python or PIL placeholders; the `generating-images-with-cli` skill covers the mechanics where it is installed. For backgrounds:
 
 - **References**: attach the empty set reference **first** and only the portraits of the people named in that shot. Tell the model the reference fixes the set's **design only**, and that the camera angle and distance must follow the prompt, not the reference. Without that line a "close-up" comes back as another wide shot.
 - **Prepare references**: flatten transparent portraits onto a neutral grey, resize portraits to about 384x576 and set references to about 836x470. Smaller references keep runs fast and stable.
@@ -78,6 +78,12 @@ Per shot:
 - the **window view** is right for the act and no window shows the wrong world;
 - moons or other sky details match the rest of the act;
 - no readable text, except signs the story wants (a station sign with the exact characters).
+
+Across the set, on the contact sheet:
+
+- follow each character through every scene they appear in and check their markers (glasses, hood, hairstyle, props); a drift often shows only next to another scene;
+- check each group's order against the approved wide shot, and check mirrored layouts (which side the partition or door is on);
+- if the frame shows a group's seats, the group should be in them, small and out of focus is enough.
 
 ### 8. Fix, don't re-roll
 
@@ -101,6 +107,5 @@ Pass the **current image first** and say "recreate image 1 exactly, change only 
 ## Delivery
 
 - Commit images with `git add -f`. Push in batches (for example every four images) so a reviewer can look as you go.
-- Do not force-push a shared branch; someone else may rebase it. A plain push, and say the new head.
 - Keep the art bible and the shot list in step with the final images. If a prompt change was needed to get a good result, put it back into the raw source so a regenerate gives the same result.
 - Portraits are generated on a plain backdrop and cut out to transparent PNG (1024x1536 RGBA) with `rembg` using the `birefnet-general` model; `isnet-anime` leaves dark clothing semi-transparent.

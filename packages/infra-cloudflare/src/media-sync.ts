@@ -204,7 +204,11 @@ export async function syncMediaObjects(
         await Promise.all(workers);
     };
     await runPhase(objects.filter(item => item.immutable));
-    await runPhase(objects.filter(item => !item.immutable));
+    // A conflicting take is skipped, not thrown, so without this check the
+    // index that references it would still go live before the run fails.
+    if (report.conflicts.length === 0) {
+        await runPhase(objects.filter(item => !item.immutable));
+    }
     report.created.sort();
     report.updated.sort();
     report.conflicts.sort();

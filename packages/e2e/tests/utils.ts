@@ -49,9 +49,9 @@ export class StoriesPage {
 
     private get trainAdventureText() {
         const storyNames = {
-            en: 'Train Adventure',
-            zh: '火車冒險',
-            ja: '列車の冒険',
+            en: 'The Platform at the End of the World',
+            zh: '世界盡頭的月台',
+            ja: '世界の果てのホーム',
         };
         return storyNames[this.locale];
     }

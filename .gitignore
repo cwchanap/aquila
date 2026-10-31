@@ -56,9 +56,15 @@ packages/stories/raw/audio-generation-cli-*/
 # asset generation job output (jobs.json, validation.json, gallery.html)
 packages/assets/generation/
 
-# generated story media (backgrounds, portraits, covers) — not committed;
-# already-tracked files (e.g. the_seventh_mirror) remain tracked
-packages/assets/media/
+# generated story media (backgrounds, portraits) — not committed; already-tracked
+# files (e.g. the_seventh_mirror) remain tracked. Each story's covers/cover.png is
+# the exception: it is the committed source that media:sync publishes to R2.
+packages/assets/media/*
+!packages/assets/media/*/
+packages/assets/media/*/*
+!packages/assets/media/*/covers/
+packages/assets/media/*/covers/*
+!packages/assets/media/*/covers/cover.png
 
 # asset publisher local-store sidecars and transaction markers
 .publisher-metadata/

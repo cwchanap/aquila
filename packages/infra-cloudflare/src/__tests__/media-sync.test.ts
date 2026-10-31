@@ -194,6 +194,26 @@ describe('syncMediaObjects', () => {
         expect(puts).toEqual([]);
     });
 
+    it('does not publish the index when a take conflicts', async () => {
+        const index = object({
+            key: 'vn/voice/story/index.json',
+            contentType: 'application/json',
+            cacheControl: 'no-cache, max-age=0, must-revalidate',
+            immutable: false,
+        });
+        const take = object();
+        const { client, puts } = fakeBucket({
+            [take.key]: { ...stored(take), sha256: 'different' },
+            [index.key]: { ...stored(index), sha256: 'stale' },
+        });
+
+        const report = await syncMediaObjects(client, 'bucket', [index, take]);
+
+        expect(report.conflicts).toEqual([take.key]);
+        expect(report.updated).toEqual([]);
+        expect(puts).toEqual([]);
+    });
+
     it('surfaces storage errors other than a missing object', async () => {
         const client: MediaSyncClient = {
             async send() {

@@ -34,10 +34,10 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act2_s1 | Into the tunnel | close-up, side view against the black window | Li Jie (Emi at the edge) |
 | act2_s2 | No signal, Saito explains | low angle, medium | Saito standing, students seated |
 | act2_s3 | Ito couple argue | C, medium, straight on | Ito couple, Ling Mo in the corner |
-| act2_s4 | Boy cries, Nakamura agitated | three-quarter close-up | mother, boy, girl (father, Nakamura blurred) |
+| act2_s4 | Boy cries, Nakamura agitated | three-quarter close-up | the Kobayashi family (Nakamura blurred, further along) |
 | act2_s5 | Emi's spiral drawing | over-the-shoulder insert | Emi's sketchbook and hand |
 | act2_s6 | Blue-black glow ahead | B, extreme wide | everyone, in their groups |
-| act3_s0 | Sea and two moons | from behind, medium-wide | students at the windows |
+| act3_s0 | Sea and two moons | from behind, medium-wide | students at the windows (Nakamura, family small far off) |
 | act3_s1 | Panic | high angle, tilted wide | everyone, in their groups |
 | act3_s2 | Emi terrified | close-up | Emi (Li Jie blurred in front) |
 | act3_s3 | Jishui station | over Yamamoto's shoulder | Yamamoto, the station through the window |

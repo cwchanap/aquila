@@ -443,6 +443,8 @@ Write prompts in markdown + docs/characters.md
 
 The manifest is a source of truth for both the prompts and where each rendered PNG must land.
 
+For backgrounds that put the cast in the scene (one set, many shots), plan with the `arranging-story-backgrounds` skill before writing `bg` blocks.
+
 ## Quick Reference
 
 ### File naming (consolidated — see Step 1 rules for branch/chapter behavior)

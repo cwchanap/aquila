@@ -16,10 +16,13 @@ import { loadR2DeliveryConfig } from './config';
  * (story covers and line voice) to the R2 delivery bucket. Visual releases
  * go through the `assets` publisher instead.
  *
- * Voice line ids are content-derived, so `.mp3` objects are cache-immutable
- * and create-only: a changed body under an existing key is a conflict, never
- * an overwrite. Everything else is revalidated or short-lived, so a changed
- * body just replaces the old one.
+ * Voice line ids hash the voice and the prompt, not the audio, so a take that
+ * is already published is never re-rolled in place: `.mp3` objects are
+ * cache-immutable and create-only, and a differing copy under an existing key
+ * is a conflict, never an overwrite. Everything else is revalidated or
+ * short-lived, so a changed body just replaces the old one. Immutable objects
+ * are stored before the mutable ones, so an index never points at a take that
+ * is not there yet.
  */
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 const REVALIDATE_CACHE = 'no-cache, max-age=0, must-revalidate';
@@ -182,22 +185,26 @@ export async function syncMediaObjects(
         unchanged: 0,
         conflicts: [],
     };
-    const queue = [...objects];
-    const workers = Array.from(
-        { length: Math.min(CONCURRENCY, queue.length) },
-        async () => {
-            for (let next = queue.shift(); next; next = queue.shift()) {
-                await syncOne(
-                    client,
-                    bucket,
-                    next,
-                    options.dryRun ?? false,
-                    report
-                );
+    const runPhase = async (phase: MediaObject[]): Promise<void> => {
+        const queue = [...phase];
+        const workers = Array.from(
+            { length: Math.min(CONCURRENCY, queue.length) },
+            async () => {
+                for (let next = queue.shift(); next; next = queue.shift()) {
+                    await syncOne(
+                        client,
+                        bucket,
+                        next,
+                        options.dryRun ?? false,
+                        report
+                    );
+                }
             }
-        }
-    );
-    await Promise.all(workers);
+        );
+        await Promise.all(workers);
+    };
+    await runPhase(objects.filter(item => item.immutable));
+    await runPhase(objects.filter(item => !item.immutable));
     report.created.sort();
     report.updated.sort();
     report.conflicts.sort();
@@ -256,7 +263,9 @@ export async function runMediaSync(argv: string[]): Promise<number> {
                 `${report.conflicts.length} conflicts`
         );
         for (const key of report.conflicts) {
-            console.error(`conflict: ${key} exists with different bytes`);
+            console.error(
+                `conflict: ${key} already exists with different content or headers`
+            );
         }
         return report.conflicts.length === 0 ? 0 : 1;
     } finally {

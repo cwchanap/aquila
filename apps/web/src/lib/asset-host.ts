@@ -12,5 +12,11 @@ export function assetHostUrl(
     baseUrl: string | undefined = import.meta.env.PUBLIC_ASSET_BASE_URL
 ): string | undefined {
     const base = baseUrl?.trim();
-    return base ? new URL(path, base).href : undefined;
+    if (!base) return undefined;
+    try {
+        return new URL(path, base).href;
+    } catch {
+        // A malformed host degrades to "media unavailable", not a crash.
+        return undefined;
+    }
 }

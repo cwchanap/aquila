@@ -132,6 +132,68 @@ describe('syncMediaObjects', () => {
         expect(puts).toEqual([]);
     });
 
+    it('stores takes before the index that points at them', async () => {
+        const index = object({
+            key: 'vn/voice/story/index.json',
+            contentType: 'application/json',
+            cacheControl: 'no-cache, max-age=0, must-revalidate',
+            immutable: false,
+        });
+        const take = object();
+        const puts: string[] = [];
+        const client: MediaSyncClient = {
+            async send(command) {
+                if (command instanceof HeadObjectCommand) {
+                    throw Object.assign(new Error('missing'), {
+                        name: 'NotFound',
+                        $metadata: { httpStatusCode: 404 },
+                    });
+                }
+                const key = (command as PutObjectCommand).input.Key!;
+                // The take is slow, so a concurrent index would finish first.
+                await new Promise(resolve =>
+                    setTimeout(resolve, key.endsWith('.mp3') ? 20 : 0)
+                );
+                puts.push(key);
+                return {};
+            },
+        };
+
+        await syncMediaObjects(client, 'bucket', [index, take]);
+
+        expect(puts).toEqual([take.key, index.key]);
+    });
+
+    it('does not publish the index when a take fails to upload', async () => {
+        const index = object({
+            key: 'vn/voice/story/index.json',
+            contentType: 'application/json',
+            cacheControl: 'no-cache, max-age=0, must-revalidate',
+            immutable: false,
+        });
+        const take = object();
+        const puts: string[] = [];
+        const client: MediaSyncClient = {
+            async send(command) {
+                if (command instanceof HeadObjectCommand) {
+                    throw Object.assign(new Error('missing'), {
+                        name: 'NotFound',
+                        $metadata: { httpStatusCode: 404 },
+                    });
+                }
+                const key = (command as PutObjectCommand).input.Key!;
+                if (key.endsWith('.mp3')) throw new Error('upload failed');
+                puts.push(key);
+                return {};
+            },
+        };
+
+        await expect(
+            syncMediaObjects(client, 'bucket', [index, take])
+        ).rejects.toThrow('upload failed');
+        expect(puts).toEqual([]);
+    });
+
     it('surfaces storage errors other than a missing object', async () => {
         const client: MediaSyncClient = {
             async send() {

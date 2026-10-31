@@ -14,6 +14,10 @@ describe('assetHostUrl', () => {
         );
     });
 
+    it('is undefined for a malformed host instead of throwing', () => {
+        expect(assetHostUrl('vn/voice', 'assets.example.dev')).toBeUndefined();
+    });
+
     it('is undefined without a configured host', () => {
         expect(assetHostUrl('vn/voice', '')).toBeUndefined();
         expect(assetHostUrl('vn/voice', '   ')).toBeUndefined();

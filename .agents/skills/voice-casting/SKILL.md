@@ -101,3 +101,5 @@ Add the story to `STORY_VOICE_LANGUAGE` in `src/voice/index.ts`. The CLI prints 
 ## Delivery
 
 Voice is generated media, so it is served from the R2 CDN and never from `apps/web/public` (see "Generated Asset Delivery" in `CLAUDE.md`). Commit new takes under `packages/assets/voice/`; after the PR merges, `.github/workflows/media-sync.yml` runs `bun --filter @aquila/infra-cloudflare media:sync`, which uploads new `.mp3`s (create-only, one-year immutable cache) and replaces each story's `index.json` (revalidated on every load). To publish by hand, run the same command with `R2_RELEASE_ACCESS_KEY_ID` and `R2_RELEASE_SECRET_ACCESS_KEY` set (`--dry-run` lists what would change). Locally the dub is silent unless `PUBLIC_ASSET_BASE_URL` points at the asset host.
+
+Re-roll takes (step 6) **before the PR merges**. A take already on R2 is create-only with a one-year immutable cache, and a re-rolled take keeps its line id, so `media:sync` reports a conflict (and the workflow fails) instead of replacing it. Redoing a published take is a manual job: delete the object from the bucket, purge it from the CDN cache, then re-run `media:sync`.

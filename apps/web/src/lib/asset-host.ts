@@ -14,7 +14,10 @@ export function assetHostUrl(
     const base = baseUrl?.trim();
     if (!base) return undefined;
     try {
-        return new URL(path, base).href;
+        const host = new URL(base);
+        // Keep a configured sub-path (`https://cdn.example/media`) when joining.
+        if (!host.pathname.endsWith('/')) host.pathname += '/';
+        return new URL(path, host).href;
     } catch {
         // A malformed host degrades to "media unavailable", not a crash.
         return undefined;

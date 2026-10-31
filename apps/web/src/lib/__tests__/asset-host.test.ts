@@ -14,6 +14,21 @@ describe('assetHostUrl', () => {
         );
     });
 
+    it('keeps a sub-path on the configured host', () => {
+        expect(
+            assetHostUrl(
+                'vn/voice/day_4012/index.json',
+                'https://cdn.example/media'
+            )
+        ).toBe('https://cdn.example/media/vn/voice/day_4012/index.json');
+        expect(
+            assetHostUrl(
+                'vn/covers/day_4012.webp',
+                'https://cdn.example/media/'
+            )
+        ).toBe('https://cdn.example/media/vn/covers/day_4012.webp');
+    });
+
     it('is undefined for a malformed host instead of throwing', () => {
         expect(assetHostUrl('vn/voice', 'assets.example.dev')).toBeUndefined();
     });

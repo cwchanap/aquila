@@ -483,9 +483,7 @@ export class ReaderManager {
 
     /** Shared scene-navigation method. Flushes any pending line replace so the
      *  Back button lands on an accurate line, then writes the new scene to the
-     *  store and pushes a fresh history entry. `at: 'end'` selects the
-     *  destination's last line (story-map decision jumps); the default 'start'
-     *  selects the first line. */
+     *  store and pushes a fresh history entry. */
     goToScene = (sceneId: string, at?: 'start' | 'end'): void => {
         if (!this.activeStory || readerState.loadStatus !== 'ready') return;
         this.flushPendingReplace(); // preserve accurate line for Back
@@ -502,15 +500,13 @@ export class ReaderManager {
         );
         readerState.canGoNext = this.hasNextScene(sceneId);
         this.syncUrl(false); // pushState (new history entry)
+        if (this.persistTimer !== null) {
+            clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+        }
         this.persist();
     };
 
-    /** Synchronous current-progress snapshot exposed to ReaderShell for the
-     *  story map. When the payload is ready it flushes a queued throttled line
-     *  replaceState and runs a pending debounced persist immediately, so the
-     *  returned record reflects the canonical scene/index — including a
-     *  just-completed ending still inside its 500 ms debounce. Never pushes
-     *  history; the manager stays the sole progress writer. */
     getCurrentStoryProgressSnapshot = (): StoryProgress | null => {
         if (readerState.hasActivePayload) {
             this.flushPendingReplace();

@@ -1613,13 +1613,11 @@ describe('ReaderManager', () => {
             await manager.initialize();
             expect(readerState.activeChoices).toEqual(choices);
 
-            readerState.reset(); // story unload path
+            readerState.reset();
             expect(readerState.activeChoices).toBeNull();
 
-            // The constructor's explicit initialization also clears a
-            // leftover payload.
             readerState.activeChoices = choices;
-            manager.destroy(); // release the initialized manager's listeners
+            manager.destroy();
             manager = new ReaderManager('en');
             expect(readerState.activeChoices).toBeNull();
         });
@@ -1685,7 +1683,6 @@ describe('ReaderManager', () => {
             );
             expect(readerState.activeChoices).toEqual(choicesA);
 
-            // Navigating to a different story unloads story A's choices.
             setLocation(
                 '?story=dont_save_me_before_midnight&scene=midnight_act'
             );
@@ -2183,6 +2180,23 @@ describe('ReaderManager', () => {
             document.body.appendChild(container);
         }
 
+        function lastMountProps() {
+            const calls = mockMount.mock.calls as unknown as [
+                unknown,
+                {
+                    props: {
+                        onIndexChange: (i: number) => void;
+                        onNavigate: (
+                            sceneId: string,
+                            at?: 'start' | 'end'
+                        ) => void;
+                        getCurrentStoryProgressSnapshot: () => StoryProgress | null;
+                    };
+                },
+            ][];
+            return calls.at(-1)![1].props;
+        }
+
         it('onIndexChange writes readerState.dialogueIndex and schedules throttled replaceState', async () => {
             const raf = stubRaf();
             const replaceState = vi.fn();
@@ -2316,24 +2330,52 @@ describe('ReaderManager', () => {
             manager = new ReaderManager('en');
             await manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
-            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
-                .onIndexChange as (i: number) => void;
-            // onNavigate is the manager -> shell boundary the story map
-            // jump callbacks travel over; it must carry the optional
-            // end-of-scene argument through to goToScene.
-            const onNavigate = mockMount.mock.calls.at(-1)![1].props
-                .onNavigate as (sceneId: string, at?: 'start' | 'end') => void;
-            onIndexChange(1); // queue a throttled line write on act1
+            const { onIndexChange, onNavigate } = lastMountProps();
+            onIndexChange(1);
             expect(raf.pending()).toBe(true);
             pushState.mockClear();
             onNavigate('act2', 'end');
-            expect(raf.pending()).toBe(false); // line write flushed first
+            expect(raf.pending()).toBe(false);
             expect(readerState.currentSceneId).toBe('act2');
-            expect(readerState.dialogueIndex).toBe(2); // last of 3 lines
-            expect(pushState).toHaveBeenCalledTimes(1); // one entry per jump
+            expect(readerState.dialogueIndex).toBe(2);
+            expect(pushState).toHaveBeenCalledTimes(1);
             const url = pushState.mock.calls[0][2] as URL;
             expect(url.searchParams.get('scene')).toBe('act2');
-            expect(url.searchParams.get('dialogue')).toBe('3'); // 1-based
+            expect(url.searchParams.get('dialogue')).toBe('3');
+        });
+
+        it('goToScene persists once even when a debounced save is pending', async () => {
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [{ dialogue: 'x' }],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const { onIndexChange } = lastMountProps();
+            mockStorage.setItem.mockClear();
+            pushState.mockClear();
+            onIndexChange(1);
+            manager.goToScene('act2');
+            const sessionWrites = () =>
+                mockStorage.setItem.mock.calls.filter(
+                    call => call[0] === 'aquila:readerState:en'
+                ).length;
+            expect(sessionWrites()).toBe(1);
+            expect(pushState).toHaveBeenCalledTimes(1);
+            vi.advanceTimersByTime(600);
+            expect(sessionWrites()).toBe(1);
+            expect(pushState).toHaveBeenCalledTimes(1);
         });
 
         it('goToScene(scene, "start") is the default and an end jump clamps an empty scene to index 0', async () => {
@@ -2354,8 +2396,6 @@ describe('ReaderManager', () => {
             manager = new ReaderManager('en');
             await manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
-            // An end jump onto an empty scene still lands on index 0 —
-            // clampIndex keeps the invariant that the index is always valid.
             manager.goToScene('act2', 'end');
             expect(readerState.currentSceneId).toBe('act2');
             expect(readerState.dialogueIndex).toBe(0);
@@ -2390,7 +2430,6 @@ describe('ReaderManager', () => {
             manager.goToScene('act2', 'end');
             expect(readerState.currentSceneId).toBe('act2');
             expect(readerState.dialogueIndex).toBe(2);
-            // The browser restores the previous history entry's URL.
             setLocation('?story=the_seventh_mirror&scene=act1&dialogue=2');
             window.dispatchEvent(new PopStateEvent('popstate'));
             await vi.waitFor(() =>
@@ -2406,8 +2445,6 @@ describe('ReaderManager', () => {
                 value: { pushState, replaceState },
                 writable: true,
             });
-            // Progress is read back from storage, so the mock needs a real
-            // backing map (the default setItem only records calls).
             const saved = new Map<string, string>();
             mockStorage.getItem.mockImplementation(
                 (key: string) => saved.get(key) ?? null
@@ -2430,14 +2467,14 @@ describe('ReaderManager', () => {
             manager = new ReaderManager('en');
             await manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
-            manager.goToScene('act2', 'end'); // parks on the terminal line
-            manager.goToScene('act1'); // jump back to an earlier act
+            manager.goToScene('act2', 'end');
+            manager.goToScene('act1');
             const record = manager.getCurrentStoryProgressSnapshot();
             expect(record).toMatchObject({
                 sceneId: 'act1',
                 dialogueIndex: 0,
                 finished: false,
-                endings: ['act2'], // reached ending is retained
+                endings: ['act2'],
             });
             expect(record?.visited).toEqual(
                 expect.arrayContaining(['act1', 'act2'])
@@ -2474,22 +2511,17 @@ describe('ReaderManager', () => {
             manager = new ReaderManager('en');
             await manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
-            const snapshot = mockMount.mock.calls.at(-1)![1].props
-                .getCurrentStoryProgressSnapshot as () => StoryProgress | null;
+            const snapshot = lastMountProps().getCurrentStoryProgressSnapshot;
             manager.goToScene('act2');
-            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
-                .onIndexChange as (i: number) => void;
-            onIndexChange(2); // final line of the terminal scene
+            const { onIndexChange } = lastMountProps();
+            onIndexChange(2);
             expect(raf.pending()).toBe(true);
             replaceState.mockClear();
             pushState.mockClear();
             const record = snapshot();
-            // The queued line write flushes into the current entry — no
-            // new history entry is pushed by the snapshot.
             expect(raf.pending()).toBe(false);
             expect(replaceState).toHaveBeenCalledTimes(1);
             expect(pushState).not.toHaveBeenCalled();
-            // The pending 500 ms persist ran once, recording the ending.
             expect(record).toMatchObject({
                 sceneId: 'act2',
                 dialogueIndex: 2,
@@ -2499,7 +2531,6 @@ describe('ReaderManager', () => {
             expect(record?.visited).toEqual(
                 expect.arrayContaining(['act1', 'act2'])
             );
-            // Later timers must not rewrite the same position or add history.
             mockStorage.setItem.mockClear();
             vi.advanceTimersByTime(600);
             expect(mockStorage.setItem).not.toHaveBeenCalled();
@@ -2528,8 +2559,7 @@ describe('ReaderManager', () => {
             manager = new ReaderManager('en');
             await manager.initialize();
             await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
-            const snapshot = mockMount.mock.calls.at(-1)![1].props
-                .getCurrentStoryProgressSnapshot as () => StoryProgress | null;
+            const snapshot = lastMountProps().getCurrentStoryProgressSnapshot;
             mockStorage.setItem.mockClear();
             replaceState.mockClear();
             const record = snapshot();

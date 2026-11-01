@@ -17,6 +17,7 @@ import {
     voiceLineId,
 } from '../cast';
 import { ffmpegTranscode, runVoiceCli } from '../cli';
+import { getStoryContent } from '../../stories';
 import { hasStoryVoice } from '../index';
 
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
@@ -325,7 +326,7 @@ describe('runVoiceCli', () => {
         await expect(run()).rejects.toThrow('has no scene nope');
     });
 
-    it('voices from the reader text when the story has that language, and reminds you to register it', async () => {
+    it('voices from the reader text when the story has that language', async () => {
         const rawRoot = tempDir();
         rawStory(rawRoot, 'elevator', 'elevator_game');
         const log = vi.fn();
@@ -344,9 +345,37 @@ describe('runVoiceCli', () => {
         );
 
         const lines = log.mock.calls.map(([line]) => line as string);
-        expect(lines.at(-2)).toMatch(
+        expect(lines.at(-1)).toMatch(
             /0 written, 0 already voiced, 0 orphaned; uncast: /
         );
+    });
+
+    it('reminds you to register a story the reader does not voice yet', async () => {
+        const rawRoot = tempDir();
+        const act1 = getStoryContent('train_adventure', 'zh').dialogue.act1;
+        rawStory(rawRoot, 'train', 'train_adventure', {
+            schemaVersion: 1,
+            scenes: {
+                act1: act1.map(entry => ({ zh: entry.dialogue, ja: 'あ' })),
+            },
+        });
+        const log = vi.fn();
+
+        await runVoiceCli(
+            [
+                'generate',
+                '--story',
+                'train',
+                '--scene',
+                'act1',
+                '--out',
+                tempDir(),
+            ],
+            { rawRoot, log }
+        );
+
+        const lines = log.mock.calls.map(([line]) => line as string);
+        expect(lines.at(-2)).toMatch(/0 written, 0 already voiced/);
         expect(lines.at(-1)).toContain('STORY_VOICE_LANGUAGE');
     });
 

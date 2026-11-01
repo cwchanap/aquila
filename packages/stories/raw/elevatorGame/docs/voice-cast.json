@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "modelId": "eleven_v4",
+  "language": "ja",
+  "roles": {
+    "xu_nian": {
+      "voiceId": "JTlYtJrcTzPC71hMLOxo",
+      "voiceName": "Yuki - Calm Anime Narrator",
+      "innerDirection": "[softly]",
+      "notes": "20, dry and under-slept: a calm, composed young voice that plays every line straight. Hapadona's pick from Yuki, Koryu and Tsuyuri. Inner monologue is the larger share of her lines and is spoken softer. Narration stays silent."
+    },
+    "fang_rui": {
+      "voiceId": "iTqcz0mjbxzCZAfsqojU",
+      "voiceName": "Nao - Cute, Playful and Bright",
+      "notes": "Xu Nian's roommate, heard only over the phone: quick, spoiled and nervous. Hapadona's pick from Nao and Momoka."
+    },
+    "fifth_floor_woman": {
+      "voiceId": "JTlYtJrcTzPC71hMLOxo",
+      "voiceName": "Yuki - Calm Anime Narrator",
+      "notes": "She speaks once, and the story says she uses Xu Nian's own voice, so she shares Xu Nian's voice with no direction tag."
+    }
+  }
+}

@@ -55,6 +55,7 @@ describe('StoryProgressStore', () => {
             updatedAt: 1000,
             finished: false,
             endings: [],
+            visited: ['ch9_act3'],
         });
         expect(store.get('elevator_game')?.sceneId).toBe('act1');
     });
@@ -84,6 +85,28 @@ describe('StoryProgressStore', () => {
             'b1a_act4',
             'b1b_act4',
         ]);
+    });
+
+    it('tracks each visited scene once, per story', () => {
+        const store = new StoryProgressStore(memoryStorage());
+        const at = (storyId: string, sceneId: string) =>
+            store.record({
+                storyId,
+                sceneId,
+                dialogueIndex: 0,
+                atEnding: false,
+            });
+        at('elevator_game', 'act1');
+        at('elevator_game', 'act2');
+        at('elevator_game', 'act2');
+        at('elevator_game', 'act3');
+        at('train_adventure', 'act1');
+        expect(store.get('elevator_game')?.visited).toEqual([
+            'act1',
+            'act2',
+            'act3',
+        ]);
+        expect(store.get('train_adventure')?.visited).toEqual(['act1']);
     });
 
     it('drops malformed records and survives corrupt JSON', () => {

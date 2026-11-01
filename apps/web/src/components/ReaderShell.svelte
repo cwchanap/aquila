@@ -678,10 +678,7 @@
   let storyMapVisibleIds = $derived.by(
     (): ReadonlySet<string> | undefined => {
       if (!storyMapAvailable || !activeFlow) return undefined;
-      if (storyMapProgress !== null) {
-        return visibleSceneIds(activeFlow, storyMapProgress, currentSceneId);
-      }
-      return currentSceneId ? new Set([currentSceneId]) : undefined;
+      return visibleSceneIds(activeFlow, storyMapProgress, currentSceneId);
     }
   );
   let storyMapFocusTarget = $derived.by((): HTMLElement | null => {

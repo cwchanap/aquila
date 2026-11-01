@@ -213,6 +213,28 @@ const branchChoices = {
     },
 };
 
+const deepBranchFlow = {
+    start: 'act1',
+    nodes: [
+        { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+        { kind: 'scene', id: 'act2', sceneId: 'act2', next: 'choice:c1' },
+        {
+            kind: 'choice',
+            id: 'choice:c1',
+            choiceId: 'c1',
+            nextByOption: { b1a: 'b1a_act3', b1b: 'b1b_act3' },
+        },
+        { kind: 'scene', id: 'b1a_act3', sceneId: 'b1a_act3', next: null },
+        {
+            kind: 'scene',
+            id: 'b1b_act3',
+            sceneId: 'b1b_act3',
+            next: 'b1b_act4',
+        },
+        { kind: 'scene', id: 'b1b_act4', sceneId: 'b1b_act4', next: null },
+    ],
+} as unknown as StoryFlowConfig;
+
 function mapProgress(visited: string[], endings: string[] = []) {
     return {
         sceneId: visited[visited.length - 1] ?? 'act1',
@@ -3007,6 +3029,63 @@ describe('ReaderShell furigana', () => {
                     screen.getByRole('button', { name: label })
                 ).toBeInTheDocument();
             }
+        });
+
+        it('keeps ancestor acts visible to Acts and the sheet with a null snapshot', async () => {
+            stubMatchMedia(false);
+            readerState.activeFlow = deepBranchFlow;
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: () => null },
+            });
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open acts panel' })
+            );
+            for (const label of ['Act 1', 'Act 2', 'Act 3']) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+            expect(
+                screen.queryByRole('button', { name: 'Act 4' })
+            ).not.toBeInTheDocument();
+
+            await openSheetFromSettings();
+            for (const label of [
+                'Expand Acts 1–2',
+                'Current position: Act 3 — Left path',
+            ]) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+            expect(
+                screen.queryByRole('button', { name: 'Acts 3–4 — Right path' })
+            ).not.toBeInTheDocument();
+        });
+
+        it('keeps ancestor acts visible in the mobile drawer with a null snapshot', async () => {
+            stubMatchMedia(true);
+            readerState.activeFlow = deepBranchFlow;
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: () => null },
+            });
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open menu' })
+            );
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open acts panel' })
+            );
+
+            for (const label of ['Act 1', 'Act 2', 'Act 3']) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+            expect(
+                screen.queryByRole('button', { name: 'Act 4' })
+            ).not.toBeInTheDocument();
         });
 
         it('closes the sheet and unlocks Settings when the story becomes ineligible', async () => {

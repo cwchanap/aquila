@@ -315,16 +315,19 @@
     const reduce =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const container = mapEl.getBoundingClientRect();
+    const bounds = mapEl.getBoundingClientRect();
+    const usableRight = bounds.left + mapEl.clientLeft + mapEl.clientWidth;
+    const usableTop = bounds.top + mapEl.clientTop;
+    const usableBottom = bounds.top + mapEl.clientTop + mapEl.clientHeight;
     const node = el.getBoundingClientRect();
     const caption = el.querySelector('[data-current-caption]');
     const captionBox = caption?.getBoundingClientRect() ?? node;
     const top = Math.min(node.top, captionBox.top);
     const bottom = Math.max(node.bottom, captionBox.bottom);
-    const dx = Math.max(node.right, captionBox.right) - container.right;
+    const dx = Math.max(node.right, captionBox.right) - usableRight;
     let dy = 0;
-    if (top < container.top) dy = top - container.top;
-    else if (bottom > container.bottom) dy = bottom - container.bottom;
+    if (top < usableTop) dy = top - usableTop;
+    else if (bottom > usableBottom) dy = bottom - usableBottom;
     mapEl.scrollTo({
       left: mapEl.scrollLeft + Math.ceil(dx),
       top: mapEl.scrollTop + Math.ceil(dy),

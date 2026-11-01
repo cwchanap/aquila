@@ -287,25 +287,38 @@ test.describe('Story map', () => {
     }, testInfo) => {
         const reader = new MobileReaderPage(page);
         await reader.seedVisitedScenes('train_adventure', TRAIN_VISITED);
+        if (isDesktop(testInfo.project.name)) {
+            await page.setViewportSize({ width: 1280, height: 600 });
+        }
         await page.goto(
             `/en/reader?story=train_adventure&scene=${TRAIN_CURRENT}&dialogue=1`
         );
+        await page.addStyleTag({
+            content:
+                '[data-testid="story-map-surface"] { scrollbar-gutter: stable; }',
+        });
         const sheet = await openStoryMap(page, testInfo.project.name);
         const surface = page.getByTestId('story-map-surface');
         const caption = surface.getByText(CURRENT_CAPTION, { exact: true });
         await expect(caption).toBeVisible();
 
         const captionInView = async () => {
-            const surfaceBox = await surface.boundingBox();
+            const usable = await surface.evaluate(el => {
+                const rect = el.getBoundingClientRect();
+                return {
+                    left: rect.left + el.clientLeft,
+                    right: rect.left + el.clientLeft + el.clientWidth,
+                    top: rect.top + el.clientTop,
+                    bottom: rect.top + el.clientTop + el.clientHeight,
+                };
+            });
             const captionBox = await caption.boundingBox();
-            if (!surfaceBox || !captionBox) return false;
+            if (!captionBox) return false;
             return (
-                captionBox.x >= surfaceBox.x - 0.5 &&
-                captionBox.x + captionBox.width <=
-                    surfaceBox.x + surfaceBox.width + 0.5 &&
-                captionBox.y >= surfaceBox.y - 0.5 &&
-                captionBox.y + captionBox.height <=
-                    surfaceBox.y + surfaceBox.height + 0.5
+                captionBox.x >= usable.left - 0.5 &&
+                captionBox.x + captionBox.width <= usable.right + 0.5 &&
+                captionBox.y >= usable.top - 0.5 &&
+                captionBox.y + captionBox.height <= usable.bottom + 0.5
             );
         };
         await expect

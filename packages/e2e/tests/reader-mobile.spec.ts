@@ -44,6 +44,7 @@ test.describe('Mobile reader', () => {
 
     test('navigates to a different act from the drawer', async ({ page }) => {
         const reader = new MobileReaderPage(page);
+        await reader.seedVisitedScenes('train_adventure', ['act1', 'act2']);
         await reader.goto();
 
         // The reader starts at act1 (train_adventure flow start). Open the
@@ -68,6 +69,25 @@ test.describe('Mobile reader', () => {
         // The reader-manager pushes the new scene onto the URL (deep-link
         // contract): scene=act2 must now be present.
         await expect(page).toHaveURL(/scene=act2/);
+    });
+
+    test('does not offer unread acts to a fresh branching reader', async ({
+        page,
+    }) => {
+        const reader = new MobileReaderPage(page);
+        await reader.goto();
+
+        await reader.openMenu();
+        await reader.openActs();
+        await expect(reader.actsHeadingLocator).toBeVisible();
+
+        await expect(reader.actButtons).toHaveCount(1);
+        await expect(
+            reader.actButtons.filter({ hasText: /^Act 1$/ })
+        ).toBeVisible();
+        await expect(
+            reader.actButtons.filter({ hasText: /^Act 2$/ })
+        ).toHaveCount(0);
     });
 
     test('opens the history backlog', async ({ page }) => {

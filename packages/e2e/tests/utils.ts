@@ -338,6 +338,39 @@ export class MobileReaderPage {
         await this.page.goto(`/${this.locale}/reader?story=train_adventure`);
     }
 
+    async seedVisitedScenes(storyId: string, sceneIds: string[]) {
+        await this.page.addInitScript(
+            ([key, story, ids]) => {
+                const raw = localStorage.getItem(key);
+                let map: Record<string, unknown> = {};
+                if (raw) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (
+                            parsed &&
+                            typeof parsed === 'object' &&
+                            !Array.isArray(parsed)
+                        ) {
+                            map = parsed;
+                        }
+                    } catch {
+                        map = {};
+                    }
+                }
+                map[story] = {
+                    sceneId: ids[ids.length - 1],
+                    dialogueIndex: 0,
+                    updatedAt: Date.now(),
+                    finished: false,
+                    endings: [],
+                    visited: ids,
+                };
+                localStorage.setItem(key, JSON.stringify(map));
+            },
+            ['aquila:storyProgress:v1', storyId, sceneIds] as const
+        );
+    }
+
     async openMenu() {
         await this.menuButton.click();
     }

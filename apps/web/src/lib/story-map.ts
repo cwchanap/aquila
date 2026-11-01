@@ -105,7 +105,7 @@ export interface StoryMapLayoutNode {
     current?: boolean;
 }
 
-export type StoryMapLayoutEdgeKind = 'link' | 'trunk' | 'branch';
+export type StoryMapLayoutEdgeKind = 'link' | 'stub' | 'trunk' | 'branch';
 
 export interface StoryMapLayoutEdge {
     id: string;
@@ -444,7 +444,10 @@ export function layoutStoryMap(
         label?: string
     ): void => {
         edges.push({
-            id: kind === 'trunk' ? `trunk:${from}` : `${from}->${to}`,
+            id:
+                kind === 'trunk' || kind === 'stub'
+                    ? `${kind}:${from}`
+                    : `${from}->${to}`,
             kind,
             from,
             to,
@@ -476,11 +479,12 @@ export function layoutStoryMap(
         if (!a) return;
         const x0 = a.x + a.width;
         const y = cyOf(a.row);
+        edge('stub', from, to, `M ${x0} ${y} L ${trunkX} ${y}`);
         edge(
             'trunk',
             from,
             to,
-            `M ${x0} ${y} L ${trunkX} ${y} L ${trunkX} ${cyOf(lastRow)}`
+            `M ${trunkX} ${y} L ${trunkX} ${cyOf(lastRow)}`
         );
     };
 

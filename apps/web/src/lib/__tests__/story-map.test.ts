@@ -618,16 +618,27 @@ describe('layoutStoryMap', () => {
         const cyOf = (row: number) =>
             metrics.paddingY + row * metrics.rowHeight + metrics.rowHeight / 2;
 
+        const stubs = layout.edges.filter(
+            e => e.kind === 'stub' && e.from === c1.id
+        );
         const trunks = layout.edges.filter(
             e => e.kind === 'trunk' && e.from === c1.id
         );
+        expect(stubs).toHaveLength(1);
         expect(trunks).toHaveLength(1);
-        const nums = trunks[0].d.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
-        const [x0, y0, tx1, y1, tx2, yLast] = nums;
-        expect(x0).toBe(c1.x + c1.width);
-        expect(y0).toBe(y1);
-        expect(tx1).toBe(tx2);
-        expect(tx1).toBeGreaterThan(x0);
+        const [sx, sy, tx1, ty] = stubs[0].d
+            .match(/-?\d+(?:\.\d+)?/g)!
+            .map(Number);
+        expect(sx).toBe(c1.x + c1.width);
+        expect(sy).toBe(ty);
+        expect(sy).toBe(cyOf(c1.row));
+        const [vx1, vy1, vx2, yLast] = trunks[0].d
+            .match(/-?\d+(?:\.\d+)?/g)!
+            .map(Number);
+        expect(vx1).toBe(tx1);
+        expect(vx1).toBe(vx2);
+        expect(vy1).toBe(sy);
+        expect(vx1).toBeGreaterThan(sx);
         const deepest = layout.nodes.find(n => n.id === 'b1c_act3')!;
         expect(yLast).toBe(cyOf(deepest.row));
         expect(trunks[0].to).toBe(deepest.id);

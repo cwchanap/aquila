@@ -40,6 +40,9 @@ export interface StoryMapRun {
     /** Sort key of the run's first act (see act-navigation). */
     sortKey: number;
     status: 'route' | 'explored';
+    /** Leading scene count on the root-to-current path; scenes after this
+     *  cutoff were read but are ahead of the reader's position. */
+    routeCount: number;
     /** True when the run contains the reader's current scene. */
     current: boolean;
     /** The reader's scene id, present only when current is true. */
@@ -107,11 +110,15 @@ export interface StoryMapLayoutNode {
     current?: boolean;
 }
 
+export type StoryMapLayoutEdgeKind = 'link' | 'trunk' | 'branch';
+
 export interface StoryMapLayoutEdge {
     id: string;
+    kind: StoryMapLayoutEdgeKind;
     from: string;
     to: string;
-    /** SVG path data: straight for same-row links, cubic bezier for branches. */
+    /** SVG path data: straight for same-row links and trunk segments,
+     *  cubic bezier for branch offshoots. */
     d: string;
     label?: string;
 }
@@ -125,9 +132,11 @@ export interface StoryMapLayout {
 interface FlowIndex {
     byId: Map<string, FlowNodeDefinition>;
     parent: Map<string, string>;
+    /** Node ids reachable from `flow.start`; everything else is ignored. */
+    reachable: Set<string>;
 }
 
-function indexFlow(flow: Pick<StoryFlowConfig, 'nodes'>): FlowIndex {
+function indexFlow(flow: Pick<StoryFlowConfig, 'start' | 'nodes'>): FlowIndex {
     const byId = new Map<string, FlowNodeDefinition>();
     const parent = new Map<string, string>();
     for (const node of flow.nodes) {
@@ -144,7 +153,21 @@ function indexFlow(flow: Pick<StoryFlowConfig, 'nodes'>): FlowIndex {
             }
         }
     }
-    return { byId, parent };
+    const reachable = new Set<string>();
+    const stack: string[] = [flow.start];
+    while (stack.length > 0) {
+        const id = stack.pop()!;
+        if (reachable.has(id)) continue;
+        const node = byId.get(id);
+        if (!node) continue;
+        reachable.add(id);
+        if (node.kind === 'scene') {
+            if (node.next) stack.push(node.next);
+        } else {
+            stack.push(...Object.values(node.nextByOption));
+        }
+    }
+    return { byId, parent, reachable };
 }
 
 function addAncestorChain(
@@ -157,10 +180,25 @@ function addAncestorChain(
     while (cur && !seen.has(cur)) {
         seen.add(cur);
         const node = index.byId.get(cur);
-        if (!node) return;
+        // An unreachable node's ancestors are unreachable too, so a chain
+        // that leaves the reachable graph contributes nothing.
+        if (!node || !index.reachable.has(cur)) return;
         if (node.kind === 'scene') into.add(node.sceneId);
         cur = index.parent.get(cur);
     }
+}
+
+function collectVisible(
+    index: FlowIndex,
+    visited: readonly string[] | undefined,
+    currentSceneId: string | null | undefined
+): Set<string> {
+    const visible = new Set<string>();
+    for (const id of visited ?? []) {
+        addAncestorChain(id, index, visible);
+    }
+    if (currentSceneId) addAncestorChain(currentSceneId, index, visible);
+    return visible;
 }
 
 export function hasRealDecision(flow: Pick<StoryFlowConfig, 'nodes'>): boolean {
@@ -174,20 +212,15 @@ export function hasRealDecision(flow: Pick<StoryFlowConfig, 'nodes'>): boolean {
  * Scene ids the reader may legitimately see: every recorded `visited` scene
  * plus the current scene, closed over ancestors back to the flow root so a
  * direct link or bookmark reveals a continuous path — without exposing any
- * sibling or descendant scenes that were never read.
+ * sibling or descendant scenes that were never read. Scenes unreachable from
+ * `flow.start` can never become visible, even if recorded as visited.
  */
 export function visibleSceneIds(
-    flow: Pick<StoryFlowConfig, 'nodes'>,
+    flow: Pick<StoryFlowConfig, 'start' | 'nodes'>,
     progress: Pick<StoryProgress, 'visited'> | null | undefined,
     currentSceneId: string | null | undefined
 ): ReadonlySet<string> {
-    const index = indexFlow(flow);
-    const visible = new Set<string>();
-    for (const id of progress?.visited ?? []) {
-        addAncestorChain(id, index, visible);
-    }
-    if (currentSceneId) addAncestorChain(currentSceneId, index, visible);
-    return visible;
+    return collectVisible(indexFlow(flow), progress?.visited, currentSceneId);
 }
 
 export function buildStoryMap({
@@ -204,11 +237,7 @@ export function buildStoryMap({
     t: Translations;
 }): StoryMapView {
     const index = indexFlow(flow);
-    const visible = new Set<string>();
-    for (const id of progress?.visited ?? []) {
-        addAncestorChain(id, index, visible);
-    }
-    if (currentSceneId) addAncestorChain(currentSceneId, index, visible);
+    const visible = collectVisible(index, progress?.visited, currentSceneId);
 
     const endings = new Set(progress?.endings ?? []);
     const acts = new Set<string>();
@@ -339,10 +368,9 @@ export function buildStoryMap({
             break;
         }
 
-        const status =
-            sceneIds.length > 0 && sceneIds.some(id => route.has(id))
-                ? 'route'
-                : 'explored';
+        const cutoff = sceneIds.findIndex(id => !route.has(id));
+        const routeCount = cutoff === -1 ? sceneIds.length : cutoff;
+        const status = routeCount > 0 ? 'route' : 'explored';
         let next: StoryMapRun['next'] = null;
         if (pendingDecision) {
             next = buildDecision(pendingDecision);
@@ -353,7 +381,7 @@ export function buildStoryMap({
                 id: `ending:${terminalScene}`,
                 sceneId: terminalScene,
                 label: actLabel(extractActName(terminalScene), t),
-                status,
+                status: route.has(terminalScene) ? 'route' : 'explored',
             };
         } else if (terminalScene || frontier) {
             next = unknown(frontier ?? `unknown:${terminalScene}`);
@@ -372,6 +400,7 @@ export function buildStoryMap({
                     extractActName(sceneIds[sceneIds.length - 1] ?? '')
             ),
             status,
+            routeCount,
             current,
             ...(current && currentSceneId ? { currentSceneId } : {}),
             next,
@@ -434,13 +463,15 @@ export function layoutStoryMap(
     };
 
     const edge = (
+        kind: StoryMapLayoutEdgeKind,
         from: string,
         to: string,
         d: string,
         label?: string
     ): void => {
         edges.push({
-            id: `${from}->${to}`,
+            id: kind === 'trunk' ? `trunk:${from}` : `${from}->${to}`,
+            kind,
             from,
             to,
             d,
@@ -453,6 +484,7 @@ export function layoutStoryMap(
         const b = byId.get(to);
         if (!a || !b) return;
         edge(
+            'link',
             from,
             to,
             `M ${a.x + a.width} ${cyOf(a.row)} L ${b.x} ${cyOf(b.row)}`,
@@ -460,19 +492,43 @@ export function layoutStoryMap(
         );
     };
 
+    /** The one shared segment a decision's side branches depart from: a stub
+     *  leaving the decision at its row, then a vertical trunk reaching the
+     *  deepest sibling band. */
+    const trunkEdge = (
+        from: string,
+        to: string,
+        trunkX: number,
+        lastRow: number
+    ): void => {
+        const a = byId.get(from);
+        if (!a) return;
+        const x0 = a.x + a.width;
+        const y = cyOf(a.row);
+        edge(
+            'trunk',
+            from,
+            to,
+            `M ${x0} ${y} L ${trunkX} ${y} L ${trunkX} ${cyOf(lastRow)}`
+        );
+    };
+
+    /** Offshoot from the shared trunk at the child's own row height. */
     const branchEdge = (
         from: string,
         to: string,
         trunkX: number,
         label: string
     ): void => {
-        const a = byId.get(from);
         const b = byId.get(to);
-        if (!a || !b) return;
+        if (!b) return;
+        const y = cyOf(b.row);
+        const bend = (b.x - trunkX) / 2;
         edge(
+            'branch',
             from,
             to,
-            `M ${a.x + a.width} ${cyOf(a.row)} C ${trunkX} ${cyOf(a.row)} ${trunkX} ${cyOf(b.row)} ${b.x} ${cyOf(b.row)}`,
+            `M ${trunkX} ${y} C ${trunkX + bend} ${y} ${b.x - bend} ${y} ${b.x} ${y}`,
             label
         );
     };
@@ -502,14 +558,17 @@ export function layoutStoryMap(
                 lastId = id;
                 cursor += width;
             };
-            if (expandedRunIds.has(node.id)) {
-                for (const sceneId of node.sceneIds) {
+            if (expandedRunIds.has(node.id) || node.current) {
+                // The current act is always unfolded; per-scene route
+                // membership stops coloring at the reader's position.
+                node.sceneIds.forEach((sceneId, i) => {
                     emitLink(sceneId, 'scene', m.sceneWidth, {
                         sceneId,
+                        status: i < node.routeCount ? 'route' : 'explored',
                         current: sceneId === node.currentSceneId,
                     });
                     cursor += m.sceneGap;
-                }
+                });
                 cursor -= m.sceneGap;
             } else {
                 emitLink(node.id, 'run', m.runWidth, {
@@ -545,6 +604,18 @@ export function layoutStoryMap(
                 order.splice(order.indexOf(primary), 1);
                 order.unshift(primary);
             }
+            const childRows = order.map(i => rowsOf(node.options[i].child));
+            // Emit the shared trunk first so it renders behind its offshoots.
+            if (order.length > 1) {
+                const lastSideBandTop =
+                    row + childRows.slice(0, -1).reduce((s, n) => s + n, 0);
+                trunkEdge(
+                    node.id,
+                    node.options[order[order.length - 1]].child.id,
+                    trunkX,
+                    lastSideBandTop
+                );
+            }
             let bandTop = row;
             order.forEach((optionIndex, placed) => {
                 const option = node.options[optionIndex];
@@ -554,7 +625,7 @@ export function layoutStoryMap(
                 } else {
                     branchEdge(node.id, option.child.id, trunkX, option.label);
                 }
-                bandTop += rowsOf(option.child);
+                bandTop += childRows[placed];
             });
             return;
         }

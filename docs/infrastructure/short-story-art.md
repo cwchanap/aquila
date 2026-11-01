@@ -1,15 +1,16 @@
 # Short-story artwork
 
 The five short stories (`elevator_game`, `three_am_laundromat`, `day_4012`,
-`demon_lord_is_hiring`, `one_pot_before_dawn`) have complete visual releases.
+`demon_lord_is_hiring`, `one_pot_before_dawn`) and `train_adventure` have
+production visual releases.
 Like every other generated asset they live on the R2 CDN and are never part of
 the Vercel bundle (see "Generated Asset Delivery" in `CLAUDE.md`).
 
-| Asset                     | Source in git                                                                    | Published to                                                              |
-| ------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Backgrounds and portraits | `packages/assets/media/<story>/` + `packages/stories/release-plans/<story>.json` | `vn/stories/<story>/current.json` and the content-addressed `vn/objects/` |
-| Cover                     | `packages/assets/media/<story>/covers/cover.png`                                 | `vn/covers/<story>.webp` (480 by 720)                                     |
-| Voice                     | `packages/assets/voice/<story>/`                                                 | `vn/voice/<story>/`                                                       |
+| Asset                     | Source in git                                    | Published to                                                              |
+| ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
+| Backgrounds and portraits | `packages/assets/media/<story>/`                 | `vn/stories/<story>/current.json` and the content-addressed `vn/objects/` |
+| Cover                     | `packages/assets/media/<story>/covers/cover.png` | `vn/covers/<story>.webp` (480 by 720)                                     |
+| Voice                     | `packages/assets/voice/<story>/`                 | `vn/voice/<story>/`                                                       |
 
 ## Reader behaviour
 
@@ -17,7 +18,11 @@ the Vercel bundle (see "Generated Asset Delivery" in `CLAUDE.md`).
 the allowlist of stories that always read the **production** release, including
 on preview deployments. The Seventh Mirror follows the per-environment preview
 pointers instead. A reader's saved Text or Visual Novel preference is
-preserved.
+preserved. Nothing publishes a visual release on merge: publish the story to
+production (below) before its allowlist entry ships, or every visual-mode
+reader hits a missing release. `src/__tests__/production-visual-allowlist.test.ts`
+keeps the allowlist in step with the stories that have art in
+`packages/assets/media/`.
 
 The reader needs `PUBLIC_ASSET_BASE_URL` and `PUBLIC_ASSET_ENVIRONMENT`. Without
 them (a bare local checkout) the shorts have no art, covers or voice and the
@@ -32,7 +37,6 @@ Visual releases go through the publisher (needs `R2_RELEASE_ACCESS_KEY_ID` and
 ```sh
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --story <story> --environment production \
-  --plan packages/stories/release-plans/<story>.json \
   --source-root packages/assets/media \
   --destination r2 --confirm-production <story> --json
 ```
@@ -42,6 +46,7 @@ Covers and voice go through `bun --filter @aquila/infra-cloudflare media:sync`
 touching `packages/assets/voice/` or a cover merges to `main`, so those two need
 no manual step.
 
-Each story's release plan covers every authored background and portrait,
-including shared scenes and endings. Original prompts, checksums and generation
+The publisher publishes whatever art is ready: every background and portrait
+the story references whose file exists under `packages/assets/media/<story>/`.
+Missing art is omitted, not an error. Original prompts, checksums and generation
 provenance stay out of git under the gitignored `packages/assets/generation/`.

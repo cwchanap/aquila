@@ -584,6 +584,11 @@ test.describe('Visual novel reader', () => {
     test('keeps Train Adventure choices usable without a visual release', async ({
         page,
     }) => {
+        // train_adventure has a production release; block it so this test
+        // holds whether or not the dev server has an asset host configured.
+        await page.route('**/vn/stories/train_adventure/**', route =>
+            route.abort()
+        );
         await page.addInitScript(() => {
             localStorage.setItem('aquila:reader-mode:v1', 'visual');
         });

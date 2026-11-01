@@ -23,15 +23,14 @@ or rollback.
 - Production is encoded exactly once. Preview receives the exact production
   manifest bytes; there is no preview-to-production copy command.
 
-## HPA-231 prerequisite
+## What gets published
 
-HPA-230 ships the publisher and test fixtures, not The Seventh Mirror's
-production classification. HPA-231 owns
-`packages/stories/release-plans/the_seventh_mirror.json`, the complete generated
-asset inventory, every inclusion/omission decision, and exact source-path
-maintenance. The production examples below cannot run for The Seventh Mirror
-until HPA-231 lands. A missing production plan is an expected prerequisite, not
-a publisher defect. Do not generate or auto-classify one during an incident.
+There is no per-story release plan. The publisher reads the story's generated
+`image-assets.json` and publishes every background and portrait whose source
+file exists under `--source-root`; assets without art yet are omitted, and a
+story with no art at all is refused. `plan` reports the included and omitted
+counts, so check them before publishing. `--plan <file>` remains only for test
+fixtures that publish a chosen subset (CI and the smoke seed).
 
 ## Credentials and configuration
 
@@ -80,7 +79,6 @@ An explicit production plan is required for production candidate creation:
 bun --filter @aquila/infra-cloudflare assets -- plan \
   --story the_seventh_mirror \
   --environment production \
-  --plan "$REPOSITORY_ROOT/packages/stories/release-plans/the_seventh_mirror.json" \
   --source-root "$REPOSITORY_ROOT/packages/assets/media" \
   --destination local \
   --destination-root .tmp/aquila-assets \
@@ -98,7 +96,6 @@ REPOSITORY_ROOT=$(pwd)
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --story the_seventh_mirror \
   --environment production \
-  --plan "$REPOSITORY_ROOT/packages/stories/release-plans/the_seventh_mirror.json" \
   --source-root "$REPOSITORY_ROOT/packages/assets/media" \
   --destination r2 \
   --no-activate \
@@ -198,7 +195,6 @@ already exist:
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --story the_seventh_mirror \
   --environment production \
-  --plan "$REPOSITORY_ROOT/packages/stories/release-plans/the_seventh_mirror.json" \
   --source-root "$REPOSITORY_ROOT/packages/assets/media" \
   --destination r2 \
   --no-activate \
@@ -257,14 +253,14 @@ With `--json`, stdout contains exactly one `PublisherReportV1` document. Human
 progress and diagnostics use stderr. Retain JSON reports as release evidence,
 but review any new report fields before artifact upload.
 
-| Exit | Meaning |
-|---:|---|
-| 0 | success or no-op |
-| 1 | CLI or configuration error |
-| 2 | input, coverage, source, encoding, or integrity failure |
-| 3 | storage or network failure |
-| 4 | conditional pointer concurrency conflict |
-| 5 | activation/rollback target, clock-skew, or pointer-time failure |
+| Exit | Meaning                                                         |
+| ---: | --------------------------------------------------------------- |
+|    0 | success or no-op                                                |
+|    1 | CLI or configuration error                                      |
+|    2 | input, coverage, source, encoding, or integrity failure         |
+|    3 | storage or network failure                                      |
+|    4 | conditional pointer concurrency conflict                        |
+|    5 | activation/rollback target, clock-skew, or pointer-time failure |
 
 Publisher reports, runtime manifests, pointer documents, object metadata, and
 workflow evidence must not contain prompts, provider data, credentials, private

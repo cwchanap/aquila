@@ -91,13 +91,11 @@ async function fixture(): Promise<{
         repositoryRoot,
         'packages/stories/src/generated/example'
     );
-    const planRoot = join(repositoryRoot, 'packages/stories/release-plans');
     const sourceRoot = join(repositoryRoot, 'sources');
     const backgroundPath = join(sourceRoot, 'backgrounds/room.png');
     const portraitPath = join(sourceRoot, 'portraits/mio.png');
     await Promise.all([
         mkdir(generatedRoot, { recursive: true }),
-        mkdir(planRoot, { recursive: true }),
         mkdir(join(sourceRoot, 'backgrounds'), { recursive: true }),
         mkdir(join(sourceRoot, 'portraits'), { recursive: true }),
     ]);
@@ -118,29 +116,6 @@ async function fixture(): Promise<{
                     key: 'mio/base',
                     path: 'portraits/mio.png',
                     section: 'chapter_1',
-                },
-            ],
-        })
-    );
-    await writeFile(
-        join(planRoot, `${storyId}.preview.json`),
-        JSON.stringify({
-            schemaVersion: 1,
-            storyId,
-            channel: 'preview',
-            entries: [
-                {
-                    identity: { type: 'portrait', key: 'mio/base' },
-                    disposition: 'included',
-                    sourcePath: 'portraits/mio.png',
-                },
-                {
-                    identity: {
-                        type: 'background',
-                        key: 'chapter_1/room',
-                    },
-                    disposition: 'included',
-                    sourcePath: 'backgrounds/room.png',
                 },
             ],
         })

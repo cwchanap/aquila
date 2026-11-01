@@ -5,7 +5,9 @@ import {
     type AssetResolverSource,
     type PublicationTarget,
     type RuntimeAssetManifestV1,
+    RUNTIME_ASSET_CACHE_POLICY,
 } from '@aquila/stories/runtime-assets';
+import { REGISTERED_STORY_IDS } from '@aquila/stories/async';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ValidatedReleaseStore } from '../validated-release-store';
 import {
@@ -948,15 +950,28 @@ describe('WebAssetResolver', () => {
         expect(store.loadRaw()).toHaveLength(1);
     });
 
-    it('persists only the two globally most-recently-used validated releases', async () => {
-        const oldest = createDocuments({ key: 'release/oldest' });
-        const middle = createDocuments({ key: 'release/middle' });
+    it('keeps a stale-fallback slot for every registered story', () => {
+        expect(
+            RUNTIME_ASSET_CACHE_POLICY.clientBounds.maxValidatedReleases
+        ).toBeGreaterThanOrEqual(REGISTERED_STORY_IDS.length);
+    });
+
+    it('persists only the globally most-recently-used validated releases', async () => {
+        const max =
+            RUNTIME_ASSET_CACHE_POLICY.clientBounds.maxValidatedReleases;
+        // Index 0 is the least recently used and must be evicted.
+        const stored = Array.from({ length: max }, (_, index) =>
+            createDocuments({ key: `release/stored-${index}` })
+        );
         const newest = createDocuments({ key: 'release/newest' });
         const store = new ValidatedReleaseStore(
-            createMemoryStorage([
-                storedRecord(oldest, { lastUsedAt: NOW - 3_000 }),
-                storedRecord(middle, { lastUsedAt: NOW - 2_000 }),
-            ])
+            createMemoryStorage(
+                stored.map((documents, index) =>
+                    storedRecord(documents, {
+                        lastUsedAt: NOW - (max - index) * 1_000,
+                    })
+                )
+            )
         );
         const resolver = createResolver(newest, { store });
 
@@ -966,7 +981,13 @@ describe('WebAssetResolver', () => {
             (store.loadRaw() as ValidatedReleaseRecord[]).map(
                 record => record.releaseId
             )
-        ).toEqual([newest.pointer.releaseId, middle.pointer.releaseId]);
+        ).toEqual([
+            newest.pointer.releaseId,
+            ...stored
+                .slice(1)
+                .reverse()
+                .map(documents => documents.pointer.releaseId),
+        ]);
     });
 
     it('keeps an accepted release in memory when persistence throws', async () => {

@@ -1,66 +1,69 @@
 import { lstat, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
-    isStoryId,
     parseStoryAssetReleasePlan,
-    type PublicationTarget,
+    type AuthoringAssetCatalog,
     type StoryAssetReleasePlanV1,
 } from '@aquila/stories/runtime-assets';
 import { PublisherError } from './errors';
 
-export interface ResolveReleasePlanOptions {
-    repositoryRoot: string;
-    storyId: string;
-    target: PublicationTarget;
-    explicitPath?: string;
-}
+const NO_ARTWORK_REASON = 'No artwork in the source root yet';
 
-export async function resolveReleasePlanPath(
-    options: ResolveReleasePlanOptions
-): Promise<string> {
-    if (options.explicitPath !== undefined) return options.explicitPath;
-    if (!isStoryId(options.storyId)) {
-        throw new PublisherError('input', 'Release-plan story id is unsafe', {
-            context: { input: 'storyId' },
+/**
+ * The release plan a story gets when none is given: every asset the story
+ * references is included if its source file exists under the source root and
+ * omitted otherwise. Publishing a story means publishing whatever art is
+ * ready — there is no per-story plan file to keep in step.
+ */
+export async function deriveReleasePlan(
+    catalog: AuthoringAssetCatalog,
+    sourceRoot: string
+): Promise<StoryAssetReleasePlanV1> {
+    const entries = await Promise.all(
+        catalog.assets.map(async asset =>
+            (await sourceExists(sourceRoot, asset.sourcePath))
+                ? {
+                      identity: asset.identity,
+                      disposition: 'included' as const,
+                      sourcePath: asset.sourcePath,
+                  }
+                : {
+                      identity: asset.identity,
+                      disposition: 'omitted' as const,
+                      reason: NO_ARTWORK_REASON,
+                  }
+        )
+    );
+    if (!entries.some(entry => entry.disposition === 'included')) {
+        throw new PublisherError('input', 'Story has no artwork to publish', {
+            context: { source: 'asset-source-root', storyId: catalog.storyId },
         });
     }
+    return parseStoryAssetReleasePlan({
+        schemaVersion: 1,
+        storyId: catalog.storyId,
+        channel: 'production',
+        entries,
+    });
+}
 
-    const plansRoot = join(
-        options.repositoryRoot,
-        'packages/stories/release-plans'
-    );
-    if (options.target.kind === 'preview') {
-        const previewPath = join(plansRoot, `${options.storyId}.preview.json`);
-        try {
-            // lstat (not access) so a dangling symlink is NOT treated as
-            // absent. access() follows symlinks, so a broken preview
-            // companion would return ENOENT and silently fall back to the
-            // production plan, publishing under a different classification
-            // than the operator intended. lstat succeeds for any directory
-            // entry (including a dangling symlink); loadReleasePlan() then
-            // reports the unreadable target.
-            await lstat(previewPath);
-            return previewPath;
-        } catch (error) {
-            // Only a genuinely absent preview companion (ENOENT from lstat)
-            // is optional. Other filesystem errors (EACCES, EIO, ...) must
-            // surface as a sanitized input error; silently falling back to
-            // the production plan would publish under a different
-            // classification than the operator intended.
-            const code =
-                typeof error === 'object' && error !== null && 'code' in error
-                    ? (error as { code?: unknown }).code
-                    : undefined;
-            if (code !== 'ENOENT') {
-                throw new PublisherError(
-                    'input',
-                    'Unable to verify preview release plan',
-                    { cause: error, context: { source: 'release-plan' } }
-                );
-            }
-        }
+// Only a genuinely absent file means "art not ready". Any other failure is
+// left for source resolution, which reports it as a sanitized source error.
+async function sourceExists(
+    sourceRoot: string,
+    sourcePath: string
+): Promise<boolean> {
+    try {
+        await lstat(join(sourceRoot, sourcePath));
+        return true;
+    } catch (error) {
+        return !(
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            (error as { code?: unknown }).code === 'ENOENT'
+        );
     }
-    return join(plansRoot, `${options.storyId}.json`);
 }
 
 export async function loadReleasePlan(

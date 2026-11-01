@@ -17,7 +17,7 @@ import {
     inspectImmutableCandidate,
     type PlannedImmutableCandidate,
 } from './immutable-candidate';
-import { loadReleasePlan, resolveReleasePlanPath } from './release-plan';
+import { deriveReleasePlan, loadReleasePlan } from './release-plan';
 import {
     normalizeReportDiagnostics,
     type ProgressSink,
@@ -234,22 +234,6 @@ export async function buildPublicationPlan(
         total: 2,
         message: 'loaded authoring catalog',
     });
-    const planPath = await resolveReleasePlanPath({
-        repositoryRoot: options.repositoryRoot,
-        storyId: options.storyId,
-        target: options.target,
-        ...(options.releasePlanPath === undefined
-            ? {}
-            : { explicitPath: options.releasePlanPath }),
-    });
-    const releasePlan = await loadReleasePlan(planPath);
-    progress(options.progress, {
-        stage: 'input',
-        completed: 2,
-        total: 2,
-        message: 'loaded release plan',
-    });
-
     const selectedSourceRoot = await resolveSourceRoot({
         repositoryRoot: options.repositoryRoot,
         ...(options.sourceRoot === undefined
@@ -257,6 +241,19 @@ export async function buildPublicationPlan(
             : { explicitPath: options.sourceRoot }),
         environment: options.environment ?? process.env,
     });
+    // An explicit plan is only for fixtures that publish a chosen subset;
+    // a story publish takes whatever art is in the source root.
+    const releasePlan =
+        options.releasePlanPath === undefined
+            ? await deriveReleasePlan(catalog, selectedSourceRoot)
+            : await loadReleasePlan(options.releasePlanPath);
+    progress(options.progress, {
+        stage: 'input',
+        completed: 2,
+        total: 2,
+        message: 'loaded release plan',
+    });
+
     const included = includedEntries(releasePlan.entries);
     const resolved = await resolveIncludedSources({
         sourceRoot: selectedSourceRoot,
@@ -286,6 +283,19 @@ export async function buildPublicationPlan(
     );
     const encodedAssets: EncodedAsset[] = [];
     const sourceWarnings = [];
+    // A derived plan silently drops art that is not in the source root, so
+    // say how much was dropped: publishing from the wrong root must be visible.
+    if (options.releasePlanPath === undefined) {
+        for (const entry of releasePlan.entries) {
+            if (entry.disposition !== 'omitted') continue;
+            sourceWarnings.push({
+                code: 'coverage/no-artwork',
+                stage: 'coverage',
+                message: `Referenced ${entry.identity.type} has no artwork and is omitted`,
+                assetType: entry.identity.type,
+            });
+        }
+    }
     for (const [index, source] of resolved.sources.entries()) {
         sourceWarnings.push(...evaluateSourceDiagnostics(source));
         const identity = qualifyAssetIdentity(source.identity);

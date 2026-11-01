@@ -135,8 +135,7 @@ type RuntimeReleaseIdentity = {
 
 const EXPECTED_IDENTITY: RuntimeReleaseIdentity = {
     assetEnvironment: (PREVIEW_ID ? 'preview' : 'production') as
-        | 'preview'
-        | 'production',
+        'preview' | 'production',
     previewId: PREVIEW_ID || null,
     releaseId: RELEASE_ID,
     manifestSha256: MANIFEST_SHA256,
@@ -309,9 +308,9 @@ function findSceneAnchors(
 /**
  * `train_adventure` is the only story with choice nodes today; the gate story
  * itself (the_seventh_mirror) is linear. The choice step therefore drives the
- * choice-bearing scene of train_adventure — the deployed reader renders it
- * with or without a release (the visual runtime has no resolver for it), which
- * is exactly the "choices must never block" property the gate asserts.
+ * choice-bearing scene of train_adventure. The step asserts only that the
+ * choice works, whatever state train_adventure's own production release is in
+ * — exactly the "choices must never block" property the gate asserts.
  */
 type ChoiceAnchors = {
     sceneId: string;

@@ -23,6 +23,9 @@ export interface StoryProgress {
     finished: boolean;
     /** Ending scene ids reached at least once, in the order first reached. */
     endings: string[];
+    /** Scene ids recorded at least once, in the order first recorded.
+     *  Absent on records written before this field existed. */
+    visited?: string[];
 }
 
 export type StoryProgressMap = Record<string, StoryProgress>;
@@ -46,7 +49,10 @@ function isProgress(value: unknown): value is StoryProgress {
         typeof v.updatedAt === 'number' &&
         typeof v.finished === 'boolean' &&
         Array.isArray(v.endings) &&
-        v.endings.every(e => typeof e === 'string')
+        v.endings.every(e => typeof e === 'string') &&
+        (v.visited === undefined ||
+            (Array.isArray(v.visited) &&
+                v.visited.every(e => typeof e === 'string')))
     );
 }
 
@@ -120,6 +126,10 @@ export class StoryProgressStore {
         if (position.atEnding && !endings.includes(position.sceneId)) {
             endings.push(position.sceneId);
         }
+        const visited = previous?.visited ? [...previous.visited] : [];
+        if (!visited.includes(position.sceneId)) {
+            visited.push(position.sceneId);
+        }
         all[position.storyId] = {
             sceneId: position.sceneId,
             dialogueIndex: Number.isFinite(position.dialogueIndex)
@@ -128,6 +138,7 @@ export class StoryProgressStore {
             updatedAt: this.now(),
             finished: position.atEnding,
             endings,
+            visited,
         };
         try {
             this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(all));

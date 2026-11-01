@@ -61,6 +61,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             secondLanguage: 'Second language',
             secondLanguageOff: 'Off',
             secondLanguageUnavailable: 'Not available for this story',
+            storyMap: { open: 'Open story map' },
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
@@ -146,6 +147,28 @@ describe('MobileNovelReader', () => {
         await fireEvent.click(screen.getByLabelText('Open menu'));
         expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
         expect(screen.queryByLabelText('Visual Novel')).not.toBeInTheDocument();
+    });
+
+    it('opens the story map from the chrome when the story is eligible', async () => {
+        const onOpenStoryMap = vi.fn();
+        renderReader({ storyMapAvailable: true, onOpenStoryMap });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open story map'));
+
+        expect(onOpenStoryMap).toHaveBeenCalledOnce();
+        expect(
+            screen.queryByLabelText('Open acts panel')
+        ).not.toBeInTheDocument();
+    });
+
+    it('hides the chrome story-map icon when the story is not eligible', async () => {
+        renderReader({ onOpenStoryMap: vi.fn() });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        expect(
+            screen.queryByLabelText('Open story map')
+        ).not.toBeInTheDocument();
     });
 
     describe('controlled contract', () => {

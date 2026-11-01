@@ -462,6 +462,14 @@ describe('StoryMapSheet', () => {
         expect(onClose).toHaveBeenCalledTimes(2);
     });
 
+    it('lets backdrop pointer hits fall through the centering wrapper to the scrim', () => {
+        render(StoryMapSheet, { props: baseProps() });
+        const dialog = screen.getByRole('dialog');
+        const wrapper = dialog.parentElement as HTMLElement;
+        expect(wrapper.className).toContain('pointer-events-none');
+        expect(dialog.className).toContain('pointer-events-auto');
+    });
+
     it('restores focus to the opener when closed', async () => {
         const opener = document.createElement('button');
         document.body.appendChild(opener);

@@ -11,6 +11,7 @@ import {
     actRangeLabel,
     actSortKey,
     extractActName,
+    extractBranchPrefix,
 } from './act-navigation';
 
 type Flow = Pick<StoryFlowConfig, 'start' | 'nodes'>;
@@ -26,7 +27,6 @@ export interface StoryMapUnknown {
 export interface StoryMapEnding {
     kind: 'ending';
     id: string;
-    /** Terminal scene this marker belongs to; also the jump target. */
     sceneId: string;
     label: string;
     status: 'route' | 'explored';
@@ -34,23 +34,14 @@ export interface StoryMapEnding {
 
 export interface StoryMapRun {
     kind: 'run';
-    /** Stable key: the first scene id of the run. */
     id: string;
-    /** Revealed scenes in reading order; never contains unread scenes. */
     sceneIds: readonly string[];
-    /** Legal jump target for the run. */
     entrySceneId: string;
-    /** Collapsed label: `Act N` or `Acts N–M` (localized). */
     label: string;
-    /** Sort key of the run's first act (see act-navigation). */
     sortKey: number;
     status: 'route' | 'explored';
-    /** Leading scene count on the root-to-current path; scenes after this
-     *  cutoff were read but are ahead of the reader's position. */
     routeCount: number;
-    /** True when the run contains the reader's current scene. */
     current: boolean;
-    /** The reader's scene id, present only when current is true. */
     currentSceneId?: string;
     next: StoryMapDecision | StoryMapUnknown | StoryMapEnding | null;
 }
@@ -63,7 +54,6 @@ export interface StoryMapOption {
 
 export interface StoryMapDecision {
     kind: 'decision';
-    /** Stable key: the flow choice node id (`choice:<choiceId>`). */
     id: string;
     choiceId: string;
     status: 'route' | 'explored';
@@ -122,8 +112,6 @@ export interface StoryMapLayoutEdge {
     kind: StoryMapLayoutEdgeKind;
     from: string;
     to: string;
-    /** SVG path data: straight for same-row links and trunk segments,
-     *  cubic bezier for branch offshoots. */
     d: string;
     label?: string;
 }
@@ -137,7 +125,6 @@ export interface StoryMapLayout {
 interface FlowIndex {
     byId: Map<string, FlowNodeDefinition>;
     parent: Map<string, string>;
-    /** Node ids reachable from `flow.start`; everything else is ignored. */
     reachable: Set<string>;
 }
 
@@ -185,8 +172,6 @@ function addAncestorChain(
     while (cur && !seen.has(cur)) {
         seen.add(cur);
         const node = index.byId.get(cur);
-        // An unreachable node's ancestors are unreachable too, so a chain
-        // that leaves the reachable graph contributes nothing.
         if (!node || !index.reachable.has(cur)) return;
         if (node.kind === 'scene') into.add(node.sceneId);
         cur = index.parent.get(cur);
@@ -213,13 +198,6 @@ export function hasRealDecision(flow: Pick<StoryFlowConfig, 'nodes'>): boolean {
     );
 }
 
-/**
- * Scene ids the reader may legitimately see: every recorded `visited` scene
- * plus the current scene, closed over ancestors back to the flow root so a
- * direct link or bookmark reveals a continuous path — without exposing any
- * sibling or descendant scenes that were never read. Scenes unreachable from
- * `flow.start` can never become visible, even if recorded as visited.
- */
 export function visibleSceneIds(
     flow: Pick<StoryFlowConfig, 'start' | 'nodes'>,
     progress: Pick<StoryProgress, 'visited'> | null | undefined,
@@ -248,7 +226,6 @@ export function buildStoryMap({
     const acts = new Set<string>();
     const stats: StoryMapStats = { acts: 0, decisions: 0, endings: 0 };
 
-    // The route is the root-to-current path: current scene plus its ancestors.
     const route = new Set<string>();
     {
         let cur: string | undefined = currentSceneId ?? undefined;
@@ -260,7 +237,6 @@ export function buildStoryMap({
         }
     }
 
-    // Guards a malformed cyclic flow into a frontier instead of looping.
     const emitted = new Set<string>();
 
     const unknown = (id: string): StoryMapUnknown => ({
@@ -327,7 +303,7 @@ export function buildStoryMap({
             emitted.add(node.sceneId);
             sceneIds.push(node.sceneId);
             const act = extractActName(node.sceneId);
-            if (act) acts.add(act);
+            if (act) acts.add(extractBranchPrefix(node.sceneId) + act);
 
             const nextId = node.next;
             if (nextId == null) {
@@ -342,7 +318,6 @@ export function buildStoryMap({
             if (target.kind === 'choice') {
                 const optionIds = Object.keys(target.nextByOption);
                 if (optionIds.length <= 1) {
-                    // A single-option choice is a link, not a fork.
                     const dest = optionIds[0]
                         ? target.nextByOption[optionIds[0]]
                         : undefined;
@@ -421,12 +396,6 @@ export function buildStoryMap({
     return { root, stats };
 }
 
-/**
- * Positions the view model as a horizontal railway map: the current route
- * stays on row 0 and side branches occupy contiguous bands allocated deepest
- * decisions first, so siblings fan out of a shared trunk. Expanded runs emit
- * one node per scene — widening only their own horizontal footprint.
- */
 export function layoutStoryMap(
     view: StoryMapView,
     expandedRunIds: ReadonlySet<string>,
@@ -497,9 +466,6 @@ export function layoutStoryMap(
         );
     };
 
-    /** The one shared segment a decision's side branches depart from: a stub
-     *  leaving the decision at its row, then a vertical trunk reaching the
-     *  deepest sibling band. */
     const trunkEdge = (
         from: string,
         to: string,
@@ -518,7 +484,6 @@ export function layoutStoryMap(
         );
     };
 
-    /** Offshoot from the shared trunk at the child's own row height. */
     const branchEdge = (
         from: string,
         to: string,
@@ -527,13 +492,14 @@ export function layoutStoryMap(
     ): void => {
         const b = byId.get(to);
         if (!b) return;
-        const y = cyOf(b.row);
+        const y1 = cyOf(b.row);
+        const y0 = y1 - m.rowHeight / 2;
         const bend = (b.x - trunkX) / 2;
         edge(
             'branch',
             from,
             to,
-            `M ${trunkX} ${y} C ${trunkX + bend} ${y} ${b.x - bend} ${y} ${b.x} ${y}`,
+            `M ${trunkX} ${y0} C ${trunkX + bend} ${y0} ${b.x - bend} ${y1} ${b.x} ${y1}`,
             label
         );
     };
@@ -564,8 +530,6 @@ export function layoutStoryMap(
                 cursor += width;
             };
             if (expandedRunIds.has(node.id) || node.current) {
-                // The current act is always unfolded; per-scene route
-                // membership stops coloring at the reader's position.
                 node.sceneIds.forEach((sceneId, i) => {
                     emitLink(sceneId, 'scene', m.sceneWidth, {
                         sceneId,
@@ -610,7 +574,6 @@ export function layoutStoryMap(
                 order.unshift(primary);
             }
             const childRows = order.map(i => rowsOf(node.options[i].child));
-            // Emit the shared trunk first so it renders behind its offshoots.
             if (order.length > 1) {
                 const lastSideBandTop =
                     row + childRows.slice(0, -1).reduce((s, n) => s + n, 0);

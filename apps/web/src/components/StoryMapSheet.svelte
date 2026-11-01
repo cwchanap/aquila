@@ -309,14 +309,25 @@
   }
 
   function scrollCurrentIntoView(): void {
-    const el = mapEl?.querySelector('[data-current="true"]');
+    if (!mapEl) return;
+    const el = mapEl.querySelector('[data-current="true"]');
     if (!(el instanceof HTMLElement)) return;
     const reduce =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.scrollIntoView({
-      block: 'nearest',
-      inline: 'end',
+    const container = mapEl.getBoundingClientRect();
+    const node = el.getBoundingClientRect();
+    const caption = el.querySelector('[data-current-caption]');
+    const captionBox = caption?.getBoundingClientRect() ?? node;
+    const top = Math.min(node.top, captionBox.top);
+    const bottom = Math.max(node.bottom, captionBox.bottom);
+    const dx = Math.max(node.right, captionBox.right) - container.right;
+    let dy = 0;
+    if (top < container.top) dy = top - container.top;
+    else if (bottom > container.bottom) dy = bottom - container.bottom;
+    mapEl.scrollTo({
+      left: mapEl.scrollLeft + Math.ceil(dx),
+      top: mapEl.scrollTop + Math.ceil(dy),
       behavior: reduce ? 'auto' : 'smooth',
     });
   }
@@ -491,6 +502,7 @@
                       class="h-4 w-4 rounded-full bg-blue-600 shadow ring-2 ring-white"
                     ></span>
                     <span
+                      data-current-caption
                       class="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-wide text-blue-800"
                     >
                       {sm.currentPosition}

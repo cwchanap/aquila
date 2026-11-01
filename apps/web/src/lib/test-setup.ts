@@ -20,6 +20,17 @@ if (
     });
 }
 
+if (
+    typeof Element !== 'undefined' &&
+    typeof Element.prototype.scrollTo !== 'function'
+) {
+    Object.defineProperty(Element.prototype, 'scrollTo', {
+        value: () => {},
+        writable: true,
+        configurable: true,
+    });
+}
+
 if (typeof localStorage === 'undefined') {
     const store: Record<string, string> = {};
     const storageMock = {

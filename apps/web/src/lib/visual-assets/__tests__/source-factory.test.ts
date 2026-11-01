@@ -1,8 +1,6 @@
 import type { StoryFlowConfig } from '@aquila/stories';
-import {
-    loadStoryContent,
-    PRODUCTION_VISUAL_STORY_IDS,
-} from '@aquila/stories/async';
+import { PRODUCTION_VISUAL_STORY_IDS } from '@aquila/stories/async';
+import { scene as trainAct1Scene } from '../../../../../../packages/stories/src/generated/trainAdventure/scenes/act1';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createVisualRuntime, getAssetResolverSource } from '../source-factory';
 import type { VisualSnapshot } from '../types';
@@ -195,15 +193,12 @@ describe('createVisualRuntime', () => {
     });
 
     it('suppresses the portrait stage for cast-inclusive stories only', async () => {
-        const { dialogue } = await loadStoryContent('train_adventure', 'zh');
-        const portraitIndex = dialogue['act1'].findIndex(
-            entry => entry.portrait
-        );
+        const portraitIndex = trainAct1Scene.findIndex(entry => entry.portrait);
         expect(portraitIndex).toBeGreaterThan(-1);
         const actInput = (storyId: string) => ({
             storyId,
             sceneId: 'act1',
-            dialogue: dialogue['act1'],
+            dialogue: trainAct1Scene,
             dialogueIndex: portraitIndex,
             flow: linearFlow,
         });

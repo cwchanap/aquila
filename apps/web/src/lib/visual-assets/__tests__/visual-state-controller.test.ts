@@ -9,7 +9,8 @@ import {
     type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
-import { loadStoryContent } from '@aquila/stories/async';
+import { scene as trainAct1Scene } from '../../../../../../packages/stories/src/generated/trainAdventure/scenes/act1';
+import { scene as trainAct2Scene } from '../../../../../../packages/stories/src/generated/trainAdventure/scenes/act2';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DecodedAsset, VisualSnapshot } from '../types';
 import {
@@ -2291,25 +2292,25 @@ describe('VisualStateController', () => {
     });
 
     it('suppresses portrait staging, loading, and prefetching for cast-inclusive act1 visuals', async () => {
-        const { dialogue, flow } = await loadStoryContent(
-            'train_adventure',
-            'zh'
-        );
-        const act1 = dialogue['act1'];
-        const act2 = dialogue['act2'];
+        const trainFlow = {
+            start: 'act1',
+            nodes: [
+                { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+            ],
+        } as unknown as StoryFlowConfig;
         const { cache, controller, latest, resolver } = createHarness({
-            sceneDialogue: { act2 },
+            sceneDialogue: { act2: trainAct2Scene },
             suppressPortraits: true,
         });
         const trainInput = (dialogueIndex: number) =>
-            input(act1, {
+            input(trainAct1Scene, {
                 storyId: 'train_adventure',
                 sceneId: 'act1',
                 dialogueIndex,
-                flow,
+                flow: trainFlow,
             });
 
-        const speakerIndex = act1.findIndex(entry => entry.portrait);
+        const speakerIndex = trainAct1Scene.findIndex(entry => entry.portrait);
         expect(speakerIndex).toBeGreaterThan(-1);
         controller.update(trainInput(speakerIndex));
         await flushAsyncWork();
@@ -2338,7 +2339,7 @@ describe('VisualStateController', () => {
 
         // At the act's end the edge prefetch requests act2's background
         // only — its portrait keys are never resolved or prefetched.
-        controller.update(trainInput(act1.length - 1));
+        controller.update(trainInput(trainAct1Scene.length - 1));
         await flushAsyncWork();
         expect(resolver.prefetchNextEdge).toHaveBeenCalledWith(
             expect.objectContaining({

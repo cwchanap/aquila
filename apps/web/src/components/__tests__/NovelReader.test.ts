@@ -731,6 +731,37 @@ describe('NovelReader — act panel navigation guard', () => {
         await fireEvent.click(screen.getByText('Act 2'));
         expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
     });
+
+    it('forwards the visible-scene allowlist to the acts panel', async () => {
+        const { container } = renderReader({
+            dialogueIndex: 0,
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+            visibleSceneIds: new Set(['b1a_act1', 'b1a_act2']),
+        });
+        await vi.runAllTimersAsync();
+        const acts = Array.from(
+            container.querySelectorAll('aside button')
+        ).filter(b => !b.getAttribute('aria-label'));
+        expect(acts.map(b => b.textContent)).toEqual(['Act 1', 'Act 2']);
+    });
+
+    it('keeps the acts panel unrestricted when no allowlist is provided', async () => {
+        const { container } = renderReader({
+            dialogueIndex: 0,
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+        });
+        await vi.runAllTimersAsync();
+        const acts = Array.from(
+            container.querySelectorAll('aside button')
+        ).filter(b => !b.getAttribute('aria-label'));
+        expect(acts.map(b => b.textContent)).toEqual([
+            'Act 1',
+            'Act 2',
+            'Act 3',
+        ]);
+    });
 });
 
 describe('NovelReader — edge cases', () => {
@@ -763,9 +794,8 @@ describe('NovelReader — edge cases', () => {
     });
 
     it('falls back to "Unknown" when characterNames is missing', async () => {
-        const { getTranslations } = await import(
-            '@aquila/stories/translations'
-        );
+        const { getTranslations } =
+            await import('@aquila/stories/translations');
         (getTranslations as ReturnType<typeof vi.fn>).mockReturnValueOnce({
             reader: {
                 unknown: 'Unknown',

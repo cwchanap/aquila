@@ -859,6 +859,29 @@ describe('VisualNovelReader', () => {
         expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
     });
 
+    it('forwards the visible-scene allowlist to the acts panel', async () => {
+        setReducedMotion(false);
+        const { container } = renderReader({
+            isInitialMount: false,
+            visibleSceneIds: new Set(['b1a_act1']),
+        });
+
+        const acts = Array.from(
+            container.querySelectorAll('.act-panel button')
+        ).filter(b => !b.getAttribute('aria-label'));
+        expect(acts.map(b => b.textContent)).toEqual(['Act 1']);
+    });
+
+    it('keeps the acts panel unrestricted when no allowlist is provided', async () => {
+        setReducedMotion(false);
+        const { container } = renderReader({ isInitialMount: false });
+
+        const acts = Array.from(
+            container.querySelectorAll('.act-panel button')
+        ).filter(b => !b.getAttribute('aria-label'));
+        expect(acts.map(b => b.textContent)).toEqual(['Act 1', 'Act 2']);
+    });
+
     it('renders choices for a choice-only scene with empty dialogue', async () => {
         setReducedMotion(false);
         const onChoice = vi.fn();

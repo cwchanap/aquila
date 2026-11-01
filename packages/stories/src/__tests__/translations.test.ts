@@ -93,6 +93,48 @@ describe('translations', () => {
             expect(en.characterName).toBeDefined();
         });
 
+        it('provides story-map labels and the Acts range in every locale', () => {
+            for (const locale of ['en', 'zh', 'ja'] as const) {
+                const reader = getTranslations(locale).reader;
+                const storyMap = reader.storyMap;
+                expect(storyMap).toBeDefined();
+                for (const [key, value] of Object.entries(storyMap)) {
+                    expect(typeof value, `${locale}.${key}`).toBe('string');
+                    expect(value.length, `${locale}.${key}`).toBeGreaterThan(0);
+                }
+                for (const key of [
+                    'title',
+                    'open',
+                    'close',
+                    'locateCurrent',
+                    'currentPosition',
+                    'statsActs',
+                    'statsDecisions',
+                    'statsEndings',
+                    'expandRun',
+                    'collapseRun',
+                    'decision',
+                    'options',
+                    'unreadLabel',
+                    'jumpTo',
+                ] as const) {
+                    expect(storyMap[key], `${locale}.${key}`).toBeTruthy();
+                }
+                expect(storyMap.statsActs).toContain('{n}');
+                expect(storyMap.statsDecisions).toContain('{n}');
+                expect(storyMap.statsEndings).toContain('{n}');
+                expect(storyMap.options).toContain('{n}');
+                expect(storyMap.expandRun).toContain('{label}');
+                expect(storyMap.collapseRun).toContain('{label}');
+                expect(storyMap.jumpTo).toContain('{label}');
+                expect(reader.actRangeLabel).toContain('{first}');
+                expect(reader.actRangeLabel).toContain('{last}');
+            }
+            expect(getTranslations('en').reader.actRangeLabel).toBe(
+                'Acts {first}–{last}'
+            );
+        });
+
         it('falls back to English for an unknown locale (exercises the || branch)', () => {
             // Cast to bypass TypeScript's Locale type restriction to cover the fallback branch
             const t = getTranslations('fr' as Locale);

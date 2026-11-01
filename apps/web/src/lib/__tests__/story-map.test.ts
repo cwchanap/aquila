@@ -20,6 +20,7 @@ const t = {
         actLabel: 'Act {n}',
         actFinal: 'Final',
         actEpilogue: 'Epilogue',
+        actRangeLabel: 'Acts {first}–{last}',
     },
 } as unknown as Translations;
 
@@ -411,9 +412,9 @@ describe('buildStoryMap', () => {
         ).not.toContain('b1b_act3');
     });
 
-    it('labels collapsed runs with act ranges', () => {
+    it('labels collapsed runs with localized act ranges', () => {
         const view = mapAt(['act1', 'act2', 'b1a_act3'], 'b1a_act3');
-        expect(view.root?.label).toBe('Act 1–Act 2');
+        expect(view.root?.label).toBe('Acts 1–2');
         const c1 = firstDecision(view.root!)!;
         expect((c1.options[0].child as StoryMapRun).label).toBe('Act 3');
     });
@@ -682,7 +683,7 @@ describe('layoutStoryMap', () => {
         const layout = layoutStoryMap(fullView(), new Set(), metrics);
         const runNode = layout.nodes.find(n => n.id === 'act1');
         expect(runNode?.kind).toBe('run');
-        expect(runNode?.label).toBe('Act 1–Act 2');
+        expect(runNode?.label).toBe('Acts 1–2');
     });
 
     it('returns an empty layout for an empty view', () => {

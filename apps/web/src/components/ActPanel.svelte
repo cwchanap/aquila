@@ -16,6 +16,7 @@
     onToggle,
     open = false,
     locale = 'en',
+    visibleSceneIds,
   }: {
     flow: StoryFlowConfig;
     storyId: string;
@@ -24,13 +25,16 @@
     onToggle: () => void;
     open?: boolean;
     locale?: Locale;
+    visibleSceneIds?: ReadonlySet<string>;
   } = $props();
 
   let expandedChapter: string | null = $state(null);
   let previousChapterKey: string | null = null;
 
   let t = $derived(getTranslations(locale));
-  let chapterData = $derived(buildChapterData(flow, currentSceneId, t));
+  let chapterData = $derived(
+    buildChapterData(flow, currentSceneId, t, visibleSceneIds)
+  );
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 

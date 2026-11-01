@@ -252,6 +252,7 @@
     "actLabel": "第 {n} 章",
     "actFinal": "最終章",
     "actEpilogue": "尾聲",
+    "actRangeLabel": "第 {first}–{last} 章",
     "chapterLabel": "第 {n} 章",
     "openActsPanel": "開啟章節面板",
     "closeActsPanel": "關閉章節面板",
@@ -263,7 +264,23 @@
     "closeMenu": "關閉選單",
     "tapToContinue": "點擊繼續",
     "lineProgress": "第 {current} / {total} 行",
-    "previousLine": "上一行"
+    "previousLine": "上一行",
+    "storyMap": {
+      "title": "故事地圖",
+      "open": "開啟故事地圖",
+      "close": "關閉故事地圖",
+      "locateCurrent": "顯示目前位置",
+      "currentPosition": "目前位置",
+      "statsActs": "{n} 章",
+      "statsDecisions": "{n} 個抉擇",
+      "statsEndings": "{n} 個結局",
+      "expandRun": "展開 {label}",
+      "collapseRun": "收合 {label}",
+      "decision": "抉擇",
+      "options": "{n} 個選項",
+      "unreadLabel": "尚未閱讀",
+      "jumpTo": "跳至 {label}"
+    }
   },
   "storyWriter": {
     "title": "故事編輯器",

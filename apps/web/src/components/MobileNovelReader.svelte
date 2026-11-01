@@ -67,6 +67,7 @@
     onSecondLanguageChange = () => {},
     furiganaAvailable = false,
     onFuriganaChange = () => {},
+    visibleSceneIds,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -99,6 +100,7 @@
     onSecondLanguageChange?: (value: SecondLanguage) => void;
     furiganaAvailable?: boolean;
     onFuriganaChange?: (on: boolean) => void;
+    visibleSceneIds?: ReadonlySet<string>;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -638,6 +640,7 @@
       {flow}
       {storyId}
       {currentSceneId}
+      {visibleSceneIds}
       open={drawerOpen}
       {locale}
       restoreFocusTarget={menuToggleButton ?? null}

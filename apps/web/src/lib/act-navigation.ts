@@ -89,28 +89,49 @@ export function chapterLabel(num: number, t: Translations): string {
     return t.reader.chapterLabel.replace('{n}', String(num));
 }
 
+export function actRangeLabel(
+    firstRawName: string,
+    lastRawName: string,
+    t: Translations
+): string {
+    const firstNum = firstRawName.match(/act(\d+)/)?.[1];
+    const lastNum = lastRawName.match(/act(\d+)/)?.[1];
+    if (firstNum && lastNum) {
+        return t.reader.actRangeLabel
+            .replace('{first}', firstNum)
+            .replace('{last}', lastNum);
+    }
+    return `${actLabel(firstRawName, t)}–${actLabel(lastRawName, t)}`;
+}
+
 export function buildChapterData(
     flow: Flow,
     sceneId: string,
-    t: Translations
+    t: Translations,
+    visibleSceneIds?: ReadonlySet<string>
 ): PanelData {
     const hasChapters = flow.nodes.some(
         n => n.kind === 'scene' && /^ch\d+_/.test(n.sceneId)
     );
 
     if (hasChapters) {
-        return buildChapters(flow, t);
+        return buildChapters(flow, t, visibleSceneIds);
     }
 
-    return buildBranches(flow, sceneId, t);
+    return buildBranches(flow, sceneId, t, visibleSceneIds);
 }
 
-function buildChapters(flow: Flow, t: Translations): ChaptersResult {
+function buildChapters(
+    flow: Flow,
+    t: Translations,
+    visibleSceneIds?: ReadonlySet<string>
+): ChaptersResult {
     const chapters: Record<number, Record<string, string>> = {};
 
     for (const node of flow.nodes) {
         if (node.kind !== 'scene') continue;
         const sceneId = node.sceneId;
+        if (visibleSceneIds && !visibleSceneIds.has(sceneId)) continue;
         const actMatch = sceneId.match(/(?:^|_)(act\d+|actFinal|actEpilogue)/);
         if (!actMatch) continue;
 
@@ -143,12 +164,14 @@ function buildChapters(flow: Flow, t: Translations): ChaptersResult {
 function buildBranches(
     flow: Flow,
     sceneId: string,
-    t: Translations
+    t: Translations,
+    visibleSceneIds?: ReadonlySet<string>
 ): BranchesResult {
     const actCandidates: Record<string, string[]> = {};
 
     for (const node of flow.nodes) {
         if (node.kind !== 'scene') continue;
+        if (visibleSceneIds && !visibleSceneIds.has(node.sceneId)) continue;
         const match = node.sceneId.match(
             /(?:^|_)(act\d+|actFinal|actEpilogue)/
         );
